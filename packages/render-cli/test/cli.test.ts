@@ -118,6 +118,13 @@ describe('pnpm render, in process', () => {
     expect(readFileSync(path.join(cwd, 's.drawio'), 'utf8')).toBe(
       golden.replace(' agent="gcportrait" ', ` agent="gcportrait ${CLI_VERSION}" `),
     );
+    // Without the version, the library's own bytes: the golden, which a release leaves as it is.
+    const unversioned = await capture(
+      ['--fixture', 'S', '--lens', 'overview', '--drawio', 'u.drawio', '--drawio-unversioned'],
+      cwd,
+    );
+    expect(unversioned.code).toBe(0);
+    expect(readFileSync(path.join(cwd, 'u.drawio'), 'utf8')).toBe(golden);
     const plain = await capture(['--fixture', 'S', '--drawio', '-', '--drawio-plain'], tempDir());
     expect(plain.code).toBe(0);
     expect(plain.stderr).toContain('plain XML → standard output');

@@ -82,7 +82,7 @@ function drawio(labels: readonly string[], plain = false): string {
     `<mxGraphModel pageWidth="400" pageHeight="300" background="#ffffff"><root><mxCell id="0"/><mxCell id="1" parent="0"/>` +
     `<mxCell id="3" value="Title and legend" parent="0"/>${cells.join('')}</root></mxGraphModel>`;
   const body = plain ? model : deflateRawSync(encodeURIComponent(model)).toString('base64');
-  return `<mxfile host="gcportrait" modified="2026-10-08T00:00:00.000Z" agent="gcportrait 1.0.0" version="24.7.17"><diagram id="gcportrait-x" name="gcportrait diagram">${body}</diagram></mxfile>\n`;
+  return `<mxfile host="gcportrait" modified="2026-10-08T00:00:00.000Z" agent="gcportrait" version="24.7.17"><diagram id="gcportrait-x" name="gcportrait diagram">${body}</diagram></mxfile>\n`;
 }
 
 describe('the samples', () => {
@@ -101,10 +101,10 @@ describe('the samples', () => {
     const [overview, , focused] = SAMPLES;
     if (overview === undefined || focused === undefined) throw new Error('no samples');
     expect(renderCommand(overview, 'light')).toBe(
-      'pnpm render --fixture S --lens overview --theme light --png docs/media/exports/S-overview-light.png --svg docs/media/exports/S-overview-light.svg --drawio docs/media/exports/S-overview-light.drawio',
+      'pnpm render --fixture S --lens overview --theme light --png docs/media/exports/S-overview-light.png --svg docs/media/exports/S-overview-light.svg --drawio docs/media/exports/S-overview-light.drawio --drawio-unversioned',
     );
     expect(renderCommand(focused, 'dark')).toBe(
-      'pnpm render --fixture M --lens networking --focus kind=shared-vpc,host=demo-net-1 --theme dark --png docs/media/exports/M-shared-vpc-dark.png --svg docs/media/exports/M-shared-vpc-dark.svg --drawio docs/media/exports/M-shared-vpc-dark.drawio',
+      'pnpm render --fixture M --lens networking --focus kind=shared-vpc,host=demo-net-1 --theme dark --png docs/media/exports/M-shared-vpc-dark.png --svg docs/media/exports/M-shared-vpc-dark.svg --drawio docs/media/exports/M-shared-vpc-dark.drawio --drawio-unversioned',
     );
   });
 
@@ -165,6 +165,17 @@ describe('the samples', () => {
       'it is not readable as diagrams.net reads it: not a draw.io file (no <mxfile>)',
     ]);
     expect(drawioProblems('<mxfile><diagram>!!</diagram></mxfile>')[0]).toMatch(/^it is not readable/);
+  });
+
+  it('wants a draw.io file’s agent without a version, so that a release leaves the samples as they are', () => {
+    const good = drawio(TITLE_BLOCK);
+    expect(good).toContain(' agent="gcportrait" ');
+    expect(drawioProblems(good.replace(' agent="gcportrait" ', ' agent="gcportrait 1.1.0" '))).toEqual([
+      'its agent is "gcportrait 1.1.0", not "gcportrait" (no version)',
+    ]);
+    expect(drawioProblems(good.replace(' agent="gcportrait"', ''))).toEqual([
+      'its agent is missing, not "gcportrait" (no version)',
+    ]);
   });
 
   it('versions the generator by its samples, previews and encoder, not by its text', () => {
@@ -257,7 +268,7 @@ describe('the staleness check', () => {
     const first = renamed.files.find((entry) => entry.file === 'S-overview-dark.svg');
     if (first !== undefined) first.command = 'pnpm render --fixture S --lens overview --theme dark';
     expect(check(renamed)).toEqual([
-      'S-overview-dark was made with another command than `pnpm render --fixture S --lens overview --theme dark --png docs/media/exports/S-overview-dark.png --svg docs/media/exports/S-overview-dark.svg --drawio docs/media/exports/S-overview-dark.drawio`',
+      'S-overview-dark was made with another command than `pnpm render --fixture S --lens overview --theme dark --png docs/media/exports/S-overview-dark.png --svg docs/media/exports/S-overview-dark.svg --drawio docs/media/exports/S-overview-dark.drawio --drawio-unversioned`',
     ]);
     tree.write('S-overview-light.png', pngHeader(100, 51));
     tree.write('stray.png', 'x');

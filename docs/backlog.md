@@ -59,7 +59,9 @@ and the security review. Each item names its area and, where known, the file.
 - **Make the repository and the ghcr.io package public**; the first `v1.0.0` tag ([handoff.md](handoff.md),
   step 5).
 - **`docs/author.md`**: fill in its placeholders; a portrait needs its licence stated before it is committed.
-- **The legal pages** on the maintainer's website, checked against [legal/](legal/README.md), and the
+- **The legal pages** on the maintainer's website, checked against [legal/](legal/README.md); the privacy notice
+  at <https://florian-chrometz.de/legal/privacy-policy> must mention TelemetryDeck, which counts the website's page
+  views once it deploys (the inventory's row W4; [website.md](website.md), "Analytics"); and the
   data-processing inventory's placeholders (`[LOG BUCKET LOCATION]`, `[LOG RETENTION IN DAYS]`,
   `[EMAIL PROVIDER]`, `[EMAIL PROVIDER LOCATION]`, `[DATE OF LEGAL REVIEW]`); rewrite the inventory's rows R1
   to R3, which still describe the demo on Cloud Run, for the static demo of [ADR 0034](adr/0034-static-demo-on-pages.md).

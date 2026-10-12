@@ -31,9 +31,11 @@ describe('the generated media the website shows (docs/media/)', () => {
   });
 
   it('gives every page a 1200×630 link-preview image on the canonical host', () => {
-    for (const id of ['home', 'docs', 'coverage', 'changelog', 'contributing', 'licence']) {
+    for (const id of ['home', 'docs', 'coverage', 'contributing', 'licence']) {
       expect(CARD_IDS).toContain(id);
     }
+    // The changelog is the repository's releases page on GitHub (src/site.ts, RELEASES_URL), not a page of the site.
+    expect(CARD_IDS).not.toContain('changelog');
     // The Impressum and the privacy notice are pages of the maintainer's own website, not of this one (src/site.ts).
     expect(CARD_IDS).not.toContain('impressum');
     expect(CARD_IDS).not.toContain('privacy');

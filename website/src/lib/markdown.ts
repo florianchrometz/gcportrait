@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * Markdown to HTML for the website, at build time: the guides under docs/, the changesets and the author section are
- * rendered from their one source in the repository, never copied.
+ * Markdown to HTML for the website, at build time: the guides under docs/ and the author section are rendered from
+ * their one source in the repository, never copied.
  *
  * GitHub-flavoured Markdown (tables, autolinks, strikethrough) through unified (remark → rehype). Raw HTML in the
  * source is dropped, never passed through (the SPDX comment line, any `<details>`), so a guide cannot inject elements

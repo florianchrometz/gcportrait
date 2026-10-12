@@ -15,9 +15,10 @@ surfaces ([ADR 0032](../adr/0032-hosted-surfaces-and-domains.md), [ADR
 (GitHub Pages) and the sign-in-free demo, described below as `demo.gcportrait.app` (Cloud Run, demo-only mode)
 and since 2026-10-11 a static build at `gcportrait.app/demo/` on the same GitHub Pages site
 ([ADR 0034](../adr/0034-static-demo-on-pages.md); this folder still has to follow, [docs/backlog.md](../backlog.md)), and neither processes
-personal data by design: no sign-in, no cookies, no analytics, no server-side storage. What remains are the hosting
-providers' request logs, a short-lived counter against overload, the header's repository widget and what the two keep
-in the visitor's own browser. Both still need an Impressum, and a privacy notice for those logs.
+personal data by design: no sign-in, no cookies, no server-side storage, and no analytics but the website's own page
+views. What remains are the hosting providers' request logs, a short-lived counter against overload, the header's
+repository widget, the website's page views counted with TelemetryDeck (never the demo's) and what the two keep in the
+visitor's own browser. Both still need an Impressum, and a privacy notice for those logs.
 
 ## Where the legal texts live
 
@@ -59,14 +60,25 @@ The facts the page at <https://florian-chrometz.de/legal/privacy-policy> must st
   requests made together), at most once an hour per tab, anonymously (no cookie, no referrer); GitHub receives the IP
   address, the user agent and the site's origin with each. The browser keeps the time and the facts in session storage
   for the hour. While the repository is not public the browser does not ask at all (W3).
+- **The website counts its page views with TelemetryDeck.** On the website's own pages only (never the demo, never a
+  self-hosted instance), and not where the browser sends Do Not Track or Global Privacy Control: once a page has
+  loaded, the visitor's browser sends TelemetryDeck (`nom.telemetrydeck.com`) one request with the page's path (no
+  query, no fragment), the site's app id, a random user identifier hashed with SHA-256 and a random session
+  identifier; a click on a link to the demo or to the repository sends one more. TelemetryDeck receives the IP
+  address, the user agent and the site's origin with each request (it says it stores no IP address); no cookie, nothing
+  typed. The two random identifiers are kept in session storage (`gcportrait.analytics`) until the tab is closed, so
+  that the pages of one visit count as one session (W4).
 - **The demo runs on Cloud Run in `europe-west1`.** Google writes a request log entry for every request (IP address,
   full URL, time, status, user agent, referrer) into Cloud Logging in the maintainer's Google Cloud project, as a
   processor; the default retention is 30 days. The demo's own log lines carry no IP address and no query string
   (R1, R2). Against overload it counts requests per IP address in memory for a minute, never written anywhere (R3).
-- **No cookies, no analytics, no sign-in.** Neither site sets a cookie or loads anything from another host for
-  analytics, tracking or advertising; the demo has no sign-in and reads no Google Cloud data.
+- **No cookies, no tracking, no sign-in.** Neither site sets a cookie or loads anything from another host; the
+  website's only analytics are its page views above (W4), with TelemetryDeck's SDK served by the site itself; there is
+  no tracking across sites, no advertising and no profile; the demo has no sign-in, reads no Google Cloud data and
+  sends no analytics.
 - **What stays in the visitor's browser.** The values typed into the website's commands (local storage,
-  `gcportrait.docs.variables`, W2); the demo's theme (local storage, `gcportrait.theme`) and its generated demo
+  `gcportrait.docs.variables`, W2); the repository widget's facts and the page views' random identifiers (session
+  storage, `gcportrait.repository` and `gcportrait.analytics`, W3 and W4); the demo's theme (local storage, `gcportrait.theme`) and its generated demo
   organisations, saved views and imported files (IndexedDB); nothing of it reaches the maintainer (R4).
 - **Email**, if the page names an address: what is sent, kept until the conversation is over (C1).
 - The usual parts of a notice: the controller (the person the Impressum names), the legal bases the inventory names,

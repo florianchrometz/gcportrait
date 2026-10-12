@@ -265,13 +265,6 @@
       "seconds": 9,
       "item": "17538342d8aaeac1830f92d7485a5e8cd15854137284654b0f480f3b4e41c0ba"
     },
-    "social/changelog.jpg": {
-      "sha256": "79a5fd86f1e88c1dc6c9a102fc0254fe439f451fd192c1b35bd7747d093f05f9",
-      "bytes": 54864,
-      "width": 1200,
-      "height": 630,
-      "item": "4a628d3397b40d427e4baff0dd8caf5a27dfac7ffaae5ff105d6117240cff7fd"
-    },
     "social/contributing.jpg": {
       "sha256": "9bf52f10885b04e9998ac319031bb6e1a9134f3a2ffc5ea626d7ba27b7ad6858",
       "bytes": 81259,

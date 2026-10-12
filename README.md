@@ -405,9 +405,9 @@ gcportrait's own work, its code, its texts and its images, is licensed under the
 
 ## Learn more
 
-- **[gcportrait.app](https://gcportrait.app)**: the website, with the [docs](https://gcportrait.app/docs/),
-  the [asset type coverage](https://gcportrait.app/coverage/) and the
-  [changelog](https://gcportrait.app/changelog/).
+- **[gcportrait.app](https://gcportrait.app)**: the website, with the [docs](https://gcportrait.app/docs/)
+  and the [asset type coverage](https://gcportrait.app/coverage/); what changed in each version is on the
+  [releases page](https://github.com/florianchrometz/gcportrait/releases).
 - [docs/README.md](docs/README.md): every guide in this repository. For users: [getting
   started](docs/getting-started.md), [modes](docs/modes.md), [lenses and filters](docs/lenses-and-filters.md),
   the [timeline](docs/timeline.md), [export](docs/export.md) and the [FAQ](docs/faq.md); for running an

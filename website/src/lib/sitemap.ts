@@ -17,7 +17,6 @@ export function sitemapPaths(): string[] {
     ...renderedDocs().map((doc) => doc.path),
     '/exports/',
     '/coverage/',
-    '/changelog/',
     '/contributing/',
     '/licence/',
   ];

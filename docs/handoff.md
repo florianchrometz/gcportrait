@@ -136,6 +136,7 @@ The script prints these steps, filled in for the repository and the destination.
    | Name | Kind | For |
    |---|---|---|
    | `PAGES_DEPLOY` | variable | `true` switches on the website's deployment to GitHub Pages from `main` and from each `v*` tag. Set it last, after the Pages source ("GitHub Actions"), the `github-pages` environment allowing `main` and `v*`, the verified domain, the DNS records and the custom domain `gcportrait.app` with HTTPS enforced: [website.md, "Deploying to GitHub Pages" and "DNS records"](website.md#deploying-to-github-pages), which has the exact records. |
+   | `WEBSITE_ANALYTICS` | variable, optional | Leave it unset: a deploying build then counts the website's page views with TelemetryDeck (never the demo's), so the privacy notice must mention it before the first deploy ([website.md, "Analytics"](website.md#analytics)). `0` switches that off (what a fork sets), `1` on in every build. |
 
    The release workflow needs no variable, no secret and no Workload Identity Federation: it publishes the image
    to GitHub Container Registry with its own `GITHUB_TOKEN`. Under Settings > Advanced Security, switch on

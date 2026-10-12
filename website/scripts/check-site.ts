@@ -21,12 +21,16 @@
  * image and use; and in CSS (every stylesheet of the build, every <style> block and style attribute), any address on
  * another host, so url(), @import, image-set() and @font-face src.
  *
- * Scripts (every inline script of a page and every script file of the build) connect to nothing but the site itself
- * and the requests of the header's repository widget (docs/website.md, "GitHub repository widget"): each `fetch(` names
- * its address as a literal, either a path of the site or `https://api.github.com/repos/…` with exactly one
- * `credentials: 'omit'` at the top level of the options written out in the call (no spread, no computed key); no
- * script names an address on any other host (XML namespaces aside), and none uses XMLHttpRequest, WebSocket,
- * EventSource, sendBeacon or importScripts.
+ * Scripts (every inline script of a page and every script file of the build) connect to nothing but the site itself,
+ * the requests of the header's repository widget (docs/website.md, "GitHub repository widget") and, in a build with
+ * analytics on, the page views sent to TelemetryDeck's ingestion host (docs/website.md, "Analytics"): each `fetch(`
+ * names its address as a literal, either a path of the site or `https://api.github.com/repos/…` with exactly one
+ * `credentials: 'omit'` at the top level of the options written out in the call (no spread, no computed key), or
+ * TelemetryDeck's `https://nom.telemetrydeck.com/…` (ANALYTICS_PREFIX) as a POST; the one exception is the SDK's own
+ * request, `fetch(target, { method: 'POST', … })`, whose address is the instance's target: accepted once, in the one
+ * script that names the ingestion address, as a POST with no credentials but 'omit'. No script names an address on any
+ * other host (XML namespaces aside), and none uses XMLHttpRequest, WebSocket, EventSource, sendBeacon or
+ * importScripts. A build that sends page views ships the SDK's licence (licenses/telemetrydeck-sdk-LICENSE.txt).
  *
  * Phones, as far as the HTML shows it (scripts/mobile.ts checks the rendered pages in a browser): one viewport meta
  * tag, `width=device-width, initial-scale=1`, that leaves zooming alone; every table in its own keyboard-focusable
@@ -75,7 +79,8 @@
  *
  * The demo (src/site.ts DEMO_URL, /demo/; ADR 0034) is the app, not a page of the site, so the page rules above leave
  * it out (it is desktop-only, has its own title and no footer of the site's); the sitemap lists its entry page only.
- * Instead (checkDemo): /demo/index.html and a byte-for-byte copy of it for each of the app's routes; exactly one
+ * Instead (checkDemo): /demo/index.html and a byte-for-byte copy of it for each of the app's routes; no file of it
+ * naming TelemetryDeck or the site's analytics app id (the demo is the app's build, which sends no analytics); exactly one
  * Content Security Policy `<meta>`, before anything the page loads, that is the backend's demo-only policy without what
  * a `<meta>` cannot carry: 'self' only, no host at all (so no Google sign-in script), and the hash of each of the
  * page's inline scripts; the backend's referrer policy, `no-referrer`, as a `<meta>`; everything the page loads under
@@ -108,6 +113,7 @@ import {
   REPOSITORY_URL,
   SITE_HOST,
   SITE_URL,
+  TELEMETRYDECK_APP_ID,
   isDemoHref,
 } from '../src/site.js';
 import {
@@ -290,6 +296,15 @@ export function checkVariables(page: Page, where: (message: string) => void): vo
 
 /** The addresses on another host a script may ask: the repository widget's (src/lib/star-count.ts). */
 export const ALLOWED_FETCH_PREFIX = 'https://api.github.com/repos/';
+/**
+ * TelemetryDeck's ingestion host, the one other host a script may send to: the website's page views, in a build with
+ * analytics on (src/lib/analytics-page.ts through @telemetrydeck/sdk, whose target is TELEMETRYDECK_TARGET in
+ * src/site.ts; docs/website.md, "Analytics"). Allowed by name, so that another host (an update of the SDK, a changed
+ * target) fails the check instead of slipping through.
+ */
+export const ANALYTICS_PREFIX = 'https://nom.telemetrydeck.com/';
+/** The licence the build writes next to the fonts' when it bundles the SDK (astro.config.ts). */
+export const ANALYTICS_LICENCE = 'telemetrydeck-sdk-LICENSE.txt';
 /** Addresses a script may name without asking them: XML namespaces (an SVG made by a script). */
 const NAMESPACE_PREFIX = 'http://www.w3.org/';
 const QUOTES = new Set(['"', "'", '`']);
@@ -433,6 +448,21 @@ export function timelineShorthands(css: string): string[] {
     .map((match) => match[0].trim());
 }
 
+/**
+ * Whether a fetch's options (fetchOptions) make it a page view's request: written out, `method` 'POST', and no
+ * `credentials` but 'omit' (the default, 'same-origin', sends no cookie to another host).
+ */
+function isAnalyticsPost(options: Map<string, string[]> | undefined): boolean {
+  if (options === undefined) return false;
+  const method = options.get('method');
+  const credentials = options.get('credentials');
+  return (
+    method?.length === 1 &&
+    method[0] === 'POST' &&
+    (credentials === undefined || (credentials.length === 1 && credentials[0] === 'omit'))
+  );
+}
+
 /** What a script (its source, as the build wrote it) may not do: see "Scripts" in the module comment. */
 export function scriptConnectionProblems(source: string): string[] {
   const problems: string[] = [];
@@ -440,14 +470,27 @@ export function scriptConnectionProblems(source: string): string[] {
     /\b(XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts)\b/g,
   )) {
     problems.push(
-      `a script uses ${match[1] ?? ''} (the only request allowed to another host is a fetch of ${ALLOWED_FETCH_PREFIX}…)`,
+      `a script uses ${match[1] ?? ''} (the only requests allowed to another host are a fetch of ${ALLOWED_FETCH_PREFIX}… and the page views' POST to ${ANALYTICS_PREFIX}…)`,
     );
   }
+  // The SDK's own request may name its address by a variable, once, in the script that names the ingestion address.
+  const namesAnalytics = source.includes(ANALYTICS_PREFIX);
+  let sdkRequests = 0;
   for (const match of source.matchAll(/\bfetch\s*\(\s*/g)) {
     const at = match.index + match[0].length;
     const end = skipUntil(source, at, ')');
     const call = source.slice(match.index, end);
     if (!QUOTES.has(source[at] ?? '')) {
+      const variable = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*/.exec(source.slice(at))?.[0];
+      if (
+        namesAnalytics &&
+        variable !== undefined &&
+        isAnalyticsPost(fetchOptions(source, at + variable.length)) &&
+        sdkRequests === 0
+      ) {
+        sdkRequests += 1;
+        continue;
+      }
       problems.push(`a script fetches an address it does not write out: ${call.slice(0, 80)}`);
       continue;
     }
@@ -457,6 +500,9 @@ export function scriptConnectionProblems(source: string): string[] {
       const credentials = fetchOptions(source, addressEnd)?.get('credentials');
       if (credentials?.length !== 1 || credentials[0] !== 'omit')
         problems.push(`a script fetches ${head}… without credentials: 'omit'`);
+    } else if (head.startsWith(ANALYTICS_PREFIX)) {
+      if (!isAnalyticsPost(fetchOptions(source, addressEnd)))
+        problems.push(`a script fetches ${head.slice(0, 80)} other than as a POST without credentials`);
     } else if (!head.startsWith('/') || head.startsWith('//')) {
       problems.push(`a script fetches from another host: ${head.slice(0, 80)}`);
     }
@@ -466,7 +512,12 @@ export function scriptConnectionProblems(source: string): string[] {
     const quoted = QUOTES.has(source[match.index - 1] ?? '');
     if (!address.includes(':') && !quoted) continue; // a "//" in code or a regular expression, not an address
     const rest = source.slice(match.index);
-    if (rest.startsWith(ALLOWED_FETCH_PREFIX) || rest.startsWith(NAMESPACE_PREFIX)) continue;
+    if (
+      rest.startsWith(ALLOWED_FETCH_PREFIX) ||
+      rest.startsWith(ANALYTICS_PREFIX) ||
+      rest.startsWith(NAMESPACE_PREFIX)
+    )
+      continue;
     problems.push(`a script names another host: ${address}`);
   }
   return problems;
@@ -685,6 +736,14 @@ export function checkDemo(demo: DemoFiles, brandSource: string | undefined): str
     where(`favicon.svg is not ${BRAND_ICON} as it is`);
   // The route copies are index.html (checked above), so their text is not searched again.
   const copies = new Set<string>(DEMO_ROUTES.map((route) => `${route}.html`));
+  // The demo is the app, and a self-hosted instance never phones home: no file of it carries the site's analytics.
+  for (const file of demo.files.filter(
+    (name) => /\.(?:html|js|mjs|css|json|txt|svg|webmanifest|map)$/.test(name) && !copies.has(name),
+  )) {
+    const text = demo.read(file) ?? '';
+    if (/telemetrydeck/i.test(text) || text.includes(TELEMETRYDECK_APP_ID))
+      where(`${file} names TelemetryDeck (the demo is the app, which sends no analytics)`);
+  }
   const code = demo.files.filter((file) => /\.(?:html|js|css)$/.test(file) && !copies.has(file));
   for (const file of code) {
     const text = demo.read(file) ?? '';
@@ -1295,10 +1354,15 @@ export function checkSite(dist: string, brandSource = BRAND_SOURCE): string[] {
     if (!existsSync(path.join(dist, 'licenses', licence))) problems.push(`licenses/${licence} is missing`);
   }
   // The site's scripts; the demo's are the app's, under its own policy (checkDemo).
+  let sendsPageViews = false;
   for (const file of filesEndingIn('.js', dist).filter((name) => !inDemo(name))) {
-    for (const problem of scriptConnectionProblems(readFileSync(path.join(dist, file), 'utf8')))
+    const source = readFileSync(path.join(dist, file), 'utf8');
+    sendsPageViews ||= source.includes(ANALYTICS_PREFIX);
+    for (const problem of scriptConnectionProblems(source))
       problems.push(`${file.split(path.sep).join('/')}: ${problem}`);
   }
+  if (sendsPageViews && !existsSync(path.join(dist, 'licenses', ANALYTICS_LICENCE)))
+    problems.push(`licenses/${ANALYTICS_LICENCE} is missing (a script carries TelemetryDeck's SDK)`);
   const stylesheets = filesEndingIn('.css', dist)
     .filter((file) => !inDemo(file))
     .map((file) => ({
@@ -1379,6 +1443,6 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     process.exit(1);
   }
   console.log(
-    `website:check: ${String(count)} pages OK (metadata, links, anchors, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's, focusable code blocks, the header's GitHub link, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, every link to it opening a new tab).`,
+    `website:check: ${String(count)} pages OK (metadata, links, anchors, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
   );
 }

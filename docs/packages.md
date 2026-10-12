@@ -401,7 +401,7 @@ it, to prepare one. [frontend/README.md](../frontend/README.md) is the reference
 
 | Package | Responsibility |
 |---|---|
-| `website/` (`@gcportrait/website`) | the Astro site at `gcportrait.app`: the landing page, the guides of `docs/` rendered at build time, a coverage page from `@gcportrait/catalog`, the changelog from the changesets, the sample exports, and the static demo at `/demo/` (ADR 0034, `pnpm demo:static`); its screenshots and demos come from `docs/media/` (`pnpm media`, `scripts/media.mjs`). [website/README.md](../website/README.md), [website.md](website.md) |
+| `website/` (`@gcportrait/website`) | the Astro site at `gcportrait.app`: the landing page, the guides of `docs/` rendered at build time, a coverage page from `@gcportrait/catalog`, the sample exports, and the static demo at `/demo/` (ADR 0034, `pnpm demo:static`); its screenshots and demos come from `docs/media/` (`pnpm media`, `scripts/media.mjs`). [website/README.md](../website/README.md), [website.md](website.md) |
 
 ## 4. Command-line entry points
 

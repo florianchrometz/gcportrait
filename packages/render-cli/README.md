@@ -56,9 +56,10 @@ Relative paths are taken from the directory the command was started in (pnpm's `
 | `--scale N` / `--width PX` | PNG pixels per drawing unit, up to 3 (default 2, the export's default), or the PNG's width in pixels (margin included). A PNG beyond the app export's canvas limits (16 384 px a side, 2^27 px in all) is drawn at the largest two-decimal scale that fits, and the report says so |
 | `--png FILE`, `--svg FILE`, `--drawio FILE` | where to write; any of them |
 | `--drawio-plain` | the draw.io file's diagram as plain XML instead of compressed as diagrams.net saves it (several times larger, readable and diffable) |
+| `--drawio-unversioned` | the draw.io file's `agent` without this package's version (`gcportrait` alone, as the library writes it by default and the golden is), so a release changes no byte of the file; the website's sample exports are written this way (`scripts/exports.mjs`) |
 | `--compare EXPECTED.png [--max-diff N] [--diff FILE]` | compare the PNG with an earlier one (pixelmatch, colour threshold 0, anti-aliased pixels counted); exit 1 when more than N pixels (default 0) differ; `--diff` writes the differences as an image |
 | `--strict` | exit 1 when the layout breaks one of its invariants (skill gcp-diagram-layout §5); the report always says whether they hold |
-| `--all [--out DIR] [--fixtures …] [--lenses …] [--themes …] [--formats png,svg,drawio] [--drawio-plain]` | every combination (default: S, M, L, XL × all lenses × both themes, PNG and SVG; `drawio` adds the draw.io files) into `DIR` (default `out/render/all`), named like the renderer's baselines, with an `index.json` listing each file, its size, rect and edge counts and the detail level used. All 88 take a few minutes |
+| `--all [--out DIR] [--fixtures …] [--lenses …] [--themes …] [--formats png,svg,drawio] [--drawio-plain] [--drawio-unversioned]` | every combination (default: S, M, L, XL × all lenses × both themes, PNG and SVG; `drawio` adds the draw.io files) into `DIR` (default `out/render/all`), named like the renderer's baselines, with an `index.json` listing each file, its size, rect and edge counts and the detail level used. All 88 take a few minutes |
 
 Exit codes: 0 done, 1 a check failed (`--compare`, `--strict`), 2 a usage error.
 
@@ -84,9 +85,9 @@ dashes, three layers (Diagram, Connections, Title and legend), the theme's canva
 diagrams.net's adaptive colours off, so its dark interface shows the drawing's own colours). Its
 labels name Google Fonts' stylesheet of Roboto and Roboto Mono, which diagrams.net loads when it opens the file
 (the render API's `fontSource`, [docs/api.md](../../docs/api.md#drawio-files)). The file's `modified` is the data's
-read time and its `agent` is `gcportrait` and this package's version, so the same arguments give the same bytes;
-the diagram is compressed as diagrams.net saves it (deflate, plain JavaScript, so the bytes are the same on every
-platform) unless `--drawio-plain` is given.
+read time and its `agent` is `gcportrait` and this package's version (`gcportrait` alone with
+`--drawio-unversioned`), so the same arguments give the same bytes; the diagram is compressed as diagrams.net saves
+it (deflate, plain JavaScript, so the bytes are the same on every platform) unless `--drawio-plain` is given.
 
 ## How it draws the app's picture
 

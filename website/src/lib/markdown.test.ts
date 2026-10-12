@@ -314,7 +314,7 @@ describe('renderMarkdown', () => {
     expect(code?.attributes).toEqual({ tabindex: '0' });
     expect(outline(code)).toEqual(['code.language-sh']);
 
-    const plain = renderMarkdown(source, { sourcePath: 'CHANGELOG.md' });
+    const plain = renderMarkdown(source, { sourcePath: 'docs/author.md' });
     expect(plain.html).not.toContain('data-var');
     expect(plain.html).not.toContain('code-block');
     expect(plain.variables).toEqual([]);

@@ -75,6 +75,15 @@ and stay under their own terms (categories 2 and 3).
    `website/dist/licenses/`. OFL-1.1 does not extend to software that merely uses the fonts, so it places no
    condition on gcportrait's own licence. Add a font package to both lists, or none.
 
+   **TelemetryDeck's SDK, on the website only.** `@telemetrydeck/sdk` 2.0.4 (MIT; its `LICENSE` file is the MIT
+   License without the attribution clause, Copyright (c) 2020 Daniel Jilg) counts the page views of the website at
+   `gcportrait.app` ([docs/website.md](docs/website.md), "Analytics"). The website's build installs it from npm and
+   bundles it, unmodified, into a file of its own that the site's pages load from the site itself, only in a build
+   with analytics on, and then writes its `LICENSE` next to the fonts' as
+   `website/dist/licenses/telemetrydeck-sdk-LICENSE.txt`. Nothing of it is in the image, the app or the static demo at
+   `/demo/` (`pnpm website:check` refuses the demo naming it), so neither a self-hosted instance nor the demo sends
+   anything to TelemetryDeck.
+
    **mxGraph, a development tool.** `mxgraph` 4.2.2 (Apache-2.0, JGraph Ltd), the JavaScript library diagrams.net
    is built on, is a development dependency of the end-to-end tests only: the draw.io fidelity check
    (`e2e/tests/drawio.spec.ts`, ADR 0036) serves its `javascript/mxClient.min.js` from `node_modules` to a test page
@@ -133,7 +142,7 @@ Google Cloud's, used under the terms Google Cloud states for them; the notices f
 
 <!-- BEGIN GENERATED: npm-dependencies (scripts/check-licenses.mjs --write) -->
 
-68 direct dependencies across 14 workspace projects. "runtime" means
+69 direct dependencies across 14 workspace projects. "runtime" means
 `dependencies`/`optionalDependencies`, "dev" means `devDependencies`. Transitive dependencies are not listed
 here but are checked against the same allowlist and deny list on every run.
 
@@ -151,6 +160,7 @@ here but are checked against the same allowlist and deny list on every run.
 | `@playwright/test` | Apache-2.0 | e2e | dev |
 | `@resvg/resvg-js` | MPL-2.0 | e2e, packages/layout, packages/render | dev |
 | `@resvg/resvg-wasm` | MPL-2.0 | packages/render | runtime |
+| `@telemetrydeck/sdk` | MIT | website | runtime |
 | `@testing-library/dom` | MIT | frontend | dev |
 | `@testing-library/react` | MIT | frontend | dev |
 | `@testing-library/user-event` | MIT | frontend | dev |

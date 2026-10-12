@@ -3,22 +3,25 @@
  * The header of every page: the wordmark, the menu, "Try the demo" and the repository widget. It stays at the top of
  * the window while the page scrolls (sticky; src/layouts/Base.astro keeps `--header-block` at its height, so an anchor
  * jump or a focused element is never hidden under it). The demo opens in a new tab (src/components/DemoLink.astro).
+ * "Changelog" is the repository's releases page on GitHub (RELEASES_URL; the site keeps no copy): an external link in
+ * the same tab, named as such for assistive technology and marked with an arrow, as the footer's are.
  */
 import DemoLink from './DemoLink.astro';
 import Logo from './Logo.astro';
 import { formatCount, repositoryFacts, repositoryLinkLabel, repositorySlug } from '../lib/github.js';
-import { PRODUCT_NAME, REPOSITORY_URL } from '../site.js';
+import { PRODUCT_NAME, RELEASES_URL, REPOSITORY_URL } from '../site.js';
 
 interface Props {
   /** The current page's path, to mark its section in the menu. */
   path: string;
 }
 const { path } = Astro.props;
-const links = [
+/** The menu: the site's own sections, and the changelog on GitHub (`site`: the host an external link leads to). */
+const links: readonly { href: string; label: string; site?: string }[] = [
   { href: '/docs/', label: 'Docs' },
   { href: '/docs/self-host/', label: 'Self-host' },
   { href: '/coverage/', label: 'Coverage' },
-  { href: '/changelog/', label: 'Changelog' },
+  { href: RELEASES_URL, label: 'Changelog', site: new URL(RELEASES_URL).host },
   { href: '/contributing/', label: 'Contributing' },
 ];
 // The self-hosting guide and its options page (/docs/self-host/, /docs/self-host-options/) are "Self-host", not "Docs".
@@ -75,9 +78,14 @@ const values = {
         {
           links.map((link) => (
             <li>
-              <a href={link.href} aria-current={current(link.href) ? 'page' : undefined}>
-                {link.label}
-              </a>
+              {link.site === undefined ? (
+                <a href={link.href} aria-current={current(link.href) ? 'page' : undefined}>
+                  {link.label}
+                </a>
+              ) : (
+                /* One line: white space between the label, the hidden name and the arrow would be underlined. */
+                <a class="external" href={link.href} rel="noopener">{link.label}<span class="visually-hidden">{` (external site, ${link.site})`}</span><svg class="external-mark" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M6 3h7v7M13 3 4 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
+              )}
             </li>
           ))
         }
@@ -207,6 +215,14 @@ const values = {
   nav a[aria-current='page'] {
     color: var(--color-link);
     box-shadow: inset 0 -2px 0 var(--color-link);
+  }
+  /* A link to another site (the changelog on GitHub): the arrow after the label, as in the footer. */
+  .external-mark {
+    display: inline-block;
+    width: 0.75em;
+    height: 0.75em;
+    margin-inline-start: 0.3em;
+    vertical-align: 0.05em;
   }
   /* The demo and the repository, at the right; under the menu when the row is too narrow for all three. */
   .header-actions {

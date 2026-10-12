@@ -29,13 +29,22 @@ describe('parseCommand: one view', () => {
       raster: {},
       png: 'out.png',
       drawioPlain: false,
+      drawioUnversioned: false,
       strict: false,
     });
   });
 
-  it('takes a draw.io file, plain on request', () => {
-    expect(render(['--drawio', 'out.drawio'])).toMatchObject({ drawio: 'out.drawio', drawioPlain: false });
+  it('takes a draw.io file, plain on request, without the version in its agent on request', () => {
+    expect(render(['--drawio', 'out.drawio'])).toMatchObject({
+      drawio: 'out.drawio',
+      drawioPlain: false,
+      drawioUnversioned: false,
+    });
     expect(render(['--drawio', '-', '--drawio-plain'])).toMatchObject({ drawio: '-', drawioPlain: true });
+    expect(render(['--drawio', 'out.drawio', '--drawio-unversioned'])).toMatchObject({
+      drawio: 'out.drawio',
+      drawioUnversioned: true,
+    });
   });
 
   it('defaults to demo M, the overview lens, and no output path (the caller picks out/render/)', () => {
@@ -129,6 +138,7 @@ describe('parseCommand: one view', () => {
     [['--png', '-', '--svg', '-'], /only one of --png, --svg and --drawio/],
     [['--svg', '-', '--drawio', '-'], /only one of --png, --svg and --drawio/],
     [['--drawio-plain'], /--drawio-plain needs --drawio/],
+    [['--drawio-unversioned'], /--drawio-unversioned needs --drawio/],
     [['--max-diff', '3'], /--max-diff needs --compare/],
     [['--diff', 'd.png'], /--diff needs --compare/],
     [['--compare', 'a.png', '--max-diff=-1'], /--max-diff takes a whole number/],
@@ -190,6 +200,7 @@ describe('parseCommand: --all, --list-fixtures, --help', () => {
     [['--all', '--png', 'a.png'], /--png cannot be used with --all/],
     [['--all', '--drawio', 'a.drawio'], /--drawio cannot be used with --all/],
     [['--all', '--drawio-plain'], /--drawio-plain needs drawio in --formats/],
+    [['--all', '--drawio-unversioned'], /--drawio-unversioned needs drawio in --formats/],
     [['--all', '--formats', 'png,vsdx'], /--formats takes png, svg, drawio, not "vsdx"/],
     [['--all', '--lens', 'networking'], /--lens cannot be used with --all/],
     [['--all', '--fixtures', 'S,XXL'], /--fixtures takes S, M, L, XL, not "XXL"/],
@@ -205,6 +216,9 @@ describe('parseCommand: --all, --list-fixtures, --help', () => {
       drawioPlain: false,
     });
     expect(all(['--all', '--formats', 'drawio', '--drawio-plain'])).toMatchObject({ drawioPlain: true });
+    expect(all(['--all', '--formats', 'drawio', '--drawio-unversioned'])).toMatchObject({
+      drawioUnversioned: true,
+    });
   });
 
   it('knows --list-fixtures and --help', () => {

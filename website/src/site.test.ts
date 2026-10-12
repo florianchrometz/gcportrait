@@ -8,11 +8,17 @@ import {
   EXPORT_DISCLAIMER,
   FOOTER_NOTICE,
   FOOTER_NOTICE_LEAD,
+  INSTALLER_URL,
+  INSTALL_COMMAND,
   LEGAL_LINKS,
   MAINTAINER_NAME,
   MAINTAINER_URL,
   NON_AFFILIATION_LONG,
+  RELEASES_URL,
   REPOSITORY_URL,
+  SITE_URL,
+  TELEMETRYDECK_APP_ID,
+  TELEMETRYDECK_TARGET,
   repositoryFileUrl,
   siteUrl,
 } from './site.js';
@@ -71,6 +77,17 @@ describe('the non-affiliation wording and the repository (ADR 0018)', () => {
     expect(REPOSITORY_URL).toBe(constantOf('frontend/src/source.ts', 'DEFAULT_SOURCE_URL'));
     expect(repositoryFileUrl('/docs/adr/README.md')).toBe(`${REPOSITORY_URL}/blob/main/docs/adr/README.md`);
     expect(repositoryFileUrl('docs/adr', 'tree')).toBe(`${REPOSITORY_URL}/tree/main/docs/adr`);
+  });
+
+  it('writes out the addresses it repeats, as they are computed (see INSTALLER_URL)', () => {
+    expect(INSTALLER_URL).toBe(`${SITE_URL}/install.sh`);
+    expect(INSTALL_COMMAND).toBe(`curl -fsSL ${SITE_URL}/install.sh | bash -s -- --project YOUR_PROJECT`);
+    expect(RELEASES_URL).toBe(`${REPOSITORY_URL}/releases`);
+  });
+
+  it('names TelemetryDeck’s app and its ingestion address, the one other host the pages send to', () => {
+    expect(TELEMETRYDECK_APP_ID).toBe('935EC0BB-BC12-4EE3-82C3-7F73D73116DD');
+    expect(TELEMETRYDECK_TARGET).toBe('https://nom.telemetrydeck.com/v2/');
   });
 
   it('keeps website/public/CNAME on the canonical host', () => {

@@ -31,14 +31,15 @@ import {
 } from '@gcportrait/render';
 
 export const USAGE = `Usage:
-  pnpm render --fixture S|M|L|XL --lens LENS [--png FILE] [--svg FILE] [--drawio FILE [--drawio-plain]]
+  pnpm render --fixture S|M|L|XL --lens LENS [--png FILE] [--svg FILE]
+              [--drawio FILE [--drawio-plain] [--drawio-unversioned]]
               [--theme light|dark] [--detail auto|folders|projects|networks|all] [--focus kind=KIND[,NAME=VALUE...]]
               [--root NODE_ID] [--filter KEY=VALUE ...] [--flip ZONE_ID ...] [--hash VIEW_HASH]
               [--viewport WIDTHxHEIGHT] [--scale N | --width PX] [--compare EXPECTED.png [--max-diff N] [--diff FILE]]
               [--strict]
   pnpm render --all [--out DIR] [--fixtures S,M,L,XL] [--lenses LENS,...] [--themes light,dark]
-              [--formats png,svg,drawio] [--drawio-plain] [--detail LEVEL] [--viewport WIDTHxHEIGHT]
-              [--scale N | --width PX] [--strict]
+              [--formats png,svg,drawio] [--drawio-plain] [--drawio-unversioned] [--detail LEVEL]
+              [--viewport WIDTHxHEIGHT] [--scale N | --width PX] [--strict]
   pnpm render --list-fixtures
 
 Draws a view of a demo organisation exactly as the app draws it (legend and title block included) and writes
@@ -62,7 +63,9 @@ standard output (then the report goes to standard error).
   --viewport   the canvas size detail auto fits (default ${String(DEFAULT_VIEWPORT.width)}x${String(DEFAULT_VIEWPORT.height)})
   --scale      PNG pixels per drawing unit, up to ${String(MAX_SCALE)} (default 2); --width sets the PNG width instead
                (margin included); a PNG beyond 16 384 px a side or 2^27 px is drawn at the largest scale that fits
-  --drawio     the .drawio file, compressed as draw.io saves it; --drawio-plain writes its diagram as plain XML
+  --drawio     the .drawio file, compressed as draw.io saves it; --drawio-plain writes its diagram as plain XML;
+               its agent is gcportrait and this command's version, or gcportrait alone with --drawio-unversioned
+               (as the render library writes it by default: a release changes no byte)
   --compare    compare the PNG with EXPECTED.png (pixelmatch, threshold 0); exit 1 when more than --max-diff
                pixels (default 0) differ; --diff writes the differences as an image
   --strict     exit 1 when the layout breaks an invariant (overlap, edge through a card, …)
@@ -95,6 +98,8 @@ export interface RenderCommand {
   readonly drawio?: string;
   /** The draw.io file's diagram as plain XML rather than compressed. */
   readonly drawioPlain: boolean;
+  /** The draw.io file's agent without the command's version (`gcportrait`, as the library writes it by default). */
+  readonly drawioUnversioned: boolean;
   readonly compare?: { readonly expected: string; readonly maxDiff: number; readonly diff?: string };
   readonly strict: boolean;
 }
@@ -108,6 +113,8 @@ export interface AllCommand {
   readonly formats: readonly OutputFormat[];
   /** The draw.io files' diagrams as plain XML rather than compressed. */
   readonly drawioPlain: boolean;
+  /** The draw.io files' agent without the command's version. */
+  readonly drawioUnversioned: boolean;
   readonly detail: DetailLevel;
   readonly viewport: Viewport;
   readonly raster: RasterChoice;
@@ -245,6 +252,7 @@ const OPTIONS = {
   svg: { type: 'string' },
   drawio: { type: 'string' },
   'drawio-plain': { type: 'boolean' },
+  'drawio-unversioned': { type: 'boolean' },
   compare: { type: 'string' },
   'max-diff': { type: 'string' },
   diff: { type: 'string' },
@@ -288,8 +296,10 @@ const ALL_FLAGS = ['out', 'fixtures', 'lenses', 'themes', 'formats'] as const;
 function parseAll(values: Values): AllCommand {
   refuse(values, SINGLE_FLAGS, '--all');
   const formats = listOf('--formats', ['png', 'svg', 'drawio'] as const, values.formats, ['png', 'svg']);
-  if (values['drawio-plain'] === true && !formats.includes('drawio'))
-    throw new UsageError('--drawio-plain needs drawio in --formats');
+  for (const flag of ['drawio-plain', 'drawio-unversioned'] as const) {
+    if (values[flag] === true && !formats.includes('drawio'))
+      throw new UsageError(`--${flag} needs drawio in --formats`);
+  }
   return {
     kind: 'all',
     ...(values.out === undefined ? {} : { out: values.out }),
@@ -298,6 +308,7 @@ function parseAll(values: Values): AllCommand {
     themes: listOf('--themes', THEMES, values.themes),
     formats,
     drawioPlain: values['drawio-plain'] === true,
+    drawioUnversioned: values['drawio-unversioned'] === true,
     detail: oneOf('--detail', DetailLevelSchema.options, values.detail ?? 'auto'),
     viewport: parseViewport(values.viewport),
     raster: parseRaster(values.scale, values.width),
@@ -337,8 +348,10 @@ function parseRender(values: Values): RenderCommand {
   if ([values.png, values.svg, values.drawio].filter((file) => file === '-').length > 1) {
     throw new UsageError('only one of --png, --svg and --drawio can write to standard output');
   }
-  if (values['drawio-plain'] === true && values.drawio === undefined)
-    throw new UsageError('--drawio-plain needs --drawio');
+  for (const flag of ['drawio-plain', 'drawio-unversioned'] as const) {
+    if (values[flag] === true && values.drawio === undefined)
+      throw new UsageError(`--${flag} needs --drawio`);
+  }
   if (values.compare === undefined) {
     const orphan = (['max-diff', 'diff'] as const).find((name) => values[name] !== undefined);
     if (orphan !== undefined) throw new UsageError(`--${orphan} needs --compare`);
@@ -369,6 +382,7 @@ function parseRender(values: Values): RenderCommand {
     raster: parseRaster(values.scale, values.width),
     ...outputs,
     drawioPlain: values['drawio-plain'] === true,
+    drawioUnversioned: values['drawio-unversioned'] === true,
     ...(compare === undefined ? {} : { compare }),
     strict: values.strict === true,
   };

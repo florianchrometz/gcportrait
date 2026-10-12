@@ -5,7 +5,8 @@
  * website), and the licence and the source. Besides the landing page's author section, the footer is the one place of
  * the site that names the maintainer. The Impressum and the privacy notice are pages of the maintainer's own website
  * (LEGAL_LINKS in src/site.ts; decision of 2026-10-11): external links, named as such for assistive technology and
- * marked with an arrow, opening in the same tab like every other link of the site but the demo's.
+ * marked with an arrow, opening in the same tab like every other link of the site but the demo's. The changelog is the
+ * repository's releases page on GitHub (RELEASES_URL), an external link of the same kind: the site keeps no copy.
  */
 import DemoLink from './DemoLink.astro';
 import Logo from './Logo.astro';
@@ -15,8 +16,11 @@ import {
   MAINTAINER_NAME,
   MAINTAINER_URL,
   PRODUCT_NAME,
+  RELEASES_URL,
   REPOSITORY_URL,
 } from '../site.js';
+
+const releasesSite = new URL(RELEASES_URL).host;
 ---
 
 <!-- SPDX-License-Identifier: MIT -->
@@ -34,7 +38,10 @@ import {
           <li><a href="/docs/getting-started/">Getting started</a></li>
           <li><a href="/docs/self-host/">Self-host</a></li>
           <li><a href="/coverage/">Asset type coverage</a></li>
-          <li><a href="/changelog/">Changelog</a></li>
+          <li>
+            {/* One line, as the legal links below: the label, the hidden name and the arrow. */}
+            <a class="external" href={RELEASES_URL} rel="noopener">Changelog<span class="visually-hidden">{` (external site, ${releasesSite})`}</span><svg class="external-mark" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M6 3h7v7M13 3 4 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
+          </li>
         </ul>
       </nav>
       <nav aria-label="Project">

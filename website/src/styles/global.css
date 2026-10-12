@@ -556,7 +556,7 @@ td.cell-command {
   color: var(--color-text-muted);
 }
 
-/* Prose from Markdown (docs, changesets). */
+/* Prose from Markdown (the docs, the author section). */
 .prose {
   max-width: var(--text-width);
   min-width: 0;

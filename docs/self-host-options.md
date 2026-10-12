@@ -477,8 +477,8 @@ Proxy](#private-instance-identity-aware-proxy) in front.
   traffic** on the service's **Revisions** tab sends all traffic back to one of them.
 
 The releases and what changed in each are on the [releases
-page](https://github.com/florianchrometz/gcportrait/releases) and in the
-[changelog](https://gcportrait.app/changelog/).
+page](https://github.com/florianchrometz/gcportrait/releases), which the release workflow writes from the changesets
+at every tag.
 
 ## Building from source
 

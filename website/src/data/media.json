@@ -171,11 +171,6 @@
       "still": "trace"
     },
     {
-      "id": "changelog",
-      "heading": "Changelog",
-      "still": "timeline"
-    },
-    {
       "id": "contributing",
       "heading": "Contributing to gcportrait",
       "still": "lenses"

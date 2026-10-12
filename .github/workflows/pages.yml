@@ -21,7 +21,9 @@
 # deploy (main only, a push or a run by hand): runs only while the repository variable PAGES_DEPLOY is `true`, so
 # the workflow is a no-op until the maintainer has set up Pages and DNS. A deploying build is strict
 # (WEBSITE_STRICT=1): it fails when a guide of the docs menu or a generated medium is missing, or when docs/author.md
-# still holds a placeholder. It publishes the site and the demo together, as one Pages artifact.
+# still holds a placeholder. It publishes the site and the demo together, as one Pages artifact. A deploying build
+# also counts the site's page views with TelemetryDeck (docs/website.md, "Analytics"; never the demo); the repository
+# variable WEBSITE_ANALYTICS, passed to the build, switches that off with 0 (a fork) or on in any build with 1.
 #
 # schedule (daily): rebuilds and redeploys main so the header's repository widget (the latest release, the stars and
 # the forks) stays current. The widget has two layers (docs/website.md, "GitHub repository widget"): the build reads
@@ -89,6 +91,8 @@ jobs:
           WEBSITE_DEMO_DIST: dist/demo
           # The header's repository widget (website/src/lib/github.ts): authenticated only when this run deploys.
           GITHUB_TOKEN: ${{ steps.mode.outputs.pages == 'true' && github.token || '' }}
+          # The page views (website/src/lib/analytics.ts): unset, on in a deploying build only; 0 off (a fork), 1 on.
+          WEBSITE_ANALYTICS: ${{ vars.WEBSITE_ANALYTICS }}
         run: pnpm run website:build
       - name: Check the built site
         run: pnpm run website:check

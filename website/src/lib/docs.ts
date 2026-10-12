@@ -27,7 +27,6 @@ export function sitePagesBySource(): Map<string, string> {
   for (const page of DOC_PAGES) {
     if (readRepoFile(page.source) !== undefined) pages.set(page.source, docPath(page.slug));
   }
-  pages.set('CHANGELOG.md', '/changelog/');
   return pages;
 }
 

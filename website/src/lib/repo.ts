@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * The repository the website is built from. The site renders files from it at build time (docs/, .changeset/,
- * the catalog's coverage), so the build needs its root: the nearest directory above the working directory (the
+ * The repository the website is built from. The site renders files from it at build time (docs/, the catalog's
+ * coverage), so the build needs its root: the nearest directory above the working directory (the
  * website package when pnpm runs the build) that holds pnpm-workspace.yaml, or GCPORTRAIT_REPO_ROOT when set.
  * Not import.meta.url: Astro bundles this module, so its own location is the build output's.
  */

@@ -6,7 +6,9 @@ The website at <https://gcportrait.app> (ADRs 0009 and 0035): a static
 [Astro](https://astro.build) site for GitHub Pages that presents gcportrait as Google Cloud architecture diagrams you
 use three ways, self-hosted in your own Google Cloud project, as a web app and through an API that returns any view as
 SVG or PNG, each with its proof; shows the features with generated screenshots and animated demos; renders the user
-guides from `docs/`; publishes the asset catalog's coverage and the changelog; and presents the author. It serves the sign-in-free demo itself, at <https://gcportrait.app/demo/>: a static build of the
+guides from `docs/`; publishes the asset catalog's coverage; and presents the author. Its "Changelog" links go to the
+repository's releases page on GitHub (`RELEASES_URL` in `src/site.ts`), which the release workflow writes from the
+changesets at every tag; the site keeps no copy. It serves the sign-in-free demo itself, at <https://gcportrait.app/demo/>: a static build of the
 app in demo-only mode that its build places there (ADR 0034, below), and links to the self-hosting guide.
 [docs/website.md](../docs/website.md) is the maintainer's guide: the demo, deploying, DNS, the legal pages.
 
@@ -24,9 +26,10 @@ From the repository root:
 | Build into `website/dist` (also part of `pnpm build`), with the demo in `website/dist/demo/` (below) | `pnpm website:build` (`WEBSITE_DEMO_DIST=dist/demo` to copy a demo built before instead of building it) |
 | Build the static demo alone, into `dist/demo/` at the root | `pnpm demo:static` |
 | Check the demo in the built site in Chromium at 1440 × 900, served as GitHub Pages serves it, both themes: the Connect page, S, M and L, a drill-in, the timeline, PNG and SVG export, a reload on a deep link, every route, the 404; axe, no request elsewhere, no policy violation | `pnpm --filter @gcportrait/website demo` (`--theme dark`, `--shots DIR`, `--dist DIR`) |
-| Check the built site: metadata, links and anchors, sitemap, the installer at `/install.sh` (`infra/install.sh` byte for byte, kept out of search), self-hosted resources (HTML attributes, every srcset candidate, CSS in files, `<style>` and `style`), scripts asking no other host than the repository widget's `api.github.com`, the header's GitHub link, the footer notice (and the long form in the landing page's author section only), the footer's links to the Impressum and the privacy notice on the maintainer's website (and no legal page of the site's own), the favicon and every page's logo as `brand/icon.svg` draws them, the demo at `/demo/` (its route copies, its policy `<meta>` with no host, its favicon, no Google sign-in host in it, its footer's links; every "Try the demo" link pointing there, every link to it opening a new tab and saying so), the viewport tag and what would be wider than a phone, the command variables and Copy buttons, the sample exports' links and files (no SVG with an affiliation line), no scroll timeline in an `animation` shorthand (browsers drop it; such animations are written as longhands) | `pnpm website:check` |
+| Check the built site: metadata, links and anchors, sitemap, the installer at `/install.sh` (`infra/install.sh` byte for byte, kept out of search), self-hosted resources (HTML attributes, every srcset candidate, CSS in files, `<style>` and `style`), scripts asking no other host than the repository widget's `api.github.com` and, for the page views, TelemetryDeck's `nom.telemetrydeck.com` (with the SDK's licence beside the fonts'), the header's GitHub link, the footer notice (and the long form in the landing page's author section only), the footer's links to the Impressum and the privacy notice on the maintainer's website (and no legal page of the site's own), the favicon and every page's logo as `brand/icon.svg` draws them, the demo at `/demo/` (its route copies, its policy `<meta>` with no host, its favicon, no Google sign-in host and no analytics in it, its footer's links; every "Try the demo" link pointing there, every link to it opening a new tab and saying so), the viewport tag and what would be wider than a phone, the command variables and Copy buttons, the sample exports' links and files (no SVG with an affiliation line), no scroll timeline in an `animation` shorthand (browsers drop it; such animations are written as longhands) | `pnpm website:check` |
 | Check the built site on phones in a browser: every page at 320, 375, 390 and 430 px in both themes (no sideways scrolling, no overlapping header items, the sticky header at the top when scrolled and above an anchor's heading, 44-pixel targets, axe-core), and the animated demos playing, pausing and falling back to the GIF on an iPhone (WebKit) and a Pixel (Chromium) | `pnpm --filter @gcportrait/website mobile` (`--only layout`, `--only playback`, `--page /docs/`, `--theme dark`, `--width 375`, `--stars 12345` with `--forks 678` and `--release v1.2.3` for GitHub's mocked answers, which a page asks for only on a build that did not find the repository not public, such as one with `WEBSITE_STAR_COUNT`) |
 | Check the fillable commands (`/docs/self-host/` and `/`) in Chromium, Firefox (also without `plaintext-only`, as before Firefox 136) and WebKit, and on an iPhone 15 and a Pixel 7 with taps: edit marks and hint, tap targets, fields edited in place and in step with each other and the panel, plain-text paste, Copy, format hints, storage and Clear values; in Chromium also no JavaScript, no shift when the script starts, axe at 1440 and 375 px in both themes | `pnpm --filter @gcportrait/website fillable` (`--profile chromium\|firefox\|firefox-fallback\|webkit\|iphone\|pixel`, `--page /docs/permissions/`, `--shots DIR`) |
+| Check the page views in Chromium on a build with `WEBSITE_ANALYTICS=1`, the site shown at its own address and TelemetryDeck answered or refused by the check: one POST per page load after the load event, the path without query or fragment, a hashed user and the tab's session, no cookie sent, sessionStorage only; the demo and repository clicks, nothing from the demo; with TelemetryDeck refused the pages load and nothing throws; nothing at all under Do Not Track, Global Privacy Control or on another host | `pnpm --filter @gcportrait/website analytics` (`--dist DIR`) |
 | Check the header's repository widget, live, in Chromium on `/` at 1440, 768, 390 and 320 px in both themes, GitHub's answers given by the check: the repository and its latest release asked once each after load, anonymous; the version, stars and forks shown with no layout shift, kept for the hour; a repository without a release keeping the build's version; a 404, 403, 429, 500, bad body, timeout or no network changing nothing and asking nothing more within the hour; no request with storage blocked; no request at all where the build found the repository not public (on such a build, all the check runs; on others, simulated); axe-core; `--real` asks GitHub itself once | `pnpm --filter @gcportrait/website stars` (`--count 1301`, `--forks 42`, `--release v1.0.1`, `--real`, `--shots DIR`) |
 | Serve the built site | `pnpm website:preview` |
 | Lighthouse on every page, light and dark, desktop and mobile (thresholds: performance 90, the rest 95) | `pnpm website:lighthouse` (`--page /docs/`, `--theme dark`, `--preset desktop`, `--mobile`) |
@@ -61,7 +64,6 @@ Nothing is copied into the site by hand: each page is built from its one source 
 | `/docs/<slug>/` | the guides under `docs/` listed in `src/data/docs.ts` (`DOC_PAGES`), rendered by `src/lib/markdown.ts` |
 | `/exports/` | the sample exports in `docs/media/exports/` and their `manifest.json`, written by `node scripts/exports.mjs` (`src/lib/exports.ts`); the landing page's "Sample exports" section shows demo S's and M's overviews from them |
 | `/coverage/` | `@gcportrait/catalog` (the compiled catalog) and `pnpm catalog:coverage --json` |
-| `/changelog/` | the pending changesets in `.changeset/` ("Unreleased") and the released sections of the packages' `CHANGELOG.md` files |
 | `/contributing/`, `/licence/` | `src/pages/*.astro`, linking to the repository's guides, `LICENSE`, `brand/LICENSE.md` and `THIRD_PARTY.md` |
 | the footer's Impressum and Privacy links | `src/site.ts` (`LEGAL_LINKS`): pages of the maintainer's website, not of this site (below) |
 | the footer notice, "Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz." | `src/site.ts` (`FOOTER_NOTICE`, the name linked to `MAINTAINER_URL`), equal to the app's footer (`src/site.test.ts`); besides it, only the landing page's author section names the maintainer, and only that section carries the long-form statement (`docs/author.md`'s closing paragraph; ADR 0018) |
@@ -189,8 +191,15 @@ with `demo/diagram.html` and redirects a folder's address to its trailing slash,
   and theme, fetched only then. Each demo has a pause button in its corner once it plays (WCAG 2.2.2: the demos loop
   for longer than five seconds; a paused GIF gives way to the poster); a demo the visitor paused stays paused. With
   reduced motion nothing plays by itself: the poster shows with a Play button. On every page, too, the header's
-  repository widget (below), in a file of its own that every page shares (about 4.1 kB, 1.9 kB gzipped).
-- Guides and changesets are rendered by `src/lib/markdown.ts`: raw HTML is dropped, and a link keeps its target
+  repository widget (below), in a file of its own that every page shares (about 4.1 kB, 1.9 kB gzipped). In a build
+  with analytics on (`WEBSITE_ANALYTICS`, on by default in a deploying build only; docs/website.md, "Analytics"), the
+  page views: `src/lib/analytics-page.ts` (the parts without a DOM in `src/lib/analytics.ts`), which the layout loads
+  after the `load` event and which, on `gcportrait.app` only and without Do Not Track or Global Privacy Control, loads
+  TelemetryDeck's SDK (`@telemetrydeck/sdk`, bundled into a file of the site's own) and sends one `pageView` with the
+  page's path, and a signal for a click on a link to the demo or the repository; its two random identifiers are kept
+  in sessionStorage (`gcportrait.analytics`). A build with analytics off carries none of it (`__WEBSITE_ANALYTICS__`,
+  `astro.config.ts`). The demo never has it.
+- Guides are rendered by `src/lib/markdown.ts`: raw HTML is dropped, and a link keeps its target
   only for http, https, mailto or a path (a `javascript:` or `data:` link becomes plain text). What may scroll
   sideways is keyboard-focusable (WCAG 2.1.1): every code block (`tabindex="0"`), and every table through its
   `.table-scroll` box. A code block written in a page itself either has `tabindex="0"` too or wraps its lines
@@ -241,12 +250,13 @@ with `demo/diagram.html` and redirects a folder's address to its trailing slash,
 
 ```
 astro.config.ts        site, output, the licence files, the favicon (brand/icon.svg, copied), the installer
-                       (infra/install.sh, copied to /install.sh), the SPDX-comment
+                       (infra/install.sh, copied to /install.sh), the page views' build flag, the SPDX-comment
                        clean-up after the build, and the demo at /demo/ (built by pnpm demo:static, or copied)
 public/                CNAME (the favicon and the installer are copied by the build from brand/ and infra/)
 scripts/               check-site.ts (pnpm website:check), lighthouse.ts (pnpm website:lighthouse), mobile.ts (the
                        phone check), fillable.ts (the fillable-commands check in three engines and on two phones),
                        stars.ts (the repository widget's live check), demo.ts (the demo's check in a browser),
+                       analytics.ts (the page views' check in a browser),
                        browser.ts (axe-core, GitHub's mocked answers and other helpers the browser checks share), serve.ts
                        (the built site served as GitHub Pages serves it: byte ranges, `x.html` for `x`, the
                        trailing-slash redirect)
@@ -254,16 +264,17 @@ src/site.ts            the fixed facts: hosts, the demo, repository, image, the 
                        to the app's)
 src/data/              docs.ts (the docs menu, with /exports/ after the Export guide), media.json (the generated
                        media, read by scripts/media.mjs too)
-src/lib/               markdown, docs, coverage, changelog, author, placeholders, brand (the mark of brand/icon.svg
+src/lib/               markdown, docs, coverage, author, placeholders, brand (the mark of brand/icon.svg
                        for the logo, and the favicon-and-logo comparison), media, exports (the sample
                        exports), seo, sitemap, github (the build's repository facts), star-count and star-count-page
                        (the formatter and the name both layers share, and the live facts in the visitor's browser),
                        fillable and
-                       fillable-page (the fillable commands of the docs pages and the landing page)
+                       fillable-page (the fillable commands of the docs pages and the landing page), analytics and
+                       analytics-page (the page views, counted with TelemetryDeck)
 src/components/        Header (sticky, with the repository widget), Footer, Logo, DemoLink (a link to the demo, in a
                        new tab), ThemedPicture, DemoVideo, Variables, ExportCard (a sample export: both themes'
                        previews with their download and open links)
 src/layouts/           Base (head, header, footer), Docs
-src/pages/             index, docs/index, docs/[slug], exports, coverage, changelog, contributing, licence, 404,
+src/pages/             index, docs/index, docs/[slug], exports, coverage, contributing, licence, 404,
                        sitemap.xml, robots.txt
 ```

@@ -18,6 +18,7 @@ import {
   svgFrame,
   WORDMARK,
   type DemoView,
+  type DrawioDrawOptions,
   type DrawioFile,
   type Raster,
 } from '@gcportrait/render';
@@ -39,10 +40,21 @@ export const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
 /** Where output goes when no path is given (git-ignored). */
 export const DEFAULT_OUT_DIR = path.join(REPO_ROOT, 'out/render');
 
-/** The command's version (its package's, the product's): the draw.io file's `agent` says `gcportrait <version>`. */
+/**
+ * The command's version (its package's, the product's): the draw.io file's `agent` says `gcportrait <version>`, or
+ * `gcportrait` alone with `--drawio-unversioned`.
+ */
 export const CLI_VERSION: string = (
   JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf8')) as { version: string }
 ).version;
+
+/** How a command writes its draw.io files: compressed unless asked plain, with its version unless asked without. */
+function drawioOptions(command: RenderCommand | AllCommand): DrawioDrawOptions {
+  return {
+    compressed: !command.drawioPlain,
+    ...(command.drawioUnversioned ? {} : { version: CLI_VERSION }),
+  };
+}
 
 export interface Io {
   readonly stdout: (chunk: string | Uint8Array) => void;
@@ -128,7 +140,7 @@ async function renderOne(command: RenderCommand, io: Io): Promise<number> {
     );
   }
   if (command.drawio !== undefined) {
-    const file = drawDrawio(view, command.theme, { compressed: !command.drawioPlain, version: CLI_VERSION });
+    const file = drawDrawio(view, command.theme, drawioOptions(command));
     if (command.drawio === '-') io.stdout(file.text);
     else writeOutput(resolve(command.drawio), file.text);
     report(
@@ -221,7 +233,7 @@ async function renderAll(command: AllCommand, io: Io): Promise<number> {
           entry = { ...entry, svg: `${name}.svg` };
         }
         if (command.formats.includes('drawio')) {
-          const file = drawDrawio(view, theme, { compressed: !command.drawioPlain, version: CLI_VERSION });
+          const file = drawDrawio(view, theme, drawioOptions(command));
           writeOutput(path.join(out, `${name}.drawio`), file.text);
           entry = { ...entry, drawio: `${name}.drawio` };
         }

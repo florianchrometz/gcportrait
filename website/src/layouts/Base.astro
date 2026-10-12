@@ -10,6 +10,12 @@
  * in `--header-block` on the root element (global.css has an estimate per width until then), and the root's
  * `scroll-padding-top` follows it, so an anchor jump, the skip link or a focused element never lands under the header.
  *
+ * Page views: the second script below counts them with TelemetryDeck (src/lib/analytics-page.ts; docs/website.md,
+ * "Analytics"), only in a build with analytics on (`__WEBSITE_ANALYTICS__`, astro.config.ts): a build with them off
+ * carries none of its code. Once the page has loaded, and only on the site's own host and when the browser does not
+ * ask not to be tracked, it loads the SDK, a file of the site's own build, and sends the page's path to TelemetryDeck's
+ * ingestion host. The demo at /demo/ is the app's own build, not a page of this layout, and never has it.
+ *
  * Disclosures: on a phone the header's menu and the docs pages' menu and contents fold away behind a button marked
  * `data-disclosure` (aria-expanded, aria-controls naming the panel that follows it). The script below only flips
  * aria-expanded (and Escape closes); each component's CSS shows the panel when it is expanded. Without JavaScript
@@ -49,6 +55,7 @@ const image = meta.socialImage;
     <title>{title}</title>
     <meta name="description" content={meta.description} />
     {meta.noindex === true ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <meta name="gcportrait-page" content={meta.path} />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1f1f1f" media="(prefers-color-scheme: dark)" />
@@ -149,5 +156,20 @@ const image = meta.socialImage;
       toggle.setAttribute('aria-expanded', 'false');
       toggle.focus();
     });
+  }
+</script>
+
+<script>
+  // The site's page views (src/lib/analytics-page.ts), in a build with analytics on only: otherwise the bundler drops
+  // the branch, and with it the module and the SDK. The module is fetched once the page has loaded, never before.
+  if (__WEBSITE_ANALYTICS__) {
+    const start = (): void => {
+      import('../lib/analytics-page.js').then(
+        ({ startAnalytics }) => startAnalytics(),
+        () => undefined,
+      );
+    };
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
   }
 </script>

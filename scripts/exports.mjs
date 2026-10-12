@@ -4,7 +4,9 @@
  * `node scripts/exports.mjs`: the sample exports the website offers for download (docs/website.md, "Sample
  * exports"): real SVG, PNG and draw.io files of the synthetic demo organisations, drawn by `pnpm render` exactly as the
  * app's Export menu draws them (the title block's three lines, scope, lens with read time and tagline, the legend, 2×
- * PNG with a 24 px margin, the draw.io file compressed as diagrams.net saves it, ADR 0036), in the light and the dark
+ * PNG with a 24 px margin, the draw.io file compressed as diagrams.net saves it, ADR 0036; its `agent` without the
+ * command's version, `gcportrait` alone as the render golden has it, so a release leaves the samples as they are), in
+ * the light and the dark
  * theme, with a WebP preview of each PNG at 480 and 960 pixels wide. Everything goes to docs/media/exports/ with a
  * manifest (each file's sample, demo size, lens, theme, size in pixels, bytes, hash and the command that made it),
  * which the website reads.
@@ -84,13 +86,14 @@ const PREVIEW_QUALITY = 0.82;
 /** All files together stay under this (docs/website.md, "Sample exports"): the site publishes every one. */
 export const BUDGET_BYTES = 6 * 1024 * 1024;
 /**
- * The tools whose version changes the bytes: the rasteriser (pinned by the render library), the preview encoder, and
- * `pnpm render` itself, whose version a draw.io file names in its `agent`.
+ * The tools whose version changes the bytes: the rasteriser (pinned by the render library) and the preview encoder.
+ * Not `pnpm render`'s own version, which changes with every release: the draw.io files are written without it
+ * (`--drawio-unversioned`, renderArgs), so their `agent` is `gcportrait` alone, and `--check` refuses one that names a
+ * version (drawioProblems).
  */
 const TOOLS = Object.freeze([
   ['@resvg/resvg-wasm', 'packages/render'],
   ['playwright', 'website'],
-  ['@gcportrait/render-cli', 'packages/render-cli'],
 ]);
 
 /**
@@ -180,6 +183,7 @@ export function renderArgs(
     svg,
     '--drawio',
     drawio,
+    '--drawio-unversioned',
   ];
 }
 
@@ -295,9 +299,10 @@ export function readDrawio(text) {
 
 /**
  * What a sample draw.io file must not say or do: unreadable as diagrams.net reads it, or stored as plain XML; an
- * affiliation line in any label (ADR 0018: never in a drawing); a script; or an address other than Google Fonts'
- * stylesheet, which each label names for the user's diagrams.net to load the faces (icons are embedded). An empty
- * list means it is fine.
+ * `agent` other than `gcportrait` alone (a version there would make every release's samples stale); an affiliation
+ * line in any label (ADR 0018: never in a drawing); a script; or an address other than Google Fonts' stylesheet,
+ * which each label names for the user's diagrams.net to load the faces (icons are embedded). An empty list means it
+ * is fine.
  * @param {string} text
  * @returns {string[]}
  */
@@ -314,6 +319,11 @@ export function drawioProblems(text) {
   /** @type {string[]} */
   const problems = [];
   if (!file.compressed) problems.push('its diagram is plain XML, not compressed as diagrams.net saves it');
+  const agent = /^<mxfile\b[^>]*\sagent="([^"]*)"/.exec(text)?.[1];
+  if (agent !== 'gcportrait')
+    problems.push(
+      `its agent is ${agent === undefined ? 'missing' : `"${agent}"`}, not "gcportrait" (no version)`,
+    );
   const decoded = decodeXml(file.model);
   if (statesAffiliation(decoded.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')))
     problems.push('a label states an affiliation');

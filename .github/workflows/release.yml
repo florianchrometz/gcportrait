@@ -362,6 +362,8 @@ jobs:
         env:
           WEBSITE_STRICT: '1'
           WEBSITE_DEMO_DIST: dist/demo
+          # The page views (website/src/lib/analytics.ts): on in this deploying build unless the variable says 0.
+          WEBSITE_ANALYTICS: ${{ vars.WEBSITE_ANALYTICS }}
         run: pnpm run website:build
       - name: Check the built site
         run: pnpm run website:check

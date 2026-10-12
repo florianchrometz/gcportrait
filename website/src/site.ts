@@ -55,8 +55,14 @@ export const IMAGE = 'ghcr.io/florianchrometz/gcportrait';
 /**
  * The one-line installer, infra/install.sh as the site serves it (astro.config.ts), and the quick start it makes: a
  * release's deploy scripts, checked against the release's checksums, run with the project id and nothing else.
+ *
+ * Its address is written out rather than computed from SITE_URL, as RELEASES_URL's is, and FOOTER_NOTICE_LEAD's
+ * computation is marked pure: page scripts import this module, and where several share it the bundler keeps a computed
+ * value in their shared file whether it is used or not, which would name addresses in scripts that ask no one
+ * (`pnpm website:check` refuses another host named in a script). src/site.test.ts holds each written-out value to what
+ * it repeats.
  */
-export const INSTALLER_URL = `${SITE_URL}/install.sh`;
+export const INSTALLER_URL = 'https://gcportrait.app/install.sh';
 export const INSTALL_COMMAND = `curl -fsSL ${INSTALLER_URL} | bash -s -- --project YOUR_PROJECT`;
 
 /**
@@ -93,7 +99,10 @@ export const MAINTAINER_URL = 'https://florian-chrometz.de';
 export const FOOTER_NOTICE =
   'Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz';
 /** `FOOTER_NOTICE` up to the maintainer's name (the footer's plain text before the link). */
-export const FOOTER_NOTICE_LEAD = FOOTER_NOTICE.slice(0, FOOTER_NOTICE.lastIndexOf(MAINTAINER_NAME));
+export const FOOTER_NOTICE_LEAD = /* @__PURE__ */ FOOTER_NOTICE.slice(
+  0,
+  /* @__PURE__ */ FOOTER_NOTICE.lastIndexOf(MAINTAINER_NAME),
+);
 
 /**
  * The short line: the footer notice's first sentence, which appears nowhere else (ADR 0018: footers and long-form
@@ -123,6 +132,23 @@ export const LEGAL_LINKS: readonly {
   { label: 'Impressum', href: IMPRESSUM_URL, site: 'florian-chrometz.de' },
   { label: 'Privacy', href: PRIVACY_URL, site: 'florian-chrometz.de' },
 ];
+
+/**
+ * The releases page on GitHub: what changed in each version, as the release workflow writes it from the changesets at
+ * every tag (scripts/release-notes.mjs). The site keeps no changelog of its own; its "Changelog" links go here.
+ * REPOSITORY_URL's /releases, written out (see INSTALLER_URL).
+ */
+export const RELEASES_URL = 'https://github.com/florianchrometz/gcportrait/releases';
+
+/**
+ * The website's page views, counted with TelemetryDeck (docs/website.md, "Analytics"): its npm SDK
+ * (@telemetrydeck/sdk), bundled by the build into the site's own pages only, never into the app or the demo at /demo/.
+ * The app id is a public identifier (every page that sends carries it). A page sends only from SITE_HOST, in a build
+ * with analytics on (src/lib/analytics.ts, WEBSITE_ANALYTICS), and never when the browser asks not to be tracked.
+ */
+export const TELEMETRYDECK_APP_ID = '935EC0BB-BC12-4EE3-82C3-7F73D73116DD';
+/** TelemetryDeck's ingestion address (the SDK's own default, passed explicitly): the one host the pages send to. */
+export const TELEMETRYDECK_TARGET = 'https://nom.telemetrydeck.com/v2/';
 
 /** The licence of gcportrait's own work (ADR 0017), as SPDX names it, and its page at the Open Source Initiative. */
 export const LICENSE_ID = 'MIT';
