@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: MIT
+#
+# The Data lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types, <service>/*
+# globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses with focus
+# views and filters.
+#
+# The AI services are here (the 11 lens ids are fixed, and their datasets, models, feature groups and
+# search data stores read from buckets and BigQuery), with the other readers and writers of data: log sinks
+# and linked datasets, Sensitive Data Protection scans, Financial Services datasets, Data Connect schemas,
+# and private services access (the Service Networking connection behind private-IP databases).
+title: Data
+description: >-
+  Storage, databases, analytics, messaging and AI: buckets, BigQuery, Cloud SQL, Spanner, Bigtable, AlloyDB,
+  Firestore, Memorystore, file storage, Pub/Sub and Kafka, Vertex AI, and the pipelines between them.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  - 'servicenetworking.googleapis.com/Connection'
+  # Data stores
+  - 'storage.googleapis.com/*'
+  - 'bigquery.googleapis.com/*'
+  - 'bigqueryreservation.googleapis.com/*'
+  - 'analyticshub.googleapis.com/*'
+  - 'bigquerydatatransfer.googleapis.com/*'
+  - 'bigquerymigration.googleapis.com/*'
+  - 'sqladmin.googleapis.com/*'
+  - 'spanner.googleapis.com/*'
+  - 'bigtableadmin.googleapis.com/*'
+  - 'alloydb.googleapis.com/*'
+  - 'firestore.googleapis.com/*'
+  - 'redis.googleapis.com/*'
+  - 'memorystore.googleapis.com/*'
+  - 'memcache.googleapis.com/*'
+  - 'file.googleapis.com/*'
+  - 'netapp.googleapis.com/*'
+  - 'lustre.googleapis.com/*'
+  - 'parallelstore.googleapis.com/*'
+  - 'oracledatabase.googleapis.com/*'
+  - 'firebasedataconnect.googleapis.com/*'
+  # Messaging and data processing
+  - 'pubsub.googleapis.com/*'
+  - 'managedkafka.googleapis.com/*'
+  - 'dataflow.googleapis.com/*'
+  - 'dataproc.googleapis.com/*'
+  - 'metastore.googleapis.com/*'
+  - 'composer.googleapis.com/*'
+  - 'datafusion.googleapis.com/*'
+  - 'dataform.googleapis.com/*'
+  - 'dataplex.googleapis.com/*'
+  - 'datalineage.googleapis.com/*'
+  - 'datastream.googleapis.com/*'
+  - 'datamigration.googleapis.com/*'
+  - 'healthcare.googleapis.com/*'
+  - 'looker.googleapis.com/*'
+  - 'storagetransfer.googleapis.com/*'
+  - 'storageinsights.googleapis.com/*'
+  - 'storagebatchoperations.googleapis.com/*'
+  - 'financialservices.googleapis.com/*'
+  - 'logging.googleapis.com/LogSink'
+  - 'logging.googleapis.com/Link'
+  - 'dlp.googleapis.com/JobTrigger'
+  - 'dlp.googleapis.com/DiscoveryConfig'
+  - 'dlp.googleapis.com/StoredInfoType'
+  # AI
+  - 'aiplatform.googleapis.com/*'
+  - 'discoveryengine.googleapis.com/*'
+  - 'documentai.googleapis.com/*'
+  - 'speech.googleapis.com/*'
+  - 'retail.googleapis.com/*'
+relationKinds: [contains, uses, attaches, replicates, triggers]
+showHidden: false
+defaultDetail: projects

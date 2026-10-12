@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+#
+# Agent Identity: auth providers that let agents call third-party APIs with OAuth or API-key
+# credentials. Asset names carry the project id (projects/<id>/locations/<l>/authProviders/<a>).
+product: Agent Identity API
+service: agentidentity.googleapis.com
+icon: identity_and_access_management
+types:
+  agentidentity.googleapis.com/AuthProvider:
+    role: hidden
+    notes: >-
+      Credentials configuration, hidden like other identity settings. workloadIds (the agents allowed to use
+      the provider, principal:// identifiers of Agent Engine resources) is input only, so no agent edge can be
+      read back.

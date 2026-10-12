@@ -1,0 +1,17 @@
+{
+  "name": "//dataproc.googleapis.com/projects/demo-data-1/regions/europe-west3/jobs/daily-aggregate-7f3a",
+  "assetType": "dataproc.googleapis.com/Job",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T05:10:00Z",
+  "data": {
+    "reference": { "projectId": "demo-data-1", "jobId": "daily-aggregate-7f3a" },
+    "placement": { "clusterName": "spark-etl", "clusterUuid": "d1000000-0000-4000-8000-000000000001" },
+    "pysparkJob": { "mainPythonFileUri": "gs://demo-data-1-dataproc-staging/jobs/aggregate.py" },
+    "status": { "state": "DONE", "stateStartTime": "2026-10-01T05:10:00Z" },
+    "driverOutputResourceUri": "gs://demo-data-1-dataproc-staging/google-cloud-dataproc-metainfo/d1000000/jobs/daily-aggregate-7f3a/driveroutput",
+    "jobUuid": "d1000000-0000-4000-8000-000000000101",
+    "done": true
+  }
+}

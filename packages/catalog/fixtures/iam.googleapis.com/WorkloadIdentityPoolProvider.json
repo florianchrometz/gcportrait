@@ -1,0 +1,42 @@
+[
+  {
+    "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/github/providers/github-oidc",
+    "assetType": "iam.googleapis.com/WorkloadIdentityPoolProvider",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-07-11T12:05:00Z",
+    "data": {
+      "name": "projects/10000000004/locations/global/workloadIdentityPools/github/providers/github-oidc",
+      "displayName": "GitHub OIDC",
+      "state": "ACTIVE",
+      "disabled": false,
+      "attributeMapping": {
+        "google.subject": "assertion.sub",
+        "attribute.repository": "assertion.repository"
+      },
+      "attributeCondition": "assertion.repository_owner == 'example-com'",
+      "oidc": {
+        "issuerUri": "https://token.actions.githubusercontent.com"
+      }
+    }
+  },
+  {
+    "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/github/providers/aws-build",
+    "assetType": "iam.googleapis.com/WorkloadIdentityPoolProvider",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-08-19T07:20:00Z",
+    "data": {
+      "name": "projects/10000000004/locations/global/workloadIdentityPools/github/providers/aws-build",
+      "displayName": "AWS build account",
+      "state": "DELETED",
+      "disabled": true,
+      "expireTime": "2026-10-19T07:20:00Z",
+      "aws": {
+        "accountId": "111122223333"
+      }
+    }
+  }
+]

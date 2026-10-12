@@ -1,0 +1,25 @@
+{
+  "name": "//gkebackup.googleapis.com/projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily/backups/shop-daily-20261001/volumeBackups/pvc-3f1c2b7a",
+  "assetType": "gkebackup.googleapis.com/VolumeBackup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily/backups/shop-daily-20261001/volumeBackups/pvc-3f1c2b7a",
+    "uid": "00000000-0000-4000-8000-000000000167",
+    "sourcePvc": {
+      "namespace": "shop",
+      "name": "data-cart-cache-0"
+    },
+    "format": "GCE_PERSISTENT_DISK",
+    "storageBytes": "1073741824",
+    "diskSizeBytes": "10737418240",
+    "state": "SUCCEEDED"
+  }
+}

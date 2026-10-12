@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: MIT
+#
+# Google Cloud Managed Service for Apache Kafka: Kafka clusters and Kafka Connect clusters. The
+# brokers run in a Google-managed project; clients reach them through Private Service Connect endpoints
+# Google creates in the subnets the cluster lists, so the cluster attaches to those subnets (several of them
+# leave it in its project with edges). Kafka topics and consumer groups are no Cloud Asset Inventory types.
+product: Google Cloud Managed Service for Apache Kafka
+service: managedkafka.googleapis.com
+icon: managed_service_for_apache_kafka
+types:
+  managedkafka.googleapis.com/Cluster:
+    role: core
+    subtitle: '{{data.capacityConfig.vcpuCount}} vCPU · {{location}}'
+    console: 'https://console.cloud.google.com/managedkafka/{{location}}/clusters/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - {
+          kind: attaches,
+          to: '$.data.gcpConfig.accessConfig.networkConfigs[*].subnet',
+          normalize: computeRelative,
+        }
+      - { kind: encryptedBy, to: $.data.gcpConfig.kmsKey, normalize: kmsKey }
+      - {
+          kind: uses,
+          to: '$.data.tlsConfig.trustConfig.casConfigs[*].caPool',
+          normalize: name,
+          service: privateca.googleapis.com,
+        }
+    notes: >-
+      networkConfigs[*].subnet may name a subnet in another project (Shared VPC); each network config adds
+      one PSC endpoint per subnet. casConfigs[*].caPool are the CA Service pools that issue mTLS client
+      certificates. capacityConfig.vcpuCount is an int64 serialised as a string. data.name uses the project
+      number while the asset name uses the project id.
+
+  managedkafka.googleapis.com/ConnectCluster:
+    role: core
+    subtitle: '{{data.capacityConfig.vcpuCount}} vCPU · {{data.kafkaCluster | lastSegment}}'
+    console: 'https://console.cloud.google.com/managedkafka/{{location}}/connectClusters/{{name | lastSegment}}?project={{projectId}}'
+    domains:
+      - '$.data.gcpConfig.accessConfig.networkConfigs[*].dnsDomainNames[*]'
+    relations:
+      - { kind: uses, to: $.data.kafkaCluster, normalize: name }
+      - {
+          kind: attaches,
+          to: '$.data.gcpConfig.accessConfig.networkConfigs[*].primarySubnet',
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.gcpConfig.accessConfig.networkConfigs[*].additionalSubnets[*]',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: '$.data.gcpConfig.secretPaths[*]',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      kafkaCluster is the primary Kafka cluster the workers store their state in; connectors may reach other
+      clusters too (config, not resource references). additionalSubnets is deprecated and read as a weak
+      attachment so that the primary subnet decides the nesting. secretPaths are Secret Manager secret
+      versions mounted into the workers.

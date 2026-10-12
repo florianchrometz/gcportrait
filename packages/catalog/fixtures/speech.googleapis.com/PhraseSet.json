@@ -1,0 +1,33 @@
+{
+  "name": "//speech.googleapis.com/projects/10000000002/locations/europe-west3/phraseSets/product-names",
+  "assetType": "speech.googleapis.com/PhraseSet",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/phraseSets/product-names",
+    "uid": "d3e4f5a6-b7c8-4d9e-8f1a-2b3c4d5e6f70",
+    "phrases": [
+      {
+        "value": "Example Pay",
+        "boost": 10
+      },
+      {
+        "value": "Example Plus",
+        "boost": 10
+      }
+    ],
+    "boost": 10,
+    "displayName": "Product names",
+    "state": "ACTIVE",
+    "createTime": "2026-03-01T08:00:00Z",
+    "updateTime": "2026-03-01T08:00:00Z",
+    "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/speech"
+  }
+}

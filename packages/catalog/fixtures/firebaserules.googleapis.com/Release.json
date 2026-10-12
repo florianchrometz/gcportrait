@@ -1,0 +1,40 @@
+[
+  {
+    "name": "//firebaserules.googleapis.com/projects/demo-app-1/releases/cloud.firestore",
+    "assetType": "firebaserules.googleapis.com/Release",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/releases/cloud.firestore",
+      "rulesetName": "projects/demo-app-1/rulesets/0a1b2c3d-0000-4000-8000-000000000001",
+      "createTime": "2025-06-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z"
+    }
+  },
+  {
+    "name": "//firebaserules.googleapis.com/projects/demo-app-1/releases/firebase.storage/demo-app-1.appspot.com",
+    "assetType": "firebaserules.googleapis.com/Release",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/releases/firebase.storage/demo-app-1.appspot.com",
+      "rulesetName": "projects/demo-app-1/rulesets/0a1b2c3d-0000-4000-8000-000000000002",
+      "createTime": "2025-06-01T08:00:00Z",
+      "updateTime": "2025-06-01T08:00:00Z"
+    }
+  }
+]

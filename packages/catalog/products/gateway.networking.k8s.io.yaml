@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MIT
+#
+# Kubernetes Gateway API objects of GKE clusters with the asset inventory feature on. Their names carry an
+# apis/gateway.networking.k8s.io segment (…/k8s/namespaces/N/apis/gateway.networking.k8s.io/gateways/G); they
+# nest in their namespace, the gateway class in its cluster, by name path.
+product: Google Kubernetes Engine
+service: gateway.networking.k8s.io
+icon: google_kubernetes_engine
+types:
+  gateway.networking.k8s.io/Gateway:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.gatewayClassName}}'
+    ips:
+      - '$.data.status.addresses[*].value'
+    notes: >-
+      spec.gatewayClassName is a bare name. GKE records the load balancer it builds for the gateway in
+      networking.gke.io/* annotations (addresses, backend services, forwarding rules, URL maps, …) as
+      /projects/<number>/global/… paths: computeRelative rejects the leading slash and the name normaliser
+      keeps the project number while Compute asset names use the id, so no rule can draw those edges yet
+      (catalog follow-ups). The gateway's addresses are indexed.
+
+  gateway.networking.k8s.io/HTTPRoute:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.hostnames[0]}}'
+    domains:
+      - '$.data.spec.hostnames[*]'
+    relations:
+      - {
+          kind: attaches,
+          to: '$.data.spec.parentRefs[*]',
+          normalize: k8sRef,
+          k8sKind: gateway.networking.k8s.io/Gateway,
+        }
+      - { kind: routes, to: '$.data.spec.rules[*].backendRefs[*]', normalize: k8sRef, k8sKind: Service }
+    notes: >-
+      spec.parentRefs (gateways) and spec.rules[*].backendRefs (services) carry group, kind and bare name but
+      no apiVersion; the k8sRef normaliser reads them with the Gateway API defaults (a parent is a
+      gateway.networking.k8s.io Gateway, a backend a core Service, both in the route's namespace unless
+      named), so the route attaches to its gateways and routes to its services.
+
+  gateway.networking.k8s.io/GatewayClass:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.controllerName}}'
+
+  gateway.networking.k8s.io/ReferenceGrant:
+    role: hidden
+    label: '{{data.metadata.name}}'

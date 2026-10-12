@@ -1,0 +1,18 @@
+{
+  "name": "//cloudresourcemanager.googleapis.com/tagKeys/40000000001",
+  "assetType": "cloudresourcemanager.googleapis.com/TagKey",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "tagKeys/40000000001",
+    "parent": "organizations/30000000001",
+    "shortName": "env",
+    "namespacedName": "30000000001/env",
+    "description": "Deployment environment",
+    "createTime": "2023-01-01T00:00:00Z",
+    "updateTime": "2023-01-01T00:00:00Z",
+    "etag": "BwYAAAAAAAA="
+  }
+}

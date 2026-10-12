@@ -1,0 +1,33 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1",
+  "assetType": "compute.googleapis.com/Project",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#project",
+    "id": "10000000001",
+    "name": "demo-net-1",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1",
+    "xpnProjectStatus": "HOST",
+    "defaultServiceAccount": "10000000001-compute@developer.gserviceaccount.com",
+    "defaultNetworkTier": "PREMIUM",
+    "commonInstanceMetadata": {
+      "kind": "compute#metadata",
+      "items": [
+        {
+          "key": "enable-oslogin",
+          "value": "TRUE"
+        }
+      ]
+    },
+    "vmDnsSetting": "ZONAL_ONLY",
+    "creationTimestamp": "2026-01-05T09:00:00.000-07:00"
+  }
+}

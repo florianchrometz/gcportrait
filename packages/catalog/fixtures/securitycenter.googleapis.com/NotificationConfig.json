@@ -1,0 +1,17 @@
+{
+  "name": "//securitycenter.googleapis.com/organizations/30000000001/locations/global/notificationConfigs/high-severity",
+  "assetType": "securitycenter.googleapis.com/NotificationConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/global/notificationConfigs/high-severity",
+    "description": "High and critical findings to the on-call topic",
+    "pubsubTopic": "projects/demo-sec-1/topics/scc-high-severity",
+    "streamingConfig": {
+      "filter": "severity=\"HIGH\" OR severity=\"CRITICAL\""
+    },
+    "cryptoKeyName": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/scc"
+  }
+}

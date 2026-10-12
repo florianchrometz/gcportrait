@@ -1,0 +1,41 @@
+{
+  "name": "//managedidentities.googleapis.com/projects/demo-net-1/locations/global/domains/ad.corp.example.com",
+  "assetType": "managedidentities.googleapis.com/Domain",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-net-1/locations/global/domains/ad.corp.example.com",
+    "labels": {
+      "team": "identity"
+    },
+    "authorizedNetworks": ["projects/demo-net-1/global/networks/core"],
+    "reservedIpRange": "10.250.0.0/24",
+    "locations": ["europe-west3"],
+    "admin": "setupadmin",
+    "fqdn": "ad.corp.example.com",
+    "createTime": "2024-05-01T09:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "state": "READY",
+    "auditLogsEnabled": true,
+    "trusts": [
+      {
+        "targetDomainName": "onprem.example.com",
+        "trustType": "FOREST",
+        "trustDirection": "BIDIRECTIONAL",
+        "selectiveAuthentication": false,
+        "targetDnsIpAddresses": ["172.20.1.10", "172.20.1.11"],
+        "state": "CONNECTED",
+        "createTime": "2024-06-01T09:00:00Z",
+        "updateTime": "2026-09-01T08:00:00Z",
+        "lastTrustHeartbeatTime": "2026-10-08T23:00:00Z"
+      }
+    ]
+  }
+}

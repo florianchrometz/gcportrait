@@ -1,0 +1,31 @@
+{
+  "name": "//gkemulticloud.googleapis.com/projects/10000000002/locations/us-east4/attachedClusters/eks-orders",
+  "assetType": "gkemulticloud.googleapis.com/AttachedCluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "us-east4",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/us-east4/attachedClusters/eks-orders",
+    "description": "Orders on EKS",
+    "oidcConfig": {
+      "issuerUrl": "https://oidc.eks-orders.example.com"
+    },
+    "platformVersion": "1.31.0-gke.1",
+    "distribution": "eks",
+    "clusterRegion": "us-east-1",
+    "fleet": {
+      "project": "projects/10000000002",
+      "membership": "projects/10000000002/locations/global/memberships/eks-orders"
+    },
+    "state": "RUNNING",
+    "uid": "00000000-0000-4000-8000-000000000152",
+    "kubernetesVersion": "1.31",
+    "createTime": "2025-11-02T10:00:00Z"
+  }
+}

@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: MIT
+#
+# Network Security Integration (networking fabric): out-of-band mirroring and in-band interception of VPC
+# traffic to third-party appliances. A producer runs the appliances behind an internal load balancer in a
+# deployment group's VPC (deployment group › zonal deployments › forwarding rule); a consumer creates an
+# endpoint group bound to that deployment group and associates it with its own VPC networks; custom security
+# profiles point firewall policy rules at the endpoint group. All eight types start hidden (catalog seed):
+# operational plumbing, revealed by the Everything lens or includeTypes, linked so the chain reads end to end.
+#
+# The API reference documents names and references with project numbers (projects/123456789/…); Compute
+# references (network, forwardingRule) are normalised to the project id through the snapshot's project index.
+product: Network Security Integration
+service: networksecurity.googleapis.com
+icon: cloud_firewall_rules
+types:
+  networksecurity.googleapis.com/InterceptDeploymentGroup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'intercept deployment group · {{data.state | lower}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+    notes: The producer's group; its VPC network holds the appliances. connectedEndpointGroups (output only) repeats the endpoint groups' own references.
+
+  networksecurity.googleapis.com/InterceptDeployment:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'intercept deployment · {{location}}'
+    relations:
+      - { kind: routes, to: $.data.forwardingRule, normalize: computeRelative }
+      - { kind: memberOf, to: $.data.interceptDeploymentGroup, normalize: name }
+    notes: Zonal; the regional internal load balancer forwarding rule in front of the appliances receives the intercepted traffic.
+
+  networksecurity.googleapis.com/InterceptEndpointGroup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'intercept endpoint group · {{data.state | lower}}'
+    relations:
+      - { kind: connects, to: $.data.interceptDeploymentGroup, normalize: name }
+    notes: The consumer's handle on a producer's deployment group, possibly in another project or organization (then dangling).
+
+  networksecurity.googleapis.com/InterceptEndpointGroupAssociation:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'intercept association · {{data.state | lower}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: uses, to: $.data.interceptEndpointGroup, normalize: name }
+    notes: Enables interception for one consumer VPC network, so it nests in that network.
+
+  networksecurity.googleapis.com/MirroringDeploymentGroup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'mirroring deployment group · {{data.state | lower}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+    notes: The producer's group; its VPC network holds the collectors. connectedEndpointGroups and nestedDeployments (output only) repeat references drawn from the other side.
+
+  networksecurity.googleapis.com/MirroringDeployment:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'mirroring deployment · {{location}}'
+    relations:
+      - { kind: routes, to: $.data.forwardingRule, normalize: computeRelative }
+      - { kind: memberOf, to: $.data.mirroringDeploymentGroup, normalize: name }
+    notes: Zonal; mirrored packets go to the regional internal load balancer forwarding rule in front of the collectors.
+
+  networksecurity.googleapis.com/MirroringEndpointGroup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'mirroring endpoint group · {{data.state | lower}}'
+    relations:
+      - { kind: connects, to: $.data.mirroringDeploymentGroup, normalize: name }
+    notes: The consumer's handle on a producer's deployment group (type DIRECT), possibly in another project or organization (then dangling).
+
+  networksecurity.googleapis.com/MirroringEndpointGroupAssociation:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'mirroring association · {{data.state | lower}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: uses, to: $.data.mirroringEndpointGroup, normalize: name }
+    notes: Enables mirroring for one consumer VPC network, so it nests in that network.

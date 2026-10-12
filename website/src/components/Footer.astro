@@ -1,0 +1,164 @@
+---
+/**
+ * The footer of every page: where to go next, the legal pages, the footer notice (ADR 0018: "Not affiliated with
+ * Google / Google Cloud. gcportrait is an independent open-source project by", the maintainer's name linked to their
+ * website), and the licence and the source. Besides the landing page's author section, the footer is the one place of
+ * the site that names the maintainer. The Impressum and the privacy notice are pages of the maintainer's own website
+ * (LEGAL_LINKS in src/site.ts; decision of 2026-10-11): external links, named as such for assistive technology and
+ * marked with an arrow, opening in the same tab like every other link of the site but the demo's.
+ */
+import DemoLink from './DemoLink.astro';
+import Logo from './Logo.astro';
+import {
+  FOOTER_NOTICE_LEAD,
+  LEGAL_LINKS,
+  MAINTAINER_NAME,
+  MAINTAINER_URL,
+  PRODUCT_NAME,
+  REPOSITORY_URL,
+} from '../site.js';
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="wordmark" href="/"><Logo size={26} /><span>{PRODUCT_NAME}</span></a>
+        <p class="muted">A portrait of your Google Cloud environment.</p>
+      </div>
+      <nav aria-label="Product">
+        <h2>Product</h2>
+        <ul>
+          <li><DemoLink>Try the demo</DemoLink></li>
+          <li><a href="/docs/getting-started/">Getting started</a></li>
+          <li><a href="/docs/self-host/">Self-host</a></li>
+          <li><a href="/coverage/">Asset type coverage</a></li>
+          <li><a href="/changelog/">Changelog</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Project">
+        <h2>Project</h2>
+        <ul>
+          <li><a href={REPOSITORY_URL}>Source code on GitHub</a></li>
+          <li><a href="/contributing/">Contributing</a></li>
+          <li><a href="/licence/">Licence (MIT)</a></li>
+          <li><a href="/#author">About the author</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Legal">
+        <h2>Legal</h2>
+        <ul>
+          {
+            LEGAL_LINKS.map((link) => (
+              <li>
+                {/* One line: white space between the label, the hidden name and the arrow would be underlined. */}
+                <a class="external" href={link.href} rel="noopener" data-legal>{link.label}<span class="visually-hidden">{` (external site, ${link.site})`}</span><svg class="external-mark" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="M6 3h7v7M13 3 4 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+    <p class="footer-notice" data-footer-notice>
+      {FOOTER_NOTICE_LEAD}<a href={MAINTAINER_URL}>{MAINTAINER_NAME}</a>.
+    </p>
+    <p class="copyright">
+      gcportrait’s code is licensed under the <a href="/licence/">MIT License</a>; its{' '}
+      <a href={REPOSITORY_URL}>source</a> is on GitHub. The gcportrait name and icon are not covered by it.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-alt);
+    padding-block: 2.5rem 2rem;
+    font-size: 0.9375rem;
+  }
+  .footer-grid {
+    display: grid;
+    gap: 1.5rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  }
+  .footer-brand {
+    grid-column: span 2;
+    min-width: min(100%, 16rem);
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .footer-brand p {
+    margin-top: 0.5rem;
+  }
+  h2 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 0.5rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li a {
+    display: inline-block;
+    padding: 0.2rem 0;
+  }
+  /* A link to another site: the arrow after the label (its name says "external site" for assistive technology). */
+  .external-mark {
+    display: inline-block;
+    width: 0.75em;
+    height: 0.75em;
+    margin-inline-start: 0.3em;
+    vertical-align: 0.05em;
+    flex: none;
+  }
+  .footer-notice {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    max-width: 60rem;
+  }
+  .copyright {
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+  @media (max-width: 40rem) {
+    .footer-brand {
+      grid-column: auto;
+    }
+  }
+  /* Phones: the link lists side by side in two columns, each link a 44-pixel-high target. */
+  @media (max-width: 47.99rem) {
+    .footer-grid {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+      gap: 1.25rem 1.5rem;
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+    .wordmark {
+      min-height: 2.75rem;
+    }
+    li a {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+      padding: 0.25rem 0;
+      line-height: 1.35;
+    }
+  }
+</style>

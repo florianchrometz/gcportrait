@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: MIT
+#
+# BigQuery sharing (formerly Analytics Hub): data exchanges and the listings published in them. A
+# listing shares one BigQuery dataset (or selected tables and routines of it, in a data clean room) or one
+# Pub/Sub topic; subscribers get a linked dataset (bigquery.googleapis.com/Dataset of type LINKED) that
+# points back at the source. Cloud Asset Inventory names both types by project id.
+product: BigQuery sharing
+service: analyticshub.googleapis.com
+icon: analytics_hub
+types:
+  analyticshub.googleapis.com/DataExchange:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'data exchange · {{location}}'
+    console: 'https://console.cloud.google.com/bigquery/analytics-hub/exchanges?project={{projectId}}'
+    contains:
+      - byParent: analyticshub.googleapis.com/Listing
+    notes: >-
+      Listings are named under their exchange (…/dataExchanges/x/listings/l) and nest in it, so the container
+      shows them (listingCount is not in the subtitle: the API omits it when it is 0). A data clean room
+      is an exchange with sharingEnvironmentConfig.dcrExchangeConfig.
+
+  analyticshub.googleapis.com/Listing:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.resourceType | lower}} listing'
+    console: 'https://console.cloud.google.com/bigquery/analytics-hub/exchanges?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.bigqueryDataset.dataset, normalize: bigqueryUri }
+      - { kind: uses, to: '$.data.bigqueryDataset.selectedResources[*].table', normalize: bigqueryUri }
+      - { kind: uses, to: $.data.pubsubTopic.topic, normalize: pubsubUri }
+    notes: >-
+      bigqueryDataset.dataset is projects/<id>/datasets/<d>; in a clean room selectedResources[*].table
+      narrows the share to single tables (projects/<id>/datasets/<d>/tables/<t>). A Pub/Sub listing names its
+      topic as projects/<id>/topics/<t>. The console link opens the exchange list.

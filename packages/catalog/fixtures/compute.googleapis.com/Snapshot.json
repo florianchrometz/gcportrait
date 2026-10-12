@@ -1,0 +1,86 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/snapshots/orders-data-pre-upgrade",
+    "assetType": "compute.googleapis.com/Snapshot",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#snapshot",
+      "id": "7400000000000000001",
+      "name": "orders-data-pre-upgrade",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/snapshots/orders-data-pre-upgrade",
+      "status": "READY",
+      "snapshotType": "STANDARD",
+      "diskSizeGb": "500",
+      "storageBytes": "96636764160",
+      "sourceDisk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/orders-data",
+      "sourceDiskId": "7200000000000000002",
+      "snapshotEncryptionKey": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+      },
+      "storageLocations": ["europe-west3"],
+      "autoCreated": false,
+      "creationTimestamp": "2026-09-28T07:00:00.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/snapshots/web-7k2p-europe-west3-a-20261008040000-a1b2c3d4",
+    "assetType": "compute.googleapis.com/Snapshot",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#snapshot",
+      "id": "7400000000000000002",
+      "name": "web-7k2p-europe-west3-a-20261008040000-a1b2c3d4",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/snapshots/web-7k2p-europe-west3-a-20261008040000-a1b2c3d4",
+      "status": "READY",
+      "snapshotType": "STANDARD",
+      "diskSizeGb": "20",
+      "autoCreated": true,
+      "sourceDisk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/web-7k2p",
+      "sourceSnapshotSchedulePolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/resourcePolicies/daily-snap",
+      "storageLocations": ["europe-west3"],
+      "creationTimestamp": "2026-10-07T21:00:00.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/snapshots/orders-data-from-isnap",
+    "assetType": "compute.googleapis.com/Snapshot",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#snapshot",
+      "id": "7400000000000000003",
+      "name": "orders-data-from-isnap",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/snapshots/orders-data-from-isnap",
+      "status": "READY",
+      "snapshotType": "ARCHIVE",
+      "diskSizeGb": "500",
+      "autoCreated": false,
+      "sourceInstantSnapshot": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instantSnapshots/orders-data-isnap-1",
+      "storageLocations": ["eu"],
+      "creationTimestamp": "2026-10-02T07:00:00.000-07:00"
+    }
+  }
+]

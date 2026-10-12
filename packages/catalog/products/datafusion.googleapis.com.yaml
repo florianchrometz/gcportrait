@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Data Fusion: pipeline-design instances, which run in a Google-managed tenant project and
+# launch Dataproc clusters in the customer project, and their DNS peerings. An instance is a container for
+# its DNS peerings, whose names continue the instance's name.
+product: Cloud Data Fusion
+service: datafusion.googleapis.com
+icon: cloud_data_fusion
+types:
+  datafusion.googleapis.com/Instance:
+    role: container
+    subtitle: '{{data.type | lower}} · {{data.version}}'
+    console: 'https://console.cloud.google.com/data-fusion/locations/{{location}}/instances/{{name | lastSegment}}?project={{projectId}}'
+    ips:
+      - $.data.networkConfig.ipAllocation
+    domains:
+      - $.data.serviceEndpoint
+      - $.data.apiEndpoint
+    relations:
+      - { kind: attaches, to: $.data.networkConfig.network, normalize: computeRelative }
+      - {
+          kind: attaches,
+          to: $.data.networkConfig.privateServiceConnectConfig.networkAttachment,
+          normalize: computeRelative,
+        }
+      - { kind: runsAs, to: $.data.dataprocServiceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.gcsBucket, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.cryptoKeyConfig.keyReference, normalize: kmsKey }
+      - { kind: triggers, to: $.data.eventPublishConfig.topic, normalize: pubsubUri }
+    contains:
+      - byParent: datafusion.googleapis.com/DnsPeering
+    notes: >-
+      A private instance reaches the VPC by peering (networkConfig.network: a bare network name in the same
+      project, which is not resolved, or projects/<host>/global/networks/<n> for a Shared VPC) with the /22
+      ipAllocation range, or through Private Service Connect (privateServiceConnectConfig.networkAttachment).
+      dataprocServiceAccount is the identity of the Dataproc clusters pipelines run on. eventPublishConfig
+      publishes pipeline events to a Pub/Sub topic (drawn as triggers). gcsBucket is the bucket Data Fusion
+      creates in the customer project for the instance. tenantProjectId names the tenant
+      project, which is outside the organisation.
+
+  datafusion.googleapis.com/DnsPeering:
+    role: leaf
+    label: '{{data.domain}}'
+    subtitle: 'DNS peering → {{data.targetProject}}/{{data.targetNetwork}}'
+    domains:
+      - $.data.domain
+    notes: >-
+      Forwards the instance's DNS queries for domain to a zone in targetNetwork of targetProject (a bare
+      network name and a project id in separate fields, which no normaliser composes into the network's
+      full name, so the peering appears in the subtitle instead of a peers edge).

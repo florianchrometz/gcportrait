@@ -1,0 +1,98 @@
+[
+  {
+    "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/memberships/shop",
+    "assetType": "gkehub.googleapis.com/Membership",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/memberships/shop",
+      "endpoint": {
+        "gkeCluster": {
+          "resourceLink": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop"
+        },
+        "kubernetesMetadata": {
+          "kubernetesApiServerVersion": "v1.31.4-gke.1183000",
+          "nodeCount": 3
+        },
+        "googleManaged": false
+      },
+      "state": {
+        "code": "READY"
+      },
+      "authority": {
+        "issuer": "https://container.googleapis.com/v1/projects/demo-app-1/locations/europe-west3/clusters/shop",
+        "workloadIdentityPool": "demo-app-1.svc.id.goog",
+        "identityProvider": "https://container.googleapis.com/v1/projects/demo-app-1/locations/europe-west3/clusters/shop"
+      },
+      "uniqueId": "00000000-0000-4000-8000-000000000145",
+      "createTime": "2025-03-01T10:05:00Z",
+      "updateTime": "2026-09-01T10:05:00Z"
+    }
+  },
+  {
+    "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/memberships/eks-orders",
+    "assetType": "gkehub.googleapis.com/Membership",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/memberships/eks-orders",
+      "endpoint": {
+        "multiCloudCluster": {
+          "resourceLink": "//gkemulticloud.googleapis.com/projects/10000000002/locations/us-east4/attachedClusters/eks-orders"
+        },
+        "kubernetesMetadata": {
+          "kubernetesApiServerVersion": "v1.31.2-eks-1234567"
+        }
+      },
+      "state": {
+        "code": "READY"
+      },
+      "uniqueId": "00000000-0000-4000-8000-000000000146",
+      "createTime": "2025-11-02T10:05:00Z"
+    }
+  },
+  {
+    "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/memberships/store-user-1",
+    "assetType": "gkehub.googleapis.com/Membership",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/memberships/store-user-1",
+      "endpoint": {
+        "onPremCluster": {
+          "resourceLink": "//gkeonprem.googleapis.com/projects/demo-app-1/locations/europe-west3/vmwareClusters/store-user-1",
+          "clusterType": "USER"
+        },
+        "kubernetesMetadata": {
+          "kubernetesApiServerVersion": "v1.30.5-gke.200"
+        }
+      },
+      "state": {
+        "code": "READY"
+      },
+      "uniqueId": "00000000-0000-4000-8000-000000000147",
+      "createTime": "2025-12-01T10:05:00Z"
+    }
+  }
+]

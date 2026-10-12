@@ -1,0 +1,33 @@
+{
+  "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/europe-west3/networkPolicies/pc-1-policy/externalAccessRules/allow-https",
+  "assetType": "vmwareengine.googleapis.com/ExternalAccessRule",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/networkPolicies/pc-1-policy/externalAccessRules/allow-https",
+    "priority": 100,
+    "action": "ALLOW",
+    "ipProtocol": "TCP",
+    "sourceIpRanges": [
+      {
+        "ipAddressRange": "0.0.0.0/0"
+      },
+      {
+        "ipAddress": "198.51.100.7"
+      }
+    ],
+    "sourcePorts": ["0-65535"],
+    "destinationIpRanges": [
+      {
+        "externalAddress": "projects/demo-ops-1/locations/europe-west3-a/privateClouds/pc-1/externalAddresses/web-vip"
+      }
+    ],
+    "destinationPorts": ["443"],
+    "state": "ACTIVE",
+    "uid": "e0000000-0000-4000-8000-000000000017",
+    "createTime": "2026-02-10T09:00:00Z",
+    "updateTime": "2026-02-10T09:00:00Z"
+  }
+}

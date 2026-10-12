@@ -1,0 +1,29 @@
+[
+  {
+    "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001",
+    "assetType": "identity.accesscontextmanager.googleapis.com/AccessPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-05-02T08:00:00Z",
+    "data": {
+      "name": "accessPolicies/40000000001",
+      "parent": "organizations/30000000001",
+      "title": "example.com default policy",
+      "etag": "a1b2c3d4e5f60718"
+    }
+  },
+  {
+    "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000002",
+    "assetType": "identity.accesscontextmanager.googleapis.com/AccessPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-07-14T08:00:00Z",
+    "data": {
+      "name": "accessPolicies/40000000002",
+      "parent": "organizations/30000000001",
+      "title": "Shared services (delegated)",
+      "scopes": ["folders/20000000002"],
+      "etag": "0f1e2d3c4b5a6978"
+    }
+  }
+]

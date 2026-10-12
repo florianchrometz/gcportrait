@@ -1,0 +1,56 @@
+{
+  "name": "@gcportrait/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gcportrait single-page app (React + Vite, desktop).",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/headless.ts",
+      "default": "./src/headless.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:demo": "VITE_DEMO=1 vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource/roboto": "^5.3.0",
+    "@fontsource/roboto-mono": "^5.3.0",
+    "@gcportrait/catalog": "workspace:*",
+    "@gcportrait/demo-data": "workspace:*",
+    "@gcportrait/graph": "workspace:*",
+    "@gcportrait/icons": "workspace:*",
+    "@gcportrait/ingest": "workspace:*",
+    "@gcportrait/layout": "workspace:*",
+    "@gcportrait/model": "workspace:*",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
+    "fflate": "0.8.2",
+    "fuse.js": "^7.5.0",
+    "idb": "^8.0.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^8.4.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/d3-selection": "^3.0.11",
+    "@types/d3-zoom": "^3.0.8",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "axe-core": "^4.13.0",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^30.1.2",
+    "vite": "^8.3.4"
+  }
+}

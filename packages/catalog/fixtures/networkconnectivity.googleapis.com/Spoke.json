@@ -1,0 +1,192 @@
+[
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/spokes/spoke-core",
+    "assetType": "networkconnectivity.googleapis.com/Spoke",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/spokes/spoke-core",
+      "description": "The production Shared VPC",
+      "uniqueId": "00000000-0000-4000-8000-000000000301",
+      "spokeType": "VPC_NETWORK",
+      "createTime": "2024-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "hub": "projects/10000000001/locations/global/hubs/hub-prod",
+      "group": "projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+      "state": "ACTIVE",
+      "linkedVpcNetwork": {
+        "uri": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "excludeExportRanges": ["10.248.0.0/16"]
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/europe-west3/spokes/spoke-vpn-dc1",
+    "assetType": "networkconnectivity.googleapis.com/Spoke",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/europe-west3/spokes/spoke-vpn-dc1",
+      "description": "HA VPN to the primary data centre",
+      "uniqueId": "00000000-0000-4000-8000-000000000302",
+      "spokeType": "VPN_TUNNEL",
+      "createTime": "2024-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "hub": "projects/10000000001/locations/global/hubs/hub-prod",
+      "group": "projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+      "state": "ACTIVE",
+      "linkedVpnTunnels": {
+        "uris": [
+          "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0",
+          "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1"
+        ],
+        "siteToSiteDataTransfer": true,
+        "vpcNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/europe-west3/spokes/spoke-ic-fra",
+    "assetType": "networkconnectivity.googleapis.com/Spoke",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/europe-west3/spokes/spoke-ic-fra",
+      "description": "Dedicated Interconnect to the primary data centre",
+      "uniqueId": "00000000-0000-4000-8000-000000000303",
+      "spokeType": "INTERCONNECT_ATTACHMENT",
+      "createTime": "2024-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "hub": "projects/10000000001/locations/global/hubs/hub-prod",
+      "group": "projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+      "state": "ACTIVE",
+      "linkedInterconnectAttachments": {
+        "uris": [
+          "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-a"
+        ],
+        "siteToSiteDataTransfer": true,
+        "vpcNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/europe-west3/spokes/spoke-sdwan",
+    "assetType": "networkconnectivity.googleapis.com/Spoke",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/europe-west3/spokes/spoke-sdwan",
+      "description": "SD-WAN appliance for the branch offices",
+      "uniqueId": "00000000-0000-4000-8000-000000000304",
+      "spokeType": "ROUTER_APPLIANCE",
+      "createTime": "2024-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "hub": "projects/10000000001/locations/global/hubs/hub-prod",
+      "group": "projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+      "state": "ACTIVE",
+      "linkedRouterApplianceInstances": {
+        "instances": [
+          {
+            "virtualMachine": "https://www.googleapis.com/compute/v1/projects/demo-net-1/zones/europe-west3-a/instances/sdwan-1",
+            "ipAddress": "10.10.0.50"
+          }
+        ],
+        "siteToSiteDataTransfer": true,
+        "vpcNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/spokes/spoke-psa-prod",
+    "assetType": "networkconnectivity.googleapis.com/Spoke",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/spokes/spoke-psa-prod",
+      "description": "Private services access producer network (Cloud SQL)",
+      "uniqueId": "00000000-0000-4000-8000-000000000305",
+      "spokeType": "PRODUCER_VPC_NETWORK",
+      "createTime": "2024-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "hub": "projects/10000000001/locations/global/hubs/hub-prod",
+      "group": "projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+      "state": "ACTIVE",
+      "linkedProducerVpcNetwork": {
+        "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "peering": "servicenetworking-googleapis-com",
+        "producerNetwork": "https://www.googleapis.com/compute/v1/projects/a1b2c3d4e5f6a7-tp/global/networks/servicenetworking",
+        "serviceConsumerVpcSpoke": "projects/10000000001/locations/global/spokes/spoke-core",
+        "excludeExportRanges": []
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/europe-west3/spokes/spoke-gw-sse",
+    "assetType": "networkconnectivity.googleapis.com/Spoke",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/europe-west3/spokes/spoke-gw-sse",
+      "description": "NCC gateway inspecting branch and internet traffic",
+      "uniqueId": "00000000-0000-4000-8000-000000000306",
+      "spokeType": "GATEWAY",
+      "createTime": "2026-06-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "hub": "projects/10000000001/locations/global/hubs/hub-inspect",
+      "state": "ACTIVE",
+      "gateway": {
+        "capacity": "CAPACITY_1_GBPS",
+        "ipRangeReservations": [
+          {
+            "ipRange": "10.100.0.0/23"
+          }
+        ],
+        "cloudRouters": [
+          "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/routers/cr-gw-sse-europe-west3"
+        ]
+      }
+    }
+  }
+]

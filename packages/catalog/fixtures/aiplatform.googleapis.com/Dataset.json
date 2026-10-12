@@ -1,0 +1,77 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/datasets/2203348812009922560",
+    "assetType": "aiplatform.googleapis.com/Dataset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/datasets/2203348812009922560",
+      "displayName": "transactions-tabular",
+      "metadataSchemaUri": "gs://google-cloud-aiplatform/schema/dataset/metadata/tabular_1.0.0.yaml",
+      "metadata": {
+        "inputConfig": {
+          "bigquerySource": {
+            "uri": "bq://demo-data-1.sales.orders"
+          }
+        }
+      },
+      "createTime": "2026-03-06T08:00:00Z",
+      "updateTime": "2026-03-06T08:00:00Z",
+      "etag": "AMEw9yNa",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      }
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/datasets/2203348812009925555",
+    "assetType": "aiplatform.googleapis.com/Dataset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/datasets/2203348812009925555",
+      "displayName": "chargebacks-csv",
+      "metadataSchemaUri": "gs://google-cloud-aiplatform/schema/dataset/metadata/tabular_1.0.0.yaml",
+      "metadata": {
+        "inputConfig": {
+          "gcsSource": {
+            "uri": [
+              "gs://demo-data-1-lake/chargebacks/2026-09.csv",
+              "gs://demo-data-1-lake/chargebacks/2026-08.csv"
+            ]
+          }
+        }
+      },
+      "createTime": "2026-09-06T08:00:00Z",
+      "updateTime": "2026-09-06T08:00:00Z"
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/datasets/8841276630195748864",
+    "assetType": "aiplatform.googleapis.com/Dataset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/datasets/8841276630195748864",
+      "displayName": "receipt-images",
+      "metadataSchemaUri": "gs://google-cloud-aiplatform/schema/dataset/metadata/image_1.0.0.yaml",
+      "metadata": {
+        "dataItemSchemaUri": "gs://google-cloud-aiplatform/schema/dataset/dataitem/image_1.0.0.yaml",
+        "gcsBucket": "demo-data-1-lake"
+      },
+      "dataItemCount": "18240",
+      "createTime": "2026-07-14T08:00:00Z",
+      "updateTime": "2026-09-28T08:00:00Z",
+      "etag": "AMEw9yPq",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      }
+    }
+  }
+]

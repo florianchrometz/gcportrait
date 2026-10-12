@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: MIT
+#
+# Playwright's browsers for a job that has already run ./.github/actions/setup: the browser builds of the Playwright
+# version the workspace resolves, cached in ~/.cache/ms-playwright under that version, and their system libraries
+# (apt, so on every run: the cache holds the browsers only). A Playwright upgrade in the lockfile changes the key,
+# so the cache never serves browsers of another version.
+name: Set up Playwright browsers
+description: >-
+  Installs the browsers of the workspace's Playwright version with their system libraries, caching the browser
+  downloads between runs.
+
+inputs:
+  browsers:
+    description: Browsers for `playwright install`, separated by spaces (chromium, webkit, firefox).
+    required: false
+    default: chromium
+  working-directory:
+    description: A workspace that depends on Playwright (`@playwright/test` or `playwright`), whose CLI runs.
+    required: false
+    default: e2e
+
+runs:
+  using: composite
+  steps:
+    - name: Read the Playwright version
+      id: version
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        WORKSPACE: ${{ inputs.working-directory }}
+      run: |
+        version=$(pnpm exec playwright --version | awk '{print $2}')
+        if [ -z "$version" ]; then
+          echo "::error::No Playwright CLI in ${WORKSPACE}."
+          exit 1
+        fi
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "Playwright $version"
+
+    - name: Restore the browsers
+      id: cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}-${{ inputs.browsers }}
+
+    - name: Install the browsers and their system libraries
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+      # Word splitting is intended: one argument per browser.
+      run: pnpm exec playwright install --with-deps $BROWSERS
+
+    - name: Install the system libraries (browsers restored from the cache)
+      if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+      run: pnpm exec playwright install-deps $BROWSERS

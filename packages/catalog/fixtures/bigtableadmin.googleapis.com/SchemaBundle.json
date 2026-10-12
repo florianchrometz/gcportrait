@@ -1,0 +1,12 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events/tables/clickstream/schemaBundles/events-v1",
+  "assetType": "bigtableadmin.googleapis.com/SchemaBundle",
+  "parent": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events/tables/clickstream/schemaBundles/events-v1",
+    "protoSchema": { "protoDescriptors": "CgtldmVudC5wcm90bxIGZXZlbnRz" },
+    "etag": "djE="
+  }
+}

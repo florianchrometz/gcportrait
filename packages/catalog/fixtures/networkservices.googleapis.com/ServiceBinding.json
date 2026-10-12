@@ -1,0 +1,21 @@
+{
+  "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/serviceBindings/payments-binding",
+  "assetType": "networkservices.googleapis.com/ServiceBinding",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/serviceBindings/payments-binding",
+    "description": "Payments service from Service Directory",
+    "service": "projects/demo-ops-1/locations/europe-west3/namespaces/internal/services/payments",
+    "serviceId": "3f2b8c1e-5a7d-4e90-b1c2-0d9e8f7a6b5c",
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

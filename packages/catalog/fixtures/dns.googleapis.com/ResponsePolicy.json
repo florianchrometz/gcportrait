@@ -1,0 +1,53 @@
+[
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/responsePolicies/core-rpz",
+    "assetType": "dns.googleapis.com/ResponsePolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#responsePolicy",
+      "id": "4300000000000000001",
+      "responsePolicyName": "core-rpz",
+      "description": "Private Google API access and blocked names for the core network",
+      "networks": [
+        {
+          "kind": "dns#responsePolicyNetwork",
+          "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+        }
+      ],
+      "labels": { "env": "prod" }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000002/locations/global/responsePolicies/shop-rpz",
+    "assetType": "dns.googleapis.com/ResponsePolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#responsePolicy",
+      "id": "4300000000000000002",
+      "responsePolicyName": "shop-rpz",
+      "description": "Overrides for the shop cluster",
+      "gkeClusters": [
+        {
+          "kind": "dns#responsePolicyGKECluster",
+          "gkeClusterName": "projects/demo-app-1/locations/europe-west3/clusters/shop"
+        }
+      ]
+    }
+  }
+]

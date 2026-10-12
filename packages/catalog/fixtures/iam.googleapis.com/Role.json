@@ -1,0 +1,40 @@
+[
+  {
+    "name": "//iam.googleapis.com/projects/demo-sec-1/roles/kmsKeyAuditor",
+    "assetType": "iam.googleapis.com/Role",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-08-02T09:30:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/roles/kmsKeyAuditor",
+      "title": "KMS key auditor",
+      "description": "Reads key metadata and IAM policies, no cryptographic operations",
+      "includedPermissions": [
+        "cloudkms.cryptoKeys.get",
+        "cloudkms.cryptoKeys.getIamPolicy",
+        "cloudkms.cryptoKeys.list",
+        "cloudkms.keyRings.get",
+        "cloudkms.keyRings.list"
+      ],
+      "stage": "GA",
+      "etag": "BwYbQ2xyz1E="
+    }
+  },
+  {
+    "name": "//iam.googleapis.com/organizations/30000000001/roles/networkViewerLite",
+    "assetType": "iam.googleapis.com/Role",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-21T15:00:00Z",
+    "data": {
+      "name": "organizations/30000000001/roles/networkViewerLite",
+      "title": "Network viewer (lite)",
+      "includedPermissions": ["compute.networks.get", "compute.networks.list", "compute.subnetworks.list"],
+      "stage": "BETA",
+      "deleted": true,
+      "etag": "BwYbQ3abc2F="
+    }
+  }
+]

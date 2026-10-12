@@ -1,0 +1,23 @@
+{
+  "name": "//connectors.googleapis.com/projects/demo-app-1/locations/europe-west3/endpointAttachments/inventory-psc",
+  "assetType": "connectors.googleapis.com/EndpointAttachment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/endpointAttachments/inventory-psc",
+    "description": "PSC endpoint to the inventory API",
+    "serviceAttachment": "projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+    "endpointIp": "10.200.0.4",
+    "endpointGlobalAccess": false,
+    "state": "ACTIVE",
+    "createTime": "2025-08-01T08:00:00Z",
+    "updateTime": "2025-08-01T08:00:00Z"
+  }
+}

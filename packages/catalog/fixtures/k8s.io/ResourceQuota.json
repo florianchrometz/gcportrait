@@ -1,0 +1,42 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/resourcequotas/shop-quota",
+  "assetType": "k8s.io/ResourceQuota",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "v1",
+    "kind": "ResourceQuota",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000112",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "shop-quota",
+      "namespace": "shop"
+    },
+    "spec": {
+      "hard": {
+        "cpu": "20",
+        "memory": "64Gi",
+        "pods": "100"
+      }
+    },
+    "status": {
+      "hard": {
+        "cpu": "20",
+        "memory": "64Gi",
+        "pods": "100"
+      },
+      "used": {
+        "cpu": "6",
+        "memory": "18Gi",
+        "pods": "23"
+      }
+    }
+  }
+}

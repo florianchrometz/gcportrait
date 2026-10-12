@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: MIT
+#
+# Database Migration Service: migration jobs between a source and a destination connection profile,
+# private connections into a VPC network, and conversion workspaces for heterogeneous migrations.
+product: Database Migration Service
+service: datamigration.googleapis.com
+icon: database_migration_service
+types:
+  datamigration.googleapis.com/MigrationJob:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type | lower}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/dbmigrate/migrations/locations/{{location}}/instances/{{name | lastSegment}}?project={{projectId}}'
+    ips:
+      - $.data.reverseSshConnectivity.vmIp
+    relations:
+      - { kind: uses, to: $.data.source, normalize: name }
+      - { kind: uses, to: $.data.destination, normalize: name }
+      - { kind: uses, to: $.data.conversionWorkspace.name, normalize: name }
+      - { kind: attaches, to: $.data.vpcPeeringConnectivity.vpc, normalize: computeRelative }
+      - { kind: attaches, to: $.data.reverseSshConnectivity.vpc, normalize: computeRelative }
+      - { kind: uses, to: $.data.dumpPath, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.cmekKeyName, normalize: kmsKey }
+    hiddenWhen: "$.data.state in ['COMPLETED', 'DELETED']"
+    notes: >-
+      source and destination are connection profile names. Connectivity is one of static IPs, VPC peering
+      (vpcPeeringConnectivity.vpc) or a reverse SSH tunnel through a bastion VM (reverseSshConnectivity: vm
+      is the VM's bare name, which no normaliser resolves, vmIp its address, vpc its network). A completed
+      (promoted) migration starts hidden.
+
+  datamigration.googleapis.com/ConnectionProfile:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.provider | lower}} · {{data.role | lower}}'
+    console: 'https://console.cloud.google.com/dbmigrate/connection-profiles?project={{projectId}}'
+    ips:
+      - $.data.*.host
+      - $.data.cloudsql.privateIp
+      - $.data.cloudsql.publicIp
+      - $.data.alloydb.settings.primaryInstanceSettings.privateIp
+    domains:
+      - $.data.*.host
+      - $.data.*.forwardSshConnectivity.hostname
+    relations:
+      - { kind: uses, to: $.data.*.privateConnectivity.privateConnection, normalize: name }
+      - {
+          kind: uses,
+          to: $.data.*.privateServiceConnectConnectivity.serviceAttachment,
+          normalize: computeRelative,
+        }
+      - { kind: uses, to: $.data.sqlserver.backups.gcsBucket, normalize: gcsUri }
+    notes: >-
+      One engine block is set (mysql, postgresql, sqlserver, oracle) for a database reached by host and
+      port, or cloudsql / alloydb for a destination DMS creates. cloudSqlId, alloydbClusterId and
+      alloydb.clusterId are bare instance and cluster ids in the profile's project, which no normaliser turns
+      into full names, so the Cloud SQL or AlloyDB edge is missing; the addresses of the created instance are
+      read instead. host is an address or a host name (read as both, the invalid reading is dropped).
+
+  datamigration.googleapis.com/PrivateConnection:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.vpcPeeringConfig.subnet}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/dbmigrate/private-connections?project={{projectId}}'
+    ips:
+      - $.data.vpcPeeringConfig.subnet
+    relations:
+      - { kind: attaches, to: $.data.vpcPeeringConfig.vpcName, normalize: computeRelative }
+      - { kind: attaches, to: $.data.pscInterfaceConfig.networkAttachment, normalize: computeRelative }
+    notes: >-
+      vpcName is documented only as the network's fully qualified name; projects/<p>/global/networks/<n>
+      resolves (verify on an export).
+
+  datamigration.googleapis.com/ConversionWorkspace:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.source.engine | lower}} → {{data.destination.engine | lower}}'
+    console: 'https://console.cloud.google.com/dbmigrate/conversion-workspaces?project={{projectId}}'
+    notes: Schema and code conversion between engines (Oracle to PostgreSQL); migration jobs point at it.

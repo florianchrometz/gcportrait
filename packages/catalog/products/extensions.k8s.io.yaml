@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MIT
+#
+# Objects of the removed extensions/v1beta1 API group that older GKE clusters still report. They duplicate the
+# apps and networking.k8s.io objects of the same name, so they start hidden.
+product: Google Kubernetes Engine
+service: extensions.k8s.io
+icon: google_kubernetes_engine
+types:
+  extensions.k8s.io/DaemonSet:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    notes: Legacy API group view of a daemon set; apps.k8s.io/DaemonSet is the one drawn.
+
+  extensions.k8s.io/Ingress:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    domains:
+      - '$.data.spec.rules[*].host'
+    relations:
+      - {
+          kind: routes,
+          to: '$.data.spec.rules[*].http.paths[*].backend.serviceName',
+          normalize: k8sRef,
+          k8sKind: Service,
+        }
+      - { kind: routes, to: $.data.spec.backend.serviceName, normalize: k8sRef, k8sKind: Service }
+    notes: >-
+      Legacy API group view of an ingress; networking.k8s.io/Ingress is the one drawn. Its backends
+      (serviceName, the extensions/v1beta1 shape) route to services in its namespace (k8sRef).

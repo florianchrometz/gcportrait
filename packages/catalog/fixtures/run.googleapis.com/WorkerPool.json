@@ -1,0 +1,72 @@
+{
+  "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/workerPools/order-consumer",
+  "assetType": "run.googleapis.com/WorkerPool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/workerPools/order-consumer",
+    "uid": "00000000-0000-4000-8000-000000000175",
+    "launchStage": "GA",
+    "template": {
+      "serviceAccount": "order-consumer@demo-app-1.iam.gserviceaccount.com",
+      "vpcAccess": {
+        "networkInterfaces": [
+          {
+            "network": "projects/demo-net-1/global/networks/core",
+            "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app"
+          }
+        ],
+        "egress": "ALL_TRAFFIC"
+      },
+      "containers": [
+        {
+          "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/order-consumer:1.2.0",
+          "env": [
+            {
+              "name": "KAFKA_PASSWORD",
+              "valueSource": {
+                "secretKeyRef": {
+                  "secret": "projects/10000000004/secrets/kafka-password",
+                  "version": "latest"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "volumes": [
+        {
+          "name": "certs",
+          "secret": {
+            "secret": "projects/10000000004/secrets/kafka-client-cert"
+          }
+        },
+        {
+          "name": "spool",
+          "gcs": {
+            "bucket": "demo-app-1-spool"
+          }
+        }
+      ],
+      "encryptionKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/run"
+    },
+    "scaling": {
+      "manualInstanceCount": 3
+    },
+    "instanceSplits": [
+      {
+        "type": "INSTANCE_SPLIT_ALLOCATION_TYPE_LATEST",
+        "percent": 100
+      }
+    ],
+    "latestReadyRevision": "projects/10000000002/locations/europe-west3/workerPools/order-consumer/revisions/order-consumer-00002-k8m",
+    "createTime": "2026-05-01T10:00:00Z"
+  }
+}

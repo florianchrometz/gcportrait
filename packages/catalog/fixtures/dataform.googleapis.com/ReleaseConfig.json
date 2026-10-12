@@ -1,0 +1,20 @@
+{
+  "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/releaseConfigs/production",
+  "assetType": "dataform.googleapis.com/ReleaseConfig",
+  "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/releaseConfigs/production",
+    "gitCommitish": "main",
+    "codeCompilationConfig": {
+      "defaultDatabase": "demo-data-1",
+      "defaultSchema": "sales",
+      "defaultLocation": "EU"
+    },
+    "cronSchedule": "0 3 * * *",
+    "timeZone": "Europe/Berlin",
+    "releaseCompilationResult": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee01"
+  }
+}

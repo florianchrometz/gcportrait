@@ -1,0 +1,13 @@
+{
+  "name": "//pubsub.googleapis.com/projects/demo-data-1/snapshots/orders-before-replay",
+  "assetType": "pubsub.googleapis.com/Snapshot",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-06T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/snapshots/orders-before-replay",
+    "topic": "projects/demo-data-1/topics/orders",
+    "expireTime": "2026-10-13T08:00:00Z"
+  }
+}

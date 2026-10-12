@@ -1,0 +1,37 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/trainingPipelines/3344556677889900112",
+  "assetType": "aiplatform.googleapis.com/TrainingPipeline",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/trainingPipelines/3344556677889900112",
+    "displayName": "fraud-scorer-v3",
+    "inputDataConfig": {
+      "datasetId": "2203348812009922560",
+      "fractionSplit": {
+        "trainingFraction": 0.8,
+        "validationFraction": 0.1,
+        "testFraction": 0.1
+      }
+    },
+    "trainingTaskDefinition": "gs://google-cloud-aiplatform/schema/trainingjob/definition/custom_task_1.0.0.yaml",
+    "modelToUpload": {
+      "name": "projects/10000000003/locations/europe-west3/models/7051234567890123456",
+      "displayName": "fraud-scorer",
+      "containerSpec": {
+        "imageUri": "europe-west3-docker.pkg.dev/demo-data-1/ml-serving/fraud-scorer:3.0.1"
+      }
+    },
+    "parentModel": "projects/10000000003/locations/europe-west3/models/7051234567890123456",
+    "state": "PIPELINE_STATE_SUCCEEDED",
+    "createTime": "2026-09-12T06:00:00Z",
+    "startTime": "2026-09-12T06:01:00Z",
+    "endTime": "2026-09-12T08:00:00Z",
+    "updateTime": "2026-09-12T08:00:00Z",
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    }
+  }
+}

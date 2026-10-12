@@ -1,0 +1,85 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/packetMirrorings/mirror-app",
+    "assetType": "compute.googleapis.com/PacketMirroring",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#packetMirroring",
+      "id": "5000000000000000124",
+      "name": "mirror-app",
+      "description": "Mirrors the app subnetwork and the NVA to the IDS collectors",
+      "network": {
+        "url": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "canonicalUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/5000000000000000001"
+      },
+      "priority": 1000,
+      "collectorIlb": {
+        "url": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-collector"
+      },
+      "mirroredResources": {
+        "subnetworks": [
+          {
+            "url": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app"
+          }
+        ],
+        "instances": [
+          {
+            "url": "https://www.googleapis.com/compute/v1/projects/demo-net-1/zones/europe-west3-a/instances/nva-1"
+          }
+        ],
+        "tags": ["mirror"]
+      },
+      "filter": {
+        "cidrRanges": ["10.0.0.0/8"],
+        "IPProtocols": ["tcp", "udp"],
+        "direction": "BOTH"
+      },
+      "enable": "TRUE",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/packetMirrorings/mirror-app",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/packetMirrorings/mirror-debug",
+    "assetType": "compute.googleapis.com/PacketMirroring",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#packetMirroring",
+      "id": "5000000000000000125",
+      "name": "mirror-debug",
+      "description": "Ad-hoc capture, switched off",
+      "network": {
+        "url": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+      },
+      "priority": 2000,
+      "collectorIlb": {
+        "url": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-collector"
+      },
+      "mirroredResources": {
+        "tags": ["debug-capture"]
+      },
+      "filter": {
+        "direction": "INGRESS"
+      },
+      "enable": "FALSE",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/packetMirrorings/mirror-debug",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+    }
+  }
+]

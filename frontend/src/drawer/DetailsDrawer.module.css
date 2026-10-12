@@ -1,0 +1,373 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The details drawer: the second column of the diagram workspace (pages/DiagramPage.module.css), 360–420 px wide
+   (its inline width follows the resize handle). App chrome tokens only (skill gcp-diagram-style §9), so both
+   themes follow; controls are 32 px tall, copy buttons and jump links at least 24 px (WCAG 2.2 target size). */
+.drawer {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: var(--drawer-width);
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--color-outline);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+/* The hidden attribute must win over the grid display above. */
+.drawer[hidden] {
+  display: none;
+}
+
+/* The resize handle: a strip on the left edge, a 2 px line in the primary colour while hovered or dragged. */
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: transparent;
+}
+
+.handle:hover::after,
+.handle:active::after {
+  background: var(--color-primary);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-4) var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-outline);
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.type {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+.title {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.product {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.button,
+.primary {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--color-surface-container);
+}
+
+.primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.status {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-3) var(--space-4) var(--space-6) var(--space-6);
+  overflow-y: auto;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: var(--font-size-control);
+}
+
+.facts dt {
+  color: var(--color-on-surface-variant);
+}
+
+.facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.nameRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.value {
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}
+
+.copy {
+  flex: none;
+  min-width: 24px;
+  height: 24px;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-footnote);
+  cursor: pointer;
+}
+
+.copy:hover {
+  background: var(--color-surface-container);
+}
+
+.values {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.values li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 12px;
+  background: var(--color-surface-container);
+  font-size: var(--font-size-footnote);
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.badgeKey {
+  color: var(--color-on-surface-variant);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.count {
+  color: var(--color-on-surface-variant);
+  font-weight: var(--font-weight-regular);
+}
+
+.group {
+  display: grid;
+  gap: 2px;
+}
+
+.groupTitle {
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  font-weight: var(--font-weight-medium);
+}
+
+.relations {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relation {
+  min-height: 24px;
+  font-size: var(--font-size-control);
+  overflow-wrap: anywhere;
+}
+
+.arrow {
+  display: inline-block;
+  width: 1.4em;
+  color: var(--color-on-surface-variant);
+}
+
+/* A jump link: a button that reads as a link, at least 24 px tall. */
+.jump {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-size: inherit;
+  text-align: start;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--color-on-surface-variant);
+}
+
+/* A node's type after its jump link: quieter than the link. */
+.typeName {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.note {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.dangling {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.danglingEntry {
+  font-size: var(--font-size-control);
+  overflow-wrap: anywhere;
+}
+
+.kind {
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-outline);
+  border-radius: 4px;
+  font-size: var(--font-size-footnote);
+}
+
+.explanation {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.json {
+  margin: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface-container);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-footnote);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.json[hidden] {
+  display: none;
+}
+
+/* The "What changed" section: the node's own change, then the fields that differ, one per line. */
+.changeStatus {
+  font-size: var(--font-size-control);
+}
+
+.fieldChanges {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fieldChange {
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}

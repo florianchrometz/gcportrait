@@ -1,0 +1,24 @@
+{
+  "name": "//financialservices.googleapis.com/projects/demo-data-1/locations/europe-west1/instances/aml/engineConfigs/retail-v1",
+  "assetType": "financialservices.googleapis.com/EngineConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "/projects/10000000003/locations/europe-west1/instances/aml/engineConfigs/retail-v1",
+    "createTime": "2026-07-01T08:00:00Z",
+    "updateTime": "2026-07-01T08:00:00Z",
+    "engineVersion": "/projects/10000000003/locations/europe-west1/instances/aml/engineVersions/aml-retail.v004.009",
+    "tuning": {
+      "primaryDataset": "/projects/10000000003/locations/europe-west1/instances/aml/datasets/q3",
+      "endTime": "2026-07-01T00:00:00Z"
+    },
+    "performanceTarget": {
+      "partyInvestigationsPerPeriodHint": "5000"
+    },
+    "lineOfBusiness": "RETAIL",
+    "hyperparameterSourceType": "TUNING",
+    "state": "ACTIVE"
+  }
+}

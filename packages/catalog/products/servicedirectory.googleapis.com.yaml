@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: MIT
+#
+# Service Directory: the namespace and service containers (from the catalog seed) and endpoints, which nest
+# in their service by name.
+product: Service Directory
+service: servicedirectory.googleapis.com
+icon: service_directory
+types:
+  servicedirectory.googleapis.com/Namespace:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'namespace · {{location}}'
+    console: 'https://console.cloud.google.com/net-services/service-directory/namespaces/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    contains:
+      - byParent: servicedirectory.googleapis.com/Service
+
+  servicedirectory.googleapis.com/Service:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'service · {{location}}'
+    console: 'https://console.cloud.google.com/net-services/service-directory/namespaces/{{location}}/{{name | parentSegment(namespaces)}}/services/{{name | lastSegment}}?project={{projectId}}'
+    contains:
+      - byParent: servicedirectory.googleapis.com/Endpoint
+
+  servicedirectory.googleapis.com/Endpoint:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.address}} · {{data.port}}'
+    console: 'https://console.cloud.google.com/net-services/service-directory/namespaces/{{location}}/{{name | parentSegment(namespaces)}}/services/{{name | parentSegment(services)}}?project={{projectId}}'
+    ips:
+      - $.data.address
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+    notes: >-
+      network is projects/<project number>/locations/global/networks/<network> (the API rejects project ids).
+      computeRelative maps the number to the project id but keeps the locations/global segment, so the edge
+      stays dangling until a normaliser maps this form to
+      //compute.googleapis.com/projects/<id>/global/networks/<n>. Endpoints without a network (external
+      addresses) have no edge.

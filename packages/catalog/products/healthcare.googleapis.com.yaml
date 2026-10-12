@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Healthcare API: datasets holding FHIR, DICOM, HL7v2 and consent stores. Asset names use the
+# project number (//healthcare.googleapis.com/projects/<number>/locations/<l>/datasets/<d>/…), and the stores
+# nest in their dataset by name. Stores publish change notifications to Pub/Sub and stream into BigQuery.
+product: Cloud Healthcare API
+service: healthcare.googleapis.com
+icon: cloud_healthcare_api
+types:
+  healthcare.googleapis.com/Dataset:
+    role: container
+    subtitle: 'healthcare dataset · {{location}}'
+    console: 'https://console.cloud.google.com/healthcare/browser/locations/{{location}}/datasets/{{name | lastSegment}}/datastores?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    contains:
+      - byParent: healthcare.googleapis.com/FhirStore
+      - byParent: healthcare.googleapis.com/DicomStore
+      - byParent: healthcare.googleapis.com/Hl7V2Store
+      - byParent: healthcare.googleapis.com/ConsentStore
+    notes: encryptionSpec.kmsKeyName (CMEK) covers the dataset and every store in it.
+
+  healthcare.googleapis.com/FhirStore:
+    role: core
+    subtitle: 'FHIR {{data.version}}'
+    console: 'https://console.cloud.google.com/healthcare/browser/locations/{{location}}/datasets/{{name | parentSegment(datasets)}}/datastores?project={{projectId}}'
+    relations:
+      - { kind: triggers, to: '$.data.notificationConfigs[*].pubsubTopic', normalize: pubsubUri }
+      - { kind: triggers, to: $.data.notificationConfig.pubsubTopic, normalize: pubsubUri }
+      - { kind: uses, to: '$.data.streamConfigs[*].bigqueryDestination.datasetUri', normalize: bigqueryUri }
+      - { kind: uses, to: $.data.bulkExportGcsDestination.uriPrefix, normalize: gcsUri }
+    notes: >-
+      notificationConfig (singular) is the deprecated form of notificationConfigs. streamConfigs stream
+      resources into a BigQuery dataset (datasetUri bq://<project>.<dataset>); a de-identified store
+      destination (streamConfigs[*].deidentifiedStoreDestination.store) is written with the project id
+      while store asset names use the number, so it is not read. bulkExportGcsDestination is the default
+      bucket of $export operations.
+
+  healthcare.googleapis.com/DicomStore:
+    role: core
+    subtitle: 'DICOM store'
+    console: 'https://console.cloud.google.com/healthcare/browser/locations/{{location}}/datasets/{{name | parentSegment(datasets)}}/datastores?project={{projectId}}'
+    relations:
+      - { kind: triggers, to: '$.data.notificationConfigs[*].pubsubTopic', normalize: pubsubUri }
+      - { kind: triggers, to: $.data.notificationConfig.pubsubTopic, normalize: pubsubUri }
+      - { kind: uses, to: '$.data.streamConfigs[*].bigqueryDestination.tableUri', normalize: bigqueryUri }
+    notes: >-
+      streamConfigs stream instance metadata into a BigQuery table (tableUri
+      bq://<project>.<dataset>.<table>).
+
+  healthcare.googleapis.com/Hl7V2Store:
+    role: core
+    subtitle: 'HL7v2 · {{data.parserConfig.version | lower}}'
+    console: 'https://console.cloud.google.com/healthcare/browser/locations/{{location}}/datasets/{{name | parentSegment(datasets)}}/datastores?project={{projectId}}'
+    relations:
+      - { kind: triggers, to: '$.data.notificationConfigs[*].pubsubTopic', normalize: pubsubUri }
+    notes: Each notification config may carry a filter that selects the messages it publishes.
+
+  healthcare.googleapis.com/ConsentStore:
+    role: leaf
+    subtitle: 'consent store'
+    console: 'https://console.cloud.google.com/healthcare/browser/locations/{{location}}/datasets/{{name | parentSegment(datasets)}}/datastores?project={{projectId}}'

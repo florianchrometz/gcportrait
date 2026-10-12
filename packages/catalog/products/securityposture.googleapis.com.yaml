@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+#
+# Security Posture API: postures (sets of organisation policies and Security Health Analytics
+# detectors) and their deployments onto an organisation, folder or project. Both are organisation-level
+# (organizations/<n>/locations/global/…), so they nest under the organisation.
+product: Security Posture API
+service: securityposture.googleapis.com
+icon: security_command_center
+types:
+  securityposture.googleapis.com/Posture:
+    role: core
+    subtitle: '{{data.state | lower}} · {{data.revisionId}}'
+    notes: >-
+      A versioned posture (revisionId); its policy sets embed organisation policy constraints and detectors,
+      not references to assets. Deployments point here, which makes it core (skill §3: referenced by other
+      assets; the seed lists it as a leaf).
+
+  securityposture.googleapis.com/PostureDeployment:
+    role: core
+    subtitle: '{{data.postureId | lastSegment}} · {{data.state | lower}}'
+    relations:
+      - {
+          kind: secures,
+          to: $.data.targetResource,
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+      - { kind: uses, to: $.data.postureId, normalize: name }
+    notes: >-
+      targetResource is organizations/<n>, folders/<n> or projects/<number>, a Resource Manager name;
+      postureId names the deployed posture (organizations/<n>/locations/global/postures/<id>) at revision
+      postureRevisionId.

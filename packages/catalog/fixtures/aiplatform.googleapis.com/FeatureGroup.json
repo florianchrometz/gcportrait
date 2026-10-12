@@ -1,0 +1,26 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/featureGroups/customer_profile",
+  "assetType": "aiplatform.googleapis.com/FeatureGroup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/featureGroups/customer_profile",
+    "createTime": "2026-04-02T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "etag": "AMEw9yN7",
+    "description": "Customer profile features from the sales dataset",
+    "serviceAgentType": "SERVICE_AGENT_TYPE_FEATURE_GROUP",
+    "serviceAccountEmail": "fg-customer-profile@demo-data-1.iam.gserviceaccount.com",
+    "bigQuery": {
+      "bigQuerySource": {
+        "inputUri": "bq://demo-data-1.sales.customer_profile"
+      },
+      "entityIdColumns": ["customer_id"],
+      "timeSeries": {
+        "timestampColumn": "feature_timestamp"
+      }
+    }
+  }
+}

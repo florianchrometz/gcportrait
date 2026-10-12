@@ -1,0 +1,42 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/apis/gateway.networking.k8s.io/gateways/shop-gateway",
+  "assetType": "gateway.networking.k8s.io/Gateway",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "gateway.networking.k8s.io/v1",
+    "kind": "Gateway",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000132",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "shop-gateway",
+      "namespace": "shop"
+    },
+    "spec": {
+      "gatewayClassName": "gke-l7-global-external-managed",
+      "listeners": [
+        {
+          "name": "https",
+          "protocol": "HTTPS",
+          "port": 443,
+          "hostname": "shop.example.org"
+        }
+      ]
+    },
+    "status": {
+      "addresses": [
+        {
+          "type": "IPAddress",
+          "value": "203.0.113.31"
+        }
+      ]
+    }
+  }
+}

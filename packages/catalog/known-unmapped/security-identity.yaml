@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: MIT
+#
+# Security and identity. `owns` lists the official asset types this group owns, mapped or not (exact types, or
+# <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not mapped
+# yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group security-identity
+# Services you share with other groups get files named after this group (no plain products/<service>.yaml):
+# products/iap.googleapis.com.security-identity.yaml.
+#
+# iap.googleapis.com: the IAM-policy-only IAP types are policy-and-runtime's; TunnelDestGroup is a resource
+# and is owned here.
+#
+# iam.googleapis.com/ServiceAccount needs `aliases: ['$.data.email']`: the graph builder keeps no list of its
+# own, so serviceAccountEmail relations (runsAs) resolve only through that catalog field.
+title: Security and identity
+owns:
+  - 'accessapproval.googleapis.com/*'
+  - 'accesscontextmanager.googleapis.com/*'
+  - 'apikeys.googleapis.com/*'
+  - 'assuredworkloads.googleapis.com/*'
+  - 'beyondcorp.googleapis.com/*'
+  - 'binaryauthorization.googleapis.com/*'
+  - 'cloudkms.googleapis.com/*'
+  - 'dlp.googleapis.com/*'
+  - 'essentialcontacts.googleapis.com/*'
+  - 'iam.googleapis.com/*'
+  - iap.googleapis.com/TunnelDestGroup
+  - 'identity.accesscontextmanager.googleapis.com/*'
+  - 'identitytoolkit.googleapis.com/*'
+  - 'ids.googleapis.com/*'
+  - 'managedidentities.googleapis.com/*'
+  - 'orgpolicy.googleapis.com/*'
+  - 'parametermanager.googleapis.com/*'
+  - 'privateca.googleapis.com/*'
+  - 'privilegedaccessmanager.googleapis.com/*'
+  - 'recaptchaenterprise.googleapis.com/*'
+  - 'secretmanager.googleapis.com/*'
+  - 'securitycenter.googleapis.com/*'
+  - 'securitycentermanagement.googleapis.com/*'
+  - 'securityposture.googleapis.com/*'
+  - 'websecurityscanner.googleapis.com/*'
+types:
+  beyondcorp.googleapis.com/ClientConnectorService: client connector, shut down on 2023-12-31; the API reference documents no fields any more
+  beyondcorp.googleapis.com/ClientGateway: client connector, shut down on 2023-12-31; the API reference documents no fields any more

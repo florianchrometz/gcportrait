@@ -1,0 +1,22 @@
+{
+  "name": "//apigateway.googleapis.com/projects/demo-app-1/locations/europe-west1/gateways/storefront-gw",
+  "assetType": "apigateway.googleapis.com/Gateway",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west1/gateways/storefront-gw",
+    "displayName": "storefront-gw",
+    "state": "ACTIVE",
+    "apiConfig": "projects/demo-app-1/locations/global/apis/storefront/configs/storefront-v3",
+    "defaultHostname": "storefront-gw-3x9k2b7q.ew.gateway.example.com",
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

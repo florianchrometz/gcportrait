@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Controls Partner API / Sovereign Controls by Partners: a partner's view of its customers and their
+# workloads, inventoried on the partner's organisation and hidden by default.
+product: Cloud Controls Partner API
+service: cloudcontrolspartner.googleapis.com
+icon: cloud_controls_partner
+types:
+  cloudcontrolspartner.googleapis.com/Partner:
+    role: hidden
+    label: 'Partner {{location}}'
+    subtitle: '{{data.partnerProjectId}}'
+
+  cloudcontrolspartner.googleapis.com/Customer:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.organizationDomain}}'
+
+  cloudcontrolspartner.googleapis.com/Workload:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.partner | lower}} · {{data.location}}'
+    notes: folder is the customer's assured-workload folder, usually in the customer's organisation, not read.

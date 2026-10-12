@@ -1,0 +1,56 @@
+{
+  "name": "//transcoder.googleapis.com/projects/demo-app-1/locations/europe-west3/jobs/6e7f8a9b-0000-4000-8000-000000000001",
+  "assetType": "transcoder.googleapis.com/Job",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/jobs/6e7f8a9b-0000-4000-8000-000000000001",
+    "config": {
+      "inputs": [
+        {
+          "key": "input0",
+          "uri": "gs://demo-app-1-media/uploads/intro.mp4"
+        }
+      ],
+      "output": {
+        "uri": "gs://demo-app-1-media/renditions/intro/"
+      },
+      "pubsubDestination": {
+        "topic": "projects/demo-app-1/topics/transcoder-events"
+      },
+      "elementaryStreams": [
+        {
+          "key": "video-720p",
+          "videoStream": {
+            "h264": {
+              "heightPixels": 720,
+              "widthPixels": 1280,
+              "bitrateBps": 2500000,
+              "frameRate": 30
+            }
+          }
+        }
+      ],
+      "muxStreams": [
+        {
+          "key": "hls-720p",
+          "container": "ts",
+          "elementaryStreams": ["video-720p"]
+        }
+      ]
+    },
+    "state": "SUCCEEDED",
+    "createTime": "2026-09-30T10:00:00Z",
+    "startTime": "2026-09-30T10:00:05Z",
+    "endTime": "2026-09-30T10:03:00Z",
+    "ttlAfterCompletionDays": 30,
+    "mode": "PROCESSING_MODE_INTERACTIVE"
+  }
+}

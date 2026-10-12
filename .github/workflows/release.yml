@@ -1,0 +1,392 @@
+# SPDX-License-Identifier: MIT
+#
+# Release pipeline (ADR 0035 §2; contributor-workflow skill §7). On a `v*` tag it checks and builds the tag,
+# publishes the container image to GitHub Container Registry and creates the GitHub release. Run by hand (Actions >
+# Release > Run workflow, on any branch) it publishes the same image as `dev` only: no version tags, no `latest`, no
+# GitHub release.
+#
+# Credentials: the workflow's own GITHUB_TOKEN, nothing else. No secret, no repository variable, no cloud account.
+#
+# publish-image: builds infra/Dockerfile for linux/amd64 and linux/arm64 with Buildx (arm64 under QEMU emulation,
+# which makes the arm64 half the slow part), starts each image (amd64 natively, arm64 emulated) and checks /healthz
+# (it must report the version), /api/config and the SPA before anything is pushed, then pushes one multi-platform
+# image to ghcr.io/<owner>/gcportrait with the tags X.Y.Z, X.Y and `latest`. `latest`, which infra/deploy.sh
+# deploys by default, moves only for the newest release: never for a pre-release (v1.2.0-rc.1 gets only its own
+# version tag), and not for a patch of an older line pushed after a newer release (v1.1.5 after v1.2.0). The image
+# carries OCI labels and index annotations: the source repository, the licence (MIT, ADR 0017) and, as its
+# description, the long form of the non-affiliation statement (ADR 0018). Build provenance and SBOM attestations are
+# switched off, so the index lists exactly the two platforms; the SBOMs travel with the release instead. The job
+# then checks that the image can be pulled anonymously, as Artifact Registry's remote repository pulls it for
+# infra/deploy.sh: a new package on ghcr.io is private until its owner makes it public once (docs/contributing.md,
+# "9. Releases"), so a tag release fails here, and a `dev` run warns, while it is not. Last, Syft
+# (anchore/sbom-action) writes one SPDX SBOM per platform.
+#
+# github-release (tags only): creates the GitHub release `vX.Y.Z` with notes built by scripts/release-notes.mjs from
+# the version's sections of the CHANGELOG.md files that `pnpm release:version` (changesets) wrote, the long form of
+# the non-affiliation statement, the installer line, the image's tags and digest. Attached: the two SBOMs, the deploy
+# scripts as gcportrait-deploy-vX.Y.Z.tar.gz (infra/deploy.sh, common.sh, uninstall.sh, install.sh and README.md,
+# with the tag in a VERSION file), which infra/install.sh (https://gcportrait.app/install.sh) downloads, and
+# checksums.txt, the SHA-256 of every other asset, against which the installer checks the archive before it unpacks
+# or runs anything; scripts/release-assets.sh writes both. A pre-release tag (with a `-`) becomes a pre-release, and
+# a release that is not the newest is not marked "latest" (the installer's default is GitHub's "latest"). It needs
+# the CHANGELOG.md sections: tag only after `pnpm release:version`.
+#
+# Follow-ups, not done yet: signing the image (cosign keyless signing with the workflow's OIDC identity, which needs
+# `id-token: write`, and `cosign verify` documented for self-hosters) and build provenance attestations. A copy in
+# a Google Cloud registry is not needed for deploying: infra/deploy.sh pulls through an Artifact Registry remote
+# repository in the self-hoster's own project. Should a mirror ever be wanted, add a job after publish-image that
+# authenticates with google-github-actions/auth (Workload Identity Federation, no key) and copies the pushed digest
+# with `docker buildx imagetools create --tag REGION-docker.pkg.dev/PROJECT/REPOSITORY/gcportrait:TAG IMAGE@DIGEST`.
+#
+# website-build and website-deploy: tag pushes only, and only while the repository variable
+# PAGES_DEPLOY is `true`, so a release neither waits for nor fails on the website before the maintainer has set up
+# Pages (docs/website.md). Then the static demo (`pnpm demo:static`, the demo at /demo/, ADR 0034; its version is the
+# tag's) and the Astro site are built from the tag the way pages.yml builds main, but strict and with the generated
+# media required to be fresh (`pnpm media --check` fails the job when docs/media/ is stale, so stale media are never
+# published), and deployed to GitHub Pages together. Neither job blocks publish-image or github-release. Needs Settings > Pages > Source set to "GitHub Actions" and the `github-pages` environment
+# allowing `v*` tags to deploy; no secret (the site's footer links the legal pages on the maintainer's website).
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-test:
+    name: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No dependency cache in release jobs: a release is built from a clean store.
+      - uses: ./.github/actions/setup
+        with:
+          cache: 'false'
+      - name: All checks (format, lint, typecheck, unit, catalog, provenance, licences)
+        run: pnpm run check
+      - name: Build every workspace
+        run: pnpm run build
+      - name: SPA size budgets (UI thread and workers, ADR 0029)
+        run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
+
+  publish-image:
+    name: publish-image
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # The arm64 build runs under emulation: several times slower than the amd64 one.
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write # push to ghcr.io with GITHUB_TOKEN
+    outputs:
+      image: ${{ steps.names.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+      latest: ${{ steps.names.outputs.latest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # All tags, to tell whether this one is the newest release (below).
+          fetch-depth: 0
+      - name: Image name, version and `latest`
+        id: names
+        env:
+          OWNER: ${{ github.repository_owner }}
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          # ghcr.io package names are lowercase.
+          image="ghcr.io/${OWNER,,}/gcportrait"
+          if [ "$EVENT" = workflow_dispatch ]; then
+            app_version="dev-${SHA::7}"
+            latest=false
+          else
+            app_version="$TAG"
+            newest="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n 1p || true)"
+            echo "Newest release tag: ${newest:-none}; this tag: $TAG"
+            if [ "$TAG" = "$newest" ]; then latest=true; else latest=false; fi
+          fi
+          {
+            echo "image=$image"
+            echo "app_version=$app_version"
+            echo "latest=$latest"
+          } >>"$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: arm64
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # Each platform is built once into the runner's Docker, started and checked before anything is pushed. The
+      # multi-platform push below reuses these builds' layers from the builder's cache.
+      - name: Build linux/amd64 for the smoke test
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/Dockerfile
+          platforms: linux/amd64
+          build-args: APP_VERSION=${{ steps.names.outputs.app_version }}
+          load: true
+          tags: gcportrait:check-amd64
+      - name: Build linux/arm64 for the smoke test (emulated)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/Dockerfile
+          platforms: linux/arm64
+          build-args: APP_VERSION=${{ steps.names.outputs.app_version }}
+          load: true
+          tags: gcportrait:check-arm64
+      - name: Smoke test both platforms (/healthz with the version, /api/config, the SPA)
+        env:
+          VERSION: ${{ steps.names.outputs.app_version }}
+        run: |
+          for arch in amd64 arm64; do
+            docker run --detach --name "check-$arch" --platform "linux/$arch" --publish 127.0.0.1:8080:8080 \
+              --read-only "gcportrait:check-$arch"
+            ok=0
+            for _ in $(seq 1 90); do
+              if curl --silent --fail http://127.0.0.1:8080/healthz >"/tmp/healthz-$arch.json"; then ok=1; break; fi
+              sleep 1
+            done
+            docker logs "check-$arch"
+            if [ "$ok" != 1 ]; then echo "::error::linux/$arch: /healthz did not answer"; exit 1; fi
+            cat "/tmp/healthz-$arch.json"
+            echo
+            grep -q "\"version\":\"$VERSION\"" "/tmp/healthz-$arch.json"
+            # Each answer goes to a file first: `curl | grep -q` under the step's pipefail fails when grep exits
+            # on its match before curl has written everything (curl then dies of SIGPIPE).
+            curl --silent --fail http://127.0.0.1:8080/api/config >"/tmp/config-$arch.json"
+            grep -q '"demo":false' "/tmp/config-$arch.json"
+            curl --silent --fail http://127.0.0.1:8080/ >"/tmp/index-$arch.html"
+            grep -q '<div id="root">' "/tmp/index-$arch.html"
+            docker rm --force "check-$arch"
+          done
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image tags, labels and annotations
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        env:
+          # The annotations on the index too: ghcr.io shows a multi-platform package's description from there.
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+        with:
+          images: ${{ steps.names.outputs.image }}
+          # A tag push: X.Y.Z and X.Y (the semver patterns skip pre-releases for X.Y); by hand: dev.
+          tags: |
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'push' }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'push' }}
+            type=raw,value=dev,enable=${{ github.event_name == 'workflow_dispatch' }}
+          flavor: |
+            latest=${{ steps.names.outputs.latest }}
+          # The action adds the source repository, revision, version and creation time by itself. The
+          # description is the long-form non-affiliation statement (ADR 0018); without it the action would take the
+          # repository's description. The licence is gcportrait's own (ADR 0017); the image also holds
+          # third-party material under its own terms (THIRD_PARTY.md).
+          labels: |
+            org.opencontainers.image.title=gcportrait
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.description=gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks of Google and are used under Google's icon usage terms.
+          annotations: |
+            org.opencontainers.image.title=gcportrait
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.description=gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks of Google and are used under Google's icon usage terms.
+      - name: Build and push linux/amd64 and linux/arm64
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: APP_VERSION=${{ steps.names.outputs.app_version }}
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+      - name: Anonymous pull check (as Artifact Registry's remote repository pulls)
+        env:
+          IMAGE: ${{ steps.names.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          path="${IMAGE#ghcr.io/}"
+          status="$(curl --silent --output /tmp/token.json --write-out '%{http_code}' \
+            "https://ghcr.io/token?scope=repository:${path}:pull&service=ghcr.io")"
+          if [ "$status" = 200 ]; then
+            # An anonymous pull token: anyone can get one for a public package; it is not a secret.
+            status="$(printf 'Authorization: Bearer %s\n' "$(jq -r .token /tmp/token.json)" |
+              curl --silent --head --output /dev/null --write-out '%{http_code}' --header @- \
+                --header 'Accept: application/vnd.oci.image.index.v1+json' "https://ghcr.io/v2/${path}/manifests/${DIGEST}")"
+          fi
+          if [ "$status" = 200 ]; then
+            echo "Anyone can pull $IMAGE@$DIGEST."
+          else
+            message="$IMAGE cannot be pulled anonymously (HTTP $status), so infra/deploy.sh cannot deploy it: make the package public once (its page on GitHub > Package settings > Change visibility > Public; docs/contributing.md, \"9. Releases\"), then re-run this job."
+            if [ "$EVENT" = push ]; then echo "::error::$message"; exit 1; fi
+            echo "::warning::$message"
+          fi
+      - name: Platform images in the pushed index
+        id: platforms
+        env:
+          IMAGE: ${{ steps.names.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          docker buildx imagetools inspect --raw "$IMAGE@$DIGEST" >/tmp/index.json
+          for arch in amd64 arm64; do
+            digest="$(jq -r --arg arch "$arch" \
+              '.manifests[] | select(.platform.os == "linux" and .platform.architecture == $arch) | .digest' /tmp/index.json)"
+            if [ -z "$digest" ]; then echo "::error::the index has no linux/$arch image"; exit 1; fi
+            echo "$arch=$digest" >>"$GITHUB_OUTPUT"
+          done
+      # anchore/sbom-action writes output-file as it is given and does not create its folder.
+      - name: Folder for the SBOMs
+        run: mkdir -p sbom
+      # A third-party action that receives a token with `packages: write` (to read the image while the package is
+      # still private). Like every action here it is pinned to a commit, not to its moving major tag: v0.24.0, the
+      # commit `v0` named on 2026-10-11. Dependabot proposes newer releases as new commits (.github/dependabot.yml).
+      - name: SBOM of linux/amd64 (Syft, SPDX JSON)
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ${{ steps.names.outputs.image }}@${{ steps.platforms.outputs.amd64 }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          format: spdx-json
+          output-file: sbom/gcportrait-${{ steps.names.outputs.app_version }}-linux-amd64.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+      - name: SBOM of linux/arm64 (Syft, SPDX JSON)
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ${{ steps.names.outputs.image }}@${{ steps.platforms.outputs.arm64 }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          format: spdx-json
+          output-file: sbom/gcportrait-${{ steps.names.outputs.app_version }}-linux-arm64.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Keep the SBOMs for the release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: sbom/
+          if-no-files-found: error
+
+  github-release:
+    name: github-release
+    # Waits for the image, so a release never announces an image that failed to publish. Tags only.
+    needs: [build-and-test, publish-image]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # create the GitHub release and attach its assets
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sbom
+          path: sbom
+      - name: Release notes from the CHANGELOG.md files
+        env:
+          TAG: ${{ github.ref_name }}
+          IMAGE: ${{ needs.publish-image.outputs.image }}
+          DIGEST: ${{ needs.publish-image.outputs.digest }}
+          LATEST: ${{ needs.publish-image.outputs.latest }}
+        run: |
+          node scripts/release-notes.mjs --tag "$TAG" --image "$IMAGE" --digest "$DIGEST" --latest "$LATEST" \
+            >release-notes.md
+          cat release-notes.md
+      # The SBOMs, the deploy scripts infra/install.sh downloads, and checksums.txt over all of them, in one folder.
+      - name: Release assets (the SBOMs, the deploy scripts, checksums.txt)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir release-assets
+          cp sbom/*.spdx.json release-assets/
+          scripts/release-assets.sh --tag "$TAG" --out release-assets
+          (cd release-assets && sha256sum --check --strict checksums.txt)
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          LATEST: ${{ needs.publish-image.outputs.latest }}
+        run: |
+          flags=(--repo "$GITHUB_REPOSITORY" --verify-tag --title "gcportrait ${TAG#v}" --notes-file release-notes.md)
+          case "$TAG" in *-*) flags+=(--prerelease) ;; esac
+          if [ "$LATEST" != true ]; then flags+=(--latest=false); fi
+          gh release create "$TAG" "${flags[@]}" release-assets/*
+
+  website-build:
+    name: website-build
+    needs: build-and-test
+    # Tag pushes only (a run by hand publishes a `dev` image and no website), and only once the maintainer has set
+    # up Pages (docs/website.md): until then a release run neither builds nor checks the site.
+    if: github.event_name == 'push' && vars.PAGES_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          cache: 'false'
+      - name: Generated media up to date (docs/media/, `pnpm media --check`)
+        run: pnpm run media --check
+      - name: Build the static demo (dist/demo, for /demo/)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: pnpm run demo:static --app-version "${TAG#v}"
+      - name: Build the website (strict, with the demo at /demo/)
+        env:
+          WEBSITE_STRICT: '1'
+          WEBSITE_DEMO_DIST: dist/demo
+        run: pnpm run website:build
+      - name: Check the built site
+        run: pnpm run website:check
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: website/dist
+
+  website-deploy:
+    name: website-deploy
+    needs: website-build
+    # Tag pushes only, and only once the maintainer has set up Pages (docs/website.md).
+    if: github.event_name == 'push' && vars.PAGES_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write # deploy to GitHub Pages
+      id-token: write # prove the deployment's origin to Pages
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

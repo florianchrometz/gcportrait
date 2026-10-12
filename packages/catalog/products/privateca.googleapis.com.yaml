@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: MIT
+#
+# Certificate Authority Service: CA pools (containers), certificate authorities and their revocation
+# lists, issued certificates and certificate templates. The chain: a subordinate CA names its issuer, an issued
+# certificate its CA and template, a CA its Cloud KMS signing key and the bucket it publishes to. Certificate
+# Manager issuance configs and TLS inspection policies point at pools (load-balancing and networking groups).
+product: Certificate Authority Service
+service: privateca.googleapis.com
+icon: certificate_authority_service
+types:
+  privateca.googleapis.com/CaPool:
+    role: container
+    subtitle: 'CA pool · {{data.tier | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/security/cas/caPools?project={{projectId}}'
+    contains:
+      - byParent: privateca.googleapis.com/CertificateAuthority
+      - byParent: privateca.googleapis.com/Certificate
+      - byParent: privateca.googleapis.com/CertificateRevocationList
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionSpec.cloudKmsKey, normalize: kmsKey }
+    notes: >-
+      projects/<p>/locations/<l>/caPools/<id>. CAs, issued certificates and the CAs' revocation lists continue
+      the pool's name and nest in it (the seed's "certificates hidden above 20" is simplified to always hidden).
+      encryptionSpec.cloudKmsKey (projects/<p>/locations/<l>/keyRings/<r>/cryptoKeys/<k>, a symmetric key in
+      the pool's location) is the CMEK key that encrypts the subject, subject alternative names and PEM fields
+      of the pool's certificates at rest; it is in the v1 discovery document although the rendered REST page
+      leaves it out. The CAs' signing keys are a separate setting on each CA. The console link opens the pool
+      list (the deep link of a single pool is not verified).
+
+  privateca.googleapis.com/CertificateAuthority:
+    role: core
+    subtitle: '{{data.type | lower}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/security/cas/caPools?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.subordinateConfig.certificateAuthority, normalize: name }
+      - { kind: uses, to: $.data.keySpec.cloudKmsKeyVersion, normalize: kmsKey }
+      - { kind: uses, to: $.data.gcsBucket, normalize: gcsUri }
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      SELF_SIGNED (a root) or SUBORDINATE, whose subordinateConfig.certificateAuthority names the issuing CA in
+      CA Service (an external issuer is a PEM chain instead). keySpec.cloudKmsKeyVersion is the CA's signing
+      key version: drawn as uses to the key (the version is hidden) rather than the seed's encryptedBy, since
+      it signs and does not encrypt the CA; a Google-managed key (keySpec.algorithm) has no edge. gcsBucket is
+      the bucket the CA certificate and CRLs are published to. A deleted CA is kept for 30 days and starts
+      hidden.
+
+  privateca.googleapis.com/Certificate:
+    role: hidden
+    label: '{{data.certificateDescription.subjectDescription.subject.commonName}}'
+    subtitle: '{{data.issuerCertificateAuthority | lastSegment}}'
+    domains:
+      - '$.data.certificateDescription.subjectDescription.subjectAltName.dnsNames[*]'
+    ips:
+      - '$.data.certificateDescription.subjectDescription.subjectAltName.ipAddresses[*]'
+    relations:
+      - { kind: uses, to: $.data.issuerCertificateAuthority, normalize: name }
+      - { kind: uses, to: $.data.certificateTemplate, normalize: name }
+    notes: >-
+      Issued certificates: many per pool, so hidden and counted on the pool. The issuing CA and template are
+      relative names in this service; the subject alternative names give hosts and addresses.
+
+  privateca.googleapis.com/CertificateTemplate:
+    role: core
+    subtitle: '{{data.maximumLifetime}} · {{location}}'
+    console: 'https://console.cloud.google.com/security/cas/certificateTemplates?project={{projectId}}'
+    notes: >-
+      projects/<p>/locations/<l>/certificateTemplates/<id>, outside the pools; issued certificates point here.
+      Predefined values and identity constraints are inline. Being referenced makes it core (skill §3; the
+      seed lists it as a leaf). The console link shape is not verified.
+
+  privateca.googleapis.com/CertificateRevocationList:
+    role: hidden
+    label: '{{name | parentSegment(certificateAuthorities)}} CRL {{data.sequenceNumber}}'
+    subtitle: '{{data.state | lower}}'
+    notes: One per CA (…/certificateAuthorities/<ca>/certificateRevocationLists/<id>), nested in the pool.

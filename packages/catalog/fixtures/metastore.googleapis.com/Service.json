@@ -1,0 +1,61 @@
+[
+  {
+    "name": "//metastore.googleapis.com/projects/demo-data-1/locations/europe-west3/services/hive",
+    "assetType": "metastore.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/services/hive",
+      "uid": "d2000000-0000-4000-8000-000000000001",
+      "createTime": "2025-02-01T09:00:00Z",
+      "network": "projects/10000000001/global/networks/core",
+      "endpointUri": "thrift://10.20.0.5:9083",
+      "port": 9083,
+      "state": "ACTIVE",
+      "tier": "ENTERPRISE",
+      "artifactGcsUri": "gs://gcs-bucket-hive-d2000000-0000-4000-8000-000000000001/hive-warehouse",
+      "hiveMetastoreConfig": {
+        "version": "3.1.2",
+        "endpointProtocol": "THRIFT",
+        "kerberosConfig": {
+          "keytab": { "cloudSecret": "projects/10000000003/secrets/hive-keytab/versions/1" },
+          "principal": "hive/metastore@EXAMPLE.COM",
+          "krb5ConfigGcsUri": "gs://demo-data-1-kerberos/krb5.conf"
+        }
+      },
+      "encryptionConfig": {
+        "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/metastore"
+      },
+      "databaseType": "MYSQL",
+      "releaseChannel": "STABLE"
+    }
+  },
+  {
+    "name": "//metastore.googleapis.com/projects/demo-data-1/locations/europe-west3/services/hive-psc",
+    "assetType": "metastore.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/services/hive-psc",
+      "uid": "d2000000-0000-4000-8000-000000000002",
+      "networkConfig": {
+        "consumers": [
+          {
+            "subnetwork": "projects/10000000001/regions/europe-west3/subnetworks/app",
+            "endpointUri": "https://hive-psc-d2000000-dot-europe-west3.metastore.googleusercontent.com",
+            "endpointLocation": "projects/demo-data-1/locations/europe-west3"
+          }
+        ]
+      },
+      "endpointUri": "https://hive-psc-d2000000-dot-europe-west3.metastore.googleusercontent.com",
+      "state": "ACTIVE",
+      "tier": "DEVELOPER",
+      "hiveMetastoreConfig": { "version": "3.1.2", "endpointProtocol": "GRPC" },
+      "databaseType": "SPANNER"
+    }
+  }
+]

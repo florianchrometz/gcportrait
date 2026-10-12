@@ -1,0 +1,29 @@
+{
+  "name": "//oracledatabase.googleapis.com/projects/demo-data-1/locations/europe-west3/autonomousDatabases/reporting-adb",
+  "assetType": "oracledatabase.googleapis.com/AutonomousDatabase",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/autonomousDatabases/reporting-adb",
+    "database": "reporting",
+    "displayName": "Reporting",
+    "entitlementId": "a1b2c3d4-0000-4000-8000-000000000001",
+    "properties": {
+      "computeCount": 4,
+      "dataStorageSizeTb": 1,
+      "dbWorkload": "OLTP",
+      "dbEdition": "ENTERPRISE_EDITION",
+      "licenseType": "LICENSE_INCLUDED",
+      "state": "AVAILABLE",
+      "privateEndpointIp": "10.50.2.10"
+    },
+    "network": "projects/demo-net-1/global/networks/core",
+    "cidr": "10.50.2.0/24",
+    "peerAutonomousDatabases": [
+      "projects/demo-data-1/locations/europe-west1/autonomousDatabases/reporting-adb-standby"
+    ],
+    "createTime": "2025-06-01T09:00:00Z"
+  }
+}

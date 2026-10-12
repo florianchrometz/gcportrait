@@ -1,0 +1,85 @@
+/* SPDX-License-Identifier: MIT */
+
+/*
+ * Design tokens for the app chrome. Colours, focus ring and control metrics come verbatim from
+ * .agents/skills/gcp-diagram-style/SKILL.md §9, typography from §3. Component styles use these custom
+ * properties only, never raw colour values, so both themes stay in step.
+ *
+ * The theme is chosen by <html data-theme="light|dark">, which the bootstrap script in index.html sets
+ * before first paint (no flash of the wrong theme) and the ThemeProvider keeps current afterwards.
+ * Light is the fallback when the attribute is missing.
+ */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* §9 app chrome, light */
+  --color-primary: #1a73e8;
+  --color-on-primary: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-container: #f8f9fa;
+  --color-on-surface: #202124;
+  --color-on-surface-variant: #5f6368;
+  --color-outline: #dadce0;
+  --color-error: #d93025;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* §9 app chrome, dark */
+  --color-primary: #8ab4f8;
+  --color-on-primary: #062e6f;
+  --color-surface: #1f1f1f;
+  --color-surface-container: #303134;
+  --color-on-surface: #e8eaed;
+  --color-on-surface-variant: #9aa0a6;
+  --color-outline: #5f6368;
+  --color-error: #f28b82;
+}
+
+:root {
+  /*
+   * §3 typography. Google Sans is used only when the viewer's system has it installed: there is no
+   * @font-face for it. Roboto and Roboto Mono are self-hosted from the @fontsource packages (main.tsx);
+   * nothing is fetched from a font CDN at runtime (CSP, offline demo).
+   */
+  --font-family-sans: 'Google Sans', 'Google Sans Text', Roboto, system-ui, sans-serif;
+  --font-family-mono: 'Roboto Mono', ui-monospace, monospace;
+
+  /* §3 diagram sizes at scale 1 (used by the renderer). Nothing below 10.5 px. */
+  --font-size-zone-title: 15px;
+  --font-size-zone-title-deep: 13px;
+  --font-weight-zone-title: 500;
+  --font-size-card-title: 13px;
+  --font-weight-card-title: 700;
+  --font-size-card-subtitle: 10.5px;
+  --font-size-chip: 10.5px;
+  --font-size-legend: 11px;
+
+  /* App chrome type scale. Controls use 13 px (§9); the footnote matches the legend size. */
+  --font-size-control: 13px;
+  --font-size-body: 14px;
+  --font-size-footnote: 11px;
+  --font-size-title: 16px;
+  --font-size-headline: 22px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* §9 controls and focus ring: 2 px primary with a 2 px surface gap. */
+  --control-height: 32px;
+  --control-radius: 8px;
+  --focus-ring-width: 2px;
+  --focus-ring-gap: 2px;
+
+  /* Spacing scale (4 px grid) and chrome dimensions. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --drawer-width: 360px;
+}

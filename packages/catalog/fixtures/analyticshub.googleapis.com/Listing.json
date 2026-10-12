@@ -1,0 +1,43 @@
+[
+  {
+    "name": "//analyticshub.googleapis.com/projects/demo-data-1/locations/europe-west3/dataExchanges/sales_exchange/listings/sales",
+    "assetType": "analyticshub.googleapis.com/Listing",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/dataExchanges/sales_exchange/listings/sales",
+      "displayName": "Sales",
+      "primaryContact": "data-team@example.com",
+      "state": "ACTIVE",
+      "resourceType": "BIGQUERY_DATASET",
+      "categories": ["CATEGORY_RETAIL"],
+      "bigqueryDataset": {
+        "dataset": "projects/demo-data-1/datasets/sales",
+        "selectedResources": [{ "table": "projects/demo-data-1/datasets/sales/tables/orders" }]
+      },
+      "restrictedExportConfig": { "enabled": true, "restrictQueryResult": false },
+      "discoveryType": "DISCOVERY_TYPE_PRIVATE"
+    }
+  },
+  {
+    "name": "//analyticshub.googleapis.com/projects/demo-data-1/locations/europe-west3/dataExchanges/sales_exchange/listings/order_events",
+    "assetType": "analyticshub.googleapis.com/Listing",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/dataExchanges/sales_exchange/listings/order_events",
+      "displayName": "Order events",
+      "state": "ACTIVE",
+      "resourceType": "PUBSUB_TOPIC",
+      "pubsubTopic": {
+        "topic": "projects/demo-data-1/topics/order-events",
+        "dataAffinityRegions": ["europe-west3"]
+      },
+      "discoveryType": "DISCOVERY_TYPE_PRIVATE"
+    }
+  }
+]

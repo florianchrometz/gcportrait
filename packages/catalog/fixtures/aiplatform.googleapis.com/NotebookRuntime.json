@@ -1,0 +1,68 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/notebookRuntimes/2109983345566778899",
+    "assetType": "aiplatform.googleapis.com/NotebookRuntime",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/notebookRuntimes/2109983345566778899",
+      "runtimeUser": "analyst@example.com",
+      "notebookRuntimeTemplateRef": {
+        "notebookRuntimeTemplate": "projects/10000000003/locations/europe-west3/notebookRuntimeTemplates/private-e2"
+      },
+      "proxyUri": "https://2109983345566778899-dot-europe-west3.aiplatform-notebook.googleusercontent.com",
+      "createTime": "2026-09-30T08:00:00Z",
+      "updateTime": "2026-10-01T07:00:00Z",
+      "healthState": "HEALTHY",
+      "displayName": "analyst runtime",
+      "runtimeState": "RUNNING",
+      "isUpgradable": false,
+      "notebookRuntimeType": "USER_DEFINED",
+      "machineSpec": {
+        "machineType": "e2-standard-4"
+      },
+      "dataPersistentDiskSpec": {
+        "diskType": "pd-balanced",
+        "diskSizeGb": "100"
+      },
+      "networkSpec": {
+        "enableInternetAccess": false,
+        "network": "projects/demo-net-1/global/networks/core",
+        "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app"
+      },
+      "idleShutdownConfig": {
+        "idleTimeout": "10800s"
+      },
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      }
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/notebookRuntimes/2109983345566770000",
+    "assetType": "aiplatform.googleapis.com/NotebookRuntime",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/notebookRuntimes/2109983345566770000",
+      "runtimeUser": "scientist@example.com",
+      "notebookRuntimeTemplateRef": {
+        "notebookRuntimeTemplate": "projects/10000000003/locations/europe-west3/notebookRuntimeTemplates/private-e2"
+      },
+      "displayName": "idle runtime",
+      "runtimeState": "STOPPED",
+      "machineSpec": {
+        "machineType": "e2-standard-4"
+      },
+      "networkSpec": {
+        "network": "projects/demo-net-1/global/networks/core"
+      },
+      "createTime": "2026-09-10T08:00:00Z",
+      "updateTime": "2026-09-10T11:00:00Z"
+    }
+  }
+]

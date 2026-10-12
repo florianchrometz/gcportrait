@@ -1,0 +1,25 @@
+{
+  "name": "//file.googleapis.com/projects/10000000002/locations/europe-west3/backups/media-20260930",
+  "assetType": "file.googleapis.com/Backup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/backups/media-20260930",
+    "state": "READY",
+    "createTime": "2026-09-30T01:00:00Z",
+    "sourceInstance": "projects/10000000002/locations/europe-west3/instances/media",
+    "sourceFileShare": "media",
+    "sourceInstanceTier": "REGIONAL",
+    "capacityGb": "1024",
+    "storageBytes": "214748364800",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/filestore",
+    "fileSystemProtocol": "NFS_V4_1"
+  }
+}

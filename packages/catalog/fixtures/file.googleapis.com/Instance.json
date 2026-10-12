@@ -1,0 +1,71 @@
+[
+  {
+    "name": "//file.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/media",
+    "assetType": "file.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/instances/media",
+      "state": "READY",
+      "createTime": "2024-07-01T09:00:00Z",
+      "tier": "REGIONAL",
+      "protocol": "NFS_V4_1",
+      "fileShares": [{ "name": "media", "capacityGb": "1024" }],
+      "networks": [
+        {
+          "network": "projects/demo-net-1/global/networks/core",
+          "modes": ["MODE_IPV4"],
+          "reservedIpRange": "10.20.6.0/26",
+          "ipAddresses": ["10.20.6.2"],
+          "connectMode": "DIRECT_PEERING"
+        }
+      ],
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/filestore",
+      "replication": {
+        "role": "ACTIVE",
+        "replicas": [{ "peerInstance": "projects/demo-app-1/locations/europe-west1/instances/media-dr" }]
+      },
+      "deletionProtectionEnabled": true
+    }
+  },
+  {
+    "name": "//file.googleapis.com/projects/demo-app-1/locations/europe-west1/instances/media-dr",
+    "assetType": "file.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west1",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west1/instances/media-dr",
+      "state": "READY",
+      "tier": "REGIONAL",
+      "protocol": "NFS_V4_1",
+      "fileShares": [{ "name": "media", "capacityGb": "1024" }],
+      "networks": [
+        {
+          "network": "app",
+          "modes": ["MODE_IPV4"],
+          "reservedIpRange": "google-managed-services-app",
+          "ipAddresses": ["10.40.8.2"],
+          "connectMode": "PRIVATE_SERVICE_ACCESS"
+        }
+      ],
+      "replication": {
+        "role": "STANDBY",
+        "replicas": [{ "peerInstance": "projects/demo-app-1/locations/europe-west3/instances/media" }]
+      }
+    }
+  }
+]

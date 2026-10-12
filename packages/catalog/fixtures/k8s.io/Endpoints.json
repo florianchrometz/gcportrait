@@ -1,0 +1,45 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/endpoints/checkout",
+  "assetType": "k8s.io/Endpoints",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "v1",
+    "kind": "Endpoints",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000107",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "checkout",
+      "namespace": "shop"
+    },
+    "subsets": [
+      {
+        "addresses": [
+          {
+            "ip": "10.20.1.14",
+            "nodeName": "gke-shop-default-pool-1a2b3c4d-x7k9",
+            "targetRef": {
+              "kind": "Pod",
+              "namespace": "shop",
+              "name": "checkout-5c7f9d8b6-m4n7q"
+            }
+          }
+        ],
+        "ports": [
+          {
+            "name": "http",
+            "port": 8080,
+            "protocol": "TCP"
+          }
+        ]
+      }
+    ]
+  }
+}

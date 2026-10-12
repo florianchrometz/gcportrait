@@ -1,0 +1,154 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/apps/replicasets/frontend-7d9c6b5f4",
+    "assetType": "apps.k8s.io/ReplicaSet",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "apps/v1",
+      "kind": "ReplicaSet",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000118",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "frontend-7d9c6b5f4",
+        "namespace": "shop",
+        "labels": {
+          "app": "frontend",
+          "pod-template-hash": "7d9c6b5f4"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "14"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "frontend",
+            "uid": "00000000-0000-4000-8000-000000000117",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "replicas": 3,
+        "selector": {
+          "matchLabels": {
+            "app": "frontend",
+            "pod-template-hash": "7d9c6b5f4"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "frontend"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "frontend",
+            "containers": [
+              {
+                "name": "frontend",
+                "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/frontend:2.3.1",
+                "ports": [
+                  {
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "replicas": 3,
+        "fullyLabeledReplicas": 3,
+        "readyReplicas": 3,
+        "availableReplicas": 3
+      }
+    }
+  },
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/apps/replicasets/frontend-5f8b7c9d6",
+    "assetType": "apps.k8s.io/ReplicaSet",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "apps/v1",
+      "kind": "ReplicaSet",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000120",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "frontend-5f8b7c9d6",
+        "namespace": "shop",
+        "labels": {
+          "app": "frontend",
+          "pod-template-hash": "5f8b7c9d6"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "13"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "frontend",
+            "uid": "00000000-0000-4000-8000-000000000119",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "replicas": 0,
+        "selector": {
+          "matchLabels": {
+            "app": "frontend",
+            "pod-template-hash": "5f8b7c9d6"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "frontend"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "frontend",
+            "containers": [
+              {
+                "name": "frontend",
+                "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/frontend:2.3.0",
+                "ports": [
+                  {
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "replicas": 0,
+        "observedGeneration": 4
+      }
+    }
+  }
+]

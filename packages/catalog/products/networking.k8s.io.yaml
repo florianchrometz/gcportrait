@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: MIT
+#
+# Kubernetes networking objects (networking.k8s.io/v1) of GKE clusters with the asset inventory feature on.
+# They nest in their namespace by name path.
+product: Google Kubernetes Engine
+service: networking.k8s.io
+icon: google_kubernetes_engine
+types:
+  networking.k8s.io/Ingress:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.rules[0].host}}'
+    console: 'https://console.cloud.google.com/kubernetes/ingress/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/details?project={{projectId}}'
+    ips:
+      - '$.data.status.loadBalancer.ingress[*].ip'
+    domains:
+      - '$.data.spec.rules[*].host'
+      - '$.data.spec.tls[*].hosts[*]'
+    relations:
+      - {
+          kind: routes,
+          to: '$.data.spec.rules[*].http.paths[*].backend.service.name',
+          normalize: k8sRef,
+          k8sKind: Service,
+        }
+      - { kind: routes, to: $.data.spec.defaultBackend.service.name, normalize: k8sRef, k8sKind: Service }
+    notes: >-
+      Backends name services by bare name in the ingress's namespace, read with k8sRef: the ingress
+      routes to them. GKE's ingress controller writes the load balancer it creates into annotations
+      (ingress.kubernetes.io/forwarding-rule, https-forwarding-rule, url-map, target-proxy) as bare Compute
+      names in the cluster's project; those edges are not drawn yet (catalog follow-ups). Its load-balancer
+      address and hosts are indexed.
+
+  networking.k8s.io/NetworkPolicy:
+    role: leaf
+    label: '{{data.metadata.name}}'
+    subtitle: 'network policy · {{data.spec.policyTypes[0]}}'

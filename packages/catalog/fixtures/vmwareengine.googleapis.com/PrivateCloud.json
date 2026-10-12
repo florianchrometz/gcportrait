@@ -1,0 +1,50 @@
+{
+  "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/europe-west3-a/privateClouds/pc-1",
+  "assetType": "vmwareengine.googleapis.com/PrivateCloud",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3-a/privateClouds/pc-1",
+    "state": "ACTIVE",
+    "type": "STANDARD",
+    "uid": "e0000000-0000-4000-8000-000000000001",
+    "networkConfig": {
+      "managementCidr": "10.40.0.0/22",
+      "vmwareEngineNetwork": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+      "vmwareEngineNetworkCanonical": "projects/10000000005/locations/global/vmwareEngineNetworks/vmware-net",
+      "dnsServerIp": "10.40.0.8"
+    },
+    "managementCluster": {
+      "clusterId": "mgmt",
+      "nodeTypeConfigs": {
+        "standard-72": {
+          "nodeCount": 3
+        }
+      }
+    },
+    "vcenter": {
+      "internalIp": "10.40.0.6",
+      "fqdn": "vcsa-1.pc-1.example.org",
+      "version": "8.0",
+      "state": "ACTIVE"
+    },
+    "nsx": {
+      "internalIp": "10.40.0.11",
+      "fqdn": "nsx-1.pc-1.example.org",
+      "version": "4.1",
+      "state": "ACTIVE"
+    },
+    "hcx": {
+      "internalIp": "10.40.0.13",
+      "fqdn": "hcx-1.pc-1.example.org",
+      "version": "4.9",
+      "state": "ACTIVE"
+    },
+    "encryptionConfig": {
+      "type": "CMEK",
+      "cryptoKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vmware"
+    }
+  }
+}

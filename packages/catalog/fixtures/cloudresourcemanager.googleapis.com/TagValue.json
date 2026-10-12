@@ -1,0 +1,18 @@
+{
+  "name": "//cloudresourcemanager.googleapis.com/tagValues/40000000011",
+  "assetType": "cloudresourcemanager.googleapis.com/TagValue",
+  "parent": "//cloudresourcemanager.googleapis.com/tagKeys/40000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "tagValues/40000000011",
+    "parent": "tagKeys/40000000001",
+    "shortName": "prod",
+    "namespacedName": "30000000001/env/prod",
+    "description": "Production workloads",
+    "createTime": "2023-01-01T00:00:00Z",
+    "updateTime": "2023-01-01T00:00:00Z",
+    "etag": "BwYAAAAAAAE="
+  }
+}

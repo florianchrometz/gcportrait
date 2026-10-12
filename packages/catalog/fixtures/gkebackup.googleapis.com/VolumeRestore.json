@@ -1,0 +1,24 @@
+{
+  "name": "//gkebackup.googleapis.com/projects/demo-app-1/locations/europe-west3/restorePlans/shop-to-autopilot/restores/drill-2026-09/volumeRestores/data-cart-cache-0",
+  "assetType": "gkebackup.googleapis.com/VolumeRestore",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/restorePlans/shop-to-autopilot/restores/drill-2026-09/volumeRestores/data-cart-cache-0",
+    "uid": "00000000-0000-4000-8000-000000000169",
+    "volumeBackup": "projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily/backups/shop-daily-20260915/volumeBackups/pvc-3f1c2b7a",
+    "targetPvc": {
+      "namespace": "shop",
+      "name": "data-cart-cache-0"
+    },
+    "volumeType": "GCE_PERSISTENT_DISK",
+    "state": "SUCCEEDED"
+  }
+}

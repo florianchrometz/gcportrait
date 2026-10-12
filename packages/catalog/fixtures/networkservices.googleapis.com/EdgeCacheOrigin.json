@@ -1,0 +1,53 @@
+[
+  {
+    "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/edgeCacheOrigins/media-bucket",
+    "assetType": "networkservices.googleapis.com/EdgeCacheOrigin",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/edgeCacheOrigins/media-bucket",
+      "originAddress": "gs://demo-app-1-media",
+      "protocol": "HTTPS",
+      "port": 443,
+      "maxAttempts": 2,
+      "failoverOrigin": "projects/demo-app-1/locations/global/edgeCacheOrigins/media-fallback",
+      "retryConditions": ["CONNECT_FAILURE", "NOT_FOUND"],
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/edgeCacheOrigins/media-fallback",
+    "assetType": "networkservices.googleapis.com/EdgeCacheOrigin",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/edgeCacheOrigins/media-fallback",
+      "description": "S3-compatible archive behind a host name",
+      "originAddress": "media-archive.example.com",
+      "protocol": "HTTPS",
+      "port": 443,
+      "awsV4Authentication": {
+        "accessKeyId": "DEMOACCESSKEY0000001",
+        "secretAccessKeyVersion": "projects/10000000002/secrets/media-archive-key/versions/3",
+        "originRegion": "eu-central-1"
+      },
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  }
+]

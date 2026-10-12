@@ -1,0 +1,9 @@
+{
+  // Node-side code of the package: the `generate` command and the tests that compare the committed fixtures.
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "outDir": "../node_modules/.tmp/tsc-scripts"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }]
+}

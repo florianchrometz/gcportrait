@@ -1,0 +1,89 @@
+[
+  {
+    "name": "//apikeys.googleapis.com/projects/10000000002/locations/global/keys/7d1c3e5a-2b4f-4a6c-9e8d-0f1a2b3c4d5e",
+    "assetType": "apikeys.googleapis.com/Key",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/keys/7d1c3e5a-2b4f-4a6c-9e8d-0f1a2b3c4d5e",
+      "uid": "7d1c3e5a-2b4f-4a6c-9e8d-0f1a2b3c4d5e",
+      "displayName": "Shop maps (browser)",
+      "createTime": "2025-02-10T09:00:00Z",
+      "updateTime": "2025-02-10T09:00:00Z",
+      "restrictions": {
+        "browserKeyRestrictions": {
+          "allowedReferrers": ["https://shop.example.com/*", "*.shop.example.com/*"]
+        },
+        "apiTargets": [
+          {
+            "service": "maps-backend.googleapis.com"
+          }
+        ]
+      },
+      "etag": "W/\"1739178000\""
+    }
+  },
+  {
+    "name": "//apikeys.googleapis.com/projects/10000000002/locations/global/keys/8e2d4f6b-3c5a-4b7d-8f9e-1a2b3c4d5e6f",
+    "assetType": "apikeys.googleapis.com/Key",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/keys/8e2d4f6b-3c5a-4b7d-8f9e-1a2b3c4d5e6f",
+      "uid": "8e2d4f6b-3c5a-4b7d-8f9e-1a2b3c4d5e6f",
+      "displayName": "Orders backend (server)",
+      "createTime": "2025-05-20T09:00:00Z",
+      "updateTime": "2026-01-12T09:00:00Z",
+      "restrictions": {
+        "serverKeyRestrictions": {
+          "allowedIps": ["203.0.113.40", "10.20.0.0/16"]
+        },
+        "apiTargets": [
+          {
+            "service": "translate.googleapis.com",
+            "methods": ["Translate*"]
+          }
+        ]
+      },
+      "serviceAccountEmail": "orders-api@demo-app-1.iam.gserviceaccount.com",
+      "etag": "W/\"1736672400\""
+    }
+  },
+  {
+    "name": "//apikeys.googleapis.com/projects/10000000002/locations/global/keys/9f3e5a7c-4d6b-4c8e-9a0f-2b3c4d5e6f70",
+    "assetType": "apikeys.googleapis.com/Key",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-20T09:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/keys/9f3e5a7c-4d6b-4c8e-9a0f-2b3c4d5e6f70",
+      "uid": "9f3e5a7c-4d6b-4c8e-9a0f-2b3c4d5e6f70",
+      "displayName": "Old prototype",
+      "createTime": "2023-08-01T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "deleteTime": "2026-09-20T09:00:00Z",
+      "restrictions": {},
+      "etag": "W/\"1758358800\""
+    }
+  }
+]

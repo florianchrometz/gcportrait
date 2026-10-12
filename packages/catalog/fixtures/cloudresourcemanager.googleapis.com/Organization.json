@@ -1,0 +1,15 @@
+{
+  "name": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "assetType": "cloudresourcemanager.googleapis.com/Organization",
+  "ancestors": ["organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001",
+    "displayName": "example.com",
+    "owner": {
+      "directoryCustomerId": "C00000000"
+    },
+    "creationTime": "2020-01-15T09:00:00Z",
+    "lifecycleState": "ACTIVE"
+  }
+}

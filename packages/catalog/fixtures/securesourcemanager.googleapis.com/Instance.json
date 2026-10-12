@@ -1,0 +1,36 @@
+{
+  "name": "//securesourcemanager.googleapis.com/projects/demo-ops-1/locations/europe-west3/instances/shop-source",
+  "assetType": "securesourcemanager.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/instances/shop-source",
+    "createTime": "2026-01-10T09:00:00Z",
+    "updateTime": "2026-01-10T09:40:00Z",
+    "labels": {
+      "team": "platform"
+    },
+    "privateConfig": {
+      "isPrivate": true,
+      "caPool": "projects/demo-sec-1/locations/europe-west3/caPools/source-tls",
+      "httpServiceAttachment": "projects/a1b2c3d4e5f6-tp/regions/europe-west3/serviceAttachments/ssm-shop-source-http",
+      "sshServiceAttachment": "projects/a1b2c3d4e5f6-tp/regions/europe-west3/serviceAttachments/ssm-shop-source-ssh",
+      "customHostConfig": {
+        "html": "source.example.com",
+        "api": "source-api.example.com",
+        "gitHttp": "source-git.example.com",
+        "gitSsh": "source-ssh.example.com"
+      }
+    },
+    "state": "ACTIVE",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/source",
+    "hostConfig": {
+      "html": "shop-source-html.source.example.com",
+      "api": "shop-source-api.source.example.com",
+      "gitHttp": "shop-source-git.source.example.com",
+      "gitSsh": "shop-source-ssh.source.example.com"
+    }
+  }
+}

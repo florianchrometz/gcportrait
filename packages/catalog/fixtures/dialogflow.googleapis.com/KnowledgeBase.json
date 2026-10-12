@@ -1,0 +1,18 @@
+{
+  "name": "//dialogflow.googleapis.com/projects/demo-app-1/locations/global/knowledgeBases/MTIzNDU2Nzg5MDEyMzQ1Njc4OQ",
+  "assetType": "dialogflow.googleapis.com/KnowledgeBase",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/knowledgeBases/MTIzNDU2Nzg5MDEyMzQ1Njc4OQ",
+    "displayName": "Returns policy FAQ",
+    "languageCode": "en"
+  }
+}

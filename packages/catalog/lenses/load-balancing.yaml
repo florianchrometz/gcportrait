@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: MIT
+#
+# The Load balancing lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# The lens lists the ends of the chain's `uses` and `secures` edges (mesh and Secure Web Proxy policies, CA
+# pools, Service Directory services, public DNS zones), the Kubernetes and Cloud Run front ends that hold
+# load-balancer addresses and host names, and Apigee, which fronts APIs from a Google tenant network.
+title: Load balancing
+description: >-
+  Traffic paths from forwarding rules through proxies, URL maps and backend services to instance groups,
+  network endpoint groups, buckets and serverless backends, with certificates and edge security.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  # The load-balancing chain
+  - 'compute.googleapis.com/ForwardingRule'
+  - 'compute.googleapis.com/GlobalForwardingRule'
+  - 'compute.googleapis.com/TargetHttpProxy'
+  - 'compute.googleapis.com/TargetHttpsProxy'
+  - 'compute.googleapis.com/TargetGrpcProxy'
+  - 'compute.googleapis.com/TargetSslProxy'
+  - 'compute.googleapis.com/TargetTcpProxy'
+  - 'compute.googleapis.com/TargetPool'
+  - 'compute.googleapis.com/TargetInstance'
+  - 'compute.googleapis.com/UrlMap'
+  - 'compute.googleapis.com/BackendService'
+  - 'compute.googleapis.com/RegionBackendService'
+  - 'compute.googleapis.com/BackendBucket'
+  - 'compute.googleapis.com/NetworkEndpointGroup'
+  - 'compute.googleapis.com/HealthCheck'
+  - 'compute.googleapis.com/HttpHealthCheck'
+  - 'compute.googleapis.com/HttpsHealthCheck'
+  - 'compute.googleapis.com/SslCertificate'
+  - 'compute.googleapis.com/SslPolicy'
+  - 'compute.googleapis.com/SecurityPolicy'
+  - 'compute.googleapis.com/NetworkEdgeSecurityService'
+  - 'compute.googleapis.com/InstanceGroup'
+  - 'compute.googleapis.com/InstanceGroupManager'
+  - 'compute.googleapis.com/Autoscaler'
+  - 'compute.googleapis.com/Instance'
+  - 'compute.googleapis.com/Address'
+  - 'compute.googleapis.com/GlobalAddress'
+  - 'compute.googleapis.com/PublicDelegatedPrefix'
+  - 'compute.googleapis.com/ServiceAttachment'
+  - 'certificatemanager.googleapis.com/*'
+  - 'privateca.googleapis.com/CaPool'
+  - 'networkservices.googleapis.com/*'
+  - 'servicedirectory.googleapis.com/Service'
+  # Mesh and Secure Web Proxy policies, Cloud Load Balancing authorization policies
+  - 'networksecurity.googleapis.com/AuthzPolicy'
+  - 'networksecurity.googleapis.com/AuthorizationPolicy'
+  - 'networksecurity.googleapis.com/ServerTlsPolicy'
+  - 'networksecurity.googleapis.com/ClientTlsPolicy'
+  - 'networksecurity.googleapis.com/GatewaySecurityPolicy'
+  - 'networksecurity.googleapis.com/UrlList'
+  # API front doors, domains and DNS
+  - 'apigateway.googleapis.com/*'
+  - 'apigee.googleapis.com/Organization'
+  - 'apigee.googleapis.com/Environment'
+  - 'apigee.googleapis.com/Instance'
+  - 'domains.googleapis.com/*'
+  - 'dns.googleapis.com/ManagedZone'
+  # Backends and front ends of other products
+  - 'run.googleapis.com/Service'
+  - 'run.googleapis.com/DomainMapping'
+  - 'cloudfunctions.googleapis.com/Function'
+  - 'cloudfunctions.googleapis.com/CloudFunction'
+  - 'appengine.googleapis.com/Service'
+  - 'storage.googleapis.com/Bucket'
+  - 'networking.k8s.io/Ingress'
+  - 'gateway.networking.k8s.io/Gateway'
+  - 'gateway.networking.k8s.io/HTTPRoute'
+relationKinds: [contains, routes, uses, attaches, secures, memberOf]
+showHidden: false
+defaultDetail: all

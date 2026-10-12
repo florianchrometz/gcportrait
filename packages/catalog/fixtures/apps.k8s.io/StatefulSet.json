@@ -1,0 +1,79 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/apps/statefulsets/cart-cache",
+  "assetType": "apps.k8s.io/StatefulSet",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "apps/v1",
+    "kind": "StatefulSet",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000121",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "cart-cache",
+      "namespace": "shop",
+      "labels": {
+        "app": "cart-cache"
+      }
+    },
+    "spec": {
+      "replicas": 3,
+      "serviceName": "cart-cache",
+      "selector": {
+        "matchLabels": {
+          "app": "cart-cache"
+        }
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "cart-cache"
+          }
+        },
+        "spec": {
+          "serviceAccountName": "cart-cache",
+          "containers": [
+            {
+              "name": "cart-cache",
+              "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/cart-cache:7.2.4",
+              "ports": [
+                {
+                  "containerPort": 8080,
+                  "protocol": "TCP"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "volumeClaimTemplates": [
+        {
+          "metadata": {
+            "name": "data"
+          },
+          "spec": {
+            "accessModes": ["ReadWriteOnce"],
+            "storageClassName": "standard-rwo-cmek",
+            "resources": {
+              "requests": {
+                "storage": "10Gi"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "status": {
+      "replicas": 3,
+      "readyReplicas": 3,
+      "currentReplicas": 3,
+      "updatedReplicas": 3
+    }
+  }
+}

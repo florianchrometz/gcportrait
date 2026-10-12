@@ -1,0 +1,34 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/rbac.authorization.k8s.io/clusterrolebindings/shop-reader-oncall",
+  "assetType": "rbac.authorization.k8s.io/ClusterRoleBinding",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "rbac.authorization.k8s.io/v1",
+    "kind": "ClusterRoleBinding",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000137",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "shop-reader-oncall"
+    },
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "ClusterRole",
+      "name": "shop-reader"
+    },
+    "subjects": [
+      {
+        "kind": "Group",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "oncall@example.com"
+      }
+    ]
+  }
+}

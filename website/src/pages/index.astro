@@ -1,0 +1,901 @@
+---
+/**
+ * The landing page: gcportrait as Google Cloud architecture diagrams you
+ * self-host, use as a web app and drive through an API. The hero names the three and offers "Try the demo" (the
+ * sign-in-free demo), "Self-host" and "Use the API"; then the three ways, each with its proof (the deploy command, a
+ * still of the app and the demo, a render request with the sample export it returns) and its guide; the features, each
+ * marked with the way it serves (the last one: the light and the dark theme side by side), the sample exports, how it
+ * works, self-hosting in 10 minutes, the service-account grant, questions, the author.
+ *
+ * Its commands are fillable as the docs pages' are (docs/website.md, "Fillable commands"): rendered by the same
+ * functions of src/lib/markdown.ts, with the Variables panel and its script after the grant command, and the values
+ * shared with the docs pages.
+ */
+import { commandVariable, type CommandVariable } from '@gcportrait/model';
+
+import Base from '../layouts/Base.astro';
+import DemoLink from '../components/DemoLink.astro';
+import DemoVideo from '../components/DemoVideo.astro';
+import ExportCard from '../components/ExportCard.astro';
+import ThemedPicture from '../components/ThemedPicture.astro';
+import Variables from '../components/Variables.astro';
+import { authorSection } from '../lib/author.js';
+import { coverageReport, percent, totals } from '../lib/coverage.js';
+import { renderedDocs } from '../lib/docs.js';
+import { sampleExports } from '../lib/exports.js';
+import { renderCommandBlock, renderInlineCode } from '../lib/markdown.js';
+import { scene, socialImage, still } from '../lib/media.js';
+import { personLd, softwareApplicationLd, sourceCodeLd } from '../lib/seo.js';
+import { CLOUD_RUN_BUTTON_URL, CLOUD_SHELL_URL, IMAGE, INSTALL_COMMAND } from '../site.js';
+
+const author = authorSection();
+const report = coverageReport();
+const numbers = totals();
+const docs = renderedDocs();
+const faq = docs.find((doc) => doc.slug === 'faq');
+// The FAQ teaser: the questions on running your own, the data and the cost first, then the catalog, the 35 days and who
+// makes gcportrait. A question the FAQ no longer has is left out; the FAQ's other questions fill up to six.
+const TEASER_QUESTIONS = [
+  'Is there a hosted gcportrait I can sign in to?',
+  'Does my data leave the browser?',
+  'What does reading my environment cost?',
+  'What happens with an asset type gcportrait does not know?',
+  'Why only 35 days?',
+  'Is gcportrait made by Google?',
+];
+const allQuestions = (faq?.headings ?? []).filter((heading) => heading.text.endsWith('?'));
+const questions = [
+  ...TEASER_QUESTIONS.flatMap((text) => allQuestions.filter((heading) => heading.text === text)),
+  ...allQuestions.filter((heading) => !TEASER_QUESTIONS.includes(heading.text)),
+].slice(0, 6);
+const permissions = docs.find((doc) => doc.slug === 'permissions');
+const grantAnchor = permissions?.headings.find((heading) => /service account/i.test(heading.text) && heading.depth === 2);
+
+const hero = scene('trace');
+const heroStill = still('hero');
+const media = {
+  lenses: scene('lenses'),
+  trace: still('trace'),
+  drillIn: scene('drill-in'),
+  timeline: scene('timeline'),
+  search: scene('search'),
+  export: still('export'),
+  snapshots: still('snapshots'),
+  drawer: still('drawer'),
+};
+
+// The landing page's teaser shows the whole-organisation samples, one per demo size; /exports/ has them all.
+const samples = sampleExports();
+const exportTeaser = samples.filter((sample) => sample.lens === 'overview' && sample.focus === undefined);
+// What the API pillar's request returns: demo S's overview in the light theme, the sample export of the same name
+// (`pnpm render` draws both, and the route answers with the same bytes; docs/api.md).
+const apiSample = samples.find((sample) => sample.id === 'S-overview')?.themes.find((item) => item.theme === 'light');
+
+// The three ways in plain words, as the README's lead and the structured data (src/lib/seo.ts) say them.
+const description =
+  'Google Cloud architecture diagrams from Cloud Asset Inventory: self-hosted on Cloud Run, explored in a web app, ' +
+  'rendered as SVG, PNG or draw.io through an API.';
+
+const meta = {
+  title: 'Google Cloud diagrams: self-hosted, web app, API',
+  description,
+  path: '/',
+  socialImage: socialImage('home', 'gcportrait: a portrait of your Google Cloud environment, with a diagram of the demo organisation'),
+  jsonLd: [
+    softwareApplicationLd({ author: author ?? undefined, ...(heroStill === undefined ? {} : { screenshot: new URL(heroStill.light.src, 'https://gcportrait.app').href }) }),
+    sourceCodeLd(),
+    ...(author === null ? [] : [personLd(author)]),
+  ],
+};
+
+// The quick start of docs/self-host.md, the installer line (src/site.ts, INSTALL_COMMAND), and the project grant of
+// docs/permissions.md, one short line each where they can be, so the blocks fit their column. Where the column is
+// narrower they wrap; on a phone they scroll sideways instead (a shell command broken at a hyphen reads as two), which
+// is why they are keyboard-focusable too.
+const deployScript = INSTALL_COMMAND;
+const deployCommands = ['gcloud auth login', INSTALL_COMMAND].join('\n');
+// The render API's request for demo organisation S (docs/api.md, POST /api/render): your instance, and your own token
+// as gcloud prints it, so the command runs as copied and no token is typed into the page.
+const renderCommand = [
+  'TOKEN=$(gcloud auth print-access-token)',
+  'curl -s -H "X-Gcportrait-Token: $TOKEN" -OJ \\',
+  `  --json '{"source":{"kind":"demo","size":"S"}}' \\`,
+  '  https://YOUR_INSTANCE/api/render',
+].join('\n');
+const grantCommand = [
+  'gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \\',
+  '  --member="serviceAccount:YOUR_SA_EMAIL" \\',
+  '  --role="roles/cloudasset.viewer"',
+].join('\n');
+// Fields in the commands, as on the docs pages; the self-host pillar's command, the page's first with fields, carries
+// the hint.
+const deployScriptBlock = renderCommandBlock(deployScript, { id: 'deploy-script', label: 'Install command', wrap: true, hint: true });
+const renderBlock = renderCommandBlock(renderCommand, { id: 'render', label: 'Render API request', wrap: true });
+const deployBlock = renderCommandBlock(deployCommands, { id: 'deploy', label: 'Deploy commands', wrap: true });
+const dryRunCode = renderInlineCode('--dry-run');
+const grantBlock = renderCommandBlock(grantCommand, { id: 'grant', label: 'Service-account grant command', wrap: true });
+const commandVariables = [
+  ...new Set([deployScriptBlock, renderBlock, deployBlock, dryRunCode, grantBlock].flatMap((part) => part.variables)),
+]
+  .map((name) => commandVariable(name))
+  .filter((variable): variable is CommandVariable => variable !== undefined);
+const fmt = (value: number): string => value.toLocaleString('en-GB');
+// The width a feature's picture is shown at, for the browser to pick the 720 or the 1440 pixel WebP: half the page
+// (minus the column gap) from 49rem, where the features become two columns, else the page less its side padding.
+// On a phone that is about 280 to 390 CSS pixels, so a 2× screen takes the 720 file and a 3× one the 1440 file.
+const FEATURE_SIZES = '(min-width: 72rem) 33.5rem, (min-width: 49rem) calc(50vw - 2.5rem), calc(100vw - 2.5rem)';
+// The light and the dark picture of "Light and dark", side by side from 40rem (half the page each), stacked below.
+const PAIR_SIZES = '(min-width: 72rem) 34rem, (min-width: 40rem) calc(50vw - 2rem), calc(100vw - 2.5rem)';
+// A pillar's picture: half the card (less its padding and the column gap) from 49rem, where its text and its proof
+// stand side by side, else the page less its padding and the card's.
+const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4.5rem), calc(100vw - 5rem)';
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<Base meta={meta}>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Open source · MIT · Self-hosted on Cloud Run</p>
+      <h1>Google Cloud architecture diagrams you host, explore and script</h1>
+      <p class="lead">
+        gcportrait draws a Google Cloud organisation, folder or project from Cloud Asset Inventory, every box a real
+        asset and every arrow a real reference: self-hosted in your own Google Cloud project with one script, explored
+        in a web app, and rendered as SVG, PNG or draw.io through an API, without opening the app.
+      </p>
+      <div class="button-row">
+        <DemoLink class="button button-primary">Try the demo</DemoLink>
+        <a class="button" href="/docs/self-host/">Self-host</a>
+        <a class="button" href="/docs/api/">Use the API</a>
+      </div>
+      <p class="muted small">
+        The demo needs no sign-in: it draws synthetic organisations generated in your browser.
+      </p>
+      {
+        hero !== undefined && (
+          <figure class="hero-media shot">
+            <DemoVideo video={hero} eager />
+          </figure>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section pillars" aria-labelledby="ways">
+    <div class="container">
+      <p class="eyebrow">Self-hosted · Web app · API</p>
+      <h2 id="ways">Three ways to use gcportrait</h2>
+      <p class="lead">
+        One instance in your project serves the web app and the API, and both produce the same drawing: what the app
+        exports is what the API renders.
+      </p>
+      <ul class="pillars-list">
+        <li class="card pillar">
+          <div class="pillar-text">
+            <p class="pillar-name">Self-hosted</p>
+            <h3>In your own Google Cloud project</h3>
+            <p>
+              One line deploys gcportrait as a single Cloud Run service: no database, no stored token, and your
+              inventory never passes through anyone else’s server. It asks for your project id and nothing else; you
+              are signed in with <code>gcloud auth login</code>.
+            </p>
+            <p class="pillar-link"><a href="/docs/self-host/">Self-host in 10 minutes</a></p>
+          </div>
+          <div class="pillar-proof">
+            <Fragment set:html={deployScriptBlock.html} />
+            <dl class="pillar-facts">
+              <div>
+                <dt>1 line</dt>
+                <dd>a release, checked against its checksums, deployed to your project</dd>
+              </div>
+              <div>
+                <dt>about 10 min</dt>
+                <dd>to “Sign in with Google”, the OAuth client included</dd>
+              </div>
+            </dl>
+          </div>
+        </li>
+        <li class="card pillar">
+          <div class="pillar-text">
+            <p class="pillar-name">Web app</p>
+            <h3>Explore it in your browser</h3>
+            <p>
+              Sign in with your Google account and pick an organisation, folder or project, or load an export file:
+              lenses, search, a details drawer, the 35-day timeline and SVG, PNG or draw.io export, with your snapshots
+              kept in your browser.
+            </p>
+            <p class="pillar-link">
+              <DemoLink class="button button-primary">Try the demo</DemoLink>
+            </p>
+            <p class="muted small">No sign-in: four synthetic organisations, generated in your browser.</p>
+          </div>
+          {
+            media.drawer !== undefined && (
+              <figure class="pillar-proof shot">
+                <ThemedPicture image={media.drawer} sizes={PILLAR_SIZES} />
+              </figure>
+            )
+          }
+        </li>
+        <li class="card pillar">
+          <div class="pillar-text">
+            <p class="pillar-name">API</p>
+            <h3>Rendered exports without the UI</h3>
+            <p>
+              Your instance answers <code>POST /api/render</code> with an SVG, a PNG or a draw.io file of any view, from
+              a live scope, an export file, a saved snapshot or a demo organisation, for scripts, docs and reviews. The
+              request carries your own Google token, as <code>gcloud auth print-access-token</code> prints it.
+            </p>
+            <p class="pillar-link"><a href="/docs/api/">The API guide</a></p>
+          </div>
+          <div class="pillar-proof">
+            <Fragment set:html={renderBlock.html} />
+            {
+              apiSample !== undefined && (
+                <figure class="api-sample">
+                  <div class="shot">
+                    <img
+                      src={apiSample.preview.src}
+                      srcset={apiSample.preview.srcset}
+                      sizes={PILLAR_SIZES}
+                      width={apiSample.preview.width}
+                      height={apiSample.preview.height}
+                      alt="What the request returns: the synthetic demo organisation S in the Overview lens, light theme, with its title block and legend."
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <figcaption>
+                    What it returns: demo S’s overview as a {fmt(apiSample.png.width)} × {fmt(apiSample.png.height)}
+                    PNG, the same file as the sample export
+                    (<a href={apiSample.png.url} download={apiSample.png.downloadName} data-export="png">download, {apiSample.png.size}</a>).
+                  </figcaption>
+                </figure>
+              )
+            }
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section-alt" aria-labelledby="features">
+    <div class="container">
+      <p class="eyebrow">Features</p>
+      <h2 id="features">What the web app shows, and the API draws</h2>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app · API</p>
+          <h3>Google Cloud-style diagrams from real data</h3>
+          <p>
+            Nested zones for folders, projects, VPC networks, subnetworks and clusters, Google’s product icons, and
+            orthogonal arrows routed through the gaps between them. {`${fmt(numbers.mapped)} of the ${fmt(report.officialTotal)} asset types Cloud Asset Inventory lists`} are
+            described in the catalog
+            (<a href="/coverage/">coverage</a>).
+          </p>
+        </div>
+        {heroStill !== undefined && <figure class="shot"><ThemedPicture image={heroStill} sizes={FEATURE_SIZES} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app · API</p>
+          <h3>Lenses, focus and filters</h3>
+          <p>
+            {numbers.lenses} lenses redraw the same organisation: the overview, everything, and one for each question:
+            networking, load balancing, compute, serverless, Kubernetes, data, security, identity, operations. Focus on
+            a project, a Shared VPC or a perimeter; filter by region, project, folder, type and depth. The API takes the
+            same view.{' '}
+            <a href="/docs/lenses-and-filters/">Lenses and filters</a>
+          </p>
+        </div>
+        {media.lenses !== undefined && <figure class="shot"><DemoVideo video={media.lenses} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app</p>
+          <h3>Click to trace</h3>
+          <p>
+            Hover a resource and its path to the top of the organisation lights up; click it and its connections stay
+            traced, the whole chain behind a load balancer included. The details drawer lists its facts and relations,
+            and “Open in Cloud Console” opens its console page when you choose it.
+          </p>
+        </div>
+        {media.trace !== undefined && <figure class="shot"><ThemedPicture image={media.trace} sizes={FEATURE_SIZES} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app</p>
+          <h3>Drill in, expand, search</h3>
+          <p>
+            Large organisations open collapsed: a click on a chip expands it in place, a double-click on a project or
+            folder makes it the whole canvas. Search finds any asset by name, IP address, domain or project id and
+            takes you to it.
+          </p>
+        </div>
+        {media.drillIn !== undefined && <figure class="shot"><DemoVideo video={media.drillIn} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app · API</p>
+          <h3>A 35-day timeline</h3>
+          <p>
+            Daily ticks over the last 35 days, read from Cloud Asset Inventory when you stop on one and kept in your
+            browser. Exports and manual pulls appear as extra ticks, and the API draws any of those days.{' '}
+            <a href="/docs/timeline/">The timeline</a>
+          </p>
+        </div>
+        {media.timeline !== undefined && <figure class="shot"><DemoVideo video={media.timeline} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app · API</p>
+          <h3>Export SVG, PNG and draw.io</h3>
+          <p>
+            Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file that diagrams.net and draw.io open as an
+            editable diagram looking like the picture: the whole diagram or the visible part, in either theme, with a
+            title block, a legend and the date it shows. Every view is also a link, and your instance’s API renders the
+            same files for scripts.{' '}
+            <a href="/docs/export/">Export</a> · <a href="/docs/api/">API</a>
+          </p>
+        </div>
+        {media.export !== undefined && <figure class="shot"><ThemedPicture image={media.export} sizes={FEATURE_SIZES} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app</p>
+          <h3>A demo mode, no account needed</h3>
+          <p>
+            Four synthetic organisations, from about 100 to about 50 000 assets with a 35-day history, generated in
+            your browser. Try every feature before you deploy anything.{' '}
+            <DemoLink>Open the demo</DemoLink>
+          </p>
+        </div>
+        {media.search !== undefined && <figure class="shot"><DemoVideo video={media.search} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Self-hosted · Web app</p>
+          <h3>Your data stays in your browser</h3>
+          <p>
+            Snapshots are stored in your browser and leave it only as files you export. The backend on your instance is
+            stateless: it streams what Cloud Asset Inventory returns to your browser and keeps nothing; your sign-in
+            token stays in the tab’s memory.
+          </p>
+        </div>
+        {media.snapshots !== undefined && <figure class="shot"><ThemedPicture image={media.snapshots} sizes={FEATURE_SIZES} /></figure>}
+      </article>
+
+      {
+        heroStill !== undefined && (
+          <article class="feature feature-wide">
+            <div class="feature-text">
+              <p class="feature-tag">Web app · API</p>
+              <h3>Light and dark</h3>
+              <p>
+                Every view in a light and a dark theme, with the same layout, the same tints and Google’s product icons
+                unchanged. The app follows your system or the theme you pick, and an export, from the app or the API,
+                is drawn in the theme you choose, whatever the screen shows. Both pictures are demo S in the Overview
+                lens.
+              </p>
+            </div>
+            <div class="theme-pair">
+              <figure class="theme-shot">
+                <div class="shot">
+                  <img
+                    src={heroStill.light.src}
+                    srcset={heroStill.light.srcset}
+                    sizes={PAIR_SIZES}
+                    width={heroStill.width}
+                    height={heroStill.height}
+                    alt="The light theme: demo organisation S in the Overview lens on a white canvas, with light blue project zones, pale green and yellow network tints, dark text and Google Cloud product icons."
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <figcaption>Light</figcaption>
+              </figure>
+              <figure class="theme-shot">
+                <div class="shot">
+                  <img
+                    src={heroStill.dark.src}
+                    srcset={heroStill.dark.srcset}
+                    sizes={PAIR_SIZES}
+                    width={heroStill.width}
+                    height={heroStill.height}
+                    alt="The dark theme: the same view of demo organisation S on a near-black canvas, with deep blue project zones, dark green and olive network tints, light text and the same product icons."
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <figcaption>Dark</figcaption>
+              </figure>
+            </div>
+          </article>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    exportTeaser.length > 0 && (
+      <section class="section section-alt exports-section" aria-labelledby="sample-exports">
+        <div class="container">
+          <p class="eyebrow">Sample exports</p>
+          <h2 id="sample-exports">See an export before you deploy</h2>
+          <p class="lead">
+            These are SVG, PNG and draw.io exports of the synthetic demo organisations, exactly as the Export menu writes
+            them and the API returns them: the diagram with its title block and its legend, in the light and the dark
+            theme. Open a draw.io file in diagrams.net to move, restyle and annotate what it shows.
+          </p>
+          <ul class="exports-teaser" aria-label="Sample exports">
+            {exportTeaser.map((sample) => (
+              <li>
+                <ExportCard sample={sample} />
+              </li>
+            ))}
+          </ul>
+          <p>
+            <a href="/exports/">All sample exports</a>, with a focused Networking view and the commands that made them.
+          </p>
+          <p class="muted small">
+            The SVGs name the Roboto fonts without embedding them (the Export menu’s “Embed fonts” option puts them in),
+            so where Roboto is not installed their labels may reflow; the PNGs are always drawn with Roboto. The draw.io
+            files name Google Fonts’ Roboto stylesheet, which diagrams.net loads when it opens them.
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section" aria-labelledby="how">
+    <div class="container">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how">From Cloud Asset Inventory to a diagram</h2>
+      <p class="lead">
+        The same pipeline draws every diagram: in your browser for the web app, on your instance for the API.
+      </p>
+      <ol class="steps">
+        <li class="step step-cai">
+          <h3>Cloud Asset Inventory</h3>
+          <p>
+            Your instance lists the scope’s assets with your own Google account or its service account, or you load a
+            Cloud Asset Inventory export file.
+          </p>
+        </li>
+        <li class="step step-snapshot">
+          <h3>Snapshot</h3>
+          <p>
+            The assets become a snapshot: kept in your browser for the web app, with the timeline’s days as you visit
+            them; built for each request and kept nowhere for the API.
+          </p>
+        </li>
+        <li class="step step-graph">
+          <h3>Graph</h3>
+          <p>
+            The asset catalog, data for {fmt(numbers.mapped)} asset types, turns references into relations: networks,
+            Shared VPC, load balancer chains.
+          </p>
+        </li>
+        <li class="step step-diagram">
+          <h3>Diagram</h3>
+          <p>
+            A layout engine packs the nested zones and routes the arrows: you explore, trace and export it in the web
+            app, or the API returns it as SVG, PNG or draw.io.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section-alt" aria-labelledby="self-host">
+    <div class="container two-col">
+      <div>
+        <p class="eyebrow">Self-host</p>
+        <h2 id="self-host">Self-host in 10 minutes</h2>
+        <p>
+          gcportrait runs as one Cloud Run service in a Google Cloud project of yours, serving the web app and the API.
+          The installer downloads the newest release’s deploy scripts, checks them against the release’s checksums
+          and runs them: they enable the Google Cloud APIs the instance needs, create its service account without
+          roles and deploy the release’s image from GitHub Container Registry
+          (<code class="code-long">{IMAGE}</code>). They end with the next steps: open the address, where the demo
+          works at once; create the OAuth client for “Sign in with Google” with the link and the origins they print;
+          redeploy with its id.
+        </p>
+        <div class="button-row">
+          <a class="button button-primary" href="/docs/self-host/">Read the guide</a>
+        </div>
+      </div>
+      <div>
+        <Fragment set:html={deployBlock.html} />
+        <p class="muted small">
+          <Fragment set:html={dryRunCode.html} /> at the end prints every change first; the last lines name the command that
+          removes everything the script created.
+        </p>
+        <div class="alternatives">
+          <p class="small">Other ways to start:</p>
+          <div class="button-row">
+            <a class="button" href={CLOUD_SHELL_URL}>Open in Cloud Shell</a>
+          </div>
+          <p class="muted small">Guided: a tutorial in Cloud Shell, in your browser, takes you through the same steps.</p>
+          <div class="button-row">
+            <a class="button" href={CLOUD_RUN_BUTTON_URL}>Run on Google Cloud</a>
+          </div>
+          <p class="muted small">
+            Built from source: Google’s Cloud Run Button builds the image in Cloud Shell and deploys it, with fewer
+            choices than the installer.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="grant">
+    <div class="container two-col">
+      <div>
+        <p class="eyebrow">For teams</p>
+        <h2 id="grant">Grant the service account</h2>
+        <p>
+          In service-account mode, someone who may grant roles grants the instance’s service account read access to a
+          folder or project once; everyone who can see that scope then reads it through the instance, without Cloud
+          Asset Inventory roles of their own. A gate first checks each person’s own access to the scope.
+        </p>
+        <p><a href={`/docs/permissions/${grantAnchor === undefined ? '' : `#${grantAnchor.id}`}`}>Permissions and the service-account grant</a></p>
+      </div>
+      <div>
+        <Fragment set:html={grantBlock.html} />
+        <p class="muted small">
+          <code>roles/cloudasset.viewer</code> and nothing else; prefer folders or projects to the whole organisation.
+        </p>
+      </div>
+    </div>
+    {
+      commandVariables.length > 0 && (
+        <div class="container landing-variables">
+          <Variables variables={commandVariables} headingLevel={3} />
+        </div>
+      )
+    }
+  </section>
+
+  {
+    questions.length > 0 && (
+      <section class="section section-alt" aria-labelledby="faq">
+        <div class="container">
+          <p class="eyebrow">Questions</p>
+          <h2 id="faq">Frequently asked</h2>
+          <p class="lead">
+            Running your own instance, where your data goes, what a read costs: short answers, each with its guide. For
+            scripts, start with the <a href="/docs/api/">API guide</a>.
+          </p>
+          <ul class="faq-list">
+            {questions.map((question) => (
+              <li>
+                <a href={`/docs/faq/#${question.id}`}>{question.text}</a>
+              </li>
+            ))}
+          </ul>
+          <p>
+            <a href="/docs/faq/">All questions</a>
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    author !== null && (
+      <section class="section" aria-labelledby="author">
+        <div class="container author">
+          <p class="eyebrow">The author</p>
+          <h2 id="author">{author.heading}</h2>
+          <div class="prose" set:html={author.html} />
+          <ul class="author-links">
+            <li>
+              <a href={author.url}>{new URL(author.url).host}</a>
+            </li>
+            {author.sameAs.map((link) => (
+              <li>
+                <a href={link}>{new URL(link).host + new URL(link).pathname.replace(/\/$/, '')}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section-alt cta" aria-labelledby="try">
+    <div class="container">
+      <h2 id="try">See your own environment</h2>
+      <p class="lead">
+        Try the web app in the demo now, deploy gcportrait to your own Google Cloud project when you are ready, and
+        script its diagrams through the API.
+      </p>
+      <div class="button-row">
+        <DemoLink class="button button-primary">Try the demo</DemoLink>
+        <a class="button" href="/docs/getting-started/">Getting started</a>
+        <a class="button" href="/docs/api/">The API guide</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding-block: clamp(2.5rem, 6vw, 5rem) 1rem;
+    background: linear-gradient(180deg, var(--color-bg-alt), var(--color-bg) 70%);
+  }
+  .hero h1 {
+    margin-top: 0;
+    max-width: 24ch;
+    font-size: clamp(2.25rem, 1.5rem + 3.2vw, 3.75rem);
+  }
+  .hero-media {
+    margin-top: 2rem;
+  }
+  .small {
+    font-size: 0.875rem;
+  }
+  /* The self-host section's other ways to start, below the installer: each button with its line, close together. */
+  .alternatives {
+    margin-top: 1.5rem;
+  }
+  .alternatives .button-row {
+    margin: 0.5rem 0 0.25rem;
+  }
+  .alternatives p {
+    margin: 0.25rem 0 0.75rem;
+  }
+  /*
+   * The three ways: a card each, the text beside its proof (a command and two short facts, a still, a request and
+   * its answer), stacked on a narrow screen.
+   */
+  .pillars-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .pillar {
+    display: grid;
+    gap: 1.25rem 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    align-items: center;
+    padding: 1.5rem;
+  }
+  .pillar-text,
+  .pillar-proof {
+    min-width: 0;
+  }
+  .pillar h3 {
+    margin: 0 0 0.5rem;
+  }
+  .pillar-text p {
+    color: var(--color-text-muted);
+  }
+  .pillar-text > p:last-child {
+    margin-bottom: 0;
+  }
+  .pillar .pillar-name {
+    margin: 0 0 0.25rem;
+    color: var(--color-link);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pillar-text .pillar-link {
+    color: var(--color-text);
+  }
+  /* The command blocks come from src/lib/markdown.ts (set:html), outside this page's scope. */
+  .pillar :global(.code-block) {
+    margin: 0;
+  }
+  .pillar-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 0.75rem 1.5rem;
+    margin: 1.25rem 0 0;
+  }
+  .pillar-facts dt {
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .pillar-facts dd {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  .api-sample {
+    margin-top: 1rem;
+  }
+  .api-sample figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .feature .feature-tag {
+    margin: 0 0 0.5rem;
+    color: var(--color-link);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .feature {
+    display: grid;
+    gap: 1.5rem 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    align-items: center;
+    padding-block: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .feature:first-of-type {
+    border-top: 0;
+  }
+  .feature:nth-of-type(even) .feature-text {
+    order: 2;
+  }
+  .feature h3 {
+    margin-top: 0;
+  }
+  .feature p {
+    color: var(--color-text-muted);
+  }
+  .feature figure {
+    min-width: 0;
+  }
+  /* "Light and dark": the text above, the two themes of the same picture side by side (stacked on a phone). */
+  .feature-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .feature.feature-wide .feature-text {
+    order: 0;
+    max-width: var(--text-width);
+  }
+  .theme-pair {
+    display: grid;
+    gap: 1.25rem 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 40rem) {
+    .theme-pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .theme-shot figcaption {
+    font-weight: 500;
+    color: var(--color-text);
+  }
+  /* On the features' background, below them: a line between the two. */
+  .exports-section {
+    border-top: 1px solid var(--color-border);
+  }
+  .exports-teaser {
+    list-style: none;
+    margin: 1.5rem 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+  }
+  .exports-teaser > li {
+    min-width: 0;
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    counter-reset: step;
+  }
+  .step {
+    counter-increment: step;
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+  }
+  .step::before {
+    content: counter(step);
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    font-weight: 500;
+  }
+  .step h3 {
+    margin: 0.75rem 0 0.5rem;
+  }
+  .step p {
+    margin: 0;
+  }
+  .step-cai {
+    background: var(--color-tint-folder);
+  }
+  .step-snapshot {
+    background: var(--color-tint-subnet);
+  }
+  .step-graph {
+    background: var(--color-tint-vpc);
+  }
+  .step-diagram {
+    background: var(--color-tint-project);
+  }
+  .two-col {
+    display: grid;
+    gap: 1.5rem 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    align-items: start;
+  }
+  /* The command blocks come from src/lib/markdown.ts (set:html), outside this page's scope. */
+  .two-col :global(.code-block) {
+    margin: 0 0 0.75rem;
+  }
+  .landing-variables {
+    margin-top: 2rem;
+  }
+  .faq-list {
+    columns: 2 20rem;
+    column-gap: 2.5rem;
+    padding-left: 1.25rem;
+  }
+  .faq-list li {
+    break-inside: avoid;
+    margin-bottom: 0.5rem;
+  }
+  .author-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    list-style: none;
+    padding: 0;
+  }
+  /* One column (below 49rem): every feature reads heading first, then its picture or demo. */
+  @media (max-width: 48.99rem) {
+    .feature:nth-of-type(even) .feature-text {
+      order: 0;
+    }
+    .feature {
+      padding-block: 1.5rem;
+    }
+  }
+  /*
+   * Phones: the command blocks keep their lines and scroll inside their box; the question and profile links are
+   * 44-pixel-high targets.
+   */
+  @media (max-width: 40rem) {
+    .two-col :global(pre.wrap),
+    .pillar :global(pre.wrap) {
+      white-space: pre;
+      overflow-wrap: normal;
+    }
+    .faq-list li {
+      margin-bottom: 0;
+    }
+    .faq-list a {
+      display: block;
+      padding-block: 0.6rem;
+    }
+    .author-links a {
+      display: inline-block;
+      padding-block: 0.6rem;
+    }
+    .author-links {
+      gap: 0 1.5rem;
+    }
+  }
+  .cta h2 {
+    margin-top: 0;
+  }
+</style>

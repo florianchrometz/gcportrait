@@ -1,0 +1,14 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "assetType": "bigtableadmin.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events",
+    "displayName": "Events",
+    "state": "READY",
+    "type": "PRODUCTION",
+    "createTime": "2024-05-01T09:00:00Z"
+  }
+}

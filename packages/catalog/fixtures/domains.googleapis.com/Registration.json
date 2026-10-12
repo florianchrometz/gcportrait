@@ -1,0 +1,87 @@
+[
+  {
+    "name": "//domains.googleapis.com/projects/demo-app-1/locations/global/registrations/example.org",
+    "assetType": "domains.googleapis.com/Registration",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/registrations/example.org",
+      "domainName": "example.org",
+      "state": "ACTIVE",
+      "createTime": "2025-01-12T08:00:00Z",
+      "expireTime": "2027-01-12T08:00:00Z",
+      "managementSettings": {
+        "renewalMethod": "AUTOMATIC_RENEWAL",
+        "preferredRenewalMethod": "AUTOMATIC_RENEWAL",
+        "transferLockState": "LOCKED",
+        "effectiveTransferLockState": "LOCKED"
+      },
+      "dnsSettings": {
+        "customDns": {
+          "nameServers": ["ns-cloud-a1.googledomains.com", "ns-cloud-a2.googledomains.com"]
+        }
+      },
+      "contactSettings": {
+        "privacy": "REDACTED_CONTACT_DATA",
+        "registrantContact": {
+          "email": "domains@example.com",
+          "phoneNumber": "+1.5555550100",
+          "postalAddress": {
+            "regionCode": "US",
+            "postalCode": "00000",
+            "locality": "Example City",
+            "addressLines": ["1 Example Street"],
+            "organization": "Example Inc."
+          }
+        }
+      },
+      "supportedPrivacy": ["REDACTED_CONTACT_DATA", "PUBLIC_CONTACT_DATA"]
+    }
+  },
+  {
+    "name": "//domains.googleapis.com/projects/demo-app-1/locations/global/registrations/example.net",
+    "assetType": "domains.googleapis.com/Registration",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/registrations/example.net",
+      "domainName": "example.net",
+      "state": "EXPIRED",
+      "createTime": "2023-05-02T08:00:00Z",
+      "expireTime": "2026-05-02T08:00:00Z",
+      "managementSettings": {
+        "renewalMethod": "RENEWAL_DISABLED",
+        "transferLockState": "UNLOCKED"
+      },
+      "contactSettings": {
+        "privacy": "REDACTED_CONTACT_DATA",
+        "registrantContact": {
+          "email": "domains@example.com",
+          "phoneNumber": "+1.5555550100",
+          "postalAddress": {
+            "regionCode": "US",
+            "postalCode": "00000",
+            "locality": "Example City",
+            "addressLines": ["1 Example Street"],
+            "organization": "Example Inc."
+          }
+        }
+      },
+      "issues": ["UNVERIFIED_EMAIL"]
+    }
+  }
+]

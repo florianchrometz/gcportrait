@@ -1,0 +1,16 @@
+{
+  "name": "//metastore.googleapis.com/projects/demo-data-1/locations/europe-west3/services/hive/metadataImports/initial-load",
+  "assetType": "metastore.googleapis.com/MetadataImport",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2025-02-02T09:30:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/services/hive/metadataImports/initial-load",
+    "description": "initial load from the on-premises metastore",
+    "createTime": "2025-02-02T09:00:00Z",
+    "endTime": "2025-02-02T09:30:00Z",
+    "state": "SUCCEEDED",
+    "databaseDump": { "gcsUri": "gs://demo-data-1-migration/hive/dump.sql", "type": "MYSQL" }
+  }
+}

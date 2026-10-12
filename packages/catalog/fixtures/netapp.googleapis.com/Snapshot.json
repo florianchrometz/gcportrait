@@ -1,0 +1,14 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/volumes/shared-home/snapshots/hourly-2026100107",
+  "assetType": "netapp.googleapis.com/Snapshot",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/volumes/shared-home/snapshots/hourly-2026100107",
+    "state": "READY",
+    "usedBytes": 52428800,
+    "createTime": "2026-10-01T07:00:00Z"
+  }
+}

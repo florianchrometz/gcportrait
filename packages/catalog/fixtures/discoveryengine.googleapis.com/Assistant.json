@@ -1,0 +1,32 @@
+{
+  "name": "//discoveryengine.googleapis.com/projects/10000000002/locations/eu/collections/default_collection/engines/support-assistant/assistants/default_assistant",
+  "assetType": "discoveryengine.googleapis.com/Assistant",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "eu",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/eu/collections/default_collection/engines/support-assistant/assistants/default_assistant",
+    "displayName": "Default assistant",
+    "generationConfig": {
+      "defaultModelId": "gemini-2.5-flash",
+      "allowedModelIds": ["gemini-2.5-flash", "gemini-2.5-pro"],
+      "defaultLanguage": "en"
+    },
+    "webGroundingType": "WEB_GROUNDING_TYPE_DISABLED",
+    "customerPolicy": {
+      "modelArmorConfig": {
+        "userPromptTemplate": "projects/demo-sec-1/locations/eu/templates/assistant-prompts",
+        "responseTemplate": "projects/demo-sec-1/locations/eu/templates/assistant-responses",
+        "failureMode": "FAIL_CLOSED"
+      }
+    },
+    "createTime": "2026-02-03T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z"
+  }
+}

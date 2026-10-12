@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: MIT
+#
+# Datastream: change-data-capture streams. A stream reads a source connection profile and writes to a
+# destination one; a profile reaches a private database through a private connection, which peers with a VPC
+# network or attaches to it through a Private Service Connect interface (stream → profile → private
+# connection → VPC).
+product: Datastream
+service: datastream.googleapis.com
+icon: datastream
+types:
+  datastream.googleapis.com/Stream:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}}'
+    console: 'https://console.cloud.google.com/datastream/streams/locations/{{location}}/instances/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.sourceConfig.sourceConnectionProfile, normalize: name }
+      - { kind: uses, to: $.data.destinationConfig.destinationConnectionProfile, normalize: name }
+      - {
+          kind: uses,
+          to: $.data.destinationConfig.bigqueryDestinationConfig.singleTargetDataset.datasetId,
+          normalize: bigqueryUri,
+        }
+      - {
+          kind: uses,
+          to: $.data.destinationConfig.bigqueryDestinationConfig.blmtConfig.bucket,
+          normalize: gcsUri,
+        }
+      - { kind: encryptedBy, to: $.data.customerManagedEncryptionKey, normalize: kmsKey }
+    notes: >-
+      singleTargetDataset.datasetId names the BigQuery dataset all tables go to (project:dataset or a
+      projects/<p>/datasets/<d> path); with sourceHierarchyDatasets the stream creates one dataset per source
+      schema from a template instead, which is not drawn. blmtConfig writes BigLake Iceberg tables into a
+      bucket. A Cloud Storage destination's bucket is on the destination profile (gcsProfile.bucket).
+
+  datastream.googleapis.com/ConnectionProfile:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'connection profile · {{location}}'
+    console: 'https://console.cloud.google.com/datastream/connection-profiles/locations/{{location}}/instances/{{name | lastSegment}}?project={{projectId}}'
+    ips:
+      - $.data.*.hostname
+      - '$.data.mongodbProfile.hostAddresses[*].hostname'
+    domains:
+      - $.data.*.hostname
+      - '$.data.mongodbProfile.hostAddresses[*].hostname'
+      - $.data.salesforceProfile.domain
+    relations:
+      - { kind: uses, to: $.data.privateConnectivity.privateConnection, normalize: name }
+      - { kind: uses, to: $.data.gcsProfile.bucket, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.*.secretManagerStoredPassword,
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      One of mysqlProfile, postgresqlProfile, oracleProfile, sqlServerProfile, mongodbProfile,
+      salesforceProfile, gcsProfile or bigqueryProfile is set; its hostname is an address or a host name (read
+      as both, the invalid reading is dropped), and forwardSshConnectivity.hostname is the SSH bastion. A
+      database's hostname is not matched to a Cloud SQL or AlloyDB asset here. Connectivity is static IP
+      allow-listing, a forward SSH tunnel, or a private connection.
+
+  datastream.googleapis.com/PrivateConnection:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.vpcPeeringConfig.subnet}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/datastream/private-connections/locations/{{location}}/instances/{{name | lastSegment}}?project={{projectId}}'
+    ips:
+      - $.data.vpcPeeringConfig.subnet
+    relations:
+      - { kind: attaches, to: $.data.vpcPeeringConfig.vpc, normalize: computeRelative }
+      - { kind: attaches, to: $.data.pscInterfaceConfig.networkAttachment, normalize: computeRelative }
+    notes: >-
+      vpcPeeringConfig peers the Datastream tenant network with vpc using a free /29 range (subnet);
+      pscInterfaceConfig instead attaches through a Compute network attachment.

@@ -1,0 +1,40 @@
+{
+  "name": "@gcportrait/render-cli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gcportrait headless renderer command line: `pnpm render` draws a demo view as the app draws it through @gcportrait/render (the frontend’s SVG components rendered without a browser, rasterised with resvg-wasm); byte-stable PNG and SVG for screenshots, visual goldens and agents’ self-checks.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "prelint": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "lint": "eslint . --max-warnings=0",
+    "pretypecheck": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "typecheck": "tsc -b",
+    "pretest": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test": "vitest run",
+    "pretest:golden:update": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test:golden:update": "RENDER_UPDATE_GOLDEN=1 vitest run test/golden.test.ts",
+    "prerender": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "render": "tsx --tsconfig ../../frontend/tsconfig.json src/cli.ts"
+  },
+  "dependencies": {
+    "@gcportrait/demo-data": "workspace:*",
+    "@gcportrait/graph": "workspace:*",
+    "@gcportrait/model": "workspace:*",
+    "@gcportrait/render": "workspace:*",
+    "pixelmatch": "7.2.0",
+    "pngjs": "7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/pngjs": "6.0.5",
+    "tsx": "^4.23.15"
+  }
+}

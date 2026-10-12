@@ -1,0 +1,20 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/metadataStores/default",
+  "assetType": "aiplatform.googleapis.com/MetadataStore",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/metadataStores/default",
+    "createTime": "2026-03-03T08:00:00Z",
+    "updateTime": "2026-03-03T08:00:00Z",
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    },
+    "description": "Default metadata store",
+    "state": {
+      "diskUtilizationBytes": "52428800"
+    }
+  }
+}

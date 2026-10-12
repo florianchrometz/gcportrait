@@ -1,0 +1,19 @@
+{
+  "name": "//monitoring.googleapis.com/projects/10000000005/snoozes/6000000000000000001",
+  "assetType": "monitoring.googleapis.com/Snooze",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000005/snoozes/6000000000000000001",
+    "displayName": "Database maintenance window",
+    "criteria": {
+      "policies": ["projects/10000000005/alertPolicies/3000000000000000001"]
+    },
+    "interval": {
+      "startTime": "2026-10-10T01:00:00Z",
+      "endTime": "2026-10-10T03:00:00Z"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  // Preset for code that runs on Node 22 (backend/, e2e/, repo tooling) and for shared packages under
+  // packages/. NodeNext resolution requires explicit `.js` extensions on relative imports, which keeps the
+  // shared packages consumable by both the bundler-resolved SPA and the Node backend. Shared packages
+  // override `types` back to [] so they cannot reach for Node APIs (pure cores, agents.md rule 9).
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"]
+  }
+}

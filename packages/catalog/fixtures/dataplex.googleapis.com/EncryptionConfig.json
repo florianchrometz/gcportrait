@@ -1,0 +1,15 @@
+{
+  "name": "//dataplex.googleapis.com/organizations/30000000001/locations/europe-west3/encryptionConfigs/default",
+  "assetType": "dataplex.googleapis.com/EncryptionConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/europe-west3/encryptionConfigs/default",
+    "key": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/catalog",
+    "encryptionState": "COMPLETED",
+    "enableMetastoreEncryption": true,
+    "createTime": "2026-02-01T09:00:00Z"
+  }
+}

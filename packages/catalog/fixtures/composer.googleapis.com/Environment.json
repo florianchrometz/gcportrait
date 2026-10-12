@@ -1,0 +1,73 @@
+[
+  {
+    "name": "//composer.googleapis.com/projects/demo-data-1/locations/europe-west3/environments/orchestration",
+    "assetType": "composer.googleapis.com/Environment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/environments/orchestration",
+      "uuid": "d3000000-0000-4000-8000-000000000001",
+      "state": "RUNNING",
+      "createTime": "2025-04-01T09:00:00Z",
+      "updateTime": "2026-09-01T09:00:00Z",
+      "storageConfig": { "bucket": "europe-west3-orchestration-d3000000-bucket" },
+      "config": {
+        "gkeCluster": "projects/demo-data-1/locations/europe-west3/clusters/europe-west3-orchestration-d3000000-gke",
+        "dagGcsPrefix": "gs://europe-west3-orchestration-d3000000-bucket/dags",
+        "softwareConfig": {
+          "imageVersion": "composer-2.9.7-airflow-2.9.3",
+          "pythonVersion": "3"
+        },
+        "nodeConfig": {
+          "network": "projects/demo-net-1/global/networks/core",
+          "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "serviceAccount": "composer-env@demo-data-1.iam.gserviceaccount.com",
+          "ipAllocationPolicy": {
+            "useIpAliases": true,
+            "clusterSecondaryRangeName": "composer-pods",
+            "servicesSecondaryRangeName": "composer-services"
+          }
+        },
+        "privateEnvironmentConfig": {
+          "enablePrivateEnvironment": true,
+          "privateClusterConfig": { "enablePrivateEndpoint": true, "masterIpv4CidrBlock": "172.16.32.0/28" },
+          "webServerIpv4CidrBlock": "172.16.32.16/28",
+          "cloudSqlIpv4CidrBlock": "10.250.0.0/16",
+          "cloudComposerNetworkIpv4CidrBlock": "172.16.33.0/24"
+        },
+        "encryptionConfig": {
+          "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/composer"
+        },
+        "environmentSize": "ENVIRONMENT_SIZE_SMALL",
+        "airflowUri": "https://d3000000a1b2c3d4-dot-europe-west3.composer.googleusercontent.com",
+        "airflowByoidUri": "https://d3000000a1b2c3d4-dot-europe-west3.composer.byoid.googleusercontent.com"
+      }
+    }
+  },
+  {
+    "name": "//composer.googleapis.com/projects/demo-data-1/locations/europe-west3/environments/orchestration-v3",
+    "assetType": "composer.googleapis.com/Environment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/environments/orchestration-v3",
+      "uuid": "d3000000-0000-4000-8000-000000000002",
+      "state": "RUNNING",
+      "config": {
+        "dagGcsPrefix": "gs://europe-west3-orchestration-v3-d3000000-bucket/dags",
+        "softwareConfig": { "imageVersion": "composer-3-airflow-2.10.5" },
+        "nodeConfig": {
+          "composerNetworkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/psc-if-ml",
+          "composerInternalIpv4CidrBlock": "172.31.128.0/20",
+          "serviceAccount": "composer-env@demo-data-1.iam.gserviceaccount.com"
+        },
+        "privateEnvironmentConfig": { "enablePrivateEnvironment": true },
+        "airflowUri": "https://d3000000e5f60718-dot-europe-west3.composer.googleusercontent.com"
+      }
+    }
+  }
+]

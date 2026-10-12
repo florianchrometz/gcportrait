@@ -1,0 +1,45 @@
+[
+  {
+    "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001/servicePerimeters/data_perimeter",
+    "assetType": "identity.accesscontextmanager.googleapis.com/ServicePerimeter",
+    "parent": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-08-20T14:30:00Z",
+    "data": {
+      "name": "accessPolicies/40000000001/servicePerimeters/data_perimeter",
+      "title": "data_perimeter",
+      "description": "Keeps customer data inside the application and analytics projects",
+      "perimeterType": "PERIMETER_TYPE_REGULAR",
+      "status": {
+        "resources": [
+          "projects/10000000002",
+          "projects/10000000003",
+          "//compute.googleapis.com/projects/demo-net-1/global/networks/core"
+        ],
+        "restrictedServices": [
+          "bigquery.googleapis.com",
+          "storage.googleapis.com",
+          "sqladmin.googleapis.com"
+        ],
+        "accessLevels": ["accessPolicies/40000000001/accessLevels/corp_network"],
+        "vpcAccessibleServices": { "enableRestriction": true, "allowedServices": ["RESTRICTED-SERVICES"] }
+      },
+      "useExplicitDryRunSpec": false
+    }
+  },
+  {
+    "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001/servicePerimeters/data_bridge",
+    "assetType": "identity.accesscontextmanager.googleapis.com/ServicePerimeter",
+    "parent": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-08-20T14:35:00Z",
+    "data": {
+      "name": "accessPolicies/40000000001/servicePerimeters/data_bridge",
+      "title": "data_bridge",
+      "perimeterType": "PERIMETER_TYPE_BRIDGE",
+      "status": {
+        "resources": ["projects/10000000003", "projects/10000000004"]
+      }
+    }
+  }
+]

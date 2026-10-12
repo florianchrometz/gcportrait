@@ -1,0 +1,121 @@
+[
+  {
+    "name": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/global/certificates/storefront",
+    "assetType": "certificatemanager.googleapis.com/Certificate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/certificates/storefront",
+      "description": "Storefront certificate served through the certificate map",
+      "scope": "DEFAULT",
+      "sanDnsnames": ["shop.example.org", "*.shop.example.org"],
+      "managed": {
+        "domains": ["shop.example.org", "*.shop.example.org"],
+        "dnsAuthorizations": ["projects/demo-app-1/locations/global/dnsAuthorizations/shop-example-org"],
+        "state": "ACTIVE",
+        "authorizationAttemptInfo": [
+          {
+            "domain": "shop.example.org",
+            "state": "AUTHORIZED"
+          },
+          {
+            "domain": "*.shop.example.org",
+            "state": "AUTHORIZED"
+          }
+        ]
+      },
+      "pemCertificate": "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUZGVtby1jZXJ0aWZpY2F0ZQ==\n-----END CERTIFICATE-----\n",
+      "expireTime": "2027-01-12T08:00:00Z",
+      "usedBy": [
+        {
+          "name": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/global/certificateMaps/storefront/certificateMapEntries/shop"
+        }
+      ],
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/europe-west3/certificates/internal-api",
+    "assetType": "certificatemanager.googleapis.com/Certificate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/certificates/internal-api",
+      "description": "Private CA certificate of the internal API",
+      "scope": "DEFAULT",
+      "sanDnsnames": ["internal-api.example.com"],
+      "managed": {
+        "domains": ["internal-api.example.com"],
+        "issuanceConfig": "projects/demo-app-1/locations/europe-west3/certificateIssuanceConfigs/internal-ca",
+        "state": "ACTIVE"
+      },
+      "expireTime": "2026-12-01T00:00:00Z",
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/global/certificates/media-edge",
+    "assetType": "certificatemanager.googleapis.com/Certificate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/certificates/media-edge",
+      "description": "Media CDN edge certificate",
+      "scope": "EDGE_CACHE",
+      "sanDnsnames": ["media.example.com"],
+      "managed": {
+        "domains": ["media.example.com"],
+        "state": "PROVISIONING",
+        "dnsAuthorizations": ["projects/demo-app-1/locations/global/dnsAuthorizations/media-example-com"]
+      },
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/europe-west3/certificates/swp-egress",
+    "assetType": "certificatemanager.googleapis.com/Certificate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/certificates/swp-egress",
+      "description": "Self-managed certificate of the Secure Web Proxy",
+      "scope": "DEFAULT",
+      "sanDnsnames": ["proxy.example.com"],
+      "pemCertificate": "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUZGVtby1jZXJ0aWZpY2F0ZQ==\n-----END CERTIFICATE-----\n",
+      "expireTime": "2027-03-31T23:59:59Z",
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/googleApiSources/project-events",
+  "assetType": "eventarc.googleapis.com/GoogleApiSource",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/googleApiSources/project-events",
+    "uid": "00000000-0000-4000-8000-000000000189",
+    "displayName": "Project events",
+    "destination": "projects/demo-app-1/locations/europe-west3/messageBuses/orders-bus",
+    "cryptoKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/eventarc",
+    "loggingConfig": {
+      "logSeverity": "NOTICE"
+    },
+    "createTime": "2026-06-01T10:02:00Z"
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "assetType": "cloudkms.googleapis.com/KeyRing",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data",
+      "createTime": "2023-04-01T08:00:00Z"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global",
+    "assetType": "cloudkms.googleapis.com/KeyRing",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/global/keyRings/global",
+      "createTime": "2023-04-01T08:05:00Z"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/autokey",
+    "assetType": "cloudkms.googleapis.com/KeyRing",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/autokey",
+      "createTime": "2025-11-20T10:00:00Z"
+    }
+  }
+]

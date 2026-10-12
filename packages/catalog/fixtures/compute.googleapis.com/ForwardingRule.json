@@ -1,0 +1,130 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-inventory",
+    "assetType": "compute.googleapis.com/ForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000011",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "ilb-inventory",
+      "description": "Internal passthrough load balancer published through PSC",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "IPAddress": "10.10.0.40",
+      "IPProtocol": "TCP",
+      "ports": ["8443"],
+      "backendService": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/backendServices/inventory-ilb",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "loadBalancingScheme": "INTERNAL",
+      "networkTier": "PREMIUM",
+      "allowGlobalAccess": false,
+      "serviceName": "ilb-inventory.il4.europe-west3.lb.demo-net-1.internal",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "c0x6IbYP7ho=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-inventory"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/forwardingRules/psc-inventory",
+    "assetType": "compute.googleapis.com/ForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000012",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "psc-inventory",
+      "description": "Private Service Connect endpoint for the inventory API",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "IPAddress": "10.10.0.45",
+      "target": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "loadBalancingScheme": "",
+      "pscConnectionId": "71000000000000002",
+      "pscConnectionStatus": "ACCEPTED",
+      "allowPscGlobalAccess": false,
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "yQ3w4N8bKyc=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/forwardingRules/psc-inventory"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/forwardingRules/legacy-nlb",
+    "assetType": "compute.googleapis.com/ForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000013",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "legacy-nlb",
+      "description": "Target-pool based external passthrough Network Load Balancer",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "IPAddress": "203.0.113.30",
+      "IPProtocol": "TCP",
+      "portRange": "80-80",
+      "target": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetPools/legacy-pool",
+      "loadBalancingScheme": "EXTERNAL",
+      "networkTier": "PREMIUM",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "Fs8Wm1qZr0o=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/forwardingRules/legacy-nlb"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/forwardingRules/internal-api",
+    "assetType": "compute.googleapis.com/ForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000014",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "internal-api",
+      "description": "Regional internal Application Load Balancer",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "IPAddress": "10.10.0.22",
+      "IPProtocol": "TCP",
+      "portRange": "443-443",
+      "target": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetHttpsProxies/internal-api-proxy",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "loadBalancingScheme": "INTERNAL_MANAGED",
+      "networkTier": "PREMIUM",
+      "allowGlobalAccess": true,
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "aX9d0Pn2v4s=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/forwardingRules/internal-api"
+    }
+  }
+]

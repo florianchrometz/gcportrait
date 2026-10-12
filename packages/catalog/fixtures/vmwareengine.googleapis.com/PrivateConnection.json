@@ -1,0 +1,23 @@
+{
+  "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/europe-west3/privateConnections/psa-backups",
+  "assetType": "vmwareengine.googleapis.com/PrivateConnection",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/privateConnections/psa-backups",
+    "description": "Private services access for the backup appliance",
+    "state": "ACTIVE",
+    "vmwareEngineNetwork": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+    "vmwareEngineNetworkCanonical": "projects/10000000005/locations/global/vmwareEngineNetworks/vmware-net",
+    "type": "PRIVATE_SERVICE_ACCESS",
+    "peeringId": "servicenetworking-googleapis-com-vmware",
+    "routingMode": "GLOBAL",
+    "serviceNetwork": "projects/a1b2c3d4-tp/global/networks/servicenetworking",
+    "peeringState": "PEERING_ACTIVE",
+    "uid": "e0000000-0000-4000-8000-000000000018",
+    "createTime": "2026-02-15T08:00:00Z",
+    "updateTime": "2026-02-15T08:00:00Z"
+  }
+}

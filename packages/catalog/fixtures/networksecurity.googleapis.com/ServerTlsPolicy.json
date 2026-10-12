@@ -1,0 +1,59 @@
+[
+  {
+    "name": "//networksecurity.googleapis.com/projects/demo-app-1/locations/global/serverTlsPolicies/mtls-partners",
+    "assetType": "networksecurity.googleapis.com/ServerTlsPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/serverTlsPolicies/mtls-partners",
+      "description": "Client certificates of partners on the HTTPS load balancer",
+      "mtlsPolicy": {
+        "clientValidationMode": "REJECT_INVALID",
+        "clientValidationTrustConfig": "projects/demo-app-1/locations/global/trustConfigs/partner-roots"
+      },
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/projects/demo-app-1/locations/global/serverTlsPolicies/mesh-mtls",
+    "assetType": "networksecurity.googleapis.com/ServerTlsPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/serverTlsPolicies/mesh-mtls",
+      "description": "Mesh workload mTLS",
+      "allowOpen": false,
+      "serverCertificate": {
+        "certificateProviderInstance": {
+          "pluginInstance": "google_cloud_private_spiffe"
+        }
+      },
+      "mtlsPolicy": {
+        "clientValidationCa": [
+          {
+            "certificateProviderInstance": {
+              "pluginInstance": "google_cloud_private_spiffe"
+            }
+          }
+        ]
+      },
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  }
+]

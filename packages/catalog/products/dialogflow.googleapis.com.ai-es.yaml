@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MIT
+#
+# Dialogflow ES: the v2 conversation profiles that wire Agent Assist and contact-center integrations
+# to an automated agent, knowledge bases, speech and Pub/Sub, and the knowledge bases themselves. Asset
+# names carry the project id (projects/<id>/locations/<l>/conversationProfiles/<p>). The CX agent is in
+# dialogflow.googleapis.com.yaml.
+product: Dialogflow ES
+service: dialogflow.googleapis.com
+icon: dialogflow
+types:
+  dialogflow.googleapis.com/ConversationProfile:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.languageCode}} · {{location}}'
+    relations:
+      - { kind: uses, to: $.data.automatedAgentConfig.agent, normalize: name }
+      - {
+          kind: uses,
+          to: "$.data.humanAgentAssistantConfig['humanAgentSuggestionConfig','endUserSuggestionConfig'].featureConfigs[*].queryConfig.knowledgeBaseQuerySource.knowledgeBases[*]",
+          normalize: name,
+        }
+      - {
+          kind: triggers,
+          to: "$.data['notificationConfig','newMessageEventNotificationConfig','newRecognitionResultNotificationConfig'].topic",
+          normalize: pubsubUri,
+        }
+      - {
+          kind: triggers,
+          to: $.data.humanAgentAssistantConfig.notificationConfig.topic,
+          normalize: pubsubUri,
+        }
+      - { kind: uses, to: '$.data.sttConfig.phraseSets[*]', normalize: name, service: speech.googleapis.com }
+    notes: >-
+      automatedAgentConfig.agent names an agent environment: a CX agent without an environment suffix
+      (projects/<id>/locations/<l>/agents/<a>) resolves to the agent, one with /environments/<e> and an ES
+      agent (…/agent/environments/<e>, not an inventory type) stay dangling. Knowledge-base suggestion sources
+      resolve within Dialogflow; conversation events are published to Pub/Sub topics (triggers, like every
+      notification topic in the catalog); speech phrase sets are Speech-to-Text v2 names, whose asset names
+      carry the project number. securitySettings and the human-agent handoff targets (LivePerson, Salesforce)
+      are not inventory types. No console deep link is known.
+
+  dialogflow.googleapis.com/KnowledgeBase:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.languageCode}} · {{location}}'
+    notes: >-
+      Documents of the knowledge base are not inventory types; conversation profiles reference the knowledge
+      base. No console deep link is known.

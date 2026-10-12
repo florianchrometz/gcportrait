@@ -1,0 +1,29 @@
+{
+  "name": "//gkeonprem.googleapis.com/projects/demo-app-1/locations/europe-west3/bareMetalClusters/plant-user-1/bareMetalNodePools/workers",
+  "assetType": "gkeonprem.googleapis.com/BareMetalNodePool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/bareMetalClusters/plant-user-1/bareMetalNodePools/workers",
+    "nodePoolConfig": {
+      "nodeConfigs": [
+        {
+          "nodeIp": "172.16.30.21"
+        },
+        {
+          "nodeIp": "172.16.30.22"
+        }
+      ],
+      "operatingSystem": "LINUX"
+    },
+    "state": "RUNNING",
+    "uid": "00000000-0000-4000-8000-000000000163"
+  }
+}

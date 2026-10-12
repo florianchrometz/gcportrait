@@ -1,0 +1,40 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/volumes/shared-home",
+  "assetType": "netapp.googleapis.com/Volume",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/volumes/shared-home",
+    "state": "READY",
+    "createTime": "2025-04-02T09:00:00Z",
+    "shareName": "shared-home",
+    "storagePool": "premium-pool",
+    "network": "projects/10000000001/global/networks/core",
+    "serviceLevel": "PREMIUM",
+    "capacityGib": "1024",
+    "usedGib": "312",
+    "protocols": ["NFSV4"],
+    "exportPolicy": {
+      "rules": [{ "allowedClients": "10.20.0.0/16", "accessType": "READ_WRITE", "nfsv4": true }]
+    },
+    "mountOptions": [
+      {
+        "export": "/shared-home",
+        "exportFull": "10.20.7.4:/shared-home",
+        "protocol": "NFSV4",
+        "instructions": "mount -t nfs -o rw,hard,vers=4.1 10.20.7.4:/shared-home /mnt/shared-home",
+        "ipAddress": "10.20.7.4"
+      }
+    ],
+    "encryptionType": "CLOUD_KMS",
+    "hasReplication": true,
+    "kmsConfig": "projects/demo-data-1/locations/europe-west3/kmsConfigs/netapp-cmek",
+    "backupConfig": {
+      "backupPolicies": ["projects/demo-data-1/locations/europe-west3/backupPolicies/daily"],
+      "backupVault": "projects/demo-data-1/locations/europe-west3/backupVaults/primary-vault",
+      "scheduledBackupEnabled": true
+    }
+  }
+}

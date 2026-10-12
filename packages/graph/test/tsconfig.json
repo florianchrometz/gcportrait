@@ -1,0 +1,11 @@
+{
+  // Tests that use the demo organisations (@gcportrait/demo-data, a dev dependency) and Node's clock for the
+  // performance budget. Kept apart so that Node types never leak into the builder's own sources.
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "../node_modules/.tmp/tsc-test"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }, { "path": "../../demo-data" }]
+}

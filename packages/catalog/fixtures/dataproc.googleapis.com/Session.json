@@ -1,0 +1,29 @@
+{
+  "name": "//dataproc.googleapis.com/projects/demo-data-1/locations/europe-west3/sessions/analyst-notebook-1",
+  "assetType": "dataproc.googleapis.com/Session",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-02T10:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/sessions/analyst-notebook-1",
+    "uuid": "d1000000-0000-4000-8000-000000000301",
+    "createTime": "2026-10-02T09:00:00Z",
+    "jupyterSession": { "kernel": "PYTHON", "displayName": "Analyst notebook" },
+    "runtimeConfig": { "version": "2.3" },
+    "environmentConfig": {
+      "executionConfig": {
+        "serviceAccount": "dataproc-batch@demo-data-1.iam.gserviceaccount.com",
+        "subnetworkUri": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+        "networkUri": "projects/demo-net-1/global/networks/core",
+        "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataproc",
+        "idleTtl": "3600s"
+      },
+      "peripheralsConfig": {
+        "metastoreService": "projects/demo-data-1/locations/europe-west3/services/hive"
+      }
+    },
+    "state": "ACTIVE",
+    "user": "analyst@example.com"
+  }
+}

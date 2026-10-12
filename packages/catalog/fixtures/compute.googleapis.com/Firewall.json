@@ -1,0 +1,109 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/firewalls/allow-internal-prod",
+    "assetType": "compute.googleapis.com/Firewall",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#firewall",
+      "id": "5000000000000000118",
+      "name": "allow-internal-prod",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "priority": 1000,
+      "direction": "INGRESS",
+      "disabled": false,
+      "logConfig": {
+        "enable": false
+      },
+      "description": "East-west traffic inside the Shared VPC",
+      "sourceRanges": ["10.0.0.0/8"],
+      "allowed": [
+        {
+          "IPProtocol": "tcp"
+        },
+        {
+          "IPProtocol": "udp"
+        },
+        {
+          "IPProtocol": "icmp"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/firewalls/allow-internal-prod"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/firewalls/allow-grpc-to-demo-app-1",
+    "assetType": "compute.googleapis.com/Firewall",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#firewall",
+      "id": "5000000000000000119",
+      "name": "allow-grpc-to-demo-app-1",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "priority": 1000,
+      "direction": "INGRESS",
+      "disabled": false,
+      "logConfig": {
+        "enable": false
+      },
+      "description": "Internal gRPC from the GKE nodes to the web tier, by service account",
+      "sourceServiceAccounts": ["gke-nodes@demo-app-1.iam.gserviceaccount.com"],
+      "targetServiceAccounts": ["web-frontend@demo-app-1.iam.gserviceaccount.com"],
+      "allowed": [
+        {
+          "IPProtocol": "tcp",
+          "ports": ["8443"]
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/firewalls/allow-grpc-to-demo-app-1"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/firewalls/deny-egress-internet-prod",
+    "assetType": "compute.googleapis.com/Firewall",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#firewall",
+      "id": "5000000000000000120",
+      "name": "deny-egress-internet-prod",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "priority": 65000,
+      "direction": "EGRESS",
+      "disabled": true,
+      "logConfig": {
+        "enable": false
+      },
+      "description": "Planned egress lock-down, not yet enforced",
+      "destinationRanges": ["0.0.0.0/0"],
+      "denied": [
+        {
+          "IPProtocol": "all"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/firewalls/deny-egress-internet-prod"
+    }
+  }
+]

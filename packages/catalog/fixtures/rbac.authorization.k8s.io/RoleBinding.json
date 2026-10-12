@@ -1,0 +1,35 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/rbac.authorization.k8s.io/rolebindings/deployer-ci",
+  "assetType": "rbac.authorization.k8s.io/RoleBinding",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "rbac.authorization.k8s.io/v1",
+    "kind": "RoleBinding",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000139",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "deployer-ci",
+      "namespace": "shop"
+    },
+    "roleRef": {
+      "apiGroup": "rbac.authorization.k8s.io",
+      "kind": "Role",
+      "name": "deployer"
+    },
+    "subjects": [
+      {
+        "kind": "User",
+        "apiGroup": "rbac.authorization.k8s.io",
+        "name": "ci-deployer@demo-app-1.iam.gserviceaccount.com"
+      }
+    ]
+  }
+}

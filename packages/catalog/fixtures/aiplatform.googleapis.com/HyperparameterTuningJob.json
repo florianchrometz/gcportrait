@@ -1,0 +1,58 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/hyperparameterTuningJobs/4455667788990011223",
+  "assetType": "aiplatform.googleapis.com/HyperparameterTuningJob",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/hyperparameterTuningJobs/4455667788990011223",
+    "displayName": "fraud-trainer-hpt",
+    "studySpec": {
+      "metrics": [
+        {
+          "metricId": "auc",
+          "goal": "MAXIMIZE"
+        }
+      ],
+      "parameters": [
+        {
+          "parameterId": "learning_rate",
+          "doubleValueSpec": {
+            "minValue": 0.001,
+            "maxValue": 0.1
+          },
+          "scaleType": "UNIT_LOG_SCALE"
+        }
+      ]
+    },
+    "maxTrialCount": 20,
+    "parallelTrialCount": 4,
+    "trialJobSpec": {
+      "workerPoolSpecs": [
+        {
+          "machineSpec": {
+            "machineType": "n1-standard-8"
+          },
+          "replicaCount": "1",
+          "containerSpec": {
+            "imageUri": "europe-west3-docker.pkg.dev/demo-data-1/ml-training/fraud-trainer:3.0.1"
+          }
+        }
+      ],
+      "serviceAccount": "vertex-training@demo-data-1.iam.gserviceaccount.com",
+      "network": "projects/10000000001/global/networks/core",
+      "baseOutputDirectory": {
+        "outputUriPrefix": "gs://demo-data-1-ml/hpt/fraud-trainer"
+      }
+    },
+    "state": "JOB_STATE_SUCCEEDED",
+    "createTime": "2026-09-20T02:00:00Z",
+    "startTime": "2026-09-20T02:02:00Z",
+    "endTime": "2026-09-20T06:30:00Z",
+    "updateTime": "2026-09-20T06:30:00Z",
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    }
+  }
+}

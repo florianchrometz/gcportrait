@@ -1,0 +1,75 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/networking.k8s.io/ingresses/storefront",
+  "assetType": "networking.k8s.io/Ingress",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "networking.k8s.io/v1",
+    "kind": "Ingress",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000128",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "storefront",
+      "namespace": "shop",
+      "annotations": {
+        "kubernetes.io/ingress.class": "gce",
+        "ingress.kubernetes.io/https-forwarding-rule": "k8s2-fs-5e8a1c2d-shop-storefront-9b1f3e7a",
+        "ingress.kubernetes.io/https-target-proxy": "k8s2-ts-5e8a1c2d-shop-storefront-9b1f3e7a",
+        "ingress.kubernetes.io/url-map": "k8s2-um-5e8a1c2d-shop-storefront-9b1f3e7a"
+      }
+    },
+    "spec": {
+      "tls": [
+        {
+          "hosts": ["shop.example.org"],
+          "secretName": "frontend-tls"
+        }
+      ],
+      "rules": [
+        {
+          "host": "shop.example.org",
+          "http": {
+            "paths": [
+              {
+                "path": "/",
+                "pathType": "Prefix",
+                "backend": {
+                  "service": {
+                    "name": "frontend",
+                    "port": {
+                      "number": 80
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "defaultBackend": {
+        "service": {
+          "name": "default-http-backend",
+          "port": {
+            "number": 80
+          }
+        }
+      }
+    },
+    "status": {
+      "loadBalancer": {
+        "ingress": [
+          {
+            "ip": "203.0.113.30"
+          }
+        ]
+      }
+    }
+  }
+}

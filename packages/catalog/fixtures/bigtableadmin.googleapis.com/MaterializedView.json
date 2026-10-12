@@ -1,0 +1,13 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events/materializedViews/daily_clicks",
+  "assetType": "bigtableadmin.googleapis.com/MaterializedView",
+  "parent": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events/materializedViews/daily_clicks",
+    "query": "SELECT TIMESTAMP_TRUNC(_timestamp, DAY) AS day, COUNT(*) AS clicks FROM clickstream GROUP BY day",
+    "etag": "ZGFpbHk=",
+    "deletionProtection": true
+  }
+}

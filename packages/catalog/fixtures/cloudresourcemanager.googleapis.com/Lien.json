@@ -1,0 +1,20 @@
+{
+  "name": "//cloudresourcemanager.googleapis.com/liens/p10000000001-l0001",
+  "assetType": "cloudresourcemanager.googleapis.com/Lien",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "liens/p10000000001-l0001",
+    "parent": "projects/10000000001",
+    "restrictions": ["resourcemanager.projects.delete"],
+    "reason": "Shared VPC host project of demo-app-1",
+    "origin": "xpn.googleapis.com",
+    "createTime": "2022-06-01T09:00:00Z"
+  }
+}

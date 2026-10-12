@@ -1,0 +1,108 @@
+[
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/subscriptions/orders-push",
+    "assetType": "pubsub.googleapis.com/Subscription",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/subscriptions/orders-push",
+      "topic": "projects/demo-data-1/topics/orders",
+      "pushConfig": {
+        "pushEndpoint": "https://orders-handler-10000000002.europe-west3.run.app/events",
+        "oidcToken": {
+          "serviceAccountEmail": "orders-push@demo-data-1.iam.gserviceaccount.com",
+          "audience": "https://orders-handler-10000000002.europe-west3.run.app"
+        }
+      },
+      "ackDeadlineSeconds": 30,
+      "messageRetentionDuration": "604800s",
+      "deadLetterPolicy": {
+        "deadLetterTopic": "projects/demo-data-1/topics/orders-dead-letter",
+        "maxDeliveryAttempts": 10
+      },
+      "retryPolicy": { "minimumBackoff": "10s", "maximumBackoff": "600s" },
+      "expirationPolicy": {},
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/subscriptions/orders-to-bigquery",
+    "assetType": "pubsub.googleapis.com/Subscription",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/subscriptions/orders-to-bigquery",
+      "topic": "projects/demo-data-1/topics/orders",
+      "bigqueryConfig": {
+        "table": "demo-data-1.sales.orders",
+        "useTopicSchema": true,
+        "writeMetadata": false,
+        "state": "ACTIVE",
+        "serviceAccountEmail": "pubsub-writer@demo-data-1.iam.gserviceaccount.com"
+      },
+      "ackDeadlineSeconds": 60,
+      "messageRetentionDuration": "604800s",
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/subscriptions/orders-archive",
+    "assetType": "pubsub.googleapis.com/Subscription",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/subscriptions/orders-archive",
+      "topic": "projects/demo-data-1/topics/orders",
+      "cloudStorageConfig": {
+        "bucket": "demo-data-1-archive",
+        "filenamePrefix": "orders/",
+        "filenameSuffix": ".avro",
+        "avroConfig": { "writeMetadata": true },
+        "maxDuration": "300s",
+        "state": "ACTIVE",
+        "serviceAccountEmail": "pubsub-writer@demo-data-1.iam.gserviceaccount.com"
+      },
+      "ackDeadlineSeconds": 60,
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/subscriptions/partner-prices",
+    "assetType": "pubsub.googleapis.com/Subscription",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/subscriptions/partner-prices",
+      "topic": "projects/demo-app-1/topics/prices",
+      "ackDeadlineSeconds": 10,
+      "analyticsHubSubscriptionInfo": {
+        "listing": "projects/demo-app-1/locations/europe-west3/dataExchanges/partner_feeds/listings/prices",
+        "subscription": "projects/demo-data-1/locations/europe-west3/subscriptions/partner-prices-hub"
+      },
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/subscriptions/legacy-orders-pull",
+    "assetType": "pubsub.googleapis.com/Subscription",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/subscriptions/legacy-orders-pull",
+      "topic": "_deleted-topic_",
+      "ackDeadlineSeconds": 10,
+      "detached": false,
+      "state": "ACTIVE"
+    }
+  }
+]

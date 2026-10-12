@@ -1,0 +1,240 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/urlMaps/web-urlmap",
+    "assetType": "compute.googleapis.com/UrlMap",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#urlMap",
+      "id": "7400000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-urlmap",
+      "defaultService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/web-bes",
+      "hostRules": [
+        {
+          "hosts": ["shop.example.org", "www.shop.example.org"],
+          "pathMatcher": "storefront"
+        }
+      ],
+      "pathMatchers": [
+        {
+          "name": "storefront",
+          "defaultService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/web-bes",
+          "pathRules": [
+            {
+              "paths": ["/api", "/api/*"],
+              "service": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/web-api-bes",
+              "customErrorResponsePolicy": {
+                "errorResponseRules": [
+                  {
+                    "matchResponseCodes": ["404"],
+                    "path": "/errors/api-404.json"
+                  }
+                ],
+                "errorService": "global/backendBuckets/web-static"
+              }
+            },
+            {
+              "paths": ["/static/*"],
+              "service": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendBuckets/web-static"
+            }
+          ],
+          "defaultCustomErrorResponsePolicy": {
+            "errorResponseRules": [
+              {
+                "matchResponseCodes": ["4xx"],
+                "path": "/errors/4xx.html"
+              }
+            ],
+            "errorService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendBuckets/web-static"
+          }
+        }
+      ],
+      "fingerprint": "Ss4nB0HJE3A=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/web-urlmap",
+      "defaultCustomErrorResponsePolicy": {
+        "errorResponseRules": [
+          {
+            "matchResponseCodes": ["5xx"],
+            "path": "/errors/5xx.html",
+            "overrideResponseCode": 503
+          }
+        ],
+        "errorService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendBuckets/web-static"
+      }
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/urlMaps/web-http-redirect",
+    "assetType": "compute.googleapis.com/UrlMap",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#urlMap",
+      "id": "7400000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-http-redirect",
+      "defaultUrlRedirect": {
+        "httpsRedirect": true,
+        "redirectResponseCode": "MOVED_PERMANENTLY_DEFAULT",
+        "stripQuery": false
+      },
+      "fingerprint": "J2s1D2QZ5mU=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/web-http-redirect"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/urlMaps/inventory-grpc",
+    "assetType": "compute.googleapis.com/UrlMap",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#urlMap",
+      "id": "7400000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "inventory-grpc",
+      "description": "Cloud Service Mesh routing for proxyless gRPC",
+      "defaultService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td",
+      "hostRules": [
+        {
+          "hosts": ["inventory.example.com:50051"],
+          "pathMatcher": "grpc"
+        }
+      ],
+      "pathMatchers": [
+        {
+          "name": "grpc",
+          "defaultService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td",
+          "routeRules": [
+            {
+              "priority": 10,
+              "matchRules": [
+                {
+                  "prefixMatch": "/inventory.v2.Inventory/"
+                }
+              ],
+              "service": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td-v2"
+            },
+            {
+              "priority": 20,
+              "matchRules": [
+                {
+                  "prefixMatch": "/inventory.v1.Inventory/"
+                }
+              ],
+              "routeAction": {
+                "weightedBackendServices": [
+                  {
+                    "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td",
+                    "weight": 90
+                  },
+                  {
+                    "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td-v2",
+                    "weight": 10
+                  }
+                ],
+                "requestMirrorPolicy": {
+                  "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td-shadow"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "fingerprint": "Hx7mC4kQe0U=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/inventory-grpc"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/urlMaps/internal-api",
+    "assetType": "compute.googleapis.com/UrlMap",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#urlMap",
+      "id": "7400000000000000004",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "internal-api",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "defaultRouteAction": {
+        "weightedBackendServices": [
+          {
+            "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/internal-api",
+            "weight": 100
+          }
+        ],
+        "requestMirrorPolicy": {
+          "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/internal-api-shadow"
+        }
+      },
+      "hostRules": [
+        {
+          "hosts": ["internal-api.example.com"],
+          "pathMatcher": "api"
+        }
+      ],
+      "pathMatchers": [
+        {
+          "name": "api",
+          "defaultRouteAction": {
+            "weightedBackendServices": [
+              {
+                "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/internal-api",
+                "weight": 100
+              }
+            ],
+            "requestMirrorPolicy": {
+              "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/internal-api-shadow"
+            }
+          },
+          "pathRules": [
+            {
+              "paths": ["/v2/*"],
+              "routeAction": {
+                "weightedBackendServices": [
+                  {
+                    "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/internal-api-v2",
+                    "weight": 100
+                  }
+                ],
+                "requestMirrorPolicy": {
+                  "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/internal-api-shadow"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "fingerprint": "r0Yt6Lw2bQs=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/urlMaps/internal-api"
+    }
+  }
+]

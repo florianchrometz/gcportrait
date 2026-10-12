@@ -1,0 +1,18 @@
+{
+  "name": "//bigqueryreservation.googleapis.com/projects/10000000005/locations/europe-west3/capacityCommitments/c-2026-annual",
+  "assetType": "bigqueryreservation.googleapis.com/CapacityCommitment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/capacityCommitments/c-2026-annual",
+    "slotCount": "100",
+    "plan": "ANNUAL",
+    "state": "ACTIVE",
+    "commitmentStartTime": "2026-01-01T00:00:00Z",
+    "commitmentEndTime": "2027-01-01T00:00:00Z",
+    "renewalPlan": "ANNUAL",
+    "edition": "ENTERPRISE"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/releases/shop-stack-v12",
+  "assetType": "saasservicemgmt.googleapis.com/Release",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/releases/shop-stack-v12",
+    "unitKind": "projects/demo-ops-1/locations/global/unitKinds/shop-stack",
+    "blueprint": {
+      "package": "europe-west3-docker.pkg.dev/demo-ops-1/images/shop-stack-blueprint:v12",
+      "engine": "inframanager"
+    },
+    "uid": "9a0b1c2d-3e4f-4a5b-8c6d-e7f8a9b0c1d2",
+    "createTime": "2026-09-20T09:00:00Z"
+  }
+}

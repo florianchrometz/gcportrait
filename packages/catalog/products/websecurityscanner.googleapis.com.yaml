@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+#
+# Web Security Scanner: scan configurations for public web applications.
+product: Web Security Scanner
+service: websecurityscanner.googleapis.com
+icon: web_security_scanner
+types:
+  websecurityscanner.googleapis.com/ScanConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.targetPlatforms[0] | lower}} · {{data.riskLevel | lower}}'
+    console: 'https://console.cloud.google.com/security/web-scanner/scanConfigs?project={{projectId}}'
+    domains:
+      - '$.data.startingUrls[*]'
+      - $.data.authentication.customAccount.loginUrl
+    notes: >-
+      projects/<number>/scanConfigs/<id>. The starting URLs' hosts are what connects a scan to the load balancer,
+      App Engine application or Cloud Run service serving them; targetPlatforms (APP_ENGINE, COMPUTE,
+      CLOUD_RUN, CLOUD_FUNCTIONS; APP_ENGINE when empty) is the subtitle. The console link shape is not
+      verified.

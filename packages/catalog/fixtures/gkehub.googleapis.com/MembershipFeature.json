@@ -1,0 +1,35 @@
+{
+  "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/memberships/shop/features/configmanagement",
+  "assetType": "gkehub.googleapis.com/MembershipFeature",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/global/memberships/shop/features/configmanagement",
+    "spec": {
+      "configmanagement": {
+        "version": "1.20.1",
+        "configSync": {
+          "enabled": true,
+          "sourceFormat": "unstructured"
+        }
+      }
+    },
+    "state": {
+      "state": {
+        "code": "OK",
+        "description": "Config Sync is synced"
+      }
+    },
+    "resourceState": {
+      "state": "ACTIVE"
+    },
+    "createTime": "2025-04-01T10:00:00Z"
+  }
+}

@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+#
+# Workflows. The workflow definition (sourceContents) calls other services by URL inside its own language,
+# which the catalog does not parse; the identity and the CMEK key are fields.
+product: Workflows
+service: workflows.googleapis.com
+icon: workflows
+types:
+  workflows.googleapis.com/Workflow:
+    role: core
+    subtitle: '{{location}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/workflows/workflow/{{location}}/{{name | lastSegment}}/executions?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: serviceAccount is projects/<p>/serviceAccounts/<email> or the bare email.

@@ -1,0 +1,96 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/batch/jobs/db-migrate-42",
+    "assetType": "batch.k8s.io/Job",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000124",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "db-migrate-42",
+        "namespace": "shop"
+      },
+      "spec": {
+        "backoffLimit": 4,
+        "template": {
+          "spec": {
+            "restartPolicy": "Never",
+            "containers": [
+              {
+                "name": "migrate",
+                "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/db-migrate:42"
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "succeeded": 1,
+        "startTime": "2026-09-29T10:00:00Z",
+        "completionTime": "2026-09-29T10:01:30Z"
+      }
+    }
+  },
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/batch/jobs/nightly-report-29312345",
+    "assetType": "batch.k8s.io/Job",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000126",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "nightly-report-29312345",
+        "namespace": "shop",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "kind": "CronJob",
+            "name": "nightly-report",
+            "uid": "00000000-0000-4000-8000-000000000125",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "backoffLimit": 2,
+        "template": {
+          "spec": {
+            "restartPolicy": "OnFailure",
+            "containers": [
+              {
+                "name": "reporter",
+                "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/reporter:3.0.0"
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "succeeded": 1,
+        "startTime": "2026-10-01T02:00:00Z",
+        "completionTime": "2026-10-01T02:04:12Z"
+      }
+    }
+  }
+]

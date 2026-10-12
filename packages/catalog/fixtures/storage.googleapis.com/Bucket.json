@@ -1,0 +1,68 @@
+[
+  {
+    "name": "//storage.googleapis.com/demo-data-1-lake",
+    "assetType": "storage.googleapis.com/Bucket",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "storage#bucket",
+      "id": "demo-data-1-lake",
+      "name": "demo-data-1-lake",
+      "selfLink": "https://www.googleapis.com/storage/v1/b/demo-data-1-lake",
+      "projectNumber": "10000000003",
+      "location": "EUROPE-WEST3",
+      "locationType": "region",
+      "storageClass": "STANDARD",
+      "metageneration": "4",
+      "etag": "CAQ=",
+      "timeCreated": "2024-03-01T09:00:00.000Z",
+      "updated": "2026-09-30T10:00:00.000Z",
+      "iamConfiguration": {
+        "bucketPolicyOnly": { "enabled": true },
+        "uniformBucketLevelAccess": { "enabled": true },
+        "publicAccessPrevention": "enforced"
+      },
+      "versioning": { "enabled": true },
+      "encryption": {
+        "defaultKmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/storage"
+      },
+      "logging": {
+        "logBucket": "demo-ops-1-access-logs",
+        "logObjectPrefix": "demo-data-1-lake"
+      },
+      "softDeletePolicy": { "retentionDurationSeconds": "604800" },
+      "rpo": "DEFAULT",
+      "labels": { "env": "prod", "team": "analytics" }
+    }
+  },
+  {
+    "name": "//storage.googleapis.com/gcf-v2-sources-10000000002-europe-west3",
+    "assetType": "storage.googleapis.com/Bucket",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "storage#bucket",
+      "id": "gcf-v2-sources-10000000002-europe-west3",
+      "name": "gcf-v2-sources-10000000002-europe-west3",
+      "projectNumber": "10000000002",
+      "location": "EUROPE-WEST3",
+      "locationType": "region",
+      "storageClass": "STANDARD",
+      "iamConfiguration": {
+        "uniformBucketLevelAccess": { "enabled": true },
+        "publicAccessPrevention": "inherited"
+      },
+      "versioning": { "enabled": false },
+      "labels": { "goog-managed-by": "cloudfunctions" }
+    }
+  }
+]

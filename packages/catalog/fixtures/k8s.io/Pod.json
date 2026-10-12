@@ -1,0 +1,119 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/pods/frontend-7d9c6b5f4-x2k8p",
+    "assetType": "k8s.io/Pod",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000102",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "frontend-7d9c6b5f4-x2k8p",
+        "namespace": "shop",
+        "labels": {
+          "app": "frontend",
+          "pod-template-hash": "7d9c6b5f4"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "ReplicaSet",
+            "name": "frontend-7d9c6b5f4",
+            "uid": "00000000-0000-4000-8000-000000000101",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "nodeName": "gke-shop-default-pool-1a2b3c4d-x7k9",
+        "serviceAccountName": "frontend",
+        "containers": [
+          {
+            "name": "frontend",
+            "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/frontend:2.3.1",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        ],
+        "restartPolicy": "Always"
+      },
+      "status": {
+        "phase": "Running",
+        "podIP": "10.20.1.12",
+        "podIPs": [
+          {
+            "ip": "10.20.1.12"
+          }
+        ],
+        "hostIP": "10.12.0.5",
+        "qosClass": "Burstable",
+        "startTime": "2026-09-30T06:12:00Z"
+      }
+    }
+  },
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/pods/nightly-report-29312345-q8w2n",
+    "assetType": "k8s.io/Pod",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000104",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "nightly-report-29312345-q8w2n",
+        "namespace": "shop",
+        "labels": {
+          "job-name": "nightly-report-29312345"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "kind": "Job",
+            "name": "nightly-report-29312345",
+            "uid": "00000000-0000-4000-8000-000000000103",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "nodeName": "gke-shop-default-pool-1a2b3c4d-x7k9",
+        "containers": [
+          {
+            "name": "reporter",
+            "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/reporter:3.0.0"
+          }
+        ],
+        "restartPolicy": "OnFailure"
+      },
+      "status": {
+        "phase": "Succeeded",
+        "hostIP": "10.12.0.5",
+        "startTime": "2026-10-01T02:00:05Z"
+      }
+    }
+  }
+]

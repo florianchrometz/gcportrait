@@ -1,0 +1,19 @@
+{
+  "name": "//file.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/media/snapshots/hourly-2026100107",
+  "assetType": "file.googleapis.com/Snapshot",
+  "parent": "//file.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/media",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/instances/media/snapshots/hourly-2026100107",
+    "state": "READY",
+    "createTime": "2026-10-01T07:00:00Z",
+    "filesystemUsedBytes": "107374182400"
+  }
+}

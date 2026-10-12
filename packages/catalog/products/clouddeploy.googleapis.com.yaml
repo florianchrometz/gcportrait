@@ -1,0 +1,158 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Deploy. A delivery pipeline is a container: its automations are cards inside it, and its releases,
+# rollouts, job runs and automation runs (all continuing the pipeline's name) are hidden and counted on it.
+# Targets are separate resources of the project and point at what they deploy to: a GKE cluster, a fleet
+# membership, a Cloud Run region or a custom target type, plus the Cloud Build pool, bucket and service
+# account that render and deploy. Cloud Asset Inventory names every Cloud Deploy asset with the project id.
+product: Cloud Deploy
+service: clouddeploy.googleapis.com
+icon: cloud_deploy
+types:
+  clouddeploy.googleapis.com/DeliveryPipeline:
+    role: container
+    subtitle: '{{data.serialPipeline.stages[0].targetId}} · {{data.serialPipeline.stages[1].targetId}} · {{data.serialPipeline.stages[2].targetId}}'
+    console: 'https://console.cloud.google.com/deploy/delivery-pipelines/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    contains:
+      - byParent: clouddeploy.googleapis.com/Automation
+      - byParent: clouddeploy.googleapis.com/Release
+      - byParent: clouddeploy.googleapis.com/Rollout
+      - byParent: clouddeploy.googleapis.com/JobRun
+      - byParent: clouddeploy.googleapis.com/AutomationRun
+    relations:
+      - {
+          kind: routes,
+          to: '$.data.serialPipeline.stages[*].targetId',
+          normalize: siblingName,
+          pattern: '{parent}/targets/{id}',
+        }
+    notes: >-
+      serialPipeline.stages[*].targetId names each stage's target by its bare id (same project and location
+      as the pipeline); the siblingName normaliser completes it, so the pipeline routes to each stage's
+      target. The subtitle lists the first three stages in promotion order. Releases carry full target names
+      in targetSnapshots (hidden edges).
+
+  clouddeploy.googleapis.com/Target:
+    role: core
+    subtitle: '{{data.gke.cluster | first(data.anthosCluster.membership, data.customTarget.customTargetType, data.run.location) | lastSegment}} · {{location}}'
+    console: 'https://console.cloud.google.com/deploy/targets/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.gke.cluster, normalize: name, service: container.googleapis.com }
+      - {
+          kind: uses,
+          to: '$.data.associatedEntities.*.gkeClusters[*].cluster',
+          normalize: name,
+          service: container.googleapis.com,
+        }
+      - { kind: uses, to: $.data.anthosCluster.membership, normalize: name, service: gkehub.googleapis.com }
+      - {
+          kind: uses,
+          to: '$.data.associatedEntities.*.anthosClusters[*].membership',
+          normalize: name,
+          service: gkehub.googleapis.com,
+        }
+      - { kind: uses, to: $.data.customTarget.customTargetType, normalize: name }
+      - {
+          kind: uses,
+          to: '$.data.multiTarget.targetIds[*]',
+          normalize: siblingName,
+          pattern: '{parent}/targets/{id}',
+        }
+      - { kind: runsAs, to: '$.data.executionConfigs[*].serviceAccount', normalize: serviceAccountEmail }
+      - {
+          kind: runsAs,
+          to: "$.data.executionConfigs[*]['defaultPool', 'privatePool'].serviceAccount",
+          normalize: serviceAccountEmail,
+        }
+      - {
+          kind: uses,
+          to: '$.data.executionConfigs[*].workerPool',
+          normalize: name,
+          service: cloudbuild.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.executionConfigs[*].privatePool.workerPool',
+          normalize: name,
+          service: cloudbuild.googleapis.com,
+        }
+      - { kind: uses, to: '$.data.executionConfigs[*].artifactStorage', normalize: gcsUri }
+      - {
+          kind: uses,
+          to: "$.data.executionConfigs[*]['defaultPool', 'privatePool'].artifactStorage",
+          normalize: gcsUri,
+        }
+    notes: >-
+      Exactly one runtime is set: gke.cluster (projects/<id>/locations/<l>/clusters/<c>, possibly in another
+      project), anthosCluster.membership (a fleet membership), run.location (projects/<p>/locations/<region>,
+      a region rather than a service, so no edge), multiTarget.targetIds (bare ids of child targets in the
+      same project and location: uses, completed by siblingName) or
+      customTarget.customTargetType. Multi-cluster canary targets list more clusters or memberships under
+      associatedEntities. The subtitle names the runtime, the first one set (first(…)): the GKE
+      cluster, the membership, the custom target type or the Cloud Run region. requireApproval marks a gated
+      target.
+
+  clouddeploy.googleapis.com/CustomTargetType:
+    role: leaf
+    label: '{{data.customTargetTypeId}}'
+    subtitle: 'custom target type · {{location}}'
+    console: 'https://console.cloud.google.com/deploy/custom-target-types?project={{projectId}}'
+    notes: >-
+      Defines the render and deploy actions of custom targets (customActions); the Skaffold modules it pulls
+      in come from Git, Cloud Storage or a Cloud Build repository and are not drawn.
+
+  clouddeploy.googleapis.com/Automation:
+    role: core
+    subtitle: '{{data.rules[0].promoteReleaseRule.destinationTargetId}} · {{location}}'
+    console: 'https://console.cloud.google.com/deploy/delivery-pipelines/{{location}}/{{name | parentSegment(deliveryPipelines)}}?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+    notes: >-
+      Promotes, advances or repairs rollouts of its pipeline on rules; selector.targets and the rules name
+      targets by bare id. Nested in its pipeline by name. Seeded as a leaf; core here because it runs as a
+      service account.
+
+  clouddeploy.googleapis.com/DeployPolicy:
+    role: leaf
+    subtitle: '{{data.rules[0].rolloutRestriction.id}} · {{location}}'
+    console: 'https://console.cloud.google.com/deploy/deploy-policies?project={{projectId}}'
+    notes: >-
+      Restricts rollouts (time windows, actions, invokers) for the pipelines and targets its selectors match
+      by bare id or label, so it is drawn without edges.
+
+  clouddeploy.googleapis.com/Release:
+    role: hidden
+    relations:
+      - { kind: uses, to: '$.data.buildArtifacts[*].tag', normalize: artifactImage }
+      - { kind: uses, to: '$.data.targetSnapshots[*].name', normalize: name }
+      - { kind: uses, to: $.data.skaffoldConfigUri, normalize: gcsUri }
+    notes: >-
+      buildArtifacts[*].image is the image name inside the Skaffold configuration; tag is the full image
+      reference, which is what resolves to an Artifact Registry repository. targetSnapshots and
+      deliveryPipelineSnapshot copy the target and pipeline objects as they were at release time.
+
+  clouddeploy.googleapis.com/Rollout:
+    role: hidden
+    subtitle: '{{data.targetId}} · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.deployingBuild, normalize: name, service: cloudbuild.googleapis.com }
+    notes: One per release and target; deployingBuild names the Cloud Build build that deployed it.
+
+  clouddeploy.googleapis.com/JobRun:
+    role: hidden
+    subtitle: '{{data.jobId}} · {{data.state | lower}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data['deployJobRun', 'verifyJobRun', 'predeployJobRun', 'postdeployJobRun'].build",
+          normalize: name,
+          service: cloudbuild.googleapis.com,
+        }
+    notes: One per job of a rollout phase; deploy, verify, predeploy and postdeploy jobs run as Cloud Build builds.
+
+  clouddeploy.googleapis.com/AutomationRun:
+    role: hidden
+    subtitle: '{{data.ruleId}} · {{data.state | lower}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+    notes: One per automation rule firing; ruleId and automationId are bare ids.

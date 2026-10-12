@@ -1,0 +1,43 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/indexes/8810239912377344000",
+  "assetType": "aiplatform.googleapis.com/Index",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/indexes/8810239912377344000",
+    "displayName": "products",
+    "description": "Product embeddings, 768 dimensions",
+    "metadataSchemaUri": "gs://google-cloud-aiplatform/schema/matchingengine/metadata/nearest_neighbor_search_1.0.0.yaml",
+    "metadata": {
+      "config": {
+        "dimensions": 768,
+        "approximateNeighborsCount": 150,
+        "distanceMeasureType": "DOT_PRODUCT_DISTANCE",
+        "algorithmConfig": {
+          "treeAhConfig": {
+            "leafNodeEmbeddingCount": "1000"
+          }
+        }
+      }
+    },
+    "deployedIndexes": [
+      {
+        "indexEndpoint": "projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216332800",
+        "deployedIndexId": "products_v2"
+      }
+    ],
+    "etag": "AMEw9yN5",
+    "createTime": "2026-03-04T08:00:00Z",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "indexStats": {
+      "vectorsCount": "1250000",
+      "shardsCount": 1
+    },
+    "indexUpdateMethod": "STREAM_UPDATE",
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    }
+  }
+}

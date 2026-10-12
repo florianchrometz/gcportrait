@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: MIT
+#
+# Pub/Sub: topics, subscriptions, schemas and snapshots. Messages flow topic → subscription → push
+# endpoint, BigQuery table or Cloud Storage bucket; subscriptions point at their topic (uses), the
+# graph builder turns a push endpoint that is a known Cloud Run or Cloud Run functions URL into a triggers
+# edge from the domains read here.
+product: Pub/Sub
+service: pubsub.googleapis.com
+icon: pubsub
+types:
+  pubsub.googleapis.com/Topic:
+    role: core
+    subtitle: '{{data.messageStoragePolicy.allowedPersistenceRegions[0]}}'
+    console: 'https://console.cloud.google.com/cloudpubsub/topic/detail/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+      - { kind: uses, to: $.data.schemaSettings.schema, normalize: pubsubUri }
+      - { kind: uses, to: $.data.ingestionDataSourceSettings.cloudStorage.bucket, normalize: gcsUri }
+      - {
+          kind: runsAs,
+          to: '$.data.ingestionDataSourceSettings.*.gcpServiceAccount',
+          normalize: serviceAccountEmail,
+        }
+    notes: >-
+      The subtitle is the first allowed message storage region (messageStoragePolicy). Import topics read
+      from Cloud Storage (ingestionDataSourceSettings.cloudStorage.bucket, a bare bucket name) or from
+      services outside Google Cloud (Kinesis, Event Hubs, MSK, Confluent Cloud: ARNs and ids, not drawn); the
+      ingestion runs as gcpServiceAccount. A deleted schema reads _deleted-schema_, which no normaliser
+      accepts, so it stays a dangling reference.
+
+  pubsub.googleapis.com/Subscription:
+    role: core
+    subtitle: 'topic {{data.topic | lastSegment}}'
+    console: 'https://console.cloud.google.com/cloudpubsub/subscription/detail/{{name | lastSegment}}?project={{projectId}}'
+    domains:
+      - $.data.pushConfig.pushEndpoint
+    relations:
+      - { kind: uses, to: $.data.topic, normalize: pubsubUri }
+      - { kind: uses, to: $.data.deadLetterPolicy.deadLetterTopic, normalize: pubsubUri }
+      - { kind: uses, to: $.data.bigqueryConfig.table, normalize: bigqueryUri }
+      - { kind: uses, to: $.data.cloudStorageConfig.bucket, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.analyticsHubSubscriptionInfo.listing,
+          normalize: name,
+          service: analyticshub.googleapis.com,
+        }
+      - { kind: runsAs, to: $.data.pushConfig.oidcToken.serviceAccountEmail, normalize: serviceAccountEmail }
+      - { kind: runsAs, to: $.data.bigqueryConfig.serviceAccountEmail, normalize: serviceAccountEmail }
+      - { kind: runsAs, to: $.data.cloudStorageConfig.serviceAccountEmail, normalize: serviceAccountEmail }
+    hiddenWhen: "$.data.topic == '_deleted-topic_' || $.data.detached == true"
+    notes: >-
+      Delivery is push (pushConfig.pushEndpoint), BigQuery (bigqueryConfig.table as project.dataset.table),
+      Cloud Storage (cloudStorageConfig.bucket, a bare bucket name) or pull (none of them); templates have no
+      conditionals, so the subtitle names the topic rather than the delivery type. A subscription whose topic
+      was deleted (topic _deleted-topic_) or that was detached from it receives nothing and starts hidden.
+      Subscriptions Eventarc creates for its triggers (label goog-eventarc) are ordinary subscriptions here;
+      the trigger points at them through its transport.
+
+  pubsub.googleapis.com/Schema:
+    role: leaf
+    subtitle: '{{data.type | lower}}'
+    console: 'https://console.cloud.google.com/cloudpubsub/schema/detail/{{name | lastSegment}}?project={{projectId}}'
+    notes: Topics point at their schema (schemaSettings.schema); the schema itself references nothing.
+
+  pubsub.googleapis.com/Snapshot:
+    role: hidden
+    subtitle: 'topic {{data.topic | lastSegment}}'
+    relations:
+      - { kind: uses, to: $.data.topic, normalize: pubsubUri }
+    notes: >-
+      A point-in-time acknowledgement state of a subscription, used for seek; it expires after at most
+      7 days.

@@ -1,0 +1,92 @@
+---
+import Base from '../layouts/Base.astro';
+import { socialImage } from '../lib/media.js';
+import { breadcrumbLd } from '../lib/seo.js';
+import { NON_AFFILIATION_LONG, REPOSITORY_URL, repositoryFileUrl } from '../site.js';
+
+const meta = {
+  title: 'Licence',
+  description:
+    'gcportrait is open source under the MIT License: what you may do with it, what stays reserved (its name and icon), the third-party material, and Google’s trademarks.',
+  path: '/licence/',
+  socialImage: socialImage('licence', 'gcportrait’s licence: MIT'),
+  jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Licence', path: '/licence/' }])],
+};
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<Base meta={meta}>
+  <div class="container prose licence">
+    <h1>Licence</h1>
+    <p class="lead">
+      gcportrait’s own work, its code, its texts and its images, is licensed under the MIT License
+      (<code>MIT</code>). Copyright © 2026 Florian Chrometz.
+    </p>
+    <p>
+      The licence text is <a href={repositoryFileUrl('LICENSE')}>LICENSE</a> in the repository (also at
+      <a href="/licenses/gcportrait-LICENSE.txt">gcportrait-LICENSE.txt</a> on this site). Every source file names the
+      licence in its first lines with the line <code class="code-long">SPDX-License-Identifier: MIT</code>.
+    </p>
+
+    <h2>What you may do</h2>
+    <p>
+      Use, copy, modify, merge, publish, distribute, sublicense and sell gcportrait, run it for yourself or for others,
+      on its own or as part of your own software or services, commercially or not. The one condition: the copyright
+      notice and the permission notice stay with every copy or substantial portion of it. It comes without warranty.
+    </p>
+    <p>
+      The licence asks nothing of an instance you run, modified or not. The app still links its source in its footer on
+      every page, “Source (MIT)”, as a courtesy to the people who use an instance: it points at this project’s
+      repository by default, and an instance that runs a modified version can point it at its own source (the backend’s
+      <code>SOURCE_URL</code>, <a href="/docs/configuration/">configuration reference</a>).
+    </p>
+
+    <h2>The gcportrait name and icon</h2>
+    <p>
+      The gcportrait name and the gcportrait icon are not covered by the MIT License. They identify this project and may
+      not be used to present other software or services as gcportrait or as endorsed by it; forks must use their own
+      name and icon.
+    </p>
+    <p>
+      The icon is <code>brand/icon.svg</code> and every rendering of it: the favicons, this website’s logo and the app’s
+      mark, the wordmarks, and the mark on the link-preview images. The details are in
+      <a href={repositoryFileUrl('brand/LICENSE.md')}>brand/LICENSE.md</a>.
+    </p>
+
+    <h2>Third-party material</h2>
+    <p>Third-party material keeps its own licences and terms and is not covered by the MIT License:</p>
+    <ul>
+      <li>
+        <strong>npm dependencies</strong>, each under its own licence. Only licences that do not reach gcportrait’s own
+        combined work are allowed (permissive licences and the file-scoped MPL-2.0), and a check enforces that on every
+        change; the list is <a href={repositoryFileUrl('THIRD_PARTY.md')}>THIRD_PARTY.md</a>.
+      </li>
+      <li>
+        <strong>The Roboto fonts</strong> the app and this website use, self-hosted, under the SIL Open Font License 1.1
+        (<a href="/licenses/roboto-LICENSE.txt">Roboto</a>, <a href="/licenses/roboto-mono-LICENSE.txt">Roboto Mono</a>).
+      </li>
+      <li>
+        <strong>Google Cloud product icons</strong>, vendored unmodified and used under Google’s icon usage terms
+        (<a href={repositoryFileUrl('packages/icons/README.md')}>packages/icons</a>). They are trademarks, not code, and
+        the MIT License does not cover them.
+      </li>
+      <li><strong>Licence texts</strong> under <code>scripts/licenses/</code>, kept verbatim.</li>
+    </ul>
+
+    <h2>Contributions</h2>
+    <p>
+      Contributions are accepted under the MIT License, the licence gcportrait is offered under (inbound = outbound);
+      there is no contributor licence agreement. The <a href="/contributing/">contributing page</a> has the rest. The
+      source is on <a href={REPOSITORY_URL}>GitHub</a>.
+    </p>
+
+    <h2>Google trademarks</h2>
+    <p>{NON_AFFILIATION_LONG}</p>
+  </div>
+</Base>
+
+<style>
+  .licence {
+    padding-top: 2rem;
+  }
+</style>

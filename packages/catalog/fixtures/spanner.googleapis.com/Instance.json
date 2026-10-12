@@ -1,0 +1,36 @@
+[
+  {
+    "name": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger",
+    "assetType": "spanner.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/instances/ledger",
+      "config": "projects/demo-data-1/instanceConfigs/regional-europe-west3",
+      "displayName": "Ledger",
+      "nodeCount": 1,
+      "processingUnits": 1000,
+      "state": "READY",
+      "edition": "ENTERPRISE"
+    }
+  },
+  {
+    "name": "//spanner.googleapis.com/projects/demo-data-1/instances/global-ledger",
+    "assetType": "spanner.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "eur3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/instances/global-ledger",
+      "config": "projects/demo-data-1/instanceConfigs/custom-eur3-read-us",
+      "displayName": "Global ledger",
+      "nodeCount": 3,
+      "processingUnits": 3000,
+      "state": "READY",
+      "edition": "ENTERPRISE_PLUS"
+    }
+  }
+]

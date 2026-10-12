@@ -1,0 +1,78 @@
+[
+  {
+    "name": "//dataflow.googleapis.com/projects/demo-data-1/locations/europe-west3/jobs/2026-09-14_03_12_45-1111111111111111111",
+    "assetType": "dataflow.googleapis.com/Job",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "id": "2026-09-14_03_12_45-1111111111111111111",
+      "projectId": "demo-data-1",
+      "name": "orders-to-bigquery",
+      "type": "JOB_TYPE_STREAMING",
+      "currentState": "JOB_STATE_RUNNING",
+      "currentStateTime": "2026-09-14T10:14:02Z",
+      "createTime": "2026-09-14T10:12:45Z",
+      "location": "europe-west3",
+      "environment": {
+        "tempStoragePrefix": "storage.googleapis.com/demo-data-1-dataflow/temp",
+        "serviceAccountEmail": "dataflow-worker@demo-data-1.iam.gserviceaccount.com",
+        "serviceKmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataflow",
+        "workerRegion": "europe-west3",
+        "workerPools": [
+          {
+            "kind": "harness",
+            "numWorkers": 2,
+            "machineType": "n2-standard-4",
+            "network": "core",
+            "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app"
+          }
+        ],
+        "sdkPipelineOptions": {
+          "options": {
+            "jobName": "orders-to-bigquery",
+            "project": "demo-data-1",
+            "region": "europe-west3",
+            "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+            "tempLocation": "gs://demo-data-1-dataflow/temp",
+            "streaming": true
+          }
+        }
+      },
+      "jobMetadata": {
+        "sdkVersion": { "version": "2.66.0", "versionDisplayName": "Apache Beam SDK for Java" },
+        "pubsubDetails": [
+          { "subscription": "projects/demo-data-1/subscriptions/orders-dataflow" },
+          { "topic": "projects/demo-data-1/topics/orders-enriched" }
+        ],
+        "bigqueryDetails": [{ "projectId": "demo-data-1", "dataset": "sales", "table": "orders" }]
+      }
+    }
+  },
+  {
+    "name": "//dataflow.googleapis.com/projects/demo-data-1/locations/europe-west3/jobs/2026-09-30_01_00_00-2222222222222222222",
+    "assetType": "dataflow.googleapis.com/Job",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-30T09:40:00Z",
+    "data": {
+      "id": "2026-09-30_01_00_00-2222222222222222222",
+      "projectId": "demo-data-1",
+      "name": "nightly-export",
+      "type": "JOB_TYPE_BATCH",
+      "currentState": "JOB_STATE_DONE",
+      "currentStateTime": "2026-09-30T08:40:00Z",
+      "createTime": "2026-09-30T08:00:00Z",
+      "location": "europe-west3",
+      "environment": {
+        "tempStoragePrefix": "storage.googleapis.com/demo-data-1-dataflow/temp",
+        "serviceAccountEmail": "dataflow-worker@demo-data-1.iam.gserviceaccount.com",
+        "workerPools": [
+          { "kind": "harness", "numWorkers": 4, "subnetwork": "regions/europe-west3/subnetworks/batch" }
+        ]
+      }
+    }
+  }
+]

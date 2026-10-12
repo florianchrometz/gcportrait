@@ -1,0 +1,56 @@
+[
+  {
+    "name": "//krmapihosting.googleapis.com/projects/demo-ops-1/locations/europe-west3/krmApiHosts/platform-cc",
+    "assetType": "krmapihosting.googleapis.com/KrmApiHost",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/krmApiHosts/platform-cc",
+      "bundlesConfig": {
+        "configControllerConfig": {
+          "enabled": true
+        }
+      },
+      "usePrivateEndpoint": true,
+      "state": "RUNNING",
+      "managementConfig": {
+        "standardManagementConfig": {
+          "network": "projects/demo-net-1/global/networks/core",
+          "masterIpv4CidrBlock": "172.16.0.128/28",
+          "manBlock": "10.0.0.0/8",
+          "clusterCidrBlock": "10.60.0.0/17",
+          "servicesCidrBlock": "10.60.128.0/22"
+        }
+      }
+    }
+  },
+  {
+    "name": "//krmapihosting.googleapis.com/projects/demo-ops-1/locations/europe-west3/krmApiHosts/sandbox-cc",
+    "assetType": "krmapihosting.googleapis.com/KrmApiHost",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/krmApiHosts/sandbox-cc",
+      "bundlesConfig": {
+        "configControllerConfig": {
+          "enabled": true
+        }
+      },
+      "usePrivateEndpoint": false,
+      "state": "RUNNING",
+      "managementConfig": {
+        "fullManagementConfig": {
+          "network": "projects/demo-net-1/global/networks/core",
+          "masterIpv4CidrBlock": "172.16.0.144/28",
+          "manBlock": "10.0.0.0/8",
+          "clusterCidrBlock": "10.61.0.0/17",
+          "servicesCidrBlock": "10.61.128.0/22"
+        }
+      }
+    }
+  }
+]

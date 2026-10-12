@@ -1,0 +1,194 @@
+[
+  {
+    "name": "//compute.googleapis.com/locations/global/firewallPolicies/70000000001",
+    "assetType": "compute.googleapis.com/FirewallPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#firewallPolicy",
+      "id": "70000000001",
+      "name": "70000000001",
+      "shortName": "org-baseline",
+      "description": "Organisation-wide baseline, inspected by Cloud NGFW Enterprise",
+      "parent": "organizations/30000000001",
+      "ruleTupleCount": 36,
+      "associations": [
+        {
+          "name": "org-baseline-org",
+          "attachmentTarget": "organizations/30000000001",
+          "firewallPolicyId": "70000000001",
+          "shortName": "org-baseline"
+        },
+        {
+          "name": "org-baseline-shared",
+          "attachmentTarget": "folders/20000000002",
+          "firewallPolicyId": "70000000001",
+          "shortName": "org-baseline"
+        }
+      ],
+      "rules": [
+        {
+          "priority": 1000,
+          "direction": "INGRESS",
+          "action": "apply_security_profile_group",
+          "description": "Inspect inbound web traffic",
+          "match": {
+            "srcIpRanges": ["0.0.0.0/0"],
+            "layer4Configs": [
+              {
+                "ipProtocol": "tcp",
+                "ports": ["443"]
+              }
+            ]
+          },
+          "securityProfileGroup": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfileGroups/inspect-all",
+          "tlsInspect": true,
+          "targetResources": [
+            "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+          ],
+          "enableLogging": true,
+          "ruleTupleCount": 4,
+          "kind": "compute#firewallPolicyRule"
+        },
+        {
+          "priority": 2000,
+          "direction": "INGRESS",
+          "action": "deny",
+          "description": "Blocked source ranges",
+          "match": {
+            "srcAddressGroups": ["organizations/30000000001/locations/global/addressGroups/blocked-ranges"],
+            "layer4Configs": [
+              {
+                "ipProtocol": "all"
+              }
+            ]
+          },
+          "enableLogging": true,
+          "ruleTupleCount": 2,
+          "kind": "compute#firewallPolicyRule"
+        },
+        {
+          "priority": 3000,
+          "direction": "EGRESS",
+          "action": "allow",
+          "description": "Package mirrors",
+          "match": {
+            "destFqdns": ["packages.example.com", "mirror.example.org"],
+            "layer4Configs": [
+              {
+                "ipProtocol": "tcp",
+                "ports": ["443"]
+              }
+            ]
+          },
+          "ruleTupleCount": 6,
+          "kind": "compute#firewallPolicyRule"
+        },
+        {
+          "priority": 2147483647,
+          "direction": "INGRESS",
+          "action": "goto_next",
+          "match": {
+            "srcIpRanges": ["0.0.0.0/0"],
+            "layer4Configs": [
+              {
+                "ipProtocol": "all"
+              }
+            ]
+          },
+          "ruleTupleCount": 2,
+          "kind": "compute#firewallPolicyRule"
+        }
+      ],
+      "packetMirroringRules": [
+        {
+          "priority": 1000,
+          "direction": "INGRESS",
+          "action": "mirror",
+          "match": {
+            "srcIpRanges": ["10.0.0.0/8"],
+            "layer4Configs": [
+              {
+                "ipProtocol": "tcp"
+              }
+            ]
+          },
+          "securityProfileGroup": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfileGroups/mirror-to-collectors",
+          "ruleTupleCount": 2,
+          "kind": "compute#packetMirroringRule"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/locations/global/firewallPolicies/70000000001"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/firewallPolicies/core-policy",
+    "assetType": "compute.googleapis.com/FirewallPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#firewallPolicy",
+      "id": "5000000000000000121",
+      "name": "core-policy",
+      "description": "Global network firewall policy of the production Shared VPC",
+      "ruleTupleCount": 18,
+      "policyType": "VPC_POLICY",
+      "associations": [
+        {
+          "name": "core-policy-core",
+          "attachmentTarget": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+        }
+      ],
+      "rules": [
+        {
+          "priority": 1000,
+          "direction": "INGRESS",
+          "action": "allow",
+          "description": "Partner extranet to the web tier",
+          "match": {
+            "srcIpRanges": ["172.24.0.0/16"],
+            "srcAddressGroups": ["projects/10000000001/locations/global/addressGroups/partner-ranges"],
+            "srcSecureTags": [{ "name": "tagValues/40000000011", "state": "EFFECTIVE" }],
+            "layer4Configs": [
+              {
+                "ipProtocol": "tcp",
+                "ports": ["443"]
+              }
+            ]
+          },
+          "targetServiceAccounts": ["web-frontend@demo-app-1.iam.gserviceaccount.com"],
+          "ruleTupleCount": 5,
+          "kind": "compute#firewallPolicyRule"
+        },
+        {
+          "priority": 1100,
+          "direction": "EGRESS",
+          "action": "deny",
+          "description": "No egress to the lab range",
+          "match": {
+            "destIpRanges": ["192.168.50.0/24"],
+            "destAddressGroups": ["projects/10000000001/locations/global/addressGroups/partner-ranges"],
+            "layer4Configs": [
+              {
+                "ipProtocol": "all"
+              }
+            ]
+          },
+          "targetSecureTags": [{ "name": "tagValues/40000000011", "state": "EFFECTIVE" }],
+          "ruleTupleCount": 3,
+          "kind": "compute#firewallPolicyRule"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/firewallPolicies/core-policy"
+    }
+  }
+]

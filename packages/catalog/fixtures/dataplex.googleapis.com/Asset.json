@@ -1,0 +1,40 @@
+[
+  {
+    "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/lakes/analytics/zones/raw/assets/landing-bucket",
+    "assetType": "dataplex.googleapis.com/Asset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/lakes/analytics/zones/raw/assets/landing-bucket",
+      "displayName": "Landing bucket",
+      "uid": "d0000000-0000-4000-8000-000000000003",
+      "state": "ACTIVE",
+      "resourceSpec": {
+        "name": "projects/10000000003/buckets/demo-data-1-landing",
+        "type": "STORAGE_BUCKET",
+        "readAccessMode": "DIRECT"
+      },
+      "resourceStatus": { "state": "READY" },
+      "discoverySpec": { "enabled": true, "schedule": "0 * * * *" }
+    }
+  },
+  {
+    "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/lakes/analytics/zones/raw/assets/sales-dataset",
+    "assetType": "dataplex.googleapis.com/Asset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/lakes/analytics/zones/raw/assets/sales-dataset",
+      "displayName": "Sales dataset",
+      "uid": "d0000000-0000-4000-8000-000000000004",
+      "state": "ACTIVE",
+      "resourceSpec": { "name": "projects/10000000003/datasets/sales", "type": "BIGQUERY_DATASET" },
+      "resourceStatus": { "state": "READY" },
+      "discoverySpec": { "enabled": true }
+    }
+  }
+]

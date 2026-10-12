@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: MIT
+#
+# Spanner: the instance container (from the catalog seed), databases, backups, instance partitions and
+# configurations. Cloud Asset Inventory names everything by project id, databases, backups and partitions
+# under their instance (`//spanner.googleapis.com/projects/<id>/instances/<i>/databases/<d>`), configurations
+# under the project (`…/projects/<id>/instanceConfigs/<c>`).
+product: Spanner
+service: spanner.googleapis.com
+icon: spanner
+types:
+  spanner.googleapis.com/Instance:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.config | lastSegment}} · {{data.processingUnits}} processing units'
+    console: 'https://console.cloud.google.com/spanner/instances/{{name | lastSegment}}/details/databases?project={{projectId}}'
+    relations:
+      - { kind: uses, to: "$[?(@.config contains '/instanceConfigs/custom-')].config", normalize: name }
+    contains:
+      - byParent: spanner.googleapis.com/Database
+      - byParent: spanner.googleapis.com/Backup
+      - byParent: spanner.googleapis.com/InstancePartition
+    notes: >-
+      data.config is the instance configuration (projects/<id>/instanceConfigs/<c>): Google-managed
+      (regional-<region>, a multi-region such as eur3) or user-managed, whose id must start with custom-.
+      Only user-managed configurations are assets of the project, so the rule reads data.config only when it
+      names a custom-… configuration (the filter keeps data when its config does); a Google-managed
+      configuration would otherwise leave a dangling reference on nearly every instance, and stays visible
+      in the subtitle.
+
+  spanner.googleapis.com/Database:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.databaseDialect | lower}} · {{data.defaultLeader}}'
+    console: 'https://console.cloud.google.com/spanner/instances/{{name | parentSegment(instances)}}/databases/{{name | lastSegment}}/details/tables?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+      - { kind: encryptedBy, to: '$.data.encryptionConfig.kmsKeyNames[*]', normalize: kmsKey }
+    notes: >-
+      A customer-managed key is encryptionConfig.kmsKeyName, or one regional key per replica region in
+      encryptionConfig.kmsKeyNames for multi-region configurations. databaseDialect is GOOGLE_STANDARD_SQL or
+      POSTGRESQL; defaultLeader is set only when chosen explicitly.
+
+  spanner.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'backup · {{data.database | lastSegment}}'
+    console: 'https://console.cloud.google.com/spanner/instances/{{name | parentSegment(instances)}}/details/backups?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.database, normalize: name }
+    notes: A backup of one database (data.database, same instance); hidden and counted in the instance's badge.
+
+  spanner.googleapis.com/InstanceConfig:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.configType | lower}} configuration'
+    console: 'https://console.cloud.google.com/spanner/instances?project={{projectId}}'
+    notes: >-
+      A user-managed instance configuration (custom-…, built on the Google-managed baseConfig with optional
+      read-only replicas); a settings object, hidden, that instances use through data.config.
+
+  spanner.googleapis.com/InstancePartition:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.config | lastSegment}} · {{data.processingUnits}} processing units'
+    console: 'https://console.cloud.google.com/spanner/instances/{{name | parentSegment(instances)}}/details/databases?project={{projectId}}'
+    notes: >-
+      A geo-partition of the instance in another configuration; it nests in its instance by name. The
+      databases using it are listed in referencingDatabases (output only), which the partition does not own.

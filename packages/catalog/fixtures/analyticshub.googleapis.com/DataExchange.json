@@ -1,0 +1,17 @@
+{
+  "name": "//analyticshub.googleapis.com/projects/demo-data-1/locations/europe-west3/dataExchanges/sales_exchange",
+  "assetType": "analyticshub.googleapis.com/DataExchange",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/dataExchanges/sales_exchange",
+    "displayName": "Sales exchange",
+    "description": "Curated sales data for the business units",
+    "primaryContact": "data-team@example.com",
+    "listingCount": 2,
+    "sharingEnvironmentConfig": { "defaultExchangeConfig": {} },
+    "discoveryType": "DISCOVERY_TYPE_PRIVATE"
+  }
+}

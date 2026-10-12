@@ -1,0 +1,22 @@
+{
+  "name": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger/backups/payments-weekly-20260928",
+  "assetType": "spanner.googleapis.com/Backup",
+  "parent": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/ledger/backups/payments-weekly-20260928",
+    "database": "projects/demo-data-1/instances/ledger/databases/payments",
+    "versionTime": "2026-09-28T03:00:00Z",
+    "expireTime": "2026-12-28T03:00:00Z",
+    "createTime": "2026-09-28T03:05:00Z",
+    "sizeBytes": "52428800",
+    "state": "READY",
+    "databaseDialect": "GOOGLE_STANDARD_SQL",
+    "encryptionInfo": {
+      "encryptionType": "CUSTOMER_MANAGED_ENCRYPTION",
+      "kmsKeyVersion": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/spanner/cryptoKeyVersions/3"
+    }
+  }
+}

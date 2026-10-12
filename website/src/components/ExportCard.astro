@@ -1,0 +1,192 @@
+---
+/**
+ * One sample export (src/lib/exports.ts): a column per theme, whatever the visitor's theme, with the preview, its
+ * label, and the links to download the PNG, the SVG and the draw.io file (with their sizes), to open the SVG in the
+ * browser, and to open the draw.io file in diagrams.net (a new tab: diagrams.net loads the file from its address on
+ * this site). The two columns sit side by side where the card is at least 27rem wide and stack below that. The `full`
+ * variant, on /exports/, adds the files' dimensions and the commands that made them.
+ *
+ * Every link carries `data-export` (png, svg, svg-open, drawio, drawio-open) for `pnpm website:check`, which checks
+ * that each file is in the build, served from the site itself, that no SVG or draw.io file carries an affiliation line
+ * (ADR 0018), and that the diagrams.net link opens a draw.io file of the site.
+ */
+import { NEW_TAB_NOTE } from '../site.js';
+import type { SampleExport } from '../lib/exports.js';
+
+interface Props {
+  sample: SampleExport;
+  /** compact: the landing page's teaser; full: the /exports/ page. */
+  variant?: 'compact' | 'full';
+  /** The card heading's level. */
+  level?: 2 | 3;
+}
+const { sample, variant = 'compact', level = 3 } = Astro.props;
+const Heading = level === 2 ? 'h2' : 'h3';
+const headingId = `export-${sample.id}`;
+const label = (theme: string): string => (theme === 'dark' ? 'Dark' : 'Light');
+// The width each preview is shown at: half the card's content box where the columns sit side by side (from a
+// 32rem viewport), the whole of it below; the landing page's two cards share a row from 56rem.
+const sizes =
+  variant === 'full'
+    ? '(min-width: 72rem) 33rem, (min-width: 32rem) calc(50vw - 3rem), calc(100vw - 5rem)'
+    : '(min-width: 72rem) 15.5rem, (min-width: 56rem) calc(25vw - 2.5rem), (min-width: 32rem) calc(50vw - 3rem), calc(100vw - 5rem)';
+const px = (value: number): string => value.toLocaleString('en-GB');
+const first = sample.themes[0];
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<article class:list={['card', 'export-card', `export-${variant}`]} aria-labelledby={headingId}>
+  <Heading id={headingId} class="export-title">{sample.title}</Heading>
+  <p class="export-summary">{sample.summary}</p>
+  <p class="export-editable">Editable: open the <code>.drawio</code> file in draw.io or diagrams.net.</p>
+  <div class="export-themes">
+    {
+      sample.themes.map((item) => (
+        <div class="export-theme">
+          <figure class="export-preview">
+            <img
+              src={item.preview.src}
+              srcset={item.preview.srcset}
+              sizes={sizes}
+              width={item.preview.width}
+              height={item.preview.height}
+              alt={`Preview of the ${item.theme} PNG export: ${sample.title}. ${sample.summary}`}
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>{label(item.theme)}</figcaption>
+          </figure>
+          <ul class="export-links">
+            <li>
+              <a class="button export-link" href={item.png.url} download={item.png.downloadName} data-export="png">
+                Download PNG <span class="export-size">({item.png.size})</span>
+                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
+              </a>
+            </li>
+            <li>
+              <a class="button export-link" href={item.svg.url} download={item.svg.downloadName} data-export="svg">
+                Download SVG <span class="export-size">({item.svg.size})</span>
+                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
+              </a>
+            </li>
+            <li>
+              <a class="button export-link" href={item.svg.url} data-export="svg-open">
+                Open SVG
+                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
+              </a>
+            </li>
+            <li>
+              <a
+                class="button export-link"
+                href={item.drawio.url}
+                download={item.drawio.downloadName}
+                data-export="drawio"
+              >
+                Download draw.io <span class="export-size">({item.drawio.size})</span>
+                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
+              </a>
+            </li>
+            <li>
+              <a
+                class="button export-link"
+                href={item.drawio.open}
+                target="_blank"
+                rel="noopener"
+                data-export="drawio-open"
+              >
+                Open in diagrams.net
+                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme${NEW_TAB_NOTE}`}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+  {
+    variant === 'full' && first !== undefined && (
+      <>
+        <p class="export-meta">
+          PNG {px(first.png.width)} × {px(first.png.height)} pixels (2×, a 24-unit margin), SVG {px(first.svg.width)} ×{' '}
+          {px(first.svg.height)} units, draw.io page {px(first.drawio.width)} × {px(first.drawio.height)}{sample.detail === undefined ? '' : `, opened at the detail level “${sample.detail}”`}.
+          Made with:
+        </p>
+        <pre tabindex="0" aria-label={`The commands that made ${sample.title}`}><code>{sample.themes.map((item) => item.command).join('\n')}</code></pre>
+      </>
+    )
+  }
+</article>
+
+<style>
+  .export-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  .export-title {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+  .export-full .export-title {
+    font-size: 1.375rem;
+  }
+  .export-summary,
+  .export-editable {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  .export-editable {
+    font-size: 0.875rem;
+  }
+  .export-themes {
+    display: grid;
+    gap: 1rem 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  }
+  .export-theme {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  /* Each preview keeps its own canvas colour; the edge sets the light one off a light page and the dark a dark one. */
+  .export-preview img {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+  }
+  .export-preview figcaption {
+    margin-top: 0.25rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+  .export-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .export-link {
+    min-height: 2.75rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.875rem;
+  }
+  .export-size {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+  .export-meta {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+  .export-card pre {
+    margin: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+  }
+</style>

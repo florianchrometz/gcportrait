@@ -1,0 +1,25 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/apis/gateway.networking.k8s.io/gatewayclasses/gke-l7-global-external-managed",
+  "assetType": "gateway.networking.k8s.io/GatewayClass",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "gateway.networking.k8s.io/v1",
+    "kind": "GatewayClass",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000134",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "gke-l7-global-external-managed"
+    },
+    "spec": {
+      "controllerName": "networking.gke.io/gateway"
+    }
+  }
+}

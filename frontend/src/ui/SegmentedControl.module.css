@@ -1,0 +1,58 @@
+/* SPDX-License-Identifier: MIT */
+
+/* A segmented control (SegmentedControl.tsx): §9 control metrics, one outline around the segments. The checked
+   segment is filled in the surface container and marked with a check (colour never carries the state alone). */
+.group {
+  display: inline-flex;
+  height: var(--control-height);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+}
+
+.inert {
+  border-style: dashed;
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.segment + .segment {
+  border-left: 1px solid var(--color-outline);
+}
+
+.segment:first-child {
+  border-radius: var(--control-radius) 0 0 var(--control-radius);
+}
+
+.segment:last-child {
+  border-radius: 0 var(--control-radius) var(--control-radius) 0;
+}
+
+.segment:hover {
+  background: var(--color-surface-container);
+}
+
+.segment[aria-checked='true'] {
+  background: var(--color-surface-container);
+  font-weight: var(--font-weight-medium);
+}
+
+.segment[aria-checked='true']::before {
+  content: '✓' / '';
+}
+
+.inert .segment {
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}

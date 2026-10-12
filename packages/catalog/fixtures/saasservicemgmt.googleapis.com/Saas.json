@@ -1,0 +1,22 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/saas/shop-hosted",
+  "assetType": "saasservicemgmt.googleapis.com/Saas",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/saas/shop-hosted",
+    "locations": [
+      {
+        "name": "europe-west3"
+      },
+      {
+        "name": "europe-west4"
+      }
+    ],
+    "state": "STATE_ACTIVE",
+    "uid": "5c6d7e8f-9a0b-4c1d-8e2f-a3b4c5d6e7f8",
+    "createTime": "2026-02-01T09:00:00Z"
+  }
+}

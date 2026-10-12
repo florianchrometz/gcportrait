@@ -1,0 +1,21 @@
+{
+  "name": "//videostitcher.googleapis.com/projects/demo-app-1/locations/europe-west1/liveConfigs/launch-event",
+  "assetType": "videostitcher.googleapis.com/LiveConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west1/liveConfigs/launch-event",
+    "sourceUri": "https://cdn.example.com/live/launch-event/main.m3u8",
+    "adTagUri": "https://ads.example.com/vast?slot=preroll",
+    "state": "READY",
+    "adTracking": "SERVER",
+    "stitchingPolicy": "CUT_CURRENT"
+  }
+}

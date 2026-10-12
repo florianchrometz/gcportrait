@@ -1,0 +1,516 @@
+# SPDX-License-Identifier: MIT
+#
+# Vertex AI, documented since 2026 as Gemini Enterprise Agent Platform, whose console pages live under
+# /agent-platform/. Asset names carry the project number (projects/<number>/locations/<l>/<collection>/<id>),
+# and so do the API's own cross-references between Vertex AI resources (deployed models, indexes, runtime
+# templates, Tensorboards), so those resolve verbatim; network fields name a project number, which
+# computeRelative turns into the id Compute names use. Serving and runtime resources are cards; training,
+# tuning, prediction, pipeline and monitoring jobs are hidden operational records.
+# The Workbench instance is notebooks.googleapis.com.
+product: Vertex AI
+service: aiplatform.googleapis.com
+icon: vertex_ai
+types:
+  aiplatform.googleapis.com/Endpoint:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.deployedModels[0].displayName}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/online-prediction/endpoints?project={{projectId}}'
+    ips:
+      - '$.data.privateServiceConnectConfig.pscAutomationConfigs[*].ipAddress'
+    domains:
+      - $.data.dedicatedEndpointDns
+      - '$.data.deployedModels[*].privateEndpoints.predictHttpUri'
+    relations:
+      - { kind: uses, to: '$.data.deployedModels[*].model', normalize: name }
+      - { kind: uses, to: '$.data.deployedModels[*].sharedResources', normalize: name }
+      - { kind: runsAs, to: '$.data.deployedModels[*].serviceAccount', normalize: serviceAccountEmail }
+      - {
+          kind: uses,
+          to: '$.data.deployedModels[*].dedicatedResources.machineSpec.reservationAffinity.values[*]',
+          normalize: computeRelative,
+        }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - {
+          kind: connects,
+          to: '$.data.privateServiceConnectConfig.projectAllowlist[*]',
+          normalize: projectNumberOrId,
+        }
+      - {
+          kind: connects,
+          to: '$.data.privateServiceConnectConfig.pscAutomationConfigs[*].forwardingRule',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: connects,
+          to: '$.data.privateServiceConnectConfig.pscAutomationConfigs[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: $.data.predictRequestResponseLoggingConfig.bigqueryDestination.outputUri,
+          normalize: bigqueryUri,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Online prediction. network (private services access, a peered VPC) and privateServiceConnectConfig are
+      mutually exclusive: a peered endpoint attaches to the VPC; a Private Service Connect endpoint connects
+      to the consumer projects on its allowlist and, with PSC automation, to the forwarding rule and network
+      created in each consumer project (the endpoint's own service attachment sits in a Google tenant
+      project and is not read). deployedModels[*].model may carry a version suffix (models/<id>@2), which
+      then stays dangling; sharedResources names a deployment resource pool. Model Garden and Gemini
+      publisher models are not project assets. The request-response log table is a bq:// URI. A peered
+      endpoint's private address is not in the resource: its deployed models' privateEndpoints.predictHttpUri
+      names a private host (http://<endpoint id>.aiplatform.googleapis.com/v1/models/<deployed model>:predict,
+      older endpoints http://aiplatform<hash>.googleapis.com/…), indexed as a domain. dedicatedEndpointDns is
+      a bare host name. A deployed model pinned to a Compute Engine reservation (reservationAffinity type
+      SPECIFIC_RESERVATION) names it in machineSpec.reservationAffinity.values as
+      projects/<p>/zones/<z>/reservations/<r>; a reservation block or sub-block name (…/reservationBlocks/<b>)
+      stays dangling because blocks are not inventory assets.
+
+  aiplatform.googleapis.com/Model:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'v{{data.versionId}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/models?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.containerSpec.imageUri, normalize: artifactImage }
+      - { kind: uses, to: $.data.artifactUri, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      One asset per registered model; versionId is the version the asset describes. The serving container
+      image (prebuilt images live in Google's own repositories and stay dangling) and the artifact directory
+      are drawn. deployedModels[*].endpoint repeats the endpoint's own reference backwards and is not drawn;
+      trainingPipeline and pipelineJob name the hidden job that produced the model.
+
+  aiplatform.googleapis.com/IndexEndpoint:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.deployedIndexes[0].id}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/matching-engine/index-endpoints?project={{projectId}}'
+    ips:
+      - '$.data.deployedIndexes[*].privateEndpoints.matchGrpcAddress'
+      - '$.data.deployedIndexes[*].privateEndpoints.pscAutomatedEndpoints[*].matchAddress'
+      - '$.data.deployedIndexes[*].pscAutomationConfigs[*].ipAddress'
+    domains:
+      - $.data.publicEndpointDomainName
+    relations:
+      - { kind: uses, to: '$.data.deployedIndexes[*].index', normalize: name }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - {
+          kind: connects,
+          to: '$.data.privateServiceConnectConfig.projectAllowlist[*]',
+          normalize: projectNumberOrId,
+        }
+      - {
+          kind: connects,
+          to: '$.data.deployedIndexes[*].pscAutomationConfigs[*].forwardingRule',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: connects,
+          to: '$.data.deployedIndexes[*].pscAutomationConfigs[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Vector Search serving. A peered index endpoint attaches to its VPC (network, private services access)
+      and serves on matchGrpcAddress; a Private Service Connect one connects to its allowlisted consumer
+      projects and, with PSC automation, to the forwarding rule created in each consumer network (the network
+      itself is a weak edge, as on the prediction endpoint: it yields to the rule only where the rule nests in
+      that network, so with Shared VPC, a rule in a service project and the network in the host, both edges
+      are drawn); a public one has a domain name. deployedIndexes[*].reservedIpRanges are bare address names
+      and are not drawn.
+
+  aiplatform.googleapis.com/Index:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.indexUpdateMethod | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/matching-engine/indexes?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Referenced by the index endpoints that deploy it (deployedIndexes[*].indexEndpoint repeats that
+      backwards). The subtitle shows the update method (batch_update or stream_update) rather than
+      indexStats.vectorsCount, which an empty index omits (proto3 JSON drops zero values). The source bucket
+      (metadata.contentsDeltaUri) is write-only in the index metadata schema and does not come back, so no
+      bucket edge.
+
+  aiplatform.googleapis.com/FeatureOnlineStore:
+    role: core
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/feature-store?project={{projectId}}'
+    domains:
+      - $.data.dedicatedServingEndpoint.publicEndpointDomainName
+    relations:
+      - {
+          kind: connects,
+          to: '$.data.dedicatedServingEndpoint.privateServiceConnectConfig.projectAllowlist[*]',
+          normalize: projectNumberOrId,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Online serving of the feature registry (Bigtable or optimized storage, both Google-managed: the
+      bigtableMetadata names a tenant project). A Private Service Connect serving endpoint connects to its
+      allowlisted consumer projects. Its feature views are not inventory types.
+
+  aiplatform.googleapis.com/FeatureGroup:
+    role: core
+    subtitle: '{{data.bigQuery.bigQuerySource.inputUri | lastSegment}}'
+    console: 'https://console.cloud.google.com/agent-platform/feature-store?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.bigQuery.bigQuerySource.inputUri, normalize: bigqueryUri }
+      - { kind: runsAs, to: $.data.serviceAccountEmail, normalize: serviceAccountEmail }
+    notes: >-
+      A feature registry group over one BigQuery table or view (bq://project.dataset.table). With
+      serviceAgentType SERVICE_AGENT_TYPE_FEATURE_GROUP it reads the table as its own service account
+      (serviceAccountEmail, output only). The reference does not document that account's email format, so the
+      fixture's address is a guess; the rule reads whatever email the field holds.
+
+  aiplatform.googleapis.com/Featurestore:
+    role: core
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/vertex-ai/features?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Feature Store (legacy). A card rather than a zone: its entity types and features are not inventory
+      types, so nothing nests in it. The console link is the legacy feature page. The node count is not in
+      the subtitle: an autoscaling store has onlineServingConfig.scaling instead of fixedNodeCount.
+
+  aiplatform.googleapis.com/Tensorboard:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/experiments?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.blobStoragePathPrefix, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      blobStoragePathPrefix is the Cloud Storage prefix (no gs:// scheme, no trailing slash) the instance
+      stores its blobs under, in the consumer project. runCount is left out of the subtitle because a new
+      instance omits it (zero).
+
+  aiplatform.googleapis.com/Dataset:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.metadataSchemaUri | lastSegment}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/datasets?project={{projectId}}'
+    relations:
+      - { kind: uses, to: '$.data.metadata.inputConfig.gcsSource.uri[*]', normalize: gcsUri }
+      - { kind: uses, to: $.data.metadata.inputConfig.bigquerySource.uri, normalize: bigqueryUri }
+      - { kind: uses, to: $.data.metadata.gcsBucket, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      metadata is a free-form value shaped by the schema metadataSchemaUri names. Tabular and time-series
+      datasets (tabular_1.0.0.yaml, time_series_1.0.0.yaml) point at their source in inputConfig: gcsSource
+      with a list of gs:// files, or bigquerySource with one bq:// table (the shape the console and the SDK
+      store; the published schema files sketch the same pointers as a discriminated union). Image, text and
+      video datasets (image_1.0.0.yaml, text_1.0.0.yaml, video_1.0.0.yaml) carry the read-only gcsBucket, the bare name of
+      the bucket that holds the dataset's blob data, plus dataItemSchemaUri; gcsUri takes the bare bucket
+      name. The subtitle names the metadata schema file, which tells the modality; dataItemCount applies to
+      unstructured datasets only and is absent on tabular ones.
+
+  aiplatform.googleapis.com/DeploymentResourcePool:
+    role: core
+    subtitle: '{{data.dedicatedResources.machineSpec.machineType}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/online-prediction/deployment-resource-pools?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: uses,
+          to: '$.data.dedicatedResources.machineSpec.reservationAffinity.values[*]',
+          normalize: computeRelative,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Shared serving machines for model co-hosting; endpoints reach it through their deployed models'
+      sharedResources. A pool drawing on a specific Compute Engine reservation names it in
+      machineSpec.reservationAffinity.values (projects/<p>/zones/<z>/reservations/<r>, possibly in another,
+      reservation-owning project); block and sub-block names stay dangling.
+
+  aiplatform.googleapis.com/ReasoningEngine:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.spec.agentFramework}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/agents/agent-engines?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.spec.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: $.data.spec.deploymentSpec.pscInterfaceConfig.networkAttachment,
+          normalize: computeRelative,
+        }
+      - { kind: uses, to: $.data.spec.containerSpec.imageUri, normalize: artifactImage }
+      - {
+          kind: uses,
+          to: "$.data.spec.packageSpec['pickleObjectGcsUri','dependencyFilesGcsUri','requirementsGcsUri']",
+          normalize: gcsUri,
+        }
+      - {
+          kind: uses,
+          to: $.data.spec.sourceCodeSpec.developerConnectSource.config.gitRepositoryLink,
+          normalize: name,
+          service: developerconnect.googleapis.com,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Agent Engine: a deployed agent runtime. It reaches a VPC through a Private Service Connect interface
+      (pscInterfaceConfig.networkAttachment, a network attachment in the consumer project; a bare attachment
+      name stays dangling). Sources are a pickled package in Cloud Storage, a container image, inline source
+      or a Developer Connect repository link. secretEnv[*].secretRef.secret holds bare secret ids, which no
+      normaliser can place yet, and is not drawn.
+
+  aiplatform.googleapis.com/NotebookRuntime:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.machineSpec.machineType}} · {{data.runtimeState | lower}}'
+    console: 'https://console.cloud.google.com/agent-platform/colab/runtimes?project={{projectId}}'
+    domains:
+      - $.data.proxyUri
+    relations:
+      - { kind: uses, to: $.data.notebookRuntimeTemplateRef.notebookRuntimeTemplate, normalize: name }
+      - { kind: attaches, to: $.data.networkSpec.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.networkSpec.network, normalize: computeRelative, weak: true }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    hiddenWhen: "$.data.runtimeState in ['STOPPED', 'BEING_STOPPED']"
+    notes: >-
+      A Colab Enterprise runtime, one per user and template; stopped runtimes start hidden. The runtime
+      workload runs as the Vertex AI notebook service agent (serviceAccount is deprecated and ignored), so
+      no identity edge; runtimeUser is the person's email.
+
+  aiplatform.googleapis.com/NotebookRuntimeTemplate:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.machineSpec.machineType}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/colab/runtime-templates?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.networkSpec.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.networkSpec.network, normalize: computeRelative, weak: true }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Machine, disk and network settings for Colab Enterprise runtimes. Its serviceAccount field is
+      deprecated and ignored (runtimes run as the notebook service agent).
+
+  aiplatform.googleapis.com/MetadataStore:
+    role: hidden
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Vertex ML Metadata store, usually the one `default` store per region that pipelines and experiments
+      create; a settings-like record, hence hidden.
+
+  aiplatform.googleapis.com/SpecialistPool:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: >-
+      A pool of human labelers; its manager and worker emails are people, not service accounts, and are not
+      drawn.
+
+  aiplatform.googleapis.com/CachedContent:
+    role: hidden
+    label: '{{data.displayName}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      A Gemini context cache with an expiry; model names a publisher model (publishers/google/models/…),
+      which is not a project asset.
+
+  aiplatform.googleapis.com/CustomJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/training/custom-jobs?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.jobSpec.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: attaches, to: $.data.jobSpec.network, normalize: computeRelative }
+      - {
+          kind: attaches,
+          to: $.data.jobSpec.pscInterfaceConfig.networkAttachment,
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: '$.data.jobSpec.workerPoolSpecs[*].containerSpec.imageUri',
+          normalize: artifactImage,
+        }
+      - {
+          kind: uses,
+          to: '$.data.jobSpec.workerPoolSpecs[*].pythonPackageSpec.executorImageUri',
+          normalize: artifactImage,
+        }
+      - { kind: uses, to: $.data.jobSpec.baseOutputDirectory.outputUriPrefix, normalize: gcsUri }
+      - { kind: uses, to: $.data.jobSpec.tensorboard, normalize: name }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      One training run. network (VPC peering) and pscInterfaceConfig (Private Service Connect interface)
+      place its workers on the customer's network. Prebuilt training images live in Google's repositories
+      and stay dangling.
+
+  aiplatform.googleapis.com/HyperparameterTuningJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/training/hyperparameter-tuning-jobs?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.trialJobSpec.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: attaches, to: $.data.trialJobSpec.network, normalize: computeRelative }
+      - {
+          kind: uses,
+          to: '$.data.trialJobSpec.workerPoolSpecs[*].containerSpec.imageUri',
+          normalize: artifactImage,
+        }
+      - { kind: uses, to: $.data.trialJobSpec.baseOutputDirectory.outputUriPrefix, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: Each trial runs the custom job spec in trialJobSpec, so the rules are the custom job's one level down.
+
+  aiplatform.googleapis.com/NasJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    relations:
+      - {
+          kind: runsAs,
+          to: $.data.nasJobSpec.multiTrialAlgorithmSpec.searchTrialSpec.searchTrialJobSpec.serviceAccount,
+          normalize: serviceAccountEmail,
+        }
+      - {
+          kind: attaches,
+          to: $.data.nasJobSpec.multiTrialAlgorithmSpec.searchTrialSpec.searchTrialJobSpec.network,
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: '$.data.nasJobSpec.multiTrialAlgorithmSpec.searchTrialSpec.searchTrialJobSpec.workerPoolSpecs[*].containerSpec.imageUri',
+          normalize: artifactImage,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Neural architecture search; the search trials run the custom job spec under
+      nasJobSpec.multiTrialAlgorithmSpec.searchTrialSpec.searchTrialJobSpec (the train trials repeat it).
+
+  aiplatform.googleapis.com/BatchPredictionJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/batch-predictions?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.model, normalize: name }
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: '$.data.inputConfig.gcsSource.uris[*]', normalize: gcsUri }
+      - { kind: uses, to: $.data.inputConfig.bigquerySource.inputUri, normalize: bigqueryUri }
+      - { kind: uses, to: $.data.outputConfig.gcsDestination.outputUriPrefix, normalize: gcsUri }
+      - { kind: uses, to: $.data.outputConfig.bigqueryDestination.outputUri, normalize: bigqueryUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      model is a project model (projects/<number>/locations/<l>/models/<id>, optionally @version) or a
+      publisher model, which is not a project asset. A BigQuery destination that names only a project
+      (bq://project) yields no dataset and is not drawn.
+
+  aiplatform.googleapis.com/PipelineJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/pipelines?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: attaches, to: $.data.pscInterfaceConfig.networkAttachment, normalize: computeRelative }
+      - { kind: uses, to: $.data.templateUri, normalize: artifactImage }
+      - { kind: uses, to: $.data.runtimeConfig.gcsOutputDirectory, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      One Vertex AI Pipelines run. templateUri names the compiled pipeline: a template in an Artifact
+      Registry Kubeflow Pipelines repository (https://<region>-kfp.pkg.dev/…) is drawn, a gs:// file is not.
+
+  aiplatform.googleapis.com/TrainingPipeline:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/training/training-pipelines?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.modelToUpload.name, normalize: name }
+      - { kind: uses, to: $.data.parentModel, normalize: name }
+      - { kind: uses, to: $.data.modelToUpload.containerSpec.imageUri, normalize: artifactImage }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      An AutoML or custom training pipeline; modelToUpload.name is the model it produced (output only),
+      parentModel the model it adds a version to. trainingTaskInputs follows trainingTaskDefinition's schema
+      and is not read; inputDataConfig.datasetId is a bare id.
+
+  aiplatform.googleapis.com/TuningJob:
+    role: hidden
+    label: '{{data.tunedModelDisplayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/generative/language/tuning?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.tunedModel.model, normalize: name }
+      - { kind: uses, to: $.data.tunedModel.endpoint, normalize: name }
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.supervisedTuningSpec.trainingDatasetUri, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Supervised tuning of a Gemini base model (baseModel is a bare publisher model id). The tuned model and
+      the endpoint it is deployed to are project assets.
+
+  aiplatform.googleapis.com/ModelDeploymentMonitoringJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    relations:
+      - { kind: uses, to: $.data.endpoint, normalize: name }
+      - { kind: uses, to: '$.data.bigqueryTables[*].bigqueryTablePath', normalize: bigqueryUri }
+      - { kind: uses, to: $.data.statsAnomaliesBaseDirectory.outputUriPrefix, normalize: gcsUri }
+      - {
+          kind: triggers,
+          to: '$.data.modelMonitoringAlertConfig.notificationChannels[*]',
+          normalize: name,
+          service: monitoring.googleapis.com,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Model monitoring (v1) of one endpoint: it logs requests into BigQuery tables
+      (bq://<project>.model_deployment_monitoring_<endpoint>.<source>_<type>) and alerts Cloud Monitoring
+      notification channels.
+
+  aiplatform.googleapis.com/NotebookExecutionJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.jobState | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/agent-platform/colab/execution-jobs?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.notebookRuntimeTemplateResourceName, normalize: name }
+      - { kind: uses, to: $.data.gcsNotebookSource.uri, normalize: gcsUri }
+      - { kind: uses, to: $.data.gcsOutputUri, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.dataformRepositorySource.dataformRepositoryResourceName,
+          normalize: name,
+          service: dataform.googleapis.com,
+        }
+      - {
+          kind: attaches,
+          to: $.data.customEnvironmentSpec.networkSpec.subnetwork,
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: $.data.customEnvironmentSpec.networkSpec.network,
+          normalize: computeRelative,
+          weak: true,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionSpec.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      A scheduled or one-off Colab Enterprise notebook run: the notebook comes from Cloud Storage, a Dataform
+      repository or inline content, the environment from a runtime template or a custom spec; it runs as a
+      service account or as executionUser (a person).
+
+  aiplatform.googleapis.com/DataLabelingJob:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: >-
+      Human data labeling, a discontinued feature whose API reference is no longer published, so no field is
+      read beyond the display name.

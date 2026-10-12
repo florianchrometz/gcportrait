@@ -1,0 +1,54 @@
+[
+  {
+    "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/europe-west3/gateways/egress-swp",
+    "assetType": "networkservices.googleapis.com/Gateway",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/gateways/egress-swp",
+      "description": "Secure Web Proxy for outbound traffic of the app subnet",
+      "type": "SECURE_WEB_GATEWAY",
+      "addresses": ["10.10.0.60"],
+      "ports": [443],
+      "scope": "egress-europe-west3",
+      "routingMode": "EXPLICIT_ROUTING_MODE",
+      "certificateUrls": ["projects/demo-app-1/locations/europe-west3/certificates/swp-egress"],
+      "gatewaySecurityPolicy": "projects/demo-app-1/locations/europe-west3/gatewaySecurityPolicies/egress-policy",
+      "network": "projects/demo-net-1/global/networks/core",
+      "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "ipVersion": "IPV4",
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/gateways/storefront-ingress",
+    "assetType": "networkservices.googleapis.com/Gateway",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/gateways/storefront-ingress",
+      "description": "Ingress gateway of the storefront mesh",
+      "type": "OPEN_MESH",
+      "ports": [443],
+      "scope": "storefront-ingress",
+      "serverTlsPolicy": "projects/demo-app-1/locations/global/serverTlsPolicies/mesh-mtls",
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  }
+]

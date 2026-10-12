@@ -1,0 +1,45 @@
+[
+  {
+    "name": "//firebase.googleapis.com/projects/demo-app-1",
+    "assetType": "firebase.googleapis.com/FirebaseProject",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectId": "demo-app-1",
+      "projectNumber": "10000000002",
+      "displayName": "Demo shop",
+      "name": "projects/demo-app-1",
+      "resources": {
+        "hostingSite": "demo-app-1",
+        "realtimeDatabaseInstance": "demo-app-1-default-rtdb",
+        "storageBucket": "demo-app-1.appspot.com",
+        "locationId": "europe-west3"
+      },
+      "state": "ACTIVE",
+      "etag": "1_a1b2c3"
+    }
+  },
+  {
+    "name": "//firebase.googleapis.com/projects/demo-old-1",
+    "assetType": "firebase.googleapis.com/FirebaseProject",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000006",
+    "ancestors": ["projects/10000000006", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectId": "demo-old-1",
+      "projectNumber": "10000000006",
+      "displayName": "Old reports",
+      "name": "projects/demo-old-1",
+      "state": "DELETED",
+      "etag": "1_d4e5f6"
+    }
+  }
+]

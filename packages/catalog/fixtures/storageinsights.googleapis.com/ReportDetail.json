@@ -1,0 +1,17 @@
+{
+  "name": "//storageinsights.googleapis.com/projects/demo-data-1/locations/europe-west3/reportConfigs/lake-inventory/reportDetails/d5000000-0000-4000-8000-000000000001",
+  "assetType": "storageinsights.googleapis.com/ReportDetail",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T06:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/reportConfigs/lake-inventory/reportDetails/d5000000-0000-4000-8000-000000000001",
+    "snapshotTime": "2026-10-01T05:00:00Z",
+    "reportPathPrefix": "lake/2026-10-01/lake-inventory_d5000000_",
+    "shardsCount": "4",
+    "status": { "code": 0 },
+    "targetDatetime": { "year": 2026, "month": 10, "day": 1 },
+    "reportMetrics": { "processedRecordsCount": "182340" }
+  }
+}

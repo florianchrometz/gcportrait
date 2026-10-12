@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT
+#
+# Oracle Database@Google Cloud: Exadata infrastructure, the Exadata VM clusters built on it and
+# Autonomous Databases, all running in Oracle-operated capacity attached to a consumer VPC network. Cloud
+# Asset Inventory names them by project id
+# (`//oracledatabase.googleapis.com/projects/<id>/locations/<region>/cloudExadataInfrastructures/<x>`,
+# `…/cloudVmClusters/<v>`, `…/autonomousDatabases/<a>`). The OCI-side links (properties.ociUrl) point at
+# Oracle's console and are not read. The ODB networks and subnets a resource may name instead of a VPC
+# (odbNetwork, odbSubnet) are not Cloud Asset Inventory types and are not drawn.
+product: Oracle Database@Google Cloud
+service: oracledatabase.googleapis.com
+icon: oracle_database
+types:
+  oracledatabase.googleapis.com/CloudExadataInfrastructure:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.properties.shape}} · {{data.properties.computeCount}} database servers · {{data.properties.storageCount}} storage servers'
+    console: 'https://console.cloud.google.com/oracle/exadata?project={{projectId}}'
+    notes: >-
+      A container: VM clusters are named beside it (…/cloudVmClusters/<v>), not under it, and
+      their parent is the project, but each names its infrastructure (exadataInfrastructure) and nests in it
+      through its nestsIn rule.
+      gcpOracleZone is the Oracle zone inside the region (e.g. europe-west3-a-r1).
+
+  oracledatabase.googleapis.com/CloudVmCluster:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.properties.nodeCount | plural(node)}} · {{data.properties.cpuCoreCount | plural(core)}} · {{data.cidr}}'
+    console: 'https://console.cloud.google.com/oracle/exadata?project={{projectId}}'
+    ips:
+      - $.data.cidr
+      - $.data.backupSubnetCidr
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+    nestsIn: { to: $.data.exadataInfrastructure, normalize: name, kind: uses }
+    notes: >-
+      exadataInfrastructure names the infrastructure it runs on (projects/<p>/locations/<r>/
+      cloudExadataInfrastructures/<x>): the VM cluster nests in it (nestsIn), or uses it when it
+      cannot (another project). network is the consumer VPC network, cidr the client subnet and
+      backupSubnetCidr the backup subnet inside Oracle's network.
+
+  oracledatabase.googleapis.com/AutonomousDatabase:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.properties.dbWorkload | lower}} · {{data.properties.computeCount}} ECPU · {{data.properties.dataStorageSizeTb}} TB'
+    ips:
+      - $.data.cidr
+      - $.data.properties.privateEndpointIp
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: replicates, to: '$.data.peerAutonomousDatabases[*]', normalize: name }
+    notes: >-
+      network is the consumer VPC network and properties.privateEndpointIp the database's private endpoint in
+      it; cidr is the subnet Oracle allocates. A primary lists its Data Guard standbys in
+      peerAutonomousDatabases (primary → standby, replicates; the reference does not state the value's format,
+      the rule assumes the resource name); a standby names its primary in sourceConfig.autonomousDatabase,
+      which would point the other way and is not read. No console link: the console URL of Autonomous
+      Databases could not be verified.

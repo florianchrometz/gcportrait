@@ -1,0 +1,23 @@
+{
+  "name": "//gkebackup.googleapis.com/projects/demo-app-1/locations/europe-west3/restorePlans/shop-to-autopilot/restores/drill-2026-09",
+  "assetType": "gkebackup.googleapis.com/Restore",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/restorePlans/shop-to-autopilot/restores/drill-2026-09",
+    "uid": "00000000-0000-4000-8000-000000000168",
+    "backup": "projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily/backups/shop-daily-20260915",
+    "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot",
+    "state": "SUCCEEDED",
+    "resourcesRestoredCount": 214,
+    "volumesRestoredCount": 3,
+    "completeTime": "2026-09-16T11:30:00Z"
+  }
+}

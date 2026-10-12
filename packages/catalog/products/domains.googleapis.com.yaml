@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Domains: domain registrations.
+product: Cloud Domains
+service: domains.googleapis.com
+icon: cloud_domains
+types:
+  domains.googleapis.com/Registration:
+    role: leaf
+    label: '{{data.domainName}}'
+    subtitle: '{{data.state | lower}} · {{data.expireTime}}'
+    console: 'https://console.cloud.google.com/net-services/domains/registrations/list?project={{projectId}}'
+    domains:
+      - $.data.domainName
+    hiddenWhen: "$.data.state in ['REGISTRATION_FAILED', 'TRANSFER_FAILED', 'EXPORTED', 'EXPIRED']"
+    notes: >-
+      Name servers (`dnsSettings.customDns.nameServers`, or the deprecated `googleDomainsDns`) are host names
+      of the zone's DNS provider, not domains of the registration, so they are not read; linking a
+      registration to its Cloud DNS zone by name is left to the DNS group. Contact data is redacted
+      in exports when privacy is on. Failed, exported and expired registrations start hidden.

@@ -1,0 +1,14 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/tenants/acme-retail",
+  "assetType": "saasservicemgmt.googleapis.com/Tenant",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/tenants/acme-retail",
+    "saas": "projects/demo-ops-1/locations/global/saas/shop-hosted",
+    "uid": "6d7e8f9a-0b1c-4d2e-9f3a-b4c5d6e7f8a9",
+    "createTime": "2026-02-10T09:00:00Z"
+  }
+}

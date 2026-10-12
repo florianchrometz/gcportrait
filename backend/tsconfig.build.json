@@ -1,0 +1,27 @@
+{
+  // First half of `pnpm --filter @gcportrait/backend build`: emits plain ESM JavaScript into dist/, which is not
+  // what runs (bundle.ts explains why the workspace imports need a bundle). The second half, bundle.ts, writes
+  // dist/server.mjs, which `pnpm start` and the image run. Type checking stays with tsconfig.json (`tsc -b`).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  // The render job (ADR 0033) runs the render library, which reaches the frontend's components: only esbuild builds
+  // it (bundle.ts, as dist/render-worker.mjs), and `tsc -b` checks it through the project references.
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.testing.ts",
+    "src/render/job.ts",
+    "src/render/worker.ts",
+    "src/render/in-process.ts"
+  ],
+  "references": []
+}

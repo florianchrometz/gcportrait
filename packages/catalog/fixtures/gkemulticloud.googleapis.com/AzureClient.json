@@ -1,0 +1,20 @@
+{
+  "name": "//gkemulticloud.googleapis.com/projects/10000000002/locations/us-east4/azureClients/orders-client",
+  "assetType": "gkemulticloud.googleapis.com/AzureClient",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "us-east4",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/us-east4/azureClients/orders-client",
+    "tenantId": "00000000-0000-4000-8000-0000000000a1",
+    "applicationId": "00000000-0000-4000-8000-0000000000a2",
+    "uid": "00000000-0000-4000-8000-000000000155",
+    "createTime": "2025-06-01T10:00:00Z"
+  }
+}

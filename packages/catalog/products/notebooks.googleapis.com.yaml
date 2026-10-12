@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+#
+# Vertex AI Workbench instances, in the v2 API shape (`gceSetup`). The legacy user-managed notebooks
+# shape (top-level `network`, `subnet`, `serviceAccount`) belongs to a retired product and is not read.
+product: Vertex AI Workbench
+service: notebooks.googleapis.com
+icon: vertex_ai
+types:
+  notebooks.googleapis.com/Instance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.gceSetup.machineType | lastSegment}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/agent-platform/workbench/instances?project={{projectId}}'
+    ips:
+      - '$.data.gceSetup.networkInterfaces[*].accessConfigs[*].externalIp'
+    domains:
+      - $.data.proxyUri
+    relations:
+      - { kind: attaches, to: '$.data.gceSetup.networkInterfaces[*].subnet', normalize: computeRelative }
+      - {
+          kind: attaches,
+          to: '$.data.gceSetup.networkInterfaces[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - { kind: runsAs, to: '$.data.gceSetup.serviceAccounts[*].email', normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.gceSetup.containerImage.repository, normalize: artifactImage }
+      - { kind: encryptedBy, to: $.data.gceSetup.bootDisk.kmsKey, normalize: kmsKey }
+      - { kind: encryptedBy, to: '$.data.gceSetup.dataDisks[*].kmsKey', normalize: kmsKey }
+    notes: >-
+      Each Workbench instance runs on a Compute Engine VM of the same name in the same project, which
+      appears as its own Instance card. `proxyUri` is the Jupyter proxy host (no scheme).

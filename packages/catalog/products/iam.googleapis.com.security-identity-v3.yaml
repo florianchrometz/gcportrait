@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MIT
+#
+# Identity and Access Management v3: principal access boundary policies (organisation level) and the
+# policy bindings that apply them to a principal set (a workforce or workload identity pool, the organisation,
+# a folder or a project). A separate official product from the v1 resources, hence its own file.
+product: Identity and Access Management v3
+service: iam.googleapis.com
+icon: identity_and_access_management
+types:
+  iam.googleapis.com/PolicyBinding:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.policyKind | lower}}'
+    relations:
+      - { kind: uses, to: $.data.policy, normalize: name }
+      - {
+          kind: secures,
+          to: "$.data.target[?(@ startsWith '//cloudresourcemanager.googleapis.com/projects/')]",
+          normalize: projectNumberOrId,
+        }
+      - {
+          kind: secures,
+          to: "$.data.target[?(!(@ startsWith '//cloudresourcemanager.googleapis.com/projects/'))]",
+          normalize: name,
+        }
+    notes: >-
+      Bindings live on the organisation, a folder or a project (…/locations/global/policyBindings/<id>).
+      policy names the bound policy: a principal access boundary policy
+      (organizations/<n>/locations/global/principalAccessBoundaryPolicies/<id>) or, for policyKind ACCESS, an
+      access policy (…/locations/<l>/accessPolicies/<id>), which is no asset type and stays dangling. The
+      target is one of two full names: target.principalSet for a principal access boundary binding
+      (//iam.googleapis.com/locations/global/workforcePools/<id>,
+      //iam.googleapis.com/projects/<number>/locations/global/workloadIdentityPools/<id>, or the organisation,
+      folder or project itself), target.resource for an access binding (the organisation, a folder or a
+      project). Both are read through filters on target's values: a project
+      (//cloudresourcemanager.googleapis.com/projects/<number or id>) goes through projectNumberOrId, so the
+      project-id form resolves too; everything else keeps its full name. A Google Workspace principal set
+      (//iam.googleapis.com/locations/global/workspace/<id>) is no asset and stays dangling.
+
+  iam.googleapis.com/PrincipalAccessBoundaryPolicy:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.details.rules[0].resources[0]}}'
+    notes: >-
+      Organisation-level (organizations/<n>/locations/global/principalAccessBoundaryPolicies/<id>). Each rule
+      lists the resources (organisations, folders, projects, as full names) the bound principals may access;
+      the subtitle shows the first. Bindings point here (uses), the policy points nowhere itself; being
+      referenced makes it core (skill §3; the seed lists it as a leaf).

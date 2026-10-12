@@ -1,0 +1,30 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/storage.k8s.io/storageclasses/standard-rwo-cmek",
+  "assetType": "storage.k8s.io/StorageClass",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "storage.k8s.io/v1",
+    "kind": "StorageClass",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000140",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "standard-rwo-cmek"
+    },
+    "provisioner": "pd.csi.storage.gke.io",
+    "parameters": {
+      "type": "pd-balanced",
+      "disk-encryption-kms-key": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/gke-pd"
+    },
+    "reclaimPolicy": "Delete",
+    "volumeBindingMode": "WaitForFirstConsumer",
+    "allowVolumeExpansion": true
+  }
+}

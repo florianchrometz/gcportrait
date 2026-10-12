@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+#
+# Firebase: the Firebase view of a project
+# and its registered apps. Cloud Asset Inventory names them with the project id
+# (//firebase.googleapis.com/projects/<id>, …/projects/<id>/<webApps|androidApps|iosApps>/<app id>). The
+# security rules types (firebaserules.googleapis.com) belong to the same product.
+product: Firebase
+service: firebase.googleapis.com
+icon: firebase
+types:
+  firebase.googleapis.com/FirebaseProject:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.resources.locationId}}'
+    console: 'https://console.firebase.google.com/project/{{data.projectId}}/overview'
+    relations:
+      - { kind: uses, to: $.data.resources.storageBucket, normalize: gcsUri }
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      resources (default bucket, hosting site, Realtime Database instance, location) is deprecated by the API
+      and may be absent. resources.hostingSite is a site id (served at <site>.web.app), not a host name, so it
+      is not read as a domain; the Realtime Database instance is no inventoried asset.
+
+  firebase.googleapis.com/FirebaseAppInfo:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.platform | lower}}'
+    console: 'https://console.firebase.google.com/project/{{projectId}}/settings/general'
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      apiKeyId is the unique id of the app's API key, not its name, so it makes no edge to the API key asset.
+      Removed apps (state DELETED, expireTime set) start hidden.

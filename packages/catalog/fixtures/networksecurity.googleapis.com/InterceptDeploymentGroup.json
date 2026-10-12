@@ -1,0 +1,34 @@
+{
+  "name": "//networksecurity.googleapis.com/projects/10000000004/locations/global/interceptDeploymentGroups/appliances",
+  "assetType": "networksecurity.googleapis.com/InterceptDeploymentGroup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-22T07:15:00Z",
+  "data": {
+    "name": "projects/10000000004/locations/global/interceptDeploymentGroups/appliances",
+    "createTime": "2026-04-10T10:00:00Z",
+    "updateTime": "2026-09-22T07:15:00Z",
+    "reconciling": false,
+    "description": "Partner firewall appliances in the inspection VPC",
+    "network": "projects/10000000004/global/networks/inspection",
+    "connectedEndpointGroups": [
+      {
+        "name": "projects/10000000004/locations/global/interceptEndpointGroups/appliances"
+      }
+    ],
+    "nestedDeployments": [
+      {
+        "name": "projects/10000000004/locations/europe-west3-a/interceptDeployments/appliances-ew3a",
+        "state": "ACTIVE"
+      }
+    ],
+    "state": "ACTIVE",
+    "locations": [
+      {
+        "location": "europe-west3-a",
+        "state": "ACTIVE"
+      }
+    ]
+  }
+}

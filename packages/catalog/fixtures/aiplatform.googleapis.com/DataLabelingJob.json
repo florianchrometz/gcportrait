@@ -1,0 +1,15 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/dataLabelingJobs/1029384756102938475",
+  "assetType": "aiplatform.googleapis.com/DataLabelingJob",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/dataLabelingJobs/1029384756102938475",
+    "displayName": "chargeback-labels",
+    "state": "JOB_STATE_SUCCEEDED",
+    "createTime": "2025-02-01T08:00:00Z",
+    "updateTime": "2025-02-10T08:00:00Z"
+  }
+}

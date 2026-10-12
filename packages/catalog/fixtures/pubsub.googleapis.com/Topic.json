@@ -1,0 +1,68 @@
+[
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/topics/orders",
+    "assetType": "pubsub.googleapis.com/Topic",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/topics/orders",
+      "labels": { "team": "retail" },
+      "messageStoragePolicy": { "allowedPersistenceRegions": ["europe-west3"], "enforceInTransit": true },
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/pubsub",
+      "schemaSettings": {
+        "schema": "projects/demo-data-1/schemas/order-event",
+        "encoding": "JSON",
+        "firstRevisionId": "a1b2c3d4",
+        "lastRevisionId": "a1b2c3d4"
+      },
+      "messageRetentionDuration": "604800s",
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/topics/landing-files",
+    "assetType": "pubsub.googleapis.com/Topic",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/topics/landing-files",
+      "messageStoragePolicy": { "allowedPersistenceRegions": ["europe-west3", "europe-west4"] },
+      "ingestionDataSourceSettings": {
+        "cloudStorage": {
+          "state": "ACTIVE",
+          "bucket": "demo-data-1-landing",
+          "textFormat": { "delimiter": "\n" },
+          "matchGlob": "**.jsonl",
+          "minimumObjectCreateTime": "2026-01-01T00:00:00Z"
+        },
+        "platformLogsSettings": { "severity": "WARNING" }
+      },
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//pubsub.googleapis.com/projects/demo-data-1/topics/kinesis-clicks",
+    "assetType": "pubsub.googleapis.com/Topic",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/topics/kinesis-clicks",
+      "ingestionDataSourceSettings": {
+        "awsKinesis": {
+          "state": "ACTIVE",
+          "streamArn": "arn:aws:kinesis:eu-central-1:111111111111:stream/clicks",
+          "consumerArn": "arn:aws:kinesis:eu-central-1:111111111111:stream/clicks/consumer/pubsub:1700000000",
+          "awsRoleArn": "arn:aws:iam::111111111111:role/pubsub-ingestion",
+          "gcpServiceAccount": "pubsub-ingest@demo-data-1.iam.gserviceaccount.com"
+        }
+      },
+      "state": "ACTIVE"
+    }
+  }
+]

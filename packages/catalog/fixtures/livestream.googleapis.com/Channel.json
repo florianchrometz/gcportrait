@@ -1,0 +1,78 @@
+{
+  "name": "//livestream.googleapis.com/projects/demo-app-1/locations/europe-west3/channels/launch-event",
+  "assetType": "livestream.googleapis.com/Channel",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/channels/launch-event",
+    "createTime": "2026-09-20T08:00:00Z",
+    "updateTime": "2026-10-01T07:00:00Z",
+    "inputAttachments": [
+      {
+        "key": "primary",
+        "input": "projects/demo-app-1/locations/europe-west3/inputs/studio-a"
+      },
+      {
+        "key": "backup",
+        "input": "projects/demo-app-1/locations/europe-west3/inputs/studio-b"
+      }
+    ],
+    "activeInput": "primary",
+    "output": {
+      "uri": "gs://demo-app-1-live/launch-event"
+    },
+    "elementaryStreams": [
+      {
+        "key": "es_video",
+        "videoStream": {
+          "h264": {
+            "widthPixels": 1280,
+            "heightPixels": 720,
+            "frameRate": 30,
+            "bitrateBps": 3000000
+          }
+        }
+      }
+    ],
+    "muxStreams": [
+      {
+        "key": "mux_video",
+        "container": "ts",
+        "elementaryStreams": ["es_video"],
+        "segmentSettings": {
+          "segmentDuration": "2s"
+        }
+      }
+    ],
+    "manifests": [
+      {
+        "fileName": "main.m3u8",
+        "type": "HLS",
+        "muxStreams": ["mux_video"],
+        "maxSegmentCount": 5
+      }
+    ],
+    "encryptions": [
+      {
+        "id": "drm",
+        "secretManagerKeySource": {
+          "secretVersion": "projects/demo-app-1/secrets/live-drm-key/versions/1"
+        },
+        "drmSystems": {
+          "widevine": {}
+        },
+        "mpegCenc": {
+          "scheme": "cenc"
+        }
+      }
+    ],
+    "streamingState": "STREAMING"
+  }
+}

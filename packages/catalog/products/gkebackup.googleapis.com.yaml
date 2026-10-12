@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT
+#
+# Backup for GKE: backup plans protect a GKE cluster, restore plans restore a backup plan's backups into a
+# cluster. Backups, restores and their per-volume records are operational and start hidden.
+product: Backup for GKE
+service: gkebackup.googleapis.com
+icon: google_kubernetes_engine
+types:
+  gkebackup.googleapis.com/BackupPlan:
+    role: core
+    subtitle: '{{data.backupSchedule.cronSchedule}} · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.cluster, normalize: name, service: container.googleapis.com }
+      - { kind: encryptedBy, to: $.data.backupConfig.encryptionKey.gcpKmsEncryptionKey, normalize: kmsKey }
+    notes: >-
+      cluster is projects/*/locations/*/clusters/* or projects/*/zones/*/clusters/*, the same forms Cloud
+      Asset Inventory uses for regional and zonal cluster names.
+
+  gkebackup.googleapis.com/RestorePlan:
+    role: core
+    subtitle: 'restore plan · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.backupPlan, normalize: name }
+      - { kind: uses, to: $.data.cluster, normalize: name, service: container.googleapis.com }
+
+  gkebackup.googleapis.com/Backup:
+    role: hidden
+    subtitle: '{{data.state | lower}}'
+
+  gkebackup.googleapis.com/VolumeBackup:
+    role: hidden
+
+  gkebackup.googleapis.com/Restore:
+    role: hidden
+    subtitle: '{{data.state | lower}}'
+
+  gkebackup.googleapis.com/VolumeRestore:
+    role: hidden

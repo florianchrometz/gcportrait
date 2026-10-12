@@ -1,0 +1,11 @@
+{
+  // The render-scene command (Node): it reads demo-data's fixtures, ingests them and builds graph and scene.
+  // Kept apart so that Node types never leak into the builder's own sources.
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "../node_modules/.tmp/tsc-scripts"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }, { "path": "../../demo-data" }, { "path": "../../ingest" }]
+}

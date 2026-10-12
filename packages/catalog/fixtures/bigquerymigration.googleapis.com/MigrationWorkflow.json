@@ -1,0 +1,22 @@
+{
+  "name": "//bigquerymigration.googleapis.com/projects/10000000003/locations/europe-west3/workflows/2b7d4e10-0000-4000-8000-000000000001",
+  "assetType": "bigquerymigration.googleapis.com/MigrationWorkflow",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/workflows/2b7d4e10-0000-4000-8000-000000000001",
+    "displayName": "Translate legacy warehouse SQL",
+    "tasks": {
+      "translate": {
+        "id": "7c1e5a20-0000-4000-8000-000000000001",
+        "type": "Translation_Teradata2BQ",
+        "state": "SUCCEEDED"
+      }
+    },
+    "state": "COMPLETED",
+    "createTime": "2026-08-01T09:00:00Z",
+    "lastUpdateTime": "2026-08-01T09:12:00Z"
+  }
+}

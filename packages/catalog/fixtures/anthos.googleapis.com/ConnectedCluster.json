@@ -1,0 +1,16 @@
+{
+  "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/memberships/edge-store-7/cluster",
+  "assetType": "anthos.googleapis.com/ConnectedCluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/global/memberships/edge-store-7/cluster"
+  }
+}

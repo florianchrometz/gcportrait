@@ -1,0 +1,403 @@
+# SPDX-License-Identifier: MIT
+#
+# Pull-request and main-branch checks (docs/contributing.md §4, "Continuous integration"). Every job starts at once,
+# so the run takes as long as its slowest job, not the sum of its jobs. Each job that needs the dependencies
+# installs them itself from the pnpm store cache (.github/actions/setup), which pnpm-lock.yaml keys: a lockfile that
+# is out of date fails every such job at its install step, with pnpm's ERR_PNPM_OUTDATED_LOCKFILE. The install's
+# `prepare` script compiles the asset catalog (packages/catalog/src/generated/, a git-ignored build artefact);
+# `catalog-check` compiles it once more as a step of its own, so a catalog that cannot be compiled at all shows up
+# there by name.
+#
+# The jobs and what they run (the same commands as locally; docs/contributing.md has the table with timings):
+#
+#   lint            pnpm format:check, pnpm lint
+#   typecheck       pnpm typecheck
+#   unit            pnpm test in three legs: layout, frontend, every other Vitest project (below)
+#   layout-budget   the layout's strict budgets and bench table; non-blocking (below)
+#   catalog-check   pnpm catalog:build, pnpm catalog:check
+#   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
+#   e2e             Playwright on Chromium in three shards: functional, export faithfulness, axe
+#   website         the website built and checked (pnpm website:build, website:check), then its phone-width check
+#   provenance      pnpm provenance, then a self-test that the guard still rejects a planted legacy import
+#   licenses        pnpm run licenses
+#   audit           node scripts/check-audit.mjs (needs the npm registry)
+#   workflows-and-shell   actionlint over the workflows, shellcheck over every shell script outside legacy/
+#   required        the one check branch protection targets: green only when every job above but layout-budget is
+#
+# Pinning: every action is pinned to a commit, with its release as a comment, and the two linters downloaded here
+# are pinned by version and SHA-256. Dependabot (github-actions) proposes new releases of the actions; the linters
+# are bumped by hand.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One group per pull request, and one per commit on main: a newer push to a pull request cancels the run it
+  # supersedes, while every commit on main keeps a complete CI result of its own.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Formatting (Prettier)
+        run: pnpm run format:check
+      - name: ESLint (strict type-checked rules, import boundaries)
+        # The type-checked rules hold every workspace's type information at once; Node's default heap (about 2 GiB
+        # on the runner) ran out on the first run.
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm run lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: TypeScript (tsc -b over every project)
+        run: pnpm run typecheck
+
+  # `pnpm test` (every Vitest project of vitest.config.ts) in three legs. The layout runs alone because its
+  # performance tests assert 2 x the budgets on CI (packages/layout/README.md, "Performance"), which other suites
+  # on the same runner would eat into; the frontend is the largest project. The third leg runs every project but
+  # those two, by negation, so a new project is never left out, and a misspelt name in the first two legs fails
+  # the leg ("No projects matched the filter") instead of skipping a project.
+  unit:
+    name: unit (${{ matrix.leg }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: layout
+            projects: layout
+          - leg: frontend
+            projects: frontend
+          - leg: all other projects
+            projects: '!layout !frontend'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Vitest (${{ matrix.projects }})
+        env:
+          PROJECTS: ${{ matrix.projects }}
+        run: |
+          args=()
+          for project in $PROJECTS; do args+=(--project "$project"); done
+          pnpm run test "${args[@]}"
+      # The render golden's comparison (packages/render-cli/test/golden.test.ts) leaves the image it drew and a
+      # picture of the differences here when the bytes differ.
+      - name: Upload the render golden's failure images
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: render-golden-failures-${{ strategy.job-index }}
+          path: out/render/golden-failures/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The layout's strict performance budgets (gcp-diagram-layout skill §7): S < 10 ms, M < 60 ms, L < 400 ms and XL
+  # collapsed < 2 s through a worker, plus the memo, cancellation and memory checks, run alone
+  # (`pnpm --filter @gcportrait/layout test:budget`), then the bench's table in the job summary.
+  #
+  # Non-blocking on purpose (continue-on-error, and `required` does not wait for it): the budgets are wall-clock
+  # figures for a desktop. On the reference machine (an Apple M1) L overview at detail `all` already takes three
+  # quarters of its 400 ms through the worker, and a shared GitHub-hosted runner is usually slower single-threaded
+  # and varies from run to run, so a blocking strict job would fail for reasons outside the change and be re-run
+  # until green. What blocks is the `unit (layout)` leg: the same measurements under `pnpm test` assert 2 x the
+  # budgets, which catches real regressions on any runner. This job shows the strict figures on every pull request
+  # and raises a warning when one is missed; the strict run is part of the layout's local checks
+  # (packages/layout/README.md, "Performance"). To make it blocking (e.g. on a larger or self-hosted runner, once
+  # its margin is known), remove continue-on-error and add it to `required`.
+  layout-budget:
+    name: layout-budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Layout budgets, strict (S 10 ms, M 60 ms, L 400 ms, XL collapsed 2 s in a worker)
+        run: pnpm --filter @gcportrait/layout test:budget
+      - name: Bench figures in the job summary
+        if: always()
+        run: |
+          status=0
+          pnpm --silent --filter @gcportrait/layout bench > layout-bench.txt 2>&1 || status=$?
+          cat layout-bench.txt
+          {
+            echo '### Layout bench (strict budgets, non-blocking)'
+            echo '```text'
+            cat layout-bench.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Warn when a budget is missed
+        if: failure()
+        run: echo "::warning title=Layout budget::A strict layout budget (gcp-diagram-layout skill §7) was missed on this runner; see the job summary. The blocking unit (layout) leg asserts 2 x the budgets."
+
+  catalog-check:
+    name: catalog-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # Already run by the install's `prepare` script; repeated here so a catalog that cannot be compiled is a
+      # failed step of its own.
+      - name: Compile the asset catalog (git-ignored build artefact)
+        run: pnpm run catalog:build
+      - name: Asset catalog validation and coverage
+        run: pnpm run catalog:check
+
+  # The app's workspaces (frontend, backend, catalog, icons; `pnpm build:app`, which leaves out the website that
+  # the `website` job builds), then the SPA's size budgets on frontend/dist. The end-to-end tests run against the
+  # Vite dev servers, so nothing waits for this build.
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build the app's workspaces
+        run: pnpm run build:app
+      - name: SPA size budgets (ADR 0029, gzipped; UI thread 350 kB, workers 400 kB; no zod on the UI thread)
+        run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
+
+  # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's
+  # faithfulness checks, which compare the PNG Chromium draws with resvg's drawing of the same view on this runner,
+  # and axe in both themes. Three shards of the one suite, each starting its own two dev servers. There are no
+  # screenshot baselines: the committed visual baselines are SVG text (e2e/baselines/diagram/, compared by the
+  # frontend's unit tests) and the render golden PNG (drawn by resvg's WebAssembly build, compared by the unit
+  # tests), so nothing here depends on the operating system that wrote a baseline.
+  e2e:
+    name: e2e (${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/playwright
+        with:
+          browsers: chromium
+      - name: Playwright (functional, export, axe), shard ${{ matrix.shard }} of 3
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: pnpm run e2e --shard="$SHARD/3"
+      - name: Upload the Playwright report, traces and export comparisons
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            out/export/e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The website (docs/website.md): built with its static demo at /demo/ (ADR 0034) and checked (`website:check`:
+  # metadata, links, sitemap, self-hosted resources, the footer's non-affiliation notice, the demo's pages and
+  # policy, every demo link opening a new tab), then at phone widths in Chromium (`mobile --only layout`: 320 to
+  # 430 CSS pixels in both themes, sideways overflow, the sticky header, 44 px touch targets, axe). The phone
+  # check's other half, playback of the landing page's animated demos on an iPhone in WebKit, stays a local check:
+  # Playwright's WebKit on Linux is not Safari (its media stack is GStreamer, not the iPhone's), so its result would
+  # not say what the check is for. pages.yml builds and deploys the site; this job is the pull request's gate.
+  website:
+    name: website
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build the site
+        run: pnpm run website:build
+      - name: Check the site
+        run: pnpm run website:check
+      - uses: ./.github/actions/playwright
+        with:
+          browsers: chromium
+          working-directory: website
+      - name: The site at phone widths (layout and axe, Chromium)
+        run: pnpm --filter @gcportrait/website run mobile --only layout
+
+  provenance:
+    name: provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The guard is a Node script without dependencies; it walks the checkout, which has no node_modules here.
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      - name: Provenance guard (legacy quarantine, forbidden names, SPDX headers)
+        run: pnpm run provenance
+      # Proves on every run that the guard still bites: a file importing from legacy/ must fail the check, and
+      # fail it for that reason. The planted file exists only in this job's checkout.
+      - name: 'Self-test: the guard rejects a planted legacy import'
+        run: |
+          license=$(node -p "require('./package.json').license")
+          mkdir provenance-canary
+          printf '%s\n' "// SPDX-License-Identifier: ${license}" "import '../legacy/planted.js';" \
+            > provenance-canary/planted.ts
+          if output=$(node scripts/check-provenance.mjs 2>&1); then
+            echo "$output"
+            echo "::error::The provenance guard accepted a planted legacy import."
+            exit 1
+          fi
+          echo "$output"
+          if ! grep -qF 'provenance-canary/planted.ts:2  [legacy-import]' <<< "$output"; then
+            echo "::error::The provenance guard failed, but not on the planted legacy import."
+            exit 1
+          fi
+          rm -r provenance-canary
+          echo "Self-test passed: the planted legacy import was rejected."
+
+  licenses:
+    name: licenses
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Dependency licence allow-list and THIRD_PARTY.md staleness
+        run: pnpm run licenses
+
+  # The dependency audit (ADR 0035 §4, principle 7; docs/security.md, "Dependency audit"): `pnpm audit` over the
+  # production dependencies and over the whole tree, read from the lockfile (no install). A high or critical
+  # advisory fails the job unless scripts/audit-allowlist.json accepts it, with a reason and an expiry date at most
+  # 90 days out; moderate and low ones are listed. It asks the npm registry's advisory service, so it can fail for a
+  # registry outage too (exit code 2, "could not run"); re-run it then. Between pull requests, GitHub's Dependabot
+  # alerts report new advisories (a repository setting, docs/security.md).
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      - name: Dependency audit (production and development; high and critical fail unless accepted)
+        run: node scripts/check-audit.mjs
+
+  # The workflows and the shell scripts, with two linters pinned by version and SHA-256 (actionlint's from its
+  # release's checksums file, shellcheck's taken from its release archive when pinned). actionlint (rhysd/actionlint)
+  # checks every workflow: syntax, expressions, job dependencies, the inputs of local actions and, through the
+  # pinned shellcheck, the shell of every `run:` step in the workflow files (not those of the composite actions, which
+  # only install). shellcheck then checks every shell script outside legacy/:
+  # the deployment and hand-off scripts at its default severity (as `shellcheck -x infra/*.sh` locally, agents.md),
+  # the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit (all other
+  # projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
+  workflows-and-shell:
+    name: workflows-and-shell
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+      SHELLCHECK_VERSION: 0.11.0
+      SHELLCHECK_SHA256: b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download actionlint and shellcheck
+        run: |
+          fetch() {
+            curl -fsSL --retry 3 -o "$RUNNER_TEMP/$2" "$1/$2"
+            echo "$3  $RUNNER_TEMP/$2" | sha256sum --check --strict
+            tar -xzf "$RUNNER_TEMP/$2" -C "$RUNNER_TEMP"
+          }
+          fetch "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}" \
+            "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" "$ACTIONLINT_SHA256"
+          fetch "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}" \
+            "shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.gz" "$SHELLCHECK_SHA256"
+          mkdir -p "$RUNNER_TEMP/bin"
+          mv "$RUNNER_TEMP/actionlint" "$RUNNER_TEMP/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" "$RUNNER_TEMP/bin/"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: actionlint (the workflows, their run scripts through shellcheck)
+        run: actionlint -version && actionlint -color -shellcheck="$RUNNER_TEMP/bin/shellcheck"
+      - name: shellcheck (the deployment and hand-off scripts, default severity)
+        run: shellcheck --version && shellcheck -x infra/*.sh scripts/handoff.sh
+      - name: shellcheck (every other shell script outside legacy/, warnings and errors)
+        run: |
+          git ls-files -z -- '*.sh' ':!:legacy/' ':!:infra/' ':!:scripts/handoff.sh' \
+            | xargs -0 --no-run-if-empty shellcheck -x --severity=warning
+
+  # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required
+  # checks"): it succeeds only when every blocking job succeeded, and fails when one failed, was cancelled or was
+  # skipped. Requiring this job alone keeps the protection rule unchanged when jobs are added, renamed or split
+  # into matrix legs here. layout-budget is left out on purpose (non-blocking, see the job).
+  required:
+    name: required
+    if: always()
+    needs:
+      - lint
+      - typecheck
+      - unit
+      - catalog-check
+      - build
+      - e2e
+      - website
+      - provenance
+      - licenses
+      - audit
+      - workflows-and-shell
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Every blocking job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
+          failed=$(jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")' <<< "$NEEDS")
+          if [ -n "$failed" ]; then
+            echo "::error title=Required checks::Not successful: ${failed}."
+            exit 1
+          fi
+          echo "Every blocking job succeeded."

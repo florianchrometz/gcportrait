@@ -1,0 +1,38 @@
+{
+  "name": "//assuredworkloads.googleapis.com/organizations/30000000001/locations/europe-west3/workloads/eu-data-boundary",
+  "assetType": "assuredworkloads.googleapis.com/Workload",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/europe-west3/workloads/eu-data-boundary",
+    "displayName": "EU data boundary",
+    "resources": [
+      {
+        "resourceId": "20000000002",
+        "resourceType": "CONSUMER_FOLDER"
+      },
+      {
+        "resourceId": "10000000003",
+        "resourceType": "CONSUMER_PROJECT"
+      },
+      {
+        "resourceId": "10000000004",
+        "resourceType": "ENCRYPTION_KEYS_PROJECT"
+      }
+    ],
+    "complianceRegime": "EU_REGIONS_AND_SUPPORT",
+    "createTime": "2025-01-15T09:00:00Z",
+    "billingAccount": "billingAccounts/000000-000000-000000",
+    "labels": {
+      "regime": "eu"
+    },
+    "enableSovereignControls": false,
+    "partner": "PARTNER_UNSPECIFIED",
+    "complianceStatus": {
+      "activeViolationCount": 0,
+      "acknowledgedViolationCount": 1
+    }
+  }
+}

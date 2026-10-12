@@ -1,0 +1,29 @@
+{
+  "name": "//managedkafka.googleapis.com/projects/demo-data-1/locations/europe-west3/connectClusters/events-connect",
+  "assetType": "managedkafka.googleapis.com/ConnectCluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/connectClusters/events-connect",
+    "kafkaCluster": "projects/demo-data-1/locations/europe-west3/clusters/events",
+    "createTime": "2025-11-05T10:00:00Z",
+    "updateTime": "2026-09-20T10:00:00Z",
+    "capacityConfig": { "vcpuCount": "3", "memoryBytes": "12884901888" },
+    "state": "ACTIVE",
+    "config": { "exactly.once.source.support": "enabled" },
+    "gcpConfig": {
+      "accessConfig": {
+        "networkConfigs": [
+          {
+            "primarySubnet": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+            "additionalSubnets": ["projects/demo-net-1/regions/europe-west3/subnetworks/gke"],
+            "dnsDomainNames": ["events.europe-west3.managedkafka.demo-data-1.cloud.goog"]
+          }
+        ]
+      },
+      "secretPaths": ["projects/demo-data-1/secrets/connect-sink-password/versions/2"]
+    }
+  }
+}

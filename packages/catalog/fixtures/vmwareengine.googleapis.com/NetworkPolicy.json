@@ -1,0 +1,25 @@
+{
+  "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/europe-west3/networkPolicies/pc-1-policy",
+  "assetType": "vmwareengine.googleapis.com/NetworkPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/networkPolicies/pc-1-policy",
+    "vmwareEngineNetwork": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+    "vmwareEngineNetworkCanonical": "projects/10000000005/locations/global/vmwareEngineNetworks/vmware-net",
+    "edgeServicesCidr": "10.50.255.0/26",
+    "internetAccess": {
+      "enabled": true,
+      "state": "ACTIVE"
+    },
+    "externalIp": {
+      "enabled": true,
+      "state": "ACTIVE"
+    },
+    "uid": "e0000000-0000-4000-8000-000000000016",
+    "createTime": "2026-01-22T08:00:00Z",
+    "updateTime": "2026-01-22T08:00:00Z"
+  }
+}

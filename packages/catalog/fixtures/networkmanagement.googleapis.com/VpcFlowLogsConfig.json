@@ -1,0 +1,52 @@
+[
+  {
+    "name": "//networkmanagement.googleapis.com/projects/demo-net-1/locations/global/vpcFlowLogsConfigs/core-network",
+    "assetType": "networkmanagement.googleapis.com/VpcFlowLogsConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/global/vpcFlowLogsConfigs/core-network",
+      "description": "Flow logs for the whole production Shared VPC",
+      "state": "ENABLED",
+      "aggregationInterval": "INTERVAL_5_SEC",
+      "flowSampling": 0.5,
+      "metadata": "INCLUDE_ALL_METADATA",
+      "network": "projects/demo-net-1/global/networks/core",
+      "targetResourceState": "TARGET_RESOURCE_EXISTS",
+      "createTime": "2026-05-01T09:00:00Z",
+      "updateTime": "2026-05-01T09:00:00Z"
+    }
+  },
+  {
+    "name": "//networkmanagement.googleapis.com/projects/demo-net-1/locations/global/vpcFlowLogsConfigs/tunnel-dc1-0",
+    "assetType": "networkmanagement.googleapis.com/VpcFlowLogsConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/global/vpcFlowLogsConfigs/tunnel-dc1-0",
+      "description": "Flow logs for the first data centre tunnel",
+      "state": "ENABLED",
+      "aggregationInterval": "INTERVAL_30_SEC",
+      "flowSampling": 1,
+      "metadata": "INCLUDE_ALL_METADATA",
+      "vpnTunnel": "projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-dc1-0",
+      "targetResourceState": "TARGET_RESOURCE_EXISTS",
+      "createTime": "2026-05-01T09:05:00Z",
+      "updateTime": "2026-05-01T09:05:00Z"
+    }
+  }
+]

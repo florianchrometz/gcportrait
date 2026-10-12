@@ -1,0 +1,81 @@
+[
+  {
+    "name": "//firebasedataconnect.googleapis.com/projects/demo-app-1/locations/europe-west3/services/shop/schemas/main",
+    "assetType": "firebasedataconnect.googleapis.com/Schema",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/services/shop/schemas/main",
+      "displayName": "Shop schema",
+      "datasources": [
+        {
+          "postgresql": {
+            "database": "orders",
+            "cloudSql": {
+              "instance": "projects/demo-data-1/locations/europe-west3/instances/orders-db"
+            },
+            "schemaValidation": "COMPATIBLE"
+          }
+        }
+      ],
+      "source": {
+        "files": [
+          {
+            "path": "dataconnect/schema/schema.gql",
+            "content": "type Order @table { total: Float! }"
+          }
+        ]
+      },
+      "createTime": "2026-03-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "uid": "d0000000-0000-4000-8000-000000000002",
+      "reconciling": false,
+      "etag": "sch-5"
+    }
+  },
+  {
+    "name": "//firebasedataconnect.googleapis.com/projects/demo-app-1/locations/europe-west3/services/partner-feed/schemas/main",
+    "assetType": "firebasedataconnect.googleapis.com/Schema",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/services/partner-feed/schemas/main",
+      "displayName": "Partner feed",
+      "datasources": [
+        {
+          "httpGraphql": {
+            "uri": "https://graphql.partner.example.com/graphql",
+            "timeout": "10s"
+          }
+        }
+      ],
+      "source": {
+        "files": [
+          {
+            "path": "dataconnect/schema/schema.gql",
+            "content": "type Offer @view { price: Float! }"
+          }
+        ]
+      },
+      "createTime": "2026-04-01T08:00:00Z",
+      "updateTime": "2026-04-01T08:00:00Z",
+      "uid": "d0000000-0000-4000-8000-000000000003",
+      "reconciling": false,
+      "etag": "sch-1"
+    }
+  }
+]

@@ -1,0 +1,155 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The Export menu, the last control of the top bar, at its right edge: the working-control metrics of the top bar's
+   controls (skill §9: 32 px tall, 8 px radius, 13 px text), a popup aligned to the button's right edge (so it opens
+   leftwards, inside the viewport), and a status line below it. */
+.anchor {
+  position: relative;
+}
+
+/* The bar's one highlighted action: a filled primary button (on-primary on primary: light 4.51 : 1, dark 6.12 : 1;
+   ui/tokens.test.ts). The global focus ring stays as it is: its surface gap separates the primary ring from the
+   primary fill. */
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--control-radius);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Hover and an open menu: 12 % of the page's text colour over the fill, which darkens it in light and lightens it in
+   dark, away from the on-primary text either way, so the contrast only grows. A background image, not a shadow, so the
+   focus ring's box shadows stay. */
+.control:hover,
+.control[aria-expanded='true'] {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--color-on-surface) 12%, transparent),
+    color-mix(in srgb, var(--color-on-surface) 12%, transparent)
+  );
+}
+
+/* Nothing drawn: still focusable and named, but inert, like the other inert controls: no fill, the placeholders'
+   dashed border, the secondary text colour. */
+.control[aria-disabled='true'] {
+  border-style: dashed;
+  border-color: var(--color-outline);
+  background: var(--color-surface);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+.control[aria-disabled='true']:hover {
+  background: var(--color-surface);
+}
+
+.caret {
+  font-size: 10.5px;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 10;
+  display: grid;
+  min-width: 248px;
+  padding: var(--space-1) 0;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+}
+
+.group {
+  display: grid;
+}
+
+.caption {
+  padding: var(--space-1) var(--space-3) 2px;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-legend);
+  font-weight: var(--font-weight-medium);
+}
+
+.separator {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--color-outline);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--color-surface-container);
+}
+
+/* Inside the popup the ring is drawn inset, so neighbouring items never cover it. */
+.item:focus-visible {
+  box-shadow: inset 0 0 0 var(--focus-ring-width) var(--color-primary);
+}
+
+/* The chosen option and the checked box: a check mark, so colour never carries the state alone. The mark has
+   empty alternative text: assistive technology reads the state from aria-checked, and the item's name stays
+   its label. */
+.item[aria-checked='true']::before,
+.item[aria-checked='false']::before {
+  width: 1.25em;
+  margin-left: -0.25em;
+}
+
+.item[aria-checked='true']::before {
+  content: '✓' / '';
+}
+
+.item[aria-checked='false']::before {
+  content: '';
+}
+
+.item[aria-disabled='true'] {
+  color: var(--color-on-surface-variant);
+  cursor: progress;
+}
+
+/* The outcome of the last export ("Saved …", "Copied …", why it failed). Kept in the DOM while empty (whenever a
+   diagram can be exported), so screen readers announce each new message; empty, it takes no room and shows
+   nothing. */
+.status {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 9;
+  width: max-content;
+  max-width: 360px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+}
+
+.status:empty {
+  padding: 0;
+  border: 0;
+}

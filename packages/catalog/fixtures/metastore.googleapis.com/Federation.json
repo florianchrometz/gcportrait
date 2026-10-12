@@ -1,0 +1,22 @@
+{
+  "name": "//metastore.googleapis.com/projects/demo-data-1/locations/europe-west3/federations/all-tables",
+  "assetType": "metastore.googleapis.com/Federation",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/federations/all-tables",
+    "version": "3.1.2",
+    "backendMetastores": {
+      "0": {
+        "name": "projects/demo-data-1/locations/europe-west3/services/hive",
+        "metastoreType": "DATAPROC_METASTORE"
+      },
+      "1": { "name": "projects/demo-data-1", "metastoreType": "BIGQUERY" }
+    },
+    "endpointUri": "https://all-tables-d2000000-dot-europe-west3.metastore.googleusercontent.com",
+    "state": "ACTIVE",
+    "uid": "d2000000-0000-4000-8000-000000000010"
+  }
+}

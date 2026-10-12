@@ -1,0 +1,55 @@
+[
+  {
+    "name": "//looker.googleapis.com/projects/demo-data-1/locations/europe-west3/instances/bi",
+    "assetType": "looker.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/instances/bi",
+      "state": "ACTIVE",
+      "platformEdition": "LOOKER_CORE_ENTERPRISE_ANNUAL",
+      "privateIpEnabled": true,
+      "publicIpEnabled": true,
+      "lookerVersion": "25.14.30",
+      "ingressPrivateIp": "10.70.0.4",
+      "ingressPublicIp": "203.0.113.70",
+      "egressPublicIp": "203.0.113.71",
+      "lookerUri": "https://bi.looker.example.com",
+      "consumerNetwork": "projects/demo-net-1/global/networks/core",
+      "reservedRange": "looker-psa-range",
+      "customDomain": { "domain": "analytics.example.com", "state": "AVAILABLE" },
+      "encryptionConfig": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/looker",
+        "kmsKeyState": "VALID"
+      }
+    }
+  },
+  {
+    "name": "//looker.googleapis.com/projects/demo-data-1/locations/europe-west3/instances/bi-psc",
+    "assetType": "looker.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/instances/bi-psc",
+      "state": "ACTIVE",
+      "platformEdition": "LOOKER_CORE_ENTERPRISE_ANNUAL",
+      "pscEnabled": true,
+      "pscConfig": {
+        "allowedVpcs": ["projects/demo-net-1/global/networks/core"],
+        "lookerServiceAttachmentUri": "projects/a1b2c3d4e5f6-tp/regions/europe-west3/serviceAttachments/looker-bi-psc",
+        "serviceAttachments": [
+          {
+            "localFqdn": "inventory.corp.example.com",
+            "targetServiceAttachmentUri": "projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+            "connectionStatus": "ACCEPTED"
+          }
+        ]
+      },
+      "lookerUri": "https://bi-psc.looker.example.com"
+    }
+  }
+]

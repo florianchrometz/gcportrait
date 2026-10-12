@@ -1,0 +1,49 @@
+[
+  {
+    "name": "//networksecurity.googleapis.com/projects/demo-app-1/locations/europe-west3/gatewaySecurityPolicies/egress-policy/rules/allow-partners",
+    "assetType": "networksecurity.googleapis.com/GatewaySecurityPolicyRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/gatewaySecurityPolicies/egress-policy/rules/allow-partners",
+      "description": "Partner APIs",
+      "enabled": true,
+      "priority": 100,
+      "basicProfile": "ALLOW",
+      "sessionMatcher": "inUrlList(host(), 'projects/demo-app-1/locations/europe-west3/urlLists/partner-hosts')",
+      "tlsInspectionEnabled": false,
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/projects/demo-app-1/locations/europe-west3/gatewaySecurityPolicies/egress-policy/rules/deny-all",
+    "assetType": "networksecurity.googleapis.com/GatewaySecurityPolicyRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/gatewaySecurityPolicies/egress-policy/rules/deny-all",
+      "description": "Everything else",
+      "enabled": true,
+      "priority": 1000,
+      "basicProfile": "DENY",
+      "sessionMatcher": "true",
+      "createTime": "2026-04-14T10:20:00.000000000Z",
+      "updateTime": "2026-09-28T07:45:00.000000000Z"
+    }
+  }
+]

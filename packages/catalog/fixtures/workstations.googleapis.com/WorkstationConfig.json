@@ -1,0 +1,50 @@
+{
+  "name": "//workstations.googleapis.com/projects/demo-app-1/locations/europe-west3/workstationClusters/dev/workstationConfigs/vscode",
+  "assetType": "workstations.googleapis.com/WorkstationConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/workstationClusters/dev/workstationConfigs/vscode",
+    "displayName": "VS Code",
+    "uid": "a0000000-0000-4000-8000-000000000002",
+    "idleTimeout": "7200s",
+    "runningTimeout": "43200s",
+    "host": {
+      "gceInstance": {
+        "machineType": "e2-standard-8",
+        "serviceAccount": "workstations@demo-app-1.iam.gserviceaccount.com",
+        "poolSize": 1,
+        "disablePublicIpAddresses": true,
+        "bootDiskSizeGb": 50
+      }
+    },
+    "persistentDirectories": [
+      {
+        "mountPath": "/home",
+        "gcePd": {
+          "sizeGb": 200,
+          "fsType": "ext4",
+          "diskType": "pd-balanced",
+          "reclaimPolicy": "DELETE"
+        }
+      }
+    ],
+    "container": {
+      "image": "europe-west3-docker.pkg.dev/demo-app-1/workstations/vscode-custom:2026.09"
+    },
+    "encryptionKey": {
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute",
+      "kmsKeyServiceAccount": "workstations@demo-app-1.iam.gserviceaccount.com"
+    },
+    "replicaZones": ["europe-west3-a", "europe-west3-b"],
+    "createTime": "2026-03-01T09:00:00Z",
+    "updateTime": "2026-09-10T08:00:00Z"
+  }
+}

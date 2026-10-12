@@ -1,0 +1,178 @@
+[
+  {
+    "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/discoveryConfigs/warehouse-profiles",
+    "assetType": "dlp.googleapis.com/DiscoveryConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/discoveryConfigs/warehouse-profiles",
+      "displayName": "Warehouse profiles",
+      "inspectTemplates": ["projects/demo-data-1/locations/europe-west3/inspectTemplates/pii-eu"],
+      "actions": [
+        {
+          "exportData": {
+            "profileTable": {
+              "projectId": "demo-data-1",
+              "datasetId": "dlp_findings",
+              "tableId": "data_profiles"
+            }
+          }
+        },
+        {
+          "pubSubNotification": {
+            "topic": "projects/demo-data-1/topics/dlp-profiles",
+            "event": "NEW_PROFILE",
+            "detailOfMessage": "TABLE_PROFILE"
+          }
+        },
+        {
+          "tagResources": {
+            "tagConditions": [
+              {
+                "tag": {
+                  "namespacedValue": "30000000001/sensitivity/high"
+                },
+                "sensitivityScore": {
+                  "score": "SENSITIVITY_HIGH"
+                }
+              }
+            ],
+            "profileGenerationsToTag": ["PROFILE_GENERATION_NEW"]
+          }
+        }
+      ],
+      "targets": [
+        {
+          "bigQueryTarget": {
+            "filter": {
+              "otherTables": {}
+            },
+            "cadence": {
+              "schemaModifiedCadence": {
+                "frequency": "UPDATE_FREQUENCY_DAILY"
+              }
+            }
+          }
+        }
+      ],
+      "createTime": "2025-12-01T09:00:00Z",
+      "updateTime": "2026-09-15T08:00:00Z",
+      "lastRunTime": "2026-10-08T03:00:00Z",
+      "status": "RUNNING"
+    }
+  },
+  {
+    "name": "//dlp.googleapis.com/organizations/30000000001/locations/europe-west3/discoveryConfigs/org-profiles",
+    "assetType": "dlp.googleapis.com/DiscoveryConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-20T08:00:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/europe-west3/discoveryConfigs/org-profiles",
+      "displayName": "Organisation-wide profiles",
+      "orgConfig": {
+        "location": {
+          "organizationId": "30000000001"
+        },
+        "projectId": "demo-sec-1"
+      },
+      "inspectTemplates": ["projects/demo-sec-1/locations/europe-west3/inspectTemplates/pii-org"],
+      "targets": [
+        {
+          "cloudStorageTarget": {
+            "filter": {
+              "others": {}
+            },
+            "generationCadence": {
+              "refreshFrequency": "UPDATE_FREQUENCY_MONTHLY"
+            }
+          }
+        },
+        {
+          "bigQueryTarget": {
+            "filter": {
+              "otherTables": {}
+            },
+            "cadence": {
+              "refreshFrequency": "UPDATE_FREQUENCY_MONTHLY"
+            }
+          }
+        }
+      ],
+      "createTime": "2026-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T08:00:00Z",
+      "lastRunTime": "2026-10-01T03:00:00Z",
+      "status": "RUNNING"
+    }
+  },
+  {
+    "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/discoveryConfigs/lake-bucket",
+    "assetType": "dlp.googleapis.com/DiscoveryConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-16T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/discoveryConfigs/lake-bucket",
+      "displayName": "Data lake bucket",
+      "inspectTemplates": ["projects/demo-data-1/locations/europe-west3/inspectTemplates/pii-eu"],
+      "targets": [
+        {
+          "cloudStorageTarget": {
+            "filter": {
+              "cloudStorageResourceReference": {
+                "bucketName": "demo-data-1-lake",
+                "projectId": "demo-data-1"
+              }
+            },
+            "generationCadence": {
+              "refreshFrequency": "UPDATE_FREQUENCY_DAILY"
+            }
+          }
+        }
+      ],
+      "createTime": "2026-04-02T09:00:00Z",
+      "updateTime": "2026-09-16T08:00:00Z",
+      "lastRunTime": "2026-10-08T04:00:00Z",
+      "status": "RUNNING"
+    }
+  },
+  {
+    "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/discoveryConfigs/orders-table",
+    "assetType": "dlp.googleapis.com/DiscoveryConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-16T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/discoveryConfigs/orders-table",
+      "displayName": "Orders table",
+      "inspectTemplates": ["projects/demo-data-1/locations/europe-west3/inspectTemplates/pii-eu"],
+      "targets": [
+        {
+          "bigQueryTarget": {
+            "filter": {
+              "tableReference": {
+                "projectId": "demo-data-1",
+                "datasetId": "sales",
+                "tableId": "orders"
+              }
+            },
+            "cadence": {
+              "schemaModifiedCadence": {
+                "frequency": "UPDATE_FREQUENCY_DAILY"
+              }
+            }
+          }
+        }
+      ],
+      "createTime": "2026-04-02T09:00:00Z",
+      "updateTime": "2026-09-16T08:00:00Z",
+      "lastRunTime": "2026-10-08T04:00:00Z",
+      "status": "PAUSED"
+    }
+  }
+]

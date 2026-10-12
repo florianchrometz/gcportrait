@@ -1,0 +1,14 @@
+{
+  "name": "//cloudcontrolspartner.googleapis.com/organizations/30000000001/locations/eu/customers/acme-bank",
+  "assetType": "cloudcontrolspartner.googleapis.com/Customer",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "eu",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/eu/customers/acme-bank",
+    "displayName": "ACME Bank",
+    "organizationDomain": "bank.example.com",
+    "isOnboarded": true
+  }
+}

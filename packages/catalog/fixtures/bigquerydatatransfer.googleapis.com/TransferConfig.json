@@ -1,0 +1,55 @@
+[
+  {
+    "name": "//bigquerydatatransfer.googleapis.com/projects/10000000003/locations/europe-west3/transferConfigs/6a1b2c3d-0000-4000-8000-000000000001",
+    "assetType": "bigquerydatatransfer.googleapis.com/TransferConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/transferConfigs/6a1b2c3d-0000-4000-8000-000000000001",
+      "displayName": "Load daily orders",
+      "dataSourceId": "google_cloud_storage",
+      "destinationDatasetId": "sales",
+      "params": {
+        "data_path_template": "gs://demo-data-1-lake/exports/orders/*.csv",
+        "destination_table_name_template": "orders_raw",
+        "file_format": "CSV",
+        "skip_leading_rows": "1",
+        "write_disposition": "APPEND"
+      },
+      "schedule": "every 24 hours",
+      "state": "SUCCEEDED",
+      "datasetRegion": "europe-west3",
+      "notificationPubsubTopic": "projects/demo-data-1/topics/transfer-runs",
+      "encryptionConfiguration": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/bigquery"
+      },
+      "ownerInfo": { "email": "transfers@demo-data-1.iam.gserviceaccount.com" },
+      "updateTime": "2026-09-20T09:00:00Z",
+      "nextRunTime": "2026-10-02T06:00:00Z"
+    }
+  },
+  {
+    "name": "//bigquerydatatransfer.googleapis.com/projects/10000000003/locations/europe-west3/transferConfigs/6a1b2c3d-0000-4000-8000-000000000002",
+    "assetType": "bigquerydatatransfer.googleapis.com/TransferConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/transferConfigs/6a1b2c3d-0000-4000-8000-000000000002",
+      "displayName": "Daily revenue rollup",
+      "dataSourceId": "scheduled_query",
+      "destinationDatasetId": "sales",
+      "params": {
+        "query": "SELECT DATE(created_at) AS day, SUM(amount) AS revenue FROM sales.orders GROUP BY day",
+        "destination_table_name_template": "daily_revenue",
+        "write_disposition": "WRITE_TRUNCATE"
+      },
+      "schedule": "every day 05:00",
+      "state": "SUCCEEDED",
+      "ownerInfo": { "email": "analyst@example.com" }
+    }
+  }
+]

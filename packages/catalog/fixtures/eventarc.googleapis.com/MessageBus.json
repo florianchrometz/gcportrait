@@ -1,0 +1,23 @@
+{
+  "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/messageBuses/orders-bus",
+  "assetType": "eventarc.googleapis.com/MessageBus",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/messageBuses/orders-bus",
+    "uid": "00000000-0000-4000-8000-000000000184",
+    "displayName": "Orders bus",
+    "cryptoKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/eventarc",
+    "loggingConfig": {
+      "logSeverity": "INFO"
+    },
+    "createTime": "2026-06-01T10:00:00Z"
+  }
+}

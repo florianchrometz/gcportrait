@@ -1,0 +1,32 @@
+[
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/privateConnections/core-peering",
+    "assetType": "datastream.googleapis.com/PrivateConnection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/privateConnections/core-peering",
+      "displayName": "core-peering",
+      "state": "CREATED",
+      "vpcPeeringConfig": { "vpc": "projects/demo-net-1/global/networks/core", "subnet": "10.250.16.0/29" }
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/privateConnections/core-psc",
+    "assetType": "datastream.googleapis.com/PrivateConnection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/privateConnections/core-psc",
+      "displayName": "core-psc",
+      "state": "CREATED",
+      "pscInterfaceConfig": {
+        "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/psc-if-ml"
+      }
+    }
+  }
+]

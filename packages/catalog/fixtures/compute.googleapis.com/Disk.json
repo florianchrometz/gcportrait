@@ -1,0 +1,79 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/disks/web-7k2p",
+    "assetType": "compute.googleapis.com/Disk",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#disk",
+      "id": "7200000000000000001",
+      "name": "web-7k2p",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/web-7k2p",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "sizeGb": "20",
+      "status": "READY",
+      "type": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/diskTypes/pd-balanced",
+      "sourceImage": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/images/web-base-v12",
+      "sourceImageId": "7300000000000000012",
+      "diskEncryptionKey": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+      },
+      "resourcePolicies": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/resourcePolicies/daily-snap"
+      ],
+      "users": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p"
+      ],
+      "physicalBlockSizeBytes": "4096",
+      "architecture": "X86_64",
+      "creationTimestamp": "2026-07-01T09:00:00.000-07:00",
+      "lastAttachTimestamp": "2026-07-01T09:00:10.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/disks/orders-data",
+    "assetType": "compute.googleapis.com/Disk",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#disk",
+      "id": "7200000000000000002",
+      "name": "orders-data",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/orders-data",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "sizeGb": "500",
+      "status": "READY",
+      "type": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/diskTypes/hyperdisk-balanced",
+      "provisionedIops": "6000",
+      "provisionedThroughput": "290",
+      "storagePool": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/storagePools/hdb-pool-1",
+      "asyncSecondaryDisks": {
+        "projects/demo-app-1/zones/europe-west4-a/disks/orders-data-dr": {
+          "asyncReplicationDisk": {
+            "disk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west4-a/disks/orders-data-dr",
+            "diskId": "7200000000000000003"
+          }
+        }
+      },
+      "diskEncryptionKey": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+      },
+      "architecture": "X86_64",
+      "creationTimestamp": "2026-05-02T09:00:00.000-07:00"
+    }
+  }
+]

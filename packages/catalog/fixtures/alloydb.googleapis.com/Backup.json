@@ -1,0 +1,23 @@
+{
+  "name": "//alloydb.googleapis.com/projects/demo-data-1/locations/europe-west3/backups/orders-20260930",
+  "assetType": "alloydb.googleapis.com/Backup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/backups/orders-20260930",
+    "displayName": "orders-20260930",
+    "uid": "c0000000-0000-4000-8000-000000000001",
+    "state": "READY",
+    "type": "AUTOMATED",
+    "clusterName": "projects/demo-data-1/locations/europe-west3/clusters/orders",
+    "clusterUid": "a0000000-0000-4000-8000-000000000001",
+    "encryptionConfig": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/alloydb"
+    },
+    "sizeBytes": "2147483648",
+    "expiryTime": "2026-10-14T00:00:00Z",
+    "databaseVersion": "POSTGRES_16"
+  }
+}

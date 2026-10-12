@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MIT
+#
+# Runs the production image on your own machine (docs/self-host-options.md, "Run the image locally"):
+#
+#   pnpm docker:build     # docker build -f infra/Dockerfile -t gcportrait:local .
+#   pnpm docker:run       # docker compose -f infra/compose.yaml up
+#
+# then open http://localhost:8080. Demo mode works as is. For "Sign in with Google", put OAUTH_CLIENT_ID (and,
+# if you like, HOSTED_BY) into infra/.env or export them, and list http://localhost:8080 among the OAuth
+# client's authorised JavaScript origins. docs/configuration.md describes every variable. Service-account
+# mode stays off locally: it needs the instance's own Google identity, which only the Cloud Run deployment has.
+name: gcportrait
+
+services:
+  gcportrait:
+    image: ${GCPORTRAIT_IMAGE:-gcportrait:local}
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+      args:
+        APP_VERSION: local
+    ports:
+      # Loopback only: the instance is for you, not for your network.
+      - '127.0.0.1:${GCPORTRAIT_PORT:-8080}:8080'
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-}
+      HOSTED_BY: ${HOSTED_BY:-}
+      SOURCE_URL: ${SOURCE_URL:-}
+      # DEMO_ONLY=true: the demo organisations only, no sign-in, no route that calls Google.
+      DEMO_ONLY: ${DEMO_ONLY:-}
+      # The render API (POST /api/render, docs/api.md): on unless RENDER_API=false (never with DEMO_ONLY=true);
+      # a limit left blank takes its default (docs/configuration.md). A render's PNG needs memory: Docker sets no
+      # limit here, Cloud Run's deploy.sh gives 2 GiB.
+      RENDER_API: ${RENDER_API:-}
+      RENDER_MAX_ASSETS: ${RENDER_MAX_ASSETS:-}
+      RENDER_MAX_PIXELS: ${RENDER_MAX_PIXELS:-}
+      RENDER_TIMEOUT_MS: ${RENDER_TIMEOUT_MS:-}
+      RENDER_MAX_BODY_BYTES: ${RENDER_MAX_BODY_BYTES:-}
+      SA_MODE_ENABLED: 'false'
+      # Clients reach the container directly here, so no forwarding header is trusted.
+      TRUST_PROXY_HOPS: '0'
+    # The image writes nothing: a read-only root filesystem, no capabilities, no privilege escalation.
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # The image's HEALTHCHECK (Node fetching /healthz) applies; `docker compose ps` shows its state.
+    restart: unless-stopped

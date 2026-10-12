@@ -1,0 +1,79 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The scope breadcrumb (Breadcrumb.tsx): the crumbs on one line, separated by a drawn "›" (no text, so the
+   navigation's text is the crumbs' labels), each cut with an ellipsis when the trail runs long; crumbs one can
+   drill out to are text buttons, underlined on hover. It takes the view row's free space and never widens the
+   row (inline-size containment: its content does not count towards the row's minimum width), so the controls
+   stay within the 1280 px minimum viewport whatever the trail (ADR 0011). Tokens only (both themes). */
+.breadcrumb {
+  flex: 1 1 auto;
+  min-width: 120px;
+  /* Room inside the clipped box for a crumb's focus ring (gap and ring), without moving the crumbs: a crumb
+     drilled out to takes focus as the current one, and the first crumb sits at the box's edge. */
+  margin: calc(-1 * (var(--focus-ring-gap) + var(--focus-ring-width)));
+  padding: calc(var(--focus-ring-gap) + var(--focus-ring-width));
+  overflow: hidden;
+  contain: inline-size;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+  list-style: none;
+}
+
+.crumb {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 2.5em;
+  max-width: 14em;
+  white-space: nowrap;
+}
+
+.crumb:last-child {
+  flex-shrink: 0;
+  color: var(--color-on-surface);
+  font-weight: var(--font-weight-medium);
+}
+
+.crumb + .crumb::before {
+  padding: 0 var(--space-1);
+  color: var(--color-on-surface-variant);
+  content: '›' / '';
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  height: 28px;
+  align-items: center;
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: var(--font-size-control);
+  cursor: pointer;
+}
+
+.link:hover {
+  background: var(--color-surface-container);
+  text-decoration: underline;
+}
+
+.note {
+  color: var(--color-error);
+  font-weight: var(--font-weight-regular);
+}

@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+#
+# Privileged Access Manager: just-in-time access grants. Entitlements are not inventoried.
+product: Privileged Access Manager
+service: privilegedaccessmanager.googleapis.com
+icon: privileged_access_manager
+types:
+  privilegedaccessmanager.googleapis.com/Grant:
+    role: hidden
+    label: '{{data.requester}}'
+    subtitle: '{{name | parentSegment(entitlements)}} · {{data.state | lower}}'
+    notes: >-
+      …/locations/global/entitlements/<e>/grants/<g>: one per access request, so hidden and counted. The
+      requester is a user e-mail; privilegedAccess.gcpIamAccess names the resource (a full name) and roles
+      granted for the duration, which is temporary access rather than a structural relation, so it is not
+      drawn.

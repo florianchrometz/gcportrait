@@ -1,0 +1,31 @@
+{
+  "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/certificateTemplates/mtls-workload",
+  "assetType": "privateca.googleapis.com/CertificateTemplate",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/certificateTemplates/mtls-workload",
+    "maximumLifetime": "2592000s",
+    "predefinedValues": {
+      "keyUsage": {
+        "baseKeyUsage": {
+          "digitalSignature": true,
+          "keyEncipherment": true
+        },
+        "extendedKeyUsage": {
+          "serverAuth": true,
+          "clientAuth": true
+        }
+      }
+    },
+    "identityConstraints": {
+      "allowSubjectPassthrough": true,
+      "allowSubjectAltNamesPassthrough": true
+    },
+    "description": "Workload mTLS certificates, 30 days",
+    "createTime": "2024-01-10T11:00:00Z",
+    "updateTime": "2024-01-10T11:00:00Z"
+  }
+}

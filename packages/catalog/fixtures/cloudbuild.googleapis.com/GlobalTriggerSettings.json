@@ -1,0 +1,9 @@
+{
+  "name": "//cloudbuild.googleapis.com/projects/10000000005/global_trigger_settings",
+  "assetType": "cloudbuild.googleapis.com/GlobalTriggerSettings",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {}
+}

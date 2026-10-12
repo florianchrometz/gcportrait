@@ -1,0 +1,61 @@
+[
+  {
+    "name": "//appengine.googleapis.com/apps/demo-app-1/services/default/versions/20261001t080000",
+    "assetType": "appengine.googleapis.com/Version",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "apps/demo-app-1/services/default/versions/20261001t080000",
+      "id": "20261001t080000",
+      "runtime": "python312",
+      "env": "standard",
+      "servingStatus": "SERVING",
+      "instanceClass": "F2",
+      "createdBy": "deployer@example.com",
+      "versionUrl": "https://20261001t080000-dot-demo-app-1.ey.r.appspot.com",
+      "serviceAccount": "gae-runtime@demo-app-1.iam.gserviceaccount.com",
+      "vpcAccessConnector": {
+        "name": "projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+        "egressSetting": "PRIVATE_IP_RANGES"
+      },
+      "automaticScaling": {
+        "maxConcurrentRequests": 10,
+        "standardSchedulerSettings": {
+          "maxInstances": 20
+        }
+      },
+      "createTime": "2026-10-01T08:00:00Z"
+    }
+  },
+  {
+    "name": "//appengine.googleapis.com/apps/demo-app-1/services/default/versions/20260901t080000",
+    "assetType": "appengine.googleapis.com/Version",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "apps/demo-app-1/services/default/versions/20260901t080000",
+      "id": "20260901t080000",
+      "runtime": "python312",
+      "env": "standard",
+      "servingStatus": "STOPPED",
+      "instanceClass": "F2",
+      "createdBy": "deployer@example.com",
+      "versionUrl": "https://20260901t080000-dot-demo-app-1.ey.r.appspot.com",
+      "createTime": "2026-09-01T08:00:00Z"
+    }
+  }
+]

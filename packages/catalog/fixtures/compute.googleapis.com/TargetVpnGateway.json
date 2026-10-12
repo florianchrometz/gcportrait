@@ -1,0 +1,33 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/targetVpnGateways/vpn-classic-europe-west3",
+  "assetType": "compute.googleapis.com/TargetVpnGateway",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#targetVpnGateway",
+    "id": "5000000000000000241",
+    "name": "vpn-classic-europe-west3",
+    "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+    "description": "Classic VPN to the branch office (static routing)",
+    "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+    "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+    "status": "READY",
+    "tunnels": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-branch-1"
+    ],
+    "forwardingRules": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/vpn-classic-esp",
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/vpn-classic-udp500",
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/vpn-classic-udp4500"
+    ],
+    "labelFingerprint": "42WmSpB8rSM=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/targetVpnGateways/vpn-classic-europe-west3"
+  }
+}

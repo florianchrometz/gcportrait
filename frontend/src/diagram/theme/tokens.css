@@ -1,0 +1,78 @@
+/* SPDX-License-Identifier: MIT */
+
+/*
+ * Diagram colour tokens (skill gcp-diagram-style §2, with the departures listed in tokens.ts) as CSS custom
+ * properties, in both themes, selected by <html data-theme> like the chrome tokens in src/styles/tokens.css.
+ * They must equal the table in tokens.ts value for value (theme.test.ts checks it). The renderer writes the same values as SVG presentation
+ * attributes for the current theme; the interactive states in diagram.css (ancestor path, selection, focus,
+ * casing) use these properties.
+ */
+
+:root,
+:root[data-theme='light'] {
+  --dg-canvas: #ffffff;
+  --dg-ink: #202124;
+  --dg-muted: #5f6368;
+  --dg-border: #dadce0;
+  --dg-surface: #f8f9fa;
+  --dg-zone-folder-fill: #f1f3f4;
+  --dg-zone-folder-stroke: #5f6368;
+  --dg-zone-project-fill: #a8c7fa;
+  --dg-zone-project-stroke: #202124;
+  --dg-zone-vpc-fill: #ceead6;
+  --dg-zone-vpc-stroke: #a8dab5;
+  --dg-zone-subnet-fill: #ffeebd;
+  --dg-zone-subnet-stroke: #fde293;
+  --dg-zone-region-fill: none;
+  --dg-zone-region-stroke: #5f6368;
+  --dg-zone-other-fill: #f8f9fa;
+  --dg-zone-other-stroke: #5f6368;
+  --dg-zone-nested-fill: #d2e3fc;
+  --dg-zone-nested-stroke: #5f6368;
+  --dg-card-fill: #ffffff;
+  --dg-card-stroke: #202124;
+  --dg-edge: #202124;
+  --dg-edge-dim: #5f6368;
+  --dg-accent-select: #1a73e8;
+  --dg-accent-path: #f9ab00;
+  --dg-accent-peer: #188038;
+  --dg-accent-removed: #d93025;
+  --dg-chip-text: #3c4043;
+  --dg-focus: #185abc;
+  --dg-muted-on-tint: #3c4043;
+  --dg-path-casing: #5f6368;
+}
+
+:root[data-theme='dark'] {
+  --dg-canvas: #1f1f1f;
+  --dg-ink: #e8eaed;
+  --dg-muted: #9aa0a6;
+  --dg-border: #5f6368;
+  --dg-surface: #303134;
+  --dg-zone-folder-fill: #2a2b2e;
+  --dg-zone-folder-stroke: #9aa0a6;
+  --dg-zone-project-fill: #1c3a5e;
+  --dg-zone-project-stroke: #8ab4f8;
+  --dg-zone-vpc-fill: #1e3a2a;
+  --dg-zone-vpc-stroke: #81c995;
+  --dg-zone-subnet-fill: #3d3419;
+  --dg-zone-subnet-stroke: #b39b4c;
+  --dg-zone-region-fill: none;
+  --dg-zone-region-stroke: #9aa0a6;
+  --dg-zone-other-fill: #303134;
+  --dg-zone-other-stroke: #9aa0a6;
+  --dg-zone-nested-fill: #2d3f55;
+  --dg-zone-nested-stroke: #9aa0a6;
+  --dg-card-fill: #2b2c2f;
+  --dg-card-stroke: #bdc1c6;
+  --dg-edge: #e8eaed;
+  --dg-edge-dim: #9aa0a6;
+  --dg-accent-select: #8ab4f8;
+  --dg-accent-path: #fdd663;
+  --dg-accent-peer: #81c995;
+  --dg-accent-removed: #f28b82;
+  --dg-chip-text: #e8eaed;
+  --dg-focus: #8ab4f8;
+  --dg-muted-on-tint: #bdc1c6;
+  --dg-path-casing: #1f1f1f;
+}

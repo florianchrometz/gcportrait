@@ -1,0 +1,264 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The timeline bar (TimelineBar.tsx): the second row of the diagram workspace, across both columns
+   (DiagramPage.module.css), 48 px tall so the canvas keeps its size. Chrome tokens only (skill gcp-diagram-style §9),
+   so both themes follow; every marker shape keeps 3 : 1 against the bar's surface container in both themes. */
+.timeline {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 48px;
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--color-outline);
+  background: var(--color-surface-container);
+}
+
+.buttons {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  padding: 0;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--color-surface-container);
+}
+
+.iconButton[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Inert, as the app's placeholders are: a dashed border and the secondary colour (not colour alone). */
+.iconButton[aria-disabled='true'] {
+  border-style: dashed;
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+.iconButton[aria-disabled='true']:hover {
+  background: var(--color-surface);
+}
+
+.glyph {
+  width: 16px;
+  height: 16px;
+  fill: currentcolor;
+}
+
+.title {
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The slider's own label ("Timeline", ui/Slider) still names it, out of sight: the bar's title says it already, and
+   the edge dates sit right beside the track. */
+.slider > :first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.edge {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  white-space: nowrap;
+}
+
+/* The thumb's focus ring (global.css) crosses the track's line: a 2 px band of the bar's own colour outside it keeps
+   the ring away from the line, so it reaches 3 : 1 against everything beside it (keyboard.spec.ts measures it). */
+.slider [role='slider']:focus-visible {
+  box-shadow:
+    0 0 0 var(--focus-ring-gap) var(--color-surface),
+    0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary),
+    0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width) + 2px) var(--color-surface-container);
+}
+
+/* The markers sit in a row just under the track, so the track and the thumb stay as ui/Slider draws them. */
+.markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  top: calc(50% + 13px);
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Not read yet: a hollow ring. */
+.marker[data-state='unknown'] {
+  border: 1.5px solid var(--color-on-surface-variant);
+}
+
+/* Ready (local, or cached in this browser): a filled dot. */
+.marker[data-state='cached'] {
+  background: var(--color-on-surface-variant);
+}
+
+/* Loading: a larger dashed ring in the primary colour, turning (standing still with reduced motion). */
+.marker[data-state='loading'] {
+  width: 9px;
+  height: 9px;
+  border: 2px dashed var(--color-primary);
+  animation: turn 1.2s linear infinite;
+}
+
+/* On screen: a larger filled dot in the primary colour with a gap and a ring. */
+.marker[data-state='current'] {
+  width: 9px;
+  height: 9px;
+  background: var(--color-primary);
+  box-shadow:
+    0 0 0 1.5px var(--color-surface-container),
+    0 0 0 3px var(--color-primary);
+}
+
+/* Failed: a cross in the error colour. */
+.marker[data-state='error'] {
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
+}
+
+.marker[data-state='error']::before,
+.marker[data-state='error']::after {
+  position: absolute;
+  top: 50%;
+  left: -1px;
+  width: 11px;
+  height: 2px;
+  background: var(--color-error);
+  content: '';
+}
+
+.marker[data-state='error']::before {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.marker[data-state='error']::after {
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+/* An extra tick (an export or a manual pull of the scope): a diamond, apart from the days' dots by shape. It
+   takes the pointer, so its tooltip names it ("export 2026-10-05 14:30: ready"); a press on it is still a press on
+   the track (it is inside it), which moves the view there. */
+.marker[data-kind='extra'] {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: auto;
+}
+
+/* Its read time is an estimate (the latest asset change): a hollow diamond. */
+.marker[data-kind='extra'][data-estimated='true'][data-state='cached'] {
+  border: 1.5px solid var(--color-on-surface-variant);
+  background: none;
+}
+
+.marker[data-kind='extra'][data-state='current'],
+.marker[data-kind='extra'][data-state='loading'] {
+  width: 9px;
+  height: 9px;
+}
+
+.marker[data-kind='extra'][data-estimated='true'][data-state='current'] {
+  border: 2px solid var(--color-primary);
+  background: var(--color-surface-container);
+}
+
+@keyframes turn {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Playback glides the thumb from day to day. */
+.playing [role='slider'] {
+  transition: left 200ms ease-out;
+}
+
+/* Two lines at most: a read's progress with its size and time, or Google's message, wraps instead of being cut
+   at one line; what still does not fit ends in an ellipsis, and the whole text is the tooltip and the status. */
+.readout {
+  display: -webkit-box;
+  flex: none;
+  overflow: hidden;
+  width: 300px;
+  max-height: 32px;
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  line-height: 16px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.textButton {
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.textButton:hover {
+  background: var(--color-surface-container);
+}
+
+/* A pressed toggle ("Play extras"): the primary colour as outline and text, not colour alone (the pressed state is
+   also its `aria-pressed`, and its tooltip says it). */
+.textButton[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker[data-state='loading'] {
+    animation: none;
+  }
+
+  .playing [role='slider'] {
+    transition: none;
+  }
+}

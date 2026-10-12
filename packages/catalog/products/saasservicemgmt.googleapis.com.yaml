@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: MIT
+#
+# App Lifecycle Manager (SaaS Runtime): a SaaS offering, its tenants, unit kinds and units (deployments of a
+# blueprint), releases and rollouts. All are hidden by default: they describe how a producer manages the
+# deployments, which appear as their own assets. Every name is flat (…/locations/<l>/<collection>/<id>), so
+# nothing nests inside the SaaS; the memberOf edges carry the grouping instead (tenant and unit kind → SaaS,
+# unit → unit kind and tenant, release and rollout kind → unit kind, rollout → rollout kind). The reference
+# documents the reference fields only as strings; they are read as resource names in the same service.
+product: App Lifecycle Manager
+service: saasservicemgmt.googleapis.com
+icon: app_lifecycle_manager
+types:
+  saasservicemgmt.googleapis.com/Saas:
+    role: hidden
+    subtitle: '{{data.locations[0].name}}'
+    notes: A SaaS offering; locations lists the regions it is deployed to.
+
+  saasservicemgmt.googleapis.com/Tenant:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.saas, normalize: name }
+    notes: >-
+      A consumer of the SaaS; consumerResource names the consumer-side resource, whose format is not
+      documented, so it is not read.
+
+  saasservicemgmt.googleapis.com/UnitKind:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.saas, normalize: name }
+      - { kind: uses, to: $.data.defaultRelease, normalize: name }
+    notes: A kind of deployable unit of the SaaS; new units start from defaultRelease.
+
+  saasservicemgmt.googleapis.com/Unit:
+    role: hidden
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: memberOf, to: $.data.unitKind, normalize: name }
+      - { kind: memberOf, to: $.data.tenant, normalize: name }
+      - { kind: uses, to: $.data.release, normalize: name }
+      - { kind: uses, to: '$.data.dependencies[*].unit', normalize: name }
+    notes: One deployment of a unit kind (for a tenant), at its current release; dependencies name other units.
+
+  saasservicemgmt.googleapis.com/Release:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.unitKind, normalize: name }
+      - { kind: uses, to: $.data.blueprint.package, normalize: artifactImage }
+    notes: >-
+      A version of a unit kind's blueprint: blueprint.package is an OCI image (Terraform or Helm) in Artifact
+      Registry, resolved to its repository.
+
+  saasservicemgmt.googleapis.com/RolloutKind:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.unitKind, normalize: name }
+    notes: How rollouts of a unit kind proceed (orchestration strategy, unit filter, error budget).
+
+  saasservicemgmt.googleapis.com/Rollout:
+    role: hidden
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: memberOf, to: $.data.rolloutKind, normalize: name }
+      - { kind: uses, to: $.data.release, normalize: name }
+    notes: Rolls a release out to the units its rollout kind selects; one per release rollout, so hidden.

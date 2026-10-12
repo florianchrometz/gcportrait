@@ -1,0 +1,45 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/networkAttachments/psc-if-ml",
+  "assetType": "compute.googleapis.com/NetworkAttachment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#networkAttachment",
+    "id": "5000000000000000122",
+    "name": "psc-if-ml",
+    "description": "Private Service Connect interface for the data platform's managed services",
+    "connectionPreference": "ACCEPT_MANUAL",
+    "subnetworks": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app"
+    ],
+    "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+    "producerAcceptLists": ["demo-data-1"],
+    "connectionEndpoints": [
+      {
+        "status": "ACCEPTED",
+        "projectIdOrNum": "10000000003",
+        "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+        "ipAddress": "10.10.0.70",
+        "subnetworkCidrRange": "10.10.0.0/20",
+        "secondaryIpCidrRanges": []
+      },
+      {
+        "status": "ACCEPTED",
+        "projectIdOrNum": "c3d4e5f6a7b8c9-tp",
+        "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+        "ipAddress": "10.10.0.71",
+        "subnetworkCidrRange": "10.10.0.0/20"
+      }
+    ],
+    "fingerprint": "p4H8xzOgu1Q=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/networkAttachments/psc-if-ml",
+    "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+  }
+}

@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: MIT
+#
+# The Compute lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# Peers and connects are drawn for VMware Engine network peerings and private connections; Dataproc clusters
+# (which own their VMs) and the Vertex AI runtimes and resource pools that pin Compute Engine reservations are
+# listed; Migrate to VMs records (all hidden) are in the operations lens.
+title: Compute
+description: >-
+  Virtual machines and what they are made of: instances, disks, images, templates, groups and autoscalers,
+  sole tenancy and reservations, TPUs, workstations, notebooks, batch and VMware Engine.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  - 'compute.googleapis.com/Instance'
+  - 'compute.googleapis.com/Disk'
+  - 'compute.googleapis.com/RegionDisk'
+  - 'compute.googleapis.com/Image'
+  - 'compute.googleapis.com/MachineImage'
+  - 'compute.googleapis.com/Snapshot'
+  - 'compute.googleapis.com/InstantSnapshot'
+  - 'compute.googleapis.com/InstanceTemplate'
+  - 'compute.googleapis.com/InstanceGroup'
+  - 'compute.googleapis.com/InstanceGroupManager'
+  - 'compute.googleapis.com/Autoscaler'
+  - 'compute.googleapis.com/NodeGroup'
+  - 'compute.googleapis.com/NodeTemplate'
+  - 'compute.googleapis.com/Reservation'
+  - 'compute.googleapis.com/Commitment'
+  - 'compute.googleapis.com/ResourcePolicy'
+  - 'compute.googleapis.com/StoragePool'
+  - 'tpu.googleapis.com/*'
+  - 'hypercomputecluster.googleapis.com/*'
+  - 'workstations.googleapis.com/*'
+  - 'notebooks.googleapis.com/*'
+  - 'batch.googleapis.com/*'
+  - 'vmwareengine.googleapis.com/*'
+  - 'dataproc.googleapis.com/Cluster'
+  - 'aiplatform.googleapis.com/NotebookRuntime'
+  - 'aiplatform.googleapis.com/NotebookRuntimeTemplate'
+  - 'aiplatform.googleapis.com/DeploymentResourcePool'
+relationKinds: [contains, attaches, uses, memberOf, routes, replicates, peers, connects]
+showHidden: false
+defaultDetail: networks

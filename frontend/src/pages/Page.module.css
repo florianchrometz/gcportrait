@@ -1,0 +1,41 @@
+/* SPDX-License-Identifier: MIT */
+
+/* Shared layout for the text pages (Connect, Snapshots, Permissions, Settings, not found). */
+.page {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+}
+
+.intro {
+  display: grid;
+}
+
+.title {
+  font-size: var(--font-size-headline);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.3;
+}
+
+.lead {
+  margin-top: var(--space-2);
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-title);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.note {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}

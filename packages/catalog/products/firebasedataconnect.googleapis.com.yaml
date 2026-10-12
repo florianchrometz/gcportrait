@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: MIT
+#
+# Firebase Data Connect: a service holds
+# its schema and connectors (nested by name); the schema reads a Cloud SQL for PostgreSQL database or an HTTP
+# GraphQL endpoint.
+product: Firebase Data Connect
+service: firebasedataconnect.googleapis.com
+icon: firebase_data_connect
+types:
+  firebasedataconnect.googleapis.com/Service:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{location}}'
+    console: 'https://console.firebase.google.com/project/{{projectId}}/dataconnect'
+    contains:
+      - byParent: firebasedataconnect.googleapis.com/Schema
+      - byParent: firebasedataconnect.googleapis.com/Connector
+
+  firebasedataconnect.googleapis.com/Schema:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.datasources[0].postgresql.database}}'
+    domains:
+      - '$.data.datasources[*].httpGraphql.uri'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.datasources[*].postgresql.cloudSql.instance',
+          normalize: name,
+          service: cloudsql.googleapis.com,
+        }
+    notes: >-
+      The seed's datasource.postgresql path is now a list, datasources[*]. cloudSql.instance is
+      projects/<p>/locations/<region>/instances/<i>, a form cloudSqlConnectionName does not accept yet; the
+      name normaliser keeps the locations segment, so the edge stays dangling until a normaliser maps it to
+      //cloudsql.googleapis.com/projects/<p>/instances/<i>.
+
+  firebasedataconnect.googleapis.com/Connector:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.displayName}}'

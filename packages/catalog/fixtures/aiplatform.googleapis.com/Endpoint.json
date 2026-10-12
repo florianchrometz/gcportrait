@@ -1,0 +1,111 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/endpoints/4721839405617283072",
+    "assetType": "aiplatform.googleapis.com/Endpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/endpoints/4721839405617283072",
+      "displayName": "fraud-scoring",
+      "description": "Online fraud scoring for checkout",
+      "deployedModels": [
+        {
+          "id": "2208813644",
+          "model": "projects/10000000003/locations/europe-west3/models/7051234567890123456",
+          "modelVersionId": "3",
+          "displayName": "fraud-scorer-v3",
+          "createTime": "2026-09-12T09:30:00Z",
+          "serviceAccount": "vertex-serving@demo-data-1.iam.gserviceaccount.com",
+          "dedicatedResources": {
+            "machineSpec": {
+              "machineType": "n1-standard-4",
+              "acceleratorType": "NVIDIA_TESLA_T4",
+              "acceleratorCount": 1,
+              "reservationAffinity": {
+                "reservationAffinityType": "SPECIFIC_RESERVATION",
+                "key": "compute.googleapis.com/reservation-name",
+                "values": ["projects/demo-data-1/zones/europe-west3-b/reservations/vertex-t4-serving"]
+              }
+            },
+            "minReplicaCount": 2,
+            "maxReplicaCount": 6
+          },
+          "privateEndpoints": {
+            "predictHttpUri": "http://4721839405617283072.aiplatform.googleapis.com/v1/models/2208813644:predict",
+            "healthHttpUri": "http://4721839405617283072.aiplatform.googleapis.com/v1/models/2208813644"
+          }
+        },
+        {
+          "id": "5530987712",
+          "model": "projects/10000000003/locations/europe-west3/models/7051234567890123999",
+          "modelVersionId": "1",
+          "displayName": "fraud-explainer",
+          "createTime": "2026-09-20T09:30:00Z",
+          "sharedResources": "projects/10000000003/locations/europe-west3/deploymentResourcePools/shared-cpu"
+        }
+      ],
+      "trafficSplit": {
+        "2208813644": 100,
+        "5530987712": 0
+      },
+      "etag": "AMEw9yN3",
+      "createTime": "2026-03-02T10:00:00Z",
+      "updateTime": "2026-09-20T09:35:00Z",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      },
+      "network": "projects/10000000001/global/networks/core",
+      "predictRequestResponseLoggingConfig": {
+        "enabled": true,
+        "samplingRate": 0.1,
+        "bigqueryDestination": {
+          "outputUri": "bq://demo-data-1.serving_logs.fraud_scoring"
+        }
+      }
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/endpoints/6602240187711028224",
+    "assetType": "aiplatform.googleapis.com/Endpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/endpoints/6602240187711028224",
+      "displayName": "recommendations-psc",
+      "deployedModels": [
+        {
+          "id": "8812201933",
+          "model": "projects/10000000003/locations/europe-west3/models/7051234567890124777",
+          "displayName": "recommender-v7",
+          "createTime": "2026-08-02T09:30:00Z",
+          "automaticResources": {
+            "minReplicaCount": 1,
+            "maxReplicaCount": 3
+          }
+        }
+      ],
+      "createTime": "2026-08-01T10:00:00Z",
+      "updateTime": "2026-08-02T09:35:00Z",
+      "privateServiceConnectConfig": {
+        "enablePrivateServiceConnect": true,
+        "projectAllowlist": ["demo-app-1", "10000000005"],
+        "pscAutomationConfigs": [
+          {
+            "projectId": "demo-app-1",
+            "network": "projects/10000000001/global/networks/core",
+            "ipAddress": "10.10.15.40",
+            "forwardingRule": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/forwardingRules/psc-recommendations",
+            "state": "PSC_AUTOMATION_STATE_SUCCESSFUL"
+          }
+        ],
+        "serviceAttachment": "projects/b7c1d2e3f4-tp/regions/europe-west3/serviceAttachments/sa-6602240187711028224"
+      },
+      "dedicatedEndpointEnabled": true,
+      "dedicatedEndpointDns": "6602240187711028224.europe-west3-10000000003.prediction.vertexai.goog"
+    }
+  }
+]

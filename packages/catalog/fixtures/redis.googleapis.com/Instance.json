@@ -1,0 +1,38 @@
+{
+  "name": "//redis.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/sessions",
+  "assetType": "redis.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/instances/sessions",
+    "displayName": "sessions",
+    "locationId": "europe-west3-a",
+    "alternativeLocationId": "europe-west3-b",
+    "redisVersion": "REDIS_7_2",
+    "reservedIpRange": "10.20.2.0/29",
+    "secondaryIpRange": "10.20.2.8/29",
+    "host": "10.20.2.4",
+    "port": 6379,
+    "readEndpoint": "10.20.2.5",
+    "readEndpointPort": 6379,
+    "currentLocationId": "europe-west3-a",
+    "createTime": "2024-06-01T09:00:00Z",
+    "state": "READY",
+    "tier": "STANDARD_HA",
+    "memorySizeGb": 5,
+    "authorizedNetwork": "projects/demo-net-1/global/networks/core",
+    "connectMode": "PRIVATE_SERVICE_ACCESS",
+    "replicaCount": 1,
+    "readReplicasMode": "READ_REPLICAS_ENABLED",
+    "transitEncryptionMode": "SERVER_AUTHENTICATION",
+    "authEnabled": true,
+    "customerManagedKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/redis"
+  }
+}

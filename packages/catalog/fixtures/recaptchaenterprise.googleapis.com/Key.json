@@ -1,0 +1,27 @@
+{
+  "name": "//recaptchaenterprise.googleapis.com/projects/10000000002/keys/6LdQ3x0pAAAAAEXAMPLEsiteKey0shop",
+  "assetType": "recaptchaenterprise.googleapis.com/Key",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/keys/6LdQ3x0pAAAAAEXAMPLEsiteKey0shop",
+    "displayName": "Shop checkout",
+    "webSettings": {
+      "allowAllDomains": false,
+      "allowedDomains": ["shop.example.com", "checkout.example.com"],
+      "integrationType": "SCORE",
+      "challengeSecurityPreference": "BALANCE"
+    },
+    "labels": {
+      "app": "shop"
+    },
+    "createTime": "2025-02-01T09:00:00Z"
+  }
+}

@@ -1,0 +1,30 @@
+---
+import DemoLink from '../components/DemoLink.astro';
+import Base from '../layouts/Base.astro';
+
+const meta = {
+  title: 'Page not found',
+  description: 'This page of gcportrait.app does not exist. Go to the start page, the documentation or the demo.',
+  path: '/404.html',
+  noindex: true,
+};
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<Base meta={meta}>
+  <div class="container not-found">
+    <h1>Page not found</h1>
+    <p class="lead">There is no page at this address. It may have moved.</p>
+    <div class="button-row">
+      <a class="button button-primary" href="/">Start page</a>
+      <a class="button" href="/docs/">Documentation</a>
+      <DemoLink class="button">Try the demo</DemoLink>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .not-found {
+    padding-block: 3rem;
+  }
+</style>

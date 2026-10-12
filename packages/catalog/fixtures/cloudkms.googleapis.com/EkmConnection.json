@@ -1,0 +1,30 @@
+{
+  "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/ekmConnections/onprem-ekm",
+  "assetType": "cloudkms.googleapis.com/EkmConnection",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/ekmConnections/onprem-ekm",
+    "createTime": "2025-09-15T10:00:00Z",
+    "serviceResolvers": [
+      {
+        "serviceDirectoryService": "projects/demo-sec-1/locations/europe-west3/namespaces/ekm/services/ekm-replica-1",
+        "hostname": "ekm1.example.com",
+        "serverCertificates": [
+          {
+            "rawDer": "MIIBszCCAVmgAwIBAgIUY29uZmlnLW9ubHk=",
+            "parsed": true
+          }
+        ]
+      },
+      {
+        "serviceDirectoryService": "projects/demo-sec-1/locations/europe-west3/namespaces/ekm/services/ekm-replica-2",
+        "hostname": "ekm2.example.com"
+      }
+    ],
+    "etag": "1757930400000000",
+    "keyManagementMode": "MANUAL"
+  }
+}

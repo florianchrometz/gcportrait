@@ -1,0 +1,399 @@
+---
+/**
+ * The header of every page: the wordmark, the menu, "Try the demo" and the repository widget. It stays at the top of
+ * the window while the page scrolls (sticky; src/layouts/Base.astro keeps `--header-block` at its height, so an anchor
+ * jump or a focused element is never hidden under it). The demo opens in a new tab (src/components/DemoLink.astro).
+ */
+import DemoLink from './DemoLink.astro';
+import Logo from './Logo.astro';
+import { formatCount, repositoryFacts, repositoryLinkLabel, repositorySlug } from '../lib/github.js';
+import { PRODUCT_NAME, REPOSITORY_URL } from '../site.js';
+
+interface Props {
+  /** The current page's path, to mark its section in the menu. */
+  path: string;
+}
+const { path } = Astro.props;
+const links = [
+  { href: '/docs/', label: 'Docs' },
+  { href: '/docs/self-host/', label: 'Self-host' },
+  { href: '/coverage/', label: 'Coverage' },
+  { href: '/changelog/', label: 'Changelog' },
+  { href: '/contributing/', label: 'Contributing' },
+];
+// The self-hosting guide and its options page (/docs/self-host/, /docs/self-host-options/) are "Self-host", not "Docs".
+const selfHost = path.startsWith('/docs/self-host/') || path.startsWith('/docs/self-host-options/');
+const current = (href: string): boolean =>
+  href === '/docs/'
+    ? path.startsWith('/docs/') && !selfHost
+    : href === '/docs/self-host/'
+      ? selfHost
+      : path.startsWith(href);
+// The repository widget's two layers (src/lib/star-count.ts): the facts read from GitHub when the site is built
+// (src/lib/github.ts; null when unknown) are in the page at first paint; once the page has loaded, the script below
+// asks GitHub for the current ones, unless the build's own request found the repository not public (GitHub's 404):
+// then a visitor's browser would only get the same 404, so `data-repository-not-public` tells the script to ask
+// nothing, and there are no facts to fill.
+const { facts, notPublic } = await repositoryFacts();
+// "owner/name" for the script's requests; undefined when REPOSITORY_URL is not a github.com repository (no request).
+const slug = repositorySlug(REPOSITORY_URL);
+// Without facts from the build the facts are in the page, hidden, for the script to fill and show; not when the
+// script will ask nothing (no repository to ask about, or one GitHub said is not public).
+const fillable = facts !== null || (slug !== undefined && !notPublic);
+const values = {
+  version: facts?.version ?? '',
+  stars: facts === null ? '' : formatCount(facts.stars),
+  forks: facts === null ? '' : formatCount(facts.forks),
+};
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<header class="site-header">
+  <div class="container header-row">
+    <a class="wordmark" href="/" aria-label={`${PRODUCT_NAME} home`}>
+      <Logo size={30} />
+      <span>{PRODUCT_NAME}</span>
+    </a>
+    {
+      /*
+       * On a phone the menu folds away behind this button (a disclosure: src/layouts/Base.astro's script flips
+       * aria-expanded, the CSS below shows the menu that follows it). Hidden on wider screens; without JavaScript the
+       * menu is shown and the button is not (Base.astro's noscript style).
+       */
+    }
+    <button type="button" class="menu-toggle" data-disclosure aria-expanded="false" aria-controls="site-menu">
+      <svg class="menu-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+        <path class="menu-icon-open" d="M4 6.5h16M4 12h16M4 17.5h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        ></path>
+        <path class="menu-icon-close" d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        ></path>
+      </svg>
+      <span>Menu</span>
+    </button>
+    <nav id="site-menu" class="site-menu" aria-label="Main">
+      <ul>
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} aria-current={current(link.href) ? 'page' : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <DemoLink class="button button-primary header-cta">Try the demo</DemoLink>
+      <a
+        class:list={['button', 'header-github', { 'has-facts': facts !== null }]}
+        href={REPOSITORY_URL}
+        rel="noopener"
+        aria-label={repositoryLinkLabel(PRODUCT_NAME, facts)}
+        data-repository={slug}
+        data-repository-not-public={notPublic && slug !== undefined ? '' : undefined}
+      >
+        {/* The GitHub mark, unmodified and used only to link to the repository (GitHub's logo guidelines). */}
+        <svg class="github-mark" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+          ></path>
+        </svg>
+        <span class="github-word">GitHub</span>
+        {
+          /*
+           * The facts: the latest release's version, the stars and the forks, each with the site's own drawing (a tag, a
+           * star, a fork). The link's name says them all (aria-label), so the drawings and the numbers are not read on
+           * their own.
+           */
+          fillable && (
+            <span class="repo-facts" hidden={facts === null}>
+              <span class="repo-fact" data-fact="version" hidden={values.version === ''}>
+                <svg class="fact-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+                  <path
+                    d="M1.75 2.6v4.3c0 .4.16.78.44 1.06l6.2 6.2a1.5 1.5 0 0 0 2.12 0l3.33-3.33a1.5 1.5 0 0 0 0-2.12l-6.2-6.2a1.5 1.5 0 0 0-1.06-.44H2.6a.85.85 0 0 0-.85.53z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"></path>
+                  <circle cx="5.1" cy="5.1" r="1.2" fill="currentColor"></circle>
+                </svg>
+                <span class="fact-value">{values.version}</span>
+              </span>
+              <span class="repo-fact" data-fact="stars" hidden={values.stars === ''}>
+                <svg class="fact-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+                  <polygon
+                    points="8,1 9.94,5.93 15.23,6.25 11.14,9.62 12.47,14.75 8,11.9 3.53,14.75 4.86,9.62 0.77,6.25 6.06,5.93"
+                    fill="currentColor"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    stroke-linejoin="round"></polygon>
+                </svg>
+                <span class="fact-value">{values.stars}</span>
+              </span>
+              <span class="repo-fact" data-fact="forks" hidden={values.forks === ''}>
+                <svg class="fact-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+                  <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <circle cx="4" cy="3.25" r="1.75"></circle>
+                    <circle cx="12" cy="3.25" r="1.75"></circle>
+                    <circle cx="8" cy="12.75" r="1.75"></circle>
+                    <path d="M4 5v.75A2.25 2.25 0 0 0 6.25 8h3.5A2.25 2.25 0 0 0 12 5.75V5M8 8v3"></path>
+                  </g>
+                </svg>
+                <span class="fact-value">{values.forks}</span>
+              </span>
+            </span>
+          )
+        }
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  /*
+   * The header stays at the top of the window while the page scrolls. Its background reaches under a phone's status
+   * bar where the page is drawn there (the safe-area inset), and it sits above the page (main isolates its own layers;
+   * the skip link, global.css, sits above the header).
+   */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding-top: env(safe-area-inset-top, 0px);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+  }
+  .header-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    padding-block: 0.75rem;
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-text);
+    font-size: 1.375rem;
+    font-weight: 500;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  nav {
+    flex: 1 1 auto;
+  }
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    display: inline-block;
+    padding: 0.5rem 0.125rem;
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  nav a:hover {
+    color: var(--color-link);
+  }
+  nav a[aria-current='page'] {
+    color: var(--color-link);
+    box-shadow: inset 0 -2px 0 var(--color-link);
+  }
+  /* The demo and the repository, at the right; under the menu when the row is too narrow for all three. */
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.625rem;
+  }
+  .header-cta,
+  .header-github {
+    min-height: 2.5rem;
+    padding-block: 0.45rem;
+  }
+  .header-github {
+    padding-inline: 0.875rem 1rem;
+  }
+  .header-github.has-facts {
+    padding-inline-end: 0.5rem;
+  }
+  .github-mark {
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  /* The repository's facts in one pill: the version, the stars and the forks, each after its drawing. */
+  .repo-facts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.0625rem 0.5rem;
+    border-radius: 999px;
+    background: var(--color-code-bg);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .repo-fact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .repo-facts[hidden],
+  .repo-fact[hidden] {
+    display: none;
+  }
+  /*
+   * Room for every count from 0 to 9.9k (the widest, "1.2k" or "9.9k", is 3.4 digit widths in Roboto's tabular digits),
+   * so a live count of another length (999 becoming 1k, 1.9k becoming 2k) does not change the link's width.
+   */
+  .repo-fact[data-fact='stars'] .fact-value,
+  .repo-fact[data-fact='forks'] .fact-value {
+    min-width: 3.4ch;
+    text-align: center;
+  }
+  .header-github:hover .repo-facts {
+    background: var(--color-bg);
+  }
+  .fact-icon {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .menu-toggle {
+    display: none;
+  }
+
+  /*
+   * Phones (to 48rem): the wordmark and the menu button on the first row, the menu folded away behind the button, the
+   * demo and the repository as two buttons on the row below, every target at least 44 × 44 pixels. Each item has its
+   * own grid cell, so nothing can overlap at any width from 320 pixels up. The open menu scrolls on its own where it
+   * would reach past the bottom of the window (the header stays at the top).
+   */
+  @media (max-width: 47.99rem) {
+    .header-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      padding-block: 0.5rem 0.75rem;
+    }
+    .wordmark {
+      min-height: 2.75rem;
+      justify-self: start;
+    }
+    .menu-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      padding: 0.45rem 0.875rem 0.45rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font: inherit;
+      font-weight: 500;
+      line-height: 1.3;
+      cursor: pointer;
+    }
+    .menu-toggle:hover {
+      background: var(--color-bg-alt);
+    }
+    .menu-toggle:focus-visible {
+      border-radius: 999px;
+    }
+    .menu-icon {
+      flex: none;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+    .menu-icon-close,
+    .menu-toggle[aria-expanded='true'] .menu-icon-open {
+      display: none;
+    }
+    .menu-toggle[aria-expanded='true'] .menu-icon-close {
+      display: inline;
+    }
+    .site-menu {
+      grid-column: 1 / -1;
+      display: none;
+      max-height: calc(100vh - 8.5rem);
+      max-height: calc(100dvh - 8.5rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .menu-toggle[aria-expanded='true'] + .site-menu {
+      display: block;
+    }
+    .site-menu ul {
+      flex-direction: column;
+      gap: 0.125rem;
+      padding-block: 0.375rem;
+      border-block: 1px solid var(--color-border);
+    }
+    .site-menu a {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-small);
+    }
+    .site-menu a:hover {
+      background: var(--color-bg-alt);
+    }
+    .site-menu a[aria-current='page'] {
+      background: var(--color-bg-alt);
+      box-shadow: inset 3px 0 0 var(--color-link);
+    }
+    .header-actions {
+      grid-column: 1 / -1;
+    }
+    .header-cta,
+    .header-github {
+      flex: 1 1 auto;
+      justify-content: center;
+      min-height: 2.75rem;
+    }
+    /*
+     * With its facts, the repository button shows the GitHub mark and the counts (its name says GitHub and the
+     * version); below 23rem the stars only, so it keeps its place beside the demo button down to 320 pixels.
+     */
+    .header-github.has-facts {
+      padding-inline: 0.75rem;
+    }
+    .header-github.has-facts .github-word {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    .repo-fact[data-fact='version'] {
+      display: none;
+    }
+  }
+  @media (max-width: 22.99rem) {
+    .repo-fact[data-fact='forks'] {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { startRepositoryFacts } from '../lib/star-count-page.js';
+
+  startRepositoryFacts();
+</script>

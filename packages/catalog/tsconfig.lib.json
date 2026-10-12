@@ -1,0 +1,9 @@
+{
+  // The runtime library: no Node types (agents.md rule 9 applies to everything the graph builder runs).
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src"],
+  "references": [{ "path": "../model" }]
+}

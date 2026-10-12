@@ -1,0 +1,11 @@
+{
+  "name": "//documentai.googleapis.com/projects/10000000003/locations/eu/labelerPools/2c4e6a8b0d1f3e57",
+  "assetType": "documentai.googleapis.com/LabelerPool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "eu",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/eu/labelerPools/2c4e6a8b0d1f3e57"
+  }
+}

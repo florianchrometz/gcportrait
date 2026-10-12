@@ -1,0 +1,23 @@
+{
+  "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/bitbucketServerConfigs/bbdc-main",
+  "assetType": "cloudbuild.googleapis.com/BitbucketServerConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000005/locations/europe-west3/bitbucketServerConfigs/bbdc-main",
+    "hostUri": "https://bitbucket.example.com",
+    "secrets": {
+      "adminAccessTokenVersionName": "projects/10000000005/secrets/bbdc-admin-token/versions/2",
+      "readAccessTokenVersionName": "projects/10000000005/secrets/bbdc-read-token/versions/2",
+      "webhookSecretVersionName": "projects/10000000005/secrets/bbdc-webhook/versions/1"
+    },
+    "username": "gcb-bot",
+    "webhookKey": "bbdc-main-hook",
+    "connectedRepositories": [{ "projectKey": "PAY", "repoSlug": "payments", "webhookId": 17 }],
+    "createTime": "2023-09-14T11:00:00Z",
+    "peeredNetwork": "projects/demo-net-1/global/networks/core",
+    "peeredNetworkIpRange": "10.60.0.16/29"
+  }
+}

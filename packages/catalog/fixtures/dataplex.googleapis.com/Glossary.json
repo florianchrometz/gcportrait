@@ -1,0 +1,16 @@
+{
+  "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/glossaries/retail-terms",
+  "assetType": "dataplex.googleapis.com/Glossary",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/glossaries/retail-terms",
+    "uid": "d0000000-0000-4000-8000-00000000000b",
+    "displayName": "Retail terms",
+    "description": "Business vocabulary of the retail data products",
+    "termCount": 42,
+    "categoryCount": 5
+  }
+}

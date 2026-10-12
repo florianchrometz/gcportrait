@@ -1,0 +1,82 @@
+[
+  {
+    "name": "//speech.googleapis.com/projects/10000000002/locations/europe-west3/recognizers/call-transcripts",
+    "assetType": "speech.googleapis.com/Recognizer",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/europe-west3/recognizers/call-transcripts",
+      "uid": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+      "displayName": "Call transcripts",
+      "defaultRecognitionConfig": {
+        "model": "chirp_3",
+        "languageCodes": ["en-US", "de-DE"],
+        "features": {
+          "enableAutomaticPunctuation": true,
+          "diarizationConfig": {
+            "minSpeakerCount": 2,
+            "maxSpeakerCount": 2
+          }
+        },
+        "adaptation": {
+          "phraseSets": [
+            {
+              "phraseSet": "projects/10000000002/locations/europe-west3/phraseSets/product-names"
+            },
+            {
+              "inlinePhraseSet": {
+                "phrases": [
+                  {
+                    "value": "gift card",
+                    "boost": 5
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "autoDecodingConfig": {}
+      },
+      "state": "ACTIVE",
+      "createTime": "2026-03-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "etag": "W/\"a1b2\"",
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/speech",
+      "kmsKeyVersionName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/speech/cryptoKeyVersions/1"
+    }
+  },
+  {
+    "name": "//speech.googleapis.com/projects/10000000002/locations/europe-west3/recognizers/old-ivr",
+    "assetType": "speech.googleapis.com/Recognizer",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/europe-west3/recognizers/old-ivr",
+      "uid": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+      "displayName": "Old IVR",
+      "defaultRecognitionConfig": {
+        "model": "telephony",
+        "languageCodes": ["en-US"]
+      },
+      "state": "DELETED",
+      "createTime": "2025-03-01T08:00:00Z",
+      "updateTime": "2026-09-20T08:00:00Z",
+      "deleteTime": "2026-09-20T08:00:00Z",
+      "expireTime": "2026-10-20T08:00:00Z"
+    }
+  }
+]

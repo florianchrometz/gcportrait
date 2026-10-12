@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: MIT
+#
+# App Engine: one application per project (its id is the project id), holding services, which hold versions.
+# Asset names nest (//appengine.googleapis.com/apps/<app>/services/<s>/versions/<v>), which is what contains
+# reads. Locations may be empty on these assets; the application's locationId names its region.
+product: App Engine
+service: appengine.googleapis.com
+icon: app_engine
+types:
+  appengine.googleapis.com/Application:
+    role: container
+    label: '{{data.id}}'
+    subtitle: '{{data.locationId}} · {{data.servingStatus | lower}}'
+    console: 'https://console.cloud.google.com/appengine?project={{projectId}}'
+    domains:
+      - $.data.defaultHostname
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.defaultBucket, normalize: gcsUri }
+      - { kind: uses, to: $.data.codeBucket, normalize: gcsUri }
+    contains:
+      - byParent: appengine.googleapis.com/Service
+    notes: serviceAccount is the application's default identity; versions may run as another one.
+
+  appengine.googleapis.com/Service:
+    role: container
+    label: '{{data.id}}'
+    subtitle: 'App Engine service'
+    console: 'https://console.cloud.google.com/appengine/versions?serviceId={{data.id}}&project={{projectId}}'
+    contains:
+      - byParent: appengine.googleapis.com/Version
+    notes: split.allocations keys are version ids (traffic shares), not resource names.
+
+  appengine.googleapis.com/Version:
+    role: core
+    label: '{{data.id}}'
+    subtitle: '{{data.runtime}} · {{data.env}}'
+    console: 'https://console.cloud.google.com/appengine/versions?serviceId={{name | parentSegment(services)}}&project={{projectId}}'
+    domains:
+      - $.data.versionUrl
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: $.data.vpcAccessConnector.name,
+          normalize: name,
+          service: vpcaccess.googleapis.com,
+        }
+    hiddenWhen: "$.data.servingStatus != 'SERVING'"
+    notes: >-
+      Stopped versions start hidden (servingStatus STOPPED); serving versions without traffic stay visible.
+      Automatically scaled standard-environment versions are not stopped by a new deploy (they scale to zero
+      and stay SERVING), so a busy service can show many old versions; Service.split.allocations (the traffic
+      split) is what would tell them apart, and the catalog cannot read another asset's data from a
+      predicate. If that proves too noisy, the role becomes hidden (catalog follow-ups).
+      Flexible-environment versions name their network and subnetwork by short name (network.name,
+      network.subnetworkName), which no normaliser resolves yet.

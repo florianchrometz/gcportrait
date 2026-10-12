@@ -1,0 +1,52 @@
+[
+  {
+    "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1",
+    "assetType": "vmmigration.googleapis.com/Source",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1",
+      "description": "On-premises vCenter, data centre 1",
+      "labels": {
+        "site": "dc1"
+      },
+      "vmware": {
+        "username": "svc-migrate@vsphere.example.org",
+        "vcenterIp": "172.16.10.5",
+        "thumbprint": "AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD",
+        "resolvedVcenterHost": "vcenter.dc1.example.org"
+      },
+      "encryption": {
+        "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/migration"
+      },
+      "createTime": "2026-04-01T08:00:00Z",
+      "updateTime": "2026-04-01T08:00:00Z"
+    }
+  },
+  {
+    "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/sources/aws-eu-central",
+    "assetType": "vmmigration.googleapis.com/Source",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/sources/aws-eu-central",
+      "aws": {
+        "awsRegion": "eu-central-1",
+        "state": "ACTIVE",
+        "publicIp": "203.0.113.120",
+        "inventoryTagList": [
+          {
+            "key": "migrate",
+            "value": "true"
+          }
+        ]
+      },
+      "createTime": "2026-05-01T08:00:00Z",
+      "updateTime": "2026-05-01T08:00:00Z"
+    }
+  }
+]

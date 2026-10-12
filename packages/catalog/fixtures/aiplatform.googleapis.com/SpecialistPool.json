@@ -1,0 +1,15 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/specialistPools/5501239981",
+  "assetType": "aiplatform.googleapis.com/SpecialistPool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/specialistPools/5501239981",
+    "displayName": "fraud reviewers",
+    "specialistManagersCount": 1,
+    "specialistManagerEmails": ["labeling-lead@example.com"],
+    "specialistWorkerEmails": ["reviewer-1@example.com", "reviewer-2@example.com"]
+  }
+}

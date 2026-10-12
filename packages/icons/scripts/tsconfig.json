@@ -1,0 +1,15 @@
+{
+  // Node tooling of the package: vendor.mjs (downloads and transforms Google's icon sets), build.mjs (writes
+  // src/generated/icons.ts), contact-sheet.mjs, their helpers under lib/, and the tests that check the vendored
+  // files and the generated module against the real catalog data. Plain ESM type-checked through JSDoc. The DOM
+  // library types the callbacks lib/render.mjs runs inside headless Chromium (page.evaluate).
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "allowJs": true,
+    "checkJs": true,
+    "outDir": "../node_modules/.tmp/tsc-scripts"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }]
+}

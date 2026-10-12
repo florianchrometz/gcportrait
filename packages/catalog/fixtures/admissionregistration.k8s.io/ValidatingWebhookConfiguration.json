@@ -1,0 +1,48 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/admissionregistration.k8s.io/validatingwebhookconfigurations/policy-validator",
+  "assetType": "admissionregistration.k8s.io/ValidatingWebhookConfiguration",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "admissionregistration.k8s.io/v1",
+    "kind": "ValidatingWebhookConfiguration",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000143",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "policy-validator"
+    },
+    "webhooks": [
+      {
+        "name": "validate.policy.example.com",
+        "clientConfig": {
+          "service": {
+            "namespace": "policy-system",
+            "name": "policy-webhook",
+            "path": "/validate",
+            "port": 443
+          }
+        },
+        "rules": [
+          {
+            "apiGroups": ["apps"],
+            "apiVersions": ["v1"],
+            "operations": ["CREATE", "UPDATE"],
+            "resources": ["deployments"],
+            "scope": "Namespaced"
+          }
+        ],
+        "failurePolicy": "Ignore",
+        "sideEffects": "None",
+        "admissionReviewVersions": ["v1"],
+        "timeoutSeconds": 10
+      }
+    ]
+  }
+}

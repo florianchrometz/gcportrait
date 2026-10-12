@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+#
+# Data processing and messaging. `owns` lists the official asset types this group owns, mapped or not (exact
+# types, or <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types
+# not mapped yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group data-processing-messaging
+title: Data processing and messaging
+owns:
+  - 'composer.googleapis.com/*'
+  - 'dataflow.googleapis.com/*'
+  - 'dataform.googleapis.com/*'
+  - 'datafusion.googleapis.com/*'
+  - 'datalineage.googleapis.com/*'
+  - 'datamigration.googleapis.com/*'
+  - 'dataplex.googleapis.com/*'
+  - 'dataproc.googleapis.com/*'
+  - 'datastream.googleapis.com/*'
+  - 'healthcare.googleapis.com/*'
+  - 'looker.googleapis.com/*'
+  - 'managedkafka.googleapis.com/*'
+  - 'metastore.googleapis.com/*'
+  - 'pubsub.googleapis.com/*'
+  - 'storagebatchoperations.googleapis.com/*'
+  - 'storageinsights.googleapis.com/*'
+  - 'storagetransfer.googleapis.com/*'
+types: {}

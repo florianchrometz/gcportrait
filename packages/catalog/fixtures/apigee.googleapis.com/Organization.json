@@ -1,0 +1,29 @@
+{
+  "name": "//apigee.googleapis.com/organizations/demo-app-1",
+  "assetType": "apigee.googleapis.com/Organization",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "demo-app-1",
+    "displayName": "Demo shop APIs",
+    "projectId": "demo-app-1",
+    "runtimeType": "CLOUD",
+    "subscriptionType": "PAID",
+    "billingType": "PAYG",
+    "analyticsRegion": "europe-west3",
+    "apiConsumerDataLocation": "europe-west3",
+    "authorizedNetwork": "projects/demo-net-1/global/networks/core",
+    "runtimeDatabaseEncryptionKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/apigee",
+    "controlPlaneEncryptionKeyName": "projects/demo-sec-1/locations/europe/keyRings/apigee/cryptoKeys/apigee-control-plane",
+    "apiConsumerDataEncryptionKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/apigee-consumer-data",
+    "state": "ACTIVE",
+    "createdAt": "1700000000000"
+  }
+}

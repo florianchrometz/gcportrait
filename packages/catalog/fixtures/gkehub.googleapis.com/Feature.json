@@ -1,0 +1,30 @@
+{
+  "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/features/configmanagement",
+  "assetType": "gkehub.googleapis.com/Feature",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/global/features/configmanagement",
+    "resourceState": {
+      "state": "ACTIVE"
+    },
+    "spec": {},
+    "fleetDefaultMemberConfig": {
+      "configmanagement": {
+        "version": "1.20.1",
+        "configSync": {
+          "enabled": true
+        }
+      }
+    },
+    "createTime": "2025-04-01T09:00:00Z",
+    "updateTime": "2026-08-01T09:00:00Z"
+  }
+}

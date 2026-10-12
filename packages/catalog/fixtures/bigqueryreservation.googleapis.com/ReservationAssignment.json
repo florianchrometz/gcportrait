@@ -1,0 +1,30 @@
+[
+  {
+    "name": "//bigqueryreservation.googleapis.com/projects/10000000005/locations/europe-west3/reservations/prod/assignments/a-data-1",
+    "assetType": "bigqueryreservation.googleapis.com/ReservationAssignment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/reservations/prod/assignments/a-data-1",
+      "assignee": "projects/demo-data-1",
+      "jobType": "QUERY",
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//bigqueryreservation.googleapis.com/projects/10000000005/locations/europe-west3/reservations/prod/assignments/a-workloads",
+    "assetType": "bigqueryreservation.googleapis.com/ReservationAssignment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/reservations/prod/assignments/a-workloads",
+      "assignee": "folders/20000000001",
+      "jobType": "PIPELINE",
+      "state": "ACTIVE"
+    }
+  }
+]

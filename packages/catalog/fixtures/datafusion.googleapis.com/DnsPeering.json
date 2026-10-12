@@ -1,0 +1,15 @@
+{
+  "name": "//datafusion.googleapis.com/projects/demo-data-1/locations/europe-west3/instances/pipelines/dnsPeerings/corp",
+  "assetType": "datafusion.googleapis.com/DnsPeering",
+  "parent": "//datafusion.googleapis.com/projects/demo-data-1/locations/europe-west3/instances/pipelines",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/instances/pipelines/dnsPeerings/corp",
+    "domain": "corp.example.com.",
+    "description": "resolve on-premises databases",
+    "targetProject": "demo-net-1",
+    "targetNetwork": "core"
+  }
+}

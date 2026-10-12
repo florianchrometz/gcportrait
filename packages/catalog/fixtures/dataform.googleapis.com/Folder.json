@@ -1,0 +1,16 @@
+{
+  "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/folders/f-sales-reporting",
+  "assetType": "dataform.googleapis.com/Folder",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/folders/f-sales-reporting",
+    "displayName": "Sales reporting",
+    "containingFolder": "projects/demo-data-1/locations/europe-west3/teamFolders/tf-analytics",
+    "teamFolderName": "projects/demo-data-1/locations/europe-west3/teamFolders/tf-analytics",
+    "createTime": "2026-05-01T09:00:00Z",
+    "creatorIamPrincipal": "user:analyst@example.com"
+  }
+}

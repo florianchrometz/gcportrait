@@ -1,0 +1,25 @@
+{
+  "name": "//appengine.googleapis.com/apps/demo-app-1/services/default",
+  "assetType": "appengine.googleapis.com/Service",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "apps/demo-app-1/services/default",
+    "id": "default",
+    "split": {
+      "allocations": {
+        "20261001t080000": 1
+      }
+    },
+    "networkSettings": {
+      "ingressTrafficAllowed": "INGRESS_TRAFFIC_ALLOWED_ALL"
+    }
+  }
+}

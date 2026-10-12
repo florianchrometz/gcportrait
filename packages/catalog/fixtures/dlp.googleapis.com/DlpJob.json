@@ -1,0 +1,23 @@
+{
+  "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/dlpJobs/i-7465028391827364",
+  "assetType": "dlp.googleapis.com/DlpJob",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-05T02:41:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/dlpJobs/i-7465028391827364",
+    "type": "INSPECT_JOB",
+    "state": "DONE",
+    "jobTriggerName": "projects/demo-data-1/locations/europe-west3/jobTriggers/lake-weekly",
+    "createTime": "2026-10-05T02:00:00Z",
+    "startTime": "2026-10-05T02:00:05Z",
+    "endTime": "2026-10-05T02:41:00Z",
+    "inspectDetails": {
+      "result": {
+        "processedBytes": "73400320",
+        "totalEstimatedBytes": "73400320"
+      }
+    }
+  }
+}

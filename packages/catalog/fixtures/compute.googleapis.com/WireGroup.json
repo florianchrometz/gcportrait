@@ -1,0 +1,79 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/global/crossSiteNetworks/csn-eu/wireGroups/wg-fra-ams",
+  "assetType": "compute.googleapis.com/WireGroup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#wireGroup",
+    "id": "5000000000000000271",
+    "name": "wg-fra-ams",
+    "description": "Frankfurt to Amsterdam, one wire on the primary connections",
+    "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+    "adminEnabled": true,
+    "reconciling": false,
+    "wireProperties": {
+      "bandwidthUnmetered": "10",
+      "faultResponse": "NONE",
+      "bandwidthAllocation": "ALLOCATE_PER_WIRE"
+    },
+    "endpoints": {
+      "fra": {
+        "interconnects": {
+          "primary": {
+            "interconnect": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnects/ic-fra-1",
+            "vlanTags": [100]
+          }
+        }
+      },
+      "ams": {
+        "interconnects": {
+          "primary": {
+            "interconnect": "projects/demo-net-1/global/interconnects/ic-ams-1",
+            "vlanTags": [100]
+          }
+        }
+      }
+    },
+    "topology": {
+      "endpoints": [
+        {
+          "label": "fra",
+          "city": "fra"
+        },
+        {
+          "label": "ams",
+          "city": "ams"
+        }
+      ]
+    },
+    "wires": [
+      {
+        "label": "fra-primary-ams-primary",
+        "endpoints": [
+          {
+            "interconnect": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnects/ic-fra-1",
+            "vlanTag": 100
+          },
+          {
+            "interconnect": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnects/ic-ams-1",
+            "vlanTag": 100
+          }
+        ],
+        "wireProperties": {
+          "bandwidthUnmetered": "10",
+          "faultResponse": "NONE",
+          "bandwidthAllocation": "ALLOCATE_PER_WIRE"
+        },
+        "adminEnabled": true
+      }
+    ],
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/crossSiteNetworks/csn-eu/wireGroups/wg-fra-ams"
+  }
+}

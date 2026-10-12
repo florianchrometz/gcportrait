@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.node.json",
+  // The render worker (src/render/worker.ts) reaches the frontend's .tsx components through @gcportrait/render: tsc
+  // checks them through the project references; at run time `pnpm dev` (tsx with the frontend's tsconfig, which
+  // workers inherit) and the bundle step (esbuild, each file's nearest tsconfig) compile them with the frontend's JSX.
+  "include": ["src"],
+  "references": [
+    { "path": "../packages/model" },
+    { "path": "../packages/ingest" },
+    { "path": "../packages/render" }
+  ]
+}

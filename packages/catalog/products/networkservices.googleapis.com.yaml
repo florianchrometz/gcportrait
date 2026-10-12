@@ -1,0 +1,326 @@
+# SPDX-License-Identifier: MIT
+#
+# Network Services API: Cloud Service Mesh (meshes, gateways, routes, endpoint policies, service
+# bindings, service load-balancing policies), Secure Web Proxy gateways, Media CDN (edge cache services,
+# origins, keysets) and Service Extensions (traffic, route and authorization extensions, Wasm plugins).
+# Network Services names references relatively (`projects/<project>/locations/<location>/…`); CAI names the
+# assets with the project id, while user-written references may carry the project number (the documentation
+# examples use numbers), which the `name` normaliser keeps as written. Backend services are Compute
+# resources, written either as self-links or as `projects/<p>/locations/global/backendServices/<b>`.
+product: Network Services API
+service: networkservices.googleapis.com
+icon: cloud_service_mesh
+types:
+  networkservices.googleapis.com/Mesh:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'service mesh · {{location}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    notes: >-
+      A mesh lists nothing; routes name their meshes (`meshes[*]`) and nest here through that `attaches`
+      relation when it is their only attachment (a route bound to a mesh and a gateway stays in the project).
+
+  networkservices.googleapis.com/Gateway:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} · {{data.addresses[0]}}'
+    console: 'https://console.cloud.google.com/net-security/secure-web-proxy?project={{projectId}}'
+    ips:
+      - '$.data.addresses[*]'
+    relations:
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative, weak: true }
+      - {
+          kind: uses,
+          to: $.data.gatewaySecurityPolicy,
+          normalize: name,
+          service: networksecurity.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.certificateUrls[*]',
+          normalize: name,
+          service: certificatemanager.googleapis.com,
+        }
+      - { kind: uses, to: $.data.serverTlsPolicy, normalize: name, service: networksecurity.googleapis.com }
+    notes: >-
+      Two products share this type: Secure Web Proxy (`type: SECURE_WEB_GATEWAY`, regional, with an address in
+      a subnetwork, a gateway security policy and certificates) and Cloud Service Mesh ingress gateways
+      (`OPEN_MESH`, routes attach to them by `gateways[*]`). `network` and `subnetwork` are relative Compute
+      names; only the Secure Web Proxy sets them. The console link opens Secure Web Proxy.
+
+  networkservices.googleapis.com/HttpRoute:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.hostnames[0]}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    domains:
+      - '$.data.hostnames[*]'
+    relations:
+      - { kind: attaches, to: '$.data.meshes[*]', normalize: name }
+      - { kind: attaches, to: '$.data.gateways[*]', normalize: name }
+      - { kind: routes, to: '$.data.rules[*].action.destinations[*].serviceName', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: '$.data.rules[*].action.requestMirrorPolicy.destination.serviceName',
+          normalize: computeSelfLink,
+        }
+    notes: >-
+      Destinations are backend services, written as Compute self-links or, as the documentation does, as
+      `projects/<p>/locations/global/backendServices/<b>`; the second form normalises to a Compute name with a
+      `locations/global` segment that matches no asset, so such a destination stays dangling until the Compute
+      normalisers accept it.
+
+  networkservices.googleapis.com/GrpcRoute:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.hostnames[0]}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    domains:
+      - '$.data.hostnames[*]'
+    relations:
+      - { kind: attaches, to: '$.data.meshes[*]', normalize: name }
+      - { kind: attaches, to: '$.data.gateways[*]', normalize: name }
+      - {
+          kind: routes,
+          to: "$.data.rules[*].action.destinations[?(@.serviceName contains '/backendServices/')].serviceName",
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: routes,
+          to: "$.data.rules[*].action.destinations[?(@.serviceName contains '/namespaces/')].serviceName",
+          normalize: name,
+          service: servicedirectory.googleapis.com,
+        }
+    notes: >-
+      A destination's serviceName is a backend service or a Service Directory service (the API reference:
+      "Must refer to either a BackendService or ServiceDirectoryService"), so the two are read apart:
+      backend services as Compute self-links or, as the documentation writes them,
+      `projects/<p>/locations/global/backendServices/<b>` (that second form normalises to a Compute name with a
+      `locations/global` segment that matches no asset, so such a destination stays dangling until the Compute
+      normalisers accept it); Service Directory services as relative names of that service.
+
+  networkservices.googleapis.com/TcpRoute:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'TCP route · {{location}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: '$.data.meshes[*]', normalize: name }
+      - { kind: attaches, to: '$.data.gateways[*]', normalize: name }
+      - { kind: routes, to: '$.data.rules[*].action.destinations[*].serviceName', normalize: computeSelfLink }
+    notes: >-
+      `rules[*].matches[*].address` is the destination range a rule matches, not an address of the route, so
+      it is not read as an IP. Destinations as for HTTP routes.
+
+  networkservices.googleapis.com/TlsRoute:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.rules[0].matches[0].sniHost[0]}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    domains:
+      - '$.data.rules[*].matches[*].sniHost[*]'
+    relations:
+      - { kind: attaches, to: '$.data.meshes[*]', normalize: name }
+      - { kind: attaches, to: '$.data.gateways[*]', normalize: name }
+      - { kind: routes, to: '$.data.rules[*].action.destinations[*].serviceName', normalize: computeSelfLink }
+    notes: >-
+      TLS routes match on SNI host names (domains). `targetProxies` (TCP proxies named
+      `projects/*/locations/*/targetTcpProxies/*`) is not read: that Network Services spelling of a Compute
+      proxy matches no asset name. Destinations as for HTTP routes.
+
+  networkservices.googleapis.com/EndpointPolicy:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: $.data.authorizationPolicy,
+          normalize: name,
+          service: networksecurity.googleapis.com,
+        }
+      - { kind: uses, to: $.data.serverTlsPolicy, normalize: name, service: networksecurity.googleapis.com }
+    notes: >-
+      Applies an authorization and a server TLS policy to the mesh endpoints its label matcher selects (the
+      endpoints are not assets). `clientTlsPolicy` is deprecated and has no effect, so it is not read.
+
+  networkservices.googleapis.com/ServiceBinding:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.service | lastSegment}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.service, normalize: name, service: servicedirectory.googleapis.com }
+    notes: >-
+      Binds a Service Directory service to Cloud Service Mesh; backend services list their bindings in
+      `serviceBindings`. Google is retiring the Service Directory integration (the field is marked deprecated).
+
+  networkservices.googleapis.com/ServiceLbPolicy:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.loadBalancingAlgorithm | lower}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    notes: Referenced by backend services (`serviceLbPolicy`); it references nothing itself.
+
+  networkservices.googleapis.com/EdgeCacheService:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.routing.hostRules[0].hosts[0]}} · {{data.ipv4Addresses[0]}}'
+    icon: cloud_cdn
+    console: 'https://console.cloud.google.com/net-services/edge-cache?project={{projectId}}'
+    ips:
+      - '$.data.ipv4Addresses[*]'
+      - '$.data.ipv6Addresses[*]'
+    domains:
+      - '$.data.routing.hostRules[*].hosts[*]'
+    relations:
+      - { kind: routes, to: '$.data.routing.pathMatchers[*].routeRules[*].origin', normalize: name }
+      - {
+          kind: uses,
+          to: '$.data.routing.pathMatchers[*].routeRules[*].routeAction.cdnPolicy.signedRequestKeyset',
+          normalize: name,
+        }
+      - {
+          kind: uses,
+          to: '$.data.routing.pathMatchers[*].routeRules[*].routeAction.cdnPolicy.addSignatures.keyset',
+          normalize: name,
+        }
+      - {
+          kind: uses,
+          to: '$.data.edgeSslCertificates[*]',
+          normalize: name,
+          service: certificatemanager.googleapis.com,
+        }
+      - { kind: uses, to: $.data.edgeSecurityPolicy, normalize: computeSelfLink }
+    notes: >-
+      Media CDN. Origins, keysets and certificates may be given by short name (`my-origin`) instead of
+      `projects/<p>/locations/global/…`; short names stay dangling. A route's CDN policy names a keyset to
+      validate signed requests (signedRequestKeyset) and one to sign the responses it generates
+      (addSignatures.keyset). The anycast addresses are output only.
+
+  networkservices.googleapis.com/EdgeCacheOrigin:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.originAddress}}'
+    icon: cloud_cdn
+    console: 'https://console.cloud.google.com/net-services/edge-cache?project={{projectId}}'
+    domains:
+      - $.data.originAddress
+    relations:
+      - { kind: uses, to: "$[?(@.originAddress startsWith 'gs://')].originAddress", normalize: gcsUri }
+      - { kind: routes, to: $.data.failoverOrigin, normalize: name }
+      - {
+          kind: uses,
+          to: $.data.awsV4Authentication.secretAccessKeyVersion,
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      `originAddress` is a host name (domain), a public address, `gs://<bucket>` or
+      `<bucket>.storage.googleapis.com`; only the `gs://` form is read as a bucket (the filter on `$` keeps
+      host names from being mistaken for bucket names), so the second bucket spelling stays a domain. The
+      failover origin is the next hop when this one fails (`routes`).
+
+  networkservices.googleapis.com/EdgeCacheKeyset:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'signed request keyset · {{location}}'
+    icon: cloud_cdn
+    console: 'https://console.cloud.google.com/net-services/edge-cache?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.validationSharedKeys[*].secretVersion',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: Public keys are inline (`publicKeys`); shared HMAC keys are Secret Manager secret versions.
+
+  networkservices.googleapis.com/LbTrafficExtension:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'traffic extension · {{data.loadBalancingScheme | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/service-extensions?project={{projectId}}'
+    relations:
+      - { kind: secures, to: '$.data.forwardingRules[*]', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: "$.data.extensionChains[*].extensions[?(@.service contains '/backendServices/')].service",
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: uses,
+          to: "$.data.extensionChains[*].extensions[?(@.service contains '/wasmPlugins/')].service",
+          normalize: name,
+        }
+    notes: >-
+      Service Extensions on a load balancer's forwarding rules (drawn as a policy over them, `secures`). A
+      callout extension's `service` is a backend service self-link (the callout path, `routes`); a plugin
+      extension's is a Wasm plugin (`uses`), so the filters split the two by the referenced collection.
+
+  networkservices.googleapis.com/LbRouteExtension:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'route extension · {{data.loadBalancingScheme | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/service-extensions?project={{projectId}}'
+    relations:
+      - { kind: secures, to: '$.data.forwardingRules[*]', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: "$.data.extensionChains[*].extensions[?(@.service contains '/backendServices/')].service",
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: uses,
+          to: "$.data.extensionChains[*].extensions[?(@.service contains '/wasmPlugins/')].service",
+          normalize: name,
+        }
+    notes: >-
+      Service Extensions on a load balancer's forwarding rules (drawn as a policy over them, `secures`). A
+      callout extension's `service` is a backend service self-link (the callout path, `routes`); a plugin
+      extension's is a Wasm plugin (`uses`), so the filters split the two by the referenced collection.
+
+  networkservices.googleapis.com/AuthzExtension:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'authorization extension · {{data.wireFormat | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/service-extensions?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.service, normalize: computeSelfLink }
+    notes: >-
+      Called by an authorization policy (networksecurity AuthzPolicy, `customProvider.authzExtension`).
+      `service` is a backend service self-link, or for regional extensions a host name, `iap.googleapis.com` or
+      a Model Armor endpoint, which stay dangling values.
+
+  networkservices.googleapis.com/WasmPlugin:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.mainVersionId}} · {{location}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/service-extensions?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    contains:
+      - byParent: networkservices.googleapis.com/WasmPluginVersion
+    notes: >-
+      Its versions nest inside (hidden, counted in the badge); `mainVersionId` is the serving one. Extensions
+      point at the plugin; `usedBy` repeats that and is not read. kmsKeyName is in the v1beta1 and v1alpha1
+      WasmPlugin resource (the official list links v1alpha1), not in v1.
+
+  networkservices.googleapis.com/WasmPluginVersion:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.imageUri | lastSegment}}'
+    icon: cloud_load_balancing
+    relations:
+      - { kind: uses, to: $.data.imageUri, normalize: artifactImage }
+      - { kind: uses, to: $.data.pluginConfigUri, normalize: artifactImage }
+    notes: >-
+      Immutable versions of a plugin. `imageUri` is an Artifact Registry container image or a generic artifact
+      (`projects/<p>/locations/<l>/repositories/<r>/genericArtifacts/<package>:<version>`); only the container
+      image form resolves to the repository.

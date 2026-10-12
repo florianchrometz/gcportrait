@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+#
+# Issue chooser: every issue starts from one of the forms in this directory. The links below send questions
+# that are not issues elsewhere: the user guides, the sign-in-free demo (to reproduce a problem on synthetic
+# data), and Google Cloud support for Google Cloud itself.
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://gcportrait.app/docs/
+    about: >-
+      The user guides: getting started, modes and permissions, lenses and filters, the timeline, export,
+      self-hosting, configuration and the FAQ. Many questions are answered there.
+  - name: Try the demo
+    url: https://demo.gcportrait.app
+    about: >-
+      gcportrait with synthetic demo organisations, no sign-in. Reproduce a problem there first: the demo data
+      is safe to share in an issue.
+  - name: Problems with Google Cloud itself
+    url: https://cloud.google.com/support
+    about: >-
+      gcportrait is an independent project, not affiliated with Google. Questions about Google Cloud services,
+      IAM or billing belong with Google Cloud support.

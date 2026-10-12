@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+# Screenshots taken by the visual smoke test for a human to look at; never committed. Visual-regression
+# baselines live in baselines/, not here.
+.scratch/

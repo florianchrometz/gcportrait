@@ -1,0 +1,33 @@
+{
+  "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/policyBasedRoutes/pbr-inspect-egress",
+  "assetType": "networkconnectivity.googleapis.com/PolicyBasedRoute",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000001/locations/global/policyBasedRoutes/pbr-inspect-egress",
+    "description": "Send the app subnet's egress through the inspection appliances",
+    "createTime": "2025-02-10T09:00:00Z",
+    "updateTime": "2025-02-10T09:00:00Z",
+    "network": "projects/demo-net-1/global/networks/core",
+    "filter": {
+      "ipProtocol": "ALL",
+      "srcRange": "10.10.0.0/20",
+      "destRange": "0.0.0.0/0",
+      "protocolVersion": "IPV4"
+    },
+    "priority": 100,
+    "virtualMachine": {
+      "tags": ["inspect-egress"]
+    },
+    "nextHopIlbIp": "10.10.0.200",
+    "selfLink": "https://networkconnectivity.googleapis.com/v1/projects/demo-net-1/locations/global/policyBasedRoutes/pbr-inspect-egress",
+    "kind": "networkconnectivity#policyBasedRoute"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "//artifactregistry.googleapis.com/projects/demo-ops-1/locations/europe-west3/repositories/python-libs/pythonPackages/shop-analytics:0.9.3",
+  "assetType": "artifactregistry.googleapis.com/PythonPackage",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/repositories/python-libs/pythonPackages/shop-analytics:0.9.3",
+    "uri": "europe-west3-python.pkg.dev/demo-ops-1/python-libs/shop-analytics/shop_analytics-0.9.3-py3-none-any.whl",
+    "packageName": "shop-analytics",
+    "version": "0.9.3",
+    "createTime": "2026-07-30T08:10:00Z",
+    "updateTime": "2026-07-30T08:10:00Z"
+  }
+}

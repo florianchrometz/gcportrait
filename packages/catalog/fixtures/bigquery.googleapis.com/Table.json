@@ -1,0 +1,125 @@
+[
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/orders",
+    "assetType": "bigquery.googleapis.com/Table",
+    "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#table",
+      "id": "demo-data-1:sales.orders",
+      "selfLink": "https://bigquery.googleapis.com/bigquery/v2/projects/demo-data-1/datasets/sales/tables/orders",
+      "tableReference": { "projectId": "demo-data-1", "datasetId": "sales", "tableId": "orders" },
+      "type": "TABLE",
+      "location": "europe-west3",
+      "numRows": "1250000",
+      "numBytes": "312500000",
+      "schema": {
+        "fields": [
+          { "name": "id", "type": "STRING", "mode": "REQUIRED" },
+          { "name": "created_at", "type": "TIMESTAMP", "mode": "REQUIRED" },
+          { "name": "amount", "type": "NUMERIC", "mode": "NULLABLE" }
+        ]
+      },
+      "timePartitioning": { "type": "DAY", "field": "created_at" },
+      "encryptionConfiguration": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/bigquery"
+      },
+      "creationTime": "1700000000000",
+      "lastModifiedTime": "1727700000000"
+    }
+  },
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/ext_clicks",
+    "assetType": "bigquery.googleapis.com/Table",
+    "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#table",
+      "id": "demo-data-1:sales.ext_clicks",
+      "tableReference": { "projectId": "demo-data-1", "datasetId": "sales", "tableId": "ext_clicks" },
+      "type": "EXTERNAL",
+      "location": "europe-west3",
+      "externalDataConfiguration": {
+        "sourceUris": ["gs://demo-data-1-lake/clicks/*.parquet"],
+        "sourceFormat": "PARQUET",
+        "autodetect": true
+      },
+      "creationTime": "1700000000000",
+      "lastModifiedTime": "1700000000000"
+    }
+  },
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/returns_iceberg",
+    "assetType": "bigquery.googleapis.com/Table",
+    "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#table",
+      "id": "demo-data-1:sales.returns_iceberg",
+      "tableReference": { "projectId": "demo-data-1", "datasetId": "sales", "tableId": "returns_iceberg" },
+      "type": "TABLE",
+      "location": "europe-west3",
+      "biglakeConfiguration": {
+        "connectionId": "projects/demo-data-1/locations/europe-west3/connections/lake",
+        "storageUri": "gs://demo-data-1-lake/iceberg/returns",
+        "fileFormat": "PARQUET",
+        "tableFormat": "ICEBERG"
+      },
+      "creationTime": "1710000000000",
+      "lastModifiedTime": "1727700000000"
+    }
+  },
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/orders_dev_clone",
+    "assetType": "bigquery.googleapis.com/Table",
+    "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#table",
+      "id": "demo-data-1:sales.orders_dev_clone",
+      "tableReference": { "projectId": "demo-data-1", "datasetId": "sales", "tableId": "orders_dev_clone" },
+      "type": "TABLE",
+      "location": "europe-west3",
+      "cloneDefinition": {
+        "baseTableReference": { "projectId": "demo-data-1", "datasetId": "sales", "tableId": "orders" },
+        "cloneTime": "2026-09-15T08:00:00Z"
+      },
+      "creationTime": "1726387200000",
+      "lastModifiedTime": "1726387200000"
+    }
+  },
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/orders_snapshot_20260930",
+    "assetType": "bigquery.googleapis.com/Table",
+    "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#table",
+      "id": "demo-data-1:sales.orders_snapshot_20260930",
+      "tableReference": {
+        "projectId": "demo-data-1",
+        "datasetId": "sales",
+        "tableId": "orders_snapshot_20260930"
+      },
+      "type": "SNAPSHOT",
+      "location": "europe-west3",
+      "snapshotDefinition": {
+        "baseTableReference": { "projectId": "demo-data-1", "datasetId": "sales", "tableId": "orders" },
+        "snapshotTime": "2026-09-30T00:00:00Z"
+      },
+      "expirationTime": "1735603200000",
+      "creationTime": "1727654400000",
+      "lastModifiedTime": "1727654400000"
+    }
+  }
+]

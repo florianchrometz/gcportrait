@@ -1,0 +1,21 @@
+{
+  "name": "//migrationcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/assets/9a8b7c6d-0000-4000-8000-000000000001",
+  "assetType": "migrationcenter.googleapis.com/Asset",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/assets/9a8b7c6d-0000-4000-8000-000000000001",
+    "createTime": "2026-04-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "title": "erp-db-01",
+    "sources": ["projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1"],
+    "machineDetails": {
+      "machineName": "erp-db-01",
+      "coreCount": 8,
+      "memoryMb": 32768,
+      "powerState": "ACTIVE"
+    }
+  }
+}

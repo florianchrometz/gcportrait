@@ -1,0 +1,24 @@
+{
+  "name": "//config.googleapis.com/projects/demo-ops-1/locations/europe-west3/previews/shop-network-plan-0042",
+  "assetType": "config.googleapis.com/Preview",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/previews/shop-network-plan-0042",
+    "createTime": "2026-09-15T11:50:00Z",
+    "state": "SUCCEEDED",
+    "deployment": "projects/demo-ops-1/locations/europe-west3/deployments/shop-network",
+    "previewMode": "DEFAULT",
+    "serviceAccount": "projects/demo-ops-1/serviceAccounts/infra-manager@demo-ops-1.iam.gserviceaccount.com",
+    "terraformBlueprint": {
+      "gitSource": {
+        "repo": "https://git.example.com/platform/terraform-shop.git",
+        "directory": "envs/prod",
+        "ref": "main"
+      }
+    },
+    "tfVersion": "1.5.7"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "//dataproc.googleapis.com/projects/demo-data-1/regions/europe-west3/workflowTemplates/nightly-etl",
+  "assetType": "dataproc.googleapis.com/WorkflowTemplate",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "id": "nightly-etl",
+    "name": "projects/demo-data-1/regions/europe-west3/workflowTemplates/nightly-etl",
+    "version": 3,
+    "placement": {
+      "managedCluster": {
+        "clusterName": "nightly-etl",
+        "config": {
+          "gceClusterConfig": {
+            "subnetworkUri": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+            "serviceAccount": "dataproc-vm@demo-data-1.iam.gserviceaccount.com"
+          }
+        }
+      }
+    },
+    "jobs": [
+      {
+        "stepId": "aggregate",
+        "pysparkJob": { "mainPythonFileUri": "gs://demo-data-1-dataproc-staging/jobs/aggregate.py" }
+      }
+    ]
+  }
+}

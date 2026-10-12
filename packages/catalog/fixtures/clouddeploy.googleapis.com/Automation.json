@@ -1,0 +1,32 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/automations/promote-to-prod",
+  "assetType": "clouddeploy.googleapis.com/Automation",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/automations/promote-to-prod",
+    "uid": "8b9cadbecfd04e7f6b8c9d0e1f203142",
+    "description": "Promote from staging after an hour without alerts",
+    "createTime": "2025-02-10T09:00:00Z",
+    "serviceAccount": "deploy-automation@demo-ops-1.iam.gserviceaccount.com",
+    "selector": {
+      "targets": [
+        {
+          "id": "shop-staging"
+        }
+      ]
+    },
+    "rules": [
+      {
+        "promoteReleaseRule": {
+          "id": "promote-release",
+          "wait": "3600s",
+          "destinationTargetId": "@next"
+        }
+      }
+    ],
+    "suspended": false
+  }
+}

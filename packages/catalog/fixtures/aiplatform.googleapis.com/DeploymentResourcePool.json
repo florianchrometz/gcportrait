@@ -1,0 +1,28 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/deploymentResourcePools/shared-cpu",
+  "assetType": "aiplatform.googleapis.com/DeploymentResourcePool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/deploymentResourcePools/shared-cpu",
+    "dedicatedResources": {
+      "machineSpec": {
+        "machineType": "n2-standard-8",
+        "reservationAffinity": {
+          "reservationAffinityType": "SPECIFIC_RESERVATION",
+          "key": "compute.googleapis.com/reservation-name",
+          "values": ["projects/demo-data-1/zones/europe-west3-a/reservations/vertex-n2-pool"]
+        }
+      },
+      "minReplicaCount": 1,
+      "maxReplicaCount": 4
+    },
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    },
+    "serviceAccount": "vertex-serving@demo-data-1.iam.gserviceaccount.com",
+    "createTime": "2026-05-01T08:00:00Z"
+  }
+}

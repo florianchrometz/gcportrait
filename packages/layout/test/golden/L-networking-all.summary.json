@@ -1,0 +1,40 @@
+{
+  "name": "L-networking-all",
+  "rects": 684,
+  "zones": 115,
+  "chips": 0,
+  "emptyZones": 193,
+  "cards": 376,
+  "sceneEdges": 346,
+  "routing": {
+    "mode": "three-pass",
+    "passes": 2,
+    "edges": 346,
+    "holders": 185,
+    "work": 95436,
+    "duplicatesMerged": 0,
+    "reciprocalMerged": 0,
+    "bundles": 30,
+    "bundledEdges": 191,
+    "dropped": 0,
+    "fallbacks": 0,
+    "failed": 0,
+    "bends": [0, 0, 78, 7, 25, 3, 58, 3, 92, 0, 40, 0, 22, 1, 15, 0, 1, 0, 1],
+    "maxLanes": 49,
+    "widened": 42,
+    "wideningRounds": 1,
+    "squeezed": 0,
+    "overlaps": 0
+  },
+  "canvas": { "width": 10899, "height": 4604 },
+  "packed": { "width": 9259, "height": 3836 },
+  "growth": 1.41,
+  "spacing": {
+    "overlaps": 0,
+    "close": 0,
+    "closest": 8,
+    "closestStubs": 6,
+    "portsCloserThanSpacing": 0,
+    "closestPorts": 12
+  }
+}

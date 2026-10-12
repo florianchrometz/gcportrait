@@ -1,0 +1,19 @@
+{
+  "name": "//servicenetworking.googleapis.com/projects/10000000001/global/networks/core/connections/servicenetworking-googleapis-com",
+  "assetType": "servicenetworking.googleapis.com/Connection",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "network": "projects/10000000001/global/networks/core",
+    "reservedPeeringRanges": ["psa-range-prod"],
+    "peering": "servicenetworking-googleapis-com",
+    "service": "services/servicenetworking.googleapis.com"
+  }
+}

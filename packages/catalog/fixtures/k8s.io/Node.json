@@ -1,0 +1,55 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/nodes/gke-shop-default-pool-1a2b3c4d-x7k9",
+  "assetType": "k8s.io/Node",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "v1",
+    "kind": "Node",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000100",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "gke-shop-default-pool-1a2b3c4d-x7k9",
+      "labels": {
+        "cloud.google.com/gke-nodepool": "default-pool",
+        "node.kubernetes.io/instance-type": "e2-standard-4",
+        "topology.kubernetes.io/region": "europe-west3",
+        "topology.kubernetes.io/zone": "europe-west3-a"
+      }
+    },
+    "spec": {
+      "providerID": "gce://demo-app-1/europe-west3-a/gke-shop-default-pool-1a2b3c4d-x7k9",
+      "podCIDR": "10.20.1.0/24",
+      "podCIDRs": ["10.20.1.0/24"]
+    },
+    "status": {
+      "addresses": [
+        {
+          "type": "InternalIP",
+          "address": "10.12.0.5"
+        },
+        {
+          "type": "Hostname",
+          "address": "gke-shop-default-pool-1a2b3c4d-x7k9"
+        }
+      ],
+      "capacity": {
+        "cpu": "4",
+        "memory": "16393400Ki",
+        "pods": "110"
+      },
+      "nodeInfo": {
+        "kubeletVersion": "v1.31.4-gke.1183000",
+        "osImage": "Container-Optimized OS from Google",
+        "containerRuntimeVersion": "containerd://1.7.24"
+      }
+    }
+  }
+}
