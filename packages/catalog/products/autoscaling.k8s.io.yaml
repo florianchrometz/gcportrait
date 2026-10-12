@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+#
+# Kubernetes horizontal pod autoscalers of GKE clusters with the asset inventory feature on. Hidden by default
+# (an operational setting of a workload); they nest in their namespace by name path.
+product: Google Kubernetes Engine
+service: autoscaling.k8s.io
+icon: google_kubernetes_engine
+types:
+  autoscaling.k8s.io/HorizontalPodAutoscaler:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.minReplicas}}–{{data.spec.maxReplicas}} replicas'
+    relations:
+      - { kind: uses, to: $.data.spec.scaleTargetRef, normalize: k8sOwner }
+    notes: >-
+      spec.scaleTargetRef is an object reference with apiVersion, kind and name in the same namespace, the
+      shape k8sOwner reads, so the scaled workload resolves.

@@ -1,0 +1,104 @@
+[
+  {
+    "name": "//dataproc.googleapis.com/projects/demo-data-1/regions/europe-west3/clusters/spark-etl",
+    "assetType": "dataproc.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectId": "demo-data-1",
+      "clusterName": "spark-etl",
+      "clusterUuid": "d1000000-0000-4000-8000-000000000001",
+      "labels": { "goog-dataproc-cluster-name": "spark-etl", "goog-dataproc-location": "europe-west3" },
+      "config": {
+        "configBucket": "demo-data-1-dataproc-staging",
+        "tempBucket": "demo-data-1-dataproc-temp",
+        "gceClusterConfig": {
+          "zoneUri": "https://www.googleapis.com/compute/v1/projects/demo-data-1/zones/europe-west3-a",
+          "subnetworkUri": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "internalIpOnly": true,
+          "serviceAccount": "dataproc-vm@demo-data-1.iam.gserviceaccount.com",
+          "serviceAccountScopes": ["https://www.googleapis.com/auth/cloud-platform"],
+          "tags": ["dataproc"]
+        },
+        "masterConfig": {
+          "numInstances": 1,
+          "instanceNames": ["spark-etl-m"],
+          "machineTypeUri": "https://www.googleapis.com/compute/v1/projects/demo-data-1/zones/europe-west3-a/machineTypes/n2-standard-4"
+        },
+        "workerConfig": {
+          "numInstances": 4,
+          "instanceNames": ["spark-etl-w-0", "spark-etl-w-1", "spark-etl-w-2", "spark-etl-w-3"],
+          "machineTypeUri": "https://www.googleapis.com/compute/v1/projects/demo-data-1/zones/europe-west3-a/machineTypes/n2-standard-8"
+        },
+        "softwareConfig": { "imageVersion": "2.2.40-debian12", "optionalComponents": ["JUPYTER"] },
+        "encryptionConfig": {
+          "gcePdKmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataproc-disks",
+          "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataproc"
+        },
+        "autoscalingConfig": {
+          "policyUri": "https://dataproc.googleapis.com/v1/projects/demo-data-1/regions/europe-west3/autoscalingPolicies/scale-workers"
+        },
+        "metastoreConfig": {
+          "dataprocMetastoreService": "projects/demo-data-1/locations/europe-west3/services/hive"
+        },
+        "endpointConfig": { "enableHttpPortAccess": true }
+      },
+      "status": { "state": "RUNNING", "stateStartTime": "2026-09-01T06:00:00Z" }
+    }
+  },
+  {
+    "name": "//dataproc.googleapis.com/projects/demo-data-1/regions/europe-west3/clusters/spark-on-gke",
+    "assetType": "dataproc.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectId": "demo-data-1",
+      "clusterName": "spark-on-gke",
+      "clusterUuid": "d1000000-0000-4000-8000-000000000002",
+      "virtualClusterConfig": {
+        "stagingBucket": "demo-data-1-dataproc-staging",
+        "kubernetesClusterConfig": {
+          "kubernetesNamespace": "spark",
+          "gkeClusterConfig": {
+            "gkeClusterTarget": "projects/demo-app-1/locations/europe-west3/clusters/shop"
+          }
+        },
+        "auxiliaryServicesConfig": {
+          "metastoreConfig": {
+            "dataprocMetastoreService": "projects/demo-data-1/locations/europe-west3/services/hive"
+          },
+          "sparkHistoryServerConfig": {
+            "dataprocCluster": "projects/demo-data-1/regions/europe-west3/clusters/spark-history"
+          }
+        }
+      },
+      "status": { "state": "RUNNING" }
+    }
+  },
+  {
+    "name": "//dataproc.googleapis.com/projects/demo-data-1/regions/europe-west3/clusters/sandbox",
+    "assetType": "dataproc.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectId": "demo-data-1",
+      "clusterName": "sandbox",
+      "config": {
+        "configBucket": "demo-data-1-dataproc-staging",
+        "gceClusterConfig": {
+          "networkUri": "projects/demo-data-1/global/networks/sandbox",
+          "serviceAccount": "dataproc-vm@demo-data-1.iam.gserviceaccount.com"
+        },
+        "workerConfig": { "numInstances": 2 },
+        "softwareConfig": { "imageVersion": "2.2-debian12" }
+      },
+      "status": { "state": "STOPPED" }
+    }
+  }
+]

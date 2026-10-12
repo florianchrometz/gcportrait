@@ -1,0 +1,130 @@
+# SPDX-License-Identifier: MIT
+#
+# The website (docs/website.md; ADRs 0009, 0034 and 0035 §2): the Astro site in website/, built on every
+# pull request and every push to main, and deployed to GitHub Pages at https://gcportrait.app from main once the
+# maintainer switches it on. The same Pages site serves the demo at https://gcportrait.app/demo/: a static build of the
+# app in demo-only mode (ADR 0034). Everything is hosted on GitHub; there is no other host. docs/website.md is the guide
+# (the one-time setup, DNS, the demo, the legal pages). The site has no legal pages of its own: its footer, and the
+# demo's, link the Impressum and the privacy notice on the maintainer's website (website/src/site.ts), so the workflow
+# needs no secret.
+#
+# build (every run): installs, builds the static demo (`pnpm demo:static`, into dist/demo/: the app below /demo/ with
+# its configuration built in, a copy of index.html per route, its Content Security Policy as a <meta>), then the site
+# (`pnpm website:build` with WEBSITE_DEMO_DIST=dist/demo, which writes website/dist with the CNAME for gcportrait.app
+# and copies the demo to website/dist/demo/), checks it (`pnpm website:check`: metadata, links and anchors, sitemap,
+# self-hosted resources, the footer notice, the footer's legal links, the favicon and the logo, and the demo's pages,
+# policy and links), and checks the generated media for staleness (`pnpm media --check`). Stale media
+# do not fail a pull request or a push (regenerating them takes a browser and adds megabytes to the history, so it is
+# done deliberately, before a release): the step leaves a warning on the run and in its summary. release.yml's
+# website job (on while PAGES_DEPLOY is `true`) refuses stale media, so a tag never publishes them.
+#
+# deploy (main only, a push or a run by hand): runs only while the repository variable PAGES_DEPLOY is `true`, so
+# the workflow is a no-op until the maintainer has set up Pages and DNS. A deploying build is strict
+# (WEBSITE_STRICT=1): it fails when a guide of the docs menu or a generated medium is missing, or when docs/author.md
+# still holds a placeholder. It publishes the site and the demo together, as one Pages artifact.
+#
+# schedule (daily): rebuilds and redeploys main so the header's repository widget (the latest release, the stars and
+# the forks) stays current. The widget has two layers (docs/website.md, "GitHub repository widget"): the build reads
+# the facts from GitHub's API (website/src/lib/github.ts) and writes them into the pages, and once a page has loaded
+# the visitor's browser asks api.github.com for the current ones itself, anonymously and at most once an hour per tab
+# (website/src/lib/star-count-page.ts), except while the build's own request found the repository not public
+# (GitHub's 404): then the pages tell the browser to ask nothing, and the next build after the repository goes public
+# brings both layers. Gated like the deploy: a scheduled run does nothing at all until PAGES_DEPLOY is `true`. A
+# deploying build passes the workflow's own read-only GITHUB_TOKEN to the build so its requests are not rate-limited;
+# other builds ask without it (and show no facts when GitHub refuses).
+name: Website
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *' # daily, for the repository widget; a no-op until the deploy is switched on (the build job's `if`)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: website-build
+    # A scheduled run only refreshes what is deployed, so it is skipped while the deploy is switched off.
+    if: github.event_name != 'schedule' || vars.PAGES_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      pages: ${{ steps.mode.outputs.pages }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Deploy or build only
+        id: mode
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          PAGES_DEPLOY: ${{ vars.PAGES_DEPLOY }}
+        run: |
+          pages=false
+          if [ "$EVENT" != pull_request ] && [ "$REF" = refs/heads/main ] && [ "$PAGES_DEPLOY" = true ]; then
+            pages=true
+          fi
+          echo "pages=$pages" >>"$GITHUB_OUTPUT"
+          if [ "$pages" = true ]; then
+            echo "WEBSITE_STRICT=1" >>"$GITHUB_ENV"
+            echo "This run deploys the site and the demo to GitHub Pages; the build is strict."
+          else
+            echo "This run builds and checks the site and the demo; it deploys nothing (PAGES_DEPLOY is '${PAGES_DEPLOY}')."
+          fi
+      - name: Build the static demo (dist/demo, for /demo/)
+        run: pnpm run demo:static
+      - name: Build the website (with the demo at /demo/)
+        env:
+          # The demo built in the step before, copied into the site instead of built again (website/astro.config.ts).
+          WEBSITE_DEMO_DIST: dist/demo
+          # The header's repository widget (website/src/lib/github.ts): authenticated only when this run deploys.
+          GITHUB_TOKEN: ${{ steps.mode.outputs.pages == 'true' && github.token || '' }}
+        run: pnpm run website:build
+      - name: Check the built site
+        run: pnpm run website:check
+      - name: Generated media up to date (warns, does not fail)
+        id: media
+        continue-on-error: true
+        run: pnpm run media --check
+      - name: Warn about stale media
+        if: steps.media.outcome == 'failure'
+        run: |
+          message="docs/media/ is stale (see the step above): run pnpm media and commit the result before the next release; release.yml's website job refuses stale media."
+          echo "::warning title=Stale media::$message"
+          echo "### Stale media" >>"$GITHUB_STEP_SUMMARY"
+          echo "$message" >>"$GITHUB_STEP_SUMMARY"
+      - name: Upload the Pages artifact
+        if: steps.mode.outputs.pages == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: website/dist
+
+  deploy:
+    name: website-deploy
+    needs: build
+    if: needs.build.outputs.pages == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write # deploy to GitHub Pages
+      id-token: write # prove the deployment's origin to Pages
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

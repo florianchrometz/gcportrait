@@ -1,0 +1,83 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/targetHttpsProxies/web-https-proxy",
+    "assetType": "compute.googleapis.com/TargetHttpsProxy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetHttpsProxy",
+      "id": "7200000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-https-proxy",
+      "urlMap": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/web-urlmap",
+      "sslCertificates": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslCertificates/cert-shop-example-org"
+      ],
+      "sslPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslPolicies/tls12-modern",
+      "quicOverride": "NONE",
+      "tlsEarlyData": "DISABLED",
+      "fingerprint": "tVJ2lXzOs8g=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetHttpsProxies/web-https-proxy"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/targetHttpsProxies/partner-https-proxy",
+    "assetType": "compute.googleapis.com/TargetHttpsProxy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetHttpsProxy",
+      "id": "7200000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "partner-https-proxy",
+      "description": "Partner API with Certificate Manager and mTLS",
+      "urlMap": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/web-urlmap",
+      "certificateMap": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/global/certificateMaps/storefront",
+      "serverTlsPolicy": "//networksecurity.googleapis.com/projects/demo-app-1/locations/global/serverTlsPolicies/mtls-partners",
+      "sslPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslPolicies/tls12-modern",
+      "quicOverride": "NONE",
+      "fingerprint": "k2Hn6qLw0Ws=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetHttpsProxies/partner-https-proxy"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/targetHttpsProxies/internal-api-proxy",
+    "assetType": "compute.googleapis.com/TargetHttpsProxy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetHttpsProxy",
+      "id": "7200000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "internal-api-proxy",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "urlMap": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/urlMaps/internal-api",
+      "sslCertificates": [
+        "//certificatemanager.googleapis.com/projects/demo-app-1/locations/europe-west3/certificates/internal-api"
+      ],
+      "fingerprint": "Uq7cY0Q2w1E=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetHttpsProxies/internal-api-proxy"
+    }
+  }
+]

@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: MIT
+#
+# Google Kubernetes Engine: the cluster container (from the catalog seed) and its node pools. Kubernetes objects
+# of the cluster live in the products/<k8s group>.yaml files; they nest here by their name path.
+product: Google Kubernetes Engine
+service: container.googleapis.com
+icon: google_kubernetes_engine
+types:
+  container.googleapis.com/Cluster:
+    role: container
+    label: '{{data.name}}'
+    subtitle: 'GKE {{data.currentMasterVersion}} · {{location}}'
+    console: 'https://console.cloud.google.com/kubernetes/clusters/details/{{location}}/{{data.name}}/details?project={{projectId}}'
+    ips:
+      - $.data.endpoint
+      - $.data.privateClusterConfig.privateEndpoint
+      - $.data.privateClusterConfig.publicEndpoint
+      - $.data.privateClusterConfig.masterIpv4CidrBlock
+      - $.data.clusterIpv4Cidr
+      - $.data.servicesIpv4Cidr
+    relations:
+      - { kind: attaches, to: $.data.networkConfig.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.networkConfig.network, normalize: computeRelative, weak: true }
+      - { kind: runsAs, to: $.data.nodeConfig.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: runsAs,
+          to: $.data.autoscaling.autoprovisioningNodePoolDefaults.serviceAccount,
+          normalize: serviceAccountEmail,
+        }
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name }
+      - { kind: encryptedBy, to: $.data.databaseEncryption.keyName, normalize: kmsKey }
+      - { kind: encryptedBy, to: $.data.nodeConfig.bootDiskKmsKey, normalize: kmsKey }
+    contains:
+      - byParent: container.googleapis.com/NodePool
+      - byParent: k8s.io/Namespace
+      - byParent: k8s.io/Node
+      - byParent: k8s.io/PersistentVolume
+      - byParent: storage.k8s.io/StorageClass
+      - byParent: gateway.networking.k8s.io/GatewayClass
+      - byParent: rbac.authorization.k8s.io/ClusterRole
+      - byParent: rbac.authorization.k8s.io/ClusterRoleBinding
+      - byParent: admissionregistration.k8s.io/MutatingWebhookConfiguration
+      - byParent: admissionregistration.k8s.io/ValidatingWebhookConfiguration
+    notes: >-
+      data.network and data.subnetwork hold bare names; networkConfig holds the project-qualified relative
+      names, which also work for Shared VPC clusters. nodeConfig is the default pool's configuration
+      (Standard clusters); Autopilot clusters name their node identity in
+      autoscaling.autoprovisioningNodePoolDefaults. fleet.membership is a full gkehub name with the project
+      number, as the Membership asset is named. masterAuthorizedNetworksConfig CIDRs are client ranges, not
+      the cluster's own addresses, so they are not listed under ips. Cluster-scoped Kubernetes objects
+      (nodes, persistent volumes, storage classes, cluster roles, webhooks, gateway classes) nest here by
+      their name path.
+
+  container.googleapis.com/NodePool:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.config.machineType}} · {{data.version}}'
+    console: 'https://console.cloud.google.com/kubernetes/nodepool/{{location}}/{{name | parentSegment(clusters)}}/{{data.name}}?project={{projectId}}'
+    ips:
+      - $.data.networkConfig.podIpv4CidrBlock
+    relations:
+      - { kind: runsAs, to: $.data.config.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: '$.data.instanceGroupUrls[*]', normalize: computeSelfLink }
+      - { kind: encryptedBy, to: $.data.config.bootDiskKmsKey, normalize: kmsKey }
+    notes: >-
+      Nests in its cluster (the asset's parent). instanceGroupUrls are the self-links of the zonal managed
+      instance groups GKE creates for the pool. networkConfig.podRange is the name of a secondary range of
+      the cluster's subnetwork, not a resource name, so it is kept as data (and its CIDR as an address)
+      rather than drawn as an edge.

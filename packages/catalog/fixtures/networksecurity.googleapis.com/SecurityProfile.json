@@ -1,0 +1,102 @@
+[
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfiles/threat-default",
+    "assetType": "networksecurity.googleapis.com/SecurityProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfiles/threat-default",
+      "description": "Block high and critical threats",
+      "createTime": "2026-03-01T13:00:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "d1e2f3a4",
+      "type": "THREAT_PREVENTION",
+      "threatPreventionProfile": {
+        "severityOverrides": [
+          {
+            "severity": "CRITICAL",
+            "action": "DENY"
+          },
+          {
+            "severity": "HIGH",
+            "action": "DENY"
+          },
+          {
+            "severity": "MEDIUM",
+            "action": "ALERT"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfiles/url-allowlist",
+    "assetType": "networksecurity.googleapis.com/SecurityProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfiles/url-allowlist",
+      "description": "Only the package mirrors and the corporate domain",
+      "createTime": "2026-03-01T13:05:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "d1e2f3a5",
+      "type": "URL_FILTERING",
+      "urlFilteringProfile": {
+        "urlFilters": [
+          {
+            "filteringAction": "ALLOW",
+            "urls": ["packages.example.com", "*.example.org"],
+            "priority": 1000
+          },
+          {
+            "filteringAction": "DENY",
+            "urls": ["*"],
+            "priority": 2000
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfiles/mirror-collectors",
+    "assetType": "networksecurity.googleapis.com/SecurityProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfiles/mirror-collectors",
+      "description": "Mirror to the IDS collectors",
+      "createTime": "2026-04-11T07:50:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "d1e2f3a6",
+      "type": "CUSTOM_MIRRORING",
+      "customMirroringProfile": {
+        "mirroringEndpointGroup": "projects/10000000004/locations/global/mirroringEndpointGroups/collectors"
+      }
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfiles/intercept-appliances",
+    "assetType": "networksecurity.googleapis.com/SecurityProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfiles/intercept-appliances",
+      "description": "Intercept to the partner appliances",
+      "createTime": "2026-04-11T07:55:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "d1e2f3a7",
+      "type": "CUSTOM_INTERCEPT",
+      "customInterceptProfile": {
+        "interceptEndpointGroup": "projects/10000000004/locations/global/interceptEndpointGroups/appliances"
+      }
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "name": "//developerconnect.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/gitlab-platform/gitRepositoryLinks/catalog-service",
+  "assetType": "developerconnect.googleapis.com/GitRepositoryLink",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/connections/gitlab-platform/gitRepositoryLinks/catalog-service",
+    "cloneUri": "https://gitlab.example.com/platform/catalog-service.git",
+    "createTime": "2025-08-21T08:30:00Z",
+    "uid": "4b5c6d7e-8f90-4a1b-83c4-e5f6a7b8c9d0",
+    "webhookId": "311",
+    "reconciling": false
+  }
+}

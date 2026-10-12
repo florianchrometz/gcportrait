@@ -1,0 +1,14 @@
+{
+  "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/github/namespaces/payments/managedIdentities/ledger",
+  "assetType": "iam.googleapis.com/WorkloadIdentityPoolManagedIdentity",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-08-01T09:05:00Z",
+  "data": {
+    "name": "projects/10000000004/locations/global/workloadIdentityPools/github/namespaces/payments/managedIdentities/ledger",
+    "description": "Ledger service workloads",
+    "state": "ACTIVE",
+    "disabled": false
+  }
+}

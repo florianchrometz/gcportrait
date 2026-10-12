@@ -1,0 +1,32 @@
+{
+  "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/lakes/analytics/tasks/curate-orders",
+  "assetType": "dataplex.googleapis.com/Task",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/lakes/analytics/tasks/curate-orders",
+    "uid": "d0000000-0000-4000-8000-000000000005",
+    "displayName": "Curate orders",
+    "state": "ACTIVE",
+    "triggerSpec": { "type": "RECURRING", "schedule": "CRON_TZ=Europe/Berlin 0 5 * * *" },
+    "executionSpec": {
+      "serviceAccount": "dataplex-tasks@demo-data-1.iam.gserviceaccount.com",
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataplex",
+      "maxJobExecutionLifetime": "3600s"
+    },
+    "spark": {
+      "pythonScriptFile": "gs://demo-data-1-dataplex/tasks/curate_orders.py",
+      "infrastructureSpec": {
+        "batch": { "executorsCount": 2, "maxExecutorsCount": 10 },
+        "containerImage": { "image": "europe-west3-docker.pkg.dev/demo-data-1/spark/curate:2.1.0" },
+        "vpcNetwork": {
+          "network": "projects/demo-net-1/global/networks/core",
+          "subNetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "networkTags": ["dataplex"]
+        }
+      }
+    }
+  }
+}

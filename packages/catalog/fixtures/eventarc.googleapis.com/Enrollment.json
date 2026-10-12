@@ -1,0 +1,22 @@
+{
+  "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/enrollments/orders-created",
+  "assetType": "eventarc.googleapis.com/Enrollment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/enrollments/orders-created",
+    "uid": "00000000-0000-4000-8000-000000000188",
+    "displayName": "Orders created",
+    "celMatch": "message.type == 'order.created'",
+    "messageBus": "projects/demo-app-1/locations/europe-west3/messageBuses/orders-bus",
+    "destination": "projects/demo-app-1/locations/europe-west3/pipelines/to-fulfilment",
+    "createTime": "2026-06-01T10:05:00Z"
+  }
+}

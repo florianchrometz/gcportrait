@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Billing: billing accounts owned by
+# the organisation, and each project's link to its billing account (hidden, drawn as a project badge).
+product: Cloud Billing
+service: cloudbilling.googleapis.com
+icon: cloud_billing
+types:
+  cloudbilling.googleapis.com/BillingAccount:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{name | lastSegment}} · {{data.currencyCode}}'
+    console: 'https://console.cloud.google.com/billing/{{name | lastSegment}}'
+    relations:
+      - { kind: memberOf, to: $.data.masterBillingAccount, normalize: name }
+    hiddenWhen: '$.data.open == false'
+    notes: >-
+      Named //cloudbilling.googleapis.com/billingAccounts/<id>; an organisation-owned account sits on the
+      organisation canvas. masterBillingAccount is set on reseller subaccounts (memberOf their parent
+      account). Closed accounts start hidden.
+
+  cloudbilling.googleapis.com/ProjectBillingInfo:
+    role: hidden
+    label: '{{data.projectId}}'
+    subtitle: '{{data.billingAccountName | lastSegment}}'
+    console: 'https://console.cloud.google.com/billing/linkedaccount?project={{data.projectId}}'
+    relations:
+      - { kind: uses, to: $.data.billingAccountName, normalize: name }
+    notes: >-
+      One per project, named //cloudbilling.googleapis.com/projects/<project id>/billingInfo; it links the
+      project to its billing account (a dangling reference when the account is not owned by the organisation).
+      billingEnabled == false is a badge on the project.

@@ -1,0 +1,188 @@
+// SPDX-License-Identifier: MIT
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import * as model from './index.js';
+import type { GraphNode, Scene, SceneNode, Snapshot, ViewSpec } from './index.js';
+
+describe('public surface', () => {
+  it('exports exactly the documented values (types are erased)', () => {
+    expect(Object.keys(model).sort()).toEqual(
+      [
+        // primitives
+        'AssetTypePatternSchema',
+        'AssetTypeSchema',
+        'CountSchema',
+        'DateSchema',
+        'DomainSchema',
+        'IconKeySchema',
+        'IpSchema',
+        'LocationSchema',
+        'NonEmptyStringSchema',
+        'NumericIdSchema',
+        'ProjectRefSchema',
+        'ResourceNameSchema',
+        'ServiceNameSchema',
+        'TextSchema',
+        'TimestampSchema',
+        'UlidSchema',
+        // asset and snapshot
+        'AncestorSchema',
+        'AssetSchema',
+        'SNAPSHOT_SCHEMA_VERSION',
+        'ScopeKindSchema',
+        'SnapshotFormatError',
+        'SnapshotReadTimeSourceSchema',
+        'SnapshotSchema',
+        'SnapshotScopeSchema',
+        'SnapshotSourceKindSchema',
+        'SnapshotSourceSchema',
+        'SnapshotStatsSchema',
+        'migrateSnapshot',
+        // lenses and relations
+        'DetailLevelSchema',
+        'LensIdSchema',
+        'EdgeStyleIdSchema',
+        'RELATION_KINDS',
+        'RelationKindInfoSchema',
+        'RelationKindSchema',
+        // graph
+        'ContainmentSchema',
+        'DanglingTargetSchema',
+        'GraphIndexesSchema',
+        'GraphNodeSchema',
+        'GraphSchema',
+        'NodeIdSchema',
+        'NodeRoleSchema',
+        'RelationEdgeSchema',
+        // timeline
+        'DiffSchema',
+        'TickSchema',
+        // view spec
+        'DEFAULT_VIEW_SPEC',
+        'DemoSizeSchema',
+        'DepthSchema',
+        'FlipIdSchema',
+        'FocusKindSchema',
+        'FocusParamNameSchema',
+        'FocusSchema',
+        'SnapshotRefSchema',
+        'VIEW_SPEC_MAX_DEPTH',
+        'VIEW_SPEC_MAX_FLIPS',
+        'ViewFiltersSchema',
+        'ViewSpecSchema',
+        'normalizeViewSpec',
+        // render options (ADR 0033)
+        'RENDER_DEFAULT_SCALE',
+        'RENDER_DEFAULT_VIEWPORT',
+        'RENDER_MAX_HASH_LENGTH',
+        'RENDER_MAX_SCALE',
+        'RENDER_MAX_SIDE',
+        'RenderFormatSchema',
+        'RenderOptionsObjectSchema',
+        'RenderOptionsSchema',
+        'RenderThemeSchema',
+        'RenderViewSchema',
+        'RenderViewportSchema',
+        'checkRenderOptions',
+        // scene
+        'ChipCountKindSchema',
+        'ChipCountsSchema',
+        'SceneCardSchema',
+        'SceneEdgeSchema',
+        'SceneMetadataSchema',
+        'SceneNodeSchema',
+        'SceneSchema',
+        'SceneZoneSchema',
+        'ZoneKindSchema',
+        'ZONE_KIND_RANK',
+        'FocusErrorCodeSchema',
+        'FocusErrorSchema',
+        'RootErrorCodeSchema',
+        'RootErrorSchema',
+        // catalog
+        'CatalogEntrySchema',
+        'CatalogProductSchema',
+        'CatalogRelationKindSchema',
+        'CatalogSchema',
+        'CatalogTypeEntrySchema',
+        'CatalogTypeSchema',
+        'CatalogZoneKindSchema',
+        'ContainsRuleSchema',
+        'DEFAULT_LABEL_TEMPLATE',
+        'JsonPathSchema',
+        'KubernetesKindSchema',
+        'LensSchema',
+        'NestsInRuleSchema',
+        'NormaliserNameSchema',
+        'PredicateSchema',
+        'RelationRuleSchema',
+        'SIBLING_PATTERN_PLACEHOLDERS',
+        'SiblingPatternSchema',
+        'TEMPLATE_FILTERS',
+        'TEMPLATE_VARIABLES',
+        'TemplateSchema',
+        // URL-hash codec
+        'decodeViewSpec',
+        'encodeViewSpec',
+        // zod-free vocabularies and guards (ADR 0029)
+        'DEMO_REF_PREFIX',
+        'DEMO_SIZES',
+        'DETAIL_LEVEL_IDS',
+        'FOCUS_KIND_IDS',
+        'LENS_IDS',
+        'RELATION_KIND_IDS',
+        'isDemoSize',
+        'isDetailLevel',
+        'isFocusKind',
+        'isLensId',
+        'isRelationKind',
+        'isSnapshotRef',
+        // command variables: the registry (zod-free) and its row schema
+        'COMMAND_VARIABLES',
+        'VARIABLE_NAME_PATTERN',
+        'commandVariable',
+        'isCommandVariableValue',
+        'splitVariableTokens',
+        'variableTokens',
+        'CommandVariableSchema',
+        // catalog rule engine contract
+        'AliasKeySchema',
+        'EvaluatedNestingSchema',
+        'EvaluatedRelationSchema',
+        'ProjectIndexSchema',
+        'RelationTargetSchema',
+        'aliasKey',
+        'buildProjectIndex',
+        'projectIndexBuilder',
+        'projectPairOf',
+        // graph builder report
+        'ContainmentCycleSchema',
+        'GraphBuildCountsSchema',
+        'GraphBuildSchema',
+        'GraphReportSchema',
+        'SharedVpcAttachmentSchema',
+        'SharedVpcPairSchema',
+        // scene builder environment and report
+        'ConcreteDetailLevelSchema',
+        'SceneBuildSchema',
+        'SceneCountsSchema',
+        'SceneDetailSchema',
+        'SceneEnvSchema',
+        'SceneFocusSchema',
+        'SceneLegendSchema',
+        'SceneOverlaySchema',
+        'ScenePointerSchema',
+        'SceneReportSchema',
+        'SceneRootSchema',
+      ].sort(),
+    );
+  });
+
+  it('infers types from the schemas, with literal versions and no implicit undefined', () => {
+    expectTypeOf<Snapshot['schemaVersion']>().toEqualTypeOf<1>();
+    expectTypeOf<ViewSpec['flips']>().toEqualTypeOf<string[]>();
+    expectTypeOf<Scene['children']>().toEqualTypeOf<SceneNode[]>();
+    // @ts-expect-error exactOptionalPropertyTypes: an optional field is omitted, never set to undefined.
+    const node: Pick<GraphNode, 'subtitle'> = { subtitle: undefined };
+    expect(node).toBeDefined();
+  });
+});

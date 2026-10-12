@@ -1,0 +1,246 @@
+[
+  {
+    "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/services/orders-api",
+    "assetType": "run.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/europe-west3/services/orders-api",
+      "uid": "00000000-0000-4000-8000-000000000170",
+      "generation": "9",
+      "ingress": "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER",
+      "launchStage": "GA",
+      "template": {
+        "serviceAccount": "orders-api@demo-app-1.iam.gserviceaccount.com",
+        "vpcAccess": {
+          "connector": "projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+          "egress": "PRIVATE_RANGES_ONLY"
+        },
+        "containers": [
+          {
+            "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/orders-api:1.7.18",
+            "ports": [
+              {
+                "name": "http1",
+                "containerPort": 8080
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "512Mi"
+              },
+              "cpuIdle": true
+            },
+            "env": [
+              {
+                "name": "DB_PASSWORD",
+                "valueSource": {
+                  "secretKeyRef": {
+                    "secret": "projects/10000000004/secrets/orders-db-password",
+                    "version": "latest"
+                  }
+                }
+              }
+            ],
+            "volumeMounts": []
+          }
+        ],
+        "volumes": [
+          {
+            "name": "cloudsql",
+            "cloudSqlInstance": {
+              "instances": ["demo-data-1:europe-west3:orders-db"]
+            }
+          },
+          {
+            "name": "tls",
+            "secret": {
+              "secret": "projects/10000000004/secrets/orders-api-tls",
+              "items": [
+                {
+                  "path": "tls.crt",
+                  "version": "latest"
+                }
+              ]
+            }
+          },
+          {
+            "name": "assets",
+            "gcs": {
+              "bucket": "demo-app-1-assets",
+              "readOnly": true
+            }
+          }
+        ],
+        "encryptionKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/run",
+        "scaling": {
+          "maxInstanceCount": 20
+        },
+        "executionEnvironment": "EXECUTION_ENVIRONMENT_GEN2"
+      },
+      "traffic": [
+        {
+          "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST",
+          "percent": 100
+        }
+      ],
+      "latestReadyRevision": "projects/10000000002/locations/europe-west3/revisions/orders-api-00009-xyz",
+      "uri": "https://orders-api-abcdefghij-ey.a.run.app",
+      "urls": [
+        "https://orders-api-10000000002.europe-west3.run.app",
+        "https://orders-api-abcdefghij-ey.a.run.app"
+      ],
+      "createTime": "2026-03-01T10:00:00Z",
+      "updateTime": "2026-09-20T10:00:00Z"
+    }
+  },
+  {
+    "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/services/catalog-api",
+    "assetType": "run.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/europe-west3/services/catalog-api",
+      "uid": "00000000-0000-4000-8000-000000000171",
+      "ingress": "INGRESS_TRAFFIC_ALL",
+      "template": {
+        "serviceAccount": "catalog-api@demo-app-1.iam.gserviceaccount.com",
+        "vpcAccess": {
+          "networkInterfaces": [
+            {
+              "network": "projects/demo-net-1/global/networks/core",
+              "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+              "tags": ["run-egress"]
+            }
+          ],
+          "egress": "PRIVATE_RANGES_ONLY"
+        },
+        "containers": [
+          {
+            "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/catalog-api:4.0.2",
+            "ports": [
+              {
+                "name": "http1",
+                "containerPort": 8080
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "512Mi"
+              },
+              "cpuIdle": true
+            },
+            "env": [],
+            "volumeMounts": []
+          }
+        ]
+      },
+      "uri": "https://catalog-api-klmnopqrst-ey.a.run.app",
+      "urls": ["https://catalog-api-10000000002.europe-west3.run.app"]
+    }
+  },
+  {
+    "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/services/search-api",
+    "assetType": "run.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "serving.knative.dev/v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "search-api",
+        "namespace": "10000000002",
+        "uid": "00000000-0000-4000-8000-000000000172",
+        "generation": 5,
+        "labels": {
+          "cloud.googleapis.com/location": "europe-west3"
+        },
+        "annotations": {
+          "run.googleapis.com/ingress": "all",
+          "run.googleapis.com/launch-stage": "GA"
+        },
+        "creationTimestamp": "2025-09-01T10:00:00Z"
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "annotations": {
+              "autoscaling.knative.dev/maxScale": "10",
+              "run.googleapis.com/vpc-access-connector": "projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+              "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+              "run.googleapis.com/cloudsql-instances": "demo-data-1:europe-west3:search-db",
+              "run.googleapis.com/encryption-key": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/run",
+              "run.googleapis.com/execution-environment": "gen2"
+            }
+          },
+          "spec": {
+            "containerConcurrency": 80,
+            "timeoutSeconds": 300,
+            "serviceAccountName": "search-api@demo-app-1.iam.gserviceaccount.com",
+            "containers": [
+              {
+                "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/search-api:2.1.0",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "index",
+                "csi": {
+                  "driver": "gcsfuse.run.googleapis.com",
+                  "readOnly": true,
+                  "volumeAttributes": {
+                    "bucketName": "demo-app-1-search-index"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "traffic": [
+          {
+            "percent": 100,
+            "latestRevision": true
+          }
+        ]
+      },
+      "status": {
+        "observedGeneration": 5,
+        "url": "https://search-api-uvwxyzabcd-ey.a.run.app",
+        "address": {
+          "url": "https://search-api-uvwxyzabcd-ey.a.run.app"
+        },
+        "latestReadyRevisionName": "search-api-00005-abc",
+        "latestCreatedRevisionName": "search-api-00005-abc"
+      }
+    }
+  }
+]

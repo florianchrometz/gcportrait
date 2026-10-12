@@ -1,0 +1,29 @@
+{
+  "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/revisions/orders-api-00009-xyz",
+  "assetType": "run.googleapis.com/Revision",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/services/orders-api/revisions/orders-api-00009-xyz",
+    "uid": "00000000-0000-4000-8000-000000000176",
+    "generation": "1",
+    "service": "projects/demo-app-1/locations/europe-west3/services/orders-api",
+    "serviceAccount": "orders-api@demo-app-1.iam.gserviceaccount.com",
+    "containers": [
+      {
+        "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/orders-api:1.7.18"
+      }
+    ],
+    "scaling": {
+      "maxInstanceCount": 20
+    },
+    "createTime": "2026-09-20T10:00:00Z"
+  }
+}

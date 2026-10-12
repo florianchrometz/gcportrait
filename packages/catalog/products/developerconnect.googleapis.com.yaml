@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: MIT
+#
+# Developer Connect: connections to Git providers (with their linked repositories nested inside) and the
+# insights configurations that tie an App Hub application or a set of projects to its artifacts. Cloud Asset
+# Inventory names every Developer Connect asset with the project id.
+product: Developer Connect
+service: developerconnect.googleapis.com
+icon: developer_connect
+types:
+  developerconnect.googleapis.com/Connection:
+    role: container
+    subtitle: '{{data.installationState.stage | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/developer-connect/connections?project={{projectId}}'
+    domains:
+      - '$.data.*.hostUri'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data.*['authorizerCredential', 'readAuthorizerCredential']['oauthTokenSecretVersion', 'userTokenSecretVersion']",
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data.*['webhookSecretSecretVersion', 'privateKeySecretVersion']",
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data.httpConfig['basicAuthentication', 'bearerTokenAuthentication']['passwordSecretVersion', 'tokenSecretVersion']",
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.*.serviceDirectoryConfig.service',
+          normalize: name,
+          service: servicedirectory.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: $.data.secureSourceManagerInstanceConfig.instance,
+          normalize: name,
+          service: securesourcemanager.googleapis.com,
+        }
+      - { kind: encryptedBy, to: $.data.cryptoKeyConfig.keyReference, normalize: kmsKey }
+    contains:
+      - byParent: developerconnect.googleapis.com/GitRepositoryLink
+    notes: >-
+      One provider config is set: GitHub (github.com, no host), GitHub Enterprise, GitLab (Enterprise),
+      Bitbucket (Cloud or Data Center), a Secure Source Manager instance, or a generic HTTP Git host
+      (httpConfig). Credentials are Secret Manager secret versions (global or regional), so the edges point at
+      versions. A self-hosted provider on a private network is reached through a Service Directory service.
+      Repository links nest by name.
+
+  developerconnect.googleapis.com/GitRepositoryLink:
+    role: leaf
+    console: 'https://console.cloud.google.com/developer-connect/connections?project={{projectId}}'
+    domains:
+      - $.data.cloneUri
+    notes: A repository linked through its connection (…/connections/<c>/gitRepositoryLinks/<l>), nested in it.
+
+  developerconnect.googleapis.com/InsightsConfig:
+    role: core
+    subtitle: '{{data.state | lower}} · {{location}}'
+    relations:
+      - { kind: uses, to: $.data.appHubApplication, normalize: name, service: apphub.googleapis.com }
+      - { kind: uses, to: '$.data.artifactConfigs[*].uri', normalize: artifactImage }
+    notes: >-
+      Correlates an App Hub application (appHubApplication) or a list of projects (projects.projectIds) with
+      the images it builds (artifactConfigs[*].uri, an image path without tag, resolved to its Artifact
+      Registry repository). runtimeConfigs (where the application runs; output only, described by the
+      reference's separate RuntimeConfig page, not checked for this entry) are not read yet.

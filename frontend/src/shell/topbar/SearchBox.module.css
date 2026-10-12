@@ -1,0 +1,20 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The search box (SearchBox.tsx): a wider input than the other controls, and its results list under it,
+   right-aligned (the box ends the view row), wide enough for a type and a project on the second line, and
+   scrolling when long. Tokens only, so both themes follow (desktop only: no breakpoints). */
+.box input {
+  width: 260px;
+}
+
+.results {
+  width: 440px;
+  max-height: min(480px, calc(100vh - 160px));
+  overflow-y: auto;
+}
+
+.results [role='option'] {
+  min-width: 0;
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+}

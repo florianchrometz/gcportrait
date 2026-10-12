@@ -1,0 +1,23 @@
+{
+  "name": "//parallelstore.googleapis.com/projects/demo-data-1/locations/europe-west3-b/instances/checkpoints",
+  "assetType": "parallelstore.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3-b",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3-b/instances/checkpoints",
+    "description": "Training checkpoints",
+    "state": "ACTIVE",
+    "createTime": "2025-08-01T09:00:00Z",
+    "capacityGib": "12000",
+    "daosVersion": "2.6.0",
+    "accessPoints": ["10.20.9.2", "10.20.9.3", "10.20.9.4"],
+    "network": "projects/demo-net-1/global/networks/core",
+    "reservedIpRange": "parallelstore-psa",
+    "effectiveReservedIpRange": "parallelstore-psa",
+    "fileStripeLevel": "FILE_STRIPE_LEVEL_BALANCED",
+    "directoryStripeLevel": "DIRECTORY_STRIPE_LEVEL_MAX",
+    "deploymentType": "SCRATCH"
+  }
+}

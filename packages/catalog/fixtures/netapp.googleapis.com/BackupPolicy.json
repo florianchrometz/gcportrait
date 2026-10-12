@@ -1,0 +1,18 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/backupPolicies/daily",
+  "assetType": "netapp.googleapis.com/BackupPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/backupPolicies/daily",
+    "dailyBackupLimit": 7,
+    "weeklyBackupLimit": 4,
+    "monthlyBackupLimit": 6,
+    "enabled": true,
+    "assignedVolumeCount": 1,
+    "state": "READY",
+    "createTime": "2025-04-01T09:00:00Z"
+  }
+}

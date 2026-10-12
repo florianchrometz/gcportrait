@@ -1,0 +1,44 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/disks/shared-config",
+  "assetType": "compute.googleapis.com/RegionDisk",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#disk",
+    "id": "7200000000000000010",
+    "name": "shared-config",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/disks/shared-config",
+    "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+    "replicaZones": [
+      "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-b"
+    ],
+    "sizeGb": "200",
+    "status": "READY",
+    "type": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/diskTypes/pd-ssd",
+    "sourceSnapshot": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/snapshots/shared-config-baseline",
+    "resourcePolicies": [
+      "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/resourcePolicies/daily-snap"
+    ],
+    "asyncSecondaryDisks": {
+      "projects/demo-app-1/regions/europe-west4/disks/shared-config-dr": {
+        "asyncReplicationDisk": {
+          "disk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west4/disks/shared-config-dr",
+          "diskId": "7200000000000000011"
+        }
+      }
+    },
+    "diskEncryptionKey": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/2"
+    },
+    "users": [],
+    "creationTimestamp": "2026-04-10T09:00:00.000-07:00"
+  }
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/backendServices/web-bes",
+    "assetType": "compute.googleapis.com/BackendService",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#backendService",
+      "id": "7500000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-bes",
+      "protocol": "HTTP",
+      "port": 8080,
+      "portName": "http",
+      "timeoutSec": 30,
+      "loadBalancingScheme": "EXTERNAL_MANAGED",
+      "localityLbPolicy": "ROUND_ROBIN",
+      "sessionAffinity": "NONE",
+      "backends": [
+        {
+          "group": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instanceGroups/web-mig",
+          "balancingMode": "UTILIZATION",
+          "maxUtilization": 0.8,
+          "capacityScaler": 1
+        }
+      ],
+      "healthChecks": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/healthChecks/web-hc"
+      ],
+      "securityPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/securityPolicies/web-armor",
+      "edgeSecurityPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/securityPolicies/web-edge",
+      "serviceLbPolicy": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/serviceLbPolicies/waterfall",
+      "connectionDraining": {
+        "drainingTimeoutSec": 300
+      },
+      "logConfig": {
+        "enable": true,
+        "sampleRate": 1
+      },
+      "enableCDN": false,
+      "iap": {
+        "enabled": false
+      },
+      "fingerprint": "n1D7AmPf3oI=",
+      "usedBy": [
+        {
+          "reference": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/web-urlmap"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/web-bes"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/backendServices/web-api-bes",
+    "assetType": "compute.googleapis.com/BackendService",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#backendService",
+      "id": "7500000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-api-bes",
+      "protocol": "HTTPS",
+      "timeoutSec": 30,
+      "loadBalancingScheme": "EXTERNAL_MANAGED",
+      "backends": [
+        {
+          "group": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/web-run-neg",
+          "balancingMode": "UTILIZATION",
+          "capacityScaler": 1
+        }
+      ],
+      "securityPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/securityPolicies/web-armor",
+      "iap": {
+        "enabled": true,
+        "oauth2ClientId": "000000000001-abcdefghijklmnopqrstuvwxyz012345.apps.googleusercontent.com"
+      },
+      "fingerprint": "Qm2T9a1xUe4=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/web-api-bes"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/backendServices/inventory-td",
+    "assetType": "compute.googleapis.com/BackendService",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#backendService",
+      "id": "7500000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "inventory-td",
+      "description": "Cloud Service Mesh service backed by Service Directory",
+      "protocol": "GRPC",
+      "loadBalancingScheme": "INTERNAL_SELF_MANAGED",
+      "timeoutSec": 30,
+      "serviceBindings": [
+        "https://networkservices.googleapis.com/v1/projects/demo-app-1/locations/global/serviceBindings/payments-binding"
+      ],
+      "securitySettings": {
+        "clientTlsPolicy": "//networksecurity.googleapis.com/projects/demo-app-1/locations/global/clientTlsPolicies/mesh-client-mtls",
+        "subjectAltNames": ["spiffe://demo-app-1.svc.id.goog/ns/payments/sa/payments"]
+      },
+      "fingerprint": "Lr4v0Pq8sX0=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/inventory-td"
+    }
+  }
+]

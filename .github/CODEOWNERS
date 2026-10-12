@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+#
+# Code owners (docs/contributing.md §7, "Opening a pull request"). GitHub requests a review from the owners
+# of every path a pull request touches, and the last matching line wins. The maintainer owns everything
+# today; the explicit lines mark the areas that need a specialist review, so reviewers can be added there as
+# the project grows without widening the catch-all.
+
+*                   @florianchrometz
+
+# Asset catalog: types, relation rules, lenses, console links (data over code, ADR 0015).
+/packages/catalog/  @florianchrometz
+
+# Layout engine: invariants, determinism, golden layouts (ADR 0006).
+/packages/layout/   @florianchrometz
+
+# Deployment: Dockerfile, deploy.sh, uninstall.sh, the Cloud Run Button hook.
+/infra/             @florianchrometz

@@ -1,0 +1,40 @@
+{
+  "name": "L-overview",
+  "rects": 164,
+  "zones": 45,
+  "chips": 117,
+  "emptyZones": 2,
+  "cards": 0,
+  "sceneEdges": 245,
+  "routing": {
+    "mode": "three-pass",
+    "passes": 4,
+    "edges": 245,
+    "holders": 14,
+    "work": 39901,
+    "duplicatesMerged": 0,
+    "reciprocalMerged": 0,
+    "bundles": 9,
+    "bundledEdges": 240,
+    "dropped": 0,
+    "fallbacks": 0,
+    "failed": 0,
+    "bends": [0, 0, 2, 2, 4, 48, 83, 38, 54, 8, 6],
+    "maxLanes": 11,
+    "widened": 34,
+    "wideningRounds": 3,
+    "squeezed": 0,
+    "overlaps": 0
+  },
+  "canvas": { "width": 4038, "height": 2316 },
+  "packed": { "width": 3754, "height": 1916 },
+  "growth": 1.3,
+  "spacing": {
+    "overlaps": 0,
+    "close": 0,
+    "closest": 8,
+    "closestStubs": 6,
+    "portsCloserThanSpacing": 0,
+    "closestPorts": 12
+  }
+}

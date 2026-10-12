@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: MIT
+#
+# Certificate Manager: certificates, certificate maps and their entries, DNS authorizations, issuance
+# configs (certificates from a private CA pool) and trust configs (mTLS client validation). Proxies point at a
+# map (`certificateMap`) or at certificates (`sslCertificates`), map entries at certificates, certificates at
+# their DNS authorizations and issuance config. References are relative names
+# (`projects/<p>/locations/<l>/…`) in this service.
+product: Certificate Manager
+service: certificatemanager.googleapis.com
+icon: certificate_manager
+types:
+  certificatemanager.googleapis.com/Certificate:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.sanDnsnames[0]}} · {{data.managed.state | lower}}'
+    console: 'https://console.cloud.google.com/security/ccm/list/certificates?project={{projectId}}'
+    domains:
+      - '$.data.managed.domains[*]'
+      - '$.data.sanDnsnames[*]'
+    relations:
+      - { kind: uses, to: '$.data.managed.dnsAuthorizations[*]', normalize: name }
+      - { kind: uses, to: $.data.managed.issuanceConfig, normalize: name }
+    notes: >-
+      Google-managed (`managed`: domains, DNS authorizations, optional private-CA issuance config, `state`) or
+      self-managed (`selfManaged` is input only; the PEM chain, SANs and `expireTime` are output). `scope` is
+      DEFAULT, EDGE_CACHE (Media CDN), ALL_REGIONS (cross-region internal load balancers) or CLIENT_AUTH.
+      `usedBy` repeats the incoming references (map entries, proxies) and is not read.
+
+  certificatemanager.googleapis.com/CertificateMap:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'certificate map · {{location}}'
+    console: 'https://console.cloud.google.com/security/ccm/list/certificates?project={{projectId}}'
+    contains:
+      - byParent: certificatemanager.googleapis.com/CertificateMapEntry
+    notes: >-
+      Entries nest inside by name. Proxies name the map (`certificateMap`); the map's output-only
+      `gclbTargets` lists those proxies and their addresses again and is not read, so each edge is drawn once,
+      from the proxy.
+
+  certificatemanager.googleapis.com/CertificateMapEntry:
+    role: core
+    label: '{{data.hostname}}'
+    subtitle: '{{data.state | lower}}'
+    console: 'https://console.cloud.google.com/security/ccm/list/certificates?project={{projectId}}'
+    domains:
+      - $.data.hostname
+    relations:
+      - { kind: uses, to: '$.data.certificates[*]', normalize: name }
+    notes: >-
+      Matches a host name (or wildcard) by SNI, or is the PRIMARY entry (`matcher`, no host name: the label
+      falls back to the entry's own name).
+
+  certificatemanager.googleapis.com/DnsAuthorization:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.domain}} · {{data.type | lower}}'
+    console: 'https://console.cloud.google.com/security/ccm/list/certificates?project={{projectId}}'
+    domains:
+      - $.data.domain
+    notes: >-
+      `dnsResourceRecord` is the CNAME to publish in the domain's zone; matching it to a Cloud DNS record set
+      is left to the DNS group.
+
+  certificatemanager.googleapis.com/CertificateIssuanceConfig:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.certificateAuthorityConfig.certificateAuthorityServiceConfig.caPool | lastSegment}} · {{data.keyAlgorithm | lower}}'
+    console: 'https://console.cloud.google.com/security/ccm/list/certificates?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: $.data.certificateAuthorityConfig.certificateAuthorityServiceConfig.caPool,
+          normalize: name,
+          service: privateca.googleapis.com,
+        }
+    notes: Certificates issued from a Certificate Authority Service CA pool (private PKI).
+
+  certificatemanager.googleapis.com/TrustConfig:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: 'trust config · {{location}}'
+    console: 'https://console.cloud.google.com/security/ccm/list/certificates?project={{projectId}}'
+    notes: >-
+      Trust anchors and intermediates are inline PEM certificates, allowlisted certificates and SPIFFE trust
+      stores too; nothing refers to another asset. Server TLS policies point here
+      (`mtlsPolicy.clientValidationTrustConfig`).

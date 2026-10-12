@@ -1,0 +1,115 @@
+[
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/erp-oracle",
+    "assetType": "datamigration.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/erp-oracle",
+      "displayName": "erp-oracle",
+      "state": "READY",
+      "provider": "DATABASE_PROVIDER_UNSPECIFIED",
+      "role": "SOURCE",
+      "oracle": {
+        "host": "erp-db.corp.example.com",
+        "port": 1521,
+        "username": "dms",
+        "databaseService": "ERPPROD",
+        "privateConnectivity": {
+          "privateConnection": "projects/demo-data-1/locations/europe-west3/privateConnections/core-peering"
+        },
+        "forwardSshConnectivity": { "hostname": "bastion.corp.example.com", "username": "dms", "port": 22 }
+      }
+    }
+  },
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/erp-alloydb",
+    "assetType": "datamigration.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/erp-alloydb",
+      "displayName": "erp-alloydb",
+      "state": "READY",
+      "provider": "ALLOYDB",
+      "role": "DESTINATION",
+      "alloydb": {
+        "clusterId": "erp",
+        "settings": {
+          "vpcNetwork": "projects/10000000001/global/networks/core",
+          "primaryInstanceSettings": {
+            "id": "erp-primary",
+            "machineConfig": { "cpuCount": 8 },
+            "privateIp": "10.60.0.5"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-mysql-onprem",
+    "assetType": "datamigration.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-mysql-onprem",
+      "displayName": "shop-mysql-onprem",
+      "state": "READY",
+      "provider": "DATABASE_PROVIDER_UNSPECIFIED",
+      "role": "SOURCE",
+      "mysql": { "host": "10.40.0.12", "port": 3306, "username": "dms", "ssl": { "type": "SERVER_ONLY" } }
+    }
+  },
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-cloudsql",
+    "assetType": "datamigration.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-cloudsql",
+      "displayName": "shop-cloudsql",
+      "state": "READY",
+      "provider": "CLOUDSQL",
+      "role": "DESTINATION",
+      "cloudsql": {
+        "cloudSqlId": "shop-mysql",
+        "settings": {
+          "sourceId": "projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-mysql-onprem",
+          "ipConfig": { "privateNetwork": "projects/demo-net-1/global/networks/core" },
+          "edition": "ENTERPRISE"
+        },
+        "privateIp": "10.60.0.9",
+        "publicIp": "203.0.113.40"
+      }
+    }
+  },
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/billing-sqlserver",
+    "assetType": "datamigration.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/billing-sqlserver",
+      "displayName": "billing-sqlserver",
+      "state": "READY",
+      "provider": "DATABASE_PROVIDER_UNSPECIFIED",
+      "role": "SOURCE",
+      "sqlserver": {
+        "backups": { "gcsBucket": "demo-data-1-sqlserver-backups" },
+        "privateServiceConnectConnectivity": {
+          "serviceAttachment": "projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api"
+        }
+      }
+    }
+  }
+]

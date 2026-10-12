@@ -1,0 +1,25 @@
+{
+  "name": "//workloadmanager.googleapis.com/projects/demo-ops-1/locations/europe-west3/evaluations/sql-weekly",
+  "assetType": "workloadmanager.googleapis.com/Evaluation",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/evaluations/sql-weekly",
+    "description": "Weekly SQL Server best-practice scan",
+    "resourceFilter": {
+      "scopes": ["projects/demo-app-1"],
+      "inclusionLabels": {
+        "env": "prod"
+      }
+    },
+    "ruleNames": ["projects/demo-ops-1/locations/europe-west3/rules/sqlserver-backup-configured"],
+    "createTime": "2026-02-01T08:00:00Z",
+    "updateTime": "2026-02-01T08:00:00Z",
+    "schedule": "0 0 */7 * *",
+    "customRulesBucket": "demo-ops-1-wlm-rules",
+    "evaluationType": "SQL_SERVER",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/wlm"
+  }
+}

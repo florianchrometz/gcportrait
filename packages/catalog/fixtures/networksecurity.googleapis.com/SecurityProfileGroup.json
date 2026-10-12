@@ -1,0 +1,54 @@
+[
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfileGroups/inspect-all",
+    "assetType": "networksecurity.googleapis.com/SecurityProfileGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfileGroups/inspect-all",
+      "description": "Threat prevention and URL filtering for inspected traffic",
+      "createTime": "2026-03-01T14:00:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "c2c0a1b2",
+      "dataPathId": "1001",
+      "threatPreventionProfile": "organizations/30000000001/locations/global/securityProfiles/threat-default",
+      "urlFilteringProfile": "organizations/30000000001/locations/global/securityProfiles/url-allowlist"
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfileGroups/mirror-to-collectors",
+    "assetType": "networksecurity.googleapis.com/SecurityProfileGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfileGroups/mirror-to-collectors",
+      "description": "Out-of-band copies to the IDS collectors",
+      "createTime": "2026-04-11T08:00:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "c2c0a1b3",
+      "dataPathId": "1002",
+      "customMirroringProfile": "organizations/30000000001/locations/global/securityProfiles/mirror-collectors"
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/securityProfileGroups/intercept-appliances",
+    "assetType": "networksecurity.googleapis.com/SecurityProfileGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/securityProfileGroups/intercept-appliances",
+      "description": "In-line inspection by the partner appliances",
+      "createTime": "2026-04-11T08:05:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "etag": "c2c0a1b4",
+      "dataPathId": "1003",
+      "customInterceptProfile": "organizations/30000000001/locations/global/securityProfiles/intercept-appliances"
+    }
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "name": "//identitytoolkit.googleapis.com/projects/10000000002/inboundSamlConfigs/saml.corp",
+  "assetType": "identitytoolkit.googleapis.com/InboundSamlConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/inboundSamlConfigs/saml.corp",
+    "displayName": "Corporate SSO",
+    "enabled": true,
+    "idpConfig": {
+      "idpEntityId": "https://sso.example.com/saml/metadata",
+      "ssoUrl": "https://sso.example.com/saml/login",
+      "idpCertificates": [
+        {
+          "x509Certificate": "-----BEGIN CERTIFICATE-----\nMIIBsynthetic\n-----END CERTIFICATE-----\n"
+        }
+      ]
+    },
+    "spConfig": {
+      "spEntityId": "shop-sp",
+      "callbackUri": "https://demo-app-1.firebaseapp.com/__/auth/handler"
+    }
+  }
+}

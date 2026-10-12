@@ -1,0 +1,38 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/commitments/cud-e2-1y",
+  "assetType": "compute.googleapis.com/Commitment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#commitment",
+    "id": "8400000000000000001",
+    "name": "cud-e2-1y",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/commitments/cud-e2-1y",
+    "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+    "plan": "TWELVE_MONTH",
+    "type": "GENERAL_PURPOSE_E2",
+    "category": "MACHINE",
+    "status": "ACTIVE",
+    "autoRenew": false,
+    "startTimestamp": "2026-06-01T00:00:00.000-07:00",
+    "endTimestamp": "2027-06-01T00:00:00.000-07:00",
+    "resources": [
+      {
+        "type": "VCPU",
+        "amount": "32"
+      },
+      {
+        "type": "MEMORY",
+        "amount": "131072"
+      }
+    ],
+    "creationTimestamp": "2026-06-01T08:00:00.000-07:00"
+  }
+}

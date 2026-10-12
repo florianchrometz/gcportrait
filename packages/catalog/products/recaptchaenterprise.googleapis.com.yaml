@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+#
+# reCAPTCHA: site keys and reCAPTCHA firewall policies (WAF integration with Cloud Armor and CDNs).
+product: reCAPTCHA
+service: recaptchaenterprise.googleapis.com
+icon: recaptcha
+types:
+  recaptchaenterprise.googleapis.com/Key:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.webSettings.integrationType | lower}}'
+    console: 'https://console.cloud.google.com/security/recaptcha?project={{projectId}}'
+    domains:
+      - '$.data.webSettings.allowedDomains[*]'
+    notes: >-
+      Web, Android, iOS or express keys (projects/<number>/keys/<key id>). The allowed web domains are the link to
+      the rest of the diagram: they match the host names load balancers, Cloud Run and App Engine serve. A WAF
+      key (wafSettings) is used by Cloud Armor rules, which name it from their side. The console link opens
+      the key list.
+
+  recaptchaenterprise.googleapis.com/FirewallPolicy:
+    role: leaf
+    label: '{{data.description}}'
+    subtitle: '{{data.path}}'
+    console: 'https://console.cloud.google.com/security/recaptcha?project={{projectId}}'
+    notes: >-
+      projects/<number>/firewallpolicies/<id>: a path pattern, a CEL condition on the assessment and actions
+      (allow, block, redirect, substitute, set header). References nothing.

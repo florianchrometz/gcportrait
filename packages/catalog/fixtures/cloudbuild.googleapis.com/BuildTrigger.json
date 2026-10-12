@@ -1,0 +1,155 @@
+[
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/triggers/4f1c2a9e-0b7d-4c36-9a51-2e8d6c1b7f30",
+    "assetType": "cloudbuild.googleapis.com/BuildTrigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "resourceName": "projects/demo-ops-1/locations/europe-west3/triggers/4f1c2a9e-0b7d-4c36-9a51-2e8d6c1b7f30",
+      "id": "4f1c2a9e-0b7d-4c36-9a51-2e8d6c1b7f30",
+      "name": "storefront-main",
+      "description": "Build and deploy the storefront on every push to main",
+      "createTime": "2025-03-12T09:14:00Z",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/build-runner@demo-ops-1.iam.gserviceaccount.com",
+      "repositoryEventConfig": {
+        "repository": "projects/demo-ops-1/locations/europe-west3/connections/ghe-shop/repositories/storefront",
+        "repositoryType": "GITHUB_ENTERPRISE",
+        "push": { "branch": "^main$" }
+      },
+      "filename": "cloudbuild.yaml",
+      "includeBuildLogs": "INCLUDE_BUILD_LOGS_WITH_STATUS"
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/triggers/9b2e7d41-5c80-4f13-8e6a-0c4d1f9a2b57",
+    "assetType": "cloudbuild.googleapis.com/BuildTrigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "resourceName": "projects/demo-ops-1/locations/europe-west3/triggers/9b2e7d41-5c80-4f13-8e6a-0c4d1f9a2b57",
+      "id": "9b2e7d41-5c80-4f13-8e6a-0c4d1f9a2b57",
+      "name": "inventory-nightly",
+      "createTime": "2025-04-02T07:30:00Z",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/build-runner@demo-ops-1.iam.gserviceaccount.com",
+      "pubsubConfig": {
+        "topic": "projects/demo-ops-1/topics/nightly-builds",
+        "subscription": "projects/demo-ops-1/subscriptions/gcb-inventory-nightly",
+        "serviceAccountEmail": "build-runner@demo-ops-1.iam.gserviceaccount.com",
+        "state": "OK"
+      },
+      "sourceToBuild": {
+        "repository": "projects/demo-ops-1/locations/europe-west3/connections/ghe-shop/repositories/inventory",
+        "ref": "refs/heads/main",
+        "repoType": "GITHUB"
+      },
+      "build": {
+        "steps": [
+          {
+            "name": "gcr.io/cloud-builders/docker",
+            "args": ["build", "-t", "europe-west3-docker.pkg.dev/demo-app-1/apps/inventory:nightly", "."]
+          }
+        ],
+        "images": ["europe-west3-docker.pkg.dev/demo-app-1/apps/inventory:nightly"],
+        "options": {
+          "pool": { "name": "projects/10000000005/locations/europe-west3/workerPools/private-build" },
+          "logging": "CLOUD_LOGGING_ONLY"
+        },
+        "timeout": "1200s"
+      }
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/global/triggers/2a6f0c3d-8e14-4b9a-b7c2-5d1e3f0a9c86",
+    "assetType": "cloudbuild.googleapis.com/BuildTrigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "resourceName": "projects/demo-ops-1/locations/global/triggers/2a6f0c3d-8e14-4b9a-b7c2-5d1e3f0a9c86",
+      "id": "2a6f0c3d-8e14-4b9a-b7c2-5d1e3f0a9c86",
+      "name": "infra-modules-webhook",
+      "createTime": "2024-11-20T15:00:00Z",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/build-runner@demo-ops-1.iam.gserviceaccount.com",
+      "webhookConfig": {
+        "secret": "projects/10000000005/secrets/build-webhook-key/versions/1",
+        "state": "OK"
+      },
+      "sourceToBuild": {
+        "uri": "https://gitlab.example.com/platform/infra-modules.git",
+        "ref": "refs/heads/main",
+        "repoType": "GITLAB"
+      },
+      "filename": "ci/cloudbuild.yaml"
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/triggers/7d3b9e05-1f6a-4c28-a9d4-6e2c8b0f1a73",
+    "assetType": "cloudbuild.googleapis.com/BuildTrigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "resourceName": "projects/demo-ops-1/locations/europe-west3/triggers/7d3b9e05-1f6a-4c28-a9d4-6e2c8b0f1a73",
+      "id": "7d3b9e05-1f6a-4c28-a9d4-6e2c8b0f1a73",
+      "name": "checkout-ghe",
+      "createTime": "2023-06-08T10:00:00Z",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/build-runner@demo-ops-1.iam.gserviceaccount.com",
+      "github": {
+        "owner": "shop",
+        "name": "checkout",
+        "enterpriseConfigResourceName": "projects/10000000005/locations/europe-west3/githubEnterpriseConfigs/ghe-primary",
+        "push": { "branch": "^main$" }
+      },
+      "filename": "cloudbuild.yaml"
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/triggers/c5e8a1f2-3b9d-4e07-8c61-9f0a2d4b6e18",
+    "assetType": "cloudbuild.googleapis.com/BuildTrigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "resourceName": "projects/demo-ops-1/locations/europe-west3/triggers/c5e8a1f2-3b9d-4e07-8c61-9f0a2d4b6e18",
+      "id": "c5e8a1f2-3b9d-4e07-8c61-9f0a2d4b6e18",
+      "name": "payments-release",
+      "createTime": "2023-09-14T12:00:00Z",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/build-runner@demo-ops-1.iam.gserviceaccount.com",
+      "bitbucketServerTriggerConfig": {
+        "repoSlug": "payments",
+        "projectKey": "PAY",
+        "bitbucketServerConfigResource": "projects/10000000005/locations/europe-west3/bitbucketServerConfigs/bbdc-main",
+        "push": { "branch": "^release/.*$" }
+      },
+      "filename": "cloudbuild.yaml"
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/triggers/e1d4c7b0-6a29-4f85-b3e2-1c9f8a5d0e64",
+    "assetType": "cloudbuild.googleapis.com/BuildTrigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "resourceName": "projects/demo-ops-1/locations/europe-west3/triggers/e1d4c7b0-6a29-4f85-b3e2-1c9f8a5d0e64",
+      "id": "e1d4c7b0-6a29-4f85-b3e2-1c9f8a5d0e64",
+      "name": "catalog-service-main",
+      "createTime": "2025-08-21T08:45:00Z",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/build-runner@demo-ops-1.iam.gserviceaccount.com",
+      "developerConnectEventConfig": {
+        "gitRepositoryLink": "projects/demo-ops-1/locations/europe-west3/connections/gitlab-platform/gitRepositoryLinks/catalog-service",
+        "gitRepositoryLinkType": "GITLAB_ENTERPRISE",
+        "push": { "branch": "^main$" }
+      },
+      "filename": "cloudbuild.yaml"
+    }
+  }
+]

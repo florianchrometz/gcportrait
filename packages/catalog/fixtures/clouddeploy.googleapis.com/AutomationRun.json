@@ -1,0 +1,24 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/automationRuns/f2a3b4c5-d6e7-4f80-9192-0a3b4c5d6e7f",
+  "assetType": "clouddeploy.googleapis.com/AutomationRun",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/automationRuns/f2a3b4c5-d6e7-4f80-9192-0a3b4c5d6e7f",
+    "createTime": "2026-09-29T07:59:00Z",
+    "updateTime": "2026-09-29T08:00:00Z",
+    "serviceAccount": "deploy-automation@demo-ops-1.iam.gserviceaccount.com",
+    "targetId": "shop-staging",
+    "state": "SUCCEEDED",
+    "ruleId": "promote-release",
+    "automationId": "promote-to-prod",
+    "promoteReleaseOperation": {
+      "targetId": "shop-prod",
+      "wait": "3600s",
+      "rollout": "projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1/rollouts/shop-2-3-1-to-shop-prod-0001",
+      "phase": "stable"
+    }
+  }
+}

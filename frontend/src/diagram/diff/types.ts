@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: MIT
+/**
+ * The timeline diff overlay's data (docs/timeline.md; style skill §6), as it crosses `postMessage`: what the page
+ * asks the data worker to compare the day it draws with (`DiffFrom`, with a Scene request), and what the worker
+ * answers with that day's Scene (`TickDiff`). Types only, so the UI thread imports nothing of the worker's side
+ * through this module.
+ */
+
+/** The day to compare the drawn day with: a timeline tick, or (`null`) the snapshot's own day. */
+export interface DiffFrom {
+  readonly tick: string | null;
+}
+
+/** A day the diff compared with: its tick (absent: the snapshot's own day) and the read time of its data. */
+export interface DiffDay {
+  readonly tick?: string;
+  readonly readTime: string;
+  /**
+   * The label of an extra tick ("export 2026-10-05 14:30"), which the diff wording uses instead of the date, so it is
+   * told from the day itself; the page adds it from the timeline's extra ticks (timeline/extraTicks.ts
+   * `extraDayLabel`), the worker never does.
+   */
+  readonly label?: string;
+}
+
+export interface DiffCounts {
+  readonly added: number;
+  readonly removed: number;
+  readonly changed: number;
+}
+
+/**
+ * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden`: it changed so
+ * that the view no longer draws it, like a project marked for deletion. Inside a ghost, what neither was removed
+ * nor changed (a region of a removed project, an untouched asset of a project marked for deletion) takes the reason
+ * of the ghost around it.
+ */
+export type GhostReason = 'removed' | 'hidden';
+
+/**
+ * The drawn day compared with the previously displayed one (`diffSnapshots` of `@gcportrait/graph`, by asset
+ * name: `added` are in the drawn day only, `removed` in the earlier one only, `changed` in both with another
+ * `updateTime`), and what the Scene carries for it.
+ */
+export interface TickDiff {
+  /** The day compared with: the one on screen before this one. */
+  readonly since: DiffDay;
+  readonly added: readonly string[];
+  readonly removed: readonly string[];
+  readonly changed: readonly string[];
+  /**
+   * The ghosts the data worker put into the Scene, by node id: the nodes the view drew on the earlier day and no
+   * longer draws, each in its old container, so the layout places it where it was (a ghost card for one tick).
+   */
+  readonly ghosts: Readonly<Record<string, GhostReason>>;
+  /**
+   * The collapsed zones (chips) of the Scene that hold something the view would draw that was added, removed or
+   * changed, with how many of each.
+   */
+  readonly inside: Readonly<Record<string, DiffCounts>>;
+}

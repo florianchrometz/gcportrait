@@ -1,0 +1,110 @@
+[
+  {
+    "name": "//networkmanagement.googleapis.com/projects/demo-net-1/locations/global/connectivityTests/web-to-orders-db",
+    "assetType": "networkmanagement.googleapis.com/ConnectivityTest",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/global/connectivityTests/web-to-orders-db",
+      "description": "Web tier reaches the orders database on its private address",
+      "displayName": "web-to-orders-db",
+      "source": {
+        "instance": "projects/demo-app-1/zones/europe-west3-a/instances/web-1",
+        "ipAddress": "10.10.0.21",
+        "network": "projects/demo-net-1/global/networks/core",
+        "projectId": "demo-app-1",
+        "networkType": "GCP_NETWORK"
+      },
+      "destination": {
+        "cloudSqlInstance": "projects/demo-data-1/instances/orders-pg",
+        "ipAddress": "10.60.0.3",
+        "port": 5432
+      },
+      "protocol": "TCP",
+      "relatedProjects": ["demo-app-1", "demo-data-1"],
+      "createTime": "2026-06-01T09:00:00Z",
+      "updateTime": "2026-06-01T09:00:00Z",
+      "reachabilityDetails": {
+        "result": "REACHABLE",
+        "verifyTime": "2026-10-01T05:55:00Z"
+      },
+      "roundTrip": false,
+      "bypassFirewallChecks": false
+    }
+  },
+  {
+    "name": "//networkmanagement.googleapis.com/projects/demo-net-1/locations/global/connectivityTests/corp-to-inspection-ilb",
+    "assetType": "networkmanagement.googleapis.com/ConnectivityTest",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/global/connectivityTests/corp-to-inspection-ilb",
+      "description": "Data centre clients reach the inspection tier",
+      "displayName": "corp-to-inspection-ilb",
+      "source": {
+        "ipAddress": "172.20.1.10",
+        "networkType": "NON_GCP_NETWORK",
+        "projectId": "demo-net-1",
+        "network": "projects/demo-net-1/global/networks/core"
+      },
+      "destination": {
+        "forwardingRule": "projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-inspection",
+        "port": 443
+      },
+      "protocol": "TCP",
+      "createTime": "2026-06-02T09:00:00Z",
+      "updateTime": "2026-06-02T09:00:00Z",
+      "reachabilityDetails": {
+        "result": "UNREACHABLE",
+        "verifyTime": "2026-10-01T05:56:00Z"
+      }
+    }
+  },
+  {
+    "name": "//networkmanagement.googleapis.com/projects/demo-net-1/locations/global/connectivityTests/node-to-shop-control-plane",
+    "assetType": "networkmanagement.googleapis.com/ConnectivityTest",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/global/connectivityTests/node-to-shop-control-plane",
+      "description": "GKE nodes reach the shop cluster control plane",
+      "displayName": "node-to-shop-control-plane",
+      "source": {
+        "instance": "projects/demo-app-1/zones/europe-west3-a/instances/gke-shop-default-pool-1a2b3c4d-x1y2",
+        "projectId": "demo-app-1"
+      },
+      "destination": {
+        "gkeMasterCluster": "projects/demo-app-1/locations/europe-west3/clusters/shop",
+        "port": 443
+      },
+      "protocol": "TCP",
+      "createTime": "2026-06-03T09:00:00Z",
+      "updateTime": "2026-06-03T09:00:00Z",
+      "reachabilityDetails": {
+        "result": "REACHABLE",
+        "verifyTime": "2026-10-01T05:57:00Z"
+      }
+    }
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "name": "//workstations.googleapis.com/projects/demo-app-1/locations/europe-west3/workstationClusters/dev",
+  "assetType": "workstations.googleapis.com/WorkstationCluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/workstationClusters/dev",
+    "displayName": "Developer workstations",
+    "uid": "a0000000-0000-4000-8000-000000000001",
+    "network": "projects/demo-net-1/global/networks/core",
+    "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+    "controlPlaneIp": "10.10.15.250",
+    "privateClusterConfig": {
+      "enablePrivateEndpoint": true,
+      "clusterHostname": "cluster-dev.cloudworkstations.example.org",
+      "serviceAttachmentUri": "projects/a1b2c3d4-tp/regions/europe-west3/serviceAttachments/ws-cluster-dev"
+    },
+    "domainConfig": {
+      "domain": "workstations.example.com"
+    },
+    "degraded": false,
+    "createTime": "2026-03-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z"
+  }
+}

@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Monitoring: alert policies trigger
+# their notification channels, Pub/Sub channels trigger their topic, uptime checks probe a host or a Cloud Run
+# function. Cloud Asset Inventory names Monitoring assets with the project number
+# (//monitoring.googleapis.com/projects/<number>/alertPolicies/<id>); the API accepts and returns projects/<id
+# or number>/…, so a reference written with the project id stays dangling until both agree.
+product: Cloud Monitoring
+service: monitoring.googleapis.com
+icon: cloud_monitoring
+types:
+  monitoring.googleapis.com/AlertPolicy:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.severity | lower}} · {{data.conditions[0].displayName | short(40)}}'
+    console: 'https://console.cloud.google.com/monitoring/alerting/policies/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: triggers, to: '$.data.notificationChannels[*]', normalize: name }
+    notes: >-
+      notificationChannels holds projects/<id or number>/notificationChannels/<id>. enabled is a badge
+      (disabled policies stay visible); the number of conditions and the combiner are drawer facts. Conditions
+      refer to metrics, log-based metrics and uptime checks inside filter strings only, so they make no edges.
+
+  monitoring.googleapis.com/NotificationChannel:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type}}'
+    console: 'https://console.cloud.google.com/monitoring/alerting/notifications?project={{projectId}}'
+    domains:
+      - $.data.labels.url
+    relations:
+      - { kind: triggers, to: $.data.labels.topic, normalize: pubsubUri }
+    notes: >-
+      labels depend on the channel type: topic (projects/<p>/topics/<t>) for pubsub, url for webhook_tokenauth
+      and webhook_basicauth (its host is the channel's domain), email_address for email; secrets in labels are
+      redacted by the API.
+
+  monitoring.googleapis.com/UptimeCheckConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.monitoredResource.labels.host}} · {{data.period}}'
+    console: 'https://console.cloud.google.com/monitoring/uptime/detail/{{name | lastSegment}}?project={{projectId}}'
+    ips:
+      - $.data.monitoredResource.labels.host
+    domains:
+      - $.data.monitoredResource.labels.host
+    relations:
+      - {
+          kind: uses,
+          to: $.data.syntheticMonitor.cloudFunctionV2.name,
+          normalize: name,
+          service: cloudfunctions.googleapis.com,
+        }
+    notes: >-
+      monitoredResource is an uptime_url (labels.host, a host name or, often, a load balancer's IP address,
+      so it is read both as a domain and as an IP), gce_instance (labels.instance_id is the numeric
+      instance id, which no normaliser turns into a name, so the seed's VM edge is not drawn), k8s_service,
+      servicedirectory_service or cloud_run_revision resource whose labels name the target piecewise (no edge
+      either). Synthetic monitors run a Cloud Run function (syntheticMonitor.cloudFunctionV2.name, a
+      projects/<p>/locations/<l>/functions/<f> name), drawn as uses. resourceGroup checks name a Monitoring
+      group, which is no asset.
+
+  monitoring.googleapis.com/Dashboard:
+    role: leaf
+    label: '{{data.displayName}}'
+    console: 'https://console.cloud.google.com/monitoring/dashboards/builder/{{name | lastSegment}}?project={{projectId}}'
+
+  monitoring.googleapis.com/Snooze:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.interval.endTime}}'
+    relations:
+      - { kind: uses, to: '$.data.criteria.policies[*]', normalize: name }
+    notes: A snooze silences the alert policies in criteria.policies until interval.endTime.

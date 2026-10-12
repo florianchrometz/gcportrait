@@ -1,0 +1,18 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events/clusters/events-c1/backups/clickstream-20260930",
+  "assetType": "bigtableadmin.googleapis.com/Backup",
+  "parent": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events/clusters/events-c1/backups/clickstream-20260930",
+    "sourceTable": "projects/demo-data-1/instances/events/tables/clickstream",
+    "expireTime": "2026-10-30T00:00:00Z",
+    "startTime": "2026-09-30T00:00:00Z",
+    "endTime": "2026-09-30T00:04:00Z",
+    "sizeBytes": "1073741824",
+    "state": "READY",
+    "backupType": "STANDARD"
+  }
+}

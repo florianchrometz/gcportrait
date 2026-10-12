@@ -1,0 +1,39 @@
+[
+  {
+    "name": "//iam.googleapis.com/projects/demo-sec-1/locations/global/oauthClients/partner-portal",
+    "assetType": "iam.googleapis.com/OauthClient",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-06-10T13:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/global/oauthClients/partner-portal",
+      "state": "ACTIVE",
+      "disabled": false,
+      "clientId": "partner-portal-7f3a1c",
+      "displayName": "Partner portal",
+      "allowedGrantTypes": ["AUTHORIZATION_CODE_GRANT", "REFRESH_TOKEN_GRANT"],
+      "allowedScopes": ["https://www.googleapis.com/auth/cloud-platform", "openid", "email"],
+      "allowedRedirectUris": ["https://portal.example.com/oauth/callback"],
+      "clientType": "CONFIDENTIAL_CLIENT"
+    }
+  },
+  {
+    "name": "//iam.googleapis.com/projects/demo-sec-1/locations/global/oauthClients/old-cli",
+    "assetType": "iam.googleapis.com/OauthClient",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-25T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/global/oauthClients/old-cli",
+      "state": "DELETED",
+      "disabled": true,
+      "clientId": "old-cli-19b2e0",
+      "displayName": "Old command-line client",
+      "allowedRedirectUris": ["http://localhost:8085/"],
+      "clientType": "PUBLIC_CLIENT",
+      "expireTime": "2026-10-25T08:00:00Z"
+    }
+  }
+]

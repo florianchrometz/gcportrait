@@ -1,0 +1,38 @@
+{
+  "name": "//apphub.googleapis.com/projects/demo-app-1/locations/global/applications/shop/workloads/storefront",
+  "assetType": "apphub.googleapis.com/Workload",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/applications/shop/workloads/storefront",
+    "displayName": "Storefront VMs",
+    "workloadReference": {
+      "uri": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instanceGroups/web"
+    },
+    "workloadProperties": {
+      "gcpProject": "projects/demo-app-1",
+      "location": "europe-west3",
+      "zone": "europe-west3-a"
+    },
+    "discoveredWorkload": "projects/demo-app-1/locations/europe-west3/discoveredWorkloads/d-storefront",
+    "attributes": {
+      "criticality": {
+        "type": "MISSION_CRITICAL"
+      },
+      "environment": {
+        "type": "PRODUCTION"
+      }
+    },
+    "createTime": "2025-07-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "uid": "c0ffee00-0000-4000-8000-000000000020",
+    "state": "ACTIVE"
+  }
+}

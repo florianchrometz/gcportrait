@@ -1,0 +1,10 @@
+{
+  // The package itself: pure code compiled without DOM or Node types (agents.md rule 9), so a stray
+  // `document`, `fs` or `process` fails to compile. Unit tests that need no host API live next to the code.
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src"],
+  "references": [{ "path": "../model" }]
+}

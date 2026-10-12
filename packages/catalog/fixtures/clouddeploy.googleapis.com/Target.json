@@ -1,0 +1,163 @@
+[
+  {
+    "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/targets/shop-staging",
+    "assetType": "clouddeploy.googleapis.com/Target",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/targets/shop-staging",
+      "targetId": "shop-staging",
+      "uid": "1a2b3c4d5e6f47089a1b2c3d4e5f6071",
+      "createTime": "2024-03-04T09:00:00Z",
+      "gke": {
+        "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot"
+      },
+      "executionConfigs": [
+        {
+          "usages": ["RENDER", "DEPLOY"],
+          "privatePool": {
+            "workerPool": "projects/10000000005/locations/europe-west3/workerPools/private-build",
+            "serviceAccount": "deploy-runner@demo-ops-1.iam.gserviceaccount.com",
+            "artifactStorage": "gs://demo-ops-1-deploy-artifacts/staging"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/targets/shop-prod",
+    "assetType": "clouddeploy.googleapis.com/Target",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/targets/shop-prod",
+      "targetId": "shop-prod",
+      "uid": "2b3c4d5e6f7a48190b2c3d4e5f607182",
+      "description": "Production cluster, approval required",
+      "requireApproval": true,
+      "createTime": "2024-03-04T09:05:00Z",
+      "gke": {
+        "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop",
+        "internalIp": true
+      },
+      "associatedEntities": {
+        "shop-autopilot": {
+          "gkeClusters": [
+            {
+              "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot"
+            }
+          ]
+        }
+      },
+      "executionConfigs": [
+        {
+          "usages": ["RENDER", "DEPLOY", "VERIFY"],
+          "workerPool": "projects/10000000005/locations/europe-west3/workerPools/private-build",
+          "serviceAccount": "deploy-runner@demo-ops-1.iam.gserviceaccount.com",
+          "artifactStorage": "gs://demo-ops-1-deploy-artifacts",
+          "executionTimeout": "3600s"
+        }
+      ]
+    }
+  },
+  {
+    "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/targets/shop-edge",
+    "assetType": "clouddeploy.googleapis.com/Target",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/targets/shop-edge",
+      "targetId": "shop-edge",
+      "uid": "3c4d5e6f7a8b492a1c3d4e5f60718293",
+      "createTime": "2025-01-20T11:00:00Z",
+      "run": {
+        "location": "projects/demo-app-1/locations/europe-west3"
+      },
+      "executionConfigs": [
+        {
+          "usages": ["RENDER", "DEPLOY"],
+          "defaultPool": {
+            "serviceAccount": "deploy-runner@demo-ops-1.iam.gserviceaccount.com",
+            "artifactStorage": "gs://demo-ops-1-deploy-artifacts/edge"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/targets/orders-multicloud",
+    "assetType": "clouddeploy.googleapis.com/Target",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/targets/orders-multicloud",
+      "targetId": "orders-multicloud",
+      "uid": "4d5e6f7a8b9c4a3b2d4e5f6071829304",
+      "createTime": "2025-07-01T08:00:00Z",
+      "anthosCluster": {
+        "membership": "projects/10000000002/locations/global/memberships/eks-orders"
+      },
+      "associatedEntities": {
+        "orders-gke": {
+          "anthosClusters": [
+            {
+              "membership": "projects/10000000002/locations/global/memberships/shop"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/targets/legacy-vm",
+    "assetType": "clouddeploy.googleapis.com/Target",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/targets/legacy-vm",
+      "targetId": "legacy-vm",
+      "uid": "5e6f7a8b9cad4b4c3e5f607182930415",
+      "createTime": "2025-09-15T08:00:00Z",
+      "customTarget": {
+        "customTargetType": "projects/demo-ops-1/locations/europe-west3/customTargetTypes/terraform-vm"
+      }
+    }
+  },
+  {
+    "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/targets/shop-everywhere",
+    "assetType": "clouddeploy.googleapis.com/Target",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/targets/shop-everywhere",
+      "targetId": "shop-everywhere",
+      "uid": "d0000000-0000-4000-8000-0000000000e9",
+      "createTime": "2025-01-20T11:00:00Z",
+      "executionConfigs": [
+        {
+          "usages": ["RENDER", "DEPLOY"],
+          "defaultPool": {
+            "serviceAccount": "deploy-runner@demo-ops-1.iam.gserviceaccount.com",
+            "artifactStorage": "gs://demo-ops-1-deploy-artifacts/edge"
+          }
+        }
+      ],
+      "multiTarget": {
+        "targetIds": ["shop-prod", "shop-edge"]
+      },
+      "description": "Rolls out to GKE and the Cloud Run edge in parallel"
+    }
+  }
+]

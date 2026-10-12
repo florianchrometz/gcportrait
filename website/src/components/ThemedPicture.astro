@@ -1,0 +1,37 @@
+---
+/**
+ * A generated still in the visitor's theme: the dark WebP set when the system prefers dark, the light one
+ * otherwise, at the width the layout needs (`sizes`). Lazy unless it is above the fold (`eager`).
+ */
+import type { ThemedImage } from '../lib/media.js';
+
+interface Props {
+  image: ThemedImage;
+  sizes?: string;
+  eager?: boolean;
+  class?: string;
+}
+// By default the width of the page's content: the container less its side padding (1.25rem each side).
+const {
+  image,
+  sizes = '(min-width: 72rem) 69.5rem, calc(100vw - 2.5rem)',
+  eager = false,
+  class: className,
+} = Astro.props;
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<picture class={className}>
+  <source media="(prefers-color-scheme: dark)" srcset={image.dark.srcset} sizes={sizes} type="image/webp" />
+  <img
+    src={image.light.src}
+    srcset={image.light.srcset}
+    sizes={sizes}
+    width={image.width}
+    height={image.height}
+    alt={image.alt}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding={eager ? 'auto' : 'async'}
+    fetchpriority={eager ? 'high' : undefined}
+  />
+</picture>

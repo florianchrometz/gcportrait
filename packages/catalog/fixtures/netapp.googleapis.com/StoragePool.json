@@ -1,0 +1,24 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/storagePools/premium-pool",
+  "assetType": "netapp.googleapis.com/StoragePool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/storagePools/premium-pool",
+    "serviceLevel": "PREMIUM",
+    "capacityGib": "4096",
+    "volumeCapacityGib": "2048",
+    "volumeCount": 2,
+    "state": "READY",
+    "createTime": "2025-04-01T09:00:00Z",
+    "network": "projects/10000000001/global/networks/core",
+    "activeDirectory": "projects/demo-data-1/locations/europe-west3/activeDirectories/corp-ad",
+    "kmsConfig": "projects/demo-data-1/locations/europe-west3/kmsConfigs/netapp-cmek",
+    "ldapEnabled": false,
+    "psaRange": "netapp-psa",
+    "encryptionType": "CLOUD_KMS",
+    "allowAutoTiering": false
+  }
+}

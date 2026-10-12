@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: MIT
+#
+# KRM API Hosting: the Config Controller
+# instance, a managed GKE control plane in a VPC of the customer's choice.
+product: KRM API Hosting
+service: krmapihosting.googleapis.com
+icon: krm_api_hosting
+types:
+  krmapihosting.googleapis.com/KrmApiHost:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    ips:
+      - $.data.managementConfig.standardManagementConfig.masterIpv4CidrBlock
+      - $.data.managementConfig.standardManagementConfig.clusterCidrBlock
+      - $.data.managementConfig.standardManagementConfig.servicesCidrBlock
+      - $.data.managementConfig.fullManagementConfig.masterIpv4CidrBlock
+      - $.data.managementConfig.fullManagementConfig.clusterCidrBlock
+      - $.data.managementConfig.fullManagementConfig.servicesCidrBlock
+    relations:
+      - {
+          kind: attaches,
+          to: $.data.managementConfig.standardManagementConfig.network,
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: $.data.managementConfig.fullManagementConfig.network,
+          normalize: computeRelative,
+        }
+    notes: >-
+      Unverified against a published API reference (the KRM API Hosting API has none; the shape follows the
+      Config Controller describe output): standardManagementConfig (GKE Standard) or fullManagementConfig
+      (Autopilot) carry the VPC network (projects/<p>/global/networks/<n>, or a bare name in the instance's
+      project, which stays dangling) and the control-plane, Pod and Service ranges. manBlock is the
+      authorised-networks client range, not an address of the host. gkeResourceLink names the managed cluster
+      in a Google-managed project and is not read.

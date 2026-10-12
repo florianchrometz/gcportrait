@@ -1,0 +1,118 @@
+# SPDX-License-Identifier: MIT
+#
+# Sensitive Data Protection: inspection job triggers and their runs, discovery (data profiling)
+# configurations, inspect and de-identify templates and stored info types. Names are
+# projects|organizations/<p>/locations/<l>/<collection>/<id>. BigQuery tables appear as
+# { projectId, datasetId, tableId } objects (bigqueryUri reads them), buckets as gs:// URLs, topics as
+# projects/<p>/topics/<t>.
+product: Sensitive Data Protection
+service: dlp.googleapis.com
+icon: sensitive_data_protection
+types:
+  dlp.googleapis.com/JobTrigger:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.status | lower}} · {{data.triggers[0].schedule.recurrencePeriodDuration}}'
+    console: 'https://console.cloud.google.com/security/sensitive-data-protection?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.inspectJob.storageConfig.cloudStorageOptions.fileSet.url, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.inspectJob.storageConfig.cloudStorageOptions.fileSet.regexFileSet.bucketName,
+          normalize: gcsUri,
+        }
+      - {
+          kind: uses,
+          to: $.data.inspectJob.storageConfig.bigQueryOptions.tableReference,
+          normalize: bigqueryUri,
+        }
+      - { kind: uses, to: $.data.inspectJob.inspectTemplateName, normalize: name }
+      - {
+          kind: uses,
+          to: '$.data.inspectJob.actions[*].saveFindings.outputConfig.table',
+          normalize: bigqueryUri,
+        }
+      - { kind: uses, to: '$.data.inspectJob.actions[*].deidentify.cloudStorageOutput', normalize: gcsUri }
+      - { kind: triggers, to: '$.data.inspectJob.actions[*].pubSub.topic', normalize: pubsubUri }
+    notes: >-
+      Scheduled inspection of a bucket (a gs:// URL with wildcards, or a regex file set's bucket), a BigQuery
+      table or a Datastore kind, with an inspect template (projects/<p>/locations/<l>/inspectTemplates/<t>) and
+      actions: findings saved to a table, de-identified copies written to a bucket, a Pub/Sub notification.
+      Hybrid jobs have no storage. The console link opens the product page.
+
+  dlp.googleapis.com/DlpJob:
+    role: hidden
+    subtitle: '{{data.type | lower}} · {{data.state | lower}}'
+    relations:
+      - { kind: memberOf, to: $.data.jobTriggerName, normalize: name }
+    notes: One run of an inspection or risk-analysis job; a triggered run names its job trigger.
+
+  dlp.googleapis.com/DiscoveryConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.status | lower}}'
+    console: 'https://console.cloud.google.com/security/sensitive-data-protection?project={{projectId}}'
+    relations:
+      - { kind: uses, to: '$.data.inspectTemplates[*]', normalize: name }
+      - { kind: uses, to: '$.data.actions[*].exportData.profileTable', normalize: bigqueryUri }
+      - { kind: triggers, to: '$.data.actions[*].pubSubNotification.topic', normalize: pubsubUri }
+      - { kind: uses, to: $.data.orgConfig.projectId, normalize: projectNumberOrId }
+      - {
+          kind: uses,
+          to: '$.data.targets[*].cloudStorageTarget.filter.cloudStorageResourceReference.bucketName',
+          normalize: gcsUri,
+        }
+      - { kind: uses, to: '$.data.targets[*].bigQueryTarget.filter.tableReference', normalize: bigqueryUri }
+    notes: >-
+      Data profiling. A project-level configuration profiles its own project; an organisation-level one names
+      its scope in orgConfig.location (organizationId or folderId, bare numbers) and the project that runs the
+      scans in orgConfig.projectId (a project id: drawn as uses). No normaliser turns a bare organisation or
+      folder number into a resource name, so the seed's secures edge to the scope is not drawn. A
+      configuration that profiles a single bucket (cloudStorageResourceReference.bucketName) or table
+      (bigQueryTarget.filter.tableReference) has exactly one target, drawn as uses like a job trigger's
+      storage; a single Cloud SQL database (databaseResourceReference: projectId, instance, database as
+      separate fields) has no normaliser that joins them. Profiles are exported to a table and announced on a
+      topic.
+
+  dlp.googleapis.com/InspectTemplate:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.inspectConfig.infoTypes[0].name}}'
+    console: 'https://console.cloud.google.com/security/sensitive-data-protection?project={{projectId}}'
+    notes: >-
+      The info types and rules to detect. Job triggers and discovery configurations point here, which makes
+      it core (skill §3: referenced by other assets; the seed lists it as a leaf).
+
+  dlp.googleapis.com/DeidentifyTemplate:
+    role: leaf
+    label: '{{data.displayName}}'
+    console: 'https://console.cloud.google.com/security/sensitive-data-protection?project={{projectId}}'
+    notes: >-
+      Transformations for de-identification. A crypto-based transformation may hold a KMS-wrapped key
+      (cryptoKey.kmsWrapped.cryptoKeyName) deep inside the configuration; not read yet.
+
+  dlp.googleapis.com/StoredInfoType:
+    role: core
+    label: '{{data.currentVersion.config.displayName}}'
+    subtitle: '{{data.currentVersion.state | lower}}'
+    console: 'https://console.cloud.google.com/security/sensitive-data-protection?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: $.data.currentVersion.config.largeCustomDictionary.outputPath.path,
+          normalize: gcsUri,
+        }
+      - {
+          kind: uses,
+          to: $.data.currentVersion.config.largeCustomDictionary.cloudStorageFileSet.url,
+          normalize: gcsUri,
+        }
+      - {
+          kind: uses,
+          to: $.data.currentVersion.config.largeCustomDictionary.bigQueryField.table,
+          normalize: bigqueryUri,
+        }
+    notes: >-
+      Custom detectors. A large custom dictionary is built from a bucket's files or a BigQuery column and
+      written to a bucket, which makes it a core type here (the seed lists it as a leaf); a regex or small
+      dictionary references nothing.

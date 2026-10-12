@@ -1,0 +1,36 @@
+{
+  "name": "//dataproc.googleapis.com/projects/demo-data-1/locations/europe-west3/batches/score-customers-20261001",
+  "assetType": "dataproc.googleapis.com/Batch",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T04:30:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/batches/score-customers-20261001",
+    "uuid": "d1000000-0000-4000-8000-000000000201",
+    "createTime": "2026-10-01T04:00:00Z",
+    "pysparkBatch": { "mainPythonFileUri": "gs://demo-data-1-dataproc-staging/batches/score.py" },
+    "runtimeConfig": {
+      "version": "2.3",
+      "containerImage": "europe-west3-docker.pkg.dev/demo-data-1/spark/score:1.4.0"
+    },
+    "environmentConfig": {
+      "executionConfig": {
+        "serviceAccount": "dataproc-batch@demo-data-1.iam.gserviceaccount.com",
+        "subnetworkUri": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+        "networkUri": "projects/demo-net-1/global/networks/core",
+        "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataproc",
+        "stagingBucket": "demo-data-1-dataproc-staging"
+      },
+      "peripheralsConfig": {
+        "metastoreService": "projects/demo-data-1/locations/europe-west3/services/hive",
+        "sparkHistoryServerConfig": {
+          "dataprocCluster": "projects/demo-data-1/regions/europe-west3/clusters/spark-history"
+        }
+      }
+    },
+    "state": "SUCCEEDED",
+    "stateTime": "2026-10-01T04:30:00Z",
+    "creator": "scheduler@demo-data-1.iam.gserviceaccount.com"
+  }
+}

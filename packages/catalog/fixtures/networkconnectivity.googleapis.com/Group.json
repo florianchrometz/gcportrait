@@ -1,0 +1,25 @@
+{
+  "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+  "assetType": "networkconnectivity.googleapis.com/Group",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000001/locations/global/hubs/hub-prod/groups/default",
+    "description": "The hub's default spoke group",
+    "createTime": "2024-03-01T09:00:00Z",
+    "updateTime": "2024-03-01T09:00:00Z",
+    "uid": "00000000-0000-4000-8000-000000000102",
+    "state": "ACTIVE",
+    "autoAccept": {
+      "autoAcceptProjects": ["demo-app-1"]
+    },
+    "routeTable": "projects/10000000001/locations/global/hubs/hub-prod/routeTables/default"
+  }
+}

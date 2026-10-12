@@ -1,0 +1,72 @@
+[
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm",
+    "assetType": "backupdr.googleapis.com/BackupPlan",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm",
+      "description": "Daily backups (compute.googleapis.com/Instance)",
+      "createTime": "2025-03-01T08:00:00Z",
+      "updateTime": "2026-06-01T08:00:00Z",
+      "backupRules": [
+        {
+          "ruleId": "daily",
+          "backupRetentionDays": 14,
+          "standardSchedule": {
+            "recurrenceType": "DAILY",
+            "backupWindow": {
+              "startHourOfDay": 1,
+              "endHourOfDay": 5
+            },
+            "timeZone": "Europe/Berlin"
+          }
+        }
+      ],
+      "state": "ACTIVE",
+      "resourceType": "compute.googleapis.com/Instance",
+      "etag": "p-2",
+      "backupVault": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3",
+      "backupVaultServiceAccount": "vault-10000000005-a1b2c3@gcp-sa-backupdr-pr.iam.gserviceaccount.com",
+      "revisionId": "v2",
+      "revisionName": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm/revisions/v2"
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql",
+    "assetType": "backupdr.googleapis.com/BackupPlan",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql",
+      "description": "Daily backups (sqladmin.googleapis.com/Instance)",
+      "createTime": "2025-03-01T08:00:00Z",
+      "updateTime": "2026-06-01T08:00:00Z",
+      "backupRules": [
+        {
+          "ruleId": "daily",
+          "backupRetentionDays": 14,
+          "standardSchedule": {
+            "recurrenceType": "DAILY",
+            "backupWindow": {
+              "startHourOfDay": 1,
+              "endHourOfDay": 5
+            },
+            "timeZone": "Europe/Berlin"
+          }
+        }
+      ],
+      "state": "ACTIVE",
+      "resourceType": "sqladmin.googleapis.com/Instance",
+      "etag": "p-2",
+      "backupVault": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3",
+      "backupVaultServiceAccount": "vault-10000000005-a1b2c3@gcp-sa-backupdr-pr.iam.gserviceaccount.com",
+      "revisionId": "v2",
+      "revisionName": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql/revisions/v2"
+    }
+  }
+]

@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Build configuration for `infra/deploy.sh --build`: builds infra/Dockerfile from the uploaded checkout and
+# pushes the image to the instance's own Artifact Registry repository. deploy.sh submits it as a regional build
+# that runs as the build service account it creates, with the source and the logs in a regional bucket of the
+# instance's own (docs/self-host-options.md, "What deploy.sh does"). Substitutions, all set by deploy.sh:
+#   _IMAGE        the image to build and push: REGION-docker.pkg.dev/PROJECT/REPOSITORY/gcportrait:TAG
+#   _APP_VERSION  the version the image reports (git describe of the checkout, or "local-build")
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=infra/Dockerfile
+      - --build-arg=APP_VERSION=${_APP_VERSION}
+      - --tag=${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+options:
+  # The logs go to the bucket deploy.sh names (--gcs-log-dir) and nowhere else, so the build account needs no
+  # project-wide logging role.
+  logging: GCS_ONLY
+  # A missing substitution is an error, not an empty string.
+  substitutionOption: MUST_MATCH
+timeout: 1200s

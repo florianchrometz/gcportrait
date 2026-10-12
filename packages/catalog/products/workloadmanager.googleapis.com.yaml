@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+#
+# Workload Manager: best-practice
+# evaluations, hidden by default.
+product: Workload Manager
+service: workloadmanager.googleapis.com
+icon: workload_manager
+types:
+  workloadmanager.googleapis.com/Evaluation:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.evaluationType | lower}} · {{data.schedule}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+      - { kind: uses, to: $.data.customRulesBucket, normalize: gcsUri }
+    notes: >-
+      resourceFilter.scopes names the evaluated projects, folders or organisation (a drawer fact);
+      bigQueryDestination.destinationDataset has no documented format and is not read.

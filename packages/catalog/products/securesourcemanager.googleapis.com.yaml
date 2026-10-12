@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+#
+# Secure Source Manager: a managed Git hosting instance per region. A private instance is reached through
+# Private Service Connect service attachments in a Google-managed tenant project (so those edges usually
+# dangle) and serves certificates from a CA Service pool.
+product: Secure Source Manager
+service: securesourcemanager.googleapis.com
+icon: secure_source_manager
+types:
+  securesourcemanager.googleapis.com/Instance:
+    role: core
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/security/source-manager/instances?project={{projectId}}'
+    domains:
+      - '$.data.hostConfig.*'
+      - '$.data.privateConfig.customHostConfig.*'
+    relations:
+      - { kind: uses, to: $.data.privateConfig.caPool, normalize: name, service: privateca.googleapis.com }
+      - {
+          kind: uses,
+          to: "$.data.privateConfig['httpServiceAttachment', 'sshServiceAttachment']",
+          normalize: computeRelative,
+        }
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      hostConfig lists the instance's host names (web UI, API, Git over HTTPS and SSH); a private instance
+      may add custom host names. The service attachments are the producer side of PSC, owned by a tenant
+      project; consumers reach them through their own PSC endpoints.

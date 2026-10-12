@@ -1,0 +1,21 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/imageImports/legacy-erp-disk",
+  "assetType": "vmmigration.googleapis.com/ImageImport",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/imageImports/legacy-erp-disk",
+    "cloudStorageUri": "gs://demo-ops-1-migration-staging/legacy-erp-disk.vmdk",
+    "diskImageTargetDefaults": {
+      "imageName": "legacy-erp-disk",
+      "familyName": "legacy-erp",
+      "targetProject": "projects/demo-ops-1/locations/global/targetProjects/demo-app-1"
+    },
+    "encryption": {
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/migration"
+    },
+    "createTime": "2026-07-01T08:00:00Z"
+  }
+}

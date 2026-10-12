@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: MIT
+#
+# Firebase Security Rules, part of the
+# Firebase product: a release points at the ruleset that is live for Cloud Firestore, Cloud Storage for
+# Firebase or the Realtime Database; rulesets are immutable versions and start hidden.
+product: Firebase
+service: firebaserules.googleapis.com
+icon: firebase
+types:
+  firebaserules.googleapis.com/Release:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'rules release'
+    console: 'https://console.firebase.google.com/project/{{projectId}}/overview'
+    relations:
+      - { kind: uses, to: $.data.rulesetName, normalize: name }
+    notes: >-
+      The release name says what the rules protect (projects/<p>/releases/cloud.firestore,
+      …/releases/firebase.storage/<bucket>), but no normaliser extracts a bucket or database from a release
+      name, so the seed's secures edges are not drawn; the label shows the protected bucket or service.
+
+  firebaserules.googleapis.com/Ruleset:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.metadata.services[0]}}'

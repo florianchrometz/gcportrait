@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT
+#
+# Data stores. `owns` lists the official asset types this group owns, mapped or not (exact types, or
+# <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not mapped
+# yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group data-stores
+title: Data stores
+owns:
+  - 'alloydb.googleapis.com/*'
+  - 'analyticshub.googleapis.com/*'
+  - 'bigquery.googleapis.com/*'
+  - 'bigquerydatatransfer.googleapis.com/*'
+  - 'bigquerymigration.googleapis.com/*'
+  - 'bigqueryreservation.googleapis.com/*'
+  - 'bigtableadmin.googleapis.com/*'
+  - 'file.googleapis.com/*'
+  - 'firestore.googleapis.com/*'
+  - 'lustre.googleapis.com/*'
+  - 'memcache.googleapis.com/*'
+  - 'memorystore.googleapis.com/*'
+  - 'netapp.googleapis.com/*'
+  - 'oracledatabase.googleapis.com/*'
+  - 'parallelstore.googleapis.com/*'
+  - 'redis.googleapis.com/*'
+  - 'spanner.googleapis.com/*'
+  - 'sqladmin.googleapis.com/*'
+  - 'storage.googleapis.com/*'
+types: {} # every owned type (58) is mapped in products/<service>.yaml for the 19 data-store services

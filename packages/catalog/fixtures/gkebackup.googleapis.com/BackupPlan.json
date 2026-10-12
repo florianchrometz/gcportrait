@@ -1,0 +1,37 @@
+{
+  "name": "//gkebackup.googleapis.com/projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily",
+  "assetType": "gkebackup.googleapis.com/BackupPlan",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily",
+    "uid": "00000000-0000-4000-8000-000000000164",
+    "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "retentionPolicy": {
+      "backupRetainDays": 30,
+      "backupDeleteLockDays": 7
+    },
+    "backupSchedule": {
+      "cronSchedule": "0 3 * * *"
+    },
+    "backupConfig": {
+      "allNamespaces": true,
+      "includeVolumeData": true,
+      "includeSecrets": true,
+      "encryptionKey": {
+        "gcpKmsEncryptionKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/gke-backup"
+      }
+    },
+    "protectedPodCount": 12,
+    "state": "READY",
+    "rpoRiskLevel": 1,
+    "createTime": "2025-05-01T10:00:00Z"
+  }
+}

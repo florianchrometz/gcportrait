@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud TPU. Paths follow the TPU v2 Node resource (networkConfig/networkConfigs, serviceAccount
+# object); the deprecated v1 shape (a plain `network`, `serviceAccount` as the TPU service agent's address) is
+# read by one extra rule.
+product: Cloud TPU
+service: tpu.googleapis.com
+icon: cloud_tpu
+types:
+  tpu.googleapis.com/Node:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.acceleratorType}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/compute/tpus?project={{projectId}}'
+    ips:
+      - '$.data.networkEndpoints[*].ipAddress'
+      - '$.data.networkEndpoints[*].accessConfig.externalIp'
+      - $.data.cidrBlock
+    relations:
+      - { kind: attaches, to: $.data.networkConfig.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.networkConfig.network, normalize: computeRelative, weak: true }
+      - { kind: attaches, to: '$.data.networkConfigs[*].subnetwork', normalize: computeRelative }
+      - { kind: attaches, to: '$.data.networkConfigs[*].network', normalize: computeRelative, weak: true }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: runsAs, to: $.data.serviceAccount.email, normalize: serviceAccountEmail }
+      - { kind: uses, to: '$.data.dataDisks[*].sourceDisk', normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.bootDiskConfig.customerEncryptionKey.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      v2 nodes name their network and subnetwork as `projects/<p>/global/networks/<n>` and
+      `projects/<p>/regions/<r>/subnetworks/<s>` (a bare "default" stays dangling); `networkConfig` and the
+      multi-NIC `networkConfigs` are exclusive. A v1 node (`$.data.network`, no subnetwork) lives in a
+      Google-managed network peered with the named VPC; it is drawn as attached to that VPC. The v1
+      `serviceAccount` string is the TPU service agent, not a workload identity, and is not drawn. Cloud
+      Asset Inventory names nodes with the project number (//tpu.googleapis.com/projects/PROJECT_NUMBER/…,
+      resource-name-format page); `data.name` keeps what the API returns.
+
+  tpu.googleapis.com/QueuedResource:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state.state | lower}}'
+    console: 'https://console.cloud.google.com/compute/tpus?project={{projectId}}'
+    notes: >-
+      A request for TPU capacity. It names the nodes it creates by unqualified id (`tpu.nodeSpec[*].nodeId`
+      under `nodeSpec[*].parent`), which no normaliser can join into a node name, and the reservation as
+      `projects/<p>/locations/<zone>/reservations/<r>`, which is not a Compute Engine reservation name; the
+      node's own `queuedResource` field names it back.

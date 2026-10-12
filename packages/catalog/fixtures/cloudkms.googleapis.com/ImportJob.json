@@ -1,0 +1,18 @@
+{
+  "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/importJobs/hsm-import-2026",
+  "assetType": "cloudkms.googleapis.com/ImportJob",
+  "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/importJobs/hsm-import-2026",
+    "importMethod": "RSA_OAEP_4096_SHA256",
+    "protectionLevel": "HSM",
+    "createTime": "2026-02-02T09:00:00Z",
+    "generateTime": "2026-02-02T09:00:05Z",
+    "expireTime": "2026-02-05T09:00:05Z",
+    "expireEventTime": "2026-02-05T09:00:05Z",
+    "state": "EXPIRED"
+  }
+}

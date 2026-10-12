@@ -1,0 +1,25 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events/clusters/events-c1",
+  "assetType": "bigtableadmin.googleapis.com/Cluster",
+  "parent": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events/clusters/events-c1",
+    "location": "projects/demo-data-1/locations/europe-west3-a",
+    "state": "READY",
+    "serveNodes": 3,
+    "nodeScalingFactor": "NODE_SCALING_FACTOR_1X",
+    "clusterConfig": {
+      "clusterAutoscalingConfig": {
+        "autoscalingLimits": { "minServeNodes": 2, "maxServeNodes": 6 },
+        "autoscalingTargets": { "cpuUtilizationPercent": 60 }
+      }
+    },
+    "defaultStorageType": "SSD",
+    "encryptionConfig": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/bigtable"
+    }
+  }
+}

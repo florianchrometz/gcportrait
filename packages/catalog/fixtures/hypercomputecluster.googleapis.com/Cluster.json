@@ -1,0 +1,115 @@
+{
+  "name": "//hypercomputecluster.googleapis.com/projects/demo-app-1/locations/europe-west4/clusters/hpc-train",
+  "assetType": "hypercomputecluster.googleapis.com/Cluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west4",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west4/clusters/hpc-train",
+    "description": "Training cluster",
+    "labels": {
+      "team": "ml"
+    },
+    "createTime": "2026-08-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "reconciling": false,
+    "networkResources": {
+      "net0": {
+        "config": {
+          "existingNetwork": {
+            "network": "projects/demo-app-1/global/networks/ml",
+            "subnetwork": "projects/demo-app-1/regions/europe-west4/subnetworks/hpc"
+          }
+        },
+        "network": {
+          "network": "projects/demo-app-1/global/networks/ml",
+          "subnetwork": "projects/demo-app-1/regions/europe-west4/subnetworks/hpc"
+        }
+      }
+    },
+    "storageResources": {
+      "home": {
+        "config": {
+          "existingFilestore": {
+            "filestore": "projects/demo-app-1/locations/europe-west4-b/instances/hpc-home"
+          }
+        },
+        "filestore": {
+          "filestore": "projects/demo-app-1/locations/europe-west4-b/instances/hpc-home"
+        }
+      },
+      "scratch": {
+        "config": {
+          "newLustre": {
+            "lustre": "projects/demo-app-1/locations/europe-west4-b/instances/hpc-scratch",
+            "filesystem": "scratch",
+            "capacityGb": "18000"
+          }
+        },
+        "lustre": {
+          "lustre": "projects/demo-app-1/locations/europe-west4-b/instances/hpc-scratch"
+        }
+      },
+      "datasets": {
+        "config": {
+          "existingBucket": {
+            "bucket": "demo-app-1-training-data"
+          }
+        },
+        "bucket": {
+          "bucket": "demo-app-1-training-data"
+        }
+      }
+    },
+    "computeResources": {
+      "a3": {
+        "config": {
+          "newReservedInstances": {
+            "reservation": "projects/demo-app-1/zones/europe-west4-b/reservations/a3-block"
+          }
+        }
+      }
+    },
+    "orchestrator": {
+      "slurm": {
+        "defaultPartition": "a3",
+        "nodeSets": [
+          {
+            "id": "a3",
+            "computeId": "a3",
+            "staticNodeCount": "2",
+            "maxDynamicNodeCount": "6",
+            "storageConfigs": [
+              {
+                "id": "home",
+                "localMount": "/home"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "id": "a3",
+            "nodeSetIds": ["a3"]
+          }
+        ],
+        "loginNodes": {
+          "count": "1",
+          "zone": "europe-west4-b",
+          "machineType": "n2-standard-8",
+          "instances": [
+            {
+              "instance": "projects/demo-app-1/zones/europe-west4-b/instances/hpc-train-login-001"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

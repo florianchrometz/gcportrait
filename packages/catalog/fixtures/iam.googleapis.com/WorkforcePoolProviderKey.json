@@ -1,0 +1,19 @@
+{
+  "name": "//iam.googleapis.com/locations/global/workforcePools/partners/providers/partner-oidc/keys/enc-2026",
+  "assetType": "iam.googleapis.com/WorkforcePoolProviderKey",
+  "parent": "//iam.googleapis.com/locations/global/workforcePools/partners",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-06-03T11:12:00Z",
+  "data": {
+    "name": "locations/global/workforcePools/partners/providers/partner-oidc/keys/enc-2026",
+    "keyData": {
+      "format": "RSA_X509_PEM",
+      "keySpec": "RSA_2048",
+      "notBeforeTime": "2026-06-03T11:12:00Z",
+      "notAfterTime": "2027-06-03T11:12:00Z"
+    },
+    "state": "ACTIVE",
+    "use": "ENCRYPTION"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/deployPolicies/prod-freeze",
+  "assetType": "clouddeploy.googleapis.com/DeployPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/deployPolicies/prod-freeze",
+    "uid": "9cadbecfd0e14f80a7c9d0e1f2031425",
+    "description": "No production rollouts at weekends",
+    "createTime": "2025-11-03T09:00:00Z",
+    "suspended": false,
+    "selectors": [
+      {
+        "target": {
+          "id": "shop-prod"
+        }
+      }
+    ],
+    "rules": [
+      {
+        "rolloutRestriction": {
+          "id": "weekend-freeze",
+          "actions": ["CREATE"],
+          "timeWindows": {
+            "timeZone": "Europe/Berlin",
+            "weeklyWindows": [
+              {
+                "daysOfWeek": ["SATURDAY", "SUNDAY"]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

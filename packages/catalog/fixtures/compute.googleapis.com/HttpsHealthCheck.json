@@ -1,0 +1,26 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/global/httpsHealthChecks/legacy-https-hc",
+  "assetType": "compute.googleapis.com/HttpsHealthCheck",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#httpsHealthCheck",
+    "id": "7700000000000000021",
+    "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+    "name": "legacy-https-hc",
+    "port": 443,
+    "requestPath": "/healthz",
+    "checkIntervalSec": 10,
+    "timeoutSec": 5,
+    "healthyThreshold": 2,
+    "unhealthyThreshold": 3,
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/httpsHealthChecks/legacy-https-hc"
+  }
+}

@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: MIT
+#
+# Identity Platform: the project's authentication configuration, its tenants and identity provider
+# configurations. All hidden (configuration records); the host names of authorised domains and identity
+# providers are still extracted. CAI names them with the project number (projects/<number>/config,
+# projects/<number>/tenants/<id>, …); nothing else references them by name.
+product: Identity Platform
+service: identitytoolkit.googleapis.com
+icon: identity_platform
+types:
+  identitytoolkit.googleapis.com/Config:
+    role: hidden
+    label: 'Identity Platform'
+    subtitle: '{{data.subtype | lower}}'
+    domains:
+      - '$.data.authorizedDomains[*]'
+    notes: >-
+      projects/<number>/config: sign-in methods, authorised domains, multi-tenancy, MFA. Blocking functions name
+      Cloud Run functions by URL (blockingFunctions.triggers.*.functionUri), which no normaliser maps to an
+      asset; not read. client.apiKey is a browser key value and is never read.
+
+  identitytoolkit.googleapis.com/Tenant:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: Tenants of a multi-tenant project (projects/<number>/tenants/<id>).
+
+  identitytoolkit.googleapis.com/DefaultSupportedIdpConfig:
+    role: hidden
+    notes: Built-in identity providers (google.com, apple.com, facebook.com, …), keyed by the provider's id.
+
+  identitytoolkit.googleapis.com/InboundSamlConfig:
+    role: hidden
+    label: '{{data.displayName}}'
+    domains:
+      - $.data.idpConfig.ssoUrl
+    notes: SAML identity providers (projects/<number>/inboundSamlConfigs/saml.<id>); the IdP's sign-in URL host.
+
+  identitytoolkit.googleapis.com/OauthIdpConfig:
+    role: hidden
+    label: '{{data.displayName}}'
+    domains:
+      - $.data.issuer
+    notes: >-
+      OIDC identity providers (projects/<number>/oauthIdpConfigs/oidc.<id>); the issuer's host. CAI's
+      asset-name reference lists both the oauthIdpConfigs and the oauthidpconfigs spelling.

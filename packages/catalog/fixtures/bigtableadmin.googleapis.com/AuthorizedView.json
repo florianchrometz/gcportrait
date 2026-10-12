@@ -1,0 +1,16 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events/tables/clickstream/authorizedViews/marketing",
+  "assetType": "bigtableadmin.googleapis.com/AuthorizedView",
+  "parent": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events/tables/clickstream/authorizedViews/marketing",
+    "subsetView": {
+      "rowPrefixes": ["Y2FtcGFpZ24j"],
+      "familySubsets": { "events": { "qualifierPrefixes": ["Y2xpY2s="] } }
+    },
+    "etag": "bWFya2V0aW5n",
+    "deletionProtection": false
+  }
+}

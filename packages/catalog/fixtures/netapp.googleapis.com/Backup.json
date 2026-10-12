@@ -1,0 +1,19 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/backupVaults/primary-vault/backups/shared-home-20260930",
+  "assetType": "netapp.googleapis.com/Backup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/backupVaults/primary-vault/backups/shared-home-20260930",
+    "state": "READY",
+    "volumeUsageBytes": "335007449088",
+    "backupType": "SCHEDULED",
+    "sourceVolume": "projects/demo-data-1/locations/europe-west3/volumes/shared-home",
+    "createTime": "2026-09-30T00:10:00Z",
+    "chainStorageBytes": "402653184000",
+    "volumeRegion": "projects/demo-data-1/locations/europe-west3",
+    "backupRegion": "projects/demo-data-1/locations/europe-west1"
+  }
+}

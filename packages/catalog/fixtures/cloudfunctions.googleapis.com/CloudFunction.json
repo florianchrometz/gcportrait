@@ -1,0 +1,90 @@
+[
+  {
+    "name": "//cloudfunctions.googleapis.com/projects/demo-app-1/locations/europe-west3/functions/invoice-mailer",
+    "assetType": "cloudfunctions.googleapis.com/CloudFunction",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/functions/invoice-mailer",
+      "runtime": "python311",
+      "entryPoint": "main",
+      "status": "ACTIVE",
+      "availableMemoryMb": 256,
+      "timeout": "60s",
+      "sourceArchiveUrl": "gs://demo-app-1-functions/invoice-mailer.zip",
+      "eventTrigger": {
+        "eventType": "google.pubsub.topic.publish",
+        "resource": "projects/demo-app-1/topics/invoices",
+        "service": "pubsub.googleapis.com",
+        "failurePolicy": {}
+      },
+      "serviceAccountEmail": "fn-runtime@demo-app-1.iam.gserviceaccount.com",
+      "buildServiceAccount": "projects/demo-app-1/serviceAccounts/fn-build@demo-app-1.iam.gserviceaccount.com",
+      "vpcConnector": "projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+      "vpcConnectorEgressSettings": "PRIVATE_RANGES_ONLY",
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/functions",
+      "dockerRepository": "projects/demo-app-1/locations/europe-west3/repositories/gcf-artifacts",
+      "buildWorkerPool": "projects/demo-app-1/locations/europe-west3/workerPools/private-builds",
+      "ingressSettings": "ALLOW_INTERNAL_ONLY",
+      "versionId": "7",
+      "updateTime": "2025-11-02T10:00:00Z"
+    }
+  },
+  {
+    "name": "//cloudfunctions.googleapis.com/projects/demo-app-1/locations/europe-west3/functions/upload-scanner",
+    "assetType": "cloudfunctions.googleapis.com/CloudFunction",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/functions/upload-scanner",
+      "runtime": "nodejs20",
+      "status": "ACTIVE",
+      "sourceArchiveUrl": "gs://demo-app-1-functions/upload-scanner.zip",
+      "eventTrigger": {
+        "eventType": "google.storage.object.finalize",
+        "resource": "projects/_/buckets/demo-app-1-uploads",
+        "service": "storage.googleapis.com"
+      },
+      "serviceAccountEmail": "fn-runtime@demo-app-1.iam.gserviceaccount.com",
+      "network": "projects/demo-net-1/global/networks/core"
+    }
+  },
+  {
+    "name": "//cloudfunctions.googleapis.com/projects/demo-app-1/locations/europe-west3/functions/report-api",
+    "assetType": "cloudfunctions.googleapis.com/CloudFunction",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/functions/report-api",
+      "runtime": "go122",
+      "status": "ACTIVE",
+      "sourceArchiveUrl": "gs://demo-app-1-functions/report-api.zip",
+      "httpsTrigger": {
+        "url": "https://europe-west3-demo-app-1.cloudfunctions.net/report-api",
+        "securityLevel": "SECURE_ALWAYS"
+      },
+      "serviceAccountEmail": "fn-runtime@demo-app-1.iam.gserviceaccount.com"
+    }
+  }
+]

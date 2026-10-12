@@ -1,0 +1,18 @@
+{
+  "name": "//dataproc.googleapis.com/projects/demo-data-1/regions/europe-west3/autoscalingPolicies/scale-workers",
+  "assetType": "dataproc.googleapis.com/AutoscalingPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "id": "scale-workers",
+    "name": "projects/demo-data-1/regions/europe-west3/autoscalingPolicies/scale-workers",
+    "basicAlgorithm": {
+      "yarnConfig": { "scaleUpFactor": 0.5, "scaleDownFactor": 1, "gracefulDecommissionTimeout": "3600s" },
+      "cooldownPeriod": "120s"
+    },
+    "workerConfig": { "minInstances": 2, "maxInstances": 10, "weight": 1 },
+    "secondaryWorkerConfig": { "minInstances": 0, "maxInstances": 20, "weight": 1 }
+  }
+}

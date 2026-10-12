@@ -1,0 +1,44 @@
+[
+  {
+    "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/global/networkPeerings/vmware-to-core",
+    "assetType": "vmwareengine.googleapis.com/NetworkPeering",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/global/networkPeerings/vmware-to-core",
+      "vmwareEngineNetwork": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+      "peerNetwork": "projects/demo-net-1/global/networks/core",
+      "peerNetworkType": "STANDARD",
+      "state": "ACTIVE",
+      "stateDetails": "Connected.",
+      "peerMtu": 1460,
+      "exportCustomRoutes": true,
+      "importCustomRoutes": true,
+      "exchangeSubnetRoutes": true,
+      "uid": "e0000000-0000-4000-8000-000000000014",
+      "createTime": "2026-01-21T08:00:00Z",
+      "updateTime": "2026-01-21T08:00:00Z"
+    }
+  },
+  {
+    "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/global/networkPeerings/vmware-to-dr",
+    "assetType": "vmwareengine.googleapis.com/NetworkPeering",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/global/networkPeerings/vmware-to-dr",
+      "vmwareEngineNetwork": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+      "peerNetwork": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net-dr",
+      "peerNetworkType": "VMWARE_ENGINE_NETWORK",
+      "state": "ACTIVE",
+      "exchangeSubnetRoutes": true,
+      "uid": "e0000000-0000-4000-8000-000000000015",
+      "createTime": "2026-03-01T08:00:00Z",
+      "updateTime": "2026-03-01T08:00:00Z"
+    }
+  }
+]

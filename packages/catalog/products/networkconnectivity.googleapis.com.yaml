@@ -1,0 +1,160 @@
+# SPDX-License-Identifier: MIT
+#
+# Network Connectivity: Network Connectivity Center hubs, spokes, groups and route tables, and the VPC-level
+# features served by the same API (internal ranges, policy-based routes, regional endpoints). The API names
+# resources with project numbers (projects/<number>/locations/<location>/…); the hub, group and route-table
+# children continue the hub's name and nest in it. Spokes are separate resources, often in other projects than
+# the hub, so they never nest in it (skill gcp-diagram-layout §2, rule 2): each spoke connects to its hub and
+# to the resources it links (tunnels, VLAN attachments, router appliance VMs or VPC networks).
+product: Network Connectivity
+service: networkconnectivity.googleapis.com
+icon: network_connectivity_center
+types:
+  networkconnectivity.googleapis.com/Hub:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'NCC hub · {{data.presetTopology | lower}}'
+    console: 'https://console.cloud.google.com/hybrid/hubs/list?project={{projectId}}'
+    contains:
+      - byParent: networkconnectivity.googleapis.com/Group
+      - byParent: networkconnectivity.googleapis.com/RouteTable
+      - byParent: networkconnectivity.googleapis.com/HubRoute
+    notes: >-
+      Global. Spokes point here with connects edges. data.routingVpcs is the output-only list of the VPC
+      networks behind its spokes and data.routeTables the names of its route tables; both mirror other assets'
+      own references and are not encoded again. Its children (groups, route tables, routes) are all hidden,
+      so the hub draws as a zone holding only a hidden-count badge, with its spokes' connects edges ending on
+      it. Spokes cannot nest there: the hub's data does not list them, their names do not continue the hub's
+      (projects/<number>/locations/<region>/spokes/<id>), and they are often in other projects.
+
+  networkconnectivity.googleapis.com/Spoke:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.spokeType | lower}} spoke · {{location}}'
+    console: 'https://console.cloud.google.com/hybrid/hubs/list?project={{projectId}}'
+    ips:
+      - '$.data.linkedRouterApplianceInstances.instances[*].ipAddress'
+      - '$.data.gateway.ipRangeReservations[*].ipRange'
+    relations:
+      - { kind: connects, to: $.data.hub, normalize: name }
+      - { kind: memberOf, to: $.data.group, normalize: name }
+      - { kind: connects, to: '$.data.linkedVpnTunnels.uris[*]', normalize: computeSelfLink }
+      - { kind: connects, to: '$.data.linkedInterconnectAttachments.uris[*]', normalize: computeSelfLink }
+      - {
+          kind: connects,
+          to: '$.data.linkedRouterApplianceInstances.instances[*].virtualMachine',
+          normalize: computeSelfLink,
+        }
+      - { kind: connects, to: $.data.linkedVpcNetwork.uri, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.linkedProducerVpcNetwork.network, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.linkedProducerVpcNetwork.producerNetwork, normalize: computeSelfLink }
+      - { kind: connects, to: '$.data.gateway.cloudRouters[*]', normalize: computeSelfLink }
+    notes: >-
+      Exactly one linked-resource field is set per spoke, or data.gateway for a GATEWAY spoke (data.spokeType
+      says which). A gateway spoke (NCC Gateway, regional) links no resource of its own: its output-only
+      data.gateway.cloudRouters are the Cloud Routers connected to it (connects; a router outside the
+      inventory stays a dangling reference), and data.gateway.ipRangeReservations[*].ipRange are the blocks
+      reserved for its infrastructure (indexed as ips). data.gateway.sacAttachment names a Secure Access
+      Connect attachment, which Cloud Asset Inventory does not export, so it is not encoded. VPC network links
+      are connects edges, not attaches: a spoke joins a network to the hub rather than sitting on it, and a
+      spoke may link a network of another project, which an attaches edge would misreport as a Shared VPC
+      pair. A producer VPC spoke links the consumer network (data.linkedProducerVpcNetwork.network) and the
+      service producer's network, usually in a Google-managed tenant project outside the organisation
+      (dangling). Hybrid spokes' output-only vpcNetwork fields repeat what the linked tunnels and attachments
+      already show.
+
+  networkconnectivity.googleapis.com/Group:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'spoke group · {{name | parentSegment(hubs)}}'
+    console: 'https://console.cloud.google.com/hybrid/hubs/list?project={{projectId}}'
+    notes: >-
+      A hub's spoke group (default, center, edge): nests in its hub by name; spokes point here with memberOf.
+      data.autoAccept lists the projects whose spokes join without review.
+
+  networkconnectivity.googleapis.com/RouteTable:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'route table · {{name | parentSegment(hubs)}}'
+    console: 'https://console.cloud.google.com/hybrid/hubs/list?project={{projectId}}'
+    notes: A hub's route table; nests in its hub by name and is counted there.
+
+  networkconnectivity.googleapis.com/HubRoute:
+    role: hidden
+    label: '{{data.ipCidrRange}}'
+    subtitle: '{{data.type | lower}} · {{data.location | lastSegment}}'
+    console: 'https://console.cloud.google.com/hybrid/hubs/list?project={{projectId}}'
+    ips:
+      - $.data.ipCidrRange
+    relations:
+      - { kind: routes, to: $.data.spoke, normalize: name }
+      - { kind: routes, to: $.data.nextHopVpcNetwork.uri, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopVpnTunnel.uri, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopInterconnectAttachment.uri, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopRouterApplianceInstance.uri, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopSpoke.uri, normalize: name }
+    notes: >-
+      One route of a hub route table (subnet and dynamic routes), high cardinality: hidden, counted on the hub
+      it nests in. data.spoke is the spoke it leads to, the nextHop* objects name the next hop (a Compute
+      resource URL, or for data.nextHopSpoke a spoke; when that is the same spoke as data.spoke the two
+      edges merge into one); data.location is the route's origin as projects/<p>/locations/<region>. The
+      destination range is indexed as an address, like a Compute route's destRange.
+
+  networkconnectivity.googleapis.com/InternalRange:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.ipCidrRange}} · {{data.usage | lower}}'
+    icon: virtual_private_cloud
+    console: 'https://console.cloud.google.com/networking/internal-ranges/list?project={{projectId}}'
+    ips:
+      - $.data.ipCidrRange
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+    notes: >-
+      A reserved or allocated block of the network's address space; it nests in its VPC network. data.users
+      lists the resources that take addresses from it (subnetworks, …): they are the users, so an edge from the
+      range would point the wrong way, and they are not encoded. data.migration names the source and target
+      of a subnet migration and is not drawn either. The API reference accepts data.network as a URL, as
+      projects/<p>/locations/global/networks/<n> or as a bare network name. Only the Compute spellings
+      without locations/global (…/projects/<p>/global/networks/<n>, as in the fixture) resolve:
+      computeSelfLink keeps a locations/global step (a dangling name) and drops a bare name, and such a range
+      stays in its project. Which spelling the API echoes back needs a real export to confirm.
+
+  networkconnectivity.googleapis.com/PolicyBasedRoute:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.filter.srcRange}} · {{data.filter.destRange}} · priority {{data.priority}}'
+    icon: cloud_routes
+    console: 'https://console.cloud.google.com/networking/routes/list?project={{projectId}}'
+    ips:
+      - $.data.nextHopIlbIp
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+    notes: >-
+      Global; nests in its VPC network. The next hop is an internal passthrough load balancer named only by
+      its address (data.nextHopIlbIp, matched to the forwarding rule through ips) or the default routing
+      (data.nextHopOtherRoutes). The route applies to instances by network tags (data.virtualMachine.tags) or to
+      the VLAN attachments of a region (data.interconnectAttachment.region): neither names an asset. The
+      filter's source and destination ranges are match criteria (0.0.0.0/0 by default), like a VPN tunnel's
+      traffic selectors: the subtitle shows them, but they are not indexed as addresses.
+
+  networkconnectivity.googleapis.com/RegionalEndpoint:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.targetGoogleApi}} · {{data.accessType | lower}}'
+    icon: private_service_connect
+    console: 'https://console.cloud.google.com/net-services/psc?project={{projectId}}'
+    ips:
+      - $.data.address
+      - $.data.ipAddress
+    domains:
+      - $.data.targetGoogleApi
+    relations:
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+      - { kind: uses, to: $.data.pscForwardingRule, normalize: computeSelfLink }
+    notes: >-
+      A private regional endpoint for a Google API (a regional Private Service Connect endpoint); it nests in
+      its subnetwork, the network edge yielding to it. data.ipAddress is the deprecated spelling of
+      data.address, which may also hold an address resource URI (then no ip is read). data.pscForwardingRule
+      is the Compute forwarding rule created for it, as a full resource name.

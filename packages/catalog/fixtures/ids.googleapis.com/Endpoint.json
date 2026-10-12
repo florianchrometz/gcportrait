@@ -1,0 +1,25 @@
+{
+  "name": "//ids.googleapis.com/projects/demo-net-1/locations/europe-west3-a/endpoints/core-ids",
+  "assetType": "ids.googleapis.com/Endpoint",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3-a",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-net-1/locations/europe-west3-a/endpoints/core-ids",
+    "createTime": "2025-06-01T09:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+    "endpointForwardingRule": "https://www.googleapis.com/compute/v1/projects/a1b2c3d4e5f6a7b8-tp/regions/europe-west3/forwardingRules/ids-fr-core-ids-0a1b2c",
+    "endpointIp": "10.20.255.10",
+    "description": "IDS for the core VPC",
+    "severity": "MEDIUM",
+    "state": "READY",
+    "trafficLogs": true
+  }
+}

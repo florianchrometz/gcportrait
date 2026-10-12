@@ -1,0 +1,96 @@
+[
+  {
+    "name": "//monitoring.googleapis.com/projects/10000000002/uptimeCheckConfigs/shop-home-a1b2c3",
+    "assetType": "monitoring.googleapis.com/UptimeCheckConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/uptimeCheckConfigs/shop-home-a1b2c3",
+      "displayName": "Shop home page",
+      "monitoredResource": {
+        "type": "uptime_url",
+        "labels": {
+          "project_id": "demo-app-1",
+          "host": "shop.example.com"
+        }
+      },
+      "httpCheck": {
+        "requestMethod": "GET",
+        "useSsl": true,
+        "validateSsl": true,
+        "path": "/",
+        "port": 443
+      },
+      "period": "60s",
+      "timeout": "10s",
+      "checkerType": "STATIC_IP_CHECKERS",
+      "selectedRegions": ["EUROPE", "USA"]
+    }
+  },
+  {
+    "name": "//monitoring.googleapis.com/projects/10000000002/uptimeCheckConfigs/checkout-journey-d4e5f6",
+    "assetType": "monitoring.googleapis.com/UptimeCheckConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/uptimeCheckConfigs/checkout-journey-d4e5f6",
+      "displayName": "Checkout journey",
+      "syntheticMonitor": {
+        "cloudFunctionV2": {
+          "name": "projects/demo-app-1/locations/europe-west3/functions/checkout-journey"
+        }
+      },
+      "period": "300s",
+      "timeout": "60s"
+    }
+  },
+  {
+    "name": "//monitoring.googleapis.com/projects/10000000002/uptimeCheckConfigs/edge-vip-b7c8d9",
+    "assetType": "monitoring.googleapis.com/UptimeCheckConfig",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/uptimeCheckConfigs/edge-vip-b7c8d9",
+      "displayName": "Edge VIP",
+      "monitoredResource": {
+        "type": "uptime_url",
+        "labels": {
+          "project_id": "demo-app-1",
+          "host": "203.0.113.10"
+        }
+      },
+      "httpCheck": {
+        "requestMethod": "GET",
+        "useSsl": true,
+        "validateSsl": true,
+        "path": "/healthz",
+        "port": 443
+      },
+      "period": "60s",
+      "timeout": "10s",
+      "checkerType": "STATIC_IP_CHECKERS",
+      "selectedRegions": ["EUROPE", "USA"]
+    }
+  }
+]

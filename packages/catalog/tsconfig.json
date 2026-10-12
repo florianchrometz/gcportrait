@@ -1,0 +1,7 @@
+{
+  // Solution file of the package. Two projects keep the runtime honest: src/ is the library the app, its
+  // workers and the graph builder import, and is checked without Node's types, so it cannot reach for Node
+  // APIs; tooling/ holds the Node command-line tools (build, check) and the tests that read the data files.
+  "files": [],
+  "references": [{ "path": "./tsconfig.lib.json" }, { "path": "./tsconfig.tooling.json" }]
+}

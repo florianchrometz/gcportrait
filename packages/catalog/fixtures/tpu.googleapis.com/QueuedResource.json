@@ -1,0 +1,36 @@
+{
+  "name": "//tpu.googleapis.com/projects/demo-app-1/locations/europe-west4-a/queuedResources/train-v5e-request",
+  "assetType": "tpu.googleapis.com/QueuedResource",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west4-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west4-a/queuedResources/train-v5e-request",
+    "createTime": "2026-09-15T07:30:00Z",
+    "tpu": {
+      "nodeSpec": [
+        {
+          "parent": "projects/demo-app-1/locations/europe-west4-a",
+          "nodeId": "train-v5e",
+          "node": {
+            "acceleratorType": "v5litepod-8",
+            "runtimeVersion": "v2-alpha-tpuv5-lite"
+          }
+        }
+      ]
+    },
+    "state": {
+      "state": "ACTIVE",
+      "activeData": {}
+    },
+    "queueingPolicy": {
+      "validUntilDuration": "86400s"
+    }
+  }
+}

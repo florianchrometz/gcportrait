@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: MIT
+#
+# Backup and DR Service: a backup vault
+# holds one data source per protected resource and their backups; a backup plan stores into a vault, and a
+# backup plan association applies a plan to a VM, disk, Cloud SQL instance, AlloyDB cluster or Filestore
+# instance. The management server (backup appliance console) peers with a VPC.
+product: Backup and DR Service
+service: backupdr.googleapis.com
+icon: backup_and_dr
+types:
+  backupdr.googleapis.com/BackupVault:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{location}} · {{data.backupCount | plural(backup)}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+    contains:
+      - byParent: backupdr.googleapis.com/DataSource
+      - byParent: backupdr.googleapis.com/Backup
+    notes: >-
+      Data sources and backups nest in the vault by name. serviceAccount is the vault's Google-managed service
+      agent (no edge); accessRestriction and the lock (effectiveTime) are badges.
+
+  backupdr.googleapis.com/DataSource:
+    role: core
+    label: '{{data.dataSourceGcpResource.gcpResourcename | lastSegment}}'
+    subtitle: '{{data.dataSourceGcpResource.type}} · {{data.backupCount | plural(backup)}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data[?(@.type in ['compute.googleapis.com/Instance', 'compute.googleapis.com/Disk', 'compute.googleapis.com/RegionDisk'])].gcpResourcename",
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: "$.data[?(@.type == 'sqladmin.googleapis.com/Instance')].gcpResourcename",
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: uses,
+          to: "$.data[?(@.type == 'alloydb.googleapis.com/Cluster')].gcpResourcename",
+          normalize: name,
+          service: alloydb.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data[?(@.type == 'file.googleapis.com/Instance')].gcpResourcename",
+          normalize: name,
+          service: file.googleapis.com,
+        }
+    notes: >-
+      The protected resource is dataSourceGcpResource.gcpResourcename, a relative path whose service follows
+      from dataSourceGcpResource.type, hence one rule per type family (the filter keeps the
+      dataSourceGcpResource object of the matching type). Backup appliance applications
+      (dataSourceBackupApplianceApplication) name no asset.
+
+  backupdr.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.backupType | lower}} · {{data.consistencyTime}}'
+
+  backupdr.googleapis.com/BackupPlan:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.resourceType}}'
+    relations:
+      - { kind: uses, to: $.data.backupVault, normalize: name }
+    notes: >-
+      backupVault is projects/<p>/locations/<l>/backupVaults/<v>, often in a central backup project; the
+      plan's backup rules (schedules, retention) are drawer facts.
+
+  backupdr.googleapis.com/BackupPlanAssociation:
+    role: core
+    label: '{{data.resource | lastSegment}}'
+    subtitle: '{{data.resourceType}}'
+    relations:
+      - {
+          kind: secures,
+          to: "$[?(@.resourceType in ['compute.googleapis.com/Instance', 'compute.googleapis.com/Disk', 'compute.googleapis.com/RegionDisk'])].resource",
+          normalize: computeRelative,
+        }
+      - {
+          kind: secures,
+          to: "$[?(@.resourceType == 'sqladmin.googleapis.com/Instance')].resource",
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: secures,
+          to: "$[?(@.resourceType == 'alloydb.googleapis.com/Cluster')].resource",
+          normalize: name,
+          service: alloydb.googleapis.com,
+        }
+      - {
+          kind: secures,
+          to: "$[?(@.resourceType == 'file.googleapis.com/Instance')].resource",
+          normalize: name,
+          service: file.googleapis.com,
+        }
+      - { kind: uses, to: $.data.backupPlan, normalize: name }
+      - { kind: uses, to: $.data.dataSource, normalize: name }
+    notes: >-
+      Lives in the protected resource's project. resource is the protected workload as a relative path
+      (projects/<p>/zones/<z>/instances/<i>) or a full name (//compute.googleapis.com/…); the filters on the
+      asset root keep data only when its resourceType matches, so each rule reads one type family. The
+      association secures its resource (the policy → target direction of `secures`, skill gcp-asset-catalog §4), uses its plan and stores
+      into its data source in the vault.
+
+  backupdr.googleapis.com/BackupPlanRevision:
+    role: hidden
+    label: '{{name | parentSegment(backupPlans)}} {{data.revisionId}}'
+    subtitle: '{{data.state | lower}}'
+
+  backupdr.googleapis.com/DataSourceReference:
+    role: hidden
+    label: '{{data.dataSourceGcpResourceInfo.gcpResourcename | lastSegment}}'
+    subtitle: '{{data.dataSourceGcpResourceInfo.type}}'
+    relations:
+      - { kind: uses, to: $.data.dataSource, normalize: name }
+    notes: A read-only pointer in the resource's project to the data source in the vault.
+
+  backupdr.googleapis.com/ManagementServer:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} · {{location}}'
+    domains:
+      - $.data.managementUri.webUi
+      - $.data.managementUri.api
+    relations:
+      - { kind: attaches, to: '$.data.networks[*].network', normalize: computeRelative }
+    notes: >-
+      The backup/recovery appliance management console, connected to one VPC through private services access
+      (networks[*].peeringMode); managementUri points at its web UI and API on googleusercontent.com.

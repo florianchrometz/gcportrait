@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MIT
+#
+# Document AI. A processor is a zone that holds its processor versions and its human review config,
+# nested by name (projects/<number>/locations/<us|eu>/processors/<p>/processorVersions/<v>, …/humanReviewConfig);
+# both are hidden and count on the processor's badge. Asset names carry the project number.
+product: Document AI
+service: documentai.googleapis.com
+icon: document_ai
+types:
+  documentai.googleapis.com/Processor:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type | lower}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/ai/document-ai/processors?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    contains:
+      - byParent: documentai.googleapis.com/ProcessorVersion
+      - byParent: documentai.googleapis.com/HumanReviewConfig
+    notes: >-
+      type is the processor kind (FORM_PARSER_PROCESSOR, INVOICE_PROCESSOR, CUSTOM_EXTRACTION_PROCESSOR, …).
+      processEndpoint is the regional googleapis.com URL every processor of the location shares, so it is not
+      indexed as a domain; defaultProcessorVersion names one of the nested versions.
+
+  documentai.googleapis.com/ProcessorVersion:
+    role: hidden
+    label: '{{data.displayName}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      A trained or Google-managed (googleManaged) version of its processor; custom versions carry their own
+      CMEK key.
+
+  documentai.googleapis.com/HumanReviewConfig:
+    role: hidden
+    notes: >-
+      The processor's human-in-the-loop review settings, a singleton under the processor; the REST reference
+      publishes no data for it.
+
+  documentai.googleapis.com/LabelerPool:
+    role: hidden
+    notes: >-
+      A pool of human labelers for review (projects/<number>/locations/<l>/labelerPools/<p>), from the beta
+      API whose reference is no longer published; no field is read.

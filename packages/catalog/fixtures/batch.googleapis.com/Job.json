@@ -1,0 +1,130 @@
+[
+  {
+    "name": "//batch.googleapis.com/projects/demo-data-1/locations/europe-west3/jobs/nightly-etl-20261008",
+    "assetType": "batch.googleapis.com/Job",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/jobs/nightly-etl-20261008",
+      "uid": "nightly-etl-20261008-c0de",
+      "priority": "0",
+      "status": {
+        "state": "RUNNING",
+        "runDuration": "1800s"
+      },
+      "createTime": "2026-10-08T01:00:00Z",
+      "updateTime": "2026-10-08T01:30:00Z",
+      "taskGroups": [
+        {
+          "name": "projects/10000000003/locations/europe-west3/jobs/nightly-etl-20261008/taskGroups/group0",
+          "taskCount": "20",
+          "parallelism": "5",
+          "taskSpec": {
+            "runnables": [
+              {
+                "container": {
+                  "imageUri": "europe-west3-docker.pkg.dev/demo-data-1/batch/etl:1.4.0",
+                  "commands": ["--date", "2026-10-07"]
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "gcs": {
+                  "remotePath": "demo-data-1-landing/exports"
+                },
+                "mountPath": "/mnt/landing"
+              }
+            ],
+            "computeResource": {
+              "cpuMilli": "2000",
+              "memoryMib": "4096"
+            },
+            "maxRetryCount": 2
+          }
+        }
+      ],
+      "allocationPolicy": {
+        "location": {
+          "allowedLocations": ["regions/europe-west3"]
+        },
+        "instances": [
+          {
+            "policy": {
+              "machineType": "e2-standard-4",
+              "provisioningModel": "SPOT"
+            }
+          }
+        ],
+        "serviceAccount": {
+          "email": "batch-etl@demo-data-1.iam.gserviceaccount.com"
+        },
+        "network": {
+          "networkInterfaces": [
+            {
+              "network": "projects/demo-net-1/global/networks/core",
+              "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+              "noExternalIpAddress": true
+            }
+          ]
+        }
+      },
+      "notifications": [
+        {
+          "pubsubTopic": "projects/demo-data-1/topics/batch-events",
+          "message": {
+            "type": "JOB_STATE_CHANGED"
+          }
+        }
+      ],
+      "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+      }
+    }
+  },
+  {
+    "name": "//batch.googleapis.com/projects/demo-data-1/locations/europe-west3/jobs/render-20261007",
+    "assetType": "batch.googleapis.com/Job",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/jobs/render-20261007",
+      "uid": "render-20261007-c0de",
+      "priority": "0",
+      "status": {
+        "state": "SUCCEEDED",
+        "runDuration": "1800s"
+      },
+      "createTime": "2026-10-08T01:00:00Z",
+      "updateTime": "2026-10-08T01:30:00Z",
+      "taskGroups": [
+        {
+          "taskCount": "4",
+          "taskSpec": {
+            "runnables": [
+              {
+                "script": {
+                  "text": "echo render"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "allocationPolicy": {
+        "instances": [
+          {
+            "instanceTemplate": "projects/demo-data-1/global/instanceTemplates/batch-render"
+          }
+        ]
+      },
+      "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+      }
+    }
+  }
+]

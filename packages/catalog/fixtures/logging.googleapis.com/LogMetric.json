@@ -1,0 +1,83 @@
+[
+  {
+    "name": "//logging.googleapis.com/projects/10000000002/metrics/checkout_errors",
+    "assetType": "logging.googleapis.com/LogMetric",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "checkout_errors",
+      "resourceName": "projects/demo-app-1/metrics/checkout_errors",
+      "description": "Failed checkouts",
+      "filter": "resource.type=\"cloud_run_revision\" AND jsonPayload.event=\"checkout_failed\"",
+      "metricDescriptor": {
+        "name": "projects/demo-app-1/metricDescriptors/logging.googleapis.com/user/checkout_errors",
+        "type": "logging.googleapis.com/user/checkout_errors",
+        "metricKind": "DELTA",
+        "valueType": "INT64",
+        "unit": "1"
+      },
+      "createTime": "2025-04-01T08:00:00Z",
+      "updateTime": "2026-08-01T08:00:00Z"
+    }
+  },
+  {
+    "name": "//logging.googleapis.com/projects/10000000005/metrics/denied_requests",
+    "assetType": "logging.googleapis.com/LogMetric",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "denied_requests",
+      "resourceName": "projects/demo-ops-1/metrics/denied_requests",
+      "description": "Permission denied in the central bucket",
+      "filter": "protoPayload.status.code=7",
+      "bucketName": "projects/demo-ops-1/locations/europe-west3/buckets/central",
+      "metricDescriptor": {
+        "name": "projects/demo-ops-1/metricDescriptors/logging.googleapis.com/user/denied_requests",
+        "type": "logging.googleapis.com/user/denied_requests",
+        "metricKind": "DELTA",
+        "valueType": "INT64",
+        "unit": "1"
+      },
+      "createTime": "2025-04-01T08:00:00Z",
+      "updateTime": "2026-08-01T08:00:00Z"
+    }
+  },
+  {
+    "name": "//logging.googleapis.com/projects/10000000002/metrics/legacy_timeouts",
+    "assetType": "logging.googleapis.com/LogMetric",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "legacy_timeouts",
+      "resourceName": "projects/demo-app-1/metrics/legacy_timeouts",
+      "description": "Timeouts of the retired API",
+      "filter": "textPayload:\"deadline exceeded\"",
+      "disabled": true,
+      "metricDescriptor": {
+        "name": "projects/demo-app-1/metricDescriptors/logging.googleapis.com/user/legacy_timeouts",
+        "type": "logging.googleapis.com/user/legacy_timeouts",
+        "metricKind": "DELTA",
+        "valueType": "INT64",
+        "unit": "1"
+      },
+      "createTime": "2025-04-01T08:00:00Z",
+      "updateTime": "2026-08-01T08:00:00Z"
+    }
+  }
+]

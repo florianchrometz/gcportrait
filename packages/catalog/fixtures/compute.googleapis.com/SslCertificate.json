@@ -1,0 +1,57 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/sslCertificates/cert-shop-example-org",
+    "assetType": "compute.googleapis.com/SslCertificate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#sslCertificate",
+      "id": "7800000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "cert-shop-example-org",
+      "type": "MANAGED",
+      "managed": {
+        "domains": ["shop.example.org", "www.shop.example.org"],
+        "status": "ACTIVE",
+        "domainStatus": {
+          "shop.example.org": "ACTIVE",
+          "www.shop.example.org": "ACTIVE"
+        }
+      },
+      "subjectAlternativeNames": ["shop.example.org", "www.shop.example.org"],
+      "expireTime": "2027-01-05T10:00:00.000-08:00",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslCertificates/cert-shop-example-org"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/sslCertificates/cert-ledger-example-org",
+    "assetType": "compute.googleapis.com/SslCertificate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#sslCertificate",
+      "id": "7800000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "cert-ledger-example-org",
+      "type": "SELF_MANAGED",
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUZGVtby1sZWRnZXItY2VydA==\n-----END CERTIFICATE-----\n",
+      "subjectAlternativeNames": ["ledger.example.org"],
+      "expireTime": "2027-06-30T23:59:59.000-07:00",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslCertificates/cert-ledger-example-org"
+    }
+  }
+]

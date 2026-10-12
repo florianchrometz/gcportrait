@@ -1,0 +1,51 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/targetSslProxies/ledger-ssl-proxy",
+    "assetType": "compute.googleapis.com/TargetSslProxy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetSslProxy",
+      "id": "7200000000000000031",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "ledger-ssl-proxy",
+      "service": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/ledger-ssl",
+      "sslCertificates": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslCertificates/cert-ledger-example-org"
+      ],
+      "sslPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/sslPolicies/tls12-modern",
+      "proxyHeader": "NONE",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetSslProxies/ledger-ssl-proxy"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/targetSslProxies/ledger-ssl-proxy-cm",
+    "assetType": "compute.googleapis.com/TargetSslProxy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetSslProxy",
+      "id": "7200000000000000032",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "ledger-ssl-proxy-cm",
+      "service": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/ledger-ssl",
+      "certificateMap": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/global/certificateMaps/storefront",
+      "proxyHeader": "PROXY_V1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetSslProxies/ledger-ssl-proxy-cm"
+    }
+  }
+]

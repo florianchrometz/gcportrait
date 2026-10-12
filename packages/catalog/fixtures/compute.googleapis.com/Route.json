@@ -1,0 +1,177 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/extranet-via-ilb-prod",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000101",
+      "name": "extranet-via-ilb-prod",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Partner extranet through the inspection tier",
+      "destRange": "172.24.0.0/16",
+      "priority": 900,
+      "routeType": "STATIC",
+      "nextHopIlb": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-inspection",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/extranet-via-ilb-prod"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/lab-via-appliance",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000102",
+      "name": "lab-via-appliance",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Lab range behind the network virtual appliance",
+      "destRange": "192.168.50.0/24",
+      "priority": 800,
+      "routeType": "STATIC",
+      "tags": ["egress-nva"],
+      "nextHopInstance": "https://www.googleapis.com/compute/v1/projects/demo-net-1/zones/europe-west3-a/instances/nva-1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/lab-via-appliance"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/corp-via-vpn",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000103",
+      "name": "corp-via-vpn",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Fallback to the data centre over the classic VPN tunnel",
+      "destRange": "172.20.0.0/16",
+      "priority": 1100,
+      "routeType": "STATIC",
+      "nextHopVpnTunnel": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-dc1-0",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/corp-via-vpn"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/l2-ica-dc1-europe-west3-2",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000104",
+      "name": "l2-ica-dc1-europe-west3-2",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Static route of the L2 VLAN attachment",
+      "destRange": "172.21.0.0/24",
+      "priority": 1000,
+      "routeType": "STATIC",
+      "nextHopInterconnectAttachment": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-2",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/l2-ica-dc1-europe-west3-2"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/ncc-spoke-shared",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000105",
+      "name": "ncc-spoke-shared",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Spoke range learned through the Network Connectivity Center hub",
+      "destRange": "10.200.0.0/16",
+      "priority": 1000,
+      "nextHopHub": "//networkconnectivity.googleapis.com/projects/demo-net-1/locations/global/hubs/core-hub",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/ncc-spoke-shared"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/default-route-3f9a1c2b7d4e5f60",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000106",
+      "name": "default-route-3f9a1c2b7d4e5f60",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Default route to the Internet.",
+      "destRange": "0.0.0.0/0",
+      "priority": 1000,
+      "routeType": "STATIC",
+      "nextHopGateway": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/gateways/default-internet-gateway",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/default-route-3f9a1c2b7d4e5f60"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/routes/default-route-8e7d6c5b4a392817",
+    "assetType": "compute.googleapis.com/Route",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-14T10:00:00Z",
+    "data": {
+      "kind": "compute#route",
+      "id": "5000000000000000107",
+      "name": "default-route-8e7d6c5b4a392817",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "description": "Default local route to the subnetwork 10.10.0.0/20.",
+      "destRange": "10.10.0.0/20",
+      "priority": 0,
+      "routeType": "SUBNET",
+      "nextHopNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/routes/default-route-8e7d6c5b4a392817"
+    }
+  }
+]

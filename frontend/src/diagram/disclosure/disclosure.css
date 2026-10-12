@@ -1,0 +1,41 @@
+/* SPDX-License-Identifier: MIT */
+
+/*
+ * The collapse affordance of an open zone (CollapseButton.tsx), in the interactive canvas only. Its
+ * face (a ⊟ glyph on a plate over the header icon) shows while the pointer is on the zone or on the button, and
+ * on keyboard focus; the face is always there to take the pointer, so pointing at the header icon of a zone
+ * shows the button under the pointer before it can be clicked. Keyboard focus fills the plate in the canvas's
+ * focus colour (--dg-focus: light #185ABC, dark #8AB4F8) with the glyph in the canvas colour (6.51 : 1 light,
+ * 7.82 dark, as the console action), its own indicator: the painter draws no ring around a zone. The focused
+ * plate keeps a 2 px canvas-coloured rim, as the focus ring sits between canvas gaps: on the light project
+ * tint the plate sits on the focus colour reaches 3.78 : 1 (the chrome's primary, used before, only 2.62), on the
+ * rim 6.51. Colours through the --dg-* tokens, so both themes follow.
+ */
+.dg-collapse {
+  cursor: pointer;
+  outline: none;
+}
+
+.dg-collapse-face {
+  opacity: 0;
+}
+
+.dg-zone:hover > .dg-collapse > .dg-collapse-face,
+.dg-collapse:hover > .dg-collapse-face,
+.dg-collapse:focus-visible > .dg-collapse-face {
+  opacity: 1;
+}
+
+.dg-collapse:hover .dg-collapse-plate {
+  stroke-width: 1.5px;
+}
+
+.dg-collapse:focus-visible .dg-collapse-plate {
+  fill: var(--dg-focus);
+  stroke: var(--dg-canvas);
+  stroke-width: 2px;
+}
+
+.dg-collapse:focus-visible .dg-collapse-glyph {
+  stroke: var(--dg-canvas);
+}

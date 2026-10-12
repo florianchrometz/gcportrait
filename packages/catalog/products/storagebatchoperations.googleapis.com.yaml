@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+#
+# Storage Batch Operations API: one-off jobs that apply one transformation (delete, hold, metadata,
+# rewrite with a new key, ACLs, contexts) to many objects of a bucket. A Cloud Storage feature, it shares the
+# Cloud Storage icon. Jobs are operational records, so they are hidden by default.
+product: Storage Batch Operations API
+service: storagebatchoperations.googleapis.com
+icon: cloud_storage
+types:
+  storagebatchoperations.googleapis.com/Job:
+    role: hidden
+    subtitle: '{{data.state | lower}} · {{data.description}}'
+    relations:
+      - { kind: uses, to: '$.data.bucketList.buckets[*].bucket', normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.rewriteObject.kmsKey, normalize: kmsKey }
+    notes: >-
+      bucketList.buckets names the bucket whose objects are transformed (one per job); a rewriteObject job
+      re-encrypts the objects with kmsKey. A job over a whole project (projectSource) has no bucket.

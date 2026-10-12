@@ -1,0 +1,20 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/migratingVms/vm-1042/cloneJobs/clone-20260915",
+  "assetType": "vmmigration.googleapis.com/CloneJob",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/migratingVms/vm-1042/cloneJobs/clone-20260915",
+    "state": "SUCCEEDED",
+    "stateTime": "2026-09-15T09:00:00Z",
+    "createTime": "2026-09-15T08:00:00Z",
+    "endTime": "2026-09-15T09:00:00Z",
+    "computeEngineTargetDetails": {
+      "vmName": "erp-app-01-test",
+      "project": "projects/demo-app-1",
+      "zone": "europe-west3-a"
+    }
+  }
+}

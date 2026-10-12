@@ -1,0 +1,151 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-a",
+    "assetType": "compute.googleapis.com/InterconnectAttachment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#interconnectAttachment",
+      "id": "5000000000000000211",
+      "name": "ica-fra-1-a",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "description": "VLAN attachment on ic-fra-1, availability domain 1",
+      "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+      "type": "DEDICATED",
+      "interconnect": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnects/ic-fra-1",
+      "router": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3",
+      "vlanTag8021q": 1001,
+      "bandwidth": "BPS_10G",
+      "edgeAvailabilityDomain": "AVAILABILITY_DOMAIN_1",
+      "cloudRouterIpAddress": "169.254.10.1/29",
+      "customerRouterIpAddress": "169.254.10.2/29",
+      "stackType": "IPV4_IPV6",
+      "cloudRouterIpv6Address": "2001:db8:10::1/125",
+      "customerRouterIpv6Address": "2001:db8:10::2/125",
+      "adminEnabled": true,
+      "state": "ACTIVE",
+      "operationalStatus": "OS_ACTIVE",
+      "mtu": 1440,
+      "encryption": "NONE",
+      "dataplaneVersion": 2,
+      "googleReferenceId": "1000000000000000211",
+      "privateInterconnectInfo": {
+        "tag8021q": 1001
+      },
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-a"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-partner-a",
+    "assetType": "compute.googleapis.com/InterconnectAttachment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#interconnectAttachment",
+      "id": "5000000000000000212",
+      "name": "ica-partner-a",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "description": "Partner VLAN attachment carrying HA VPN (IPsec) to the branch network",
+      "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+      "type": "PARTNER",
+      "router": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3-hybrid",
+      "pairingKey": "00000000-0000-4000-8000-000000000001/europe-west3/1",
+      "partnerMetadata": {
+        "partnerName": "Example Carrier",
+        "interconnectName": "EX-FRA-01",
+        "portalUrl": "https://portal.example.com/attachments/0001"
+      },
+      "partnerAsn": "65030",
+      "vlanTag8021q": 2001,
+      "bandwidth": "BPS_1G",
+      "edgeAvailabilityDomain": "AVAILABILITY_DOMAIN_1",
+      "cloudRouterIpAddress": "169.254.20.1/29",
+      "customerRouterIpAddress": "169.254.20.2/29",
+      "stackType": "IPV4_ONLY",
+      "encryption": "IPSEC",
+      "ipsecInternalAddresses": [
+        "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/addresses/ica-ipsec-range"
+      ],
+      "adminEnabled": true,
+      "state": "ACTIVE",
+      "operationalStatus": "OS_ACTIVE",
+      "mtu": 1440,
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-partner-a"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-l2",
+    "assetType": "compute.googleapis.com/InterconnectAttachment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#interconnectAttachment",
+      "id": "5000000000000000213",
+      "name": "ica-fra-1-l2",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "description": "L2 VLAN attachment on ic-fra-1 forwarding the data centre's VLANs to the edge appliances",
+      "creationTimestamp": "2025-06-01T09:00:00.000-07:00",
+      "type": "L2_DEDICATED",
+      "interconnect": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnects/ic-fra-1",
+      "vlanTag8021q": 1101,
+      "bandwidth": "BPS_10G",
+      "edgeAvailabilityDomain": "AVAILABILITY_DOMAIN_1",
+      "l2Forwarding": {
+        "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "tunnelEndpointIpAddress": "10.10.0.60",
+        "defaultApplianceIpAddress": "10.10.0.61",
+        "applianceMappings": {
+          "300": {
+            "name": "erp-vlan",
+            "applianceIpAddress": "10.10.0.62",
+            "innerVlanToApplianceMappings": [
+              {
+                "innerVlanTags": ["100", "200-210"],
+                "innerApplianceIpAddress": "10.10.0.63"
+              }
+            ]
+          },
+          "400-410": {
+            "name": "lab-vlans",
+            "applianceIpAddress": "10.10.0.64"
+          }
+        },
+        "geneveHeader": {
+          "vni": 5001
+        }
+      },
+      "adminEnabled": true,
+      "state": "ACTIVE",
+      "operationalStatus": "OS_ACTIVE",
+      "googleReferenceId": "1000000000000000213",
+      "privateInterconnectInfo": {
+        "tag8021q": 1101
+      },
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-l2"
+    }
+  }
+]

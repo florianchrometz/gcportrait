@@ -1,0 +1,32 @@
+{
+  "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/fleets/default",
+  "assetType": "gkehub.googleapis.com/Fleet",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/global/fleets/default",
+    "displayName": "Shop fleet",
+    "uid": "00000000-0000-4000-8000-000000000144",
+    "createTime": "2025-03-01T10:00:00Z",
+    "updateTime": "2026-06-01T10:00:00Z",
+    "state": {
+      "code": "READY"
+    },
+    "defaultClusterConfig": {
+      "securityPostureConfig": {
+        "mode": "BASIC",
+        "vulnerabilityMode": "VULNERABILITY_BASIC"
+      },
+      "binaryAuthorizationConfig": {
+        "evaluationMode": "DISABLED"
+      }
+    }
+  }
+}

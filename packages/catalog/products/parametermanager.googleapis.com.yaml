@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+#
+# Parameter Manager: parameters (configuration documents, optionally CMEK-encrypted) and their
+# versions. CAI names them with the project id (projects/<id>/locations/<l>/parameters/<p>), unlike Secret
+# Manager. The product is part of Secret Manager and uses its icon. Version payloads may reference secrets
+# (__REF__(//secretmanager.googleapis.com/…)), but payloads are not part of the asset, so those references are
+# not read.
+product: Parameter Manager
+service: parametermanager.googleapis.com
+icon: secret_manager
+types:
+  parametermanager.googleapis.com/Parameter:
+    role: core
+    subtitle: '{{data.format | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/security/parameter-manager?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      projects/<id>/locations/<l>/parameters/<parameter>; kmsKey is a key in the parameter's location. policyMember is
+      the parameter's own IAM principal, not a reference. The console link opens the product page (the deep
+      link shape of a single parameter is not verified).
+
+  parametermanager.googleapis.com/ParameterVersion:
+    role: hidden
+    label: '{{name | parentSegment(parameters)}} · {{name | lastSegment}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyVersion, normalize: kmsKey }
+    notes: kmsKeyVersion is the key version that encrypted the payload (CMEK parameters only); resolved to its key.

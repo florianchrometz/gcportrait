@@ -1,0 +1,64 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop",
+    "assetType": "k8s.io/Namespace",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "shop",
+        "uid": "00000000-0000-4000-8000-000000000001",
+        "creationTimestamp": "2025-03-01T10:00:00Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "shop"
+        }
+      },
+      "spec": {
+        "finalizers": ["kubernetes"]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    }
+  },
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/kube-system",
+    "assetType": "k8s.io/Namespace",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "kube-system",
+        "uid": "00000000-0000-4000-8000-000000000002",
+        "creationTimestamp": "2025-03-01T10:00:00Z",
+        "labels": {
+          "kubernetes.io/metadata.name": "kube-system"
+        }
+      },
+      "spec": {
+        "finalizers": ["kubernetes"]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    }
+  }
+]

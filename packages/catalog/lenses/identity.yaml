@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: MIT
+#
+# The Identity lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# runsAs is drawn in this lens only (skill gcp-asset-catalog §4), so every visible type with a runsAs rule is
+# listed (the list comes from the compiled catalog: role not hidden, at least one runsAs relation). `secures`
+# shows IAM policy bindings on workload identity pools and resources.
+title: Identity
+description: >-
+  Service accounts, workload and workforce identity, and which workloads run as which identity.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  # Identities
+  - 'iam.googleapis.com/*'
+  - 'identitytoolkit.googleapis.com/*'
+  - 'managedidentities.googleapis.com/*'
+  - 'privilegedaccessmanager.googleapis.com/*'
+  - 'agentidentity.googleapis.com/*'
+  - 'apikeys.googleapis.com/*'
+  - 'beyondcorp.googleapis.com/AppConnector'
+  # Workloads that run as an identity (runsAs)
+  - 'aiplatform.googleapis.com/DeploymentResourcePool'
+  - 'aiplatform.googleapis.com/Endpoint'
+  - 'aiplatform.googleapis.com/FeatureGroup'
+  - 'aiplatform.googleapis.com/ReasoningEngine'
+  - 'apigateway.googleapis.com/ApiConfig'
+  - 'appengine.googleapis.com/Application'
+  - 'appengine.googleapis.com/Version'
+  - 'batch.googleapis.com/Job'
+  - 'bigquerydatatransfer.googleapis.com/TransferConfig'
+  - 'cloudbuild.googleapis.com/BuildTrigger'
+  - 'clouddeploy.googleapis.com/Automation'
+  - 'clouddeploy.googleapis.com/Target'
+  - 'cloudfunctions.googleapis.com/*'
+  - 'cloudtasks.googleapis.com/Queue'
+  - 'composer.googleapis.com/Environment'
+  - 'compute.googleapis.com/Instance'
+  - 'compute.googleapis.com/InstanceTemplate'
+  - 'config.googleapis.com/Deployment'
+  - 'connectors.googleapis.com/Connection'
+  - 'container.googleapis.com/Cluster'
+  - 'container.googleapis.com/NodePool'
+  - 'dataflow.googleapis.com/Job'
+  - 'dataform.googleapis.com/Repository'
+  - 'dataform.googleapis.com/WorkflowConfig'
+  - 'datafusion.googleapis.com/Instance'
+  - 'dataplex.googleapis.com/Task'
+  - 'dataproc.googleapis.com/Cluster'
+  - 'eventarc.googleapis.com/Pipeline'
+  - 'eventarc.googleapis.com/Trigger'
+  - 'k8s.io/ServiceAccount'
+  - 'logging.googleapis.com/LogSink'
+  - 'notebooks.googleapis.com/Instance'
+  - 'pubsub.googleapis.com/Subscription'
+  - 'pubsub.googleapis.com/Topic'
+  - 'run.googleapis.com/Job'
+  - 'run.googleapis.com/Service'
+  - 'run.googleapis.com/WorkerPool'
+  - 'storagetransfer.googleapis.com/TransferJob'
+  - 'tpu.googleapis.com/Node'
+  - 'workflows.googleapis.com/Workflow'
+  - 'workstations.googleapis.com/WorkstationConfig'
+relationKinds: [contains, runsAs, uses, memberOf, secures]
+showHidden: false
+defaultDetail: projects

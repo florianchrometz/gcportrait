@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: MIT
+#
+# Chrome Enterprise Premium (formerly BeyondCorp Enterprise), app connectors: an app connection
+# publishes a remote application endpoint through an app gateway, served by one or more app connectors that
+# run next to the application and act as a service account. The client connector types (ClientConnectorService,
+# ClientGateway) belong to the client connector, shut down on 2023-12-31, and stay unmapped.
+product: Chrome Enterprise Premium
+service: beyondcorp.googleapis.com
+icon: beyondcorp
+types:
+  beyondcorp.googleapis.com/AppConnector:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/security/beyondcorp/connectors?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.principalInfo.serviceAccount.email, normalize: serviceAccountEmail }
+    notes: >-
+      The connector's identity (principalInfo.serviceAccount.email). Its VM or remote agent reports in
+      resourceInfo, which names no asset.
+
+  beyondcorp.googleapis.com/AppConnection:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.applicationEndpoint.host}}'
+    console: 'https://console.cloud.google.com/security/beyondcorp/connectors?project={{projectId}}'
+    ips:
+      - $.data.applicationEndpoint.host
+    domains:
+      - $.data.applicationEndpoint.host
+    relations:
+      - { kind: uses, to: '$.data.connectors[*]', normalize: name }
+      - { kind: uses, to: $.data.gateway.appGateway, normalize: name }
+    notes: >-
+      applicationEndpoint.host is a host name or an IP address (each path keeps its own kind). connectors name
+      app connectors and gateway.appGateway the app gateway as projects/<p>/locations/<l>/…; the API reference
+      spells the gateway collection appgateways in its format string, while gateways are named
+      …/appGateways/<id>, so a value written that way stays dangling. gateway.uri and gateway.l7psc are
+      output-only gateway endpoints, not assets.
+
+  beyondcorp.googleapis.com/AppGateway:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.hostType | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/security/beyondcorp/connectors?project={{projectId}}'
+    domains:
+      - $.data.uri
+    notes: >-
+      Referenced by app connections. uri (output only, server-defined; the reference documents it only as a
+      URI) contributes its host to the domain index and search. allocatedConnections[*].pscUri names a Private
+      Service Connect endpoint in Google's tenant project, which is no asset of the organisation and no host
+      name, so it is not read.

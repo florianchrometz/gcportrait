@@ -1,0 +1,24 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/units/acme-retail-shop",
+  "assetType": "saasservicemgmt.googleapis.com/Unit",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/units/acme-retail-shop",
+    "unitKind": "projects/demo-ops-1/locations/global/unitKinds/shop-stack",
+    "release": "projects/demo-ops-1/locations/global/releases/shop-stack-v12",
+    "tenant": "projects/demo-ops-1/locations/global/tenants/acme-retail",
+    "dependencies": [
+      {
+        "alias": "network",
+        "unit": "projects/demo-ops-1/locations/global/units/acme-retail-network"
+      }
+    ],
+    "state": "UNIT_STATE_READY",
+    "managementMode": "MANAGEMENT_MODE_SYSTEM",
+    "uid": "8f9a0b1c-2d3e-4f4a-9b5c-d6e7f8a9b0c1",
+    "createTime": "2026-02-10T09:30:00Z"
+  }
+}

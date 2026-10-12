@@ -1,0 +1,19 @@
+{
+  "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/routines/net_amount",
+  "assetType": "bigquery.googleapis.com/Routine",
+  "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "etag": "c2FsZXMtbmV0",
+    "routineReference": { "projectId": "demo-data-1", "datasetId": "sales", "routineId": "net_amount" },
+    "routineType": "SCALAR_FUNCTION",
+    "language": "SQL",
+    "arguments": [{ "name": "gross", "dataType": { "typeKind": "NUMERIC" } }],
+    "returnType": { "typeKind": "NUMERIC" },
+    "definitionBody": "gross / 1.19",
+    "creationTime": "1715000000000",
+    "lastModifiedTime": "1715000000000"
+  }
+}

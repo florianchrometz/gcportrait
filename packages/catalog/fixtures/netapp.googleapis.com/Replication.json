@@ -1,0 +1,19 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/volumes/shared-home/replications/to-west1",
+  "assetType": "netapp.googleapis.com/Replication",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/volumes/shared-home/replications/to-west1",
+    "state": "READY",
+    "role": "SOURCE",
+    "replicationSchedule": "HOURLY",
+    "mirrorState": "MIRRORED",
+    "healthy": true,
+    "createTime": "2025-04-03T09:00:00Z",
+    "destinationVolume": "projects/demo-data-1/locations/europe-west1/volumes/shared-home-dr",
+    "sourceVolume": "projects/demo-data-1/locations/europe-west3/volumes/shared-home"
+  }
+}

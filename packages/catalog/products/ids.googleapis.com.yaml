@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Intrusion Detection System: IDS endpoints. Each endpoint is attached to a VPC network and
+# receives mirrored traffic through an internal load balancer forwarding rule that Google creates in a tenant
+# project; a packet mirroring policy in the customer network names that forwarding rule as its collector.
+product: Cloud Intrusion Detection System
+service: ids.googleapis.com
+icon: cloud_ids
+types:
+  ids.googleapis.com/Endpoint:
+    role: core
+    subtitle: '{{data.severity | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/net-security/ids/endpoints?project={{projectId}}'
+    ips:
+      - $.data.endpointIp
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - { kind: uses, to: $.data.endpointForwardingRule, normalize: computeSelfLink }
+    notes: >-
+      projects/<p>/locations/<zone>/endpoints/<id>. network is the fully qualified URL of the VPC network;
+      the endpoint nests in it when both are in one project. endpointForwardingRule is the collector's
+      forwarding rule URL, in a Google tenant project: it is drawn as uses, not the seed's routes, because
+      mirrored traffic flows from that rule to the endpoint and routes would point the other way; it usually
+      stays dangling, but packet mirroring policies resolve to the same name. severity is the minimum alert
+      severity. The console link shape is not verified.

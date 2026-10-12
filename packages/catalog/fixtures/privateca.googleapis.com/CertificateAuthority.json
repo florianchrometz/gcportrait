@@ -1,0 +1,96 @@
+[
+  {
+    "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca",
+    "assetType": "privateca.googleapis.com/CertificateAuthority",
+    "parent": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/root-pool",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca",
+      "type": "SELF_SIGNED",
+      "config": {
+        "subjectConfig": {
+          "subject": {
+            "commonName": "example.com Root CA",
+            "organization": "Example Corp"
+          }
+        },
+        "x509Config": {
+          "caOptions": {
+            "isCa": true
+          }
+        }
+      },
+      "lifetime": "315360000s",
+      "keySpec": {
+        "cloudKmsKeyVersion": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-root/cryptoKeyVersions/1"
+      },
+      "tier": "ENTERPRISE",
+      "state": "ENABLED",
+      "gcsBucket": "demo-sec-1-ca-artifacts",
+      "accessUrls": {
+        "caCertificateAccessUrl": "https://storage.googleapis.com/demo-sec-1-ca-artifacts/root-ca/ca.crt"
+      },
+      "createTime": "2024-01-10T09:00:00Z",
+      "updateTime": "2024-01-10T09:00:00Z",
+      "expireTime": "2034-01-07T09:00:00Z"
+    }
+  },
+  {
+    "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/internal-pool/certificateAuthorities/internal-ca-1",
+    "assetType": "privateca.googleapis.com/CertificateAuthority",
+    "parent": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/internal-pool",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/caPools/internal-pool/certificateAuthorities/internal-ca-1",
+      "type": "SUBORDINATE",
+      "config": {
+        "subjectConfig": {
+          "subject": {
+            "commonName": "example.com Internal CA 1",
+            "organization": "Example Corp"
+          }
+        }
+      },
+      "lifetime": "157680000s",
+      "keySpec": {
+        "algorithm": "EC_P256_SHA256"
+      },
+      "subordinateConfig": {
+        "certificateAuthority": "projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca"
+      },
+      "tier": "ENTERPRISE",
+      "state": "ENABLED",
+      "createTime": "2024-01-10T10:00:00Z",
+      "updateTime": "2024-01-10T10:00:00Z",
+      "expireTime": "2029-01-08T10:00:00Z"
+    }
+  },
+  {
+    "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/internal-pool/certificateAuthorities/internal-ca-0",
+    "assetType": "privateca.googleapis.com/CertificateAuthority",
+    "parent": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/internal-pool",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/caPools/internal-pool/certificateAuthorities/internal-ca-0",
+      "type": "SUBORDINATE",
+      "keySpec": {
+        "algorithm": "RSA_PKCS1_2048_SHA256"
+      },
+      "subordinateConfig": {
+        "certificateAuthority": "projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca"
+      },
+      "tier": "ENTERPRISE",
+      "state": "DELETED",
+      "createTime": "2022-03-01T10:00:00Z",
+      "updateTime": "2026-09-20T10:00:00Z",
+      "deleteTime": "2026-09-20T10:00:00Z",
+      "expireTime": "2026-10-20T10:00:00Z"
+    }
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/global/publicAdvertisedPrefixes/byoip-v4",
+  "assetType": "compute.googleapis.com/PublicAdvertisedPrefix",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#publicAdvertisedPrefix",
+    "id": "5000000000000000126",
+    "name": "byoip-v4",
+    "description": "The organisation's own /24, advertised by Google",
+    "ipCidrRange": "203.0.113.0/24",
+    "dnsVerificationIp": "203.0.113.1",
+    "status": "ANNOUNCED_TO_INTERNET",
+    "pdpScope": "GLOBAL_AND_REGIONAL",
+    "byoipApiVersion": "V2",
+    "publicDelegatedPrefixs": [
+      {
+        "name": "byoip-v4-global",
+        "project": "10000000001",
+        "ipRange": "203.0.113.0/25",
+        "status": "ANNOUNCED"
+      },
+      {
+        "name": "byoip-v4-europe-west3",
+        "project": "10000000001",
+        "region": "europe-west3",
+        "ipRange": "203.0.113.128/26",
+        "status": "ANNOUNCED"
+      }
+    ],
+    "fingerprint": "sE5f8KxZ3hQ=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/publicAdvertisedPrefixes/byoip-v4"
+  }
+}

@@ -1,0 +1,104 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The sign-in surfaces (src/auth/ and the top bar's AccountMenu). App chrome tokens only (skill
+   gcp-diagram-style §9), so both themes follow; desktop only. The filled primary button and the alert come from
+   the snapshots' sheet (the Connect page's other primary action, "Try the demo", looks the same). */
+
+.stack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.note {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+/* A secondary action: outlined on the surface (text: light 16.1 : 1, dark 13.9 : 1). */
+.secondary {
+  height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.secondary:hover {
+  background: var(--color-surface-container);
+}
+
+/* The account's letter in a circle: primary fill, on-primary text (light 4.51 : 1, dark 6.12 : 1). Decorative:
+   the email next to it names the account. */
+.avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+}
+
+.avatarLarge {
+  width: 40px;
+  height: 40px;
+  font-size: var(--font-size-title);
+}
+
+/* The top bar's slot: the avatar beside the account menu's button. */
+.slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  width: 320px;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.accountName {
+  font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+/* "(ends 14:32)" after the account's name in the menu button when the renewal needs a click; words, not colour. */
+.badge {
+  color: var(--color-on-surface-variant);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.fieldLabel {
+  font-weight: var(--font-weight-medium);
+}
+
+.code {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-control);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,4 @@
+{
+  "$comment": "Accepted npm advisories for scripts/check-audit.mjs (docs/security.md, 'Dependency audit'). Each entry: id (GHSA-... or npm's numeric id), package, reason (why it does not affect gcportrait, or why there is no fix yet), added and expires (YYYY-MM-DD, at most 90 days apart). An expired entry no longer counts.",
+  "advisories": []
+}

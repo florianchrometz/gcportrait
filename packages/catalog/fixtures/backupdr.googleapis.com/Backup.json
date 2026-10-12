@@ -1,0 +1,24 @@
+{
+  "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-web-7k2p/backups/b-20261001-0300",
+  "assetType": "backupdr.googleapis.com/Backup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-web-7k2p/backups/b-20261001-0300",
+    "createTime": "2026-10-01T03:00:00Z",
+    "updateTime": "2026-10-01T03:20:00Z",
+    "enforcedRetentionEndTime": "2026-10-08T03:00:00Z",
+    "expireTime": "2026-10-15T03:00:00Z",
+    "consistencyTime": "2026-10-01T03:00:00Z",
+    "etag": "b-1",
+    "state": "ACTIVE",
+    "backupType": "SCHEDULED",
+    "gcpBackupPlanInfo": {
+      "backupPlan": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm",
+      "backupPlanRuleId": "daily"
+    },
+    "resourceSizeBytes": "21474836480"
+  }
+}

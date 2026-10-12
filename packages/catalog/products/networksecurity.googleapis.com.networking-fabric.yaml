@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Next Generation Firewall Enterprise (networking fabric): zonal firewall endpoints, their
+# associations with VPC networks, security profiles and profile groups (applied by firewall policy rules), address
+# groups and TLS inspection policies. networksecurity.googleapis.com is shared by product: this group's
+# Network Security Integration and DNS Armor types are in networksecurity.googleapis.com.networking-fabric-*.yaml,
+# the Secure Web Proxy, Cloud Load Balancing and Cloud Service Mesh types belong to load-balancing-edge.
+#
+# Firewall endpoints, security profiles, profile groups and address groups may live under the organization
+# (organizations/<n>/locations/<l>/…) or a project; references to them are relative names in this service.
+product: Cloud Next Generation Firewall Enterprise
+service: networksecurity.googleapis.com
+icon: cloud_firewall_rules
+types:
+  networksecurity.googleapis.com/FirewallEndpoint:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'firewall endpoint · {{location}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/net-security/firewall-endpoints/list?organizationId={{name | parentSegment(organizations)}}'
+    notes: >-
+      A zonal Cloud NGFW Enterprise endpoint, usually created under the organization and billed to
+      data.billingProjectId; it nests in its organization (or project) by parent. VPC networks reach it through
+      firewall endpoint associations, which draw the edges; data.associations repeats them and is not read twice.
+
+  networksecurity.googleapis.com/FirewallEndpointAssociation:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{location}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/net-security/firewall-endpoints/list?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: uses, to: $.data.firewallEndpoint, normalize: name }
+      - { kind: uses, to: $.data.tlsInspectionPolicy, normalize: name }
+    notes: >-
+      Connects one VPC network to a zonal firewall endpoint, so it nests in that network. A disabled association
+      (data.disabled) stays visible: it is a gap in inspection worth seeing.
+
+  networksecurity.googleapis.com/SecurityProfileGroup:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.description | short(48)}}'
+    console: 'https://console.cloud.google.com/net-security/security-profile-groups/list?organizationId={{name | parentSegment(organizations)}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data['threatPreventionProfile','urlFilteringProfile','customMirroringProfile','customInterceptProfile','wildfireAnalysisProfile']",
+          normalize: name,
+        }
+    notes: >-
+      Bundles one security profile per kind; firewall policy rules (action apply_security_profile_group or mirror)
+      name the group, which draws the edge from the policy.
+
+  networksecurity.googleapis.com/SecurityProfile:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}}'
+    console: 'https://console.cloud.google.com/net-security/security-profiles/list?organizationId={{name | parentSegment(organizations)}}'
+    relations:
+      - { kind: uses, to: $.data.customInterceptProfile.interceptEndpointGroup, normalize: name }
+      - { kind: uses, to: $.data.customMirroringProfile.mirroringEndpointGroup, normalize: name }
+    notes: >-
+      One profile type each (data.type): threat prevention, URL filtering and WildFire analysis are settings;
+      custom intercept and custom mirroring profiles send matched traffic to a Network Security Integration
+      endpoint group (uses edges).
+
+  networksecurity.googleapis.com/AddressGroup:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type}} · capacity {{data.capacity}}'
+    console: 'https://console.cloud.google.com/net-security/addressgroups/list?project={{projectId}}'
+    ips:
+      - '$.data.items[*]'
+    notes: >-
+      A named list of addresses and ranges, organization- or project-level, matched by firewall policy rules
+      (srcAddressGroups, destAddressGroups) and Cloud Armor; those rules draw the edges. Cloud Asset Inventory
+      names project-level groups with the project number.
+
+  networksecurity.googleapis.com/TlsInspectionPolicy:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.minTlsVersion | lower}} · {{location}}'
+    relations:
+      - { kind: uses, to: $.data.caPool, normalize: name, service: privateca.googleapis.com }
+      - { kind: uses, to: $.data.trustConfig, normalize: name, service: certificatemanager.googleapis.com }
+    notes: >-
+      Decrypts inspected TLS with certificates issued from a Certificate Authority Service pool (caPool) and
+      validates upstream servers against a Certificate Manager trust config. Used by firewall endpoint
+      associations and by Secure Web Proxy gateways.

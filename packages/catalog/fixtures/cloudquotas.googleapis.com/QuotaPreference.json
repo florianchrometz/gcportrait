@@ -1,0 +1,31 @@
+{
+  "name": "//cloudquotas.googleapis.com/projects/demo-app-1/locations/global/quotaPreferences/cpus-europe-west3",
+  "assetType": "cloudquotas.googleapis.com/QuotaPreference",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/global/quotaPreferences/cpus-europe-west3",
+    "service": "compute.googleapis.com",
+    "quotaId": "CPUS-per-project-region",
+    "dimensions": {
+      "region": "europe-west3"
+    },
+    "quotaConfig": {
+      "preferredValue": "200",
+      "grantedValue": "200",
+      "requestOrigin": "CLOUD_CONSOLE"
+    },
+    "justification": "Seasonal peak",
+    "etag": "q1w2e3",
+    "createTime": "2026-09-01T08:00:00Z",
+    "updateTime": "2026-09-02T08:00:00Z",
+    "reconciling": false
+  }
+}

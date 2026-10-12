@@ -1,0 +1,41 @@
+[
+  {
+    "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/metadataJobs/import-partner-20261001",
+    "assetType": "dataplex.googleapis.com/MetadataJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T03:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/metadataJobs/import-partner-20261001",
+      "type": "IMPORT",
+      "importSpec": {
+        "sourceStorageUri": "gs://demo-data-1-catalog-import/partner/",
+        "scope": {
+          "entryGroups": ["projects/demo-data-1/locations/europe-west3/entryGroups/partner-systems"],
+          "entryTypes": ["projects/demo-data-1/locations/europe-west3/entryTypes/partner-table"]
+        },
+        "entrySyncMode": "FULL",
+        "aspectSyncMode": "INCREMENTAL"
+      },
+      "status": { "state": "SUCCEEDED", "completionPercent": 100 }
+    }
+  },
+  {
+    "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/metadataJobs/export-weekly-20260928",
+    "assetType": "dataplex.googleapis.com/MetadataJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-28T03:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/metadataJobs/export-weekly-20260928",
+      "type": "EXPORT",
+      "exportSpec": {
+        "outputPath": "gs://demo-data-1-catalog-export/",
+        "scope": { "projects": ["projects/demo-data-1"] }
+      },
+      "status": { "state": "SUCCEEDED" }
+    }
+  }
+]

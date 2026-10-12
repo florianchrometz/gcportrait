@@ -1,0 +1,413 @@
+[
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/3",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "compute"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/storage",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/storage",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/storage/cryptoKeyVersions/2",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "storage"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/sql",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/sql",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/sql/cryptoKeyVersions/2",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "HSM",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "HSM",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "sql"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/run",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/run",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/run/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "run"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/secrets",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/secrets",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/secrets/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "secret-manager"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/params",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/params",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/params/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "parameter-manager"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-pool",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-pool",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-pool/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "certificate-authority-service"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-root",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-root",
+      "purpose": "ASYMMETRIC_SIGN",
+      "createTime": "2024-02-12T09:00:00Z",
+      "versionTemplate": {
+        "protectionLevel": "HSM",
+        "algorithm": "EC_SIGN_P384_SHA384"
+      },
+      "destroyScheduledDuration": "2592000s"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/attestor",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/attestor",
+      "purpose": "ASYMMETRIC_SIGN",
+      "createTime": "2024-02-12T09:00:00Z",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "EC_SIGN_P256_SHA256"
+      },
+      "destroyScheduledDuration": "2592000s"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/hr-records",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/hr-records",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/hr-records/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "EXTERNAL_VPC",
+        "algorithm": "EXTERNAL_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "versionTemplate": {
+        "protectionLevel": "EXTERNAL_VPC",
+        "algorithm": "EXTERNAL_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "cryptoKeyBackend": "projects/demo-sec-1/locations/europe-west3/ekmConnections/onprem-ekm"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/payroll",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/payroll",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/payroll/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "EXTERNAL",
+        "algorithm": "EXTERNAL_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "versionTemplate": {
+        "protectionLevel": "EXTERNAL",
+        "algorithm": "EXTERNAL_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/secret-manager",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/secret-manager",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/secret-manager/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/scc",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/scc",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/scc/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "SOFTWARE",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s",
+      "labels": {
+        "purpose": "security-command-center"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/approvals",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/global/keyRings/global",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/approvals",
+      "purpose": "ASYMMETRIC_SIGN",
+      "createTime": "2024-02-12T09:00:00Z",
+      "versionTemplate": {
+        "protectionLevel": "HSM",
+        "algorithm": "EC_SIGN_P256_SHA256"
+      },
+      "destroyScheduledDuration": "2592000s"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/autokey/cryptoKeys/storage-bucket-7c1e2f",
+    "assetType": "cloudkms.googleapis.com/CryptoKey",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/autokey",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/autokey/cryptoKeys/storage-bucket-7c1e2f",
+      "primary": {
+        "name": "projects/demo-sec-1/locations/europe-west3/keyRings/autokey/cryptoKeys/storage-bucket-7c1e2f/cryptoKeyVersions/1",
+        "state": "ENABLED",
+        "createTime": "2026-07-03T08:00:00Z",
+        "protectionLevel": "HSM",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+        "generateTime": "2026-07-03T08:00:00Z"
+      },
+      "purpose": "ENCRYPT_DECRYPT",
+      "createTime": "2024-02-12T09:00:00Z",
+      "nextRotationTime": "2026-10-01T08:00:00Z",
+      "rotationPeriod": "7776000s",
+      "versionTemplate": {
+        "protectionLevel": "HSM",
+        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION"
+      },
+      "destroyScheduledDuration": "2592000s"
+    }
+  }
+]

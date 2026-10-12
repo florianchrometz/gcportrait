@@ -1,0 +1,244 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p",
+    "assetType": "compute.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#instance",
+      "id": "7100000000000000001",
+      "name": "web-7k2p",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "machineType": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/machineTypes/e2-standard-4",
+      "status": "RUNNING",
+      "hostname": "web-7k2p.app.example.com",
+      "networkInterfaces": [
+        {
+          "kind": "compute#networkInterface",
+          "name": "nic0",
+          "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+          "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "networkIP": "10.10.0.12",
+          "stackType": "IPV4_IPV6",
+          "ipv6Address": "2001:db8:10:0:0:1:0:12",
+          "aliasIpRanges": [
+            {
+              "ipCidrRange": "10.10.8.0/28"
+            }
+          ],
+          "accessConfigs": [
+            {
+              "kind": "compute#accessConfig",
+              "type": "ONE_TO_ONE_NAT",
+              "name": "External NAT",
+              "natIP": "203.0.113.10",
+              "networkTier": "PREMIUM"
+            }
+          ],
+          "ipv6AccessConfigs": [
+            {
+              "kind": "compute#accessConfig",
+              "type": "DIRECT_IPV6",
+              "name": "external-ipv6",
+              "externalIpv6": "2001:db8:20:0:0:1:0:12",
+              "externalIpv6PrefixLength": 96,
+              "networkTier": "PREMIUM"
+            }
+          ]
+        }
+      ],
+      "disks": [
+        {
+          "kind": "compute#attachedDisk",
+          "type": "PERSISTENT",
+          "mode": "READ_WRITE",
+          "boot": true,
+          "autoDelete": true,
+          "deviceName": "persistent-disk-0",
+          "index": 0,
+          "interface": "SCSI",
+          "source": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/web-7k2p",
+          "diskSizeGb": "20",
+          "diskEncryptionKey": {
+            "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+          }
+        }
+      ],
+      "metadata": {
+        "kind": "compute#metadata",
+        "items": [
+          {
+            "key": "instance-template",
+            "value": "projects/10000000002/global/instanceTemplates/web-v12"
+          },
+          {
+            "key": "created-by",
+            "value": "projects/10000000002/zones/europe-west3-a/instanceGroupManagers/web"
+          }
+        ]
+      },
+      "serviceAccounts": [
+        {
+          "email": "vm-web@demo-app-1.iam.gserviceaccount.com",
+          "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        }
+      ],
+      "resourcePolicies": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/resourcePolicies/web-weekday-hours"
+      ],
+      "scheduling": {
+        "onHostMaintenance": "MIGRATE",
+        "automaticRestart": true,
+        "preemptible": false,
+        "provisioningModel": "STANDARD"
+      },
+      "labels": {
+        "app": "web",
+        "env": "prod"
+      },
+      "creationTimestamp": "2026-07-01T09:00:00.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instances/egress-appliance-1",
+    "assetType": "compute.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#instance",
+      "id": "7100000000000000002",
+      "name": "egress-appliance-1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/egress-appliance-1",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "machineType": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/machineTypes/n2-standard-8",
+      "status": "TERMINATED",
+      "canIpForward": true,
+      "sourceMachineImage": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/machineImages/egress-appliance-golden",
+      "instanceEncryptionKey": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+      },
+      "networkInterfaces": [
+        {
+          "kind": "compute#networkInterface",
+          "name": "nic0",
+          "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+          "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "networkIP": "10.10.0.40",
+          "stackType": "IPV4_ONLY"
+        },
+        {
+          "kind": "compute#networkInterface",
+          "name": "nic1",
+          "networkAttachment": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/networkAttachments/partner-psc",
+          "networkIP": "10.14.0.5",
+          "stackType": "IPV4_ONLY"
+        }
+      ],
+      "disks": [
+        {
+          "kind": "compute#attachedDisk",
+          "type": "PERSISTENT",
+          "mode": "READ_WRITE",
+          "boot": true,
+          "source": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/egress-appliance-1",
+          "deviceName": "boot"
+        }
+      ],
+      "serviceAccounts": [
+        {
+          "email": "appliance@demo-app-1.iam.gserviceaccount.com",
+          "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        }
+      ],
+      "scheduling": {
+        "onHostMaintenance": "MIGRATE",
+        "automaticRestart": true,
+        "preemptible": false
+      },
+      "lastStopTimestamp": "2026-09-30T18:00:00.000-07:00",
+      "creationTimestamp": "2026-03-12T10:00:00.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instances/licensed-db-1",
+    "assetType": "compute.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#instance",
+      "id": "7100000000000000003",
+      "name": "licensed-db-1",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/licensed-db-1",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "machineType": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/machineTypes/n2-highmem-16",
+      "status": "RUNNING",
+      "canIpForward": false,
+      "networkInterfaces": [
+        {
+          "kind": "compute#networkInterface",
+          "name": "nic0",
+          "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+          "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "networkIP": "10.10.0.41",
+          "stackType": "IPV4_ONLY"
+        }
+      ],
+      "disks": [
+        {
+          "kind": "compute#attachedDisk",
+          "type": "PERSISTENT",
+          "mode": "READ_WRITE",
+          "boot": true,
+          "source": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/licensed-db-1",
+          "deviceName": "boot"
+        }
+      ],
+      "serviceAccounts": [
+        {
+          "email": "licensed-db@demo-app-1.iam.gserviceaccount.com",
+          "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        }
+      ],
+      "scheduling": {
+        "onHostMaintenance": "MIGRATE",
+        "automaticRestart": true,
+        "preemptible": false,
+        "nodeAffinities": [
+          {
+            "key": "compute.googleapis.com/node-group-name",
+            "operator": "IN",
+            "values": ["licensed-db"]
+          },
+          {
+            "key": "compute.googleapis.com/node-group-name",
+            "operator": "NOT_IN",
+            "values": ["batch-nodes"]
+          }
+        ]
+      },
+      "creationTimestamp": "2026-04-02T10:00:00.000-07:00"
+    }
+  }
+]

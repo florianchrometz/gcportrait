@@ -1,0 +1,46 @@
+[
+  {
+    "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001/accessLevels/corp_network",
+    "assetType": "identity.accesscontextmanager.googleapis.com/AccessLevel",
+    "parent": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-05-02T08:10:00Z",
+    "data": {
+      "name": "accessPolicies/40000000001/accessLevels/corp_network",
+      "title": "corp_network",
+      "description": "Requests from the corporate egress range",
+      "basic": {
+        "conditions": [{ "ipSubnetworks": ["203.0.113.0/24"] }],
+        "combiningFunction": "AND"
+      }
+    }
+  },
+  {
+    "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001/accessLevels/corp_or_core_vpc",
+    "assetType": "identity.accesscontextmanager.googleapis.com/AccessLevel",
+    "parent": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-08-20T14:00:00Z",
+    "data": {
+      "name": "accessPolicies/40000000001/accessLevels/corp_or_core_vpc",
+      "title": "corp_or_core_vpc",
+      "description": "The corporate range, or the core VPC's application subnets",
+      "basic": {
+        "conditions": [
+          { "requiredAccessLevels": ["accessPolicies/40000000001/accessLevels/corp_network"] },
+          {
+            "vpcNetworkSources": [
+              {
+                "vpcSubnetwork": {
+                  "network": "//compute.googleapis.com/projects/demo-net-1/global/networks/core",
+                  "vpcIpSubnetworks": ["10.20.0.0/16"]
+                }
+              }
+            ]
+          }
+        ],
+        "combiningFunction": "OR"
+      }
+    }
+  }
+]

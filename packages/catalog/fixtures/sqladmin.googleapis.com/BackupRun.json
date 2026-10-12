@@ -1,0 +1,23 @@
+{
+  "name": "//cloudsql.googleapis.com/projects/demo-data-1/instances/orders-db/backupRuns/1727827200000",
+  "assetType": "sqladmin.googleapis.com/BackupRun",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-02T02:20:00Z",
+  "data": {
+    "kind": "sql#backupRun",
+    "id": "1727827200000",
+    "instance": "orders-db",
+    "status": "SUCCESSFUL",
+    "type": "AUTOMATED",
+    "backupKind": "SNAPSHOT",
+    "enqueuedTime": "2026-10-02T02:00:00Z",
+    "startTime": "2026-10-02T02:00:05Z",
+    "endTime": "2026-10-02T02:18:40Z",
+    "windowStartTime": "2026-10-02T02:00:00Z",
+    "location": "europe-west3",
+    "databaseVersion": "POSTGRES_16",
+    "selfLink": "https://sqladmin.googleapis.com/sql/v1beta4/projects/demo-data-1/instances/orders-db/backupRuns/1727827200000"
+  }
+}

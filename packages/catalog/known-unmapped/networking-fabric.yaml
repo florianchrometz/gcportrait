@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: MIT
+#
+# Networking fabric. `owns` lists the official asset types this group owns, mapped or not (exact types, or
+# <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not mapped
+# yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group networking-fabric
+# Services you share with other groups get files named after this group (no plain products/<service>.yaml):
+# products/compute.googleapis.com.networking-fabric.yaml (it holds the seeded network and
+# subnetwork) and products/networksecurity.googleapis.com.networking-fabric.yaml.
+#
+# compute.googleapis.com is split by the catalog seed's sections (networking fabric, hybrid connectivity, load
+# balancing, compute), except CrossSiteNetwork and WireGroup: the seed lists them under networking fabric, but
+# Cross-Site Interconnect belongs to hybrid-connectivity, which owns them; networksecurity.googleapis.com by
+# product (NGFW Enterprise, Network Security Integration and DNS Armor here; Secure Web Proxy, Cloud Load
+# Balancing and Cloud Service Mesh types in load-balancing-edge).
+title: Networking fabric
+owns:
+  - compute.googleapis.com/Address
+  - compute.googleapis.com/Firewall
+  - compute.googleapis.com/FirewallPolicy
+  - compute.googleapis.com/GlobalAddress
+  - compute.googleapis.com/Network
+  - compute.googleapis.com/NetworkAttachment
+  - compute.googleapis.com/NetworkEdgeSecurityService
+  - compute.googleapis.com/PacketMirroring
+  - compute.googleapis.com/PublicAdvertisedPrefix
+  - compute.googleapis.com/PublicDelegatedPrefix
+  - compute.googleapis.com/Route
+  - compute.googleapis.com/Router
+  - compute.googleapis.com/ServiceAttachment
+  - compute.googleapis.com/Subnetwork
+  - 'networkmanagement.googleapis.com/*'
+  - networksecurity.googleapis.com/AddressGroup
+  - networksecurity.googleapis.com/DnsThreatDetector
+  - networksecurity.googleapis.com/FirewallEndpoint
+  - networksecurity.googleapis.com/FirewallEndpointAssociation
+  - networksecurity.googleapis.com/InterceptDeployment
+  - networksecurity.googleapis.com/InterceptDeploymentGroup
+  - networksecurity.googleapis.com/InterceptEndpointGroup
+  - networksecurity.googleapis.com/InterceptEndpointGroupAssociation
+  - networksecurity.googleapis.com/MirroringDeployment
+  - networksecurity.googleapis.com/MirroringDeploymentGroup
+  - networksecurity.googleapis.com/MirroringEndpointGroup
+  - networksecurity.googleapis.com/MirroringEndpointGroupAssociation
+  - networksecurity.googleapis.com/SecurityProfile
+  - networksecurity.googleapis.com/SecurityProfileGroup
+  - networksecurity.googleapis.com/TlsInspectionPolicy
+types: {} # every owned type is mapped: products/compute.googleapis.com.networking-fabric.yaml,
+# products/networkmanagement.googleapis.com.yaml and products/networksecurity.googleapis.com.networking-fabric*.yaml

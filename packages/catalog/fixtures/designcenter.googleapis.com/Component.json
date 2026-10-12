@@ -1,0 +1,33 @@
+[
+  {
+    "name": "//designcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/spaces/platform/applicationTemplates/web-stack/components/frontend",
+    "assetType": "designcenter.googleapis.com/Component",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/spaces/platform/applicationTemplates/web-stack/components/frontend",
+      "displayName": "Frontend",
+      "sharedTemplateRevisionUri": "projects/demo-ops-1/locations/europe-west3/spaces/platform/sharedTemplates/7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5/revisions/r3",
+      "createTime": "2026-04-20T09:00:00Z",
+      "apis": ["run.googleapis.com"],
+      "roles": ["roles/run.admin"]
+    }
+  },
+  {
+    "name": "//designcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/spaces/platform/applicationTemplates/web-stack/components/database",
+    "assetType": "designcenter.googleapis.com/Component",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/spaces/platform/applicationTemplates/web-stack/components/database",
+      "displayName": "Database",
+      "sharedTemplateRevisionUri": "projects/demo-ops-1/locations/europe-west3/spaces/platform/sharedTemplates/8d2e3f4a-5b6c-4d7e-9f80-a1b2c3d4e5f6/revisions/r1",
+      "createTime": "2026-04-20T09:05:00Z",
+      "apis": ["sqladmin.googleapis.com"]
+    }
+  }
+]

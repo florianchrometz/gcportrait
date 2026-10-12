@@ -1,0 +1,7 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The Permissions page's own layout; the shared text-page layout is Page.module.css. Tokens only. */
+.check {
+  display: grid;
+  gap: var(--space-6);
+}

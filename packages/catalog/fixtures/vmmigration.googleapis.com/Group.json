@@ -1,0 +1,16 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/groups/erp-wave-1",
+  "assetType": "vmmigration.googleapis.com/Group",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/groups/erp-wave-1",
+    "displayName": "ERP wave 1",
+    "description": "ERP application servers",
+    "migrationTargetType": "MIGRATION_TARGET_TYPE_GCE",
+    "createTime": "2026-05-20T08:00:00Z",
+    "updateTime": "2026-05-20T08:00:00Z"
+  }
+}

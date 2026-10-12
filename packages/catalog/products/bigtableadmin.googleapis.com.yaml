@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: MIT
+#
+# Bigtable: the instance container (from the catalog seed), clusters, tables, app profiles, views, backups
+# and schema bundles. The asset types carry the admin API's service (bigtableadmin.googleapis.com), but Cloud
+# Asset Inventory names the assets in the bigtable family by project id:
+# `//bigtable.googleapis.com/projects/<id>/instances/<i>` and everything under it by name (clusters, tables,
+# app profiles, logical and materialized views; backups under their cluster, authorized views and schema
+# bundles under their table). A rule that reads a relative Bigtable name must therefore set
+# `service: bigtable.googleapis.com`.
+product: Bigtable
+service: bigtableadmin.googleapis.com
+icon: bigtable
+types:
+  bigtableadmin.googleapis.com/Instance:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type | lower}} instance'
+    console: 'https://console.cloud.google.com/bigtable/instances/{{name | lastSegment}}/overview?project={{projectId}}'
+    contains:
+      - byParent: bigtableadmin.googleapis.com/Cluster
+      - byParent: bigtableadmin.googleapis.com/Table
+      - byParent: bigtableadmin.googleapis.com/AppProfile
+      - byParent: bigtableadmin.googleapis.com/LogicalView
+      - byParent: bigtableadmin.googleapis.com/MaterializedView
+      - byParent: bigtableadmin.googleapis.com/Backup
+      - byParent: bigtableadmin.googleapis.com/AuthorizedView
+      - byParent: bigtableadmin.googleapis.com/SchemaBundle
+    notes: >-
+      Everything of the instance nests in it by name: clusters, tables and app profiles as cards, the hidden
+      backups (named under their cluster), authorized views and schema bundles (named under their table) and
+      logical and materialized views in its badge. Clusters and tables stay cards rather than zones of their
+      own, so a hidden child of theirs is counted on the instance. Replication between an instance's clusters
+      is implicit (every cluster holds every table) and is not drawn.
+
+  bigtableadmin.googleapis.com/Cluster:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.location | lastSegment}} · {{data.serveNodes | plural(node)}} · {{data.defaultStorageType | lower}}'
+    console: 'https://console.cloud.google.com/bigtable/instances/{{name | parentSegment(instances)}}/overview?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      data.location is projects/<id>/locations/<zone>. serveNodes is the current node count, also under
+      autoscaling (clusterConfig.clusterAutoscalingConfig holds the limits). The customer-managed key is per
+      cluster (encryptionConfig.kmsKeyName, in the cluster's region).
+
+  bigtableadmin.googleapis.com/Table:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: 'table'
+    console: 'https://console.cloud.google.com/bigtable/instances/{{name | parentSegment(instances)}}/tables?project={{projectId}}'
+    notes: >-
+      A leaf rather than the seed's card with edges: a table references no other asset (its encryption is the
+      clusters', its restore source a hidden backup), and the readers and writers point at it from their side.
+      The seed's "hidden above 30 per instance" needs a per-container threshold the catalog does not have.
+
+  bigtableadmin.googleapis.com/AppProfile:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.singleClusterRouting.clusterId}} · {{data.standardIsolation.priority | lower}}'
+    console: 'https://console.cloud.google.com/bigtable/instances/{{name | parentSegment(instances)}}/app-profiles?project={{projectId}}'
+    notes: >-
+      Routing for an application: singleClusterRouting.clusterId or multiClusterRoutingUseAny.clusterIds name
+      clusters of the same instance by bare id, so the subtitle shows the single-cluster target instead of an
+      edge. Data Boost profiles (dataBoostIsolationReadOnly) read without using cluster nodes.
+
+  bigtableadmin.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'backup · {{data.sourceTable | lastSegment}}'
+    console: 'https://console.cloud.google.com/bigtable/instances/{{name | parentSegment(instances)}}/backups?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.sourceTable, normalize: name, service: bigtable.googleapis.com }
+    notes: >-
+      A backup of one table, kept in a cluster (…/clusters/c/backups/b); hidden and counted on the instance.
+
+  bigtableadmin.googleapis.com/AuthorizedView:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'authorized view · {{name | parentSegment(tables)}}'
+    notes: >-
+      A subset of one table's rows and columns that can be granted on its own (subsetView); counted on the
+      instance.
+
+  bigtableadmin.googleapis.com/LogicalView:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'logical view'
+    notes: A saved SQL query over the instance's tables (data.query); counted on the instance.
+
+  bigtableadmin.googleapis.com/MaterializedView:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'materialized view'
+    notes: >-
+      A continuously maintained SQL query result over the instance's tables (data.query); counted on the
+      instance.
+
+  bigtableadmin.googleapis.com/SchemaBundle:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'schema bundle · {{name | parentSegment(tables)}}'
+    notes: >-
+      Protocol buffer descriptors for one table's values (protoSchema); a settings object, counted on the
+      instance.

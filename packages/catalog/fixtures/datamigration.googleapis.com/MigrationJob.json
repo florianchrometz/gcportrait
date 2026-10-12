@@ -1,0 +1,50 @@
+[
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/migrationJobs/erp-to-alloydb",
+    "assetType": "datamigration.googleapis.com/MigrationJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/migrationJobs/erp-to-alloydb",
+      "displayName": "erp-to-alloydb",
+      "state": "RUNNING",
+      "phase": "CDC",
+      "type": "CONTINUOUS",
+      "source": "projects/demo-data-1/locations/europe-west3/connectionProfiles/erp-oracle",
+      "destination": "projects/demo-data-1/locations/europe-west3/connectionProfiles/erp-alloydb",
+      "sourceDatabase": { "provider": "DATABASE_PROVIDER_UNSPECIFIED", "engine": "ORACLE" },
+      "destinationDatabase": { "provider": "ALLOYDB", "engine": "POSTGRESQL" },
+      "conversionWorkspace": {
+        "name": "projects/demo-data-1/locations/europe-west3/conversionWorkspaces/erp-schema",
+        "commitId": "c1"
+      },
+      "vpcPeeringConnectivity": { "vpc": "projects/demo-net-1/global/networks/core" },
+      "cmekKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dms"
+    }
+  },
+  {
+    "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/migrationJobs/shop-mysql",
+    "assetType": "datamigration.googleapis.com/MigrationJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/migrationJobs/shop-mysql",
+      "displayName": "shop-mysql",
+      "state": "COMPLETED",
+      "type": "ONE_TIME",
+      "source": "projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-mysql-onprem",
+      "destination": "projects/demo-data-1/locations/europe-west3/connectionProfiles/shop-cloudsql",
+      "dumpPath": "gs://demo-data-1-migration/shop/dump.sql",
+      "reverseSshConnectivity": {
+        "vmIp": "10.40.0.30",
+        "vmPort": 2222,
+        "vm": "dms-bastion",
+        "vpc": "projects/demo-net-1/global/networks/core"
+      }
+    }
+  }
+]

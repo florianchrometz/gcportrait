@@ -1,0 +1,72 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/batchPredictionJobs/7788990011223344556",
+    "assetType": "aiplatform.googleapis.com/BatchPredictionJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/batchPredictionJobs/7788990011223344556",
+      "displayName": "nightly-fraud-rescoring",
+      "model": "projects/10000000003/locations/europe-west3/models/7051234567890123456",
+      "modelVersionId": "3",
+      "inputConfig": {
+        "instancesFormat": "bigquery",
+        "bigquerySource": {
+          "inputUri": "bq://demo-data-1.sales.orders"
+        }
+      },
+      "outputConfig": {
+        "predictionsFormat": "jsonl",
+        "gcsDestination": {
+          "outputUriPrefix": "gs://demo-data-1-ml/batch/fraud"
+        }
+      },
+      "dedicatedResources": {
+        "machineSpec": {
+          "machineType": "n1-standard-4"
+        },
+        "startingReplicaCount": 2,
+        "maxReplicaCount": 4
+      },
+      "serviceAccount": "vertex-serving@demo-data-1.iam.gserviceaccount.com",
+      "state": "JOB_STATE_SUCCEEDED",
+      "createTime": "2026-10-01T01:00:00Z",
+      "startTime": "2026-10-01T01:02:00Z",
+      "endTime": "2026-10-01T01:40:00Z",
+      "updateTime": "2026-10-01T01:40:00Z",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      }
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/batchPredictionJobs/7788990011223340000",
+    "assetType": "aiplatform.googleapis.com/BatchPredictionJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/batchPredictionJobs/7788990011223340000",
+      "displayName": "review-summaries",
+      "model": "publishers/google/models/gemini-2.5-flash",
+      "inputConfig": {
+        "instancesFormat": "jsonl",
+        "gcsSource": {
+          "uris": ["gs://demo-data-1-ml/batch/reviews/input.jsonl"]
+        }
+      },
+      "outputConfig": {
+        "predictionsFormat": "bigquery",
+        "bigqueryDestination": {
+          "outputUri": "bq://demo-data-1.sales.review_summaries"
+        }
+      },
+      "state": "JOB_STATE_RUNNING",
+      "createTime": "2026-10-01T04:00:00Z",
+      "updateTime": "2026-10-01T04:05:00Z"
+    }
+  }
+]

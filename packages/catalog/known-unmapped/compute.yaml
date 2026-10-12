@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: MIT
+#
+# Compute. `owns` lists the official asset types this group owns, mapped or not (exact types, or <service>/*
+# for a whole service; the most specific pattern wins); `types` lists the owned types not mapped yet, each
+# with its reason (skill gcp-asset-catalog §6 and §8). Map a type in products/<service>[.<suffix>].yaml with
+# its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group compute
+# Services you share with other groups get files named after this group (no plain products/<service>.yaml):
+# products/compute.googleapis.com.compute.yaml.
+#
+# compute.googleapis.com is split by the catalog seed's sections; this group owns the Compute section.
+title: Compute
+owns:
+  - 'batch.googleapis.com/*'
+  - compute.googleapis.com/Autoscaler
+  - compute.googleapis.com/Commitment
+  - compute.googleapis.com/Disk
+  - compute.googleapis.com/Image
+  - compute.googleapis.com/Instance
+  - compute.googleapis.com/InstanceGroup
+  - compute.googleapis.com/InstanceGroupManager
+  - compute.googleapis.com/InstanceSettings
+  - compute.googleapis.com/InstanceTemplate
+  - compute.googleapis.com/InstantSnapshot
+  - compute.googleapis.com/License
+  - compute.googleapis.com/MachineImage
+  - compute.googleapis.com/NodeGroup
+  - compute.googleapis.com/NodeTemplate
+  - compute.googleapis.com/Project
+  - compute.googleapis.com/RegionDisk
+  - compute.googleapis.com/Reservation
+  - compute.googleapis.com/ResourcePolicy
+  - compute.googleapis.com/Snapshot
+  - compute.googleapis.com/StoragePool
+  - 'hypercomputecluster.googleapis.com/*'
+  - 'notebooks.googleapis.com/*'
+  - 'tpu.googleapis.com/*'
+  - 'vmmigration.googleapis.com/*'
+  - 'vmwareengine.googleapis.com/*'
+  - 'workstations.googleapis.com/*'
+types: {} # every owned type is mapped

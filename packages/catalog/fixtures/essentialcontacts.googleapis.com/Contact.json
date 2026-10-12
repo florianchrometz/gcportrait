@@ -1,0 +1,20 @@
+{
+  "name": "//essentialcontacts.googleapis.com/projects/demo-app-1/contacts/104",
+  "assetType": "essentialcontacts.googleapis.com/Contact",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/contacts/104",
+    "email": "shop-oncall@example.com",
+    "notificationCategorySubscriptions": ["SECURITY", "TECHNICAL"],
+    "languageTag": "en",
+    "validationState": "VALID",
+    "validateTime": "2026-03-01T09:00:00Z"
+  }
+}

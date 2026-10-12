@@ -1,0 +1,20 @@
+{
+  "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/orders/rowAccessPolicies/eu_only",
+  "assetType": "bigquery.googleapis.com/RowAccessPolicy",
+  "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/orders",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "etag": "ZXUtb25seQ==",
+    "rowAccessPolicyReference": {
+      "projectId": "demo-data-1",
+      "datasetId": "sales",
+      "tableId": "orders",
+      "policyId": "eu_only"
+    },
+    "filterPredicate": "region = 'EU'",
+    "creationTime": "2025-02-01T09:00:00Z",
+    "lastModifiedTime": "2025-02-01T09:00:00Z"
+  }
+}

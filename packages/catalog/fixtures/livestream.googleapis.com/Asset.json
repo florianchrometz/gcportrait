@@ -1,0 +1,23 @@
+{
+  "name": "//livestream.googleapis.com/projects/demo-app-1/locations/europe-west3/assets/standby-slate",
+  "assetType": "livestream.googleapis.com/Asset",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/assets/standby-slate",
+    "createTime": "2026-09-20T08:00:00Z",
+    "updateTime": "2026-09-20T08:00:00Z",
+    "image": {
+      "uri": "gs://demo-app-1-live/assets/standby.png"
+    },
+    "crc32c": "AAAAAA==",
+    "state": "ACTIVE"
+  }
+}

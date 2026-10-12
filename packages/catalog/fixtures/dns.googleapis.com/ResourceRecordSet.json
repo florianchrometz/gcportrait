@@ -1,0 +1,264 @@
+[
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000006/rrsets/www.example.com./A",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000006",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "www.example.com.",
+      "type": "A",
+      "ttl": 300,
+      "rrdatas": ["203.0.113.40"]
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000006/rrsets/shop.example.com./CNAME",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000006",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "shop.example.com.",
+      "type": "CNAME",
+      "ttl": 300,
+      "rrdatas": ["www.example.com."]
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000006/rrsets/app.example.com./A",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000006",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "app.example.com.",
+      "type": "A",
+      "ttl": 60,
+      "routingPolicy": {
+        "kind": "dns#rRSetRoutingPolicy",
+        "healthCheck": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/healthChecks/app-public",
+        "geo": {
+          "kind": "dns#rRSetRoutingPolicyGeoPolicy",
+          "enableFencing": false,
+          "items": [
+            {
+              "location": "europe-west3",
+              "healthCheckedTargets": {
+                "externalEndpoints": ["203.0.113.50"]
+              }
+            },
+            {
+              "location": "us-central1",
+              "healthCheckedTargets": {
+                "externalEndpoints": ["203.0.113.51"]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000006/rrsets/canary.example.com./A",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000006",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "canary.example.com.",
+      "type": "A",
+      "ttl": 60,
+      "routingPolicy": {
+        "kind": "dns#rRSetRoutingPolicy",
+        "wrr": {
+          "kind": "dns#rRSetRoutingPolicyWrrPolicy",
+          "items": [
+            {
+              "weight": 90,
+              "rrdatas": ["203.0.113.60"]
+            },
+            {
+              "weight": 10,
+              "rrdatas": ["203.0.113.61"]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000006/rrsets/status.example.com./A",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000006",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "status.example.com.",
+      "type": "A",
+      "ttl": 60,
+      "routingPolicy": {
+        "kind": "dns#rRSetRoutingPolicy",
+        "healthCheck": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/healthChecks/status-public",
+        "primaryBackup": {
+          "kind": "dns#rRSetRoutingPolicyPrimaryBackupPolicy",
+          "trickleTraffic": 0,
+          "primaryTargets": {
+            "externalEndpoints": ["203.0.113.70"]
+          },
+          "backupGeoTargets": {
+            "kind": "dns#rRSetRoutingPolicyGeoPolicy",
+            "items": [
+              {
+                "location": "us-central1",
+                "rrdatas": ["203.0.113.71"]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000001/rrsets/api.internal.example.com./A",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "api.internal.example.com.",
+      "type": "A",
+      "ttl": 30,
+      "routingPolicy": {
+        "kind": "dns#rRSetRoutingPolicy",
+        "wrr": {
+          "kind": "dns#rRSetRoutingPolicyWrrPolicy",
+          "items": [
+            {
+              "weight": 1,
+              "healthCheckedTargets": {
+                "internalLoadBalancers": [
+                  {
+                    "loadBalancerType": "regionalL4ilb",
+                    "ipAddress": "10.10.0.20",
+                    "port": "443",
+                    "ipProtocol": "tcp",
+                    "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+                    "project": "demo-net-1",
+                    "region": "europe-west3"
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 1,
+              "healthCheckedTargets": {
+                "internalLoadBalancers": [
+                  {
+                    "loadBalancerType": "regionalL7ilb",
+                    "ipAddress": "10.10.0.21",
+                    "port": "443",
+                    "ipProtocol": "tcp",
+                    "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+                    "project": "demo-net-1",
+                    "region": "europe-west3"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/managedZones/4100000000000000001/rrsets/db.internal.example.com./A",
+    "assetType": "dns.googleapis.com/ResourceRecordSet",
+    "parent": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#resourceRecordSet",
+      "name": "db.internal.example.com.",
+      "type": "A",
+      "ttl": 30,
+      "routingPolicy": {
+        "kind": "dns#rRSetRoutingPolicy",
+        "primaryBackup": {
+          "kind": "dns#rRSetRoutingPolicyPrimaryBackupPolicy",
+          "trickleTraffic": 0,
+          "primaryTargets": {
+            "internalLoadBalancers": [
+              {
+                "loadBalancerType": "regionalL4ilb",
+                "ipAddress": "10.10.0.30",
+                "port": "5432",
+                "ipProtocol": "tcp",
+                "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+                "project": "demo-net-1",
+                "region": "europe-west3"
+              }
+            ]
+          },
+          "backupGeoTargets": {
+            "kind": "dns#rRSetRoutingPolicyGeoPolicy",
+            "items": [
+              {
+                "location": "europe-west1",
+                "rrdatas": ["10.40.0.30"]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/cachedContents/8899001122334455667",
+  "assetType": "aiplatform.googleapis.com/CachedContent",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/cachedContents/8899001122334455667",
+    "displayName": "policy-handbook-cache",
+    "model": "projects/10000000003/locations/europe-west3/publishers/google/models/gemini-2.5-pro",
+    "createTime": "2026-10-01T06:00:00Z",
+    "updateTime": "2026-10-01T06:00:00Z",
+    "expireTime": "2026-10-01T12:00:00Z",
+    "usageMetadata": {
+      "totalTokenCount": 182000
+    },
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    }
+  }
+}

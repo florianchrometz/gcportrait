@@ -1,0 +1,14 @@
+{
+  "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/retiredResources/a7c3e9d1",
+  "assetType": "cloudkms.googleapis.com/RetiredResource",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/retiredResources/a7c3e9d1",
+    "originalResource": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/legacy-app",
+    "resourceType": "CryptoKey",
+    "deleteTime": "2026-08-30T12:00:00Z"
+  }
+}

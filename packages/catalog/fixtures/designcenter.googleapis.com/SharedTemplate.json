@@ -1,0 +1,16 @@
+{
+  "name": "//designcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/spaces/platform/sharedTemplates/7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+  "assetType": "designcenter.googleapis.com/SharedTemplate",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/spaces/platform/sharedTemplates/7c1d2e3f-4a5b-4c6d-8e7f-90a1b2c3d4e5",
+    "displayName": "Cloud Run service",
+    "description": "A Cloud Run service behind a load balancer",
+    "createTime": "2026-03-01T09:00:00Z",
+    "latestRevisionId": "r3",
+    "templateCategory": "COMPONENT_TEMPLATE"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "//beyondcorp.googleapis.com/projects/demo-sec-1/locations/europe-west3/appConnectors/onprem-dc1",
+  "assetType": "beyondcorp.googleapis.com/AppConnector",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/appConnectors/onprem-dc1",
+    "createTime": "2025-04-01T09:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "displayName": "On-premises DC1",
+    "uid": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+    "state": "HEALTHY",
+    "principalInfo": {
+      "serviceAccount": {
+        "email": "beyondcorp-connector@demo-sec-1.iam.gserviceaccount.com"
+      }
+    }
+  }
+}

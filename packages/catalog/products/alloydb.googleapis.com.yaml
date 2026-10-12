@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: MIT
+#
+# AlloyDB for PostgreSQL: the cluster container (from the catalog seed), instances, backups and cross-region
+# replication. Cloud Asset Inventory names the three types by project id, instances under their cluster
+# (`//alloydb.googleapis.com/projects/<id>/locations/<l>/clusters/<c>/instances/<i>`), backups under the
+# location (`…/locations/<l>/backups/<b>`).
+product: AlloyDB for PostgreSQL
+service: alloydb.googleapis.com
+icon: alloydb
+types:
+  alloydb.googleapis.com/Cluster:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.clusterType | lower}} · {{data.databaseVersion}}'
+    console: 'https://console.cloud.google.com/alloydb/locations/{{location}}/clusters/{{name | lastSegment}}/overview?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.networkConfig.network, normalize: computeRelative }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+      - { kind: replicates, to: '$.data.primaryConfig.secondaryClusterNames[*]', normalize: name }
+    contains:
+      - byParent: alloydb.googleapis.com/Instance
+    notes: >-
+      The network is written with the host project's number (projects/N/global/networks/X); the project index
+      turns it into the Compute name. data.network is the older spelling of networkConfig.network.
+      Cross-region replication is read on the primary, whose primaryConfig.secondaryClusterNames lists its
+      secondary clusters, so the edge runs primary → secondary; a secondary names its primary in
+      secondaryConfig.primaryClusterName, which would point the other way and is not read.
+
+  alloydb.googleapis.com/Instance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.instanceType | lower}} · {{data.machineConfig.cpuCount}} vCPU · {{data.availabilityType | lower}}'
+    console: 'https://console.cloud.google.com/alloydb/locations/{{location}}/clusters/{{name | parentSegment(clusters)}}/overview?project={{projectId}}'
+    ips:
+      - $.data.ipAddress
+      - $.data.publicIpAddress
+      - '$.data.outboundPublicIpAddresses[*]'
+      - '$.data.pscInstanceConfig.pscAutoConnections[*].ipAddress'
+    relations:
+      - {
+          kind: attaches,
+          to: '$.data.pscInstanceConfig.pscAutoConnections[*].consumerNetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: '$.data.pscInstanceConfig.pscInterfaceConfigs[*].networkAttachmentResource',
+          normalize: computeRelative,
+        }
+    notes: >-
+      instanceType is PRIMARY, READ_POOL or SECONDARY; the instance nests in its cluster by name, and the
+      cluster carries the private services access network. ipAddress is the private address, publicIpAddress
+      and outboundPublicIpAddresses the public ones when enabled. With Private Service Connect, each
+      automatically created consumer endpoint attaches the instance to that consumer network (with the
+      endpoint's address), and a PSC interface reaches out through a network attachment (uses).
+
+  alloydb.googleapis.com/Backup:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type | lower}} backup · {{data.clusterName | lastSegment}}'
+    console: 'https://console.cloud.google.com/alloydb/backups?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.clusterName, normalize: name }
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      An on-demand or automated backup of one cluster (data.clusterName); hidden, counted in the project's
+      badge.

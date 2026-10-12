@@ -1,0 +1,99 @@
+[
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/pipelines/to-fulfilment",
+    "assetType": "eventarc.googleapis.com/Pipeline",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/pipelines/to-fulfilment",
+      "uid": "00000000-0000-4000-8000-000000000185",
+      "displayName": "Orders to fulfilment",
+      "destinations": [
+        {
+          "workflow": "projects/demo-app-1/locations/europe-west3/workflows/order-fulfilment",
+          "authenticationConfig": {
+            "googleOidc": {
+              "serviceAccount": "eventarc-invoker@demo-app-1.iam.gserviceaccount.com"
+            }
+          }
+        }
+      ],
+      "retryPolicy": {
+        "maxAttempts": 5
+      },
+      "createTime": "2026-06-01T10:00:00Z",
+      "cryptoKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/eventarc"
+    }
+  },
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/pipelines/to-inventory",
+    "assetType": "eventarc.googleapis.com/Pipeline",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/pipelines/to-inventory",
+      "uid": "00000000-0000-4000-8000-000000000186",
+      "displayName": "Orders to inventory",
+      "destinations": [
+        {
+          "httpEndpoint": {
+            "uri": "https://inventory.internal.example.com/orders"
+          },
+          "networkConfig": {
+            "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/eventarc-egress"
+          },
+          "authenticationConfig": {
+            "oauthToken": {
+              "serviceAccount": "eventarc-invoker@demo-app-1.iam.gserviceaccount.com"
+            }
+          }
+        }
+      ],
+      "retryPolicy": {
+        "maxAttempts": 5
+      },
+      "createTime": "2026-06-01T10:00:00Z"
+    }
+  },
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/pipelines/to-audit",
+    "assetType": "eventarc.googleapis.com/Pipeline",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/pipelines/to-audit",
+      "uid": "00000000-0000-4000-8000-000000000187",
+      "displayName": "Orders to audit bus",
+      "destinations": [
+        {
+          "messageBus": "projects/demo-ops-1/locations/europe-west3/messageBuses/audit-bus"
+        }
+      ],
+      "retryPolicy": {
+        "maxAttempts": 5
+      },
+      "createTime": "2026-06-01T10:00:00Z"
+    }
+  }
+]

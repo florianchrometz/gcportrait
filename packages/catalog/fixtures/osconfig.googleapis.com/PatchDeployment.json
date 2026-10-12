@@ -1,0 +1,70 @@
+{
+  "name": "//osconfig.googleapis.com/projects/demo-app-1/patchDeployments/weekly-web",
+  "assetType": "osconfig.googleapis.com/PatchDeployment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/patchDeployments/weekly-web",
+    "description": "Weekly patching of the web tier",
+    "instanceFilter": {
+      "instances": [
+        "zones/europe-west3-a/instances/web-7k2p",
+        "projects/demo-app-1/zones/europe-west3-a/instances/egress-appliance-1"
+      ]
+    },
+    "patchConfig": {
+      "rebootConfig": "DEFAULT",
+      "apt": {
+        "type": "UPGRADE"
+      },
+      "preStep": {
+        "linuxExecStepConfig": {
+          "gcsObject": {
+            "bucket": "demo-ops-1-os-packages",
+            "object": "scripts/drain.sh",
+            "generationNumber": "1727600000000001"
+          },
+          "interpreter": "SHELL"
+        }
+      },
+      "postStep": {
+        "linuxExecStepConfig": {
+          "localPath": "/opt/ops/undrain.sh",
+          "interpreter": "SHELL"
+        }
+      }
+    },
+    "duration": "3600s",
+    "recurringSchedule": {
+      "timeZone": {
+        "id": "Europe/Berlin"
+      },
+      "timeOfDay": {
+        "hours": 3
+      },
+      "frequency": "WEEKLY",
+      "weekly": {
+        "dayOfWeek": "SUNDAY"
+      },
+      "nextExecuteTime": "2026-10-11T01:00:00Z",
+      "lastExecuteTime": "2026-10-04T01:00:00Z"
+    },
+    "createTime": "2025-05-01T08:00:00Z",
+    "updateTime": "2026-06-01T08:00:00Z",
+    "lastExecuteTime": "2026-10-04T01:00:00Z",
+    "rollout": {
+      "mode": "ZONE_BY_ZONE",
+      "disruptionBudget": {
+        "fixed": 1
+      }
+    },
+    "state": "ACTIVE"
+  }
+}

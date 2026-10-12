@@ -1,0 +1,23 @@
+{
+  "name": "//identitytoolkit.googleapis.com/projects/10000000002/oauthIdpConfigs/oidc.partner",
+  "assetType": "identitytoolkit.googleapis.com/OauthIdpConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/oauthIdpConfigs/oidc.partner",
+    "displayName": "Partner IdP",
+    "enabled": true,
+    "clientId": "shop-partner-login",
+    "issuer": "https://idp.partner.example.org",
+    "responseType": {
+      "code": true
+    }
+  }
+}

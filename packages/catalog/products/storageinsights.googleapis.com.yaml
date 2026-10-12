@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MIT
+#
+# Storage Insights: inventory report configurations, which list a source bucket's object metadata
+# into a destination bucket on a schedule, and the per-run report details. Storage Insights is a Cloud
+# Storage feature and shares its icon.
+product: Storage Insights
+service: storageinsights.googleapis.com
+icon: cloud_storage
+types:
+  storageinsights.googleapis.com/ReportConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.frequencyOptions.frequency | lower}} inventory of {{data.objectMetadataReportOptions.storageFilters.bucket}}'
+    relations:
+      - { kind: uses, to: $.data.objectMetadataReportOptions.storageFilters.bucket, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.objectMetadataReportOptions.storageDestinationOptions.bucket,
+          normalize: gcsUri,
+        }
+    notes: >-
+      storageFilters.bucket is the bucket being inventoried and storageDestinationOptions.bucket where the
+      CSV or Parquet shards are written (both bare bucket names). The label falls back to the config id when
+      the configuration has no display name.
+
+  storageinsights.googleapis.com/ReportDetail:
+    role: hidden
+    subtitle: '{{data.snapshotTime}} · {{data.shardsCount | plural(shard)}}'
+    notes: One per generated report; reportPathPrefix is an object name prefix in the destination bucket.

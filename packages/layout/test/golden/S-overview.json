@@ -1,0 +1,1842 @@
+{
+  "rects": {
+    "//cloudresourcemanager.googleapis.com/folders/20000000001": {
+      "x": 24,
+      "y": 24,
+      "width": 860,
+      "height": 820,
+      "parent": null,
+      "role": "zone",
+      "kind": "folder",
+      "depth": 1,
+      "headerHeight": 40,
+      "padding": 16,
+      "paddingExtra": { "top": 0, "right": 16, "bottom": 0, "left": 0 },
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000004": {
+      "x": 40,
+      "y": 80,
+      "width": 158,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+      "role": "empty",
+      "kind": "project",
+      "depth": 2,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000002": {
+      "x": 222,
+      "y": 80,
+      "width": 349,
+      "height": 180,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+      "role": "zone",
+      "kind": "project",
+      "depth": 2,
+      "headerHeight": 40,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner": {
+      "x": 238,
+      "y": 136,
+      "width": 317,
+      "height": 108,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+      "role": "zone",
+      "kind": "vpc",
+      "depth": 3,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-partner-1/regions/europe-west3/subnetworks/partner-europe-west3": {
+      "x": 254,
+      "y": 184,
+      "width": 208,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner",
+      "role": "empty",
+      "kind": "subnet",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000003": {
+      "x": 595,
+      "y": 80,
+      "width": 158,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+      "role": "empty",
+      "kind": "project",
+      "depth": 2,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000001": {
+      "x": 40,
+      "y": 292,
+      "width": 812,
+      "height": 536,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+      "role": "zone",
+      "kind": "project",
+      "depth": 2,
+      "headerHeight": 40,
+      "padding": 16,
+      "paddingExtra": { "top": 0, "right": 48, "bottom": 0, "left": 16 },
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod": {
+      "x": 72,
+      "y": 488,
+      "width": 589,
+      "height": 324,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "role": "zone",
+      "kind": "vpc",
+      "depth": 3,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-gke-1-gke-europe-west3": {
+      "x": 88,
+      "y": 688,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "empty",
+      "kind": "subnet",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "x": 332,
+      "y": 688,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "empty",
+      "kind": "subnet",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//dns.googleapis.com/projects/demo-net-1/managedZones/internal-prod": {
+      "x": 88,
+      "y": 752,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "empty",
+      "kind": "product-container",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//servicenetworking.googleapis.com/projects/10000000001/global/networks/vpc-shared-prod/connections/servicenetworking-googleapis-com": {
+      "x": 88,
+      "y": 536,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "card",
+      "kind": "card",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3": {
+      "x": 332,
+      "y": 536,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "card",
+      "kind": "card",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3": {
+      "x": 88,
+      "y": 612,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "card",
+      "kind": "card",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3": {
+      "x": 332,
+      "y": 612,
+      "width": 220,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "role": "card",
+      "kind": "card",
+      "depth": 4,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/global/interconnects/ic-dc1-1": {
+      "x": 72,
+      "y": 348,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "role": "card",
+      "kind": "card",
+      "depth": 3,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-1": {
+      "x": 316,
+      "y": 348,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "role": "card",
+      "kind": "card",
+      "depth": 3,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/global/externalVpnGateways/onprem-dc1": {
+      "x": 568,
+      "y": 348,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "role": "card",
+      "kind": "card",
+      "depth": 3,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0": {
+      "x": 72,
+      "y": 412,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "role": "card",
+      "kind": "card",
+      "depth": 3,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1": {
+      "x": 316,
+      "y": 412,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "role": "card",
+      "kind": "card",
+      "depth": 3,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/folders/20000000002": {
+      "x": 948,
+      "y": 24,
+      "width": 1377,
+      "height": 984,
+      "parent": null,
+      "role": "zone",
+      "kind": "folder",
+      "depth": 1,
+      "headerHeight": 40,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/folders/20000000003": {
+      "x": 964,
+      "y": 80,
+      "width": 1345,
+      "height": 912,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000002",
+      "role": "zone",
+      "kind": "folder",
+      "depth": 2,
+      "headerHeight": 40,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/folders/20000000004": {
+      "x": 980,
+      "y": 136,
+      "width": 1313,
+      "height": 840,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000003",
+      "role": "zone",
+      "kind": "folder",
+      "depth": 3,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000010": {
+      "x": 996,
+      "y": 184,
+      "width": 275,
+      "height": 172,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000004",
+      "role": "zone",
+      "kind": "project",
+      "depth": 4,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//bigquery.googleapis.com/projects/demo-data-1/datasets/analytics": {
+      "x": 1012,
+      "y": 296,
+      "width": 161,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000010",
+      "role": "empty",
+      "kind": "product-container",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//storage.googleapis.com/demo-data-1-lake": {
+      "x": 1012,
+      "y": 232,
+      "width": 167,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000010",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000008": {
+      "x": 1295,
+      "y": 184,
+      "width": 398,
+      "height": 172,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000004",
+      "role": "zone",
+      "kind": "project",
+      "depth": 4,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//container.googleapis.com/projects/demo-gke-1/locations/europe-west3/clusters/retail-prod": {
+      "x": 1311,
+      "y": 232,
+      "width": 366,
+      "height": 108,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000008",
+      "role": "zone",
+      "kind": "product-container",
+      "depth": 5,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//container.googleapis.com/projects/demo-gke-1/locations/europe-west3/clusters/retail-prod/nodePools/default-pool": {
+      "x": 1327,
+      "y": 280,
+      "width": 220,
+      "height": 44,
+      "parent": "//container.googleapis.com/projects/demo-gke-1/locations/europe-west3/clusters/retail-prod",
+      "role": "card",
+      "kind": "card",
+      "depth": 6,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000009": {
+      "x": 996,
+      "y": 404,
+      "width": 504,
+      "height": 352,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000004",
+      "role": "zone",
+      "kind": "project",
+      "depth": 4,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//pubsub.googleapis.com/projects/demo-svc-1/subscriptions/eventarc-europe-west3-orders-handler-614468-sub-400": {
+      "x": 1012,
+      "y": 452,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders": {
+      "x": 1264,
+      "y": 452,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-api": {
+      "x": 1012,
+      "y": 528,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudsql.googleapis.com/projects/demo-svc-1/instances/orders-db": {
+      "x": 1264,
+      "y": 528,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler": {
+      "x": 1012,
+      "y": 620,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler": {
+      "x": 1264,
+      "y": 620,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468": {
+      "x": 1012,
+      "y": 696,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000007": {
+      "x": 1532,
+      "y": 404,
+      "width": 745,
+      "height": 556,
+      "parent": "//cloudresourcemanager.googleapis.com/folders/20000000004",
+      "role": "zone",
+      "kind": "project",
+      "depth": 4,
+      "headerHeight": 32,
+      "padding": 16,
+      "paddingExtra": { "top": 0, "right": 16, "bottom": 0, "left": 16 },
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig": {
+      "x": 1564,
+      "y": 772,
+      "width": 277,
+      "height": 108,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "zone",
+      "kind": "product-container",
+      "depth": 5,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/api-bejw": {
+      "x": 1580,
+      "y": 820,
+      "width": 162,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig",
+      "role": "card",
+      "kind": "card",
+      "depth": 6,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig": {
+      "x": 1889,
+      "y": 772,
+      "width": 290,
+      "height": 172,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "zone",
+      "kind": "product-container",
+      "depth": 5,
+      "headerHeight": 32,
+      "padding": 16,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl": {
+      "x": 1905,
+      "y": 820,
+      "width": 162,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig",
+      "role": "card",
+      "kind": "card",
+      "depth": 6,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-ut19": {
+      "x": 1905,
+      "y": 884,
+      "width": 162,
+      "height": 44,
+      "parent": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig",
+      "role": "card",
+      "kind": "card",
+      "depth": 6,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes": {
+      "x": 1564,
+      "y": 452,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/forwardingRules/api-ilb-fr": {
+      "x": 1816,
+      "y": 452,
+      "width": 189,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/api-mig": {
+      "x": 2053,
+      "y": 452,
+      "width": 192,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//run.googleapis.com/projects/demo-web-1/locations/europe-west3/services/storefront-api": {
+      "x": 1564,
+      "y": 528,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-api-bes": {
+      "x": 1816,
+      "y": 528,
+      "width": 189,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-bes": {
+      "x": 2053,
+      "y": 528,
+      "width": 192,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/forwardingRules/web-https-fr": {
+      "x": 1564,
+      "y": 604,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/targetHttpsProxies/web-https-proxy": {
+      "x": 1816,
+      "y": 604,
+      "width": 189,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig": {
+      "x": 2053,
+      "y": 604,
+      "width": 192,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/networkEndpointGroups/web-run-neg": {
+      "x": 1564,
+      "y": 680,
+      "width": 220,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap": {
+      "x": 1816,
+      "y": 680,
+      "width": 189,
+      "height": 44,
+      "parent": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "role": "card",
+      "kind": "card",
+      "depth": 5,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000005": {
+      "x": 24,
+      "y": 1028,
+      "width": 148,
+      "height": 44,
+      "parent": null,
+      "role": "empty",
+      "kind": "project",
+      "depth": 1,
+      "headerHeight": 0,
+      "padding": 0,
+      "collapsed": false
+    }
+  },
+  "edges": {
+    "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler -uses-> //pubsub.googleapis.com/projects/demo-svc-1/topics/orders": {
+      "from": "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler",
+      "to": "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1116, "y": 620, "side": "top" },
+      "target": { "x": 1374, "y": 496, "side": "bottom" },
+      "points": [
+        { "x": 1116, "y": 620 },
+        { "x": 1116, "y": 596 },
+        { "x": 1240, "y": 596 },
+        { "x": 1240, "y": 520 },
+        { "x": 1374, "y": 520 },
+        { "x": 1374, "y": 494 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders <-uses- * (bottom)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler -routes-> //run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler": {
+      "from": "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler",
+      "to": "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1232, "y": 642, "side": "right" },
+      "target": { "x": 1264, "y": 636, "side": "left" },
+      "points": [
+        { "x": 1232, "y": 642 },
+        { "x": 1248, "y": 642 },
+        { "x": 1248, "y": 636 },
+        { "x": 1266, "y": 636 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler -attaches-> //vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3": {
+      "from": "//cloudfunctions.googleapis.com/projects/demo-svc-1/locations/europe-west3/functions/orders-handler",
+      "to": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1012, "y": 636, "side": "left" },
+      "target": { "x": 552, "y": 558, "side": "right" },
+      "points": [
+        { "x": 1012, "y": 636 },
+        { "x": 1004, "y": 636 },
+        { "x": 1004, "y": 596 },
+        { "x": 916, "y": 596 },
+        { "x": 916, "y": 528 },
+        { "x": 653, "y": 528 },
+        { "x": 653, "y": 558 },
+        { "x": 550, "y": 558 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000007 -shares-> //cloudresourcemanager.googleapis.com/projects/10000000001": {
+      "from": "//cloudresourcemanager.googleapis.com/projects/10000000007",
+      "to": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "kind": "shares",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1532, "y": 696, "side": "left" },
+      "target": { "x": 852, "y": 570, "side": "right" },
+      "points": [
+        { "x": 1532, "y": 696 },
+        { "x": 1516, "y": 696 },
+        { "x": 1516, "y": 380 },
+        { "x": 916, "y": 380 },
+        { "x": 916, "y": 276 },
+        { "x": 868, "y": 276 },
+        { "x": 868, "y": 570 },
+        { "x": 850, "y": 570 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//cloudresourcemanager.googleapis.com/projects/10000000001 <-shares- * (right)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000008 -shares-> //cloudresourcemanager.googleapis.com/projects/10000000001": {
+      "from": "//cloudresourcemanager.googleapis.com/projects/10000000008",
+      "to": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "kind": "shares",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1295, "y": 284, "side": "left" },
+      "target": { "x": 852, "y": 570, "side": "right" },
+      "points": [
+        { "x": 1295, "y": 284 },
+        { "x": 1283, "y": 284 },
+        { "x": 1283, "y": 380 },
+        { "x": 916, "y": 380 },
+        { "x": 916, "y": 276 },
+        { "x": 868, "y": 276 },
+        { "x": 868, "y": 570 },
+        { "x": 850, "y": 570 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//cloudresourcemanager.googleapis.com/projects/10000000001 <-shares- * (right)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//cloudresourcemanager.googleapis.com/projects/10000000009 -shares-> //cloudresourcemanager.googleapis.com/projects/10000000001": {
+      "from": "//cloudresourcemanager.googleapis.com/projects/10000000009",
+      "to": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+      "kind": "shares",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 996, "y": 568, "side": "left" },
+      "target": { "x": 852, "y": 570, "side": "right" },
+      "points": [
+        { "x": 996, "y": 568 },
+        { "x": 988, "y": 568 },
+        { "x": 988, "y": 380 },
+        { "x": 916, "y": 380 },
+        { "x": 916, "y": 276 },
+        { "x": 868, "y": 276 },
+        { "x": 868, "y": 570 },
+        { "x": 850, "y": 570 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//cloudresourcemanager.googleapis.com/projects/10000000001 <-shares- * (right)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//cloudsql.googleapis.com/projects/demo-svc-1/instances/orders-db -attaches-> //compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod": {
+      "from": "//cloudsql.googleapis.com/projects/demo-svc-1/instances/orders-db",
+      "to": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1264, "y": 556, "side": "left" },
+      "target": { "x": 661, "y": 698, "side": "right" },
+      "points": [
+        { "x": 1264, "y": 556 },
+        { "x": 1248, "y": 556 },
+        { "x": 1248, "y": 604 },
+        { "x": 916, "y": 604 },
+        { "x": 916, "y": 820 },
+        { "x": 820, "y": 820 },
+        { "x": 820, "y": 698 },
+        { "x": 659, "y": 698 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod -peers-> //compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "to": "//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner",
+      "kind": "peers",
+      "count": 1,
+      "merged": false,
+      "heads": "both",
+      "source": { "x": 661, "y": 634, "side": "right" },
+      "target": { "x": 396.5, "y": 244, "side": "bottom" },
+      "points": [
+        { "x": 659, "y": 634 },
+        { "x": 828, "y": 634 },
+        { "x": 828, "y": 402 },
+        { "x": 876, "y": 402 },
+        { "x": 876, "y": 284 },
+        { "x": 396.5, "y": 284 },
+        { "x": 396.5, "y": 242 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-1 -connects-> //compute.googleapis.com/projects/demo-net-1/global/interconnects/ic-dc1-1": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-1",
+      "to": "//compute.googleapis.com/projects/demo-net-1/global/interconnects/ic-dc1-1",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 316, "y": 364, "side": "left" },
+      "target": { "x": 292, "y": 370, "side": "right" },
+      "points": [
+        { "x": 316, "y": 364 },
+        { "x": 304, "y": 364 },
+        { "x": 304, "y": 370 },
+        { "x": 292, "y": 370 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-1 -connects-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-1",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 426, "y": 392, "side": "bottom" },
+      "target": { "x": 192, "y": 612, "side": "top" },
+      "points": [
+        { "x": 426, "y": 392 },
+        { "x": 426, "y": 402 },
+        { "x": 56, "y": 402 },
+        { "x": 56, "y": 596 },
+        { "x": 192, "y": 596 },
+        { "x": 192, "y": 612 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3 <-connects- * (top)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0 -connects-> //compute.googleapis.com/projects/demo-net-1/global/externalVpnGateways/onprem-dc1": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0",
+      "to": "//compute.googleapis.com/projects/demo-net-1/global/externalVpnGateways/onprem-dc1",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 182, "y": 456, "side": "bottom" },
+      "target": { "x": 568, "y": 364, "side": "left" },
+      "points": [
+        { "x": 182, "y": 456 },
+        { "x": 182, "y": 480 },
+        { "x": 560, "y": 480 },
+        { "x": 560, "y": 364 },
+        { "x": 568, "y": 364 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0 -connects-> * (bottom)",
+        "end": "source",
+        "size": 2
+      }
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0 -connects-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 170, "y": 456, "side": "bottom" },
+      "target": { "x": 192, "y": 612, "side": "top" },
+      "points": [
+        { "x": 170, "y": 456 },
+        { "x": 170, "y": 472 },
+        { "x": 56, "y": 472 },
+        { "x": 56, "y": 596 },
+        { "x": 192, "y": 596 },
+        { "x": 192, "y": 612 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3 <-connects- * (top)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0 -connects-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 182, "y": 456, "side": "bottom" },
+      "target": { "x": 436, "y": 612, "side": "top" },
+      "points": [
+        { "x": 182, "y": 456 },
+        { "x": 182, "y": 480 },
+        { "x": 64, "y": 480 },
+        { "x": 64, "y": 604 },
+        { "x": 436, "y": 604 },
+        { "x": 436, "y": 612 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0 -connects-> * (bottom)",
+        "end": "source",
+        "size": 2
+      }
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1 -connects-> //compute.googleapis.com/projects/demo-net-1/global/externalVpnGateways/onprem-dc1": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1",
+      "to": "//compute.googleapis.com/projects/demo-net-1/global/externalVpnGateways/onprem-dc1",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 426, "y": 456, "side": "bottom" },
+      "target": { "x": 568, "y": 376, "side": "left" },
+      "points": [
+        { "x": 426, "y": 456 },
+        { "x": 426, "y": 472 },
+        { "x": 552, "y": 472 },
+        { "x": 552, "y": 376 },
+        { "x": 568, "y": 376 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1 -connects-> * (bottom)",
+        "end": "source",
+        "size": 2
+      }
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1 -connects-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 414, "y": 456, "side": "bottom" },
+      "target": { "x": 192, "y": 612, "side": "top" },
+      "points": [
+        { "x": 414, "y": 456 },
+        { "x": 414, "y": 472 },
+        { "x": 56, "y": 472 },
+        { "x": 56, "y": 596 },
+        { "x": 192, "y": 596 },
+        { "x": 192, "y": 612 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3 <-connects- * (top)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1 -connects-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3",
+      "kind": "connects",
+      "count": 1,
+      "merged": false,
+      "heads": "none",
+      "source": { "x": 426, "y": 456, "side": "bottom" },
+      "target": { "x": 448, "y": 612, "side": "top" },
+      "points": [
+        { "x": 426, "y": 456 },
+        { "x": 426, "y": 472 },
+        { "x": 820, "y": 472 },
+        { "x": 820, "y": 596 },
+        { "x": 448, "y": 596 },
+        { "x": 448, "y": 612 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-1 -connects-> * (bottom)",
+        "end": "source",
+        "size": 2
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-api-bes -routes-> //compute.googleapis.com/projects/demo-web-1/regions/europe-west3/networkEndpointGroups/web-run-neg": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-api-bes",
+      "to": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/networkEndpointGroups/web-run-neg",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1898.5, "y": 572, "side": "bottom" },
+      "target": { "x": 1680, "y": 680, "side": "top" },
+      "points": [
+        { "x": 1898.5, "y": 572 },
+        { "x": 1898.5, "y": 596 },
+        { "x": 1792, "y": 596 },
+        { "x": 1792, "y": 664 },
+        { "x": 1680, "y": 664 },
+        { "x": 1680, "y": 682 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-bes -routes-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-bes",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 2149, "y": 572, "side": "bottom" },
+      "target": { "x": 2179, "y": 854, "side": "right" },
+      "points": [
+        { "x": 2149, "y": 572 },
+        { "x": 2149, "y": 588 },
+        { "x": 2269, "y": 588 },
+        { "x": 2269, "y": 854 },
+        { "x": 2177, "y": 854 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/forwardingRules/web-https-fr -routes-> //compute.googleapis.com/projects/demo-web-1/global/targetHttpsProxies/web-https-proxy": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/global/forwardingRules/web-https-fr",
+      "to": "//compute.googleapis.com/projects/demo-web-1/global/targetHttpsProxies/web-https-proxy",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1784, "y": 626, "side": "right" },
+      "target": { "x": 1816, "y": 620, "side": "left" },
+      "points": [
+        { "x": 1784, "y": 626 },
+        { "x": 1800, "y": 626 },
+        { "x": 1800, "y": 620 },
+        { "x": 1818, "y": 620 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/targetHttpsProxies/web-https-proxy -routes-> //compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/global/targetHttpsProxies/web-https-proxy",
+      "to": "//compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1910.5, "y": 648, "side": "bottom" },
+      "target": { "x": 1892.5, "y": 680, "side": "top" },
+      "points": [
+        { "x": 1910.5, "y": 648 },
+        { "x": 1910.5, "y": 664 },
+        { "x": 1892.5, "y": 664 },
+        { "x": 1892.5, "y": 682 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap -routes-> //compute.googleapis.com/projects/demo-web-1/global/backendServices/web-api-bes": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap",
+      "to": "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-api-bes",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1904.5, "y": 680, "side": "top" },
+      "target": { "x": 1910.5, "y": 572, "side": "bottom" },
+      "points": [
+        { "x": 1904.5, "y": 680 },
+        { "x": 1904.5, "y": 672 },
+        { "x": 1808, "y": 672 },
+        { "x": 1808, "y": 588 },
+        { "x": 1910.5, "y": 588 },
+        { "x": 1910.5, "y": 570 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap -routes-> //compute.googleapis.com/projects/demo-web-1/global/backendServices/web-bes": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/global/urlMaps/web-urlmap",
+      "to": "//compute.googleapis.com/projects/demo-web-1/global/backendServices/web-bes",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1916.5, "y": 680, "side": "top" },
+      "target": { "x": 2137, "y": 572, "side": "bottom" },
+      "points": [
+        { "x": 1916.5, "y": 680 },
+        { "x": 1916.5, "y": 664 },
+        { "x": 2029, "y": 664 },
+        { "x": 2029, "y": 588 },
+        { "x": 2137, "y": 588 },
+        { "x": 2137, "y": 570 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes -attaches-> //compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes",
+      "to": "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1564, "y": 468, "side": "left" },
+      "target": { "x": 661, "y": 646, "side": "right" },
+      "points": [
+        { "x": 1564, "y": 468 },
+        { "x": 1524, "y": 468 },
+        { "x": 1524, "y": 388 },
+        { "x": 916, "y": 388 },
+        { "x": 916, "y": 472 },
+        { "x": 844, "y": 472 },
+        { "x": 844, "y": 646 },
+        { "x": 659, "y": 646 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes -routes-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1674, "y": 496, "side": "bottom" },
+      "target": { "x": 1564, "y": 836, "side": "left" },
+      "points": [
+        { "x": 1674, "y": 496 },
+        { "x": 1674, "y": 512 },
+        { "x": 1556, "y": 512 },
+        { "x": 1556, "y": 836 },
+        { "x": 1566, "y": 836 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/forwardingRules/api-ilb-fr -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/forwardingRules/api-ilb-fr",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1816, "y": 480, "side": "left" },
+      "target": { "x": 552, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1816, "y": 480 },
+        { "x": 1800, "y": 480 },
+        { "x": 1800, "y": 520 },
+        { "x": 1508, "y": 520 },
+        { "x": 1508, "y": 396 },
+        { "x": 940, "y": 396 },
+        { "x": 940, "y": 680 },
+        { "x": 653, "y": 680 },
+        { "x": 653, "y": 710 },
+        { "x": 550, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 6
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/forwardingRules/api-ilb-fr -routes-> //compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/forwardingRules/api-ilb-fr",
+      "to": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/backendServices/api-ilb-bes",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1816, "y": 468, "side": "left" },
+      "target": { "x": 1784, "y": 474, "side": "right" },
+      "points": [
+        { "x": 1816, "y": 468 },
+        { "x": 1800, "y": 468 },
+        { "x": 1800, "y": 474 },
+        { "x": 1782, "y": 474 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/networkEndpointGroups/web-run-neg -routes-> //run.googleapis.com/projects/demo-web-1/locations/europe-west3/services/storefront-api": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/regions/europe-west3/networkEndpointGroups/web-run-neg",
+      "to": "//run.googleapis.com/projects/demo-web-1/locations/europe-west3/services/storefront-api",
+      "kind": "routes",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1668, "y": 680, "side": "top" },
+      "target": { "x": 1674, "y": 572, "side": "bottom" },
+      "points": [
+        { "x": 1668, "y": 680 },
+        { "x": 1668, "y": 664 },
+        { "x": 1548, "y": 664 },
+        { "x": 1548, "y": 588 },
+        { "x": 1674, "y": 588 },
+        { "x": 1674, "y": 570 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/api-mig -uses-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/api-mig",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 2149, "y": 496, "side": "bottom" },
+      "target": { "x": 1841, "y": 842, "side": "right" },
+      "points": [
+        { "x": 2149, "y": 496 },
+        { "x": 2149, "y": 512 },
+        { "x": 2021, "y": 512 },
+        { "x": 2021, "y": 740 },
+        { "x": 1857, "y": 740 },
+        { "x": 1857, "y": 842 },
+        { "x": 1839, "y": 842 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig -uses-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 2161, "y": 648, "side": "bottom" },
+      "target": { "x": 2179, "y": 894, "side": "right" },
+      "points": [
+        { "x": 2161, "y": 648 },
+        { "x": 2161, "y": 664 },
+        { "x": 2261, "y": 664 },
+        { "x": 2261, "y": 894 },
+        { "x": 2177, "y": 894 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1564, "y": 848, "side": "left" },
+      "target": { "x": 552, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1564, "y": 848 },
+        { "x": 1516, "y": 848 },
+        { "x": 1516, "y": 1018 },
+        { "x": 653, "y": 1018 },
+        { "x": 653, "y": 710 },
+        { "x": 550, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 6
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1889, "y": 860, "side": "left" },
+      "target": { "x": 552, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1889, "y": 860 },
+        { "x": 1865, "y": 860 },
+        { "x": 1865, "y": 1018 },
+        { "x": 653, "y": 1018 },
+        { "x": 653, "y": 710 },
+        { "x": 550, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 6
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/api-bejw -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/api-bejw",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1580, "y": 836, "side": "left" },
+      "target": { "x": 552, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1580, "y": 836 },
+        { "x": 1572, "y": 836 },
+        { "x": 1572, "y": 1018 },
+        { "x": 653, "y": 1018 },
+        { "x": 653, "y": 710 },
+        { "x": 550, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 6
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/api-bejw -memberOf-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/api-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/api-bejw",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/api-mig",
+      "kind": "memberOf",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1742, "y": 842, "side": "right" },
+      "target": { "x": 2053, "y": 468, "side": "left" },
+      "points": [
+        { "x": 1742, "y": 842 },
+        { "x": 1833, "y": 842 },
+        { "x": 1833, "y": 812 },
+        { "x": 1849, "y": 812 },
+        { "x": 1849, "y": 764 },
+        { "x": 2045, "y": 764 },
+        { "x": 2045, "y": 468 },
+        { "x": 2055, "y": 468 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1905, "y": 836, "side": "left" },
+      "target": { "x": 552, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1905, "y": 836 },
+        { "x": 1897, "y": 836 },
+        { "x": 1897, "y": 1018 },
+        { "x": 653, "y": 1018 },
+        { "x": 653, "y": 710 },
+        { "x": 550, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 6
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl -memberOf-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig",
+      "kind": "memberOf",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1980, "y": 820, "side": "top" },
+      "target": { "x": 2137, "y": 648, "side": "bottom" },
+      "points": [
+        { "x": 1980, "y": 820 },
+        { "x": 1980, "y": 812 },
+        { "x": 1865, "y": 812 },
+        { "x": 1865, "y": 748 },
+        { "x": 2029, "y": 748 },
+        { "x": 2029, "y": 664 },
+        { "x": 2137, "y": 664 },
+        { "x": 2137, "y": 646 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-ut19 -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-ut19",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1905, "y": 900, "side": "left" },
+      "target": { "x": 552, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1905, "y": 900 },
+        { "x": 1865, "y": 900 },
+        { "x": 1865, "y": 1018 },
+        { "x": 653, "y": 1018 },
+        { "x": 653, "y": 710 },
+        { "x": 550, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-web-1-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 6
+      }
+    },
+    "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-ut19 -memberOf-> //compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig": {
+      "from": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-ut19",
+      "to": "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroupManagers/web-mig",
+      "kind": "memberOf",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1980, "y": 884, "side": "top" },
+      "target": { "x": 2149, "y": 648, "side": "bottom" },
+      "points": [
+        { "x": 1980, "y": 884 },
+        { "x": 1980, "y": 874 },
+        { "x": 1873, "y": 874 },
+        { "x": 1873, "y": 756 },
+        { "x": 2037, "y": 756 },
+        { "x": 2037, "y": 672 },
+        { "x": 2149, "y": 672 },
+        { "x": 2149, "y": 646 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//container.googleapis.com/projects/demo-gke-1/locations/europe-west3/clusters/retail-prod -attaches-> //compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-gke-1-gke-europe-west3": {
+      "from": "//container.googleapis.com/projects/demo-gke-1/locations/europe-west3/clusters/retail-prod",
+      "to": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-gke-1-gke-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1311, "y": 296, "side": "left" },
+      "target": { "x": 308, "y": 710, "side": "right" },
+      "points": [
+        { "x": 1311, "y": 296 },
+        { "x": 1303, "y": 296 },
+        { "x": 1303, "y": 372 },
+        { "x": 932, "y": 372 },
+        { "x": 932, "y": 672 },
+        { "x": 320, "y": 672 },
+        { "x": 320, "y": 710 },
+        { "x": 306, "y": 710 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468 -uses-> //pubsub.googleapis.com/projects/demo-svc-1/subscriptions/eventarc-europe-west3-orders-handler-614468-sub-400": {
+      "from": "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468",
+      "to": "//pubsub.googleapis.com/projects/demo-svc-1/subscriptions/eventarc-europe-west3-orders-handler-614468-sub-400",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1116, "y": 696, "side": "top" },
+      "target": { "x": 1122, "y": 496, "side": "bottom" },
+      "points": [
+        { "x": 1116, "y": 696 },
+        { "x": 1116, "y": 680 },
+        { "x": 1256, "y": 680 },
+        { "x": 1256, "y": 512 },
+        { "x": 1122, "y": 512 },
+        { "x": 1122, "y": 494 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468 -uses-> //pubsub.googleapis.com/projects/demo-svc-1/topics/orders": {
+      "from": "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468",
+      "to": "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1128, "y": 696, "side": "top" },
+      "target": { "x": 1374, "y": 496, "side": "bottom" },
+      "points": [
+        { "x": 1128, "y": 696 },
+        { "x": 1128, "y": 688 },
+        { "x": 1240, "y": 688 },
+        { "x": 1240, "y": 520 },
+        { "x": 1374, "y": 520 },
+        { "x": 1374, "y": 494 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders <-uses- * (bottom)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468 -triggers-> //run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler": {
+      "from": "//eventarc.googleapis.com/projects/demo-svc-1/locations/europe-west3/triggers/orders-handler-614468",
+      "to": "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler",
+      "kind": "triggers",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1232, "y": 718, "side": "right" },
+      "target": { "x": 1264, "y": 648, "side": "left" },
+      "points": [
+        { "x": 1232, "y": 718 },
+        { "x": 1248, "y": 718 },
+        { "x": 1248, "y": 648 },
+        { "x": 1266, "y": 648 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//pubsub.googleapis.com/projects/demo-svc-1/subscriptions/eventarc-europe-west3-orders-handler-614468-sub-400 -uses-> //pubsub.googleapis.com/projects/demo-svc-1/topics/orders": {
+      "from": "//pubsub.googleapis.com/projects/demo-svc-1/subscriptions/eventarc-europe-west3-orders-handler-614468-sub-400",
+      "to": "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1232, "y": 474, "side": "right" },
+      "target": { "x": 1374, "y": 496, "side": "bottom" },
+      "points": [
+        { "x": 1232, "y": 474 },
+        { "x": 1248, "y": 474 },
+        { "x": 1248, "y": 520 },
+        { "x": 1374, "y": 520 },
+        { "x": 1374, "y": 494 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//pubsub.googleapis.com/projects/demo-svc-1/topics/orders <-uses- * (bottom)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-api -uses-> //cloudsql.googleapis.com/projects/demo-svc-1/instances/orders-db": {
+      "from": "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-api",
+      "to": "//cloudsql.googleapis.com/projects/demo-svc-1/instances/orders-db",
+      "kind": "uses",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1232, "y": 550, "side": "right" },
+      "target": { "x": 1264, "y": 544, "side": "left" },
+      "points": [
+        { "x": 1232, "y": 550 },
+        { "x": 1248, "y": 550 },
+        { "x": 1248, "y": 544 },
+        { "x": 1266, "y": 544 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false
+    },
+    "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-api -attaches-> //vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3": {
+      "from": "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-api",
+      "to": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1012, "y": 544, "side": "left" },
+      "target": { "x": 552, "y": 558, "side": "right" },
+      "points": [
+        { "x": 1012, "y": 544 },
+        { "x": 1004, "y": 544 },
+        { "x": 1004, "y": 512 },
+        { "x": 916, "y": 512 },
+        { "x": 916, "y": 528 },
+        { "x": 653, "y": 528 },
+        { "x": 653, "y": 558 },
+        { "x": 550, "y": 558 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 3
+      }
+    },
+    "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler -attaches-> //vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3": {
+      "from": "//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-handler",
+      "to": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+      "kind": "attaches",
+      "count": 1,
+      "merged": false,
+      "heads": "end",
+      "source": { "x": 1368, "y": 620, "side": "top" },
+      "target": { "x": 552, "y": 558, "side": "right" },
+      "points": [
+        { "x": 1368, "y": 620 },
+        { "x": 1368, "y": 612 },
+        { "x": 924, "y": 612 },
+        { "x": 924, "y": 528 },
+        { "x": 653, "y": 528 },
+        { "x": 653, "y": 558 },
+        { "x": 550, "y": 558 }
+      ],
+      "elbowRadius": 6,
+      "fallback": false,
+      "bundle": {
+        "id": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3 <-attaches- * (right)",
+        "end": "target",
+        "size": 3
+      }
+    }
+  },
+  "chips": [],
+  "bounds": { "x": 0, "y": 0, "width": 2349, "height": 1096 },
+  "arrangements": {
+    "canvas": { "cardColumns": 0, "zoneRows": [2, 1] },
+    "zones": {
+      "//cloudresourcemanager.googleapis.com/folders/20000000001": { "cardColumns": 0, "zoneRows": [3, 1] },
+      "//cloudresourcemanager.googleapis.com/projects/10000000002": { "cardColumns": 0, "zoneRows": [1] },
+      "//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner": {
+        "cardColumns": 0,
+        "zoneRows": [1]
+      },
+      "//cloudresourcemanager.googleapis.com/projects/10000000001": { "cardColumns": 3, "zoneRows": [1] },
+      "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod": {
+        "cardColumns": 2,
+        "zoneRows": [2, 1]
+      },
+      "//cloudresourcemanager.googleapis.com/folders/20000000002": { "cardColumns": 0, "zoneRows": [1] },
+      "//cloudresourcemanager.googleapis.com/folders/20000000003": { "cardColumns": 0, "zoneRows": [1] },
+      "//cloudresourcemanager.googleapis.com/folders/20000000004": { "cardColumns": 0, "zoneRows": [2, 2] },
+      "//cloudresourcemanager.googleapis.com/projects/10000000010": { "cardColumns": 1, "zoneRows": [1] },
+      "//cloudresourcemanager.googleapis.com/projects/10000000008": { "cardColumns": 0, "zoneRows": [1] },
+      "//container.googleapis.com/projects/demo-gke-1/locations/europe-west3/clusters/retail-prod": {
+        "cardColumns": 1,
+        "zoneRows": []
+      },
+      "//cloudresourcemanager.googleapis.com/projects/10000000009": { "cardColumns": 2, "zoneRows": [] },
+      "//cloudresourcemanager.googleapis.com/projects/10000000007": { "cardColumns": 3, "zoneRows": [2] },
+      "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/api-mig": {
+        "cardColumns": 1,
+        "zoneRows": []
+      },
+      "//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig": {
+        "cardColumns": 1,
+        "zoneRows": []
+      }
+    }
+  },
+  "gutters": {
+    "canvas": { "gaps": { "zoneColumns": [[40]] } },
+    "zones": {
+      "//cloudresourcemanager.googleapis.com/folders/20000000001": {
+        "ringSides": { "right": 16 },
+        "gaps": { "rows": [12] }
+      },
+      "//cloudresourcemanager.googleapis.com/projects/10000000001": {
+        "ringSides": { "right": 48, "left": 16 },
+        "gaps": { "cardColumns": [0, 8], "rows": [0, 12] }
+      },
+      "//compute.googleapis.com/projects/demo-net-1/global/networks/vpc-shared-prod": {
+        "gaps": { "rows": [12, 12] }
+      },
+      "//cloudresourcemanager.googleapis.com/folders/20000000004": {
+        "gaps": { "zoneColumns": [[], [8]], "rows": [28] }
+      },
+      "//cloudresourcemanager.googleapis.com/projects/10000000009": {
+        "gaps": { "cardColumns": [8], "rows": [12, 28, 12] }
+      },
+      "//cloudresourcemanager.googleapis.com/projects/10000000007": {
+        "ringSides": { "right": 16, "left": 16 },
+        "gaps": { "cardColumns": [8, 24], "zoneColumns": [[24]], "rows": [12, 12, 12, 28] }
+      }
+    }
+  },
+  "report": {
+    "counts": {
+      "rects": 55,
+      "zones": 15,
+      "chips": 0,
+      "emptyZones": 8,
+      "cards": 32,
+      "edges": 45,
+      "maxDepth": 6,
+      "organisationZonesDropped": 0,
+      "truncatedLabels": 12,
+      "cappedTitles": 0,
+      "headerWidened": 6
+    },
+    "routing": {
+      "mode": "three-pass",
+      "passes": 2,
+      "edges": 45,
+      "holders": 30,
+      "work": 1335,
+      "duplicatesMerged": 0,
+      "reciprocalMerged": 0,
+      "bundles": 7,
+      "bundledEdges": 22,
+      "dropped": 0,
+      "fallbacks": 0,
+      "failed": 0,
+      "bends": [0, 0, 7, 6, 17, 3, 11, 0, 1],
+      "maxLanes": 6,
+      "widened": 7,
+      "wideningRounds": 1,
+      "squeezed": 0,
+      "overlaps": 0
+    },
+    "warnings": []
+  }
+}

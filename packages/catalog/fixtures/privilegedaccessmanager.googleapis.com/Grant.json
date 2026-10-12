@@ -1,0 +1,35 @@
+{
+  "name": "//privilegedaccessmanager.googleapis.com/projects/demo-app-1/locations/global/entitlements/prod-db-admin/grants/0f9e8d7c-6b5a-4493-8271-605f4e3d2c1b",
+  "assetType": "privilegedaccessmanager.googleapis.com/Grant",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-07T15:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/entitlements/prod-db-admin/grants/0f9e8d7c-6b5a-4493-8271-605f4e3d2c1b",
+    "createTime": "2026-10-07T13:00:00Z",
+    "updateTime": "2026-10-07T15:00:00Z",
+    "requester": "oncall-dba@example.com",
+    "requestedDuration": "7200s",
+    "justification": {
+      "unstructuredJustification": "Incident INC-4711: replica lag"
+    },
+    "state": "EXPIRED",
+    "privilegedAccess": {
+      "gcpIamAccess": {
+        "resourceType": "cloudresourcemanager.googleapis.com/Project",
+        "resource": "//cloudresourcemanager.googleapis.com/projects/demo-app-1",
+        "roleBindings": [
+          {
+            "role": "roles/cloudsql.admin"
+          }
+        ]
+      }
+    }
+  }
+}

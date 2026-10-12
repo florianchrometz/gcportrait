@@ -1,0 +1,28 @@
+{
+  "name": "//developerconnect.googleapis.com/projects/demo-ops-1/locations/europe-west3/insightsConfigs/shop-insights",
+  "assetType": "developerconnect.googleapis.com/InsightsConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/insightsConfigs/shop-insights",
+    "createTime": "2026-04-14T09:00:00Z",
+    "updateTime": "2026-09-30T06:00:00Z",
+    "appHubApplication": "projects/demo-ops-1/locations/global/applications/shop",
+    "artifactConfigs": [
+      {
+        "uri": "europe-west3-docker.pkg.dev/demo-app-1/apps/storefront",
+        "googleArtifactRegistry": {
+          "projectId": "demo-app-1",
+          "artifactRegistryPackage": "storefront"
+        },
+        "googleArtifactAnalysis": {
+          "projectId": "demo-app-1"
+        }
+      }
+    ],
+    "state": "COMPLETE",
+    "reconciling": false
+  }
+}

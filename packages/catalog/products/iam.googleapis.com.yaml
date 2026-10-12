@@ -1,0 +1,146 @@
+# SPDX-License-Identifier: MIT
+#
+# Identity and Access Management, v1 resources: service accounts and their keys, custom roles,
+# workload identity pools (project level) and workforce pools (organisation level) with their providers,
+# provider keys, namespaces and managed identities, and OAuth clients. Deny policies (v2) and principal access
+# boundary policies and their bindings (v3) are separate official products, described in
+# iam.googleapis.com.security-identity-v2.yaml and iam.googleapis.com.security-identity-v3.yaml.
+#
+# Service accounts are the target of every runsAs relation: workloads name them by e-mail, so the type lists
+# its e-mail as an alias, which is what the serviceAccountEmail normaliser resolves through. Cloud Asset
+# Inventory names a service account by its numeric unique id (…/serviceAccounts/<uniqueId>); its keys continue
+# that name. Workload identity pool names carry the project number, workforce pools sit at
+# locations/global under the organisation.
+product: Identity and Access Management v1
+service: iam.googleapis.com
+icon: identity_and_access_management
+types:
+  iam.googleapis.com/ServiceAccount:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.email}}'
+    icon: service_account
+    console: 'https://console.cloud.google.com/iam-admin/serviceaccounts/details/{{data.uniqueId}}?project={{projectId}}'
+    aliases:
+      - $.data.email
+    notes: >-
+      No outgoing references: workloads point at the account (runsAs) by e-mail. data.name repeats the e-mail
+      (projects/<id>/serviceAccounts/<email>), the asset name uses the unique id. Without a display name the
+      label falls back to the e-mail. Google-managed service agents (service-<n>@gcp-sa-….iam.gserviceaccount.com)
+      are no assets of the organisation, so references to them stay dangling.
+
+  iam.googleapis.com/ServiceAccountKey:
+    role: leaf
+    label: '{{name | lastSegment | short(12)}}'
+    subtitle: '{{data.keyType | lower}} · {{data.validBeforeTime}}'
+    console: 'https://console.cloud.google.com/iam-admin/serviceaccounts/details/{{name | parentSegment(serviceAccounts)}}/keys?project={{projectId}}'
+    hiddenWhen: "$.data.keyType == 'SYSTEM_MANAGED' || $.data.disabled == true"
+    notes: >-
+      A leaf rather than hidden so that user-managed keys, a classic finding, show up in the identity and
+      security views; the system-managed keys Google rotates itself (and disabled keys) start hidden, which is
+      what the seed's predicate asks for. The key nests where its service account nests: its CAI parent is the
+      account and its name continues the account's (…/serviceAccounts/<uniqueId>/keys/<keyId>); data.name uses
+      the account's e-mail instead, so no field names the account asset.
+
+  iam.googleapis.com/Role:
+    role: leaf
+    label: '{{data.title}}'
+    subtitle: '{{name | lastSegment}} · {{data.stage | lower}}'
+    console: 'https://console.cloud.google.com/iam-admin/roles?project={{projectId}}'
+    hiddenWhen: '$.data.deleted == true'
+    notes: >-
+      Custom roles only (predefined roles are no assets), defined on a project or the organisation; an
+      organisation role has no project, so it gets no console link. Deleted custom roles stay listed for seven
+      days with deleted set and start hidden.
+
+  iam.googleapis.com/WorkloadIdentityPool:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'workload identity pool · {{data.mode | lower}}'
+    console: 'https://console.cloud.google.com/iam-admin/workload-identity-pools/pool/{{name | lastSegment}}?project={{projectId}}'
+    contains:
+      - byParent: iam.googleapis.com/WorkloadIdentityPoolProvider
+      - byParent: iam.googleapis.com/WorkloadIdentityPoolProviderKey
+      - byParent: iam.googleapis.com/WorkloadIdentityPoolNamespace
+      - byParent: iam.googleapis.com/WorkloadIdentityPoolManagedIdentity
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      Names carry the project number (projects/<number>/locations/global/workloadIdentityPools/<id>); providers,
+      their keys, namespaces and managed identities continue the pool's name and nest in it (provider keys too,
+      because a provider is a card, not a zone). A deleted pool is kept for 30 days and starts hidden. mode is
+      FEDERATION_ONLY or TRUST_DOMAIN (managed workload identities) and is absent on older pools.
+
+  iam.googleapis.com/WorkloadIdentityPoolProvider:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.oidc.issuerUri}}'
+    console: 'https://console.cloud.google.com/iam-admin/workload-identity-pools/pool/{{name | parentSegment(workloadIdentityPools)}}?project={{projectId}}'
+    domains:
+      - $.data.oidc.issuerUri
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      One of oidc (issuerUri, allowedAudiences), aws (accountId), saml (idpMetadataXml) or x509 (trustStore);
+      only an OIDC provider has a subtitle and a host: the seed's "issuerUri|aws.accountId" subtitle would
+      need both variables on one fixture (catalog:check template-unproven), and the two are a oneof.
+      attributeCondition is a CEL expression and is not read. A leaf (the seed says core): it references no
+      asset and none references it, so it is a card in its pool without edges (skill §3). The console link
+      opens the pool.
+
+  iam.googleapis.com/WorkloadIdentityPoolProviderKey:
+    role: hidden
+    label: '{{name | parentSegment(providers)}} · {{name | lastSegment}}'
+    notes: SAML assertion encryption keys of a provider; nested in the pool by name.
+
+  iam.googleapis.com/WorkloadIdentityPoolNamespace:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    notes: Namespaces of a TRUST_DOMAIN pool (managed workload identities); nested in the pool by name.
+
+  iam.googleapis.com/WorkloadIdentityPoolManagedIdentity:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    notes: Managed workload identities inside a pool namespace; nested in the pool by name.
+
+  iam.googleapis.com/WorkforcePool:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'workforce pool · {{location}}'
+    contains:
+      - byParent: iam.googleapis.com/WorkforcePoolProvider
+      - byParent: iam.googleapis.com/WorkforcePoolProviderKey
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      Organisation-level (locations/global/workforcePools/<id>, data.parent organizations/<n>), so it nests
+      under the organisation and has no project for a console link. Providers and their keys nest by name.
+
+  iam.googleapis.com/WorkforcePoolProvider:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.oidc.issuerUri}}'
+    domains:
+      - $.data.oidc.issuerUri
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      OIDC (issuerUri, clientId, webSsoConfig) or SAML (idpMetadataXml); only OIDC has a subtitle and a host.
+      A leaf (the seed says core): it references no asset and none references it (skill §3).
+
+  iam.googleapis.com/WorkforcePoolProviderKey:
+    role: hidden
+    label: '{{name | parentSegment(providers)}} · {{name | lastSegment}}'
+    notes: SAML assertion encryption keys of a workforce provider; nested in the pool by name.
+
+  iam.googleapis.com/OauthClient:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.clientType | lower}}'
+    domains:
+      - '$.data.allowedRedirectUris[*]'
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      OAuth applications for workforce identity federation (projects/<p>/locations/global/oauthClients/<id>).
+      The redirect URIs' hosts are listed as domains; nothing else in the organisation is referenced.
+
+  iam.googleapis.com/OauthClientCredential:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: Client secrets of an OAuth client; the secret value itself is never part of the asset.

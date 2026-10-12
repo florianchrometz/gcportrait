@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+#
+# Workspace layout (docs/packages.md). Entries that do not exist yet are ignored by pnpm.
+# legacy/ (in the build repository only) is deliberately not listed: it is frozen and never built.
+packages:
+  - frontend
+  - backend
+  - packages/*
+  - website
+  - e2e
+
+# pnpm 10 runs no dependency install scripts unless they are listed in onlyBuiltDependencies. The scripts of
+# the packages below only verify (or, as a fallback, download) a native platform binary that pnpm already
+# installs as an optional dependency, so they stay skipped. Listing them makes that decision explicit and
+# silences the install warning. Review this list when `pnpm install` reports a new ignored build script.
+ignoredBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+
+# Optional dependencies that are never installed. sharp is Astro's optional image service (website/); its prebuilt
+# libvips binaries are LGPL-3.0-or-later, which the licence policy denies (scripts/check-licenses.mjs). The website
+# transforms no images (website/astro.config.ts uses the passthrough image service), so it needs none.
+ignoredOptionalDependencies:
+  - sharp

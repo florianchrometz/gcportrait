@@ -1,0 +1,30 @@
+{
+  "name": "//speech.googleapis.com/projects/10000000002/locations/europe-west3/customClasses/store-locations",
+  "assetType": "speech.googleapis.com/CustomClass",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/customClasses/store-locations",
+    "uid": "e4f5a6b7-c8d9-4e0f-9a2b-3c4d5e6f7081",
+    "displayName": "Store locations",
+    "items": [
+      {
+        "value": "Berlin Mitte"
+      },
+      {
+        "value": "Hamburg Altona"
+      }
+    ],
+    "state": "ACTIVE",
+    "createTime": "2026-03-01T08:00:00Z",
+    "updateTime": "2026-03-01T08:00:00Z",
+    "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/speech"
+  }
+}

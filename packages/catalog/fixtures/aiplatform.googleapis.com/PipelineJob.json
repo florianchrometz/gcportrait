@@ -1,0 +1,57 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/pipelineJobs/fraud-training-20261001020000",
+    "assetType": "aiplatform.googleapis.com/PipelineJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/pipelineJobs/fraud-training-20261001020000",
+      "displayName": "fraud-training",
+      "createTime": "2026-10-01T02:00:00Z",
+      "startTime": "2026-10-01T02:01:00Z",
+      "endTime": "2026-10-01T03:30:00Z",
+      "updateTime": "2026-10-01T03:30:00Z",
+      "state": "PIPELINE_STATE_SUCCEEDED",
+      "runtimeConfig": {
+        "gcsOutputDirectory": "gs://demo-data-1-ml/pipelines/fraud-training",
+        "parameterValues": {
+          "epochs": 20
+        }
+      },
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      },
+      "serviceAccount": "vertex-pipelines@demo-data-1.iam.gserviceaccount.com",
+      "network": "projects/10000000001/global/networks/core",
+      "templateUri": "https://europe-west3-kfp.pkg.dev/demo-data-1/pipelines/fraud-training/v12",
+      "templateMetadata": {
+        "version": "sha256:9f2c1e0d"
+      },
+      "scheduleName": "projects/10000000003/locations/europe-west3/schedules/nightly-fraud-training"
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/pipelineJobs/feature-refresh-20261001050000",
+    "assetType": "aiplatform.googleapis.com/PipelineJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/pipelineJobs/feature-refresh-20261001050000",
+      "displayName": "feature-refresh",
+      "createTime": "2026-10-01T05:00:00Z",
+      "updateTime": "2026-10-01T05:01:00Z",
+      "state": "PIPELINE_STATE_RUNNING",
+      "runtimeConfig": {
+        "gcsOutputDirectory": "gs://demo-data-1-ml/pipelines/feature-refresh"
+      },
+      "serviceAccount": "vertex-pipelines@demo-data-1.iam.gserviceaccount.com",
+      "pscInterfaceConfig": {
+        "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/agents"
+      }
+    }
+  }
+]

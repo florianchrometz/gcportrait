@@ -1,0 +1,40 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MIT -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Architecture diagrams of a Google Cloud environment, drawn from Cloud Asset Inventory data."
+    />
+    <title>gcportrait</title>
+    <script>
+      // Theme bootstrap. Runs before first paint so the page never flashes the wrong theme: reads the
+      // preference mirror from localStorage and sets <html data-theme>. Must stay in step with
+      // THEME_MIRROR_KEY and resolveTheme() in src/theme/theme.ts (checked by src/theme/bootstrap.test.ts).
+      // The backend allows exactly this script through its CSP by hash.
+      (function () {
+        var preference = 'system';
+        try {
+          var stored = window.localStorage.getItem('gcportrait.theme');
+          if (stored === 'system' || stored === 'light' || stored === 'dark') preference = stored;
+        } catch (error) {}
+        var dark = preference === 'dark';
+        if (preference === 'system') {
+          try {
+            dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          } catch (error) {}
+        }
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme-preference', preference);
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>gcportrait needs JavaScript to draw diagrams.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

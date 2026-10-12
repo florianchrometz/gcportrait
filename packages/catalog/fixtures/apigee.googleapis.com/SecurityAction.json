@@ -1,0 +1,26 @@
+{
+  "name": "//apigee.googleapis.com/organizations/demo-app-1/environments/prod/securityActions/block-scrapers",
+  "assetType": "apigee.googleapis.com/SecurityAction",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "block-scrapers",
+    "description": "Deny abusive bots",
+    "state": "ENABLED",
+    "createTime": "2026-05-01T08:00:00Z",
+    "updateTime": "2026-05-01T08:00:00Z",
+    "conditionConfig": {
+      "botReasons": ["Flooder"]
+    },
+    "deny": {
+      "responseCode": 429
+    }
+  }
+}

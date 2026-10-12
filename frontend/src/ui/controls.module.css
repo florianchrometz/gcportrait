@@ -1,0 +1,61 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The primitives' trigger controls (skill gcp-diagram-style §9: 32 px tall, 8 px radius, 13 px text), their
+   visible labels and carets, and the inert look of a control that is not available yet (aria-disabled: dashed
+   border, secondary text), as the top bar's placeholders have it. Tokens only, so both themes follow. */
+.anchor {
+  position: relative;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.control:hover {
+  background: var(--color-surface-container);
+}
+
+.control[aria-disabled='true'] {
+  border-style: dashed;
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+.control[aria-disabled='true']:hover {
+  background: var(--color-surface);
+}
+
+input.control {
+  cursor: text;
+}
+
+input.control::placeholder {
+  color: var(--color-on-surface-variant);
+  opacity: 1;
+}
+
+.caret {
+  font-size: 10.5px;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fieldLabel {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}

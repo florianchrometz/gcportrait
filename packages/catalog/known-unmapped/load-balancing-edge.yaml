@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: MIT
+#
+# Load balancing and edge. `owns` lists the official asset types this group owns, mapped or not (exact types,
+# or <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not
+# mapped yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group load-balancing-edge
+# Services you share with other groups get files named after this group (no plain products/<service>.yaml):
+# products/compute.googleapis.com.load-balancing-edge.yaml and
+# products/networksecurity.googleapis.com.load-balancing-edge.yaml.
+#
+# compute.googleapis.com is split by the catalog seed's sections; this group owns the load-balancing chain.
+# networksecurity.googleapis.com is split by product: Secure Web Proxy, Cloud Load Balancing and Cloud Service
+# Mesh types are here (TlsInspectionPolicy, listed under both NGFW and Secure Web Proxy, is
+# networking-fabric's).
+title: Load balancing and edge
+owns:
+  - 'apigateway.googleapis.com/*'
+  - 'certificatemanager.googleapis.com/*'
+  - compute.googleapis.com/BackendBucket
+  - compute.googleapis.com/BackendService
+  - compute.googleapis.com/ForwardingRule
+  - compute.googleapis.com/GlobalForwardingRule
+  - compute.googleapis.com/HealthCheck
+  - compute.googleapis.com/HttpHealthCheck
+  - compute.googleapis.com/HttpsHealthCheck
+  - compute.googleapis.com/NetworkEndpointGroup
+  - compute.googleapis.com/RegionBackendService
+  - compute.googleapis.com/SecurityPolicy
+  - compute.googleapis.com/SslCertificate
+  - compute.googleapis.com/SslPolicy
+  - compute.googleapis.com/TargetGrpcProxy
+  - compute.googleapis.com/TargetHttpProxy
+  - compute.googleapis.com/TargetHttpsProxy
+  - compute.googleapis.com/TargetInstance
+  - compute.googleapis.com/TargetPool
+  - compute.googleapis.com/TargetSslProxy
+  - compute.googleapis.com/TargetTcpProxy
+  - compute.googleapis.com/UrlMap
+  - 'domains.googleapis.com/*'
+  - networksecurity.googleapis.com/AuthorizationPolicy
+  - networksecurity.googleapis.com/AuthzPolicy
+  - networksecurity.googleapis.com/ClientTlsPolicy
+  - networksecurity.googleapis.com/GatewaySecurityPolicy
+  - networksecurity.googleapis.com/GatewaySecurityPolicyRule
+  - networksecurity.googleapis.com/ServerTlsPolicy
+  - networksecurity.googleapis.com/UrlList
+  - 'networkservices.googleapis.com/*'
+types: {} # every owned type is mapped (products/compute.googleapis.com.load-balancing-edge.yaml,
+# certificatemanager, networkservices, apigateway, domains, and the three networksecurity …load-balancing-edge*.yaml files)

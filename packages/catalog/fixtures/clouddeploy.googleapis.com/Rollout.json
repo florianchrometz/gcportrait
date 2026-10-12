@@ -1,0 +1,20 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1/rollouts/shop-2-3-1-to-shop-prod-0001",
+  "assetType": "clouddeploy.googleapis.com/Rollout",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1/rollouts/shop-2-3-1-to-shop-prod-0001",
+    "uid": "becfd0e1f2a3419203b4c5d6e7f8091a",
+    "createTime": "2026-09-29T08:00:00Z",
+    "approveTime": "2026-09-29T08:20:00Z",
+    "deployStartTime": "2026-09-29T08:21:00Z",
+    "deployEndTime": "2026-09-29T08:34:00Z",
+    "targetId": "shop-prod",
+    "approvalState": "APPROVED",
+    "state": "SUCCEEDED",
+    "deployingBuild": "projects/10000000005/locations/europe-west3/builds/d0e1f2a3-b4c5-4d6e-8f70-81920a3b4c5d"
+  }
+}

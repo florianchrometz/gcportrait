@@ -1,0 +1,54 @@
+[
+  {
+    "name": "//alloydb.googleapis.com/projects/demo-data-1/locations/europe-west3/clusters/orders",
+    "assetType": "alloydb.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/clusters/orders",
+      "displayName": "orders",
+      "uid": "a0000000-0000-4000-8000-000000000001",
+      "state": "READY",
+      "clusterType": "PRIMARY",
+      "databaseVersion": "POSTGRES_16",
+      "network": "projects/10000000001/global/networks/core",
+      "networkConfig": {
+        "network": "projects/10000000001/global/networks/core",
+        "allocatedIpRange": "alloydb-psa"
+      },
+      "encryptionConfig": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/alloydb"
+      },
+      "primaryConfig": {
+        "secondaryClusterNames": ["projects/demo-data-1/locations/europe-west1/clusters/orders-dr"]
+      },
+      "createTime": "2024-02-01T09:00:00Z"
+    }
+  },
+  {
+    "name": "//alloydb.googleapis.com/projects/demo-data-1/locations/europe-west1/clusters/orders-dr",
+    "assetType": "alloydb.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west1",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west1/clusters/orders-dr",
+      "displayName": "orders-dr",
+      "uid": "a0000000-0000-4000-8000-000000000002",
+      "state": "READY",
+      "clusterType": "SECONDARY",
+      "databaseVersion": "POSTGRES_16",
+      "networkConfig": {
+        "network": "projects/10000000001/global/networks/core",
+        "allocatedIpRange": "alloydb-psa"
+      },
+      "secondaryConfig": {
+        "primaryClusterName": "projects/demo-data-1/locations/europe-west3/clusters/orders"
+      },
+      "createTime": "2025-01-15T09:00:00Z"
+    }
+  }
+]

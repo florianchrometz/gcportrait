@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: MIT
+#
+# Live Stream API: a channel transcodes
+# its attached inputs into a Cloud Storage bucket; a pool peers the service's network with a VPC; media assets
+# are hidden.
+product: Live Stream API
+service: livestream.googleapis.com
+icon: live_stream
+types:
+  livestream.googleapis.com/Channel:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.streamingState | lower}} · {{location}}'
+    relations:
+      - { kind: uses, to: '$.data.inputAttachments[*].input', normalize: name }
+      - { kind: uses, to: $.data.output.uri, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: '$.data.encryptions[*].secretManagerKeySource.secretVersion',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      inputAttachments[*].input is the input's name (the seed's inputId does not exist); output.uri is the
+      gs:// folder the manifests and segments are written to; DRM keys come from Secret Manager secret
+      versions.
+
+  livestream.googleapis.com/Input:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} · {{data.tier | lower}}'
+    ips:
+      - $.data.uri
+    notes: >-
+      uri (output only) is the push endpoint, rtmp://<address>/live/<key> or srt://<address>:<port>; its
+      address is the input's IP. securityRules.ipRanges lists the client ranges allowed to push (a drawer
+      fact).
+
+  livestream.googleapis.com/Asset:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: uses, to: "$.data['video','image'].uri", normalize: gcsUri }
+
+  livestream.googleapis.com/Pool:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{location}}'
+    relations:
+      - { kind: peers, to: $.data.networkConfig.peeredNetwork, normalize: computeRelative }
+    notes: networkConfig.peeredNetwork is projects/<project number>/global/networks/<name>.

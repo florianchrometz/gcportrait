@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Quotas: quota preferences are
+# settings records and start hidden.
+product: Cloud Quotas
+service: cloudquotas.googleapis.com
+icon: cloud_quotas
+types:
+  cloudquotas.googleapis.com/QuotaPreference:
+    role: hidden
+    label: '{{data.quotaId}}'
+    subtitle: '{{data.service}} · {{data.quotaConfig.preferredValue}}'
+    console: 'https://console.cloud.google.com/iam-admin/quotas?project={{projectId}}'

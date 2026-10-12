@@ -1,0 +1,50 @@
+[
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/workerPools/private-build",
+    "assetType": "cloudbuild.googleapis.com/WorkerPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000005/locations/europe-west3/workerPools/private-build",
+      "displayName": "private-build",
+      "uid": "8a4f1e2c-6b3d-4970-a5c8-1d2e3f4a5b6c",
+      "createTime": "2024-02-19T10:00:00Z",
+      "updateTime": "2025-11-03T08:30:00Z",
+      "state": "RUNNING",
+      "privatePoolV1Config": {
+        "workerConfig": { "machineType": "e2-standard-4", "diskSizeGb": "100" },
+        "networkConfig": {
+          "peeredNetwork": "projects/10000000001/global/networks/core",
+          "egressOption": "NO_PUBLIC_EGRESS",
+          "peeredNetworkIpRange": "10.60.0.0/29"
+        }
+      },
+      "etag": "W/\"a1b2c3\""
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/workerPools/psc-build",
+    "assetType": "cloudbuild.googleapis.com/WorkerPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000005/locations/europe-west3/workerPools/psc-build",
+      "displayName": "psc-build",
+      "uid": "3c9e7a1b-0d2f-4865-b4a7-9e8d7c6b5a40",
+      "createTime": "2025-06-11T13:20:00Z",
+      "state": "RUNNING",
+      "privatePoolV1Config": {
+        "workerConfig": { "machineType": "e2-standard-8", "diskSizeGb": "200" },
+        "privateServiceConnect": {
+          "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/psc-if-build",
+          "publicIpAddressDisabled": true,
+          "routeAllTraffic": true
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/europe-west3-a/privateClouds/pc-1/externalAddresses/web-vip",
+  "assetType": "vmwareengine.googleapis.com/ExternalAddress",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3-a/privateClouds/pc-1/externalAddresses/web-vip",
+    "internalIp": "10.50.1.20",
+    "externalIp": "203.0.113.90",
+    "state": "ACTIVE",
+    "uid": "e0000000-0000-4000-8000-000000000012",
+    "description": "Public VIP of the web tier",
+    "createTime": "2026-02-10T08:00:00Z",
+    "updateTime": "2026-02-10T08:00:00Z"
+  }
+}

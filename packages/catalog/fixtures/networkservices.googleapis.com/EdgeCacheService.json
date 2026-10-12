@@ -1,0 +1,66 @@
+{
+  "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/edgeCacheServices/media-edge",
+  "assetType": "networkservices.googleapis.com/EdgeCacheService",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/edgeCacheServices/media-edge",
+    "description": "Video on demand for the storefront",
+    "ipv4Addresses": ["203.0.113.80", "203.0.113.81"],
+    "ipv6Addresses": ["2001:db8:80::1"],
+    "requireTls": true,
+    "edgeSslCertificates": ["projects/demo-app-1/locations/global/certificates/media-edge"],
+    "edgeSecurityPolicy": "projects/demo-app-1/global/securityPolicies/web-edge",
+    "routing": {
+      "hostRules": [
+        {
+          "hosts": ["media.example.com"],
+          "pathMatcher": "routes"
+        }
+      ],
+      "pathMatchers": [
+        {
+          "name": "routes",
+          "routeRules": [
+            {
+              "priority": "1",
+              "description": "Signed video segments",
+              "matchRules": [
+                {
+                  "prefixMatch": "/"
+                }
+              ],
+              "origin": "projects/demo-app-1/locations/global/edgeCacheOrigins/media-bucket",
+              "routeAction": {
+                "cdnPolicy": {
+                  "cacheMode": "CACHE_ALL_STATIC",
+                  "defaultTtl": "3600s",
+                  "signedRequestMode": "REQUIRE_TOKENS",
+                  "signedRequestKeyset": "projects/demo-app-1/locations/global/edgeCacheKeysets/media-keys",
+                  "addSignatures": {
+                    "actions": ["GENERATE_COOKIE"],
+                    "keyset": "projects/demo-app-1/locations/global/edgeCacheKeysets/media-keys",
+                    "tokenTtl": "1200s"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "logConfig": {
+      "enable": true,
+      "sampleRate": 1
+    },
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

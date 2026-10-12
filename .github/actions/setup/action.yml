@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: MIT
+#
+# Shared job setup for the workflows in .github/workflows: pnpm at the version pinned by the packageManager
+# field of the root package.json, Node at the version in .nvmrc, the pnpm store cache, and a frozen-lockfile
+# install (whose `prepare` script compiles the asset catalog). Use it right after actions/checkout.
+#
+# The actions are pinned to commits, each with its release as a comment; Dependabot (github-actions, which
+# watches this directory) proposes the next release as a new commit and comment. The pins are releases at least
+# two weeks old when chosen.
+name: Set up pnpm and Node
+description: >-
+  pnpm from packageManager, Node from .nvmrc with the pnpm store cache, then pnpm install
+  --frozen-lockfile.
+
+inputs:
+  cache:
+    description: Restore and save the pnpm store cache ('true' or 'false'). Release jobs turn it off.
+    required: false
+    default: 'true'
+  install:
+    description: >-
+      Run `pnpm install --frozen-lockfile` ('true' or 'false'). A job that needs only Node and pnpm (the
+      provenance guard, the dependency audit) turns it off, and with it the store cache.
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    # No `version` input: the action reads packageManager (pnpm@x.y.z) from the root package.json.
+    - name: Set up pnpm (version from package.json packageManager)
+      uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+    - name: Set up Node (version from .nvmrc)
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version-file: .nvmrc
+        # .nvmrc names the major version only, while the engines field (with engine-strict in .npmrc) asks for
+        # a recent patch release that the runner's preinstalled Node may not have yet.
+        check-latest: true
+        cache: ${{ inputs.cache == 'true' && inputs.install == 'true' && 'pnpm' || '' }}
+
+    - name: Install dependencies
+      if: inputs.install == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile

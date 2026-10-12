@@ -1,0 +1,23 @@
+{
+  "name": "//cloudbuild.googleapis.com/projects/10000000005/locations/europe-west3/githubEnterpriseConfigs/ghe-primary",
+  "assetType": "cloudbuild.googleapis.com/GithubEnterpriseConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000005/locations/europe-west3/githubEnterpriseConfigs/ghe-primary",
+    "hostUrl": "https://github.example.com",
+    "appId": "3987",
+    "createTime": "2023-06-01T09:00:00Z",
+    "webhookKey": "ghe-primary-hook",
+    "peeredNetwork": "projects/10000000001/global/networks/core",
+    "secrets": {
+      "privateKeyVersionName": "projects/10000000005/secrets/ghe-legacy-private-key/versions/1",
+      "webhookSecretVersionName": "projects/10000000005/secrets/ghe-legacy-webhook/versions/1",
+      "oauthSecretVersionName": "projects/10000000005/secrets/ghe-legacy-oauth-secret/versions/1",
+      "oauthClientIdVersionName": "projects/10000000005/secrets/ghe-legacy-oauth-client/versions/1"
+    },
+    "displayName": "GitHub Enterprise (primary)"
+  }
+}

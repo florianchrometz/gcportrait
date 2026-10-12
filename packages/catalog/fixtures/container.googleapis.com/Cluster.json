@@ -1,0 +1,123 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "assetType": "container.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "shop",
+      "location": "europe-west3",
+      "locations": ["europe-west3-a", "europe-west3-b", "europe-west3-c"],
+      "network": "core",
+      "subnetwork": "gke",
+      "networkConfig": {
+        "network": "projects/demo-net-1/global/networks/core",
+        "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/gke",
+        "datapathProvider": "ADVANCED_DATAPATH"
+      },
+      "endpoint": "203.0.113.10",
+      "privateClusterConfig": {
+        "enablePrivateNodes": true,
+        "privateEndpoint": "10.12.0.2",
+        "publicEndpoint": "203.0.113.10"
+      },
+      "clusterIpv4Cidr": "10.20.0.0/16",
+      "servicesIpv4Cidr": "10.30.0.0/20",
+      "ipAllocationPolicy": {
+        "useIpAliases": true,
+        "clusterSecondaryRangeName": "pods",
+        "servicesSecondaryRangeName": "services"
+      },
+      "currentMasterVersion": "1.31.4-gke.1183000",
+      "status": "RUNNING",
+      "releaseChannel": {
+        "channel": "REGULAR"
+      },
+      "selfLink": "https://container.googleapis.com/v1/projects/demo-app-1/locations/europe-west3/clusters/shop",
+      "nodeConfig": {
+        "machineType": "e2-standard-4",
+        "diskSizeGb": 100,
+        "imageType": "COS_CONTAINERD",
+        "serviceAccount": "gke-nodes@demo-app-1.iam.gserviceaccount.com",
+        "bootDiskKmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/gke-boot"
+      },
+      "fleet": {
+        "project": "projects/10000000002",
+        "membership": "//gkehub.googleapis.com/projects/10000000002/locations/global/memberships/shop"
+      },
+      "databaseEncryption": {
+        "state": "ENCRYPTED",
+        "keyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/gke-secrets"
+      },
+      "workloadIdentityConfig": {
+        "workloadPool": "demo-app-1.svc.id.goog"
+      }
+    }
+  },
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot",
+    "assetType": "container.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "shop-autopilot",
+      "location": "europe-west3",
+      "locations": ["europe-west3-a", "europe-west3-b", "europe-west3-c"],
+      "network": "core",
+      "subnetwork": "app",
+      "networkConfig": {
+        "network": "projects/demo-net-1/global/networks/core",
+        "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+        "datapathProvider": "ADVANCED_DATAPATH"
+      },
+      "endpoint": "172.16.0.2",
+      "privateClusterConfig": {
+        "enablePrivateNodes": true,
+        "enablePrivateEndpoint": true,
+        "masterIpv4CidrBlock": "172.16.0.0/28",
+        "privateEndpoint": "172.16.0.2"
+      },
+      "clusterIpv4Cidr": "10.40.0.0/17",
+      "servicesIpv4Cidr": "10.41.0.0/22",
+      "ipAllocationPolicy": {
+        "useIpAliases": true,
+        "clusterIpv4CidrBlock": "10.40.0.0/17",
+        "servicesIpv4CidrBlock": "10.41.0.0/22"
+      },
+      "autopilot": {
+        "enabled": true
+      },
+      "autoscaling": {
+        "enableNodeAutoprovisioning": true,
+        "autoprovisioningNodePoolDefaults": {
+          "serviceAccount": "gke-autopilot@demo-app-1.iam.gserviceaccount.com",
+          "oauthScopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        }
+      },
+      "currentMasterVersion": "1.32.2-gke.1297000",
+      "currentNodeVersion": "1.32.2-gke.1297000",
+      "status": "RUNNING",
+      "releaseChannel": {
+        "channel": "REGULAR"
+      },
+      "fleet": {
+        "project": "projects/10000000002"
+      },
+      "selfLink": "https://container.googleapis.com/v1/projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot"
+    }
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "name": "//artifactregistry.googleapis.com/projects/demo-app-1/locations/europe-west3/repositories/apps/dockerImages/storefront@sha256:5d2c9e8f1a7b3c406e9d1f2a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c",
+  "assetType": "artifactregistry.googleapis.com/DockerImage",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/repositories/apps/dockerImages/storefront@sha256:5d2c9e8f1a7b3c406e9d1f2a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c",
+    "uri": "europe-west3-docker.pkg.dev/demo-app-1/apps/storefront@sha256:5d2c9e8f1a7b3c406e9d1f2a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c",
+    "tags": ["2.3.1", "latest"],
+    "imageSizeBytes": "48211933",
+    "uploadTime": "2026-09-28T16:02:11Z",
+    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+    "buildTime": "2026-09-28T16:01:40Z",
+    "updateTime": "2026-09-28T16:02:11Z"
+  }
+}

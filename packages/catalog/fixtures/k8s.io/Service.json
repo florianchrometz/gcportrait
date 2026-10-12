@@ -1,0 +1,84 @@
+[
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/services/checkout",
+    "assetType": "k8s.io/Service",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000105",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "checkout",
+        "namespace": "shop",
+        "annotations": {
+          "networking.gke.io/load-balancer-type": "Internal"
+        }
+      },
+      "spec": {
+        "type": "LoadBalancer",
+        "clusterIP": "10.30.0.25",
+        "clusterIPs": ["10.30.0.25"],
+        "ports": [
+          {
+            "name": "http",
+            "port": 80,
+            "targetPort": 8080,
+            "protocol": "TCP"
+          }
+        ],
+        "selector": {
+          "app": "checkout"
+        },
+        "externalTrafficPolicy": "Cluster"
+      },
+      "status": {
+        "loadBalancer": {
+          "ingress": [
+            {
+              "ip": "10.12.0.40"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/services/payments-db",
+    "assetType": "k8s.io/Service",
+    "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "uid": "00000000-0000-4000-8000-000000000106",
+        "creationTimestamp": "2026-05-04T09:00:00Z",
+        "name": "payments-db",
+        "namespace": "shop"
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "db.payments.example.com"
+      },
+      "status": {
+        "loadBalancer": {}
+      }
+    }
+  }
+]

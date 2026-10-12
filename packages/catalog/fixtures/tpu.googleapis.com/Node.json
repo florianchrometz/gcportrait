@@ -1,0 +1,135 @@
+[
+  {
+    "name": "//tpu.googleapis.com/projects/10000000002/locations/europe-west4-a/nodes/train-v5e",
+    "assetType": "tpu.googleapis.com/Node",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west4-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west4-a/nodes/train-v5e",
+      "acceleratorType": "v5litepod-8",
+      "runtimeVersion": "v2-alpha-tpuv5-lite",
+      "state": "READY",
+      "health": "HEALTHY",
+      "apiVersion": "V2",
+      "cidrBlock": "10.60.0.0/29",
+      "networkConfig": {
+        "network": "projects/demo-app-1/global/networks/ml",
+        "subnetwork": "projects/demo-app-1/regions/europe-west4/subnetworks/tpu",
+        "enableExternalIps": true,
+        "canIpForward": false
+      },
+      "serviceAccount": {
+        "email": "tpu-train@demo-app-1.iam.gserviceaccount.com",
+        "scope": ["https://www.googleapis.com/auth/cloud-platform"]
+      },
+      "networkEndpoints": [
+        {
+          "ipAddress": "10.60.0.2",
+          "port": 8470,
+          "accessConfig": {
+            "externalIp": "203.0.113.60"
+          }
+        }
+      ],
+      "dataDisks": [
+        {
+          "sourceDisk": "projects/demo-app-1/zones/europe-west4-a/disks/train-datasets",
+          "mode": "READ_ONLY"
+        }
+      ],
+      "bootDiskConfig": {
+        "customerEncryptionKey": {
+          "kmsKeyName": "projects/demo-sec-1/locations/europe-west4/keyRings/ml/cryptoKeys/tpu"
+        }
+      },
+      "schedulingConfig": {
+        "preemptible": false,
+        "reserved": false,
+        "spot": false
+      },
+      "queuedResource": "projects/10000000002/locations/europe-west4-a/queuedResources/train-v5e-request",
+      "labels": {
+        "team": "ml"
+      },
+      "createTime": "2026-09-15T08:00:00Z",
+      "id": "9100000000000000001"
+    }
+  },
+  {
+    "name": "//tpu.googleapis.com/projects/10000000002/locations/europe-west4-a/nodes/serve-v5e",
+    "assetType": "tpu.googleapis.com/Node",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west4-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west4-a/nodes/serve-v5e",
+      "acceleratorType": "v5litepod-4",
+      "runtimeVersion": "v2-alpha-tpuv5-lite",
+      "state": "READY",
+      "apiVersion": "V2",
+      "networkConfigs": [
+        {
+          "network": "projects/demo-app-1/global/networks/ml",
+          "subnetwork": "projects/demo-app-1/regions/europe-west4/subnetworks/tpu"
+        },
+        {
+          "network": "projects/demo-app-1/global/networks/ml-storage",
+          "subnetwork": "projects/demo-app-1/regions/europe-west4/subnetworks/tpu-storage"
+        }
+      ],
+      "serviceAccount": {
+        "email": "tpu-serve@demo-app-1.iam.gserviceaccount.com"
+      },
+      "networkEndpoints": [
+        {
+          "ipAddress": "10.60.0.10",
+          "port": 8470
+        }
+      ],
+      "createTime": "2026-09-20T08:00:00Z",
+      "id": "9100000000000000002"
+    }
+  },
+  {
+    "name": "//tpu.googleapis.com/projects/10000000002/locations/europe-west4-a/nodes/legacy-v3",
+    "assetType": "tpu.googleapis.com/Node",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west4-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west4-a/nodes/legacy-v3",
+      "acceleratorType": "v3-8",
+      "tensorflowVersion": "2.12.0",
+      "state": "READY",
+      "apiVersion": "V1",
+      "network": "projects/demo-app-1/global/networks/ml",
+      "cidrBlock": "10.61.0.0/29",
+      "networkEndpoints": [
+        {
+          "ipAddress": "10.61.0.2",
+          "port": 8470
+        }
+      ],
+      "createTime": "2025-11-01T08:00:00Z"
+    }
+  }
+]

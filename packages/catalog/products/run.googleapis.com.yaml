@@ -1,0 +1,228 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Run services, jobs and worker pools, with their revisions and executions hidden. The rules read both
+# API shapes an inventory may carry: the v2 resource (template.*, serviceAccount, vpcAccess, volumes) and the
+# v1 Knative resource (spec.template.spec.*, with VPC access, Cloud SQL and the CMEK key as annotations of
+# spec.template.metadata). A path of the other shape simply selects nothing.
+product: Cloud Run
+service: run.googleapis.com
+icon: cloud_run
+types:
+  run.googleapis.com/Service:
+    role: core
+    subtitle: '{{location}}'
+    console: 'https://console.cloud.google.com/run/detail/{{location}}/{{name | lastSegment}}/metrics?project={{projectId}}'
+    domains:
+      - '$.data.urls[*]'
+      - $.data.uri
+      - $.data.status.url
+      - $.data.status.address.url
+    relations:
+      # v2
+      - { kind: runsAs, to: $.data.template.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: $.data.template.vpcAccess.connector,
+          normalize: name,
+          service: vpcaccess.googleapis.com,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.template.vpcAccess.networkInterfaces[*].subnetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.template.vpcAccess.networkInterfaces[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.volumes[*].cloudSqlInstance.instances[*]',
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.containers[*].env[*].valueSource.secretKeyRef.secret',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.volumes[*].secret.secret',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - { kind: uses, to: '$.data.template.volumes[*].gcs.bucket', normalize: gcsUri }
+      - { kind: uses, to: '$.data.template.containers[*].image', normalize: artifactImage }
+      - { kind: encryptedBy, to: $.data.template.encryptionKey, normalize: kmsKey }
+      # v1 (Knative)
+      - { kind: runsAs, to: $.data.spec.template.spec.serviceAccountName, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: "$.data.spec.template.metadata.annotations['run.googleapis.com/vpc-access-connector']",
+          normalize: name,
+          service: vpcaccess.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data.spec.template.metadata.annotations['run.googleapis.com/cloudsql-instances']",
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: uses,
+          to: '$.data.spec.template.spec.volumes[*].csi.volumeAttributes.bucketName',
+          normalize: gcsUri,
+        }
+      - { kind: uses, to: '$.data.spec.template.spec.containers[*].image', normalize: artifactImage }
+      - {
+          kind: encryptedBy,
+          to: "$.data.spec.template.metadata.annotations['run.googleapis.com/encryption-key']",
+          normalize: kmsKey,
+        }
+    notes: >-
+      v2 secrets in the service's own project are bare secret ids (projects/<p>/secrets/<s> only across
+      projects), and v1 env secrets name a secret or an alias; bare ids resolve to nothing until a normaliser
+      adds the asset's project. The v1 run.googleapis.com/cloudsql-instances annotation holds a
+      comma-separated list; only a single connection name resolves. The v1 network-interfaces annotation is a
+      JSON string and is not read. Serverless NEGs route to the service (load-balancing group).
+
+  run.googleapis.com/Job:
+    role: core
+    subtitle: '{{location}}'
+    console: 'https://console.cloud.google.com/run/jobs/details/{{location}}/{{name | lastSegment}}/executions?project={{projectId}}'
+    relations:
+      # v2: the task template sits at template.template
+      - { kind: runsAs, to: $.data.template.template.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: $.data.template.template.vpcAccess.connector,
+          normalize: name,
+          service: vpcaccess.googleapis.com,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.template.template.vpcAccess.networkInterfaces[*].subnetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.template.template.vpcAccess.networkInterfaces[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.template.volumes[*].cloudSqlInstance.instances[*]',
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.template.containers[*].env[*].valueSource.secretKeyRef.secret',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.template.volumes[*].secret.secret',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - { kind: uses, to: '$.data.template.template.volumes[*].gcs.bucket', normalize: gcsUri }
+      - { kind: uses, to: '$.data.template.template.containers[*].image', normalize: artifactImage }
+      - { kind: encryptedBy, to: $.data.template.template.encryptionKey, normalize: kmsKey }
+      # v1 (Knative-style): execution template annotations, task template spec
+      - {
+          kind: runsAs,
+          to: $.data.spec.template.spec.template.spec.serviceAccountName,
+          normalize: serviceAccountEmail,
+        }
+      - {
+          kind: attaches,
+          to: "$.data.spec.template.metadata.annotations['run.googleapis.com/vpc-access-connector']",
+          normalize: name,
+          service: vpcaccess.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data.spec.template.metadata.annotations['run.googleapis.com/cloudsql-instances']",
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: uses,
+          to: '$.data.spec.template.spec.template.spec.containers[*].image',
+          normalize: artifactImage,
+        }
+      - {
+          kind: encryptedBy,
+          to: "$.data.spec.template.metadata.annotations['run.googleapis.com/encryption-key']",
+          normalize: kmsKey,
+        }
+    notes: Same rules as the service, one template level deeper (execution template → task template).
+
+  run.googleapis.com/WorkerPool:
+    role: core
+    subtitle: '{{location}} · {{data.scaling.manualInstanceCount | plural(instance)}}'
+    relations:
+      - { kind: runsAs, to: $.data.template.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: '$.data.template.vpcAccess.networkInterfaces[*].subnetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.template.vpcAccess.networkInterfaces[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.containers[*].env[*].valueSource.secretKeyRef.secret',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.template.volumes[*].secret.secret',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - { kind: uses, to: '$.data.template.volumes[*].gcs.bucket', normalize: gcsUri }
+      - { kind: uses, to: '$.data.template.containers[*].image', normalize: artifactImage }
+      - { kind: encryptedBy, to: $.data.template.encryptionKey, normalize: kmsKey }
+    notes: >-
+      v2 shape (projects.locations.workerPools): the revision template at template, with no URL (worker
+      pools serve no requests). Direct VPC egress through networkInterfaces.
+
+  run.googleapis.com/Revision:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.service, normalize: name }
+    notes: >-
+      Asset names are …/locations/<l>/revisions/<r>, not nested under the service, so revisions nest in
+      the project and count on it; the v2 service field (projects/<p>/locations/<l>/services/<s>) links the
+      service. v1 revisions name their service only in a label.
+
+  run.googleapis.com/Execution:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.job, normalize: name }
+    notes: One per job run; the v2 job field (projects/<p>/locations/<l>/jobs/<j>) links the job.
+
+  run.googleapis.com/DomainMapping:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.routeName}} · {{location}}'
+    console: 'https://console.cloud.google.com/run/domains?project={{projectId}}'
+    domains:
+      - $.data.metadata.name
+    relations:
+      - { kind: routes, to: $.data.spec.routeName, normalize: siblingName, pattern: '{parent}/services/{id}' }
+    notes: >-
+      v1 only (domains.cloudrun.com). spec.routeName is the mapped service's bare name in the same project
+      and region, completed by siblingName, so the mapping routes to the service (core since then;
+      the subtitle names the service too). The A/AAAA records in status.resourceRecords are
+      Google's shared front-end addresses, the same for every domain mapping, so they are not indexed as this
+      mapping's addresses: they would match every mapping of the organisation to every other.

@@ -1,0 +1,20 @@
+{
+  "name": "//parametermanager.googleapis.com/projects/demo-app-1/locations/europe-west3/parameters/checkout-config/versions/v7",
+  "assetType": "parametermanager.googleapis.com/ParameterVersion",
+  "parent": "//parametermanager.googleapis.com/projects/demo-app-1/locations/europe-west3/parameters/checkout-config",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-09-10T10:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/parameters/checkout-config/versions/v7",
+    "createTime": "2026-09-10T10:00:00Z",
+    "updateTime": "2026-09-10T10:00:00Z",
+    "disabled": false,
+    "kmsKeyVersion": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/params/cryptoKeyVersions/1"
+  }
+}

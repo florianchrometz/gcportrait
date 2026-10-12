@@ -1,0 +1,90 @@
+[
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/3",
+    "assetType": "cloudkms.googleapis.com/CryptoKeyVersion",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/3",
+      "state": "ENABLED",
+      "protectionLevel": "SOFTWARE",
+      "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+      "createTime": "2026-07-03T08:00:00Z",
+      "generateTime": "2026-07-03T08:00:00Z"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/2",
+    "assetType": "cloudkms.googleapis.com/CryptoKeyVersion",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/2",
+      "state": "DISABLED",
+      "protectionLevel": "SOFTWARE",
+      "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+      "createTime": "2026-07-03T08:00:00Z",
+      "generateTime": "2026-07-03T08:00:00Z"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-root/cryptoKeyVersions/1",
+    "assetType": "cloudkms.googleapis.com/CryptoKeyVersion",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-root",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-root/cryptoKeyVersions/1",
+      "state": "ENABLED",
+      "protectionLevel": "HSM",
+      "algorithm": "EC_SIGN_P384_SHA384",
+      "createTime": "2026-07-03T08:00:00Z",
+      "generateTime": "2026-07-03T08:00:00Z",
+      "importJob": "projects/demo-sec-1/locations/europe-west3/keyRings/data/importJobs/hsm-import-2026",
+      "importTime": "2026-02-02T10:00:00Z"
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/payroll/cryptoKeyVersions/1",
+    "assetType": "cloudkms.googleapis.com/CryptoKeyVersion",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/payroll",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/payroll/cryptoKeyVersions/1",
+      "state": "ENABLED",
+      "protectionLevel": "EXTERNAL",
+      "algorithm": "EXTERNAL_SYMMETRIC_ENCRYPTION",
+      "createTime": "2026-07-03T08:00:00Z",
+      "generateTime": "2026-07-03T08:00:00Z",
+      "externalProtectionLevelOptions": {
+        "externalKeyUri": "https://ekm.example.com/v0/keys/payroll-2026"
+      }
+    }
+  },
+  {
+    "name": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/hr-records/cryptoKeyVersions/1",
+    "assetType": "cloudkms.googleapis.com/CryptoKeyVersion",
+    "parent": "//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/hr-records",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/hr-records/cryptoKeyVersions/1",
+      "state": "ENABLED",
+      "protectionLevel": "EXTERNAL_VPC",
+      "algorithm": "EXTERNAL_SYMMETRIC_ENCRYPTION",
+      "createTime": "2026-07-03T08:00:00Z",
+      "generateTime": "2026-07-03T08:00:00Z",
+      "externalProtectionLevelOptions": {
+        "ekmConnectionKeyPath": "v0/hr/records"
+      }
+    }
+  }
+]

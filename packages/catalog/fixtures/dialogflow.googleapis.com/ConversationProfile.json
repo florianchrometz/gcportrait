@@ -1,0 +1,59 @@
+[
+  {
+    "name": "//dialogflow.googleapis.com/projects/demo-app-1/locations/global/conversationProfiles/aB3dE5fG7hI9jK1lM2nO",
+    "assetType": "dialogflow.googleapis.com/ConversationProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/conversationProfiles/aB3dE5fG7hI9jK1lM2nO",
+      "displayName": "Contact center assist",
+      "createTime": "2026-03-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "automatedAgentConfig": {
+        "agent": "projects/demo-app-1/locations/global/agents/2f7b4c1e-9a3d-4e57-8b21-6c0d5e4f3a92",
+        "sessionTtl": "1800s"
+      },
+      "humanAgentAssistantConfig": {
+        "notificationConfig": {
+          "topic": "projects/demo-data-1/topics/orders",
+          "messageFormat": "JSON"
+        },
+        "humanAgentSuggestionConfig": {
+          "featureConfigs": [
+            {
+              "suggestionFeature": {
+                "type": "ARTICLE_SUGGESTION"
+              },
+              "queryConfig": {
+                "maxResults": 3,
+                "knowledgeBaseQuerySource": {
+                  "knowledgeBases": [
+                    "projects/demo-app-1/locations/global/knowledgeBases/MTIzNDU2Nzg5MDEyMzQ1Njc4OQ"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "newMessageEventNotificationConfig": {
+        "topic": "projects/demo-app-1/topics/assist-messages",
+        "messageFormat": "JSON"
+      },
+      "sttConfig": {
+        "speechModelVariant": "USE_ENHANCED",
+        "model": "telephony",
+        "phraseSets": ["projects/10000000002/locations/europe-west3/phraseSets/product-names"]
+      },
+      "languageCode": "en-US",
+      "timeZone": "Europe/Berlin"
+    }
+  }
+]

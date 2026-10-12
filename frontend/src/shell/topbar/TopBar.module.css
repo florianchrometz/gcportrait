@@ -1,0 +1,140 @@
+/* SPDX-License-Identifier: MIT */
+
+.topBar {
+  border-bottom: 1px solid var(--color-outline);
+  background: var(--color-surface);
+}
+
+.appRow,
+.viewRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+}
+
+.appRow {
+  height: 52px;
+}
+
+.viewRow {
+  height: 48px;
+  border-top: 1px solid var(--color-outline);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  /* The website header's gap between its logo and the name (website/src/components/Header.astro). */
+  gap: 0.6rem;
+  color: var(--color-on-surface);
+  font-size: 18px;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: var(--control-radius);
+  padding: var(--space-1) var(--space-1);
+}
+
+/* gcportrait's mark before the wordmark (brand/icon.svg, served as favicon.svg): a 24-pixel square, centred on the
+   wordmark's line, the mark reading as the logo beside the name as on the website. */
+.mark {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.demoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
+  color: var(--color-on-surface);
+  font-size: var(--font-size-legend);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.demoBadge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.nav {
+  margin-left: var(--space-4);
+}
+
+.navList {
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border-radius: var(--control-radius);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background: var(--color-surface-container);
+}
+
+/* Active page: primary text on the surface (4.5:1 light, 7.8:1 dark) plus an underline bar, not colour alone. */
+.navLinkActive {
+  color: var(--color-primary);
+  box-shadow: inset 0 -2px 0 var(--color-primary);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* The underline bar replaces the global focus ring's box-shadow (same specificity, later source order), so the
+   ring is restated here together with the bar; keyboard users must see focus on the current page too. */
+.navLinkActive:focus-visible {
+  box-shadow:
+    inset 0 -2px 0 var(--color-primary),
+    0 0 0 var(--focus-ring-gap) var(--color-surface),
+    0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary);
+}
+
+.navLinkActive:hover {
+  background: transparent;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.breadcrumb {
+  min-width: 180px;
+}
+
+.breadcrumbList {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+.searchSlot {
+  margin-left: auto;
+}

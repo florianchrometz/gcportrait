@@ -1,0 +1,47 @@
+[
+  {
+    "name": "//orgpolicy.googleapis.com/projects/10000000002/policies/compute.vmExternalIpAccess",
+    "assetType": "orgpolicy.googleapis.com/Policy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "updateTime": "2026-09-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/policies/compute.vmExternalIpAccess",
+      "spec": {
+        "etag": "CO3qq7cGEJjN0ooD",
+        "updateTime": "2026-02-01T09:00:00Z",
+        "rules": [
+          {
+            "denyAll": true
+          }
+        ]
+      },
+      "etag": "CO3qq7cGEJjN0ooD"
+    }
+  },
+  {
+    "name": "//orgpolicy.googleapis.com/organizations/30000000001/policies/iam.allowedPolicyMemberDomains",
+    "assetType": "orgpolicy.googleapis.com/Policy",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "updateTime": "2026-09-01T08:00:00Z",
+    "data": {
+      "name": "organizations/30000000001/policies/iam.allowedPolicyMemberDomains",
+      "spec": {
+        "updateTime": "2025-01-01T09:00:00Z",
+        "rules": [
+          {
+            "values": {
+              "allowedValues": ["C00000000"]
+            }
+          }
+        ]
+      }
+    }
+  }
+]

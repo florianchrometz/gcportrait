@@ -1,0 +1,149 @@
+[
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-01",
+    "assetType": "networkconnectivity.googleapis.com/HubRoute",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-01",
+      "createTime": "2026-09-20T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "ipCidrRange": "10.10.0.0/20",
+      "type": "VPC_PRIMARY_SUBNET",
+      "uid": "00000000-0000-4000-8000-000000000201",
+      "state": "ACTIVE",
+      "spoke": "projects/10000000001/locations/global/spokes/spoke-core",
+      "location": "projects/10000000001/locations/europe-west3",
+      "priority": "100",
+      "nextHopVpcNetwork": {
+        "uri": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-02",
+    "assetType": "networkconnectivity.googleapis.com/HubRoute",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-02",
+      "createTime": "2026-09-20T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "ipCidrRange": "172.16.0.0/16",
+      "type": "DYNAMIC_ROUTE",
+      "uid": "00000000-0000-4000-8000-000000000202",
+      "state": "ACTIVE",
+      "spoke": "projects/10000000001/locations/europe-west3/spokes/spoke-vpn-dc1",
+      "location": "projects/10000000001/locations/europe-west3",
+      "priority": "100",
+      "nextHopVpnTunnel": {
+        "uri": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-onprem-dc1-0",
+        "vpcNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "siteToSiteDataTransfer": true
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-03",
+    "assetType": "networkconnectivity.googleapis.com/HubRoute",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-03",
+      "createTime": "2026-09-20T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "ipCidrRange": "172.17.0.0/16",
+      "type": "DYNAMIC_ROUTE",
+      "uid": "00000000-0000-4000-8000-000000000203",
+      "state": "ACTIVE",
+      "spoke": "projects/10000000001/locations/europe-west3/spokes/spoke-ic-fra",
+      "location": "projects/10000000001/locations/europe-west3",
+      "priority": "100",
+      "nextHopInterconnectAttachment": {
+        "uri": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-a",
+        "vpcNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "siteToSiteDataTransfer": true
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-04",
+    "assetType": "networkconnectivity.googleapis.com/HubRoute",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/hubs/hub-prod/routeTables/default/routes/r-04",
+      "createTime": "2026-09-20T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "ipCidrRange": "172.18.0.0/16",
+      "type": "DYNAMIC_ROUTE",
+      "uid": "00000000-0000-4000-8000-000000000204",
+      "state": "ACTIVE",
+      "spoke": "projects/10000000001/locations/europe-west3/spokes/spoke-sdwan",
+      "location": "projects/10000000001/locations/europe-west3",
+      "priority": "100",
+      "nextHopRouterApplianceInstance": {
+        "uri": "https://www.googleapis.com/compute/v1/projects/demo-net-1/zones/europe-west3-a/instances/sdwan-1",
+        "vpcNetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+        "siteToSiteDataTransfer": true
+      }
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/hubs/hub-inspect/routeTables/default/routes/r-05",
+    "assetType": "networkconnectivity.googleapis.com/HubRoute",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/hubs/hub-inspect/routeTables/default/routes/r-05",
+      "createTime": "2026-09-20T09:00:00Z",
+      "updateTime": "2026-09-20T09:00:00Z",
+      "ipCidrRange": "172.20.0.0/16",
+      "type": "DYNAMIC_ROUTE",
+      "uid": "00000000-0000-4000-8000-000000000205",
+      "state": "ACTIVE",
+      "spoke": "projects/10000000001/locations/europe-west3/spokes/spoke-gw-sse",
+      "location": "projects/10000000001/locations/europe-west3",
+      "priority": "100",
+      "nextHopSpoke": {
+        "uri": "projects/10000000001/locations/europe-west3/spokes/spoke-gw-sse",
+        "siteToSiteDataTransfer": false
+      }
+    }
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "name": "//apigee.googleapis.com/organizations/demo-app-1/apis/orders-v1/revisions/3",
+  "assetType": "apigee.googleapis.com/ApiProxyRevision",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "orders-v1",
+    "revision": "3",
+    "displayName": "orders-v1",
+    "basepaths": ["/orders/v1"],
+    "createdAt": "1759000000000",
+    "lastModifiedAt": "1759000000000",
+    "policies": ["VerifyAPIKey", "SpikeArrest"],
+    "proxyEndpoints": ["default"],
+    "targetEndpoints": ["default"],
+    "targetServers": ["orders-backend"],
+    "type": "Application",
+    "configurationVersion": {
+      "majorVersion": 4
+    }
+  }
+}

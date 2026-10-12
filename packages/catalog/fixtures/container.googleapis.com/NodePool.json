@@ -1,0 +1,56 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/nodePools/default-pool",
+  "assetType": "container.googleapis.com/NodePool",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "default-pool",
+    "config": {
+      "machineType": "e2-standard-4",
+      "diskSizeGb": 100,
+      "diskType": "pd-balanced",
+      "imageType": "COS_CONTAINERD",
+      "serviceAccount": "gke-nodes@demo-app-1.iam.gserviceaccount.com",
+      "bootDiskKmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/gke-boot",
+      "oauthScopes": ["https://www.googleapis.com/auth/cloud-platform"],
+      "workloadMetadataConfig": {
+        "mode": "GKE_METADATA"
+      },
+      "shieldedInstanceConfig": {
+        "enableSecureBoot": true,
+        "enableIntegrityMonitoring": true
+      }
+    },
+    "initialNodeCount": 1,
+    "autoscaling": {
+      "enabled": true,
+      "minNodeCount": 1,
+      "maxNodeCount": 4,
+      "locationPolicy": "BALANCED"
+    },
+    "management": {
+      "autoUpgrade": true,
+      "autoRepair": true
+    },
+    "locations": ["europe-west3-a", "europe-west3-b"],
+    "version": "1.31.4-gke.1183000",
+    "instanceGroupUrls": [
+      "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instanceGroupManagers/gke-shop-default-pool-1a2b3c4d-grp",
+      "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-b/instanceGroupManagers/gke-shop-default-pool-5e6f7a8b-grp"
+    ],
+    "networkConfig": {
+      "podRange": "pods",
+      "podIpv4CidrBlock": "10.20.0.0/16"
+    },
+    "podIpv4CidrSize": 24,
+    "status": "RUNNING",
+    "selfLink": "https://container.googleapis.com/v1/projects/demo-app-1/locations/europe-west3/clusters/shop/nodePools/default-pool"
+  }
+}

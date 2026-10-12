@@ -1,0 +1,133 @@
+# SPDX-License-Identifier: MIT
+#
+# Dataplex, listed on the official page as Knowledge Catalog: the lake and zone containers (from the catalog
+# seed), assets, tasks and scans, the catalog's own metadata objects (entry groups, entry and aspect types,
+# glossaries) and the organisation-level encryption configuration. Lake › Zone › Asset nests by name; an asset
+# points at the bucket or dataset it manages.
+product: Knowledge Catalog
+service: dataplex.googleapis.com
+icon: dataplex
+types:
+  dataplex.googleapis.com/Lake:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'lake · {{location}}'
+    console: 'https://console.cloud.google.com/dataplex/lakes/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.metastore.service, normalize: name, service: metastore.googleapis.com }
+    contains:
+      - byParent: dataplex.googleapis.com/Zone
+      - byParent: dataplex.googleapis.com/Task
+
+  dataplex.googleapis.com/Zone:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type | lower}} zone'
+    console: 'https://console.cloud.google.com/dataplex/lakes/{{location}}/{{name | parentSegment(lakes)}}/zones/{{name | lastSegment}}?project={{projectId}}'
+    contains:
+      - byParent: dataplex.googleapis.com/Asset
+
+  dataplex.googleapis.com/Asset:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.resourceSpec.type | lower}} · {{data.resourceSpec.readAccessMode | lower}}'
+    console: 'https://console.cloud.google.com/dataplex/lakes/{{location}}/{{name | parentSegment(lakes)}}/zones/{{name | parentSegment(zones)}}/assets/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: "$.data[?(@.type == 'BIGQUERY_DATASET')].name", normalize: bigqueryUri }
+      - {
+          kind: uses,
+          to: "$.data[?(@.type == 'STORAGE_BUCKET')].name",
+          normalize: name,
+          service: storage.googleapis.com,
+        }
+    notes: >-
+      resourceSpec.name is projects/<project>/datasets/<d> or projects/<project>/buckets/<b> (documented with
+      the project number) and resourceSpec.type says which; the filters read the spec of each type (a filter
+      on data keeps the members whose type matches, which is resourceSpec). A dataset written with the
+      project id resolves to the dataset; one written with the project number, as the API documents it and
+      the fixture writes it, stays dangling until names are canonicalised by project (catalog follow-ups). No normaliser
+      turns projects/<p>/buckets/<b> into the bucket's name (//storage.googleapis.com/<b>) yet (gcsUri would
+      read "projects" as the bucket), so the bucket rule keeps the value as a storage name that stays
+      dangling until gcsUri learns that form.
+
+  dataplex.googleapis.com/Task:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.triggerSpec.type | lower}} · {{data.triggerSpec.schedule}}'
+    console: 'https://console.cloud.google.com/dataplex/process/tasks?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.executionSpec.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: encryptedBy, to: $.data.executionSpec.kmsKey, normalize: kmsKey }
+      - { kind: attaches, to: $.data.*.infrastructureSpec.vpcNetwork.subNetwork, normalize: computeRelative }
+      - {
+          kind: attaches,
+          to: $.data.*.infrastructureSpec.vpcNetwork.network,
+          normalize: computeRelative,
+          weak: true,
+        }
+      - { kind: uses, to: $.data.*.infrastructureSpec.containerImage.image, normalize: artifactImage }
+    notes: >-
+      A Spark or notebook task of a lake, run on Dataproc Serverless as executionSpec.serviceAccount.
+      infrastructureSpec sits under spark or notebook, hence the wildcard. The documentation gives no format
+      for vpcNetwork.network and subNetwork (the default is the project's network named default): relative
+      Compute names resolve, bare names stay dangling (verify on an export).
+
+  dataplex.googleapis.com/DataScan:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type | lower}}'
+    relations:
+      - { kind: uses, to: $.data.data.resource, normalize: name }
+      - { kind: uses, to: $.data.*.postScanActions.bigqueryExport.resultsTable, normalize: bigqueryUri }
+    notes: >-
+      data.resource is a full name: a BigQuery table (or, for documentation scans, a dataset) resolves; a
+      bucket is written //storage.googleapis.com/projects/<p>/buckets/<b>, which is not the bucket's asset
+      name, so it stays dangling. data.entity names a Dataplex entity
+      (projects/<number>/…/zones/<z>/entities/<e>), which is no Cloud Asset Inventory type, so it is not
+      read. Quality and profile scans may export their results to a BigQuery table
+      (postScanActions.bigqueryExport.resultsTable).
+
+  dataplex.googleapis.com/EntryGroup:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: 'entry group · {{location}}'
+    hiddenWhen: "$.name contains '/entryGroups/@'"
+    notes: >-
+      Entry groups whose id starts with @ (@bigquery, @pubsub, …) are the system groups the catalog keeps
+      for Google Cloud resources; they start hidden.
+
+  dataplex.googleapis.com/EntryType:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: 'entry type · {{data.system}}'
+
+  dataplex.googleapis.com/AspectType:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: 'aspect type · {{location}}'
+
+  dataplex.googleapis.com/Glossary:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: 'glossary · {{location}}'
+    notes: >-
+      Glossary terms and categories are not Cloud Asset Inventory types; termCount and categoryCount count
+      them but are left out of the JSON when zero, so the subtitle does not show them.
+
+  dataplex.googleapis.com/EncryptionConfig:
+    role: hidden
+    subtitle: '{{data.encryptionState | lower}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.key, normalize: kmsKey }
+    notes: >-
+      An organisation-level setting (organizations/<org>/locations/<l>/encryptionConfigs/<c>) that encrypts
+      the catalog's metadata in one location with a customer-managed key.
+
+  dataplex.googleapis.com/MetadataJob:
+    role: hidden
+    subtitle: '{{data.type | lower}} · {{data.status.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.importSpec.sourceStorageUri, normalize: gcsUri }
+      - { kind: uses, to: $.data.exportSpec.outputPath, normalize: gcsUri }
+      - { kind: uses, to: '$.data.importSpec.scope.entryGroups[*]', normalize: name }
+    notes: A metadata import from (or export to) Cloud Storage; one asset per run, so hidden by default.

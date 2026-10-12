@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: MIT
+name: Asset type request
+description: Ask for an asset type to be drawn with its own icon, label and relations.
+title: '[Catalog]: '
+labels: ['catalog']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every asset type already renders: a type without a catalog entry appears as a generic card inside its
+        project, with no arrows. This form asks for a proper entry (role, label, icon and relations).
+        Adding one yourself is a short, documented task: see `.agents/skills/gcp-asset-catalog/SKILL.md`.
+
+        Do not paste real organisation data; the sample asset below must be synthetic.
+  - type: input
+    id: asset-type
+    attributes:
+      label: Asset type identifier
+      description: Exactly as Cloud Asset Inventory reports it in the `assetType` field.
+      placeholder: compute.googleapis.com/Instance
+    validations:
+      required: true
+  - type: input
+    id: api-reference
+    attributes:
+      label: API reference link
+      description: The REST reference page of the resource, so the fields behind each relation can be checked.
+      placeholder: https://cloud.google.com/compute/docs/reference/rest/v1/instances
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Proposed role
+      description: How the type appears in the diagram (the gcp-asset-catalog skill, §2 and §3).
+      options:
+        - container (a zone other resources nest into)
+        - core (a card with references to other resources)
+        - leaf (a card without references beyond its container)
+        - hidden (imported, but hidden by default; for high-volume or operational records)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: relations
+    attributes:
+      label: Relations
+      description: >-
+        One line per reference: the relation kind, the field that holds the reference (a JSONPath on the
+        asset), and the target asset type. Kinds: contains, attaches, routes, uses, peers, connects,
+        memberOf, runsAs, encryptedBy, secures, triggers, replicates, shares. Write "none" if the type
+        references nothing.
+      placeholder: |
+        attaches → $.data.networkInterfaces[*].subnetwork → compute.googleapis.com/Subnetwork
+        uses → $.data.disks[*].source → compute.googleapis.com/Disk
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Why it matters
+      description: Where the type shows up in your architecture, and what the diagram is missing today.
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample asset (synthetic)
+      description: >-
+        Optional: the shape of the asset's `resource.data`, with every value replaced by a synthetic one
+        (example.com domains, project numbers below 100000000000).
+      render: json
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: >-
+            The identifier is in the official list of supported asset types
+            (https://docs.cloud.google.com/asset-inventory/docs/supported-asset-types).
+          required: true
+        - label: This request contains no real organisation data.
+          required: true

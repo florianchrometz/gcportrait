@@ -1,0 +1,12 @@
+{
+  "name": "//designcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/spaces/platform/applicationTemplates/web-stack/revisions/r4",
+  "assetType": "designcenter.googleapis.com/ApplicationTemplateRevision",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/spaces/platform/applicationTemplates/web-stack/revisions/r4",
+    "createTime": "2026-04-28T15:00:00Z"
+  }
+}

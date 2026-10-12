@@ -1,0 +1,34 @@
+[
+  {
+    "name": "//documentai.googleapis.com/projects/10000000003/locations/eu/processors/7a1c2e3f4b5d6e70/processorVersions/9b8c7d6e5f4a3b21",
+    "assetType": "documentai.googleapis.com/ProcessorVersion",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "eu",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/eu/processors/7a1c2e3f4b5d6e70/processorVersions/9b8c7d6e5f4a3b21",
+      "displayName": "uptrained-2026-09",
+      "state": "DEPLOYED",
+      "createTime": "2026-09-15T08:00:00Z",
+      "kmsKeyName": "projects/demo-sec-1/locations/europe/keyRings/docai/cryptoKeys/processors",
+      "googleManaged": false,
+      "modelType": "MODEL_TYPE_GENERATIVE"
+    }
+  },
+  {
+    "name": "//documentai.googleapis.com/projects/10000000003/locations/eu/processors/7a1c2e3f4b5d6e70/processorVersions/pretrained-invoice-v2.0-2023-12-06",
+    "assetType": "documentai.googleapis.com/ProcessorVersion",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "eu",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/eu/processors/7a1c2e3f4b5d6e70/processorVersions/pretrained-invoice-v2.0-2023-12-06",
+      "displayName": "Google Stable",
+      "state": "DEPLOYED",
+      "createTime": "2023-12-06T00:00:00Z",
+      "googleManaged": true
+    }
+  }
+]

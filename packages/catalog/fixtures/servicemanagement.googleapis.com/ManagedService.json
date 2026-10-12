@@ -1,0 +1,17 @@
+{
+  "name": "//servicemanagement.googleapis.com/services/orders.endpoints.demo-app-1.cloud.goog",
+  "assetType": "servicemanagement.googleapis.com/ManagedService",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "serviceName": "orders.endpoints.demo-app-1.cloud.goog",
+    "producerProjectId": "demo-app-1"
+  }
+}

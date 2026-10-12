@@ -1,0 +1,67 @@
+[
+  {
+    "name": "//discoveryengine.googleapis.com/projects/10000000002/locations/eu/collections/default_collection/dataStores/product-docs",
+    "assetType": "discoveryengine.googleapis.com/DataStore",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "eu",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/eu/collections/default_collection/dataStores/product-docs",
+      "displayName": "Product documentation",
+      "industryVertical": "GENERIC",
+      "solutionTypes": ["SOLUTION_TYPE_SEARCH"],
+      "defaultSchemaId": "default_schema",
+      "contentConfig": "CONTENT_REQUIRED",
+      "createTime": "2026-02-02T08:00:00Z",
+      "cmekConfig": {
+        "name": "projects/10000000002/locations/eu/cmekConfigs/default_cmek_config",
+        "kmsKey": "projects/demo-sec-1/locations/europe/keyRings/search/cryptoKeys/search",
+        "state": "ACTIVE",
+        "isDefault": true
+      },
+      "documentProcessingConfig": {
+        "name": "projects/10000000002/locations/eu/collections/default_collection/dataStores/product-docs/documentProcessingConfig",
+        "defaultParsingConfig": {
+          "layoutParsingConfig": {}
+        }
+      }
+    }
+  },
+  {
+    "name": "//discoveryengine.googleapis.com/projects/10000000002/locations/global/collections/default_collection/dataStores/orders-federated",
+    "assetType": "discoveryengine.googleapis.com/DataStore",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/global/collections/default_collection/dataStores/orders-federated",
+      "displayName": "Orders (AlloyDB)",
+      "industryVertical": "GENERIC",
+      "solutionTypes": ["SOLUTION_TYPE_SEARCH"],
+      "contentConfig": "NO_CONTENT",
+      "createTime": "2026-07-02T08:00:00Z",
+      "federatedSearchConfig": {
+        "alloyDbConfig": {
+          "alloydbConnectionConfig": {
+            "instance": "projects/demo-data-1/locations/europe-west3/clusters/orders/instances/orders-primary",
+            "database": "orders",
+            "authMode": "AUTH_MODE_SERVICE_ACCOUNT"
+          },
+          "returnedFields": ["order_id", "status"]
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+#
+# Access Approval: the settings singleton of an organisation, folder or project.
+product: Access Approval
+service: accessapproval.googleapis.com
+icon: access_approval
+types:
+  accessapproval.googleapis.com/AccessApprovalSettings:
+    role: hidden
+    label: 'Access Approval'
+    subtitle: '{{data.enrolledServices[0].cloudProduct}} · {{data.enrolledServices[0].enrollmentLevel | lower}}'
+    relations:
+      - { kind: uses, to: $.data.activeKeyVersion, normalize: kmsKey }
+      - { kind: triggers, to: $.data.notificationPubsubTopic, normalize: pubsubUri }
+    notes: >-
+      <organizations|folders|projects>/<n>/accessApprovalSettings. activeKeyVersion is the asymmetric Cloud KMS
+      key version that signs approvals (drawn to its key); notificationPubsubTopic receives approval requests.
+      Notification e-mails are addresses, not assets.

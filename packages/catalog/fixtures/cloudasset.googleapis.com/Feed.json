@@ -1,0 +1,42 @@
+[
+  {
+    "name": "//cloudasset.googleapis.com/projects/10000000005/feeds/compute-changes",
+    "assetType": "cloudasset.googleapis.com/Feed",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000005/feeds/compute-changes",
+      "assetTypes": ["compute.googleapis.com/Instance", "compute.googleapis.com/Firewall"],
+      "contentType": "RESOURCE",
+      "feedOutputConfig": {
+        "pubsubDestination": {
+          "topic": "projects/demo-ops-1/topics/asset-changes"
+        }
+      }
+    }
+  },
+  {
+    "name": "//cloudasset.googleapis.com/organizations/30000000001/feeds/new-projects",
+    "assetType": "cloudasset.googleapis.com/Feed",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "organizations/30000000001/feeds/new-projects",
+      "assetTypes": ["cloudresourcemanager.googleapis.com/Project"],
+      "contentType": "RESOURCE",
+      "condition": {
+        "expression": "temporal_asset.prior_asset_state == google.cloud.asset.v1.TemporalAsset.PriorAssetState.DOES_NOT_EXIST",
+        "title": "created"
+      },
+      "feedOutputConfig": {
+        "pubsubDestination": {
+          "topic": "projects/demo-ops-1/topics/org-changes"
+        }
+      }
+    }
+  }
+]

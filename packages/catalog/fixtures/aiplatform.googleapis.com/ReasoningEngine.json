@@ -1,0 +1,112 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/reasoningEngines/5517789201234567168",
+    "assetType": "aiplatform.googleapis.com/ReasoningEngine",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/reasoningEngines/5517789201234567168",
+      "displayName": "support-agent",
+      "description": "Customer support agent (ADK)",
+      "spec": {
+        "agentFramework": "google-adk",
+        "packageSpec": {
+          "pickleObjectGcsUri": "gs://demo-data-1-agents/support-agent/agent_engine.pkl",
+          "dependencyFilesGcsUri": "gs://demo-data-1-agents/support-agent/dependencies.tar.gz",
+          "requirementsGcsUri": "gs://demo-data-1-agents/support-agent/requirements.txt",
+          "pythonVersion": "3.12"
+        },
+        "deploymentSpec": {
+          "env": [
+            {
+              "name": "ORDERS_API",
+              "value": "https://orders.internal.example.com"
+            }
+          ],
+          "secretEnv": [
+            {
+              "name": "CRM_TOKEN",
+              "secretRef": {
+                "secret": "crm-token",
+                "version": "latest"
+              }
+            }
+          ],
+          "pscInterfaceConfig": {
+            "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/agents",
+            "dnsPeeringConfigs": [
+              {
+                "domain": "internal.example.com.",
+                "targetProject": "demo-net-1",
+                "targetNetwork": "core"
+              }
+            ]
+          },
+          "minInstances": 1,
+          "maxInstances": 10
+        },
+        "serviceAccount": "agent-runtime@demo-data-1.iam.gserviceaccount.com"
+      },
+      "createTime": "2026-07-01T08:00:00Z",
+      "updateTime": "2026-09-28T08:00:00Z",
+      "etag": "AMEw9yNb",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      }
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/reasoningEngines/5517789201234569999",
+    "assetType": "aiplatform.googleapis.com/ReasoningEngine",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/reasoningEngines/5517789201234569999",
+      "displayName": "pricing-agent",
+      "spec": {
+        "agentFramework": "langgraph",
+        "sourceCodeSpec": {
+          "developerConnectSource": {
+            "config": {
+              "gitRepositoryLink": "projects/demo-app-1/locations/europe-west3/connections/github/gitRepositoryLinks/pricing-agent",
+              "dir": "agent",
+              "revision": "main"
+            }
+          },
+          "pythonSpec": {
+            "version": "3.12",
+            "entrypointModule": "agent",
+            "entrypointObject": "root_agent"
+          }
+        },
+        "serviceAccount": "agent-runtime@demo-data-1.iam.gserviceaccount.com"
+      },
+      "createTime": "2026-08-01T08:00:00Z",
+      "updateTime": "2026-09-29T08:00:00Z"
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/reasoningEngines/5517789201234568888",
+    "assetType": "aiplatform.googleapis.com/ReasoningEngine",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/reasoningEngines/5517789201234568888",
+      "displayName": "catalog-agent",
+      "spec": {
+        "agentFramework": "custom",
+        "containerSpec": {
+          "imageUri": "europe-west3-docker.pkg.dev/demo-data-1/agents/catalog-agent:2.1.0"
+        }
+      },
+      "createTime": "2026-08-15T08:00:00Z",
+      "updateTime": "2026-09-30T08:00:00Z"
+    }
+  }
+]

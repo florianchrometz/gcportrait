@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+#
+# DNS and domains. `owns` lists the official asset types this group owns, mapped or not (exact types, or
+# <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not mapped
+# yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group dns-domains
+title: DNS and domains
+owns:
+  - 'dns.googleapis.com/*'
+types: {} # every Cloud DNS type is mapped in products/dns.googleapis.com.yaml

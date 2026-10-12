@@ -1,0 +1,79 @@
+[
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/responsePolicies/core-rpz/rules/legacy-app",
+    "assetType": "dns.googleapis.com/ResponsePolicyRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#responsePolicyRule",
+      "ruleName": "legacy-app",
+      "dnsName": "legacy.example.com.",
+      "localData": {
+        "localDatas": [
+          {
+            "kind": "dns#resourceRecordSet",
+            "name": "legacy.example.com.",
+            "type": "A",
+            "ttl": 300,
+            "rrdatas": ["10.10.0.40"]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/responsePolicies/core-rpz/rules/googleapis-private",
+    "assetType": "dns.googleapis.com/ResponsePolicyRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#responsePolicyRule",
+      "ruleName": "googleapis-private",
+      "dnsName": "*.googleapis.com.",
+      "localData": {
+        "localDatas": [
+          {
+            "kind": "dns#resourceRecordSet",
+            "name": "*.googleapis.com.",
+            "type": "CNAME",
+            "ttl": 300,
+            "rrdatas": ["private.googleapis.com."]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/10000000001/locations/global/responsePolicies/core-rpz/rules/partner-passthru",
+    "assetType": "dns.googleapis.com/ResponsePolicyRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#responsePolicyRule",
+      "ruleName": "partner-passthru",
+      "dnsName": "*.partner.example.net.",
+      "behavior": "bypassResponsePolicy"
+    }
+  }
+]

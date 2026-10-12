@@ -1,0 +1,62 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/targetPools/legacy-pool",
+    "assetType": "compute.googleapis.com/TargetPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetPool",
+      "id": "7300000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "legacy-pool",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "sessionAffinity": "NONE",
+      "instances": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/legacy-web-1",
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-b/instances/legacy-web-2"
+      ],
+      "healthChecks": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/httpHealthChecks/legacy-hc"
+      ],
+      "backupPool": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetPools/legacy-pool-backup",
+      "failoverRatio": 0.1,
+      "securityPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/securityPolicies/nlb-ddos",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetPools/legacy-pool"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/targetPools/legacy-pool-backup",
+    "assetType": "compute.googleapis.com/TargetPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#targetPool",
+      "id": "7300000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "legacy-pool-backup",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "sessionAffinity": "NONE",
+      "instances": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-c/instances/legacy-web-3"
+      ],
+      "healthChecks": [
+        "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/httpHealthChecks/legacy-hc"
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetPools/legacy-pool-backup"
+    }
+  }
+]

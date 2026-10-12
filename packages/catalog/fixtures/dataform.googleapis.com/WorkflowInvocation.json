@@ -1,0 +1,32 @@
+[
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowInvocations/1759284000-a1b2",
+    "assetType": "dataform.googleapis.com/WorkflowInvocation",
+    "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T02:10:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowInvocations/1759284000-a1b2",
+      "workflowConfig": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowConfigs/nightly",
+      "invocationConfig": { "serviceAccount": "dataform-runner@demo-data-1.iam.gserviceaccount.com" },
+      "state": "SUCCEEDED",
+      "invocationTiming": { "startTime": "2026-10-01T02:00:00Z", "endTime": "2026-10-01T02:10:00Z" },
+      "resolvedCompilationResult": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee01"
+    }
+  },
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowInvocations/1759370400-c3d4",
+    "assetType": "dataform.googleapis.com/WorkflowInvocation",
+    "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-02T09:05:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowInvocations/1759370400-c3d4",
+      "compilationResult": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee02",
+      "state": "FAILED",
+      "resolvedCompilationResult": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee02"
+    }
+  }
+]

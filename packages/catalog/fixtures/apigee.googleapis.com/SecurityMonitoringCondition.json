@@ -1,0 +1,23 @@
+{
+  "name": "//apigee.googleapis.com/organizations/demo-app-1/securityMonitoringConditions/prod-default",
+  "assetType": "apigee.googleapis.com/SecurityMonitoringCondition",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "organizations/demo-app-1/securityMonitoringConditions/prod-default",
+    "profile": "google-default",
+    "scope": "prod",
+    "includeAllResources": {},
+    "createTime": "2026-05-01T08:00:00Z",
+    "updateTime": "2026-05-01T08:00:00Z",
+    "totalMonitoredResources": 12,
+    "totalDeployedResources": 12
+  }
+}

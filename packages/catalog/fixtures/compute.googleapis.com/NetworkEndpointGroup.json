@@ -1,0 +1,138 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/web-run-neg",
+    "assetType": "compute.googleapis.com/NetworkEndpointGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#networkEndpointGroup",
+      "id": "7600000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-run-neg",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "networkEndpointType": "SERVERLESS",
+      "cloudRun": {
+        "service": "storefront-api"
+      },
+      "size": 0,
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/web-run-neg"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/networkEndpointGroups/internal-api-neg-a",
+    "assetType": "compute.googleapis.com/NetworkEndpointGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#networkEndpointGroup",
+      "id": "7600000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "internal-api-neg-a",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "networkEndpointType": "GCE_VM_IP_PORT",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "defaultPort": 8080,
+      "size": 2,
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/networkEndpointGroups/internal-api-neg-a"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/inventory-psc-neg",
+    "assetType": "compute.googleapis.com/NetworkEndpointGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#networkEndpointGroup",
+      "id": "7600000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "inventory-psc-neg",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "networkEndpointType": "PRIVATE_SERVICE_CONNECT",
+      "pscTargetService": "projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "pscData": {
+        "consumerPscAddress": "10.10.0.46",
+        "pscConnectionId": "71000000000000003",
+        "pscConnectionStatus": "ACCEPTED"
+      },
+      "size": 1,
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/inventory-psc-neg"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/thumbnailer-neg",
+    "assetType": "compute.googleapis.com/NetworkEndpointGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#networkEndpointGroup",
+      "id": "7600000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "thumbnailer-neg",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "networkEndpointType": "SERVERLESS",
+      "size": 0,
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/thumbnailer-neg",
+      "cloudFunction": {
+        "function": "thumbnailer"
+      }
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/legacy-app-neg",
+    "assetType": "compute.googleapis.com/NetworkEndpointGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#networkEndpointGroup",
+      "id": "7600000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "legacy-app-neg",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "networkEndpointType": "SERVERLESS",
+      "size": 0,
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/networkEndpointGroups/legacy-app-neg",
+      "appEngine": {
+        "service": "default",
+        "version": "v20260901"
+      }
+    }
+  }
+]

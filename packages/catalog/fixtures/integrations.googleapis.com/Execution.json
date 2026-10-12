@@ -1,0 +1,25 @@
+{
+  "name": "//integrations.googleapis.com/projects/demo-app-1/locations/europe-west3/integrations/order-sync/executions/0a1b2c3d-0000-4000-8000-000000000001",
+  "assetType": "integrations.googleapis.com/Execution",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/integrations/order-sync/executions/0a1b2c3d-0000-4000-8000-000000000001",
+    "createTime": "2026-10-01T07:59:00Z",
+    "updateTime": "2026-10-01T07:59:02Z",
+    "executionMethod": "POST",
+    "triggerId": "api_trigger/order-sync_API_1",
+    "integrationVersionState": "ACTIVE",
+    "snapshotNumber": "7",
+    "executionDetails": {
+      "state": "SUCCEEDED"
+    }
+  }
+}

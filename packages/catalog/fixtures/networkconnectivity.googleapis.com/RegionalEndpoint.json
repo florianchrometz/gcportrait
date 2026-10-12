@@ -1,0 +1,52 @@
+[
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/europe-west3/regionalEndpoints/rep-storage-ew3",
+    "assetType": "networkconnectivity.googleapis.com/RegionalEndpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/europe-west3/regionalEndpoints/rep-storage-ew3",
+      "description": "Cloud Storage over a regional endpoint, kept in the region",
+      "createTime": "2025-06-01T09:00:00Z",
+      "updateTime": "2025-06-01T09:00:00Z",
+      "targetGoogleApi": "storage.europe-west3.p.rep.googleapis.com",
+      "network": "projects/demo-net-1/global/networks/core",
+      "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "accessType": "REGIONAL",
+      "address": "10.10.0.100",
+      "pscForwardingRule": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/forwardingRules/rep-storage-ew3"
+    }
+  },
+  {
+    "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/europe-west3/regionalEndpoints/rep-bigquery-ew3",
+    "assetType": "networkconnectivity.googleapis.com/RegionalEndpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/europe-west3/regionalEndpoints/rep-bigquery-ew3",
+      "description": "BigQuery over a regional endpoint (created before address replaced ipAddress)",
+      "createTime": "2024-11-01T09:00:00Z",
+      "updateTime": "2024-11-01T09:00:00Z",
+      "targetGoogleApi": "bigquery.europe-west3.p.rep.googleapis.com",
+      "network": "projects/demo-net-1/global/networks/core",
+      "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "accessType": "GLOBAL",
+      "ipAddress": "10.10.0.101",
+      "pscForwardingRule": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/forwardingRules/rep-bigquery-ew3"
+    }
+  }
+]

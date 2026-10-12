@@ -1,0 +1,116 @@
+[
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-web-7k2p",
+    "assetType": "backupdr.googleapis.com/DataSource",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-web-7k2p",
+      "state": "ACTIVE",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-10-01T03:00:00Z",
+      "backupCount": "14",
+      "etag": "ds-1",
+      "totalStoredBytes": "21474836480",
+      "configState": "ACTIVE",
+      "backupConfigInfo": {
+        "lastBackupState": "SUCCEEDED",
+        "lastSuccessfulBackupConsistencyTime": "2026-10-01T03:00:00Z"
+      },
+      "dataSourceGcpResource": {
+        "gcpResourcename": "projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p",
+        "location": "europe-west3-a",
+        "type": "compute.googleapis.com/Instance",
+        "computeInstanceDatasourceProperties": {
+          "name": "projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p",
+          "machineType": "e2-standard-4",
+          "totalDiskCount": "1",
+          "totalDiskSizeGb": "20"
+        }
+      }
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-orders-db",
+    "assetType": "backupdr.googleapis.com/DataSource",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-orders-db",
+      "state": "ACTIVE",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-10-01T03:00:00Z",
+      "backupCount": "14",
+      "etag": "ds-1",
+      "totalStoredBytes": "21474836480",
+      "configState": "ACTIVE",
+      "backupConfigInfo": {
+        "lastBackupState": "SUCCEEDED",
+        "lastSuccessfulBackupConsistencyTime": "2026-10-01T03:00:00Z"
+      },
+      "dataSourceGcpResource": {
+        "gcpResourcename": "projects/demo-data-1/instances/orders-db",
+        "location": "europe-west3",
+        "type": "sqladmin.googleapis.com/Instance"
+      }
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-orders-alloydb",
+    "assetType": "backupdr.googleapis.com/DataSource",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-orders-alloydb",
+      "state": "ACTIVE",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-10-01T03:00:00Z",
+      "backupCount": "14",
+      "etag": "ds-1",
+      "totalStoredBytes": "21474836480",
+      "configState": "ACTIVE",
+      "backupConfigInfo": {
+        "lastBackupState": "SUCCEEDED",
+        "lastSuccessfulBackupConsistencyTime": "2026-10-01T03:00:00Z"
+      },
+      "dataSourceGcpResource": {
+        "gcpResourcename": "projects/demo-data-1/locations/europe-west3/clusters/orders",
+        "location": "europe-west3",
+        "type": "alloydb.googleapis.com/Cluster"
+      }
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-media",
+    "assetType": "backupdr.googleapis.com/DataSource",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-media",
+      "state": "ACTIVE",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-10-01T03:00:00Z",
+      "backupCount": "14",
+      "etag": "ds-1",
+      "totalStoredBytes": "21474836480",
+      "configState": "ACTIVE",
+      "backupConfigInfo": {
+        "lastBackupState": "SUCCEEDED",
+        "lastSuccessfulBackupConsistencyTime": "2026-10-01T03:00:00Z"
+      },
+      "dataSourceGcpResource": {
+        "gcpResourcename": "projects/demo-app-1/locations/europe-west3/instances/media",
+        "location": "europe-west3",
+        "type": "file.googleapis.com/Instance"
+      }
+    }
+  }
+]

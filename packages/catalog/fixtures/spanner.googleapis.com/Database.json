@@ -1,0 +1,44 @@
+[
+  {
+    "name": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger/databases/payments",
+    "assetType": "spanner.googleapis.com/Database",
+    "parent": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/instances/ledger/databases/payments",
+      "state": "READY",
+      "createTime": "2024-04-01T09:00:00Z",
+      "encryptionConfig": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/spanner"
+      },
+      "versionRetentionPeriod": "1h",
+      "earliestVersionTime": "2026-10-01T07:00:00Z",
+      "defaultLeader": "europe-west3",
+      "databaseDialect": "GOOGLE_STANDARD_SQL",
+      "enableDropProtection": true
+    }
+  },
+  {
+    "name": "//spanner.googleapis.com/projects/demo-data-1/instances/global-ledger/databases/accounts",
+    "assetType": "spanner.googleapis.com/Database",
+    "parent": "//spanner.googleapis.com/projects/demo-data-1/instances/global-ledger",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "eur3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/instances/global-ledger/databases/accounts",
+      "state": "READY",
+      "createTime": "2025-03-01T09:00:00Z",
+      "encryptionConfig": {
+        "kmsKeyNames": [
+          "projects/demo-sec-1/locations/europe-west1/keyRings/data/cryptoKeys/spanner",
+          "projects/demo-sec-1/locations/europe-west4/keyRings/data/cryptoKeys/spanner"
+        ]
+      },
+      "versionRetentionPeriod": "1h",
+      "databaseDialect": "POSTGRESQL"
+    }
+  }
+]

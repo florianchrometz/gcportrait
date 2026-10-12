@@ -1,0 +1,195 @@
+[
+  {
+    "name": "//osconfig.googleapis.com/projects/demo-app-1/locations/europe-west3-a/osPolicyAssignments/ops-agent",
+    "assetType": "osconfig.googleapis.com/OSPolicyAssignment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/europe-west3-a/osPolicyAssignments/ops-agent",
+      "osPolicies": [
+        {
+          "id": "install-ops-agent",
+          "mode": "ENFORCEMENT",
+          "resourceGroups": [
+            {
+              "inventoryFilters": [
+                {
+                  "osShortName": "debian"
+                }
+              ],
+              "resources": [
+                {
+                  "id": "ops-agent",
+                  "pkg": {
+                    "desiredState": "INSTALLED",
+                    "apt": {
+                      "name": "google-cloud-ops-agent"
+                    }
+                  }
+                },
+                {
+                  "id": "hardening-agent",
+                  "pkg": {
+                    "desiredState": "INSTALLED",
+                    "deb": {
+                      "source": {
+                        "gcs": {
+                          "bucket": "demo-ops-1-os-packages",
+                          "object": "agents/hardening-agent_2.4.1_amd64.deb",
+                          "generation": "1727600000000000"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "cis-baseline",
+                  "exec": {
+                    "validate": {
+                      "interpreter": "SHELL",
+                      "file": {
+                        "gcs": {
+                          "bucket": "demo-ops-1-os-packages",
+                          "object": "scripts/cis-validate.sh"
+                        }
+                      }
+                    },
+                    "enforce": {
+                      "interpreter": "SHELL",
+                      "file": {
+                        "gcs": {
+                          "bucket": "demo-ops-1-os-packages",
+                          "object": "scripts/cis-enforce.sh"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "motd",
+                  "file": {
+                    "path": "/etc/motd",
+                    "state": "PRESENT",
+                    "file": {
+                      "gcs": {
+                        "bucket": "demo-ops-1-os-packages",
+                        "object": "files/motd"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "instanceFilter": {
+        "inclusionLabels": [
+          {
+            "labels": {
+              "env": "prod"
+            }
+          }
+        ],
+        "inventories": [
+          {
+            "osShortName": "debian"
+          }
+        ]
+      },
+      "rollout": {
+        "disruptionBudget": {
+          "percent": 10
+        },
+        "minWaitDuration": "300s"
+      },
+      "revisionCreateTime": "2026-09-02T08:00:00Z",
+      "etag": "b1c2d3",
+      "uid": "a7d4c1e2-0000-4000-8000-000000000001",
+      "description": "Install the Ops Agent on production VMs",
+      "revisionId": "r7",
+      "rolloutState": "SUCCEEDED",
+      "baseline": true,
+      "deleted": false,
+      "reconciling": false
+    }
+  },
+  {
+    "name": "//osconfig.googleapis.com/projects/demo-app-1/locations/europe-west3-a/osPolicyAssignments/legacy-hardening",
+    "assetType": "osconfig.googleapis.com/OSPolicyAssignment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000002/locations/europe-west3-a/osPolicyAssignments/legacy-hardening",
+      "osPolicies": [
+        {
+          "id": "install-ops-agent",
+          "mode": "ENFORCEMENT",
+          "resourceGroups": [
+            {
+              "inventoryFilters": [
+                {
+                  "osShortName": "debian"
+                }
+              ],
+              "resources": [
+                {
+                  "id": "ops-agent",
+                  "pkg": {
+                    "desiredState": "INSTALLED",
+                    "apt": {
+                      "name": "google-cloud-ops-agent"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "instanceFilter": {
+        "inclusionLabels": [
+          {
+            "labels": {
+              "env": "prod"
+            }
+          }
+        ],
+        "inventories": [
+          {
+            "osShortName": "debian"
+          }
+        ]
+      },
+      "rollout": {
+        "disruptionBudget": {
+          "percent": 10
+        },
+        "minWaitDuration": "300s"
+      },
+      "revisionCreateTime": "2026-09-02T08:00:00Z",
+      "etag": "b1c2d3",
+      "uid": "a7d4c1e2-0000-4000-8000-000000000002",
+      "description": "Retired hardening policy",
+      "revisionId": "r3",
+      "rolloutState": "SUCCEEDED",
+      "baseline": false,
+      "deleted": true,
+      "reconciling": false
+    }
+  }
+]

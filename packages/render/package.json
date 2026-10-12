@@ -1,0 +1,40 @@
+{
+  "name": "@gcportrait/render",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gcportrait render library: a snapshot and a view drawn as the app draws them (the frontend's SVG components rendered without a browser) and rasterised with resvg-wasm; the one code path behind `pnpm render` and the backend's POST /api/render.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "prelint": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "lint": "eslint . --max-warnings=0",
+    "pretypecheck": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "typecheck": "tsc -b",
+    "pretest": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource/roboto": "^5.3.0",
+    "@fontsource/roboto-mono": "^5.3.0",
+    "@gcportrait/catalog": "workspace:*",
+    "@gcportrait/demo-data": "workspace:*",
+    "@gcportrait/frontend": "workspace:*",
+    "@gcportrait/graph": "workspace:*",
+    "@gcportrait/layout": "workspace:*",
+    "@gcportrait/model": "workspace:*",
+    "@resvg/resvg-wasm": "2.6.2"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "@types/node": "^22.20.5",
+    "@types/pngjs": "6.0.5",
+    "pngjs": "7.0.0"
+  }
+}

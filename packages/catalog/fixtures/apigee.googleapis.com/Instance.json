@@ -1,0 +1,30 @@
+{
+  "name": "//apigee.googleapis.com/organizations/demo-app-1/instances/euw3",
+  "assetType": "apigee.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "euw3",
+    "location": "europe-west3",
+    "displayName": "Frankfurt",
+    "description": "Runtime in europe-west3",
+    "host": "10.20.0.2",
+    "port": "443",
+    "ipRange": "10.20.0.0/22",
+    "peeringCidrRange": "SLASH_22",
+    "diskEncryptionKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/apigee-disk",
+    "state": "ACTIVE",
+    "runtimeVersion": "1-14-0-apigee-4",
+    "consumerAcceptList": ["demo-app-1", "demo-net-1"],
+    "serviceAttachment": "projects/a1b2c3d4e5f6-tp/regions/europe-west3/serviceAttachments/apigee-europe-west3-x7k2",
+    "createdAt": "1700000200000",
+    "lastModifiedAt": "1759000000000"
+  }
+}

@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud SQL. The asset types are named after the Cloud
+# SQL Admin API (sqladmin.googleapis.com), but Cloud Asset Inventory names the assets in the cloudsql family:
+# `//cloudsql.googleapis.com/projects/<id>/instances/<name>`, `…/instances/<name>/backupRuns/<id>` and
+# `//cloudsql.googleapis.com/projects/<id>/backups/<id>`. The data is the v1beta4/v1 resource; Cloud SQL's
+# change history is synchronised a few times a day, so a new instance may appear late.
+product: Cloud SQL
+service: sqladmin.googleapis.com
+icon: cloud_sql
+types:
+  sqladmin.googleapis.com/Instance:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.databaseVersion}} · {{data.settings.tier}} · {{data.settings.availabilityType | lower}}'
+    console: 'https://console.cloud.google.com/sql/instances/{{data.name}}/overview?project={{projectId}}'
+    ips:
+      - '$.data.ipAddresses[*].ipAddress'
+      - '$.data.settings.ipConfiguration.pscConfig.pscAutoConnections[*].ipAddress'
+    relations:
+      - { kind: attaches, to: $.data.settings.ipConfiguration.privateNetwork, normalize: computeRelative }
+      - {
+          kind: attaches,
+          to: '$.data.settings.ipConfiguration.pscConfig.pscAutoConnections[*].consumerNetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: $.data.settings.ipConfiguration.pscConfig.networkAttachmentUri,
+          normalize: computeRelative,
+        }
+      - { kind: encryptedBy, to: $.data.diskEncryptionConfiguration.kmsKeyName, normalize: kmsKey }
+      - { kind: replicates, to: $.data.masterInstanceName, normalize: cloudSqlConnectionName, reverse: true }
+    notes: >-
+      A private IP is reached through private services access: settings.ipConfiguration.privateNetwork is the
+      consumer VPC network (projects/<id>/global/networks/<name>, usually the Shared VPC host's), so the
+      instance attaches to it and, being in another project, stays in its own project with a Shared VPC edge.
+      Private Service Connect endpoints created for the instance (pscConfig.pscAutoConnections) attach it to
+      each consumer network and carry the endpoint address. pscConfig.networkAttachmentUri
+      (projects/<p>/regions/<r>/networkAttachments/<a>) is the network attachment of an outbound Private
+      Service Connect interface, which the instance uses to reach the consumer network. ipAddresses lists
+      PRIMARY (public), PRIVATE and OUTGOING addresses. instanceType ON_PREMISES_INSTANCE (an external primary
+      of a migration) is shown, not hidden. Replication is read on the replica, which names its primary
+      (masterInstanceName, `project:name`), as a reverse rule: the edge runs primary → replica
+      (replicates), as the relation-kind table draws it (skill gcp-asset-catalog §4); the primary's replicaNames (bare names) are not read.
+      pscConfig.allowedConsumerProjects is an allow list read in the other direction (consumers use the
+      instance) and is not drawn.
+
+  sqladmin.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'backup · {{data.instance}} · {{data.type | lower}} · {{data.backupKind | lower}}'
+    console: 'https://console.cloud.google.com/sql/instances/{{data.instance}}/backups?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      A backup of the Backups API (on-demand, automated and final backups kept beyond the instance's life).
+      data.instance is the instance's bare name in the same project, shown in the subtitle (the label is the
+      backup's id, as for the other backups of the group); the backup nests in its project. kmsKey (output
+      only) is the customer-managed key the backup is encrypted with, a key or key-version path (encryptedBy
+      the key).
+
+  sqladmin.googleapis.com/BackupRun:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'backup run · {{data.instance}} · {{data.type | lower}} · {{data.status | lower}}'
+    console: 'https://console.cloud.google.com/sql/instances/{{data.instance}}/backups?project={{projectId}}'
+    notes: >-
+      One backup run of an instance (the legacy backupRuns collection). Its name continues the instance's name,
+      but the instance is a card, not a container, so the run nests in the project and is counted in its badge.

@@ -1,0 +1,13 @@
+{
+  "name": "//cloudkms.googleapis.com/folders/20000000002/autokeyConfig",
+  "assetType": "cloudkms.googleapis.com/AutokeyConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/folders/20000000002",
+  "ancestors": ["folders/20000000002", "folders/20000000001", "organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "folders/20000000002/autokeyConfig",
+    "keyProject": "projects/demo-sec-1",
+    "state": "ACTIVE",
+    "etag": "1763632800000000"
+  }
+}

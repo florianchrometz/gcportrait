@@ -1,0 +1,66 @@
+[
+  {
+    "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/inspectTemplates/pii-eu",
+    "assetType": "dlp.googleapis.com/InspectTemplate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/inspectTemplates/pii-eu",
+      "displayName": "PII (EU)",
+      "description": "Names, e-mail addresses, IBANs and phone numbers",
+      "createTime": "2025-10-20T09:00:00Z",
+      "updateTime": "2026-02-10T09:00:00Z",
+      "inspectConfig": {
+        "infoTypes": [
+          {
+            "name": "EMAIL_ADDRESS"
+          },
+          {
+            "name": "IBAN_CODE"
+          },
+          {
+            "name": "PHONE_NUMBER"
+          },
+          {
+            "name": "PERSON_NAME"
+          }
+        ],
+        "minLikelihood": "LIKELY"
+      }
+    }
+  },
+  {
+    "name": "//dlp.googleapis.com/projects/demo-sec-1/locations/europe-west3/inspectTemplates/pii-org",
+    "assetType": "dlp.googleapis.com/InspectTemplate",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-20T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/inspectTemplates/pii-org",
+      "displayName": "PII (organisation profiles)",
+      "description": "Names, e-mail addresses, IBANs and phone numbers",
+      "createTime": "2026-03-01T09:00:00Z",
+      "updateTime": "2026-09-20T08:00:00Z",
+      "inspectConfig": {
+        "infoTypes": [
+          {
+            "name": "EMAIL_ADDRESS"
+          },
+          {
+            "name": "IBAN_CODE"
+          },
+          {
+            "name": "PHONE_NUMBER"
+          },
+          {
+            "name": "PERSON_NAME"
+          }
+        ],
+        "minLikelihood": "LIKELY"
+      }
+    }
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "assetType": "dataform.googleapis.com/Repository",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+      "displayName": "warehouse",
+      "gitRemoteSettings": {
+        "url": "https://git.example.org/data/warehouse.git",
+        "defaultBranch": "main",
+        "authenticationTokenSecretVersion": "projects/demo-data-1/secrets/dataform-git-token/versions/1",
+        "tokenStatus": "VALID"
+      },
+      "npmrcEnvironmentVariablesSecretVersion": "projects/demo-data-1/secrets/dataform-npmrc/versions/3",
+      "serviceAccount": "dataform-runner@demo-data-1.iam.gserviceaccount.com",
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/dataform",
+      "setAuthenticatedUserAdmin": false,
+      "createTime": "2024-07-01T09:00:00Z"
+    }
+  },
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/marts",
+    "assetType": "dataform.googleapis.com/Repository",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/marts",
+      "gitRemoteSettings": {
+        "url": "ssh://git@git.example.org/data/marts.git",
+        "defaultBranch": "main",
+        "sshAuthenticationConfig": {
+          "userPrivateKeySecretVersion": "projects/demo-data-1/secrets/dataform-ssh-key/versions/2",
+          "hostPublicKey": "git.example.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleOnlyKey"
+        }
+      },
+      "createTime": "2025-01-10T09:00:00Z"
+    }
+  }
+]

@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MIT
+#
+# Looker (Google Cloud core): Looker instances and their backups. An instance with a private IP
+# attaches to a consumer VPC network through private services access; with Private Service Connect it is
+# reached from allowed VPCs and reaches databases through service attachments.
+product: Looker
+service: looker.googleapis.com
+icon: looker
+types:
+  looker.googleapis.com/Instance:
+    role: core
+    subtitle: '{{data.platformEdition | lower}} · {{data.lookerVersion}}'
+    console: 'https://console.cloud.google.com/looker/instances?project={{projectId}}'
+    ips:
+      - $.data.ingressPrivateIp
+      - $.data.ingressPublicIp
+      - $.data.egressPublicIp
+    domains:
+      - $.data.lookerUri
+      - $.data.customDomain.domain
+      - '$.data.pscConfig.serviceAttachments[*].localFqdn'
+    relations:
+      - { kind: attaches, to: $.data.consumerNetwork, normalize: computeRelative }
+      - {
+          kind: uses,
+          to: '$.data.pscConfig.serviceAttachments[*].targetServiceAttachmentUri',
+          normalize: computeRelative,
+        }
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      consumerNetwork may be in another project (Shared VPC); reservedRange is the name of the private
+      services access range there, not a CIDR, so it is not read as an address. pscConfig.allowedVpcs lists
+      the networks allowed to reach the instance and lookerServiceAttachmentUri is Looker's own producer
+      attachment in a Google project: neither is drawn. serviceAttachments[*] are egress paths to customer
+      services (targetServiceAttachmentUri), reachable from Looker as localFqdn.
+
+  looker.googleapis.com/Backup:
+    role: hidden
+    subtitle: '{{data.state | lower}} · {{data.createTime}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      A backup of the instance its name continues (the instance is a card, so backups stay in the project);
+      encryptionConfig reports the key it was written with.

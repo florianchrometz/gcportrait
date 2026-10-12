@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: MIT
+#
+# The Operations lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# Delivery (Cloud Build, Artifact Registry, Cloud Deploy, Developer Connect, Secure Source Manager,
+# Infra Manager) has no lens of its own among the 11 fixed ids, so it is here; so are backups (Backup and DR,
+# Backup for GKE, snapshot schedules, machine images), migrations (Migrate to VMs), network diagnostics,
+# slot reservations, storage reports and transfers, and Security Command Center exports. The resources App
+# Hub registers and Backup and DR protects are listed so that those edges have a visible end; memberOf
+# draws billing sub-accounts and migration groups.
+title: Operations
+description: >-
+  Logging sinks and buckets, monitoring and alerting, OS configuration, asset feeds, billing, enabled
+  services, service directories, App Hub, backups, migrations and the delivery pipeline.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  # Operations and platform
+  - 'logging.googleapis.com/*'
+  - 'monitoring.googleapis.com/*'
+  - 'osconfig.googleapis.com/*'
+  - 'cloudasset.googleapis.com/*'
+  - 'cloudbilling.googleapis.com/*'
+  - 'cloudquotas.googleapis.com/*'
+  - 'serviceusage.googleapis.com/*'
+  - 'servicemanagement.googleapis.com/*'
+  - 'servicedirectory.googleapis.com/*'
+  - 'apphub.googleapis.com/*'
+  - 'workloadmanager.googleapis.com/*'
+  - 'essentialcontacts.googleapis.com/*'
+  - 'networkmanagement.googleapis.com/*'
+  - 'securitycenter.googleapis.com/NotificationConfig'
+  - 'securitycenter.googleapis.com/BigQueryExport'
+  - 'bigqueryreservation.googleapis.com/*'
+  - 'storageinsights.googleapis.com/ReportConfig'
+  - 'storagetransfer.googleapis.com/TransferJob'
+  # Backups and migrations
+  - 'backupdr.googleapis.com/*'
+  - 'gkebackup.googleapis.com/BackupPlan'
+  - 'gkebackup.googleapis.com/RestorePlan'
+  - 'compute.googleapis.com/ResourcePolicy'
+  - 'compute.googleapis.com/Snapshot'
+  - 'compute.googleapis.com/MachineImage'
+  - 'vmmigration.googleapis.com/*'
+  - 'batch.googleapis.com/Job'
+  # Delivery
+  - 'cloudbuild.googleapis.com/*'
+  - 'artifactregistry.googleapis.com/Repository'
+  - 'clouddeploy.googleapis.com/*'
+  - 'developerconnect.googleapis.com/*'
+  - 'securesourcemanager.googleapis.com/*'
+  - 'config.googleapis.com/*'
+  # Where operations data goes, and what App Hub registers and Backup and DR protects
+  - 'storage.googleapis.com/Bucket'
+  - 'bigquery.googleapis.com/Dataset'
+  - 'pubsub.googleapis.com/Topic'
+  - 'compute.googleapis.com/Instance'
+  - 'compute.googleapis.com/Disk'
+  - 'compute.googleapis.com/RegionDisk'
+  - 'compute.googleapis.com/InstanceGroup'
+  - 'compute.googleapis.com/ForwardingRule'
+  - 'compute.googleapis.com/GlobalForwardingRule'
+  - 'sqladmin.googleapis.com/Instance'
+  - 'alloydb.googleapis.com/Cluster'
+  - 'file.googleapis.com/Instance'
+  - 'run.googleapis.com/Service'
+  - 'cloudfunctions.googleapis.com/Function'
+  - 'container.googleapis.com/Cluster'
+relationKinds: [contains, uses, triggers, secures, memberOf]
+showHidden: false
+defaultDetail: projects

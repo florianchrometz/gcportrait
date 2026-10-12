@@ -1,0 +1,15 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/unitKinds/shop-stack",
+  "assetType": "saasservicemgmt.googleapis.com/UnitKind",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/unitKinds/shop-stack",
+    "saas": "projects/demo-ops-1/locations/global/saas/shop-hosted",
+    "defaultRelease": "projects/demo-ops-1/locations/global/releases/shop-stack-v12",
+    "uid": "7e8f9a0b-1c2d-4e3f-8a4b-c5d6e7f8a9b0",
+    "createTime": "2026-02-01T09:30:00Z"
+  }
+}

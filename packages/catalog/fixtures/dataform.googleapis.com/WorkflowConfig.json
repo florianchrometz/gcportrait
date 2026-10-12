@@ -1,0 +1,37 @@
+[
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowConfigs/nightly",
+    "assetType": "dataform.googleapis.com/WorkflowConfig",
+    "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowConfigs/nightly",
+      "releaseConfig": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/releaseConfigs/production",
+      "invocationConfig": {
+        "includedTags": ["daily"],
+        "transitiveDependenciesIncluded": true,
+        "serviceAccount": "dataform-runner@demo-data-1.iam.gserviceaccount.com"
+      },
+      "cronSchedule": "0 4 * * *",
+      "timeZone": "Europe/Berlin",
+      "disabled": false,
+      "createTime": "2024-07-02T09:00:00Z"
+    }
+  },
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowConfigs/backfill-2025",
+    "assetType": "dataform.googleapis.com/WorkflowConfig",
+    "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workflowConfigs/backfill-2025",
+      "releaseConfig": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/releaseConfigs/production",
+      "cronSchedule": "0 1 1 * *",
+      "disabled": true
+    }
+  }
+]

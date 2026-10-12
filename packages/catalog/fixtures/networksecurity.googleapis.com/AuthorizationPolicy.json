@@ -1,0 +1,35 @@
+{
+  "name": "//networksecurity.googleapis.com/projects/demo-app-1/locations/global/authorizationPolicies/inventory-authz",
+  "assetType": "networksecurity.googleapis.com/AuthorizationPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/authorizationPolicies/inventory-authz",
+    "action": "ALLOW",
+    "rules": [
+      {
+        "sources": [
+          {
+            "principals": ["spiffe://demo-app-1.svc.id.goog/ns/storefront/sa/web"]
+          }
+        ],
+        "destinations": [
+          {
+            "hosts": ["inventory.example.com"],
+            "ports": [8443],
+            "methods": ["GET", "POST"]
+          }
+        ]
+      }
+    ],
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

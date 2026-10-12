@@ -1,0 +1,18 @@
+{
+  // Tests that read files (the golden layouts, the font files for the metrics staleness check), use Node's
+  // clock for the performance budget, or build the demo Scenes through @gcportrait/graph (development only).
+  // Kept apart so that Node types never leak into the layout's own sources.
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "../node_modules/.tmp/tsc-test"
+  },
+  "include": ["."],
+  "references": [
+    { "path": ".." },
+    { "path": "../scripts" },
+    { "path": "../../demo-data" },
+    { "path": "../../graph" },
+    { "path": "../../catalog/tsconfig.lib.json" }
+  ]
+}

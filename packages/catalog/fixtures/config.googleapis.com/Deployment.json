@@ -1,0 +1,58 @@
+[
+  {
+    "name": "//config.googleapis.com/projects/demo-ops-1/locations/europe-west3/deployments/shop-network",
+    "assetType": "config.googleapis.com/Deployment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/deployments/shop-network",
+      "createTime": "2024-10-01T09:00:00Z",
+      "updateTime": "2026-09-15T12:00:00Z",
+      "labels": {
+        "stack": "network"
+      },
+      "state": "ACTIVE",
+      "latestRevision": "projects/demo-ops-1/locations/europe-west3/deployments/shop-network/revisions/r-27",
+      "lockState": "UNLOCKED",
+      "tfVersion": "1.5.7",
+      "terraformBlueprint": {
+        "gitSource": {
+          "repo": "https://git.example.com/platform/terraform-shop.git",
+          "directory": "envs/prod",
+          "ref": "main"
+        },
+        "inputValues": {
+          "region": {
+            "inputValue": "europe-west3"
+          }
+        }
+      },
+      "artifactsGcsBucket": "gs://demo-ops-1-infra-manager/shop-network",
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/infra-manager@demo-ops-1.iam.gserviceaccount.com",
+      "workerPool": "projects/10000000005/locations/europe-west3/workerPools/private-build"
+    }
+  },
+  {
+    "name": "//config.googleapis.com/projects/demo-ops-1/locations/europe-west3/deployments/sandbox-baseline",
+    "assetType": "config.googleapis.com/Deployment",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/deployments/sandbox-baseline",
+      "createTime": "2025-05-05T09:00:00Z",
+      "updateTime": "2026-08-01T07:00:00Z",
+      "state": "ACTIVE",
+      "latestRevision": "projects/demo-ops-1/locations/europe-west3/deployments/sandbox-baseline/revisions/r-3",
+      "lockState": "UNLOCKED",
+      "tfVersion": "1.5.7",
+      "terraformBlueprint": {
+        "gcsSource": "gs://demo-ops-1-blueprints/sandbox-baseline"
+      },
+      "serviceAccount": "projects/demo-ops-1/serviceAccounts/infra-manager@demo-ops-1.iam.gserviceaccount.com"
+    }
+  }
+]

@@ -1,0 +1,65 @@
+[
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/streams/orders-cdc",
+    "assetType": "datastream.googleapis.com/Stream",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/streams/orders-cdc",
+      "displayName": "orders-cdc",
+      "createTime": "2025-06-01T09:00:00Z",
+      "sourceConfig": {
+        "sourceConnectionProfile": "projects/demo-data-1/locations/europe-west3/connectionProfiles/orders-mysql",
+        "mysqlSourceConfig": {
+          "includeObjects": { "mysqlDatabases": [{ "database": "shop" }] },
+          "maxConcurrentCdcTasks": 5
+        }
+      },
+      "destinationConfig": {
+        "destinationConnectionProfile": "projects/demo-data-1/locations/europe-west3/connectionProfiles/bigquery",
+        "bigqueryDestinationConfig": {
+          "dataFreshness": "900s",
+          "singleTargetDataset": { "datasetId": "demo-data-1:sales" }
+        }
+      },
+      "state": "RUNNING",
+      "backfillAll": {},
+      "customerManagedEncryptionKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/datastream"
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/streams/returns-lakehouse",
+    "assetType": "datastream.googleapis.com/Stream",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/streams/returns-lakehouse",
+      "displayName": "returns-lakehouse",
+      "sourceConfig": {
+        "sourceConnectionProfile": "projects/demo-data-1/locations/europe-west3/connectionProfiles/returns-postgres",
+        "postgresqlSourceConfig": { "replicationSlot": "datastream_slot", "publication": "datastream_pub" }
+      },
+      "destinationConfig": {
+        "destinationConnectionProfile": "projects/demo-data-1/locations/europe-west3/connectionProfiles/bigquery",
+        "bigqueryDestinationConfig": {
+          "sourceHierarchyDatasets": {
+            "datasetTemplate": { "location": "europe-west3", "datasetIdPrefix": "cdc" }
+          },
+          "blmtConfig": {
+            "bucket": "demo-data-1-lakehouse",
+            "rootPath": "/returns",
+            "connectionName": "demo-data-1.europe-west3.lakehouse",
+            "fileFormat": "PARQUET",
+            "tableFormat": "ICEBERG"
+          }
+        }
+      },
+      "state": "PAUSED",
+      "backfillNone": {}
+    }
+  }
+]

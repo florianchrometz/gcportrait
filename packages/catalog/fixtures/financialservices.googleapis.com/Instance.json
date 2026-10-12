@@ -1,0 +1,15 @@
+{
+  "name": "//financialservices.googleapis.com/projects/demo-data-1/locations/europe-west1/instances/aml",
+  "assetType": "financialservices.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west1/instances/aml",
+    "createTime": "2026-06-01T08:00:00Z",
+    "updateTime": "2026-06-01T08:00:00Z",
+    "state": "ACTIVE",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west1/keyRings/aml/cryptoKeys/aml"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "//securitycenter.googleapis.com/projects/10000000002/virtualMachineThreatDetectionSettings",
+  "assetType": "securitycenter.googleapis.com/VirtualMachineThreatDetectionSettings",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/virtualMachineThreatDetectionSettings",
+    "serviceEnablementState": "INHERITED",
+    "modules": {},
+    "updateTime": "2026-02-01T09:00:00Z"
+  }
+}

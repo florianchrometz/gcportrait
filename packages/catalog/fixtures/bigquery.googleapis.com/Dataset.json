@@ -1,0 +1,78 @@
+[
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+    "assetType": "bigquery.googleapis.com/Dataset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#dataset",
+      "id": "demo-data-1:sales",
+      "datasetReference": {
+        "datasetId": "sales",
+        "projectId": "demo-data-1"
+      },
+      "friendlyName": "Sales",
+      "location": "europe-west3",
+      "type": "DEFAULT",
+      "defaultEncryptionConfiguration": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/bigquery"
+      },
+      "creationTime": "1700000000000",
+      "lastModifiedTime": "1700000000000"
+    }
+  },
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-app-1/datasets/sales_shared",
+    "assetType": "bigquery.googleapis.com/Dataset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#dataset",
+      "id": "demo-app-1:sales_shared",
+      "datasetReference": {
+        "datasetId": "sales_shared",
+        "projectId": "demo-app-1"
+      },
+      "location": "europe-west3",
+      "type": "LINKED",
+      "linkedDatasetSource": {
+        "sourceDataset": {
+          "projectId": "demo-data-1",
+          "datasetId": "sales"
+        }
+      },
+      "creationTime": "1720000000000",
+      "lastModifiedTime": "1720000000000"
+    }
+  },
+  {
+    "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/_a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4",
+    "assetType": "bigquery.googleapis.com/Dataset",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "bigquery#dataset",
+      "id": "demo-data-1:_a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4",
+      "datasetReference": {
+        "datasetId": "_a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4",
+        "projectId": "demo-data-1"
+      },
+      "location": "europe-west3",
+      "type": "DEFAULT",
+      "defaultTableExpirationMs": "86400000",
+      "creationTime": "1727000000000",
+      "lastModifiedTime": "1727000000000"
+    }
+  }
+]

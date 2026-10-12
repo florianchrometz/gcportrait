@@ -1,0 +1,25 @@
+{
+  "name": "//connectors.googleapis.com/projects/demo-app-1/locations/europe-west3/regionalSettings",
+  "assetType": "connectors.googleapis.com/RegionalSettings",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/regionalSettings",
+    "encryptionConfig": {
+      "encryptionType": "CMEK",
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/connectors"
+    },
+    "networkConfig": {
+      "egressMode": "STATIC_IP",
+      "egressIps": ["203.0.113.40", "203.0.113.41"]
+    },
+    "provisioned": true
+  }
+}

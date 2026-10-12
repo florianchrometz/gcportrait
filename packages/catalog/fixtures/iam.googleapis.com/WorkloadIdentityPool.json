@@ -1,0 +1,33 @@
+[
+  {
+    "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/github",
+    "assetType": "iam.googleapis.com/WorkloadIdentityPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-07-11T12:00:00Z",
+    "data": {
+      "name": "projects/10000000004/locations/global/workloadIdentityPools/github",
+      "displayName": "GitHub Actions",
+      "description": "Deployments from the example.com GitHub organisation",
+      "state": "ACTIVE",
+      "disabled": false,
+      "mode": "FEDERATION_ONLY"
+    }
+  },
+  {
+    "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/legacy-ci",
+    "assetType": "iam.googleapis.com/WorkloadIdentityPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-28T16:45:00Z",
+    "data": {
+      "name": "projects/10000000004/locations/global/workloadIdentityPools/legacy-ci",
+      "displayName": "Legacy CI",
+      "state": "DELETED",
+      "disabled": true,
+      "expireTime": "2026-10-28T16:45:00Z"
+    }
+  }
+]

@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: MIT
+#
+# The Networking lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# Network Security types are listed one by one (Cloud NGFW, Network Security Integration, DNS Armor),
+# because networksecurity.googleapis.com/* would also pull in the service mesh and Secure Web Proxy policy
+# types of the load-balancing lens. `secures` is drawn so that firewall policies show the organisation,
+# folders and networks they govern. Private connectivity of other products (Datastream and Database
+# Migration private connections, Integration Connectors endpoint attachments, Cloud Build private pools,
+# Workstations clusters, Managed Microsoft AD, Cloud IDS) is here because it is how those products join a VPC.
+title: Networking
+description: >-
+  VPC networks, subnets, routing, firewalls, private connectivity, hybrid links and DNS: how the networks
+  are built and joined.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  # Networking fabric
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  - 'compute.googleapis.com/Route'
+  - 'compute.googleapis.com/Router'
+  - 'compute.googleapis.com/Address'
+  - 'compute.googleapis.com/GlobalAddress'
+  - 'compute.googleapis.com/Firewall'
+  - 'compute.googleapis.com/FirewallPolicy'
+  - 'compute.googleapis.com/NetworkAttachment'
+  - 'compute.googleapis.com/ServiceAttachment'
+  - 'compute.googleapis.com/PacketMirroring'
+  - 'compute.googleapis.com/PublicAdvertisedPrefix'
+  - 'compute.googleapis.com/PublicDelegatedPrefix'
+  - 'compute.googleapis.com/NetworkEdgeSecurityService'
+  - 'compute.googleapis.com/ForwardingRule'
+  - 'compute.googleapis.com/GlobalForwardingRule'
+  - 'compute.googleapis.com/NetworkEndpointGroup'
+  # Hybrid connectivity
+  - 'compute.googleapis.com/Interconnect'
+  - 'compute.googleapis.com/InterconnectAttachment'
+  - 'compute.googleapis.com/VpnGateway'
+  - 'compute.googleapis.com/ExternalVpnGateway'
+  - 'compute.googleapis.com/TargetVpnGateway'
+  - 'compute.googleapis.com/VpnTunnel'
+  - 'compute.googleapis.com/CrossSiteNetwork'
+  - 'compute.googleapis.com/WireGroup'
+  - 'networkconnectivity.googleapis.com/*'
+  - 'servicenetworking.googleapis.com/*'
+  - 'vpcaccess.googleapis.com/*'
+  - 'networkmanagement.googleapis.com/*'
+  # DNS, domains and service discovery
+  - 'dns.googleapis.com/*'
+  - 'domains.googleapis.com/*'
+  - 'servicedirectory.googleapis.com/*'
+  # Cloud NGFW, Network Security Integration, DNS Armor, Secure Web Proxy gateways
+  - 'networksecurity.googleapis.com/FirewallEndpoint'
+  - 'networksecurity.googleapis.com/FirewallEndpointAssociation'
+  - 'networksecurity.googleapis.com/SecurityProfile'
+  - 'networksecurity.googleapis.com/SecurityProfileGroup'
+  - 'networksecurity.googleapis.com/AddressGroup'
+  - 'networksecurity.googleapis.com/TlsInspectionPolicy'
+  - 'networksecurity.googleapis.com/DnsThreatDetector'
+  - 'networksecurity.googleapis.com/InterceptDeployment'
+  - 'networksecurity.googleapis.com/InterceptDeploymentGroup'
+  - 'networksecurity.googleapis.com/InterceptEndpointGroup'
+  - 'networksecurity.googleapis.com/InterceptEndpointGroupAssociation'
+  - 'networksecurity.googleapis.com/MirroringDeployment'
+  - 'networksecurity.googleapis.com/MirroringDeploymentGroup'
+  - 'networksecurity.googleapis.com/MirroringEndpointGroup'
+  - 'networksecurity.googleapis.com/MirroringEndpointGroupAssociation'
+  - 'networkservices.googleapis.com/Gateway'
+  - 'ids.googleapis.com/Endpoint'
+  # VMware Engine networks
+  - 'vmwareengine.googleapis.com/VmwareEngineNetwork'
+  - 'vmwareengine.googleapis.com/NetworkPeering'
+  - 'vmwareengine.googleapis.com/NetworkPolicy'
+  - 'vmwareengine.googleapis.com/PrivateConnection'
+  - 'vmwareengine.googleapis.com/PrivateCloud'
+  # Other products' private connectivity
+  - 'datastream.googleapis.com/PrivateConnection'
+  - 'datamigration.googleapis.com/PrivateConnection'
+  - 'connectors.googleapis.com/EndpointAttachment'
+  - 'connectors.googleapis.com/ManagedZone'
+  - 'cloudbuild.googleapis.com/WorkerPool'
+  - 'workstations.googleapis.com/WorkstationCluster'
+  - 'managedidentities.googleapis.com/Domain'
+relationKinds: [contains, attaches, peers, connects, routes, uses, secures, shares]
+showHidden: false
+defaultDetail: networks

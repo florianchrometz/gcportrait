@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: MIT
+#
+# Security Command Center: findings exports (BigQuery, Pub/Sub), mute and resource-value
+# configurations, and the per-service settings singletons. Settings and configurations are hidden; the two
+# exports are drawn because they connect the organisation's security findings to a dataset or a topic. The
+# v2 configurations live at organizations|folders|projects/<n>/locations/<l>/…, the v1beta2 settings at
+# organizations|folders|projects/<n>/<service>Settings.
+product: Security Command Center
+service: securitycenter.googleapis.com
+icon: security_command_center
+types:
+  securitycenter.googleapis.com/BigQueryExport:
+    role: core
+    subtitle: '{{data.dataset | lastSegment}}'
+    relations:
+      - { kind: uses, to: $.data.dataset, normalize: bigqueryUri }
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: >-
+      Continuous export of findings (filtered by filter) into a dataset (projects/<p>/datasets/<d>). Usually
+      created on the organisation, so it nests there and has no console link of its own. principal is the
+      Security Command Center service agent that writes the rows; it is not read. cryptoKeyName (v2, output
+      only) is the Cloud KMS key protecting Security Command Center data when CMEK was chosen at activation;
+      the same key appears on every v2 configuration of the organisation. Only the v2 shapes carry it: the v1
+      BigQueryExport, NotificationConfig and MuteConfig schemas have no such field, so a v1-shaped asset draws
+      no key edge.
+
+  securitycenter.googleapis.com/NotificationConfig:
+    role: core
+    subtitle: '{{data.pubsubTopic | lastSegment}}'
+    relations:
+      - { kind: triggers, to: $.data.pubsubTopic, normalize: pubsubUri }
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: >-
+      Streams findings matching streamingConfig.filter to a Pub/Sub topic (projects/<p>/topics/<t>).
+      serviceAccount is the service agent that publishes; it is not read. cryptoKeyName (output only) is the
+      CMEK key of Security Command Center data, as on BigQueryExport.
+
+  securitycenter.googleapis.com/MuteConfig:
+    role: hidden
+    subtitle: '{{data.type | lower}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: >-
+      Mute rules (a findings filter, STATIC or DYNAMIC with an expiry). cryptoKeyName (output only) is the
+      CMEK key of Security Command Center data, as on BigQueryExport; nothing else is referenced.
+
+  securitycenter.googleapis.com/ResourceValueConfig:
+    role: hidden
+    subtitle: '{{data.resourceValue | lower}} · {{data.resourceType}}'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.tagValues[*]',
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+    notes: >-
+      Attack-exposure resource values (HIGH, MEDIUM, LOW, NONE) for resources carrying the listed tag values
+      (tagValues/<n>, Resource Manager tag values); organisation level.
+
+  securitycenter.googleapis.com/ContainerThreatDetectionSettings:
+    role: hidden
+    label: 'Container Threat Detection'
+    subtitle: '{{data.serviceEnablementState | lower}}'
+    notes: Settings singleton (enablement, modules) of an organisation, folder, project or cluster.
+
+  securitycenter.googleapis.com/EventThreatDetectionSettings:
+    role: hidden
+    label: 'Event Threat Detection'
+    subtitle: '{{data.serviceEnablementState | lower}}'
+    notes: Settings singleton (enablement, modules) of an organisation, folder or project.
+
+  securitycenter.googleapis.com/SecurityHealthAnalyticsSettings:
+    role: hidden
+    label: 'Security Health Analytics'
+    subtitle: '{{data.serviceEnablementState | lower}}'
+    notes: Settings singleton (enablement, modules) of an organisation, folder or project.
+
+  securitycenter.googleapis.com/VirtualMachineThreatDetectionSettings:
+    role: hidden
+    label: 'Virtual Machine Threat Detection'
+    subtitle: '{{data.serviceEnablementState | lower}}'
+    notes: Settings singleton (enablement, modules) of an organisation, folder or project.
+
+  securitycenter.googleapis.com/WebSecurityScannerSettings:
+    role: hidden
+    label: 'Web Security Scanner'
+    subtitle: '{{data.serviceEnablementState | lower}}'
+    notes: Settings singleton (enablement, modules) of an organisation, folder or project.

@@ -1,0 +1,40 @@
+{
+  "name": "L-load-balancing",
+  "rects": 165,
+  "zones": 45,
+  "chips": 117,
+  "emptyZones": 2,
+  "cards": 1,
+  "sceneEdges": 135,
+  "routing": {
+    "mode": "three-pass",
+    "passes": 3,
+    "edges": 135,
+    "holders": 6,
+    "work": 17108,
+    "duplicatesMerged": 0,
+    "reciprocalMerged": 0,
+    "bundles": 4,
+    "bundledEdges": 133,
+    "dropped": 0,
+    "fallbacks": 0,
+    "failed": 0,
+    "bends": [0, 0, 0, 7, 22, 15, 45, 14, 27, 3, 2],
+    "maxLanes": 7,
+    "widened": 17,
+    "wideningRounds": 2,
+    "squeezed": 0,
+    "overlaps": 0
+  },
+  "canvas": { "width": 4050, "height": 2072 },
+  "packed": { "width": 3926, "height": 1916 },
+  "growth": 1.12,
+  "spacing": {
+    "overlaps": 0,
+    "close": 0,
+    "closest": 8,
+    "closestStubs": 12,
+    "portsCloserThanSpacing": 0,
+    "closestPorts": 12
+  }
+}

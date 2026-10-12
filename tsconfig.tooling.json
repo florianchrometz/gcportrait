@@ -1,0 +1,24 @@
+{
+  // Repo tooling: root config files, scripts/ (plain ESM .mjs, type-checked through JSDoc) and their tests,
+  // plus the build/test config files at the root of each workspace package. Those config files run in Node,
+  // so they are checked here rather than with the package's own (possibly browser) settings.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": [
+    "*.ts",
+    "*.js",
+    "*.mjs",
+    "scripts/**/*.ts",
+    "scripts/**/*.mjs",
+    "frontend/*.ts",
+    "backend/*.ts",
+    "packages/*/*.ts"
+  ],
+  // backend/bundle.ts writes the render worker's asset directory with @gcportrait/render (ADR 0033), which reaches
+  // the frontend's components: checked through the library's project, not compiled again here.
+  "references": [{ "path": "./packages/render" }]
+}

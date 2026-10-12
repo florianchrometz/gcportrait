@@ -1,0 +1,23 @@
+{
+  "name": "//artifactregistry.googleapis.com/projects/10000000002/locations/europe-west3/repositories/apps/rules/deny-legacy-base",
+  "assetType": "artifactregistry.googleapis.com/Rule",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/repositories/apps/rules/deny-legacy-base",
+    "action": "DENY",
+    "operation": "DOWNLOAD",
+    "condition": {
+      "expression": "request.time > timestamp('2026-01-01T00:00:00Z')",
+      "title": "Retire the legacy base image"
+    },
+    "packageId": "legacy-base"
+  }
+}

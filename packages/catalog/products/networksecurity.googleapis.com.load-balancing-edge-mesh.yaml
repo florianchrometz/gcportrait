@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Service Mesh, the Network Security part: authorization policies and client and server TLS policies.
+# Endpoint policies, gateways and HTTPS proxies point at them. The second file of the load-balancing-edge
+# group for networksecurity.googleapis.com (see networksecurity.googleapis.com.load-balancing-edge.yaml).
+product: Cloud Service Mesh
+service: networksecurity.googleapis.com
+icon: cloud_service_mesh
+types:
+  networksecurity.googleapis.com/AuthorizationPolicy:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.action | lower}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    notes: >-
+      Rules match SPIFFE principals and source ranges against hosts, ports and methods; none of them name an
+      asset. Endpoint policies apply it (`authorizationPolicy`).
+
+  networksecurity.googleapis.com/ServerTlsPolicy:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'server TLS · {{data.mtlsPolicy.clientValidationMode | lower}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: $.data.mtlsPolicy.clientValidationTrustConfig,
+          normalize: name,
+          service: certificatemanager.googleapis.com,
+        }
+    notes: >-
+      Two uses: Cloud Service Mesh (certificate providers, `allowOpen`) and mTLS on Application Load Balancers
+      (`mtlsPolicy` with a Certificate Manager trust config). HTTPS proxies, mesh gateways and endpoint
+      policies point here.
+
+  networksecurity.googleapis.com/ClientTlsPolicy:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: 'client TLS · {{data.sni}}'
+    console: 'https://console.cloud.google.com/net-services/service-mesh?project={{projectId}}'
+    notes: >-
+      Certificate providers are plug-in instances or gRPC endpoints, not assets. Backend services reference
+      client TLS policies through `securitySettings.clientTlsPolicy` (Cloud Service Mesh).

@@ -1,0 +1,67 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/healthChecks/web-hc",
+    "assetType": "compute.googleapis.com/HealthCheck",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#healthCheck",
+      "id": "7700000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-hc",
+      "type": "HTTP",
+      "checkIntervalSec": 10,
+      "timeoutSec": 5,
+      "healthyThreshold": 2,
+      "unhealthyThreshold": 3,
+      "httpHealthCheck": {
+        "port": 8080,
+        "requestPath": "/healthz",
+        "proxyHeader": "NONE",
+        "portSpecification": "USE_FIXED_PORT"
+      },
+      "logConfig": {
+        "enable": false
+      },
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/healthChecks/web-hc"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/healthChecks/inventory-tcp-hc",
+    "assetType": "compute.googleapis.com/HealthCheck",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#healthCheck",
+      "id": "7700000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "inventory-tcp-hc",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "type": "TCP",
+      "checkIntervalSec": 5,
+      "timeoutSec": 5,
+      "healthyThreshold": 2,
+      "unhealthyThreshold": 2,
+      "tcpHealthCheck": {
+        "port": 8443,
+        "proxyHeader": "NONE",
+        "portSpecification": "USE_FIXED_PORT"
+      },
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/healthChecks/inventory-tcp-hc"
+    }
+  }
+]

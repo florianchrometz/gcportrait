@@ -1,0 +1,76 @@
+[
+  {
+    "name": "//apphub.googleapis.com/projects/demo-app-1/locations/global/applications/shop/services/orders-api",
+    "assetType": "apphub.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/applications/shop/services/orders-api",
+      "displayName": "Orders API",
+      "serviceReference": {
+        "uri": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/services/orders-api"
+      },
+      "serviceProperties": {
+        "gcpProject": "projects/demo-app-1",
+        "location": "europe-west3"
+      },
+      "discoveredService": "projects/demo-app-1/locations/europe-west3/discoveredServices/d-orders-api",
+      "attributes": {
+        "criticality": {
+          "type": "HIGH"
+        },
+        "environment": {
+          "type": "PRODUCTION"
+        }
+      },
+      "createTime": "2025-07-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "uid": "c0ffee00-0000-4000-8000-000000000010",
+      "state": "ACTIVE"
+    }
+  },
+  {
+    "name": "//apphub.googleapis.com/projects/demo-app-1/locations/global/applications/shop/services/internal-api",
+    "assetType": "apphub.googleapis.com/Service",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/applications/shop/services/internal-api",
+      "displayName": "Internal API load balancer",
+      "serviceReference": {
+        "uri": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/forwardingRules/internal-api"
+      },
+      "serviceProperties": {
+        "gcpProject": "projects/demo-app-1",
+        "location": "europe-west3"
+      },
+      "discoveredService": "projects/demo-app-1/locations/europe-west3/discoveredServices/d-internal-api",
+      "attributes": {
+        "criticality": {
+          "type": "MEDIUM"
+        },
+        "environment": {
+          "type": "PRODUCTION"
+        }
+      },
+      "createTime": "2025-07-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "uid": "c0ffee00-0000-4000-8000-000000000012",
+      "state": "ACTIVE"
+    }
+  }
+]

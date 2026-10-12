@@ -1,0 +1,92 @@
+# SPDX-License-Identifier: MIT
+#
+# Apigee: the organization container (from the catalog seed), environments, instances and proxies (skill
+# gcp-diagram-layout §2: Apigee Organization › Environment/Instance). Every Apigee asset is named under its
+# organisation (//apigee.googleapis.com/organizations/<org>/…), the organisation is named after its project
+# id, and the children nest in the organisation (and security actions in their environment) by name.
+product: Apigee
+service: apigee.googleapis.com
+icon: apigee
+types:
+  apigee.googleapis.com/Organization:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'Apigee {{data.runtimeType | lower}} · {{data.analyticsRegion}}'
+    console: 'https://console.cloud.google.com/apigee/overview?project={{data.projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.authorizedNetwork, normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.runtimeDatabaseEncryptionKeyName, normalize: kmsKey }
+      - { kind: encryptedBy, to: $.data.controlPlaneEncryptionKeyName, normalize: kmsKey }
+      - { kind: encryptedBy, to: $.data.apiConsumerDataEncryptionKeyName, normalize: kmsKey }
+    contains:
+      - byParent: apigee.googleapis.com/Environment
+      - byParent: apigee.googleapis.com/Instance
+      - byParent: apigee.googleapis.com/ApiProxy
+      - byParent: apigee.googleapis.com/ApiProxyRevision
+      - byParent: apigee.googleapis.com/SecurityMonitoringCondition
+      - byParent: apigee.googleapis.com/SecurityProfileV2
+    notes: >-
+      An Apigee organisation is named after its project (//apigee.googleapis.com/organizations/<project id>)
+      and nests in that project by its parent. authorizedNetwork is a bare network name in the same project or
+      projects/<host>/global/networks/<name> for Shared VPC; only the qualified form resolves. The seed's uses
+      edge to data.projectId is left out: it is the project the organisation already nests in. displayName is
+      unused by Apigee and often empty (the label then falls back to the organisation name). The control-plane
+      and API consumer data keys apply to data residency organisations only.
+
+  apigee.googleapis.com/Environment:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.type | lower}} · {{data.deploymentType | lower}}'
+    console: 'https://console.cloud.google.com/apigee/environments?project={{projectId}}'
+    contains:
+      - byParent: apigee.googleapis.com/SecurityAction
+    notes: >-
+      Environments are attached to instances by environment attachments (not inventoried), so the diagram does
+      not draw which instance serves which environment. forwardProxyUri is a drawer fact.
+
+  apigee.googleapis.com/Instance:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.location}} · {{data.host}}'
+    console: 'https://console.cloud.google.com/apigee/instances?project={{projectId}}'
+    ips:
+      - $.data.host
+      - $.data.ipRange
+    relations:
+      - { kind: uses, to: $.data.serviceAttachment, normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.diskEncryptionKeyName, normalize: kmsKey }
+    notes: >-
+      host is the runtime's internal address. ipRange is a comma-separated list of a /22 and/or a /28 range;
+      only a single range is read as an address. peeringCidrRange is a size (SLASH_22 …), not a range.
+      serviceAttachment is the instance's Private Service Connect service attachment in Apigee's tenant
+      project; consumers' PSC endpoints and NEGs target the same name, which stays dangling.
+      consumerAcceptList (projects allowed to connect) is an access list, not drawn.
+
+  apigee.googleapis.com/ApiProxy:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: 'revision {{data.latestRevisionId}}'
+    console: 'https://console.cloud.google.com/apigee/proxies/{{data.name}}/overview?project={{projectId}}'
+    notes: >-
+      The seed nests revisions in the proxy; a proxy is drawn as a card instead, and its revisions are counted
+      on the organisation. Target servers and deployments are not inventoried as edges.
+
+  apigee.googleapis.com/ApiProxyRevision:
+    role: hidden
+    label: '{{data.name}} r{{data.revision}}'
+    subtitle: '{{data.basepaths[0]}}'
+
+  apigee.googleapis.com/SecurityAction:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+
+  apigee.googleapis.com/SecurityMonitoringCondition:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.profile}} · {{data.scope}}'
+
+  apigee.googleapis.com/SecurityProfileV2:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.description | short(40)}}'

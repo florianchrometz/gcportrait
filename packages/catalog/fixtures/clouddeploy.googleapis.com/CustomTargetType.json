@@ -1,0 +1,29 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/customTargetTypes/terraform-vm",
+  "assetType": "clouddeploy.googleapis.com/CustomTargetType",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/customTargetTypes/terraform-vm",
+    "customTargetTypeId": "terraform-vm",
+    "uid": "7a8b9cadbecf4d6e5a7b8c9d0e1f2031",
+    "description": "Deploys VM-based services with Terraform",
+    "createTime": "2025-09-15T07:50:00Z",
+    "customActions": {
+      "renderAction": "tf-render",
+      "deployAction": "tf-apply",
+      "includeSkaffoldModules": [
+        {
+          "configs": ["terraform-deployer"],
+          "git": {
+            "repo": "https://git.example.com/platform/deploy-modules.git",
+            "path": "terraform/skaffold.yaml",
+            "ref": "main"
+          }
+        }
+      ]
+    }
+  }
+}

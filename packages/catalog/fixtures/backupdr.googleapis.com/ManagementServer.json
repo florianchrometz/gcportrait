@@ -1,0 +1,28 @@
+{
+  "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/managementServers/bdr-console",
+  "assetType": "backupdr.googleapis.com/ManagementServer",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/managementServers/bdr-console",
+    "description": "Backup and DR management console",
+    "createTime": "2025-02-20T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "type": "BACKUP_RESTORE",
+    "managementUri": {
+      "webUi": "https://bmc-10000000005-a1b2c3d4-dot-europe-west3.backupdr.googleusercontent.com",
+      "api": "https://bmc-10000000005-a1b2c3d4-dot-europe-west3.backupdr.googleusercontent.com/actifio"
+    },
+    "state": "READY",
+    "networks": [
+      {
+        "network": "projects/demo-net-1/global/networks/core",
+        "peeringMode": "PRIVATE_SERVICE_ACCESS"
+      }
+    ],
+    "etag": "m-4",
+    "oauth2ClientId": "bdr-console-client"
+  }
+}

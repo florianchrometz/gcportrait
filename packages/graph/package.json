@@ -1,0 +1,39 @@
+{
+  "name": "@gcportrait/graph",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gcportrait graph core: Snapshot + asset catalog → Graph (containment, relation edges, indexes, dangling references, Shared VPC), the timeline diff, and Graph + ViewSpec → Scene (lenses, focus views, filters, drill-in, detail levels).",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "prelint": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "lint": "eslint . --max-warnings=0",
+    "pretypecheck": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "typecheck": "tsc -b tsconfig.json test/tsconfig.json scripts/tsconfig.json",
+    "pretest": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test": "vitest run",
+    "prerender-scene": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "render-scene": "tsx scripts/render-scene.ts",
+    "pretest:budget": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test:budget": "GRAPH_BUDGET=1 vitest run test/performance.test.ts --silent=false"
+  },
+  "dependencies": {
+    "@gcportrait/catalog": "workspace:*",
+    "@gcportrait/model": "workspace:*"
+  },
+  "devDependencies": {
+    "@gcportrait/demo-data": "workspace:*",
+    "@gcportrait/ingest": "workspace:*",
+    "@types/node": "^22.20.5",
+    "fast-check": "^4.10.2",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.5"
+  }
+}

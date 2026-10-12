@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT
+#
+# Storage Transfer Service: transfer jobs that copy objects into Cloud Storage buckets from other
+# buckets, other clouds, HTTP lists or on-premises file systems, once, on a schedule or on events. Asset
+# names use the project number (//storagetransfer.googleapis.com/projects/<number>/transferJobs/<id>).
+product: Storage Transfer Service
+service: storagetransfer.googleapis.com
+icon: storage_transfer_service
+types:
+  storagetransfer.googleapis.com/TransferJob:
+    role: core
+    label: '{{data.description | short(48)}}'
+    subtitle: '{{data.transferSpec.gcsDataSink.bucketName}} · {{data.status | lower}}'
+    console: 'https://console.cloud.google.com/transfer/jobs?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.transferSpec.gcsDataSource.bucketName, normalize: gcsUri }
+      - { kind: uses, to: $.data.transferSpec.gcsDataSink.bucketName, normalize: gcsUri }
+      - { kind: uses, to: $.data.transferSpec.gcsIntermediateDataLocation.bucketName, normalize: gcsUri }
+      - { kind: uses, to: $.data.replicationSpec.gcsDataSource.bucketName, normalize: gcsUri }
+      - { kind: uses, to: $.data.replicationSpec.gcsDataSink.bucketName, normalize: gcsUri }
+      - { kind: triggers, to: $.data.notificationConfig.pubsubTopic, normalize: pubsubUri }
+      - { kind: uses, to: $.data.eventStream.name, normalize: pubsubUri }
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+    hiddenWhen: "$.data.status != 'ENABLED'"
+    notes: >-
+      Bucket names are bare (bucketName). External sources (awsS3DataSource, azureBlobStorageDataSource,
+      httpDataSource, posixDataSource, hdfsDataSource) are outside Google Cloud and not drawn; agent pools
+      (sourceAgentPoolName) are no Cloud Asset Inventory type. An event-driven job reads a Pub/Sub
+      subscription (eventStream.name; an AWS SQS ARN otherwise). The label falls back to the job id when the
+      job has no description. Disabled and deleted jobs start hidden.

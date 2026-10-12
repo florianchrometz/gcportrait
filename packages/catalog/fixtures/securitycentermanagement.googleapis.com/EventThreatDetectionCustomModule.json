@@ -1,0 +1,24 @@
+{
+  "name": "//securitycentermanagement.googleapis.com/organizations/30000000001/locations/global/eventThreatDetectionCustomModules/1840273645",
+  "assetType": "securitycentermanagement.googleapis.com/EventThreatDetectionCustomModule",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/global/eventThreatDetectionCustomModules/1840273645",
+    "displayName": "unexpected_egress_ranges",
+    "config": {
+      "metadata": {
+        "severity": "MEDIUM",
+        "description": "Egress to unexpected ranges",
+        "recommendation": "Review the firewall rules"
+      },
+      "ips": ["203.0.113.10"]
+    },
+    "enablementState": "ENABLED",
+    "type": "CONFIGURABLE_BAD_IP",
+    "updateTime": "2026-03-01T09:00:00Z",
+    "lastEditor": "secops@example.com"
+  }
+}

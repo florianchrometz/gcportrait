@@ -1,0 +1,18 @@
+{
+  "name": "//cloudcontrolspartner.googleapis.com/organizations/30000000001/locations/eu/customers/acme-bank/workloads/core-banking",
+  "assetType": "cloudcontrolspartner.googleapis.com/Workload",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "eu",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/eu/customers/acme-bank/workloads/core-banking",
+    "folderId": "20000000002",
+    "folder": "folders/20000000002",
+    "createTime": "2025-02-01T08:00:00Z",
+    "isOnboarded": true,
+    "keyManagementProjectId": "demo-sec-1",
+    "location": "europe-west3",
+    "partner": "PARTNER_SOVEREIGN_CONTROLS_BY_T_SYSTEMS"
+  }
+}

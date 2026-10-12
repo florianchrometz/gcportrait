@@ -1,0 +1,17 @@
+{
+  "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca/certificateRevocationLists/a1b2c3d4",
+  "assetType": "privateca.googleapis.com/CertificateRevocationList",
+  "parent": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/caPools/root-pool/certificateAuthorities/root-ca/certificateRevocationLists/a1b2c3d4",
+    "sequenceNumber": "42",
+    "accessUrl": "https://storage.googleapis.com/demo-sec-1-ca-artifacts/root-ca/crl.crl",
+    "state": "ACTIVE",
+    "createTime": "2026-09-25T00:00:00Z",
+    "updateTime": "2026-09-25T00:00:00Z",
+    "revisionId": "c0ffee01"
+  }
+}

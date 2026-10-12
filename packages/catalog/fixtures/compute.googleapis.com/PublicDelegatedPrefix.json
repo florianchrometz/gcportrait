@@ -1,0 +1,88 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/publicDelegatedPrefixes/byoip-v4-global",
+    "assetType": "compute.googleapis.com/PublicDelegatedPrefix",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#publicDelegatedPrefix",
+      "id": "5000000000000000127",
+      "name": "byoip-v4-global",
+      "description": "Global half of the /24 for anycast load balancers",
+      "parentPrefix": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/publicAdvertisedPrefixes/byoip-v4",
+      "ipCidrRange": "203.0.113.0/25",
+      "status": "ANNOUNCED_TO_INTERNET",
+      "isLiveMigration": false,
+      "byoipApiVersion": "V2",
+      "publicDelegatedSubPrefixs": [
+        {
+          "name": "storefront",
+          "ipCidrRange": "203.0.113.0/28",
+          "delegateeProject": "demo-app-1",
+          "isAddress": true,
+          "status": "ACTIVE"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/publicDelegatedPrefixes/byoip-v4-global"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/publicDelegatedPrefixes/byoip-v4-europe-west3",
+    "assetType": "compute.googleapis.com/PublicDelegatedPrefix",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#publicDelegatedPrefix",
+      "id": "5000000000000000128",
+      "name": "byoip-v4-europe-west3",
+      "description": "Regional quarter of the /24",
+      "parentPrefix": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/publicAdvertisedPrefixes/byoip-v4",
+      "ipCidrRange": "203.0.113.128/26",
+      "status": "ANNOUNCED_TO_INTERNET",
+      "enableEnhancedIpv4Allocation": true,
+      "byoipApiVersion": "V2",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/publicDelegatedPrefixes/byoip-v4-europe-west3",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/publicDelegatedPrefixes/byoip-v6-subnets",
+    "assetType": "compute.googleapis.com/PublicDelegatedPrefix",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#publicDelegatedPrefix",
+      "id": "5000000000000000129",
+      "name": "byoip-v6-subnets",
+      "description": "IPv6 sub-prefix for dual-stack subnetworks",
+      "parentPrefix": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/publicDelegatedPrefixes/byoip-v6-europe-west3",
+      "ipCidrRange": "2001:db8:41::/56",
+      "mode": "EXTERNAL_IPV6_SUBNETWORK_CREATION",
+      "status": "ANNOUNCED_TO_INTERNET",
+      "byoipApiVersion": "V2",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/publicDelegatedPrefixes/byoip-v6-subnets",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+    }
+  }
+]

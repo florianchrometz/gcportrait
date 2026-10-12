@@ -1,0 +1,34 @@
+{
+  "name": "//websecurityscanner.googleapis.com/projects/10000000002/scanConfigs/5629499534213120",
+  "assetType": "websecurityscanner.googleapis.com/ScanConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/scanConfigs/5629499534213120",
+    "displayName": "Shop weekly scan",
+    "maxQps": 15,
+    "startingUrls": ["https://shop.example.com/", "https://shop.example.com/account"],
+    "authentication": {
+      "customAccount": {
+        "username": "scanner@example.com",
+        "loginUrl": "https://login.example.com/signin"
+      }
+    },
+    "userAgent": "CHROME_LINUX",
+    "schedule": {
+      "intervalDurationDays": 7
+    },
+    "targetPlatforms": ["COMPUTE"],
+    "exportToSecurityCommandCenter": "ENABLED",
+    "riskLevel": "LOW",
+    "managedScan": false,
+    "staticIpScan": false
+  }
+}

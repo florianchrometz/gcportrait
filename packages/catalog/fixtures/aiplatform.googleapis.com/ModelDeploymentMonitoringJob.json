@@ -1,0 +1,41 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/modelDeploymentMonitoringJobs/2233445566778899001",
+  "assetType": "aiplatform.googleapis.com/ModelDeploymentMonitoringJob",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/modelDeploymentMonitoringJobs/2233445566778899001",
+    "displayName": "fraud-scoring-monitor",
+    "endpoint": "projects/10000000003/locations/europe-west3/endpoints/4721839405617283072",
+    "state": "JOB_STATE_RUNNING",
+    "scheduleState": "OFFLINE",
+    "modelDeploymentMonitoringScheduleConfig": {
+      "monitorInterval": "3600s"
+    },
+    "modelMonitoringAlertConfig": {
+      "enableLogging": true,
+      "notificationChannels": ["projects/demo-data-1/notificationChannels/14402298130044587714"],
+      "emailAlertConfig": {
+        "userEmails": ["ml-oncall@example.com"]
+      }
+    },
+    "bigqueryTables": [
+      {
+        "logSource": "SERVING",
+        "logType": "PREDICT",
+        "bigqueryTablePath": "bq://demo-data-1.model_deployment_monitoring_4721839405617283072.serving_predict"
+      }
+    ],
+    "statsAnomaliesBaseDirectory": {
+      "outputUriPrefix": "gs://demo-data-1-ml/monitoring/fraud-scoring"
+    },
+    "createTime": "2026-03-10T08:00:00Z",
+    "updateTime": "2026-10-01T07:00:00Z",
+    "nextScheduleTime": "2026-10-01T08:00:00Z",
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    }
+  }
+}

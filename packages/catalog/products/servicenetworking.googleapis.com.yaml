@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT
+#
+# Service Networking: private services access, the peering between a consumer VPC network and the
+# Google-managed producer network that Cloud SQL, Memorystore, AlloyDB and other services use for private IPs.
+product: Service Networking
+service: servicenetworking.googleapis.com
+icon: service_networking
+types:
+  servicenetworking.googleapis.com/Connection:
+    role: core
+    label: 'Private services access'
+    subtitle: '{{data.service | lastSegment}} · {{data.reservedPeeringRanges[0]}}'
+    console: 'https://console.cloud.google.com/networking/networks/details/{{data.network | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - {
+          kind: uses,
+          to: '$.data.reservedPeeringRanges[*]',
+          normalize: siblingName,
+          service: compute.googleapis.com,
+          pattern: 'projects/{project}/global/addresses/{id}',
+        }
+    notes: >-
+      Nests in the consumer VPC network, which data.network names with the project number
+      (projects/<number>/global/networks/<name>; the project index turns it into the network's id-based name).
+      data.reservedPeeringRanges are the names of the global addresses (purpose VPC_PEERING) reserved in the
+      network's project, the connection's own; siblingName builds their names (with the project number
+      the connection's name carries, which the graph matches against the addresses' id-based names), so the
+      connection uses each range. The subtitle also shows the first one. The peering itself (data.peering) appears on the network as a peers edge
+      into the producer's tenant project.

@@ -1,0 +1,114 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/addresses/psa-range-prod",
+    "assetType": "compute.googleapis.com/GlobalAddress",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#address",
+      "id": "5000000000000000114",
+      "name": "psa-range-prod",
+      "description": "Private services access range (Cloud SQL, Memorystore)",
+      "address": "10.60.0.0",
+      "prefixLength": 20,
+      "status": "RESERVED",
+      "addressType": "INTERNAL",
+      "purpose": "VPC_PEERING",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/addresses/psa-range-prod"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/addresses/psc-googleapis",
+    "assetType": "compute.googleapis.com/GlobalAddress",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#address",
+      "id": "5000000000000000115",
+      "name": "psc-googleapis",
+      "description": "Private Service Connect endpoint for Google APIs",
+      "address": "10.255.255.254",
+      "status": "IN_USE",
+      "addressType": "INTERNAL",
+      "purpose": "PRIVATE_SERVICE_CONNECT",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "users": [
+        "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/forwardingRules/pscgoogleapis"
+      ],
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/addresses/psc-googleapis"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/addresses/web-lb-ip",
+    "assetType": "compute.googleapis.com/GlobalAddress",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#address",
+      "id": "5000000000000000116",
+      "name": "web-lb-ip",
+      "description": "Anycast address of the storefront load balancer",
+      "address": "203.0.113.10",
+      "status": "IN_USE",
+      "addressType": "EXTERNAL",
+      "ipVersion": "IPV4",
+      "networkTier": "PREMIUM",
+      "ipCollection": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/publicDelegatedPrefixes/byoip-v4-global",
+      "users": ["https://www.googleapis.com/compute/v1/projects/demo-app-1/global/forwardingRules/web-https"],
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/addresses/web-lb-ip"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/addresses/shared-services-block",
+    "assetType": "compute.googleapis.com/GlobalAddress",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#address",
+      "id": "5000000000000000117",
+      "name": "shared-services-block",
+      "description": "Global internal block carved from the shared-services internal range",
+      "address": "10.70.0.0",
+      "prefixLength": 24,
+      "status": "RESERVED",
+      "addressType": "INTERNAL",
+      "purpose": "VPC_PEERING",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "ipCollection": "https://networkconnectivity.googleapis.com/v1/projects/demo-net-1/locations/global/internalRanges/shared-services",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/addresses/shared-services-block"
+    }
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "name": "//cloudsql.googleapis.com/projects/demo-data-1/backups/1727740800000",
+  "assetType": "sqladmin.googleapis.com/Backup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/backups/1727740800000",
+    "kind": "sql#backup",
+    "instance": "orders-db",
+    "type": "ON_DEMAND",
+    "description": "Before the schema migration",
+    "state": "SUCCESSFUL",
+    "backupKind": "SNAPSHOT",
+    "location": "europe-west3",
+    "databaseVersion": "POSTGRES_16",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/sql",
+    "expiryTime": "2026-12-31T00:00:00Z"
+  }
+}

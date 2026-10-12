@@ -1,0 +1,99 @@
+/* SPDX-License-Identifier: MIT */
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+}
+
+.canvas {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--dg-canvas, var(--color-surface));
+}
+
+/*
+ * "Skip to the diagram" focuses the canvas area itself while nothing is drawn. It touches the edges of
+ * <main>, which would clip the global ring drawn outside it, so its ring is drawn inside: 2 px primary at the edge
+ * with the 2 px surface gap within.
+ */
+.canvas:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+  box-shadow: inset 0 0 0 calc(var(--focus-ring-width) + var(--focus-ring-gap)) var(--color-surface);
+}
+
+/* The diagram's <svg> fills the canvas (diagram.css styles its inside). */
+.canvas > svg {
+  position: absolute;
+  inset: 0;
+}
+
+.empty {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 420px;
+  padding: var(--space-6) var(--space-8);
+  border: 1px dashed var(--color-outline);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.emptyText {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+.demoList {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-control);
+}
+
+.status {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+/* Progress while a new view replaces the one on screen: a small chip above the diagram, top right. */
+.statusOverlay {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+}
+
+.error {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  max-width: 560px;
+  padding: var(--space-6) var(--space-8);
+  border: 1px solid var(--color-error);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.errorIds {
+  margin: 0;
+  padding-left: var(--space-4);
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}

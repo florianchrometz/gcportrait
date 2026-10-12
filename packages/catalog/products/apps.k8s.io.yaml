@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MIT
+#
+# Kubernetes workload controllers (apps/v1) of GKE clusters with the asset inventory feature on. They nest in
+# their namespace by name path. Ownership (deployment → replica set → pod) comes from ownerReferences; images
+# are drawn as uses edges to their Artifact Registry repository (images from other registries yield nothing).
+product: Google Kubernetes Engine
+service: apps.k8s.io
+icon: google_kubernetes_engine
+types:
+  apps.k8s.io/Deployment:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.template.spec.containers[0].image | lastSegment | short(32)}} · {{data.spec.replicas | plural(replica)}}'
+    console: 'https://console.cloud.google.com/kubernetes/deployment/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/overview?project={{projectId}}'
+    relations:
+      - { kind: uses, to: '$.data.spec.template.spec.containers[*].image', normalize: artifactImage }
+    notes: >-
+      spec.template.spec.serviceAccountName names a Kubernetes service account by bare name (no edge yet);
+      the Workload Identity binding is drawn from that service account.
+
+  apps.k8s.io/ReplicaSet:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.replicas | plural(replica)}}'
+    console: 'https://console.cloud.google.com/kubernetes/replicaset/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/overview?project={{projectId}}'
+    relations:
+      - { kind: memberOf, to: '$.data.metadata.ownerReferences[*]', normalize: k8sOwner }
+    hiddenWhen: '$.data.spec.replicas == 0'
+    notes: >-
+      Belongs to its deployment through ownerReferences. Deployments keep their old replica sets scaled to
+      zero (revisionHistoryLimit); those start hidden. The image is drawn from the deployment.
+
+  apps.k8s.io/StatefulSet:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.template.spec.containers[0].image | lastSegment | short(32)}} · {{data.spec.replicas | plural(replica)}}'
+    console: 'https://console.cloud.google.com/kubernetes/statefulset/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/overview?project={{projectId}}'
+    relations:
+      - { kind: uses, to: '$.data.spec.template.spec.containers[*].image', normalize: artifactImage }
+    notes: Its claims (volumeClaimTemplates) are separate PersistentVolumeClaim objects in the namespace.
+
+  apps.k8s.io/DaemonSet:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.template.spec.containers[0].image | lastSegment | short(32)}} · {{data.status.desiredNumberScheduled | plural(node)}}'
+    console: 'https://console.cloud.google.com/kubernetes/daemonset/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/overview?project={{projectId}}'
+    relations:
+      - { kind: uses, to: '$.data.spec.template.spec.containers[*].image', normalize: artifactImage }

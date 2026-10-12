@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+#
+# Cloud Storage. Cloud Asset Inventory names a bucket
+# `//storage.googleapis.com/<bucket>` (no project segment) and returns the JSON API v1 bucket resource, whose
+# data.location is upper case (`EUROPE-WEST3`, `EU`); the asset's own location is lower case.
+product: Cloud Storage
+service: storage.googleapis.com
+icon: cloud_storage
+types:
+  storage.googleapis.com/Bucket:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{location}} · {{data.storageClass | lower}}'
+    console: 'https://console.cloud.google.com/storage/browser/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryption.defaultKmsKeyName, normalize: kmsKey }
+      - { kind: uses, to: $.data.logging.logBucket, normalize: gcsUri }
+    hiddenWhen: >-
+      $.data.name startsWith 'gcf-sources-' || $.data.name startsWith 'gcf-v2-sources-' || $.data.name
+      startsWith 'gcf-v2-uploads-' || $.data.name startsWith 'run-sources-' || $.data.name endsWith
+      '_cloudbuild' || $.data.name startsWith 'dataproc-staging-' || $.data.name startsWith 'dataproc-temp-' ||
+      ($.data.name endsWith '.appspot.com' && ($.data.name startsWith 'staging.' || $.data.name contains
+      'artifacts.'))
+    notes: >-
+      encryption.defaultKmsKeyName is the bucket's default customer-managed key (encryptedBy); logging.logBucket
+      names the bucket that receives the usage logs (uses). External BigQuery tables, backend buckets, log
+      sinks and transfer jobs point at buckets from their side. hiddenWhen hides the staging buckets the
+      platform creates on its own (Cloud Run functions sources and uploads, Cloud Run source deploys, Cloud
+      Build, Dataproc staging and temp, App Engine staging and Container Registry): they are operational
+      storage, not architecture, and an organisation has one or more per project. UBLA, public access
+      prevention, versioning and retention (iamConfiguration, versioning, retentionPolicy) are badges for the
+      drawer, not edges.

@@ -1,0 +1,17 @@
+{
+  "name": "//datalineage.googleapis.com/projects/demo-data-1/locations/europe-west3/processes/composer-orchestration-curate-orders",
+  "assetType": "datalineage.googleapis.com/Process",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T05:30:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/processes/composer-orchestration-curate-orders",
+    "displayName": "curate_orders.load_marts",
+    "attributes": { "dag_id": "curate_orders", "task_id": "load_marts" },
+    "origin": {
+      "sourceType": "COMPOSER",
+      "name": "projects/demo-data-1/locations/europe-west3/environments/orchestration"
+    }
+  }
+}

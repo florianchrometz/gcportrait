@@ -1,0 +1,24 @@
+{
+  "name": "//networksecurity.googleapis.com/projects/demo-net-1/locations/europe-west3/tlsInspectionPolicies/ngfw-inspection",
+  "assetType": "networksecurity.googleapis.com/TlsInspectionPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-09-20T09:30:00Z",
+  "data": {
+    "name": "projects/demo-net-1/locations/europe-west3/tlsInspectionPolicies/ngfw-inspection",
+    "description": "Decrypts inbound web traffic for threat prevention",
+    "createTime": "2026-03-01T15:00:00Z",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "caPool": "projects/demo-sec-1/locations/europe-west3/caPools/ngfw-inspection",
+    "trustConfig": "projects/demo-net-1/locations/europe-west3/trustConfigs/internal-roots",
+    "minTlsVersion": "TLS_1_2",
+    "tlsFeatureProfile": "PROFILE_MODERN",
+    "excludePublicCaSet": false
+  }
+}

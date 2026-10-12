@@ -1,0 +1,33 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/storagePools/hdb-pool-1",
+  "assetType": "compute.googleapis.com/StoragePool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#storagePool",
+    "id": "8600000000000000001",
+    "name": "hdb-pool-1",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/storagePools/hdb-pool-1",
+    "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+    "storagePoolType": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/storagePoolTypes/hyperdisk-balanced",
+    "capacityProvisioningType": "ADVANCED",
+    "performanceProvisioningType": "ADVANCED",
+    "poolProvisionedCapacityGb": "10240",
+    "poolProvisionedIops": "30000",
+    "poolProvisionedThroughput": "1024",
+    "state": "READY",
+    "resourceStatus": {
+      "diskCount": "1",
+      "totalProvisionedDiskCapacityGb": "500",
+      "poolUsedCapacityBytes": "96636764160"
+    },
+    "creationTimestamp": "2026-05-01T09:00:00.000-07:00"
+  }
+}

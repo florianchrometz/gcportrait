@@ -1,0 +1,92 @@
+[
+  {
+    "name": "//storagetransfer.googleapis.com/projects/10000000003/transferJobs/landing-to-archive",
+    "assetType": "storagetransfer.googleapis.com/TransferJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "transferJobs/landing-to-archive",
+      "description": "Nightly copy of landed files to the archive bucket",
+      "projectId": "demo-data-1",
+      "serviceAccount": "transfer-runner@demo-data-1.iam.gserviceaccount.com",
+      "transferSpec": {
+        "gcsDataSource": { "bucketName": "demo-data-1-landing", "path": "daily/" },
+        "gcsDataSink": { "bucketName": "demo-data-1-archive", "path": "landing/" },
+        "objectConditions": { "maxTimeElapsedSinceLastModification": "86400s" },
+        "transferOptions": { "deleteObjectsFromSourceAfterTransfer": false }
+      },
+      "notificationConfig": {
+        "pubsubTopic": "projects/demo-data-1/topics/transfer-events",
+        "eventTypes": ["TRANSFER_OPERATION_SUCCESS", "TRANSFER_OPERATION_FAILED"],
+        "payloadFormat": "JSON"
+      },
+      "schedule": {
+        "scheduleStartDate": { "year": 2025, "month": 1, "day": 1 },
+        "startTimeOfDay": { "hours": 2 },
+        "repeatInterval": "86400s"
+      },
+      "status": "ENABLED",
+      "creationTime": "2025-01-01T09:00:00Z"
+    }
+  },
+  {
+    "name": "//storagetransfer.googleapis.com/projects/10000000003/transferJobs/partner-s3-events",
+    "assetType": "storagetransfer.googleapis.com/TransferJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "transferJobs/partner-s3-events",
+      "description": "Partner exports from S3",
+      "projectId": "demo-data-1",
+      "transferSpec": {
+        "awsS3DataSource": {
+          "bucketName": "partner-exports",
+          "roleArn": "arn:aws:iam::111111111111:role/sts-reader"
+        },
+        "gcsDataSink": { "bucketName": "demo-data-1-landing", "path": "partner/" },
+        "gcsIntermediateDataLocation": { "bucketName": "demo-data-1-transfer-staging" }
+      },
+      "eventStream": { "name": "projects/demo-data-1/subscriptions/partner-s3-notifications" },
+      "status": "ENABLED"
+    }
+  },
+  {
+    "name": "//storagetransfer.googleapis.com/projects/10000000003/transferJobs/replicate-lake",
+    "assetType": "storagetransfer.googleapis.com/TransferJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "transferJobs/replicate-lake",
+      "description": "Event-driven replication of the lake bucket",
+      "projectId": "demo-data-1",
+      "replicationSpec": {
+        "gcsDataSource": { "bucketName": "demo-data-1-lake" },
+        "gcsDataSink": { "bucketName": "demo-data-1-lake-replica" }
+      },
+      "status": "ENABLED"
+    }
+  },
+  {
+    "name": "//storagetransfer.googleapis.com/projects/10000000003/transferJobs/1234567890123456789",
+    "assetType": "storagetransfer.googleapis.com/TransferJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-06-01T08:00:00Z",
+    "data": {
+      "name": "transferJobs/1234567890123456789",
+      "projectId": "demo-data-1",
+      "transferSpec": {
+        "httpDataSource": { "listUrl": "https://files.example.com/exports/urls.tsv" },
+        "gcsDataSink": { "bucketName": "demo-data-1-landing" }
+      },
+      "status": "DISABLED"
+    }
+  }
+]

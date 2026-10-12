@@ -1,0 +1,104 @@
+[
+  {
+    "name": "//developerconnect.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/gitlab-platform",
+    "assetType": "developerconnect.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/gitlab-platform",
+      "createTime": "2025-08-20T10:00:00Z",
+      "updateTime": "2026-03-02T09:00:00Z",
+      "uid": "0d1e2f3a-4b5c-4d6e-8f70-a1b2c3d4e5f6",
+      "gitlabEnterpriseConfig": {
+        "hostUri": "https://gitlab.example.com",
+        "webhookSecretSecretVersion": "projects/10000000005/secrets/devconnect-gitlab-webhook/versions/1",
+        "readAuthorizerCredential": {
+          "userTokenSecretVersion": "projects/10000000005/secrets/devconnect-gitlab-read/versions/2"
+        },
+        "authorizerCredential": {
+          "userTokenSecretVersion": "projects/10000000005/secrets/devconnect-gitlab-api/versions/2"
+        },
+        "serviceDirectoryConfig": {
+          "service": "projects/demo-ops-1/locations/europe-west3/namespaces/internal/services/gitlab"
+        },
+        "serverVersion": "17.4.1"
+      },
+      "cryptoKeyConfig": {
+        "keyReference": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/devconnect"
+      },
+      "installationState": {
+        "stage": "COMPLETE"
+      },
+      "disabled": false,
+      "reconciling": false
+    }
+  },
+  {
+    "name": "//developerconnect.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/github-shop",
+    "assetType": "developerconnect.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/github-shop",
+      "createTime": "2025-09-01T08:00:00Z",
+      "uid": "1e2f3a4b-5c6d-4e7f-9081-b2c3d4e5f6a7",
+      "githubConfig": {
+        "githubApp": "DEVELOPER_CONNECT",
+        "authorizerCredential": {
+          "oauthTokenSecretVersion": "projects/10000000005/secrets/devconnect-github-oauth/versions/1"
+        },
+        "appInstallationId": "51234"
+      },
+      "installationState": {
+        "stage": "COMPLETE"
+      },
+      "disabled": false
+    }
+  },
+  {
+    "name": "//developerconnect.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/ssm-shop",
+    "assetType": "developerconnect.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/ssm-shop",
+      "createTime": "2026-01-12T08:00:00Z",
+      "uid": "2f3a4b5c-6d7e-4f80-a192-c3d4e5f6a7b8",
+      "secureSourceManagerInstanceConfig": {
+        "instance": "projects/demo-ops-1/locations/europe-west3/instances/shop-source"
+      },
+      "installationState": {
+        "stage": "COMPLETE"
+      }
+    }
+  },
+  {
+    "name": "//developerconnect.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/git-mirror",
+    "assetType": "developerconnect.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/git-mirror",
+      "createTime": "2026-02-03T08:00:00Z",
+      "uid": "3a4b5c6d-7e8f-4091-b2a3-d4e5f6a7b8c9",
+      "httpConfig": {
+        "hostUri": "https://git.example.com",
+        "basicAuthentication": {
+          "username": "devconnect",
+          "passwordSecretVersion": "projects/10000000005/secrets/git-mirror-password/versions/1"
+        }
+      },
+      "installationState": {
+        "stage": "COMPLETE"
+      }
+    }
+  }
+]

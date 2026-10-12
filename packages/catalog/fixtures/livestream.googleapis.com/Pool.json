@@ -1,0 +1,21 @@
+{
+  "name": "//livestream.googleapis.com/projects/demo-app-1/locations/europe-west3/pools/default",
+  "assetType": "livestream.googleapis.com/Pool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/pools/default",
+    "createTime": "2026-09-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "networkConfig": {
+      "peeredNetwork": "projects/10000000001/global/networks/core"
+    }
+  }
+}
