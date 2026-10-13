@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Client for `POST /api/preflight` (docs/api.md, docs/permissions.md; ADR 0028 §2–§4). The answer's shape is the
+ * Client for `POST /api/preflight` (docs/api.md, docs/permissions.md). The answer's shape is the
  * backend's `PreflightResponseSchema` (backend/src/preflight/schemas.ts), read here with plain guards because the UI
- * thread ships no zod (ADR 0029): every field is checked, and an answer that does not fit is an error, never half
+ * thread ships no zod: every field is checked, and an answer that does not fit is an error, never half
  * shown. The token goes only to this backend, through `fetchWithToken` (src/auth).
  */
 import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';

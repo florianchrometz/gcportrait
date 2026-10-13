@@ -24,7 +24,7 @@
  * button is pressed. Every request must stay on the site's own host, but for the header's repository widget.
  *
  * The header's repository widget (docs/website.md, "GitHub repository widget") is answered by the check, never by
- * GitHub: with a 404, as GitHub answers for the private repository today, so nothing changes; with `--stars N`, N stars,
+ * GitHub: with a 404, as GitHub answers for a private repository, so nothing changes; with `--stars N`, N stars,
  * `--forks` forks (N unless given) and the release `--release` (v1.0.0 unless given), shown (or added where the build
  * had none) before the layout is measured.
  *
@@ -69,7 +69,7 @@ class UsageError extends Error {}
 
 /**
  * The site's pages: the sitemap's and the 404 page, without the demo (/demo/), which is the app: desktop-only
- * (agents.md rule 7), checked by the e2e suite and `pnpm --filter @gcportrait/website demo`.
+ * (agents.md, Product rules), checked by the e2e suite and `pnpm --filter @gcportrait/website demo`.
  */
 function sitemapPages(dist: string): string[] {
   const sitemap = readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');

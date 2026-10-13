@@ -124,7 +124,7 @@ describe('the keyboard camera', () => {
     // The drawing point under (300, 200) is still there.
     expect((300 - to.x) / to.k).toBeCloseTo((300 - camera.x) / camera.k);
     expect((200 - to.y) / to.k).toBeCloseTo((200 - camera.y) / camera.k);
-    // The scale extent, [0.05, 200] (ADR 0035 §5), as literals: the camera stops at 5 % and at 20 000 %.
+    // The scale extent, [0.05, 200], as literals: the camera stops at 5 % and at 20 000 %.
     expect(zoomAbout(camera, 1000, 0, 0).k).toBe(200);
     expect(zoomAbout(camera, 0.001, 0, 0).k).toBe(0.05);
     expect(zoomStepTransform(camera, 1, null, 1280, 624)?.k).toBeCloseTo(0.4 * ZOOM_STEP);

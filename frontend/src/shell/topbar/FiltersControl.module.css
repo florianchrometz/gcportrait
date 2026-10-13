@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The Filters popover (FiltersControl.tsx): switches on the left, the pickers on the right, sized to fit under
-   the top bar at the minimum desktop viewport (1280 × 800, ADR 0011). Tokens only (both themes). */
+   the top bar at the minimum desktop viewport (1280 × 800). Tokens only (both themes). */
 .panel {
   display: grid;
   grid-template-columns: 17rem 22rem;

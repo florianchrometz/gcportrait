@@ -2,12 +2,12 @@
 
 # @gcportrait/model
 
-The single definition of every type that crosses a package boundary in gcportrait (agents.md, hard rule 4):
-Asset and Snapshot, relation kinds, Graph, ViewSpec, Scene, the asset catalog's shapes, the timeline's Tick
-and Diff, and the URL-hash codec for views. Every type is inferred from a zod schema (`z.infer`); nothing is
-declared twice. The package sits at the bottom of the dependency graph, imports no other `@gcportrait`
-package, has no side effects, runs unchanged in the browser, in workers and in Node, and exposes its public
-API only through `src/index.ts`.
+The single definition of every type that crosses a package boundary in gcportrait (agents.md, Data and graph
+semantics): Asset and Snapshot, relation kinds, Graph, ViewSpec, Scene, the asset catalog's shapes, the
+timeline's Tick and Diff, and the URL-hash codec for views. Every type is inferred from a zod schema
+(`z.infer`); nothing is declared twice. The package sits at the bottom of the dependency graph, imports no
+other `@gcportrait` package, has no side effects, runs unchanged in the browser, in workers and in Node, and
+exposes its public API only through `src/index.ts`.
 
 ```ts
 import { decodeViewSpec, encodeViewSpec, migrateSnapshot, type ViewSpec } from '@gcportrait/model';
@@ -103,11 +103,11 @@ Version 1 is the first format, so there is no upgrade step yet.
 | `LensIdSchema`, `LensId` | the eleven lenses ([docs/lenses-and-filters.md](../../docs/lenses-and-filters.md)): `overview`, `networking`, `load-balancing`, `compute`, `serverless`, `kubernetes`, `data`, `security`, `identity`, `operations`, `everything` |
 | `DetailLevelSchema`, `DetailLevel` | `auto`, `folders`, `projects`, `networks`, `all` (progressive disclosure, skill gcp-diagram-layout §6) |
 
-### Without zod (ADR 0029)
+### Without zod
 
 The schemas are built from plain tuples in `schemas/vocabulary.ts`, which imports no zod; code that only lists
-or tests a value (the app's UI thread, which ships no zod) imports these instead of a schema's `options` or
-`safeParse`. `vocabulary.test.ts` proves each guard equal to its schema.
+or tests a value (the app's UI thread, which ships no zod: agents.md, Architecture and code) imports these
+instead of a schema's `options` or `safeParse`. `vocabulary.test.ts` proves each guard equal to its schema.
 
 | Export | What |
 |---|---|
@@ -182,7 +182,7 @@ reads it for zone badges, the drawer and the cycle error.
 lens decides" (identities); `true` and `false` override.
 
 `normalizeViewSpec` turns any input into a valid ViewSpec in canonical form and never throws for plain data of
-any shape. It imports no zod (`codec/normalize.ts`, ADR 0029): each field is judged by a plain predicate that
+any shape. It imports no zod (`codec/normalize.ts`): each field is judged by a plain predicate that
 accepts exactly what its schema accepts (`normalize.test.ts` proves each against its schema, and
 `view-hash.property.test.ts` the whole normaliser against a zod-based reference on any input, plain objects
 with or without a prototype; class instances and arrays are no records). Field by field: a missing or invalid
@@ -236,14 +236,14 @@ what the UI needs around it. A refused root or focus is reported here, never thr
 | Export | What |
 |---|---|
 | `CatalogEntrySchema`, `CatalogEntry` | one product file `products/<service>[.<suffix>].yaml`: `product`, `service`, `icon`, `types` |
-| `CatalogTypeEntrySchema`, `CatalogTypeEntry` | one type: `role`, `label` (default `DEFAULT_LABEL_TEMPLATE`), `subtitle?`, `icon?`, `console?` (an `https://` template), `ips`, `domains`, `relations`, `contains` (all default `[]`), `nestsIn?` (one `NestsInRule` or a list, stored as a list: the containers the asset nests in; ADR 0022), `zoneKind?`, `aliases?` (JSONPaths to alternative keys of the asset, at least one), `hiddenWhen?` (predicate or `null`), `notes?`, `deprecated?` (date); only containers have `contains` and `zoneKind` |
+| `CatalogTypeEntrySchema`, `CatalogTypeEntry` | one type: `role`, `label` (default `DEFAULT_LABEL_TEMPLATE`), `subtitle?`, `icon?`, `console?` (an `https://` template), `ips`, `domains`, `relations`, `contains` (all default `[]`), `nestsIn?` (one `NestsInRule` or a list, stored as a list: the containers the asset nests in), `zoneKind?`, `aliases?` (JSONPaths to alternative keys of the asset, at least one), `hiddenWhen?` (predicate or `null`), `notes?`, `deprecated?` (date); only containers have `contains` and `zoneKind` |
 | `CatalogZoneKindSchema`, `CatalogZoneKind` | how the scene draws a container: `vpc`, `subnet`, `region`, `product` (the default), `group` |
-| `RelationRuleSchema`, `RelationRule` | `{ kind, to, normalize, weak?, reverse?, versionLevel?, service?, pattern?, k8sKind? }`; `reverse` draws the edge from the target to the asset (ADR 0022); `versionLevel` only with `kmsKey`; `service` (the target's service) only with `name` and `siblingName`; `pattern` required with `siblingName` and only there; `k8sKind` only with `k8sRef` |
-| `NestsInRuleSchema`, `NestsInRule` | `{ to, normalize, service?, pattern?, k8sKind?, kind? }` (ADR 0022): a reference to the container the asset nests in, read like a relation rule's; `kind` is the relation drawn when the asset does not nest there |
+| `RelationRuleSchema`, `RelationRule` | `{ kind, to, normalize, weak?, reverse?, versionLevel?, service?, pattern?, k8sKind? }`; `reverse` draws the edge from the target to the asset; `versionLevel` only with `kmsKey`; `service` (the target's service) only with `name` and `siblingName`; `pattern` required with `siblingName` and only there; `k8sKind` only with `k8sRef` |
+| `NestsInRuleSchema`, `NestsInRule` | `{ to, normalize, service?, pattern?, k8sKind?, kind? }`: a reference to the container the asset nests in, read like a relation rule's; `kind` is the relation drawn when the asset does not nest there |
 | `SiblingPatternSchema`, `SIBLING_PATTERN_PLACEHOLDERS` | a `siblingName` pattern: `/`-separated literal segments and placeholders `{id}`, `{parent}`, `{project}`, `{projectId}`, `{projectNumber}`, `{location}`, `{region}`, `{zone}`, `{.key}` |
 | `KubernetesKindSchema` | a `k8sRef` kind: `Kind` or `group/Kind` |
 | `CatalogRelationKindSchema`, `CatalogRelationKind` | every relation kind except `shares`, which only the graph builder derives |
-| `NormaliserNameSchema`, `NormaliserName` | the fifteen normalisers of the skill's §5 (`siblingName` and `k8sRef`: ADR 0023) |
+| `NormaliserNameSchema`, `NormaliserName` | the fifteen normalisers of the skill's §5 |
 | `ContainsRuleSchema`, `ContainsRule` | a JSONPath, or `{ byParent: <asset type> }` |
 | `JsonPathSchema`, `PredicateSchema` | strings starting with `$.` or `$[` |
 | `TemplateSchema` | text with `{{variable \| filter …}}` expressions |
@@ -259,8 +259,8 @@ in its description, and stored under its own `assetType`.
 
 ## Catalog rule engine contract
 
-What `@gcportrait/catalog`'s rule engine reads next to an asset, and what it hands to the graph builder
-([ADR 0020](../../docs/adr/0020-graph-depends-on-catalog.md)).
+What `@gcportrait/catalog`'s rule engine reads next to an asset, and what it hands to the graph builder (the
+catalog owns rule semantics: agents.md, Data and graph semantics).
 
 | Export | What |
 |---|---|
@@ -276,7 +276,7 @@ What `@gcportrait/catalog`'s rule engine reads next to an asset, and what it han
 `encodeViewSpec(spec): string` writes a view into a URL hash (without the leading `#`); `decodeViewSpec(hash):
 ViewSpec` reads one, with or without the `#`. `decodeViewSpec(encodeViewSpec(spec))` deep-equals
 `normalizeViewSpec(spec)` for every input (a fast-check property test). The codec runs on the app's UI thread
-for every hash it reads and writes, so neither it nor `normalizeViewSpec` imports zod (ADR 0029): a bundler that
+for every hash it reads and writes, so neither it nor `normalizeViewSpec` imports zod: a bundler that
 keeps only what is imported leaves the schema library out of a bundle that uses the codec alone.
 
 ### Grammar
@@ -345,10 +345,10 @@ All of these are asserted verbatim in `src/codec/view-hash.test.ts`.
 
 ## Command variables
 
-The values a reader fills in where the documentation or the app shows a command, one registry for both: a token
-is `YOUR_` and capitals as one word (`YOUR_PROJECT`, `YOUR_ORG_ID`; docs/contributing.md, "Data, privacy and
-presentation"). Data in `src/schemas/command-variables.ts`, which imports nothing at run time (ADR 0029; the
-repository's `.mjs` tooling loads it by Node's type stripping).
+The values a reader fills in where the documentation or the app shows a command, one registry for both: a
+token is `YOUR_` and capitals as one word (`YOUR_PROJECT`, `YOUR_ORG_ID`; docs/contributing.md, "Data, privacy
+and presentation"). Data in `src/schemas/command-variables.ts`, which imports nothing at run time (no zod on
+the UI thread; the repository's `.mjs` tooling loads it by Node's type stripping).
 
 | Export | What |
 |---|---|

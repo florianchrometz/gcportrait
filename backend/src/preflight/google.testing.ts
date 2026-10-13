@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
  * A pretend Google for the preflight, scope-search and service-account gate tests (never built into dist/:
- * tsconfig.build.json leaves `*.testing.ts` out): Resource Manager v3 `get`, `search` and `testIamPermissions`,
- * Cloud Asset Inventory's `assets.list` probe and OAuth2 `tokeninfo`, as an `UpstreamFetch` that records every call,
- * on top of what every pretend Google shares (../upstream/google.testing.ts). Error bodies are shaped like the ones
- * the quota-project spike recorded (docs/spikes/quota-project.md §4), and the gate's answers are declared once, for
- * the gate, the preflight and the routes alike. The data is synthetic (agents.md rule 6: `demo-` project ids,
- * numbers below 100000000000, organisation 30000000001, example.com).
+ * tsconfig.build.json leaves `*.testing.ts` out): Resource Manager v3 `get`, `search` and
+ * `testIamPermissions`, Cloud Asset Inventory's `assets.list` probe and OAuth2 `tokeninfo`, as an
+ * `UpstreamFetch` that records every call, on top of what every pretend Google shares
+ * (../upstream/google.testing.ts). Error bodies are shaped like the ones Google gives (skill cai-ingestion
+ * §9; scripts/probe-google-apis.sh asks for them), and the gate's answers are declared once, for the gate,
+ * the preflight and the routes alike. The data is synthetic (agents.md, Security and privacy, principle 6:
+ * `demo-` project ids, numbers below 100000000000, organisation 30000000001, example.com).
  */
 import type { GateFinding } from '../auth/gate.js';
 import {
@@ -34,7 +35,10 @@ export function endpointOf(call: RecordedCall): Endpoint {
   return 'other';
 }
 
-/** The answers the quota-project spike recorded, by row (its §3, §4, §5), as fresh `Response`s. */
+/**
+ * Google's answers (skill cai-ingestion §9), by the row of scripts/probe-google-apis.sh that asks for each,
+ * as fresh `Response`s.
+ */
 export const answers = {
   /** g1: the scope's metadata. */
   project: (projectId = 'demo-app-1', displayName = 'Demo app 1'): Response =>
@@ -68,7 +72,7 @@ export const answers = {
     }),
   /**
    * `testIamPermissions`: the permissions the caller holds of those asked for. Google answers `{}` when it holds
-   * none, for a scope it may not see and for one that does not exist alike (measured 2026-10-10).
+   * none, for a scope it may not see and for one that does not exist alike.
    */
   permissions: (granted: readonly string[]): Response =>
     jsonResponse(200, granted.length === 0 ? {} : { permissions: granted }),
@@ -255,7 +259,7 @@ function otherKindOf(permission: string): string {
     : 'resourcemanager.folders.get';
 }
 
-/** One of the spike's answers to a step of the service-account gate (ADR 0028 §4), and what the gate makes of it. */
+/** One of Google's answers to a step of the service-account gate, and what the gate makes of it. */
 export interface GateAnswer {
   readonly label: string;
   /** Google's answer; `permission` is the `get` permission of the scope the call is about. */
@@ -269,7 +273,7 @@ export interface GateAnswer {
 
 /**
  * Every answer to the caller's `testIamPermissions` (gate step 1) that keeps the gate closed: the gate's own tests,
- * the preflight's checklist and the routes over HTTP each run them (the spike's §5, as synthetic cases).
+ * the preflight's checklist and the routes over HTTP each run them (as synthetic cases).
  */
 export const CALLER_REFUSALS: readonly GateAnswer[] = [
   {
@@ -408,7 +412,7 @@ const exposure = (
 
 /**
  * Every answer to the account's own `get` of the scope (gate step 2 with SA_MODE_STRICT_EXPOSURE) that keeps the
- * gate closed: only Resource Manager's exact IAM denial of the scope's `get` opens it (the spike's §5).
+ * gate closed: only Resource Manager's exact IAM denial of the scope's `get` opens it.
  */
 export const EXPOSURE_REFUSALS: readonly GateAnswer[] = [
   exposure('200 (a public get, or more than cloudasset.viewer)', () => answers.project(), 'exposed'),

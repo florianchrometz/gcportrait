@@ -28,7 +28,7 @@ function matchesAny(patterns: readonly string[] | undefined, assetType: string):
  * hides (false) service-account cards whatever the lens says; a type the lens or `includeTypes` names is a
  * candidate; a hidden-by-default node is shown only when the lens says `showHidden` or `includeTypes` names
  * its type, except that `includeTypes` never reveals a node of a hidden type whose `hiddenWhen` matched
- * (ADR 0024: the predicate marks the noise of a type the user switched on, such as destroyed secret versions;
+ * (the predicate marks the noise of a type the user switched on, such as destroyed secret versions;
  * only a lens with `showHidden` draws those). For a type visible by role, `includeTypes` still reveals its
  * `hiddenWhen` matches.
  */

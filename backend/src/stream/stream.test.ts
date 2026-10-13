@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * What every stream shares: its slots per token (slots.ts) and the caller's token it keys them on (caller.ts, ADR
- * 0031). The frames are frames.test.ts's.
+ * What every stream shares: its slots per token (slots.ts) and the caller's token it keys them on
+ * (caller.ts). The frames are frames.test.ts's.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -39,7 +39,7 @@ describe('StreamSlots', () => {
 describe('the caller’s token', () => {
   const request = (headers: Record<string, string | string[]>) => ({ headers });
 
-  it('is read from X-Gcportrait-Token, the header the app sends (ADR 0031), named as the app names it', () => {
+  it('is read from X-Gcportrait-Token, the header the app sends, named as the app names it', () => {
     expect(TOKEN_HEADER).toBe('x-gcportrait-token');
     // The app's own constant (frontend/src/auth/fetch.ts), read as text: no package imports another's source.
     const client = readFileSync(

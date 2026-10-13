@@ -119,7 +119,7 @@ export async function signInThroughGis(
   });
 }
 
-/** A synthetic access token (agents.md rule 6). */
+/** A synthetic access token (agents.md, Data and graph semantics). */
 export const TEST_TOKEN = 'ya29.synthetic-test-token';
 
 /** Sign-in controls that hand out `token` (none: signed out) and record what the backend refused. */

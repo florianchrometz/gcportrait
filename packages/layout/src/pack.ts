@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Stage 3: packing (skill gcp-diagram-layout §1, §4 and §9; ADRs 0025 and 0026).
+ * Stage 3: packing (skill gcp-diagram-layout §1, §4 and §9).
  * Bottom-up: the children of a zone are already sized when the zone is packed, and the zone's size follows
  * from its packed children.
  *
@@ -8,7 +8,7 @@
  * - the card block on top: a grid of `cardColumns` columns filled row by row; each column is as wide as its
  *   widest card and every card in it takes that width; a row is one card high, so cards share a baseline;
  * - the zone block below it: open zones, chips and empty zones in rows, `zoneRows[i]` zones in row `i`, each
- *   row left-aligned and as tall as its tallest cell. A cell is one zone, or (ADR 0026) a stack: consecutive
+ *   row left-aligned and as tall as its tallest cell. A cell is one zone, or a stack: consecutive
  *   zones one above the other, left-aligned, standing beside a single zone at least as tall in its row
  *   (`zoneStacks[i]` gives the zones per cell of row `i`; absent when every cell is one zone). The cells of a
  *   row share its top edge.
@@ -32,20 +32,20 @@
  *    beside it above wide rows of zones (skill §9, "huge empty zones").
  * 2. Orientation (skill §1, "wider than tall"): only candidates on the target's side of 1 compete (aspect ≥ 1
  *    for a target ≥ 1), unless there are none.
- * 3. Frame: the smallest frame area wins. A box whose aspect is within `tolerance` (20 %, ADR 0025's band) of
- *    the target counts as on target and is its own frame, so inside the band the most compact arrangement
+ * 3. Frame: the smallest frame area wins. A box whose aspect is within `tolerance` (20 %, the packing band)
+ *    of the target counts as on target and is its own frame, so inside the band the most compact arrangement
  *    wins. Any other box is framed to the target's aspect: it pays for the empty strip that would make it
  *    look like the target. So the packer leaves the band only when every arrangement inside it takes more
  *    area than one outside it after that penalty, and it takes an arrangement inside the band only when that
  *    box is no larger than every other tidy arrangement's frame (skill §9, "huge empty zones"). For grids of
  *    equal boxes, whose area hardly depends on the column count, this is skill §4's rule: the grid closest to
  *    the target, the closeness measured in area.
- * 4. Near ties (ADR 0026): among the candidates whose frame is within `NEAR_TIE` (2 %) of the smallest,
+ * 4. Near ties: among the candidates whose frame is within `NEAR_TIE` (2 %) of the smallest,
  *    one whose rows do not hold more zones further down (not inverted) ranks first, then one with fewer rows.
  * Ties: closer to the target (|aspect − target|), then fewer rows (skill §4), then fewer card columns, then the
  * zone split listed first.
  *
- * Stacks (ADR 0026). An arrangement with stacks replaces the plain one only when its box fits inside the plain
+ * Stacks. An arrangement with stacks replaces the plain one only when its box fits inside the plain
  * one's (no wider, no taller) with a smaller frame: a stack fills the height a tall sibling gives its row and
  * never makes its own container larger (its new shape may lead the parent to another arrangement, chosen for
  * a smaller frame, not a smaller area). Among those the smallest frame wins (ties as above, then fewer stacked
@@ -70,15 +70,15 @@ export interface PackTarget {
 }
 
 /**
- * How zone rows may be built (ADR 0026). `stacks`: a zone row may set consecutive zones one above the other
+ * How zone rows may be built (skill §4). `stacks`: a zone row may set consecutive zones one above the other
  * in a stack (a cell) no taller than one of the container's zones, so short siblings fill the height a tall
- * one gives the row. The default is on; off is skill §4's plain rows, kept for the measurement that chose it
+ * one gives the row. The default is on; off is plain rows only, kept for the packing measurement
  * (`scripts/measure.ts --packing`).
  */
 export interface PackPolicy {
   readonly stacks: boolean;
   /**
-   * Measurement only (ADR 0026, skill §9's "pack zones in rows by height"): before packing, a container's
+   * Measurement only (skill §9's "pack zones in rows by height"): before packing, a container's
    * zones are reordered tallest first (stable), giving up skill §4's sibling order. Never set by the layout.
    */
   readonly byHeight?: boolean;
@@ -93,7 +93,7 @@ export const RUN_BUDGET_LIMIT = 120;
 export const STACK_LIMIT = 24;
 
 /**
- * Near ties (ADR 0026): among the arrangements whose frame is within this share of the smallest, one
+ * Near ties (skill §4): among the arrangements whose frame is within this share of the smallest, one
  * whose rows are not inverted (no zone row holds fewer zones than a later one) is preferred, then one with
  * fewer rows.
  */
@@ -374,7 +374,7 @@ export function ranksBefore(a: RankKeys, b: RankKeys): boolean {
 /**
  * Among near ties (frames within `NEAR_TIE` of the smallest), a candidate whose rows are not inverted ranks
  * first, then one with fewer rows (a lone short last row, such as a loose project under the folders, costs a
- * band across the whole box: ADR 0026); otherwise `ranksBefore`.
+ * band across the whole box); otherwise `ranksBefore`.
  */
 export function nearTieRanksBefore(a: RankKeys, b: RankKeys, smallest: number): boolean {
   const near = (keys: RankKeys): boolean => keys.frame <= smallest * (1 + NEAR_TIE);
@@ -460,7 +460,7 @@ export function chooseArrangement(
     stacked: cells.reduce((sum, cell) => sum + (cell.zones > 1 ? cell.zones : 0), 0),
   }));
 
-  // Plain rows first (skill §4, ADR 0025): oriented candidates only, when any is.
+  // Plain rows first (skill §4): oriented candidates only, when any is.
   const plain = groupings[0] as (typeof groupings)[number];
   let oriented = false;
   for (const [index, grid] of grids.entries()) {
@@ -506,7 +506,7 @@ export function chooseArrangement(
   for (const candidate of plainCandidates) {
     if (best === undefined || nearTieRanksBefore(candidate, best, smallest)) best = candidate;
   }
-  // Stacks (ADR 0026): an arrangement with stacked zones replaces the plain one only when its box fits inside
+  // Stacks (skill §4): an arrangement with stacked zones replaces the plain one only when its box fits inside
   // the plain one's (no wider, no taller) and its frame is smaller, so a stack never makes its own container
   // larger (its parent, choosing by frame, may then take a larger box).
   if (best !== undefined) {

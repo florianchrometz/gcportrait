@@ -69,7 +69,7 @@ describe('Pull now', () => {
     );
     await userEvent.click(button());
     expect(requests).toHaveLength(1);
-    expect(requests[0]?.headers.get('x-gcportrait-token')).toBe(TEST_TOKEN); // ADR 0031
+    expect(requests[0]?.headers.get('x-gcportrait-token')).toBe(TEST_TOKEN); // gcportrait's own header
     expect(requests[0]?.body).toEqual({
       scope: 'organizations/30000000001',
       contentType: 'RESOURCE',

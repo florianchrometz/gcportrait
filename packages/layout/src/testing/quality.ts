@@ -2,7 +2,7 @@
 /**
  * Test and measurement helper (not part of the public API): how a Layout's routes read, from its points and
  * rects alone (independent of the router). Used by the golden test of skill §8's check view and by
- * `scripts/measure.ts` to compare the routing before and after a change (ADR 0027).
+ * `scripts/measure.ts` to compare the routing before and after a change.
  *
  * - `length`: the total drawn length of every edge (a hub bundle's members count once where they coincide:
  *   each holder's segments are merged per line before they are summed).
@@ -11,8 +11,8 @@
  *   (between the border and the zone's children, parallel to that side) or the canvas margin, or outside a
  *   rect within `HUG_DISTANCE` of its border with no other rect's border facing it from the other side within
  *   that distance (beside a shorter neighbour, under a shorter row): what reads like a doubled border or an
- *   underline (ADR 0027, rule 2). Crossing a band (leaving or entering a
- *   zone) and running between two boxes do not count.
+ *   underline (skill §5). Crossing a band (leaving or entering a zone) and running between two boxes do not
+ *   count.
  * - `detours`: edges whose drawn length is more than twice the Manhattan distance between their ports (and
  *   more than 200 px longer than it), and the worst ratio.
  * - `crossings`: pairs of perpendicular segments of different holders that cross (not at an end).
@@ -23,8 +23,8 @@
  * - `overshoots` and `worstOvershoot`: how far a route runs past both of its ends, the farthest any of its
  *   points lies outside the box around its two ports, as the number of edges that go more than
  *   `OVERSHOOT_LIMIT` past and the worst distance: a route that goes round to reach a cheaper line and comes
- *   back (a U-turn inside the canvas, which neither `detours` nor `margin` sees when the ends are far apart;
- *   found when the routing rules of ADR 0027 were reviewed) shows up here.
+ *   back (a U-turn inside the canvas, which neither `detours` nor `margin` sees when the ends are far apart)
+ *   shows up here.
  */
 import { DEFAULT_SIZING, type Sizing } from '../constants.js';
 import type { EdgePath, Layout, Point } from '../types.js';

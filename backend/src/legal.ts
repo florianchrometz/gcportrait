@@ -3,16 +3,16 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 /**
- * The instance's legal pages (ADR 0032): an Impressum and a privacy notice, written by whoever runs the instance
- * and handed to the backend at start-up, never kept in the repository (they name a person and an address). The
- * SPA shows them at /impressum and /privacy, rendered from Markdown with a renderer that never emits raw HTML
- * (frontend/src/legal/), and links them from its footer only when they exist. Two ways in, one of them at a time
- * (config.ts):
+ * The instance's legal pages (agents.md, Modes and hosting): an Impressum and a privacy notice, written by
+ * whoever runs the instance and handed to the backend at start-up, never kept in the repository (they name a
+ * person and an address). The SPA shows them at /impressum and /privacy, rendered from Markdown with a
+ * renderer that never emits raw HTML (frontend/src/legal/), and links them from its footer only when they
+ * exist. Two ways in, one of them at a time (config.ts):
  *
  * - `LEGAL_DIR`: a directory holding `impressum.md` and/or `privacy.md` (local runs, compose, any volume);
  * - `LEGAL_BUNDLE`: the same texts as one JSON object of base64 strings, `{"impressum":"…","privacy":"…"}`, which
  *   `infra/deploy.sh --legal-dir` builds from such a directory and sets as an environment variable on Cloud Run
- *   (ADR 0032: no Secret Manager secret, no grant, nothing to clean up; the texts are public anyway).
+ *   (no Secret Manager secret, no grant, nothing to clean up; the texts are public anyway).
  *
  * Both are read once, checked (UTF-8, size, no control characters) and kept in memory; a problem stops start-up
  * with a message that names the variable and the file, never the text.

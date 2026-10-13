@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The export serialiser: custom properties resolved for the export theme, `<title>` and `<desc>`,
- * the title block (the canvas's three lines, no affiliation line: ADR 0018, placement of 2026-10-11) and the legend
+ * the title block (the canvas's three lines, no affiliation line) and the legend
  * always present, the interactive scaffolding gone, the compatibility encodings (xlink:href, halo copies), the
  * "current viewport" crop, and well-formed XML.
  */
@@ -114,7 +114,7 @@ describe('resolveCustomProperties', () => {
 });
 
 describe('prepareExportSvg', () => {
-  it('names the scope and the lens in <title>, the read time in <desc>, and no affiliation line anywhere (ADR 0018)', () => {
+  it('names the scope and the lens in <title>, the read time in <desc>, and no affiliation line anywhere', () => {
     const svg = exported('light');
     const [title, desc] = [...svg.children];
     expect(title?.localName).toBe('title');
@@ -361,7 +361,7 @@ describe('the current-viewport crop', () => {
       'dg-edges',
     ]);
     // The title block is in the file even though the area does not reach it, line for line as in the whole file:
-    // it still ends with the tagline (ADR 0018).
+    // it still ends with the tagline.
     expect(titleLines(svg)).toEqual(titleLines(exported('light')));
     expect(titleLines(svg).at(-1)).toBe(TAGLINE);
     const titleShift = svg.querySelector('.dg-title-block')?.parentElement?.getAttribute('transform');

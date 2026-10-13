@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Permissions page's standing guidance (docs/permissions.md; ADR 0028 §3–§4; skill cai-ingestion §3):
+ * The Permissions page's standing guidance (docs/permissions.md; skill cai-ingestion §3):
  * - `PermissionsReference`: what each way of reading needs, as a table, its commands in the command group of
  *   the scope picked (an organisation's when none is) with their variables as fields to fill in place, prefilled
  *   from what the app knows (the scope, the quota project, the account, this instance's service account;
  *   commands/useCommandVariables.ts), and the Variables panel to fill each once for the whole page;
- * - `ServiceAccountExplainer`: service-account mode in ADR 0028 §3's words, with the account's email, and the gate.
+ * - `ServiceAccountExplainer`: service-account mode in the words of docs/permissions.md §3, with the account's
+ *   email, and the gate.
  */
 import type { ReactElement } from 'react';
 

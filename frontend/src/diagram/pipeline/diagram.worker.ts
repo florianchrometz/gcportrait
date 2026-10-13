@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The diagram's worker script (ADR 0035 §5: ingest, graph build and layout off the UI thread). The page starts it
- * twice, as two dedicated workers: the data worker (ingest, graph and Scene; dataRole.ts) and the layout worker
- * (layoutRole.ts), told apart by the name the page gives each instance (roles.ts); src/snapshots starts a third
- * instance for file import (snapshots/worker/role.ts; it loads no demo generator, ADR 0029) and src/import a
+ * The diagram's worker script (ingest, graph build and layout off the UI thread; agents.md, Architecture and code).
+ * The page starts it twice, as two dedicated workers: the data worker (ingest, graph and Scene; dataRole.ts) and the
+ * layout worker (layoutRole.ts), told apart by the name the page gives each instance (roles.ts); src/snapshots starts
+ * a third instance for file import (snapshots/worker/role.ts; it loads no demo generator) and src/import a
  * fourth for live pulls and export reads (import/worker/role.ts); "Try the demo" starts a fifth for one job
  * (demoRole.ts), so preparing a demo organisation never holds back the data worker.
  * One script for all lets the build share the modules the roles have in common (the model and zod) instead of

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The service-account gate (ADR 0004; ADR 0028 §4 with its amendment of 2026-10-10; ADR 0035 §4, principle 4).
+ * The service-account gate (agents.md, Security and privacy, The service-account gate; principle 4).
  * Before the backend reads a scope with its own identity, it proves, with the same parsed scope in every call, that
  * the *caller* may see that scope:
  *
@@ -52,7 +52,7 @@ import {
 import { SCOPE_COLLECTIONS, scopePath, type ParsedScope } from '../upstream/scope.js';
 import type { ServiceAccountIdentity } from './identity.js';
 
-/** The longest a pass is remembered (the amendment to ADR 0028 §4: five minutes). */
+/** The longest a pass is remembered: five minutes. */
 export const GATE_MEMO_MAX_MS = 5 * 60_000;
 /** The most passes remembered at once; the oldest go first. */
 export const GATE_MEMO_MAX_ENTRIES = 10_000;
@@ -63,8 +63,8 @@ export function getPermissionOf(scope: ParsedScope): string {
 }
 
 /**
- * Whether an answer is exactly Resource Manager's IAM denial of `get` on the scope (ADR 0028 §4 step 2): HTTP 403,
- * `error.status` `PERMISSION_DENIED`, exactly one ErrorInfo, with reason `IAM_PERMISSION_DENIED`, domain
+ * Whether an answer is exactly Resource Manager's IAM denial of `get` on the scope (the exposure check): HTTP
+ * 403, `error.status` `PERMISSION_DENIED`, exactly one ErrorInfo, with reason `IAM_PERMISSION_DENIED`, domain
  * `cloudresourcemanager.googleapis.com` and `metadata.permission` the `get` permission of the scope's kind.
  */
 export function isExactGetDenial(outcome: GoogleOutcome, scope: ParsedScope): boolean {

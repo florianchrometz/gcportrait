@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * The URL-hash codec for ViewSpec. The grammar, the keys and examples are in the
- * package README. In short: `key=value` fields joined by `&` in a fixed key order, list values joined by `,`,
- * every value item percent-encoded except for a readable safe set, defaults left out (the default view is the
- * empty hash). Decoding is total: unknown keys are ignored and a malformed value falls back to its default,
- * field by field, so any string decodes to a valid ViewSpec. No zod on this path (ADR 0029): the values are
- * judged by normalize.ts's plain predicates, which accept exactly what the schemas accept.
+ * The URL-hash codec for ViewSpec. The grammar, the keys and examples are in the package README. In short:
+ * `key=value` fields joined by `&` in a fixed key order, list values joined by `,`, every value item
+ * percent-encoded except for a readable safe set, defaults left out (the default view is the empty hash).
+ * Decoding is total: unknown keys are ignored and a malformed value falls back to its default, field by
+ * field, so any string decodes to a valid ViewSpec. No zod on this path (it runs on the UI thread): the
+ * values are judged by normalize.ts's plain predicates, which accept exactly what the schemas accept.
  */
 import type { LooseViewSpec, ViewSpec, ViewSpecInput } from '../schemas/view-spec.js';
 import { DEFAULT_VIEW_SPEC, normalizeViewSpec } from './normalize.js';

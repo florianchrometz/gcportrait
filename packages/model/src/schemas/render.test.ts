@@ -6,7 +6,7 @@ import { RenderOptionsSchema } from './render.js';
 
 const issues = (input: unknown): string[] => issueLines(RenderOptionsSchema, input);
 
-describe('RenderOptionsSchema (ADR 0033)', () => {
+describe('RenderOptionsSchema', () => {
   it('fills in the defaults: the overview at auto detail, light, PNG, a 1280×800 viewport', () => {
     expect(RenderOptionsSchema.parse({})).toEqual({
       view: {},

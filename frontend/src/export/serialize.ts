@@ -11,7 +11,7 @@
  * - `<title>` and `<desc>` carry the scope, the lens and the read time (neutral metadata: no affiliation
  *   sentence), and the title block and the legend are required: a drawing without them is refused, never
  *   exported. The title block is the canvas's own three lines, ending with the tagline; the non-affiliation
- *   statement is in the app footer, never in a drawing (ADR 0018, placement of 2026-10-11);
+ *   statement is in the app footer, never in a drawing (agents.md, Non-affiliation, brand and legal);
  * - "current viewport": the drawing is clipped to the visible area and the title block and the legend move into
  *   bands above and below it, so they are in the file even when they are scrolled away;
  * - two encodings make the file draw the same in older editors (Illustrator, Inkscape 0.92) as in a browser,

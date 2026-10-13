@@ -9,11 +9,11 @@
  *   (`packages/catalog/dist/catalog.json`, which `pnpm catalog:build` writes from `packages/catalog/lenses/`).
  *
  * Checked (a staleness test, scripts/user-docs.test.ts, runs the same checks in `pnpm test`):
- * - no user document logs what was verified when and where (a "Verified on" line or section, a heading about how it
- *   was verified, a dated note of when something changed or was decided, a machine and its versions, a measured or
- *   timed run, the record of a first version, a shell prompt with its output in code): a user document says what to
- *   do; dated records of reviews and runs belong in docs/history/. The user documents are the guides, the documents
- *   whose commands are checked, and LOG_FREE_DOCS;
+ * - no user document logs what was checked when and where (a dated verification line or section, a heading
+ *   about how it was verified, a dated note of when something changed or was decided, a machine and its
+ *   versions, a measured or timed run, the record of a first version, a shell prompt with its output in
+ *   code): a user document says what to do, and keeps no record of runs (agents.md, Documentation). The user
+ *   documents are the guides, the documents whose commands are checked, and LOG_FREE_DOCS;
  * - the self-hosting guide asks for nothing but QUICK_START_VARIABLES: the website's Variables panel lists the
  *   variables of a page's code, and the page that starts a deploy asks for the project id, the OAuth client id and
  *   the email address to grant, nothing optional;
@@ -67,22 +67,54 @@ const COMMAND_DOCS = Object.freeze([
   'docs/cloudshell-tutorial.md',
 ]);
 
-/** Other user documents, checked for verification logs only (their commands are not all the scripts'). */
+/**
+ * Other documents, checked for verification logs only (their commands are not all the scripts'): the README,
+ * the rules (agents.md) and the skills, the contributor references and the package READMEs. Every document
+ * says what is, never how it came to be (agents.md, Documentation). Not listed: the generated THIRD_PARTY.md
+ * and CHANGELOGs, the changesets, docs/contributing.md (its troubleshooting table names Node versions), and
+ * the catalog's and the icons' READMEs (dates of Google's own retirements and of the icon download are data
+ * there).
+ */
 export const LOG_FREE_DOCS = Object.freeze([
   'README.md',
+  'agents.md',
+  '.agents/README.md',
+  '.agents/skills/cai-ingestion/SKILL.md',
+  '.agents/skills/contributor-workflow/SKILL.md',
+  '.agents/skills/gcp-asset-catalog/SKILL.md',
+  '.agents/skills/gcp-diagram-layout/SKILL.md',
+  '.agents/skills/gcp-diagram-style/SKILL.md',
   'infra/README.md',
   'docs/website.md',
+  'docs/backlog.md',
+  'docs/catalog-followups.md',
+  'docs/packages.md',
+  'docs/security.md',
+  'docs/threat-model.md',
+  'backend/README.md',
+  'frontend/README.md',
+  'e2e/README.md',
+  'e2e/baselines/render/README.md',
+  'website/README.md',
+  'brand/README.md',
+  'packages/model/README.md',
+  'packages/ingest/README.md',
+  'packages/graph/README.md',
+  'packages/layout/README.md',
+  'packages/render/README.md',
   'packages/render-cli/README.md',
+  'packages/demo-data/README.md',
 ]);
 
 /**
- * What reads as a log for the maintainer rather than an instruction, matched per line outside code: a "Verified on …"
- * line or section, or a heading about how a page was verified; a dated note of when something happened (on, until or
- * as of a date, a request or decision of a date); a machine with its versions (an operating system or Node with a
- * version, an Apple chip); a measured or timed run; the record of a first version.
+ * What reads as a log for the maintainer rather than an instruction, matched per line outside code: a line or
+ * section that says on which date something was verified, or a heading about how a page was verified; a dated
+ * note of when something happened (on, until or as of a date, a request or decision of a date); a machine
+ * with its versions (an operating system or Node with a version, an Apple chip); a measured or timed run; the
+ * record of a first version.
  */
 export const VERIFICATION_LOG = Object.freeze([
-  /\bverified on\b/i,
+  /\bverified\s+on\b/i,
   /^#{1,6}\s.*\bverified\b/i,
   /\b(?:on|until|as of)\s+20\d\d-\d\d-\d\d\b/i,
   /\b(?:request|decision|pass|polish)\s+of\s+20\d\d-\d\d-\d\d\b/i,
@@ -109,7 +141,7 @@ export const QUICK_START_VARIABLES = Object.freeze(['YOUR_PROJECT', 'YOUR_OAUTH_
 /** The registry of command variables (`@gcportrait/model`): a TypeScript module that imports nothing at run time. */
 export const VARIABLES_MODULE = 'packages/model/src/schemas/command-variables.ts';
 
-/** The directories whose Markdown documents' code may name variables (not the ADRs or spikes: those are records). */
+/** The directories whose Markdown documents' code may name variables. */
 const VARIABLE_DIRS = Object.freeze(['docs', 'docs/legal']);
 
 /** Where the lens blocks go, and where the compiled catalog is. */
@@ -778,13 +810,13 @@ export function verificationLogLines(markdown) {
     if (fenced) {
       if (PROMPT.test(line))
         problems.push(
-          `line ${String(index + 1)} records a run ("${quoted}"): show the command without a prompt and its output; recorded runs go to docs/history/`,
+          `line ${String(index + 1)} records a run ("${quoted}"): show the command without a prompt and its output; a guide keeps no record of runs`,
         );
       return;
     }
     if (VERIFICATION_LOG.some((pattern) => pattern.test(line)))
       problems.push(
-        `line ${String(index + 1)} logs a verification ("${quoted}"): a guide says what to do; dated records go to docs/history/`,
+        `line ${String(index + 1)} logs a verification ("${quoted}"): a guide says what to do, not when or where it was checked`,
       );
   });
   return problems;

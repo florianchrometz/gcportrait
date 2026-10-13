@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Permissions page (docs/permissions.md; ADR 0028 §3): the preflight checklist with commands, and the
+ * The Permissions page (docs/permissions.md): the preflight checklist with commands, and the
  * service-account mode explanation with the account's email:
  * - "Check a scope": signed in, the scope picker, the quota project (user mode), the mode when the instance offers
  *   service-account mode, and the permission check with its checklist and copy-ready commands; signed out, the
  *   sign-in card;
  * - "What each mode needs": the permission table of docs/permissions.md, its commands' variables as fields to
  *   fill in place, prefilled from what the page knows (preflight/PermissionsGuide.tsx);
- * - "Service-account mode": ADR 0028 §3's explanation, the account's email from /api/config and the gate as this
- *   instance runs it (with or without the strict exposure check, `saStrictExposure`).
- * The non-affiliation statement is the footer's, as on every page (ADR 0018).
+ * - "Service-account mode": the explanation of docs/permissions.md §3, the account's email from /api/config and
+ *   the gate as this instance runs it (with or without the strict exposure check, `saStrictExposure`).
+ * The non-affiliation statement is the footer's, as on every page.
  * In demo mode nothing is checked (there is no backend), nor on a demo-only instance (no sign-in); the
  * guidance stays.
  */

@@ -4,13 +4,14 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectNoAxeViolations, openDiagram } from './support.js';
 
 /**
- * axe-core (all non-experimental rules, best practices included) on every page of the app in demo mode, in light and
- * dark (ADR 0012: WCAG 2.2 AA; the gcp-diagram-style skill's accessibility rules): the Connect, Diagram (empty),
- * Snapshots, Permissions, Settings and not-found pages; the diagram with demo organisations S, M and L drawn, at
- * rest, with the keyboard inside a zone, and with a node's menu and the details drawer open; the Snapshot menu open.
- * Every node of each drawing is a named control or graphics object (type + label), and the lines are hidden from
- * assistive technology. The live-mode Connect page is checked in live.spec.ts; the other popups and dialogs in their
- * own specs (controls, with the Lens list; search, drawer, export, snapshots, disclosure).
+ * axe-core (all non-experimental rules, best practices included) on every page of the app in demo mode, in
+ * light and dark (WCAG 2.2 AA; agents.md, Style and accessibility; the gcp-diagram-style skill's
+ * accessibility rules): the Connect, Diagram (empty), Snapshots, Permissions, Settings and not-found pages;
+ * the diagram with demo organisations S, M and L drawn, at rest, with the keyboard inside a zone, and with a
+ * node's menu and the details drawer open; the Snapshot menu open. Every node of each drawing is a named
+ * control or graphics object (type + label), and the lines are hidden from assistive technology. The
+ * live-mode Connect page is checked in live.spec.ts; the other popups and dialogs in their own specs
+ * (controls, with the Lens list; search, drawer, export, snapshots, disclosure).
  */
 const PAGES = [
   { path: '/', heading: 'Connect' },

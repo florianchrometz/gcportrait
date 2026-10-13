@@ -2,8 +2,9 @@
 /**
  * Client for `POST /api/scopes/search` (backend/src/routes/scopes.ts; docs/api.md): the
  * organisations, folders and projects the signed-in person can see, matching what they typed. The token goes only
- * to this backend, through `fetchWithToken` (src/auth). The answer is checked by hand (ADR 0029: no zod on the UI
- * thread); an entry that does not fit is dropped, an answer that does not fit is an error.
+ * to this backend, through `fetchWithToken` (src/auth). The answer is checked by hand (no zod on the UI
+ * thread; agents.md, Architecture and code); an entry that does not fit is dropped, an answer that does not fit is an
+ * error.
  */
 import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';
 import { isRecord, readError, type UpstreamSummary } from '../preflight/api';

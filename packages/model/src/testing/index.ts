@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * `@gcportrait/model/testing`: helpers for tests and data tooling that the app must not ship, kept out of the
- * main entry point. Today that is the "synthetic only" guard every package runs over its fixtures and
- * generated data (agents.md rule 6). Pure and dependency-free.
+ * main entry point: the "synthetic only" guard every package runs over its fixtures and generated data
+ * (agents.md, Data and graph semantics). Pure and dependency-free.
  */
 export {
   EXAMPLE_DOMAINS,

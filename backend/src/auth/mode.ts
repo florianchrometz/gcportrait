@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Service-account mode as one server runs it (ADR 0004; ADR 0028 and its amendment of 2026-10-10): the config
- * the server publishes, reconciled with the identity Application Default Credentials resolved to (./identity.ts),
- * and the gate (./gate.ts) built from both.
+ * Service-account mode as one server runs it (agents.md, Security and privacy, The service-account gate): the
+ * config the server publishes, reconciled with the identity Application Default Credentials resolved to
+ * (./identity.ts), and the gate (./gate.ts) built from both.
  */
 import { ConfigError, type ServerConfig } from '../config.js';
 import { ServiceAccountGate } from './gate.js';

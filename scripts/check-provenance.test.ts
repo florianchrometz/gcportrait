@@ -1,42 +1,112 @@
 // SPDX-License-Identifier: MIT
-import { symlinkSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { readFileSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
+import { deflateSync } from 'node:zlib';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { FIXTURE_LICENSE, createTempTree, manifest, runScript, type TempTree } from './testing/temp-tree.js';
+import {
+  FIXTURE_LICENSE,
+  REPO,
+  createTempTree,
+  manifest,
+  runScript,
+  type TempTree,
+} from './testing/temp-tree.js';
 
-// The forbidden names, the legacy path and the Gizmo calls are assembled at run time so that this file does
-// not itself trip the checker it tests.
-const UPSTREAM_NAME = ['gcp', 'viz'].join('');
-const OLD_NAME = ['kno', 'yog'].join('');
-const LEGACY = ['leg', 'acy'].join('');
-const OLD_DEP_NAME = ['for', 'seti'].join('');
+// Every string the checker refuses is assembled at run time, so that this file does not itself trip the
+// checker it tests (it is scanned like every other file, with no exemption).
+const NAME_A = ['gcp', 'viz'].join('');
+const NAME_B = ['kno', 'yog'].join('');
+const NAME_C = ['for', 'seti'].join('');
 const NOTICE = ['Copy', 'right'].join('');
 const COMPANY = ['Goo', 'gle'].join('');
+const SUFFIX = ['L', 'LC'].join('');
 const GIZMO_V = ['g.', 'V('].join('');
 const GIZMO_M = ['g.', 'M('].join('');
 const GIZMO_EMIT = ['g.', 'emit('].join('');
 const QUOTE = '"';
-// The retired terms and the plan's ids, assembled for the same reason.
-const SUFFIX = ['L', 'LC'].join('');
-const PLAN_FILE = ['IMPLEMENTATION', 'PLAN'].join('');
-const TASK_ID = ['P3', '6'].join('.');
-const PHASE = ['Phase', '5'].join(' ');
-const DECISION_ID = ['D', '18'].join('');
-// The project's former licence (rule h), assembled for the same reason.
-const FORMER = ['A', 'GPL'].join('');
-const FORMER_LONG = ['GNU', ['Aff', 'ero'].join('')].join(' ');
+
+/** A name with its letters in alternating case, as inside a camelCase identifier. */
+function mixedCase(name: string): string {
+  return name.replace(/[a-z]/g, (letter, index: number) => (index % 2 === 0 ? letter : letter.toUpperCase()));
+}
+// Decision records: the abbreviation, spelled out, a folder of them, and a numbered rule of agents.md.
+const RECORD = ['A', 'DR'].join('');
+const RECORD_SPELLED = ['Architecture', 'Decision', 'Record'].join(' ');
+const RECORD_NUMBERED = ['decision', 'record', '42'].join(' ');
+const RECORD_FOLDER = ['handbook', RECORD.toLowerCase()].join('/');
+const RULE_NUMBER = ['agents.md', 'rule', '9'].join(' ');
+const RULE_OF = ['rule', '12', 'of', 'agents.md'].join(' ');
+// Build-record wording the checker refuses by pattern.
+const VERIFIED = ['Verified', 'on'].join(' ');
+const AMENDED_ON = ['amended', 'on'].join(' ');
+const AS_AMENDED = ['as', 'amended'].join(' ');
+const AS_DECIDED = ['as', 'decided'].join(' ');
+const DATE = ['2030', '04', '02'].join('-');
+const DATE_WRITTEN = ['2', 'April', '2030'].join(' ');
+const DATE_US = ['Apr', '2,', '2030'].join(' ');
+// Phrases and a directory refused by digest only for a test run (--also-refuse): ordinary words, so that
+// the mechanism is tested without this file naming a phrase the checker refuses for real.
+const JOINED_PHRASE = 'blue-lantern';
+const SPACED_PHRASE = 'copper kettle';
+const DIRECTORY = 'vault/';
+const DATED_WORD = 'voyage of <date>';
+// Ids of work items.
+const TASK_ID = ['P12', '4'].join('.');
+const PHASE = ['Phase', '11'].join(' ');
+const DECISION_ID = ['D', '42'].join('');
+// The denied licence family (rule g).
+const LICENCE_SHORT = ['A', 'GPL'].join('');
+const LICENCE_LONG = ['GNU', ['Aff', 'ero'].join('')].join(' ');
 
 const TS_HEADER = `// SPDX-License-Identifier: ${FIXTURE_LICENSE}`;
 const MD_HEADER = `<!-- SPDX-License-Identifier: ${FIXTURE_LICENSE} -->`;
 const HASH_HEADER = `# SPDX-License-Identifier: ${FIXTURE_LICENSE}`;
 const CSS_HEADER = `/* SPDX-License-Identifier: ${FIXTURE_LICENSE} */`;
 
-/** Writes a small tree that satisfies every rule, including the exempt places. */
+/** Every refused string at once, for the places the walker never reads. */
+const EVERY_REFUSED_STRING = [
+  NAME_A,
+  NAME_B,
+  `${COMPANY} ${SUFFIX}`,
+  `${RECORD} 12`,
+  RECORD_FOLDER,
+  VERIFIED,
+  TASK_ID,
+  LICENCE_SHORT,
+].join(' ');
+
+/** Binary fixtures: the signature of a format, then bytes that are not plain text. */
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+function bytes(...parts: ReadonlyArray<string | readonly number[] | Uint8Array>): Uint8Array {
+  return Buffer.concat(
+    parts.map((part) => (typeof part === 'string' ? Buffer.from(part, 'latin1') : Buffer.from(part))),
+  );
+}
+/** A PNG chunk: its length, type and data, and four bytes in place of the checksum. */
+function pngChunk(type: string, data: Uint8Array): Uint8Array {
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  return bytes(length, type, data, [0x12, 0x34, 0x56, 0x78]);
+}
+function utf16(text: string, order: 'le' | 'be' = 'le'): Buffer {
+  const buffer = Buffer.from(text, 'utf16le');
+  return order === 'be' ? buffer.swap16() : buffer;
+}
+
+/** The PHRASE_DIGESTS entry the checker prints for a phrase. */
+function digestOf(phrase: string): string {
+  const result = runScript('check-provenance.mjs', ['--digest-of', phrase]);
+  expect(result.stderr).toBe('');
+  return result.stdout.trim();
+}
+
+/** Writes a small tree that satisfies every rule. */
 function writeCleanTree(tree: TempTree): void {
   tree.write('package.json', manifest(FIXTURE_LICENSE));
-  tree.write('LICENSE', 'placeholder licence text\n');
+  tree.write('LICENSE', 'licence text\n');
   tree.write('data.json', '{ "ok": true }\n');
   tree.write('image.png', new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]));
   tree.write('src/index.ts', `${TS_HEADER}\nexport const answer = 42;\n`);
@@ -50,16 +120,10 @@ function writeCleanTree(tree: TempTree): void {
   tree.write('.gitignore', `${HASH_HEADER}\nnode_modules/\n`);
   tree.write('infra/Dockerfile', `# syntax=docker/dockerfile:1\n${HASH_HEADER}\nFROM scratch\n`);
   tree.write('.nvmrc', '22\n');
-  // Exempt places may mention the old names, and skipped directories are not looked at at all.
-  tree.write(
-    'docs/adr/0001-decision.md',
-    `${MD_HEADER}\n\nThe ${OLD_NAME} tree wrapped ${UPSTREAM_NAME}; we stop using it.\n`,
-  );
-  tree.write('packages/icons/README.md', `${MD_HEADER}\n\n# Icons\n\nNone of them from ${OLD_NAME}.\n`);
-  tree.write(`${LEGACY}/${OLD_NAME}/main.go`, 'package main\n');
-  tree.write(`${LEGACY}/README.md`, `The ${OLD_NAME} tree.\n`);
-  tree.write('node_modules/dep/index.js', `module.exports = '${UPSTREAM_NAME}';\n`);
-  tree.write('frontend/dist/bundle.js', 'console.log(1);\n');
+  // Skipped directories are not looked at at all, whatever they hold.
+  tree.write('node_modules/dep/index.js', `module.exports = '${EVERY_REFUSED_STRING}';\n`);
+  tree.write('node_modules/dep/main.go', 'package main\n');
+  tree.write('frontend/dist/bundle.js', `console.log('${EVERY_REFUSED_STRING}');\n`);
 }
 
 describe('check-provenance', () => {
@@ -74,19 +138,23 @@ describe('check-provenance', () => {
     tree.remove();
   });
 
-  const check = () => runScript('check-provenance.mjs', ['--root', tree.root]);
+  const check = (...args: string[]) => runScript('check-provenance.mjs', ['--root', tree.root, ...args]);
 
   it('passes a clean tree', () => {
     const result = check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain('provenance: OK');
+    expect(result.stdout).toContain(
+      'provenance: OK. 14 files scanned, 8 SPDX headers (LicenseRef-gcportrait-unset) verified; no forbidden names, banned terms or banned files.',
+    );
   });
 
   /**
-   * The failing cases: files planted into the clean tree, the lines the check must print for them (`<file>:<line>
-   * [rule] …`), and, where the case pins it, the summary's count of problems and files; `absent` must not be
-   * reported. Every row is a rule of the provenance guard (agents.md rule 1 and 2): keep them all.
+   * The failing cases: files planted into the clean tree, the lines the check must print for them
+   * (`<file>:<line> [rule] …`), and, where the case pins it, the summary's count of problems and files;
+   * `absent` must not be reported. `refuse` lists phrases whose digests the run refuses as well
+   * (`--also-refuse`). Every row is a rule of the provenance guard (agents.md, Licence and dependencies,
+   * and Names that never appear): keep them all.
    */
   type Failing = {
     readonly name: string;
@@ -94,72 +162,94 @@ describe('check-provenance', () => {
     readonly lines: readonly string[];
     readonly summary?: readonly [problems: number, files: number];
     readonly absent?: readonly string[];
+    readonly refuse?: readonly string[];
   };
-  const legacyTarget = `${QUOTE}../../${LEGACY}/thing.js${QUOTE}`;
   const FAILING: readonly Failing[] = [
     {
-      name: 'a planted legacy import',
-      files: {
-        'frontend/src/bad.ts': `${TS_HEADER}\nimport x from ${QUOTE}../${LEGACY}/${OLD_NAME}/x${QUOTE};\nexport default x;\n`,
-      },
-      lines: ['frontend/src/bad.ts:2  [legacy-import]'],
-      summary: [2, 1],
-    },
-    {
-      name: 'require(), dynamic import() and re-exports from legacy',
-      files: {
-        'backend/src/a.cjs': `${TS_HEADER}\nconst thing = require(${legacyTarget});\n`,
-        'backend/src/b.ts': `${TS_HEADER}\nconst m = await import(${legacyTarget});\n`,
-        'backend/src/c.ts': `${TS_HEADER}\nexport * from ${legacyTarget};\n`,
-      },
-      lines: ['a.cjs', 'b.ts', 'c.ts'].map((file) => `backend/src/${file}:2  [legacy-import]`),
-    },
-    {
       name: 'a planted forbidden name, case-insensitively',
-      files: { 'docs/notes.md': `${MD_HEADER}\n\nThis came from ${UPSTREAM_NAME.toUpperCase()}.\n` },
-      lines: [`docs/notes.md:3  [forbidden-name] mentions "${UPSTREAM_NAME}"`],
+      files: { 'docs/notes.md': `${MD_HEADER}\n\nA line with ${NAME_A.toUpperCase()} in it.\n` },
+      lines: [`docs/notes.md:3  [forbidden-name] mentions "${NAME_A}"`],
+      summary: [1, 1],
     },
     {
       // A camelCase constructor, an identifier with a suffix and a hyphenated name all contain the name.
-      name: 'the old names anywhere inside a word, including camelCase identifiers',
+      name: 'the forbidden names anywhere inside a word, including camelCase identifiers',
       files: {
-        'src/camel.ts': `${TS_HEADER}\nexport const viz = ${['New', 'Gcp', 'Viz'].join('')}();\n`,
-        'src/state.ts': `${TS_HEADER}\nexport const ${OLD_NAME}State = {};\n`,
-        'src/bucket.ts': `${TS_HEADER}\nexport const bucket = 'react-${OLD_NAME}-state';\n`,
-        'src/deps.ts': `${TS_HEADER}\nexport const dep = 'github.com/${OLD_DEP_NAME}Security/x';\n`,
+        'src/camel.ts': `${TS_HEADER}\nexport const made = New${mixedCase(NAME_A)}();\n`,
+        'src/state.ts': `${TS_HEADER}\nexport const ${NAME_B}State = {};\n`,
+        'src/bucket.ts': `${TS_HEADER}\nexport const bucket = 'demo-${NAME_B}-bucket';\n`,
+        'src/deps.ts': `${TS_HEADER}\nexport const dep = 'example.com/${NAME_C}Extra/x';\n`,
       },
       lines: [
-        `src/camel.ts:2  [forbidden-name] mentions "${UPSTREAM_NAME}"`,
-        `src/state.ts:2  [forbidden-name] mentions "${OLD_NAME}"`,
-        `src/bucket.ts:2  [forbidden-name] mentions "${OLD_NAME}"`,
-        `src/deps.ts:2  [forbidden-name] mentions "${OLD_DEP_NAME}"`,
+        `src/camel.ts:2  [forbidden-name] mentions "${NAME_A}"`,
+        `src/state.ts:2  [forbidden-name] mentions "${NAME_B}"`,
+        `src/bucket.ts:2  [forbidden-name] mentions "${NAME_B}"`,
+        `src/deps.ts:2  [forbidden-name] mentions "${NAME_C}"`,
       ],
       summary: [4, 4],
     },
     {
+      // A hyphen or an underscore between the halves of a name, and for the first two a space or a dot.
+      name: 'the forbidden names with a separator between their halves',
+      files: {
+        'docs/split.md': [
+          MD_HEADER,
+          '',
+          `The ${NAME_A.slice(0, 3)}-${NAME_A.slice(3)} tool.`,
+          `The ${NAME_B.slice(0, 3).toUpperCase()} ${NAME_B.slice(3)} tool.`,
+          `The ${NAME_C.slice(0, 3)}_${NAME_C.slice(3)} tool.`,
+          `The ${NAME_A.slice(0, 3)}.${NAME_A.slice(3)} tool.`,
+          '',
+        ].join('\n'),
+      },
+      lines: [
+        `docs/split.md:3  [forbidden-name] mentions "${NAME_A}"`,
+        `docs/split.md:4  [forbidden-name] mentions "${NAME_B}"`,
+        `docs/split.md:5  [forbidden-name] mentions "${NAME_C}"`,
+        `docs/split.md:6  [forbidden-name] mentions "${NAME_A}"`,
+      ],
+      summary: [4, 1],
+    },
+    {
+      // No document is exempt, wherever it sits.
+      name: 'a forbidden name in any document',
+      files: {
+        'packages/icons/README.md': `${MD_HEADER}\n\n# Icons\n\nA line with ${NAME_B}.\n`,
+        'docs/notes/team.md': `${MD_HEADER}\n\nTwo names: ${NAME_B} and ${NAME_A}.\n`,
+      },
+      lines: [
+        `packages/icons/README.md:5  [forbidden-name] mentions "${NAME_B}"`,
+        `docs/notes/team.md:3  [forbidden-name] mentions "${NAME_A}"`,
+        `docs/notes/team.md:3  [forbidden-name] mentions "${NAME_B}"`,
+      ],
+      summary: [3, 2],
+    },
+    {
       name: 'a Google copyright notice in its usual forms',
       files: {
-        'src/a.ts': `${TS_HEADER}\n// ${NOTICE} 2022 ${COMPANY} LLC\nexport {};\n`,
+        'src/a.ts': `${TS_HEADER}\n// ${NOTICE} 2022 ${COMPANY} ${SUFFIX}\nexport {};\n`,
         'src/b.ts': `${TS_HEADER}\n/* ${NOTICE} (c) 2019 ${COMPANY} Inc. */\nexport {};\n`,
-        'src/c.ts': `${TS_HEADER}\n// ${NOTICE.toUpperCase()}  ${COMPANY.toLowerCase()} LLC\nexport {};\n`,
-        'src/d.ts': `${TS_HEADER}\n// \u00a9 2021 ${COMPANY} LLC\nexport {};\n`,
+        'src/c.ts': `${TS_HEADER}\n// ${NOTICE.toUpperCase()}  ${COMPANY.toLowerCase()} ${SUFFIX}\nexport {};\n`,
+        'src/d.ts': `${TS_HEADER}\n// © 2021 ${COMPANY} ${SUFFIX}\nexport {};\n`,
       },
       lines: [
         ...['a', 'b', 'c', 'd'].map(
           (file) => `src/${file}.ts:2  [forbidden-name] mentions "${NOTICE} ${COMPANY}"`,
         ),
-        // The company suffix is a retired term of its own: three of the four notices carry it.
-        ...['a', 'c', 'd'].map((file) => `src/${file}.ts:2  [retired-term] mentions "${COMPANY} ${SUFFIX}"`),
+        // The company suffix is a banned term of its own: three of the four notices carry it.
+        `src/a.ts:2  [banned-term] mentions "${COMPANY} ${SUFFIX}" (${COMPANY}'s name with its company suffix)`,
+        `src/c.ts:2  [banned-term] mentions "${COMPANY.toLowerCase()} ${SUFFIX}"`,
+        `src/d.ts:2  [banned-term] mentions "${COMPANY} ${SUFFIX}"`,
       ],
       summary: [7, 4],
     },
     {
-      // The shape of a copied upstream config file: our header, then the original licence header kept intact.
-      name: 'an upstream file copied verbatim with only the SPDX line prepended',
+      // The shape of a copied config file: our header, then the original licence header kept intact.
+      name: 'a file copied verbatim with only the SPDX line prepended',
       files: {
         'packages/model/labels.yaml': [
           HASH_HEADER,
-          `# ${NOTICE} 2022 ${COMPANY} LLC`,
+          `# ${NOTICE} 2022 ${COMPANY} Inc.`,
           '#',
           '# Licensed under the Apache License, Version 2.0 (the "License");',
           '# you may not use this file except in compliance with the License.',
@@ -169,87 +259,321 @@ describe('check-provenance', () => {
         ].join('\n'),
       },
       lines: [`packages/model/labels.yaml:2  [forbidden-name] mentions "${NOTICE} ${COMPANY}"`],
+      summary: [1, 1],
     },
     {
       name: 'a forbidden name in a file or directory name, even with clean contents',
       files: {
-        [`frontend/src/zz-plant-${OLD_NAME}-filename.ts`]: `${TS_HEADER}\nexport {};\n`,
-        [`src/${UPSTREAM_NAME}/index.ts`]: `${TS_HEADER}\nexport {};\n`,
-        [`assets/${OLD_NAME}.png`]: new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]),
+        [`frontend/src/zz-plant-${NAME_B}-filename.ts`]: `${TS_HEADER}\nexport {};\n`,
+        [`src/${NAME_A}/index.ts`]: `${TS_HEADER}\nexport {};\n`,
+        [`assets/${NAME_B}.png`]: new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]),
       },
       lines: [
-        `frontend/src/zz-plant-${OLD_NAME}-filename.ts  [forbidden-name] path mentions "${OLD_NAME}"`,
-        `src/${UPSTREAM_NAME}/index.ts  [forbidden-name] path mentions "${UPSTREAM_NAME}"`,
-        `assets/${OLD_NAME}.png  [forbidden-name] path mentions "${OLD_NAME}"`,
+        `frontend/src/zz-plant-${NAME_B}-filename.ts  [forbidden-name] path mentions "${NAME_B}"`,
+        `src/${NAME_A}/index.ts  [forbidden-name] path mentions "${NAME_A}"`,
+        `assets/${NAME_B}.png  [forbidden-name] path mentions "${NAME_B}"`,
       ],
       summary: [3, 3],
     },
     {
-      // No exemption: not the decision records, not the icons README.
-      name: "Google's company suffix and the retired planning document, in contents and in names, anywhere",
+      name: "Google's company suffix in any document",
       files: {
-        'docs/adr/0003-icons.md': `${MD_HEADER}\n\nThe icons are ${COMPANY}'s (${COMPANY}, ${SUFFIX.toLowerCase()}).\n`,
+        'docs/icons.md': `${MD_HEADER}\n\nThe icons are ${COMPANY}'s (${COMPANY}, ${SUFFIX.toLowerCase()}).\n`,
         'packages/icons/README.md': `${MD_HEADER}\n\n# Icons\n\nTrademarks of ${COMPANY} ${SUFFIX}.\n`,
-        'src/rules.ts': `${TS_HEADER}\n// The packing rule (see ${PLAN_FILE}.md).\nexport {};\n`,
-        [`docs/${PLAN_FILE}.md`]: `${MD_HEADER}\n\n# Plan\n`,
       },
       lines: [
-        `docs/adr/0003-icons.md:3  [retired-term] mentions "${COMPANY} ${SUFFIX}"`,
-        `packages/icons/README.md:5  [retired-term] mentions "${COMPANY} ${SUFFIX}"`,
-        `src/rules.ts:2  [retired-term] mentions "${PLAN_FILE}"`,
-        `docs/${PLAN_FILE}.md  [retired-term] path mentions "${PLAN_FILE}"`,
+        `docs/icons.md:3  [banned-term] mentions "${COMPANY}, ${SUFFIX.toLowerCase()}"`,
+        `packages/icons/README.md:5  [banned-term] mentions "${COMPANY} ${SUFFIX}"`,
       ],
-      summary: [4, 4],
+      summary: [2, 2],
     },
     {
-      // Task and phase ids in any text file, decision ids in Markdown only: in code such a token is often a name.
-      name: 'ids of the retired implementation plan outside the historical records',
+      // A citation with and without a number, a plural, one broken across a line, in any case and with or
+      // without a separator before the number, spelled out, links into a folder of records (relative and
+      // from the root), a folder of records as a path, and a numbered rule of agents.md in both orders.
+      name: 'citations of decision records and numbered rules',
       files: {
-        'src/layout.ts': `${TS_HEADER}\n// Packing rules from ${TASK_ID}.\nexport const ${DECISION_ID} = 1;\n`,
-        'docs/guide-two.md': `${MD_HEADER}\n\nAt the ${PHASE.toLowerCase()} review, decision ${DECISION_ID} said so.\n`,
-        '.changeset/step.md': `---\n'@gcportrait/model': patch\n---\n\nThe ${PHASE} follow-ups.\n`,
-      },
-      lines: [
-        `src/layout.ts:2  [plan-id] "${TASK_ID}" reads as a task id of the retired implementation plan`,
-        `docs/guide-two.md:3  [plan-id] "${PHASE.toLowerCase()}" reads as a phase`,
-        `docs/guide-two.md:3  [plan-id] "${DECISION_ID}" reads as a decision id`,
-        `.changeset/step.md:5  [plan-id] "${PHASE}" reads as a phase`,
-      ],
-      summary: [4, 3],
-      absent: ['src/layout.ts:3'],
-    },
-    {
-      // Contents outside the exempt places, and paths anywhere; a CHANGELOG's intro and unreleased section count, its
-      // released sections are history.
-      name: 'the former licence outside the record of the decision',
-      files: {
-        'src/footer.ts': `${TS_HEADER}\nexport const SOURCE = 'Source (${FORMER}-3.0)';\n`,
-        'docs/licence.md': `${MD_HEADER}\n\nLicensed under the ${FORMER_LONG.toUpperCase()} General Public License.\n`,
-        [`scripts/licenses/${FORMER}-3.0-only.txt`]: 'licence text\n',
-        'CHANGELOG.md': [
-          '# Changelog',
+        'backend/src/cache.ts': `${TS_HEADER}\n// The cache (${RECORD} 12 §3).\nexport {};\n`,
+        'docs/modes.md': `${MD_HEADER}\n\nSee [${RECORD}\n7](${RECORD.toLowerCase()}/colours.md).\n`,
+        'docs/index.md': [
+          MD_HEADER,
           '',
-          `Now under ${FORMER.toLowerCase()}-3.0.`,
+          `Read the ${RECORD}s first.`,
+          `Links: ../${RECORD.toLowerCase()}/README.md and ${RECORD_FOLDER}/x.md.`,
           '',
-          '## Unreleased',
+        ].join('\n'),
+        [`${RECORD_FOLDER}/notes.md`]: `${MD_HEADER}\n\n# Notes\n`,
+        'backend/src/rules.ts': `${TS_HEADER}\n// Colours (${RULE_NUMBER}).\n// Pure (${RULE_OF}).\nexport {};\n`,
+        'docs/forms.md': [
+          MD_HEADER,
           '',
-          `Back to ${FORMER}.`,
-          '',
-          '## 1.0.0 (2026-10-12)',
-          '',
-          `Was ${FORMER}-3.0-only.`,
+          `See ${RECORD.toLowerCase()} 0042.`,
+          `See ${RECORD.charAt(0)}${RECORD.slice(1).toLowerCase()} 9.`,
+          `See ${RECORD}0042 and ${RECORD}_0042.`,
+          `An ${RECORD_SPELLED} says so.`,
+          `See ${RECORD_NUMBERED}.`,
           '',
         ].join('\n'),
       },
       lines: [
-        `src/footer.ts:2  [former-licence] mentions "${FORMER}"`,
-        `docs/licence.md:3  [former-licence] mentions "${FORMER_LONG}"`,
-        `scripts/licenses/${FORMER}-3.0-only.txt  [former-licence] path mentions "${FORMER}"`,
-        `CHANGELOG.md:3  [former-licence] mentions "${FORMER}"`,
-        `CHANGELOG.md:7  [former-licence] mentions "${FORMER}"`,
+        `backend/src/cache.ts:2  [banned-term] mentions "${RECORD} 12" (a citation of a decision record); state the rule, or point to the section of agents.md that holds it`,
+        `docs/modes.md:3  [banned-term] mentions "${RECORD}" (a citation of a decision record)`,
+        `docs/modes.md:4  [banned-term] mentions "${RECORD.toLowerCase()}/" (a citation of a decision record)`,
+        `docs/index.md:3  [banned-term] mentions "${RECORD}s"`,
+        `docs/index.md:4  [banned-term] mentions "${RECORD.toLowerCase()}/"`,
+        `${RECORD_FOLDER}/notes.md  [banned-term] path mentions "${RECORD.toLowerCase()}/"`,
+        `backend/src/rules.ts:2  [banned-term] mentions "${RULE_NUMBER}" (a numbered rule of agents.md)`,
+        `backend/src/rules.ts:3  [banned-term] mentions "${RULE_OF}"`,
+        `docs/forms.md:3  [banned-term] mentions "${RECORD.toLowerCase()} 0042"`,
+        `docs/forms.md:4  [banned-term] mentions "${RECORD.charAt(0)}${RECORD.slice(1).toLowerCase()} 9"`,
+        `docs/forms.md:5  [banned-term] mentions "${RECORD}0042"`,
+        `docs/forms.md:6  [banned-term] mentions "${RECORD_SPELLED}"`,
+        `docs/forms.md:7  [banned-term] mentions "${RECORD_NUMBERED.slice(0, -1)}"`,
       ],
-      summary: [5, 4],
-      absent: ['CHANGELOG.md:11'],
+      // One finding per label and line: the line broken in docs/modes.md is not reported twice.
+      summary: [13, 6],
+      absent: ['across a line break'],
+    },
+    {
+      name: 'build-record wording, in Markdown, code and configuration',
+      files: {
+        'docs/records.md': [
+          MD_HEADER,
+          '',
+          `${VERIFIED} ${DATE}.`,
+          `The cache rule, ${AMENDED_ON} ${DATE}.`,
+          `The budgets ${AS_AMENDED}.`,
+          `Kept ${AS_DECIDED}.`,
+          `Faster since the review of ${DATE}.`,
+          `The colour rule, accepted ${DATE}.`,
+          `About 300 ms (measured ${DATE}).`,
+          `Since the audit of ${DATE_WRITTEN}.`,
+          `Decided ${DATE_US}.`,
+          '',
+        ].join('\n'),
+        'scripts/port.ts': `${TS_HEADER}\n// ${VERIFIED.toUpperCase()} the server.\nexport {};\n`,
+        'infra/notes.yaml': `${HASH_HEADER}\n# kept ${AS_DECIDED}\nkey: value\n`,
+      },
+      lines: [
+        `docs/records.md:3  [banned-term] mentions "${VERIFIED}" (a build-record phrase); a file says what is, not how it came to be (agents.md, Documentation)`,
+        `docs/records.md:4  [banned-term] mentions "${AMENDED_ON}" (a build-record phrase)`,
+        `docs/records.md:5  [banned-term] mentions "${AS_AMENDED}"`,
+        `docs/records.md:6  [banned-term] mentions "${AS_DECIDED}"`,
+        `docs/records.md:7  [banned-term] mentions "review of ${DATE}"`,
+        `docs/records.md:8  [banned-term] mentions "accepted ${DATE}"`,
+        `docs/records.md:9  [banned-term] mentions "measured ${DATE}"`,
+        `docs/records.md:10  [banned-term] mentions "audit of ${DATE_WRITTEN}"`,
+        `docs/records.md:11  [banned-term] mentions "Decided ${DATE_US}"`,
+        `scripts/port.ts:2  [banned-term] mentions "${VERIFIED.toUpperCase()}"`,
+        `infra/notes.yaml:2  [banned-term] mentions "${AS_DECIDED}"`,
+      ],
+      // Line 3 and line 4 each match two patterns of the label: one finding per label and line.
+      summary: [11, 3],
+    },
+    {
+      // The phrases are refused for this run only; the forms a digest stands for (case, a hyphen, an
+      // underscore or nothing between joined words, a plural; a word before a date in each date form) and
+      // the places it is looked for (a line, a line break, a path, a binary file's metadata), and the near
+      // misses that pass.
+      name: 'phrases and a directory refused by digest',
+      refuse: [JOINED_PHRASE, SPACED_PHRASE, DIRECTORY, DATED_WORD],
+      files: {
+        'docs/story.md': [
+          MD_HEADER,
+          '',
+          'The blue-lantern step.',
+          'A BlueLantern, two Blue_Lanterns.',
+          'A copper kettle.',
+          'Copper  kettles, three.',
+          'The blue lantern glows; a copper-kettle; the blue cat lantern.',
+          'Moved from vault/ to src/.',
+          'See ./vault/a and (../vault/b).',
+          'The vault holds src/vault/c and vault.',
+          'Ignore **/vault/** and C:\\\\repo\\\\vault\\\\x; a vault-door and vault.ts are fine.',
+          `The voyage of ${DATE} ended.`,
+          `Voyage (${DATE_US}).`,
+          `The voyage list of ${DATE}; a voyage since ${DATE_WRITTEN}.`,
+          '',
+        ].join('\n'),
+        'src/wrap.ts': `${TS_HEADER}\n// The copper\n// kettle steps.\nexport {};\n`,
+        'scripts/blue_lantern.sh': `#!/bin/sh\n${HASH_HEADER}\nexit 0\n`,
+        'vault/keep.ts': `${TS_HEADER}\nexport {};\n`,
+        'src/vault/fine.ts': `${TS_HEADER}\nexport {};\n`,
+        'media/clip.webp': bytes(
+          'RIFF',
+          [0x40, 0, 0, 0],
+          'WEBPXMP ',
+          [0x20, 0, 0, 0],
+          utf16('A copper kettle'),
+        ),
+      },
+      lines: [
+        'docs/story.md:3  [banned-term] mentions "blue-lantern" (a build-record phrase)',
+        'docs/story.md:4  [banned-term] mentions "BlueLantern"',
+        'docs/story.md:5  [banned-term] mentions "copper kettle"',
+        'docs/story.md:6  [banned-term] mentions "Copper  kettles"',
+        'docs/story.md:8  [banned-term] mentions "vault/"',
+        'docs/story.md:9  [banned-term] mentions "vault/"',
+        'docs/story.md:10  [banned-term] mentions "vault/"',
+        'docs/story.md:11  [banned-term] mentions "vault/"',
+        'src/wrap.ts:2  [banned-term] mentions "copper kettle" across a line break',
+        'scripts/blue_lantern.sh  [banned-term] path mentions "blue_lantern"',
+        'vault/keep.ts  [banned-term] path mentions "vault/"',
+        'src/vault/fine.ts  [banned-term] path mentions "vault/"',
+        'media/clip.webp  [banned-term] mentions "copper kettle" in its binary contents (a build-record phrase)',
+        `docs/story.md:12  [banned-term] mentions "voyage of ${DATE}"`,
+        `docs/story.md:13  [banned-term] mentions "Voyage (${DATE_US}"`,
+      ],
+      summary: [15, 6],
+      absent: ['docs/story.md:7', 'docs/story.md:14'],
+    },
+    {
+      // A banned term broken across a line break, in a block comment, line comments, a hash comment and
+      // Markdown: the next line's comment marker is dropped, and the finding sits on the line where the term
+      // starts.
+      name: 'a banned term broken across a line break',
+      files: {
+        'backend/src/colours.ts': `${TS_HEADER}\n/**\n * Colours (${RULE_NUMBER.replace(' ', '\n * ')}).\n */\nexport {};\n`,
+        'backend/src/pure.ts': `${TS_HEADER}\n// Pure functions (${RULE_OF.replace(' of', '\n// of')}).\nexport {};\n`,
+        'infra/notes.sh': `#!/bin/sh\n${HASH_HEADER}\n# The budgets, ${AS_AMENDED.replace(' ', '\n# ')}.\nexit 0\n`,
+        'docs/cache.md': `${MD_HEADER}\n\nThe cache, faster since the review of\n${DATE}, holds every page.\n`,
+        'docs/name.md': `${MD_HEADER}\n\nWrite ${COMPANY}\n${SUFFIX} nowhere.\n`,
+      },
+      lines: [
+        `backend/src/colours.ts:3  [banned-term] mentions "${RULE_NUMBER}" across a line break (a numbered rule of agents.md)`,
+        `backend/src/pure.ts:2  [banned-term] mentions "${RULE_OF}" across a line break`,
+        `infra/notes.sh:3  [banned-term] mentions "${AS_AMENDED}" across a line break (a build-record phrase)`,
+        `docs/cache.md:3  [banned-term] mentions "review of ${DATE}" across a line break`,
+        `docs/name.md:3  [banned-term] mentions "${COMPANY} ${SUFFIX}" across a line break`,
+      ],
+      summary: [5, 5],
+    },
+    {
+      // Task and phase ids in any text file, decision ids in Markdown only: in code such a token is often a
+      // name. No folder is exempt, and any number counts.
+      name: 'ids of work items, anywhere',
+      files: {
+        'src/layout.ts': `${TS_HEADER}\n// Packing rules from ${TASK_ID}.\nexport const ${DECISION_ID} = 1;\n`,
+        'docs/guide-two.md': `${MD_HEADER}\n\nAt the ${PHASE.toLowerCase()} check, decision ${DECISION_ID} said so.\n`,
+        '.changeset/step.md': `---\n'@gcportrait/model': patch\n---\n\nThe ${PHASE} follow-ups.\n`,
+        'docs/notes/week.md': `${MD_HEADER}\n\nDecided as ${DECISION_ID} in ${TASK_ID}.\n`,
+      },
+      lines: [
+        `src/layout.ts:2  [plan-id] "${TASK_ID}" reads as a task id of a work plan; say what the thing is or does (agents.md, Documentation)`,
+        `docs/guide-two.md:3  [plan-id] "${PHASE.toLowerCase()}" reads as a phase`,
+        `docs/guide-two.md:3  [plan-id] "${DECISION_ID}" reads as a decision id`,
+        `.changeset/step.md:5  [plan-id] "${PHASE}" reads as a phase`,
+        `docs/notes/week.md:3  [plan-id] "${TASK_ID}" reads as a task id`,
+        `docs/notes/week.md:3  [plan-id] "${DECISION_ID}" reads as a decision id`,
+      ],
+      summary: [6, 4],
+      absent: ['src/layout.ts:3'],
+    },
+    {
+      // Contents outside the deny list and the licence texts, and paths anywhere; a CHANGELOG is no
+      // exception.
+      name: 'the denied licence family outside the deny list',
+      files: {
+        'src/footer.ts': `${TS_HEADER}\nexport const SOURCE = 'Source (${LICENCE_SHORT}-3.0)';\n`,
+        'docs/licence.md': `${MD_HEADER}\n\nLicensed under the ${LICENCE_LONG.toUpperCase()} General Public License.\n`,
+        [`scripts/licenses/${LICENCE_SHORT}-3.0-only.txt`]: 'licence text\n',
+        'CHANGELOG.md': [
+          '# Changelog',
+          '',
+          '## 1.0.0',
+          '',
+          `Not under ${LICENCE_SHORT.toLowerCase()}-3.0.`,
+          '',
+        ].join('\n'),
+      },
+      lines: [
+        `src/footer.ts:2  [licence-name] mentions "${LICENCE_SHORT}"; gcportrait is MIT (agents.md, Licence and dependencies)`,
+        `docs/licence.md:3  [licence-name] mentions "${LICENCE_LONG}"`,
+        `scripts/licenses/${LICENCE_SHORT}-3.0-only.txt  [licence-name] path mentions "${LICENCE_SHORT}"`,
+        `CHANGELOG.md:5  [licence-name] mentions "${LICENCE_SHORT}"`,
+      ],
+      summary: [4, 4],
+    },
+    {
+      // A stray NUL byte, a wide encoding with and without a byte-order mark, invalid UTF-8 or a UTF-8
+      // byte-order mark hides nothing from the other rules, and is itself reported.
+      name: 'a text file that is not UTF-8 without NUL bytes, read all the same',
+      files: {
+        'docs/nul.md': `${MD_HEADER}\n\nA line with ${NAME_A}.\u0000\n`,
+        'src/nul.ts': `export const x = '${NAME_B}';\u0000\n`,
+        'docs/wide.md': bytes([0xff, 0xfe], utf16(`${MD_HEADER}\n\nA line with ${NAME_C}.\n`)),
+        'docs/wide-be.md': bytes([0xfe, 0xff], utf16(`${MD_HEADER}\n\nA line with ${NAME_A}.\n`, 'be')),
+        'docs/wide-plain.md': utf16(`${MD_HEADER}\n\nSee ${RECORD} 12.\n`),
+        'docs/latin.md': bytes(`${MD_HEADER}\n\nCaf`, [0xe9], ' au lait.\n'),
+        'docs/marked.md': bytes([0xef, 0xbb, 0xbf], `${MD_HEADER}\n\n# Marked\n`),
+      },
+      lines: [
+        "docs/nul.md  [encoding] holds NUL bytes; every text file is UTF-8 without a byte-order mark or NUL bytes (.editorconfig), and a binary format's extension belongs in BINARY_EXTENSIONS",
+        `docs/nul.md:3  [forbidden-name] mentions "${NAME_A}"`,
+        'src/nul.ts  [encoding] holds NUL bytes',
+        `src/nul.ts:1  [forbidden-name] mentions "${NAME_B}"`,
+        'src/nul.ts  [spdx-header] missing SPDX header',
+        'docs/wide.md  [encoding] is UTF-16 text',
+        `docs/wide.md:3  [forbidden-name] mentions "${NAME_C}"`,
+        'docs/wide-be.md  [encoding] is UTF-16 text',
+        `docs/wide-be.md:3  [forbidden-name] mentions "${NAME_A}"`,
+        'docs/wide-plain.md  [encoding] is UTF-16 text',
+        `docs/wide-plain.md:3  [banned-term] mentions "${RECORD} 12"`,
+        'docs/latin.md  [encoding] is not valid UTF-8',
+        'docs/marked.md  [encoding] starts with a byte-order mark',
+      ],
+      // The SPDX headers of the wide and marked files are found once decoded.
+      summary: [13, 7],
+      absent: ['docs/wide.md  [spdx-header]', 'docs/marked.md  [spdx-header]'],
+    },
+    {
+      // Plain text under a binary extension is read as text; a real binary file through its printable runs
+      // (a PNG text chunk, UTF-16 metadata in a GIF, an XMP chunk in a WebP) and a PNG's compressed text
+      // chunks, inflated.
+      name: 'binary files: plain text under a binary extension, and the metadata of real ones',
+      files: {
+        'assets/note.png': `A note with ${NAME_A}.\n`,
+        'assets/real.png': bytes(
+          PNG_SIGNATURE,
+          [0, 0, 0, 0x1c],
+          'tEXtComment',
+          [0],
+          `Made with ${NAME_B} tools`,
+          [0x12, 0x34, 0x56, 0x78],
+        ),
+        'assets/meta.gif': bytes(
+          'GIF89a',
+          [1, 0, 1, 0, 0x80, 0, 0],
+          utf16(`Rights: ${COMPANY} ${SUFFIX}`),
+          [0x3b],
+        ),
+        'assets/licence.webp': bytes(
+          'RIFF',
+          [0x40, 0, 0, 0],
+          'WEBPXMP ',
+          [0x20, 0, 0, 0],
+          `Licence: ${LICENCE_LONG}`,
+        ),
+        'assets/compressed.png': bytes(
+          PNG_SIGNATURE,
+          pngChunk('zTXt', bytes('Comment', [0, 0], deflateSync(`Made with ${NAME_C}`))),
+          pngChunk(
+            'iTXt',
+            bytes('Note', [0, 1, 0], 'en', [0], 'Note', [0], deflateSync(`The audit of ${DATE}`)),
+          ),
+          pngChunk('IEND', new Uint8Array()),
+        ),
+      },
+      lines: [
+        'assets/note.png  [encoding] holds plain text under a binary extension; give it the extension of its format',
+        `assets/note.png:1  [forbidden-name] mentions "${NAME_A}"`,
+        `assets/real.png  [forbidden-name] mentions "${NAME_B}" in its binary contents`,
+        `assets/meta.gif  [banned-term] mentions "${COMPANY} ${SUFFIX}" in its binary contents`,
+        `assets/licence.webp  [licence-name] mentions "${LICENCE_LONG}" in its binary contents`,
+        `assets/compressed.png  [forbidden-name] mentions "${NAME_C}" in its binary contents`,
+        `assets/compressed.png  [banned-term] mentions "audit of ${DATE}" in its binary contents`,
+      ],
+      summary: [7, 5],
     },
     {
       name: 'a missing SPDX header',
@@ -280,10 +604,10 @@ describe('check-provenance', () => {
       lines: ['styles/bad.css  [spdx-header]', 'src/late.ts  [spdx-header]'],
     },
     {
-      // Shaped like the upstream query files: the Gizmo call sits mid-line, after an assignment or an `if`; ordinary
-      // code that merely mentions emit or a V() method on another object is fine. A banned file is reported once: it
-      // has to go, so the header rule does not report it as well.
-      name: 'Go, Graphviz and Gizmo query files outside legacy',
+      // Shaped like Gizmo query files: the call sits mid-line, after an assignment or an `if`; ordinary code
+      // that merely mentions emit or a V() method on another object is fine. A banned file is reported once:
+      // it has to go, so the header rule does not report it as well.
+      name: 'Go, Graphviz and Gizmo query files',
       files: {
         'cmd/main.go': 'package main\n',
         'templates/graph.dot': 'digraph {}\n',
@@ -294,7 +618,7 @@ describe('check-provenance', () => {
         'src/events.ts': `${TS_HEADER}\nexport function fire(bus: { emit(name: string): void }, graph: { V(id: number): void }): void {\n  bus.emit('ready');\n  graph.V(1);\n}\n`,
       },
       lines: [
-        'cmd/main.go  [banned-file]',
+        'cmd/main.go  [banned-file] .go files are not allowed: no Go code, no Graphviz templates (agents.md, Licence and dependencies)',
         'templates/graph.dot  [banned-file]',
         'templates/graph.gv  [banned-file]',
         'queries/all.js:2  [banned-file]',
@@ -305,8 +629,8 @@ describe('check-provenance', () => {
       absent: ['src/events.ts'],
     },
     {
-      // Header-free formats and names next to them: JSON family, plain text, SVG, files that cannot carry a comment;
-      // a NOTICE file is none of them (gcportrait has none since 2026-10-12, ADR 0017).
+      // Header-free formats and names next to them: JSON family, plain text, SVG, files that cannot carry a
+      // comment; a NOTICE file is none of them.
       name: 'a text file type that has no header rule, and accepts the header-free formats',
       files: {
         'config/settings.toml': 'key = "value"\n',
@@ -328,10 +652,10 @@ describe('check-provenance', () => {
   ];
 
   // A loop rather than it.each: its `$name` would cut the names at 40 characters.
-  for (const { name, files, lines, summary, absent = [] } of FAILING) {
+  for (const { name, files, lines, summary, absent = [], refuse = [] } of FAILING) {
     it(`fails on ${name}`, () => {
       for (const [relPath, content] of Object.entries(files)) tree.write(relPath, content);
-      const result = check();
+      const result = check(...refuse.flatMap((phrase) => ['--also-refuse', digestOf(phrase)]));
       expect(result.status).toBe(1);
       for (const line of lines) expect(result.stderr).toContain(line);
       for (const text of absent) expect(result.stderr).not.toContain(text);
@@ -349,16 +673,46 @@ describe('check-provenance', () => {
     expect(result.status).toBe(0);
   });
 
-  it('allows the plan ids in the historical records, and look-alikes that are not ids', () => {
+  it('allows the words the banned terms resemble, where they mean something else', () => {
     tree.write(
-      'docs/adr/0004-history.md',
-      `${MD_HEADER}\n\nDecided as ${DECISION_ID} in ${TASK_ID} (${PHASE}).\n`,
+      'src/words.ts',
+      [
+        TS_HEADER,
+        `// Wait ${NAME_C.slice(0, 3)} settings; ${NAME_C.slice(0, 3)} setInterval; ${NAME_C.slice(0, 3)}.setItem.`,
+        '// Each decision of the gate; a request of the user; the rule of thumb.',
+        '// A review of the code; accepted until 2030-10-31; checked twice.',
+        '// Added since 2030-09-23 and since 4 Sept 2030; measured in milliseconds; a review of 3 files.',
+        `export const integrity = 'sha512-ab/${RECORD}+cd==';`,
+        `export const uri = 'data:image/png;base64,xy/${RECORD.toLowerCase()}/z${RECORD}b';`,
+        `export const ${RECORD}IATIC = 'quadr/';`,
+        `// PADRES, ${RECORD}x, x${RECORD}, ${RECORD.toLowerCase()}enaline and ${RECORD.toLowerCase()}ift are words, not citations.`,
+        '// Words that only look like a banned term when two lines are read as one: see agents.md',
+        '// rules apply; kept as',
+        '// amendments allow; the review of',
+        '// the 2030-10-08 ticks; rule 12 of',
+        '// the guide.',
+        '',
+      ].join('\n'),
     );
-    tree.write('docs/history/2026-10-10-review.md', `${MD_HEADER}\n\nWhat ${TASK_ID} changed in ${PHASE}.\n`);
+    tree.write(
+      'packages/catalog/data/cai-supported-asset-types.2030-01-15.txt',
+      'compute.googleapis.com/Instance\n',
+    );
+    tree.write('docs/timeline.md', `${MD_HEADER}\n\nWhat changed since 2030-09-23.\n`);
+    tree.write(
+      'pnpm-lock.yaml',
+      `lockfileVersion: '9.0'\npackages:\n  character-entities@2.0.2:\n    resolution: {integrity: sha512-${RECORD}+${RECORD.toLowerCase()}/Q==}\n`,
+    );
+    const result = check();
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+  });
+
+  it('allows look-alikes of the work-item ids', () => {
     // Versions, colours, CSS, and words that only start like an id.
     tree.write(
       'docs/notes.md',
-      `${MD_HEADER}\n\nVersion 3.6.0, colour #D1D5DB, a DE1 adapter, P35, Phase 8, phased 2, ${DECISION_ID}x.\n`,
+      `${MD_HEADER}\n\nVersion 3.6.0, colours #D1D5DB and #D93025, a DE1 adapter, P35, phased 2, ${DECISION_ID}x, D1234.\n`,
     );
     tree.write('src/sizes.ts', `${TS_HEADER}\nexport const P = { P30: 1, p3: 2 };\n`);
     const result = check();
@@ -366,31 +720,58 @@ describe('check-provenance', () => {
     expect(result.status).toBe(0);
   });
 
-  it('allows the former licence in the decision record, the deny list, licence texts and released notes', () => {
-    tree.write('THIRD_PARTY.md', `${MD_HEADER}\n\nDenied: GPL, LGPL, ${FORMER} (network copyleft).\n`);
-    tree.write('docs/adr/0017-licence.md', `${MD_HEADER}\n\nFirst ${FORMER}-3.0-only, then MIT.\n`);
-    tree.write('scripts/check-licenses.mjs', `${TS_HEADER}\nexport const family = '${FORMER}-*';\n`);
-    tree.write('scripts/check-licenses.test.ts', `${TS_HEADER}\nexport const id = '${FORMER}-3.0-only';\n`);
-    tree.write('scripts/licenses/MPL-2.0.txt', `the ${FORMER_LONG} General Public License, Version 3.0\n`);
+  it('looks for short terms in text only, not in the bytes of a binary file', () => {
+    // Abbreviations, licence ids and work-item ids are short enough to occur by chance in compressed data.
     tree.write(
-      'packages/model/CHANGELOG.md',
-      `# @fx/model\n\n## 1.0.0\n\n### Major Changes\n\n- Licensed under ${FORMER}-3.0-only.\n`,
-    );
-    // Hashes and words that merely contain the letters.
-    tree.write(
-      'src/hash.ts',
-      `${TS_HEADER}\nexport const integrity = 'sha512-x${FORMER.toLowerCase()}Q==';\nexport const lgpl = 'LGPL-2.1';\n`,
+      'assets/noise.png',
+      bytes(
+        PNG_SIGNATURE,
+        [0],
+        `${RECORD} 12`,
+        [0],
+        `${LICENCE_SHORT}-3.0`,
+        [0],
+        `${TASK_ID} ${PHASE} ${DECISION_ID}`,
+        [0],
+        `${RECORD.toLowerCase()}/x`,
+        [0, 0x89],
+      ),
     );
     const result = check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
-  it('allows a forbidden name in the path of an exempt document', () => {
-    tree.write(`docs/adr/0002-drop-${UPSTREAM_NAME}.md`, `${MD_HEADER}\n\nWhy ${UPSTREAM_NAME} goes.\n`);
+  it('allows the denied licence family in the deny list and the licence texts', () => {
+    tree.write('THIRD_PARTY.md', `${MD_HEADER}\n\nDenied: GPL, LGPL, ${LICENCE_SHORT} (network copyleft).\n`);
+    tree.write('scripts/check-licenses.mjs', `${TS_HEADER}\nexport const family = '${LICENCE_SHORT}-*';\n`);
+    tree.write(
+      'scripts/check-licenses.test.ts',
+      `${TS_HEADER}\nexport const id = '${LICENCE_SHORT}-3.0-only';\n`,
+    );
+    tree.write('scripts/licenses/MPL-2.0.txt', `the ${LICENCE_LONG} General Public License, Version 3.0\n`);
+    // Hashes and words that merely contain the letters.
+    tree.write(
+      'src/hash.ts',
+      `${TS_HEADER}\nexport const integrity = 'sha512-x${LICENCE_SHORT.toLowerCase()}Q==';\nexport const lgpl = 'LGPL-2.1';\n`,
+    );
     const result = check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
+  });
+
+  it('finds no refused string in the checker and in this test, which spell none of them out', () => {
+    for (const file of ['scripts/check-provenance.mjs', 'scripts/check-provenance.test.ts'])
+      tree.write(file, readFileSync(path.join(REPO, file), 'utf8'));
+    const result = check();
+    // Their headers name MIT, not the fixture's identifier; nothing else may be reported.
+    const reported = result.stderr
+      .split('\n')
+      .filter((line) => line.startsWith('  scripts/check-provenance'));
+    expect(reported).toEqual([
+      expect.stringContaining('scripts/check-provenance.mjs:1  [spdx-header]'),
+      expect.stringContaining('scripts/check-provenance.test.ts:1  [spdx-header]'),
+    ]);
   });
 
   it('requires the identifier named in the root package.json', () => {
@@ -406,15 +787,28 @@ describe('check-provenance', () => {
   });
 
   it('reports symbolic links instead of following them', () => {
-    // The link targets live under legacy/, which the walker skips; only the links themselves are visible.
-    tree.write(`${LEGACY}/vendor/main.go`, 'package main\n');
-    tree.write(`${LEGACY}/vendor/util.ts`, 'export const copied = true;\n');
+    // The link targets live under node_modules/, which the walker skips; only the links themselves are
+    // visible.
+    tree.write('node_modules/vendor/main.go', 'package main\n');
+    tree.write('node_modules/vendor/util.ts', 'export const copied = true;\n');
     tree.write('packages/model/.gitkeep', '');
-    symlinkSync(path.join(tree.root, LEGACY, 'vendor'), path.join(tree.root, 'packages/model/vendor'), 'dir');
-    symlinkSync(path.join(tree.root, LEGACY, 'vendor/util.ts'), path.join(tree.root, 'src/util.ts'), 'file');
+    symlinkSync(
+      path.join(tree.root, 'node_modules/vendor'),
+      path.join(tree.root, 'packages/model/vendor'),
+      'dir',
+    );
+    symlinkSync(
+      path.join(tree.root, 'node_modules/vendor/util.ts'),
+      path.join(tree.root, 'src/util.ts'),
+      'file',
+    );
     const result = check();
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('packages/model/vendor  [symlink]');
+    expect(result.stderr).toContain(
+      'packages/model/vendor  [symlink] symbolic link to "' +
+        path.join(tree.root, 'node_modules/vendor') +
+        '"; links are not allowed in the tree (they can reach outside the repository)',
+    );
     expect(result.stderr).toContain('src/util.ts  [symlink]');
     expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
   });
@@ -431,6 +825,20 @@ describe('check-provenance', () => {
     expect(failing.stderr).toContain('FAILED with 1 problem(s) in 1 file(s)');
     tree.write('backend/.env.example', `${HASH_HEADER}\nOAUTH_CLIENT_ID=\n`);
     expect(check().status).toBe(0);
+  });
+
+  it('skips build output only where .gitignore ignores it, and walks a deeper dist or build directory', () => {
+    tree.write('dist/demo/index.js', `console.log('${EVERY_REFUSED_STRING}');\n`);
+    tree.write('packages/model/build/out.js', `console.log('${EVERY_REFUSED_STRING}');\n`);
+    expect(check().status).toBe(0);
+    // A directory of that name inside a source tree is committed, so it is checked.
+    tree.write('frontend/src/build/leak.ts', 'export {};\n');
+    tree.write('packages/model/src/dist/leak.ts', 'export {};\n');
+    const result = check();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('frontend/src/build/leak.ts  [spdx-header] missing SPDX header');
+    expect(result.stderr).toContain('packages/model/src/dist/leak.ts  [spdx-header] missing SPDX header');
+    expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
   });
 
   it('skips Playwright output only under e2e/, and git-ignored scratch files anywhere', () => {
@@ -450,35 +858,72 @@ describe('check-provenance', () => {
     );
   });
 
-  it('prints the rules with --list-exempt', () => {
+  it('checks every file git tracks, also under a path the walk skips', () => {
+    tree.write('coverage/kept.ts', `${TS_HEADER}\nexport const name = '${NAME_A}';\n`);
+    tree.write('src/.claude/notes.md', `${MD_HEADER}\n\nA line with ${NAME_B}.\n`);
+    expect(check().status).toBe(0);
+    const git = (...args: string[]) => spawnSync('git', args, { cwd: tree.root, encoding: 'utf8' });
+    expect(git('init', '--quiet').status).toBe(0);
+    expect(git('add', '--force', 'coverage/kept.ts', 'src/.claude/notes.md').status).toBe(0);
+    const result = check();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`coverage/kept.ts:2  [forbidden-name] mentions "${NAME_A}"`);
+    expect(result.stderr).toContain(`src/.claude/notes.md:3  [forbidden-name] mentions "${NAME_B}"`);
+    expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
+  });
+
+  it('prints the digest entry of a phrase with --digest-of, the same for every form it stands for', () => {
+    const joined = digestOf(JOINED_PHRASE);
+    expect(joined).toMatch(/^words:11:[0-9a-f]{8}:[0-9a-f]{64}$/);
+    for (const form of ['Blue_Lantern', 'BlueLanterns', 'blue-lanterns', 'bluelantern'])
+      expect(digestOf(form)).toBe(joined);
+    expect(digestOf('blue lantern')).toMatch(/^words:12:/);
+    expect(digestOf(SPACED_PHRASE)).toBe(digestOf('Copper   Kettles'));
+    expect(digestOf(DIRECTORY)).toMatch(/^path:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
+    expect(digestOf('./Vault/')).toBe(digestOf(DIRECTORY));
+    expect(digestOf(DATED_WORD)).toMatch(/^dated:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
+    expect(digestOf('Voyage <date>')).toBe(digestOf(DATED_WORD));
+    expect(runScript('check-provenance.mjs', ['--digest-of', 'one two three four']).status).toBe(2);
+    expect(check('--also-refuse', 'words:3:0:abc').status).toBe(2);
+  });
+
+  it('prints the rules with --list-exempt, without the forbidden names, the secret patterns or the digests', () => {
     const result = runScript('check-provenance.mjs', ['--list-exempt']);
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain('(a) legacy-import');
-    expect(result.stdout).toContain('(d) spdx-header');
-    expect(result.stdout).toContain('docs/adr/**');
-    expect(result.stdout).toContain('packages/icons/README.md');
+    for (const heading of [
+      '(a) forbidden-name',
+      '(b) banned-file',
+      '(c) spdx-header',
+      '(d) symlink',
+      '(e) banned-term',
+      '(f) plan-id',
+      '(g) licence-name',
+      '(h) encoding',
+    ])
+      expect(result.stdout).toContain(heading);
+    expect(result.stdout).toContain(
+      '3 names (assembled at run time, not printed) and a Google copyright notice',
+    );
+    expect(result.stdout).toContain('a citation of a decision record (3 patterns, not printed)');
+    expect(result.stdout).toMatch(/a build-record phrase \(3 patterns and \d+ phrase digests, not printed\)/);
+    expect(result.stdout).toContain('a numbered rule of agents.md: /');
+    expect(result.stdout).toContain('in Markdown (.md .mdx .markdown), with no exemption');
+    expect(result.stdout).toContain(`"${LICENCE_SHORT}", "${LICENCE_LONG}"`);
+    expect(result.stdout).toContain('THIRD_PARTY.md (the dependency deny list names it)');
     expect(result.stdout).toContain('.editorconfig');
     expect(result.stdout).toContain('Dockerfile');
     expect(result.stdout).toContain('.env.example');
     expect(result.stdout).toContain('header-free');
-    expect(result.stdout).toContain('substring');
-    expect(result.stdout).toContain('(f) retired-term');
-    expect(result.stdout).toContain(`"${COMPANY} ${SUFFIX}", "${PLAN_FILE}"`);
-    expect(result.stdout).toContain('(g) plan-id');
-    expect(result.stdout).toContain('not applied in: docs/adr/**, docs/history/**');
-    expect(result.stdout).toContain('(h) former-licence');
-    expect(result.stdout).toContain(`"${FORMER}", "${FORMER_LONG}"`);
-    expect(result.stdout).toContain('docs/adr/0017-* (the record of the licence decision)');
-    expect(result.stdout).toContain('the released sections of any CHANGELOG.md');
+    expect(result.stdout).not.toMatch(/[0-9a-f]{64}/);
+    for (const secret of [NAME_A, NAME_B, NAME_C, RECORD, VERIFIED, 'amended', 'decided'])
+      expect(result.stdout.toLowerCase()).not.toContain(secret.toLowerCase());
   });
 
-  it('exempts only the decision records, the icons README and the checker from the name rule, and only generated or consumed files from the header rule', () => {
+  it('exempts only the checker from the name rule, and only generated or consumed files from the header rule', () => {
     const result = runScript('check-provenance.mjs', ['--list-exempt']);
     expect(result.status).toBe(0);
-    const allowed = /^ {4}allowed only in: (.+)$/m.exec(result.stdout)?.[1];
-    expect(allowed).toBe(
-      'docs/adr/**, packages/icons/README.md, scripts/check-provenance.mjs (this checker)',
-    );
+    const notApplied = /^ {4}not applied in: (.+)$/m.exec(result.stdout)?.[1];
+    expect(notApplied).toBe('scripts/check-provenance.mjs (this checker)');
     const headerExempt = /^ {4}header-exempt:\n((?: {6}.+\n)+)/m.exec(result.stdout)?.[1] ?? '';
     expect(
       headerExempt

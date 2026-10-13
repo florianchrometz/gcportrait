@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render API's error answers (ADR 0033 §5): the server's shape plus the fields the gate's refusal body already
- * has, `{ statusCode, error, message, requestId, code, retryable?, reason?, upstream? }`, always sent before any byte
- * of an image. `code` says what happened in a word a script can test; `reason` is Google's `ErrorInfo` reason when
- * a pull's error frame carried one; `upstream` is Google's own status and code when Google's answer led to it. An
- * answer with `retryable: true` carries `Retry-After` (its own delay, else {@link DEFAULT_RETRY_AFTER_SECONDS}), and
- * so does every 429.
+ * The render API's error answers (agents.md, Exports and the render API): the server's shape plus the fields
+ * the gate's refusal body already has, `{ statusCode, error, message, requestId, code, retryable?, reason?,
+ * upstream? }`, always sent before any byte of an image. `code` says what happened in a word a script can
+ * test; `reason` is Google's `ErrorInfo` reason when a pull's error frame carried one; `upstream` is Google's
+ * own status and code when Google's answer led to it. An answer with `retryable: true` carries `Retry-After`
+ * (its own delay, else {@link DEFAULT_RETRY_AFTER_SECONDS}), and so does every 429.
  *
  * Answers the shared helpers give without a code (the token's 401 and 429, the schema's 400, Fastify's 413 and 415,
  * the service-account checks' 403 and 501) get the code of their status (`DEFAULT_CODES`) on the way out, so every
@@ -32,7 +32,7 @@ export const DEFAULT_CODES: Readonly<Record<number, string>> = {
   501: 'SA_MODE_UNAVAILABLE',
 };
 
-/** Seconds a client waits before trying again after `RENDER_BUSY` (ADR 0033 §7). */
+/** Seconds a client waits before trying again after `RENDER_BUSY`. */
 export const RENDER_BUSY_RETRY_SECONDS = 10;
 
 /** `Retry-After` of a retryable answer that names no delay of its own (Google's or the gate's 5xx, a cut pull). */

@@ -32,19 +32,18 @@ function constantOf(file: string, name: string): string {
   return [...declaration.matchAll(/'([^']*)'|"([^"]*)"/g)].map((m) => m[1] ?? m[2] ?? '').join('');
 }
 
-describe('the non-affiliation wording and the repository (ADR 0018)', () => {
+describe('the non-affiliation wording and the repository', () => {
   it('keeps the long form equal to the app’s (frontend/src/branding.ts)', () => {
     expect(NON_AFFILIATION_LONG).toBe(constantOf('frontend/src/branding.ts', 'NON_AFFILIATION_LONG'));
     expect(NON_AFFILIATION_LONG).toContain('is not affiliated with, endorsed by, or sponsored by Google');
   });
 
-  it('keeps the long form in the approved words: an independent open-source project, no maintainer named', () => {
+  it('keeps the long form word for word: an independent open-source project, no maintainer named', () => {
     expect(NON_AFFILIATION_LONG).toBe(
       'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is ' +
         'not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are ' +
         "trademarks of Google and are used under Google's icon usage terms.",
     );
-    expect(NON_AFFILIATION_LONG).not.toMatch(/\bside\b/);
     expect(NON_AFFILIATION_LONG).not.toContain(MAINTAINER_NAME);
   });
 
@@ -75,8 +74,8 @@ describe('the non-affiliation wording and the repository (ADR 0018)', () => {
 
   it('links the repository the app’s source link defaults to', () => {
     expect(REPOSITORY_URL).toBe(constantOf('frontend/src/source.ts', 'DEFAULT_SOURCE_URL'));
-    expect(repositoryFileUrl('/docs/adr/README.md')).toBe(`${REPOSITORY_URL}/blob/main/docs/adr/README.md`);
-    expect(repositoryFileUrl('docs/adr', 'tree')).toBe(`${REPOSITORY_URL}/tree/main/docs/adr`);
+    expect(repositoryFileUrl('/docs/packages.md')).toBe(`${REPOSITORY_URL}/blob/main/docs/packages.md`);
+    expect(repositoryFileUrl('docs/media', 'tree')).toBe(`${REPOSITORY_URL}/tree/main/docs/media`);
   });
 
   it('writes out the addresses it repeats, as they are computed (see INSTALLER_URL)', () => {

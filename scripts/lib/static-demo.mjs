@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * The static demo (ADR 0034): the app built in demo-only mode for a static host, the maintainer's demo at
- * https://gcportrait.app/demo/ on GitHub Pages. Shared by the frontend's build (frontend/vite.config.ts, which writes
- * the bundle when VITE_STATIC_DEMO=1) and the root command that runs it (scripts/static-demo.mjs, `pnpm demo:static`).
- * Plain ESM, Node built-ins only.
+ * The static demo (agents.md, Modes and hosting): the app built in demo-only mode for a static host, the
+ * maintainer's demo at https://gcportrait.app/demo/ on GitHub Pages. Shared by the frontend's build
+ * (frontend/vite.config.ts, which writes the bundle when VITE_STATIC_DEMO=1) and the root command that runs
+ * it (scripts/static-demo.mjs, `pnpm demo:static`). Plain ESM, Node built-ins only.
  *
  * **Routes on a static host.** The app routes by path (`/diagram`, `/settings`, …; the URL hash is the diagram's view,
  * so hash routing is not an option), and a static host has no rewrite to the app's index.html. So the build writes a
@@ -21,7 +21,7 @@
  * SHA-256 hash, computed from the very page written, as the backend computes it from the page it serves. The backend's
  * `Referrer-Policy: no-referrer` goes along as `<meta name="referrer">`. What has no `<meta>` form at all is left to the
  * host: `frame-ancestors` and X-Frame-Options, Cross-Origin-Opener- and -Embedder-Policy, Permissions-Policy and
- * nosniff (ADR 0034 weighs that).
+ * nosniff.
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';

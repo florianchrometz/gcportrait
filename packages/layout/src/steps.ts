@@ -7,7 +7,7 @@
  */
 
 /**
- * Edges routed between two steps of a routing pass: about 10 ms of routing on average on an Apple M1, at most
+ * Edges routed between two steps of a routing pass: about 10 ms of routing on average, at most
  * about 30 ms (the longest edges, routed last, of the demo L overview at detail `all`).
  */
 export const ROUTE_STEP = 128;

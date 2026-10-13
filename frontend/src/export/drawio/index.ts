@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * The draw.io export (ADR 0036, docs/api.md): the diagram's SVG document turned into a `.drawio` file that
- * diagrams.net opens as an editable diagram that looks like the picture (translate.ts says how). One function for
- * every surface: the app's export flow (`exportDrawioFile`) loads this module on demand with the drawing it renders
- * for the export, and the render library (`pnpm render --drawio`, `POST /api/render` with `"format": "drawio"`)
- * imports it through the frontend's headless entry with the static render of the same components. No DOM: it runs in
- * the browser and in Node alike.
+ * The draw.io export (docs/api.md; agents.md, Exports and the render API): the diagram's SVG document turned into a
+ * `.drawio` file that diagrams.net opens as an editable diagram that looks like the picture (translate.ts says how).
+ * One function for every surface: the app's export flow (`exportDrawioFile`) loads this module on demand with the
+ * drawing it renders for the export, and the render library (`pnpm render --drawio`, `POST /api/render` with
+ * `"format": "drawio"`) imports it through the frontend's headless entry with the static render of the same
+ * components. No DOM: it runs in the browser and in Node alike.
  */
 import { modelXml, mxfileXml, readDrawio, type ReadDrawio } from './model';
 import { translateSvg, type DrawioSummary, type TranslateOptions } from './translate';

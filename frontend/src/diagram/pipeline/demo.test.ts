@@ -1,7 +1,7 @@
 // @vitest-environment node
 // SPDX-License-Identifier: MIT
 /**
- * The demo organisations in the workers (ADR 0029 as amended on 2026-10-11: the demo generator runs in workers only):
+ * The demo organisations in the workers (the demo generator runs in workers only):
  * "Try the demo" prepares demo S as the data worker draws it, with its 35-day history, through the data protocol's
  * `demo` request (which the demo worker answers in the app, demoRole.ts) with the snapshot library's progress stages.
  */

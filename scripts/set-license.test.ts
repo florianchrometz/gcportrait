@@ -13,9 +13,11 @@ import {
   type TempTree,
 } from './testing/temp-tree.js';
 
-const LEGACY = ['leg', 'acy'].join('');
-/** The project's former licence, assembled at run time so that this file does not name it (provenance rule h). */
-const FORMER_LICENCE = `${['A', 'GPL'].join('')}-3.0-only`;
+/**
+ * A licence of the denied network-copyleft family, assembled at run time so that this file does not name
+ * it.
+ */
+const DENIED_LICENCE = `${['A', 'GPL'].join('')}-3.0-only`;
 
 /** header line for a comment style and identifier */
 const ts = (id: string) => `// SPDX-License-Identifier: ${id}`;
@@ -47,7 +49,7 @@ function writeTree(tree: TempTree): void {
   for (const [relPath, content] of FIXTURE_FILES) tree.write(relPath, content(FIXTURE_LICENSE));
   // Never touched: skipped directories, and headers that carry some other identifier.
   tree.write('node_modules/dep/index.js', `${ts(FIXTURE_LICENSE)}\n`);
-  tree.write(`${LEGACY}/old.ts`, `${ts(FIXTURE_LICENSE)}\n`);
+  tree.write('out/old.ts', `${ts(FIXTURE_LICENSE)}\n`);
   tree.write('vendor-note.md', `${md('CC-BY-4.0')}\n\nThird-party note.\n`);
   // Never touched: .nvmrc carries no header.
   tree.write('.nvmrc', '22\n');
@@ -97,7 +99,7 @@ describe('set-license', () => {
     expect(license).not.toContain('<copyright holders>');
 
     expect(tree.read('node_modules/dep/index.js')).toBe(`${ts(FIXTURE_LICENSE)}\n`);
-    expect(tree.read(`${LEGACY}/old.ts`)).toBe(`${ts(FIXTURE_LICENSE)}\n`);
+    expect(tree.read('out/old.ts')).toBe(`${ts(FIXTURE_LICENSE)}\n`);
     expect(tree.read('vendor-note.md')).toContain('CC-BY-4.0');
     expect(tree.read('.nvmrc')).toBe('22\n');
   });
@@ -147,8 +149,8 @@ describe('set-license', () => {
   it.each([
     { args: ['MIT'], message: 'MIT needs --holder' },
     { args: ['GPL-3.0-only'], message: 'no built-in text for "GPL-3.0-only"' },
-    // The project's former licence: its text is no longer built in (ADR 0017).
-    { args: [FORMER_LICENCE], message: `no built-in text for "${FORMER_LICENCE}"` },
+    // A denied licence has no built-in text.
+    { args: [DENIED_LICENCE], message: `no built-in text for "${DENIED_LICENCE}"` },
     { args: ['MIT OR Apache-2.0'], message: 'is not a single SPDX licence identifier' },
     { args: [], message: 'expected exactly one SPDX licence identifier' },
     { args: ['MIT', '--year', '30'], message: '--year must be a four-digit year' },

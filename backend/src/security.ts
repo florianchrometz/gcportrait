@@ -2,24 +2,26 @@
 import { createHash } from 'node:crypto';
 
 /**
- * The security headers of every response (ADR 0035 §4; the review in docs/security.md §6): the Content Security
- * Policy, Cross-Origin-Opener-Policy and -Embedder-Policy, and Permissions-Policy. server.ts sends them with
- * @fastify/helmet (which adds HSTS, nosniff, X-Frame-Options, Referrer-Policy and Cross-Origin-Resource-Policy).
+ * The security headers of every response (agents.md, Security and privacy; docs/security.md §6): the Content
+ * Security Policy, Cross-Origin-Opener-Policy and -Embedder-Policy, and Permissions-Policy. server.ts sends
+ * them with @fastify/helmet (which adds HSTS, nosniff, X-Frame-Options, Referrer-Policy and
+ * Cross-Origin-Resource-Policy).
  *
- * Scripts and styles load only from the backend's own origin, plus Google Identity Services' client script (Google
- * sign-in, ADR 0004), which the SPA loads only when a person presses "Sign in with Google". The one inline script
- * the SPA ships (the theme bootstrap in frontend/index.html, which must run before first paint) is allowed by its
- * SHA-256 hash, computed from the exact index.html being served, so no 'unsafe-inline' is ever needed. Fonts are
- * self-hosted. The browser may talk to the backend, to Google's OAuth host (tokeninfo, revoke) and to GIS's own
- * endpoints; it never calls Cloud Asset Inventory, Resource Manager or Cloud Storage itself (the backend does,
- * through its upstream allowlist, upstream/allowlist.ts), so those hosts are not in `connect-src`.
+ * Scripts and styles load only from the backend's own origin, plus Google Identity Services' client script
+ * (Google sign-in), which the SPA loads only when a person presses "Sign in with Google". The one inline
+ * script the SPA ships (the theme bootstrap in frontend/index.html, which must run before first paint) is
+ * allowed by its SHA-256 hash, computed from the exact index.html being served, so no 'unsafe-inline' is ever
+ * needed. Fonts are self-hosted. The browser may talk to the backend, to Google's OAuth host (tokeninfo,
+ * revoke) and to GIS's own endpoints; it never calls Cloud Asset Inventory, Resource Manager or Cloud Storage
+ * itself (the backend does, through its upstream allowlist, upstream/allowlist.ts), so those hosts are not in
+ * `connect-src`.
  */
 
 /**
  * The Google origin the SPA itself talks to: `oauth2.googleapis.com`, for tokeninfo (frontend/src/auth/
  * tokeninfo.ts: whose token it is, and for which client) and for revoking a token on sign-out (GIS's
- * `google.accounts.oauth2.revoke`). Until the security review of 2026-10-11 `connect-src` listed all four upstream
- * hosts (upstream/allowlist.ts); the browser never called the other three.
+ * `google.accounts.oauth2.revoke`). The other three upstream hosts (upstream/allowlist.ts) are the backend's
+ * alone, so they stay out of `connect-src`.
  */
 export const BROWSER_GOOGLE_ORIGINS = ['https://oauth2.googleapis.com'] as const;
 

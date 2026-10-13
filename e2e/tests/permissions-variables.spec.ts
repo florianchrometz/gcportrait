@@ -7,14 +7,14 @@ import { copied, grantClipboard, panel, reference, row, values } from './permiss
 import { expectNoAxeViolations, scratchShot } from './support.js';
 
 /**
- * Fillable commands on the Permissions page (the maintainer's request of 2026-10-11; preflight/CommandBlock.tsx,
- * commands/): every variable of a command is a labelled field filled in place, and every field of a variable on the
- * page shows one value, prefilled from what the app knows (the scope picked, the signed-in account, the instance's
- * service account) and editable; Copy copies the command with the values (an unfilled one as its token) and says so;
- * the values outlive a reload in the tab's sessionStorage. Run by the `chromium-live` project on `pnpm dev`'s Vite
- * server (every backend and Google call answered in the page): signed out, signed in, demo-only and service-account
- * cases; axe and screenshots in both themes. The demo mode case: permissions-variables-demo.spec.ts. Synthetic values
- * only (agents.md rule 6).
+ * Fillable commands on the Permissions page (preflight/CommandBlock.tsx, commands/): every variable of a
+ * command is a labelled field filled in place, and every field of a variable on the page shows one value,
+ * prefilled from what the app knows (the scope picked, the signed-in account, the instance's service account)
+ * and editable; Copy copies the command with the values (an unfilled one as its token) and says so; the
+ * values outlive a reload in the tab's sessionStorage. Run by the `chromium-live` project on `pnpm dev`'s
+ * Vite server (every backend and Google call answered in the page): signed out, signed in, demo-only and
+ * service-account cases; axe and screenshots in both themes. The demo mode case:
+ * permissions-variables-demo.spec.ts. Synthetic values only (agents.md, Security and privacy, principle 6).
  */
 const ACCOUNT = 'gcportrait-backend@demo-host.iam.gserviceaccount.com';
 const TOKEN = 'e2e-fake-access-token-variables-7c2e';

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * The production bundles (bundle.ts, ADR 0033 §9): written into a temporary directory, the render worker draws a
- * demo view to the committed goldens' bytes (the PNG and the `.drawio` file) from its own asset directory, with no
- * node_modules involved, and
- * `server.mjs` holds none of the render library: no React, no resvg, no frontend component, no native addon. The
- * licence file names the files each package ships in and carries the MPL-2.0 text, and the notices script's table of
- * the asset directory's packages (scripts/third-party-notices.mjs) matches the directory the bundle writes.
+ * The production bundles (bundle.ts): written into a temporary directory, the render worker draws a demo view
+ * to the committed goldens' bytes (the PNG and the `.drawio` file) from its own asset directory, with no
+ * node_modules involved, and `server.mjs` holds none of the render library: no React, no resvg, no frontend
+ * component, no native addon. The licence file names the files each package ships in and carries the MPL-2.0
+ * text, and the notices script's table of the asset directory's packages (scripts/third-party-notices.mjs)
+ * matches the directory the bundle writes.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';

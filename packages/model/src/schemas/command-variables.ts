@@ -4,7 +4,7 @@
  * or the app shows a command, with its label, description, synthetic example, format and whether it is a secret.
  * It is the one registry: the website renders each token in a docs code block as a field from it, the app's command
  * blocks take their fields from it, and `node scripts/user-docs.mjs` fails on a token in a guide that it does not
- * list. The module imports nothing at run time (no zod, ADR 0029), so the app's UI thread, the website's build and
+ * list. The module imports nothing at run time (no zod), so the app's UI thread, the website's build and
  * plain Node (the repository's .mjs tooling loads it by type stripping) all read the same file. Its row schema is
  * CommandVariableSchema (command-variable.ts).
  *
@@ -34,7 +34,7 @@ const PROJECT_ID_HINT =
 const NUMBER_HINT = 'digits only';
 const HOST_HINT = 'a host name such as gcportrait.example.com, without https:// or a path';
 
-/** The registry, in the order a page about running gcportrait meets them. Examples are synthetic (rule 6). */
+/** The registry, in the order a page about running gcportrait meets them. Examples are synthetic (agents.md, Data and graph semantics). */
 export const COMMAND_VARIABLES = [
   {
     name: 'YOUR_PROJECT',

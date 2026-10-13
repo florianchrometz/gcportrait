@@ -36,7 +36,7 @@ afterAll(() => {
 });
 
 describe('debugSvg', () => {
-  it('draws every rect with its label, in both themes, with no affiliation line (ADR 0018)', () => {
+  it('draws every rect with its label, in both themes, with no affiliation line', () => {
     for (const theme of ['light', 'dark'] as const) {
       const svg = debugSvg(input, layout, { theme, caption: 'test', aspects: true });
       expect(svg).not.toMatch(/affiliated/i);
@@ -71,7 +71,7 @@ describe('the debug-svg command', () => {
     writeErr.mockRestore();
   });
 
-  it('prints its usage, with no affiliation line (ADR 0018: footers and long-form texts only)', () => {
+  it('prints its usage, with no affiliation line (footers and long-form texts only)', () => {
     expect(run(['--help'])).toBe(0);
     expect(write).toHaveBeenCalledWith(expect.stringContaining('Usage:'));
     expect(write).not.toHaveBeenCalledWith(expect.stringMatching(/affiliated/i));

@@ -32,7 +32,7 @@ describe('COMMAND_VARIABLES', () => {
     },
   );
 
-  it('gives only synthetic examples (agents.md rule 6)', () => {
+  it('gives only synthetic examples', () => {
     const examples = COMMAND_VARIABLES.map((variable) => variable.example).join('\n');
     expect(findNonSyntheticData(examples)).toEqual([]);
   });

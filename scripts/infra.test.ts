@@ -335,7 +335,7 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
         const help = run(script, ['--help'], []);
         expect(help.status).toBe(0);
         expect(help.out.split('\n')[0]).toBe(`gcportrait infra/${script}`);
-        // The long form, wrapped, after the options (ADR 0018: footers and long-form texts).
+        // The long form, wrapped, after the options (agents.md, Non-affiliation, brand and legal).
         expect(help.out.trimEnd().split('\n\n').at(-1)?.replace(/\s+/g, ' ')).toBe(LONG_FORM);
         expect(help.calls).toEqual([]);
         // A run: the first line, before anything is asked of Google; no affiliation line in the run's output.
@@ -346,7 +346,7 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
     });
   });
 
-  it('--oauth-client-id: the example in the refusal is a synthetic number (agents.md rule 6)', () => {
+  it('--oauth-client-id: the example in the refusal is a synthetic number', () => {
     const result = run('deploy.sh', ['--project', 'example-project', '--oauth-client-id', 'bad id'], []);
     expect(result.status).toBe(1);
     expect(result.out).toContain('must look like 12345678901-abc.apps.googleusercontent.com');
@@ -458,7 +458,7 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
       expect(changesIn(result.calls)).toEqual([]);
     });
 
-    it('uses and updates what carries its marks, removing the redundant Object Admin grant of an earlier version', () => {
+    it('updates what carries its marks, its build account holding Storage Admin on its bucket only', () => {
       const ours: readonly Rule[] = [
         [
           'gcloud',
@@ -485,46 +485,23 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
         ['gcloud', 'artifacts repositories describe *', '*', 0, 'managed-by=gcportrait-deploy\\n'],
         ['gcloud', 'storage buckets describe *', '*', 0, `${NUMBER}\\tmanaged-by=gcportrait-deploy\\n`],
       ];
-      const policy = (withObjectAdmin: boolean): Rule => [
-        'gcloud',
-        'storage buckets get-iam-policy gs://example-project-gcportrait-builds *',
-        '*',
-        0,
-        'roles/storage.admin\\tserviceAccount:gcportrait-build@example-project.iam.gserviceaccount.com\\n' +
-          (withObjectAdmin
-            ? 'roles/storage.objectAdmin\\tserviceAccount:gcportrait-build@example-project.iam.gserviceaccount.com\\n'
-            : '') +
-          'roles/storage.objectAdmin\\tserviceAccount:someone-else@example-project.iam.gserviceaccount.com\\n',
-      ];
-      for (const withObjectAdmin of [true, false]) {
-        const result = run(
-          'deploy.sh',
-          ['--project', 'example-project', '--build'],
-          buildRules([
-            ...ours,
-            policy(withObjectAdmin),
-            ['gcloud', 'storage buckets remove-iam-policy-binding *', '*', 0, ''],
-          ]),
-        );
-        expect(result.status, result.out).toBe(0);
-        expect(result.out).toContain('Cloud Run service gcportrait (europe-west3) exists, made by deploy.sh');
-        expect(count(result.calls, 'gcloud iam service-accounts create')).toBe(0);
-        expect(count(result.calls, 'gcloud artifacts repositories create')).toBe(0);
-        expect(count(result.calls, 'gcloud artifacts repositories set-cleanup-policies')).toBe(1);
-        expect(result.calls.some((call) => call.includes('storage/v1/b?project='))).toBe(false);
-        // Storage Admin on its bucket, and the earlier Object Admin grant of its own account gone; nobody else's.
-        expect(result.calls.find((call) => call.includes('buckets add-iam-policy-binding'))).toContain(
-          '--role=roles/storage.admin',
-        );
-        expect(result.calls.filter((call) => call.includes('buckets remove-iam-policy-binding'))).toEqual(
-          withObjectAdmin
-            ? [
-                'gcloud storage buckets remove-iam-policy-binding gs://example-project-gcportrait-builds --member=serviceAccount:gcportrait-build@example-project.iam.gserviceaccount.com --role=roles/storage.objectAdmin --format=none',
-              ]
-            : [],
-        );
-        expect(count(result.calls, 'gcloud run deploy')).toBe(1);
-      }
+      const result = run('deploy.sh', ['--project', 'example-project', '--build'], buildRules(ours));
+      expect(result.status, result.out).toBe(0);
+      expect(result.out).toContain('Cloud Run service gcportrait (europe-west3) exists, made by deploy.sh');
+      expect(count(result.calls, 'gcloud iam service-accounts create')).toBe(0);
+      expect(count(result.calls, 'gcloud artifacts repositories create')).toBe(0);
+      expect(count(result.calls, 'gcloud artifacts repositories set-cleanup-policies')).toBe(1);
+      expect(result.calls.some((call) => call.includes('storage/v1/b?project='))).toBe(false);
+      // Storage Admin on its bucket and Artifact Registry Writer on its repository; no other grant, and
+      // nothing removed.
+      expect(
+        result.calls.filter((call) => /(?:buckets|repositories) add-iam-policy-binding/.test(call)),
+      ).toEqual([
+        expect.stringContaining('--role=roles/storage.admin'),
+        expect.stringContaining('--role=roles/artifactregistry.writer'),
+      ]);
+      expect(result.calls.some((call) => call.includes('remove-iam-policy-binding'))).toBe(false);
+      expect(count(result.calls, 'gcloud run deploy')).toBe(1);
     });
   });
 
@@ -671,27 +648,6 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
       expect(sleeps(result.calls)).toBe(2);
       expect(result.out).toContain('GET /api/healthz: {"status":"ok","version":"test"}');
       expect(result.out).toContain('GET /api/config: {"demo":false}');
-    });
-
-    it('takes /api/config at once for an image that predates /api/healthz (the backend’s own JSON 404)', () => {
-      const result = deployWith([
-        [
-          'curl',
-          '*/api/healthz',
-          '*',
-          0,
-          '{"statusCode":404,"error":"Not Found","message":"Route GET:/api/healthz not found"}\\n404 application/json; charset=utf-8',
-        ],
-      ]);
-      expect(result.status, result.out).toBe(0);
-      // No retries: the 404 came from the backend, so the image is up.
-      expect(healthzCalls(result.calls)).toBe(1);
-      expect(sleeps(result.calls)).toBe(0);
-      expect(result.out).toContain(
-        'GET /api/healthz: not in this image (an image from before 2026-10-10); /api/config answers',
-      );
-      expect(result.out).toContain('GET /api/config: {"demo":false}');
-      expect(result.out).not.toContain('did not answer yet');
     });
 
     it('says in one line what the check saw, and shows the answers only with --verbose', () => {

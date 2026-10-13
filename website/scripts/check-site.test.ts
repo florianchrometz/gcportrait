@@ -37,6 +37,7 @@ import {
   checkLegalLinks,
   checkLinks,
   checkPage,
+  checkRepositoryLinks,
   cssAddresses,
   diagramsNetFile,
   INSTALLER_SOURCE,
@@ -779,6 +780,34 @@ describe('checkLinks', () => {
     ]);
   });
 
+  it('finds links into the repository that name no file or folder of it', () => {
+    const blob = `${REPOSITORY_URL}/blob/main`;
+    const tree = `${REPOSITORY_URL}/tree/main`;
+    const pages = [
+      {
+        path: '/docs/faq/',
+        html: [
+          `<a href="${blob}/docs/packages.md#data-flow">packages</a>`,
+          `<a href="${tree}/docs/media">media</a>`,
+          `<a href="${tree}/infra/">infra</a>`,
+          `<a href="${blob}/docs/gone.md">gone</a>`,
+          `<a href="${blob}/docs/gone.md">the same link again</a>`,
+          `<a href="${tree}/docs/nowhere">nowhere</a>`,
+          `<a href="${blob}/../outside.md">outside</a>`,
+          `<a href="${REPOSITORY_URL}/issues">issues</a>`,
+          `<a href="${REPOSITORY_URL}/releases">releases</a>`,
+          `<a href="${tree}/">the repository</a>`,
+        ].join(''),
+      },
+    ];
+    const existing = new Set(['docs/packages.md', 'docs/media', 'infra']);
+    expect(checkRepositoryLinks(pages, (repoPath) => existing.has(repoPath))).toEqual([
+      `/docs/faq/: a link to ${blob}/docs/gone.md, which names no file or folder of the repository`,
+      `/docs/faq/: a link to ${tree}/docs/nowhere, which names no file or folder of the repository`,
+      `/docs/faq/: a link to ${blob}/../outside.md, which names no file or folder of the repository`,
+    ]);
+  });
+
   it('maps built files to their URL paths', () => {
     expect(urlPathOf('index.html')).toBe('/');
     expect(urlPathOf('docs/self-host/index.html')).toBe('/docs/self-host/');
@@ -791,7 +820,7 @@ describe('checkExports', () => {
     Buffer.from(
       `<svg width="10" height="10"><title>gcportrait diagram of example.com, Overview lens</title><desc>${desc}</desc>${lines.map((line) => `<text x="0" y="0">${line}</text>`).join('')}${extra}</svg>`,
     );
-  // The title block's three lines and the <desc> of an export since 2026-10-11: no affiliation line (ADR 0018).
+  // The title block's three lines and the <desc> of an export: no affiliation line (a drawing never carries one).
   const titleBlock = [
     'example.com',
     'Overview lens · read 2026-10-08T00:00:00+00:00',
@@ -870,7 +899,7 @@ describe('checkExports', () => {
     ]);
   });
 
-  it('finds the line in the <title>, as an entity, elsewhere in the file, and an older or the long wording', () => {
+  it('finds the line in the <title>, as an entity, elsewhere in the file, and any other affiliation sentence, the long form included', () => {
     const problems = (lines: readonly string[], text: string, extra = ''): string[] =>
       exportSvgProblems(svg(lines, text, extra).toString());
     expect(problems(titleBlock, desc)).toEqual([]);
@@ -885,9 +914,9 @@ describe('checkExports', () => {
     expect(problems(titleBlock, desc, `<!-- ${EXPORT_DISCLAIMER} -->`)).toEqual([
       'it states an affiliation outside its title block, <title> and <desc>',
     ]);
-    expect(
-      problems(titleBlock, `${desc} Not affiliated with Google. An independent open-source side project.`),
-    ).toEqual(['its <desc> states an affiliation']);
+    expect(problems(titleBlock, `${desc} Not affiliated with Google in any way.`)).toEqual([
+      'its <desc> states an affiliation',
+    ]);
     expect(problems(titleBlock, `${desc} ${NON_AFFILIATION_LONG.replace(/'/g, '&#39;')}`)).toEqual([
       'its <desc> states an affiliation',
     ]);
@@ -1008,7 +1037,7 @@ describe('checkDemoLinks (every "Try the demo" link goes to /demo/, in a new tab
   });
 });
 
-describe('checkFooterNotice and checkLandingStatement (ADR 0018: footers and long-form texts only)', () => {
+describe('checkFooterNotice and checkLandingStatement (footers and long-form texts only)', () => {
   const found = (check: typeof checkFooterNotice, html: string): string[] => {
     const problems: string[] = [];
     check(html, (message) => problems.push(message));
@@ -1021,7 +1050,7 @@ describe('checkFooterNotice and checkLandingStatement (ADR 0018: footers and lon
     expect(found(checkFooterNotice, `<footer>${FOOTER_NOTICE_HTML}</footer>`)).toEqual([]);
   });
 
-  it('refuses a footer without it, with the old long form instead, or with the name not linked', () => {
+  it('refuses a footer without it, with the long form instead, or with the name not linked', () => {
     expect(found(checkFooterNotice, `<footer>${LONG}</footer>`)).toEqual([
       `the footer lacks the footer notice "${FOOTER_NOTICE_LEAD}${MAINTAINER_NAME}."`,
     ]);

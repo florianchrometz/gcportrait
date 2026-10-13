@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive diagram (ADR 0035 §5; style skill §13): the drawing inside an `<svg>` that d3-zoom pans and zooms
- * (`scaleExtent [0.05, 200]`, wheel and drag; double-click is reserved for drill-in and does not zoom), level
- * of detail by the effective scale, and hover, selection (with its trace) and keyboard focus painted by the
- * highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting
+ * The interactive diagram (agents.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that
+ * d3-zoom pans and zooms (`scaleExtent [0.05, 200]`, wheel and drag; double-click is reserved for drill-in and does
+ * not zoom), level of detail by the effective scale, and hover, selection (with its trace) and keyboard focus painted
+ * by the highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting
  * only set attributes and classes on it, and never ask for a new layout. `data-diagram-ready="true"` on the
  * `<svg>` says the drawing is fitted and interactive: it is set once the painter and its listeners are attached.
  *
@@ -109,7 +109,7 @@ interface OpenMenu {
   readonly items: readonly MenuItem[];
 }
 
-/** The canvas size when the element has none yet (jsdom, a hidden page): the minimum viewport (ADR 0011). */
+/** The canvas size when the element has none yet (jsdom, a hidden page): the minimum viewport, 1280 × 800. */
 const FALLBACK_SIZE = { width: 1280, height: 800 };
 
 function canvasSize(svg: SVGSVGElement): { width: number; height: number } {

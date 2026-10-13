@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render job's messages (ADR 0033 §8), between the route on the main thread and the job in a render worker
- * (worker.ts) or in process (in-process.ts, the tests): `start` names the source and the options, `chunk` hands
- * over the data a piece at a time (a pull's frames, an upload's bytes), each answered with `ack` once the job has
- * read it, and `end` asks for the result. The job answers with `progress` (assets read so far), then exactly one
+ * The render job's messages, between the route on the main thread and the job in a render worker (worker.ts)
+ * or in process (in-process.ts, the tests): `start` names the source and the options, `chunk` hands over the
+ * data a piece at a time (a pull's frames, an upload's bytes), each answered with `ack` once the job has read
+ * it, and `end` asks for the result. The job answers with `progress` (assets read so far), then exactly one
  * `result` or `error`. Types only: the main thread never loads the render library.
  */
 import type { DemoSize, RenderOptions, ScopeKind } from '@gcportrait/model';

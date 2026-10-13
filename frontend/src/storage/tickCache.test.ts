@@ -4,7 +4,7 @@
  * The tick cache in IndexedDB (fake-indexeddb): one entry per cache key, never shared across scopes; days before
  * the 35-day window dropped when a tick of the scope is stored; every scope's ticks listed and deleted one by one or
  * by scope (the Snapshots page); nothing kept without IndexedDB; and the version-1 store, keyed by
- * `[scope, readTime]` and never written, replaced by version 2's.
+ * `[scope, readTime]`, which holds no data, replaced by version 2's.
  */
 import 'fake-indexeddb/auto';
 
@@ -125,7 +125,7 @@ describe('the tick cache', () => {
     expect(await cache.removeScope(ORG)).toBe(0);
   });
 
-  it('replaces the version-1 store keyed by [scope, readTime] (never written) on upgrade', async () => {
+  it('replaces the version-1 store keyed by [scope, readTime], which holds no data, on upgrade', async () => {
     expect(DB_VERSION).toBe(2);
     const old = await openDB(DB_NAME, 1, {
       upgrade(db) {

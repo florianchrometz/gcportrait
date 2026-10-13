@@ -222,7 +222,7 @@ types:
       - { kind: routes, to: $.data.spec.routeName, normalize: siblingName, pattern: '{parent}/services/{id}' }
     notes: >-
       v1 only (domains.cloudrun.com). spec.routeName is the mapped service's bare name in the same project
-      and region, completed by siblingName, so the mapping routes to the service (core since then;
+      and region, completed by siblingName, so the mapping routes to the service (which makes it core;
       the subtitle names the service too). The A/AAAA records in status.resourceRecords are
       Google's shared front-end addresses, the same for every domain mapping, so they are not indexed as this
       mapping's addresses: they would match every mapping of the organisation to every other.

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * Released images from GitHub Container Registry (ADR 0035 §2): deploy.sh deploys them through an Artifact Registry
- * remote repository of ghcr.io that it creates once, and uninstall.sh removes that repository with the last instance
- * that deploys from it; against the stand-ins of scripts/testing/infra-stub.ts.
+ * Released images from GitHub Container Registry (agents.md, Releases): deploy.sh deploys them through an
+ * Artifact Registry remote repository of ghcr.io that it creates once, and uninstall.sh removes that
+ * repository with the last instance that deploys from it; against the stand-ins of
+ * scripts/testing/infra-stub.ts.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -71,8 +72,8 @@ describe.skipIf(!BASH_AVAILABLE)(
       /**
        * gcloud's answer to that describe: `MODE|FORMAT|LABELS|COMMON|CUSTOM`, the upstream's address in one of the
        * two fields Artifact Registry may give it and an empty string for the other (gcloud prints a field that is not
-       * set as one). A repository created with --remote-docker-repo is described with `commonRepository.uri` (the
-       * real run of 2026-10-11); `dockerRepository.customRepository.uri` is the older shape.
+       * set as one). A repository created with --remote-docker-repo is described with `commonRepository.uri`;
+       * `dockerRepository.customRepository.uri` is the older shape.
        */
       const described = (
         mode: string,
@@ -87,8 +88,8 @@ describe.skipIf(!BASH_AVAILABLE)(
           field === 'commonRepository' ? upstream : '',
           field === 'customRepository' ? upstream : '',
         ].join('|');
-      /** What gcloud 587.0.0 printed for the remote repository deploy.sh created in the real run of 2026-10-11. */
-      const REAL_OURS = 'REMOTE_REPOSITORY|DOCKER|managed-by=gcportrait-deploy|https://ghcr.io|';
+      /** What gcloud prints for the remote repository deploy.sh creates. */
+      const DESCRIBED_OURS = 'REMOTE_REPOSITORY|DOCKER|managed-by=gcportrait-deploy|https://ghcr.io|';
       const REMOTE_CREATE =
         'gcloud artifacts repositories create ghcr --project=example-project --location=europe-west3 ' +
         '--repository-format=docker --mode=remote-repository --remote-docker-repo=https://ghcr.io ' +
@@ -225,8 +226,8 @@ describe.skipIf(!BASH_AVAILABLE)(
       });
 
       it('accepts on the next run the remote repository it created, described as Artifact Registry does today', () => {
-        // The real run of 2026-10-11 with a synthetic image: the first run creates the repository, the second, with
-        // the same flags, finds it with its upstream in commonRepository.uri and deploys through it as it is.
+        // With a synthetic image: the first run creates the repository, the second, with the same flags,
+        // finds it with its upstream in commonRepository.uri and deploys through it as it is.
         const args = [
           '--project',
           'example-project',
@@ -237,7 +238,7 @@ describe.skipIf(!BASH_AVAILABLE)(
           '--image',
           'ghcr.io/someone/echo:42',
         ];
-        expect(described('REMOTE_REPOSITORY', MANAGED, 'https://ghcr.io')).toBe(REAL_OURS);
+        expect(described('REMOTE_REPOSITORY', MANAGED, 'https://ghcr.io')).toBe(DESCRIBED_OURS);
         const first = run('deploy.sh', args, pullRules());
         expect(first.status, first.out).toBe(0);
         expect(first.calls.filter((call) => call.startsWith('gcloud artifacts repositories create'))).toEqual(
@@ -246,7 +247,7 @@ describe.skipIf(!BASH_AVAILABLE)(
         const second = run(
           'deploy.sh',
           args,
-          pullRules([['gcloud', 'artifacts repositories describe ghcr *', '*', 0, `${REAL_OURS}\\n`]]),
+          pullRules([['gcloud', 'artifacts repositories describe ghcr *', '*', 0, `${DESCRIBED_OURS}\\n`]]),
         );
         expect(second.status, second.out).toBe(0);
         expect(second.calls).toContain(REMOTE_DESCRIBE);
@@ -266,7 +267,7 @@ describe.skipIf(!BASH_AVAILABLE)(
         const theirs =
           'remote repository ghcr (europe-west3) of https://ghcr.io exists, not made by deploy.sh: it pulls through it and changes nothing there';
         const answers: readonly (readonly [string, string])[] = [
-          [REAL_OURS, ours],
+          [DESCRIBED_OURS, ours],
           [described('REMOTE_REPOSITORY', 'team=platform', 'https://ghcr.io/'), theirs],
           [described('REMOTE_REPOSITORY', MANAGED, 'https://ghcr.io', 'customRepository'), ours],
           [described('REMOTE_REPOSITORY', 'team=platform', 'https://ghcr.io/', 'customRepository'), theirs],
@@ -358,7 +359,7 @@ describe.skipIf(!BASH_AVAILABLE)(
             : ['gcloud', 'run jobs list *', '*', 0, jobs],
           ['gcloud', '* delete *', '*', 0, ''],
         ];
-        const OURS = REAL_OURS;
+        const OURS = DESCRIBED_OURS;
         const remoteDeletes = (calls: readonly string[]) =>
           calls.filter((call) => call.startsWith('gcloud artifacts repositories delete ghcr'));
 
@@ -439,7 +440,7 @@ describe.skipIf(!BASH_AVAILABLE)(
           // repository of ghcr.io it creates. So the upstream's field does not matter, nor does an upstream deploy.sh
           // would refuse (the last case).
           const answers: readonly (readonly [string, string])[] = [
-            [REAL_OURS, deleted],
+            [DESCRIBED_OURS, deleted],
             [described('REMOTE_REPOSITORY', MANAGED, 'https://ghcr.io/', 'customRepository'), deleted],
             [described('REMOTE_REPOSITORY', 'team=platform', 'https://ghcr.io'), kept],
             [described('REMOTE_REPOSITORY', 'team=platform', 'https://ghcr.io', 'customRepository'), kept],

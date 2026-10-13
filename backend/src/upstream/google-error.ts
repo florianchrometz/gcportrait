@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 /**
- * Google's error answers, read once for every route (ADR 0028 §2; docs/spikes/quota-project.md §4). Google APIs
- * answer an error with the envelope `{"error": {"code", "message", "status", "details": [...]}}`; Cloud Storage's
- * JSON API leaves out `status`. The backend classifies by HTTP status and the `ErrorInfo` reason, never by message
- * text, and passes the message on verbatim (skill cai-ingestion §4: 400/403/404 are actionable). A body that is not
- * that JSON (an HTML error page, for a request Google could not route) is never forwarded.
+ * Google's error answers, read once for every route (agents.md, Security and privacy, Quota project and the
+ * permission check; skill cai-ingestion §9). Google APIs answer an error with the envelope `{"error":
+ * {"code", "message", "status", "details": [...]}}`; Cloud Storage's JSON API leaves out `status`. The
+ * backend classifies by HTTP status and the `ErrorInfo` reason, never by message text, and passes the message
+ * on verbatim (skill cai-ingestion §4: 400/403/404 are actionable). A body that is not that JSON (an HTML
+ * error page, for a request Google could not route) is never forwarded.
  *
  * {@link errorDetailOf} is the one parser of the envelope. The preflight, the scope search and the
- * service-account gate read its {@link GoogleErrorDetail} (through upstream/google.ts); the streams read the same
- * parse as a {@link GoogleError} ({@link googleErrorOf}), so both classify an answer alike (until 2026-10-10 the
- * preflight and the streams had a parser each, with different limits).
+ * service-account gate read its {@link GoogleErrorDetail} (through upstream/google.ts); the streams read the
+ * same parse as a {@link GoogleError} ({@link googleErrorOf}), so both classify an answer alike.
  */
 
 /** One `google.rpc.ErrorInfo` of an error answer's `details`. */
@@ -19,7 +19,7 @@ export interface ErrorInfo {
   readonly metadata: Readonly<Record<string, string>>;
 }
 
-/** An error answer, read by status and `ErrorInfo` (ADR 0028 §2: never by message text). */
+/** An error answer, read by status and `ErrorInfo` (never by message text). */
 export interface GoogleErrorDetail {
   /** Whether the body was Google's JSON error envelope; an HTML page or anything else is not. */
   readonly json: boolean;

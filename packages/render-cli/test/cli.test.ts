@@ -69,7 +69,7 @@ describe('pnpm render, in process', () => {
       cwd,
     );
     expect(result.code).toBe(0);
-    // The banner names the command and nothing else: no affiliation line (ADR 0018: footers and long-form texts).
+    // The banner names the command and nothing else: no affiliation line (footers and long-form texts only).
     const [banner] = result.stderr.split('\n');
     expect(banner).toBe(BANNER);
     expect(banner).toBe('gcportrait render');
@@ -84,8 +84,8 @@ describe('pnpm render, in process', () => {
     expect(result.stdout).toContain('invariants hold');
     expect(result.stdout).toContain(`→ ${path.join(cwd, 'shots/s.png')}`);
     expect(readFileSync(path.join(cwd, 'shots/s.svg'), 'utf8')).toBe(baselineSvg('S-overview-auto-light'));
-    // The size of the golden: the frame (the title band's three lines; no affiliation line since 2026-10-11)
-    // and 24 px margins, at 2× (2 × (2349 + 48) by 2 × (1358 + 48) when this was written).
+    // The size of the golden: the frame (the title band's three lines, no affiliation line) and 24 px
+    // margins, at 2×.
     const { width, height } = decodePng(readFileSync(GOLDEN));
     expect(decodePng(readFileSync(path.join(cwd, 'shots/s.png')))).toMatchObject({ width, height });
   });

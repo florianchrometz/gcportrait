@@ -230,7 +230,7 @@ export function isSolidZone(node: Pick<LayoutNode, 'role'>): boolean {
 
 /**
  * Chips and empty zones that are siblings take the width of the widest of them, as cards in a column take
- * their column's widest width (ADR 0026): rows of them line up in tidy columns, and the packer, which
+ * their column's widest width (skill §4): rows of them line up in tidy columns, and the packer, which
  * compares rows by width, never prefers a ragged grid only because one label is a few px shorter.
  */
 function shareSolidWidths(order: readonly LayoutNode[]): void {

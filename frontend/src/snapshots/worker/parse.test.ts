@@ -33,7 +33,7 @@ beforeAll(async () => {
 });
 
 describe('the .gcportrait.json bundle', () => {
-  it('starts with its format key and carries no non-affiliation line (ADR 0018: never with an export)', () => {
+  it('starts with its format key and carries no non-affiliation line (never with an export)', () => {
     expect(text.startsWith(`{"format":"${BUNDLE_FORMAT}","version":1,`)).toBe(true);
     const bundle = JSON.parse(text) as Record<string, unknown>;
     expect(Object.keys(bundle)).toEqual([
@@ -48,13 +48,13 @@ describe('the .gcportrait.json bundle', () => {
     expect(text.slice(0, text.indexOf('"snapshot"'))).not.toMatch(/affiliated/i);
   });
 
-  it('reads a bundle written before 2026-10-12, with the short line as its notice', () => {
-    const older = text.replace(
+  it('ignores a key it does not read', () => {
+    const extended = text.replace(
       '"generator":"gcportrait",',
-      '"generator":"gcportrait","notice":"Not affiliated with Google / Google Cloud.",',
+      '"generator":"gcportrait","comment":"by hand",',
     );
-    expect(older).toContain('"notice"');
-    const parsed = parseBundle(older);
+    expect(extended).toContain('"comment"');
+    const parsed = parseBundle(extended);
     expect(parsed.snapshot).toEqual(snapshot);
     expect(parsed.history).toEqual(history);
   });

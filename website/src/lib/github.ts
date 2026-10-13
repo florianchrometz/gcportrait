@@ -7,19 +7,19 @@
  * (src/lib/star-count-page.ts). The build's facts are as fresh as the last build (the website workflow rebuilds daily
  * once the deploy is switched on: its scheduled run is skipped until PAGES_DEPLOY is true).
  *
- * Two requests, made together: the repository (`stargazers_count`, `forks_count`) and its latest release
- * (`tag_name`). The build never fails over them. A problem with the repository's answer prints one warning line, and
- * the header shows the link without facts: a repository URL that is not a github.com repository (a fork's own host),
- * offline, no answer within 3 s, a 404 (the repository is private, or not there yet), an answer saying it is private
- * (to a token that may read it), a 403 or 429 (the rate limit is spent), or a body without the counts. The 404 and
- * the private answer also say that the repository is not public (`notPublic`): a visitor's browser, asking
- * anonymously, would get the same 404, so the header tells the page's script not to ask at all
- * (`data-repository-not-public`, src/components/Header.astro); a site built before the repository goes public shows no
- * live facts until the next build (pages.yml rebuilds daily). The release's answer only decides the version: a 404 is
- * a repository without a release yet (no version, no line), any other problem prints one warning line and leaves the
- * version out. With `GITHUB_TOKEN` set (GitHub Actions provides one) the requests are authenticated, which lifts the
- * unauthenticated limit of 60 requests an hour per address; the token is sent to api.github.com only and never
- * printed. Nothing is cached on disk: a build asks once and keeps the answer in memory for every page.
+ * Two requests, made together: the repository (`stargazers_count`, `forks_count`) and its latest release (`tag_name`).
+ * The build never fails over them. A problem with the repository's answer prints one warning line, and the header shows
+ * the link without facts: a repository URL that is not a github.com repository (a fork's own host), offline, no answer
+ * within 3 s, a 404 (the repository is private, or not there yet), an answer saying it is private (to a token that may
+ * read it), a 403 or 429 (the rate limit is spent), or a body without the counts. The 404 and the private answer also
+ * say that the repository is not public (`notPublic`): a visitor's browser, asking anonymously, would get the same 404,
+ * so the header tells the page's script not to ask at all (`data-repository-not-public`, src/components/Header.astro);
+ * a site built while the repository is not public shows no live facts until the next build after it is (pages.yml
+ * rebuilds daily). The release's answer only decides the version: a 404 is a repository without a release yet (no
+ * version, no line), any other problem prints one warning line and leaves the version out. With `GITHUB_TOKEN` set
+ * (GitHub Actions provides one) the requests are authenticated, which lifts the unauthenticated limit of 60 requests an
+ * hour per address; the token is sent to api.github.com only and never printed. Nothing is cached on disk: a build asks
+ * once and keeps the answer in memory for every page.
  *
  * `WEBSITE_STAR_COUNT` replaces the build's requests, for previews, tests and builds without a network: a whole number
  * is used as the star count, with `WEBSITE_FORK_COUNT` as the fork count (0 when unset) and `WEBSITE_RELEASE` as the
@@ -208,7 +208,7 @@ export async function askRepositoryFacts(
     return notPublic ? NOT_PUBLIC : NO_FACTS;
   }
   const fields = counts.body ?? {};
-  // A token that may read the private repository (the workflow's own) gets an answer; visitors would not.
+  // A token that may read a private repository (the workflow's own) gets an answer; visitors would not.
   if (fields.private === true) {
     warn(`${PREFIX} ${slug} is private; ${OUTCOME_NOT_PUBLIC}`);
     return NOT_PUBLIC;

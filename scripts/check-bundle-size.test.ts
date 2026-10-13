@@ -279,13 +279,13 @@ describe('check-bundle-size', () => {
     '',
   ].join('\n');
 
-  it('says the UI thread ships no zod when only a worker chunk bundles it (ADR 0029)', () => {
+  it('says the UI thread ships no zod when only a worker chunk bundles it', () => {
     writeBuild();
     write('assets/codec-GGGGGGGG.js', ZOD_CHUNK);
     const result = check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain('No zod on the UI thread (ADR 0029).');
+    expect(result.stdout).toContain('No zod on the UI thread.');
   });
 
   it('fails when an initial UI chunk contains zod, whatever the sizes, and names the file and signatures', () => {
@@ -294,7 +294,7 @@ describe('check-bundle-size', () => {
     const result = check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(
-      'zod on the UI thread (ADR 0029 keeps it in the workers): assets/shared-BBBBBBBB.js (._zod, "$Zod…", "ZodError").',
+      'zod on the UI thread (it belongs in the workers): assets/shared-BBBBBBBB.js (._zod, "$Zod…", "ZodError").',
     );
     expect(result.stderr).toMatch(
       /size-budget: FAILED\. UI thread \d+\.\d\d kB of 350\.00 kB \(\d+\.\d%\); workers \d+\.\d\d kB of 400\.00 kB \(\d+\.\d%\) \(gzipped\); zod on the UI thread in 1 file\./,
@@ -326,7 +326,7 @@ describe('check-bundle-size', () => {
     writeBuild();
     const result = check('--summary', path.join(tree.root, 'summary.md'));
     expect(result.status).toBe(0);
-    expect(tree.read('summary.md')).toContain('No zod on the UI thread (ADR 0029).');
+    expect(tree.read('summary.md')).toContain('No zod on the UI thread.');
   });
 
   it('rejects unknown options and a --dist that is not a directory', () => {

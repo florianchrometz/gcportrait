@@ -11,11 +11,11 @@ gcp-diagram-layout §6): a Graph and a `ViewSpec` become the `Scene` that `packa
 drill-in, focus views, lenses, filters and detail levels, composed in a fixed order (see
 [Views](#views-graph--viewspec--scene)).
 
-The package is a pure core (agents.md rule 9): no I/O, no clock, no randomness, no DOM; `src/` compiles without
-Node types. The same snapshot and catalog always give a deep-equal graph, whatever the order of the assets.
-It imports `@gcportrait/model` and `@gcportrait/catalog` only ([ADR 0020](../../docs/adr/0020-graph-depends-on-catalog.md)):
-every rule semantic (JSONPaths, normalisers, templates, `hiddenWhen`) is evaluated by the catalog's engine, never
-re-implemented here.
+The package is a pure core: no I/O, no clock, no randomness, no DOM; `src/` compiles without Node types. The
+same snapshot and catalog always give a deep-equal graph, whatever the order of the assets. It imports
+`@gcportrait/model` and `@gcportrait/catalog` only (agents.md, Architecture and code): every rule semantic
+(JSONPaths, normalisers, templates, `hiddenWhen`) is evaluated by the catalog's engine, never re-implemented
+here.
 
 ```ts
 import { catalog } from '@gcportrait/catalog';
@@ -76,13 +76,13 @@ project, edges that matched only with their project segment swapped, nodes neste
    uses too).
 2. **Nodes.** For a mapped type: the catalog's label, subtitle, role, product, `ips`, `domains` and default
    visibility (`hidden` for role `hidden` or a matching `hiddenWhen`; `hiddenWhenMatched` marks the latter).
-   For a type the catalog does not map (unknown types still render: agents.md rule 5): a generic card labelled
-   `data.displayName`, else the last segment of `data.name`, else of the asset name; product = the service
-   host; no addresses; visible; role `core` when another asset's rule points at it and `leaf` otherwise (it
-   has no rules, hence no outgoing edges; it is never a container, because only the catalog can declare what
-   nests in a type). `projectId`/`projectNumber` come from the catalog's `assetProject`. A Resource Manager
-   project whose Compute settings (`compute.googleapis.com/Project`) say `xpnProjectStatus: HOST` is marked
-   `sharedVpcHost`.
+   For a type the catalog does not map (unknown types still render: agents.md, Product rules): a generic card
+   labelled `data.displayName`, else the last segment of `data.name`, else of the asset name; product = the
+   service host; no addresses; visible; role `core` when another asset's rule points at it and `leaf`
+   otherwise (it has no rules, hence no outgoing edges; it is never a container, because only the catalog can
+   declare what nests in a type). `projectId`/`projectNumber` come from the catalog's `assetProject`. A
+   Resource Manager project whose Compute settings (`compute.googleapis.com/Project`) say
+   `xpnProjectStatus: HOST` is marked `sharedVpcHost`.
 3. **Aliases** (below).
 4. **Relations.** Each asset's rules through `evaluateRelations`; each target is resolved against the nodes
    (with canonical project matching, below) and the aliases. A `reverse` rule's relation is drawn from the node
@@ -102,8 +102,7 @@ project, edges that matched only with their project segment swapped, nodes neste
    service project's node to the host project's node, the attachment listed in `report.sharedVpc`, and the
    target's `sharedWith` count. Subnets and networks are the catalog's `zoneKind` `subnet` and `vpc`. Other
    cross-project attachments (a producer's network peered into a project that is no host, a connector in
-   another project) are drawn but are no Shared VPC
-   ([ADR 0024](../../docs/adr/0024-graph-builder-project-matching-and-shared-vpc.md)).
+   another project) are drawn but are no Shared VPC.
 8. **Virtual regions** when `showRegions` is set (skill gcp-diagram-layout §2, rule 3).
 9. **Output.** Records with sorted keys, children lists, edges and dangling references sorted, indexes.
 
@@ -114,7 +113,7 @@ A node's parent is the first acceptable candidate, tier by tier:
 | Tier | Candidate | Example |
 |---|---|---|
 | 1. Declared by a container | a catalog `contains` JSONPath naming the node; a `byParent` rule for its type whose container is its `parent` or a prefix of its name; for a Kubernetes object (name holds `/k8s/`), every container its name continues. Several: the innermost (longest name). Decided for every node first, so a container's own declaration beats any other node's preference. | subnet in the network that lists it; table in its dataset; pod, ConfigMap or deployment in its namespace; namespace, node and node pool in the cluster |
-| 1b. Declared by the node | none of the above: the first target of its type's `nestsIn` rules that is a container ([ADR 0022](../../docs/adr/0022-reverse-rules-and-child-side-containment.md)). Decided with tier 1, before any attachment. | a managed VM in its instance group (from `created-by`), a disk in its storage pool, a NetApp volume in its pool, an enrollment in its message bus |
+| 1b. Declared by the node | none of the above: the first target of its type's `nestsIn` rules that is a container. Decided with tier 1, before any attachment. | a managed VM in its instance group (from `created-by`), a disk in its storage pool, a NetApp volume in its pool, an enrollment in its message bus |
 | 2. Attachment (skill gcp-diagram-layout §2, rule 1) | the node's resolved `attaches` targets, reduced to the innermost ones (a target that contains another target drops out). Exactly one left, and it is a container → nest there. Several or none → no nesting from attachments; the edges are drawn. | VM with one subnet → subnet; only a network → VPC; two subnets → project; a connector (not a container) → project |
 | 3. `parent` field | the parent asset if it is a container; a parent that is not a container passes its own placement on | node pool in its cluster; a key version where its key nests |
 | 4. `ancestors` | the closest ancestor (project, folder, organisation) present in the snapshot | everything else lands in its project |
@@ -135,14 +134,12 @@ the project's id and number, and are in `byType` and `byProject` like any node.
 
 ## Aliases and dangling references
 
-**Canonical project matching**
-([ADR 0024](../../docs/adr/0024-graph-builder-project-matching-and-shared-vpc.md)). Cloud Asset Inventory
-names some services' assets with the project id and others with the number, and references use either. A name
-that matches no node is tried once more with its first `projects/<ref>` segment swapped through the project
-index (number → id, or id → number, `names.ts`); the edge then records the form it matched
-(`matchedProject: 'id' | 'number'`, counted in `counts.projectSwaps`). Exact names win, asset names are never
-rewritten, and a name that matches neither way dangles with the value as read. `contains` names and `nestsIn`
-targets resolve the same way.
+**Canonical project matching.** Cloud Asset Inventory names some services' assets with the project id and
+others with the number, and references use either. A name that matches no node is tried once more with its
+first `projects/<ref>` segment swapped through the project index (number → id, or id → number, `names.ts`);
+the edge then records the form it matched (`matchedProject: 'id' | 'number'`, counted in
+`counts.projectSwaps`). Exact names win, asset names are never rewritten, and a name that matches neither way
+dangles with the value as read. `contains` names and `nestsIn` targets resolve the same way.
 
 Some references name no asset by themselves. The alias index (`indexes.aliases`) maps them to node ids:
 
@@ -217,13 +214,13 @@ parameter that names nothing usable falls back and is reported.
 ### Composition order
 
 The steps compose in this order; each works on what the previous one left, so every filter applies under a
-drill-in and under every focus view (filters compose with focus views and drill-in: ADR 0035 §3).
+drill-in and under every focus view (filters compose with focus views and drill-in: agents.md, Product rules).
 
 | Step | What it does |
 |---|---|
 | (a) root | The organisation is the canvas: its zone is dropped and its children are the top level. `root` re-roots the view at a container: it becomes the canvas, its children the top level, and nothing above or beside it is drawn. A root that is no node (`unknown-root`) or no container (`not-a-container`) falls back to the organisation; `report.root.error` says why, and so does `scene.metadata.rootError`. |
 | (b) focus | Picks a part of what the root left (table below). Parameters come from `viewSpec.focus.params` and are checked against the graph; an error (`report.focus.error`: `missing-param`, `unknown-project`, `not-a-host`, `unknown-perimeter`, `not-a-perimeter`, `unknown-application`, `not-an-application`, `ambiguous`, `outside-root`; also in `scene.metadata.focusError`) leaves the view at its root. When the root lies inside the focus's project (or application), the focus keeps the whole canvas. Focus views show their projects at the top level, without folders. |
-| (c) lens | A node is a candidate when the catalog lens's `types` (asset types, `<service>/*`, `*`) or `filters.includeTypes` name its type, and `filters.excludeTypes` does not (exclude wins). A hidden-by-default node (role `hidden` or `hiddenWhen`) only with the lens's `showHidden` or a matching `includeTypes`, except that `includeTypes` never reveals a hidden type's `hiddenWhen` matches (ADR 0024: the predicate marks the noise of a type the user switched on; only `showHidden` draws them); otherwise it is "held back" and counted in its zone's `N hidden` badge. `showIdentities: true` shows service-account cards and `runsAs` edges in any lens, `false` hides them in every lens, absent lets the lens decide. Edges: the lens's `relationKinds` (`contains` is nesting, never an arrow). |
+| (c) lens | A node is a candidate when the catalog lens's `types` (asset types, `<service>/*`, `*`) or `filters.includeTypes` name its type, and `filters.excludeTypes` does not (exclude wins). A hidden-by-default node (role `hidden` or `hiddenWhen`) only with the lens's `showHidden` or a matching `includeTypes`, except that `includeTypes` never reveals a hidden type's `hiddenWhen` matches (the predicate marks the noise of a type the user switched on; only `showHidden` draws them); otherwise it is "held back" and counted in its zone's `N hidden` badge. `showIdentities: true` shows service-account cards and `runsAs` edges in any lens, `false` hides them in every lens, absent lets the lens decide. Edges: the lens's `relationKinds` (`contains` is nesting, never an arrow). |
 | (d) filters | `regions` keeps nodes whose location is listed (a zone matches its region; case-insensitive); folders and projects, nodes without a location and global containers (VPCs) are structure and stay. `projects` keeps nodes of the listed projects (id or number), `folders` the subtrees of the listed folders; with either, folders above a kept node stay as structure. `showRegions` adds virtual region and zone zones under each project (whatever the graph was built with: the builder's region containers are added or removed to match the view). Then, repeated until nothing changes: `hideDisconnected` removes cards without a drawn edge, then containers left with neither a visible child nor a drawn edge; `hideEmptyProjects` / `hideEmptyFolders` remove projects / folders without a visible child, recursively; region zones always go when empty. "Empty" and "disconnected" therefore mean empty and disconnected in this view, and the filters are idempotent. |
 | (e) detail | Each zone starts collapsed by the level (table below) or when it is an asset zone deeper than `filters.depth` below the root (bundles, region zones and overlays are no level). A flip (`flipIdOf(zone id)` in `viewSpec.flips`) XORs that default, so a click opens a chip or closes an open zone whatever collapsed it. `auto` picks the deepest level whose rect count (zones + cards, a chip counts once, without flips) is at most `env.viewportBudget` (default 73) and falls back to `folders`, but never opens deeper than the lens's `defaultDetail` (its ceiling, reported as `detail.ceiling`: Networking and Compute open at most at `networks`, Security, Data and the others at `projects`; an explicit level is not capped); a view of at most 100 rects is never collapsed, whatever the ceiling (demo S's Networking opens at `all`); flips apply after the choice, so opening a chip never changes the level. A zone with nothing inside never becomes a chip. A collapsed zone carries chip counts (`{ networks: 2, resources: 39 }`: folders, projects, networks, subnets, containers, resources inside it at any depth; the renderer writes "2 networks · 39 resources"). Every edge end inside a chip is re-targeted to the outermost chip; edges that then join the same two nodes with the same kind merge with a `count` and `merged: true`, edges inside one chip are dropped, and merged peerings order their ends. More than 120 visible siblings (in a zone or at the top level) are bundled into alphabetical `group` zones of 20–24, labelled with the shortest prefixes that tell their ends from the neighbouring bundles (`demo-a – demo-f`) and identified as `group:<first member id>`. |
 | (f) pointers | `selection` and `highlight` pass through to `report.selection` / `report.highlight` with the graph node they name and the scene node that shows it (`shownAs`: the node, or the chip it is collapsed into). |
@@ -338,20 +335,19 @@ Invalid input exits with code 2 and the usage.
 
 ### Performance
 
-`buildSceneWithReport` medians on an Apple M1, 2026-10-09, with the real catalog: S (96 assets)
-0.5–1.5 ms; M (952) 3.2 ms for a Shared VPC focus with hide filters, 5.3 ms for the overview at `auto`, 6.9 ms
-for everything at `all` (951 rects); L (6 382) 14 ms, 25 ms and 39 ms (6 394 rects).
+`buildSceneWithReport` medians with the real catalog: S (96 assets) 0.5–1.5 ms; M (952) 3.2 ms for a Shared
+VPC focus with hide filters, 5.3 ms for the overview at `auto`, 6.9 ms for everything at `all` (951 rects); L
+(6 382) 14 ms, 25 ms and 39 ms (6 394 rects).
 
-Most of a build does not depend on the view's detail level: `prepareView` does steps (a)–(d), the scene
-tree, the held-back counts and the zone badges, and `buildPreparedScene` finishes a view from that preparation
-(step (e), the emitted nodes and edges, the report). Two views share a preparation when their
-`preparedViewKey` is the same: they differ only in detail level, flips, `depth` filter, selection, highlight,
-snapshot ref, timeline tick, read time or `auto` budget. `buildSceneWithReport` is the two parts in a row, and
-a property test (`test/views/scene.property.test.ts`) checks that a view finished from another view's
-preparation is the view built from scratch. The app's data worker keeps the last preparation
+Most of a build does not depend on the view's detail level: `prepareView` does steps (a)–(d), the scene tree,
+the held-back counts and the zone badges, and `buildPreparedScene` finishes a view from that preparation (step
+(e), the emitted nodes and edges, the report). Two views share a preparation when their `preparedViewKey` is
+the same: they differ only in detail level, flips, `depth` filter, selection, highlight, snapshot ref,
+timeline tick, read time or `auto` budget. `buildSceneWithReport` is the two parts in a row, and a property
+test (`test/views/scene.property.test.ts`) checks that a view finished from another view's preparation is the
+view built from scratch. The app's data worker keeps the last preparation
 (`frontend/src/diagram/pipeline/sceneMemo.ts`), so a timeline step's open view and a chip expanded cost only
-the finish. The overview at `auto` on each demo organisation's own day, medians of nine in Node 22 on an Apple
-M1, 2026-10-11:
+the finish. The overview at `auto` on each demo organisation's own day, medians of nine in Node 22:
 
 | Organisation | From scratch | Prepare | Finish at `auto` | Finish with every zone open |
 |---|---|---|---|---|
@@ -415,8 +411,8 @@ Every graph test runs on the real compiled catalog; there are no test-only stand
 
 `test/performance.test.ts` builds the M organisation ten times after a warm-up and asserts a median under
 150 ms, measuring again (up to twice) when a busy machine misses it; L (generated in the test) is measured for
-information, under `test:budget` only. Measured on an Apple M1 (8 cores), 2026-10-09,
-with the real catalog (`pnpm --filter @gcportrait/graph test:budget`):
+information, under `test:budget` only. Typical figures with the real catalog
+(`pnpm --filter @gcportrait/graph test:budget`):
 
 | Organisation | Assets | Median build | Notes |
 |---|---|---|---|
@@ -426,16 +422,16 @@ with the real catalog (`pnpm --filter @gcportrait/graph test:budget`):
 Containment is resolved with memoised placement (each node is placed once; chains are walked only to check
 cycles and innermost attachment targets), so the build grows roughly linearly with the number of assets.
 
-**The builder's memo** (`BuildMemo`, `src/memo.ts`). Most of a build is per asset: its node (label,
-subtitle, project, addresses, host names, visibility) and what its type's relation, `nestsIn` and `contains`
-rules produce through the catalog's engine. That depends on the asset, its catalog entry and the snapshot's
-project index only, so a memo passed as `options.memo` keeps it by asset object and reuses it in a later build
-whose catalog is the same object and whose project index has the same content (another catalog or index starts
-it afresh); the rest of the build (resolution, containment, edges, records, indexes) runs as before. The app's data
+**The builder's memo** (`BuildMemo`, `src/memo.ts`). Most of a build is per asset: its node (label, subtitle,
+project, addresses, host names, visibility) and what its type's relation, `nestsIn` and `contains` rules
+produce through the catalog's engine. That depends on the asset, its catalog entry and the snapshot's project
+index only, so a memo passed as `options.memo` keeps it by asset object and reuses it in a later build whose
+catalog is the same object and whose project index has the same content (another catalog or index starts it
+afresh); the rest of the build (resolution, containment, edges, records, indexes) runs in full. The app's data
 worker builds every Graph with one memo, and the days of a history share their unchanged asset objects
-(`frontend/src/diagram/pipeline/historyRead.ts`), so a timeline step evaluates the rules only for the assets the
-day changed. `test/performance.test.ts` builds a day of the L history after the next day as that step does: 53.2 ms
-with the memo against 118.5 ms without (median of five, Apple M1, 2026-10-11). A property test
-(`src/build.property.test.ts`) checks that a build with a memo that saw other days of the organisation (assets kept,
-changed, removed, projects given another id) is deep-equal to a build without one; `src/memo.test.ts` checks that
-only an unchanged asset object's work is reused.
+(`frontend/src/diagram/pipeline/historyRead.ts`), so a timeline step evaluates the rules only for the assets
+the day changed. `test/performance.test.ts` builds a day of the L history after the next day as that step
+does: about 53 ms with the memo against about 119 ms without (median of five). A property test
+(`src/build.property.test.ts`) checks that a build with a memo that saw other days of the organisation (assets
+kept, changed, removed, projects given another id) is deep-equal to a build without one; `src/memo.test.ts`
+checks that only an unchanged asset object's work is reused.

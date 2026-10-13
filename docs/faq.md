@@ -148,14 +148,14 @@ to import again later ([timeline.md](timeline.md#9-the-35-day-limit-and-other-li
   permission check adds a few small ones: with your own account, Google's `tokeninfo` for your token, one
   Resource Manager `GET` of the scope and a one-asset listing per quota project it tries (at most two: the
   scope's own project, then the one you picked); in service-account mode, `tokeninfo` and the gate's Resource
-  Manager checks, then one such listing as the instance's account
-  ([ADR 0028](adr/0028-quota-project-and-sa-gate.md) §2 and §4). Every day of the timeline you stop on is
-  another full read of the scope (only when you stop on it, and its two neighbours while the page is idle;
-  never all 35). For very large organisations, an export is one long-running operation instead of thousands of
-  pages.
+  Manager checks, then one such listing as the instance's account ([permissions.md, "Checking a
+  scope"](permissions.md#6-checking-a-scope) and ["The gate"](permissions.md#the-gate)). Every day of the
+  timeline you stop on is another full read of the scope (only when you stop on it, and its two neighbours
+  while the page is idle; never all 35). For very large organisations, an export is one long-running operation
+  instead of thousands of pages.
 - **The instance** you run yourself costs Cloud Run time while it serves requests and nothing while idle (it
-  scales to zero), plus the storage of its image ([self-host-options.md](self-host-options.md#costs)). Trying the demo costs
-  you nothing.
+  scales to zero), plus the storage of its image ([self-host-options.md](self-host-options.md#costs)). Trying
+  the demo costs you nothing.
 
 ### Does my data leave the browser?
 
@@ -178,22 +178,23 @@ organisations are generated in your browser and kept there
 Cloud Asset Inventory accepts a token only with the `cloudasset` scope (or the much wider `cloud-platform`),
 and Google describes that scope as "See, edit, configure, and delete your Google Cloud Asset data". gcportrait
 only *lists* assets with it, and a token can never do more than your own IAM roles allow. The app says this
-before you sign in; [permissions.md](permissions.md#2-with-your-own-account) and [ADR
-0028](adr/0028-quota-project-and-sa-gate.md) §6 have the details.
+before you sign in; [permissions.md](permissions.md#2-with-your-own-account) has the details.
 
 ### Is there a hosted gcportrait I can sign in to?
 
-No, on purpose ([ADR 0035](adr/0035-decisions-inherited-from-the-implementation-plan.md) §2): to read your own Google Cloud, you run your own instance, in a project of
-yours, with your own OAuth client, so your organisation's data and tokens never pass through anyone else's
-server. One script sets it up in about ten minutes ([self-host.md](self-host.md)). The project hosts only its
-website, `gcportrait.app`, and a sign-in-free demo, `gcportrait.app/demo/`, with the synthetic organisations.
+No, on purpose: to read your own Google Cloud, you run your own instance, in a project of yours, with your own
+OAuth client, so your organisation's data and tokens never pass through anyone else's server. One script sets
+it up in about ten minutes ([self-host.md](self-host.md)). The project hosts only its website,
+`gcportrait.app`, and a sign-in-free demo, `gcportrait.app/demo/`, with the synthetic organisations.
 
 ### Is gcportrait made by Google?
 
 No. gcportrait draws *Google Cloud-style* diagrams with Google's product icons, used under Google's icon usage
-terms, but it is an independent open-source project, not affiliated with, endorsed by, or sponsored by Google. Its code is licensed under the MIT License ([../LICENSE](../LICENSE)); the gcportrait name and icon are not covered by it.
+terms, but it is an independent open-source project, not affiliated with, endorsed by, or sponsored by Google.
+Its code is licensed under the MIT License ([../LICENSE](../LICENSE)); the gcportrait name and icon are not
+covered by it.
 
 ### Does it work on a phone or a tablet?
 
-No: gcportrait is built for desktop browsers, at least 1280 × 800 pixels ([ADR 0011](adr/0011-desktop-only.md)). Architecture diagrams
-of a real organisation need the room.
+No: gcportrait is built for desktop browsers, at least 1280 × 800 pixels. Architecture diagrams of a real
+organisation need the room.

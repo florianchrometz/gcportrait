@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: MIT
 /**
  * What a live pull takes and how it is authorised, shared by the routes that pull a scope: `POST
- * /api/assets/stream` (the app's pull, streamed as frames) and `POST /api/render` with a `scope` source (ADR 0033),
+ * /api/assets/stream` (the app's pull, streamed as frames) and `POST /api/render` with a `scope` source,
  * so both read Cloud Asset Inventory with the same fields, the same mode rule and the same credentials.
  *
- * - The fields: `{ scope, readTime?, assetTypes?, mode, quotaProject? }`. In `user` mode `quotaProject` is required:
- *   it goes into `x-goog-user-project`, so the user's own project pays (ADR 0028 §1; never the instance's). In `sa`
- *   mode it is refused: the instance's own project pays.
+ * - The fields: `{ scope, readTime?, assetTypes?, mode, quotaProject? }`. In `user` mode `quotaProject` is
+ *   required: it goes into `x-goog-user-project`, so the user's own project pays (never the instance's;
+ *   agents.md, Security and privacy, Quota project and the permission check). In `sa` mode it is refused: the
+ *   instance's own project pays.
  * - Service-account mode only when the operator enabled it (403 otherwise), and only with the instance's identity
  *   (501 otherwise): the gate is never skipped.
- * - The credentials of each page: the caller's token and quota project in user mode; in service-account mode the
- *   gate of ADR 0028 §4 (../auth/gate.ts) before every CAI call. Its first run decides whether the pull starts at all
- *   (a refusal is answered as an HTTP error by `sendRefusal`); a later refusal ends the pull with an `error` frame.
+ * - The credentials of each page: the caller's token and quota project in user mode; in service-account mode
+ *   the service-account gate (../auth/gate.ts) before every CAI call. Its first run decides whether the pull
+ *   starts at all (a refusal is answered as an HTTP error by `sendRefusal`); a later refusal ends the pull
+ *   with an `error` frame.
  */
 import { TimestampSchema } from '@gcportrait/model';
 import type { FastifyReply, FastifyRequest } from 'fastify';

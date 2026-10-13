@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * The contract of `POST /api/preflight` (docs/permissions.md; ADR 0028 §2–§4), written once as zod
- * schemas: the route validates the body with the request schema and Fastify serialises the answer through the
- * response schema (../schemas.ts, `toFastifySchema`), so nothing undeclared leaves the backend. The SPA reads
- * the same shape with its own zod-free guards (frontend/src/preflight/api.ts; ADR 0029: no zod on the UI thread).
+ * The contract of `POST /api/preflight` (docs/permissions.md), written once as zod schemas: the route
+ * validates the body with the request schema and Fastify serialises the answer through the response schema
+ * (../schemas.ts, `toFastifySchema`), so nothing undeclared leaves the backend. The SPA reads the same shape
+ * with its own zod-free guards (frontend/src/preflight/api.ts; no zod on the UI thread).
  *
  * The answer carries facts and commands, not sentences: each item's `finding` is a code the Permissions page
- * words (ADR 0028 §3), and `commands` are copy-ready `gcloud` lines with every value filled in that the backend
- * knows (the scope, the quota project, the caller's or the account's email).
+ * words, and `commands` are copy-ready `gcloud` lines with every value filled in that the backend knows (the
+ * scope, the quota project, the caller's or the account's email).
  */
 import { ScopeKindSchema } from '@gcportrait/model';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ export const PreflightRequestSchema = z
     quotaProject: QuotaProjectSchema.optional(),
   })
   .superRefine((body, context) => {
-    // Service-account mode never sends a quota project (ADR 0028 §1): the account's own project pays.
+    // Service-account mode never sends a quota project: the account's own project pays.
     if (body.mode === 'sa' && body.quotaProject !== undefined)
       context.addIssue({
         code: 'custom',
@@ -96,7 +96,10 @@ export const PreflightItemSchema = z.object({
   id: z.enum(PREFLIGHT_ITEM_IDS),
   status: z.enum(ITEM_STATUSES),
   finding: z.enum(FINDINGS),
-  /** Whether a pull needs it; `scope-details` in user mode does not (ADR 0028 §2 step 1: a warning). */
+  /**
+   * Whether a pull needs it; `scope-details` in user mode does not (a denied `get` of the scope is a
+   * warning).
+   */
   blocking: z.boolean(),
   /** The permission checked (`cloudasset.assets.listResource`, `resourcemanager.folders.get`, …). */
   permission: z.string(),
@@ -113,7 +116,7 @@ export const PreflightItemSchema = z.object({
 export type PreflightItem = z.infer<typeof PreflightItemSchema>;
 
 /**
- * A quota project tried in user mode (ADR 0028 §2 step 2):
+ * A quota project tried in user mode:
  * - `usable`: Google accepted it as the quota project (the listing itself may still be refused);
  * - `not-found`: it does not exist or was deleted (400 `USER_PROJECT_DENIED`);
  * - `no-permission`: no `serviceusage.services.use` on it (403 `USER_PROJECT_DENIED`);

@@ -9,16 +9,16 @@ import { checkSection, choose, environment, expectTokenNowhere } from '../fixtur
 import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
 
 /**
- * Service-account mode (ADR 0028) end to end, run by the `chromium-live` project against `pnpm dev`'s Vite server.
- * Unlike the other live specs, the backend here is the real one: the spec starts
- * `backend/src/auth/sa-harness.testing.ts` as a process (it is never imported) and sends the browser's `/api`
- * requests to it, so the routes, the service-account gate and the Application Default Credentials code run as they
- * do on Cloud Run. Only Google is pretend, inside that process: its metadata server (the account
- * `gcportrait-backend@demo-host…`), tokeninfo, Resource Manager (search, `testIamPermissions`, the account's own
- * `get`) and Cloud Asset Inventory. Google's sign-in script and the browser's tokeninfo are answered by
- * fixtures/gis.ts. Everything is synthetic: organisation 30000000001, folders Platform (20000000001: the person may
- * see it, the account may list it), Finance (20000000002: the person may not see it) and Shared (20000000003: its
- * details are public), example.com.
+ * Service-account mode (agents.md, Security and privacy, The service-account gate) end to end, run by the
+ * `chromium-live` project against `pnpm dev`'s Vite server. Unlike the other live specs, the backend here is
+ * the real one: the spec starts `backend/src/auth/sa-harness.testing.ts` as a process (it is never imported)
+ * and sends the browser's `/api` requests to it, so the routes, the service-account gate and the Application
+ * Default Credentials code run as they do on Cloud Run. Only Google is pretend, inside that process: its
+ * metadata server (the account `gcportrait-backend@demo-host…`), tokeninfo, Resource Manager (search,
+ * `testIamPermissions`, the account's own `get`) and Cloud Asset Inventory. Google's sign-in script and the
+ * browser's tokeninfo are answered by fixtures/gis.ts. Everything is synthetic: organisation 30000000001,
+ * folders Platform (20000000001: the person may see it, the account may list it), Finance (20000000002: the
+ * person may not see it) and Shared (20000000003: its details are public), example.com.
  */
 
 const HARNESS = path.join('src', 'auth', 'sa-harness.testing.ts');
@@ -187,7 +187,7 @@ test.describe('service-account mode, default gate (caller check only)', () => {
       true,
     );
 
-    // The token went to the backend in X-Gcportrait-Token only (ADR 0031): never a URL, the page, a log or storage.
+    // The token went to the backend in X-Gcportrait-Token only: never a URL, the page, a log or storage.
     await expectTokenNowhere(page, google, [TOKEN]);
   });
 
@@ -217,8 +217,9 @@ test.describe('service-account mode, default gate (caller check only)', () => {
       'true',
     );
 
-    // Without the app in the way, the backend refuses the stream all the same: with the token in the app's own
-    // header (as behind IAP) and in Authorization (the non-IAP path for scripts) alike (ADR 0031).
+    // Without the app in the way, the backend refuses the stream all the same: with the token in the app's
+    // own header (as behind IAP) and in Authorization (the non-IAP path for scripts) alike (agents.md,
+    // Security and privacy, Tokens).
     for (const headers of [{ 'x-gcportrait-token': TOKEN }, { authorization: `Bearer ${TOKEN}` }]) {
       const direct = await request.post(`${harness.url}/api/assets/stream`, {
         headers,

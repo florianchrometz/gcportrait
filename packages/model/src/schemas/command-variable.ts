@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * One variable of a copy-ready command: a value the reader fills in where the documentation or the app shows a
- * command (`gcloud projects add-iam-policy-binding YOUR_PROJECT_ID …`). The registry itself is data in a module
- * that imports no zod (command-variables.ts), so the website's build, the app's UI thread and the repository's
- * tooling read it without the schema library (ADR 0029); this module declares its row schema and re-exports it, and
- * command-variables.test.ts checks every row against the schema.
+ * One variable of a copy-ready command: a value the reader fills in where the documentation or the app shows
+ * a command (`gcloud projects add-iam-policy-binding YOUR_PROJECT_ID …`). The registry itself is data in a
+ * module that imports no zod (command-variables.ts), so the website's build, the app's UI thread and the
+ * repository's tooling read it without the schema library; this module declares its row schema and re-exports
+ * it, and command-variables.test.ts checks every row against the schema.
  */
 import { z } from 'zod';
 
@@ -28,7 +28,7 @@ export const CommandVariableSchema = z.strictObject({
   label: z.string().min(1).max(40),
   /** One or two sentences: what the value is and where to find it. */
   description: z.string().min(1),
-  /** A synthetic example that matches `pattern` (agents.md rule 6: no real organisation data). */
+  /** A synthetic example that matches `pattern` (no real organisation data). */
   example: z.string().min(1),
   /** The value's format as a JavaScript regular expression source, anchored with `^` and `$`. */
   pattern: z.string().refine(isAnchoredPattern, 'must be a regular expression anchored with ^ and $'),

@@ -77,7 +77,7 @@ describe('exporting the diagram on screen', () => {
     const text = (await saved[0]?.blob.text()) ?? '';
     expect(text).toContain('class="dg-title-block"');
     expect(text).toContain(TAGLINE);
-    // ADR 0018, placement of 2026-10-11: the footer only, never the drawing.
+    // The non-affiliation statement is in the footer only, never in the drawing.
     expect(text).not.toMatch(/affiliated/i);
     expect(text).toContain('class="dg-legend"');
     // The link was temporary.

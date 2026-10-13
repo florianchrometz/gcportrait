@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The process-wide budget of live-pull page bytes held in memory (docs/security.md "Response caps and memory"). A
- * Cloud Asset Inventory page is read whole (up to 25 MiB, `MAX_PAGE_BYTES`) and written out as one `page` frame
- * (scanned, not parsed: list-page.ts); before the security review of 2026-10-11, measured on the development
- * machine, one 24 MiB page raised the process's resident memory by about 120 MiB while it was parsed and
- * re-serialised, and four at once by about 410 MiB, more than the 512 MiB deploy.sh gives a Cloud Run instance. The
- * per-token stream cap (slots.ts) does not bound that across tokens.
+ * The process-wide budget of live-pull page bytes held in memory (docs/security.md "Response caps and
+ * memory"). A Cloud Asset Inventory page is read whole (up to 25 MiB, `MAX_PAGE_BYTES`) and written out as
+ * one `page` frame (scanned, not parsed: list-page.ts). Pages held at once still add up: four at the cap are
+ * about 100 MiB of bytes, and the per-token stream cap (slots.ts) does not bound them across tokens.
  *
  * Every page read claims its bytes here as they arrive, and keeps the claim until the response has written its
  * frame out to the connection (ndjson.ts asks the stream for its next line only then), or gives it back at once

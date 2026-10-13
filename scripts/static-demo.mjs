@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * `pnpm demo:static`: builds the static demo (ADR 0034), the app in demo-only mode as a self-contained bundle for a
- * static host, which the website serves at https://gcportrait.app/demo/ on GitHub Pages. It needs no server: no
- * backend, no rewrites, no headers. What it holds and why (scripts/lib/static-demo.mjs, docs/website.md "The demo"):
+ * `pnpm demo:static`: builds the static demo, the app in demo-only mode as a self-contained bundle for a
+ * static host, which the website serves at https://gcportrait.app/demo/ on GitHub Pages. It needs no server:
+ * no backend, no rewrites, no headers. What it holds and why (scripts/lib/static-demo.mjs, docs/website.md
+ * "The demo"):
  *
  * - the app (frontend/, `vite build` with VITE_STATIC_DEMO=1) below the base path `/demo/`, assets content-hashed, the
  *   theme bootstrap kept, the brand icon as its favicon, the licence files in `licenses/`;
@@ -41,10 +42,10 @@ const FRONTEND = path.join(ROOT, 'frontend');
 export const DEFAULT_OUT = path.join(ROOT, 'dist', 'demo');
 
 /**
- * The maintainer's Impressum and privacy notice, which the maintainer's demo links (decision of 2026-10-11, ADR 0032 as
- * amended). The website's footer links the same pages (IMPRESSUM_URL and PRIVACY_URL in website/src/site.ts);
- * scripts/static-demo.test.ts fails while the two differ. Someone who publishes a static demo of their own links their
- * own pages with --impressum-url and --privacy-url.
+ * The maintainer's Impressum and privacy notice, which the maintainer's demo links (agents.md, Modes and
+ * hosting). The website's footer links the same pages (IMPRESSUM_URL and PRIVACY_URL in website/src/site.ts);
+ * scripts/static-demo.test.ts fails while the two differ. Someone who publishes a static demo of their own
+ * links their own pages with --impressum-url and --privacy-url.
  */
 export const MAINTAINER_IMPRESSUM_URL = 'https://florian-chrometz.de/legal/impressum';
 export const MAINTAINER_PRIVACY_URL = 'https://florian-chrometz.de/legal/privacy-policy';

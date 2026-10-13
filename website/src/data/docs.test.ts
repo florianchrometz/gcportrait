@@ -53,7 +53,7 @@ describe('the docs manifest (src/data/docs.ts)', () => {
     }
   });
 
-  it('keeps the self-hosting guide at /docs/self-host/, where the demo-only Connect page links (ADR 0032)', () => {
+  it('keeps the self-hosting guide at /docs/self-host/, where the demo-only Connect page links', () => {
     expect(DOC_PAGES.find((page) => page.source === 'docs/self-host.md')?.slug).toBe('self-host');
   });
 });

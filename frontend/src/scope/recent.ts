@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * What the scope picker remembers in this browser's preferences (IndexedDB, `storage/preferences.ts`): the scopes
- * picked most recently, and the quota project last picked for each scope (ADR 0028 §2: "the SPA remembers the
- * last pick per scope in its preferences"). Ids and display names only, never a token or an email. Values are
+ * picked most recently, and the quota project last picked for each scope (the last pick per scope is
+ * remembered in the preferences). Ids and display names only, never a token or an email. Values are
  * checked on every read, so a stale or hand-edited entry is dropped instead of breaking the picker.
  */
 import { isProjectRef, parseScopeName, type ScopeChoice } from './scopeName';

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 /**
- * Streaming an NDJSON response (ADR 0005: the backend streams and forgets). The producer is an async generator of
- * lines, and it is asked for its next line only once the response has written the previous one out to the
- * connection: `Readable.from` alone pulls the next line as soon as a line has been queued on the socket, whether or
- * not the client takes it, so a client that stops reading kept every line queued for it in memory, uncounted (a
- * live-pull page of up to 25 MiB per stream; the security review of 2026-10-11 measured +24 MiB per such client). A
- * producer can therefore keep what a line costs (a page's budget claim, page-budget.ts) until it is asked for more.
- * A line longer than {@link WRITE_PIECE_BYTES} is written in copies of that size, so no piece waiting on the socket
- * keeps the whole line alive. A piece that has to wait must be taken whole within {@link STREAM_STALL_MS}, or the
- * connection is closed: a minimum rate (about 17 KiB/s for 1 MiB pieces), which cuts off a client that reads too
- * slowly as well as one that stopped.
+ * Streaming an NDJSON response (the backend streams and forgets; agents.md, Security and privacy, principle
+ * 1). The producer is an async generator of lines, and it is asked for its next line only once the response
+ * has written the previous one out to the connection: `Readable.from` alone pulls the next line as soon as a
+ * line has been queued on the socket, whether or not the client takes it, so a client that stops reading
+ * would keep every line queued for it in memory, uncounted (a live-pull page of up to 25 MiB per stream). A
+ * producer can therefore keep what a line costs (a page's budget claim, page-budget.ts) until it is asked for
+ * more. A line longer than {@link WRITE_PIECE_BYTES} is written in copies of that size, so no piece waiting
+ * on the socket keeps the whole line alive. A piece that has to wait must be taken whole within
+ * {@link STREAM_STALL_MS}, or the connection is closed: a minimum rate (about 17 KiB/s for 1 MiB pieces),
+ * which cuts off a client that reads too slowly as well as one that stopped.
  *
  * When the client goes away (or stalls) the stream's signal aborts, which cancels the upstream request in
  * flight and any backoff wait, and the generator is closed; `onEnd` runs exactly once however the response
  * ends (finished, failed, the client gone or stalled, or answered with an error before streaming began).
  *
- * `sendPieces` is the same writer for any content type: the render API sends its images through it (ADR 0033).
+ * `sendPieces` is the same writer for any content type: the render API sends its images through it.
  */
 import type { ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
@@ -159,7 +159,7 @@ export interface PiecesOptions {
 /**
  * Sends `produce`'s chunks as the response body with status 200, whatever their content type, each written out in
  * pieces of at most {@link WRITE_PIECE_BYTES} before the next is asked for, with the stall rule above (a client that
- * does not take a piece within `stallMs` is cut off). The NDJSON streams and the render API's images (ADR 0033) go
+ * does not take a piece within `stallMs` is cut off). The NDJSON streams and the render API's images go
  * out through it. An exception the producer lets escape (a bug) is logged and ends the response, after
  * `options.failure` when one is given; its text is never sent.
  */

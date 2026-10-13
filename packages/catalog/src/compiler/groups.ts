@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Authoring groups (ADR 0021): `known-unmapped/<group>.yaml` says which official
+ * Authoring groups (README, "Authoring a group"): `known-unmapped/<group>.yaml` says which official
  * types a group owns (`owns`: exact types or `<service>/*` globs) and which of them it has not mapped yet
  * (`types`, each with a reason). Ownership lets `pnpm catalog:check --group <group>` check one group's files
  * while others are mid-edit, and the coverage report count per group. Pure.

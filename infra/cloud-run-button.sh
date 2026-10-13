@@ -2,15 +2,15 @@
 # SPDX-License-Identifier: MIT
 #
 # The Cloud Run Button's postcreate hook (app.json at the repository root; docs/self-host-options.md, "Run on
-# Google Cloud"). The button builds infra/Dockerfile in Cloud Shell, deploys the service with the two variables it
-# asks for and the options of app.json, and runs this once, right after it created the service. This adds what the
-# button cannot set, the settings infra/deploy.sh gives every instance: TRUST_PROXY_HOPS=1 (Cloud Run's front end
-# is one proxy hop), a 900 s request timeout for long pulls, startup CPU boost and the /healthz probes. It also
-# sets app.json's limit of 10 instances: the button writes its max-instances option under a misspelt annotation key
-# (`autoscaling.knative.dev` + `maxScale`, no slash; cmd/cloudshell_open/deploy.go, read 2026-10-11), which Cloud
-# Run does not apply. It removes OAUTH_CLIENT_ID when it was left at `none` (the button wants a value for every
-# variable it asks for, and an empty one is not accepted), then prints the next steps. One `gcloud run services
-# update`, so one more revision.
+# Google Cloud"). The button builds infra/Dockerfile in Cloud Shell, deploys the service with the two
+# variables it asks for and the options of app.json, and runs this once, right after it created the service.
+# This adds what the button cannot set, the settings infra/deploy.sh gives every instance: TRUST_PROXY_HOPS=1
+# (Cloud Run's front end is one proxy hop), a 900 s request timeout for long pulls, startup CPU boost and the
+# /healthz probes. It also sets app.json's limit of 10 instances: the button writes its max-instances option
+# under a misspelt annotation key (`autoscaling.knative.dev` + `maxScale`, no slash;
+# cmd/cloudshell_open/deploy.go), which Cloud Run does not apply. It removes OAUTH_CLIENT_ID when it was left
+# at `none` (the button wants a value for every variable it asks for, and an empty one is not accepted), then
+# prints the next steps. One `gcloud run services update`, so one more revision.
 #
 # The button passes GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_REGION, K_SERVICE and SERVICE_URL, and the variables it asked
 # for (OAUTH_CLIENT_ID, SA_MODE_ENABLED). Run by hand, set them yourself:

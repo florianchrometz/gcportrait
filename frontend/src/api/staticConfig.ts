@@ -3,10 +3,10 @@ import { readSourceUrl } from '../source';
 import { isLegalUrl, type PublicConfig } from './config';
 
 /**
- * The static demo (`pnpm demo:static`, ADR 0034): the app built in demo-only mode for a static host, the maintainer's
- * demo at https://gcportrait.app/demo/ on GitHub Pages. There is no backend to ask, so the public configuration that a
- * demo-only instance's GET /api/config would answer is built in at build time, from these variables (the root command
- * scripts/static-demo.mjs sets them):
+ * The static demo (`pnpm demo:static`; agents.md, Modes and hosting): the app built in demo-only mode for a static
+ * host, the maintainer's demo at https://gcportrait.app/demo/ on GitHub Pages. There is no backend to ask, so the
+ * public configuration that a demo-only instance's GET /api/config would answer is built in at build time, from these
+ * variables (the root command scripts/static-demo.mjs sets them):
  *
  * - `VITE_STATIC_DEMO`: "1" for the static demo's bundle;
  * - `VITE_APP_VERSION`: the version shown where an instance shows its backend's (`git describe` by default);

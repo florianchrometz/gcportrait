@@ -18,10 +18,10 @@
 #   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
 #   e2e             Playwright on Chromium in three shards: functional, export faithfulness, axe
 #   website         the website built and checked (pnpm website:build, website:check), then its phone-width check
-#   provenance      pnpm provenance, then a self-test that the guard still rejects a planted legacy import
+#   provenance      pnpm provenance, then a self-test that the guard still rejects a planted banned file
 #   licenses        pnpm run licenses
 #   audit           node scripts/check-audit.mjs (needs the npm registry)
-#   workflows-and-shell   actionlint over the workflows, shellcheck over every shell script outside legacy/
+#   workflows-and-shell   actionlint over the workflows, shellcheck over every shell script
 #   required        the one check branch protection targets: green only when every job above but layout-budget is
 #
 # Pinning: every action is pinned to a commit, with its release as a comment, and the two linters downloaded here
@@ -56,8 +56,8 @@ jobs:
       - name: Formatting (Prettier)
         run: pnpm run format:check
       - name: ESLint (strict type-checked rules, import boundaries)
-        # The type-checked rules hold every workspace's type information at once; Node's default heap (about 2 GiB
-        # on the runner) ran out on the first run.
+        # The type-checked rules hold every workspace's type information at once, more than Node's default
+        # heap (about 2 GiB on the runner) holds.
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run lint
@@ -120,15 +120,15 @@ jobs:
   # collapsed < 2 s through a worker, plus the memo, cancellation and memory checks, run alone
   # (`pnpm --filter @gcportrait/layout test:budget`), then the bench's table in the job summary.
   #
-  # Non-blocking on purpose (continue-on-error, and `required` does not wait for it): the budgets are wall-clock
-  # figures for a desktop. On the reference machine (an Apple M1) L overview at detail `all` already takes three
-  # quarters of its 400 ms through the worker, and a shared GitHub-hosted runner is usually slower single-threaded
-  # and varies from run to run, so a blocking strict job would fail for reasons outside the change and be re-run
-  # until green. What blocks is the `unit (layout)` leg: the same measurements under `pnpm test` assert 2 x the
-  # budgets, which catches real regressions on any runner. This job shows the strict figures on every pull request
-  # and raises a warning when one is missed; the strict run is part of the layout's local checks
-  # (packages/layout/README.md, "Performance"). To make it blocking (e.g. on a larger or self-hosted runner, once
-  # its margin is known), remove continue-on-error and add it to `required`.
+  # Non-blocking on purpose (continue-on-error, and `required` does not wait for it): the budgets are
+  # wall-clock figures for a desktop. On a fast desktop machine L overview at detail `all` uses most of its
+  # 400 ms through the worker, and a shared GitHub-hosted runner is usually slower single-threaded and varies
+  # from run to run, so a blocking strict job would fail for reasons outside the change and be re-run until
+  # green. What blocks is the `unit (layout)` leg: the same measurements under `pnpm test` assert 2 x the
+  # budgets, which catches real regressions on any runner. This job shows the strict figures on every pull
+  # request and raises a warning when one is missed; the strict run is part of the layout's local checks
+  # (packages/layout/README.md, "Performance"). To make it blocking (e.g. on a larger or self-hosted runner,
+  # once its margin is known), remove continue-on-error and add it to `required`.
   layout-budget:
     name: layout-budget
     runs-on: ubuntu-latest
@@ -188,7 +188,7 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Build the app's workspaces
         run: pnpm run build:app
-      - name: SPA size budgets (ADR 0029, gzipped; UI thread 350 kB, workers 400 kB; no zod on the UI thread)
+      - name: SPA size budgets (gzipped; UI thread 350 kB, workers 400 kB; no zod on the UI thread)
         run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
 
   # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's
@@ -229,7 +229,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # The website (docs/website.md): built with its static demo at /demo/ (ADR 0034) and checked (`website:check`:
+  # The website (docs/website.md): built with its static demo at /demo/ and checked (`website:check`:
   # metadata, links, sitemap, self-hosted resources, the footer's non-affiliation notice, the demo's pages and
   # policy, every demo link opening a new tab), then at phone widths in Chromium (`mobile --only layout`: 320 to
   # 430 CSS pixels in both themes, sideways overflow, the sticky header, 44 px touch targets, axe). The phone
@@ -268,28 +268,26 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           install: 'false'
-      - name: Provenance guard (legacy quarantine, forbidden names, SPDX headers)
+      - name: Provenance guard (forbidden names, banned terms and files, SPDX headers)
         run: pnpm run provenance
-      # Proves on every run that the guard still bites: a file importing from legacy/ must fail the check, and
-      # fail it for that reason. The planted file exists only in this job's checkout.
-      - name: 'Self-test: the guard rejects a planted legacy import'
+      # Proves on every run that the guard still bites: a planted Go file must fail the check, and fail it for
+      # that reason. The planted file exists only in this job's checkout.
+      - name: 'Self-test: the guard rejects a planted banned file'
         run: |
-          license=$(node -p "require('./package.json').license")
           mkdir provenance-canary
-          printf '%s\n' "// SPDX-License-Identifier: ${license}" "import '../legacy/planted.js';" \
-            > provenance-canary/planted.ts
+          printf '%s\n' 'package main' > provenance-canary/planted.go
           if output=$(node scripts/check-provenance.mjs 2>&1); then
             echo "$output"
-            echo "::error::The provenance guard accepted a planted legacy import."
+            echo "::error::The provenance guard accepted a planted banned file."
             exit 1
           fi
           echo "$output"
-          if ! grep -qF 'provenance-canary/planted.ts:2  [legacy-import]' <<< "$output"; then
-            echo "::error::The provenance guard failed, but not on the planted legacy import."
+          if ! grep -qF 'provenance-canary/planted.go  [banned-file]' <<< "$output"; then
+            echo "::error::The provenance guard failed, but not on the planted banned file."
             exit 1
           fi
           rm -r provenance-canary
-          echo "Self-test passed: the planted legacy import was rejected."
+          echo "Self-test passed: the planted banned file was rejected."
 
   licenses:
     name: licenses
@@ -303,12 +301,13 @@ jobs:
       - name: Dependency licence allow-list and THIRD_PARTY.md staleness
         run: pnpm run licenses
 
-  # The dependency audit (ADR 0035 §4, principle 7; docs/security.md, "Dependency audit"): `pnpm audit` over the
-  # production dependencies and over the whole tree, read from the lockfile (no install). A high or critical
-  # advisory fails the job unless scripts/audit-allowlist.json accepts it, with a reason and an expiry date at most
-  # 90 days out; moderate and low ones are listed. It asks the npm registry's advisory service, so it can fail for a
-  # registry outage too (exit code 2, "could not run"); re-run it then. Between pull requests, GitHub's Dependabot
-  # alerts report new advisories (a repository setting, docs/security.md).
+  # The dependency audit (agents.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
+  # `pnpm audit` over the production dependencies and over the whole tree, read from the lockfile (no
+  # install). A high or critical advisory fails the job unless scripts/audit-allowlist.json accepts it, with a
+  # reason and an expiry date at most 90 days out; moderate and low ones are listed. It asks the npm
+  # registry's advisory service, so it can fail for a registry outage too (exit code 2, "could not run");
+  # re-run it then. Between pull requests, GitHub's Dependabot alerts report new advisories (a repository
+  # setting, docs/security.md).
   audit:
     name: audit
     runs-on: ubuntu-latest
@@ -324,11 +323,11 @@ jobs:
         run: node scripts/check-audit.mjs
 
   # The workflows and the shell scripts, with two linters pinned by version and SHA-256 (actionlint's from its
-  # release's checksums file, shellcheck's taken from its release archive when pinned). actionlint (rhysd/actionlint)
-  # checks every workflow: syntax, expressions, job dependencies, the inputs of local actions and, through the
-  # pinned shellcheck, the shell of every `run:` step in the workflow files (not those of the composite actions, which
-  # only install). shellcheck then checks every shell script outside legacy/:
-  # the deployment and hand-off scripts at its default severity (as `shellcheck -x infra/*.sh` locally, agents.md),
+  # release's checksums file, shellcheck's taken from its release archive when pinned). actionlint
+  # (rhysd/actionlint) checks every workflow: syntax, expressions, job dependencies, the inputs of local
+  # actions and, through the pinned shellcheck, the shell of every `run:` step in the workflow files (not
+  # those of the composite actions, which only install). shellcheck then checks every shell script: the
+  # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, agents.md, Commands),
   # the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit (all other
   # projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
   workflows-and-shell:
@@ -360,11 +359,11 @@ jobs:
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
       - name: actionlint (the workflows, their run scripts through shellcheck)
         run: actionlint -version && actionlint -color -shellcheck="$RUNNER_TEMP/bin/shellcheck"
-      - name: shellcheck (the deployment and hand-off scripts, default severity)
-        run: shellcheck --version && shellcheck -x infra/*.sh scripts/handoff.sh
-      - name: shellcheck (every other shell script outside legacy/, warnings and errors)
+      - name: shellcheck (the deployment scripts, default severity)
+        run: shellcheck --version && shellcheck -x infra/*.sh
+      - name: shellcheck (every other shell script, warnings and errors)
         run: |
-          git ls-files -z -- '*.sh' ':!:legacy/' ':!:infra/' ':!:scripts/handoff.sh' \
+          git ls-files -z -- '*.sh' ':!:infra/' \
             | xargs -0 --no-run-if-empty shellcheck -x --severity=warning
 
   # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required

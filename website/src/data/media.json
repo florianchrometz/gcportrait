@@ -49,7 +49,7 @@
     {
       "id": "export",
       "title": "The Export menu",
-      "alt": "The Export menu open over the demo organisation S: SVG or PNG at 2× or 3×, the whole diagram or the current viewport, and copying the PNG."
+      "alt": "The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, and downloads of SVG, PNG and draw.io files or copying the PNG."
     },
     {
       "id": "snapshots",
@@ -132,12 +132,12 @@
     },
     {
       "id": "docs-export",
-      "heading": "Export SVG and PNG",
+      "heading": "Export SVG, PNG and draw.io",
       "still": "export"
     },
     {
       "id": "exports",
-      "heading": "Sample exports: SVG and PNG of the demo organisations",
+      "heading": "Sample exports: SVG, PNG and draw.io of the demo organisations",
       "still": "export"
     },
     {

@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/scopes/search` (the scope picker of docs/permissions.md; skill cai-ingestion §1; the quota-project
- * spike's §3, rows h1–h4): the organisations, folders and projects the caller can see whose name or id matches what
- * the person typed, for the scope picker. Resource Manager v3 `organizations:search`, `folders:search` and
- * `projects:search` run side by side with the caller's own token (GET with query parameters; an empty result is
- * `{}`).
+ * `POST /api/scopes/search` (the scope picker of docs/permissions.md; skill cai-ingestion §1): the
+ * organisations, folders and projects the caller can see whose name or id matches what the person typed, for
+ * the scope picker. Resource Manager v3 `organizations:search`, `folders:search` and `projects:search` run
+ * side by side with the caller's own token (GET with query parameters; an empty result is `{}`).
  *
- * How the text becomes a Resource Manager query (measured against the API on 2026-10-10):
+ * How the text becomes a Resource Manager query (as the API answers it):
  * - the text splits into at most five terms of `[A-Za-z0-9._-]` (other characters, quotes and non-ASCII letters
  *   among them, are refused by the query syntax and act as separators);
  * - folders: `state:ACTIVE AND displayName:*t*` for each term; projects: `state:ACTIVE AND (name:*t* OR id:*t*)`;

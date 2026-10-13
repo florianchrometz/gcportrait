@@ -1,7 +1,7 @@
 ---
 /**
  * The page frame: the head with every page's search and link-preview metadata (src/lib/seo.ts), the skip link,
- * the header, the page, and the footer with the footer notice (ADR 0018). Fonts are self-hosted (Roboto from
+ * the header, the page, and the footer with the footer notice. Fonts are self-hosted (Roboto from
  * @fontsource, Latin subset only), the three faces most text is set in preloaded (no layout shift when they arrive);
  * nothing is loaded from another host (the header's repository widget, once the page has loaded, only asks
  * api.github.com for the repository's version, stars and forks: src/lib/star-count.ts).
@@ -83,7 +83,6 @@ const image = meta.socialImage;
     </noscript>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap.xml" />
-    <meta name="author" content="Florian Chrometz" />
 
     <meta property="og:type" content={meta.type ?? 'website'} />
     <meta property="og:site_name" content="gcportrait" />

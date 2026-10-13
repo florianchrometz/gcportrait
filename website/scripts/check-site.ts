@@ -5,16 +5,17 @@
  *
  * Every page: a unique title and description (50 to 170 characters), the canonical URL on https://gcportrait.app (the
  * 404 page instead: noindex and no canonical URL), OpenGraph and Twitter card tags with a 1200×630 image and its alt
- * text, valid JSON-LD and never an Organization (nothing may read as Google's, ADR 0018), `lang`, one level-1 heading,
+ * text, valid JSON-LD and never an Organization (nothing may read as Google's), `lang`, one level-1 heading,
  * alt text on every image, nothing loaded from another host (self-hosted fonts and media only), the footer notice in
- * the footer (ADR 0018: "Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project
+ * the footer ("Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project
  * by", the maintainer's name linked to their website, and a full stop), the footer's links to the Impressum and the
  * privacy notice on the maintainer's website (src/site.ts, LEGAL_LINKS: each once, `rel="noopener"`, named as an
  * external site for assistive technology), the header's one link to the repository (the repository widget: same tab,
  * named "gcportrait on GitHub", followed by ": version …, N stars, N forks" when the build knew them, and
  * `data-repository` naming that repository), no text run into a link or code without a space, every code block either
- * keyboard-focusable (`tabindex="0"`: it may scroll sideways, WCAG 2.1.1) or wrapping its lines (`class="wrap"`), and
- * every internal link and anchor resolving to a built page.
+ * keyboard-focusable (`tabindex="0"`: it may scroll sideways, WCAG 2.1.1) or wrapping its lines (`class="wrap"`),
+ * every internal link and anchor resolving to a built page, and every link into the repository (a guide's link to a
+ * repository file becomes one) naming a file or folder that exists.
  *
  * Resources from another host are refused wherever HTML or CSS names them: script, link (stylesheet, font preload,
  * preconnect), img and source (src and every srcset candidate), video, audio, track, iframe, embed, object, SVG
@@ -46,14 +47,15 @@
  * Sample exports (docs/website.md, "Sample exports"): every link of the exports section (`a[data-export]`, on the
  * landing page and /exports/) points at a file of the build itself, a PNG, an SVG or a draw.io file; a download link
  * has its `download` name; no SVG it offers carries an affiliation line, in its title block, its <title>, its <desc> or
- * anywhere else (ADR 0018 as placed on 2026-10-11: the statement is in the footer and the long form, never in a
- * drawing), and none loads anything from elsewhere; every draw.io file reads as diagrams.net reads it (compressed),
- * with no affiliation line in its labels and no address but Google Fonts' stylesheet its labels name for the user's
- * diagrams.net; every "Open in diagrams.net" link (`drawio-open`) is `https://app.diagrams.net/?url=` with the public
- * address of a draw.io file of the build on https://gcportrait.app, opens a new tab (`rel="noopener"`) and says so in
- * its name; and /exports/ offers at least one PNG, one SVG, one draw.io file and one diagrams.net link of each theme.
- * diagrams.net's host is a link target only: like every other host, the page rules refuse it as a resource; a link to
- * it may go anywhere there, but one that opens a file (`?url=`) is an export's checked "Open in diagrams.net" link.
+ * anywhere else (the statement is in the footer and the long form, never in a drawing: agents.md, Non-affiliation,
+ * brand and legal), and none loads anything from elsewhere; every draw.io file reads as diagrams.net reads it
+ * (compressed), with no affiliation line in its labels and no address but Google Fonts' stylesheet its labels name for
+ * the user's diagrams.net; every "Open in diagrams.net" link (`drawio-open`) is `https://app.diagrams.net/?url=` with
+ * the public address of a draw.io file of the build on https://gcportrait.app, opens a new tab (`rel="noopener"`) and
+ * says so in its name; and /exports/ offers at least one PNG, one SVG, one draw.io file and one diagrams.net link of
+ * each theme. diagrams.net's host is a link target only: like every other host, the page rules refuse it as a resource;
+ * a link to it may go anywhere there, but one that opens a file (`?url=`) is an export's checked "Open in diagrams.net"
+ * link.
  *
  * The installer (docs/website.md, "The installer"): /install.sh is infra/install.sh byte for byte (the build copies it;
  * website/public/ holds no copy), the content type it is served with is one `curl … | bash` and a browser both take
@@ -63,7 +65,7 @@
  *
  * The site: the sitemap lists exactly the pages built, robots.txt names it, the CNAME holds gcportrait.app, the font
  * licences ship next to the fonts, the landing page carries the SoftwareApplication and Person data and the long-form
- * non-affiliation statement in its author section only (ADR 0018: footers and long-form texts; no other section of it
+ * non-affiliation statement in its author section only (footers and long-form texts only; no other section of it
  * carries the statement), and no page is an Impressum or a privacy notice of its own (those are the maintainer's
  * website's: /impressum/ and /privacy/ are not built).
  *
@@ -77,7 +79,7 @@
  * logo (`<svg class="logo">`, src/components/Logo.astro) draws the same shapes in the same colours in both themes
  * (src/lib/brand.ts), and a stylesheet applies the logo's dark colours.
  *
- * The demo (src/site.ts DEMO_URL, /demo/; ADR 0034) is the app, not a page of the site, so the page rules above leave
+ * The demo (src/site.ts DEMO_URL, /demo/) is the app, not a page of the site, so the page rules above leave
  * it out (it is desktop-only, has its own title and no footer of the site's); the sitemap lists its entry page only.
  * Instead (checkDemo): /demo/index.html and a byte-for-byte copy of it for each of the app's routes; no file of it
  * naming TelemetryDeck or the site's analytics app id (the demo is the app's build, which sends no analytics); exactly one
@@ -579,8 +581,8 @@ export function checkDemoLinks(
 }
 
 /**
- * The footer notice (ADR 0018) in the footer: its text up to the maintainer's name, the name as a link to their
- * website, and a full stop.
+ * The footer notice in the footer (agents.md, Non-affiliation, brand and legal): its text up to the maintainer's
+ * name, the name as a link to their website, and a full stop.
  */
 export function checkFooterNotice(html: string, where: (message: string) => void): void {
   const footer = /<footer\b[\s\S]*<\/footer>/i.exec(html)?.[0] ?? '';
@@ -599,7 +601,7 @@ export function checkFooterNotice(html: string, where: (message: string) => void
 }
 
 /**
- * The landing page's long-form statement (ADR 0018): in its author section (the section labelled by #author, from
+ * The landing page's long-form statement: in its author section (the section labelled by #author, from
  * docs/author.md's closing paragraph) and in no other section of the page; the footer carries the footer notice.
  */
 export function checkLandingStatement(html: string, where: (message: string) => void): void {
@@ -914,7 +916,7 @@ export function checkPage(page: Page): string[] {
 
 /**
  * Whether a text states an affiliation: the short line (EXPORT_DISCLAIMER) itself, or any sentence that says
- * "affiliated with … Google" (the long form, an older short form).
+ * "affiliated with … Google" (the long form, or any other wording of it).
  */
 export function statesAffiliation(text: string): boolean {
   return text.includes(EXPORT_DISCLAIMER) || /\baffiliated with\b[^.]*\bGoogle\b/i.test(text);
@@ -922,8 +924,8 @@ export function statesAffiliation(text: string): boolean {
 
 /**
  * What an exported SVG the site offers must not say or do: no affiliation line in its title block (any <text> of the
- * drawing), its <title>, its <desc> or anywhere else in the file (ADR 0018 as placed on 2026-10-11; the <desc> keeps
- * neutral metadata only), and nothing loaded from elsewhere.
+ * drawing), its <title>, its <desc> or anywhere else in the file (the <desc> keeps neutral metadata only; agents.md,
+ * Non-affiliation, brand and legal), and nothing loaded from elsewhere.
  */
 export function exportSvgProblems(text: string): string[] {
   const problems: string[] = [];
@@ -951,7 +953,7 @@ const FONT_SOURCE_PREFIX = 'https://fonts.googleapis.com/css2?';
 
 /**
  * What a draw.io file the site offers must not be or say: unreadable as diagrams.net reads it (one diagram, its model
- * compressed: base64 of the raw-deflated, URI-encoded XML), an affiliation line in a label (ADR 0018), a script, or an
+ * compressed: base64 of the raw-deflated, URI-encoded XML), an affiliation line in a label, a script, or an
  * address other than the fonts' stylesheet (its icons are embedded).
  */
 export function exportDrawioProblems(text: string): string[] {
@@ -1261,6 +1263,40 @@ export function checkLinks(pages: readonly Page[], exists: (urlPath: string) => 
   return problems;
 }
 
+/**
+ * Links into the repository that name no file or folder of it: the GitHub addresses on the default branch
+ * (`REPOSITORY_URL/blob/main/…`, `…/tree/main/…`) that a guide's link to a repository file becomes
+ * (src/lib/markdown.ts, `rewriteHref`), and that the pages write themselves (`repositoryFileUrl`). `exists` answers
+ * for a path relative to the repository root.
+ */
+export function checkRepositoryLinks(
+  pages: readonly Page[],
+  exists: (repoPath: string) => boolean,
+): string[] {
+  const prefixes = ['blob', 'tree'].map((kind) => `${REPOSITORY_URL}/${kind}/main/`);
+  const problems: string[] = [];
+  for (const page of pages) {
+    const seen = new Set<string>();
+    for (const anchor of tags(page.html, 'a')) {
+      const href = anchor.href ?? '';
+      const prefix = prefixes.find((candidate) => href.startsWith(candidate));
+      if (prefix === undefined || seen.has(href)) continue;
+      seen.add(href);
+      let repoPath: string;
+      try {
+        repoPath = decodeURIComponent(href.slice(prefix.length).replace(/[?#].*$/, ''));
+      } catch {
+        repoPath = '..';
+      }
+      repoPath = path.posix.normalize(repoPath).replace(/\/$/, '');
+      if (repoPath === '.' || repoPath === '') continue;
+      if (repoPath.startsWith('..') || !exists(repoPath))
+        problems.push(`${page.path}: a link to ${href}, which names no file or folder of the repository`);
+    }
+  }
+  return problems;
+}
+
 /** The repository's root, above this package. */
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -1309,6 +1345,9 @@ export function checkSite(dist: string, brandSource = BRAND_SOURCE): string[] {
       const file = path.join(dist, decodeURIComponent(urlPath));
       return existsSync(file) && (statSync(file).isFile() || existsSync(path.join(file, 'index.html')));
     }),
+  );
+  problems.push(
+    ...checkRepositoryLinks(pages, (repoPath) => existsSync(path.join(REPOSITORY_ROOT, repoPath))),
   );
   problems.push(
     ...checkExports(pages, (urlPath) => {
@@ -1443,6 +1482,6 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     process.exit(1);
   }
   console.log(
-    `website:check: ${String(count)} pages OK (metadata, links, anchors, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
+    `website:check: ${String(count)} pages OK (metadata, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
   );
 }

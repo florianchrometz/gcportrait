@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
  * The Google calls of the scope picker, the preflight and the service-account gate (docs/permissions.md;
- * ADR 0028 §1–§4; skill cai-ingestion §1), made through the allowlisted client of request.ts
- * (`requestJson`: the four hosts only, no redirect, 60 s, retries) with:
+ * agents.md, Security and privacy, Quota project and the permission check; skill cai-ingestion §1), made
+ * through the allowlisted client of request.ts (`requestJson`: the four hosts only, no redirect, 60 s,
+ * retries) with:
  *
  * - the bearer token forwarded verbatim in `Authorization` (or, for tokeninfo, in the form body, never a URL);
  * - the incoming request's id sent as `x-request-id` and on every log line (`log` is Fastify's request logger);
@@ -101,7 +102,7 @@ export function isUnauthenticated(outcome: GoogleOutcome): boolean {
   return outcome.kind === 'answer' && outcome.httpStatus === 401;
 }
 
-/** The token lacks the OAuth scope the API needs (the spike's sign-in row): the person signs in again, allowing it. */
+/** The token lacks the OAuth scope the API needs: the person signs in again, allowing it. */
 export function isScopeInsufficient(outcome: GoogleOutcome): boolean {
   return (
     outcome.kind === 'answer' &&
@@ -210,7 +211,7 @@ export function getScope(
 
 /**
  * CAI `assets.list` with `pageSize: 1` (preflight probe): POST with the method override and a JSON body (skill
- * §1), the quota project in `x-goog-user-project` when one is given (user mode; never in SA mode, ADR 0028 §1).
+ * §1), the quota project in `x-goog-user-project` when one is given (user mode; never in SA mode).
  */
 export function probeAssets(
   context: GoogleCallContext,

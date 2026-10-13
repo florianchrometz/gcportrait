@@ -17,11 +17,11 @@ import {
 } from './support.js';
 
 /**
- * Demo-only mode (ADR 0032: a sign-in-free demo instance) end to end, run by the
- * `chromium-live` project against `pnpm dev`'s Vite server. The backend is the real one in demo-only mode: the spec
- * starts `backend/src/demo-only-harness.testing.ts` as a process (DEMO_ONLY=true, and LEGAL_DIR for the legal pages)
- * and sends the browser's `/api` requests to it, as sa-mode.spec.ts does. Legal texts are synthetic (agents.md
- * rule 6).
+ * Demo-only mode (a sign-in-free demo instance; agents.md, Modes and hosting) end to end, run by the
+ * `chromium-live` project against `pnpm dev`'s Vite server. The backend is the real one in demo-only mode:
+ * the spec starts `backend/src/demo-only-harness.testing.ts` as a process (DEMO_ONLY=true, and LEGAL_DIR for
+ * the legal pages) and sends the browser's `/api` requests to it, as sa-mode.spec.ts does. Legal texts are
+ * synthetic (agents.md, Security and privacy, principle 6).
  */
 
 const HARNESS = path.join('src', 'demo-only-harness.testing.ts');

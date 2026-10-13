@@ -24,7 +24,7 @@ export interface Viewport {
   readonly height: number;
 }
 
-/** The app's smallest supported canvas (ADR 0011), and what `auto` detail is computed for unless told otherwise. */
+/** The app's smallest supported canvas, and what `auto` detail is computed for unless told otherwise. */
 export const DEFAULT_VIEWPORT: Viewport = { width: 1280, height: 800 };
 
 /** The demo organisations, smallest first. */

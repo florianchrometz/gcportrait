@@ -377,7 +377,7 @@ describe('buildGraph properties', () => {
           const to = graph.nodes[edge.to]?.projectNumber;
           if (from === undefined || to === undefined || from === to) continue;
           expect(graph.containment.parent[edge.from]).not.toBe(edge.to);
-          // Into another project's subnet, or into a Shared VPC host's network (ADR 0024).
+          // Into another project's subnet, or into a Shared VPC host's network.
           const layer = zoneKindOf(edge.to);
           const shared = layer === 'subnet' || (layer === 'vpc' && hosts.has(projectNodeId(to)));
           expect(listed.has(`${edge.from} ${edge.to}`)).toBe(shared);

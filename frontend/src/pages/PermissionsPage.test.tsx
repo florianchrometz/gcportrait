@@ -64,8 +64,8 @@ interface Live {
 
 /**
  * A live instance with `config`, Google's tokeninfo naming ada@example.com, GIS on the page, and the scope search and
- * the check answering only a request with the token in gcportrait's own header (ADR 0031; Authorization stays empty
- * for IAP).
+ * the check answering only a request with the token in gcportrait's own header (Authorization stays empty for
+ * IAP).
  */
 function live(
   preflight: (body: unknown) => Response = () => Response.json(BLOCKED_ANSWER),
@@ -150,7 +150,7 @@ describe('the Permissions page, signed out', () => {
     await within(sa).findByText(ACCOUNT_EMAIL);
     expect(within(sa).getByText(/The gate\./)).toBeDefined();
     expect(within(sa).getByText(/Grant the account roles\/cloudasset.viewer only/)).toBeDefined();
-    // The non-affiliation statement is the footer's alone (ADR 0018: footers and long-form texts); the page has none.
+    // The non-affiliation statement is the footer's alone (footers and long-form texts); the page has none.
     expect(screen.getByRole('main').textContent).not.toMatch(/affiliated/i);
     expect(screen.getByRole('contentinfo').textContent).toContain(FOOTER_NOTICE);
     await expectNoAxeViolations();

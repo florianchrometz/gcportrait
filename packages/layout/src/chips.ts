@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * A collapsed zone's chip (skill gcp-diagram-style §4; ADR 0025): the ⊞ glyph, the zone's label and
+ * A collapsed zone's chip (skill gcp-diagram-style §4): the ⊞ glyph, the zone's label and
  * a count line ("2 networks · 39 resources"). Its width comes from the text metrics like a card's, within
  * 148–220 px, so two chips whose labels share a long prefix ("Shared VPC host (Production)", "Shared VPC host
  * (Non-production)") stay apart and the count line keeps its last part. The count line's wording is defined

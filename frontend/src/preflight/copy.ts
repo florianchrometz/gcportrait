@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The words of the permission check (ADR 0028 §3; docs/permissions.md): a title per
+ * The words of the permission check (docs/permissions.md): a title per
  * checklist item, a sentence per finding, a sentence per quota-project result and the overall outcome. The backend
  * sends codes and commands only; everything a person reads is here, once.
  */
@@ -38,7 +38,7 @@ export function upstreamLabel(upstream: UpstreamSummary): string {
     .join(' ');
 }
 
-/** ADR 0028 §3's "anything else": "Google refused the request (STATUS REASON): MESSAGE". */
+/** Any other refusal: "Google refused the request (STATUS REASON): MESSAGE". */
 export function refusal(upstream: UpstreamSummary | undefined): string {
   if (upstream === undefined) return 'Google refused the request.';
   if (upstream.status === 0) return `Google did not answer (${upstream.message ?? upstreamLabel(upstream)}).`;
@@ -101,7 +101,7 @@ export function explainItem(
   return own[item.id][item.finding] ?? shared[item.finding] ?? refusal(item.upstream);
 }
 
-/** The sentence for one quota project tried (ADR 0028 §3). */
+/** The sentence for one quota project tried. */
 export function explainCandidate(candidate: QuotaCandidate): string {
   const project = candidate.project;
   const words: Readonly<Record<CandidateResult, string>> = {
@@ -139,9 +139,9 @@ export function outcomeHeadline(outcome: PreflightOutcome): string {
 export const EMAIL_PLACEHOLDER = 'YOUR_EMAIL';
 
 /**
- * Service-account mode as ADR 0028 §3 words it, for the scope named (or "a scope") and the instance's account
- * (or a placeholder when the instance publishes none). The last paragraph follows the instance's gate: with the
- * strict exposure check (`saStrictExposure` in /api/config) a scope the account can see on its own is refused;
+ * Service-account mode in the words of docs/permissions.md §3, for the scope named (or "a scope") and the instance's
+ * account (or a placeholder when the instance publishes none). The last paragraph follows the instance's gate: with
+ * the strict exposure check (`saStrictExposure` in /api/config) a scope the account can see on its own is refused;
  * without it (the default) a scope whose details are public is open to everyone who signs in.
  */
 export function serviceAccountParagraphs(

@@ -2,18 +2,18 @@
 // @ts-check
 /**
  * `node scripts/exports.mjs`: the sample exports the website offers for download (docs/website.md, "Sample
- * exports"): real SVG, PNG and draw.io files of the synthetic demo organisations, drawn by `pnpm render` exactly as the
- * app's Export menu draws them (the title block's three lines, scope, lens with read time and tagline, the legend, 2×
- * PNG with a 24 px margin, the draw.io file compressed as diagrams.net saves it, ADR 0036; its `agent` without the
- * command's version, `gcportrait` alone as the render golden has it, so a release leaves the samples as they are), in
- * the light and the dark
- * theme, with a WebP preview of each PNG at 480 and 960 pixels wide. Everything goes to docs/media/exports/ with a
- * manifest (each file's sample, demo size, lens, theme, size in pixels, bytes, hash and the command that made it),
- * which the website reads.
+ * exports"): real SVG, PNG and draw.io files of the synthetic demo organisations, drawn by `pnpm render`
+ * exactly as the app's Export menu draws them (the title block's three lines, scope, lens with read time and
+ * tagline, the legend, 2× PNG with a 24 px margin, the draw.io file compressed as diagrams.net saves it; its
+ * `agent` without the command's version, `gcportrait` alone as the render golden has it, so a release leaves
+ * the samples as they are), in the light and the dark theme, with a WebP preview of each PNG at 480 and 960
+ * pixels wide. Everything goes to docs/media/exports/ with a manifest (each file's sample, demo size, lens,
+ * theme, size in pixels, bytes, hash and the command that made it), which the website reads.
  *
- * No file carries the non-affiliation line (ADR 0018 as placed on 2026-10-11): the statement is in the
- * footers of the app and the website and in the long form, never in a drawing, so neither an SVG's title block nor its
- * <title> or <desc> may hold it, nor a draw.io file's labels, and `--check` fails a file that does.
+ * No file carries the non-affiliation line (agents.md, Non-affiliation, brand and legal): the statement is in
+ * the footers of the app and the website and in the long form, never in a drawing, so neither an SVG's title
+ * block nor its <title> or <desc> may hold it, nor a draw.io file's labels, and `--check` fails a file that
+ * does.
  *
  *   node scripts/exports.mjs                     render every sample, write docs/media/exports/ and its manifest
  *   node scripts/exports.mjs --check             compare the manifest with the files and this script: every file
@@ -25,15 +25,15 @@
  *                                                byte for byte (the renderer, the demo data or the fonts changed?)
  *   node scripts/exports.mjs --list              print the files a run writes
  *
- * Kept apart from `pnpm media` (scripts/media.mjs) on purpose: these files come from the headless renderer, not from
- * screenshots of the app, so they neither depend on the demo app bundle nor touch the animated demos; `pnpm media
- * --check` does not look at them. The renderer is byte-stable (packages/render-cli/README.md): the same arguments give
- * the same bytes, so a second run writes the same files, on every platform since its rasteriser is resvg's
- * WebAssembly build (ADR 0033).
+ * Kept apart from `pnpm media` (scripts/media.mjs) on purpose: these files come from the headless renderer,
+ * not from screenshots of the app, so they neither depend on the demo app bundle nor touch the animated
+ * demos; `pnpm media --check` does not look at them. The renderer is byte-stable
+ * (packages/render-cli/README.md): the same arguments give the same bytes, so a second run writes the same
+ * files, on every platform since its rasteriser is resvg's WebAssembly build.
  *
  * The previews are encoded by Playwright's Chromium (a canvas scaled with high-quality smoothing, then WebP), as the
  * media script encodes its WebPs: the website package's dev dependency, with Chromium from
- * `pnpm --filter @gcportrait/e2e install-browsers`. Only the synthetic demo organisations are drawn (ADR 0014).
+ * `pnpm --filter @gcportrait/e2e install-browsers`. Only the synthetic demo organisations are drawn.
  * Exit code 0 on success (and with --check when everything agrees), 1 on a failure or a difference, 2 on a usage
  * error.
  */
@@ -239,18 +239,18 @@ function decodeXml(text) {
 }
 
 /**
- * Whether a text states an affiliation: any sentence that says "affiliated with … Google" (the long form, the footer's
- * first sentence, the short lines of earlier versions). @param {string} text
+ * Whether a text states an affiliation: any sentence that says "affiliated with … Google" (the long form, the
+ * footer's first sentence, or any shorter line). @param {string} text
  */
 export function statesAffiliation(text) {
   return /\baffiliated with\b[^.]*\bGoogle\b/i.test(text);
 }
 
 /**
- * What an exported SVG must not say or do: no affiliation line in its title block (any <text> of the drawing), its
- * <title> or its <desc>, nor anywhere else in the file (ADR 0018 as placed on 2026-10-11: the statement is in the
- * footers and the long form, never in a drawing; the <desc> keeps neutral metadata only); and it loads nothing from
- * another host and holds no script. An empty list means it is fine.
+ * What an exported SVG must not say or do: no affiliation line in its title block (any <text> of the
+ * drawing), its <title> or its <desc>, nor anywhere else in the file (the statement is in the footers and the
+ * long form, never in a drawing; the <desc> keeps neutral metadata only); and it loads nothing from another
+ * host and holds no script. An empty list means it is fine.
  * @param {string} text
  * @returns {string[]}
  */
@@ -298,11 +298,11 @@ export function readDrawio(text) {
 }
 
 /**
- * What a sample draw.io file must not say or do: unreadable as diagrams.net reads it, or stored as plain XML; an
- * `agent` other than `gcportrait` alone (a version there would make every release's samples stale); an affiliation
- * line in any label (ADR 0018: never in a drawing); a script; or an address other than Google Fonts' stylesheet,
- * which each label names for the user's diagrams.net to load the faces (icons are embedded). An empty list means it
- * is fine.
+ * What a sample draw.io file must not say or do: unreadable as diagrams.net reads it, or stored as plain XML;
+ * an `agent` other than `gcportrait` alone (a version there would make every release's samples stale); an
+ * affiliation line in any label (never in a drawing); a script; or an address other than Google Fonts'
+ * stylesheet, which each label names for the user's diagrams.net to load the faces (icons are embedded). An
+ * empty list means it is fine.
  * @param {string} text
  * @returns {string[]}
  */

@@ -76,8 +76,8 @@ describe('the app’s picture', () => {
     for (const theme of THEMES) {
       const svg = drawSvg(view, theme);
       expect(svg.startsWith('<?xml version="1.0" encoding="UTF-8"?>\n<svg ')).toBe(true);
-      // The canvas's title block, ending with the tagline; the non-affiliation statement (ADR 0018) sits in the
-      // footers and long-form texts only, so neither the title block nor <desc> carries it.
+      // The canvas's title block, ending with the tagline; the non-affiliation statement sits in the footers
+      // and long-form texts only, so neither the title block nor <desc> carries it.
       expect(svg).toContain(`>${TAGLINE}</text>`);
       expect(svg).not.toMatch(/affiliated/i);
       expect(svg).toContain('Drawn with gcportrait.</desc>');
@@ -98,7 +98,8 @@ describe('the app’s picture', () => {
   it('reports the layout’s invariants and the detail level the view used, budgeted as the app at its smallest viewport unless given another', async () => {
     const view = await createDemoViews().prepare('M', spec('M', 'networking'));
     expect(view.violations).toEqual([]);
-    // The app's `auto` budget at 1280×800 (ADR 0011), so the headless view opens what the app opens.
+    // The app's `auto` budget at 1280×800, its smallest viewport, so the headless view opens what the app
+    // opens.
     expect(view.report.detail).toMatchObject({
       requested: 'auto',
       used: 'folders',

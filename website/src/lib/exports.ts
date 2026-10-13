@@ -2,8 +2,8 @@
 /**
  * The sample exports the site offers (docs/media/exports/, written by `node scripts/exports.mjs`; docs/website.md,
  * "Sample exports"): real SVG, PNG and draw.io files of the synthetic demo organisations as `pnpm render` draws them,
- * in both themes, each with a WebP preview at 480 and 960 pixels. Like every export since 2026-10-11 they carry no
- * affiliation line (ADR 0018): the site states it in its footer. The manifest (docs/media/exports/manifest.json) says
+ * in both themes, each with a WebP preview at 480 and 960 pixels. Like every export they carry no affiliation line
+ * (a drawing never does): the site states it in its footer. The manifest (docs/media/exports/manifest.json) says
  * what each file is; Vite imports the files from docs/media/exports at build time, so each is published once under a
  * content-hashed name and the site loads nothing from elsewhere. A draw.io file is also offered through diagrams.net,
  * which opens it from its address on the site (a link to app.diagrams.net, never a resource the site loads).

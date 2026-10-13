@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
  * @gcportrait/render-cli — the headless renderer's command line (export rules: skill gcp-diagram-style §8):
- * `pnpm render` draws a demo view as the app draws it, as a standalone SVG, a PNG and a draw.io file, byte-stable
- * for the same input, through the render library (`@gcportrait/render`, ADR 0033), which the backend's `POST /api/render`
- * draws with too. Used by the website's sample exports (scripts/exports.mjs), the render goldens under
- * e2e/baselines/render/, and agents' self-checks. This file is the package's only public surface: the command
- * line, the comparisons, and the library's drawing functions the command runs, re-exported for its tests.
+ * `pnpm render` draws a demo view as the app draws it, as a standalone SVG, a PNG and a draw.io file,
+ * byte-stable for the same input, through the render library (`@gcportrait/render`), which the backend's
+ * `POST /api/render` draws with too. Used by the website's sample exports (scripts/exports.mjs), the render
+ * goldens under e2e/baselines/render/, and agents' self-checks. This file is the package's only public
+ * surface: the command line, the comparisons, and the library's drawing functions the command runs,
+ * re-exported for its tests.
  */
 export {
   parseCommand,

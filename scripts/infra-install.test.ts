@@ -613,7 +613,7 @@ describe.skipIf(!BASH_AVAILABLE)(
         );
         for (const flag of ['  --version TAG', '  --dir PATH', '  -h, --help'])
           expect(help.out).toContain(flag);
-        // The long form closes --help, as it closes deploy.sh's (ADR 0018).
+        // The long form closes --help, as it closes deploy.sh's.
         expect(help.out.trimEnd().split('\n\n').at(-1)?.replace(/\s+/g, ' ')).toBe(
           brandingConstant('NON_AFFILIATION_LONG'),
         );

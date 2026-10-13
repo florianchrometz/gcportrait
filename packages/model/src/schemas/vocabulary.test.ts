@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The zod-free vocabularies (ADR 0029): each tuple and its schema list the specified values, in their order
+ * The zod-free vocabularies: each tuple and its schema list the specified values, in their order
  * (consumers such as the render CLI's help text read the schema's options), and each guard accepts exactly what
  * its schema accepts, for the members, near misses and anything at all.
  */

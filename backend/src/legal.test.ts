@@ -15,7 +15,7 @@ import {
 } from './legal.js';
 import { configRefusal, thrownMessage } from './server.testing.js';
 
-/** Synthetic texts only (agents.md rule 6): no real person, no real address. */
+/** Synthetic texts only (agents.md, Security and privacy, principle 6): no real person, no real address. */
 const IMPRESSUM =
   '# Impressum\n\nExample Operator\nExample Street 1\n12345 Example City\n\nmail@example.com\n';
 const PRIVACY = '# Privacy\n\nThis instance stores nothing about you.\n';

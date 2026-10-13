@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Snapshots to draw, read by the app's own code (ADR 0033), so a render shows what the app would show for the same
+ * Snapshots to draw, read by the app's own code, so a render shows what the app would show for the same
  * data:
  *
  * - a demo organisation: the data worker's demo loader (`loadDemoSnapshot`), as `pnpm render --fixture`;

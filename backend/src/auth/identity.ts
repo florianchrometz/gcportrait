@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The backend's own identity for service-account mode (ADR 0004; ADR 0028 §1 and its amendment of 2026-10-10):
- * Application Default Credentials (ADC), resolved once at start-up by main.ts when `SA_MODE_ENABLED=true`.
+ * The backend's own identity for service-account mode (agents.md, Security and privacy, The service-account
+ * gate): Application Default Credentials (ADC), resolved once at start-up by main.ts when
+ * `SA_MODE_ENABLED=true`.
  *
  * Without a client library, on purpose (backend/README.md, "Service-account mode"): on Cloud Run, ADC is one GET to
  * the metadata server, and the few other forms a developer needs locally are one or two POSTs each. A library
@@ -66,10 +67,10 @@ const IMPERSONATION_URL =
   /^https:\/\/iamcredentials\.googleapis\.com\/v1\/projects\/-\/serviceAccounts\/([^/:?#\s]+):generateAccessToken$/;
 
 /**
- * The OAuth scopes of the account's own tokens where the backend chooses them (impersonation, key file): read-only
- * Google Cloud plus Cloud Asset Inventory, which the quota-project spike's sign-in row measured as enough for both
- * APIs the account calls (CAI `assets.list`, and Resource Manager `get` for the strict exposure check). The metadata
- * server's token keeps the platform's default scope; the account's IAM roles bound what either can do.
+ * The OAuth scopes of the account's own tokens where the backend chooses them (impersonation, key file):
+ * read-only Google Cloud plus Cloud Asset Inventory, which together are enough for both APIs the account
+ * calls (CAI `assets.list`, and Resource Manager `get` for the strict exposure check). The metadata server's
+ * token keeps the platform's default scope; the account's IAM roles bound what either can do.
  */
 export const ACCOUNT_SCOPES = [
   'https://www.googleapis.com/auth/cloud-platform.read-only',

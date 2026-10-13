@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 /**
  * The website's fixed facts: where it and the demo live, the repository, the image, and the non-affiliation
- * wording (ADRs 0009, 0018, 0032, 0034 and 0035).
+ * wording (agents.md, Modes and hosting, and Non-affiliation, brand and legal).
  *
  * The website may not import the frontend (eslint.config.js, WORKSPACE_DEPENDENCIES), so the non-affiliation strings
  * are copies of frontend/src/branding.ts; src/site.test.ts reads that file as text and fails while they differ.
  */
 
-/** The canonical origin of every page (ADR 0009). website/public/CNAME names its host for GitHub Pages. */
+/** The canonical origin of every page. website/public/CNAME names its host for GitHub Pages. */
 export const SITE_URL = 'https://gcportrait.app';
 export const SITE_HOST = 'gcportrait.app';
 
 /**
- * The sign-in-free demo: a static build of the app in demo-only mode, served by this site below /demo/ (ADR 0034;
- * `pnpm demo:static`, which the build runs, astro.config.ts). Every "Try the demo" link points here and opens it in a
+ * The sign-in-free demo: a static build of the app in demo-only mode, served by this site below /demo/
+ * (`pnpm demo:static`, which the build runs, astro.config.ts). Every "Try the demo" link points here and opens it in a
  * new tab (src/components/DemoLink.astro): the demo is the app, with no way back to the site. Where an absolute
  * address is needed (the sitemap), `siteUrl(DEMO_URL)` gives https://gcportrait.app/demo/. Only this entry page is
  * listed: the app's other routes (/demo/diagram, …) are states of the same app.
@@ -40,8 +40,8 @@ export function isDemoHref(href: string, base: string = SITE_URL): boolean {
 }
 
 /**
- * The public repository, as the app's default "Source (MIT)" link names it (frontend/src/source.ts,
- * DEFAULT_SOURCE_URL); the hand-off (docs/handoff.md) publishes it there.
+ * The project's repository, as the app's default "Source (MIT)" link names it (frontend/src/source.ts,
+ * DEFAULT_SOURCE_URL); a fork changes it (docs/contributing.md, Releases).
  */
 export const REPOSITORY_URL = 'https://github.com/florianchrometz/gcportrait';
 /** A repository file or folder on the default branch. */
@@ -49,7 +49,7 @@ export function repositoryFileUrl(repoPath: string, kind: 'blob' | 'tree' = 'blo
   return `${REPOSITORY_URL}/${kind}/main/${repoPath.replace(/^\/+/, '')}`;
 }
 
-/** The released container image on GitHub Container Registry (ADR 0035), published by the release workflow. */
+/** The released container image on GitHub Container Registry, published by the release workflow. */
 export const IMAGE = 'ghcr.io/florianchrometz/gcportrait';
 
 /**
@@ -79,8 +79,9 @@ export const PRODUCT_NAME = 'gcportrait';
 export const TAGLINE = 'A portrait of your Google Cloud environment.';
 
 /**
- * The non-affiliation statement's long form (ADR 0018): the README, the website's long-form texts (the landing page's
- * author section, from docs/author.md, the licence page, the guides), the docs, the icons README, the release notes.
+ * The non-affiliation statement's long form (agents.md, Non-affiliation, brand and legal): the README, the website's
+ * long-form texts (the landing page's author section, from docs/author.md, the licence page, the guides), the docs, the
+ * icons README, the release notes.
  */
 export const NON_AFFILIATION_LONG =
   'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and ' +
@@ -92,9 +93,9 @@ export const MAINTAINER_NAME = 'Florian Chrometz';
 export const MAINTAINER_URL = 'https://florian-chrometz.de';
 
 /**
- * The footer notice of every page (ADR 0018), as the app's footer has it: it ends with the maintainer's name, which the
- * footer renders as a link to MAINTAINER_URL, followed by a full stop. Besides it, only the landing page's author
- * section names the maintainer.
+ * The footer notice of every page, as the app's footer has it: it ends with the maintainer's name, which the footer
+ * renders as a link to MAINTAINER_URL, followed by a full stop. Besides it, only the landing page's author section
+ * names the maintainer.
  */
 export const FOOTER_NOTICE =
   'Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz';
@@ -105,15 +106,15 @@ export const FOOTER_NOTICE_LEAD = /* @__PURE__ */ FOOTER_NOTICE.slice(
 );
 
 /**
- * The short line: the footer notice's first sentence, which appears nowhere else (ADR 0018: footers and long-form
- * texts only). No exported file's title block, <title> or <desc> carries it, and the sample exports' check refuses
- * any SVG the site offers that does.
+ * The short line: the footer notice's first sentence, which appears nowhere else (the statement belongs in footers and
+ * long-form texts only). No exported file's title block, <title> or <desc> carries it, and the sample exports' check
+ * refuses any SVG the site offers that does.
  */
 export const EXPORT_DISCLAIMER = 'Not affiliated with Google / Google Cloud.';
 
 /**
  * The Impressum and the privacy notice of the website and the demo: pages of the maintainer's own website, which the
- * footer of every page links (decision of 2026-10-11, ADR 0032 as amended). The site has no legal pages of its own;
+ * footer of every page links (agents.md, Modes and hosting). The site has no legal pages of its own;
  * docs/legal/data-processing-inventory.md lists the facts the privacy notice covers. `pnpm website:check` requires both
  * links on every page.
  */
@@ -150,7 +151,10 @@ export const TELEMETRYDECK_APP_ID = '935EC0BB-BC12-4EE3-82C3-7F73D73116DD';
 /** TelemetryDeck's ingestion address (the SDK's own default, passed explicitly): the one host the pages send to. */
 export const TELEMETRYDECK_TARGET = 'https://nom.telemetrydeck.com/v2/';
 
-/** The licence of gcportrait's own work (ADR 0017), as SPDX names it, and its page at the Open Source Initiative. */
+/**
+ * The licence of gcportrait's own work (agents.md, Licence and dependencies), as SPDX names it, and its page at the
+ * Open Source Initiative.
+ */
 export const LICENSE_ID = 'MIT';
 export const LICENSE_URL = 'https://opensource.org/licenses/MIT';
 

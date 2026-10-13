@@ -7,7 +7,7 @@ import { errorDetailOf as errorDetailOfGoogle, soleReason, summaryOf } from './g
 const bytes = (value: unknown): Uint8Array =>
   new TextEncoder().encode(typeof value === 'string' ? value : JSON.stringify(value));
 
-describe('googleErrorOf (the quota-project spike’s error bodies)', () => {
+describe('googleErrorOf (Google’s error bodies)', () => {
   it('reads the status, the message verbatim and the one ErrorInfo reason', () => {
     const body = {
       error: {

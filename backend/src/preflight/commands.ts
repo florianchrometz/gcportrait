@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The copy-ready `gcloud` commands of the permissions checklist (docs/permissions.md; skill cai-ingestion §3;
- * ADR 0028 §3). Every value placed into a command has been validated before: the scope and the quota project
- * by their schemas (digits, lower-case letters, `.`, `:` and `-` only), an email by {@link SAFE_EMAIL}, so no
- * command can carry shell syntax. An unknown email becomes the visible placeholder `YOUR_EMAIL`.
+ * The copy-ready `gcloud` commands of the permissions checklist (docs/permissions.md; skill cai-ingestion
+ * §3). Every value placed into a command has been validated before: the scope and the quota project by their
+ * schemas (digits, lower-case letters, `.`, `:` and `-` only), an email by {@link SAFE_EMAIL}, so no command
+ * can carry shell syntax. An unknown email becomes the visible placeholder `YOUR_EMAIL`.
  */
 import type { ParsedScope } from '../upstream/scope.js';
 

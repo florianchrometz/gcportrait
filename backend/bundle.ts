@@ -6,7 +6,7 @@
  *   dist/server.mjs                         the service, with every npm dependency and workspace package inlined
  *   dist/server.mjs.map                     its source map (no sources inside; Node maps stack traces with it
  *                                           when started with --enable-source-maps)
- *   dist/render-worker.mjs (and .map)       the render API's worker (ADR 0033): the render library, the frontend's
+ *   dist/render-worker.mjs (and .map)       the render API's worker: the render library, the frontend's
  *                                           SVG components, react-dom/server and resvg-wasm's glue code; started
  *                                           afresh for every render by src/render/runner.ts, never imported by
  *                                           server.mjs
@@ -31,7 +31,7 @@
  * Licences: a bundle drops the LICENSE files that node_modules would have carried, while MIT, BSD, ISC and
  * Apache-2.0 ask for their notices to travel with every copy. The esbuild metafiles name each file that went
  * into the bundles, so the script writes the licence of every package they came from next to them, and of the
- * packages whose files dist/render-assets/ holds (resvg-wasm, MPL-2.0; the fonts, OFL-1.1, ADR 0019), with the
+ * packages whose files dist/render-assets/ holds (resvg-wasm, MPL-2.0; the fonts, OFL-1.1), with the
  * files each one ships in. An MPL-2.0 package also gets where its Source Code Form is and the section 3.3
  * statement, and the file ends with the canonical MPL-2.0 text (scripts/licenses/MPL-2.0.txt): resvg-wasm ships
  * no licence file of its own.
@@ -158,7 +158,7 @@ function licenceReport(packages: readonly PackageInfo[], shippedIn: ShippedIn): 
   return `${[header, ...sections, ...mplText].join('\n\n')}\n`;
 }
 
-/** Fails on a native addon, which neither bundle can carry (ADR 0033 §9). */
+/** Fails on a native addon, which neither bundle can carry (agents.md, Exports and the render API). */
 function refuseNativeAddons(metafile: Metafile, what: string): void {
   const native = Object.keys(metafile.inputs).filter((input) => input.endsWith('.node'));
   if (native.length > 0) throw new Error(`bundle: ${what} would need native addons: ${native.join(', ')}`);

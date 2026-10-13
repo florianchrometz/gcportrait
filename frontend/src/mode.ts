@@ -7,7 +7,7 @@ import { DEFAULT_SOURCE_URL, readSourceUrl } from './source';
 
 /**
  * How the app runs. Demo mode (`VITE_DEMO=1`, `pnpm dev:demo`) uses synthetic organisations only and never
- * calls the backend, so it works without Google Cloud, without a backend, and offline (ADR 0014).
+ * calls the backend, so it works without Google Cloud, without a backend, and offline (agents.md, Product rules).
  * `sourceUrl` is the build-time target of the footer's "Source (MIT)" link (VITE_SOURCE_URL, source.ts):
  * all demo mode has, and live mode's fallback until (or unless) the backend's /api/config names its own.
  * `staticConfig` is the static demo's built-in configuration (`VITE_STATIC_DEMO=1`, `pnpm demo:static`;

@@ -2,7 +2,7 @@
 // @ts-check
 /**
  * `pnpm media`: the website's and the README's screenshots, animated demos and link-preview images, generated from
- * the app in demo mode (docs/website.md; ADR 0014: synthetic data only, never a real organisation). Everything is
+ * the app in demo mode (docs/website.md; synthetic data only, never a real organisation). Everything is
  * written to docs/media/ and committed, with docs/media/manifest.json recording the hash of what the media were made
  * from, so `pnpm media --check` (CI) says when they are stale.
  *

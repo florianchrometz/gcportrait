@@ -222,7 +222,7 @@ describe('URL-hash codec properties', { timeout: 30_000 }, () => {
     );
   });
 
-  it('normalises exactly as the zod-based reference does (ADR 0029: no zod on the parse path)', () => {
+  it('normalises exactly as the zod-based reference does (no zod on the parse path)', () => {
     fc.assert(
       fc.property(fc.oneof(looseSpec, validSpec, junk), (input) => {
         expect(normalizeViewSpec(input as never)).toEqual(referenceNormalize(input));

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * @gcportrait/layout — the pure, deterministic layout engine (skill gcp-diagram-layout, ADR 0006): a `Scene`
+ * @gcportrait/layout — the pure, deterministic layout engine (skill gcp-diagram-layout): a `Scene`
  * from `@gcportrait/model` becomes a `Layout` of absolute rects and routed edges. Stages 1–3 (forest
  * normalisation, sizing, packing) and 4–5 (gutters, routing) are here, and the worker protocol that runs them
  * off the UI thread with cancellation and memoisation. This file is the package's only public surface.

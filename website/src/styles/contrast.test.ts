@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * WCAG 2.2 AA for the website's colours (ADR 0012): every text colour on every background it is used on reaches
- * 4.5 : 1, and the focus ring 3 : 1, in the light and the dark theme, read from global.css itself.
+ * WCAG 2.2 AA for the website's colours (agents.md, Style and accessibility): every text colour on every background
+ * it is used on reaches 4.5 : 1, and the focus ring 3 : 1, in the light and the dark theme, read from global.css
+ * itself.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';

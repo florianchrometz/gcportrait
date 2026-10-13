@@ -52,7 +52,7 @@ for (const { path, heading } of ROUTES) {
   });
 }
 
-test('on the diagram the footer alone says it: not the title block, not the drawing’s <desc> (ADR 0018)', async ({
+test('on the diagram the footer alone says it: not the title block, not the drawing’s <desc>', async ({
   page,
 }) => {
   const svg = await openDiagram(page);
@@ -229,7 +229,7 @@ for (const scheme of ['light', 'dark'] as const) {
   test(`the Export button ends the top bar at its right edge, filled in the primary colour (${scheme}); its menu opens inside the window`, async ({
     page,
   }) => {
-    // The smallest desktop window the app is built for (ADR 0011).
+    // The smallest desktop window the app is built for (agents.md, Product rules).
     const VIEWPORT = { width: 1280, height: 800 };
     await page.setViewportSize(VIEWPORT);
     await page.emulateMedia({ colorScheme: scheme });

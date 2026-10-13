@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Property tests (fast-check) of canonical name matching and reverse rules (ADRs 0022 and 0024; catalog
- * follow-ups §1.1 and §1.2): random projects whose assets are named with the project id or the project
- * number, and references that spell the project either way, or name a project the snapshot does not have.
+ * Property tests (fast-check) of canonical name matching and reverse rules: random projects whose assets are
+ * named with the project id or the project number, and references that spell the project either way, or name
+ * a project the snapshot does not have.
  */
 import { GraphBuildSchema, type Asset } from '@gcportrait/model';
 import fc from 'fast-check';

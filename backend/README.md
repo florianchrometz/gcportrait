@@ -2,12 +2,11 @@
 
 # @gcportrait/backend
 
-The stateless Fastify 5 service that runs on Cloud Run (Node 22, ESM; ADRs 0003 and 0005). It serves the built
-SPA, and forwards Cloud Asset Inventory requests with the user's token or, behind a gate, the service account,
-without storing anything (ADR 0004; ADR 0035 §4, the security and privacy principles). It may import
-`@gcportrait/model`, `@gcportrait/ingest`, `@gcportrait/catalog` and `@gcportrait/render`; it reaches the
-frontend only through the render library, and only in its render worker (`src/render/`, ADR 0033), never in
-`dist/server.mjs`.
+The stateless Fastify 5 service that runs on Cloud Run (Node 22, ESM). It serves the built SPA, and forwards
+Cloud Asset Inventory requests with the user's token or, behind a gate, the service account, without storing
+anything (agents.md, Security and privacy). It may import `@gcportrait/model`, `@gcportrait/ingest`,
+`@gcportrait/catalog` and `@gcportrait/render`; it reaches the frontend only through the render library, and
+only in its render worker (`src/render/`), never in `dist/server.mjs` (agents.md, Architecture and code).
 
 ## Scripts
 
@@ -41,7 +40,7 @@ frontend only through the render library, and only in its render worker (`src/re
 |---|---|
 | `GET /healthz` | `{ status: "ok", version }`. Not rate limited, logged at warn level only. On Cloud Run only the container's probes reach it: from outside, Cloud Run's front end answers `/healthz` itself with a 404 (it keeps paths ending in `z`), so check `/api/healthz` there. |
 | `GET /api/healthz` | The same answer, for checks from outside a Cloud Run service (deploy.sh's readiness wait, the docs). Rate limited like every `/api` route, logged at warn level only. |
-| `GET /api/config` | `{ oauthClientId, saMode, saStrictExposure, backendServiceAccount, version, sourceUrl, hostedBy, demo: false, demoOnly, legal: { impressum, privacy, impressumUrl, privacyUrl }, render }` (`src/routes/config.ts`; `render` is the render API's limits, or null where it is off). `demoOnly` is `DEMO_ONLY` (then no client, no service-account mode, no account). `legal.impressum` and `legal.privacy` say which legal pages the instance serves as texts (`/api/legal`); `legal.impressumUrl` and `legal.privacyUrl` are the addresses of those it links instead (`LEGAL_IMPRESSUM_URL`, `LEGAL_PRIVACY_URL`; https, or null), for the app's footer. Public by design: nothing in it is a secret. `oauthClientId` is the OAuth web client the SPA's Google sign-in uses (null: sign-in is not offered); with service-account mode on, `backendServiceAccount` is the account Application Default Credentials resolved to and `saStrictExposure` says whether the gate runs its exposure check (section "Service-account mode"); `sourceUrl` is where the source of the running version is published (`SOURCE_URL`); the app's footer links to it as "Source (MIT)". `hostedBy` is one line the Connect page shows next to "Sign in with Google", so a person knows who runs the instance before granting it access: "Hosted by NAME." (`HOSTED_BY`), or null when none is set; the non-affiliation statement is the footer's (ADR 0018). |
+| `GET /api/config` | `{ oauthClientId, saMode, saStrictExposure, backendServiceAccount, version, sourceUrl, hostedBy, demo: false, demoOnly, legal: { impressum, privacy, impressumUrl, privacyUrl }, render }` (`src/routes/config.ts`; `render` is the render API's limits, or null where it is off). `demoOnly` is `DEMO_ONLY` (then no client, no service-account mode, no account). `legal.impressum` and `legal.privacy` say which legal pages the instance serves as texts (`/api/legal`); `legal.impressumUrl` and `legal.privacyUrl` are the addresses of those it links instead (`LEGAL_IMPRESSUM_URL`, `LEGAL_PRIVACY_URL`; https, or null), for the app's footer. Public by design: nothing in it is a secret. `oauthClientId` is the OAuth web client the SPA's Google sign-in uses (null: sign-in is not offered); with service-account mode on, `backendServiceAccount` is the account Application Default Credentials resolved to and `saStrictExposure` says whether the gate runs its exposure check (section "Service-account mode"); `sourceUrl` is where the source of the running version is published (`SOURCE_URL`); the app's footer links to it as "Source (MIT)". `hostedBy` is one line the Connect page shows next to "Sign in with Google", so a person knows who runs the instance before granting it access: "Hosted by NAME." (`HOSTED_BY`), or null when none is set; the non-affiliation statement is the footer's. |
 | `GET /api/legal` | `{ impressum, privacy }`: the Markdown of each legal page from `LEGAL_DIR` or `LEGAL_BUNDLE` (`src/legal.ts`, `src/routes/legal.ts`), or null for a page the instance does not publish. Public; registered in every mode. |
 | `POST /api/scopes/search` | `{ scopes: [{ kind, scope, id, displayName, parent?, projectNumber? }], nextPageToken?, problems }` for `{ query, kinds?, pageSize?, pageToken? }`: the organisations, folders and projects the caller can see (`src/routes/scopes.ts`, section "Scope search and preflight"). Needs the caller's token. |
 | `POST /api/preflight` | The permission checklist for `{ scope, mode: "user" \| "sa", quotaProject? }` (`src/routes/preflight.ts`, `src/preflight/`): status per item, copy-ready `gcloud` commands. In service-account mode a refusal of the gate is a 403 (or 401, 503) whose body carries the checklist as `preflight`. Needs the caller's token. |
@@ -50,18 +49,18 @@ frontend only through the render library, and only in its render worker (`src/re
 | `POST /api/render` | An SVG, PNG or draw.io file of a view of a scope (a live pull), an uploaded export or bundle, or a demo organisation (`src/routes/render.ts`, section "Render API"). Needs the caller's token; absent with `RENDER_API=false`. |
 | `GET /*` | SPA files and the SPA fallback (production image only), as above. |
 
-**Demo-only mode** (`DEMO_ONLY=true`, [ADR 0032](../docs/adr/0032-hosted-surfaces-and-domains.md)):
-the routes that need the caller's token, the render API among them, are not registered, so they answer the JSON 404 of an unknown route
-(with a sentence saying why); everything else above stays, rate limits included, and the CSP allows no Google
-host. `src/demo-only.test.ts` holds the route matrix; `src/demo-only-harness.testing.ts` runs this mode for
+**Demo-only mode** (`DEMO_ONLY=true`; agents.md, Modes and hosting): the routes that need the caller's token,
+the render API among them, are not registered, so they answer the JSON 404 of an unknown route (with a
+sentence saying why); everything else above stays, rate limits included, and the CSP allows no Google host.
+`src/demo-only.test.ts` holds the route matrix; `src/demo-only-harness.testing.ts` runs this mode for
 `e2e/tests/demo-only.spec.ts`.
 
-**The caller's token** (ADR 0031, `src/stream/caller.ts`) comes in `X-Gcportrait-Token: TOKEN`, the header the
-app sends, which Identity-Aware Proxy in front of an instance leaves alone. Only a request without that header
-may send `Authorization: Bearer TOKEN` instead (scripts against a public instance; the scheme in any letter
-case); a malformed
-`X-Gcportrait-Token` is a 401, never replaced by `Authorization`. Neither value is ever logged (below). Upstream
-the token always goes to Google as `Authorization: Bearer`.
+**The caller's token** (`src/stream/caller.ts`; agents.md, Security and privacy, Tokens) comes in
+`X-Gcportrait-Token: TOKEN`, the header the app sends, which Identity-Aware Proxy in front of an instance
+leaves alone. Only a request without that header may send `Authorization: Bearer TOKEN` instead (scripts
+against a public instance; the scheme in any letter case); a malformed `X-Gcportrait-Token` is a 401, never
+replaced by `Authorization`. Neither value is ever logged (below). Upstream the token always goes to Google
+as `Authorization: Bearer`.
 
 API responses carry `cache-control: no-store` and `x-request-id`.
 
@@ -78,7 +77,7 @@ logged as a start-up warning), `SA_MODE_STRICT_EXPOSURE` (`true` or `false`, off
 once stops start-up), `BACKEND_SA_EMAIL`
 (with service-account mode on, optional and checked against the account Application Default Credentials resolve
 to; section "Service-account mode"), `HOSTED_BY` (who runs the instance: plain text on one line,
-at most 80 characters, and never naming Google, ADR 0018), `STATIC_DIR`, `TRUST_PROXY_HOPS`, `APP_VERSION`,
+at most 80 characters, and never naming Google), `STATIC_DIR`, `TRUST_PROXY_HOPS`, `APP_VERSION`,
 `SOURCE_URL`, and the render API's `RENDER_API`, `RENDER_MAX_ASSETS`, `RENDER_MAX_PIXELS`, `RENDER_TIMEOUT_MS` and
 `RENDER_MAX_BODY_BYTES` (section "Render API"). Nothing in it is a secret, and no credential is ever configured through the environment: the
 OAuth client's secret is never used (the browser's token client needs only the id; see
@@ -91,15 +90,15 @@ version is published. The app links to it in its footer, "Source (MIT)" on every
 from `/api/config`: a courtesy to the people who use the instance, since gcportrait is licensed under the MIT
 License, which does not ask for it. The default, `https://github.com/florianchrometz/gcportrait`
 (`DEFAULT_SOURCE_URL` in `src/config.ts`), is the project's repository, the right target for an unmodified
-deployment; the maintainer sets the real one at hand-off (docs/handoff.md). Whoever runs a modified version and
-publishes its source can point `SOURCE_URL` there.
+deployment; a fork changes it (docs/contributing.md, Releases). Whoever runs a modified version and publishes
+its source can point `SOURCE_URL` there.
 
 ## Security and logging
 
 - **Headers** (`@fastify/helmet`): a CSP with no `unsafe-*` source. It allows `'self'` for scripts, styles,
   fonts, workers and connections, `data:` images, and connections to `oauth2.googleapis.com`, the one Google API
-  host the browser itself calls (tokeninfo, and revoking a token on sign-out). Until the security review of
-  2026-10-11 it also listed `cloudasset`, `cloudresourcemanager` and `storage`, which only the backend calls.
+  host the browser itself calls (tokeninfo, and revoking a token on sign-out); `cloudasset`,
+  `cloudresourcemanager` and `storage` stay out, since only the backend calls them.
   The SPA's inline theme script is allowed by its SHA-256 hash, computed from the served `index.html`
   (`src/security.ts`). Google Identity Services adds exactly two sources:
   `script-src https://accounts.google.com/gsi/client` (its client script, which the SPA loads only when someone
@@ -110,8 +109,8 @@ publishes its source can point `SOURCE_URL` there.
   all. Also set: HSTS, `nosniff`, `frame-ancestors 'none'` plus the matching `X-Frame-Options: DENY` for
   browsers without CSP framing support, `Referrer-Policy: no-referrer`, same-origin CORP, and a
   `Permissions-Policy` that switches off every device, sensor and media feature Chromium knows except
-  `clipboard-write` for the page itself (the copy buttons). [docs/security.md](../docs/security.md) is the
-  review with the evidence for each.
+  `clipboard-write` for the page itself (the copy buttons). [docs/security.md](../docs/security.md) lists each
+  control with the tests that hold it.
 - **Cross-origin isolation in demo-only mode**: `Cross-Origin-Opener-Policy: same-origin` and
   `Cross-Origin-Embedder-Policy: require-corp`, so the page is cross-origin isolated; it loads nothing from
   another origin there. With sign-in the opener policy stays as below and no embedder policy is sent
@@ -123,16 +122,16 @@ publishes its source can point `SOURCE_URL` there.
   Fastify leaves unlimited) and, separately, 30 s for its body (a `preParsing` hook), each answered with 408.
   The hook is needed because Fastify sets `requestTimeout` after creating the server, when Node has already
   taken `headersTimeout` from its 60 s default, and Node's check then swaps the two: the whole request would
-  get 60 s (`REQUEST_TIMEOUT_MS` in `src/server.ts` has the measurement). A response may stream for as long as
-  Google answers and the client keeps up: a client that does not take a 1 MiB piece within 60 s, about
-  17 KiB/s, is disconnected (below).
-- **Cross-Origin-Opener-Policy: `same-origin-allow-popups`** (not `same-origin`). The GIS token
-  client opens Google's sign-in in a window of its own; that window hands the token back to the page through
-  `postMessage` to its opener, and GIS watches whether the person closed it. Under `same-origin` the browser
-  puts a cross-origin window this page opens into another browsing context group: the window has no opener and
-  the page's handle reads as closed at once, so sign-in could never finish. Measured in Chromium against this
-  backend: a window opened to `accounts.google.com` from the page saw `window.opener !== null` and the page
-  saw `closed === false` under `same-origin-allow-popups`; under `same-origin`, no opener and `closed ===
+  get 60 s (`REQUEST_TIMEOUT_MS` in `src/server.ts` says how). A response may stream for as long as Google
+  answers and the client keeps up: a client that does not take a 1 MiB piece within 60 s, about 17 KiB/s, is
+  disconnected (below).
+- **Cross-Origin-Opener-Policy: `same-origin-allow-popups`** (not `same-origin`). The GIS token client opens
+  Google's sign-in in a window of its own; that window hands the token back to the page through `postMessage`
+  to its opener, and GIS watches whether the person closed it. Under `same-origin` the browser puts a
+  cross-origin window this page opens into another browsing context group: the window has no opener and the
+  page's handle reads as closed at once, so sign-in could never finish. In Chromium, under
+  `same-origin-allow-popups` a window the page opens to `accounts.google.com` keeps `window.opener` and the
+  page sees `closed === false`; under `same-origin` the window has no opener and the page sees `closed ===
   true`. `same-origin-allow-popups` keeps that link only for windows the page opens itself and still isolates
   the page from any cross-origin page that opens it. Google's own error page (an unknown client id, an origin
   that is not authorised) sends `same-origin` itself, so then the link breaks anyway and the app says the
@@ -148,19 +147,19 @@ publishes its source can point `SOURCE_URL` there.
 - **Request ids**: a well-formed incoming `x-request-id` is kept, otherwise a UUID is minted. It is echoed in the
   response and logged as `requestId`.
 - **Logs** (pino, JSON on stdout): `message` and `severity` fields so Cloud Logging classifies lines without a
-  router rule. No credential, session or user identity ever reaches a log line (agents.md rule 10). The
-  request serializer logs method, path, host and the request headers, but only an
+  router rule. No credential, session or user identity ever reaches a log line (agents.md, Security and
+  privacy, The backend). The request serializer logs method, path, host and the request headers, but only an
   **allowlist** of harmless headers keeps its value (`LOGGED_HEADERS` in `src/logging.ts`: `accept*`,
   `content-length`, `content-type`, `host`, `origin`, `traceparent`, `user-agent`, `x-cloud-trace-context`,
   `x-forwarded-proto`). Every other header is logged by name with the value `[redacted]`. An allowlist,
-  because behind Cloud Run and IAP credentials and identity arrive in headers whose names give no hint of
-  it: `x-goog-iap-jwt-assertion`, `x-goog-authenticated-user-email`/`-id`, `x-serverless-authorization`,
+  because behind Cloud Run and IAP credentials and identity arrive in headers whose names give no hint of it:
+  `x-goog-iap-jwt-assertion`, `x-goog-authenticated-user-email`/`-id`, `x-serverless-authorization`,
   `x-api-key`. A query string is never logged (`/path?[redacted]`): the API takes JSON bodies and the SPA
   keeps its view in the URL hash, which never reaches the server. Request and response bodies are never
-  logged. Nor is the client address (direct or forwarded): it identifies a person, so rate limiting keys on
-  it in memory only. As a second line of defence pino redacts those credential headers, `x-gcportrait-token`
-  (the caller's token, ADR 0031) included, in any object logged by hand with a `headers` field. `LOG_LEVEL` sets the level; `LOG_FORMAT=pretty` (used by `pnpm dev`) routes
-  through pino-pretty.
+  logged. Nor is the client address (direct or forwarded): it identifies a person, so rate limiting keys on it
+  in memory only. As a second line of defence pino redacts those credential headers, `x-gcportrait-token` (the
+  caller's token) included, in any object logged by hand with a `headers` field. `LOG_LEVEL` sets the level;
+  `LOG_FORMAT=pretty` (used by `pnpm dev`) routes through pino-pretty.
 - **Errors**: 5xx responses never carry internal messages, only `Internal error.` plus the request id; the
   details go to the log.
 
@@ -173,7 +172,7 @@ port, no redirect followed (`redirect: "manual"`: a 3xx is an answer like any ot
 forwards the bearer token verbatim, sends the incoming request id upstream as `x-request-id`, and logs one line
 per call with a fixed operation name, the host, the status, the attempts and the time (never a URL path, which
 carries the scope, a header value or a body). Answers are classified by HTTP status and the `ErrorInfo` reason,
-never by message text (ADR 0028 §2); Google's message is passed on only from a JSON error body, never from an
+never by message text; Google's message is passed on only from a JSON error body, never from an
 HTML page, cut at 2 000 characters. One parser reads Google's error envelope for every route
 (`src/upstream/google-error.ts`), so the preflight and the streams classify an answer alike. Each route has its
 own rate limit per token hash (`src/upstream/token-limit.ts`, in memory, keyed by the token's SHA-256), in
@@ -182,14 +181,14 @@ refused with 401 before anything is sent upstream.
 
 **`POST /api/scopes/search`.** Resource Manager v3 `organizations:search`, `folders:search` and
 `projects:search` side by side. The text becomes at most five terms of `[A-Za-z0-9._-]`; folders are queried
-as `state:ACTIVE AND displayName:*TERM*`, projects as `state:ACTIVE AND (name:*TERM* OR id:*TERM*)` (measured
-on 2026-10-10: case-insensitive substrings; quotes, `'` and non-ASCII letters are refused by the query
+as `state:ACTIVE AND displayName:*TERM*`, projects as `state:ACTIVE AND (name:*TERM* OR id:*TERM*)`
+(case-insensitive substrings; quotes, `'` and non-ASCII letters are refused by the query
 syntax). Organisations accept only `domain:` and `directoryCustomerId:` queries, so they are listed and
 matched here, as is text the terms do not cover. `nextPageToken` carries the three kinds' own page tokens; one
 kind failing is listed in `problems`, every kind failing is a 403 (the token lacks the OAuth scope) or 502.
 
-**`POST /api/preflight`.** The checks of ADR 0028 §2 (user mode) and §4 (service-account mode), in
-`src/preflight/run.ts`:
+**`POST /api/preflight`.** The permission check of user mode and the service-account gate (agents.md, Security
+and privacy, Quota project and the permission check, and The service-account gate), in `src/preflight/run.ts`:
 
 | Mode | Item | Checked by | `missing` gives |
 |---|---|---|---|
@@ -211,12 +210,13 @@ pass, the route answers its 403 (or 401, 503) with the checklist as `preflight`,
 are `no-credentials` when its token cannot be had. Service-account mode off (`SA_MODE_ENABLED`) answers 403, and
 a build without the instance's identity 501.
 
-Tests: `src/preflight/run.test.ts` (every checklist row × 200/403/404/429/5xx, ADR 0028 §2's table, the 15
-synthetic step-2 answers of the quota-project spike's §5 plus a 404, the commands, the email),
+Tests: `src/preflight/run.test.ts` (every checklist row × 200/403/404/429/5xx, the answer table, the 15
+synthetic answers to the gate's caller check plus a 404, the commands, the email),
 `src/routes/preflight.test.ts` and `src/routes/scopes.test.ts` (over HTTP with `inject`: bodies, tokens, rate
-limits, logs, request ids, the search's queries and pages), `src/upstream/allowlist-attacks.test.ts` (look-alike
-hosts, user info, ports, schemes, encodings, redirects, and route bodies that try to steer a call elsewhere),
-against a pretend Google (`src/preflight/google.testing.ts`, spike-shaped bodies).
+limits, logs, request ids, the search's queries and pages), `src/upstream/allowlist-attacks.test.ts`
+(look-alike hosts, user info, ports, schemes, encodings, redirects, and route bodies that try to steer a call
+elsewhere), against a pretend Google (`src/preflight/google.testing.ts`, bodies shaped like Google's: skill
+cai-ingestion §9).
 
 ## Live pull and export read
 
@@ -234,7 +234,7 @@ answers after that arrives in the stream as an `error` frame (`src/stream/frames
 forwarded), `status` (the HTTP status Google answered), `code` (Google's canonical status, from the HTTP
 status when Cloud Storage leaves it out), `reason` (the one `ErrorInfo` reason, if any) and `retryable`.
 
-**`POST /api/assets/stream`** (`src/stream/asset-list.ts`, ADR 0010, ADR 0028 §1 and §5):
+**`POST /api/assets/stream`** (`src/stream/asset-list.ts`):
 
 - calls `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with `X-HTTP-Method-Override: GET` and the
   body `{ contentType: "RESOURCE", pageSize: 500, readTime?, assetTypes?, pageToken? }`, following
@@ -264,11 +264,11 @@ status when Cloud Storage leaves it out), `reason` (the one `ErrorInfo` reason, 
   in the buffers); until then it holds its page's claim, its slot and its connection;
 - a page is never parsed: `src/stream/list-page.ts` scans its bytes once and writes the `page` frame into one
   buffer outside the JavaScript heap (whitespace outside strings removed, the assets counted, `nextPageToken`
-  and `readTime` read, the structure checked). Before the security review of 2026-10-11 a page at the cap cost
-  about 120 MiB while it was parsed and serialised again, and four at once ended a process with a 128 MiB heap;
-  the measurements are in docs/security.md, "Response caps and memory".
+  and `readTime` read, the structure checked). Parsing a page at the cap and serialising it again would cost
+  about 120 MiB, and four at once would end a process with a 128 MiB heap (docs/security.md, "Response caps
+  and memory").
 
-**`POST /api/export/read`** (`src/stream/export-read.ts`, ADR 0010): `gs://BUCKET/OBJECT` reads that object
+**`POST /api/export/read`** (`src/stream/export-read.ts`): `gs://BUCKET/OBJECT` reads that object
 (`…/storage/v1/b/BUCKET/o/OBJECT?alt=media`, after a metadata lookup for its size); a URI ending in `/`, or
 one that names no object, reads every object under that prefix in name order (`?prefix=`, folder placeholders
 skipped), as `--output-path-prefix` writes them. The export's own lines are streamed as they arrive, a line
@@ -291,15 +291,14 @@ pagination, the request Google receives, every error answer as a frame (read bac
 a dev dependency for this), retries and their delays (recorded, and on fake timers), timeouts, the 25 MiB cap
 declared and streamed, the stream cap and the rate limit, the gate before every page, logs without secrets,
 cancellation when a real client disconnects, and a 5 000-asset organisation streamed over a real connection
-into `@gcportrait/ingest` (ten pages answered after 50 ms each; 614 ms on the development machine, budget
-10 s; the test prints its time).
+into `@gcportrait/ingest` (ten pages answered after 50 ms each, within a budget of 10 s; the test prints its
+time).
 
 ## Service-account mode
 
 The backend may read a scope with its own identity, after proving that the caller may see that scope
-([ADR 0004](../docs/adr/0004-user-sign-in-and-service-account-mode.md);
-[ADR 0028](../docs/adr/0028-quota-project-and-sa-gate.md) §4 and its amendment; ADR 0035 §4, principle 4; the
-user guide is [docs/permissions.md](../docs/permissions.md)). `SA_MODE_ENABLED=true` turns it on.
+(agents.md, Security and privacy, principle 4 and The service-account gate; the user guide is
+[docs/permissions.md](../docs/permissions.md)). `SA_MODE_ENABLED=true` turns it on.
 
 **The identity** (`src/auth/identity.ts`). At start-up `src/main.ts` resolves Application Default Credentials
 in ADC's own order: the file `GOOGLE_APPLICATION_CREDENTIALS` names, gcloud's well-known file, the metadata
@@ -325,7 +324,7 @@ checked before it is called (`checkIdentityUrl`: the metadata server over HTTP o
 a 10 s timeout, no redirect followed, answers capped at 64 KiB, and nothing logged. These are not the upstream
 allowlist (`src/upstream/allowlist.ts`, still exactly its four hosts): nothing a request carries
 can reach them, and the token they hand out is the backend's own. Workload identity federation is not
-supported, and no dependency was added.
+supported, and the module needs no dependency.
 
 **The gate** (`src/auth/gate.ts`, `ServiceAccountGate`), built by `buildServer` from the identity and the
 config, and asked by every route that takes `mode: "sa"` (`/api/preflight`, `/api/assets/stream`) before each
@@ -338,20 +337,19 @@ CAI call as the account, each page of a stream included:
    it passes;
 2. the account's token from the identity;
 3. with `SA_MODE_STRICT_EXPOSURE=true` only: the account's own `GET` of the scope must be exactly Resource
-   Manager's IAM denial (ADR 0028 §4 step 2; a 200, a public `get` or more than `roles/cloudasset.viewer`,
-   refuses). Off by default, because it refuses every scope where a customer granted the account more than
+   Manager's IAM denial (a 200, a public `get` or more than `roles/cloudasset.viewer`, refuses). Off by
+   default, because it refuses every scope where a customer granted the account more than
    `roles/cloudasset.viewer`; with it off, a scope whose `get` is public passes step 1 for everyone signed in
    (docs/permissions.md says so).
 
 A pass is remembered in memory for at most five minutes, keyed by the SHA-256 of the caller's token and the
 scope, never past the token's own expiry (tokeninfo's `expires_in`), never a refusal (a refusal at the caller
-or exposure step forgets a pass for that token and scope at once), at most 10 000 entries;
-the preflight always checks afresh. Refusals (`src/auth/refusal.ts`) are 403 (`SA_GATE_CALLER_DENIED`,
-`SA_GATE_EXPOSED`, `SA_GATE_UNEXPECTED`, `SA_GATE_EXPOSURE_UNEXPECTED`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT`),
-401 (`UNAUTHENTICATED`) or 503 (`SA_GATE_UNAVAILABLE`, `SA_CREDENTIALS_UNAVAILABLE`, `retryable`), in the
-server's error shape plus `code`; in the middle of a stream, an `error` frame. The quota project in this mode
-is the account's own project: no `x-goog-user-project` is sent (ADR 0028 §1), and the body may not name one
-(400).
+or exposure step forgets a pass for that token and scope at once), at most 10 000 entries; the preflight
+always checks afresh. Refusals (`src/auth/refusal.ts`) are 403 (`SA_GATE_CALLER_DENIED`, `SA_GATE_EXPOSED`,
+`SA_GATE_UNEXPECTED`, `SA_GATE_EXPOSURE_UNEXPECTED`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT`), 401
+(`UNAUTHENTICATED`) or 503 (`SA_GATE_UNAVAILABLE`, `SA_CREDENTIALS_UNAVAILABLE`, `retryable`), in the server's
+error shape plus `code`; in the middle of a stream, an `error` frame. The quota project in this mode is the
+account's own project: no `x-goog-user-project` is sent, and the body may not name one (400).
 
 **The audit line.** Each decision of the gate logs one line, `service-account gate`, with the request id and
 `audit: { event: "sa-gate", route, scope, callerEmailHash, decision: "allowed" | "denied", step?, finding,
@@ -378,14 +376,14 @@ server; never built into `dist/`).
 Responses are validated through Fastify's own JSON Schema support. Each contract is written once as a zod
 schema in `src/schemas.ts`, the TypeScript type is `z.infer` of it, and Fastify gets `z.toJSONSchema(...)`
 (built into zod 4). Fastify's serializer (fast-json-stringify) then emits only the declared fields, fails
-loudly when a required field is missing, and keeps the fast serialization path. This was chosen over
-`fastify-type-provider-zod` for three reasons. It keeps zod as the single definition of every contract
-(agents.md rule 4: types that cross a package boundary are zod schemas, declared once). It adds no dependency
-(the provider's current major also pulls in `@fastify/swagger` and `openapi-types` as required peers). And
-request bodies are validated with zod schemas too, some of them from `@gcportrait/model`, either the same way or
-with an explicit `schema.parse`.
+loudly when a required field is missing, and keeps the fast serialization path. This is used rather than
+`fastify-type-provider-zod` for three reasons. It keeps zod as the single definition of every contract (types
+that cross a package boundary are zod schemas, declared once; agents.md, Data and graph semantics). It adds no
+dependency (the provider's current major also pulls in `@fastify/swagger` and `openapi-types` as required
+peers). And request bodies are validated with zod schemas too, some of them from `@gcportrait/model`, either
+the same way or with an explicit `schema.parse`.
 
-## Render API (ADR 0033)
+## Render API
 
 `POST /api/render` draws a view as SVG, PNG or a draw.io file (`"format": "drawio"`, compressed unless
 `"compressed": false`, with or without `fontSource`) with the render library (`@gcportrait/render`), the code
@@ -413,10 +411,10 @@ is the user's reference (request, sources, headers, errors, limits); here is how
   reads the data with the app's own code (the import handler for NDJSON and frames, `parseBundle`, the demo
   loader), so the API draws what the app would. The tests run the same job in process
   (`src/render/in-process.ts`).
-- **The answer** goes out through `sendPieces` (`src/stream/ndjson.ts`, the streams' writer and stall rule) with
-  the export's file name, the view's hash, and the detail level and scale used; no non-affiliation line travels
-  with it (ADR 0018). One log line per render, counts only: source kind, format, theme,
-  assets, bytes, ms, outcome.
+- **The answer** goes out through `sendPieces` (`src/stream/ndjson.ts`, the streams' writer and stall rule)
+  with the export's file name, the view's hash, and the detail level and scale used; no non-affiliation line
+  travels with it (agents.md, Non-affiliation, brand and legal). One log line per render, counts only: source
+  kind, format, theme, assets, bytes, ms, outcome.
 - **A draw.io file** (`application/vnd.jgraph.mxfile`, `.drawio`) is the SVG's drawing translated into draw.io's
   cells by the frontend's translator (`frontend/src/export/drawio/`, through the render library's `drawDrawio`);
   the job passes the instance's version (`APP_VERSION`, else the package's) for the file's `agent`. The body

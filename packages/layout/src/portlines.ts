@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * Port lines (ADR 0027): a straight way out of a rect that nothing stands beside. A port's stub meets the
+ * Port lines (skill §5): a straight way out of a rect that nothing stands beside. A port's stub meets the
  * gutter line of its container on that side (ports.ts); when that line is the container's padding ring (the
  * rect is the last of its row on that side, or in the last row for a bottom port) the space beyond it is free
  * up to the container's border, and beyond the border up to the parent's gutter on that side, and so on
  * outwards while each zone is the last of its row on that side. A port line runs straight through that free
  * space, from the stub's gutter line to the first gutter beside which another child stands (or the canvas
  * margin), so a route can leave a deeply nested rect in one straight run instead of turning along the padding
- * ring, which reads as a doubled border (ADR 0027, rule 1).
+ * ring, which reads as a doubled border.
  *
  * A port line belongs to its port alone: only its edge (or, for a hub bundle's shared port, the bundle's members)
  * may run along it (`GutterPiece.holder`: the edge's index, or the bundle's lane holder), always on lane 0, the port's own coordinate, so the route leaves the

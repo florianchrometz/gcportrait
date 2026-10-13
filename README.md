@@ -31,8 +31,8 @@ show every reference between them. You use it three ways: **self-hosted**, as on
 own Google Cloud project that one script deploys; as a **web app**, where you explore any scope you can read
 with lenses, search, a details drawer and a timeline that moves any view through the last 35 days and marks
 what was added, removed or changed; and through its **API**, which returns any view as SVG, PNG or draw.io
-without opening the app ([docs/api.md](docs/api.md)). It is made for cloud engineers and architects who need to
-understand or document an environment, for security and compliance reviewers checking exposure (public
+without opening the app ([docs/api.md](docs/api.md)). It is made for cloud engineers and architects who need
+to understand or document an environment, for security and compliance reviewers checking exposure (public
 addresses, peerings, perimeters, Shared VPC), and for platform teams who want a current picture instead of a
 hand-drawn one, in a wiki or a pipeline as well as on screen. It is a viewer, not a drawing tool: every box is
 a real asset and every arrow a real reference. The instance stores nothing, and your snapshots stay in your
@@ -48,24 +48,94 @@ browser.
 Animation not playing? Open the still frame (<a href="docs/media/animated/trace-light-poster.webp">light</a>,
 <a href="docs/media/animated/trace-dark-poster.webp">dark</a>).</sub></p>
 
-## Not affiliated with Google
+## Quick start
 
-> [!IMPORTANT]
-> gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-> trademarks of Google and are used under Google's icon usage terms.
+To draw your own environment, run gcportrait in a Google Cloud project of yours: with the installer line
+below, with the guided tutorial in Cloud Shell, or with the "Run on Google Cloud" button. There is no hosted
+sign-in service. To look first, [try the demo](#try-the-demo).
+
+### Self-host in 10 minutes
+
+You need a Google Cloud project with billing enabled where you are Owner (or hold [the roles deploy.sh
+needs](docs/self-host-options.md#permissions-to-run-deploysh)), and the Google Cloud CLI (Cloud Shell has it).
+
+**1. Deploy.** Sign in, then run the installer with your project id, the one thing it asks for:
+
+```sh
+gcloud auth login
+curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT
+```
+
+The installer downloads the newest release's deploy scripts, checks them against the release's checksums
+before it runs anything, and runs them: they enable the APIs, create a service account with no roles, and
+deploy the release's image from GitHub Container Registry (`ghcr.io/florianchrometz/gcportrait`, linux/amd64
+and linux/arm64), pulled through an Artifact Registry remote repository in your project. Add `--dry-run` to
+see every change first; everything else is an optional flag with a default. Open the address it prints: the
+demo works at once.
+
+**2. Create the OAuth client** for "Sign in with Google", the one step Google offers no API for. The script
+ends with the console link and the exact origins to add to a new client of the type Web application.
+
+**3. Redeploy with the client id:**
+
+```sh
+curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT --oauth-client-id YOUR_OAUTH_CLIENT_ID
+```
+
+Everyone then signs in with their own Google account and sees only what their own IAM permissions allow.
+
+Without a terminal of your own:
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/florianchrometz/gcportrait.git&cloudshell_git_branch=main&cloudshell_workspace=.&cloudshell_tutorial=docs/cloudshell-tutorial.md&show=ide%2Cterminal)
+**Guided**: a tutorial in Cloud Shell, in your browser, walks you through the same steps.
+
+[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run/?git_repo=https://github.com/florianchrometz/gcportrait.git&revision=main)
+**Built from source**: Google's Cloud Run Button builds the image from source in Cloud Shell and deploys it,
+with fewer choices than the installer ([its limits](docs/self-host-options.md#run-on-google-cloud)).
+
+An instance is one Cloud Run service: the app and a small stateless backend, with no database and no stored
+token. People sign in with their own Google account and read what their roles allow, or a team grants the
+instance's service account `roles/cloudasset.viewer` once (service-account mode, behind a gate that checks
+each person's own access to the scope); Cloud Asset Inventory export files load too.
+[docs/self-host.md](docs/self-host.md) is the guide (the three steps in detail, using it, updating,
+uninstalling), [docs/self-host-options.md](docs/self-host-options.md) explains every option (another region,
+Identity-Aware Proxy, service-account mode, a demo-only instance, custom domains, legal pages, building from
+source, troubleshooting), [docs/configuration.md](docs/configuration.md) lists every setting,
+[docs/modes.md](docs/modes.md) compares the ways in, [docs/permissions.md](docs/permissions.md) lists every
+permission with the exact `gcloud` command, and [docs/api.md](docs/api.md) is the instance's API: SVG, PNG and
+draw.io renders of a scope, an export or a demo with curl and your own token.
+
+### Try the demo
+
+**[gcportrait.app/demo](https://gcportrait.app/demo/)** is gcportrait in demo-only mode: no sign-in, no Google
+Cloud account, nothing to install. Your browser generates four synthetic organisations (S about 100 assets,
+M about 1&nbsp;000, L about 6&nbsp;000, XL about 50&nbsp;000), each with a 35-day history, and gcportrait
+draws them as it would draw yours. The released image runs the same app on your machine, with Docker (or a
+compatible runtime), for linux/amd64 and linux/arm64:
+
+```sh
+docker run --rm --publish 127.0.0.1:8080:8080 ghcr.io/florianchrometz/gcportrait:latest
+```
+
+Open <http://localhost:8080>, choose "Try the demo" and pick M. To run it from source instead, see
+[docs/contributing.md](docs/contributing.md).
+
+On organisation M, press `/`, search for `10.0.14.5` and press Enter: the virtual machine with that address is
+selected, its path traced and its details open. Then switch the Lens to Networking and step through the days
+with `[` and `]`. gcportrait is built for desktop browsers (1280 × 800 or larger).
+[docs/getting-started.md](docs/getting-started.md) has the full first tour.
 
 ## Features
 
 **Three ways to use it**, with the same diagrams in each:
 
 - **Self-hosted.** One Cloud Run service in a Google Cloud project of yours, no database and no stored token,
-  deployed with one line that asks for your project id and nothing else; with the OAuth client for "Sign in with
-  Google", about 10 minutes ([Self-host in 10 minutes](#self-host-in-10-minutes)).
+  deployed with one line that asks for your project id and nothing else; with the OAuth client for "Sign in
+  with Google", about 10 minutes ([Self-host in 10 minutes](#self-host-in-10-minutes)).
 - **Web app.** Sign in with your Google account, pick an organisation, folder or project or load an export
   file, and explore it with everything in the table below. The [demo](#try-the-demo) needs no account.
-- **API.** `POST /api/render` on your instance returns any view as SVG, PNG or draw.io, from a live scope, an export
-  file, a saved snapshot or a demo organisation, for scripts, docs and reviews
+- **API.** `POST /api/render` on your instance returns any view as SVG, PNG or draw.io, from a live scope, an
+  export file, a saved snapshot or a demo organisation, for scripts, docs and reviews
   ([docs/api.md](docs/api.md)). This request returns the PNG of demo S in the Overview lens, the same file as
   the [sample export](docs/media/exports/S-overview-light.png):
 
@@ -142,14 +212,14 @@ the zones around it and shows its details; if the lens hides it, a dialog offers
 <td width="50%" valign="top">
 <h3>Export SVG, PNG and draw.io</h3>
 <p>Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file that diagrams.net and draw.io open as an
-editable diagram looking like the picture (zones as containers, resources with their icons, connected lines), the
-whole diagram or the visible part, in either theme, with a title block, a legend and the date it shows. Every view
-is also a link, and a self-hosted instance draws the same files for scripts through its API
+editable diagram looking like the picture (zones as containers, resources with their icons, connected lines),
+the whole diagram or the visible part, in either theme, with a title block, a legend and the date it shows.
+Every view is also a link, and a self-hosted instance draws the same files for scripts through its API
 (<code>POST /api/render</code>).
 <a href="docs/export.md">Guide</a> · <a href="docs/api.md">API</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/export-dark.png">
-  <img src="docs/media/stills/export-light.png" width="400" alt="The Export menu open over the demo organisation S: SVG or PNG at 2× or 3×, the whole diagram or the current viewport, and copying the PNG.">
+  <img src="docs/media/stills/export-light.png" width="400" alt="The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, and downloads of SVG, PNG and draw.io files or copying the PNG.">
 </picture>
 </td>
 <td width="50%" valign="top">
@@ -191,79 +261,6 @@ you are not using.</p>
 </tr>
 </table>
 
-## Try the demo
-
-**[gcportrait.app/demo](https://gcportrait.app/demo/)** is gcportrait in demo-only mode: no sign-in, no Google
-Cloud account, nothing to install. Your browser generates four synthetic organisations (S about 100 assets,
-M about 1&nbsp;000, L about 6&nbsp;000, XL about 50&nbsp;000), each with a 35-day history, and gcportrait
-draws them as it would draw yours. The released image runs the same app on your machine, with Docker (or a
-compatible runtime), for linux/amd64 and linux/arm64:
-
-```sh
-docker run --rm --publish 127.0.0.1:8080:8080 ghcr.io/florianchrometz/gcportrait:latest
-```
-
-Open <http://localhost:8080>, choose "Try the demo" and pick M. To run it from source instead, see
-[docs/contributing.md](docs/contributing.md).
-
-On organisation M, press `/`, search for `10.0.14.5` and press Enter: the virtual machine with that address is
-selected, its path traced and its details open. Then switch the Lens to Networking and step through the days
-with `[` and `]`. gcportrait is built for desktop browsers (1280 × 800 or larger).
-[docs/getting-started.md](docs/getting-started.md) has the full first tour.
-
-## Deploy to your Google Cloud project
-
-To draw your own environment, run gcportrait in a Google Cloud project of yours; there is no hosted sign-in
-service. An instance is one Cloud Run service: the app and a small stateless backend, with no database and no
-stored token. People sign in with their own Google account and read what their roles allow, or a team grants
-the instance's service account `roles/cloudasset.viewer` once (service-account mode, behind a gate that checks
-each person's own access to the scope). Cloud Asset Inventory export files load too.
-[docs/modes.md](docs/modes.md) compares the ways in, and [docs/permissions.md](docs/permissions.md) lists
-every permission with the exact `gcloud` command.
-
-### Self-host in 10 minutes
-
-You need a Google Cloud project with billing enabled where you are Owner (or hold [the roles deploy.sh
-needs](docs/self-host-options.md#permissions-to-run-deploysh)), and the Google Cloud CLI (Cloud Shell has it).
-
-**1. Deploy.** Sign in, then run the installer with your project id, the one thing it asks for:
-
-```sh
-gcloud auth login
-curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT
-```
-
-The installer downloads the newest release's deploy scripts, checks them against the release's checksums before
-it runs anything, and runs them: they enable the APIs, create a service account with no roles, and deploy the
-release's image from GitHub Container Registry (`ghcr.io/florianchrometz/gcportrait`, linux/amd64 and
-linux/arm64), pulled through an Artifact Registry remote repository in your project. Add `--dry-run` to see every
-change first; everything else is an optional flag with a default. Open the address it prints: the demo works at
-once.
-
-**2. Create the OAuth client** for "Sign in with Google", the one step Google offers no API for. The script ends
-with the console link and the exact origins to add to a new client of the type Web application.
-
-**3. Redeploy with the client id:**
-
-```sh
-curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT --oauth-client-id YOUR_OAUTH_CLIENT_ID
-```
-
-Everyone then signs in with their own Google account and sees only what their own IAM permissions allow.
-[docs/self-host.md](docs/self-host.md) is the guide (the three steps in detail, using it, updating, uninstalling),
-[docs/self-host-options.md](docs/self-host-options.md) explains every option (another region, Identity-Aware
-Proxy, service-account mode, a demo-only instance, custom domains, legal pages, building from source,
-troubleshooting), and [docs/configuration.md](docs/configuration.md) lists every setting.
-[docs/api.md](docs/api.md) is the instance's API: SVG, PNG and draw.io renders of a scope, an export or a demo with
-curl and your own token.
-
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/florianchrometz/gcportrait.git&cloudshell_git_branch=main&cloudshell_workspace=.&cloudshell_tutorial=docs/cloudshell-tutorial.md&show=ide%2Cterminal)
-**Guided**: a tutorial in Cloud Shell, in your browser, walks you through the same steps.
-
-[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run/?git_repo=https://github.com/florianchrometz/gcportrait.git&revision=main)
-**Built from source**: Google's Cloud Run Button builds the image from source in Cloud Shell and deploys it,
-with fewer choices than the installer ([its limits](docs/self-host-options.md#run-on-google-cloud)).
-
 ## How it works
 
 ```mermaid
@@ -279,7 +276,7 @@ flowchart TD
 ```
 
 Sources become a Snapshot in the browser, the asset catalog (YAML, about one file per product) turns the
-assets' references into typed relations, and the view in the URL selects a Scene. A clean-room layout engine
+assets' references into typed relations, and the view in the URL selects a Scene. Its own layout engine
 packs the nested zones into grids and routes every arrow orthogonally through the gutters between them, in a
 web worker, deterministically; React draws the result as SVG. The same pipeline runs without a browser:
 `pnpm render --fixture M --lens networking --png out.png` draws a demo view exactly as the app does.
@@ -304,39 +301,11 @@ web worker, deterministically; React draws the result as SVG. The same pipeline 
 - [Changesets](https://github.com/changesets/changesets) and GitHub Actions: releases as a distroless
   container image on GitHub Container Registry
 
-## Status and roadmap
+## Roadmap
 
-**Built** (version 1.0.0):
-
-- The data core: synthetic demo organisations S to XL with a 35-day history, streaming ingestion of Cloud
-  Asset Inventory exports and list results, and the graph with lenses, focus views, filters, drill-in and
-  diff.
-- The asset catalog: 632 of 641 official asset types and 1&nbsp;387 rules, each proven by a fixture; a weekly
-  job checks the official list for new types.
-- The layout engine and the renderer in light and dark, the Export menu, and `pnpm render`.
-- The app: search, the details drawer, progressive disclosure, saved views, the Snapshots page, the keyboard;
-  axe reports no violations on any page in either theme.
-- The backend: Google sign-in, the scope picker, the permission check with the exact `gcloud` commands, live
-  pulls, export files, service-account mode, and `infra/deploy.sh` and `infra/uninstall.sh`.
-- The timeline: 35 daily ticks, the comparison with the day you came from, extra ticks, playback.
-- The render API: `POST /api/render` draws any view as SVG, PNG or draw.io on the server, byte for byte what
-  `pnpm render` draws ([docs/api.md](docs/api.md)); the draw.io file is the same drawing as diagrams.net cells.
-- The draw.io export, in the Export menu, the API, `pnpm render` and the website's sample exports: rendered by
-  mxGraph, it matches the SVG within a pixel for every shape and line of text on demos S, M and L in both themes.
-- The website for `gcportrait.app` and the sign-in-free demo at `gcportrait.app/demo/` (a static build of the
-  app in demo-only mode), the user guides, the release pipeline to GitHub
-  Container Registry with the one-line installer and the pull path through an Artifact Registry remote repository, a
-  performance pass on the large demo organisations (its targets are in the
-  [layout skill](.agents/skills/gcp-diagram-layout/SKILL.md), §7), a [security review](docs/security.md) of the
-  backend with a [threat model](docs/threat-model.md), links to the Impressum and the privacy notice on the
-  maintainer's website, and the script that moves the project to its public repository.
-
-**Not tried on a real instance yet:** signing in with your own account behind Identity-Aware Proxy
-(`deploy.sh --iap`) and `uninstall.sh --disable-apis`.
-[docs/backlog.md](docs/backlog.md) lists what is left, the known limitations and the decisions still open.
-
-**Next:** the move to the public repository and the 1.0.0 tag ([CHANGELOG.md](CHANGELOG.md)); then the items
-of [docs/backlog.md](docs/backlog.md).
+**Tested against stand-ins only**, not on a real Google Cloud project: signing in with your own account behind
+Identity-Aware Proxy (`deploy.sh --iap`) and `uninstall.sh --disable-apis`. [docs/backlog.md](docs/backlog.md)
+lists what is left, the known limitations and the decisions still open.
 
 **Later, not scheduled:** an opt-in team workspace (shared storage, scheduled snapshots, sharing), IAM policy
 and OS inventory layers, Cloud Asset Inventory's relationship data where Security Command Center Premium
@@ -344,13 +313,13 @@ provides it, comparing snapshots across scopes, and sharing saved views.
 
 **Not planned:** editing diagrams, cost data, IAM policy analysis beyond showing identities, multi-cloud, a
 phone or tablet layout for the app, storing snapshots on a server, and real-time feeds
-([ADR 0035](docs/adr/0035-decisions-inherited-from-the-implementation-plan.md) §1).
+([agents.md](agents.md), "What gcportrait is and is not").
 
 ## Contributing
 
 Contributions are welcome, asset types especially: the catalog is data (YAML plus a synthetic fixture), so
-adding or correcting a type needs no Google Cloud account. Pull requests are highly welcome; keep each one small
-and about one feature or one function rather than a full rewrite. Running gcportrait needs no clone (the
+adding or correcting a type needs no Google Cloud account. Pull requests are highly welcome; keep each one
+small and about one feature or one function rather than a full rewrite. Running gcportrait needs no clone (the
 installer above); working on it starts with a fork of the repository and a clone of your fork:
 
 ```sh
@@ -361,47 +330,14 @@ pnpm install
 pnpm dev:demo
 ```
 
-[docs/contributing.md](docs/contributing.md) takes you from there to a green `pnpm check` and a pull request, and
-[agents.md](agents.md) is the short version of the rules for people and AI assistants alike. Every pull request
-states that the change is original work.
-Bugs, ideas and asset-type requests go in an
+[docs/contributing.md](docs/contributing.md) takes you from there to a green `pnpm check` and a pull request,
+and [agents.md](agents.md) holds every rule of the project in one file, for people and AI assistants alike.
+Every pull request states that the change is original work. Bugs, ideas and asset-type requests go in an
 [issue](https://github.com/florianchrometz/gcportrait/issues/new/choose).
 
-Contributions are accepted under the MIT License, the project's licence (inbound = outbound): by opening a pull
-request you offer your change under it, and you keep the copyright in what you write. There is no contributor
-licence agreement (CLA).
-
-## Author
-
-gcportrait is built and maintained by **Florian Chrometz**. It draws a Google Cloud environment as it actually
-is: every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and
-pull requests are welcome. More about Florian on his [personal website](https://florian-chrometz.de), on
-[GitHub](https://github.com/florianchrometz) and in the [author section of the
-website](https://gcportrait.app/#author).
-
-## Licence
-
-gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`), copyright
-(c) 2026 Florian Chrometz: [LICENSE](LICENSE) holds the text. Source files carry the line
-`SPDX-License-Identifier: MIT` within their first ten lines, and `pnpm provenance` checks every one.
-
-- **What you may do.** Use, copy, modify, merge, publish, distribute, sublicense and sell gcportrait, run it for
-  yourself or for others, on its own or as part of your own software or services, as long as the copyright
-  notice and the permission notice travel with it. The licence asks nothing of an instance you run; the app
-  still links its source in its footer on every page, "Source (MIT)", as a courtesy to the people who use it.
-  For a modified version, you can point the backend's `SOURCE_URL` (and `VITE_SOURCE_URL` for a demo-mode build)
-  at your source.
-- **The name and the icon are reserved.** The gcportrait name and the gcportrait icon are not covered by the MIT
-  License. They identify this project and may not be used to present other software or services as gcportrait
-  or as endorsed by it; forks must use their own name and icon ([brand/LICENSE.md](brand/LICENSE.md)).
-- **Third-party material keeps its own licences.** The npm dependencies, the self-hosted Roboto fonts (SIL
-  Open Font License 1.1) and the licence texts under `scripts/licenses/` are listed in
-  [THIRD_PARTY.md](THIRD_PARTY.md); `pnpm run licenses` allows only licences that do not reach gcportrait's
-  own combined work.
-- **Google trademarks.** Google Cloud and the Google Cloud product icons are trademarks of Google, used
-  unmodified under Google's icon usage terms ([packages/icons/README.md](packages/icons/README.md)); they are
-  not covered by the MIT License. gcportrait is not affiliated with, endorsed by, or sponsored by Google
-  ([above](#not-affiliated-with-google)).
+Contributions are accepted under the MIT License, the project's licence (inbound = outbound): by opening a
+pull request you offer your change under it, and you keep the copyright in what you write. There is no
+contributor licence agreement (CLA).
 
 ## Learn more
 
@@ -413,9 +349,49 @@ gcportrait's own work, its code, its texts and its images, is licensed under the
   the [timeline](docs/timeline.md), [export](docs/export.md) and the [FAQ](docs/faq.md); for running an
   instance: [self-host](docs/self-host.md), its [options](docs/self-host-options.md),
   [permissions](docs/permissions.md) and [configuration](docs/configuration.md).
-- **API**: [docs/api.md](docs/api.md), every route an instance serves for scripts, with curl examples:
-  `POST /api/render` for SVG, PNG and draw.io renders of a scope, an export file, a snapshot or a demo organisation,
+- **API**: [docs/api.md](docs/api.md), every route an instance serves for scripts, with curl examples: `POST
+  /api/render` for SVG, PNG and draw.io renders of a scope, an export file, a snapshot or a demo organisation,
   and the live pull and export read the app streams from.
-- For contributors: [docs/contributing.md](docs/contributing.md), [agents.md](agents.md), the package map in
-  [docs/packages.md](docs/packages.md), the decision records in [docs/adr/](docs/adr/README.md) and the open
-  work in [docs/backlog.md](docs/backlog.md).
+- For contributors: [docs/contributing.md](docs/contributing.md), every rule of the project in
+  [agents.md](agents.md), the package map in [docs/packages.md](docs/packages.md) and the open work in
+  [docs/backlog.md](docs/backlog.md).
+
+## Author
+
+gcportrait is built and maintained by **Florian Chrometz**. It draws a Google Cloud environment as it actually
+is: every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and
+pull requests are welcome. More about Florian on his [personal website](https://florian-chrometz.de), on
+[GitHub](https://github.com/florianchrometz) and in the [author section of the
+website](https://gcportrait.app/#author).
+
+## Not affiliated with Google
+
+> [!IMPORTANT]
+> gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
+> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
+> trademarks of Google and are used under Google's icon usage terms.
+
+## Licence
+
+gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`),
+copyright (c) 2026 Florian Chrometz: [LICENSE](LICENSE) holds the text. Source files carry the line
+`SPDX-License-Identifier: MIT` within their first ten lines, and `pnpm provenance` checks every one.
+
+- **What you may do.** Use, copy, modify, merge, publish, distribute, sublicense and sell gcportrait, run it
+  for yourself or for others, on its own or as part of your own software or services, as long as the copyright
+  notice and the permission notice travel with it. The licence asks nothing of an instance you run; the app
+  still links its source in its footer on every page, "Source (MIT)", as a courtesy to the people who use it.
+  For a modified version, you can point the backend's `SOURCE_URL` (and `VITE_SOURCE_URL` for a demo-mode
+  build) at your source.
+- **The name and the icon are reserved.** The gcportrait name and the gcportrait icon are not covered by the
+  MIT License. They identify this project and may not be used to present other software or services as
+  gcportrait or as endorsed by it; forks must use their own name and icon
+  ([brand/LICENSE.md](brand/LICENSE.md)).
+- **Third-party material keeps its own licences.** The npm dependencies, the self-hosted Roboto fonts (SIL
+  Open Font License 1.1) and the licence texts under `scripts/licenses/` are listed in
+  [THIRD_PARTY.md](THIRD_PARTY.md); `pnpm run licenses` allows only licences that do not reach gcportrait's
+  own combined work.
+- **Google trademarks.** Google Cloud and the Google Cloud product icons are trademarks of Google, used
+  unmodified under Google's icon usage terms ([packages/icons/README.md](packages/icons/README.md)); they are
+  not covered by the MIT License. gcportrait is not affiliated with, endorsed by, or sponsored by Google
+  ([above](#not-affiliated-with-google)).

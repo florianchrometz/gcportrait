@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Dependency audit gate (ADR 0035 §4, principle 7; docs/security.md, "Dependency audit"): `pnpm audit` over the
- * production dependencies and over the whole tree (development dependencies included), failing on any high or
- * critical advisory that is not accepted in scripts/audit-allowlist.json.
+ * Dependency audit gate (agents.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
+ * `pnpm audit` over the production dependencies and over the whole tree (development dependencies included),
+ * failing on any high or critical advisory that is not accepted in scripts/audit-allowlist.json.
  *
  *   node scripts/check-audit.mjs                       audit (CI: the `audit` job of .github/workflows/pr.yml)
  *   node scripts/check-audit.mjs --today 2026-10-11    judge expiry dates against that day (tests)

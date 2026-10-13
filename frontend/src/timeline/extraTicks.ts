@@ -99,7 +99,7 @@ function isExtraSource(source: SnapshotMeta['source']): source is ExtraSource {
   return source === 'export' || source === 'api';
 }
 
-/** Where a stored snapshot's read time came from, from its listing metadata (older records: the estimate flag). */
+/** Where a stored snapshot's read time came from, from its listing metadata (without one: the estimate flag). */
 export function readTimeSourceOf(meta: ExtraCandidate['meta']): ExtraReadTimeSource {
   switch (meta.readTimeSource) {
     case 'estimated-max-update-time':

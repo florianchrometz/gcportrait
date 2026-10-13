@@ -1,23 +1,24 @@
 // SPDX-License-Identifier: MIT
 /**
- * The permission preflight (docs/permissions.md; ADR 0028 §2 and §4; skill cai-ingestion §3): which of
- * the grants a pull of one scope needs are in place, checked against Google with the caller's token, answered as
- * a checklist with copy-ready commands.
+ * The permission preflight (docs/permissions.md; agents.md, Security and privacy, Quota project and the
+ * permission check; skill cai-ingestion §3): which of the grants a pull of one scope needs are in place,
+ * checked against Google with the caller's token, answered as a checklist with copy-ready commands.
  *
- * **User mode** (ADR 0028 §2), in this order:
+ * **User mode**, in this order:
  * 1. Resource Manager `GET {scope}`: a 200 gives the display name; 403 `IAM_PERMISSION_DENIED` is only a warning
  *    (`roles/cloudasset.viewer` does not include `resourcemanager.*.get`, and a user holding only that role can
- *    still list); any other answer stops, as in step 2's table.
+ *    still list); any other answer stops, as in the answer table of docs/permissions.md.
  * 2. The quota project: CAI `assets.list` with `pageSize: 1` and `x-goog-user-project`, for the scope itself when
  *    it is a project, then the project the person picked; never any other guess, never the instance's project.
  *    Each answer is matched on HTTP status and `ErrorInfo` reason together ({@link classifyProbe}); an answer the
  *    table does not know stops the preflight and fails closed.
  *
- * **Service-account mode** (ADR 0028 §4 and its amendment): the gate of ../auth/gate.ts, checked afresh (the
- * caller's `testIamPermissions` for the scope's `get`; with `SA_MODE_STRICT_EXPOSURE`, the account's `get` must be
- * exactly Resource Manager's IAM denial), and only after a pass the account's own probe, without a quota header.
- * The gate is never skipped and never configured away: without a pass, the account makes no CAI call, and the
- * result carries the gate's refusal, which the route answers as 403, 401 or 503 with the checklist in the body.
+ * **Service-account mode** (agents.md, Security and privacy, The service-account gate): the gate of
+ * ../auth/gate.ts, checked afresh (the caller's `testIamPermissions` for the scope's `get`; with
+ * `SA_MODE_STRICT_EXPOSURE`, the account's `get` must be exactly Resource Manager's IAM denial), and only
+ * after a pass the account's own probe, without a quota header. The gate is never skipped and never
+ * configured away: without a pass, the account makes no CAI call, and the result carries the gate's refusal,
+ * which the route answers as 403, 401 or 503 with the checklist in the body.
  *
  * Google's `tokeninfo` runs next to the first check: its email (when the token carries one) fills `--member`, and a
  * token it calls invalid ends the preflight with 401 (the person signs in again).
@@ -124,7 +125,7 @@ export function classifyGet(outcome: GoogleOutcome): Finding {
   return 'unexpected';
 }
 
-/** What a user-mode probe says (ADR 0028 §2 step 2's table). */
+/** What a user-mode probe says (the table of docs/permissions.md). */
 export type ProbeVerdict =
   /** 200: the quota project is usable and the scope is listable. */
   | 'listable'
@@ -202,7 +203,7 @@ function item(
   };
 }
 
-/** The overall outcome: sign in again, ready, try again, or blocked (ADR 0028 §2). */
+/** The overall outcome: sign in again, ready, try again, or blocked. */
 export function outcomeOf(items: readonly PreflightItem[]): PreflightOutcome {
   if (items.some((entry) => entry.finding === 'sign-in')) return 'sign-in';
   if (items.every((entry) => !entry.blocking || entry.status === 'ok')) return 'ready';

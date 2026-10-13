@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The preflight's matrix (every checklist row of docs/permissions.md × ok/403/404/429/5xx; ADR 0028 §2 table and §4
- * gate), run against a pretend Google whose answers are shaped like the ones the quota-project spike recorded.
+ * The preflight's matrix (every checklist row of docs/permissions.md × ok/403/404/429/5xx, and the
+ * service-account gate), run against a pretend Google whose answers are shaped like Google's (skill
+ * cai-ingestion §9).
  */
 import { describe, expect, it } from 'vitest';
 
@@ -203,7 +204,7 @@ describe('user mode, row "resourcemanager.*.get on the scope" (step 1, a warning
     expect(response.outcome).toBe('sign-in');
   });
 
-  it('never sends the quota header to Resource Manager (ADR 0028 §1)', async () => {
+  it('never sends the quota header to Resource Manager', async () => {
     const { google } = await run({}, { quotaProject: 'demo-quota-1' });
     for (const call of google.callsTo('get')) expect(call.headers.has('x-goog-user-project')).toBe(false);
   });
@@ -315,7 +316,8 @@ describe('user mode, row "quota project: Cloud Asset API enabled + serviceusage.
       'gcloud services enable cloudasset.googleapis.com --project=demo-app-1',
       `gcloud projects add-iam-policy-binding demo-quota-1 --member="${USER}" --role="roles/serviceusage.serviceUsageConsumer"`,
     ]);
-    // The scope's IAM is checked only after the quota project (spike finding 4): unknown, with its command.
+    // Google checks the scope's IAM only after the quota project (skill cai-ingestion §9): unknown, with its
+    // command.
     expect(itemOf(response, 'cai-access')).toMatchObject({
       status: 'unknown',
       finding: 'not-checked',
@@ -425,7 +427,7 @@ describe('user mode, row "quota project: Cloud Asset API enabled + serviceusage.
     expect(itemOf(html, 'quota-project').upstream).toEqual({ status: 404 });
   });
 
-  it('403 ACCESS_TOKEN_SCOPE_INSUFFICIENT on the probe: sign in again (the spike’s sign-in row)', async () => {
+  it('403 ACCESS_TOKEN_SCOPE_INSUFFICIENT on the probe: sign in again', async () => {
     const { result } = await run({ list: always(() => answers.scopeInsufficient()) });
     expect(checklist(result).outcome).toBe('sign-in');
   });
@@ -615,7 +617,7 @@ describe('service-account mode, row "caller still needs resourcemanager.*.get on
         .filter((call) => call.url.host !== 'oauth2.googleapis.com')
         .map((call) => `${endpointOf(call)}:${call.token === ACCOUNT_TOKEN ? 'account' : 'caller'}`),
     ).toEqual(['testIam:caller', 'get:account', 'list:account']);
-    // The same scope in every call (ADR 0028 §4).
+    // The same scope in every call.
     expect(
       new Set(google.calls.filter((call) => call.url.host !== 'oauth2.googleapis.com').map(scopeOfCall)),
     ).toEqual(new Set(['projects/demo-app-1']));

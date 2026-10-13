@@ -2,7 +2,7 @@
 // @ts-check
 /**
  * Writes the notes of a GitHub release (.github/workflows/release.yml, job github-release) to standard
- * output, in Markdown: the long-form non-affiliation statement (ADR 0018), the changes of the version, read
+ * output, in Markdown: the long-form non-affiliation statement, the changes of the version, read
  * from the `## X.Y.Z` sections of the workspace packages' CHANGELOG.md files that `pnpm release:version`
  * (changesets) wrote, the installer line that deploys the release (infra/install.sh, served by the website, with the
  * release's deploy scripts and checksums.txt that scripts/release-assets.sh attaches), and the container image with
@@ -26,7 +26,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-/** The long-form non-affiliation statement (ADR 0018); scripts/release-notes.test.ts keeps it equal to the app's. */
+/**
+ * The long-form non-affiliation statement (agents.md, Non-affiliation, brand and legal);
+ * scripts/release-notes.test.ts keeps it equal to the app's.
+ */
 export const NON_AFFILIATION_LONG =
   'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is ' +
   'not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are ' +

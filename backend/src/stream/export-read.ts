@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Reading a Cloud Asset Inventory export from Cloud Storage with the caller's token (ADR 0010; the
- * cai-ingestion skill §1): the export's own NDJSON lines, streamed through as they arrive.
+ * Reading a Cloud Asset Inventory export from Cloud Storage with the caller's token (agents.md, Data and
+ * graph semantics; the cai-ingestion skill §1): the export's own NDJSON lines, streamed through as they
+ * arrive.
  *
  * `gs://BUCKET/OBJECT` names one object (`--output-path`). A URI ending in `/`, or one that names no object,
  * is a prefix (`--output-path-prefix` writes `PREFIX/<asset type>/<shard>`): every object under `PREFIX/` is read,
@@ -151,7 +152,7 @@ async function listPrefix(
 ): Promise<ExportPlan> {
   const objects: ExportObject[] = [];
   // Every object listed counts against the cap, folder placeholders included, so that a prefix of placeholders
-  // alone cannot keep the listing going page after page (a review finding of 2026-10-10).
+  // alone cannot keep the listing going page after page.
   let listed = 0;
   let pageToken: string | undefined;
   do {

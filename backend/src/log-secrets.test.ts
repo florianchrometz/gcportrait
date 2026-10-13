@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * No token and no email in any log line, at the most verbose level (agents.md rule 10; ADR 0035 §4, principle 2;
- * the security review's check in docs/security.md §7). The server runs at `LOG_LEVEL=trace` against a
- * pretend Google, and every route is driven the way a person, a script and an attacker would: the token in each
- * header the backend reads, in a query string, in a body, in a malformed header and in Google's own error messages;
- * service-account mode with its gate and audit line; retries, refusals and failures. Every line written is then
- * searched for the tokens and the email. Everything is synthetic (agents.md rule 6).
+ * No token and no email in any log line, at the most verbose level (agents.md, Security and privacy,
+ * principle 2; docs/security.md §7). The server runs at `LOG_LEVEL=trace` against a pretend Google, and every
+ * route is driven the way a person, a script and an attacker would: the token in each header the backend
+ * reads, in a query string, in a body, in a malformed header and in Google's own error messages;
+ * service-account mode with its gate and audit line; retries, refusals and failures. Every line written is
+ * then searched for the tokens and the email. Everything is synthetic (agents.md, Security and privacy,
+ * principle 6).
  */
 import type { FastifyInstance, InjectOptions } from 'fastify';
 import { describe, expect, it } from 'vitest';
@@ -151,7 +152,7 @@ describe('no token and no email in any log line at LOG_LEVEL=trace', () => {
       200, 200, 200, 200, 200, 404, 200, 200, 200, 200, 200, 403, 200, 200, 400, 400, 401, 401, 404,
     ]);
     const logged = lines();
-    // Trace really is the level (measured: 49 lines, all at info, as nothing in the server or Fastify writes below
+    // Trace really is the level (the lines are all at info, as nothing in the server or Fastify writes below
     // it on these paths); the request lines, upstream lines and stream lines are all among them.
     expect(app.log.level).toBe('trace');
     expect(logged.some((line) => line.includes('"message":"incoming request"'))).toBe(true);
@@ -210,7 +211,7 @@ describe('no token and no email in any log line at LOG_LEVEL=trace', () => {
     expectNoSecret(logged);
   });
 
-  it('on the render API (ADR 0033): its log line has counts only, whatever the request carries', async () => {
+  it('on the render API: its log line has counts only, whatever the request carries', async () => {
     const { app, lines } = await traced({
       tokeninfo: () => jsonResponse(200, { email: CALLER_EMAIL, expires_in: '3599' }),
       list: () => googleError(403, 'PERMISSION_DENIED', `The token ${CALLER_TOKEN} was refused.`),

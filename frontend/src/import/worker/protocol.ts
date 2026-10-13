@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The import worker's protocol (ADR 0035 §5: ingest off the UI thread): the page reads a stream from the backend
+ * The import worker's protocol (ingest off the UI thread): the page reads a stream from the backend
  * (a live pull's frames, or an export's lines) and hands its bytes over chunk by chunk; the worker reads them with
  * `@gcportrait/ingest` as they arrive, counts pages and assets for the progress bar, and at the end answers with
  * the snapshot ready to store (`PreparedSnapshot`: Blobs and listing metadata, never parsed assets), which the

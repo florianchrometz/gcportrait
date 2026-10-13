@@ -2,12 +2,13 @@
 /**
  * Large answers of the diagram workers cross to the page as transferred bytes. A worker's answer is
  * structured-cloned on `postMessage` and deserialised on the UI thread when the page reads it; for a large Layout
- * that is a long task (demo XL at `projects`, 11.4 MB of JSON: 41.9 ms, a median of three). The same answer as JSON
- * bytes, transferred (no copy) and parsed on the UI thread, took 28.3 ms there (measured on 2026-10-11). So the
+ * that is a long task (demo XL at `projects`, 11.4 MB of JSON: about 42 ms). The same answer as JSON bytes,
+ * transferred (no copy) and parsed on the UI thread, takes about 28 ms there. So the
  * data and layout roles of the worker script (diagram.worker.ts) post a Scene answer or a
  * Layout of more than `TRANSFER_ABOVE_RECTS` rects as `{ type: 'encoded', bytes }`, the message's JSON as UTF-8 with
  * the buffer transferred, and the page (workers.ts) decodes every message before its client reads it. Smaller
- * answers, the defaults at 1280 × 800 among them, travel as they did: the JSON step would cost more than it saves.
+ * answers, the defaults at 1280 × 800 among them, are structured-cloned: the JSON step would cost more than it
+ * saves.
  * The answers are plain data, so the round trip gives the page what the clone gave it (transfer.test.ts), but for a
  * field whose value is `undefined` (an icon's `category`), which JSON leaves out and which reads the same.
  */

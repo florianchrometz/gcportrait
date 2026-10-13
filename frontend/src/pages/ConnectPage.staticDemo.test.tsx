@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The static demo (`pnpm demo:static`, ADR 0034): the app in demo-only mode with its configuration built in
+ * The static demo (`pnpm demo:static`): the app in demo-only mode with its configuration built in
  * (api/staticConfig.ts), on a host with no backend. It asks nothing of anyone: the footer links the Impressum and the
  * privacy notice on another site, and /impressum and /privacy lead there. Its Connect page and the Permissions
  * page's note are a demo-only instance's from the first render: ConnectPage.demoOnly.test.tsx checks them for both

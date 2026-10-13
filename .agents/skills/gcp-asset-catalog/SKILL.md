@@ -6,6 +6,9 @@ description: How gcportrait's asset catalog works and how to extend it — entry
 
 # gcportrait asset catalog
 
+The rules this handbook applies are in [agents.md](../../../agents.md) ("Data and graph semantics" and
+"Quality gates, testing and CI"); this file is the procedure for extending the catalog.
+
 Load this before adding or changing an asset type, a relation rule, a lens, an icon mapping or a console URL,
 and before running or fixing `pnpm catalog:check`. The catalog is *data*; code reads it.
 
@@ -23,7 +26,7 @@ References in this directory:
 
 ## 1. Structure
 
-`packages/catalog` (its README is the reference; ADR 0021 explains the group layout):
+`packages/catalog` (its README is the reference, the group layout included):
 
 ```
 packages/catalog/
@@ -86,7 +89,7 @@ the zone; `product` by default; the VPC network and subnetwork are `vpc` and `su
 whose values are other keys of the asset, e.g. `[ "$.data.email" ]` on `iam.googleapis.com/ServiceAccount`; the
 graph's alias index maps each value's `aliasKey` to the asset, which is what `serviceAccountEmail` targets), and
 `nestsIn` (one rule or a list, `{ to, normalize, …, kind? }`, the container the asset nests in, such
-as a VM's managed instance group; `kind` is drawn instead when it cannot nest there, ADR 0022). A relation rule
+as a VM's managed instance group; `kind` is drawn instead when it cannot nest there). A relation rule
 may say `reverse: true` to draw the edge from the target to the asset (a replica's `masterInstanceName` draws
 primary `replicates` replica).
 
@@ -141,10 +144,10 @@ not about identities or security.
 | `secures` | a policy or perimeter applies to its targets (a service perimeter to projects, a firewall policy to a network or folder, a Cloud Armor policy to backends) | policy → target | as an overlay on the target, in the lenses that list it |
 | `triggers` | eventing (Eventarc, Pub/Sub push → service, function or workflow) | source → target | general lenses |
 | `replicates` | replicas and cross-region copies (a Cloud SQL replica, an AlloyDB secondary) | primary → replica | general lenses |
-| `shares` | Shared VPC: a service project uses a host project's network (derived from cross-project `attaches`, ADR 0024) | service project → host project | general lenses; derived by the graph builder, never written in YAML |
+| `shares` | Shared VPC: a service project uses a host project's network (derived from cross-project `attaches` on evidence, agents.md, "Data and graph semantics") | service project → host project | general lenses; derived by the graph builder, never written in YAML |
 
 Choose the most specific kind; `uses` is the fallback. A rule whose data sits on the other side writes
-`reverse: true` (ADR 0022). `weak: true` makes an edge yield to a stronger one from the same asset (NIC network
+`reverse: true`. `weak: true` makes an edge yield to a stronger one from the same asset (NIC network
 vs. subnet).
 
 ## 5. Normalisers (turn a field value into a full resource name)
@@ -169,8 +172,8 @@ vs. subnet).
 
 Values that resolve to no asset are *dangling* (kept in the drawer, counted, not drawn). Project numbers vs.
 ids: Compute uses ids in self-links, most v2 APIs use numbers in `name`; the snapshot's project index maps
-both ways, and the graph matches a name with its project segment swapped when the written form names no asset
-(ADR 0024). Never hard-code either.
+both ways, and the graph matches a name with its project segment swapped when the written form names no asset.
+Never hard-code either.
 
 ## 6. Adding a type (20 minutes)
 
@@ -216,8 +219,8 @@ type), `relationKinds`, `showHidden: false`, `defaultDetail` (the deepest level 
 ceiling: choose the level the lens reads well at, not the deepest it can draw). The compiled catalog must
 contain all 11 lens ids of `LensId` (`@gcportrait/model`), so every lens file has to exist before
 `catalog.json` validates. Add a table-driven test case in `packages/graph` for the lens combined with every
-focus view and the standard filter set (filters compose with focus views and drill-in: agents.md hard rule
-14).
+focus view and the standard filter set (filters compose with focus views and drill-in;
+agents.md, Product rules).
 
 ## 8. Coverage and drift
 

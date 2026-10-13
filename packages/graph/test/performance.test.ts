@@ -20,8 +20,8 @@ const M_BUDGET_MS = 150;
 /** The L figures, for information: under `test:budget` only. */
 const BUDGET_RUN = process.env['GRAPH_BUDGET'] === '1';
 /**
- * A wall-clock budget fails when other processes take the machine's cores (a median of 157 ms has been seen at a
- * load average of 30, against 16-18 ms on a quiet machine): a retry measures again instead of failing the run.
+ * A wall-clock budget fails when other processes take the machine's cores (under heavy load a median can be ten
+ * times the quiet figure of 16-18 ms): a retry measures again instead of failing the run.
  */
 const RETRY = { retry: 2 };
 

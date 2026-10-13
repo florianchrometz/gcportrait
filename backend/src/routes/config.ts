@@ -5,20 +5,21 @@ import type { ServerConfig } from '../config.js';
 import { PublicConfigResponseSchema, toFastifySchema, type PublicConfigResponse } from '../schemas.js';
 
 /**
- * GET /api/config (docs/api.md): the public configuration the SPA starts from. No auth, by design: nothing here is a
- * secret. The OAuth web client id is what Google Identity Services needs in the browser, `saMode` and
- * `backendServiceAccount` tell the Connect and Permissions pages whether service-account mode is offered and which
- * account to grant (with the mode on, the account Application Default Credentials resolved to), `saStrictExposure`
- * whether its gate also refuses scopes the account can see on its own, `hostedBy` says who runs the instance before
- * anyone signs in, `sourceUrl` is the target of the footer's source link, `demoOnly` says the instance serves the demo only
- * (ADR 0032), `legal` which legal pages it serves as texts (routes/legal.ts) and the addresses of those it links
- * instead (LEGAL_IMPRESSUM_URL, LEGAL_PRIVACY_URL), and `render` the limits of the render API, or null where it is
- * off (ADR 0033).
+ * GET /api/config (docs/api.md): the public configuration the SPA starts from. No auth, by design: nothing
+ * here is a secret. The OAuth web client id is what Google Identity Services needs in the browser, `saMode`
+ * and `backendServiceAccount` tell the Connect and Permissions pages whether service-account mode is offered
+ * and which account to grant (with the mode on, the account Application Default Credentials resolved to),
+ * `saStrictExposure` whether its gate also refuses scopes the account can see on its own, `hostedBy` says who
+ * runs the instance before anyone signs in, `sourceUrl` is the target of the footer's source link, `demoOnly`
+ * says the instance serves the demo only, `legal` which legal pages it serves as texts (routes/legal.ts) and
+ * the addresses of those it links instead (LEGAL_IMPRESSUM_URL, LEGAL_PRIVACY_URL), and `render` the limits
+ * of the render API, or null where it is off.
  */
 
 /**
- * The `hostedBy` line: "Hosted by NAME.", or null without a name. It carries no non-affiliation line: the app's
- * footer says that on every page (ADR 0018, placement of 2026-10-12: footers and long-form texts only).
+ * The `hostedBy` line: "Hosted by NAME.", or null without a name. It carries no non-affiliation line: the
+ * app's footer says that on every page (footers and long-form texts only; agents.md, Non-affiliation, brand
+ * and legal).
  */
 export function hostedByLine(hostedBy: string | null): string | null {
   const name = hostedBy?.replace(/[.\s]+$/u, '') ?? '';

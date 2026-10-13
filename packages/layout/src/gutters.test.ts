@@ -110,7 +110,7 @@ describe('buildGutters', () => {
     expect(left.b).toBe(tree.bounds.height - 12);
   });
 
-  it('runs a gutter between the zones of a stack, out to the gutters beside the stack (ADR 0026)', () => {
+  it('runs a gutter between the zones of a stack, out to the gutters beside the stack', () => {
     // A tall VPC and two short empty zones after it: the two stack beside the VPC.
     const stacked = scene([
       zone('p', 'project', [
@@ -135,7 +135,7 @@ describe('buildGutters', () => {
     expect(gutters.around[y.index * 4 + ABOVE]).toBe(between.c);
   });
 
-  it('marks the stretches of a gutter that run along a border inside a padding band (ADR 0027)', () => {
+  it('marks the stretches of a gutter that run along a border inside a padding band', () => {
     const { tree, node, line } = setup(twoProjects);
     // A ring side hugs its zone's border between the zone's corners; the canvas ring (the margin) everywhere.
     const a = node('a');

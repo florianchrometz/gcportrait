@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The asset directory the backend's bundle ships (ADR 0033): written and read back by the same module, it holds the
+ * The asset directory the backend's bundle ships: written and read back by the same module, it holds the
  * packages' own bytes in the loading order of the fonts, so the bundle draws with what `pnpm render` draws with.
  */
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -29,7 +29,7 @@ describe('the asset directory', () => {
     expect(manifest.fonts).toHaveLength(fontFiles().length);
     expect(manifest.fonts[0]).toMatch(/^fonts\/0+-roboto-latin-400-normal\.woff$/);
     expect(manifest.packages).toEqual({ '@resvg/resvg-wasm': '2.6.2', ...fontPackageVersions() });
-    // The OFL-1.1 fonts travel with their licence (ADR 0019); resvg-wasm ships none of its own.
+    // The OFL-1.1 fonts travel with their licence; resvg-wasm ships none of its own.
     expect(manifest.licenses.some((name) => name.includes('fontsource__roboto-'))).toBe(true);
     for (const name of manifest.licenses) expect(existsSync(path.join(dir, name))).toBe(true);
     expect(JSON.parse(readFileSync(path.join(dir, ASSET_MANIFEST), 'utf8'))).toEqual(manifest);

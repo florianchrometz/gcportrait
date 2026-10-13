@@ -12,12 +12,12 @@ import {
 
 /**
  * The top bar's view controls (the ViewSpec of @gcportrait/model; docs/lenses-and-filters.md) on demo
- * organisation M: each control writes the view into the URL hash as expected, and reloading that URL restores it
- * (the hash is the only state of a view). Lens (and the default-detail rule), detail, focus with its parameter
- * pickers, every filter, the breadcrumb's drill-in trail (and double-click drill-in), the Snapshot menu, Copy link,
- * saved views (IndexedDB, across a reload). Filters apply under a drill-in and under a focus (the earlier tool's
- * named bug, ADR 0035 §3). Axe on the open popovers and the dialog in both themes; screenshots of them go to
- * e2e/.scratch/controls/ (git-ignored).
+ * organisation M: each control writes the view into the URL hash as expected, and reloading that URL restores
+ * it (the hash is the only state of a view). Lens (and the default-detail rule), detail, focus with its
+ * parameter pickers, every filter, the breadcrumb's drill-in trail (and double-click drill-in), the Snapshot
+ * menu, Copy link, saved views (IndexedDB, across a reload). Filters apply under a drill-in and under a focus
+ * (filters, focus views and drill-in compose; agents.md, Product rules). Axe on the open popovers and the
+ * dialog in both themes; screenshots of them go to e2e/.scratch/controls/ (git-ignored).
  */
 
 const FOLDERS = '//cloudresourcemanager.googleapis.com/folders/';
@@ -134,7 +134,7 @@ test('the Lens picker opens a lens at auto, no deeper than its default; a chosen
   await expect(banner(page).getByRole('combobox', { name: 'Lens' })).toContainText('Compute');
   await expect(detail(page).getByRole('radio', { name: 'Projects' })).toHaveAttribute('aria-checked', 'true');
 
-  // The lens's own level (a link from before 2026-10-10) follows the lens: the next switch opens at auto.
+  // The lens's own default level (as a link may hold it) follows the lens: the next switch opens at auto.
   await detail(page).getByRole('radio', { name: 'Networks' }).click();
   await expectHash(page, 'snapshot=demo:M&lens=compute&detail=networks');
   await chooseLens(page, 'Data');
@@ -267,9 +267,7 @@ test('the Filters popover writes every filter, counts them, a reload restores th
   await expect(filtersButton(page)).toHaveAccessibleName('Filters');
 });
 
-test('filters apply under a drill-in and under a focus (the earlier tool’s filters silently did not)', async ({
-  page,
-}) => {
+test('filters apply under a drill-in and under a focus', async ({ page }) => {
   // Drilled into Workloads: the compute lens draws VMs; excluding their type from the popover removes them all,
   // and the drill-in stays.
   const svg = await openDiagram(page, `/diagram#snapshot=demo:M&lens=compute&detail=all&root=${WORKLOADS}`);

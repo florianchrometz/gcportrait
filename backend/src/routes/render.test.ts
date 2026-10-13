@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/render` (ADR 0033) over HTTP (Fastify `inject`, a pretend Google behind the allowlisted client, the
- * render job in process): every source and both formats with the bytes the command line and the library write,
- * the title block without the affiliation line, the checks in their order (token, schema, the source's authority,
- * the lock, the slots), every error code with `Retry-After` on the retryable ones, the limits, the gate before every
- * page of a pull, the page budget, slot and lock given back, uploads that time out or cannot be read, a page that
- * arrives after the client left, and one log line of counts without secrets. Everything is synthetic (agents.md
- * rule 6).
+ * `POST /api/render` over HTTP (Fastify `inject`, a pretend Google behind the allowlisted client, the render
+ * job in process): every source and both formats with the bytes the command line and the library write, the
+ * title block without the affiliation line, the checks in their order (token, schema, the source's authority,
+ * the lock, the slots), every error code with `Retry-After` on the retryable ones, the limits, the gate
+ * before every page of a pull, the page budget, slot and lock given back, uploads that time out or cannot be
+ * read, a page that arrives after the client left, and one log line of counts without secrets. Everything is
+ * synthetic (agents.md, Security and privacy, principle 6).
  */
 import { readFileSync } from 'node:fs';
 import { request as httpRequest } from 'node:http';
@@ -276,7 +276,8 @@ describe('POST /api/render: the bytes `pnpm render` writes', () => {
       'x-gcportrait-detail': 'all',
       'x-gcportrait-scale': '2',
     });
-    // No non-affiliation header: the statement goes in footers and long-form texts, never with an export (ADR 0018).
+    // No non-affiliation header: the statement goes in footers and long-form texts, never with an export
+    // (agents.md, Non-affiliation, brand and legal).
     expect(response.headers['x-gcportrait-notice']).toBeUndefined();
     expect([...response.rawPayload.subarray(0, 8)]).toEqual(PNG_MAGIC);
     expect(response.rawPayload.equals(readFileSync(GOLDEN))).toBe(true);
@@ -301,7 +302,7 @@ describe('POST /api/render: the bytes `pnpm render` writes', () => {
     expect(response.headers['x-gcportrait-view']).toBe('snapshot=demo:M&lens=networking&detail=networks');
     expect(response.headers['x-gcportrait-scale']).toBeUndefined();
     const svg = response.body;
-    // The title block: scope, lens with read time, tagline; nothing else (ADR 0018 as placed on 2026-10-11).
+    // The title block: scope, lens with read time, tagline; nothing else.
     const block = /<g class="dg-title-block"[^>]*>([\s\S]*?)<\/g>/.exec(svg)?.[1] ?? '';
     const lines = [...block.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((match) => match[1]);
     expect(lines).toEqual(['example.com', 'Networking lens · read 2026-10-08T00:00:00+00:00', TAGLINE]);
@@ -565,8 +566,8 @@ describe('POST /api/render: a live pull', () => {
   });
 
   it('a page that arrives after the client left crashes nothing: the process lives, the lock is given back', async () => {
-    // The reviewer's case: Google answers a page after the client went away (the stub ignores the abort), the pull
-    // hands the frame to the route, and the stopped job refuses it. That refusal must be handled, or Node exits.
+    // Google answers a page after the client went away (the stub ignores the abort), the pull hands the frame
+    // to the route, and the stopped job refuses it. That refusal must be handled, or Node exits.
     const unhandled: unknown[] = [];
     const onUnhandled = (reason: unknown): void => {
       unhandled.push(reason);
@@ -624,7 +625,8 @@ describe('POST /api/render: refusals', () => {
     expect(none.headers['www-authenticate']).toBe('Bearer');
     expect(errorOf(none.body)).toMatchObject({ statusCode: 401, code: 'UNAUTHENTICATED' });
     expect(calls()).toEqual([]);
-    // Authorization: Bearer is taken when X-Gcportrait-Token is absent (ADR 0031).
+    // Authorization: Bearer is taken when X-Gcportrait-Token is absent (agents.md, Security and privacy,
+    // Tokens).
     const bearer = await post(
       app,
       { source: { kind: 'demo', size: 'S' }, format: 'svg' },

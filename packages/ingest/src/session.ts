@@ -12,7 +12,7 @@
  *   `{"t":"page","assets":[…]}` carries assets, `{"t":"progress","pages":n,"assets":m}` and
  *   `{"t":"done","assets":m,"readTime":"…"}` become events, and `{"t":"error","message":"…"}` stops the
  *   session with the upstream message. An object with a `name` is always an asset, whatever else it holds,
- *   so an asset is never mistaken for a frame and dropped (agents.md rule 5).
+ *   so an asset is never mistaken for a frame and dropped (agents.md, Product rules).
  */
 import {
   SNAPSHOT_SCHEMA_VERSION,

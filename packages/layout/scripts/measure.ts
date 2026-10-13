@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * `pnpm --filter @gcportrait/layout measure`: how the routes of a set of demo views read (total length, bends,
- * border-hugging length, detours, crossings, the canvas margin and how far routes run past both of their ends;
- * `src/testing/quality.ts`) and how long each takes, so that a routing change can be compared before and after
- * (ADR 0027). With `--packing` it prints instead, per view, the canvas area, the mean fill, the mean
+ * `pnpm --filter @gcportrait/layout measure`: how the routes of a set of demo views read (total length,
+ * bends, border-hugging length, detours, crossings, the canvas margin and how far routes run past both of
+ * their ends; `src/testing/quality.ts`) and how long each takes, so that a routing change can be compared
+ * before and after. With `--packing` it prints instead, per view, the canvas area, the mean fill, the mean
  * deviation from the target aspect and the share within 20 % of it of the containers with two or more
- * children, under each packing rule that ADR 0026 measured: skill §4's plain rows in sibling order, skill §9's
- * rows by height, and the rule in use (stacks and near ties). Prints a table; `--json` prints JSON.
+ * children, under each packing rule it compares: plain rows in sibling order, skill §9's rows by height, and
+ * the rule in use (skill §4: stacks and near ties). Prints a table; `--json` prints JSON.
  *
  *   pnpm --filter @gcportrait/layout measure
  *   pnpm --filter @gcportrait/layout measure --view M:overview:auto --view L:overview:projects --json
@@ -27,7 +27,7 @@ export interface View {
   readonly detail: DetailLevel;
 }
 
-/** The views ADR 0027 measured: M at `auto` (the collapsed overviews the app opens at) and L at `projects`. */
+/** The default views: M at `auto` (the collapsed overviews the app opens at) and L at `projects`. */
 export const DEFAULT_VIEWS: readonly View[] = [
   { fixture: 'M', lens: 'overview', detail: 'auto' },
   { fixture: 'M', lens: 'networking', detail: 'auto' },
@@ -35,7 +35,7 @@ export const DEFAULT_VIEWS: readonly View[] = [
   { fixture: 'L', lens: 'overview', detail: 'projects' },
 ];
 
-/** The packing rules ADR 0026 compares, by name. */
+/** The packing rules `--packing` compares, by name. */
 export const PACKING_RULES: readonly (readonly [string, PackPolicy])[] = [
   ['order', { stacks: false }],
   ['height', { stacks: false, byHeight: true }],
@@ -47,11 +47,11 @@ const USAGE = `Usage:
 
 Lays out each view (default: M overview, networking and load-balancing at auto, L overview at projects) and
 prints its lane holders, its first routing pass's search work (the states it settled, which decide single-pass
-mode: ADR 0027), its mode and passes, and its routes' length, bends, border-hugging length, detours,
+mode), its mode and passes, and its routes' length, bends, border-hugging length, detours,
 crossings, canvas-margin length and edges,
 and the routes that run more than 1 000 px past both of their ends with the worst such distance (overshoots),
 or with --packing the canvas area and the containers' mean fill, mean aspect deviation and share within 20 % of
-the target under each packing rule (ADR 0026).`;
+the target under each packing rule.`;
 
 export function parseView(text: string): View {
   const [fixture, lens, detail = 'auto'] = text.split(':');

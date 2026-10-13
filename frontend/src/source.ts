@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 
 /**
- * The app's link to its own source (ADR 0017). gcportrait is licensed under the MIT License, which asks nothing of
- * an instance's operator here; the link is a courtesy to the people who use an instance: it says where the source
- * of the version they use is published, and under which licence. The shell footer shows it on every route as
- * "Source (MIT)" (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the backend's SOURCE_URL)
- * in live mode, and the build-time VITE_SOURCE_URL in demo mode, where there is no backend; both fall back to
- * DEFAULT_SOURCE_URL, so an unmodified copy links upstream.
+ * The app's link to its own source (agents.md, Product rules). gcportrait is licensed under the MIT License, which
+ * asks nothing of an instance's operator here; the link is a courtesy to the people who use an instance: it says
+ * where the source of the version they use is published, and under which licence. The shell footer shows it on every
+ * route as "Source (MIT)" (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the backend's
+ * SOURCE_URL) in live mode, and the build-time VITE_SOURCE_URL in demo mode, where there is no backend; both fall
+ * back to DEFAULT_SOURCE_URL, so an unmodified copy links to the project's repository.
  */
 
-/** The footer link's text, naming the licence (ADR 0017). */
+/** The footer link's text, naming the licence. */
 export const SOURCE_LINK_TEXT = 'Source (MIT)';
 
 /**
- * gcportrait's public repository: the same default as SOURCE_URL in backend/src/config.ts. A copy published
- * under another repository changes both, and the tests that pin them (docs/handoff.md).
+ * The project's repository: the same default as SOURCE_URL in backend/src/config.ts. A fork changes both, and the
+ * tests that pin them (docs/contributing.md, Releases).
  */
 export const DEFAULT_SOURCE_URL = 'https://github.com/florianchrometz/gcportrait';
 

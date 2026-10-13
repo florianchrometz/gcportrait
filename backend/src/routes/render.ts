@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/render` (ADR 0033): a view of a scope, an uploaded export or bundle, or a demo organisation, drawn on
- * the server as SVG, PNG or a draw.io file (`"format": "drawio"`, compressed unless `"compressed": false`; the pixel
- * limits are a PNG's only) with the code `pnpm render` runs (`@gcportrait/render`, in a fresh worker per render:
- * ../render/runner.ts), so an instance's users can script exports without the app. Registered only with the routes
- * that call Google (never on a demo-only instance) and only while `RENDER_API` is on.
+ * `POST /api/render` (agents.md, Exports and the render API): a view of a scope, an uploaded export or
+ * bundle, or a demo organisation, drawn on the server as SVG, PNG or a draw.io file (`"format": "drawio"`,
+ * compressed unless `"compressed": false`; the pixel limits are a PNG's only) with the code `pnpm render`
+ * runs (`@gcportrait/render`, in a fresh worker per render: ../render/runner.ts), so an instance's users can
+ * script exports without the app. Registered only with the routes that call Google (never on a demo-only
+ * instance) and only while `RENDER_API` is on.
  *
  * The request is one JSON document, `RenderOptionsSchema` of `@gcportrait/model` plus `source`: the whole body for
  * the `scope` and `demo` sources, or the `request` field of a `multipart/form-data` body whose `file` part follows
@@ -75,7 +76,7 @@ import {
 import { ScopeNameSchema } from '../upstream/scope.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
 
-/** Renders per token hash and minute (ADR 0033 §7). */
+/** Renders per token hash and minute. */
 export const RENDER_RATE_LIMIT_PER_MINUTE = 10;
 
 /** Where the data of a render comes from. */

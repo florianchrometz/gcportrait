@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * One day of a stored history as a snapshot, in the data worker (docs/timeline.md): `snapshotAt` of
- * `@gcportrait/demo-data` (the generator-free replay, ADR 0029) applies the daily mutations up to the day, and the
+ * `@gcportrait/demo-data` (the generator-free replay) applies the daily mutations up to the day, and the
  * assets are read as any export is read, CAI NDJSON through `@gcportrait/ingest`, with the snapshot's own scope and
  * source and a clock fixed at the day's read time, exactly as diagram/pipeline/demo.ts reads a demo organisation's
  * last day. So a demo day is the same snapshot every time, and the last day is the snapshot itself. The days of a

@@ -70,7 +70,7 @@ describe('public surface', () => {
         'ViewFiltersSchema',
         'ViewSpecSchema',
         'normalizeViewSpec',
-        // render options (ADR 0033)
+        // render options
         'RENDER_DEFAULT_SCALE',
         'RENDER_DEFAULT_VIEWPORT',
         'RENDER_MAX_HASH_LENGTH',
@@ -123,7 +123,7 @@ describe('public surface', () => {
         // URL-hash codec
         'decodeViewSpec',
         'encodeViewSpec',
-        // zod-free vocabularies and guards (ADR 0029)
+        // zod-free vocabularies and guards
         'DEMO_REF_PREFIX',
         'DEMO_SIZES',
         'DETAIL_LEVEL_IDS',

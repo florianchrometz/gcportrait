@@ -22,16 +22,17 @@ sameAs: # Person.sameAs, and the links under the section: profile pages, https o
 The bio: one paragraph of 60 to 120 words, in the third person, for the Google Cloud community: what Florian
 does, his work with Google Cloud, what he writes or speaks about, and where to find him. Its first 300
 characters become the description in search results (Person.description). Name no programme membership and
-nothing that suggests Google's endorsement (ADR 0018). This comment does not appear on the site.
+nothing that suggests Google's endorsement (agents.md, "Non-affiliation, brand and legal"). This comment does
+not appear on the site.
 -->
 
-<!-- Draft of 2026-10-12 for the maintainer's approval; this comment does not appear on the site. -->
+<!-- A draft, for the maintainer's approval; this comment does not appear on the site. -->
 
 Florian Chrometz is a Google Cloud solution architect and developer. By day he designs and runs platforms on
-Google Cloud and Firebase, with serverless services at the core; by night he builds and publishes apps in Swift
-and JavaScript. He holds the Google Cloud Professional Cloud Architect certification. gcportrait grew out of
-that daily work: the wish to see an organisation's real resources and their relations as a clear architecture
-diagram, without drawing it by hand. More about Florian is on his personal website and on GitHub.
+Google Cloud and Firebase, with serverless services at the core; by night he builds and publishes apps in
+Swift and JavaScript. He holds the Google Cloud Professional Cloud Architect certification. gcportrait grew
+out of that daily work: the wish to see an organisation's real resources and their relations as a clear
+architecture diagram, without drawing it by hand. More about Florian is on his personal website and on GitHub.
 
 Florian Chrometz builds and maintains gcportrait, which draws a Google Cloud environment as it actually is:
 every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and

@@ -2,7 +2,8 @@
 /**
  * The backend as the tests stand it in: GET /api/config's answer (`publicConfig`), and a `fetch` that answers the
  * routes a test names, records every call with its parsed JSON body, and fails any other request as a dropped
- * connection would (`stubBackend`). Synthetic values only (agents.md rule 6). Imported by tests only.
+ * connection would (`stubBackend`). Synthetic values only (agents.md, Data and graph semantics). Imported by tests
+ * only.
  */
 import { vi, type Mock } from 'vitest';
 
@@ -22,7 +23,7 @@ export function publicConfig(overrides: Partial<PublicConfig> = {}): PublicConfi
   };
 }
 
-/** The static demo's build settings in the tests (ADR 0034): its source and the operator's legal pages elsewhere. */
+/** The static demo's build settings in the tests: its source and the operator's legal pages elsewhere. */
 export const STATIC_DEMO = {
   source: 'https://git.example.org/me/gcportrait',
   impressum: 'https://operator.example.com/legal/impressum',

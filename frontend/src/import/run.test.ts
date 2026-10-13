@@ -73,7 +73,7 @@ describe('a live pull', () => {
     const call = calls[0];
     expect(call?.url).toBe('/api/assets/stream');
     expect(call?.init?.method).toBe('POST');
-    expect(call?.headers.get('x-gcportrait-token')).toBe(TOKEN); // ADR 0031
+    expect(call?.headers.get('x-gcportrait-token')).toBe(TOKEN); // gcportrait's own header
     expect(call?.body).toEqual({
       scope: 'organizations/30000000001',
       contentType: 'RESOURCE',

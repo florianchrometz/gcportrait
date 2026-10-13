@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The search box (ADR 0035 §5; style skill §13): an editable combobox (ui/Combobox) over the Graph of the
+ * The search box (style skill §13): an editable combobox (ui/Combobox) over the Graph of the
  * view's snapshot, searched in the data worker (search/service.ts, ranking in search/rank.ts). Press `/`
  * anywhere outside a text field to focus it; type to list the results, grouped by kind (projects, networks,
  * resources, …) with icon, type and project; ↑ ↓ move, Enter or a click chooses (Enter with no active result

@@ -2,22 +2,22 @@
 /**
  * Golden layouts (skill gcp-diagram-layout §8): the demo organisations S and M × the overview, networking and
  * load-balancing lenses at detail `auto`, and M × the same lenses at detail `all`, built through
- * @gcportrait/graph with the real catalog (development only). Each layout, rects and routed edges, is compared
- * with its committed JSON under test/golden/, must satisfy the invariants (edges included) and be
+ * @gcportrait/graph with the real catalog (development only). Each layout, rects and routed edges, is
+ * compared with its committed JSON under test/golden/, must satisfy the invariants (edges included) and be
  * deterministic, and keeps its edges apart (skill §8 "lanes spaced"): no two edges (a hub bundle's members
  * count as one) run alongside each other closer than the lane pitch, every lane fits its gutter, and the
  * ports on a side are at least the port spacing apart. At detail `auto` (what the app opens) the routing must
  * not grow the packed canvas more than twofold, and the canvas stays wider than tall. The packing is checked
  * on the same Scene laid out without routing (the arrangement the router pins): it fills its rows, and every
  * container with at least four children is checked against its packing target by an independent oracle
- * (src/testing/oracle.ts) and against a fill floor (skill §9, "huge empty zones"), as ADR 0025 restates the
- * packing criterion: within 20 % unless no arrangement with full rows reaches 20 % or every one that does
- * needs more area than the chosen one framed to the target; fill ≥ 40 %. The L organisation is too large to
- * commit as JSON: L × networking (at `auto` and `all`) and L × overview and load-balancing (at `auto`) are
- * compared by their summaries (counts, the routing report with its fallbacks, bends histogram, lanes,
- * bundles, widening and passes, canvas and growth, spacing), with the same spacing checks and the invariants,
- * and L networking at `all` with determinism; the rest of L (overview and load-balancing at `all`,
- * single-pass mode) by the invariants.
+ * (src/testing/oracle.ts) and against a fill floor (skill §9, "huge empty zones"), by the packing criterion
+ * (agents.md, Layout and drawing rules): within 20 % unless no arrangement with full rows reaches 20 % or
+ * every one that does needs more area than the chosen one framed to the target; fill ≥ 40 %. The L
+ * organisation is too large to commit as JSON: L × networking (at `auto` and `all`) and L × overview and
+ * load-balancing (at `auto`) are compared by their summaries (counts, the routing report with its fallbacks,
+ * bends histogram, lanes, bundles, widening and passes, canvas and growth, spacing), with the same spacing
+ * checks and the invariants, and L networking at `all` with determinism; the rest of L (overview and
+ * load-balancing at `all`, single-pass mode) by the invariants.
  *
  * Update the goldens deliberately, after looking at the change (README "Golden layouts"):
  *   pnpm --filter @gcportrait/layout test:golden:update
@@ -230,8 +230,8 @@ describe.each(GOLDEN_CASES)('golden layout $name', (golden: GoldenCase) => {
         frameArea(a.width, a.height, aspect.target, ASPECT_TOLERANCE);
       const chosenFrame = frame(aspect);
       // The packer's choice is the best tidy arrangement: none needs a smaller frame by more than the near-tie
-      // margin (within 2 %, a grid that does not grow downwards and then fewer rows rank first: ADR 0026).
-      // Stacks (ADR 0026), which the oracle does not enumerate, only ever take a smaller frame.
+      // margin (within 2 %, a grid that does not grow downwards and then fewer rows rank first: skill §4).
+      // Stacks, which the oracle does not enumerate, only ever take a smaller frame.
       expect(chosenFrame, `${id}: a tidy arrangement needs a smaller frame`).toBeLessThanOrEqual(
         Math.min(...pool.map(frame)) * (1 + NEAR_TIE) + 1e-6,
       );
@@ -369,25 +369,25 @@ describe('demo L, lens overview, detail projects (skill §8 check view)', () => 
     // single-pass mode.
     expect(routing.squeezed).toBeLessThanOrEqual(5);
     const quality = routeQuality(layout);
-    // No route runs round through the canvas margin (a review on 2026-10-10 found 26 U-turns there while a gap
-    // beside a single border cost more than the free space beside it: ADR 0027).
+    // No route runs round through the canvas margin: a gap beside a single border costs no more than the free
+    // space beside it (skill §5), so no U-turn through the margin is ever cheaper.
     expect(quality.marginEdges).toBe(0);
-    // Nor inside the canvas: no route runs more than 1 000 px past both of its ends (an earlier rule had 140,
-    // dropping up to 2 528 px to a row gap and climbing back, while a long ring side cost 1.5 × its whole
-    // length; the surcharge is now capped per side, ADR 0027 rule 2). The farthest, under 1 000 px, run up
-    // from a top-row project to Workloads' ring top, the only gutter across Workloads above its folders.
+    // Nor inside the canvas: no route runs more than 1 000 px past both of its ends (the surcharge along a
+    // ring side is capped per side, skill §5, so a long ring side never costs so much that routes drop to a
+    // row gap far below and climb back). The farthest, under 1 000 px, run up from a top-row project to
+    // Workloads' ring top, the only gutter across Workloads above its folders.
     expect(quality.overshoots).toBe(0);
     expect(() => {
       assertLayout(scene, layout);
     }).not.toThrow();
   });
 
-  it('sits well inside the three-pass band of search work, so a small data change cannot flip it (ADR 0027)', () => {
+  it('sits well inside the three-pass band of search work, so a small data change cannot flip it', () => {
     const { routing } = layout.report;
     const { oneRoundWork, singlePassWork } = DEFAULT_ROUTING;
-    // 2 658 edges, 1 234 lane holders: the raw counts said nothing about its cost (a holder count put it 16
-    // holders under a 1 250-holder threshold). Its first pass settles about 290 000 states: 15 % more work
-    // keeps both widening rounds, 40 % more still routes in three passes.
+    // 2 658 edges, 1 234 lane holders: the raw counts say nothing about its cost. Its first pass settles
+    // about 290 000 states: 15 % more work keeps both widening rounds, 40 % more still routes in three
+    // passes.
     expect(routing.edges).toBe(2658);
     expect(routing.work * 1.15).toBeLessThan(oneRoundWork);
     expect(routing.work * 1.4).toBeLessThan(singlePassWork);
@@ -414,13 +414,13 @@ describe('demo L, lens overview, detail projects (skill §8 check view)', () => 
 
 describe('widening rounds', () => {
   it('runs a third round where the second re-route still squeezes a lane, but not above lateRoundsUpTo holders nor in the one-round band', () => {
-    // M networking at `all` needs three rounds to keep every lane inside its gutter (ADR 0027).
+    // M networking at `all` needs three rounds to keep every lane inside its gutter (skill §5).
     const scene = demoScene('M', 'networking', 'all');
     const full = layoutScene(scene);
     expect(full.report.routing).toMatchObject({ wideningRounds: 3, squeezed: 0 });
     const capped = layoutScene(scene, { routing: { lateRoundsUpTo: 0 } });
     expect(capped.report.routing.wideningRounds).toBe(2);
-    // In the band between oneRoundWork and singlePassWork one round at most, still three-pass (ADR 0027).
+    // In the band between oneRoundWork and singlePassWork one round at most, still three-pass (skill §5).
     const banded = layoutScene(scene, { routing: { oneRoundWork: full.report.routing.work - 1 } });
     expect(banded.report.routing).toMatchObject({ mode: 'three-pass', wideningRounds: 1 });
   });

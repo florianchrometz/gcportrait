@@ -18,7 +18,7 @@ import { dataHarness, TEST_VIEWPORT } from '../testing/dataHarness';
 import { consoleLinks, consoleSource, DataError, lensList, loadDemoSnapshot } from './dataHandler';
 import { createSceneMemo } from './sceneMemo';
 
-// The handler loads the demo generator on first use (ADR 0029); loaded once here, before any test times its steps.
+// The handler loads the demo generator on first use; loaded once here, before any test times its steps.
 beforeAll(async () => {
   await import('./demo');
 });

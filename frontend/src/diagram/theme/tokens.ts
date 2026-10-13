@@ -5,9 +5,9 @@
  * baselines, the headless renderer and the export), and `tokens.css` defines the same values as CSS custom
  * properties (`--dg-*`) that the interactive states use and that follow `<html data-theme>`.
  *
- * Every value is the skill's §2 value: since 2026-10-10 the skill records the grey outlines and the dim edge the
- * renderer had departed to (each theme's `muted`), the dark subnet stroke and the `mutedOnTint` and `pathCasing`
- * tokens, each with its contrast figure (§10). Should a §2 value ever fail a §10 contrast pair again, the
+ * Every value is the skill's §2 value: §2 holds the grey outlines and the dim edge (each theme's `muted`), the dark
+ * subnet stroke and the `mutedOnTint` and `pathCasing` tokens, each with its contrast figure (§10). Should a §2
+ * value ever fail a §10 contrast pair, the
  * skill's own rule applies (§1: "keep Google's colour semantics and adjust values until contrast passes"),
  * with a colour the palette already has, listed in `SKILL_DEPARTURES` with the §2 value and its measured ratio
  * until the skill adopts it. `theme.test.ts` checks the table against the skill's §2 tables, checks that each
@@ -138,10 +138,10 @@ export interface SkillDeparture {
 }
 
 /**
- * The departures from §2: none since 2026-10-10, when the skill adopted the grey container outlines and the dim
- * edge (each theme's `muted` grey, the one grey of the palette that reaches 3 : 1 on every tint they meet:
- * light #5F6368, 3.52 on the project tint at worst; dark #9AA0A6, 4.07 on the nested tint at worst).
- * `theme.test.ts` keeps the values they replaced (`ADOPTED`) and shows that each of them fails a §10 pair.
+ * The departures from §2: none. The grey container outlines and the dim edge are each theme's `muted` grey, the
+ * one grey of the palette that reaches 3 : 1 on every tint they meet (light #5F6368, 3.52 on the project tint at
+ * worst; dark #9AA0A6, 4.07 on the nested tint at worst). `theme.test.ts` keeps the fainter greys they could take
+ * instead (`FAINTER`) and shows that each of them fails a §10 pair.
  */
 export const SKILL_DEPARTURES: readonly SkillDeparture[] = [];
 

@@ -11,12 +11,12 @@ import {
 } from './support.js';
 
 /**
- * Findings of the app walkthrough of 2026-10-10, in the browser at the minimum desktop viewport, 1280 × 800
- * (ADR 0011), in both themes: the Networking lens on demo M opens readable (its
- * default detail is the ceiling of `auto`, so the fitted drawing keeps its labels); the top bar's Theme menu sets
- * the same preference as Settings; "Try the demo" lands focus on the page and announces it; the view row is shown
- * on the diagram page only; a link naming no snapshot and a refused focus say so. Screenshots of the Networking
- * lens and of the Theme menu go to e2e/.scratch/walkthrough/ (git-ignored).
+ * The app at the minimum desktop viewport, 1280 × 800 (desktop only; agents.md, Product rules), in both
+ * themes: the Networking lens on demo M opens readable (its default detail is the ceiling of `auto`, so the
+ * fitted drawing keeps its labels); the top bar's Theme menu sets the same preference as Settings; "Try the
+ * demo" lands focus on the page and announces it; the view row is shown on the diagram page only; a link
+ * naming no snapshot and a refused focus say so. Screenshots of the Networking lens and of the Theme menu go
+ * to e2e/.scratch/minimum-viewport/ (git-ignored).
  */
 test.use({ viewport: { width: 1280, height: 800 } });
 
@@ -27,7 +27,7 @@ function canvasClasses(page: Page): Promise<string> {
 }
 
 async function shot(page: Page, name: string): Promise<void> {
-  await scratchShot(page, 'walkthrough', name);
+  await scratchShot(page, 'minimum-viewport', name);
 }
 
 for (const scheme of ['light', 'dark'] as const) {
@@ -48,7 +48,7 @@ for (const scheme of ['light', 'dark'] as const) {
       const auto = page.getByRole('radiogroup', { name: 'Detail' }).getByRole('radio', { name: /^Auto · / });
       await expect(auto).toHaveAttribute('aria-checked', 'true');
       await expect(auto).toHaveText(/^Auto · (folders|projects|networks)$/);
-      // Fitted to the canvas, the drawing keeps its labels (the walkthrough saw 172 rects below the label scale).
+      // Fitted to the canvas, the drawing keeps its labels: its scale stays at or above the label scale.
       const scale = Number(
         await page.locator('svg.dg-canvas[data-diagram-ready="true"]').getAttribute('data-scale'),
       );

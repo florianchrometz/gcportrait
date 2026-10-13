@@ -40,7 +40,7 @@ afterEach(() => {
 
 /**
  * A library over `db` with the in-process snapshot worker. "Try the demo" takes the demo's record as the data worker
- * prepares it (ADR 0029; demo.test.ts covers the job itself), prepared once for the file unless `demo` says otherwise.
+ * prepares it (demo.test.ts covers the job itself), prepared once for the file unless `demo` says otherwise.
  */
 function library(
   db: Promise<GcportraitDB | null>,

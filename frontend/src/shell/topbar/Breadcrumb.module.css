@@ -4,7 +4,7 @@
    navigation's text is the crumbs' labels), each cut with an ellipsis when the trail runs long; crumbs one can
    drill out to are text buttons, underlined on hover. It takes the view row's free space and never widens the
    row (inline-size containment: its content does not count towards the row's minimum width), so the controls
-   stay within the 1280 px minimum viewport whatever the trail (ADR 0011). Tokens only (both themes). */
+   stay within the 1280 px minimum viewport whatever the trail. Tokens only (both themes). */
 .breadcrumb {
   flex: 1 1 auto;
   min-width: 120px;

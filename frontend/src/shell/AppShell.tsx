@@ -11,9 +11,9 @@ import { TopBar } from './topbar/TopBar';
 
 /**
  * The frame around every page: skip links (to the content; on the diagram page also straight to the drawing),
- * top bar, the routed page in <main>, and the footer with the non-affiliation notice (ADR 0018, placement of
- * 2026-10-10: `FOOTER_NOTICE`, the maintainer's name a link to their website in a new tab) and, next
- * to it, the "Source (MIT)" link (ADR 0017), which stay visible on every route and sit
+ * top bar, the routed page in <main>, and the footer with the non-affiliation notice (`FOOTER_NOTICE`,
+ * the maintainer's name a link to their website in a new tab; agents.md, Non-affiliation, brand and legal) and,
+ * next to it, the "Source (MIT)" link, which stay visible on every route and sit
  * outside anything the diagram canvas will ever draw; after them "Impressum · Privacy" when the instance publishes
  * them (legal/LegalLinks.tsx): its own pages, or the pages it links on another site (`legal.impressumUrl` and
  * `legal.privacyUrl` in /api/config or the static demo's configuration), marked as external.

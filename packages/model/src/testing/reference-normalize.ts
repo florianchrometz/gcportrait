@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * For tests only (codec/view-hash.property.test.ts; not part of the `./testing` export): `normalizeViewSpec` as
- * it was written before ADR 0029, every field judged by its zod schema's `safeParse`. The zod-free normaliser
+ * For tests only (codec/view-hash.property.test.ts; not part of the `./testing` export): `normalizeViewSpec`
+ * written with zod, every field judged by its zod schema's `safeParse`. The zod-free normaliser
  * (codec/normalize.ts) must give the same result for any input; this is the oracle the property test compares
  * it with.
  */

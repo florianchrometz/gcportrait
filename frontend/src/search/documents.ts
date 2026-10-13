@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The search documents of a Graph (ADR 0035 §5: a Fuse.js index over the Graph's node index): one per node, except
+ * The search documents of a Graph (a Fuse.js index over the Graph's node index): one per node, except
  * the organisation, which is the canvas and never a node of the drawing. Each carries the fields the index
  * searches (rank.ts: label, display name, last name segment, full name, IPs, domains, project id, type name,
  * asset type, product, and the names of the project and folders above it) and what a result shows (kind, type

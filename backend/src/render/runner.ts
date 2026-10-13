@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * How the render route runs a render job (ADR 0033 §8). The default runner starts a fresh `worker_threads` worker
- * per render and terminates it when the render ends, times out or loses its client: rasterising takes seconds of
- * CPU that would otherwise stall `/healthz` and every stream, and the WebAssembly rasteriser's memory (about 10 bytes
- * per PNG pixel) is only given back when its thread ends. The worker's heap is capped too; running out of it is
- * `RENDER_TOO_LARGE`. The PNG comes back by transfer, without a copy.
+ * How the render route runs a render job (agents.md, Exports and the render API). The default runner starts a
+ * fresh `worker_threads` worker per render and terminates it when the render ends, times out or loses its
+ * client: rasterising takes seconds of CPU that would otherwise stall `/healthz` and every stream, and the
+ * WebAssembly rasteriser's memory (about 10 bytes per PNG pixel) is only given back when its thread ends. The
+ * worker's heap is capped too; running out of it is `RENDER_TOO_LARGE`. The PNG comes back by transfer,
+ * without a copy.
  *
  * In the bundle the worker is `dist/render-worker.mjs`, with the rasteriser's assets in `dist/render-assets/`
  * (bundle.ts names both through a build-time define); from source it is `worker.ts`, run by tsx's loader, which
@@ -16,7 +17,7 @@ import { Worker } from 'node:worker_threads';
 
 import type { JobErrorCode, JobInput, JobOutput, JobResult, JobSpec } from './protocol.js';
 
-/** The render worker's old-generation heap, in MiB (ADR 0033 §7: a fixed limit). */
+/** The render worker's old-generation heap, in MiB (a fixed limit). */
 export const RENDER_WORKER_HEAP_MB = 1024;
 
 /** Why a run failed: the job's own error, or the worker's (its heap exhausted, or it stopped). */

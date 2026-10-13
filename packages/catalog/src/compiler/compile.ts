@@ -770,7 +770,7 @@ export function compileCatalog(
     ruleCount += rules.length;
     const { hiddenWhen } = entry;
     if (typeof hiddenWhen === 'string') {
-      // A hiddenWhen predicate is proven by a fixture it hides and one it leaves visible (ADR 0023).
+      // A hiddenWhen predicate is proven by a fixture it hides and one it leaves visible.
       const matching = fixtures.filter((asset) => hiddenWhenMatches(asset, entry)).length;
       const missing = [
         ...(matching === 0 ? ['one it matches (starts hidden)'] : []),

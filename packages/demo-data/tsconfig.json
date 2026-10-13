@@ -1,5 +1,5 @@
 {
-  // The pure generator: no Node APIs (agents.md rule 9). The command-line wrapper and the tests that read the
+  // The pure generator: no Node APIs (a pure core). The command-line wrapper and the tests that read the
   // committed fixtures live in scripts/, which has its own project with Node types.
   "extends": "../../tsconfig.node.json",
   "compilerOptions": {

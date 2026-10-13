@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * No real organisation data in the backend's tests (agents.md rule 6): every test and test helper under src/, found
- * by name so a new one is checked without being listed, and the two files of other areas that the service-account
- * tests' data reaches (the e2e spec that drives the harness, and the permissions guide whose cases they mirror),
- * which this test only reads. A few files hold a value the guard flags on purpose; each is exempted here by value,
- * with the reason, so anything else in them is still checked.
+ * No real organisation data in the backend's tests (agents.md, Security and privacy, principle 6): every test
+ * and test helper under src/, found by name so a new one is checked without being listed, and the two files
+ * of other areas that the service-account tests' data reaches (the e2e spec that drives the harness, and the
+ * permissions guide whose cases they mirror), which this test only reads. A few files hold a value the guard
+ * flags on purpose; each is exempted here by value, with the reason, so anything else in them is still
+ * checked.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -30,7 +31,7 @@ interface Exemption {
 
 const EXEMPTIONS: Readonly<Record<string, Exemption>> = {
   'backend/src/config.test.ts': {
-    reason: 'pins DEFAULT_SOURCE_URL, the real repository a fork must change (docs/handoff.md)',
+    reason: 'pins DEFAULT_SOURCE_URL, the project repository a fork changes (docs/contributing.md, Releases)',
     allowed: [/^github\.com$/],
   },
   'backend/src/render/bundle.test.ts': {
@@ -67,7 +68,7 @@ const findingsOf = (file: string): string[] =>
 const valueOf = (finding: string): string => finding.split(' ')[1] ?? '';
 
 describe('the backend tests’ data', () => {
-  it.each(FILES)('%s is synthetic (agents.md rule 6)', (file) => {
+  it.each(FILES)('%s is synthetic', (file) => {
     const allowed = EXEMPTIONS[file]?.allowed ?? [];
     const findings = findingsOf(file).filter(
       (finding) => !allowed.some((pattern) => pattern.test(valueOf(finding))),

@@ -130,14 +130,6 @@ export function loadSources(root: string = CATALOG_ROOT): CatalogSources {
   if (!existsSync(path.join(root, KNOWN_UNMAPPED_DIR))) {
     violations.push({ code: 'load', file: `${KNOWN_UNMAPPED_DIR}/`, message: 'known-unmapped/ is missing' });
   }
-  if (existsSync(path.join(root, 'known-unmapped.yaml'))) {
-    violations.push({
-      code: 'file-name',
-      file: 'known-unmapped.yaml',
-      message:
-        'the single file became known-unmapped/<group>.yaml (one per authoring group): move its entries there',
-    });
-  }
 
   const fixtures: SourceFile[] = [];
   for (const service of listDir(path.join(root, 'fixtures'))) {

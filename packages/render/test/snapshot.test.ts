@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The snapshot readers (ADR 0033) against the app's own import: a demo organisation's assets as a Cloud Asset
+ * The snapshot readers against the app's own import: a demo organisation's assets as a Cloud Asset
  * Inventory export and as a live pull's frames, and as a `.gcportrait.json` bundle, give back the snapshot the demo
  * loader reads, so a render of either is the demo's drawing. Refusals carry the app's messages. Synthetic data only.
  */

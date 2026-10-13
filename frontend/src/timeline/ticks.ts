@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The timeline's ticks (ADR 0008; skill cai-ingestion §5, binding): `today` at 00:00 UTC and the 34
+ * The timeline's ticks (agents.md, Product rules; skill cai-ingestion §5): `today` at 00:00 UTC and the 34
  * days before it, oldest first. A tick's read time is `YYYY-MM-DDT00:00:00Z`; the latest tick of a live scope uses
  * "now" instead (`readTime: null`), so it is never in the future and shows the scope as it is. Ticks are labelled in
  * the viewer's local date: the label is the local date of the instant the tick shows.
@@ -9,7 +9,7 @@
  * history passes its last day (`DemoHistory.today`), so a demo organisation's timeline is the same on every day.
  */
 
-/** Daily ticks on the timeline: today and the 34 days before it (ADR 0008; CAI reads at most 35 days back). */
+/** Daily ticks on the timeline: today and the 34 days before it (CAI reads at most 35 days back). */
 export const TIMELINE_DAYS = 35;
 
 const DAY_MS = 86_400_000;

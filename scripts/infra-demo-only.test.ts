@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Demo-only instances, custom domains and legal pages (ADR 0032): deploy.sh's --demo-only, --domain,
- * --legal-dir, --impressum-url and --privacy-url, uninstall.sh's domain mappings and infra/common.sh's JSON reader,
- * against the stand-ins of scripts/testing/infra-stub.ts.
+ * Demo-only instances, custom domains and legal pages (agents.md, Modes and hosting): deploy.sh's
+ * --demo-only, --domain, --legal-dir, --impressum-url and --privacy-url, uninstall.sh's domain mappings and
+ * infra/common.sh's JSON reader, against the stand-ins of scripts/testing/infra-stub.ts.
  */
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -380,7 +380,7 @@ describe.skipIf(!BASH_AVAILABLE)(
               env: { PATH: '/usr/bin:/bin', LC_ALL: 'C' },
             },
           );
-        /** Synthetic texts only (agents.md rule 6). */
+        /** Synthetic texts only (agents.md, Data and graph semantics). */
         const IMPRESSUM =
           '# Impressum\n\nExample Operator  \nExample Street 1, 12345 Example City\n\nÄ ö ü ß – “quotes”\n';
         const PRIVACY = '# Privacy\r\n\r\nNothing about you is stored.\r\n';

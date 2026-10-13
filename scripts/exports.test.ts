@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * scripts/exports.mjs: the sample exports' file list, the render command each manifest entry records, the PNG and
- * SVG sizes, the non-affiliation rule for an exported SVG (no affiliation line in its title block, <title> or
- * <desc>, ADR 0018 as placed on 2026-10-11) and for a draw.io file's labels, the draw.io file read as diagrams.net
- * reads it, the staleness check against the manifest, the committed samples themselves, and the command line's paths
- * that need no browser.
+ * scripts/exports.mjs: the sample exports' file list, the render command each manifest entry records, the PNG
+ * and SVG sizes, the non-affiliation rule for an exported SVG (no affiliation line in its title block,
+ * <title> or <desc>) and for a draw.io file's labels, the draw.io file read as diagrams.net reads it, the
+ * staleness check against the manifest, the committed samples themselves, and the command line's paths that
+ * need no browser.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -34,10 +34,10 @@ import {
 import { SCRIPTS_DIR, createTempTree, runScript, type TempTree } from './testing/temp-tree.js';
 
 const REPO = path.resolve(SCRIPTS_DIR, '..');
-/** The short non-affiliation line of earlier versions, which an export must never carry either. */
+/** The first sentence of the footer notice (frontend/src/branding.ts), which no export may carry. */
 const DISCLAIMER = 'Not affiliated with Google / Google Cloud.';
 const TAGLINE = 'gcportrait.app - Visualize your Google Cloud Infrastructure';
-/** The title block's three lines and the <desc> of an export since 2026-10-11 (frontend/src/diagram/titleBlock.ts). */
+/** The title block's three lines and the <desc> of an export (frontend/src/diagram/titleBlock.ts). */
 const TITLE_BLOCK = ['example.com', 'Overview lens · read 2026-10-08T00:00:00+00:00', TAGLINE];
 const DESC = 'example.com, Overview lens, read 2026-10-08T00:00:00+00:00. Drawn with gcportrait.';
 
@@ -283,9 +283,9 @@ describe('the staleness check', () => {
   });
 
   it('fails every SVG and draw.io file that carries the non-affiliation line, and the whole set over its budget', () => {
-    const old = Buffer.from(svg([...TITLE_BLOCK, DISCLAIMER], `${DESC} ${DISCLAIMER}`));
-    files['M-overview-light.svg'] = old;
-    tree.write('M-overview-light.svg', old);
+    const affiliated = Buffer.from(svg([...TITLE_BLOCK, DISCLAIMER], `${DESC} ${DISCLAIMER}`));
+    files['M-overview-light.svg'] = affiliated;
+    tree.write('M-overview-light.svg', affiliated);
     const stated = Buffer.from(drawio([...TITLE_BLOCK, DISCLAIMER]));
     files['S-overview-dark.drawio'] = stated;
     tree.write('S-overview-dark.drawio', stated);

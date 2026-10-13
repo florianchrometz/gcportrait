@@ -2,19 +2,19 @@
 
 # @gcportrait/layout
 
-The layout engine (ADR 0006;
+The layout engine (its specification is the
 [skill gcp-diagram-layout](../../.agents/skills/gcp-diagram-layout/SKILL.md)): a `Scene` from
 `@gcportrait/model` becomes a `Layout` of absolute rectangles for every zone, chip and card and an orthogonal
-path for every edge. It is a clean-room design from the skill: nested zones packed bottom-up into tidy grids
+path for every edge. It is gcportrait's own engine: nested zones packed bottom-up into tidy grids
 that aim at a target aspect ratio (stages 1–3), then edges routed through the gaps between them, in lanes,
 never across a card or a header (stages 4–5), and the invariants that check both (see "Pipeline"). A worker
 protocol runs it off the UI thread, cancels superseded requests between stages and memoises the last eight
 Layouts by a structural hash of the Scene ("Worker" below).
 
-The package is a pure core (agents.md rule 9): no DOM, no randomness, no clock (unless the caller passes one
-for timings), no I/O; `src/` compiles without DOM or Node types. Text is never measured from the DOM: widths
-come from a font metrics table generated at build time from the Roboto files the app self-hosts. It imports
-`@gcportrait/model` only.
+The package is a pure core (agents.md, Layout and drawing rules): no DOM, no randomness, no clock (unless the
+caller passes one for timings), no I/O; `src/` compiles without DOM or Node types. Text is never measured from
+the DOM: widths come from a font metrics table generated at build time from the Roboto files the app
+self-hosts. It imports `@gcportrait/model` only.
 
 ```ts
 import { assertLayout, layoutScene } from '@gcportrait/layout';
@@ -41,10 +41,10 @@ assertLayout(scene, layout); // throws LayoutInvariantError in development build
 | `layoutScene(scene, options?)` | `Layout`: `rects` (one per Scene node, keyed by id, parents before children), `edges` (one routed `EdgePath` per drawn edge, keyed `<from> -<kind>-> <to>`), `chips` (ids of collapsed zones), `bounds` (the canvas), `arrangements` (how each container was packed), `gutters` (the reservations it was packed with), `report` |
 | `LayoutRect` | `x`, `y`, `width`, `height`, `parent` (`null` at the top level), `role` (`zone`, `chip`, `empty`, `card`), `kind` (the zone kind or `card`), `depth` (the canvas is 0, the top level 1), `headerHeight` and `padding` (open zones; 0 otherwise), `paddingExtra?` (extra padding per side, the router's lane space; absent when none), `collapsed` |
 | `EdgePath`, `EdgePort`, `EdgeHeads`, `EdgeBundle`, `Side` | a routed edge: `from`, `to`, `kind`, `count` (relations it stands for), `merged`, `heads` (`end`, `both`, `none`), `source` and `target` ports (`x`, `y`, `side`: on the rects' borders), `points` (orthogonal polyline from the source end to the target end; an end with a head stops at its tip, 2 px inside the border), `elbowRadius` (6; 0 for a straight edge; the renderer clamps it beside a head, see "Geometry"), `fallback`, `bundle` (a hub bundle's members: its `id`, the shared `end` and its `size`; absent for an edge of its own) |
-| `Arrangement`, `Arrangements` | a container's packing: `cardColumns` (the card grid), `zoneRows` (zones per row, top to bottom) and `zoneStacks?` (per row, the zones of each cell: a cell of more than one is a stack, ADR 0026; absent when every cell is one zone); `Layout.arrangements` has one for the `canvas` and one per open zone in `zones` |
+| `Arrangement`, `Arrangements` | a container's packing: `cardColumns` (the card grid), `zoneRows` (zones per row, top to bottom) and `zoneStacks?` (per row, the zones of each cell: a cell of more than one is a stack; absent when every cell is one zone); `Layout.arrangements` has one for the `canvas` and one per open zone in `zones` |
 | `LayoutOptions` | `sizing` (overrides of `DEFAULT_SIZING`), `targetAspect` (1.6), `rootAspect` (1.75), `aspectTolerance` (0.2), `fontMetrics` (default: the generated table), `gutters` (the gutter hook below), `arrangements` (pinned arrangements, below), `route` (false: stop after packing), `routing` (overrides of `DEFAULT_ROUTING`), `clock` (for `report.timings` only) |
 | `LayoutReport` | `counts` (rects, zones, chips, empty zones, cards, Scene edges, maximum depth, organisation zones dropped, labels too long for a card or chip, zone titles capped at `zoneTitleMaxWidth`, zones widened by their header), `routing` (`RoutingReport`, below), `warnings` (sorted in code-point order), `timings?` (normalise, size, pack, route, total in ms; only with a `clock`) |
-| `RoutingReport` | `mode` (the policy: `three-pass`, `single-pass`, `none`), `passes` (routing passes run: 1 to 4), `edges` (routed), `holders` (lane holders: edges routed on their own plus hub bundles; above `lateRoundsUpTo` of them two widening rounds at most), `work` (the first routing pass's search work: the A* states it settled, which decide single-pass mode and the one-round band, ADR 0027), `duplicatesMerged`, `reciprocalMerged`, `bundles` and `bundledEdges` (hub bundles), `dropped` (an end at the canvas, or inside one chip), `fallbacks` and `failed` (0 unless something is wrong), `bends` (histogram: `bends[k]` edges with k elbows), `maxLanes`, `widened` (containers), `wideningRounds`, `squeezed` (gutter lines whose lanes did not fit; the report warns), `overlaps` (edges with a stretch no lane kept clear of another edge; 0 unless something is wrong; the report warns) |
+| `RoutingReport` | `mode` (the policy: `three-pass`, `single-pass`, `none`), `passes` (routing passes run: 1 to 4), `edges` (routed), `holders` (lane holders: edges routed on their own plus hub bundles; above `lateRoundsUpTo` of them two widening rounds at most), `work` (the first routing pass's search work: the A* states it settled, which decide single-pass mode and the one-round band), `duplicatesMerged`, `reciprocalMerged`, `bundles` and `bundledEdges` (hub bundles), `dropped` (an end at the canvas, or inside one chip), `fallbacks` and `failed` (0 unless something is wrong), `bends` (histogram: `bends[k]` edges with k elbows), `maxLanes`, `widened` (containers), `wideningRounds`, `squeezed` (gutter lines whose lanes did not fit; the report warns), `overlaps` (edges with a stretch no lane kept clear of another edge; 0 unless something is wrong; the report warns) |
 | `GutterReservations`, `GutterWidening`, `GapWidening`, `Insets` | per container (`canvas`, or `zones[id]`): extra `horizontal` and `vertical` gap and padding `ring` (uniform), `ringSides` (per side) and `gaps` (`cardColumns[c]`, `zoneColumns[r][i]` after cell i of zone row r, `rows[k]`, `stacks[r][c][k]` below zone k of the stack in cell c of zone row r: single gaps), added to the base sizes |
 | `Point`, `Rect`, `RectRole`, `StageTimings`, `LayoutCounts` | the remaining output types |
 | `measureText(text, weight, size, { family?, metrics? })` | width in px of `text` in Roboto 400/500/700 (or Roboto Mono) from the metrics table |
@@ -65,10 +65,11 @@ assertLayout(scene, layout); // throws LayoutInvariantError in development build
 
 ## Worker
 
-The app lays out in a dedicated worker (ADR 0035 §5; skill §7: "memoise by Scene hash; cancel superseded
-requests; never block the UI thread"). `src/worker.ts` is the protocol, `src/client.ts` the page side; both
-are plain functions of `postMessage`, so the same code runs in a Web Worker, a Node `worker_threads` worker
-(`scripts/lib/layout-worker.ts`, used by the bench and the tests) or in-process in a test.
+The app lays out in a dedicated worker (agents.md, Layout and drawing rules; skill §7: "memoise by Scene hash;
+cancel superseded requests; never block the UI thread"). `src/worker.ts` is the protocol, `src/client.ts` the
+page side; both are plain functions of `postMessage`, so the same code runs in a Web Worker, a Node
+`worker_threads` worker (`scripts/lib/layout-worker.ts`, used by the bench and the tests) or in-process in a
+test.
 
 **Protocol.** The page posts `{ type: 'layout', id, scene, options? }` (`options` are `LayoutOptions` without
 `clock`: a function cannot cross `postMessage`) and `{ type: 'cancel', id }`. The worker answers each request
@@ -94,19 +95,19 @@ does when it runs an effect twice) takes the running layout over instead of star
 **Memoisation.** The key (`layoutKey`, `src/hash.ts`) is a structural hash of the Scene's tree (`children` and
 `edges`) and the options; the Scene's `metadata` (root label, lens, read time, rect count, refusals) is left
 out, because the layout never reads it (`layout.test.ts` lays out a Scene with other metadata and compares),
-so two timeline days whose Scenes differ only in their read time share one Layout (since 2026-10-10; before,
-the key was the whole Scene). In the hash, equal data hashes alike whatever the order of its objects' keys
-(zod lists a parsed object's keys in schema order, a hand-built Scene in any order), arrays keep their order,
-and `undefined` values count as absent, as in JSON. Two 32-bit lanes run over type tags, lengths, keys in
-code-unit order and text two UTF-16 units at a time, and are avalanched and cross-mixed into 64 bits; the key
-is 16 hex digits and the number of units fed. No collision among 3 000 random distinct JSON values is a test,
-and so are pinned values. A value that is not a plain-data tree (a function, a cycle, more than
-`MAX_KEY_DEPTH` levels, more than `MAX_KEY_UNITS` units) has no key and is laid out without the memo; the
-layout then refuses a Scene that is not a tree with its typed error. The memo keeps the last `MEMO_CAPACITY`
-(8) Layouts, least recently used out first; a hit is answered synchronously with the stored Layout,
-byte-identical to the first answer. Hashing the demo XL Scene at `folders` (217 000 characters of JSON) takes
-about 0.7 ms. The worker's Layouts are structured clones on the page; in-process (a test, or a host without
-workers) the handler hands out the stored object itself, which the caller must not mutate.
+so two timeline days whose Scenes differ only in their read time share one Layout. In the hash, equal data
+hashes alike whatever the order of its objects' keys (zod lists a parsed object's keys in schema order, a
+hand-built Scene in any order), arrays keep their order, and `undefined` values count as absent, as in JSON.
+Two 32-bit lanes run over type tags, lengths, keys in code-unit order and text two UTF-16 units at a time, and
+are avalanched and cross-mixed into 64 bits; the key is 16 hex digits and the number of units fed. No
+collision among 3 000 random distinct JSON values is a test, and so are pinned values. A value that is not a
+plain-data tree (a function, a cycle, more than `MAX_KEY_DEPTH` levels, more than `MAX_KEY_UNITS` units) has
+no key and is laid out without the memo; the layout then refuses a Scene that is not a tree with its typed
+error. The memo keeps the last `MEMO_CAPACITY` (8) Layouts, least recently used out first; a hit is answered
+synchronously with the stored Layout, byte-identical to the first answer. Hashing the demo XL Scene at
+`folders` (217 000 characters of JSON) takes about 0.7 ms. The worker's Layouts are structured clones on the
+page; in-process (a test, or a host without workers) the handler hands out the stored object itself, which the
+caller must not mutate.
 
 **Mounting it in the frontend.** The worker module is a few lines; Vite bundles it, with
 `@gcportrait/layout` and the metrics table, through its `?worker` import:
@@ -171,7 +172,7 @@ The frontend's tsconfig references `packages/layout`.
    run (`subtitleRuns`): the subtitle's facts are joined by `' · '`, and a fact that is an address (an IPv4 or
    IPv6 address or CIDR range in its standard text form, or a comma-separated list of them) is set in Roboto
    Mono, everything else in Roboto (style §3); versions (`3.1.2`), times (`12:30`) and `host:port` are not
-   addresses. Chips (`src/chips.ts`, ADR 0025): height 44; width = 10 + the 16 px ⊞ glyph + 8 + the wider of
+   addresses. Chips (`src/chips.ts`): height 44; width = 10 + the 16 px ⊞ glyph + 8 + the wider of
    the label (13 px, 700) and the count line (10.5 px, 400) + 10, rounded up and clamped to 148–220; the count
    line is measured in its full form ("1 network · 4 subnets · 2 containers") when that fits a 220 px chip,
    else in its short form ("1 net · 4 sub · 2 ctr"), as the renderer draws it (`chipCountLine`). Sibling chips
@@ -189,7 +190,7 @@ The frontend's tsconfig references `packages/layout`.
    `cardColumns` columns where each column is as wide as its widest card and every card in it takes that width
    (cards in a row share a baseline); and the **zone block** below it, open zones, chips and empty zones in
    rows (`zoneRows[i]` zones in row `i`), each row left-aligned and as tall as its tallest cell, the cells
-   sharing its top edge. A cell is one zone, or a **stack** (ADR 0026): consecutive zones one above the other,
+   sharing its top edge. A cell is one zone, or a **stack**: consecutive zones one above the other,
    left-aligned, beside a single zone at least as tall in its row (`zoneStacks[i]`). The candidates are every
    card column count combined with every way to break the cells into rows (k per row, and rows filled up to a
    width budget at every width a run of consecutive cells, a card grid or the widest zone takes), the cells
@@ -205,7 +206,7 @@ The frontend's tsconfig references `packages/layout`.
       arrangement, outside it the closest to the target measured in area. For grids of equal boxes this is
       skill §4's rule (the column count whose grid is closest to the target).
 
-   4. **Near ties** (ADR 0026): among the candidates whose frame is within 2 % (`NEAR_TIE`) of the
+   4. **Near ties**: among the candidates whose frame is within 2 % (`NEAR_TIE`) of the
       smallest, one whose rows do not hold more zones further down ranks first (no inverted, ragged grid:
       `[2, 1]` over `[1, 2]`), then one with fewer rows (a loose project shares the folders' row instead of a
       row of its own under a blank band).
@@ -214,13 +215,12 @@ The frontend's tsconfig references `packages/layout`.
    arrangement with stacked zones replaces the chosen one only when its box fits inside it (no wider, no
    taller) with a smaller frame, so a stack fills the height a tall sibling gives its row and never makes its
    own container larger (the parent, choosing by frame, may then take a larger box: S everything's canvas grows
-   5.5 %, ADR 0026). A zone is as wide as its packed children plus padding, or as its
+   5.5 %). A zone is as wide as its packed children plus padding, or as its
    header needs if that is wider (children stay left-aligned); its height is header + padding + children +
    padding. Positions are then made absolute top-down, the canvas content starting at the canvas margin (24).
 
-   Rules 1–3 are ADR 0025's (accepted), which replaced skill §4's "choose the column count `c` that minimises
-   `|aspect(c) − target|`"; rule 4 and the stacks are ADR 0026's (accepted), measured against skill §9's
-   "rows by height" on 15 demo views (`pnpm --filter @gcportrait/layout measure --packing`).
+   These are skill §4's rules; `pnpm --filter @gcportrait/layout measure --packing` measures each of them on
+   15 demo views.
 
 All sizes are whole px with the default sizing, so every coordinate in a Layout is an integer.
 
@@ -249,20 +249,18 @@ it byte for byte. The packer's choice of arrangement does not look at `gaps` (th
    parent's last row: a route leaves a deeply nested zone in one straight run, not a staircase of two bends
    per level. Every line runs through free space (property-tested over random Scenes). Each line keeps its
    strip (the width of the gap or padding it is the centre-line of) and its container and gap; collinear lines
-   that touch merge, keeping their pieces. Each piece also records its **hugging stretches** (`hugSpans`,
-   ADR 0027): a ring side between its zone's corners (inside the padding band; beyond them the line is an
-   extension, crossing a gap or running through free space) and the whole canvas ring (`margin`). A route
-   along a ring side reads as a doubled border or an underline, so the router charges its length 1.5 times
-   (`hugFactor`), but at most 320 px more than its length over the whole side (`hugCap`: a side longer than
-   640 px pays less per px), and the margin twice (`marginFactor`). A gap costs its length whether a child
-   borders it on both sides, one or none: below a short zone beside a tall one, the gap runs through the same
-   free space as the short zone's ring sides running on down, and when the gap cost more (the first version of
-   the layout polish of 2026-10-10) routes in L at `projects` went down past their target into the canvas
-   margin and back up those parallel lines (26 U-turns). Without the cap (the second version) 9 000 px along a
-   ring top cost 4 500 px extra, and 140 routes there dropped up to 2 528 px to a row gap and climbed back to
-   avoid it (ADR 0027).
+   that touch merge, keeping their pieces. Each piece also records its **hugging stretches** (`hugSpans`): a
+   ring side between its zone's corners (inside the padding band; beyond them the line is an extension,
+   crossing a gap or running through free space) and the whole canvas ring (`margin`). A route along a ring
+   side reads as a doubled border or an underline, so the router charges its length 1.5 times (`hugFactor`),
+   but at most 320 px more than its length over the whole side (`hugCap`: a side longer than 640 px pays less
+   per px), and the margin twice (`marginFactor`). A gap costs its length whether a child borders it on both
+   sides, one or none: below a short zone beside a tall one, the gap runs through the same free space as the
+   short zone's ring sides running on down, and a dearer gap would send routes down past their target into the
+   canvas margin and back up those parallel lines. Without the cap, 9 000 px along a ring top would cost
+   4 500 px extra, and routes there would drop to a far row gap and climb back to avoid it.
 5. **Routing** (`src/edges.ts`, `src/ports.ts`, `src/portlines.ts`, `src/network.ts`, `src/occupancy.ts`,
-   `src/route.ts`, `src/fallback.ts`; ADR 0027 records where the rules go beyond skill §5).
+   `src/route.ts`, `src/fallback.ts`; skill §5).
    - *Merging.* Scene edges are resolved to the rects they are drawn between: an end inside a collapsed zone
      goes to its (outermost) chip, as the Scene builder already does; an edge with an end at a dropped
      organisation zone, or with both ends at one rect, is dropped and counted. A symmetric kind
@@ -291,7 +289,7 @@ it byte for byte. The packer's choice of arrangement does not look at `gaps` (th
      full do they share a side more closely. From the port a stub runs straight out to the gutter on that side
      (or, facing inwards, to the zone's own ring). An edge with both ends at one rect (inside one chip) is not
      drawn and counts in `dropped`; the Scene never holds an edge from a node to itself.
-   - *Port lines* (ADR 0027). Where a port faces a side nothing stands beside (the rect is the last or first
+   - *Port lines*. Where a port faces a side nothing stands beside (the rect is the last or first
      of its row, or in the last row for a bottom port), the stub's gutter is its container's padding ring, and
      the space beyond it is free up to the container's border and on through every zone the rect's zone is the
      last of. A port line runs straight through that space, from the stub's gutter to the first gap beside one
@@ -333,31 +331,30 @@ it byte for byte. The packer's choice of arrangement does not look at `gaps` (th
      keeping the outer lanes 8 px from the boxes).
    - *Passes.* Route (search every edge); widen every gutter whose lanes do not fit (its own gap, or its side
      of its container's ring, through the gutter hook) and re-pack with the arrangements pinned; re-route: the
-     three passes. A laid route whose old lanes are all still free, fitting and clear keeps them
-     without preparing its other preferences (what the lane search would find first). The re-route lays each
-     route onto the widened gutters: every edge keeps its ports' sides, its bundle and its place in the order,
-     and its route keeps its gutter pieces (keyed by container and gap, which the pinned re-pack keeps), its
-     turns and its lanes, which is exactly what the widening made room for. Only an edge whose gutters no
-     longer line up (a line it ran straight along has come apart, or two lines it turned between no longer
-     meet, because the re-pack moved them) is searched again, keeping to its old corridor (1.5 × the length
-     outside it) and lanes; in the re-route a full gutter is closed to the search and a lane must fit its
-     gutter, and a route that does not fit is searched again avoiding the segments that did not (twice at
-     most). Where the re-pack made two gutters meet that did not before, a few lanes can still not fit;
-     further rounds (`wideningRounds`, 3 in all; 2 above `lateRoundsUpTo`, 500 lane holders, where a round
-     costs too much of the budget) widen those and lay the routes once more. **Single-pass mode is decided by
-     the first pass's search work** (ADR 0027 rule 4): the first pass searches exactly and counts the
-     A* states it settles (`report.routing.work`; deterministic, and most of the routing time); once it has
-     settled `singlePassWork` (420 000) it searches the rest of its edges weighted (the estimate ×
+     three passes. A laid route whose old lanes are all still free, fitting and clear keeps them without
+     preparing its other preferences (what the lane search would find first). The re-route lays each route
+     onto the widened gutters: every edge keeps its ports' sides, its bundle and its place in the order, and
+     its route keeps its gutter pieces (keyed by container and gap, which the pinned re-pack keeps), its turns
+     and its lanes, which is exactly what the widening made room for. Only an edge whose gutters no longer
+     line up (a line it ran straight along has come apart, or two lines it turned between no longer meet,
+     because the re-pack moved them) is searched again, keeping to its old corridor (1.5 × the length outside
+     it) and lanes; in the re-route a full gutter is closed to the search and a lane must fit its gutter, and
+     a route that does not fit is searched again avoiding the segments that did not (twice at most). Where the
+     re-pack made two gutters meet that did not before, a few lanes can still not fit; further rounds
+     (`wideningRounds`, 3 in all; 2 above `lateRoundsUpTo`, 500 lane holders, where a round costs too much of
+     the budget) widen those and lay the routes once more. **Single-pass mode is decided by the first pass's
+     search work**: the first pass searches exactly and counts the A* states it settles
+     (`report.routing.work`; deterministic, and most of the routing time); once it has settled
+     `singlePassWork` (420 000) it searches the rest of its edges weighted (the estimate ×
      `SINGLE_PASS_WEIGHT`, 1.5: each route costs at most 1.5 × the cheapest) and its route is final (no
      widening; lanes that do not fit are squeezed closer, `report.routing.squeezed`, with a warning). Above
      `oneRoundWork` (340 000) and below that, one widening round at most (the band: a view whose work grows
-     loses a round before it loses the widening, and stays within its budget). L overview at `projects`
-     (2 658 edges, 1 234 lane holders, 290 252 states) routes in three passes with two rounds, 17 % below the
-     band and 45 % below single-pass; L overview at `networks` and `all` and L load-balancing at `all` (exact
-     first passes of 548 033, 827 309 and 520 348 states) stay single-pass. The layout polish of 2026-10-10
-     first counted lane holders against 1 250, which left L at `projects` 16 holders to spare and did not
-     measure cost (L load-balancing at `networks`, 1 239 holders, costs about as much; at `all`, 1 281, almost
-     twice).
+     loses a round before it loses the widening, and stays within its budget). L overview at `projects` (2 658
+     edges, 1 234 lane holders, 290 252 states) routes in three passes with two rounds, 17 % below the band
+     and 45 % below single-pass; L overview at `networks` and `all` and L load-balancing at `all` (exact first
+     passes of 548 033, 827 309 and 520 348 states) stay single-pass. A count of lane holders would not
+     measure cost: L load-balancing at `networks` (1 239 holders) costs about as much as L at `projects`
+     (1 234), and at `all` (1 281) almost twice.
    - *Geometry.* Points: source port (or the head's tip, for `both`), stub end on the first run's lane, one
      elbow per change of run, stub start on the last run's lane, target port or the head's tip `arrowInset`
      (2 px) inside the border (at most the zone's padding deep in an open zone; at the border for a port on the
@@ -374,19 +371,18 @@ it byte for byte. The packer's choice of arrangement does not look at `gaps` (th
 **Interpretations** (where the skill's text left a choice; each is the reading the tests and renders support):
 "a cost per lane already used in a segment" charges a lane once per gutter run end to end, not once per piece
 a crossing splits off (that reading made long detours cheaper than any busy corridor), and counts holders (a
-bundle's members share a lane), at 50 rather than the skill's first 200 (ADR 0027: lanes widen their gutter,
-so a busy corridor between two folders is cheaper than a detour around one); the "three passes" are route,
-widen and re-pack, re-route, where the re-route lays the routes onto the widened gutters, and a second
-widen-and-lay round runs only where lanes still do not fit (so up to three routing passes, only the first a
-full search); "parallel arrows in the same gap are spaced in lanes, never overlapping" holds for the drawn
-geometry, elbows and stubs included, and a hub's edges of one kind are not parallel arrows but one trunk (a
-bundle); per-gap and per-side widening extend the packer's uniform hook, so one busy gap does not widen every
-gap of its container; lane slots alternate around the centre-line (a gutter with an even number of lanes is
-one pitch wider than lanes × 8 + 8); a route stays within the containers it has to cross; `secures` edges are
-routed as lines like every other kind (the style skill draws them as an overlay; the renderer decides); "above
-1 500 edges one pass only" measures the first pass's search work instead of counting edges (420 000 settled
-states, with a one-round band above 340 000; it first counted lane holders, 1 250), since neither count says
-what routing costs.
+bundle's members share a lane), at 50 (lanes widen their gutter, so a busy corridor between two folders is
+cheaper than a detour around one); the "three passes" are route, widen and re-pack, re-route, where the
+re-route lays the routes onto the widened gutters, and a second widen-and-lay round runs only where lanes
+still do not fit (so up to three routing passes, only the first a full search); "parallel arrows in the same
+gap are spaced in lanes, never overlapping" holds for the drawn geometry, elbows and stubs included, and a
+hub's edges of one kind are not parallel arrows but one trunk (a bundle); per-gap and per-side widening extend
+the packer's uniform hook, so one busy gap does not widen every gap of its container; lane slots alternate
+around the centre-line (a gutter with an even number of lanes is one pitch wider than lanes × 8 + 8); a route
+stays within the containers it has to cross; `secures` edges are routed as lines like every other kind (the
+style skill draws them as an overlay; the renderer decides); the first pass's search work decides single-pass
+mode (420 000 settled states, with a one-round band above 340 000), because neither the number of edges nor
+the number of lane holders says what routing costs.
 
 ## Constants (scale 1)
 
@@ -521,11 +517,11 @@ megabytes; L overview and load-balancing at `all` (single-pass: their first pass
 the invariants; L overview at `projects` (skill §8's check view: 2 658 edges, 1 234 lane holders, 290 252
 states of search work) must route in three passes with two rounds, with no stretch lacking a clear lane, at
 most five squeezed lines (three today), no route in the canvas margin and none more than 1 000 px past both
-of its ends (ADR 0027 rule 2); its work must stay 15 % below `oneRoundWork` and 40 % below `singlePassWork`,
+of its ends; its work must stay 15 % below `oneRoundWork` and 40 % below `singlePassWork`,
 and it must stay in three passes with a tenth of its edges dropped or a tenth more added (every tenth edge
-again the other way round: 380 776 states, one round, in the band) (ADR 0027 rule 4). M networking at `all`
-checks the third widening round, which keeps its last lane inside its gutter. Measured on 2026-10-10
-(`--silent=false` prints the table):
+again the other way round: 380 776 states, one round, in the band). M networking at `all`
+checks the third widening round, which keeps its last lane inside its gutter. The figures (`--silent=false`
+prints the table):
 
 | Case | Overlaps | Closest lanes | Ports < 12 px | Squeezed lines | Bundles | Passes | Growth (routed / packed area) |
 |---|---|---|---|---|---|---|---|
@@ -535,14 +531,13 @@ checks the third widening round, which keeps its last lane inside its gutter. Me
 | L overview / networking / load-balancing | 0 | 8 px | 0 | 0 | 9 / 7 / 4 | 4 / 3 / 3 | 1.30 / 1.33 / 1.12 |
 | L networking, `all` | 0 | 8 px | 0 | 0 | 30 | 2 | 1.41 |
 
-How the routes read (`pnpm --filter @gcportrait/layout measure`, `src/testing/quality.ts`; ADR 0027 has the
-before and after of the layout polish of 2026-10-10): M overview at `auto` 22 325 px of edges with 223 bends,
-7 661 px along a single border, 153 crossings, nothing in the canvas margin and no route more than 270 px past
-both of its ends; M networking 21 869 / 187 / 6 840 / 122, one edge with 96 px in the margin, at most 254 px
-past its ends; M load-balancing 12 432 / 114 / 5 074 / 34, one edge with 56 px in the margin, the Cloud Armor
-`secures` line 1 048 px past its ends (see Known limits); L overview at `projects` 1 392 568 / 13 417 /
-638 637 / 8 075, nothing in the margin and no route more than 1 000 px past both of its ends, the farthest
-994 px (`test/golden.test.ts` checks both).
+How the routes read (`pnpm --filter @gcportrait/layout measure`, `src/testing/quality.ts`): M overview at
+`auto` 22 325 px of edges with 223 bends, 7 661 px along a single border, 153 crossings, nothing in the canvas
+margin and no route more than 270 px past both of its ends; M networking 21 869 / 187 / 6 840 / 122, one edge
+with 96 px in the margin, at most 254 px past its ends; M load-balancing 12 432 / 114 / 5 074 / 34, one edge
+with 56 px in the margin, the Cloud Armor `secures` line 1 048 px past its ends (see Known limits); L overview
+at `projects` 1 392 568 / 13 417 / 638 637 / 8 075, nothing in the margin and no route more than 1 000 px past
+both of its ends, the farthest 994 px (`test/golden.test.ts` checks both).
 
 **Updating the goldens is a deliberate act.** A change to sizing, ordering, packing, the metrics table, the
 catalog, the graph's Scene builder or the demo data changes them. Look at the change first (`pnpm --filter
@@ -551,18 +546,18 @@ catalog, the graph's Scene builder or the demo data changes them. Look at the ch
 When a graph or catalog change and a layout change land separately, whichever lands second regenerates them.
 
 **Packing aspect and fill.** The golden test checks every container with at least four children against
-the packing criterion as ADR 0025 restates it:
+the packing criterion (agents.md, Layout and drawing rules):
 
 - its children box must leave at most 60 % empty (fill ≥ 40 %; skill §9);
 - it must be within 20 % of its target, unless an independent oracle (`src/testing/oracle.ts`, brute force
   over the arrangements skill §4 allows: every card column count × every split of the zones into rows) shows
   that no arrangement with full rows reaches 20 % (*unreachable*), or that every such arrangement takes more
   area than the chosen one framed to the target (*costlier*); the oracle also confirms that the packer's
-  choice needs the smallest frame of all tidy arrangements, within the 2 % near-tie margin (ADR 0026; the
+  choice needs the smallest frame of all tidy arrangements, within the 2 % near-tie margin (the
   oracle enumerates plain rows only, and stacks only ever take less).
 
 The packing figures are the packing's alone (`route: false`); routing pins the arrangement and only widens gaps.
-Measured on 2026-10-10 (`--silent=false` prints the table and every container outside 20 %, with the best fill
+The figures (`--silent=false` prints the table and every container outside 20 %, with the best fill
 any arrangement within 20 % would have, full rows or not):
 
 | Case | Rects | ≥ 4 children | Within 20 % | Unreachable | Costlier | Mean deviation | Worst | Lowest fill | Mean fill |
@@ -583,16 +578,14 @@ reach it only with a row left short (four chips as 2 + 1 + 1, for example). The 
 small sets of wide boxes: a card or chip is 3.4 to 5 times as wide as it is tall, so four chips form a column
 under 1 or a 2 × 2 grid of aspect 3 to 4 and nothing in between; chips take their width from their label and
 count line (up to 220 px), so the M folders' 2 × 2 chip grids reach 3.8 to 4.1 (2.96 with 148 px chips). The
-packer takes the 2 × 2 grid (wider than tall, skill §1). None is *costlier* any more: the two that were
-(`vpc-shared-nonprod` in M overview at `all`, folder 20000000007 in M networking) changed shape with the wider
-chips and stacks.
+packer takes the 2 × 2 grid (wider than tall, skill §1). None is *costlier*.
 
 The 40 % fill floor is a check on the demo organisations, not a guarantee. Over 1 500 random Scenes
 (`arbitraryScene`, fast-check seed 987654; 21 921 containers with four or more children) the median fill is
-64.8 %, the 1st percentile 44.5 % and the lowest 36.6 %; 6 containers fill less than 40 % (26 before the zone
-title cap, when an 80-character header could widen a zone to about 1 300 px: the title cap holds it to
-660 px), each with one child far wider than the rest, which sets the box's width whatever the arrangement.
-67.9 % of those containers are within 20 % of their target.
+64.8 %, the 1st percentile 44.5 % and the lowest 36.6 %; 6 containers fill less than 40 % (the zone title cap
+holds an 80-character header to 660 px, which could otherwise widen a zone to about 1 300 px), each with one
+child far wider than the rest, which sets the box's width whatever the arrangement. 67.9 % of those containers
+are within 20 % of their target.
 
 ## Debug renders
 
@@ -611,64 +604,60 @@ once: what the SVG renderer has to do too. Subtitles are set in the runs of `sub
 dashed square (a 16 px one on a chip, its ⊞ glyph, followed by the count line the layout sized it with,
 `chipCountLine`). With `--aspects` it adds each container's children box with its aspect, target, child count
 and fill. It exists to look at the packing and the routing; it is not the SVG renderer or `pnpm render`: no
-icons, no legend, no dim mode. Like every drawing it carries no affiliation line, and neither do its banner and
-those of the other tools, which name the command only (ADR 0018: footers and long-form texts). Zone strokes follow skill gcp-diagram-style §4 (1 px
-for folders, regions, product containers and groups; 1.5 px for projects, VPC networks and subnets). A
-relative `--out` is taken from the directory the command was started in (`INIT_CWD`, which pnpm sets), not
-from the package directory pnpm runs the script in.
+icons, no legend, no dim mode. Like every drawing it carries no affiliation line, and neither do its banner
+and those of the other tools, which name the command only (agents.md, Non-affiliation, brand and legal). Zone
+strokes follow skill gcp-diagram-style §4 (1 px for folders, regions, product containers and groups; 1.5 px
+for projects, VPC networks and subnets). A relative `--out` is taken from the directory the command was
+started in (`INIT_CWD`, which pnpm sets), not from the package directory pnpm runs the script in.
 
 ## Known limits
 
-- **Single-pass mode.** Where the first pass's search work reaches `singlePassWork` (L overview at
-  `networks` and `all`, L load-balancing at `all`: exact first passes of 520 348 to 827 309 states) the rest
-  of it is searched weighted and its route is final: no widening, so a gutter with more lanes than its base
-  width holds squeezes them (`report.routing.squeezed`, 487 to 928 lines in those views; the report warns),
-  and some runs find no clear lane (`overlaps`, 7 to 74; up to 276 when those views were searched weighted
-  from the first edge). Ports stay 12 px apart and hubs are bundled. Three passes there would cost 321–503 ms
-  in-process (measured on a busy machine), past the budget through the worker. L overview at `projects`
-  routes in three passes but stops after two widening rounds (above `lateRoundsUpTo`): three lines stay
-  squeezed. Its margin is no longer thin (it was 16 holders under a 1 250-holder threshold): its work is
-  17 % below the one-round band and 45 % below single-pass; a tenth more edges like its own put it into the
-  band (one round, 18 squeezed lines), about a fifth more into single-pass mode. The thresholds are
-  calibrated on the demo L views and this machine; a view of a very different shape (say, many short edges
-  with long widening rounds) can need other values.
+- **Single-pass mode.** Where the first pass's search work reaches `singlePassWork` (L overview at `networks`
+  and `all`, L load-balancing at `all`: exact first passes of 520 348 to 827 309 states) the rest of it is
+  searched weighted and its route is final: no widening, so a gutter with more lanes than its base width holds
+  squeezes them (`report.routing.squeezed`, 487 to 928 lines in those views; the report warns), and some runs
+  find no clear lane (`overlaps`, 7 to 74). Ports stay 12 px apart and hubs are bundled. Three passes there
+  would cost about 320–500 ms in-process, past the budget through the worker. L overview at `projects` routes
+  in three passes but stops after two widening rounds (above `lateRoundsUpTo`): three lines stay squeezed. Its
+  work is 17 % below the one-round band and 45 % below single-pass; a tenth more edges like its own put it
+  into the band (one round, 18 squeezed lines), about a fifth more into single-pass mode. The thresholds are
+  calibrated on the demo L views; a view of a very different shape (say, many short edges with long widening
+  rounds) can need other values.
 - **Detours.** A route cannot enter a zone from above (its header), and a bundle's port is on the side most of
   its members face, so a member coming from another side goes round its hub; a port line out of a chip in its
   zone's last row can take a route down and under the folder before it turns (M networking at `auto`: Retail
   web (prod) to the Shared VPC host runs about 550 px under Workloads). 19 of the 743 routes of S, M and L at
-  `auto` are longer than twice the distance between their ports (20 before the layout polish), the worst 5.6
-  times. L overview at `projects` has 94 such routes of 2 658 (91 before), short routes inside projects round
-  a card or two.
+  `auto` are longer than twice the distance between their ports, the worst 5.6 times. L overview at `projects`
+  has 94 such routes of 2 658, short routes inside projects round a card or two.
 - **Long borders and far gaps.** Across a wide zone the only gutters in a route's scope are its ring top under
   its header and the gaps between its rows of children. With `hugCap` a route runs along a long ring side when
   that is the shortest way (L at `projects`: about 7 lanes along Workloads' ring top under its header, the
-  farthest 994 px past its ends), and a quiet long ring side can draw routes away from a busy gap (L networking
-  at `auto`: three lines between project chips come down the blank area under Platform and round the
-  bottom-left corner of Workloads onto its ring bottom). Where the gaps themselves lie far away, a route runs
-  past its ends to reach them: 189 routes of the 16 views `measure` was run on go more than 1 000 px past both
-  of their ends (723 before the layout polish, 397 without the cap, 165 after it), 165 of them in the two
-  single-pass L views at `all` (102 and 63; they search their shortest edges exactly up to the single-pass
-  budget, and those routes take longer ways where the weighted search took shorter, squeezed ones); 18
-  of the 19 in L networking at `all` already do (by 800–1 228 px) on a length-only route over the packed
-  gutters, before the widening stretches them; one in M networking at `all` is a `shares` route the re-route
-  searches again with its gutters full and sends 1 119 px past its source (132 px in the first pass).
+  farthest 994 px past its ends), and a quiet long ring side can draw routes away from a busy gap (L
+  networking at `auto`: three lines between project chips come down the blank area under Platform and round
+  the bottom-left corner of Workloads onto its ring bottom). Where the gaps themselves lie far away, a route
+  runs past its ends to reach them: 189 routes of the 16 views `measure` was run on go more than 1 000 px past
+  both of their ends, 165 of them in the two single-pass L views at `all` (102 and 63; they search their
+  shortest edges exactly up to the single-pass budget, and those routes take longer ways where the weighted
+  search took shorter, squeezed ones); 18 of the 19 in L networking at `all` already do (by 800–1 228 px) on a
+  length-only route over the packed gutters, before the widening stretches them; one in M networking at `all`
+  is a `shares` route the re-route searches again with its gutters full and sends 1 119 px past its source
+  (132 px in the first pass).
 - **The canvas margin.** A route needs it mostly to reach the side of an outermost rect that faces the canvas
   edge. It costs twice its length, so no route runs round the diagram through it; but rounding an outermost
   rect's corner through it can cost less than a busy gap, since the per-side cap on border hugging (`hugCap`)
-  makes a quiet long ring side cheap (ADR 0027 rule 2). 13 routes of the 16 views `measure` was run on use it
-  (2 048 px together; the same after the layout polish and, re-measured, with single-pass mode by search
-  work): the firewall endpoint's `uses` and the firewall policy's
-  `secures` lines from the card row above the folders in the networking views (96–368 px), the Cloud Armor
-  `secures` line in each load-balancing view (56 px), a `shares` bundle member in M networking at `all`
-  (88 px), and the three lines in L networking at `auto` that round the corner of Workloads (224–312 px).
+  makes a quiet long ring side cheap. 13 routes of the 16 views `measure` covers use it (2 048 px together):
+  the firewall endpoint's `uses` and the firewall policy's `secures` lines from the card row above the folders
+  in the networking views (96–368 px), the Cloud Armor `secures` line in each load-balancing view (56 px), a
+  `shares` bundle member in M networking at `all` (88 px), and the three lines in L networking at `auto` that
+  round the corner of Workloads (224–312 px).
 - **`secures` from a lone card in the root's card row.** The card block has no gutter beside its last column,
   so the card's right stub runs to the canvas ring and the route comes back along the gap below the card row:
   the Cloud Armor line runs 1 048 px past its ends in M load-balancing at `auto` and 14 039 px in L
   load-balancing at `all`. The renderer draws `secures` as overlays, so the line is not seen, but it holds
   lanes. A gutter beside a card block's last column would fix it; it moves every golden, so it waits.
-- **Crossings.** A route leaves a chip straight along its port line and crosses the corridors it used to run
-  along: the M overviews at `auto` have 34–153 crossings (17–103 before the layout polish). Lanes are assigned
-  lowest-free in routing order, not in an order that avoids crossings at a corridor's ends.
+- **Crossings.** A route leaves a chip straight along its port line and crosses the corridors it would
+  otherwise run along: the M overviews at `auto` have 34–153 crossings. Lanes are assigned lowest-free in
+  routing order, not in an order that avoids crossings at a corridor's ends.
 - **Two trunks per Shared VPC host.** A host's `shares` and `attaches` edges are two bundles (one per kind),
   so the collapsed overviews draw two parallel trunks into it. Deliberately: the kinds are drawn differently
   (`shares` dashed 8 4, `attaches` solid; style §4), and a member's dashes are drawn from the bundle's end so
@@ -680,7 +669,7 @@ from the package directory pnpm runs the script in.
   this one.
 - **Empty space beside a tall sibling that comes later.** Stacks keep sibling order, so the blank area under a
   short folder beside a much taller one (M at `auto`: under Platform, beside Workloads) stays; filling it needs
-  a later sibling stacked under an earlier one (ADR 0026, deferred).
+  a later sibling stacked under an earlier one (an open item of [docs/backlog.md](../../docs/backlog.md)).
 - **Busy fully open views.** L networking at `all` (684 rects, 346 edges) still carries 48 lanes in its
   busiest gutter, and its routing grows the packed canvas 1.33-fold.
 - **Stubs from facing ports.** Ports on two rects facing each other across a gutter sit on slot grids half a
@@ -746,16 +735,15 @@ instrumentation (`LAYOUT_COVERAGE`) each case is laid out once and the time limi
 
 **In CI** the strict run is the `layout-budget` job of `.github/workflows/pr.yml`, **non-blocking**
 (`continue-on-error`): it prints the bench table into the job summary and raises a warning when a budget is
-missed. The reason is the margin against the runner, not the budget: on the reference machine L overview at
-`all` takes three quarters of its 400 ms through the worker, and a shared GitHub-hosted runner (2 to 4 vCPUs,
-other jobs on the same host) is usually slower single-threaded than an Apple M1 and varies from run to run (not
-measured yet: the job's first runs will show the margin), so a blocking strict job would fail for reasons
-outside the change and be re-run until green. The 2 × ceiling in the blocking `unit` job catches real
-regressions on any runner; run `test:budget` locally for every layout change and quote its figures in the pull
-request. Removing `continue-on-error` makes the job blocking, e.g. on a larger or self-hosted runner.
+missed. The reason is the margin against the runner, not the budget: on a fast desktop machine L overview at
+`all` takes about two thirds of its 400 ms through the worker, and a shared GitHub-hosted runner (2 to 4
+vCPUs, other jobs on the same host) is usually slower single-threaded and varies from run to run, so a
+blocking strict job would fail for reasons outside the change and be re-run until green. The 2 × ceiling in
+the blocking `unit` job catches real regressions on any runner; run `test:budget` locally for every layout
+change and quote its figures in the pull request. Removing `continue-on-error` makes the job blocking, e.g. on
+a larger or self-hosted runner.
 
-Measured on an Apple M1 (8 cores), Node 22.23, load average about 4.0–6.7 (other work running), 2026-10-10,
-with `test:budget` (strict, all 48 checks passed):
+Typical figures of `test:budget` (strict; `bench` prints the same table for the machine it runs on):
 
 | Case | Rects | Edges | Mode (passes) | In-process | Worker round trip | In the worker | Budget |
 |---|---|---|---|---|---|---|---|
@@ -773,19 +761,18 @@ with `test:budget` (strict, all 48 checks passed):
 | XL networking `folders` | 498 | 473 | three-pass (3) |  | 71.8 ms | 66.4 ms | 2 s |
 | XL load-balancing `folders` | 495 | 366 | three-pass (2) |  | 42.5 ms | 37.8 ms | 2 s |
 
-The same run: a memo hit takes 0.11 ms (S), 0.09 ms (M), 0.22 ms (L) and 0.62 ms (XL) in-process, and 0.55 ms
-round trip through the worker for M; the superseded L overview `all` layout (241.8 ms uncancelled) stopped after
-4 steps and the S request behind it was answered in 6.4 ms; the worker heap was 21.2 MiB before and 21.5 MiB
-after 100 XL layouts (+0.3 MiB). The worker adds about 0.5 ms to a small layout (posting, the key, the yields
+A memo hit takes 0.11 ms (S), 0.09 ms (M), 0.22 ms (L) and 0.62 ms (XL) in-process, and 0.55 ms round trip
+through the worker for M; a superseded L overview `all` layout (about 240 ms uncancelled) stops after 4 steps
+and the S request behind it is answered in about 6 ms; the worker heap grows by about 0.3 MiB over 100 XL
+layouts (21.2 to 21.5 MiB). The worker adds about 0.5 ms to a small layout (posting, the key, the yields
 between steps and the progress messages) and about 10 %–30 % to the largest (mostly the structured clone of a
 2 000-rect Layout back to the page). L overview at `projects` is the closest to its budget: its three passes
 take about 120, 75 and 50 ms, with about 20 ms for each widening re-pack between them (the first searches
-every edge; the other two lay the routes onto the widened gutters and search again only those whose gutters
-no longer line up), so it stops after two widening rounds (`lateRoundsUpTo`). The single-pass views
-search their shortest edges exactly until the first pass has settled `singlePassWork` states, then the rest
-weighted (ADR 0027 rule 4): L overview at `all` takes 204.9 ms in-process (165.2 ms when it was searched
-weighted from the first edge; 268 ms before the layout polish, exact) and L load-balancing at `all` 142.6 ms
-(102.8 ms), both well inside the budget through the worker.
+every edge; the other two lay the routes onto the widened gutters and search again only those whose gutters no
+longer line up), so it stops after two widening rounds (`lateRoundsUpTo`). The single-pass views search their
+shortest edges exactly until the first pass has settled `singlePassWork` states, then the rest weighted: L
+overview at `all` takes about 205 ms in-process and L load-balancing at `all` about 143 ms, both well inside
+the budget through the worker.
 
 Stages 1–3 take at most 7 ms (L at `all`); the rest is routing, mostly the A* searches of the first pass:
 the re-route lays the routes onto the widened gutters and searches only the few whose gutters no longer line up
@@ -796,16 +783,14 @@ at the first zone give budgets. A container of 2000 cards and 2000 empty zones t
 fills 60 % of its box. Beyond the budgets, XL at `projects` (7 838 rects, 10 652 edges, single-pass) lays out in
 about 0.8 s in-process.
 
-**In the app** (the performance pass of 2026-10-11). Measured on a production demo build in Chromium at
-1280 × 800 (the method and the app-level targets: skill §7): the layout of a timeline
-step on L at `auto` takes about 45–55 ms of the step from key press to diagram, and a memo hit makes it
-vanish: across 100 switches on demo M the memo answered 52 of 100 layouts (100 % when alternating two days; a
-day with changes cannot hit, since its Scene carries its ghosts and markers), and stepping back and forth on L
-answers the kept days from it. The package itself did not change: the app's mount of the worker
+**In the app.** On a production demo build in Chromium at 1280 × 800 (the method and the app-level targets:
+skill §7): the layout of a timeline step on L at `auto` takes about 45–55 ms of the step from key press to
+diagram, and a memo hit makes it vanish: across 100 switches on demo M the memo answered 52 of 100 layouts
+(100 % when alternating two days; a day with changes cannot hit, since its Scene carries its ghosts and
+markers), and stepping back and forth on L answers the kept days from it. The app's mount of the worker
 (`frontend/src/diagram/pipeline/`) posts a Layout of more than 1 000 rects as transferred JSON bytes instead
 of a structured clone (L at `all`, 3.5 MB; XL at `projects`, 11.4 MB: 41.9 ms to read on the UI thread as a
-clone, 28.3 ms decoded), and the layout client receives the decoded message as before. The budgets above were
-run again strictly after that pass (the "Tests" commands).
+clone, 28.3 ms decoded), and the layout client receives the decoded message.
 
 ## Tests
 
@@ -827,29 +812,29 @@ catalog and a stale one would silently change them.
   brute-force oracle `src/testing/oracle.ts` over random sizes, each packing rule on a worked example, pinned
   arrangements, per-gap and per-side widening), the options, the invariant checks (each violation planted,
   edges included), the metrics table and `measureText`, `subtitleRuns`, the code-point order, and large mixed
-  containers (15 + 8, 40 + 10, 2000 + 2000 cards and zones) within 20 % at more than 50 % fill; the rules of
-  ADRs 0025–0027: chips from their label and count line (`src/chips.test.ts`), sibling chips and empty zones
-  sharing a width, the zone title cap, the depth convention with and without an organisation zone, stacks
-  (taken only inside the plain box, never alone or beside stacks only, placed and widened), near ties, sorted
-  warnings. Routing: merging (duplicates, reciprocal peers, chip re-targeting, dropped edges), the gutter
-  lines (rings, gaps, strips, gap references, extensions, merging), the routing graph (intersections, attach
-  points, pressure per gutter, owners, strips and piece keys per segment), the occupancy index (clearances,
-  stubs, holders, long segments, removal), ports (sides, slots, the shifted grid, bundles by size and by
-  crowding, the majority side, spilling to the neighbouring and the opposite sides, zone bands, inward ports,
-  keeping the previous pass's plan), port lines (`src/portlines.test.ts`: out through every zone a chip is the
-  last of, one piece per container, none where a neighbour stands beside, a straight exit), stack gaps and
-  hugging stretches in the gutters and the network (with each hugging segment's side length), the length
-  factors (`hugFactors`: a ring side capped per side, the margin), the router (straight edges, heads and tips,
-  zone ends, lanes 8 px apart, widening, hub bundles sharing one trunk and head, one bundle per kind, the
-  re-route laying routes onto widened gutters, scope (order independence: the property test), no U-turn
-  through the margin beside a tall folder nor down to a far row gap below a row of tall sub-folders,
-  single-pass mode by the first pass's search work and the one-round band on a synthetic 2 000-edge Scene (the
-  work counted the same on every run and in any edge order, the weighted rest after the budget, the budget
-  reached but not passed) and its warning), the bundle invariant, the fallback (around obstacles, giving up,
-  in a layout), the heap and the geometry helpers, and the route-quality helper
-  (`src/testing/quality.test.ts`: length, bends, hugging, crossings, detours, the canvas margin and
-  overshoots). `src/constants.test.ts` pins the tuning constants the ADRs and this README state as numbers
-  (near ties, the routing work budgets, the memo's size, the title cap).
+  containers (15 + 8, 40 + 10, 2000 + 2000 cards and zones) within 20 % at more than 50 % fill; chips from
+  their label and count line (`src/chips.test.ts`), sibling chips and empty zones sharing a width, the zone
+  title cap, the depth convention with and without an organisation zone, stacks (taken only inside the plain
+  box, never alone or beside stacks only, placed and widened), near ties, sorted warnings. Routing: merging
+  (duplicates, reciprocal peers, chip re-targeting, dropped edges), the gutter lines (rings, gaps, strips, gap
+  references, extensions, merging), the routing graph (intersections, attach points, pressure per gutter,
+  owners, strips and piece keys per segment), the occupancy index (clearances, stubs, holders, long segments,
+  removal), ports (sides, slots, the shifted grid, bundles by size and by crowding, the majority side,
+  spilling to the neighbouring and the opposite sides, zone bands, inward ports, keeping the previous pass's
+  plan), port lines (`src/portlines.test.ts`: out through every zone a chip is the last of, one piece per
+  container, none where a neighbour stands beside, a straight exit), stack gaps and hugging stretches in the
+  gutters and the network (with each hugging segment's side length), the length factors (`hugFactors`: a ring
+  side capped per side, the margin), the router (straight edges, heads and tips, zone ends, lanes 8 px apart,
+  widening, hub bundles sharing one trunk and head, one bundle per kind, the re-route laying routes onto
+  widened gutters, scope (order independence: the property test), no U-turn through the margin beside a tall
+  folder nor down to a far row gap below a row of tall sub-folders, single-pass mode by the first pass's
+  search work and the one-round band on a synthetic 2 000-edge Scene (the work counted the same on every run
+  and in any edge order, the weighted rest after the budget, the budget reached but not passed) and its
+  warning), the bundle invariant, the fallback (around obstacles, giving up, in a layout), the heap and the
+  geometry helpers, and the route-quality helper (`src/testing/quality.test.ts`: length, bends, hugging,
+  crossings, detours, the canvas margin and overshoots). `src/constants.test.ts` pins the tuning constants the
+  layout skill and this README state as numbers (near ties, the routing work budgets, the memo's size, the
+  title cap).
 - `src/layout.property.test.ts`: fast-check over random Scene trees (depth up to 8, up to 300 nodes, random
   kinds, chips, empty zones, badges, odd labels and ids such as `__proto__`, up to 200 random edges of every
   head style between any two nodes, a zone and its own descendant included, sometimes inside an organisation

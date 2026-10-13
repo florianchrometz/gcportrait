@@ -3,8 +3,8 @@
  * The snapshot library: everything the app does with snapshots, behind one object the pages use
  * (SnapshotLibraryProvider). Importing files runs in the snapshot worker (worker/, created on first use);
  * generating a demo organisation runs in a worker started for the job (`demo`: main.tsx passes
- * `createBrowserDemoJob`, diagram/pipeline/workers.ts; the demo generator runs in workers only, ADR 0029 as amended
- * on 2026-10-11). What either prepares is saved through the repository (IndexedDB; a demo organisation in memory
+ * `createBrowserDemoJob`, diagram/pipeline/workers.ts; the demo generator runs in workers only). What either
+ * prepares is saved through the repository (IndexedDB; a demo organisation in memory
  * until a reload when IndexedDB refuses it, an import never); exporting writes the `.gcportrait.json` bundle
  * (bundle.ts) from a stored record's documents as they are, once the snapshot worker has read them in full (`check`),
  * so a damaged record is never written to a file. Every change is announced to `subscribe`rs (the provider re-lists).

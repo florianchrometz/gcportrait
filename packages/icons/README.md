@@ -7,11 +7,11 @@
 > trademarks of Google and are used under Google's icon usage terms.
 
 The Google Cloud product icons, as Google Cloud provides them at <https://cloud.google.com/icons>, vendored
-unmodified, plus a few icons of gcportrait's own, behind the icon keys the asset catalog uses (ADRs 0017 and
-0018; the icon rules of the gcp-diagram-style skill). The icons are Google Cloud's, not gcportrait's (see
-[Trademark, usage terms and copyright](#trademark-usage-terms-and-copyright)). The package is data and lookups
-only: no DOM, no Node APIs, so the app, its workers and the headless renderer can all import it.
-`src/index.ts` is the only public surface; the tooling lives in `scripts/`.
+unmodified, plus a few icons of gcportrait's own, behind the icon keys the asset catalog uses (agents.md,
+Non-affiliation, brand and legal; the icon rules of the gcp-diagram-style skill). The icons are Google
+Cloud's, not gcportrait's (see [Trademark, usage terms and copyright](#trademark-usage-terms-and-copyright)).
+The package is data and lookups only: no DOM, no Node APIs, so the app, its workers and the headless renderer
+can all import it. `src/index.ts` is the only public surface; the tooling lives in `scripts/`.
 
 ```ts
 import { iconFor, resolveIcon, placeIcon, isOwnDrawing, ICON_KEYS } from '@gcportrait/icons';
@@ -51,34 +51,31 @@ the products its 2025 icon system has not updated yet, together with the *Google
 uses the icons as provided there, under the terms stated on that page: the page states no separate licence; it
 links Google's Site terms (<https://policies.google.com/terms>) and Google Cloud terms
 (<https://cloud.google.com/product-terms>), and Google's trademark rules are in its Brand Resource Center
-(<https://about.google/brand-resource-center/>). These are the "Google's icon usage terms" of ADRs 0017
-and 0018. Google Cloud and the Google Cloud product icons are trademarks of Google.
+(<https://about.google/brand-resource-center/>). These are the "Google's icon usage terms" the non-affiliation
+statement names. Google Cloud and the Google Cloud product icons are trademarks of Google.
 
-The icons are third-party material. They are not covered by gcportrait's own licence (`MIT`, ADR
-0017), and neither gcportrait nor its maintainer licenses them: anyone who uses or passes them on does so
-under the terms Google Cloud states at <https://cloud.google.com/icons>, not under gcportrait's licence.
-`THIRD_PARTY.md` lists them as third-party material. The own drawings below are gcportrait's code and artwork,
-under `MIT`.
+The icons are third-party material. They are not covered by gcportrait's own licence (`MIT`), and neither
+gcportrait nor its maintainer licenses them: anyone who uses or passes them on does so under the terms Google
+Cloud states at <https://cloud.google.com/icons>, not under gcportrait's licence. `THIRD_PARTY.md` lists them
+as third-party material. The own drawings below are gcportrait's code and artwork, under `MIT`.
 
 gcportrait uses the icons to label the Google Cloud products in diagrams of the user's own environment, and:
 
 - never alters the artwork (the transforms below change how a file is written, never what it draws; a test and
   an optional pixel comparison prove it);
 - never implies endorsement: the footers of the app and the website carry the non-affiliation notice, and the
-  long-form texts carry the statement above in full (ADR 0018); a drawing or an export never does;
+  long-form texts carry the statement above in full; a drawing or an export never does;
 - marks its own drawings as its own (`kind: 'own'`, `isOwnDrawing`, a comment in each file, an amber outline
   on the contact sheet), and never presents them as Google Cloud's.
 
 None of Google's SVG files carries a copyright notice, so nothing was stripped; the transforms keep any comment
-that might hold one, and the provenance check needs no exemption for `vendored/`. The maintainer's one-time IP
-review before a commercial launch should cover this package.
+that might hold one, and the provenance check needs no exemption for `vendored/`.
 
-## What is vendored, from where, when
+## What is vendored, and from where
 
-Vendored on 2026-10-09 by `scripts/vendor.mjs` from the three ZIP files the library page links
-(`manifest.json` records each ZIP's size and SHA-256, `archive-index.json` every SVG entry in each ZIP with
-its SHA-256, the baseline of the [drift check](#keeping-the-icons-current); the index was added on 2026-10-11
-from the same archives, byte for byte):
+Vendored by `scripts/vendor.mjs` from the three ZIP files the library page links (`manifest.json` records
+each ZIP's date, size and SHA-256, `archive-index.json` every SVG entry in each ZIP with its SHA-256, the
+baseline of the [drift check](#keeping-the-icons-current)):
 
 | Set | Google's title | URL | SVGs in the ZIP | Vendored |
 |---|---|---|---|---|
@@ -158,7 +155,7 @@ Checks, at vendoring time and in the tests: no colour appears that the source di
 is lost, no file exceeds 8 kB, each committed file still matches the SHA-256, size and colours the manifest
 recorded (so nothing was recoloured or edited since), and each file is a fixed point of the transforms.
 `vendor.mjs --verify-render` also rasterises every source and its transform in headless Chromium at 16, 24 and
-96 px, both sized alike, and requires identical pixels; on 2026-10-09 all 110 were pixel-identical.
+96 px, both sized alike, and requires identical pixels; all 110 are.
 
 ## Own drawings
 
@@ -301,11 +298,11 @@ ZIPs produces byte-identical output.
 A new catalog icon key needs an entry in `mapping.json` (and, for the catalog, in
 `packages/catalog/icon-keys.json`) before `vendor.mjs` will run.
 
-## Open point for the maintainer
+## Google's older console icons
 
 Google's product icons overview (May 2026) says of the legacy console icons, in its appendix: "Please note,
 these icons should not be used as of 2026", while the library page still offers them "for your projects". The
-style skill uses them for sub-products, and this package follows it. Following Google's
-newer guidance instead is a data change: remove the `legacy` candidates from `mapping.json` (each key then falls
-to its category mark, assigned per that overview), give the generic mark another source (for example an own
-drawing), and re-vendor. That is a design decision for an ADR, not for this package alone.
+style skill uses them for sub-products, and this package follows it. Following the overview instead is a data
+change: remove the `legacy` candidates from `mapping.json` (each key then falls to its category mark, assigned
+per that overview), give the generic mark another source (for example an own drawing), and re-vendor. Whether
+to make that change is open work ([docs/backlog.md](../../docs/backlog.md), "Catalog and icons").

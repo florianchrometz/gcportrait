@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * `normalizeViewSpec` and the view constants, without zod (ADR 0029). The URL-hash codec (view-hash.ts) runs on
- * the app's UI thread for every hash it reads and writes, so its parse path is plain code: each field is checked
- * by a small predicate that accepts exactly what the field's schema in schemas/view-spec.ts accepts (the same
- * patterns from schemas/patterns.ts and tuples from schemas/vocabulary.ts). The schemas stay the definition and
- * validate where it matters (worker messages, tests); normalize.test.ts proves each predicate against its schema,
- * and the property tests prove the whole normaliser against a zod-based reference and `ViewSpecSchema`.
+ * `normalizeViewSpec` and the view constants, without zod (agents.md, Architecture and code). The URL-hash
+ * codec (view-hash.ts) runs on the app's UI thread for every hash it reads and writes, so its parse path is
+ * plain code: each field is checked by a small predicate that accepts exactly what the field's schema in
+ * schemas/view-spec.ts accepts (the same patterns from schemas/patterns.ts and tuples from
+ * schemas/vocabulary.ts). The schemas stay the definition and validate where it matters (worker messages,
+ * tests); normalize.test.ts proves each predicate against its schema, and the property tests prove the whole
+ * normaliser against a zod-based reference and `ViewSpecSchema`.
  */
 import type { Focus, LooseViewSpec, ViewFilters, ViewSpec, ViewSpecInput } from '../schemas/view-spec.js';
 import {

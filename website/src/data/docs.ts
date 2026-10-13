@@ -122,9 +122,8 @@ export const NOT_ON_SITE: Readonly<Record<string, string>> = {
   'docs/cloudshell-tutorial.md': 'Cloud Shell tutorial markup, opened by the "Open in Cloud Shell" button',
   'docs/author.md': 'rendered as the landing page’s "About the author" section',
   'docs/website.md': 'the maintainer’s guide to building and deploying this site',
-  'docs/security.md': 'the security review checklist, contributor material',
+  'docs/security.md': 'the security controls and the commands that check them, contributor material',
   'docs/threat-model.md': 'the threat model, contributor material',
-  'docs/handoff.md': 'the maintainer’s hand-off steps',
   'docs/backlog.md': 'open work, known defects and ideas for later, contributor material',
 };
 

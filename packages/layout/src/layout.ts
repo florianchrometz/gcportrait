@@ -12,7 +12,7 @@
  * (`Routing.wideningRounds`, 3 in all; 2 above `Routing.lateRoundsUpTo` lane holders; 1 when the first pass's
  * search work is above `Routing.oneRoundWork`). Once the first pass's search work reaches
  * `Routing.singlePassWork`, it searches the rest of its edges weighted and its route is final (single-pass
- * mode; ADR 0027).
+ * mode).
  */
 import type { Scene } from '@gcportrait/model';
 import {
@@ -77,7 +77,7 @@ export interface ResolvedOptions {
   readonly arrangements: NonNullable<LayoutOptions['arrangements']>;
   readonly route: boolean;
   readonly routing: Routing;
-  /** How zone rows may be built (ADR 0026); only the measurement script changes it (`LayoutInternals`). */
+  /** How zone rows may be built (skill §4); only the measurement script changes it (`LayoutInternals`). */
   readonly packPolicy: PackPolicy;
 }
 
@@ -467,7 +467,7 @@ export function placedTree(
 export interface LayoutInternals {
   /** False routes every edge by the coarse-grid fallback instead of the gutter network. */
   readonly network?: boolean;
-  /** How zone rows may be built (the packing measurement of ADR 0026); default `DEFAULT_PACK_POLICY`. */
+  /** How zone rows may be built (`measure --packing` compares them); default `DEFAULT_PACK_POLICY`. */
   readonly packing?: PackPolicy;
 }
 
@@ -544,7 +544,7 @@ export function* layoutSteps(
     const merged = mergeEdges(scene, nodes);
     // Single-pass mode is decided by the first pass's search work (route.ts: it switches to the weighted search
     // once its work reaches `singlePassWork`, and is then final); the number of widening rounds by that work
-    // and the lane holders (an edge of its own, or a hub bundle once: its members share their lanes) (ADR 0027).
+    // and the lane holders (an edge of its own, or a hub bundle once: its members share their lanes).
     let single = false;
     let holders = 0;
     let work = 0;

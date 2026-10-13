@@ -35,9 +35,9 @@ explains the same rules in one place.
 
 `YOUR_SCOPE_ID` is the organisation number, the folder number or the project id. Use the command group of the
 scope's kind: `gcloud organizations`, `gcloud resource-manager folders` or `gcloud projects`. The commands
-below use an organisation; the Permissions page writes the right group and shows each value as a field to fill in
-place, prefilled with the scope, your email and the account when it knows them, one value per variable for every
-command on the page.
+below use an organisation; the Permissions page writes the right group and shows each value as a field to fill
+in place, prefilled with the scope, your email and the account when it knows them, one value per variable for
+every command on the page.
 
 | Mode | Who needs it | What | Where | Role that grants it | Checklist item ([section 6](#6-checking-a-scope)) | Command |
 |---|---|---|---|---|---|---|
@@ -53,7 +53,7 @@ command on the page.
 ## 2. With your own account
 
 1. **Sign in.** "Sign in with Google" uses Google Identity Services in your browser and asks Google for three
-   OAuth scopes ([ADR 0028](adr/0028-quota-project-and-sa-gate.md) §6):
+   OAuth scopes, and never the wider `cloud-platform`, which would let a token change what it reaches:
 
    | Scope | What gcportrait uses it for | Needed |
    |---|---|---|
@@ -73,8 +73,7 @@ command on the page.
    gcportrait revokes the grant at once and asks you to sign in again and allow both; without the email scope
    sign-in still works, and the commands show `YOUR_EMAIL`. The app sends the token only to its own instance,
    in the `X-Gcportrait-Token` header (not `Authorization`, which Identity-Aware Proxy in front of a private
-   instance takes for its own; [ADR 0031](adr/0031-token-header-behind-iap.md)), and the instance forwards it
-   to Google.
+   instance takes for its own), and the instance forwards it to Google.
 2. **Cloud Asset Inventory on the scope.** You need `roles/cloudasset.viewer` there (or a custom role with
    `cloudasset.assets.listResource`). Without it Google refuses the listing: "You cannot list assets in SCOPE,
    or it does not exist."

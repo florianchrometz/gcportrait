@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Demo-only mode (DEMO_ONLY=true, ADR 0032): the route matrix against the normal mode, the
- * configuration it reports and refuses, the legal pages, the CSP, the rate limit and the SPA. Fastify inject, no
- * network: a request that reached Google would fail on the fetch below.
+ * Demo-only mode (DEMO_ONLY=true; agents.md, Modes and hosting): the route matrix against the normal mode,
+ * the configuration it reports and refuses, the legal pages, the CSP, the rate limit and the SPA. Fastify
+ * inject, no network: a request that reached Google would fail on the fetch below.
  */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -26,7 +26,7 @@ writeFileSync(path.join(dist, 'index.html'), INDEX_HTML);
 writeFileSync(path.join(dist, 'assets', 'index-abc123.js'), 'console.log("app");\n');
 const legal = path.join(scratch, 'legal');
 mkdirSync(legal);
-/** Synthetic texts (agents.md rule 6). */
+/** Synthetic texts (agents.md, Security and privacy, principle 6). */
 const IMPRESSUM = '# Impressum\n\nExample Operator, Example Street 1, 12345 Example City\n';
 writeFileSync(path.join(legal, 'impressum.md'), IMPRESSUM);
 
@@ -45,7 +45,7 @@ async function start(
   return (await startTestServer({ env: { STATIC_DIR: dist, ...env }, ...options })).app;
 }
 
-/** The routes that call Google (docs/api.md) and the render API (ADR 0033), with a body each would accept. */
+/** The routes that call Google (docs/api.md) and the render API, with a body each would accept. */
 const GOOGLE_ROUTES: readonly { readonly url: string; readonly body: Record<string, unknown> }[] = [
   { url: '/api/scopes/search', body: { query: 'demo' } },
   { url: '/api/preflight', body: { scope: 'projects/demo-project', mode: 'user' } },
@@ -87,7 +87,8 @@ describe('the route matrix', () => {
         { authorization: 'Bearer' },
         { authorization: 'Bearer two words' },
         { authorization: 'bearer\ttoken' },
-        // A malformed dedicated header is never replaced by Authorization (ADR 0031).
+        // A malformed dedicated header is never replaced by Authorization (agents.md, Security and privacy,
+        // Tokens).
         { 'x-gcportrait-token': 'not a token', authorization: 'Bearer ya29.demo-only-test-token' },
       ];
       for (const env of [{}, { DEMO_ONLY: 'false' }]) {

@@ -4,8 +4,8 @@ import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction, type St
 
 /**
  * The browser database (IndexedDB through `idb`). Snapshots, saved views, preferences and the timeline
- * tick cache live here and nowhere else: asset data never leaves the browser (ADR 0005; ADR 0035 §4,
- * principle 1). `preferences` (storage/preferences.ts), `savedViews` (views/savedViewStore.ts),
+ * tick cache live here and nowhere else: asset data never leaves the browser (agents.md, Security
+ * and privacy, principle 1). `preferences` (storage/preferences.ts), `savedViews` (views/savedViewStore.ts),
  * `snapshots` (src/snapshots/) and `tickCache` (storage/tickCache.ts, the timeline's fetched ticks)
  * are in use. The page reads all of them through one connection (storage/connection.ts); the data worker
  * opens its own.
@@ -39,7 +39,7 @@ export type SnapshotMeta = {
   readonly estimatedReadTime?: boolean;
   /**
    * Where the read time came from (the snapshot's `readTimeSource`: an export's operation.json, typed in by the
-   * person, Google's answer to a pull, or the estimate); absent in older records.
+   * person, Google's answer to a pull, or the estimate); absent for a demo or when the snapshot names none.
    */
   readonly readTimeSource?: SnapshotReadTimeSource;
   /** How many daily ticks `history` holds. */
@@ -129,7 +129,7 @@ const MIGRATIONS: readonly Migration[] = [
     tickCache.createIndex('byScope', 'scope');
   },
   // 1 → 2: the tick cache keyed by the tick's cache key, (scope, readTime, contentType, assetTypes) as one string
-  // (skill cai-ingestion §5). Version 1 created the store but nothing ever wrote to it, so it is replaced.
+  // (skill cai-ingestion §5). The version-1 store holds no data, so it is replaced.
   (db) => {
     db.deleteObjectStore('tickCache');
     const tickCache = db.createObjectStore('tickCache', { keyPath: 'key' });

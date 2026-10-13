@@ -2,9 +2,9 @@
 /**
  * Google's tokeninfo endpoint, asked once per new token: whose token it is (the `email` scope makes Google say),
  * and whether it was issued to this instance's OAuth client. The token travels in a form body, never in the URL
- * (agents.md rule 10), straight from the browser to `oauth2.googleapis.com`, the one Google API host the
- * Content Security Policy lets the browser reach; no cookie and no referrer go with it. How long the
- * lookup may take is the session's choice (`ACCOUNT_LOOKUP_TIMEOUT_MS` in session.ts, through the signal).
+ * (agents.md, Security and privacy, principle 2), straight from the browser to `oauth2.googleapis.com`, the one
+ * Google API host the Content Security Policy lets the browser reach; no cookie and no referrer go with it. How long
+ * the lookup may take is the session's choice (`ACCOUNT_LOOKUP_TIMEOUT_MS` in session.ts, through the signal).
  */
 
 export const TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';

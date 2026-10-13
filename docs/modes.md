@@ -62,7 +62,8 @@ reads it through the account, without Cloud Asset Inventory roles of their own. 
 account, the instance checks with your own sign-in that you can see the scope (the *gate*), and refuses
 otherwise. The account's own project pays; you pick no quota project.
 [permissions.md](permissions.md#3-through-the-instances-service-account) has the grant, the gate and what it
-does not protect against; [self-host-options.md](self-host-options.md#service-account-mode) the operator's side.
+does not protect against; [self-host-options.md](self-host-options.md#service-account-mode) the operator's
+side.
 
 ## 4. The demo
 
@@ -87,15 +88,15 @@ application, and edge cases such as an empty project.
 The demo runs in four places:
 
 - **on any instance**, next to sign-in and export files;
-- **on a demo-only instance** of your own: the image with `DEMO_ONLY=true`. It has no sign-in and no route that
-  calls Google, and stores nothing on its server; its Connect page offers the demo, a link to deploy gcportrait to
-  your own Google Cloud project, and its operator's legal pages if it has any
+- **on a demo-only instance** of your own: the image with `DEMO_ONLY=true`. It has no sign-in and no route
+  that calls Google, and stores nothing on its server; its Connect page offers the demo, a link to deploy
+  gcportrait to your own Google Cloud project, and its operator's legal pages if it has any
   ([self-host-options.md](self-host-options.md#demo-only-instance));
 - **in the static demo**, such as the project's own at <https://gcportrait.app/demo/>: the same app as on a
-  demo-only instance, built once by `pnpm demo:static` with that configuration built in (no backend at all, not even
-  for `/api/config`), so any static host serves it; the website's GitHub Pages site serves the project's. It looks and
-  behaves like a demo-only instance, links its legal pages elsewhere, and keeps everything in your browser
-  ([ADR 0034](adr/0034-static-demo-on-pages.md), [website.md, "The demo"](website.md#the-demo));
+  demo-only instance, built once by `pnpm demo:static` with that configuration built in (no backend at all,
+  not even for `/api/config`), so any static host serves it; the website's GitHub Pages site serves the
+  project's. It looks and behaves like a demo-only instance, links its legal pages elsewhere, and keeps
+  everything in your browser ([website.md, "The demo"](website.md#the-demo));
 - **in a demo build** without any backend: `pnpm dev:demo` (the SPA built with `VITE_DEMO=1`), for
   contributors and for trying gcportrait from a checkout.
 

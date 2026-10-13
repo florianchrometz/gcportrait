@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The non-affiliation statement (ADR 0018) outside the app: every copy the tooling, the image, the release, the
- * infra scripts and the docs keep of the long form is frontend/src/branding.ts's, word for word.
- * The app pins the wording itself (frontend/src/App.test.tsx); the website checks its own copy
- * (website/src/site.test.ts). And no text file of the repository names Google by its company form: "Google" or
- * "Google Cloud" only.
+ * The non-affiliation statement outside the app (agents.md, Non-affiliation, brand and legal): every copy the
+ * tooling, the image, the release, the infra scripts and the docs keep of the long form is
+ * frontend/src/branding.ts's, word for word. The app pins the wording itself (frontend/src/App.test.tsx); the
+ * website checks its own copy (website/src/site.test.ts). And no text file of the repository names Google by
+ * its company form: "Google" or "Google Cloud" only.
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -60,7 +60,6 @@ const LONG_FORM_COPIES: readonly Copy[] = [
 
 /** The documents that quote the long form in their prose. */
 const LONG_FORM_DOCUMENTS = [
-  { copy: 'docs/handoff.md', file: 'docs/handoff.md' },
   { copy: 'the Cloud Shell tutorial (a footnote of its first step)', file: 'docs/cloudshell-tutorial.md' },
   { copy: 'the docs index (docs/README.md)', file: 'docs/README.md' },
   { copy: 'the websiteâ€™s README (website/README.md)', file: 'website/README.md' },
@@ -106,8 +105,8 @@ describe('the long form as the closing paragraph of docs/author.md (the websiteâ
 const COMPANY_FORM = ['Google', 'LLC'].join(' ');
 
 /**
- * The repository's files outside legacy/, as root-relative paths: the ones git lists (tracked, plus untracked ones
- * it does not ignore, so a new file counts before its commit), or, outside a git checkout, the ones the provenance
+ * The repository's files, as root-relative paths: the ones git lists (tracked, plus untracked ones it does
+ * not ignore, so a new file counts before its commit), or, outside a git checkout, the ones the provenance
  * check walks.
  */
 function repositoryFiles(): string[] {
@@ -115,13 +114,11 @@ function repositoryFiles(): string[] {
     cwd: REPO,
     encoding: 'utf8',
   });
-  const listed =
-    git.status === 0
-      ? git.stdout.split('\0').filter((relPath) => relPath !== '')
-      : listRepoFiles(REPO)
-          .filter((file) => !file.isSymlink)
-          .map((file) => file.relPath);
-  return listed.filter((relPath) => relPath !== 'legacy' && !relPath.startsWith('legacy/'));
+  return git.status === 0
+    ? git.stdout.split('\0').filter((relPath) => relPath !== '')
+    : listRepoFiles(REPO)
+        .filter((file) => !file.isSymlink)
+        .map((file) => file.relPath);
 }
 
 describe('the trademark line', () => {

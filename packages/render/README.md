@@ -2,8 +2,8 @@
 
 # @gcportrait/render
 
-The render library ([ADR 0033](../../docs/adr/0033-render-api.md)): a snapshot and a view drawn as the app
-draws them, as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on every platform. `pnpm render`
+The render library (agents.md, Exports and the render API): a snapshot and a view drawn as the app draws them,
+as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on every platform. `pnpm render`
 ([`@gcportrait/render-cli`](../render-cli/README.md)) and the backend's `POST /api/render`
 ([docs/api.md](../../docs/api.md)) both draw through it, so a demo view comes out byte for byte the same from
 either.
@@ -12,9 +12,10 @@ either.
 > affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks
 > of Google and are used under Google's icon usage terms.
 
-The drawings carry no affiliation line (ADR 0018): the title block holds the scope, the lens with the read time and
-the tagline. Neither does anything that travels with them: not the command line's output, not the API's answer; the
-statement is in the app's footer and the long-form texts only.
+The drawings carry no affiliation line (agents.md, Non-affiliation, brand and legal): the title block holds
+the scope, the lens with the read time and the tagline. Neither does anything that travels with them: not the
+command line's output, not the API's answer; the statement is in the app's footer and the long-form texts
+only.
 
 ## What it does
 
@@ -43,11 +44,11 @@ const result = renderView(await snapshotFromDemo('M'), RenderOptionsSchema.parse
 
 `@resvg/resvg-wasm` 2.6.2 (MPL-2.0, used unmodified, pinned exactly: the pixels depend on its version). A
 WebAssembly build computes the same pixels on every platform, and it can be bundled into the backend's image,
-which has no `node_modules`. `test/parity.test.ts` draws six views and a capped one with it and with the native
-`@resvg/resvg-js` 2.6.2 (a dev dependency, used only there) and finds the same bytes; the committed golden
-(`e2e/baselines/render/S-overview-auto-light.png`, first drawn natively) comes out byte for byte. It is 1.2 to
-1.9 times slower than the native binding, and its memory grows to about 10 bytes per pixel of the largest PNG
-drawn and is never given back while its thread lives: the backend draws each render in a fresh worker.
+which has no `node_modules`. `test/parity.test.ts` draws six views and a capped one with it and with the
+native `@resvg/resvg-js` 2.6.2 (a dev dependency, used only there) and finds the same bytes; the committed
+golden (`e2e/baselines/render/S-overview-auto-light.png`) comes out byte for byte. It is 1.2 to 1.9 times
+slower than the native binding, and its memory grows to about 10 bytes per pixel of the largest PNG drawn and
+is never given back while its thread lives: the backend draws each render in a fresh worker.
 
 ## Boundaries and dependencies
 
@@ -55,13 +56,13 @@ The one package that may import the frontend (`eslint.config.js`): `model`, `cat
 `demo-data` and `frontend`, through `frontend/src/headless.ts`, which the app never imports, so
 `react-dom/server` stays out of its bundle. The frontend may not import this package. Node only (`fs`, `zlib`,
 WebAssembly); the draw.io translator it reaches through the frontend is plain TypeScript with fflate (MIT) as
-its compressor, the same code the browser runs. Dependencies: the workspace packages above, `@resvg/resvg-wasm` (MPL-2.0) and `@fontsource/roboto`
-and `@fontsource/roboto-mono` (OFL-1.1, [ADR 0019](../../docs/adr/0019-font-licence-exception.md); the backend's
-image copies the faces with their licences). Dev only: `@resvg/resvg-js` (the parity test), `pngjs`. The
-backend's image ships resvg-wasm's glue code in `backend/dist/render-worker.mjs` and its module as
-`backend/dist/render-assets/resvg.wasm`; the package has no licence file of its own, so
-`THIRD_PARTY_NOTICES.txt` and `server-dependencies.txt` name those files, where its source is, and carry the
-MPL-2.0 text (`scripts/licenses/MPL-2.0.txt`).
+its compressor, the same code the browser runs. Dependencies: the workspace packages above,
+`@resvg/resvg-wasm` (MPL-2.0) and `@fontsource/roboto` and `@fontsource/roboto-mono` (OFL-1.1, the font
+exception of agents.md, Licence and dependencies; the backend's image copies the faces with their licences).
+Dev only: `@resvg/resvg-js` (the parity test), `pngjs`. The backend's image ships resvg-wasm's glue code in
+`backend/dist/render-worker.mjs` and its module as `backend/dist/render-assets/resvg.wasm`; the package has no
+licence file of its own, so `THIRD_PARTY_NOTICES.txt` and `server-dependencies.txt` name those files, where
+its source is, and carry the MPL-2.0 text (`scripts/licenses/MPL-2.0.txt`).
 
 | Command | |
 |---|---|

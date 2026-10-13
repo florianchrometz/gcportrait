@@ -68,14 +68,14 @@ export interface GutterPiece {
   readonly strip: number;
   readonly gap: GapRef;
   /**
-   * The stretches of the piece that run along a border inside a padding band (ADR 0027): a ring side between
+   * The stretches of the piece that run along a border inside a padding band (skill §5): a ring side between
    * its zone's corners (beyond them it is the line's extension, crossing a gap or running through free
    * space), or the canvas's margin. A route along them reads as a doubled border or an underline, so the
    * router charges their length more (`Routing.hugFactor`, at most `Routing.hugCap` more over one side; the
    * margin `Routing.marginFactor`). A gap's line, between two children, beside one or beside none, costs its
    * length: a gap with a child on one side only runs through the same free space as the lines parallel to it
-   * there (a shorter neighbour's ring side running on down), and charging it more sent routes the long way
-   * round through those lines and the canvas margin (ADR 0027). Absent when the piece has none.
+   * there (a shorter neighbour's ring side running on down), and charging it more would send routes the long
+   * way round through those lines and the canvas margin. Absent when the piece has none.
    */
   readonly hugSpans?: readonly (readonly [number, number])[];
   /** Set on the canvas's ring (its margin): its hugging stretches cost `Routing.marginFactor`. */
@@ -255,7 +255,7 @@ export function buildGutters(tree: PlacedTree): Gutters {
     };
 
     // The zone block's rows (needed first: the card block's lower gutter is the gap above them), each as its
-    // cells: one zone, or a stack of zones one above the other (ADR 0026).
+    // cells: one zone, or a stack of zones one above the other (skill §4).
     const zoneRows: LayoutNode[][] = [];
     const rowCells: LayoutNode[][][] = [];
     let next = 0;

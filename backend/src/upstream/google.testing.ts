@@ -2,11 +2,12 @@
 /**
  * What every pretend Google of the backend's tests shares (never built into dist/: tsconfig.build.json leaves
  * `*.testing.ts` out): the synthetic credentials, the recorded call, Google's answer shapes (JSON, the error
- * envelope the quota-project spike recorded in docs/spikes/quota-project.md §4, the HTML error page), streamed
- * bodies, an upstream client that never sleeps, Cloud Asset Inventory's pager and the instance's identity. The fakes
- * of single APIs build on it: ../preflight/google.testing.ts (Resource Manager, tokeninfo and the gate's answers)
- * and ../stream/google.testing.ts (synthetic assets, Cloud Asset Inventory and Cloud Storage). Everything is
- * synthetic (agents.md rule 6): `demo-` project ids, numbers below 100000000000, example.com.
+ * envelope of skill cai-ingestion §9, the HTML error page), streamed bodies, an upstream client that never
+ * sleeps, Cloud Asset Inventory's pager and the instance's identity. The fakes of single APIs build on it:
+ * ../preflight/google.testing.ts (Resource Manager, tokeninfo and the gate's answers) and
+ * ../stream/google.testing.ts (synthetic assets, Cloud Asset Inventory and Cloud Storage). Everything is
+ * synthetic (agents.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,
+ * example.com.
  */
 import pino from 'pino';
 import { vi, type Mock } from 'vitest';
@@ -72,7 +73,7 @@ export interface ErrorInfoShape {
 }
 
 /**
- * Google's error envelope (the spike's §4) with any number of ErrorInfo entries; a lone reason stands for one from
+ * Google's error envelope with any number of ErrorInfo entries; a lone reason stands for one from
  * googleapis.com about the Cloud Asset API.
  */
 export function googleError(
@@ -104,7 +105,7 @@ export function googleError(
   });
 }
 
-/** Google's HTML error page (the spike's finding 11: what a request without the method override gets). */
+/** Google's HTML error page: what a request without the method override gets. */
 export function htmlResponse(status = 404): Response {
   return new Response(`<!DOCTYPE html><html><body>Error ${String(status)}</body></html>`, {
     status,
@@ -177,7 +178,7 @@ export function testContext(
 /**
  * Cloud Asset Inventory's `assets.list` over `pages`: the page token `page-N` asks for page N, every page but the
  * last names the next, and a token past the end is Google's 400. Requests without the method override get Google's
- * HTML 404 (the spike's finding 11).
+ * HTML 404.
  */
 export function caiPager(
   pages: readonly (readonly unknown[])[],

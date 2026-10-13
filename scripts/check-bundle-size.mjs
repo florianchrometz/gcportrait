@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Bundle-size budgets for the SPA (ADR 0029). The build in frontend/dist is split by
- * thread and each part has its own budget, both gzipped:
+ * Bundle-size budgets for the SPA (agents.md, Quality gates, testing and CI). The build in frontend/dist is
+ * split by thread and each part has its own budget, both gzipped:
  *
  *   UI thread  350 kB  the entry script, every chunk it imports statically, and the CSS index.html links, plus a
  *                      lazily imported chunk only when it is part of the first paint of /diagram
@@ -34,10 +34,11 @@
  * Each file is gzipped on its own at zlib's default level, the level most web servers use, and the gzipped
  * sizes are summed per part. 1 kB is 1000 bytes.
  *
- * No zod on the UI thread (ADR 0029; a guard since its amendment of 2026-10-11): every JavaScript file the UI thread
- * loads (the initial chunks, the lazy ones and anything unclassified) is searched for zod's signatures
- * (`ZOD_SIGNATURES` below: names a minifier keeps, such as zod 4's `._zod` property and its `"$ZodType"` constructor
- * names), and a match fails the check whatever the sizes; the workers may bundle zod.
+ * No zod on the UI thread (zod runs in the workers only; agents.md, Architecture and code): every JavaScript
+ * file the UI thread loads (the initial chunks, the lazy ones and anything unclassified) is searched for
+ * zod's signatures (`ZOD_SIGNATURES` below: names a minifier keeps, such as zod 4's `._zod` property and its
+ * `"$ZodType"` constructor names), and a match fails the check whatever the sizes; the workers may bundle
+ * zod.
  *
  * Exit code 0 when both parts are within their budgets and the UI thread has no zod, and also when there is no
  * build output yet (with a notice saying so); 1 when either part is above its budget or a UI-thread file contains
@@ -52,10 +53,10 @@ import { gzipSync } from 'node:zlib';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_DIST = path.join(ROOT, 'frontend', 'dist');
 
-/** The UI thread's budget (ADR 0029): 350 kB gzipped. */
+/** The UI thread's budget: 350 kB gzipped. */
 const UI_BUDGET_BYTES = 350_000;
 
-/** The workers' budget (ADR 0029): 400 kB gzipped, all worker scripts and their chunks together. */
+/** The workers' budget: 400 kB gzipped, all worker scripts and their chunks together. */
 const WORKER_BUDGET_BYTES = 400_000;
 
 /**
@@ -124,7 +125,7 @@ function listFiles(base, dir) {
 /**
  * The build file a reference names, as a path relative to the dist directory, or null when it names none:
  * `./x.js` and `../x.js` relative to the referring file, `/assets/x.js` from the site root, `assets/x.js` from
- * the base (Vite's preload lists). A build for a base path (the static demo's `/demo/`, ADR 0034) names its files
+ * the base (Vite's preload lists). A build for a base path (the static demo's `/demo/`) names its files
  * below it (`/demo/assets/x.js`): an absolute reference also counts for the build file it names below its first
  * segments.
  * @param {string} specifier
@@ -333,12 +334,12 @@ function zodSignatures(code) {
  * @returns {string}
  */
 function zodLine(measurement) {
-  if (measurement.zod.size === 0) return 'No zod on the UI thread (ADR 0029).';
+  if (measurement.zod.size === 0) return 'No zod on the UI thread.';
   const files = [...measurement.zod.entries()]
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([file, found]) => `${file} (${found.join(', ')})`);
   return (
-    `zod on the UI thread (ADR 0029 keeps it in the workers): ${files.join('; ')}. Import the zod-free ` +
+    `zod on the UI thread (it belongs in the workers): ${files.join('; ')}. Import the zod-free ` +
     'codec and vocabularies of @gcportrait/model on the UI thread, never a *Schema.'
   );
 }
@@ -581,9 +582,7 @@ function main(argv) {
     `${budgetLine('UI thread', ui, UI_BUDGET_BYTES)}; ${budgetLine('workers', workers, WORKER_BUDGET_BYTES)} ` +
     `(gzipped)${noZod ? '' : `; zod on the UI thread in ${plural(measurement.zod.size, 'file')}`}.`;
 
-  console.log(
-    `Bundle size of ${shownDist}/assets (gzip; fonts and data tables excluded), by thread (ADR 0029).\n`,
-  );
+  console.log(`Bundle size of ${shownDist}/assets (gzip; fonts and data tables excluded), by thread.\n`);
   if (!measurement.hasAssets) {
     console.log(`  No assets/ directory in ${shownDist}; no JavaScript or CSS to count.\n`);
   }

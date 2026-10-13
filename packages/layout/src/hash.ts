@@ -14,7 +14,7 @@
  * xors and multiplies by its own constants. At the end each lane is avalanched and the two are cross-mixed,
  * giving 64 bits as 16 hex digits, followed by the number of code units fed, in base 36. Deterministic: no
  * randomness, no seed, no platform dependence (only `Math.imul` and 32-bit integer arithmetic). It walks a
- * demo XL Scene at `folders` (217 000 characters of JSON) in about 0.7 ms on an Apple M1.
+ * demo XL Scene at `folders` (217 000 characters of JSON) in about 0.7 ms.
  *
  * A value that is not plain data (a function, a symbol), that nests objects and arrays more than
  * `MAX_KEY_DEPTH` levels deep (a value that contains itself, a cycle, nests without end) or that takes more

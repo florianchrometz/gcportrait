@@ -40,10 +40,10 @@ function viewBox(text: string): number[] {
 }
 
 describe('the SVG file', () => {
-  it('is named gcportrait_<scope>_<lens>_<readTime>.svg and carries no affiliation line (ADR 0018)', async () => {
+  it('is named gcportrait_<scope>_<lens>_<readTime>.svg and carries no affiliation line', async () => {
     // How the title block, <title> and <desc> are written into a file is serialize.test.tsx's; here, that the export
     // flow hands them this source's text and the viewer's offset, and that the whole file it writes carries no
-    // affiliation line anywhere (ADR 0018, placement of 2026-10-11).
+    // affiliation line anywhere (agents.md, Non-affiliation, brand and legal).
     const source = sourceWith();
     const file = exportSvgFile(source, { area: 'whole', theme: 'light' });
     expect(file.fileName).toBe('gcportrait_example.com_overview_20261008T000000Z.svg');
@@ -72,7 +72,7 @@ describe('the SVG file', () => {
 });
 
 describe('the current viewport', () => {
-  it('is what the canvas shows of the diagram, and carries no affiliation line (ADR 0018)', () => {
+  it('is what the canvas shows of the diagram, and carries no affiliation line', () => {
     const source = sourceWith({ x: -500, y: 60, width: 700, height: 100 });
     const { bounds } = source.model.input.layout;
     expect(viewportCrop(source)).toEqual({ x: bounds.x, y: 60, width: 200 - bounds.x, height: 100 });

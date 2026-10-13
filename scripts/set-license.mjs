@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Applies a project licence to the whole tree (ADR 0017). It last ran on 2026-10-12, when the maintainer chose the
- * MIT License: `node scripts/set-license.mjs MIT --holder "Florian Chrometz" --year 2026`, committed as one change.
- * LICENSE then got a closing note by hand, on what the MIT License does not cover (the gcportrait name and icon,
- * brand/LICENSE.md; the third-party material, THIRD_PARTY.md); a later run writes the bare text and must keep that
- * note. It is needed again only if the project licence ever changes.
+ * Applies a project licence to the whole tree. gcportrait is MIT (agents.md, Licence and dependencies), so
+ * this is needed only if the project licence changes. LICENSE carries a closing note written by hand, on what
+ * the MIT License does not cover (the gcportrait name and icon, brand/LICENSE.md; the third-party material,
+ * THIRD_PARTY.md); a run writes the bare licence text, so the note has to be put back after it.
  *
  * What it does, in the tree rooted at the repository (or --root):
  *   1. rewrites every SPDX header line that carries the current project licence identifier (the "license"
- *      field of the root package.json: MIT since 2026-10-12) to the new identifier, using the same file walk and
- *      header rules as scripts/check-provenance.mjs;
+ *      field of the root package.json, MIT) to the new identifier, using the same file walk and header rules
+ *      as scripts/check-provenance.mjs;
  *   2. sets the "license" field of every package.json that carries the current identifier;
  *   3. writes LICENSE from the built-in text in scripts/licenses/<id>.txt (Apache-2.0, MIT) or
  *      from --text <file> for any other identifier. Nothing is fetched.

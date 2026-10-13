@@ -2,7 +2,7 @@
 /**
  * The scope and quota project the person picked (`connect.scope`, `connect.quotaProject` in the app store), shared
  * by the Connect page, the Permissions page and the live pull. Picking a scope also remembers it among the recent
- * scopes and brings back the quota project last picked for it (ADR 0028 §2); picking a quota project remembers it
+ * scopes and brings back the quota project last picked for it; picking a quota project remembers it
  * for the scope. Both memories are this browser's preferences (scope/recent.ts).
  */
 import { useCallback } from 'react';

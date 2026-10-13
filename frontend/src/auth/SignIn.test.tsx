@@ -64,17 +64,17 @@ afterEach(() => {
 });
 
 describe('who runs the instance (hostedByLine)', () => {
-  it('is the backend’s "Hosted by" line alone, or nothing; an older backend’s short line is cut off', () => {
+  it('is the backend’s "Hosted by" line alone, or nothing; a statement at its end is cut off', () => {
     const config = (hostedBy: string | null): PublicConfig => ({ ...CONFIG, hostedBy });
-    // An older backend that sends no `hostedBy` at all.
-    const older: PublicConfig = Object.fromEntries(
+    // A configuration without `hostedBy` at all.
+    const bare: PublicConfig = Object.fromEntries(
       Object.entries(CONFIG).filter(([key]) => key !== 'hostedBy'),
     ) as PublicConfig;
     expect(hostedByLine(config('Hosted by Example Ltd.'))).toBe('Hosted by Example Ltd.');
     expect(hostedByLine(config(null))).toBeNull();
-    expect(hostedByLine(older)).toBeNull();
+    expect(hostedByLine(bare)).toBeNull();
     expect(hostedByLine(null)).toBeNull();
-    // What backends before 2026-10-12 sent (ADR 0018 then put the short line here; now only the footers carry it).
+    // Only the footers carry the statement.
     expect(hostedByLine(config('Hosted by Example Ltd. Not affiliated with Google / Google Cloud.'))).toBe(
       'Hosted by Example Ltd.',
     );

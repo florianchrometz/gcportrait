@@ -60,7 +60,7 @@ describe('the lens switch', () => {
     expect(decodeViewSpec(encodeViewSpec(switched))).toEqual(switched);
   });
 
-  it('counts the lens’s own default level as following it, as older links hold it', () => {
+  it('counts the lens’s own default level as following it, as a link may hold it', () => {
     const chosen = normalizeViewSpec({ snapshot: 'demo:M', lens: 'networking', detail: 'networks' });
     expect(detailFollowsLens(chosen, DEFAULTS)).toBe(true);
     const next: DetailLevel = 'auto';

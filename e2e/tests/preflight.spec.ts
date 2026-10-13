@@ -7,12 +7,13 @@ import { expectNoAxeViolations, scratchShot } from './support.js';
 
 /**
  * The Permissions page in normal mode, run by the `chromium-live` project against `pnpm dev`'s Vite server.
- * Everything outside the browser is answered inside it, as a mock service worker would: the backend's
- * GET /api/config, POST /api/scopes/search and POST /api/preflight (answers shaped like the backend's contract,
+ * Everything outside the browser is answered inside it, as a mock service worker would: the backend's GET
+ * /api/config, POST /api/scopes/search and POST /api/preflight (answers shaped like the backend's contract,
  * backend/src/preflight/schemas.ts and routes/scopes.ts), and Google's sign-in script and tokeninfo
- * (fixtures/gis.ts). The spec signs in, searches and picks a scope, picks a quota project, runs the check, reads
- * the checklist and its commands, copies one, switches to service-account mode, and checks that the token only
- * ever travels in gcportrait's own X-Gcportrait-Token header to this backend, never in Authorization (ADR 0031).
+ * (fixtures/gis.ts). The spec signs in, searches and picks a scope, picks a quota project, runs the check,
+ * reads the checklist and its commands, copies one, switches to service-account mode, and checks that the
+ * token only ever travels in gcportrait's own X-Gcportrait-Token header to this backend, never in
+ * Authorization (agents.md, Security and privacy, Tokens).
  */
 
 const ACCOUNT = 'gcportrait-backend@demo-host.iam.gserviceaccount.com';
@@ -253,7 +254,7 @@ test('the Permissions page checks a scope and lists what to grant, with commands
   await expect(listing.getByText('Copied.')).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(LIST_BINDING);
 
-  // The token went to this backend in X-Gcportrait-Token only (ADR 0031): never in Authorization, a URL, the page
+  // The token went to this backend in X-Gcportrait-Token only: never in Authorization, a URL, the page
   // or any storage.
   expect(log.badToken).toEqual([]);
   await expectTokenNowhere(page, google, [TOKEN]);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The zod-free normaliser's predicates (ADR 0029) against the schemas they stand in for: for valid values, near
+ * The zod-free normaliser's predicates against the schemas they stand in for: for valid values, near
  * misses and anything at all, each accepts exactly what its schema accepts. view-spec.test.ts covers
  * `normalizeViewSpec` field by field; view-hash.property.test.ts compares it with a zod-based reference.
  */

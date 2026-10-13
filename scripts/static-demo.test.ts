@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The static demo's tooling (ADR 0034): scripts/lib/static-demo.mjs and scripts/static-demo.mjs. The policy is the
+ * The static demo's tooling: scripts/lib/static-demo.mjs and scripts/static-demo.mjs. The policy is the
  * backend's demo-only one without what a `<meta>` cannot carry, the route copies are App.tsx's routes, the website's
  * check and footer agree with both, and the bundle check finds what it must.
  */

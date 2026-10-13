@@ -6,8 +6,9 @@
  * violation of its own (and every file that does not parse), so that one group's half-finished YAML never stops
  * another group's typecheck and never reaches the graph builder; the left-out types are named on stderr, and
  * `pnpm catalog:check` is the gate. It fails, writing nothing, only when no catalog can be assembled at all (a
- * lens file missing or invalid). `--strict` restores the old behaviour: no output while any violation exists. Unchanged outputs are not rewritten, so watchers and incremental builds stay quiet. `--quiet` (the
- * typecheck, lint and test hooks) prints nothing unless something is wrong, and then only to stderr.
+ * lens file missing or invalid). `--strict` writes nothing while any violation exists. Unchanged outputs are
+ * not rewritten, so watchers and incremental builds stay quiet. `--quiet` (the typecheck, lint and test hooks)
+ * prints nothing unless something is wrong, and then only to stderr.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 /**
- * The live pull (ADR 0010, skill cai-ingestion §1 and §4, ADR 0028 §5): Cloud Asset Inventory
- * `assets.list` page by page, as NDJSON frames (frames.ts).
+ * The live pull (skill cai-ingestion §1 and §4): Cloud Asset Inventory `assets.list` page by page, as NDJSON
+ * frames (frames.ts).
  *
- * - `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with `X-HTTP-Method-Override: GET` and a JSON body (a
- *   POST without the override is an HTML 404, the quota-project spike's finding 11): `contentType: RESOURCE`,
- *   `pageSize: 500` (the API allows 1000; 500 keeps a page well under the 25 MiB cap), `readTime` and `assetTypes`
- *   when asked, and the `pageToken` of the previous page's `nextPageToken`, until a page has none.
+ * - `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with `X-HTTP-Method-Override: GET` and a JSON
+ *   body (a POST without the override is an HTML 404; skill cai-ingestion §9): `contentType: RESOURCE`,
+ *   `pageSize: 500` (the API allows 1000; 500 keeps a page well under the 25 MiB cap), `readTime` and
+ *   `assetTypes` when asked, and the `pageToken` of the previous page's `nextPageToken`, until a page has
+ *   none.
  * - Each page: a `page` frame with its assets as Google sent them (scanned into the frame, not parsed:
- *   list-page.ts), then a `progress` frame with the totals. A page without an `assets` key is an empty page (finding
- *   12). At the end a `done` frame with the total and the `readTime` Google reported (every 200 carries one).
+ *   list-page.ts), then a `progress` frame with the totals. A page without an `assets` key is an empty page
+ *   (skill cai-ingestion §9). At the end a `done` frame with the total and the `readTime` Google reported
+ *   (every 200 carries one).
  * - Retries: 429, 5xx, timeouts and transport failures, by the upstream client's policy (500 ms, ×2, ≤ 8 s, 5
  *   attempts). Every other answer ends the stream with an `error` frame carrying Google's message verbatim, its
  *   status, canonical code and `ErrorInfo` reason: 400 (`assetTypes`, `readTime`), 401, 403, 404 (a `readTime`
@@ -20,8 +22,8 @@
  *   error frame instead; a page the budget cannot hold is retried like a timeout, then ends the stream with a
  *   retryable `INSTANCE_BUSY` frame. Nothing of a page but its frame is kept while the frame waits for the client.
  *
- * The credentials are asked for before every page: in user mode they are the caller's token and quota project;
- * in service-account mode the gate of ADR 0028 §4 runs before every CAI call and may refuse.
+ * The credentials are asked for before every page: in user mode they are the caller's token and quota
+ * project; in service-account mode the service-account gate runs before every CAI call and may refuse.
  */
 import { googleErrorOf } from '../upstream/google-error.js';
 import {
@@ -37,7 +39,7 @@ import type { PageBudget } from './page-budget.js';
 
 export const CAI_BASE_URL = 'https://cloudasset.googleapis.com/v1';
 
-/** Results per page (the API allows up to 1000; ADR 0028 §5 keeps 500). */
+/** Results per page (the API allows up to 1000; 500 keeps a page well under the cap). */
 export const CAI_PAGE_SIZE = 500;
 
 /** The largest page read (skill cai-ingestion §4; docs/security.md §5). */

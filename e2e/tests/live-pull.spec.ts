@@ -307,8 +307,8 @@ test('Pull now streams the checked scope into a snapshot and opens the diagram',
   await expect(row).toContainText('live pull');
   await expect(row).toContainText(String(ASSETS.length));
 
-  // The token went only to this backend, in X-Gcportrait-Token (ADR 0031): never in Authorization, a URL, the page
-  // or any storage.
+  // The token went only to this backend, in X-Gcportrait-Token (agents.md, Security and privacy, Tokens):
+  // never in Authorization, a URL, the page or any storage.
   expect(log.badToken).toEqual([]);
   await expectTokenNowhere(page, google, [TOKEN]);
 });

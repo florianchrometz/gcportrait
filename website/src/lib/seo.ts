@@ -2,8 +2,8 @@
 /**
  * Search and link-preview metadata of every page: the title, the description, the canonical URL on
  * https://gcportrait.app, OpenGraph and Twitter card tags with the page's 1200×630 social image, and JSON-LD.
- * The structured data names gcportrait's author, Florian Chrometz, as a Person; no Organization, and nothing
- * that could read as Google's (ADR 0018).
+ * The structured data names gcportrait's author as a Person; no Organization, and nothing that could read as
+ * Google's (agents.md, Non-affiliation, brand and legal).
  */
 import {
   LICENSE_URL,

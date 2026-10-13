@@ -250,7 +250,7 @@ describe('the handler', () => {
   it('answers a malformed request with an error', () => {
     const answers: SnapshotResponse[] = [];
     const handle = createSnapshotHandler((response) => answers.push(response));
-    // The demo organisations are the data worker's (ADR 0029): this worker knows no `demo` request.
+    // The demo organisations are the data worker's: this worker knows no `demo` request.
     handle({ type: 'demo', job: 4, size: 'S' });
     handle('nonsense');
     handle({ type: 'import', job: 5, files: [new Blob(['{}'])], now: 0, taken: [] });

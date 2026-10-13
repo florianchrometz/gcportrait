@@ -18,7 +18,7 @@
     "backend/*.ts",
     "packages/*/*.ts"
   ],
-  // backend/bundle.ts writes the render worker's asset directory with @gcportrait/render (ADR 0033), which reaches
+  // backend/bundle.ts writes the render worker's asset directory with @gcportrait/render, which reaches
   // the frontend's components: checked through the library's project, not compiled again here.
   "references": [{ "path": "./packages/render" }]
 }

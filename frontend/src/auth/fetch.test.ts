@@ -1,7 +1,7 @@
 // @vitest-environment node
 // SPDX-License-Identifier: MIT
 /**
- * The token goes only to this backend's /api/ paths, in X-Gcportrait-Token (ADR 0031: Identity-Aware Proxy takes
+ * The token goes only to this backend's /api/ paths, in X-Gcportrait-Token (Identity-Aware Proxy takes
  * `Authorization` for its own), never in `Authorization`, a URL or a cookie; a 401 expires the session.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';

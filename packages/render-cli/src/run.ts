@@ -2,7 +2,7 @@
 /**
  * `pnpm render`: one demo view as PNG, SVG and/or a draw.io file, every fixture × lens × theme (`--all`), or the list of demo
  * organisations. Every run starts with the command's name on standard error; neither the output nor the drawings
- * carry an affiliation line (ADR 0018: footers and long-form texts only). Exit codes: 0 done, 1 a check failed
+ * carry an affiliation line (footers and long-form texts only). Exit codes: 0 done, 1 a check failed
  * (`--compare` beyond `--max-diff`, `--strict` with layout invariant violations), 2 a usage error.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';

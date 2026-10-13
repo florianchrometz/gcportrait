@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The preflight panel (docs/permissions.md; ADR 0028 §2–§3): the "Check permissions" action for the
+ * The preflight panel (docs/permissions.md): the "Check permissions" action for the
  * scope, mode and quota project in the app store, and the checklist it answers: one row per need, its status in
  * words (never by colour alone), what was found, who needs which permission where, Google's own answer when the
  * check could not tell, and copy-ready commands. In user mode the quota projects tried are listed with why each

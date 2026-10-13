@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * `pnpm --filter @gcportrait/website demo`: the static demo (/demo/, ADR 0034) in the built site (website/dist), served
+ * `pnpm --filter @gcportrait/website demo`: the static demo (/demo/) in the built site (website/dist), served
  * the way GitHub Pages serves it (scripts/serve.ts: no rewrites, `x.html` for `x`, the site's 404 page for anything
  * else), in a real browser. Run after `pnpm website:build`. Exit code 0 when clean, 1 with every problem listed, 2 on a
  * usage error.

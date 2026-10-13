@@ -121,7 +121,7 @@ describe('locateNode', () => {
   });
 
   it('switches to the Everything lens with the Lens picker’s detail rule', () => {
-    // At networking's own level (as an older link holds it): the level follows the lens, so Everything opens at
+    // At networking's own level (as a link may hold it): the level follows the lens, so Everything opens at
     // auto, its chips opened around the node where needed.
     const following = locateNode(M, view('M', { lens: 'networking', detail: 'networks' }), KMS_KEY_M);
     if (following.kind !== 'offer') throw new Error(`expected offer, got ${following.kind}`);

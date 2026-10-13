@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The caller's Google access token (user mode, ADR 0004; ADR 0031): forwarded upstream verbatim,
- * never stored, never logged (agents.md rule 10). The streams' caps and the per-token rate limit key on a SHA-256
- * of it, which is kept in memory only, so the token itself is never used as a map key or a log field.
+ * The caller's Google access token (user mode; agents.md, Security and privacy, Tokens): forwarded upstream
+ * verbatim, never stored, never logged (agents.md, Security and privacy, principle 2). The streams' caps and
+ * the per-token rate limit key on a SHA-256 of it, which is kept in memory only, so the token itself is never
+ * used as a map key or a log field.
  *
  * Where it comes from, in this order:
  *

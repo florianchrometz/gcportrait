@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
 /**
- * Product name, tagline and the non-affiliation statement (ADR 0018 with its placement amendments of 2026-10-11 and
- * 2026-10-12), defined once. Change the wording only together with ADR 0018 and every copy listed below.
+ * Product name, tagline and the non-affiliation statement, defined once (agents.md, Non-affiliation, brand and
+ * legal). Change the wording only together with agents.md and every copy listed below.
  *
  * Where each goes:
  * - `TAGLINE`: the third and last line of the diagram's title block, on the canvas and in every export.
@@ -16,7 +16,7 @@
  * a command line's output, the backend's `hostedBy` line).
  *
  * Copies outside the app are checked against this file by scripts/non-affiliation-copies.test.ts (the image label,
- * the release workflow, the release notes, the third-party notices, infra/common.sh, docs/handoff.md, the Cloud Shell
+ * the release workflow, the release notes, the third-party notices, infra/common.sh, the Cloud Shell
  * tutorial), website/src/site.test.ts (the website's) and packages/icons/scripts/data.test.ts (the icons README).
  */
 

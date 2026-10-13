@@ -29,7 +29,7 @@ describe('large answers as transferred JSON bytes', () => {
   });
 
   it('encodes, by default, an answer of more than 1 000 rects, and leaves one of 1 000 as it is', () => {
-    // The threshold transfer.ts documents, measured on 2026-10-11: more than 1 000 rects.
+    // The threshold transfer.ts documents: more than 1 000 rects.
     const answer = (rectCount: number) => ({
       type: 'scene',
       id: 1,

@@ -5,10 +5,10 @@
  * 1. Every lens × every focus view (and none) × the standard filter set, on S and M: each combination is its
  *    own test case, checked by the independent oracle (`oracle.ts`).
  * 2. Drill-in on a folder, a project and a VPC × the standard filter set × three lenses, same oracle.
- * 3. Filters under drill-in and focus (filters compose with focus views and drill-in: ADR 0035 §3): in every
- *    drill-in and focus context,
- *    each filter changes the view exactly when the unfiltered view holds something the filter removes, and
- *    the filtered view satisfies the filter. The matrix of which filter bites where is pinned per size.
+ * 3. Filters under drill-in and focus (filters compose with focus views and drill-in: agents.md, Product
+ *    rules): in every drill-in and focus context, each filter changes the view exactly when the unfiltered
+ *    view holds something the filter removes, and the filtered view satisfies the filter. The matrix of which
+ *    filter bites where is pinned per size.
  * 4. Named rows with specific expectations: ids present or absent, counts, chips, edge kinds.
  */
 import type {

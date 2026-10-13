@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render job (ADR 0033 §8): a plain function of `post`, so the same code runs in a render worker (worker.ts) and
- * in process (in-process.ts, the tests). It reads the source with the render library's readers (the app's own:
- * the demo loader, the bundle reader, the import handler for NDJSON and a pull's frames), checks the asset limit,
- * and draws with `renderView`, the code `pnpm render` runs. One job per handler; messages after its end are ignored.
+ * The render job (agents.md, Exports and the render API): a plain function of `post`, so the same code runs
+ * in a render worker (worker.ts) and in process (in-process.ts, the tests). It reads the source with the
+ * render library's readers (the app's own: the demo loader, the bundle reader, the import handler for NDJSON
+ * and a pull's frames), checks the asset limit, and draws with `renderView`, the code `pnpm render` runs. One
+ * job per handler; messages after its end are ignored.
  */
 import {
   checkAssetCount,

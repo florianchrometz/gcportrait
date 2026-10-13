@@ -12,11 +12,11 @@ export const SCRIPTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.u
 export const REPO = path.resolve(SCRIPTS_DIR, '..');
 
 /**
- * The licence identifier the fixture trees declare (their package.json and SPDX headers): the placeholder of the time
- * before the licence was chosen (scripts/lib/repo-files.mjs still falls back to it), not the project's MIT, so the
- * tests show that the tools take the identifier from the tree they check.
+ * The licence identifier the fixture trees declare (their package.json and SPDX headers): the tools' fallback
+ * (FALLBACK_LICENSE_ID in scripts/lib/repo-files.mjs), not the project's MIT, so the tests show that the
+ * tools take the identifier from the tree they check.
  */
-export const FIXTURE_LICENSE = 'LicenseRef-gcportrait-TBD';
+export const FIXTURE_LICENSE = 'LicenseRef-gcportrait-unset';
 
 /** A throw-away directory tree for exercising the repo tooling. */
 export interface TempTree {

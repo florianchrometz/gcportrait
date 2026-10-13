@@ -39,7 +39,7 @@ export interface TimelineControllerOptions {
   readonly store: AppStore;
   readonly cache: TickCacheStore;
   readonly fetchTick: TickFetcher;
-  /** Demo mode reads nothing from Google Cloud (ADR 0014). */
+  /** Demo mode reads nothing from Google Cloud. */
   readonly demo: boolean;
   readonly clock?: () => number;
   readonly debounceMs?: number;

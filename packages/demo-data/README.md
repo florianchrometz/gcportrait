@@ -3,15 +3,15 @@
 # @gcportrait/demo-data
 
 Deterministic synthetic Google Cloud organisations for gcportrait's demo mode, tests, screenshots and website
-(demo mode is first-class: ADR 0014). Four sizes, each with a 35-day history, emitted either as
-Cloud Asset Inventory records (the shape `assets.list` and `exportAssets` produce) or as the normalised
+(demo mode is first-class: agents.md, Product rules). Four sizes, each with a 35-day history, emitted either
+as Cloud Asset Inventory records (the shape `assets.list` and `exportAssets` produce) or as the normalised
 `Asset` / `Snapshot` of `@gcportrait/model`. Everything is synthetic: `example.com` / `example.org` names,
 project numbers below 100000000000, one organisation per size (`30000000001` to `30000000004`), and addresses
 from private and documentation ranges, checked by the "synthetic only" guard of `@gcportrait/model/testing`
 that every package runs over its fixtures.
 
-The generator is a pure core (agents.md rule 9): no I/O, no clock, no `Math.random`. A seed and a `today` date
-fully determine the output, byte for byte. The only Node code is the `generate` command in `scripts/`.
+The generator is a pure core: no I/O, no clock, no `Math.random`. A seed and a `today` date fully determine
+the output, byte for byte. The only Node code is the `generate` command in `scripts/`.
 
 ```ts
 import {

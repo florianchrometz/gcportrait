@@ -21,7 +21,7 @@ import {
  * (CONFIGURED_SOURCE_URL, the operator's SOURCE_URL: a fork elsewhere), and its legal links follow `legal`.
  */
 
-/** Synthetic pages elsewhere (agents.md rule 6), as an operator's LEGAL_IMPRESSUM_URL and LEGAL_PRIVACY_URL. */
+/** Synthetic pages elsewhere, as an operator's LEGAL_IMPRESSUM_URL and LEGAL_PRIVACY_URL. */
 const LINKED_IMPRESSUM = 'https://legal.example.com/impressum';
 const LINKED_PRIVACY = 'https://legal.example.com/privacy-policy';
 

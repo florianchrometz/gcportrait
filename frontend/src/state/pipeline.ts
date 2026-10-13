@@ -23,7 +23,7 @@ import type { DiagramWorkers } from '../diagram/pipeline/workers';
 import type { PipelineError, PipelineSlice, SnapshotStage } from './slices';
 import type { AppStore } from './store';
 
-/** The canvas size used until the canvas has been measured: the minimum viewport (ADR 0011). */
+/** The canvas size used until the canvas has been measured: the minimum viewport, 1280 × 800. */
 export const FALLBACK_VIEWPORT: Viewport = { width: 1280, height: 800 };
 
 export { sceneKey } from './sceneKey';

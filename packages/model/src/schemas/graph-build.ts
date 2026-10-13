@@ -87,7 +87,7 @@ export const GraphReportSchema = z.strictObject({
   cycles: z.array(ContainmentCycleSchema),
   /** Node id → number of its dangling references (`Graph.dangling` entries from it). */
   danglingByNode: z.record(NodeIdSchema, PositiveCountSchema),
-  /** Asset types the catalog does not map → number of assets, drawn as generic cards (agents.md rule 5). */
+  /** Asset types the catalog does not map → number of assets, drawn as generic cards (never dropped). */
   unmappedTypes: z.record(AssetTypeSchema, PositiveCountSchema),
   counts: GraphBuildCountsSchema,
 });

@@ -4,8 +4,8 @@
 
 `icon.svg` is gcportrait's mark: a frame holding a project zone above a VPC network and a subnetwork tile, in the
 diagram's tints, drawn for the project (no Google mark or icon). The gcportrait name and the icon are not covered
-by the MIT License: [LICENSE.md](LICENSE.md) says what that means. It is the one source of the mark (decision of
-2026-10-11); nothing else draws it on its own:
+by the MIT License: [LICENSE.md](LICENSE.md) says what that means. It is the one source of the mark
+([agents.md](../agents.md), "Non-affiliation, brand and legal"); nothing else draws it on its own:
 
 | Where | How it uses `icon.svg` |
 |---|---|

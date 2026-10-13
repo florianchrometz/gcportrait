@@ -9,11 +9,10 @@ snapshot assembly with stats, and a worker protocol. It reads both CAI export fi
 per line, snake_case envelope keys) and `assets.list` results (camelCase), as plain lines or inside the
 backend's `/api/assets/stream` frames, from files, `fetch` bodies, streams and strings.
 
-The package is a pure core (agents.md rule 9). It compiles without DOM or Node types, depends only on
-`@gcportrait/model`, has no side effects, never reads the clock or a random source itself, and runs the same
-in a Web Worker, in Node and in tests. The single exception is the worker handler's *defaults* for the
-snapshot id (`Date.now`, `crypto.getRandomValues`), which a caller can replace. `src/index.ts` is the only
-public surface.
+The package is a pure core. It compiles without DOM or Node types, depends only on `@gcportrait/model`, has no
+side effects, never reads the clock or a random source itself, and runs the same in a Web Worker, in Node and
+in tests. The single exception is the worker handler's *defaults* for the snapshot id (`Date.now`,
+`crypto.getRandomValues`), which a caller can replace. `src/index.ts` is the only public surface.
 
 ```ts
 import { ingest } from '@gcportrait/ingest';
@@ -105,7 +104,7 @@ skipped. A stream abandoned early (error frame, strict mode) is cancelled and it
 
 Detected per line, so they can be mixed in one input. An object is a frame when it has a `t` field and no
 `name`; an object with a `name` is always an asset, so an asset that happens to carry a `t` field is never
-dropped (agents.md rule 5).
+dropped (no asset is ever dropped: agents.md, Product rules).
 
 | Line | Dialect | Handling |
 |---|---|---|
@@ -243,28 +242,21 @@ services and KMS keys; 76.3 MiB, 1 599 bytes per line on average. The file is po
 `postIngestJob` to a `worker_threads` worker running the package's handler; the clock runs from the first
 message to the `done` reply arriving on the main thread, so it includes reading, transfer, parsing,
 normalisation, the project index and the structured clone of the result back. Each measurement is the best
-of three runs after a warm-up job.
+of three runs after a warm-up job. On a desktop machine with little else running the best run takes about
+1 s; with the machine's cores busy several times over it takes 1.3 to 2 s, which is why the strict check runs
+alone (below).
 
-| Machine and load | Three runs | Best | Budget |
-|---|---|---|---|
-| Apple M1, 8 cores, Node 22.23.2, load average ≈ 5 (round 1, camelCase input) | 1 087, 986, 971 ms | 971 ms | 1 500 ms |
-| same machine, load average ≈ 12 (other agents' jobs), export input | 1 485, 1 714, 1 277 ms | 1 277 ms | 1 500 ms |
-| same, ≈ 12 | 1 787, 1 415, 1 547 ms | 1 415 ms | 1 500 ms |
-| same, ≈ 12 | 1 923, 1 367, 1 649 ms | 1 367 ms | 1 500 ms |
-| same, ≈ 15 to 16 (the machine oversubscribed about twice) | 2 698, 2 450, 1 945 ms | 1 945 ms: over | 1 500 ms |
-
-In-process, at load ≈ 5, the input takes about 500 ms to ingest (JSON.parse about 240 ms, the project index
-about 80 ms, normalisation through `AssetSchema` about 45 ms); posting the 50 000-asset result back to the
-page (structured clone) takes about 460 ms of the total. Reading the snake_case export style costs nothing
-extra: an interleaved comparison at load ≈ 12 measured the normaliser at 42 ms (export keys) and 44 ms
-(`assets.list` keys) per 50 000 assets, against 52 ms for the camelCase-only normaliser it replaced.
+In-process the input takes about 500 ms to ingest (JSON.parse about 240 ms, the project index about 80 ms,
+normalisation through `AssetSchema` about 45 ms); posting the 50 000-asset result back to the page (structured
+clone) takes about 460 ms of the total. Reading the snake_case export style costs nothing extra: the
+normaliser takes about 42 ms (export keys) and 44 ms (`assets.list` keys) per 50 000 assets.
 
 A wall-clock budget only means something on a machine that is not busy with other work, so the strict
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
 unit job) the same measurement asserts a regression ceiling of 3 × 1.5 s instead, which still catches an
-order-of-magnitude slowdown (for example, at load ≈ 15 it measured 2 674, 1 497 and 2 676 ms and passed). Add
-`--silent=false` to print the figures there (Vitest ignores flags after a `--`).
+order-of-magnitude slowdown on a busy machine. Add `--silent=false` to print the figures there (Vitest ignores
+flags after a `--`).
 
 ## Tests
 

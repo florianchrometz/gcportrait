@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The search ranking (ADR 0035 §5: a Fuse.js index over the Graph's nodes). Pure; runs in the data worker.
+ * The search ranking (a Fuse.js index over the Graph's nodes). Pure; runs in the data worker.
  *
  * A node matches in the best of four tiers, and tiers never mix: every exact match ranks above every prefix
  * match, and so on, so typing a full resource name, an IP or a project id lands on that node first, whatever a

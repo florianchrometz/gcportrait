@@ -1,24 +1,25 @@
 # SPDX-License-Identifier: MIT
 #
-# Release pipeline (ADR 0035 §2; contributor-workflow skill §7). On a `v*` tag it checks and builds the tag,
-# publishes the container image to GitHub Container Registry and creates the GitHub release. Run by hand (Actions >
-# Release > Run workflow, on any branch) it publishes the same image as `dev` only: no version tags, no `latest`, no
-# GitHub release.
+# Release pipeline (agents.md, Releases; contributor-workflow skill §7). On a `v*` tag it checks and builds
+# the tag, publishes the container image to GitHub Container Registry and creates the GitHub release. Run by
+# hand (Actions > Release > Run workflow, on any branch) it publishes the same image as `dev` only: no version
+# tags, no `latest`, no GitHub release.
 #
 # Credentials: the workflow's own GITHUB_TOKEN, nothing else. No secret, no repository variable, no cloud account.
 #
-# publish-image: builds infra/Dockerfile for linux/amd64 and linux/arm64 with Buildx (arm64 under QEMU emulation,
-# which makes the arm64 half the slow part), starts each image (amd64 natively, arm64 emulated) and checks /healthz
-# (it must report the version), /api/config and the SPA before anything is pushed, then pushes one multi-platform
-# image to ghcr.io/<owner>/gcportrait with the tags X.Y.Z, X.Y and `latest`. `latest`, which infra/deploy.sh
-# deploys by default, moves only for the newest release: never for a pre-release (v1.2.0-rc.1 gets only its own
-# version tag), and not for a patch of an older line pushed after a newer release (v1.1.5 after v1.2.0). The image
-# carries OCI labels and index annotations: the source repository, the licence (MIT, ADR 0017) and, as its
-# description, the long form of the non-affiliation statement (ADR 0018). Build provenance and SBOM attestations are
-# switched off, so the index lists exactly the two platforms; the SBOMs travel with the release instead. The job
-# then checks that the image can be pulled anonymously, as Artifact Registry's remote repository pulls it for
-# infra/deploy.sh: a new package on ghcr.io is private until its owner makes it public once (docs/contributing.md,
-# "9. Releases"), so a tag release fails here, and a `dev` run warns, while it is not. Last, Syft
+# publish-image: builds infra/Dockerfile for linux/amd64 and linux/arm64 with Buildx (arm64 under QEMU
+# emulation, which makes the arm64 half the slow part), starts each image (amd64 natively, arm64 emulated) and
+# checks /healthz (it must report the version), /api/config and the SPA before anything is pushed, then pushes
+# one multi-platform image to ghcr.io/<owner>/gcportrait with the tags X.Y.Z, X.Y and `latest`. `latest`,
+# which infra/deploy.sh deploys by default, moves only for the newest release: never for a pre-release
+# (v1.2.0-rc.1 gets only its own version tag), and not for a patch of an older line pushed after a newer
+# release (v1.1.5 after v1.2.0). The image carries OCI labels and index annotations: the source repository,
+# the licence (MIT) and, as its description, the long form of the non-affiliation statement (agents.md,
+# Non-affiliation, brand and legal). Build provenance and SBOM attestations are switched off, so the index
+# lists exactly the two platforms; the SBOMs travel with the release instead. The job then checks that the
+# image can be pulled anonymously, as Artifact Registry's remote repository pulls it for infra/deploy.sh: a
+# new package on ghcr.io is private until its owner makes it public once (docs/contributing.md, "9.
+# Releases"), so a tag release fails here, and a `dev` run warns, while it is not. Last, Syft
 # (anchore/sbom-action) writes one SPDX SBOM per platform.
 #
 # github-release (tags only): creates the GitHub release `vX.Y.Z` with notes built by scripts/release-notes.mjs from
@@ -31,20 +32,22 @@
 # a release that is not the newest is not marked "latest" (the installer's default is GitHub's "latest"). It needs
 # the CHANGELOG.md sections: tag only after `pnpm release:version`.
 #
-# Follow-ups, not done yet: signing the image (cosign keyless signing with the workflow's OIDC identity, which needs
-# `id-token: write`, and `cosign verify` documented for self-hosters) and build provenance attestations. A copy in
-# a Google Cloud registry is not needed for deploying: infra/deploy.sh pulls through an Artifact Registry remote
-# repository in the self-hoster's own project. Should a mirror ever be wanted, add a job after publish-image that
-# authenticates with google-github-actions/auth (Workload Identity Federation, no key) and copies the pushed digest
-# with `docker buildx imagetools create --tag REGION-docker.pkg.dev/PROJECT/REPOSITORY/gcportrait:TAG IMAGE@DIGEST`.
+# Not in the pipeline (docs/backlog.md): signing the image (cosign keyless signing with the workflow's OIDC
+# identity, which needs `id-token: write`, and `cosign verify` documented for self-hosters) and build
+# provenance attestations. A copy in a Google Cloud registry is not needed for deploying: infra/deploy.sh
+# pulls through an Artifact Registry remote repository in the self-hoster's own project. Should a mirror ever
+# be wanted, add a job after publish-image that authenticates with google-github-actions/auth (Workload
+# Identity Federation, no key) and copies the pushed digest with `docker buildx imagetools create --tag
+# REGION-docker.pkg.dev/PROJECT/REPOSITORY/gcportrait:TAG IMAGE@DIGEST`.
 #
-# website-build and website-deploy: tag pushes only, and only while the repository variable
-# PAGES_DEPLOY is `true`, so a release neither waits for nor fails on the website before the maintainer has set up
-# Pages (docs/website.md). Then the static demo (`pnpm demo:static`, the demo at /demo/, ADR 0034; its version is the
-# tag's) and the Astro site are built from the tag the way pages.yml builds main, but strict and with the generated
-# media required to be fresh (`pnpm media --check` fails the job when docs/media/ is stale, so stale media are never
-# published), and deployed to GitHub Pages together. Neither job blocks publish-image or github-release. Needs Settings > Pages > Source set to "GitHub Actions" and the `github-pages` environment
-# allowing `v*` tags to deploy; no secret (the site's footer links the legal pages on the maintainer's website).
+# website-build and website-deploy: tag pushes only, and only while the repository variable PAGES_DEPLOY is
+# `true`, so a release neither waits for nor fails on the website before the maintainer has set up Pages
+# (docs/website.md). Then the static demo (`pnpm demo:static`, the demo at /demo/; its version is the tag's)
+# and the Astro site are built from the tag the way pages.yml builds main, but strict and with the generated
+# media required to be fresh (`pnpm media --check` fails the job when docs/media/ is stale, so stale media are
+# never published), and deployed to GitHub Pages together. Neither job blocks publish-image or github-release.
+# Needs Settings > Pages > Source set to "GitHub Actions" and the `github-pages` environment allowing `v*`
+# tags to deploy; no secret (the site's footer links the legal pages on the maintainer's website).
 name: Release
 
 on:
@@ -76,7 +79,7 @@ jobs:
         run: pnpm run check
       - name: Build every workspace
         run: pnpm run build
-      - name: SPA size budgets (UI thread and workers, ADR 0029)
+      - name: SPA size budgets (UI thread and workers)
         run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
 
   publish-image:
@@ -193,9 +196,9 @@ jobs:
           flavor: |
             latest=${{ steps.names.outputs.latest }}
           # The action adds the source repository, revision, version and creation time by itself. The
-          # description is the long-form non-affiliation statement (ADR 0018); without it the action would take the
-          # repository's description. The licence is gcportrait's own (ADR 0017); the image also holds
-          # third-party material under its own terms (THIRD_PARTY.md).
+          # description is the long-form non-affiliation statement; without it the action would take the
+          # repository's description. The licence is gcportrait's own (MIT); the image also holds third-party
+          # material under its own terms (THIRD_PARTY.md).
           labels: |
             org.opencontainers.image.title=gcportrait
             org.opencontainers.image.licenses=MIT
@@ -256,9 +259,9 @@ jobs:
       # anchore/sbom-action writes output-file as it is given and does not create its folder.
       - name: Folder for the SBOMs
         run: mkdir -p sbom
-      # A third-party action that receives a token with `packages: write` (to read the image while the package is
-      # still private). Like every action here it is pinned to a commit, not to its moving major tag: v0.24.0, the
-      # commit `v0` named on 2026-10-11. Dependabot proposes newer releases as new commits (.github/dependabot.yml).
+      # A third-party action that receives a token with `packages: write` (to read the image while the package
+      # is still private). Like every action here it is pinned to a commit with its release as a comment, not
+      # to its moving major tag. Dependabot proposes newer releases as new commits (.github/dependabot.yml).
       - name: SBOM of linux/amd64 (Syft, SPDX JSON)
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:

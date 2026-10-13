@@ -6,13 +6,15 @@ description: Layout rules for gcportrait diagrams — nesting order, containment
 
 # gcportrait diagram layout
 
+The rules this handbook applies are in [agents.md](../../../agents.md) ("Layout and drawing rules" and
+"Quality gates, testing and CI"); this file is the layout engine's specification, with every constant.
+
 Load this for any work in `packages/layout`, `packages/graph` (Scene building) or the renderer, and when
-judging whether a diagram "looks right". The engine is a clean-room implementation (ADR 0006); this file is
-the specification. `packages/graph` builds the containment forest, the Scene, detail levels, chips and bundles
-described below on the full asset catalog (its README is the reference); `packages/layout` packs and routes
-(its README is the reference; ADRs 0025 to 0027 record the rules beyond this file); the renderer
-(`frontend/src/diagram/`, with the selection trace) draws the result. The Scene and ViewSpec types they consume
-are in `@gcportrait/model`.
+judging whether a diagram "looks right". The engine is gcportrait's own. `packages/graph` builds the
+containment forest, the Scene, detail levels, chips and bundles described below on the full asset catalog (its
+README is the reference); `packages/layout` packs and routes (its README is the reference); the renderer
+(`frontend/src/diagram/`, with the selection trace) draws the result. The Scene and ViewSpec types they
+consume are in `@gcportrait/model`.
 
 ## 1. What a correct diagram looks like
 
@@ -20,7 +22,7 @@ are in `@gcportrait/model`.
   inside projects, subnets yellow inside VPCs, resources are cards inside the deepest container they belong to.
 - Children of a zone form a tidy grid that is wider than tall (target aspect 1.6, root 1.75). Rows are
   left-aligned; cards in a row share a baseline; zones in a row share their top edge, except that short
-  siblings may stack one above the other beside a taller one (§4, ADR 0026).
+  siblings may stack one above the other beside a taller one (§4).
 - Arrows are orthogonal, run through the gaps between boxes, never over a card or through a zone header, and
   attach to the border of their target. Parallel arrows in the same gap are spaced in lanes, never overlapping.
 - Nothing jiggles: the same input always yields the same picture, and expanding one zone moves its siblings
@@ -54,7 +56,7 @@ Decision rules (applied in `packages/graph`, consumed by layout):
    asset (into their project); labelled from `data.displayName`, else the last segment of `data.name`, else of
    the asset name; the icon by product, then by category, then the generic mark; no edges of their own (another
    type's rule may still point at one, which makes it `core`, else it is a `leaf`). `pnpm catalog:check`
-   reports the official types the catalog does not map. Never drop an asset (agents.md hard rule 5).
+   reports the official types the catalog does not map. Never drop an asset (agents.md, "Product rules").
 
 ## 3. Sizing constants (scale 1)
 
@@ -86,18 +88,17 @@ DOM.
   containers), then by label (locale-independent, code-point order), then by id.
 - Mixed children: cards first in a grid of `c` columns (each column as wide as its widest card), then zones in
   rows below, any number per row; a zone row's height is the tallest cell in it. A cell is one zone, or a stack
-  of consecutive zones one above the other, left-aligned, beside a single zone at least as tall in its row
-  (ADR 0026).
-- Choose `c` and the zone rows (ADR 0025) among the arrangements whose rows are all full (no row but the last
+  of consecutive zones one above the other, left-aligned, beside a single zone at least as tall in its row.
+- Choose `c` and the zone rows among the arrangements whose rows are all full (no row but the last
   of its block has room for the next child, and the card grid could not take one more column) and, when any
   is, wider than tall: the one with the smallest frame wins, where a children box within 20 % of the target
   aspect is its own frame and any other box is framed by the smallest rectangle of the target's aspect around
   it; among the candidates within 2 % of the smallest frame, one whose rows do not hold more zones further
-  down ranks first, then one with fewer rows (ADR 0026); ties prefer the closer aspect, then fewer rows, then
-  fewer card columns. For equal boxes this is the column count whose grid is closest to the target. Small sets
-  of wide boxes cannot always reach 20 % (four chips make a column or a 2 × 2 grid of aspect 3–4); the restated
-  packing criterion allows for that (ADR 0025).
-- Stacks (ADR 0026): an arrangement with stacked zones replaces the plain one only when its box fits inside
+  down ranks first, then one with fewer rows (`NEAR_TIE`); ties prefer the closer aspect, then fewer rows,
+  then fewer card columns. For equal boxes this is the column count whose grid is closest to the target. Small
+  sets of wide boxes cannot always reach 20 % (four chips make a column or a 2 × 2 grid of aspect 3–4); the
+  packing criterion below allows for that.
+- Stacks: an arrangement with stacked zones replaces the plain one only when its box fits inside
   the plain one's (no wider, no taller) with a smaller frame, so stacking never makes its own container larger
   (its parent, choosing by frame, may then take a larger box).
 - Flat sets above 120 siblings are bundled into synthetic groups of ~24 by label prefix (shown as grey "group"
@@ -105,10 +106,19 @@ DOM.
   invents nodes.
 - The root packs folders and loose projects together; folders rank before projects. A loose project shares
   the last folder row when that frames within 2 % of a row of its own (the near-tie rule above).
+- For gutter routing, `Layout.arrangements` records each container's choice and `LayoutOptions.arrangements`
+  pins it, so re-packing with wider gutters keeps every row and column.
+
+**The packing criterion** (`test/golden.test.ts`, with the brute-force oracle in `src/testing/oracle.ts`): on
+the S and M golden layouts, every container with four or more children is within 20 % of its target aspect,
+unless no arrangement with full rows reaches 20 %, or every one that does needs more area than the chosen
+arrangement framed to the target; and none of them fills less than 40 % of its children box on the demo
+fixtures. The oracle enumerates plain rows; the test accepts the packer's choice within `NEAR_TIE` of the
+smallest tidy frame, and stacks only ever take less. The 40 % floor is a check on the fixtures, not a
+guarantee: a container with one child far wider than the rest can fill less. `src/testing/rows.ts` and the
+property tests enforce full rows.
 
 ## 5. Gutters and routing
-
-The rules below are ADR 0027's (which records where they go beyond this section's first version).
 
 - After packing, every zone has horizontal and vertical gutters between its children (and between the zones
   of a stack) and an inner ring inside its padding. Gutters of nested zones connect to the parent's gutters:
@@ -135,7 +145,8 @@ The rules below are ADR 0027's (which records where they go beyond this section'
   longer line up); a round runs only while some lane does not fit. The first pass's search work (the A* states
   it settles) decides single-pass mode: once it reaches 420 000 the rest of the pass is searched weighted
   (each route at most 1.5 × the cheapest) and it is final; above 340 000 one widening round at most, a band
-  so that a view loses a round before it loses the widening (ADR 0027).
+  so that a view loses a round before it loses the widening (a stateless layout keeps no memory of an earlier
+  decision, so the band is its hysteresis).
 - Ports: an edge leaves/enters a rect at the side facing the other endpoint, at a port slot spaced 12 px along
   that side, never on a zone header; top and left sides use a grid shifted by half a spacing, so stubs of rects
   facing each other across a gap may run 6 px apart. Edges to a zone target end at its border; edges to a
@@ -180,7 +191,7 @@ The layout's budgets, through a worker, enforced by `pnpm --filter @gcportrait/l
 
 Memoise by Scene hash; cancel superseded requests; never block the UI thread. The pipeline around it has its
 own budgets: ingest of XL < 1.5 s and the graph build of M < 150 ms (`test:budget` in `packages/ingest` and
-`packages/graph`), and the bundles of ADR 0029 (`pnpm size`).
+`packages/graph`), and the bundle budgets (`pnpm size`; agents.md, "Quality gates, testing and CI").
 
 The app's targets, measured in the browser on a production demo build (`VITE_DEMO=1`) in Chromium at
 1280 × 800, with `performance.measureUserAgentSpecificMemory()` behind COOP and COEP for the heap:
@@ -192,9 +203,8 @@ The app's targets, measured in the browser on a production demo build (`VITE_DEM
 | Worker heap after 100 timeline switches on M, against a warm baseline after garbage collection | within 20 % |
 | UI-thread long tasks (> 50 ms) while panning and zooming L and XL at the default | none sustained |
 
-All were met on 2026-10-11 (XL's first diagram about 2.6 s); the open performance items are in
-`docs/backlog.md`. A change to the diagram pipeline, the workers or the timeline's data path measures these
-again, before and after, on the same machine.
+The open performance items are in `docs/backlog.md`. A change to the diagram pipeline, the workers or the
+timeline's data path measures these again, before and after, on the same machine.
 
 ## 8. How to verify
 
@@ -208,7 +218,7 @@ again, before and after, on the same machine.
    length, bends, border-hugging length, detours, crossings, the routes in the canvas margin and the routes
    that run more than 1 000 px past both of their ends (overshoots; `src/testing/quality.ts`; `--view
    L:overview:projects` and the other views, not only M), and `measure --packing` the canvas area, fill and
-   aspect of each packing rule (ADR 0026): compare before and after.
+   aspect of each packing rule: compare before and after.
 
 Checklist: grid tidy and wider than tall; no card touched by an edge; no edge through a header; lanes spaced;
 heads on borders; peers double-headed; chips show counts; nothing overlaps the legend or title block; the
@@ -223,5 +233,5 @@ whole diagram fits the viewport at the auto level.
 | Lines run along zone borders or around the canvas, or drop far past both ends and come back | no port line out of the rect; border hugging not charged; a line dearer than its parallel through the same free space (routes U-turn through the margin to reach the cheaper one); or a long border charged in proportion to its whole length (routes drop to a far row gap and climb back) | check the port lines (`src/portlines.ts`), `hugFactor`, `hugCap` and `marginFactor`; compare `pnpm --filter @gcportrait/layout measure` (margin edges and px, overshoots) before and after |
 | Layout flickers on hover | hover triggered re-layout | hover must mutate attributes only (one exception: the painter clones a traced line from its relation kind's hidden prototype and removes it again; never a re-render or re-layout) |
 | Different picture per run | iteration over a Map/Set with unstable order, or `Math.random` | sort deterministically; no randomness in layout |
-| Huge empty zones | aspect target applied to zone-only rows; short siblings beside a tall one | stack short siblings beside the tall one (ADR 0026; rows by height would break §4's order), re-evaluate columns |
+| Huge empty zones | aspect target applied to zone-only rows; short siblings beside a tall one | stack short siblings beside the tall one (rows by height would break §4's order), re-evaluate columns |
 | Tiny text soup at root for a big org | auto level too deep | check budget math and rect counting (chips count as 1) |

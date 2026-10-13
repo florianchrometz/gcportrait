@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * A copy-ready command (docs/permissions.md; the maintainer's request of 2026-10-11): the text in a code block,
+ * A copy-ready command (docs/permissions.md): the text in a code block,
  * each registered variable in it (`YOUR_ORG_ID`, COMMAND_VARIABLES in `@gcportrait/model`) a labelled field filled in
  * place (commands/VariableField.tsx), and a Copy button that writes the command with the values to the clipboard and
  * says so in a polite live region. Every field of a variable on the page shows one value, prefilled from what the

@@ -7,6 +7,10 @@ directory with a `SKILL.md` (frontmatter `name` + `description`, then the instru
 `references/` files. They are written so that an assistant can load one and immediately follow it, and so that
 a reviewer can use the same file as a checklist to fact-check a change.
 
+The skills are the procedural handbooks of their domains: they say how the work is done. The rules they apply
+are in [agents.md](../agents.md), the one rules file of the project; a skill points there for a rule and never
+restates how or when a rule came about.
+
 | Skill | Purpose |
 |---|---|
 | `skills/gcp-diagram-style/` | Colours, zone tints, typography, icons, edge styles, legend, light/dark, WCAG checks, export rules, accessibility, and a fact-check list for renders. |
@@ -18,8 +22,9 @@ a reviewer can use the same file as a checklist to fact-check a change.
 How to load a skill:
 - Any assistant (Claude Code, Gemini CLI, Codex, Cursor, Copilot, ...): name the SKILL.md path in the prompt
   ("load .agents/skills/gcp-diagram-style/SKILL.md"), or include its content in context. The repository
-  deliberately has no tool-specific configuration ([ADR 0016](../docs/adr/0016-agents-md-only-entry-point.md));
+  deliberately has no tool-specific configuration ([agents.md](../agents.md), "How this file works");
   `agents.md` tells every tool which skill to load for which work.
 - Humans: read it; the checklists are meant for review too.
 
-Keep skills factual and short. When a rule changes, change the skill in the same PR as the code.
+Keep skills factual and short. When a rule changes, change `agents.md` and the skill in the same PR as the
+code.

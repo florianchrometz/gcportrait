@@ -100,7 +100,7 @@ describe('formatReport', () => {
 
   it('lists violations by code with their location, capped per code', () => {
     const violations: Violation[] = [
-      { code: 'unmapped', message: 'one', file: 'known-unmapped.yaml' },
+      { code: 'unmapped', message: 'one', file: 'known-unmapped/net.yaml' },
       { code: 'syntax', message: 'two', file: 'products/x.yaml', line: 7 },
       { code: 'lens-missing', message: 'three' },
       ...Array.from({ length: 45 }, (_, i): Violation => ({
@@ -109,7 +109,7 @@ describe('formatReport', () => {
       })),
     ];
     const lines = formatViolations(violations);
-    expect(lines[0]).toBe('  [unmapped] known-unmapped.yaml: one');
+    expect(lines[0]).toBe('  [unmapped] known-unmapped/net.yaml: one');
     expect(lines).toContain('  [syntax] products/x.yaml:7: two');
     expect(lines).toContain('  [lens-missing] three');
     expect(lines).toContain('  [unmapped] … and 6 more (--json lists every one)');

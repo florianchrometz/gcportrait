@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The demo organisations the app offers (ADR 0014): the snapshot menu and the empty canvas list them, beside the
+ * The demo organisations the app offers: the snapshot menu and the empty canvas list them, beside the
  * stored snapshots.
  */
 import {

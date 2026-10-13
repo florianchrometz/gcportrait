@@ -13,7 +13,7 @@ import { defineConfig, loadEnv, type Plugin, type ProxyOptions, type Rollup, typ
  * `pnpm dev:demo` (VITE_DEMO=1) serves it on :5174 with no proxy at all: demo mode never calls the
  * backend. Different ports let both run side by side, and let the e2e suite reuse a running demo server.
  *
- * VITE_STATIC_DEMO=1 builds the static demo (ADR 0034; `pnpm demo:static`, scripts/static-demo.mjs, sets it with the
+ * VITE_STATIC_DEMO=1 builds the static demo (`pnpm demo:static`, scripts/static-demo.mjs, sets it with the
  * rest of the static demo's settings): the app in demo-only mode with its configuration built in
  * (src/api/staticConfig.ts), for a static host below `/demo/` (another base with `--base`), written to the repository's
  * `dist/demo/` (another place with `--outDir`), with a copy of index.html per route and the Content Security Policy as a
@@ -51,7 +51,7 @@ function fontLicences(): Plugin {
 }
 
 /**
- * gcportrait's own licence (MIT, ADR 0017; its closing note names what it does not cover, the gcportrait name and
+ * gcportrait's own licence (MIT; its closing note names what it does not cover, the gcportrait name and
  * icon and the third-party material), copied byte for byte from the repository root to
  * dist/licenses/gcportrait-LICENSE.txt, so the built app (and the image that ships it) carries it next to the code
  * it conveys, as the font licences travel with the fonts.
@@ -315,7 +315,7 @@ export const DATA_TABLES = [
 ] as const;
 
 /**
- * Ships the data tables as JSON files instead of JavaScript (the catalog is data, ADR 0015; the icons are
+ * Ships the data tables as JSON files instead of JavaScript (the catalog is data; the icons are
  * images). In the production build of the worker, each table module is evaluated once at build time, its
  * exports are written to `assets/<name>-<hash>.json`, and the module is replaced by one that fetches that file
  * and re-exports the same names (a top-level await, so importers see the same values, already parsed, when
@@ -371,7 +371,7 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> => {
   const licences = inlinedPackageLicences();
   const tools = staticDemo ? await staticDemoTools() : undefined;
   return {
-    // The static demo is served below /demo/ (ADR 0034); every instance at the root of its origin.
+    // The static demo is served below /demo/; every instance at the root of its origin.
     ...(tools === undefined ? {} : { base: tools.DEFAULT_BASE }),
     plugins: [
       react(),

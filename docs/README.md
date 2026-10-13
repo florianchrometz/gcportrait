@@ -8,13 +8,13 @@ trademarks of Google and are used under Google's icon usage terms.
 
 ## User guides
 
-For people who use gcportrait or run an instance of it. They say what to do; `node scripts/user-docs.mjs` (run by
-`pnpm test`) fails when the ten guides from modes.md to api.md name a command, flag or setting the tree does not
-have; when a guide, getting-started.md, cloudshell-tutorial.md, website.md or a README for running gcportrait logs
-what was verified when and where (a dated note, a machine, a timed run, a recorded run in code); and when
-self-host.md asks for more than the project id, the OAuth client id and the email address to grant. The project's
-website (`gcportrait.app`) builds its /docs/ pages from the same files, and its "About the author" section from
-[author.md](author.md).
+For people who use gcportrait or run an instance of it. They say what to do; `node scripts/user-docs.mjs` (run
+by `pnpm test`) fails when the ten guides from modes.md to api.md name a command, flag or setting the tree
+does not have; when a guide, getting-started.md, cloudshell-tutorial.md, website.md or a README for running
+gcportrait logs what was verified when and where (a dated note, a machine, a timed run, a recorded run in
+code); and when self-host.md asks for more than the project id, the OAuth client id and the email address to
+grant. The project's website (`gcportrait.app`) builds its /docs/ pages from the same files, and its "About
+the author" section from [author.md](author.md).
 
 | Guide | What it covers |
 |---|---|
@@ -35,32 +35,29 @@ website (`gcportrait.app`) builds its /docs/ pages from the same files, and its 
 
 | Path | What it is for |
 |---|---|
+| [agents.md](../agents.md) | Every rule of the project in one place, for people and AI assistants alike: what gcportrait is and is not, the product, data, layout, export, style, security, hosting, brand, licence, architecture, quality and release rules, how to work a task, the skills and every command. Cite a rule by its heading ("agents.md, Security and privacy"). |
 | [contributing.md](contributing.md) | From a clone of your fork to a green `pnpm check` and a small, focused pull request: setup, the local loop, the checks, the provenance rules, changesets, and the maintainer's release setup. |
 | [website.md](website.md) | The website at `gcportrait.app` (`website/`): building and checking it, the generated screenshots, animated demos and link-preview images in [media/](media/manifest.json) (`pnpm media`, and `pnpm media --check` for staleness), Lighthouse, deploying to GitHub Pages, the DNS records for the apex and `www`, the footer's links to the legal pages on the maintainer's website, the favicon and logo from `brand/icon.svg`, the static demo at `/demo/`, the sample exports, the fillable commands, the sticky header, and the header's repository widget (the latest release, the stars and the forks). |
-| [handoff.md](handoff.md) | The maintainer's hand-off to the public repository: what `scripts/handoff.sh` copies, leaves out and checks, its flags, and the steps after it (create and push the GitHub repository, its variables and secrets, `DEFAULT_SOURCE_URL`, the `v1.0.0` tag). |
-| [legal/](legal/README.md) | What `gcportrait.app` (the demo under `/demo/` included) processes (a fact sheet, not legal advice): the data-processing inventory (the providers' request logs, the header's repository widget, the demo's overload counter, what stays in the visitor's browser) and what they do not, and the facts the maintainer's privacy notice covers. The Impressum and the privacy notice themselves are on the maintainer's website, which the site and the demo both link. |
+| [legal/](legal/README.md) | What `gcportrait.app` (the demo under `/demo/` included) processes (a fact sheet, not legal advice): the data-processing inventory (GitHub Pages' request logs, the header's repository widget, the website's page views counted with TelemetryDeck, what stays in the visitor's browser) and what they do not, and the facts the maintainer's privacy notice covers. The Impressum and the privacy notice themselves are on the maintainer's website, which the site and the demo both link. |
 | [packages.md](packages.md) | The workspace packages: what each one is responsible for, its public entry points, the dependency direction, and how data flows from a Cloud Asset Inventory source through the Scene and the layout to a drawn and exported diagram, with the real function and type names and the command-line entry points (`pnpm render-scene`, `pnpm render`, the budgets and goldens). |
-| [threat-model.md](threat-model.md) | What gcportrait protects (the person's token, the instance's account, the inventory, availability, the supply chain), from whom, the trust boundaries between the browser, the backend and Google's APIs, the token's path, service-account mode and its gate, demo mode and exports, and the threats with their controls, citing the security and privacy principles of [ADR 0035](adr/0035-decisions-inherited-from-the-implementation-plan.md) §4. |
-| [security.md](security.md) | The security review as a checklist with the evidence for each item: the upstream host allowlist, request bodies, rate limits and the stream cap, timeouts, response caps and memory, the CSP and the other headers, logs without tokens at `LOG_LEVEL=trace`, errors, request ids, shutdown, static files, the container and Cloud Run, the dependency audit (`node scripts/check-audit.mjs`) and Dependabot, the licence-compliance follow-ups, and the open findings with their severity. |
-| [adr/](adr/README.md) | Architecture decision records, 0001 to 0035: the founding decisions, the ones taken while building gcportrait (the render API, the hosted surfaces, the static demo, …) and [0035](adr/0035-decisions-inherited-from-the-implementation-plan.md), the product's scope, principles and frontend architecture, with a topic index. Start with the index. |
+| [threat-model.md](threat-model.md) | What gcportrait protects (the person's token, the instance's account, the inventory, availability, the supply chain), from whom, the trust boundaries between the browser, the backend and Google's APIs, the token's path, service-account mode and its gate, demo mode and exports, and the threats with their controls, citing the security and privacy principles of [agents.md](../agents.md), "Security and privacy". |
+| [security.md](security.md) | The security controls as a checklist with the evidence for each item: the upstream host allowlist, request bodies, rate limits and the stream cap, timeouts, response caps and memory, the CSP and the other headers, logs without tokens at `LOG_LEVEL=trace`, errors, request ids, shutdown, static files, the container and Cloud Run, the dependency audit (`node scripts/check-audit.mjs`) and Dependabot, the licence-compliance follow-ups, and the open findings with their severity. |
 | [backlog.md](backlog.md) | The open work: the maintainer's pending decisions, what is left before the first release, the CI follow-ups, open items for self-hosting and the backend, the app, performance, the catalog and icons, the website and docs, and the "Later" list. Start a task from an item here or from an issue. Not a page of the website. |
 | [catalog-followups.md](catalog-followups.md) | The asset catalog's own backlog: engine and schema work (project id versus number, reverse and child-side rules, missing normalisers, template filters), demo-data cases, and per service the field formats, roles and console links that public documentation could not settle. Read it before changing a catalog rule's semantics or when you have a real Cloud Asset Inventory export to check against. |
-| [history/](history/) | Dated records of the reviews made while gcportrait was built (the visual review, the app walkthrough, the self-hosting smoke test, the timeline review, the performance pass, the release readiness, the hand-off rehearsal, and the verification records the user guides once carried), each file named by its date, kept as written and not updated; what they left open is in [backlog.md](backlog.md). |
-| [spikes/quota-project.md](spikes/quota-project.md) | The quota-project spike: which Cloud Asset Inventory and Resource Manager calls were made with a user token and a service account, with which quota project, and what came back; the decisions taken from it are [ADR 0028](adr/0028-quota-project-and-sa-gate.md), and `scripts/spike-quota-project.sh` re-runs the matrix. |
 
 ## Documentation elsewhere in the repository
 
-- [agents.md](../agents.md): hard rules, layout, commands and how to work a task; the entry point for humans
-  and AI assistants alike.
+- [agents.md](../agents.md): every rule of the project, the repository map, the commands and how to work a
+  task; the one rules file for humans and AI assistants alike.
 - [.agents/skills/](../.agents/README.md): style, layout, asset catalog, ingestion and contributor-workflow
-  skills, usable as checklists by reviewers too.
-- [brand/](../brand/README.md): `icon.svg`, the one source of gcportrait's mark (the favicons and the website's
-  logo).
+  skills, the handbooks that apply agents.md's rules, usable as checklists by reviewers too.
+- [brand/](../brand/README.md): `icon.svg`, the one source of gcportrait's mark (the favicons and the
+  website's logo).
 - Each workspace package's `README.md` (`frontend/`, `backend/`, `e2e/`, `packages/*/`): its scripts,
   structure and conventions.
 - [CHANGELOG.md](../CHANGELOG.md): the release notes, 1.0.0 first; each workspace package's own `CHANGELOG.md`
   is written by `pnpm release:version` from the changesets in `.changeset/`.
-- [LICENSE](../LICENSE): gcportrait's own work is licensed under the MIT License (ADR 0017), except the gcportrait
+- [LICENSE](../LICENSE): gcportrait's own work is licensed under the MIT License, except the gcportrait
   name and icon ([brand/LICENSE.md](../brand/LICENSE.md)); the root README's "Licence" section says what that
   means.
 - [THIRD_PARTY.md](../THIRD_PARTY.md): every category of third-party material, why the dependency licences

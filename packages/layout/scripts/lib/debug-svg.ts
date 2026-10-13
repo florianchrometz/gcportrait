@@ -7,7 +7,7 @@
  * optionally each container's children box with its packing aspect. A development aid
  * only, not the SVG renderer: no icons (an outlined square marks the icon slot), no legend, no dim mode.
  * Colours are the style skill's tokens (gcp-diagram-style §2) in either theme. Like every drawing, it carries no
- * affiliation line (ADR 0018, as placed on 2026-10-11): the command's banner prints the short line instead.
+ * affiliation line (agents.md, Non-affiliation, brand and legal), and neither does the command's banner.
  */
 import {
   chipCountLine,

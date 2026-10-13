@@ -255,7 +255,7 @@ describe('check-licenses', () => {
     );
     expect(result.stdout).toContain('@fontsource/roboto: OFL-1.1');
     expect(result.stdout).toContain('@fontsource/roboto-mono: OFL-1.1');
-    // The two Roboto packages are the only font exception (ADR 0019).
+    // The two Roboto packages are the only font exception.
     expect(result.stdout.match(/^ {2}\S+: OFL-1\.1\b/gm)).toHaveLength(2);
   });
 

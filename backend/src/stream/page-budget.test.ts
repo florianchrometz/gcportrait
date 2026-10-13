@@ -154,7 +154,7 @@ describe('assetListFrames with a budget', () => {
     return { last: linesOf(lines.join('')).at(-1), used: budget.used };
   }
 
-  // A finding of the security review: these answers kept their claim for the life of the process.
+  // An answer that is not a page must not keep its claim for the life of the process.
   it('gives the claim back when a 200 answer is not a page of assets', async () => {
     const html = new Response(`<html>${'x'.repeat(1024 * 1024)}</html>`, {
       status: 200,
@@ -308,8 +308,8 @@ describe('the page budget across streams, over HTTP', () => {
     await expect.poll(() => budget.used).toBe(0);
   });
 
-  // A finding of the security review: Readable.from asked for the next line once a frame was queued on the socket,
-  // so a client that stopped reading kept a whole page in memory that the budget no longer counted.
+  // Readable.from asks for the next line once a frame is queued on the socket, so a client that stops reading
+  // would keep a whole page in memory that the budget no longer counts.
   it('keeps a page claimed while its client does not read it, and asks Google for nothing more meanwhile', async () => {
     const budget = new PageBudget();
     // The second page only has to exist: one asset, so the client reads one large page, not two.
@@ -323,8 +323,8 @@ describe('the page budget across streams, over HTTP', () => {
     const { client, response } = await startPull(app);
     const claimed = large().bytes;
     await expect.poll(() => budget.used, { timeout: 10_000 }).toBeGreaterThanOrEqual(claimed);
-    // The frame now waits on the full socket. Under the old behaviour its claim was given back and the second page
-    // asked for as soon as it was queued there; that it never happens can only be watched for a while.
+    // The frame waits on the full socket and keeps its claim, so the second page is not asked for while it
+    // waits; that it never happens can only be watched for a while.
     await expect.poll(() => responses[0]?.writableNeedDrain, { timeout: 10_000 }).toBe(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
     expect(cai.calls).toHaveLength(1);
@@ -372,7 +372,7 @@ describe('the page budget across streams, over HTTP', () => {
     client.destroy();
   }, 30_000);
 
-  // The security review, round 2: the stall limit is a minimum rate, not only a cut for a client that stops. Each
+  // The stall limit is a minimum rate, not only a cut for a client that stops. Each
   // piece that has to wait (a frame, or 1 MiB of a larger one) must be taken whole within the limit.
   it('cuts off a client that keeps reading, but slower than a piece per stall limit', async () => {
     const stallMs = 1000;

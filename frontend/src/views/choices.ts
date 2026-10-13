@@ -282,7 +282,8 @@ export function viewChoices(
 
 /**
  * The types a filter can name: every catalog type, every type of the snapshot the catalog does not map (they
- * still render, rule 5), and a `<service>/*` pattern per service; those present in the snapshot first.
+ * still render: agents.md, Product rules), and a `<service>/*` pattern per service; those present in the snapshot
+ * first.
  */
 export function typeChoices(graph: Graph, catalog: ChoicesCatalog): TypeChoice[] {
   const count = (type: string): number => graph.indexes.byType[type]?.length ?? 0;

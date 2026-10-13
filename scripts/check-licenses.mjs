@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Licence guard for npm dependencies (ADR 0017; ADR 0035 §4, principle 7).
+ * Licence guard for npm dependencies (agents.md, Licence and dependencies; Security and privacy,
+ * principle 7).
  *
  *   node scripts/check-licenses.mjs               verify (CI and `pnpm check`)
  *   node scripts/check-licenses.mjs --write       regenerate the dependency section of THIRD_PARTY.md
@@ -70,13 +71,14 @@ const ALLOWED_LICENSES = Object.freeze([
  * Licences accepted for named packages only, each with the reason it is acceptable there. A listed package
  * is accepted under exactly the licence named here (or anything on ALLOWED_LICENSES); keep the list short.
  *
- * SIL OFL 1.1, fonts only (ADR 0019): the app self-hosts its Roboto fonts (the production CSP and the offline demo
- * rule out a font CDN). The font files are bundled unmodified into frontend/dist and so are
- * redistributed with the production image. OFL 1.1 permits that (the fonts may not be sold on their own)
- * provided the copyright notice and the licence accompany every copy; the frontend build writes each
- * package's own LICENSE file to dist/licenses/ (frontend/vite.config.ts). OFL 1.1 does not extend to the
- * software that uses the fonts, so it places no obligation on gcportrait's own licence. The website self-hosts the
- * same two packages and writes their LICENSE files to website/dist/licenses/ (website/astro.config.ts).
+ * SIL OFL 1.1, fonts only (agents.md, Licence and dependencies): the app self-hosts its Roboto fonts (the
+ * production CSP and the offline demo rule out a font CDN). The font files are bundled unmodified into
+ * frontend/dist and so are redistributed with the production image. OFL 1.1 permits that (the fonts may not
+ * be sold on their own) provided the copyright notice and the licence accompany every copy; the frontend
+ * build writes each package's own LICENSE file to dist/licenses/ (frontend/vite.config.ts). OFL 1.1 does not
+ * extend to the software that uses the fonts, so it places no obligation on gcportrait's own licence. The
+ * website self-hosts the same two packages and writes their LICENSE files to website/dist/licenses/
+ * (website/astro.config.ts).
  * @type {Readonly<Record<string, { license: string, reason: string }>>}
  */
 const PACKAGE_LICENSE_EXCEPTIONS = Object.freeze({

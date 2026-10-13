@@ -27,8 +27,8 @@ if (container === null) throw new Error('index.html must contain <div id="root">
 const connection = createDatabaseConnection();
 const preferences = createPreferenceStore(connection.database);
 // The data worker draws the diagrams; "Try the demo" prepares a demo organisation in a worker of its own, started for
-// the job (the job no longer holds back the data worker's Scene requests). The demo generator runs in workers
-// only (ADR 0029).
+// the job, so the job never holds back the data worker's Scene requests. The demo generator runs in workers
+// only (agents.md, Architecture and code).
 const diagramWorkers = sharedWorkers(createBrowserWorkers);
 const snapshots = createSnapshotLibrary({
   database: connection.database,
@@ -38,7 +38,7 @@ const snapshots = createSnapshotLibrary({
 
 createRoot(container).render(
   <StrictMode>
-    {/* The static demo is served below /demo/ (ADR 0034); every instance at the root of its origin. */}
+    {/* The static demo is served below /demo/; every instance at the root of its origin. */}
     <BrowserRouter basename={routerBasename(import.meta.env.BASE_URL)}>
       <App
         mode={readAppMode(import.meta.env)}

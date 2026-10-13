@@ -6,15 +6,19 @@ description: Facts and rules for getting data into gcportrait from Google Cloud 
 
 # Cloud Asset Inventory ingestion
 
+The rules this handbook applies are in [agents.md](../../../agents.md) ("Security and privacy", "Data and
+graph semantics" and "Product rules"); this file holds the facts about Google's APIs and the procedures built
+on them.
+
 Load this for any work in `backend/` routes that call Google APIs, in `packages/ingest`, in
-`packages/demo-data`, on the permissions preflight, or on the timeline. Verified against the official docs on
-2026-10-08; the links are in §8. The backend's Google API routes are `/api/scopes/search` and `/api/preflight`
-(the scope picker and the permission check), `/api/assets/stream` and `/api/export/read` (the live pull and the
-export read; the frames and caps of §4, backend/README.md "Live pull and export read"); service-account mode
-and its gate live in `backend/src/auth/` (backend/README.md "Service-account mode", docs/permissions.md).
-`packages/ingest` reads both NDJSON spellings described below into the `Asset` and `Snapshot` schemas of
-`@gcportrait/model`, and `packages/demo-data` (with a generator case per catalog group) writes either spelling;
-their READMEs are the reference.
+`packages/demo-data`, on the permissions preflight, or on the timeline. The links to Google's documentation
+are in §8, and what the APIs answer in practice is in §9. The backend's Google API routes are
+`/api/scopes/search` and `/api/preflight` (the scope picker and the permission check), `/api/assets/stream`
+and `/api/export/read` (the live pull and the export read; the frames and caps of §4, backend/README.md "Live
+pull and export read"); service-account mode and its gate live in `backend/src/auth/` (backend/README.md
+"Service-account mode", docs/permissions.md). `packages/ingest` reads both NDJSON spellings described below
+into the `Asset` and `Snapshot` schemas of `@gcportrait/model`, and `packages/demo-data` (with a generator
+case per catalog group) writes either spelling; their READMEs are the reference.
 
 ## 1. The APIs we use
 
@@ -23,7 +27,7 @@ their READMEs are the reference.
 | List assets | `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with header `X-HTTP-Method-Override: GET` and a JSON body (`GET` with query params hits URL-length limits) | live pull, timeline ticks |
 | Export assets | `POST https://cloudasset.googleapis.com/v1/{scope}:exportAssets` → long-running operation; `GET .../v1/{operation.name}` to poll | user-run exports we can read; we do not start exports from the hosted backend in v1 |
 | Asset history | `GET https://cloudasset.googleapis.com/v1/{scope}:batchGetAssetsHistory` | not used for the timeline (≤ 100 names per call); candidate for a per-asset "history" drawer tab later |
-| Scope search | `POST https://cloudresourcemanager.googleapis.com/v3/{organizations,folders,projects}:search` | scope picker |
+| Scope search | `GET https://cloudresourcemanager.googleapis.com/v3/{organizations,folders,projects}:search` with query parameters (`query`, `pageSize`, `pageToken`); a search that finds nothing answers `{}` | scope picker |
 | Scope get | `GET https://cloudresourcemanager.googleapis.com/v3/{organizations,folders,projects}/{id}` | preflight; the SA-mode gate's optional exposure check (the account's own `get`) |
 | Test permissions | `POST https://cloudresourcemanager.googleapis.com/v3/{organizations,folders,projects}/{id}:testIamPermissions` with `{"permissions":[…]}` (no permission needed to call it; a scope the caller may not see, or that does not exist, answers `{}`) | the SA-mode gate's caller check |
 | GCS object read | `GET https://storage.googleapis.com/storage/v1/b/{bucket}/o/{object}?alt=media` | reading an export the user points at |
@@ -37,7 +41,7 @@ Scope formats: `organizations/123`, `folders/456`, `projects/my-id` or `projects
 - `readTime`: RFC 3339, optional, **no more than 35 days in the past**; omitted = now.
 - `assetTypes[]`: RE2 patterns (`compute.googleapis.com/.*`); a pattern matching nothing → `INVALID_ARGUMENT`.
   Omitted = all types.
-- `pageSize` up to 1000 (the backend asks for 500, so a page stays well under its 25 MiB cap; ADR 0028 §5);
+- `pageSize` up to 1000 (the backend asks for 500, so a page stays well under its 25 MiB cap);
   `pageToken` from `nextPageToken`.
 - Listing is synchronous and can hit quota on very large inventories; the export path is the fallback.
 
@@ -98,11 +102,11 @@ Scope formats: `organizations/123`, `folders/456`, `projects/my-id` or `projects
 Quota project: user-credential calls to CAI need a project where the caller holds `serviceusage.services.use`
 and where `cloudasset.googleapis.com` is enabled. We send `x-goog-user-project: <quota project>`. Preflight
 order: the scanned project (project scope) → the user's chosen project → error with the three conditions
-listed. Service-account mode sends no quota header: the account's own project pays (ADR 0028 §1), which
-deploy.sh makes the instance's project.
+listed. Service-account mode sends no quota header: the account's own project pays (agents.md, "Security and
+privacy"), which deploy.sh makes the instance's project.
 
-Service-account mode gate (ADR 0028 §4 as amended on 2026-10-10): before using the backend identity for a scope, the
-backend asks `testIamPermissions` on the scope with the **caller's** token for
+Service-account mode gate (agents.md, "Security and privacy"): before using the backend identity for a scope,
+the backend asks `testIamPermissions` on the scope with the **caller's** token for
 `resourcemanager.{organizations,folders,projects}.get`, and goes on only when that permission comes back. A
 public `get` counts as the caller's; `SA_MODE_STRICT_EXPOSURE=true` adds the exposure check (the account's own
 `GET {scope}` must be exactly Resource Manager's IAM denial), off by default. A pass is remembered for at most
@@ -130,8 +134,8 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
   are surfaced to the UI with the upstream message (they are actionable).
 - Streaming: emit NDJSON frames `{"t":"page","assets":[...]}`, `{"t":"progress","pages":n,"assets":m}`,
   `{"t":"done","assets":m,"readTime":"..."}`, `{"t":"error",...}`. The browser parses frame by frame. The
-  error frame carries `message` (Google's, verbatim), `status` (Google's HTTP status), `code` (Google's canonical
-  status), `reason` (the `ErrorInfo` reason, when there is one) and `retryable`; an export read
+  error frame carries `message` (Google's, verbatim), `status` (Google's HTTP status), `code` (Google's
+  canonical status), `reason` (the `ErrorInfo` reason, when there is one) and `retryable`; an export read
   (`/api/export/read`) streams the export's own lines and uses only the error frame.
 - Caps: 60 s upstream timeout per page, 25 MiB per page, 4 concurrent streams per token hash, and a
   process-wide budget of 64 MiB of page bytes held at once (`backend/src/stream/page-budget.ts`), each page
@@ -148,9 +152,13 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
 - Diff between ticks A→B: added = names in B not in A; removed = names in A not in B; changed = same name,
   different `updateTime`. Pure function, no API calls.
 - Do not prefetch all 35 ticks; fetch on demand plus two neighbours at idle, max two in flight.
+- A tick whose `readTime` lies before the scope existed answers 404 `NOT_FOUND` ("Requested entity was not
+  found."), even inside the 35-day window: the timeline draws it as "did not exist yet", not as a failure. A
+  future `readTime` is 400 `INVALID_ARGUMENT`, which is why the latest tick sends none.
 - Extra ticks: every stored export or manual pull of the same scope is an extra tick on the timeline, placed
-  at its read time; its id (the ViewSpec's `tick`) is that read time to the second in UTC, `YYYY-MM-DDTHH:MM:SSZ`,
-  so it never collides with a day. A read time later than "now" is shown at "now", never in the future.
+  at its read time; its id (the ViewSpec's `tick`) is that read time to the second in UTC,
+  `YYYY-MM-DDTHH:MM:SSZ`, so it never collides with a day. A read time later than "now" is shown at "now",
+  never in the future.
 
 ## 6. Gotchas
 
@@ -167,15 +175,15 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
 ## 7. Synthetic demo data rules (`packages/demo-data`)
 
 - Deterministic from a seed; sizes S(≈80) M(≈600) L(≈6 000) XL(≈50 000) assets as targets (with the default
-  seed today: S 96, M 952, L 6 382, XL 51 242; M carries the catalog groups' generator cases, see the demo-data
-  README); 35 days of history as per-day mutation lists applied on top of the base.
-- Realistic topology: 2–3 folder levels; a shared-VPC host with 3+ service projects; two peered VPCs; one
-  HA VPN + one Interconnect attachment; an external HTTPS LB chain (forwarding rule → proxy → URL map → backend
+  seed today: S 96, M 952, L 6 382, XL 51 242; M carries the catalog groups' generator cases, see the
+  demo-data README); 35 days of history as per-day mutation lists applied on top of the base.
+- Realistic topology: 2–3 folder levels; a shared-VPC host with 3+ service projects; two peered VPCs; one HA
+  VPN + one Interconnect attachment; an external HTTPS LB chain (forwarding rule → proxy → URL map → backend
   services → NEGs/instance groups → MIG instances with `created-by`); an internal LB; GKE cluster with
   namespaces, deployments, services, ingress; Cloud Run services with a VPC connector and Cloud SQL via
-  private services access; Pub/Sub + Eventarc + Functions; BigQuery datasets with external tables on
-  buckets; KMS keys used by disks/buckets/SQL; service accounts used by everything; a perimeter around two
-  projects; one empty project; one project with only hidden-tier assets.
+  private services access; Pub/Sub + Eventarc + Functions; BigQuery datasets with external tables on buckets;
+  KMS keys used by disks/buckets/SQL; service accounts used by everything; a perimeter around two projects;
+  one empty project; one project with only hidden-tier assets.
 - Names: one org per demo size (S `30000000001`, M `…02`, L `…03`, XL `…04`), folders `2000000000x`,
   projects `demo-<role>-<n>` with numbers `1000000000x`,
   emails `*@example.com`, domains `*.example.org`, IPs from `10.0.0.0/8`, `172.16.0.0/12`, `203.0.113.0/24`.
@@ -183,14 +191,15 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
 
 ## 8. References
 
-Google's documentation, verified on 2026-10-08 (check a page again before relying on a limit it states):
+Google's documentation (check a page again before relying on a limit it states):
 
 - Supported asset types: <https://docs.cloud.google.com/asset-inventory/docs/supported-asset-types>
 - List assets (REST, `readTime` ≤ 35 days back, RE2 `assetTypes`):
   <https://docs.cloud.google.com/asset-inventory/docs/list-assets>
 - Export to Cloud Storage (`uri` or `uriPrefix`, a 15-minute lockout on the same destination):
   <https://docs.cloud.google.com/asset-inventory/docs/export-cloud-storage>
-- The `exportAssets` method: <https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/TopLevel/exportAssets>
+- The `exportAssets` method:
+  <https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/TopLevel/exportAssets>
 - `batchGetAssetsHistory` (≤ 100 names, 35 days):
   <https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/TopLevel/batchGetAssetsHistory>
 - The Asset resource (`name`, `assetType`, `resource.{parent,data,location}`, `ancestors`, `updateTime`):
@@ -203,5 +212,75 @@ Google's documentation, verified on 2026-10-08 (check a page again before relyin
   <https://docs.cloud.google.com/architecture>
 - WCAG 2.2: <https://www.w3.org/TR/WCAG22/>
 
-What the APIs actually answered with a user token and with a service account is recorded in the quota-project
-spike ([docs/spikes/quota-project.md](../../../docs/spikes/quota-project.md)) and decided in ADR 0028.
+## 9. What Google's APIs answer
+
+Observed with a user token and with a service account that holds only `roles/cloudasset.viewer`; the backend's
+classification (agents.md, "Security and privacy", "Quota project and the permission check") and its tests'
+recorded answers (`backend/src/upstream/google.testing.ts`, `backend/src/preflight/google.testing.ts`) rest on
+these. Check them again with real calls before changing what the backend relies on: `gcloud auth
+print-access-token | scripts/probe-google-apis.sh --project YOUR_PROJECT` runs the call matrix with the tokens
+you pipe in (`--sa` adds the service account's rows; `--help` lists the rest).
+
+**The quota project.**
+
+- The consumer of a CAI call is the project in `x-goog-user-project`. Without the header it is the project
+  that owns the token's OAuth client: for a gcloud user token the gcloud CLI's own project, for a service
+  account's token the account's own project, and so, for a user token the app holds, the project of the
+  instance's OAuth client (to be confirmed with a real sign-in; docs/backlog.md).
+- The Cloud Asset API must be enabled in the consumer project, not in the scanned one.
+- A token may name its own project as the quota project without `serviceusage.services.use`; any other project
+  is checked.
+- Google checks the token's OAuth scopes first, then the quota project, then the scope's IAM: with a bad quota
+  project and a forbidden scope, the answer is the quota error.
+
+**Errors.** Every JSON error shares one envelope, `{"error": {"code", "message", "status", "details":
+[...]}}`; `type.googleapis.com/google.rpc.ErrorInfo` carries `reason`, `domain` and `metadata`. Classify by
+status and reason, never by message text:
+
+| Answer | Meaning |
+|---|---|
+| 400 `INVALID_ARGUMENT` / `USER_PROJECT_DENIED` | the quota project does not exist or was deleted |
+| 403 `PERMISSION_DENIED` / `USER_PROJECT_DENIED` | the caller lacks `serviceusage.services.use` on the quota project |
+| 403 `PERMISSION_DENIED` / `SERVICE_DISABLED` | the Cloud Asset API is disabled in the quota project (`metadata.activationUrl` links the console) |
+| 403 `PERMISSION_DENIED`, no `ErrorInfo` | CAI: the caller cannot list the scope, or it does not exist; never an empty list |
+| 403 `PERMISSION_DENIED` / `IAM_PERMISSION_DENIED`, domain `cloudresourcemanager.googleapis.com` | Resource Manager: `metadata.permission` names the `get` that was denied; a scope that does not exist answers the same ("or it may not exist") |
+| 403 `PERMISSION_DENIED` / `ACCESS_TOKEN_SCOPE_INSUFFICIENT` | the token lacks the OAuth scope the API needs |
+| 404 `NOT_FOUND` | a `readTime` before the scope existed |
+| 400 `INVALID_ARGUMENT`, no reason | a future `readTime`; one more than 35 days back (the message names the earliest allowed time); a `pageSize` above 1000; an `assetTypes` pattern that matches no supported type, or an invalid RE2 pattern (the two read the same) |
+| 404 with an HTML body | a POST to `assets.list` without `X-HTTP-Method-Override: GET`: never forward it |
+
+CAI's own denial reads differently for a project id that does not exist ("The caller does not have
+permission") and for one that exists ("Request denied by Cloud IAM. …"), so a message passed on verbatim tells
+whether an id exists; the id is visible in other ways too (creating a project with it fails). No response
+header is useful: neither successes nor errors carry `retry-after` or `x-goog-*`; everything is in the JSON
+body.
+
+**Listing.**
+
+- Every 200 from `assets.list` carries `readTime`; a page without an `assets` key is an empty page, and a
+  supported type with no assets in the scope answers `{"readTime": …}` alone.
+- `pageSize` goes up to 1000; a `pageToken` in the POST body continues the listing.
+
+**Permissions and roles.**
+
+- `roles/cloudasset.viewer` holds neither `resourcemanager.*.get` nor `serviceusage.services.use`: an account
+  with only that role lists a scope it cannot `get` (Resource Manager answers the IAM denial).
+- `resourcemanager.projects.get` can be granted publicly, and then every signed-in user and every service
+  account has it; `testIamPermissions` returns such a public permission as the caller's. This is why the
+  service-account gate has its optional exposure check.
+- `testIamPermissions` needs no permission to call; a scope the caller may not see, or one that does not
+  exist, answers `{}`.
+
+**OAuth scopes.** CAI `assets.list` refuses a token with only `cloud-platform.read-only` (403
+`ACCESS_TOKEN_SCOPE_INSUFFICIENT`) while Resource Manager accepts it; a token with only `cloudasset` is the
+reverse; a token with both works for both APIs. The check is on the token's scopes, not the identity. Google's
+discovery document describes `cloudasset` as "See, edit, configure, and delete your Google Cloud Asset data",
+and the consent screen reads that way, although what a token can do stays bounded by the person's IAM roles
+and gcportrait only lists assets with it.
+
+**The service-account gate, against real answers.** With an account that holds only `roles/cloudasset.viewer`
+on a project, the account's own `get` of that project is exactly Resource Manager's IAM denial naming
+`resourcemanager.projects.get` (`resourcemanager.folders.get` for a folder), so the strict exposure check
+passes it; on a project whose `get` is public the account's `get` answers 200 and the strict check refuses. On
+a project where nobody granted the account a role, the caller's check can pass and CAI then refuses the list:
+the gate decides who may ask, the customer's grant decides what can be read.

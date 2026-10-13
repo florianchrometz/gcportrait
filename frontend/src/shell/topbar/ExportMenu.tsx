@@ -3,7 +3,7 @@
  * The Export menu in the top bar (docs/export.md): a WAI-ARIA menu button whose menu holds the options
  * (area, theme, PNG resolution, embedded fonts) as radio and checkbox items and the four actions (download SVG,
  * download PNG, download the draw.io file, copy PNG). The area and the theme apply to all three files; the draw.io
- * file (ADR 0036) is translated by a module loaded on its first use. Options keep the menu open; an action closes it,
+ * file is translated by a module loaded on its first use. Options keep the menu open; an action closes it,
  * returns focus to the button and reports its outcome in a status line (a live region). Keyboard: Enter, Space or ↓
  * opens on the first item, ↑ on the last; ↑ ↓ Home End move; Escape closes; Tab leaves. Inert (`aria-disabled`,
  * still focusable) while no diagram is drawn; the status line (named "Export status") exists only while there is a

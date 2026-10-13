@@ -2,10 +2,10 @@
 import type { AuthControls } from './context';
 
 /**
- * The request header that carries the session's Google token to this backend (ADR 0031). Not `Authorization`:
- * Identity-Aware Proxy in front of an instance (`deploy.sh --iap`) treats that header as its own credential, so a
- * person's token in it never got past IAP. The backend reads this one first (backend/src/stream/caller.ts, whose
- * TOKEN_HEADER a backend test checks against this value).
+ * The request header that carries the session's Google token to this backend (agents.md, Security and privacy,
+ * Tokens). Not `Authorization`: Identity-Aware Proxy in front of an instance (`deploy.sh --iap`) treats that header
+ * as its own credential, so a person's token in it would never get past IAP. The backend reads this one first
+ * (backend/src/stream/caller.ts, whose TOKEN_HEADER a backend test checks against this value).
  */
 export const TOKEN_HEADER = 'x-gcportrait-token';
 
@@ -18,8 +18,8 @@ export class NotSignedInError extends Error {
 }
 
 /**
- * `fetch` to this backend's API with the session's token in {@link TOKEN_HEADER} (ADR 0004, ADR 0031: the
- * backend forwards it to Google and never keeps it). Only same-origin `/api/` paths are accepted, so the token
+ * `fetch` to this backend's API with the session's token in {@link TOKEN_HEADER} (the backend forwards it
+ * to Google and never keeps it). Only same-origin `/api/` paths are accepted, so the token
  * never goes anywhere else, and never into a URL; a caller's own `Authorization` header is dropped, so nothing
  * else IAP would take for its own goes along. The request is never cached (`no-store`), and the header is not a
  * cookie: the browser sends it only with these calls. A 401 answer tells the session that Google refused the

@@ -23,7 +23,7 @@ export default defineConfig({
       // index.ts only re-exports; testing/ holds test helpers.
       exclude: ['src/**/*.test.ts', 'src/testing/**', 'src/index.ts'],
       reporter: [['text', { skipFull: false }], 'text-summary'],
-      // Pure core (agents.md rule 9): everything is tested. The few uncovered branches are `?? ''` fallbacks
+      // Pure core: everything is tested. The few uncovered branches are `?? ''` fallbacks
       // that noUncheckedIndexedAccess requires but valid input cannot reach.
       thresholds: { statements: 99, branches: 95, functions: 100, lines: 100 },
     },

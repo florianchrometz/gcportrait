@@ -458,7 +458,7 @@ describe('logging', () => {
     const { app, logs } = await startTestServer({ logLevel: 'info' });
     const secrets = {
       authorization: 'Bearer header-secret',
-      // The caller's token as the app sends it (ADR 0031).
+      // The caller's token as the app sends it (agents.md, Security and privacy, Tokens).
       'x-gcportrait-token': 'ya29.own-header-secret',
       cookie: 'sid=cookie-secret',
       'x-goog-iam-authorization-token': 'iam-secret',

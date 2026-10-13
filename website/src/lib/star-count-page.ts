@@ -26,8 +26,8 @@
  *   the note keeps the tab from asking again within the hour. Nothing is logged.
  * - Where the build's own request found the repository not public (GitHub's 404, or an answer marked private), the
  *   link carries `data-repository-not-public` and the script asks nothing at all: an anonymous request would only get
- *   the same 404, and would still send the visitor's address to GitHub. A site built before the repository goes public
- *   shows no live facts until the next build (the website workflow rebuilds daily).
+ *   the same 404, and would still send the visitor's address to GitHub. A site built while the repository is not
+ *   public shows no live facts until the next build after it is (the website workflow rebuilds daily).
  */
 import { PRODUCT_NAME } from '../site.js';
 import {

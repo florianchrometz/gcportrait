@@ -2,7 +2,7 @@
 /**
  * The action area of the Connect page's "Your Google Cloud environment" card: "Sign in with Google" when
  * the backend names an OAuth client, the signed-in account with "Sign out", or "Sign in again" after an expiry.
- * Before sign-in it says what Google will ask (ADR 0028 §6) and who runs this instance (`hostedBy`, ADR 0018).
+ * Before sign-in it says what Google will ask (labels.ts, `CONSENT_NOTE`) and who runs this instance (`hostedBy`).
  * Without a backend or an OAuth client the button stays in place, inert, with the reason. While Google's window is
  * open the button still works: a press brings the window back (session.ts), for one lost behind others.
  */

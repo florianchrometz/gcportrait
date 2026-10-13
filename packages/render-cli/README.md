@@ -4,25 +4,24 @@
 
 The headless renderer (export rules: skill gcp-diagram-style §8): `pnpm render` draws a view of a demo
 organisation exactly as the app draws it, legend and title block included, and writes it as SVG and as a PNG
-rasterised with [resvg](https://github.com/thx/resvg-js)'s WebAssembly build (`@resvg/resvg-wasm`, MPL-2.0, used
-unmodified). The output is byte-stable: the same arguments give the same bytes, on every run, in every process and
-on every platform. The drawing is done by the render library, [`@gcportrait/render`](../render/README.md)
-([ADR 0033](../../docs/adr/0033-render-api.md)), which the backend's `POST /api/render` draws with too: a view an
+rasterised with [resvg](https://github.com/thx/resvg-js)'s WebAssembly build (`@resvg/resvg-wasm`, MPL-2.0,
+used unmodified). The output is byte-stable: the same arguments give the same bytes, on every run, in every
+process and on every platform. The drawing is done by the render library,
+[`@gcportrait/render`](../render/README.md), which the backend's `POST /api/render` draws with too: a view an
 instance draws through its API is byte for byte what this command writes (`--hash` takes the API's
-`x-gcportrait-view` header). The
-website's sample exports (`node scripts/exports.mjs`), the render golden under
-[`e2e/baselines/render/`](../../e2e/baselines/render/README.md) and contributors' and agents' visual
+`x-gcportrait-view` header). The website's sample exports (`node scripts/exports.mjs`), the render golden
+under [`e2e/baselines/render/`](../../e2e/baselines/render/README.md) and contributors' and agents' visual
 self-checks (agents.md, "How to work a task") use it.
 
 > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not
 > affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks
 > of Google and are used under Google's icon usage terms.
 
-Every run prints the command's name, `gcportrait render`, as the first line of standard error. Neither its output,
-`index.json` nor the drawings carry an affiliation line (ADR 0018: footers and long-form texts only). Every SVG and
-PNG has the app's own title block, the same three lines as the canvas, ending with the tagline `gcportrait.app -
-Visualize your Google Cloud Infrastructure`, and the SVG's `<desc>` holds the scope, the lens, the read time and
-"Drawn with gcportrait." only.
+Every run prints the command's name, `gcportrait render`, as the first line of standard error. Neither its
+output, `index.json` nor the drawings carry an affiliation line (footers and long-form texts only: agents.md,
+Non-affiliation, brand and legal). Every SVG and PNG has the app's own title block, the same three lines as
+the canvas, ending with the tagline `gcportrait.app - Visualize your Google Cloud Infrastructure`, and the
+SVG's `<desc>` holds the scope, the lens, the read time and "Drawn with gcportrait." only.
 
 ## Usage
 
@@ -156,15 +155,15 @@ A failing golden test leaves the actual file (and for the PNG a picture of the d
 ## Dependencies
 
 `@gcportrait/render` (which brings `@resvg/resvg-wasm` 2.6.2, MPL-2.0, pinned exactly, the `@fontsource`
-Roboto packages, OFL-1.1, [ADR 0019](../../docs/adr/0019-font-licence-exception.md), and through the frontend's
-draw.io translator fflate 0.8.2, MIT, pinned exactly), `pixelmatch` 7.2.0 (ISC)
-and `pngjs` 7.0.0 (MIT) for the comparisons, and the workspace packages above.
+Roboto packages, OFL-1.1, the font exception of agents.md, Licence and dependencies, and through the
+frontend's draw.io translator fflate 0.8.2, MIT, pinned exactly), `pixelmatch` 7.2.0 (ISC) and `pngjs` 7.0.0
+(MIT) for the comparisons, and the workspace packages above.
 
 ## Known limits
 
 - **Platforms.** The rasteriser is WebAssembly, which computes the same pixels on every platform. It is slower than
-  a native binding would be ([ADR 0033](../../docs/adr/0033-render-api.md) has the comparison), so `--all` takes a
-  few minutes.
+  a native binding would be (1.2 to 1.9 times, [`@gcportrait/render`](../render/README.md)), so `--all` takes
+  a few minutes.
 - **Demo data only.** The command draws the demo organisations. A stored snapshot, an export or a live pull is
   drawn by the app's Export menu or by the render API (`POST /api/render`, [docs/api.md](../../docs/api.md)).
 - **Whole diagram only.** The export's "current viewport" option is an interactive concept; the command

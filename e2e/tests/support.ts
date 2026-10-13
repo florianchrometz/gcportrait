@@ -9,8 +9,8 @@ import { expect, type Locator, type Page } from '@playwright/test';
  */
 
 /*
- * The non-affiliation statement as placed on 2026-10-12 (ADR 0018), as the app must show it. Kept literal on
- * purpose: these are the expectations, not copies of frontend/src/branding.ts.
+ * The non-affiliation statement as the app must show it (agents.md, Non-affiliation, brand and legal). Kept
+ * literal on purpose: these are the expectations, not copies of frontend/src/branding.ts.
  */
 /** The title block's third line, on the canvas and in every export. */
 export const TAGLINE = 'gcportrait.app - Visualize your Google Cloud Infrastructure';
@@ -22,13 +22,16 @@ export const MAINTAINER_LINK_NAME = 'Florian Chrometz (personal website)';
 export const MAINTAINER_URL = 'https://florian-chrometz.de';
 /**
  * The footer notice's first sentence, which appears nowhere else: not in a drawing or an export, not in the
- * `hostedBy` line, not on any page (ADR 0018: footers and long-form texts only).
+ * `hostedBy` line, not on any page (footers and long-form texts only).
  */
 export const NOT_AFFILIATED = 'Not affiliated with Google / Google Cloud.';
 
 export const WORDMARK = 'gcportrait';
 
-/** The footer's link to the app's source and its licence (ADR 0017), next to the non-affiliation notice on every route. */
+/**
+ * The footer's link to the app's source and its licence, next to the non-affiliation notice on every
+ * route.
+ */
 export const SOURCE_LINK_TEXT = 'Source (MIT)';
 
 /**
@@ -154,7 +157,7 @@ export function recordApiRequests(page: Page): string[] {
 
 /**
  * Runs axe-core (all non-experimental rules, best practices included) on the page as it is now, after the
- * web fonts have loaded, and fails with a readable summary of any violation (ADR 0012: WCAG 2.2 AA).
+ * web fonts have loaded, and fails with a readable summary of any violation (WCAG 2.2 AA).
  */
 export async function expectNoAxeViolations(page: Page): Promise<void> {
   await page.evaluate(async () => {

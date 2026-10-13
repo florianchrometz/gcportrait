@@ -24,7 +24,7 @@ describe('Copy link', () => {
 
   it('links the diagram page with the hash, below the app’s base path', () => {
     expect(viewLink('', 'https://example.com/app?x=1')).toBe('https://example.com/diagram');
-    // The static demo, below /demo/ (ADR 0034): the link keeps the base path.
+    // The static demo, below /demo/: the link keeps the base path.
     expect(viewLink('snapshot=demo:M', 'https://gcportrait.app/demo/settings', '/demo/')).toBe(
       'https://gcportrait.app/demo/diagram#snapshot=demo:M',
     );

@@ -15,10 +15,10 @@ const REPO = path.resolve(SCRIPTS_DIR, '..');
 const read = (relPath: string): string => readFileSync(path.join(REPO, relPath), 'utf8');
 
 /**
- * The fields the Cloud Run Button accepts in app.json, by their JSON type. The button decodes the file with Go's
- * DisallowUnknownFields, so any other field makes it fail (cmd/cloudshell_open/appfile.go of
- * GoogleCloudPlatform/cloud-run-button, read 2026-10-10); `description`, `keywords`, `logo`, `repository`,
- * `website`, `stack` and `formation` are accepted and ignored, for Heroku's app.json.
+ * The fields the Cloud Run Button accepts in app.json, by their JSON type. The button decodes the file with
+ * Go's DisallowUnknownFields, so any other field makes it fail (cmd/cloudshell_open/appfile.go of
+ * GoogleCloudPlatform/cloud-run-button); `description`, `keywords`, `logo`, `repository`, `website`, `stack`
+ * and `formation` are accepted and ignored, for Heroku's app.json.
  */
 const TOP_LEVEL: Readonly<Record<string, string>> = {
   name: 'string',

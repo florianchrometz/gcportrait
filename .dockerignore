@@ -37,9 +37,7 @@ packages/catalog/src/generated
 **/application_default_credentials.json
 **/*.log
 
-# Not part of the product: the frozen previous implementation (build repository only, ADR 0007), docs, release
-# notes, deployment scripts
-legacy
+# Not part of the product: docs, release notes, deployment scripts
 docs
 .changeset
 infra/*

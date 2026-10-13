@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/export/read` (ADR 0010; skill cai-ingestion §1): reads a Cloud Asset Inventory export from Cloud
+ * `POST /api/export/read` (skill cai-ingestion §1): reads a Cloud Asset Inventory export from Cloud
  * Storage with the caller's own token (`storage.objects.get` on the bucket, docs/permissions.md) and streams its
  * NDJSON lines (../stream/export-read.ts), which `@gcportrait/ingest` reads in the app's import worker. One object,
  * or every object under a prefix.

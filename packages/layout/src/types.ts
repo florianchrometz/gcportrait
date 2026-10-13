@@ -185,7 +185,7 @@ export interface RoutingReport {
   readonly holders: number;
   /**
    * The first routing pass's search work: the A* states it settled. Single-pass mode starts where it reaches
-   * `Routing.singlePassWork`; above `Routing.oneRoundWork` one widening round runs at most (ADR 0027).
+   * `Routing.singlePassWork`; above `Routing.oneRoundWork` one widening round runs at most (skill §5).
    */
   readonly work: number;
   /**
@@ -248,7 +248,7 @@ export interface Arrangement {
   /** How many zones (open zones, chips, empty zones) each zone row holds, top to bottom; [] without zones. */
   readonly zoneRows: readonly number[];
   /**
-   * The stacks of each zone row (ADR 0026): `zoneStacks[r]` lists, left to right, how many consecutive zones
+   * The stacks of each zone row (skill §4): `zoneStacks[r]` lists, left to right, how many consecutive zones
    * each cell of row r sets one above the other (summing to `zoneRows[r]`). Absent when every cell holds one
    * zone (plain rows).
    */

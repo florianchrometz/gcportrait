@@ -3,11 +3,10 @@
  * A Cloud Asset Inventory `assets.list` page turned into a `page` frame without parsing it (docs/security.md
  * "Response caps and memory").
  *
- * Until the security review of 2026-10-11 every page was decoded into a string, parsed and serialised again: about
- * three copies of the page on the JavaScript heap at once, which for a page at the 25 MiB cap is roughly 100 MiB of
- * heap, while V8 gives a process a heap of about a quarter of its memory by default. Measured with
- * `--max-old-space-size=128` (the heap a 512 MiB instance gets), four such pages at once ended the process with
- * "JavaScript heap out of memory".
+ * Decoding every page into a string, parsing it and serialising it again would hold about three copies of the
+ * page on the JavaScript heap at once: for a page at the 25 MiB cap roughly 100 MiB of heap, while V8 gives a
+ * process a heap of about a quarter of its memory by default. With `--max-old-space-size=128` (the heap a 512
+ * MiB instance gets), four such pages at once end the process with "JavaScript heap out of memory".
  *
  * This scanner reads the page's bytes once and writes the frame into one buffer outside the heap:
  * `{"t":"page","assets":` + the `assets` array with every whitespace outside strings removed (Google's answers are

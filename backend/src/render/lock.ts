@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * One render at a time per instance (ADR 0033 §7): a render keeps the instance's only CPU busy and holds hundreds of
- * MiB, so a second one waits for another instance (Cloud Run adds them) rather than sharing this one. In memory
- * only; the lock is given back exactly once, however the render ends.
+ * One render at a time per instance (agents.md, Exports and the render API): a render keeps the instance's
+ * only CPU busy and holds hundreds of MiB, so a second one waits for another instance (Cloud Run adds them)
+ * rather than sharing this one. In memory only; the lock is given back exactly once, however the render ends.
  */
 export class RenderLock {
   #held = false;

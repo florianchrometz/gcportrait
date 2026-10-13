@@ -12,16 +12,16 @@
 # --demo-only deploys a sign-in-free demo (the backend's DEMO_ONLY: the demo organisations only, no route that calls
 # Google), --domain maps a host name of yours to the service with a Cloud Run domain mapping and prints the
 # DNS records to create, and the legal pages come either as links to your own pages (--impressum-url, --privacy-url)
-# or as texts the instance serves (--legal-dir), one way per page (ADR 0032).
+# or as texts the instance serves (--legal-dir), one way per page.
 #
 # Idempotent and declarative: every run brings the instance to what its flags say (a flag you leave out gets
 # its default), so re-running with one more flag changes only that. It enables the APIs the instance needs,
 # creates the backend service account with no roles at all, builds the image with Cloud Build (--build) or
 # pulls the published one from GitHub Container Registry through an Artifact Registry remote repository
-# (ADR 0035 §2), deploys the Cloud Run service, optionally puts Identity-Aware Proxy in front, then
-# prints the next steps (open the address, create the OAuth client, redeploy with its id), then the address, the
-# account and the rest. It never grants anything on an organisation, folder or other project, never creates a key,
-# and never stores a credential. infra/uninstall.sh removes what it made.
+# (agents.md, Modes and hosting), deploys the Cloud Run service, optionally puts Identity-Aware Proxy in
+# front, then prints the next steps (open the address, create the OAuth client, redeploy with its id), then
+# the address, the account and the rest. It never grants anything on an organisation, folder or other project,
+# never creates a key, and never stores a credential. infra/uninstall.sh removes what it made.
 
 set -Eeuo pipefail
 
@@ -225,7 +225,7 @@ if [ -n "$DOMAIN" ]; then
   valid_hostname "$DOMAIN" || die "--domain must be a host name such as demo.example.com"
   [ "$IAP" = 0 ] || die "--domain and --iap are not supported together"
   domain_mapping_region "$REGION" ||
-    die "--domain: Cloud Run offers domain mappings in $(printf '%s' "$DOMAIN_MAPPING_REGIONS" | sed 's/ /, /g') only, not in $REGION. Deploy with --region europe-west1 (or another of them), or put a load balancer in front yourself (docs/self-host-options.md, \"Custom domain\"; ADR 0032)."
+    die "--domain: Cloud Run offers domain mappings in $(printf '%s' "$DOMAIN_MAPPING_REGIONS" | sed 's/ /, /g') only, not in $REGION. Deploy with --region europe-west1 (or another of them), or put a load balancer in front yourself (docs/self-host-options.md, \"Custom domain\")."
 fi
 # The legal texts travel as one environment variable (LEGAL_BUNDLE), checked here as the backend checks them.
 LEGAL_BUNDLE=""
@@ -250,7 +250,7 @@ for page in $LEGAL_PAGES; do
   case "$page" in impressum) IMPRESSUM_URL="$legal_url" ;; *) PRIVACY_URL="$legal_url" ;; esac
 done
 if [ "$SA_STRICT" = 1 ] && [ "$SA_MODE" = 0 ]; then die "--sa-strict-exposure needs --sa-mode"; fi
-# Memory: 2 GiB for a full instance (the render API's defaults fit it: ADR 0033), 256 MiB for a demo-only one.
+# Memory: 2 GiB for a full instance (the render API's defaults fit it), 256 MiB for a demo-only one.
 if [ "$DEMO_ONLY" = 1 ]; then MEMORY=256Mi REQUEST_TIMEOUT=60; else MEMORY=2Gi REQUEST_TIMEOUT=900; fi
 if [ -n "$MEMORY_ARG" ]; then
   [[ "$MEMORY_ARG" =~ ^([1-9][0-9]{0,3})(Mi|Gi)$ ]] || die "--memory must be a size such as 512Mi or 2Gi"
@@ -441,9 +441,9 @@ fi
 
 # run: the service. iam: the backend's service account. cloudasset and cloudresourcemanager: the backend's own
 # calls are charged to this project in service-account mode, and Resource Manager calls made with a person's
-# token are charged to the project of the OAuth client, which lives here (ADR 0028 §1). artifactregistry: the
-# image. cloudbuild: --build only. iap: --iap only. A demo-only instance calls no Google API, so it needs neither
-# Cloud Asset Inventory nor Resource Manager.
+# token, which carry no quota project, are charged to the project of the OAuth client, which lives here (skill
+# cai-ingestion §9). artifactregistry: the image. cloudbuild: --build only. iap: --iap only. A demo-only
+# instance calls no Google API, so it needs neither Cloud Asset Inventory nor Resource Manager.
 step "Enabling the Google APIs the instance needs"
 if [ "$DEMO_ONLY" = 1 ]; then
   APIS="run.googleapis.com iam.googleapis.com artifactregistry.googleapis.com"
@@ -591,7 +591,8 @@ else
     --display-name="gcportrait backend ($SERVICE)" --description="$BACKEND_SA_DESCRIPTION"
 fi
 # deploy.sh grants this account nothing. Report what it holds on the project, if anything, because a role that
-# includes resourcemanager.projects.get makes the service-account gate refuse this project as a scope (ADR 0028).
+# includes resourcemanager.projects.get makes the service-account gate refuse this project as a scope
+# (agents.md, Security and privacy, The service-account gate).
 HELD_ROLES="$(gcloud projects get-iam-policy "$PROJECT" --flatten='bindings[].members' \
   --filter="bindings.members:serviceAccount:${BACKEND_SA_EMAIL}" --format='value(bindings.role)' 2>/dev/null || true)"
 if [ -n "$HELD_ROLES" ]; then
@@ -671,15 +672,6 @@ POLICY
   retry_when "$NEW_ACCOUNT" 6 15 gcloud artifacts repositories add-iam-policy-binding "$BUILD_REPO" \
     --project="$PROJECT" --location="$REGION" --member="serviceAccount:$BUILD_SA_EMAIL" \
     --role=roles/artifactregistry.writer --format=none
-  # Storage Admin includes everything Storage Object Admin allows, which an earlier deploy.sh granted on this
-  # bucket and which is redundant now: removed where it is still there.
-  if [ "$BUCKET_EXISTS" = 1 ] && gcloud storage buckets get-iam-policy "gs://$BUILD_BUCKET" --flatten='bindings[].members' \
-    --format='value(bindings.role,bindings.members)' 2>/dev/null |
-    grep -Fx "roles/storage.objectAdmin"$'\t'"serviceAccount:$BUILD_SA_EMAIL" >/dev/null; then
-    say "removing the redundant Storage Object Admin grant of an earlier deploy.sh"
-    run gcloud storage buckets remove-iam-policy-binding "gs://$BUILD_BUCKET" \
-      --member="serviceAccount:$BUILD_SA_EMAIL" --role=roles/storage.objectAdmin --format=none
-  fi
 
   step "Building the image with Cloud Build (about a minute, plus the upload)"
   APP_VERSION="$(git -C "$REPO_ROOT" describe --tags --always --dirty 2>/dev/null || true)"
@@ -687,12 +679,12 @@ POLICY
   IMAGE_TAG="$(date -u +%Y%m%d-%H%M%S)-$(printf '%s' "$APP_VERSION" | tr -c 'A-Za-z0-9_.-' '-' | cut -c1-80)"
   IMAGE="${AR_HOST}/${PROJECT}/${BUILD_REPO}/gcportrait:${IMAGE_TAG}"
   say "version: $APP_VERSION"
-  # What is uploaded: the checkout minus .gitignore'd files and minus what no build needs: the frozen legacy
-  # tree, docs, git metadata, and anything local that may hold a credential (the same patterns as .dockerignore;
-  # scripts/infra.test.ts keeps the two lists together). The list is written for this run only, so that gcloud
-  # never drops a .gcloudignore into the checkout.
+  # What is uploaded: the checkout minus .gitignore'd files and minus what no build needs: docs, git metadata,
+  # and anything local that may hold a credential (the same patterns as .dockerignore; scripts/infra.test.ts
+  # keeps the two lists together). The list is written for this run only, so that gcloud never drops a
+  # .gcloudignore into the checkout.
   {
-    printf '%s\n' '.git/' '.github/' '.claude/' 'legacy/' 'docs/' '.changeset/' 'node_modules/' \
+    printf '%s\n' '.git/' '.github/' '.claude/' 'docs/' '.changeset/' 'node_modules/' \
       '.env' '.env.*' '*.local.*' '*.pem' '*.key' '*-key.json' 'application_default_credentials.json' '*.log' \
       '/e2e/*' '!/e2e/package.json'
     [ ! -f "$REPO_ROOT/.gitignore" ] || cat "$REPO_ROOT/.gitignore"
@@ -833,12 +825,9 @@ if [ "$DRY_RUN" = 0 ]; then
   elif [ "$HAVE_CURL" = 0 ]; then
     say "curl is not installed, so the address is not checked from here; open $URL/api/config in a browser"
   else
-    # GET /api/healthz from outside, waited for while the new address comes up (7 tries, 5 s apart), then the
-    # configuration and the app. An image from before 2026-10-10 has no /api/healthz and answers it with the
-    # backend's own JSON 404 (Google's front end answers with an HTML page): that ends the wait at once, and
-    # /api/config stands in for it.
+    # GET /api/healthz from outside, waited for while the new address comes up (7 tries, 5 s apart; until then
+    # Google's front end answers with an HTML page), then the configuration and the app.
     HEALTHY=0
-    OLD_IMAGE=0
     HEALTH_BODY=""
     RUNNING_VERSION=""
     NL=$'\n'
@@ -848,16 +837,12 @@ if [ "$DRY_RUN" = 0 ]; then
       HEALTH_BODY="${answer%"$NL"*}"
       case "${answer##*"$NL"}" in
         "200 application/json"*) HEALTHY=1; break ;;
-        "404 application/json"*) OLD_IMAGE=1; break ;;
       esac
       [ "$attempt" = 7 ] || sleep 5
     done
     if [ "$HEALTHY" = 1 ]; then
       detail "GET /api/healthz: $HEALTH_BODY"
       RUNNING_VERSION="$(json_value "$HEALTH_BODY" version)"
-    elif [ "$OLD_IMAGE" = 1 ] && curl --silent --fail --max-time 10 "$URL/api/config" >/dev/null; then
-      detail "GET /api/healthz: not in this image (an image from before 2026-10-10); /api/config answers"
-      HEALTHY=1
     fi
     if [ "$HEALTHY" = 0 ] || ! curl --silent --show-error --fail --max-time 10 "$URL/api/config" >"$TMP_DIR/config.json"; then
       warn "$URL/api/healthz did not answer yet; check the service's logs in the console"

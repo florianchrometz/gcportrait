@@ -139,7 +139,7 @@ else:
 - **Three scopes**, which the app requests when someone signs in:
   `https://www.googleapis.com/auth/cloud-platform.read-only` (Resource Manager: the scope picker, the
   preflight and the service-account gate), `https://www.googleapis.com/auth/cloudasset` (Cloud Asset Inventory
-  refuses a token without it or `cloud-platform`; [ADR 0028](adr/0028-quota-project-and-sa-gate.md) §6) and
+  refuses a token without it or `cloud-platform`) and
   `https://www.googleapis.com/auth/userinfo.email` (the account menu shows the email address).
 
 Google offers no command-line or API way to create this kind of client, so it is the one console step. In the
@@ -203,9 +203,7 @@ account's whole grant to the instance's OAuth client, not just one token: other 
 account end their session at their next request ("Session expired"), and the next sign-in shows Google's
 consent screen again.
 
-There is no hosted sign-in instance of gcportrait ([ADR
-0035](adr/0035-decisions-inherited-from-the-implementation-plan.md) §2, [ADR
-0032](adr/0032-hosted-surfaces-and-domains.md)): the project hosts its website and a sign-in-free demo, and
+There is no hosted sign-in instance of gcportrait: the project hosts its website and a sign-in-free demo, and
 whoever wants to read their own Google Cloud runs their own instance with their own OAuth client, as above.
 
 ### If you enable sign-in
@@ -258,7 +256,7 @@ inside.
 - IAP's Google-managed sign-in lets in accounts of the project's own organisation; for accounts outside it,
   IAP needs an OAuth client of your own (see Google's IAP documentation for Cloud Run).
 - A redeploy without `--iap` makes the service public again.
-- **User mode behind IAP** is designed to work ([ADR 0031](adr/0031-token-header-behind-iap.md), proposed):
+- **User mode behind IAP** is designed to work:
   IAP treats the `Authorization` header as the place for its own credential, so the app never puts the
   person's Google token there: every `/api/*` call carries it in a header of gcportrait's own,
   `X-Gcportrait-Token`, a header IAP has no use for and is meant to pass on as sent. IAP's cookie decides who
@@ -286,8 +284,8 @@ infra/deploy.sh --project YOUR_PROJECT --oauth-client-id YOUR_OAUTH_CLIENT_ID --
 ```
 
 - **The gate.** Before every call as the account, the backend checks that the signed-in person can `get` the
-  scope with their own token; there is no setting that skips it ([ADR
-  0028](adr/0028-quota-project-and-sa-gate.md) §4). `--sa-strict-exposure` also refuses a scope whose details
+  scope with their own token; there is no setting that skips it ([permissions.md, "The
+  gate"](permissions.md#the-gate)). `--sa-strict-exposure` also refuses a scope whose details
   the account can read itself (a public `get`, or more roles than `cloudasset.viewer`): see backend/README.md,
   "Service-account mode".
 - **Prefer folders and projects to the organisation.** Anyone who can see the scope and sign in can read its
@@ -304,10 +302,10 @@ infra/deploy.sh --project YOUR_PROJECT --oauth-client-id YOUR_OAUTH_CLIENT_ID --
 A demo-only instance lets people try gcportrait without signing in and without any Google Cloud data: the app
 with its synthetic demo organisations S, M, L and XL (generated in each visitor's browser and kept there), the
 timeline, search and export, and nothing else. This is for your own instance, for example to show gcportrait
-inside your company with your own legal pages ([ADR 0032](adr/0032-hosted-surfaces-and-domains.md)). The
+inside your company with your own legal pages ([Legal pages: link or serve](#legal-pages-link-or-serve)). The
 project's own demo at <https://gcportrait.app/demo/> is not one: it is a static build of the app with the same
-behaviour, served by the website's GitHub Pages site without any server ([ADR
-0034](adr/0034-static-demo-on-pages.md); `pnpm demo:static`, [website.md, "The demo"](website.md#the-demo)). A
+behaviour, served by the website's GitHub Pages site without any server (`pnpm demo:static`, [website.md, "The
+demo"](website.md#the-demo)). A
 static build of your own, for any static host, works the same way: `pnpm demo:static --base /PATH/
 --impressum-url URL --privacy-url URL` writes it to `dist/demo/`; it has no response headers, so its Content
 Security Policy is a `<meta>` without `frame-ancestors`, and it is not cross-origin isolated.
@@ -381,7 +379,7 @@ deletes every mapping that routes to the service it deletes. The DNS records are
 Balancer with a serverless network endpoint group and a Google-managed certificate in front of the service
 (Google's guide "Set up a global external Application Load Balancer with Cloud Run"). deploy.sh does not
 automate it. Its forwarding rule alone costs about $18 a month ($0.025 an hour), which is why deploy.sh offers
-a domain mapping in a region that has them instead ([ADR 0032](adr/0032-hosted-surfaces-and-domains.md)).
+a domain mapping in a region that has them instead.
 
 ## Legal pages: link or serve
 
@@ -477,8 +475,8 @@ Proxy](#private-instance-identity-aware-proxy) in front.
   traffic** on the service's **Revisions** tab sends all traffic back to one of them.
 
 The releases and what changed in each are on the [releases
-page](https://github.com/florianchrometz/gcportrait/releases), which the release workflow writes from the changesets
-at every tag.
+page](https://github.com/florianchrometz/gcportrait/releases), which the release workflow writes from the
+changesets at every tag.
 
 ## Building from source
 
@@ -584,14 +582,14 @@ to run again at any time, also after it stopped halfway.
 
 | Step | What | Why |
 |---|---|---|
-| APIs | enables `run`, `iam`, `cloudasset`, `cloudresourcemanager` and `artifactregistry` (`.googleapis.com`); with `--build` also `cloudbuild` and `storage`; with `--iap` also `iap` | Cloud Asset Inventory and Resource Manager are charged to this project for the instance's own calls and for header-less Resource Manager calls made with a person's token through this project's OAuth client ([ADR 0028](adr/0028-quota-project-and-sa-gate.md) §1). The APIs it had to enable are recorded as `gcportrait-api-NAME=enabled` labels on the service and, with `--build`, on the build repository, which exists minutes earlier. A run that stops before either exists names the APIs it enabled. |
+| APIs | enables `run`, `iam`, `cloudasset`, `cloudresourcemanager` and `artifactregistry` (`.googleapis.com`); with `--build` also `cloudbuild` and `storage`; with `--iap` also `iap` | Cloud Asset Inventory and Resource Manager are charged to this project for the instance's own calls and for header-less Resource Manager calls made with a person's token through this project's OAuth client ([permissions.md, "Which account, and who pays"](permissions.md#which-account-and-who-pays)). The APIs it had to enable are recorded as `gcportrait-api-NAME=enabled` labels on the service and, with `--build`, on the build repository, which exists minutes earlier. A run that stops before either exists names the APIs it enabled. |
 | What exists | before it creates anything, it checks that whatever exists of its names (the service, the backend account; with `--build` the build account, repository and bucket) carries its mark: the `managed-by=gcportrait-deploy` label, or on an account exactly the description deploy.sh writes | deploy.sh never adopts or changes what it did not create. A resource of one of its names without the mark stops the run before anything is created, granted, uploaded or deployed; the message names each one, the command that hands it over if it is meant for this instance (deploy.sh then manages it, and uninstall.sh deletes it with the instance), and `--service`, which changes every derived name. |
 | Backend account | `SERVICE-backend@PROJECT.iam.gserviceaccount.com` | The service's identity, and the account a team grants in [service-account mode](#service-account-mode). deploy.sh grants it **no role at all**, on nothing: not on this project, not on any organisation or folder. It reports any role it finds on the project, granted by someone else. |
 | Image (without `--build`) | once per project and region, an Artifact Registry remote repository `ghcr` (Docker, upstream `https://ghcr.io`, labelled `managed-by=gcportrait-deploy`), shared by every instance in the region; the service runs `REGION-docker.pkg.dev/PROJECT/ghcr/florianchrometz/gcportrait:TAG` from it | Cloud Run can run a public ghcr.io image directly, but Google recommends an Artifact Registry remote repository for availability (Cloud Run's "Deploying container images"): Artifact Registry fetches an image from ghcr.io the first time it is asked for it and keeps it, so a redeploy or a new instance does not depend on ghcr.io. It looks a tag up again once its cached answer is an hour old, so a tag that just moved (`latest` right after a release) can still give the image before for up to an hour; `--image vX.Y.Z` is exact. Public images need no credentials. Before it changes anything, deploy.sh asks ghcr.io anonymously whether the image exists, so an unknown tag or a package that is not public stops the run at once. An existing repository named `ghcr` is used only when it is a remote repository of ghcr.io; one that deploy.sh did not create is pulled through and never changed or deleted, and a repository of that name of any other kind stops the run. `--image ghcr.io/OWNER/NAME:TAG` (a fork's image) goes through the same repository. |
-| Build (`--build`) | a Docker repository `SERVICE-builds` in the region (keeps the 5 newest images), a private regional bucket `gs://PROJECT-SERVICE-builds` (the uploaded source and the build logs, deleted after 14 days; created with its label in one request to the Cloud Storage API), a build account `SERVICE-build@...` with Storage Admin on that bucket and Artifact Registry Writer on that repository and nothing else, and one Cloud Build run of `infra/cloudbuild.yaml` | A build account of its own instead of the project's Compute Engine default account, which would need the Compute Engine API and, in projects without the secure-by-default organisation policies, holds Editor on the whole project ([ADR 0030](adr/0030-own-cloud-build-service-account.md)). Storage Admin, on the one bucket only, is the role Google documents for a build account that keeps its logs in a bucket of the user's: Cloud Build reads the bucket itself before it accepts a build (with Storage Object Admin alone it refuses: `FAILED_PRECONDITION: invalid bucket ... does not have access`). On that bucket it also lets the build account change the bucket's IAM policy or delete the bucket; a narrower custom role (Storage Object Admin plus `storage.buckets.get`) is left open by the security review ([security.md](security.md), O5). An earlier deploy.sh also granted Storage Object Admin there, which Storage Admin includes; a run finds and removes that grant. Bucket names are global, so an existing bucket of that name is used only when it belongs to this project and carries deploy.sh's label. The upload leaves out git-ignored files, `legacy/`, `docs/`, and anything local that may hold a credential (env files, `*.local.*` notes, keys: the same patterns as `.dockerignore`). |
+| Build (`--build`) | a Docker repository `SERVICE-builds` in the region (keeps the 5 newest images), a private regional bucket `gs://PROJECT-SERVICE-builds` (the uploaded source and the build logs, deleted after 14 days; created with its label in one request to the Cloud Storage API), a build account `SERVICE-build@...` with Storage Admin on that bucket and Artifact Registry Writer on that repository and nothing else, and one Cloud Build run of `infra/cloudbuild.yaml` | A build account of its own instead of the project's Compute Engine default account, which would need the Compute Engine API and, in projects without the secure-by-default organisation policies, holds Editor on the whole project. Storage Admin, on the one bucket only, is the role Google documents for a build account that keeps its logs in a bucket of the user's: Cloud Build reads the bucket itself before it accepts a build (with Storage Object Admin alone it refuses: `FAILED_PRECONDITION: invalid bucket ... does not have access`). On that bucket it also lets the build account change the bucket's IAM policy or delete the bucket; a narrower custom role (Storage Object Admin plus `storage.buckets.get`) is open ([security.md](security.md), O5). Bucket names are global, so an existing bucket of that name is used only when it belongs to this project and carries deploy.sh's label. The upload leaves out git-ignored files, `docs/`, and anything local that may hold a credential (env files, `*.local.*` notes, keys: the same patterns as `.dockerignore`). |
 | Cloud Run | the service `SERVICE` (default `gcportrait`) from the image, as the backend account: 1 CPU, 2 GiB (`--memory`), 80 concurrent requests, 0 to 10 instances, 900 s request timeout, startup CPU boost, startup and liveness probes on `GET /healthz`, labelled `managed-by=gcportrait-deploy` | Scales to zero when nobody uses it. The environment it sets is in [configuration.md](configuration.md#environment-on-cloud-run): `TRUST_PROXY_HOPS=1`, `LOG_LEVEL`, `SA_MODE_ENABLED`, `BACKEND_SA_EMAIL`, and `OAUTH_CLIENT_ID`, `HOSTED_BY`, `SOURCE_URL` when given. |
-| Access | public (`allUsers` may invoke the service), or with `--iap` Identity-Aware Proxy and the listed principals | Public is safe in the sense of ADR 0035 §4: reading any Google Cloud data still needs the person's own sign-in and their own IAM roles. |
-| Check | the newest revision is ready (its startup probe `GET /healthz` passed); without IAP it also waits for `GET /api/healthz` on the new address (up to seven tries, 5 s apart, while Google's front end still answers with its own page), then checks `GET /api/config` and `GET /`, and says in one line that the instance answers, with its version (`--verbose` shows each answer). An older image without `/api/healthz` answers it with the backend's own JSON 404, which ends the wait at once; `GET /api/config` is the check there | Proves the instance answers before the script says so. Cloud Run's front end keeps paths ending in `z` for itself, so `/healthz` answers only inside the container (the probes, Docker); from outside it returns Google's 404, and `/api/healthz` gives the same answer. |
+| Access | public (`allUsers` may invoke the service), or with `--iap` Identity-Aware Proxy and the listed principals | Public is safe in the sense of [agents.md](../agents.md), "Security and privacy": reading any Google Cloud data still needs the person's own sign-in and their own IAM roles. |
+| Check | the newest revision is ready (its startup probe `GET /healthz` passed); without IAP it also waits for `GET /api/healthz` on the new address (up to seven tries, 5 s apart, while Google's front end still answers with its own page), then checks `GET /api/config` and `GET /`, and says in one line that the instance answers, with its version (`--verbose` shows each answer). | Proves the instance answers before the script says so. Cloud Run's front end keeps paths ending in `z` for itself, so `/healthz` answers only inside the container (the probes, Docker); from outside it returns Google's 404, and `/api/healthz` gives the same answer. |
 
 It **never** grants a role on an organisation, a folder or another project, never creates a service-account
 key, never stores a token or a secret (the OAuth client's secret is not used anywhere), and never uses or

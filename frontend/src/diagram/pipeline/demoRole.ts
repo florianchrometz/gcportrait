@@ -2,13 +2,13 @@
 /**
  * The demo role of the diagram worker (diagram.worker.ts): "Try the demo" in a worker of its own, started for
  * one job and ended with it (workers.ts, `createBrowserDemoJob`). Preparing demo XL (its 35-day history generated,
- * read and encoded for storage) takes seconds; in the data worker, which answers one request at a time, it held back
- * every Scene request behind it, and its history stayed in the data worker's memory afterwards.
- * The generator is still loaded by no other thread than a worker (ADR 0029): the data worker for drawing the demo
- * organisations, this one for preparing them; both load the same chunk (demo.ts).
+ * read and encoded for storage) takes seconds; in the data worker, which answers one request at a time, it would hold
+ * back every Scene request behind it, and its history would stay in the data worker's memory afterwards.
+ * The generator is loaded by no other thread than a worker (agents.md, Architecture and code): the data worker for
+ * drawing the demo organisations, this one for preparing them; both load the same chunk (demo.ts).
  *
- * It answers the data protocol's `demo` request (protocol.ts) with `job-progress` messages and `demo` or `error`,
- * as the data handler did; any other request is a protocol error.
+ * It answers the data protocol's `demo` request (protocol.ts) with `job-progress` messages and `demo` or `error`;
+ * any other request is a protocol error.
  */
 import { isDemoSize } from '@gcportrait/model';
 

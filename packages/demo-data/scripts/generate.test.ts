@@ -86,8 +86,8 @@ describe('committed fixtures', () => {
 
 describe('performance', () => {
   /**
-   * A wall-clock budget fails when other processes take the machine's cores (XL has taken 6.6 s to generate and
-   * 29.5 s to sweep at a load average of 30, against 1.6 s and 6.2 s on the rerun): a retry measures again.
+   * A wall-clock budget fails when other processes take the machine's cores (under heavy load XL can take four
+   * times as long as its quiet 1.6 s to generate and 6.2 s to sweep): a retry measures again.
    */
   const RETRY = { retry: 2 };
   // XL (≈50 000 assets) is generated once: the timing test generates it, and the sweep reuses that, or generates
@@ -111,7 +111,7 @@ describe('performance', () => {
     expect(() => {
       assertSyntheticOnly(text, {}, 'XL');
     }).not.toThrow();
-    // The guard's e-mail masking used to copy the whole text per address (XL: minutes); now it is one pass.
+    // The guard masks e-mail addresses in one pass over the text, not one copy of it per address.
     expect(performance.now() - start).toBeLessThan(20_000);
   });
 });

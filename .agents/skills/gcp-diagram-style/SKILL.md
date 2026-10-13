@@ -6,6 +6,10 @@ description: Visual rules for gcportrait diagrams and app chrome — zone tints,
 
 # gcportrait diagram style
 
+The rules this handbook applies are in [agents.md](../../../agents.md) ("Style and accessibility", "Exports
+and the render API" and "Non-affiliation, brand and legal"); this file holds the palettes, the sizes and the
+checklists that carry them out.
+
 Load this before changing anything a user can see in a diagram or exporting one, and when reviewing a render.
 Rules here win over personal taste. Where Google's architecture-diagram conventions and WCAG conflict, keep
 Google's colour *semantics* (what a tint means) and adjust *values* until contrast passes.
@@ -16,18 +20,18 @@ Google's colour *semantics* (what a tint means) and adjust *values* until contra
    zones with a title, white (light) or near-black (dark) resource cards, ink-coloured orthogonal arrows. The
    diagrams are Google Cloud-*style*; the project is independent and not affiliated with Google, and the app
    and website footers and the long-form texts say so, never a drawing or an export
-   ([ADR 0018](../../../docs/adr/0018-non-affiliation-statement.md); §7).
+   (agents.md, "Non-affiliation, brand and legal"; §7).
 2. Colour means **containment type**, never status. The only non-containment colours are the four accents
    (selection, ancestor path, domain peer, timeline change) and they are overlays, not fills.
 3. Icons are never recoloured, stretched, outlined or redrawn. If an official icon is illegible at 16 px, draw
    a separate *own* glyph in the two-tone palette and mark it as ours. The icons are Google trademarks, used
-   under Google's icon usage terms (ADR 0018); `packages/icons/README.md` carries the long-form statement.
+   under Google's icon usage terms; `packages/icons/README.md` carries the long-form statement.
 4. Everything readable at 100 % zoom must stay readable in both themes; the contrast tests are the gate.
 5. The legend is part of the SVG so exports carry it.
 
 ## 2. Palette
 
-### Light (provenance: maintainer-validated look from the previous implementation; values re-checked here)
+### Light (maintainer-validated values, contrast-checked)
 
 | Token | Use | Value |
 |---|---|---|
@@ -54,7 +58,7 @@ Google's colour *semantics* (what a tint means) and adjust *values* until contra
 | `mutedOnTint` | secondary text (a zone's id, a card-sized zone's subtitle) where `muted` is below 4.5 : 1 on the tint | `#3C4043` |
 | `pathCasing` | the band under the path to the root and the `secures` overlay | `#5F6368` |
 
-### Dark (validated by the same tests; values adopted on 2026-10-10)
+### Dark (contrast-checked by the same tests)
 
 | Token | Value |
 |---|---|
@@ -80,17 +84,16 @@ Rules for dark: official colour icons sit on a small light plate (`#FFFFFF` at 9
 artwork stays as designed; two-tone legacy icons (`#4285F4` + `#AECBFA`) need no plate.
 
 Both tables hold the values the renderer draws (`frontend/src/diagram/theme/tokens.ts` checks them value for
-value). On 2026-10-10 this skill adopted the grey outlines and the dim edge the renderer had drawn since it was
-built (each theme's `muted`, the one grey that reaches 3 : 1 on every tint), the dark subnet stroke chosen with
-the selection trace, and the two tokens the renderer added (`mutedOnTint`, `pathCasing`); §10 gives each its
-contrast figure.
+value). The grey outlines and the dim edge are each theme's `muted`, the one grey that reaches 3 : 1 on every
+tint; §10 gives each token its contrast figure.
 
 ## 3. Typography
 
 - Labels: `"Google Sans", "Google Sans Text", Roboto, system-ui, sans-serif`. Google Sans is used only when
   the viewer's system has it; ship Roboto (self-hosted woff2, 400/500/700). Do not fetch fonts from a CDN at
   runtime in the SPA (CSP, offline demo). The app bundles Roboto and Roboto Mono from the `@fontsource`
-  packages (OFL-1.1, accepted for these two only; ADR 0019) and ships their licences in `dist/licenses/`.
+  packages (OFL-1.1, accepted for these two only; agents.md, "Licence and dependencies") and ships their
+  licences in `dist/licenses/`.
 - Identifiers, IPs, CIDRs: `"Roboto Mono", ui-monospace, monospace`.
 - Sizes at scale 1: zone title 15 px (depth 0–1) / 13 px (deeper), 500 weight; card title 13 px 700; card
   subtitle 10.5 px 400; chip count line 10.5 px; legend 11 px. Nothing below 10.5 px.
@@ -139,8 +142,8 @@ contrast figure.
 
 ## 6. Highlight states
 
-- Select: the **selection trace** stays painted until the selection changes (the maintainer's request of
-  2026-10-09; ids, not elements, carry it, so it survives pan, zoom, a theme change and a new layout of the same view):
+- Select: the **selection trace** stays painted until the selection changes (ids, not elements, carry it, so
+  it survives pan, zoom, a theme change and a new layout of the same view):
   - *Path to the root:* every zone around the node up to the top level (the canvas is the organisation) gets an
     `accent.path` 3 px ring on its border, on a `pathCasing` band 1 px each side (light `muted` #5F6368, which
     reaches 3 : 1 on every light fill and the amber 3.13 : 1 on it; dark `canvas`).
@@ -196,8 +199,8 @@ selected (§6), timeline markers when a tick is active. Title block top-left: sc
 (SVG, PNG, `pnpm render`, the render API, the layout's debug renders): no drawing carries the non-affiliation
 statement, neither in the title block nor in the SVG's `<desc>`, which holds neutral metadata only (scope, lens,
 read time, "Drawn with gcportrait."). The statement lives in the app footer and the website footer and in the
-long form (ADR 0018, "Amended 2026-10-11 (placement, final)", restated on 2026-10-12). Legend and title block are hidden
-from the interactive canvas when the user disables them in settings, but always included in exports.
+long form (agents.md, "Non-affiliation, brand and legal"). Legend and title block are hidden from the
+interactive canvas when the user disables them in settings, but always included in exports.
 
 ## 8. Export rules
 
@@ -237,16 +240,16 @@ Contrast ratio = (L1 + 0.05) / (L2 + 0.05) with relative luminance per WCAG. Thr
 | console action text on its pill; on its focused pill (`canvas` on `focus`) | 4.5 : 1 | 1.4.3 |
 | focus ring vs. adjacent colours, and the canvas ring vs. every fill it is drawn over | 3 : 1 | 2.4.13 |
 
-The values §2 adopted on 2026-10-10, with what they measure (and what the earlier values measured):
+What the tokens below reach, and what the nearest alternative would reach (which is why it is not used):
 
 | Token | Light | Dark |
 |---|---|---|
-| `zone.folder`, `zone.other`, `zone.nested`, `zone.region` strokes | `#5F6368` (`muted`): 3.52 : 1 on the project tint at worst (a container or a region on a project), 5.44 on the folder fill; `#9AA0A6` measured 2.37 on the folder fill, 2.50 on `other`, 2.03 on `nested`, 1.54 on a project, and the region's `#DADCE0` 1.25 on a project | `#9AA0A6` (`muted`): 4.07 : 1 on the nested tint at worst; `#5F6368` measured 2.34 on the folder fill, 2.15 on `other`, 1.78 on `nested`, 1.91 for a region on a project |
-| `edge.dim` | `#5F6368`: 3.52 : 1 on the project tint at worst, 6.05 on the canvas; `#BDC1C6` measured 1.81 on the canvas, 1.05 on a project | `#9AA0A6`: 4.07 : 1 on the nested tint at worst, 6.24 on the canvas; `#5F6368` measured 2.72 on the canvas, 1.78 on `nested` |
-| `zone.subnet` stroke | `#FDE293` (decorative, below) | `#B39B4C`: 4.53 : 1 on its fill, 4.55 on the VPC tint, and 1.94 against the amber `#FDD663` it replaced, so a subnet never looks highlighted |
+| `zone.folder`, `zone.other`, `zone.nested`, `zone.region` strokes | `#5F6368` (`muted`): 3.52 : 1 on the project tint at worst (a container or a region on a project), 5.44 on the folder fill; `#9AA0A6` would reach 2.37 on the folder fill, 2.50 on `other`, 2.03 on `nested`, 1.54 on a project, and the region's `#DADCE0` 1.25 on a project | `#9AA0A6` (`muted`): 4.07 : 1 on the nested tint at worst; `#5F6368` would reach 2.34 on the folder fill, 2.15 on `other`, 1.78 on `nested`, 1.91 for a region on a project |
+| `edge.dim` | `#5F6368`: 3.52 : 1 on the project tint at worst, 6.05 on the canvas; `#BDC1C6` would reach 1.81 on the canvas, 1.05 on a project | `#9AA0A6`: 4.07 : 1 on the nested tint at worst, 6.24 on the canvas; `#5F6368` would reach 2.72 on the canvas, 1.78 on `nested` |
+| `zone.subnet` stroke | `#FDE293` (decorative, below) | `#B39B4C`: 4.53 : 1 on its fill, 4.55 on the VPC tint, and 1.94 against the path accent's amber `#FDD663`, so a subnet never looks highlighted |
 | `mutedOnTint` | `#3C4043` (the `chip.text` grey): 6.09 : 1 on the project tint, where `muted` reaches 3.52 | `#BDC1C6` (the card stroke): 6.39 on the project tint and 5.94 on `nested`, where `muted` reaches 4.38 and 4.07 |
-| `pathCasing` | `#5F6368` (`muted`): the amber `#F9AB00` reaches 3.13 : 1 on it (1.13–1.93 on the light fills), and it reaches 3.52 on the project tint at worst; `ink`, the first value, read as hazard tape | `#1F1F1F` (`canvas`): the amber reaches 11.75 : 1 on it |
-| console action | text on its pill 4.51 : 1; `canvas` on its focused `focus` pill 6.51 (4.51 on `primary` before the `focus` token) | 7.82; 7.82 |
+| `pathCasing` | `#5F6368` (`muted`): the amber `#F9AB00` reaches 3.13 : 1 on it (1.13–1.93 on the light fills), and it reaches 3.52 on the project tint at worst; `ink` would read as hazard tape | `#1F1F1F` (`canvas`): the amber reaches 11.75 : 1 on it |
+| console action | text on its pill 4.51 : 1; `canvas` on its focused `focus` pill 6.51 | 7.82; 7.82 |
 | timeline markers | `accent.peer` 5.02 and `accent.removed` 4.77 on their `canvas` gap and band (2.92 and 2.78 on the project tint alone); `accent.path` 3.13 on its `pathCasing` disc; a ghost's label 4.53 on its body at worst | 8.42, 6.90; 11.75; 4.57 |
 
 Secondary text uses `muted` where it reaches 4.5 : 1 and `mutedOnTint` where it does not (the light project
@@ -290,7 +293,7 @@ Non-colour cues: every edge kind differs by dash or head, every zone kind by tit
 
 ## 13. Accessibility
 
-Every page, the diagram included, meets WCAG 2.2 AA in both themes ([ADR 0012](../../../docs/adr/0012-light-and-dark-themes.md)).
+Every page, the diagram included, meets WCAG 2.2 AA in both themes (agents.md, "Style and accessibility").
 
 - **Keyboard.** Tab moves through the header controls in reading order; on the canvas the arrow keys, Home
   and End move focus between the cards of a zone; Enter opens the details drawer for the focused card; `/`

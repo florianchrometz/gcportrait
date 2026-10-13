@@ -54,10 +54,10 @@ codec", lists every key.
 
 ## 2. Lenses
 
-A lens is a named bundle of asset types and of the relation kinds drawn between them ([ADR 0015](adr/0015-maintainability-catalog-as-data.md):
-data, not code). The 11 lenses are files in [packages/catalog/lenses/](../packages/catalog/lenses/), each a curated list
-of types with a comment on why it takes them. The table and the bundles below are generated from them
-(`node scripts/user-docs.mjs --write` writes them again after a lens file changed).
+A lens is a named bundle of asset types and of the relation kinds drawn between them (data, not code). The 11
+lenses are files in [packages/catalog/lenses/](../packages/catalog/lenses/), each a curated list of types with
+a comment on why it takes them. The table and the bundles below are generated from them (`node
+scripts/user-docs.mjs --write` writes them again after a lens file changed).
 
 <!-- user-docs:lens-table:start (generated from packages/catalog/lenses/ by `node scripts/user-docs.mjs --write`; do not edit) -->
 | Lens | What it is for | Arrows it draws | `auto` opens at most at | Hidden types |
@@ -83,8 +83,8 @@ How to read it:
   lens each: `runsAs` (which identity a workload runs as) to Identity, unless Filters › Identities says Show,
   and `encryptedBy` (customer-managed keys) to Security.
 - **`auto` opens at most at.** With the detail level at `auto`, a lens never opens deeper than this level, so
-  it opens readable at any size ([section 7](#7-detail-levels-and-chips)), unless the whole view has at most 100
-  rectangles: then it opens whole. A level you choose yourself is not capped.
+  it opens readable at any size ([section 7](#7-detail-levels-and-chips)), unless the whole view has at most
+  100 rectangles: then it opens whole. A level you choose yourself is not capped.
 - **Hidden types.** Some types are hidden by default because they are records rather than architecture:
   enabled services, Cloud Build builds, key versions, DNS record sets, tag bindings, Kubernetes RBAC objects.
   A lens draws them only when it says so (Everything), or when you include their type (`Include types`);
@@ -582,8 +582,8 @@ The rules behind the table:
 - **Structure stays.** The region, project and folder filters never remove the folders and projects that hold
   what they keep, so the diagram keeps its shape.
 - **Every filter composes with every focus and drill-in** (step 4 of [section
-  1](#1-how-a-view-is-put-together)). The end-to-end tests check exactly this, because an earlier tool's
-  filters silently did not.
+  1](#1-how-a-view-is-put-together)). The end-to-end tests check exactly this, because a filter that silently
+  stops applying misleads the reader.
 
 ## 6. Drill-in and the breadcrumb
 
@@ -612,9 +612,9 @@ The **Detail** control picks how deep zones open: `auto`, `folders`, `projects`,
 
 **`auto`** picks the deepest level whose number of rectangles (zones, cards and chips) fits the canvas: a
 budget of the canvas's area in px² divided by 14 000, between 24 and 250 (73 for a 1280 × 800 canvas). A view
-of at most 100 rectangles never collapses, whatever the lens; otherwise `auto` never opens deeper than the lens
-allows ([section 2](#2-lenses)). The control names the level it picked ("Auto · folders"). When the window grows or shrinks so
-much that `auto` picks another level, the page says why.
+of at most 100 rectangles never collapses, whatever the lens; otherwise `auto` never opens deeper than the
+lens allows ([section 2](#2-lenses)). The control names the level it picked ("Auto · folders"). When the
+window grows or shrinks so much that `auto` picks another level, the page says why.
 
 **Chips.** A collapsed zone is drawn as a chip in the zone's colour, with the zone's icon and what it holds
 ("2 networks · 39 resources"). Click it (or Enter or Space on a focused chip) to open just that zone; an open

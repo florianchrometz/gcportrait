@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * The layout worker protocol (ADR 0035 §5: ingest, graph build and layout each run off the UI thread; skill
- * gcp-diagram-layout §7: "memoise by Scene hash; cancel superseded requests;
+ * The layout worker protocol (ingest, graph build and layout each run off the UI thread: agents.md,
+ * Architecture and code; skill gcp-diagram-layout §7: "memoise by Scene hash; cancel superseded requests;
  * never block the UI thread").
  *
  * The page posts `layout` requests (a Scene, options and an id of its choosing) and `cancel`s; the worker

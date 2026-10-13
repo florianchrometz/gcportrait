@@ -94,7 +94,7 @@ describe('sign-in', () => {
     expect(context.gis.requests).toEqual([{ prompt: 'select_account' }]);
   });
 
-  it('asks for read-only Cloud Platform, Cloud Asset and the email address (ADR 0028 §6)', () => {
+  it('asks for read-only Cloud Platform, Cloud Asset and the email address, never all of Cloud Platform', () => {
     expect(OAUTH_SCOPES).toEqual([
       'https://www.googleapis.com/auth/cloud-platform.read-only',
       'https://www.googleapis.com/auth/cloudasset',

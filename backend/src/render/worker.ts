@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render worker's entry (ADR 0033 §8): one render job (job.ts) on this thread's messages. The bundle writes it
- * as `dist/render-worker.mjs`; `workerData.assetDir` names the rasteriser's asset directory next to it, or is null
- * from source, where the installed packages provide the assets.
+ * The render worker's entry: one render job (job.ts) on this thread's messages. The bundle writes it as
+ * `dist/render-worker.mjs`; `workerData.assetDir` names the rasteriser's asset directory next to it, or is
+ * null from source, where the installed packages provide the assets.
  */
 import { parentPort, workerData } from 'node:worker_threads';
 

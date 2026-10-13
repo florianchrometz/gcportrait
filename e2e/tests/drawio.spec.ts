@@ -22,8 +22,9 @@ import { decodePng, mismatch, OUT_DIR, REPO_ROOT, renderWithResvg } from './expo
 import { openDiagram, TAGLINE } from './support.js';
 
 /**
- * The draw.io export's fidelity (ADR 0036): the `.drawio` file the Export menu downloads, drawn by mxGraph (the library
- * diagrams.net is built on) in Chromium, against the SVG export of the same view: demo S, M and L in both themes.
+ * The draw.io export's fidelity (agents.md, Exports and the render API): the `.drawio` file the Export menu
+ * downloads, drawn by mxGraph (the library diagrams.net is built on) in Chromium, against the SVG export of
+ * the same view: demo S, M and L in both themes.
  *
  * - Structure, from the file: as many zone containers, node groups, connected lines and text lines as the SVG has zone
  *   groups, node groups, lines and text lines; every zone and node under its id in its zone; every line between the
@@ -34,11 +35,12 @@ import { openDiagram, TAGLINE } from './support.js';
  * - Pixels: mxGraph's picture against resvg's PNG of the SVG export (the rasteriser of `pnpm render` and the render
  *   API), both at 1× with a 24 px margin on the canvas colour, compared with pixelmatch at threshold 0.1.
  *
- * The limits sit a little above what ADR 0036 measured with mxGraph 4.2.2, and the spec fails on more: 2 to 3.3 % of
- * the pixels differ (text anti-aliasing, draw.io's half-pixel snap of odd line widths, its own arrowheads); every text
- * line lies within 1 px; before an open head draw.io stops the line 2.236 × its width short of the tip (2.68 px at the
- * 1.2 px memberOf line), where the SVG runs it to the tip; a block head is up to 1.26 px wider than the drawing's.
- * Boxes and line ends are exact in the file, so their limit is half a pixel. And demo S light, the render golden's view, downloads byte for byte as the golden.
+ * The limits sit a little above what mxGraph 4.2.2 draws, and the spec fails on more: 2 to 3.3 % of the
+ * pixels differ (text anti-aliasing, draw.io's half-pixel snap of odd line widths, its own arrowheads); every
+ * text line lies within 1 px; before an open head draw.io stops the line 2.236 × its width short of the tip
+ * (2.68 px at the 1.2 px memberOf line), where the SVG runs it to the tip; a block head is up to 1.26 px
+ * wider than the drawing's. Boxes and line ends are exact in the file, so their limit is half a pixel. And
+ * demo S light, the render golden's view, downloads byte for byte as the golden.
  */
 test.use({ timezoneId: 'UTC', acceptDownloads: true });
 
@@ -50,23 +52,23 @@ const GOLDEN = path.join(REPO_ROOT, 'e2e/baselines/render/S-overview-auto-light.
 /** Where the test page loads mxGraph from: a route of this spec answers it with the file in node_modules. */
 const MX_URL = 'http://localhost:5174/__fidelity/mxClient.js';
 
-/** The limits (see above: ADR 0036's measured figures, and a little room). */
+/** The limits (see above: what mxGraph draws, and a little room). */
 const LIMITS = {
   /**
-   * Share of pixels pixelmatch counts (threshold 0.1, anti-aliasing not counted); measured 2 to 3.3 % on macOS
-   * and 4.15 % on demo L on Linux, whose FreeType text differs more from resvg's.
+   * Share of pixels pixelmatch counts (threshold 0.1, anti-aliasing not counted): 2 to 3.3 % on macOS and
+   * 4.15 % on demo L on Linux, whose FreeType text differs more from resvg's.
    */
   pixels: 0.05,
-  /** A text line's place, its left edge and its middle; measured within 1 px. */
+  /** A text line's place, its left edge and its middle: within 1 px. */
   text: 1.25,
   /**
    * How far before an open head's tip draw.io stops the line: 2.236 × the line's width (mxGraph's open arrow), so
-   * 2.68 px at the 1.2 px memberOf line (ADR 0036's "about 2.2 px" is that factor at a 1 px line).
+   * 2.68 px at the 1.2 px memberOf line (about 2.2 px at a 1 px line).
    */
   openHeadShort: 3,
   /**
    * How much wider (or narrower) a block head is across the line, its outline and its stroke: mxGraph draws it
-   * `size + 2 × width` across; measured up to 1.26 px wider (the 7 × 5 head at a 1.2 px line).
+   * `size + 2 × width` across: up to 1.26 px wider (the 7 × 5 head at a 1.2 px line).
    */
   blockHeadWidth: 1.5,
   /** Zone and node boxes, line ends at the heads' tips: exact in the file. */
@@ -337,7 +339,8 @@ for (const size of ['S', 'M', 'L'] as const) {
       const svg = await download(page, 'Download SVG', label, `${size}-${theme}`);
       const drawio = await download(page, DRAWIO_ACTION, label, `${size}-${theme}`);
 
-      // The file: its name, as diagrams.net reads it, compressed, and nothing an export must not carry (ADR 0018).
+      // The file: its name, as diagrams.net reads it, compressed, and nothing an export must not carry
+      // (agents.md, Non-affiliation, brand and legal).
       expect(drawio.name).toMatch(FILE_NAME);
       const file = readDrawio(drawio.bytes);
       expect(file.compressed).toBe(true);

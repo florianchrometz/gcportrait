@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The preflight's client side: the answer's guard, the request (path, method, body, token), the error answers,
- * and the words for every item and finding (ADR 0028 §3).
+ * and the words for every item and finding (docs/permissions.md).
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -61,7 +61,7 @@ describe('isPreflightAnswer', () => {
 });
 
 describe('requestPreflight', () => {
-  // The token in gcportrait's own header, never in Authorization or the URL (ADR 0031): auth/fetch.test.ts.
+  // The token in gcportrait's own header, never in Authorization or the URL: auth/fetch.test.ts.
   it('posts the request as JSON to /api/preflight, and reads the answer', async () => {
     const { calls } = stubBackend({ routes: { '/api/preflight': () => Response.json(BLOCKED_ANSWER) } });
     const outcome = await requestPreflight(auth(), {
@@ -158,7 +158,7 @@ const FINDINGS: readonly Finding[] = [
   'unexpected',
 ];
 
-describe('the words (ADR 0028 §3)', () => {
+describe('the words', () => {
   const base: PreflightItem = {
     id: 'cai-access',
     status: 'unknown',
@@ -181,7 +181,7 @@ describe('the words (ADR 0028 §3)', () => {
     }
   });
 
-  it('says what ADR 0028 §3 says', () => {
+  it('says what each finding means and what to do', () => {
     const answer = { scope: 'folders/20000000001', quotaProject: 'demo-quota-1' };
     expect(explainItem({ ...base, id: 'cai-access', finding: 'denied' }, answer)).toBe(
       'You cannot list assets in folders/20000000001, or it does not exist.',

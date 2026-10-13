@@ -13,7 +13,7 @@ import { expectNoAxeViolations } from '../test/axe';
 import { publicConfig, stubBackend, type StubbedBackend } from '../test/backend';
 import { currentLocation, renderApp } from '../test/renderApp';
 
-/** Synthetic texts only (agents.md rule 6). */
+/** Synthetic texts only (agents.md, Data and graph semantics). */
 const IMPRESSUM = [
   '# Impressum',
   '',
@@ -124,7 +124,7 @@ describe('the footer', () => {
     },
   );
 
-  it('links only the page that exists, and nothing without texts, an older backend, an address that is not https, or a backend that is down', async () => {
+  it('links only the page that exists, and nothing without texts or `legal`, for an address that is not https, or with the backend down', async () => {
     backend(config({ impressum: false, privacy: true }));
     const first = renderApp('/', { demo: false, snapshots: fakeLibrary() });
     const legal = await within(footer()).findByRole('navigation', { name: 'Legal' });

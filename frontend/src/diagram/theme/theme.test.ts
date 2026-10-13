@@ -3,10 +3,10 @@
  * The diagram palettes against the style skill (gcp-diagram-style §2, §9, §10), in both themes:
  *
  * 1. the token table (tokens.ts) holds the skill's §2 values, except the departures it lists
- *    (`SKILL_DEPARTURES`, none since 2026-10-10), and tokens.css defines the same values;
+ *    (`SKILL_DEPARTURES`, none at present), and tokens.css defines the same values;
  * 2. each departure is still needed: with the §2 value put back, a §10 pair fails (so a departure goes as soon
- *    as the skill adopts a value that passes); and each value the skill adopted on 2026-10-10 still is: the one it
- *    replaced fails a §10 pair (`ADOPTED`);
+ *    as the skill adopts a value that passes); and each muted grey stroke still is: the fainter grey it could take
+ *    instead fails a §10 pair (`FAINTER`);
  * 3. every §10 pair reaches its threshold. The only pairs allowed below it are the skill's own documented
  *    exemption, the VPC and subnet outlines ("decorative stroke"), and only while the compensating checks the
  *    skill names pass (the title text on the fill, the card stroke inside it).
@@ -36,10 +36,10 @@ const NON_TEXT = 3;
 const DECORATIVE: readonly ZoneTint[] = ['vpc', 'subnet'];
 
 /**
- * The values the skill's §2 tables held before 2026-10-10, which the renderer had departed from and the skill
- * then adopted (each theme's `muted`): every one of them fails a §10 pair, which is why.
+ * The fainter greys the container outlines and the dim edge could take instead of each theme's `muted` (`skill`
+ * here, `value` the one §2 holds): every one of them fails a §10 pair, which is why §2 sets `muted`.
  */
-const ADOPTED: readonly SkillDeparture[] = [
+const FAINTER: readonly SkillDeparture[] = [
   {
     theme: 'light',
     token: 'zone.folder',
@@ -476,16 +476,16 @@ describe('the token table is the style skill §2, with the listed departures', (
     }
   });
 
-  it.each(ADOPTED.map((adopted) => [adopted.theme, adopted.token, adopted] as const))(
-    '%s %s: the value §2 adopted is in the table, and the one it replaced fails a §10 pair',
-    (theme, token, adopted) => {
+  it.each(FAINTER.map((fainter) => [fainter.theme, fainter.token, fainter] as const))(
+    '%s %s: the value §2 holds is in the table, and a fainter grey fails a §10 pair',
+    (theme, token, fainter) => {
       const values = paletteValues(PALETTES[theme], token);
-      expect(values[values.length - 1]).toBe(adopted.value);
-      expect(skillTable(theme).get(token)?.at(-1)).toBe(adopted.value);
-      const broken = failures(withSkillValue(PALETTES[theme], adopted)).filter((pair) =>
+      expect(values[values.length - 1]).toBe(fainter.value);
+      expect(skillTable(theme).get(token)?.at(-1)).toBe(fainter.value);
+      const broken = failures(withSkillValue(PALETTES[theme], fainter)).filter((pair) =>
         pair.tokens.includes(token),
       );
-      expect(describePairs(broken).length, adopted.fails).toBeGreaterThan(0);
+      expect(describePairs(broken).length, fainter.fails).toBeGreaterThan(0);
     },
   );
 
@@ -495,10 +495,10 @@ describe('the token table is the style skill §2, with the listed departures', (
     expect(table.has('edge') || table.has('chip.text')).toBe(false);
     expect(dark.edge).toBe(dark.ink); // the dark `ink` row: "text, strokes, edges"
     expect(dark.chipText).toBe(dark.ink);
-    // The region outline is each theme's muted grey (it was the theme's border, which fails).
+    // The region outline is each theme's muted grey (the theme's border would fail).
     expect(table.get('zone.region')).toEqual([dark.muted]);
     expect(skillTable('light').get('zone.region')).toEqual([PALETTES.light.muted]);
-    // The two tokens the renderer added are in §2.
+    // The renderer's two tokens beyond the base palette are in §2.
     expect(table.get('mutedOnTint')).toEqual([dark.mutedOnTint]);
     expect(skillTable('light').get('pathCasing')).toEqual([PALETTES.light.pathCasing]);
   });
@@ -572,7 +572,7 @@ describe.each(THEMES)('WCAG 2.2 contrast, %s theme (skill §10)', (theme) => {
     expect(contrastRatio(palette.accentPath, palette.pathCasing)).toBeGreaterThanOrEqual(NON_TEXT);
   });
 
-  it('tells the dark subnet outline from the path-to-root accent (it no longer looks highlighted)', () => {
+  it('tells the dark subnet outline from the path-to-root accent (so it does not look highlighted)', () => {
     const subnet = palette.zone.subnet.stroke;
     expect(subnet).not.toBe(palette.accentPath);
     if (theme === 'dark') {

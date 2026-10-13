@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The frontend's only entry point for other workspaces (`@gcportrait/frontend`): what the render library
- * (`@gcportrait/render`, used by `pnpm render` and the backend's `POST /api/render`; ADR 0033) needs to read data and
+ * (`@gcportrait/render`, used by `pnpm render` and the backend's `POST /api/render`) needs to read data and
  * draw a view as the app does, without a browser. The demo snapshot loader and the zone type names of the data
  * worker, the icon resolution of the data worker, the standalone SVG document of the renderer (`renderDiagramSvg`,
  * the same components as the canvas, rendered with `react-dom/server`), the diagram palettes, the tagline and the

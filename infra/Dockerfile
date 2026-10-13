@@ -30,7 +30,7 @@ WORKDIR /src
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN corepack enable && pnpm --version && pnpm fetch
 
-# Then the sources (.dockerignore keeps out node_modules, build output, legacy/, docs and local env files).
+# Then the sources (.dockerignore keeps out node_modules, build output, docs and local env files).
 COPY . .
 # --offline: everything comes from the store filled by `pnpm fetch`. The root `prepare` script compiles the
 # asset catalog (packages/catalog/src/generated/, a git-ignored build artefact the SPA build reads).
@@ -39,7 +39,7 @@ RUN pnpm install --frozen-lockfile --offline
 # The SPA (frontend/dist, with the font and gcportrait licences under licenses/ and THIRD_PARTY_NOTICES.txt, the
 # notices of every third-party package in the app and the server: scripts/third-party-notices.mjs) and
 # the backend bundles (backend/dist/server.mjs; the render API's worker, render-worker.mjs, with what it reads at run
-# time in render-assets/: resvg's WebAssembly module and the Roboto faces, ADR 0033; their source maps; and the
+# time in render-assets/: resvg's WebAssembly module and the Roboto faces; their source maps; and the
 # licences of the npm packages inlined into them or copied). An image never ships without its notices: the build
 # stops here if the file is missing or empty.
 RUN pnpm --filter @gcportrait/frontend run build \
@@ -55,8 +55,8 @@ FROM gcr.io/distroless/nodejs22-debian12:nonroot@sha256:13593b7570658e8477de39e2
 # output of `git describe`.
 ARG APP_VERSION=dev
 
-# The description is the long form of the non-affiliation statement (ADR 0018); the licence is
-# gcportrait's own (ADR 0017). Third-party material in the image keeps its own terms (/app/THIRD_PARTY.md): every
+# The description is the long form of the non-affiliation statement; the licence is
+# gcportrait's own (MIT). Third-party material in the image keeps its own terms (/app/THIRD_PARTY.md): every
 # package's notices in /app/frontend/dist/licenses/THIRD_PARTY_NOTICES.txt (served at
 # /licenses/THIRD_PARTY_NOTICES.txt and linked from the app's Settings page), the SPA's licences next to it, the
 # server's in /app/backend/dist/licenses/. The label app.gcportrait.third-party-notices names that file's path in
@@ -74,7 +74,7 @@ COPY --from=build /src/LICENSE /src/THIRD_PARTY.md /app/
 COPY --from=build /src/brand/LICENSE.md /app/brand/LICENSE.md
 COPY --from=build /src/backend/package.json /app/backend/package.json
 COPY --from=build /src/backend/dist/server.mjs /src/backend/dist/server.mjs.map /app/backend/dist/
-# The render API (ADR 0033): its worker next to server.mjs, which starts it per render, and its assets. Read only;
+# The render API: its worker next to server.mjs, which starts it per render, and its assets. Read only;
 # the worker writes nothing (fonts are unwrapped in memory).
 COPY --from=build /src/backend/dist/render-worker.mjs /src/backend/dist/render-worker.mjs.map /app/backend/dist/
 COPY --from=build /src/backend/dist/render-assets /app/backend/dist/render-assets

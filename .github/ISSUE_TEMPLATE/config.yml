@@ -11,7 +11,7 @@ contact_links:
       The user guides: getting started, modes and permissions, lenses and filters, the timeline, export,
       self-hosting, configuration and the FAQ. Many questions are answered there.
   - name: Try the demo
-    url: https://demo.gcportrait.app
+    url: https://gcportrait.app/demo/
     about: >-
       gcportrait with synthetic demo organisations, no sign-in. Reproduce a problem there first: the demo data
       is safe to share in an issue.

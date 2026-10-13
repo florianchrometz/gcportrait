@@ -62,7 +62,7 @@ describe('routing', () => {
   });
 });
 
-describe('non-affiliation statement (ADR 0018, footer placement of 2026-10-10)', () => {
+describe('non-affiliation statement', () => {
   it('uses the canonical wording', () => {
     expect(TAGLINE).toBe('gcportrait.app - Visualize your Google Cloud Infrastructure');
     expect(FOOTER_NOTICE).toBe(

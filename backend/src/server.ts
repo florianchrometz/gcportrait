@@ -41,14 +41,14 @@ import { StreamSlots } from './stream/slots.js';
 import { createUpstreamClient, type UpstreamOptions } from './upstream/request.js';
 
 /**
- * The gcportrait backend (ADRs 0003 and 0005): stateless, no database, no stored credentials. It serves the health
- * checks (/healthz for the container's probes, /api/healthz from outside: Cloud Run's front end answers /healthz
- * itself), /api/config, /api/legal, the scope search and the permission preflight, the live pull and the export
- * read with the caller's token or, behind its gate, the service account (ADRs 0004 and 0028), the render API
- * (ADR 0033: SVG and PNG drawn on the server, unless RENDER_API=false), and in the production image the built
- * SPA. In demo-only mode (DEMO_ONLY=true, ADR 0032) the routes that call Google, the render API among them,
- * are not registered at all, so they answer the JSON 404 of any unknown route. backend/README.md and docs/api.md
- * describe every route.
+ * The gcportrait backend (agents.md, Security and privacy, The backend): stateless, no database, no stored
+ * credentials. It serves the health checks (/healthz for the container's probes, /api/healthz from outside:
+ * Cloud Run's front end answers /healthz itself), /api/config, /api/legal, the scope search and the
+ * permission preflight, the live pull and the export read with the caller's token or, behind its gate, the
+ * service account, the render API (SVG, PNG and draw.io drawn on the server, unless RENDER_API=false), and in
+ * the production image the built SPA. In demo-only mode (DEMO_ONLY=true) the routes that call Google, the
+ * render API among them, are not registered at all, so they answer the JSON 404 of any unknown route.
+ * backend/README.md and docs/api.md describe every route.
  */
 
 export type BuildServerOptions = {
@@ -78,8 +78,8 @@ export type BuildServerOptions = {
   /** How long a stream waits for its client to take a piece (stream/ndjson.ts); tests lower it. */
   readonly streamStallMs?: number;
   /**
-   * How `POST /api/render` runs a render (render/runner.ts, ADR 0033): by default a fresh worker per render; tests
-   * pass the same job in process (render/in-process.ts).
+   * How `POST /api/render` runs a render (render/runner.ts): by default a fresh worker per render; tests pass
+   * the same job in process (render/in-process.ts).
    */
   readonly renderRunner?: RenderRunner;
   /** One render per instance (render/lock.ts); tests pass one to hold it. */
@@ -95,20 +95,21 @@ export const DEFAULT_RATE_LIMIT_PER_MINUTE = 600;
 export const DEFAULT_STREAM_RATE_LIMIT_PER_MINUTE = 30;
 
 /**
- * The largest request body accepted (docs/security.md §2; it was 1 MiB until 2026-10-11). The largest legitimate
+ * The largest request body accepted (docs/security.md §2). The largest legitimate
  * one is a live pull with 100 asset-type patterns of 256 characters, about 27 KiB; a scope search's page token is
  * at most 8 KiB.
  */
 export const BODY_LIMIT_BYTES = 64 * 1024;
 
 /**
- * How long a client may take to send its request (docs/security.md §4): its headers (Node's `requestTimeout`, which
- * Fastify leaves at no limit) and, separately, its body (the `preParsing` hook below). Node alone would allow the
- * body more: Fastify sets `requestTimeout` on the server after creating it, when Node has already taken
- * `headersTimeout` from its own default (60 s), and Node's check, given a headers limit above the request limit,
- * swaps the two, so the whole request would get 60 s (measured with both scaled down: 1.5 s and 3 s gave 408 for
- * unfinished headers after 1.5 s and for an unfinished body only after 3 s). A sender that dribbles a request cannot
- * hold a connection open for longer; how long a response streams is not limited by it.
+ * How long a client may take to send its request (docs/security.md §4): its headers (Node's `requestTimeout`,
+ * which Fastify leaves at no limit) and, separately, its body (the `preParsing` hook below). Node alone would
+ * allow the body more: Fastify sets `requestTimeout` on the server after creating it, when Node has already
+ * taken `headersTimeout` from its own default (60 s), and Node's check, given a headers limit above the
+ * request limit, swaps the two, so the whole request would get 60 s (with the two limits scaled down to 1.5 s
+ * and 3 s, Node answers unfinished headers with 408 after 1.5 s but an unfinished body only after 3 s). A
+ * sender that dribbles a request cannot hold a connection open for longer; how long a response streams is not
+ * limited by it.
  */
 export const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -323,9 +324,8 @@ export async function buildServer(
 }
 
 /**
- * The live pull and the export read, the scope search and the permission preflight, and the render API
- * (ADR 0033): the caller's token forwarded to the allowlisted Google hosts, or behind its gate the service
- * account (ADR 0028).
+ * The live pull and the export read, the scope search and the permission preflight, and the render API: the
+ * caller's token forwarded to the allowlisted Google hosts, or behind its gate the service account.
  */
 async function registerGoogleRoutes(
   app: FastifyInstance,
@@ -358,7 +358,7 @@ async function registerGoogleRoutes(
     gate,
     ...(scopeRate === undefined ? {} : { perMinute: scopeRate }),
   });
-  // The render API (ADR 0033): a pull through the same client, gate, slots and page budget as the stream.
+  // The render API: a pull through the same client, gate, slots and page budget as the stream.
   if (config.render !== null) {
     const renderRate = options.renderRateLimitPerMinute;
     await registerRenderRoute(app, {

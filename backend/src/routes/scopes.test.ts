@@ -220,7 +220,7 @@ describe('POST /api/scopes/search', () => {
     expect(body.scopes.map((entry) => entry.displayName)).toEqual(['Müller Einkauf']);
   });
 
-  it('treats a search that finds nothing ({}) as empty lists (spike finding 18)', async () => {
+  it('treats a search that finds nothing ({}) as empty lists', async () => {
     const { app } = await start(() => jsonResponse(200, {}));
     expect(parsed(await search(app, { query: 'nothing' }))).toEqual({ scopes: [], problems: [] });
   });
@@ -348,7 +348,8 @@ describe('POST /api/scopes/search', () => {
     const { app, google } = await start();
     const send = (headers: Record<string, string>) =>
       app.inject({ method: 'POST', url: '/api/scopes/search', headers, payload: { query: '' } });
-    // What the app sends behind Identity-Aware Proxy: its own header, IAP's assertion, no Authorization (ADR 0031).
+    // What the app sends behind Identity-Aware Proxy: its own header, IAP's assertion, no Authorization
+    // (agents.md, Security and privacy, Tokens).
     const behindIap = await send({
       'x-gcportrait-token': CALLER_TOKEN,
       'x-goog-iap-jwt-assertion': 'eyJhbGciOiJFUzI1NiJ9.iap.signature',

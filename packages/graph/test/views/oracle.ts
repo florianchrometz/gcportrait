@@ -13,7 +13,7 @@
  *   referenced by it, or a container of such a reference within its project);
  * - lens and type filters: every drawn node's type is in the lens or `includeTypes`, not in `excludeTypes`;
  *   hidden-by-default nodes only with `showHidden` or `includeTypes`, and a hidden type's `hiddenWhen`
- *   matches only with `showHidden` (ADR 0024); identities as `showIdentities` says;
+ *   matches only with `showHidden`; identities as `showIdentities` says;
  * - location, project and folder filters on every drawn node;
  * - edges: only kinds the view draws; every scene edge stands for at least one graph relation between nodes
  *   the scene shows (or chips that hold them; edges from inside a bundle or a region-zone chip are not traced,

@@ -5,30 +5,28 @@
  * scripts/set-license.mjs). Both tools must agree on which files exist and what a header looks like, so the
  * rules live here once. Plain ESM, Node built-ins only.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 /**
- * The placeholder SPDX identifier every file carried until the maintainer chose the licence (ADR 0017: `MIT` since
- * 2026-10-12). Only a fallback now, for a tree whose root package.json names no licence (the tools' tests build
- * such trees).
+ * The SPDX identifier the tools assume for a tree whose root package.json names no licence (the tools' tests
+ * build such trees). gcportrait's own package.json names `MIT`.
  */
-export const PLACEHOLDER_LICENSE_ID = 'LicenseRef-gcportrait-TBD';
+export const FALLBACK_LICENSE_ID = 'LicenseRef-gcportrait-unset';
 
 /** How many lines from the top of a file (or from the end of Markdown/Astro frontmatter) may precede the header. */
 export const HEADER_WINDOW = 10;
 
 /**
  * Directory names that are never walked, wherever they occur: VCS data, and the directories .gitignore
- * ignores at any depth (installed dependencies, build output, per-user assistant settings). Keep this list in
- * step with the unanchored directory entries of .gitignore.
+ * ignores at any depth (installed dependencies, coverage reports, tool caches, per-user assistant settings).
+ * Keep this list in step with the unanchored directory entries of .gitignore.
  */
 export const SKIPPED_DIR_NAMES = Object.freeze([
   '.git',
   'node_modules',
   '.pnpm-store',
-  'dist',
-  'build',
   'coverage',
   '.astro',
   '.vite',
@@ -36,12 +34,19 @@ export const SKIPPED_DIR_NAMES = Object.freeze([
 ]);
 
 /**
- * Root-relative paths that are never walked: legacy/, the frozen previous implementation (ADR 0007; it exists in
- * the build repository only), the scratch output directory of `pnpm render`, and the Playwright output
- * directories, which .gitignore ignores under e2e/ only.
+ * Build output directories, skipped only where .gitignore ignores them: at the root, directly under a
+ * top-level directory, or directly under a workspace package in packages/ (`/dist/`, `/<dir>/dist/`,
+ * `/packages/<pkg>/dist/` and the same for `build`). A directory of that name deeper in the tree (such as
+ * `src/build/`) is committed like any other, so it is walked like any other.
+ */
+export const SKIPPED_BUILD_DIR_NAMES = Object.freeze(['dist', 'build']);
+const SKIPPED_BUILD_DIR = /^(?:[^/]+\/|packages\/[^/]+\/)?(?:dist|build)$/;
+
+/**
+ * Root-relative paths that are never walked: the scratch output directory of `pnpm render`, and the
+ * Playwright output directories, which .gitignore ignores under e2e/ only.
  */
 export const SKIPPED_ROOT_PATHS = Object.freeze([
-  'legacy',
   'out',
   'e2e/test-results',
   'e2e/playwright-report',
@@ -60,7 +65,11 @@ export const SKIPPED_FILE_PATTERNS = Object.freeze([
   { pattern: /^(?:\.DS_Store|Thumbs\.db)$/, rule: '.DS_Store, Thumbs.db' },
 ]);
 
-/** Extensions treated as binary: never read for text rules. Other files are also treated as binary if they hold a NUL byte. */
+/**
+ * Extensions of binary formats. The provenance check reads such a file through its printable runs and every
+ * other file as text; scripts/set-license.mjs never rewrites one (see isBinary). A new binary format is
+ * added here.
+ */
 export const BINARY_EXTENSIONS = Object.freeze(
   new Set([
     '.png',
@@ -151,9 +160,9 @@ export const HEADER_STYLE_BY_FILENAME = new Map([
 /**
  * Text formats that carry no SPDX header because they cannot hold a comment (JSON and its line-delimited
  * forms, the bare version number in .nvmrc, empty placeholder files) or are data and licence texts rather
- * than source (plain text, SVG artwork, draw.io files such as the render golden, LICENSE). Every other text file
- * must match a header style above; a file type that matches neither fails the provenance check until one of the
- * two lists names it.
+ * than source (plain text, SVG artwork, draw.io files such as the render golden, LICENSE). Every other text
+ * file must match a header style above; a file type that matches neither fails the provenance check until one
+ * of the two lists names it.
  */
 export const HEADER_FREE_EXTENSIONS = Object.freeze(
   new Set(['.json', '.jsonl', '.ndjson', '.txt', '.svg', '.drawio']),
@@ -161,8 +170,8 @@ export const HEADER_FREE_EXTENSIONS = Object.freeze(
 
 /**
  * File names that carry no SPDX header, see HEADER_FREE_EXTENSIONS. `.prettierrc` holds JSON; GitHub Pages
- * requires `CNAME` (website/public/CNAME, ADR 0009) to hold nothing but the domain; `LICENSE` is the licence text
- * (ADR 0017), which states the licence in its own words.
+ * requires `CNAME` (website/public/CNAME) to hold nothing but the domain; `LICENSE` is the licence text,
+ * which states the licence in its own words.
  */
 export const HEADER_FREE_FILENAMES = Object.freeze(
   new Set(['LICENSE', '.nvmrc', '.prettierrc', '.gitkeep', 'CNAME']),
@@ -296,6 +305,8 @@ export function splitLines(text) {
 }
 
 /**
+ * Whether scripts/set-license.mjs leaves a file alone as binary: a binary extension, or a NUL byte in its
+ * first 8 KiB (the provenance check reports such a text file).
  * @param {string} relPath root-relative POSIX path
  * @param {Buffer} content
  * @returns {boolean}
@@ -303,6 +314,17 @@ export function splitLines(text) {
 export function isBinary(relPath, content) {
   if (BINARY_EXTENSIONS.has(path.posix.extname(relPath).toLowerCase())) return true;
   return content.subarray(0, 8192).includes(0);
+}
+
+/**
+ * Whether a directory is never walked (SKIPPED_DIR_NAMES, SKIPPED_ROOT_PATHS, SKIPPED_BUILD_DIR_NAMES).
+ * @param {string} relPath root-relative POSIX path of a directory
+ * @param {string} name its base name
+ * @returns {boolean}
+ */
+function isSkippedDir(relPath, name) {
+  if (SKIPPED_DIR_NAMES.includes(name) || SKIPPED_ROOT_PATHS.includes(relPath)) return true;
+  return SKIPPED_BUILD_DIR_NAMES.includes(name) && SKIPPED_BUILD_DIR.test(relPath);
 }
 
 /**
@@ -321,10 +343,34 @@ function isSkippedFileName(name) {
  */
 
 /**
- * Every file under `root` that the tooling looks at, in a stable (sorted) order. Symbolic links are never
- * followed: they are returned with `isSymlink: true` so that the provenance check can report them (a link
- * could otherwise reach into legacy/ or outside the repository unnoticed) and the licence rewriter can skip
- * them. Links inside skipped directories are not listed, like everything else there.
+ * The files git tracks in the work tree whose top is `root` (it holds `.git`), as root-relative POSIX paths;
+ * none when `root` is not the top of a work tree or git cannot be run.
+ * @param {string} root
+ * @returns {string[]}
+ */
+function listTrackedFiles(root) {
+  if (!existsSync(path.join(root, '.git'))) return [];
+  try {
+    return execFileSync('git', ['ls-files', '-z'], {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .split('\0')
+      .filter((relPath) => relPath !== '');
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Every file under `root` that the tooling looks at: the walk below, in a stable (sorted) order, then every
+ * file git tracks that the walk skipped (one added under an ignored path with `git add --force`, say), so
+ * that nothing committed escapes the checks. Symbolic links are never followed: they are returned with
+ * `isSymlink: true` so that the provenance check can report them (a link could otherwise reach outside the
+ * repository unnoticed) and the licence rewriter can skip them. Links inside skipped directories are not
+ * listed, like everything else there, unless git tracks them.
  * @param {string} root absolute path of the repository root
  * @returns {RepoFile[]}
  */
@@ -340,11 +386,10 @@ export function listRepoFiles(root) {
     for (const entry of entries) {
       const relPath = relDir === '' ? entry.name : `${relDir}/${entry.name}`;
       if (entry.isSymbolicLink()) {
-        if (SKIPPED_DIR_NAMES.includes(entry.name) || SKIPPED_ROOT_PATHS.includes(relPath)) continue;
+        if (isSkippedDir(relPath, entry.name)) continue;
         files.push({ absPath: path.join(root, relPath), relPath, isSymlink: true });
       } else if (entry.isDirectory()) {
-        if (SKIPPED_DIR_NAMES.includes(entry.name)) continue;
-        if (SKIPPED_ROOT_PATHS.includes(relPath)) continue;
+        if (isSkippedDir(relPath, entry.name)) continue;
         visit(relPath);
       } else if (entry.isFile()) {
         if (SKIPPED_ROOT_PATHS.includes(relPath) || isSkippedFileName(entry.name)) continue;
@@ -353,24 +398,38 @@ export function listRepoFiles(root) {
     }
   };
   visit('');
+  const walked = new Set(files.map((file) => file.relPath));
+  for (const relPath of listTrackedFiles(root).sort()) {
+    if (walked.has(relPath)) continue;
+    const absPath = path.join(root, relPath);
+    /** @type {import('node:fs').Stats} */
+    let stats;
+    try {
+      stats = lstatSync(absPath);
+    } catch {
+      continue; // deleted in the work tree, not yet in a commit
+    }
+    if (stats.isSymbolicLink()) files.push({ absPath, relPath, isSymlink: true });
+    else if (stats.isFile()) files.push({ absPath, relPath, isSymlink: false });
+  }
   return files;
 }
 
 /**
  * The project's licence identifier: the `license` field of the root package.json (`MIT`), which
- * scripts/set-license.mjs rewrites together with every header. Falls back to the placeholder when the field is
- * missing.
+ * scripts/set-license.mjs rewrites together with every header. Falls back to FALLBACK_LICENSE_ID when the
+ * field is missing.
  * @param {string} root absolute path of the repository root
  * @returns {string}
  */
 export function readProjectLicenseId(root) {
   const manifestPath = path.join(root, 'package.json');
-  if (!existsSync(manifestPath)) return PLACEHOLDER_LICENSE_ID;
+  if (!existsSync(manifestPath)) return FALLBACK_LICENSE_ID;
   /** @type {unknown} */
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   if (typeof manifest === 'object' && manifest !== null && 'license' in manifest) {
     const { license } = manifest;
     if (typeof license === 'string' && license.trim() !== '') return license.trim();
   }
-  return PLACEHOLDER_LICENSE_ID;
+  return FALLBACK_LICENSE_ID;
 }

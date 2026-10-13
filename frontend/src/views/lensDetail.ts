@@ -8,7 +8,7 @@
  * level the budget cannot fit. An explicit level the person chooses still wins.
  *
  * **The rule.** The detail level follows the lens while it is `auto`, or the current lens's own `defaultDetail`
- * (what older links hold, and what choosing the lens's own level means): a lens switch then sets
+ * (what a link may hold, and what choosing the lens's own level means): a lens switch then sets
  * `auto`, which opens the new lens at most at its default. Once the person has chosen another level than the
  * current lens's default, that level is theirs and stays across lens switches. The URL hash is the only state,
  * so nothing remembers *who* set the level, and a shared link behaves exactly like the view it came from. While

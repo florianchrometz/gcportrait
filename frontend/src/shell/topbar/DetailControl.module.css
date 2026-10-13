@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The detail control (DetailControl.tsx): ui/SegmentedControl with narrower segments, so the view row keeps
-   within the 1280 px minimum viewport (ADR 0011) with Auto's picked level in its label. */
+   within the 1280 px minimum viewport with Auto's picked level in its label. */
 .detail {
   display: inline-flex;
 }

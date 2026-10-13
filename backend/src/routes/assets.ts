@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/assets/stream` (ADR 0010; skill cai-ingestion §1 and §4): a live pull of one scope from Cloud Asset
- * Inventory, streamed to the browser as NDJSON frames (../stream/asset-list.ts) that `@gcportrait/ingest` reads in
- * the app's import worker.
+ * `POST /api/assets/stream` (skill cai-ingestion §1 and §4): a live pull of one scope from Cloud Asset
+ * Inventory, streamed to the browser as NDJSON frames (../stream/asset-list.ts) that `@gcportrait/ingest`
+ * reads in the app's import worker.
  *
  * Body (schema-validated, nothing else accepted): `{ scope, readTime?, contentType: "RESOURCE", assetTypes?, mode,
  * quotaProject? }`; the pull's fields, mode rule and credentials are ../stream/pull.ts's, shared with the render
- * route (ADR 0033).
+ * route.
  * - `mode: "user"`: the caller's bearer token is forwarded, and `quotaProject` is required: it goes into
- *   `x-goog-user-project`, so the user's own project pays (ADR 0028 §1; never the instance's project).
- * - `mode: "sa"`: only when the operator enabled service-account mode, and only through the gate of ADR 0028 §4
- *   (../auth/gate.ts), which runs before every CAI call (a pass is remembered for at most five minutes per
- *   caller-token hash and scope); the account's own token, no quota header (its own project pays). Without the
- *   instance's identity this build refuses service-account mode: the gate is never skipped.
+ *   `x-goog-user-project`, so the user's own project pays (never the instance's project; agents.md, Security
+ *   and privacy, Quota project and the permission check).
+ * - `mode: "sa"`: only when the operator enabled service-account mode, and only through the service-account
+ *   gate (../auth/gate.ts), which runs before every CAI call (a pass is remembered for at most five minutes
+ *   per caller-token hash and scope); the account's own token, no quota header (its own project pays).
+ *   Without the instance's identity this build refuses service-account mode: the gate is never skipped.
  *
  * Answers: 400 (body), 401 (no bearer token, or Google did not accept it at the gate), 403 (service-account mode
  * off, or refused by the gate: ../auth/refusal.ts), 429 (the rate limit per token hash, or more than four streams

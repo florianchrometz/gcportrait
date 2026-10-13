@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Connect page's "Try the demo" (ADR 0014): choose a size, S to XL; a demo worker started for the
- * job (the demo generator runs in workers only, ADR 0029 as amended on 2026-10-11) generates that demo organisation
+ * The Connect page's "Try the demo": choose a size, S to XL; a demo worker started for the job (the demo
+ * generator runs in workers only; agents.md, Architecture and code) generates that demo organisation
  * with its 35-day history (`@gcportrait/demo-data`), reads it through `@gcportrait/ingest`, and the library stores it
  * in IndexedDB as `demo:<size>` (in memory, until a reload, when the browser allows no storage); then the diagram
  * opens with `snapshot=demo:<size>` in the hash (`actions.setSnapshot`), focus moving to the page

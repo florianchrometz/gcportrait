@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The diagram's SVG as draw.io cells (ADR 0036). One drawing, three files: the translator walks the
- * markup the diagram's components drew (the same markup the SVG export and the PNG come from) and turns every
- * primitive into a draw.io cell at the same place and size, with the same colours, strokes, dashes, corner radii,
- * fonts and lines of text, so the file is the picture by construction. The structure comes from the markers the
- * components write on their groups:
+ * The diagram's SVG as draw.io cells (agents.md, Exports and the render API). One drawing, three files: the
+ * translator walks the markup the diagram's components drew (the same markup the SVG export and the PNG come from)
+ * and turns every primitive into a draw.io cell at the same place and size, with the same colours, strokes, dashes,
+ * corner radii, fonts and lines of text, so the file is the picture by construction. The structure comes from the
+ * markers the components write on their groups:
  *
  * - `data-kind="zone"` (`data-id`, `data-n`: its short index in the drawing, `data-parent`: its zone's index): a
  *   container cell (`container=1`) drawn as the zone's body, nested in its parent zone's container with relative

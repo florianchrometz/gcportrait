@@ -19,7 +19,7 @@ function edgeOf(layout: Layout, id: string): EdgePath {
 
 const SIDE_BY_SIDE: LayoutOptions = { arrangements: { canvas: { cardColumns: 2, zoneRows: [] } } };
 
-describe('hugFactors (ADR 0027 rule 2)', () => {
+describe('hugFactors', () => {
   it('charges a ring side hugFactor per px up to hugCap over the side, and the canvas margin marginFactor', () => {
     const piece = (
       a: number,
@@ -257,7 +257,7 @@ describe('routing', () => {
     }
   });
 
-  it('goes straight up the gap beside a tall folder, never round through the canvas margin (ADR 0027)', () => {
+  it('goes straight up the gap beside a tall folder, never round through the canvas margin', () => {
     // A short folder beside a tall one: below the short one the gap between them has a child on one side only,
     // beside the free space where the short folder's ring side runs on down to the margin. An edge from the
     // bottom of the tall folder to a chip in the short one takes the gap, not a U-turn through the margin to
@@ -288,12 +288,12 @@ describe('routing', () => {
     expect(edge.points.some((point) => Math.abs(point.x - gapX) <= DEFAULT_ROUTING.lanePitch)).toBe(true);
   });
 
-  it('runs along a long ring side rather than dropping to a row gap far below and climbing back (ADR 0027)', () => {
+  it('runs along a long ring side rather than dropping to a row gap far below and climbing back', () => {
     // A wide folder w with a row of tall sub-folders: from a card at the top of the rightmost one to a chip
     // in the folder to the left of w, the shortest way runs along w's ring top (under its header); the only
     // gap-only way drops below the row of sub-folders and climbs back up. Charging the ring top 1.5 × over
-    // its whole length (an earlier version of the rule, ADR 0027) made the drop cheaper; the surcharge is
-    // capped per ring side (`hugCap`), so the route stays above its source.
+    // its whole length would make the drop cheaper; the surcharge is capped per ring side (`hugCap`), so the
+    // route stays above its source.
     const counts = { networks: 1, subnets: 2, containers: 0, resources: 3 };
     const sub = (i: number): SceneNode => {
       const at = String(i).padStart(2, '0');
@@ -376,7 +376,7 @@ function manyEdges(projects: number, cards: number, count: number): Scene {
   return scene(children, edges);
 }
 
-describe('single-pass mode (ADR 0027: decided by the first pass’s search work)', () => {
+describe('single-pass mode (decided by the first pass’s search work)', () => {
   // Lane holders: an edge routed on its own, or a hub bundle once (its members share their lanes).
   const input = manyEdges(40, 25, 2000);
   const unlimited = { singlePassWork: Number.MAX_SAFE_INTEGER, oneRoundWork: Number.MAX_SAFE_INTEGER };

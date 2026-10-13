@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render job (job.ts, ADR 0033 §8) on its own messages: every chunk acknowledged once read, progress, exactly one
- * result or error, the asset limit as soon as it is passed, the app's messages for files it cannot read, and the
- * run's channel (runner.ts) failing a push once the job failed. Synthetic data only (agents.md rule 6).
+ * The render job (job.ts) on its own messages: every chunk acknowledged once read, progress, exactly one
+ * result or error, the asset limit as soon as it is passed, the app's messages for files it cannot read, and
+ * the run's channel (runner.ts) failing a push once the job failed. Synthetic data only (agents.md, Security
+ * and privacy, principle 6).
  */
 import { RenderOptionsSchema, type RenderOptionsInput } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';

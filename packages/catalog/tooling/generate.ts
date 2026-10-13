@@ -5,11 +5,10 @@
  * git-ignored build artefacts.
  *
  * Why generated rather than committed: the package is consumed from source (its `exports` point at
- * src/index.ts) by Vite, Vitest, tsc and ESLint, so the module must exist before any of them runs. It used to
- * be committed for that reason, but then every catalog change regenerated one shared file, and the catalog
- * groups, authoring in parallel, would all conflict on it. Now `pnpm install` (the root `prepare` script) and
- * the `typecheck`, `lint` and `test` scripts that consume it build it first, and `pnpm catalog:check` fails if
- * it is ever committed again.
+ * src/index.ts) by Vite, Vitest, tsc and ESLint, so the module must exist before any of them runs. It is not
+ * committed because every catalog change would regenerate one shared file that the catalog groups, authoring in
+ * parallel, would all conflict on. `pnpm install` (the root `prepare` script) and the `typecheck`, `lint` and
+ * `test` scripts that consume it build it first, and `pnpm catalog:check` fails if it is committed.
  */
 import type { Catalog } from '@gcportrait/model';
 import * as prettier from 'prettier';

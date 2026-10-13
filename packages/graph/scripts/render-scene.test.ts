@@ -120,7 +120,7 @@ describe('run', () => {
     expect(code).toBe(0);
     expect(err).toBe('');
     const lines = out.trimEnd().split('\n');
-    // The banner names the command only: no affiliation line (ADR 0018: footers and long-form texts).
+    // The banner names the command only: no affiliation line (footers and long-form texts only).
     expect(lines[0]).toBe('gcportrait render-scene');
     expect(out).not.toMatch(/affiliated/i);
     expect(lines.map((line) => line.split(/\s+/)[0])).toEqual([

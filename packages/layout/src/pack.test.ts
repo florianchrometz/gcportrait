@@ -195,7 +195,7 @@ describe('chooseArrangement', () => {
   });
 });
 
-describe('stacks (ADR 0026)', () => {
+describe('stacks', () => {
   // A tall zone and two short ones after it: plain rows leave a band of empty space beside the short ones;
   // stacking the two short ones beside the tall one fits in the plain arrangement's box with a smaller frame.
   const tall = (): LayoutNode[] => [
@@ -239,7 +239,7 @@ describe('stacks (ADR 0026)', () => {
   });
 });
 
-describe('near ties (ADR 0026)', () => {
+describe('near ties', () => {
   it('prefers rows that do not grow downwards when the frames differ by less than 2 %', () => {
     // [1, 2] frames 0.6 % smaller than [2, 1] only because the first chip is 1 px wider.
     const items = [node('a', 'chip', 150, 44), node('b', 'chip', 148, 44), node('c', 'chip', 149, 44)];

@@ -14,7 +14,7 @@
     "outDir": "dist"
   },
   "include": ["src"],
-  // The render job (ADR 0033) runs the render library, which reaches the frontend's components: only esbuild builds
+  // The render job runs the render library, which reaches the frontend's components: only esbuild builds
   // it (bundle.ts, as dist/render-worker.mjs), and `tsc -b` checks it through the project references.
   "exclude": [
     "src/**/*.test.ts",

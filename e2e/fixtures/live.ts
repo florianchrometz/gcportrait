@@ -4,9 +4,10 @@ import { expect, type Locator, type Page, type Request } from '@playwright/test'
 import { storedEverywhere, type GoogleStubs } from './gis.js';
 
 /**
- * What the live specs (run by the `chromium-live` project against `pnpm dev`'s Vite server) share: the backend's
- * GET /api/config answered inside the browser, the Permissions page's check section, and the checks that the access
- * token travels only in gcportrait's own header and is kept nowhere (ADR 0031). Everything is synthetic.
+ * What the live specs (run by the `chromium-live` project against `pnpm dev`'s Vite server) share: the
+ * backend's GET /api/config answered inside the browser, the Permissions page's check section, and the checks
+ * that the access token travels only in gcportrait's own header and is kept nowhere (agents.md, Security and
+ * privacy, Tokens). Everything is synthetic.
  */
 
 /** The operator's SOURCE_URL most specs configure: a fork elsewhere, so the footer must not link the default. */
@@ -49,7 +50,7 @@ export async function choose(page: Page, field: string, text: string, option: Re
 
 /**
  * A stubbed backend's guard: whether a request carries this session's `token` in X-Gcportrait-Token and no
- * Authorization header (ADR 0031). A request that does not is noted in `refused`, by its path and why.
+ * Authorization header. A request that does not is noted in `refused`, by its path and why.
  */
 export function requireToken(token: string, refused: string[]): (request: Request) => boolean {
   return (request) => {

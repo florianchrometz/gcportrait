@@ -5,14 +5,14 @@
  * project's network layer becomes evidence for a pair: a derived `shares` edge from the service project's
  * node to the host project's node, and a "shared with N projects" count on the host-side subnet or network.
  *
- * Which cross-project attachments count (ADR 0024, catalog follow-ups §1.5): one into a **subnetwork** of
- * another project in the snapshot (a subnet can only be used across projects through Shared VPC), and one
- * into a **network** of a project that is a Shared VPC host (its Compute settings say `xpnProjectStatus:
- * HOST`, the project node's `sharedVpcHost`). A network of a project that is not a host is reached by peering
- * a producer's network into it (Cloud Build private pools, GitHub Enterprise and Bitbucket Server configs,
- * AlloyDB, Vertex AI, Apigee), which is no Shared VPC; neither is an attachment to anything but a subnet or a
- * network (a Serverless VPC Access connector in the host project, say). Which types are subnets and networks
- * is the catalog's `zoneKind` (`subnet`, `vpc`).
+ * Which cross-project attachments count (Shared VPC only on evidence: agents.md, Data and graph semantics):
+ * one into a **subnetwork** of another project in the snapshot (a subnet can only be used across projects
+ * through Shared VPC), and one into a **network** of a project that is a Shared VPC host (its Compute
+ * settings say `xpnProjectStatus: HOST`, the project node's `sharedVpcHost`). A network of a project that is
+ * not a host is reached by peering a producer's network into it (Cloud Build private pools, GitHub Enterprise
+ * and Bitbucket Server configs, AlloyDB, Vertex AI, Apigee), which is no Shared VPC; neither is an attachment
+ * to anything but a subnet or a network (a Serverless VPC Access connector in the host project, say). Which
+ * types are subnets and networks is the catalog's `zoneKind` (`subnet`, `vpc`).
  */
 import type { CatalogZoneKind, GraphNode, RelationEdge, SharedVpcPair } from '@gcportrait/model';
 import { compareTuples } from './order.js';

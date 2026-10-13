@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render job in process (ADR 0033 §8): the same job as the worker's (job.ts), with its messages delivered on
- * the next microtask as a worker would deliver them. For the tests, which compare its bytes with the library's and
- * the command line's; never the server's default (runner.ts), as it would draw on the main thread. Not part of
+ * The render job in process: the same job as the worker's (job.ts), with its messages delivered on the next
+ * microtask as a worker would deliver them. For the tests, which compare its bytes with the library's and the
+ * command line's; never the server's default (runner.ts), as it would draw on the main thread. Not part of
  * `dist/server.mjs`.
  */
 import { createRenderJob, type JobEnvironment } from './job.js';

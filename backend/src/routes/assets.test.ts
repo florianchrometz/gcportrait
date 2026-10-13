@@ -268,7 +268,7 @@ describe('POST /api/assets/stream: Google’s errors as frames', () => {
       },
     },
     {
-      name: 'a readTime before the scope existed (ADR 0028 §5)',
+      name: 'a readTime before the scope existed',
       answer: () => googleError(404, 'NOT_FOUND', 'Requested entity was not found.'),
       frame: { status: 404, code: 'NOT_FOUND', message: 'Requested entity was not found.' },
     },

@@ -46,8 +46,8 @@
  * machine with `pnpm --filter @gcportrait/website exec playwright install webkit firefox`. Firefox runs with a
  * throwaway application-data directory (MOZ_APP_DATA), so it never touches a Firefox profile of the user's (and
  * starts where its own lookup of that directory fails: "Could not find profile folder"). axe-core comes from the e2e
- * package (scripts/browser.ts). The header's repository widget is answered by the check with GitHub's 404 of today
- * (scripts/browser.ts), so the header does not change and GitHub is never asked.
+ * package (scripts/browser.ts). The header's repository widget is answered by the check with GitHub's 404 for a
+ * private repository (scripts/browser.ts), so the header does not change and GitHub is never asked.
  */
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -217,7 +217,8 @@ async function newContext(
 ): Promise<BrowserContext> {
   const context = await browser.newContext(contextOptions(run, javaScript));
   await context.addInitScript(KEEP_NAMES_SHIM);
-  // The header's repository widget: answered here with GitHub's 404 of today (nothing changes), never asked of GitHub.
+  // The header's repository widget: answered here with GitHub's 404 for a private repository (nothing changes), never
+  // asked of GitHub.
   await answerRepositoryRequests(context);
   if (run.profile.init !== undefined) await context.addInitScript(run.profile.init);
   if (javaScript) {

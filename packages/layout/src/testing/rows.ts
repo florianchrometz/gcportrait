@@ -46,7 +46,7 @@ export function fullRowViolations(scene: Scene, layout: Layout, options: LayoutO
       a[1].y - b[1].y || a[1].x - b[1].x;
 
     // Zone rows: a row starts with a zone at or below the bottom of every zone so far; a zone that starts
-    // inside the row's band sits in it (side by side, or stacked under another zone of the row: ADR 0026).
+    // inside the row's band sits in it (side by side, or stacked under another zone of the row: skill §4).
     // A row's cells are its zones sharing a left edge (a stack is left-aligned).
     const zones = children.filter(([, r]) => r.role !== 'card').sort(readingOrder);
     const rows: [string, LayoutRect][][] = [];

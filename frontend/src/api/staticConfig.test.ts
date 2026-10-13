@@ -10,7 +10,7 @@ import { readStaticConfig, UNKNOWN_VERSION } from './staticConfig';
 const IMPRESSUM = 'https://operator.example.com/legal/impressum';
 const PRIVACY = 'https://operator.example.com/legal/privacy';
 
-describe('readStaticConfig (the static demo, ADR 0034)', () => {
+describe('readStaticConfig (the static demo)', () => {
   it('is null for every build but the static demo', () => {
     expect(readStaticConfig({})).toBeNull();
     expect(readStaticConfig({ VITE_STATIC_DEMO: '0', VITE_APP_VERSION: '1.0.0' })).toBeNull();
@@ -74,7 +74,7 @@ describe('readStaticConfig (the static demo, ADR 0034)', () => {
 });
 
 describe('the legal pages in /api/config', () => {
-  it('accepts the linked addresses next to the booleans, and an older backend without them', () => {
+  it('accepts the linked addresses next to the booleans, and the booleans alone', () => {
     const base = {
       oauthClientId: null,
       saMode: false,

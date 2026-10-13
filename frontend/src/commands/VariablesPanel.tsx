@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Variables panel of a page's commands (the maintainer's request of 2026-10-11, as the website's docs pages have
- * it): each registered variable of the commands given, in the order they first appear, with its label, token,
- * description and a synthetic example, and a text box to fill it in once for every command on the page. The values are
- * the commands' own (commands/useCommandVariables.ts): typing here updates every field, and the other way round.
- * "Clear values" forgets what was typed; the facts the app knows show again.
+ * The Variables panel of a page's commands (as the website's docs pages have it): each registered variable of the
+ * commands given, in the order they first appear, with its label, token, description and a synthetic example, and a
+ * text box to fill it in once for every command on the page. The values are the commands' own
+ * (commands/useCommandVariables.ts): typing here updates every field, and the other way round. "Clear values" forgets
+ * what was typed; the facts the app knows show again.
  */
 import { commandVariable, variableTokens, type CommandVariable } from '@gcportrait/model';
 import { useId, type ReactElement } from 'react';

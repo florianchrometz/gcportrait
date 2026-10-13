@@ -28,7 +28,7 @@ function useViewWords(): ViewWords {
 }
 
 /**
- * The top bar's "Saved views" button and its dialog (ADR 0035 §5: saved views in IndexedDB). The dialog
+ * The top bar's "Saved views" button and its dialog (saved views in IndexedDB). The dialog
  * saves the view on screen under a name (its URL hash, so it reopens as its link would; a taken name is updated),
  * and lists the saved views, newest first, each to apply (`actions.setView`, a history entry, back to the
  * diagram page), rename or delete. A status line says what happened, and when the browser keeps them for the

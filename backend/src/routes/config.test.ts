@@ -124,7 +124,7 @@ describe('hostedByLine', () => {
     expect(hostedByLine(hostedBy)).toBe(line);
   });
 
-  it('carries no non-affiliation line: the footer says it (ADR 0018)', () => {
+  it('carries no non-affiliation line: the footer says it', () => {
     expect(hostedByLine('Example Operator')).not.toMatch(/affiliated/i);
   });
 });

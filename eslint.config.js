@@ -7,13 +7,13 @@
  * Boundaries are enforced with two mechanisms:
  *  - eslint-plugin-import-x `no-relative-packages` resolves every relative import (through the TypeScript
  *    resolver, so `./x.js` → `x.ts` works) and reports one that lands inside another workspace package.
- *    import-x was chosen over eslint-plugin-boundaries because only this rule needs module resolution; the
- *    rest of the boundary policy is a short allow-list that reads best as plain data (below) without a
+ *    import-x is used rather than eslint-plugin-boundaries because only this rule needs module resolution;
+ *    the rest of the boundary policy is a short allow-list that reads best as plain data (below) without a
  *    second plugin's element/rule vocabulary to learn.
- *  - core `no-restricted-imports` patterns, generated per workspace from WORKSPACE_DEPENDENCIES below, keep the
- *    dependency direction of docs/packages.md §2 (frontend/backend → packages → model), force imports through
- *    the package entry point (`@gcportrait/<pkg>`, never a deep path), and forbid anything that reaches into
- *    legacy/ (ADRs 0001, 0007).
+ *  - core `no-restricted-imports` patterns, generated per workspace from WORKSPACE_DEPENDENCIES below, keep
+ *    the dependency direction of docs/packages.md §2 (frontend/backend → packages → model; agents.md,
+ *    Architecture and code) and force imports through the package entry point (`@gcportrait/<pkg>`, never a
+ *    deep path).
  */
 import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
@@ -27,13 +27,14 @@ const SOURCE_FILES = ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'];
 /**
  * Which internal packages (`@gcportrait/<name>`) each workspace may import (docs/packages.md §2).
  * Later entries win for files matched by several globs, so the general `packages/*` rule comes before the
- * model rule. Repository tooling (scripts/, root config files) is not restricted beyond legacy/.
+ * model rule. Repository tooling (scripts/, root config files) is not restricted.
  * @type {ReadonlyArray<{ files: string, allowed: readonly string[] }>}
  */
 const WORKSPACE_DEPENDENCIES = [
   { files: 'packages/*/**', allowed: ['model'] },
   { files: 'packages/model/**', allowed: [] },
-  // The graph builder evaluates catalog rules through @gcportrait/catalog's rule engine (ADR 0020).
+  // The graph builder evaluates catalog rules through @gcportrait/catalog's rule engine: the catalog owns
+  // rule semantics (agents.md, Data and graph semantics).
   { files: 'packages/graph/**', allowed: ['model', 'catalog'] },
   // Its tests build the demo organisations with @gcportrait/demo-data (a dev dependency; tests only).
   { files: 'packages/graph/test/**', allowed: ['model', 'catalog', 'demo-data'] },
@@ -44,10 +45,10 @@ const WORKSPACE_DEPENDENCIES = [
   // nothing under packages/layout/src/ imports them).
   { files: 'packages/layout/test/**', allowed: ['model', 'graph', 'catalog', 'demo-data'] },
   { files: 'packages/layout/scripts/**', allowed: ['model', 'graph', 'catalog', 'demo-data'] },
-  // The render library (ADR 0033) is Node code on top of the app, not a library under it: it reads data and draws
+  // The render library is Node code on top of the app, not a library under it: it reads data and draws
   // views with the frontend's own readers and SVG components (@gcportrait/frontend's entry point, src/headless.ts)
   // so its output is the app's picture. It is the one package that may import the frontend; the frontend may not
-  // import it.
+  // import it (agents.md, Architecture and code).
   {
     files: 'packages/render/**',
     allowed: ['model', 'catalog', 'graph', 'layout', 'demo-data', 'frontend'],
@@ -55,7 +56,8 @@ const WORKSPACE_DEPENDENCIES = [
   // `pnpm render`: the command line around the render library. Nothing imports it.
   { files: 'packages/render-cli/**', allowed: ['model', 'graph', 'demo-data', 'render'] },
   { files: 'frontend/**', allowed: ['model', 'catalog', 'graph', 'layout', 'icons', 'ingest', 'demo-data'] },
-  // The backend reaches the frontend only through the render library, in its render worker (ADR 0033).
+  // The backend reaches the frontend only through the render library, in its render worker (agents.md,
+  // Architecture and code).
   { files: 'backend/**', allowed: ['model', 'catalog', 'ingest', 'render'] },
   { files: 'website/**', allowed: ['model', 'catalog', 'demo-data'] },
   { files: 'e2e/**', allowed: ['model', 'demo-data'] },
@@ -65,10 +67,6 @@ const WORKSPACE_DIRS = ['packages', 'frontend', 'backend', 'website', 'e2e'];
 
 /** Import patterns forbidden everywhere. */
 const BASE_RESTRICTED_PATTERNS = [
-  {
-    regex: 'legacy/|(^|/)legacy$',
-    message: 'legacy/ is frozen reference material and is never imported from (ADRs 0001, 0007).',
-  },
   {
     regex: `^(\\.\\./)+(${WORKSPACE_DIRS.join('|')})(/|$)`,
     message: 'Import another workspace package by its name (@gcportrait/<pkg>), not by a relative path.',
@@ -115,20 +113,9 @@ function dependencyDirection({ files, allowed }) {
   };
 }
 
-/** Dynamic import() and require() are not covered by no-restricted-imports; catch legacy paths there too. */
-const LEGACY_DYNAMIC_IMPORTS = [
-  'ImportExpression > Literal[value=/legacy\\//]',
-  'ImportExpression > TemplateLiteral > TemplateElement[value.raw=/legacy\\//]',
-  'CallExpression[callee.name="require"] > Literal[value=/legacy\\//]',
-].map((selector) => ({
-  selector,
-  message: 'legacy/ is frozen reference material and is never imported from (ADRs 0001, 0007).',
-}));
-
 export default defineConfig(
   globalIgnores(
     [
-      'legacy/',
       '**/dist/',
       '**/build/',
       '**/coverage/',
@@ -179,7 +166,6 @@ export default defineConfig(
     rules: {
       'import-x/no-relative-packages': 'error',
       'no-restricted-imports': ['error', { patterns: BASE_RESTRICTED_PATTERNS }],
-      'no-restricted-syntax': ['error', ...LEGACY_DYNAMIC_IMPORTS],
     },
   },
 

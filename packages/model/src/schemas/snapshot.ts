@@ -71,7 +71,7 @@ export const SnapshotSchema = z
     scope: SnapshotScopeSchema,
     /** The Cloud Asset Inventory read time (RFC 3339). */
     readTime: TimestampSchema,
-    /** Where `readTime` came from; absent when unknown (older snapshots, an input without any asset). */
+    /** Where `readTime` came from; absent when unknown (a snapshot file that does not say, an input without any asset). */
     readTimeSource: SnapshotReadTimeSourceSchema.exactOptional(),
     source: SnapshotSourceSchema,
     contentType: z.literal('RESOURCE'),

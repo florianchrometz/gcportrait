@@ -13,8 +13,8 @@ DEFAULT_SERVICE="gcportrait"
 DEFAULT_DEMO_SERVICE="gcportrait-demo"
 
 # The regions that offer Cloud Run domain mappings (deploy.sh --domain), as Google lists them on "Mapping custom
-# domains" (read 2026-10-10; the feature is in Preview there). europe-west3 is not among them: ADR 0032 records why
-# the maintainer's demo runs in europe-west1 instead, and what a region without them needs (a load balancer).
+# domains" (the feature is in Preview there). europe-west3, the default region, is not among them: an instance
+# with --domain runs in one of these, or a region without them puts a load balancer in front instead.
 DOMAIN_MAPPING_REGIONS="asia-east1 asia-northeast1 asia-southeast1 europe-north1 europe-west1 europe-west4 us-central1 us-east1 us-east4 us-west1"
 
 # The legal pages deploy.sh --legal-dir ships (LEGAL_BUNDLE; backend/src/legal.ts), and the largest text it accepts:
@@ -25,9 +25,9 @@ MAX_LEGAL_TEXT_BYTES=11264
 # backend/src/config.ts).
 MAX_LEGAL_URL_LENGTH=2048
 
-# The non-affiliation statement's long form (ADR 0018), at the end of every --help (NON_AFFILIATION_LONG in
-# frontend/src/branding.ts holds the same words; scripts/non-affiliation-copies.test.ts keeps them equal). The run
-# banner names the script only: the statement goes in footers and long-form texts.
+# The non-affiliation statement's long form, at the end of every --help (NON_AFFILIATION_LONG in
+# frontend/src/branding.ts holds the same words; scripts/non-affiliation-copies.test.ts keeps them equal). The
+# run banner names the script only: the statement goes in footers and long-form texts.
 NON_AFFILIATION_LONG="gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks of Google and are used under Google's icon usage terms."
 
 # The marker on every resource deploy.sh creates. Labels where the resource has them (the Cloud Run service,
@@ -42,7 +42,7 @@ SA_MARKER="Created by gcportrait infra/deploy.sh"
 API_LABEL_PREFIX="gcportrait-api-"
 
 # The published image: .github/workflows/release.yml pushes it to GitHub Container Registry on every v* tag
-# (linux/amd64 and linux/arm64; tags X.Y.Z, X.Y and latest) and, run by hand, as `dev` (ADR 0035 §2).
+# (linux/amd64 and linux/arm64; tags X.Y.Z, X.Y and latest) and, run by hand, as `dev` (agents.md, Releases).
 # `deploy.sh --image TAG` deploys PUBLISHED_IMAGE:TAG; without --image and --build it deploys :latest.
 PUBLISHED_IMAGE="ghcr.io/florianchrometz/gcportrait"
 # The source repository: the clone that --build needs, which deploy.sh's advice names. A fork changes it with
@@ -54,7 +54,7 @@ SOURCE_REPOSITORY="https://github.com/florianchrometz/gcportrait"
 # deploy.sh creates; uninstall.sh deletes it with the last instance that deploys from it). Cloud Run then deploys
 # REGION-docker.pkg.dev/PROJECT/REMOTE_REPO/OWNER/NAME:TAG. Cloud Run could run a public ghcr.io image directly,
 # but Google recommends a remote repository for availability: Artifact Registry keeps a copy of every image it
-# fetched (Cloud Run's "Deploying container images", read 2026-10-10).
+# fetched (Cloud Run's "Deploying container images").
 REMOTE_REPO="ghcr"
 REMOTE_UPSTREAM="https://ghcr.io"
 
@@ -233,10 +233,10 @@ has_control_or_format_char() {
   return 1
 }
 
-# hosted_by_problem TEXT: empty when the backend accepts TEXT (already trimmed) as HOSTED_BY, else why not. The
-# backend's rules (backend/src/config.ts): at most 80 characters, plain text on one line without < or >, not
-# naming Google (ADR 0018). Checked here so that a bad value fails before anything is deployed, instead of
-# as a new revision that does not start.
+# hosted_by_problem TEXT: empty when the backend accepts TEXT (already trimmed) as HOSTED_BY, else why not.
+# The backend's rules (backend/src/config.ts): at most 80 characters, plain text on one line without < or >,
+# not naming Google (agents.md, Non-affiliation, brand and legal). Checked here so that a bad value fails
+# before anything is deployed, instead of as a new revision that does not start.
 hosted_by_problem() {
   local value="$1"
   if [ -z "$value" ]; then
@@ -467,10 +467,11 @@ ghcr_manifest() {
   esac
 }
 
-# remote_repo_info: the remote repository's `MODE|FORMAT|LABELS|UPSTREAM` in REGION, or nothing, with a failure,
-# when it does not exist. UPSTREAM is the custom upstream's address, from whichever field holds it: Artifact Registry
-# describes a repository created with --remote-docker-repo=URL with remoteRepositoryConfig.commonRepository.uri (seen
-# 2026-10-11), older ones with remoteRepositoryConfig.dockerRepository.customRepository.uri.
+# remote_repo_info: the remote repository's `MODE|FORMAT|LABELS|UPSTREAM` in REGION, or nothing, with a
+# failure, when it does not exist. UPSTREAM is the custom upstream's address, from whichever field holds it:
+# Artifact Registry describes a repository created with --remote-docker-repo=URL with
+# remoteRepositoryConfig.commonRepository.uri, older ones with
+# remoteRepositoryConfig.dockerRepository.customRepository.uri.
 remote_repo_info() {
   local info mode format labels common custom
   info="$(gcloud artifacts repositories describe "$REMOTE_REPO" --project="$PROJECT" --location="$REGION" \

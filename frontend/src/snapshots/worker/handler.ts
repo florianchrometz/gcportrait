@@ -2,8 +2,8 @@
 /**
  * The worker side of the snapshot protocol (protocol.ts): a plain function of `postMessage`, so the same code
  * runs in the Web Worker (role.ts) and in-process in tests. Jobs run one after another, in order. The demo
- * organisations are not prepared here: the demo generator runs in the diagram's workers only (ADR 0029 as amended on
- * 2026-10-11), and a demo worker started for the job answers "Try the demo" (diagram/pipeline/demoRole.ts, demo.ts).
+ * organisations are not prepared here: the demo generator runs in the diagram's workers only, and a demo
+ * worker started for the job answers "Try the demo" (diagram/pipeline/demoRole.ts, demo.ts).
  *
  * - `import`: every `.gcportrait.json` bundle (../bundle.ts) becomes the snapshot it holds, history included; all
  *   other files together are one Cloud Asset Inventory export (one file, or the files of a `uriPrefix` export),

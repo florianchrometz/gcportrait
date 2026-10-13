@@ -6,12 +6,12 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
 
 /**
- * The demo entry and the Snapshots page in demo mode: "Try the demo" generates a demo organisation in a worker
- * started for the job (the demo generator runs in workers only, ADR 0029 and its amendment), stores it in
- * IndexedDB and opens it on the diagram; the size can be switched and survives a
- * reload; stored snapshots export as `.gcportrait.json` files that import back (read by the worker, loaded by the
- * diagram's data worker from IndexedDB) as separate copies, each under a new id (the demo organisations' files
- * share their snapshot id), and can be deleted: a deleted snapshot's ref then draws nothing, even while the data
+ * The demo entry and the Snapshots page in demo mode: "Try the demo" generates a demo organisation in a
+ * worker started for the job (the demo generator runs in workers only; agents.md, Architecture and code),
+ * stores it in IndexedDB and opens it on the diagram; the size can be switched and survives a reload; stored
+ * snapshots export as `.gcportrait.json` files that import back (read by the worker, loaded by the diagram's
+ * data worker from IndexedDB) as separate copies, each under a new id (the demo organisations' files share
+ * their snapshot id), and can be deleted: a deleted snapshot's ref then draws nothing, even while the data
  * worker still holds its Graph, and never another snapshot. Without IndexedDB the demo still works, in memory
  * until a reload. Screenshots of the pages in both themes go to e2e/.scratch/ (git-ignored).
  */
@@ -107,7 +107,8 @@ test('try demo S, switch to M, reload: M is still loaded; export both, import th
     history: { ticks: unknown[] };
   };
   expect(bundle.format).toBe('gcportrait.snapshot');
-  // No non-affiliation line travels with an exported file (ADR 0018: footers and long-form texts only).
+  // No non-affiliation line travels with an exported file (footers and long-form texts only; agents.md,
+  // Non-affiliation, brand and legal).
   expect(bundle.notice).toBeUndefined();
   expect(bundle.snapshot.assets).toHaveLength(952);
   expect(bundle.snapshot.id).toMatch(ULID);

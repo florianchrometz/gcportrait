@@ -20,7 +20,7 @@ import { isSafeEntryName, readZip } from './zip.mjs';
 /** Google Cloud's icon library page, which links the archives (and the product icons overview). */
 export const ICONS_PAGE = 'https://cloud.google.com/icons';
 
-/** Download caps: the page and each archive (the largest archive was 2.3 MB on 2026-10-11). */
+/** Download caps: the page and each archive (the largest archive is about 2.3 MB). */
 export const MAX_PAGE_BYTES = 16 * 1024 * 1024;
 export const MAX_ARCHIVE_BYTES = 64 * 1024 * 1024;
 

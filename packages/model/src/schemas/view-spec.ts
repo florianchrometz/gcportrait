@@ -24,7 +24,7 @@ import { DEMO_REF_PREFIX, DEMO_SIZES, FOCUS_KIND_IDS } from './vocabulary.js';
 
 /**
  * The view constants, `DEFAULT_VIEW_SPEC` and `normalizeViewSpec` live in codec/normalize.ts, which imports no zod
- * (ADR 0029: the URL-hash codec runs on the app's UI thread); they are re-exported here for the package's own
+ * (the URL-hash codec runs on the app's UI thread); they are re-exported here for the package's own
  * modules and tests.
  */
 export {
@@ -36,7 +36,7 @@ export {
   normalizeViewSpec,
 } from '../codec/normalize.js';
 
-/** The synthetic demo organisations (ADR 0014). */
+/** The synthetic demo organisations. */
 export const DemoSizeSchema = z.enum(DEMO_SIZES);
 export type DemoSize = z.infer<typeof DemoSizeSchema>;
 

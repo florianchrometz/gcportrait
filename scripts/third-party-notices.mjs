@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * The third-party notices of what a gcportrait build conveys (the licence review's compliance items):
+ * The third-party notices of what a gcportrait build conveys (docs/security.md, 11. Licence compliance):
  * one text file, `frontend/dist/licenses/THIRD_PARTY_NOTICES.txt`, served by every instance at
  * `/licenses/THIRD_PARTY_NOTICES.txt` and shipped in the image at `/app/frontend/dist/licenses/`.
  *
@@ -9,7 +9,7 @@
  * frontend/vite.config.ts passes in) and in the backend's image (the backend's production dependencies, a superset
  * of what backend/bundle.ts inlines), with its name, version, licence, home page, copyright lines and where it
  * ships: the app, the server bundle (`backend/dist/server.mjs`), the render worker (`backend/dist/render-worker.mjs`,
- * whose code is the production closure of `packages/render`, ADR 0033) or, unmodified, a file of the worker's asset
+ * whose code is the production closure of `packages/render`) or, unmodified, a file of the worker's asset
  * directory (`backend/dist/render-assets/`, {@link RENDER_ASSET_FILES}). It gives what the licences ask to accompany
  * the software:
  *
@@ -43,7 +43,7 @@ const DEFAULT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 
 /** Where the frontend build (and this script by default) writes the file, relative to the repository root. */
 export const NOTICES_PATH = 'frontend/dist/licenses/THIRD_PARTY_NOTICES.txt';
 
-/** The workspace whose production closure the backend's render worker bundles (backend/bundle.ts, ADR 0033). */
+/** The workspace whose production closure the backend's render worker bundles (backend/bundle.ts). */
 export const RENDER_WORKSPACE = 'packages/render';
 
 /**
@@ -69,7 +69,7 @@ const PLACES = /** @type {const} */ ({
 
 /** @typedef {keyof typeof PLACES} Place */
 
-/** The non-affiliation statement's long form (ADR 0018), exactly as the app words it (frontend/src/branding.ts). */
+/** The non-affiliation statement's long form, exactly as the app words it (frontend/src/branding.ts). */
 export const NON_AFFILIATION_LONG =
   'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is ' +
   'not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are ' +

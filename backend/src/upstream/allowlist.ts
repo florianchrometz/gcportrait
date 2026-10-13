@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The upstream host allowlist (ADR 0035 §4, principle 3; docs/security.md §1): the backend calls Google on the
- * caller's behalf only at these four hosts, over HTTPS, on the default port, so it can never be used as an open
- * proxy. Every upstream request goes through {@link allowedUpstreamUrl} before it is sent. (The SPA's own CSP is
- * narrower: the browser talks only to the OAuth host, `BROWSER_GOOGLE_ORIGINS` in ../security.ts.)
+ * The upstream host allowlist (agents.md, Security and privacy, principle 3; docs/security.md §1): the
+ * backend calls Google on the caller's behalf only at these four hosts, over HTTPS, on the default port, so
+ * it can never be used as an open proxy. Every upstream request goes through {@link allowedUpstreamUrl}
+ * before it is sent. (The SPA's own CSP is narrower: the browser talks only to the OAuth host,
+ * `BROWSER_GOOGLE_ORIGINS` in ../security.ts.)
  */
 
 /** The four Google API origins: Cloud Asset Inventory, Resource Manager, Cloud Storage and OAuth (tokeninfo). */

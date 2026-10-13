@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The options of a rendered export (ADR 0033): which view of a snapshot to draw, in which theme, as SVG, PNG or a
- * draw.io file, at which PNG scale or width, the draw.io file compressed or not and with or without the fonts'
- * stylesheet, and the viewport the `auto` detail level fits. One schema for the render library
- * (`@gcportrait/render`'s `renderView`) and the backend's `POST /api/render`, which adds the data source.
+ * The options of a rendered export (agents.md, Exports and the render API): which view of a snapshot to draw,
+ * in which theme, as SVG, PNG or a draw.io file, at which PNG scale or width, the draw.io file compressed or
+ * not and with or without the fonts' stylesheet, and the viewport the `auto` detail level fits. One schema
+ * for the render library (`@gcportrait/render`'s `renderView`) and the backend's `POST /api/render`, which
+ * adds the data source.
  *
  * The view is either an app link's hash (`{ hash }`, the part after `#`, decoded leniently by `decodeViewSpec` as the
  * app decodes it) or explicit fields, checked strictly with the view schemas: `lens`, `detail`, `focus`, `root`,
@@ -24,7 +25,7 @@ export const RENDER_MAX_SCALE = 3;
 export const RENDER_DEFAULT_SCALE = 2;
 /** The longest side of a PNG, and of the viewport, in pixels (the limit of the app's export canvas). */
 export const RENDER_MAX_SIDE = 16_384;
-/** The viewport `auto` detail fits when none is given: the app's smallest supported canvas (ADR 0011). */
+/** The viewport `auto` detail fits when none is given: the app's smallest supported canvas (1280×800). */
 export const RENDER_DEFAULT_VIEWPORT = Object.freeze({ width: 1280, height: 800 });
 /** The longest view hash accepted (an app link's hash is far shorter). */
 export const RENDER_MAX_HASH_LENGTH = 8192;

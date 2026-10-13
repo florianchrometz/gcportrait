@@ -2,14 +2,14 @@
 
 # @gcportrait/website
 
-The website at <https://gcportrait.app> (ADRs 0009 and 0035): a static
-[Astro](https://astro.build) site for GitHub Pages that presents gcportrait as Google Cloud architecture diagrams you
-use three ways, self-hosted in your own Google Cloud project, as a web app and through an API that returns any view as
-SVG or PNG, each with its proof; shows the features with generated screenshots and animated demos; renders the user
-guides from `docs/`; publishes the asset catalog's coverage; and presents the author. Its "Changelog" links go to the
-repository's releases page on GitHub (`RELEASES_URL` in `src/site.ts`), which the release workflow writes from the
-changesets at every tag; the site keeps no copy. It serves the sign-in-free demo itself, at <https://gcportrait.app/demo/>: a static build of the
-app in demo-only mode that its build places there (ADR 0034, below), and links to the self-hosting guide.
+The website at <https://gcportrait.app>: a static [Astro](https://astro.build) site for GitHub Pages that presents
+gcportrait as Google Cloud architecture diagrams you use three ways, self-hosted in your own Google Cloud project, as
+a web app and through an API that returns any view as SVG, PNG or a draw.io file, each with its proof; shows the
+features with generated screenshots and animated demos; renders the user guides from `docs/`; publishes the asset
+catalog's coverage; and presents the author. Its "Changelog" links go to the repository's releases page on GitHub
+(`RELEASES_URL` in `src/site.ts`), which the release workflow writes from the changesets at every tag; the site keeps
+no copy. It serves the sign-in-free demo itself, at <https://gcportrait.app/demo/>: a static build of the app in
+demo-only mode that its build places there (below), and links to the self-hosting guide.
 [docs/website.md](../docs/website.md) is the maintainer's guide: the demo, deploying, DNS, the legal pages.
 
 gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
@@ -26,7 +26,7 @@ From the repository root:
 | Build into `website/dist` (also part of `pnpm build`), with the demo in `website/dist/demo/` (below) | `pnpm website:build` (`WEBSITE_DEMO_DIST=dist/demo` to copy a demo built before instead of building it) |
 | Build the static demo alone, into `dist/demo/` at the root | `pnpm demo:static` |
 | Check the demo in the built site in Chromium at 1440 × 900, served as GitHub Pages serves it, both themes: the Connect page, S, M and L, a drill-in, the timeline, PNG and SVG export, a reload on a deep link, every route, the 404; axe, no request elsewhere, no policy violation | `pnpm --filter @gcportrait/website demo` (`--theme dark`, `--shots DIR`, `--dist DIR`) |
-| Check the built site: metadata, links and anchors, sitemap, the installer at `/install.sh` (`infra/install.sh` byte for byte, kept out of search), self-hosted resources (HTML attributes, every srcset candidate, CSS in files, `<style>` and `style`), scripts asking no other host than the repository widget's `api.github.com` and, for the page views, TelemetryDeck's `nom.telemetrydeck.com` (with the SDK's licence beside the fonts'), the header's GitHub link, the footer notice (and the long form in the landing page's author section only), the footer's links to the Impressum and the privacy notice on the maintainer's website (and no legal page of the site's own), the favicon and every page's logo as `brand/icon.svg` draws them, the demo at `/demo/` (its route copies, its policy `<meta>` with no host, its favicon, no Google sign-in host and no analytics in it, its footer's links; every "Try the demo" link pointing there, every link to it opening a new tab and saying so), the viewport tag and what would be wider than a phone, the command variables and Copy buttons, the sample exports' links and files (no SVG with an affiliation line), no scroll timeline in an `animation` shorthand (browsers drop it; such animations are written as longhands) | `pnpm website:check` |
+| Check the built site: metadata, links and anchors, every link into the repository naming a file or folder that exists (a guide's link to a repository file becomes one), sitemap, the installer at `/install.sh` (`infra/install.sh` byte for byte, kept out of search), self-hosted resources (HTML attributes, every srcset candidate, CSS in files, `<style>` and `style`), scripts asking no other host than the repository widget's `api.github.com` and, for the page views, TelemetryDeck's `nom.telemetrydeck.com` (with the SDK's licence beside the fonts'), the header's GitHub link, the footer notice (and the long form in the landing page's author section only), the footer's links to the Impressum and the privacy notice on the maintainer's website (and no legal page of the site's own), the favicon and every page's logo as `brand/icon.svg` draws them, the demo at `/demo/` (its route copies, its policy `<meta>` with no host, its favicon, no Google sign-in host and no analytics in it, its footer's links; every "Try the demo" link pointing there, every link to it opening a new tab and saying so), the viewport tag and what would be wider than a phone, the command variables and Copy buttons, the sample exports' links and files (no SVG with an affiliation line), no scroll timeline in an `animation` shorthand (browsers drop it; such animations are written as longhands) | `pnpm website:check` |
 | Check the built site on phones in a browser: every page at 320, 375, 390 and 430 px in both themes (no sideways scrolling, no overlapping header items, the sticky header at the top when scrolled and above an anchor's heading, 44-pixel targets, axe-core), and the animated demos playing, pausing and falling back to the GIF on an iPhone (WebKit) and a Pixel (Chromium) | `pnpm --filter @gcportrait/website mobile` (`--only layout`, `--only playback`, `--page /docs/`, `--theme dark`, `--width 375`, `--stars 12345` with `--forks 678` and `--release v1.2.3` for GitHub's mocked answers, which a page asks for only on a build that did not find the repository not public, such as one with `WEBSITE_STAR_COUNT`) |
 | Check the fillable commands (`/docs/self-host/` and `/`) in Chromium, Firefox (also without `plaintext-only`, as before Firefox 136) and WebKit, and on an iPhone 15 and a Pixel 7 with taps: edit marks and hint, tap targets, fields edited in place and in step with each other and the panel, plain-text paste, Copy, format hints, storage and Clear values; in Chromium also no JavaScript, no shift when the script starts, axe at 1440 and 375 px in both themes | `pnpm --filter @gcportrait/website fillable` (`--profile chromium\|firefox\|firefox-fallback\|webkit\|iphone\|pixel`, `--page /docs/permissions/`, `--shots DIR`) |
 | Check the page views in Chromium on a build with `WEBSITE_ANALYTICS=1`, the site shown at its own address and TelemetryDeck answered or refused by the check: one POST per page load after the load event, the path without query or fragment, a hashed user and the tab's session, no cookie sent, sessionStorage only; the demo and repository clicks, nothing from the demo; with TelemetryDeck refused the pages load and nothing throws; nothing at all under Do Not Track, Global Privacy Control or on another host | `pnpm --filter @gcportrait/website analytics` (`--dist DIR`) |
@@ -34,7 +34,7 @@ From the repository root:
 | Serve the built site | `pnpm website:preview` |
 | Lighthouse on every page, light and dark, desktop and mobile (thresholds: performance 90, the rest 95) | `pnpm website:lighthouse` (`--page /docs/`, `--theme dark`, `--preset desktop`, `--mobile`) |
 | Regenerate the screenshots, animated demos and link-preview images (`docs/media/`) | `pnpm media` (`--only scene:ID`, `--theme light`; `pnpm media --check` for staleness) |
-| Regenerate the sample exports (`docs/media/exports/`, SVG and PNG of demo S and M in both themes, from `pnpm render`; like every export, without an affiliation line) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render`: draw again and compare byte for byte) |
+| Regenerate the sample exports (`docs/media/exports/`, SVG, PNG and draw.io files of demo S and M in both themes, from `pnpm render`, with WebP previews; like every export, without an affiliation line) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render`: draw again and compare byte for byte) |
 | Unit tests, lint, types | `pnpm --filter @gcportrait/website test` (also `lint`, `typecheck`) |
 
 **Values to fill in.** In a guide's code a value the reader fills in is written `YOUR_` and capitals as one word
@@ -66,7 +66,7 @@ Nothing is copied into the site by hand: each page is built from its one source 
 | `/coverage/` | `@gcportrait/catalog` (the compiled catalog) and `pnpm catalog:coverage --json` |
 | `/contributing/`, `/licence/` | `src/pages/*.astro`, linking to the repository's guides, `LICENSE`, `brand/LICENSE.md` and `THIRD_PARTY.md` |
 | the footer's Impressum and Privacy links | `src/site.ts` (`LEGAL_LINKS`): pages of the maintainer's website, not of this site (below) |
-| the footer notice, "Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz." | `src/site.ts` (`FOOTER_NOTICE`, the name linked to `MAINTAINER_URL`), equal to the app's footer (`src/site.test.ts`); besides it, only the landing page's author section names the maintainer, and only that section carries the long-form statement (`docs/author.md`'s closing paragraph; ADR 0018) |
+| the footer notice, "Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz." | `src/site.ts` (`FOOTER_NOTICE`, the name linked to `MAINTAINER_URL`), equal to the app's footer (`src/site.test.ts`); besides it, only the landing page's author section names the maintainer, and only that section carries the long-form statement (`docs/author.md`'s closing paragraph; agents.md, Non-affiliation, brand and legal) |
 | `/favicon.svg`, the logo | `brand/icon.svg` at the repository root (below) |
 | `/install.sh`, the one-line installer | `infra/install.sh` at the repository root, copied by the build as it is; `robots.txt` keeps it out of search, and `pnpm website:check` compares it byte for byte (docs/website.md, "The installer") |
 | screenshots, demos (WebM, with the GIF of the same scene as the fallback), link previews | `docs/media/`, written by `pnpm media` (`scripts/media.mjs`; the list with alt texts is `src/data/media.json`); the landing page's "Light and dark" block shows the hero still's light and dark WebPs side by side |
@@ -98,7 +98,7 @@ One or two paragraphs.
 **Legal pages.** The site has none of its own: the maintainer keeps the Impressum and the privacy notice on their
 own website, and the footer of every page links them, <https://florian-chrometz.de/legal/impressum> and
 <https://florian-chrometz.de/legal/privacy-policy> (`IMPRESSUM_URL`, `PRIVACY_URL` and `LEGAL_LINKS` in `src/site.ts`;
-decision of 2026-10-11, ADR 0032 as amended). They are external links in the footer's style, `rel="noopener"`, named
+agents.md, Modes and hosting). They are external links in the footer's style, `rel="noopener"`, named
 "… (external site, florian-chrometz.de)" for assistive technology with the part in brackets visually hidden, and
 marked with an arrow; `pnpm website:check` requires both on every page. No secret, no `WEBSITE_LEGAL_DIR`, no texts in
 the repository; `docs/legal/` keeps only the data-processing inventory the maintainer's privacy notice is checked
@@ -120,7 +120,7 @@ the docs menu or a generated medium is missing, or when `docs/author.md` holds a
 goes on.
 
 **The demo.** `/demo/` is the app itself, not an Astro page: a static build in demo-only mode
-(`pnpm demo:static`, `scripts/static-demo.mjs` at the root; ADR 0034, docs/website.md "The demo"). After Astro has
+(`pnpm demo:static`, `scripts/static-demo.mjs` at the root; docs/website.md, "The demo"). After Astro has
 written the site, `astro.config.ts` (`staticDemo`) runs that command with `--out dist/demo` and the footer's legal
 links (`IMPRESSUM_URL`, `PRIVACY_URL`), or copies the bundle `WEBSITE_DEMO_DIST` names (relative to the repository
 root, built for `/demo/`; the workflows build the demo as a step of its own first), so `pnpm website:build` alone gives
@@ -167,8 +167,8 @@ with `demo/diagram.html` and redirects a folder's address to its trailing slash,
   `contenteditable="plaintext-only"` (set on a probe, read back: Chromium, Safari and Firefox from 136) and falls back
   to `contenteditable="true"` with formatting and drops refused and leftover markup turned back into text; it takes
   every paste as plain text on one line, and Enter leaves the field. It never empties a focused field: a field that
-  shows its token selects it, and the first key that edits replaces all of it. Emptying it on focus, as the first
-  version did, lost the caret in WebKit, so on a Mac's Safari and on every iPhone typing into a command did nothing.
+  shows its token selects it, and the first key that edits replaces all of it: emptying a field on focus would lose
+  the caret in WebKit, so on a Mac's Safari and on every iPhone typing into a command would do nothing.
   Before anyone touches them the fields read as editable: tinted, underlined, ending in a pencil (the edit mark,
   drawn by `global.css` with a mask, the site's own drawing), ringed on hover or press; on a touch screen each has a
   transparent 44-pixel-tall tap target (`.var-target`), over the code's text and under every field.
@@ -231,8 +231,8 @@ with `demo/diagram.html` and redirects a folder's address to its trailing slash,
   9.9k, so where the build had facts such counts always fit, and so does a version of the same length); on any
   failure nothing changes, and nothing is logged. Where the build's own request found the repository not public
   (`data-repository-not-public`), the script asks nothing at all: the visitor's browser would only get the same 404
-  (and send its address to GitHub for nothing), so a site built before the repository goes public shows no live facts
-  until the next build. Otherwise a visitor's browser contacts GitHub: row W3 of
+  (and send its address to GitHub for nothing), so a site built while the repository is not public shows no live
+  facts until the next build after it is. Otherwise a visitor's browser contacts GitHub: row W3 of
   docs/legal/data-processing-inventory.md, which the privacy notice on the maintainer's website must cover.
 - Light and dark follow `prefers-color-scheme`, with the app's palette values (`src/styles/global.css`;
   `src/styles/contrast.test.ts` checks every text pair at 4.5 : 1). Roboto and Roboto Mono are self-hosted from
@@ -241,10 +241,12 @@ with `demo/diagram.html` and redirects a folder's address to its trailing slash,
 - Every page has its title, description, canonical URL on https://gcportrait.app, OpenGraph and Twitter card tags
   with its own 1200×630 image, and JSON-LD (`src/lib/seo.ts`): WebSite on every page, SoftwareApplication,
   SoftwareSourceCode and Person on the landing page, TechArticle and BreadcrumbList on the guides. The structured
-  data names the author as a Person and never an Organization (ADR 0018). `sitemap.xml` and `robots.txt` are
-  generated. The 404 page, served at every unknown address, is `noindex` and names no canonical URL.
-- The `.astro` files are compiled by the build but not type-checked (`@astrojs/check` could not be installed
-  cleanly with pnpm here); their logic lives in typed modules under `src/lib/`, which `tsc -b` and ESLint check.
+  data names the author as a Person and never an Organization (agents.md, Non-affiliation, brand and legal).
+  `sitemap.xml` and `robots.txt` are generated. The 404 page, served at every unknown address, is `noindex` and
+  names no canonical URL.
+- The `.astro` files are compiled by the build but not type-checked (`@astrojs/check` does not install cleanly
+  with pnpm in this workspace); their logic lives in typed modules under `src/lib/`, which `tsc -b` and ESLint
+  check.
 
 ## Layout
 

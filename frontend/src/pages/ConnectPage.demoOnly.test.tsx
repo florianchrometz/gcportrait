@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Connect page of a demo-only instance (the backend's DEMO_ONLY, ADR 0032), whether its
- * configuration comes from /api/config or is built in (the static demo, ADR 0034): only "Try the demo" with its four
+ * The Connect page of a demo-only instance (the backend's DEMO_ONLY), whether its
+ * configuration comes from /api/config or is built in (the static demo): only "Try the demo" with its four
  * sizes, the call to deploy gcportrait to one's own project, the notice that the demo processes no personal data; no
  * sign-in, no export, no backend section; and while /api/config is on its way, nothing of the live sources flashes
  * up. Also the top bar's badge and the Permissions page's note. And the Connect page of a live instance, for

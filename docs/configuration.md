@@ -6,12 +6,12 @@ gcportrait renders Google Cloud-style architecture diagrams. It is an independen
 not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
 trademarks of Google and are used under Google's icon usage terms.
 
-Every setting of a gcportrait instance, its default and who sets it. [self-host.md](self-host.md) is the
-guide and [self-host-options.md](self-host-options.md) explains each option with an example; this page is the
+Every setting of a gcportrait instance, its default and who sets it. [self-host.md](self-host.md) is the guide
+and [self-host-options.md](self-host-options.md) explains each option with an example; this page is the
 reference. Nothing configured here is a secret, and no credential is ever configured through the environment:
-the backend uses the caller's own token, or in service-account mode its own Application Default Credentials (on
-Cloud Run: the service's identity). A test keeps the tables below equal to the backend's schema, the scripts'
-`--help` and the build's variables (`node scripts/user-docs.mjs`).
+the backend uses the caller's own token, or in service-account mode its own Application Default Credentials
+(on Cloud Run: the service's identity). A test keeps the tables below equal to the backend's schema, the
+scripts' `--help` and the build's variables (`node scripts/user-docs.mjs`).
 
 | Section | |
 |---|---|
@@ -44,7 +44,7 @@ never its value.
 | `SA_MODE_ENABLED` | `false` | Exactly `true` enables service-account mode; any other value leaves it off (a value other than `true`/`false` is a start-up warning). With it on, start-up resolves the instance's Application Default Credentials and stops if they are not usable. |
 | `SA_MODE_STRICT_EXPOSURE` | `false` | `true` adds the exposure check to the service-account gate: a scope whose details the account can read itself is refused (backend/README.md, "Service-account mode"). Any value other than `true`, `false` or unset stops start-up, so a typo never leaves the check off unnoticed. |
 | `BACKEND_SA_EMAIL` | unset | The account customers grant `roles/cloudasset.viewer` to, shown on the Permissions page (`backendServiceAccount` in `/api/config`). With service-account mode on it must be the account the credentials resolve to, which fills it in when unset. |
-| `HOSTED_BY` | unset | Who runs the instance, shown before sign-in as "Hosted by NAME." (`hostedBy` in `/api/config`, `null` when unset). Plain text on one line, at most 80 characters, without `<` or `>`, never naming Google ([ADR 0018](adr/0018-non-affiliation-statement.md)). |
+| `HOSTED_BY` | unset | Who runs the instance, shown before sign-in as "Hosted by NAME." (`hostedBy` in `/api/config`, `null` when unset). Plain text on one line, at most 80 characters, without `<` or `>`, never naming Google. |
 | `STATIC_DIR` | `../frontend/dist` from the backend package | The built SPA; served when it contains `index.html`. The image sets `/app/frontend/dist`. |
 | `TRUST_PROXY_HOPS` | `0` | Reverse-proxy hops whose `X-Forwarded-For` is trusted for the client address (rate limiting). `1` behind Cloud Run's front end; `0` wherever clients can reach the process directly. |
 | `APP_VERSION` | `version` of `backend/package.json` | Reported by `/healthz` and `/api/config`; at most 64 characters. The image sets it at build time. |
@@ -65,12 +65,12 @@ token, 60 s and 25 MiB per upstream page, 1 GiB per export read; for renders one
 minute per token, a scale of at most 3 and 16 384 px a side, and a 1 GiB heap for the render worker) are not
 configurable; backend/README.md and [api.md](api.md#limits) list them.
 
-**Memory.** A full instance needs about 300 MiB with its page budget full, plus, while a render runs, the render
-worker's heap (at most 1 GiB) and about 10 bytes per PNG pixel up to `RENDER_MAX_PIXELS`. With the defaults that
-fits 2 GiB, deploy.sh's default; on less, set `RENDER_API=false` or lower `RENDER_MAX_PIXELS`. A render keeps the
-instance's one CPU busy for its duration (a few seconds for demo XL's overview), so other requests on that
-instance wait meanwhile; further renders get `429 RENDER_BUSY` until Cloud Run adds an instance (up to
-`--max-instances`).
+**Memory.** A full instance needs about 300 MiB with its page budget full, plus, while a render runs, the
+render worker's heap (at most 1 GiB) and about 10 bytes per PNG pixel up to `RENDER_MAX_PIXELS`. With the
+defaults that fits 2 GiB, deploy.sh's default; on less, set `RENDER_API=false` or lower `RENDER_MAX_PIXELS`. A
+render keeps the instance's one CPU busy for its duration (a few seconds for demo XL's overview), so other
+requests on that instance wait meanwhile; further renders get `429 RENDER_BUSY` until Cloud Run adds an
+instance (up to `--max-instances`).
 
 **Locally.** `pnpm dev` starts the backend with `HOST=localhost` and `LOG_FORMAT=pretty` and reads
 `backend/.env` when it exists (`backend/.env.example` documents each variable; none is needed for the demo).
@@ -121,8 +121,8 @@ by hand in the console is replaced at the next deploy; give it to deploy.sh as a
 --project PROJECT_ID [flags]` with the file downloaded first. It downloads the deploy scripts of a release
 (`gcportrait-deploy-vX.Y.Z.tar.gz`), checks their SHA-256 against the release's `checksums.txt` before it
 unpacks or runs anything, and runs their `infra/deploy.sh --image vX.Y.Z` with every flag below it does not
-know ([self-host-options.md, "The installer"](self-host-options.md#the-installer)). Exit status: deploy.sh's, or 1 when the
-installer refuses (a missing tool, a bad flag, `--build`, a download or a checksum that fails).
+know ([self-host-options.md, "The installer"](self-host-options.md#the-installer)). Exit status: deploy.sh's,
+or 1 when the installer refuses (a missing tool, a bad flag, `--build`, a download or a checksum that fails).
 
 | Flag | Default | Effect |
 |---|---|---|
@@ -139,9 +139,9 @@ installer goes to deploy.sh in place of the release's own image; `--build` is re
 sets the service to what its flags say, and a flag left out gets its default. A run ends with the next steps
 (open the address; create the OAuth client, with the console link and the origins; redeploy with
 `--oauth-client-id`, the exact command), then the instance's settings and a command that repeats the current
-setup; after `--build`, that command deploys the image just built with `--image` instead of building again. The
-commands name the script by its path from the current directory (`gcportrait-vX.Y.Z/infra/deploy.sh` where the
-installer kept it).
+setup; after `--build`, that command deploys the image just built with `--image` instead of building again.
+The commands name the script by its path from the current directory (`gcportrait-vX.Y.Z/infra/deploy.sh` where
+the installer kept it).
 
 | Flag | Default | Effect |
 |---|---|---|
@@ -153,7 +153,7 @@ installer kept it).
 | `--build-machine TYPE` | `e2-highcpu-8` | Cloud Build machine type for `--build`. |
 | `--oauth-client-id ID` | unset | `OAUTH_CLIENT_ID`. |
 | `--hosted-by TEXT` | unset | `HOSTED_BY`; checked against the backend's rules before deploying. |
-| `--iap` | off | Identity-Aware Proxy in front of the service instead of public access; a redeploy without it makes the service public again. Needs `curl`. User mode behind it is designed to work: the app sends the person's token in `X-Gcportrait-Token` ([ADR 0031](adr/0031-token-header-behind-iap.md), proposed; [self-host-options.md](self-host-options.md#private-instance-identity-aware-proxy)); try it with `--dry-run` first. |
+| `--iap` | off | Identity-Aware Proxy in front of the service instead of public access; a redeploy without it makes the service public again. Needs `curl`. User mode behind it is designed to work: the app sends the person's token in `X-Gcportrait-Token` ([self-host-options.md](self-host-options.md#private-instance-identity-aware-proxy)); try it with `--dry-run` first. |
 | `--iap-members LIST` | your gcloud account | Comma-separated `user:`, `group:`, `serviceAccount:` or `domain:` principals granted `roles/iap.httpsResourceAccessor`; repeatable; added, never removed. Needs `--iap`. |
 | `--sa-mode` | off | `SA_MODE_ENABLED=true`. |
 | `--sa-strict-exposure` | off | `SA_MODE_STRICT_EXPOSURE=true`; needs `--sa-mode`. |
@@ -173,12 +173,13 @@ installer kept it).
 | `-h`, `--help` | | Usage. |
 
 **Fixed Cloud Run settings** (change them with `gcloud run services update` only if you accept that the next
-deploy.sh run resets them): container port 8080, 1 CPU, memory from `--memory` (2 GiB; 256 MiB with `--demo-only`), concurrency 80,
-min instances 0, request timeout 900 s (60 s with `--demo-only`), startup CPU boost, ingress `all`, startup
-probe `GET /healthz` every 2 s (up to 15 failures), liveness probe `GET /healthz` every 30 s (3 failures),
-service account = the backend account, label `managed-by=gcportrait-deploy`. The probes reach the container
-directly; from outside, Cloud Run's front end answers `/healthz` itself (it keeps paths ending in `z`), so
-deploy.sh's own check waits on `GET /api/healthz`, which answers the same.
+deploy.sh run resets them): container port 8080, 1 CPU, memory from `--memory` (2 GiB; 256 MiB with
+`--demo-only`), concurrency 80, min instances 0, request timeout 900 s (60 s with `--demo-only`), startup CPU
+boost, ingress `all`, startup probe `GET /healthz` every 2 s (up to 15 failures), liveness probe `GET
+/healthz` every 30 s (3 failures), service account = the backend account, label
+`managed-by=gcportrait-deploy`. The probes reach the container directly; from outside, Cloud Run's front end
+answers `/healthz` itself (it keeps paths ending in `z`), so deploy.sh's own check waits on `GET
+/api/healthz`, which answers the same.
 
 **APIs it enables when they are off**: `run`, `iam`, `cloudasset`, `cloudresourcemanager`, `artifactregistry`
 (with `--demo-only` only `run`, `iam`, `artifactregistry`); with `--build` `cloudbuild` and `storage`; with
@@ -241,7 +242,7 @@ sources).
 | User | `65532:65532` (the base image's `nonroot`); nothing in `/app` is writable, so the container runs with a read-only root filesystem |
 | Port | 8080 |
 | Health | `HEALTHCHECK`: Node fetches `http://127.0.0.1:$PORT/healthz` every 30 s (Docker, compose). Cloud Run ignores it and uses deploy.sh's startup and liveness probes on the same path, which reach the container directly; from outside a Cloud Run service, `/healthz` gets the front end's own 404, so check `/api/healthz` there. |
-| Labels | `org.opencontainers.image.title=gcportrait`, `.description` = the long form of the non-affiliation statement (ADR 0018), `.licenses=MIT`, `.version` = `APP_VERSION`; the release workflow adds source, revision and creation time |
+| Labels | `org.opencontainers.image.title=gcportrait`, `.description` = the long form of the non-affiliation statement, `.licenses=MIT`, `.version` = `APP_VERSION`; the release workflow adds source, revision and creation time |
 
 ## Local runs with compose
 
@@ -260,9 +261,10 @@ read-only root filesystem, all capabilities dropped, `no-new-privileges`.
 
 ## Cloud Run Button
 
-The "Run on Google Cloud" button ([self-host-options.md, "Run on Google Cloud"](self-host-options.md#run-on-google-cloud))
-reads `app.json` at the repository root. It asks for two variables and deploys with fixed options; its
-`postcreate` hook, `infra/cloud-run-button.sh`, then adds what the button cannot set.
+The "Run on Google Cloud" button ([self-host-options.md, "Run on Google
+Cloud"](self-host-options.md#run-on-google-cloud)) reads `app.json` at the repository root. It asks for two
+variables and deploys with fixed options; its `postcreate` hook, `infra/cloud-run-button.sh`, then adds what
+the button cannot set.
 
 | Item | Value |
 |---|---|
@@ -276,16 +278,16 @@ The service runs as the project's Compute Engine default service account and car
 deploy.sh and uninstall.sh leave it alone. Run against the same project and region, deploy.sh first enables
 whichever of the APIs it needs are still off (the hook enables none), then stops before it creates or deploys
 anything. It prints the `gcloud run services update … --update-labels=managed-by=gcportrait-deploy` command
-that hands the service over and, when it enabled APIs, the `gcloud services disable …` command for them in case
-you give up instead. Once you have run the hand-over command
-yourself, deploy.sh manages the service ([self-host-options.md, "Run on Google Cloud"](self-host-options.md#run-on-google-cloud)).
+that hands the service over and, when it enabled APIs, the `gcloud services disable …` command for them in
+case you give up instead. Once you have run the hand-over command yourself, deploy.sh manages the service
+([self-host-options.md, "Run on Google Cloud"](self-host-options.md#run-on-google-cloud)).
 
 ## Release workflow
 
 `.github/workflows/release.yml` on `v*` tags, and by hand (workflow_dispatch) for a `dev` image. It needs no
 secret and no repository variable: the workflow's own `GITHUB_TOKEN` (`packages: write` for the image,
-`contents: write` for the release) does everything. [contributing.md, "9. Releases"](contributing.md#9-releases)
-has the one-time step (making the package public).
+`contents: write` for the release) does everything. [contributing.md, "9.
+Releases"](contributing.md#9-releases) has the one-time step (making the package public).
 
 | Item | Value |
 |---|---|
@@ -304,7 +306,7 @@ Read by Vite when the frontend is built (`frontend/README.md`); the image builds
 |---|---|---|
 | `VITE_DEMO` | unset | `1` builds or serves the demo-only app (no backend calls); `pnpm dev:demo` sets it. |
 | `VITE_SOURCE_URL` | `https://github.com/florianchrometz/gcportrait` | The footer's source link when no backend answers (demo mode, the static demo); the image's app takes `SOURCE_URL` from `/api/config`. |
-| `VITE_STATIC_DEMO` | unset | `1` builds the static demo: demo-only mode with its configuration built in instead of `/api/config`, below `/demo/`, for a static host ([ADR 0034](adr/0034-static-demo-on-pages.md)). `pnpm demo:static` sets it with the three below; not together with `VITE_DEMO`. |
+| `VITE_STATIC_DEMO` | unset | `1` builds the static demo: demo-only mode with its configuration built in instead of `/api/config`, below `/demo/`, for a static host ([website.md, "The demo"](website.md#the-demo)). `pnpm demo:static` sets it with the three below; not together with `VITE_DEMO`. |
 | `VITE_APP_VERSION` | `git describe` (by `pnpm demo:static`) | The static demo's version (`--app-version`). |
 | `VITE_LEGAL_IMPRESSUM_URL` | the maintainer's Impressum (by `pnpm demo:static`) | The Impressum the static demo's footer links (`--impressum-url`; an `https://` URL, anything else links nothing), as `LEGAL_IMPRESSUM_URL` does for an instance. |
 | `VITE_LEGAL_PRIVACY_URL` | the maintainer's privacy notice (by `pnpm demo:static`) | The same for the privacy notice (`--privacy-url`). |

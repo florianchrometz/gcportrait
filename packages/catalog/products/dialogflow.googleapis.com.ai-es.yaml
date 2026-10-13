@@ -36,8 +36,8 @@ types:
       agent (…/agent/environments/<e>, not an inventory type) stay dangling. Knowledge-base suggestion sources
       resolve within Dialogflow; conversation events are published to Pub/Sub topics (triggers, like every
       notification topic in the catalog); speech phrase sets are Speech-to-Text v2 names, whose asset names
-      carry the project number. securitySettings and the human-agent handoff targets (LivePerson, Salesforce)
-      are not inventory types. No console deep link is known.
+      carry the project number. securitySettings and the services that take a conversation over from the
+      agent (LivePerson, Salesforce) are not inventory types. No console deep link is known.
 
   dialogflow.googleapis.com/KnowledgeBase:
     role: leaf

@@ -8,17 +8,17 @@ trademarks of Google and are used under Google's icon usage terms.
 
 Every route an instance serves under `/api`, for scripts: health and settings, the scope search and permission
 check, the live pull and export read the app streams from, and `POST /api/render`, which draws a view as SVG,
-PNG or a draw.io file on the server, byte for byte what `pnpm render` and the app's export draw. A demo-only instance has
-none of the routes that need a token.
+PNG or a draw.io file on the server, byte for byte what `pnpm render` and the app's export draw. A demo-only
+instance has none of the routes that need a token.
 
 ## Authentication
 
 The routes that read Google Cloud take your own Google access token and nothing else; the instance stores it
 nowhere and logs it never. Send it in `X-Gcportrait-Token` (the app's header, which Identity-Aware Proxy
-leaves alone), or in `Authorization: Bearer` when there is no `X-Gcportrait-Token` ([ADR
-0031](adr/0031-token-header-behind-iap.md)). A token from `gcloud auth print-access-token` works; reading a
-scope needs the permissions of [permissions.md](permissions.md). Behind Identity-Aware Proxy, IAP takes
-`Authorization` for its own sign-in, so use `X-Gcportrait-Token` there.
+leaves alone), or in `Authorization: Bearer` when there is no `X-Gcportrait-Token` ([permissions.md, "With
+your own account"](permissions.md#2-with-your-own-account)). A token from `gcloud auth print-access-token`
+works; reading a scope needs the permissions of [permissions.md](permissions.md). Behind Identity-Aware Proxy,
+IAP takes `Authorization` for its own sign-in, so use `X-Gcportrait-Token` there.
 
 ```sh
 curl -s https://YOUR_INSTANCE/api/healthz
@@ -60,8 +60,8 @@ The two streams answer 200 once they start; what Google says after that arrives 
 ## POST /api/render
 
 Draws one view of one snapshot, with the code `pnpm render` runs: the same view gives the same bytes, a PNG is
-the app's export (2× by default, a 24 px margin, the theme's canvas colour), and a draw.io file is the same drawing
-as cells diagrams.net can edit ([below](#drawio-files)). The request is one JSON document:
+the app's export (2× by default, a 24 px margin, the theme's canvas colour), and a draw.io file is the same
+drawing as cells diagrams.net can edit ([below](#drawio-files)). The request is one JSON document:
 
 | Field | Default | |
 |---|---|---|
@@ -117,9 +117,9 @@ the tagline. Renders run one at a time per instance, so a script retries a `429 
 ### draw.io files
 
 `"format": "drawio"` answers a `.drawio` file (`gcportrait_<scope>_<lens>_<readTime>.drawio`) that
-[diagrams.net](https://app.diagrams.net) (draw.io) opens as an editable diagram looking like the PNG and the SVG.
-It is not drawn a second time: the SVG of the view is translated into draw.io's cells, so every zone, card, line
-and label is where the picture has it, in the same colours, strokes, dashes and fonts:
+[diagrams.net](https://app.diagrams.net) (draw.io) opens as an editable diagram looking like the PNG and the
+SVG. It is not drawn a second time: the SVG of the view is translated into draw.io's cells, so every zone,
+card, line and label is where the picture has it, in the same colours, strokes, dashes and fonts:
 
 - zones are containers, nested as in the drawing, each with its title as its label, so moving a zone moves
   what it holds; cards, chips and collapsed zones are groups of their body, their icon (Google's icon as an
@@ -133,8 +133,8 @@ and label is where the picture has it, in the same colours, strokes, dashes and 
 
 The diagram is compressed as diagrams.net saves it (the XML URI-encoded, deflated, base64); `"compressed":
 false` (or `pnpm render --drawio-plain`) writes the XML itself. With `fontSource` (the default) each label
-names Google Fonts' stylesheet of Roboto and Roboto Mono: the instance fetches nothing, it is your diagrams.net
-that loads the faces from Google Fonts when it opens the file.
+names Google Fonts' stylesheet of Roboto and Roboto Mono: the instance fetches nothing, it is your
+diagrams.net that loads the faces from Google Fonts when it opens the file.
 
 To open a file in diagrams.net, use File, Open from, Device, or give it a public URL of the file:
 `https://app.diagrams.net/?url=` followed by the URL-encoded address of a `.drawio` file anyone can read (a
@@ -183,5 +183,5 @@ approach `RENDER_TIMEOUT_MS`, and `x-gcportrait-scale` says when the scale was l
 `RENDER_MAX_PIXELS`. `RENDER_API=false` (`deploy.sh --no-render-api`) turns the route off where nobody needs
 it. Any Google account's token passes the render route's token check for the `demo`, `ndjson` and `bundle`
 sources: on a public instance, keep `--max-instances` low or put Identity-Aware Proxy in front
-([self-host-options.md](self-host-options.md#private-instance-identity-aware-proxy)). An upload must pass Cloud Run's 32 MiB request limit and arrive within 30 s
-(else `408`); read larger scopes with `scope`.
+([self-host-options.md](self-host-options.md#private-instance-identity-aware-proxy)). An upload must pass
+Cloud Run's 32 MiB request limit and arrive within 30 s (else `408`); read larger scopes with `scope`.

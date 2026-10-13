@@ -193,10 +193,11 @@ describe('src/generated/icons.ts', () => {
 
 /**
  * Official icons Google draws only in its two light tones (#669DF6 and #AECBFA): their best contrast on the
- * white light-theme card is 2.72:1. Icons are never recoloured (ADR 0018), so they ship as drawn; the card's
- * title names the resource, so the glyph is not the only carrier of its meaning (WCAG 1.4.11 asks 3:1 of
- * graphics required to understand the content). The same kind of documented exemption as the subnet stroke
- * (style skill §10). Kept exact: the test fails when an entry no longer needs it or another icon would.
+ * white light-theme card is 2.72:1. Icons are never recoloured (agents.md, Style and accessibility), so they
+ * ship as drawn; the card's title names the resource, so the glyph is not the only carrier of its meaning
+ * (WCAG 1.4.11 asks 3:1 of graphics required to understand the content). The same kind of documented
+ * exemption as the subnet stroke (style skill §10). Kept exact: the test fails when an entry no longer needs
+ * it or another icon would.
  */
 const LIGHT_CARD_EXEMPT: ReadonlyMap<string, number> = new Map([
   ['cloud_armor', 2.7],
@@ -231,8 +232,9 @@ describe('contrast (both themes)', () => {
 
 describe('README.md', () => {
   /**
-   * The README's long form of the non-affiliation statement (ADR 0018), word for word the app's
-   * `NON_AFFILIATION_LONG` (frontend/src/branding.ts, read as text: the package may not import the frontend).
+   * The README's long form of the non-affiliation statement (agents.md, Non-affiliation, brand and legal),
+   * word for word the app's `NON_AFFILIATION_LONG` (frontend/src/branding.ts, read as text: the package may
+   * not import the frontend).
    */
   const LONG_FORM =
     'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project ' +
@@ -253,7 +255,7 @@ describe('README.md', () => {
   });
 
   it('says the icons are Google Cloud’s, provided at cloud.google.com/icons, outside the licence', () => {
-    // The maintainer's rule of 2026-10-11: "Google" or "Google Cloud", never the company's legal name.
+    // "Google" or "Google Cloud", never the company's legal name (agents.md, Non-affiliation, brand and legal).
     expect(readme).not.toContain(['Google', 'LLC'].join(' '));
     expect(prose).toContain("The Google Cloud product icons are Google Cloud's.");
     expect(prose).toContain(

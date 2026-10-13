@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 #
-# The website (docs/website.md; ADRs 0009, 0034 and 0035 §2): the Astro site in website/, built on every
+# The website (docs/website.md; agents.md, Modes and hosting): the Astro site in website/, built on every
 # pull request and every push to main, and deployed to GitHub Pages at https://gcportrait.app from main once the
 # maintainer switches it on. The same Pages site serves the demo at https://gcportrait.app/demo/: a static build of the
-# app in demo-only mode (ADR 0034). Everything is hosted on GitHub; there is no other host. docs/website.md is the guide
+# app in demo-only mode. Everything is hosted on GitHub; there is no other host. docs/website.md is the guide
 # (the one-time setup, DNS, the demo, the legal pages). The site has no legal pages of its own: its footer, and the
 # demo's, link the Impressum and the privacy notice on the maintainer's website (website/src/site.ts), so the workflow
 # needs no secret.
@@ -11,9 +11,10 @@
 # build (every run): installs, builds the static demo (`pnpm demo:static`, into dist/demo/: the app below /demo/ with
 # its configuration built in, a copy of index.html per route, its Content Security Policy as a <meta>), then the site
 # (`pnpm website:build` with WEBSITE_DEMO_DIST=dist/demo, which writes website/dist with the CNAME for gcportrait.app
-# and copies the demo to website/dist/demo/), checks it (`pnpm website:check`: metadata, links and anchors, sitemap,
-# self-hosted resources, the footer notice, the footer's legal links, the favicon and the logo, and the demo's pages,
-# policy and links), and checks the generated media for staleness (`pnpm media --check`). Stale media
+# and copies the demo to website/dist/demo/), checks it (`pnpm website:check`: metadata, links and anchors, links
+# into the repository that must name a file or folder it has, sitemap, self-hosted resources, the footer notice, the
+# footer's legal links, the favicon and the logo, and the demo's pages, policy and links), and checks the generated
+# media for staleness (`pnpm media --check`). Stale media
 # do not fail a pull request or a push (regenerating them takes a browser and adds megabytes to the history, so it is
 # done deliberately, before a release): the step leaves a warning on the run and in its summary. release.yml's
 # website job (on while PAGES_DEPLOY is `true`) refuses stale media, so a tag never publishes them.

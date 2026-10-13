@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * A pretend Google for the stream tests (never built into dist/: tsconfig.build.json leaves `*.testing.ts` out):
- * Cloud Asset Inventory's `assets.list` and Cloud Storage's JSON API as an `UpstreamFetch`, recording every call,
- * on top of what every pretend Google shares (../upstream/google.testing.ts). The data is synthetic (agents.md
- * rule 6): `demo-` project ids, numbers below 100000000000, organisation 30000000001, example.com.
+ * A pretend Google for the stream tests (never built into dist/: tsconfig.build.json leaves `*.testing.ts`
+ * out): Cloud Asset Inventory's `assets.list` and Cloud Storage's JSON API as an `UpstreamFetch`, recording
+ * every call, on top of what every pretend Google shares (../upstream/google.testing.ts). The data is
+ * synthetic (agents.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,
+ * organisation 30000000001, example.com.
  */
 import {
   caiPager,
@@ -78,8 +79,9 @@ export type Override = (
 ) => Response | undefined | Promise<Response | undefined>;
 
 /**
- * Cloud Asset Inventory's `assets.list` over `pages`: the page token `page-N` asks for page N, and every page but
- * the last names the next. Requests without the method override get Google's HTML 404 (the spike's finding 11).
+ * Cloud Asset Inventory's `assets.list` over `pages`: the page token `page-N` asks for page N, and every page
+ * but the last names the next. Requests without the method override get Google's HTML 404 (skill
+ * cai-ingestion §9).
  */
 export function mockCai(
   pages: readonly (readonly unknown[])[],

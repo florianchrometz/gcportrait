@@ -20,7 +20,7 @@ export type Preferences = {
   readonly drawerWidth: number;
   /** The scope picker's recent scopes, newest first (scope/recent.ts). */
   readonly recentScopes: readonly ScopeChoice[];
-  /** The quota project last picked per scope (ADR 0028 §2). */
+  /** The quota project last picked per scope. */
   readonly quotaProjects: Readonly<Record<string, string>>;
 };
 

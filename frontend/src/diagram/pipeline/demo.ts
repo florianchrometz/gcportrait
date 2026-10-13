@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * The demo organisations (ADR 0014) in the workers, the only places the demo generator runs (ADR 0029 as amended
- * on 2026-10-11: never on the UI thread, never in the snapshot worker). The data worker's handler (dataHandler.ts)
+ * The demo organisations in the workers, the only places the demo generator runs (never on the UI thread, never in
+ * the snapshot worker; agents.md, Architecture and code). The data worker's handler (dataHandler.ts)
  * imports this module on first use to draw a demo organisation, so a stored snapshot is drawn without loading the
  * generator at all; the demo worker (demoRole.ts), started for one "Try the demo" job, imports it to prepare one.
  *

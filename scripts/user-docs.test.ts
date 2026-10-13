@@ -249,33 +249,37 @@ describe('the commands in a guide', () => {
 });
 
 describe('verification logs in a guide', () => {
-  it('finds "Verified on" lines and headings about verifying, outside code', () => {
+  // The dated phrases a guide may not hold are assembled, so that this file holds none of them either.
+  const VERIFIED = ['Verified', 'on'].join(' ');
+  const DAY = '2026-10-11';
+
+  it('finds dated verification lines and headings about verifying, outside code', () => {
     const markdown = [
       '# Guide',
       '',
-      'What to do. Verified on 2026-10-11 ([section 9](#9-verified-on)).',
+      `What to do. ${VERIFIED} ${DAY} ([section 9](#9-verified-on)).`,
       '',
       '## 9. How this page was verified',
       '',
       '```text',
-      'echo verified on 2026-10-11',
+      `echo ${VERIFIED.toLowerCase()} ${DAY}`,
       '```',
       '',
       'A check that was verified by the tests, said in passing, is no log.',
     ].join('\n');
     expect(verificationLogLines(markdown)).toEqual([
       // The line, cut at 60 characters.
-      'line 3 logs a verification ("What to do. Verified on 2026-10-11 ([section 9](#9-verified-"): a guide says what to do; dated records go to docs/history/',
-      'line 5 logs a verification ("## 9. How this page was verified"): a guide says what to do; dated records go to docs/history/',
+      `line 3 logs a verification ("What to do. ${VERIFIED} ${DAY} ([section 9](#9-verified-"): a guide says what to do, not when or where it was checked`,
+      'line 5 logs a verification ("## 9. How this page was verified"): a guide says what to do, not when or where it was checked',
     ]);
     expect(verificationLogLines('# Guide\n\nOpen the address.\n')).toEqual([]);
   });
 
   it('finds dated notes, machines, measured and timed runs, first versions, and prompts in code', () => {
     const logs = [
-      'The website serves phones (maintainer decision of 2026-10-11).',
-      'On 2026-10-11 the apex still answers with the parking page.',
-      '(The action was called "Drill in" until 2026-10-10.)',
+      `The website serves phones (maintainer ${['decision', 'of'].join(' ')} ${DAY}).`,
+      'On 2026-01-15 the domain still answers with a placeholder page.',
+      '(The button was called "Go" until 2026-01-15.)',
       'on the maintainer’s macOS 27 Firefox does not start without it',
       'With Node 22.23.2 and pnpm 10.18.1:',
       'Measured on an Apple M1 (8 cores).',
@@ -310,7 +314,7 @@ describe('verification logs in a guide', () => {
       String(3 + logs.length + kept.length + 6),
     ]);
     expect(found.at(-1)).toBe(
-      `line ${String(3 + logs.length + kept.length + 6)} records a run ("$ pnpm media"): show the command without a prompt and its output; recorded runs go to docs/history/`,
+      `line ${String(3 + logs.length + kept.length + 6)} records a run ("$ pnpm media"): show the command without a prompt and its output; a guide keeps no record of runs`,
     );
   });
 });

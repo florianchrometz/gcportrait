@@ -123,13 +123,13 @@ export interface Routing {
    * The first routing pass's search budget, in A* states settled (`RoutingReport.work`, a deterministic measure
    * of routing time): once the first pass has settled this many, it searches the rest of its edges weighted
    * and is final, without widening gutters (single-pass mode). A view whose exact first pass stays within it
-   * routes in three passes (ADR 0027).
+   * routes in three passes (skill §5).
    */
   readonly singlePassWork: number;
   /**
    * Above this much first-pass work (and up to `singlePassWork`), at most one widening round runs: the band
    * between the two keeps a growing view in three-pass mode with its gutters widened, at the cost of one round
-   * instead of two, so that it loses a round before it loses the widening (ADR 0027).
+   * instead of two, so that it loses a round before it loses the widening.
    */
   readonly oneRoundWork: number;
   /**
@@ -144,7 +144,7 @@ export interface Routing {
   readonly wideningRounds: number;
   /**
    * Above this many lane holders, at most two widening rounds run whatever `wideningRounds` says: a round lays
-   * every route again, which on a very large layout costs a large share of its budget (ADR 0027).
+   * every route again, which on a very large layout costs a large share of its budget.
    */
   readonly lateRoundsUpTo: number;
   /**
@@ -157,22 +157,22 @@ export interface Routing {
   /**
    * What a route pays per px along a zone's border inside its padding band (a ring side between the zone's
    * corners), relative to 1 for every gap and every line through free space: such a stretch reads as a doubled
-   * border or an underline, so routes take the gaps between the zones where they can (ADR 0027). A gap with a
+   * border or an underline, so routes take the gaps between the zones where they can (skill §5). A gap with a
    * child on one side only is not charged more: it runs through the same free space as the lines parallel to it
-   * there, and a dearer gap sent routes the long way round to reach them.
+   * there, and a dearer gap would send routes the long way round to reach them.
    */
   readonly hugFactor: number;
   /**
    * The most a route pays above its length for running along the whole of one ring side (px): on a side longer
    * than `hugCap / (hugFactor − 1)` the surcharge per px falls in proportion, so no route goes more than about
-   * `hugCap / 2` out of its way and back to avoid a long border (ADR 0027 rule 2). Without the cap 9 000 px
-   * along a ring top cost 4 500 px extra, and routes dropped 2 000 px to a row gap and climbed back to avoid it.
+   * `hugCap / 2` out of its way and back to avoid a long border. Without the cap 9 000 px along a ring top
+   * would cost 4 500 px extra, and routes would drop 2 000 px to a row gap and climb back to avoid it.
    */
   readonly hugCap: number;
   /**
    * What a route pays per px in the canvas margin (the canvas's ring), relative to 1: the margin is the gutter
    * beside the outermost zones, needed only to reach a side of one that faces the canvas edge, so routes do
-   * not run round the diagram through it (ADR 0027).
+   * not run round the diagram through it.
    */
   readonly marginFactor: number;
 }
@@ -217,9 +217,9 @@ export const TARGET_ASPECT = 1.6;
 export const ROOT_ASPECT = 1.75;
 
 /**
- * The band around the packing target (ADR 0025: "within 20 % of target"): a children
- * box within this relative deviation of the target needs no empty frame, so among those the most compact
- * arrangement wins (src/pack.ts).
+ * The band around the packing target ("within 20 % of target": agents.md, Layout and drawing rules): a
+ * children box within this relative deviation of the target needs no empty frame, so among those the most
+ * compact arrangement wins (src/pack.ts).
  */
 export const ASPECT_TOLERANCE = 0.2;
 

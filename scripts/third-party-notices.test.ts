@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * scripts/third-party-notices.mjs: the notices file for a throw-away pnpm workspace whose frontend,
- * backend and render library (the backend's render worker, ADR 0033) depend on planted packages under chosen
+ * backend and render library (the backend's render worker) depend on planted packages under chosen
  * licences (`file:` dependencies, installed offline), and its helpers on their own. Every name, author and text is
  * synthetic, except the canonical licence texts of scripts/licenses/.
  */
@@ -287,7 +287,8 @@ describe('the third-party statements about the Google Cloud product icons', () =
 
   it('THIRD_PARTY.md says they are Google Cloud’s, provided at cloud.google.com/icons, not licensed by gcportrait', () => {
     const text = read('THIRD_PARTY.md');
-    // The maintainer's rule of 2026-10-11: "Google" or "Google Cloud", never the company's legal name.
+    // "Google" or "Google Cloud", never the company's legal name (agents.md, Non-affiliation, brand and
+    // legal).
     expect(text).not.toContain(['Google', 'LLC'].join(' '));
     expect(text).toContain('https://cloud.google.com/icons');
     expect(text).toMatch(/Google Cloud product icons\*\*: Google Cloud's/);

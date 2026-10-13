@@ -8,7 +8,7 @@ import type { PublicConfig } from '../api/config';
 
 /**
  * How Cloud Asset Inventory is read: `user` with the person's own token (the default), `sa` through the instance's
- * service account when the backend offers service-account mode (ADR 0004, ADR 0028 §4).
+ * service account when the backend offers service-account mode (agents.md, Modes and hosting).
  */
 export type AccessMode = 'user' | 'sa';
 

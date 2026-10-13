@@ -140,20 +140,6 @@ describe('loadSources', () => {
     expect(sources.loadViolations).toEqual([]);
   });
 
-  it('flags the old single known-unmapped.yaml', () => {
-    write('known-unmapped/net.yaml', 'title: Net\n');
-    write('known-unmapped.yaml', 'types: {}\n');
-    write('icon-keys.json', '{"description":"x","keys":[]}');
-    expect(loadSources(root).loadViolations).toEqual([
-      {
-        code: 'file-name',
-        file: 'known-unmapped.yaml',
-        message:
-          'the single file became known-unmapped/<group>.yaml (one per authoring group): move its entries there',
-      },
-    ]);
-  });
-
   it('falls back to version 0.0.0 without a package.json', () => {
     expect(catalogVersion(root)).toBe('0.0.0');
     write('package.json', '{"version":"1.2.3"}');

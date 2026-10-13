@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The service-account gate (ADR 0028 §4 and its amendment) against a pretend Google: allowed, denied, the memo
- * (a pass remembered, an expired one checked again, never across tokens or scopes, never a refusal), strict mode's
- * exposure check, the account's token, and the audit line. In every refusal no call is made as the account.
+ * The service-account gate (agents.md, Security and privacy, The service-account gate) against a pretend
+ * Google: allowed, denied, the memo (a pass remembered, an expired one checked again, never across tokens or
+ * scopes, never a refusal), strict mode's exposure check, the account's token, and the audit line. In every
+ * refusal no call is made as the account.
  */
 import pino from 'pino';
 import { describe, expect, it } from 'vitest';

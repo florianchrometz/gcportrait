@@ -2,14 +2,12 @@
 
 # @gcportrait/catalog
 
-The asset catalog: what gcportrait knows about each Cloud Asset Inventory asset type, kept as data (ADR 0015;
-the entry schema and the roles in skill gcp-asset-catalog §2–§3), plus the one rule engine that reads it. The
-graph builder (`@gcportrait/graph`) evaluates relations, labels, addresses, aliases and default visibility
-through this package, so rule semantics live here only
-([ADR 0020](../../docs/adr/0020-graph-depends-on-catalog.md)). The skill
+The asset catalog: what gcportrait knows about each Cloud Asset Inventory asset type, kept as data
+(agents.md, Data and graph semantics; the entry schema and the roles in skill gcp-asset-catalog §2–§3), plus
+the one rule engine that reads it. The graph builder (`@gcportrait/graph`) evaluates relations, labels,
+addresses, aliases and default visibility through this package, so rule semantics live here only. The skill
 [gcp-asset-catalog](../../.agents/skills/gcp-asset-catalog/SKILL.md) is the contributor guide; this file
-describes the package. How several groups author it at once is
-[ADR 0021](../../docs/adr/0021-catalog-group-authoring.md).
+describes the package. How several groups author it at once is "Authoring a group" below.
 
 ```ts
 import { buildProjectIndex } from '@gcportrait/model';
@@ -87,14 +85,13 @@ editor, `vitest watch`), run `pnpm catalog:build` after editing YAML; a unit tes
 
 ## Authoring a group
 
-The official types are mapped group by group ([ADR 0021](../../docs/adr/0021-catalog-group-authoring.md)), by
-as many authors at once as there are groups. Every file belongs to one group, so no two authors edit the same
-file.
+The official types are mapped group by group, by as many authors at once as there are groups. Every file
+belongs to one group, so no two authors edit the same file.
 
 **Your group file.** `known-unmapped/<group>.yaml` is yours: `networking-fabric`, `hybrid-connectivity`,
 `load-balancing-edge`, `dns-domains`, `compute`, `containers-serverless`, `data-stores`,
 `data-processing-messaging`, `ai`, `security-identity`, `developer-tooling-delivery`, `operations-platform`,
-plus `hierarchy` (the Resource Manager types of the catalog seed) and `policy-and-runtime` (IAM-policy-only
+plus `hierarchy` (the Resource Manager types) and `policy-and-runtime` (IAM-policy-only
 types that are no RESOURCE content and stay unmapped). It has three keys:
 
 ```yaml
@@ -113,11 +110,11 @@ equally is an error. `owns` never changes while you map; `types` shrinks.
 has no such plain file: each group writes into `products/<service>.<group>.yaml`, `<group>` being the group
 file's stem, or `products/<service>.<group>-<more>.yaml` for a second file
 (`product-file-group` otherwise). A file whose suffix names a group in this way is that group's file, whatever
-its service, and holds that group's types only. The shared services and their files today:
+its service, and holds that group's types only. The shared services and their files:
 
 | Service | Files |
 |---|---|
-| `compute.googleapis.com` (split by the catalog seed's sections; Cross-Site Interconnect goes with hybrid connectivity) | `.networking-fabric.yaml` (holds the seeded network and subnetwork), `.hybrid-connectivity.yaml`, `.load-balancing-edge.yaml`, `.compute.yaml` |
+| `compute.googleapis.com` (split by the catalog seed's sections; Cross-Site Interconnect goes with hybrid connectivity) | `.networking-fabric.yaml` (holds the network and subnetwork), `.hybrid-connectivity.yaml`, `.load-balancing-edge.yaml`, `.compute.yaml` |
 | `networksecurity.googleapis.com` (split by product) | `.networking-fabric.yaml`, `.load-balancing-edge.yaml` |
 | `iap.googleapis.com` | `.security-identity.yaml` (the policy-only IAP types stay unmapped in `policy-and-runtime`) |
 
@@ -181,12 +178,11 @@ keyed by asset type, each a `CatalogTypeEntrySchema` with `role` (`container | c
 service of the target for the `name` and `siblingName` normalisers, which otherwise use the asset's own
 service; `pattern` is `siblingName`'s (required there), `k8sKind` is `k8sRef`'s, `versionLevel` is `kmsKey`'s.
 
-- `reverse: true` ([ADR 0022](../../docs/adr/0022-reverse-rules-and-child-side-containment.md)): the
-  edge is drawn from the referenced node to the asset (a Cloud SQL replica's `masterInstanceName` draws
-  primary `replicates` replica; a backend service's `securityPolicy` draws the policy `secures` the backend).
-  A dangling reverse reference stays with the asset that holds it. With `weak`, the edge is a fallback the
-  target's own rule usually draws (the copies merge, strong wins).
-- `nestsIn` (ADR 0022): one rule or a list, `{ to, normalize, service?, pattern?, k8sKind?, kind? }`,
+- `reverse: true`: the edge is drawn from the referenced node to the asset (a Cloud SQL replica's
+  `masterInstanceName` draws primary `replicates` replica; a backend service's `securityPolicy` draws the
+  policy `secures` the backend). A dangling reverse reference stays with the asset that holds it. With `weak`,
+  the edge is a fallback the target's own rule usually draws (the copies merge, strong wins).
+- `nestsIn`: one rule or a list, `{ to, normalize, service?, pattern?, k8sKind?, kind? }`,
   naming the container the asset nests in (an instance's managed group, a disk's storage pool). The graph
   builder tries it right after the containers' own claims and before the attachment heuristics; it nests the
   asset in the first target that is a `container` node of the same project without closing a cycle, and
@@ -236,8 +232,7 @@ singular; the plural is `<word>s` unless given; a missing count stays missing, s
 subtitle that counts uses it: the `… instances`, `… nodes`, `… replicas`, `… slots`, `… shards`, `… bytes`,
 `… days`, `… cores`, `… backups`, `… workers` and `… VMs` subtitles of 21 types do (ranges such as
 `2–5 replicas` keep the plural). A missing variable renders as nothing. Labels and subtitles render by
-` · `-separated segment ([ADR 0023](../../docs/adr/0023-sibling-and-kubernetes-reference-normalisers.md)): a
-segment whose expressions are all missing is dropped with its literal text
+` · `-separated segment: a segment whose expressions are all missing is dropped with its literal text
 (`{{data.sizeGb}} GB · {{location}}` renders `europe-west3` when the size is missing), and a label that
 renders empty falls back to `data.displayName`, the last segment of `data.name`, then the last segment of the
 asset name (also the label of a type the catalog does not know). A console URL with any missing variable is
@@ -282,8 +277,8 @@ them trim, ignore trailing slashes and decode a value that is a wholly URL-encod
 | `projectNumberOrId` | numbers (also as JSON numbers), ids, `projects/…`, Resource Manager full names | `//cloudresourcemanager.googleapis.com/projects/<number>`; an id the index does not know stays an id |
 | `k8sOwner` | an `ownerReferences[*]` object `{ apiVersion, kind, name }` | the owner in the same cluster (and namespace unless cluster-scoped): `…/k8s/namespaces/n/<group>/<plural>/<name>`; a group Kubernetes does not serve itself is `apis/<group>` (Gateway API) |
 | `logSinkDestination` | `storage…/b`, `bigquery…/projects/p/datasets/d`, `pubsub…/projects/p/topics/t`, `logging…/<parent>/locations/l/buckets/b`, `logging…/projects/p` | the bucket, dataset, topic, log bucket or project |
-| `siblingName` (ADR 0023) | a bare id (`staging`), a path (`projects/…/instanceGroupManagers/m`, full names and self-links too), or an object (`{ service, region }`, `{ name, projectId }`) | the rule's `pattern` filled in, in the rule's `service`: placeholders `{id}`, `{parent}`, `{project}`, `{projectId}`, `{projectNumber}`, `{location}`, `{region}`, `{zone}`, `{.key}` (below) |
-| `k8sRef` (ADR 0023) | a bare name of the rule's `k8sKind`, or `{ name, kind?, group? \| apiGroup? \| apiVersion?, namespace? }` | the object in the asset's cluster, in its namespace unless named or cluster-scoped, group as for `k8sOwner` |
+| `siblingName` | a bare id (`staging`), a path (`projects/…/instanceGroupManagers/m`, full names and self-links too), or an object (`{ service, region }`, `{ name, projectId }`) | the rule's `pattern` filled in, in the rule's `service`: placeholders `{id}`, `{parent}`, `{project}`, `{projectId}`, `{projectNumber}`, `{location}`, `{region}`, `{zone}`, `{.key}` (below) |
+| `k8sRef` | a bare name of the rule's `k8sKind`, or `{ name, kind?, group? \| apiGroup? \| apiVersion?, namespace? }` | the object in the asset's cluster, in its namespace unless named or cluster-scoped, group as for `k8sOwner` |
 
 **`siblingName` resolution.** Each placeholder takes its value from the reference first, then from the asset
 that holds it: `{id}` is a bare value, a path's last segment or an object's `name`; `{parent}` is a path
@@ -294,7 +289,7 @@ path's `projects/<p>`, else the asset name's project segment, else its project's
 `location`, `region` or `zone`, else the path's `locations|regions|zones/<l>`, else the asset's location;
 `{region}` is that location with a zone turned into its region, `{zone}` a zone only; `{.key}` is the object's
 string property. A placeholder without a value yields no name, and the value dangles as read. Which spelling of
-the project a pattern writes does not matter: the graph matches either (ADR 0024).
+the project a pattern writes does not matter: the graph matches either (packages/graph/README.md).
 
 **`k8sRef` resolution.** The kind is the object's `kind`, else the rule's `k8sKind`; the group is the object's
 `group` or `apiGroup` (`''` is the core group), else its `apiVersion`'s group, else the rule's group when the
@@ -336,7 +331,7 @@ fails the check; warnings do not:
 
 | Code | Meaning |
 |---|---|
-| `load`, `schema`, `file-name` | unreadable or invalid YAML/JSON, a schema error (with its line), a file in the wrong place or misnamed (`products/<service>[.<suffix>].yaml`, `known-unmapped/<group>.yaml`, the old single `known-unmapped.yaml`) |
+| `load`, `schema`, `file-name` | unreadable or invalid YAML/JSON, a schema error (with its line), a file in the wrong place or misnamed (`products/<service>[.<suffix>].yaml`, `known-unmapped/<group>.yaml`) |
 | `syntax` | a malformed JSONPath, predicate or template |
 | `duplicate-type` | a type described in two product files (both named); blamed on the one that is not its owner's file, whose entry stays |
 | `product-mismatch` | two files of one product (same service and name) with different product icons; blamed on the later file |
@@ -385,17 +380,17 @@ parses a saved page; the weekly `catalog-drift.yml` workflow runs the script and
 changed. Commit a new snapshot together with the catalog changes it requires: the compiler then checks against
 it, and every new type must be mapped, or owned and listed by a group file (`owns` plus a `types` line).
 
-### Coverage on 2026-10-09
+### Coverage
 
-Against the official list of 2026-10-09 (641 types): **632 mapped (98.6 %)**, of which 63 containers, 257
-core, 79 leaf and 233 hidden by default; **9 unmapped**, each listed with its reason in the group file that
+Against the official list of 2026-10-09 (641 types): **632 mapped (98.6 %)**, of which 69 containers, 258
+core, 71 leaf and 234 hidden by default; **9 unmapped**, each listed with its reason in the group file that
 owns it: the 7 IAP types of `policy-and-runtime` (IAM policy content only, no RESOURCE data, outside v1
 ingestion) and the 2 BeyondCorp client-connector types of `security-identity` (`ClientConnectorService`,
 `ClientGateway`: shut down on 2023-12-31, the API reference documents no fields any more). 156 products in 159
-product files; 1 350 rules (relation, address, domain, containment and alias paths), every one proven by a
-fixture; 632 fixture files, one per mapped type; 11 lenses; 0 violations. 17 icon keys were listed in
-`icon-keys.json` and 117 more were pending, the check's only warnings. Coverage stays at or above 95 % of the
-official list, with no rule without a fixture (skill gcp-asset-catalog §8).
+product files; 1 387 rules (relation, address, domain, containment and alias paths), every one proven by a
+fixture; 632 fixture files, one per mapped type; 11 lenses; 134 icon keys, none pending; 0 violations.
+Coverage stays at or above 95 % of the official list, with no rule without a fixture (skill gcp-asset-catalog
+§8).
 
 | Group | Official | Mapped | Container | Core | Leaf | Hidden | Unmapped | Product files |
 |---|---|---|---|---|---|---|---|---|
@@ -404,51 +399,45 @@ official list, with no rule without a fixture (skill gcp-asset-catalog §8).
 | `hybrid-connectivity` | 18 | 18 | 2 | 13 | 0 | 3 | 0 | 4 |
 | `load-balancing-edge` | 54 | 54 | 5 | 36 | 11 | 2 | 0 | 8 |
 | `dns-domains` | 5 | 5 | 2 | 1 | 0 | 2 | 0 | 1 |
-| `compute` | 45 | 45 | 5 | 22 | 5 | 13 | 0 | 8 |
-| `containers-serverless` | 85 | 85 | 9 | 32 | 15 | 29 | 0 | 23 |
-| `data-stores` | 58 | 58 | 7 | 25 | 7 | 19 | 0 | 19 |
+| `compute` | 45 | 45 | 7 | 19 | 5 | 14 | 0 | 8 |
+| `containers-serverless` | 85 | 85 | 11 | 38 | 7 | 29 | 0 | 23 |
+| `data-stores` | 58 | 58 | 9 | 23 | 7 | 19 | 0 | 19 |
 | `data-processing-messaging` | 58 | 58 | 5 | 25 | 12 | 16 | 0 | 17 |
 | `ai` | 53 | 53 | 4 | 17 | 3 | 29 | 0 | 10 |
 | `security-identity` | 84 | 82 | 5 | 30 | 9 | 38 | 2 | 27 |
 | `developer-tooling-delivery` | 43 | 43 | 4 | 9 | 4 | 26 | 0 | 9 |
 | `operations-platform` | 93 | 93 | 10 | 29 | 12 | 42 | 0 | 27 |
 | `policy-and-runtime` | 7 | 0 | 0 | 0 | 0 | 0 | 7 | 0 |
-| **Total** | **641** | **632** | **63** | **257** | **79** | **233** | **9** | **159** |
+| **Total** | **641** | **632** | **69** | **258** | **71** | **234** | **9** | **159** |
 
-The table records that day; `pnpm catalog:coverage` (per group) and `pnpm catalog:check` (overall) print the
-current numbers.
+`pnpm catalog:coverage` (per group) and `pnpm catalog:check` (overall) print these numbers for the tree as it
+is; update the table when they change.
 
-## The seed and the group files
+## Shared product files
 
-The seed mapped the Resource Manager product (Organization, Folder, Project containers; TagKey, TagValue,
-TagBinding, Lien hidden) and the Tier-0 containers of the nesting order (skill gcp-diagram-layout §2): VPC
-network and subnetwork, GKE cluster, Kubernetes namespace, BigQuery dataset, KMS key ring, AlloyDB cluster,
-Spanner instance, Bigtable instance, Dataplex lake and zone, Apigee organization, VMware Engine private cloud,
-Dataform repository, Service Directory namespace and service. Group authoring (ADR 0021) split its single
-unmapped list into the group files above (Compute Engine by the seed's sections: networking fabric, hybrid
-connectivity, load balancing, compute, except Cross-Site Interconnect's CrossSiteNetwork and WireGroup, which
-go with hybrid connectivity; the seven IAM-policy-only IAP types into `policy-and-runtime`), renamed the
-Compute Engine seed file to `compute.googleapis.com.networking-fabric.yaml` (its group's file), gave the
-network containers their zone kinds and the Kubernetes namespace, Dataplex zone and Service Directory service
-their console links (`parentSegment`). Console URL templates are best-effort links to the matching Cloud
-Console page; correct one when a page moves.
+Compute Engine's types are split by the sections of the catalog seed (the skill's
+`references/catalog-seed.md`): networking fabric (`compute.googleapis.com.networking-fabric.yaml`, with the
+VPC network and subnetwork), hybrid connectivity (Cross-Site Interconnect's CrossSiteNetwork and WireGroup
+included), load balancing and compute. The seven IAM-policy-only IAP types belong to `policy-and-runtime` and
+stay unmapped. Console URL templates are best-effort links to the matching Cloud Console page; correct one
+when a page moves.
 
-## The catalog review (2026-10-09)
+## Conventions
 
-The review checked the twelve groups' work as one catalog: `pnpm catalog:check` clean (632 of 641 official
-types mapped, 98.6 %; 9 unmapped with a reason; 0 rules without a fixture), relation kinds and directions made
-consistent across groups (every notification topic a resource publishes to is `triggers`; one edge per link,
-not one from each side: a cluster's fleet membership, an Eventarc trigger's function; a Private Service
-Connect interface NIC `connects`, so it never reads as Shared VPC), reviewer findings fixed in place, the 11
-lenses rewritten as explicit, catalog-driven type lists (each file's header says what it takes and why), the
-demo organisation M rendered through every lens, and the graph tests moved onto the real catalog.
+What public documentation does not settle, and what needs a change outside the catalog's data files (project
+id versus number in names, template filters, demo-data cases), is the open work in
+[docs/catalog-followups.md](../../docs/catalog-followups.md).
 
-What could not be settled from public documentation, and what needs a change outside the catalog's data
-files (project id versus number in names, reverse and child-side rules, missing normalisers, template filters,
-demo-data cases), is the backlog in [docs/catalog-followups.md](../../docs/catalog-followups.md).
+### Relation conventions
+
+- Relation kinds and directions are the same across groups: every notification topic a resource publishes to
+  is `triggers`.
+- One edge per link, not one from each side: a cluster's fleet membership, an Eventarc trigger's function.
+- A Private Service Connect interface NIC `connects`, so it never reads as Shared VPC.
 
 ### Lens conventions
 
+- Each lens file's header says what the lens takes and why.
 - A lens lists types, not "everything of a service", where a service mixes architecture with records:
   `compute.googleapis.com`, `networksecurity.googleapis.com`, `networkservices.googleapis.com`, BigQuery and
   Bigtable are listed type by type in the overview. Lenses cannot exclude types, so a glob is only used where
@@ -458,17 +447,3 @@ demo-data cases), is the backlog in [docs/catalog-followups.md](../../docs/catal
   `runsAs` or `encryptedBy` rule, add it to the identity or security lens in the same change.
 - A lens lists the targets its relation kinds need: a `uses` edge whose target type is not in the lens is not
   drawn there.
-
-## Engine follow-ups
-
-The engine work on section 1 of [catalog-followups.md](../../docs/catalog-followups.md) (its section 6 is the
-record) added `reverse` and `nestsIn`
-([ADR 0022](../../docs/adr/0022-reverse-rules-and-child-side-containment.md)), the `siblingName` and `k8sRef`
-normalisers, `first(…)`, segment dropping and the `hiddenWhen` proof
-([ADR 0023](../../docs/adr/0023-sibling-and-kubernetes-reference-normalisers.md)), applied where the
-follow-ups listed a workaround; the graph builder's side is
-[ADR 0024](../../docs/adr/0024-graph-builder-project-matching-and-shared-vpc.md). After it: 632 types (69
-container, 258 core, 71 leaf, 234 hidden), 1 387 rules, `pnpm catalog:check` clean. Fixtures changed only
-where a new rule or check needed a shape: a folder in deletion (Folder, for the `hiddenWhen` proof), a Cloud
-SQL read replica, a sole-tenant VM, serverless NEGs for a function and App Engine, an Eventarc trigger with a
-GKE destination, a Cloud Deploy multi-target, and Ingress default backends.

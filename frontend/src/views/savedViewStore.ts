@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * Saved views (ADR 0035 §5: IndexedDB for snapshots, saved views and preferences): a name and the
- * view's URL hash, kept in the `savedViews` store of the browser database (storage/db.ts, `StoredView`), so a
+ * Saved views (IndexedDB for snapshots, saved views and preferences; agents.md, Architecture and code): a name and
+ * the view's URL hash, kept in the `savedViews` store of the browser database (storage/db.ts, `StoredView`), so a
  * saved view reopens exactly as its link would. Nothing leaves the browser. When IndexedDB is unavailable (some
  * private windows, tests without it) the views are kept in memory for the session and every write says so
  * (`persisted: false`), as the preference store does.

@@ -118,7 +118,7 @@ describe('buildGraph on the scenario', () => {
     });
 
     it('reports the pair with its attachments and the shared-with count of each host-side target', () => {
-      // Only attachments into the host's subnets (or a Shared VPC host's networks) count (ADR 0024); the Cloud
+      // Only attachments into the host's subnets (or a Shared VPC host's networks) count; the Cloud
       // Run service's connector in the host project is drawn, but it is no evidence of Shared VPC.
       expect(report.sharedVpc).toEqual([
         { service: PROJECT_WEB, host: PROJECT_HOST, attachments: [{ from: ON_HOST, to: HOST_SUBNET }] },
@@ -128,7 +128,7 @@ describe('buildGraph on the scenario', () => {
     });
   });
 
-  describe('rule 4: types the catalog does not map', () => {
+  describe('types the catalog does not map', () => {
     it('renders them as generic leaf cards in their project, labelled from the data, without edges', () => {
       expect(graph.nodes[GADGET]).toEqual({
         id: GADGET,
@@ -640,7 +640,7 @@ describe('peerings', () => {
   });
 });
 
-describe('child-side containment: nestsIn (ADR 0022)', () => {
+describe('child-side containment: nestsIn', () => {
   const OTHER_ID = 'demo-other-1';
   const OTHER_NUMBER = '10000000077';
   const POOLS = catalogWith([
@@ -749,7 +749,7 @@ describe('nestsIn through an alias', () => {
   });
 });
 
-describe('Shared VPC hosts (ADR 0024)', () => {
+describe('Shared VPC hosts', () => {
   it('marks a project whose Compute settings say HOST, and only counts its networks then', () => {
     const settings = (projectId: string, number: string, status: string): Asset =>
       resource(`//compute.googleapis.com/projects/${projectId}`, 'compute.googleapis.com/Project', number, {

@@ -54,8 +54,8 @@ export function isReleaseTag(value: unknown): value is string {
 
 /**
  * A count as GitHub abbreviates it on a repository's star and fork buttons: exact below 1000, then thousands with one
- * decimal, rounded, and a trailing ".0" dropped (999, 1k, 1.2k, 12k, 12.3k, 63.2k for 63,156, 456.8k, 1.2M). GitHub's
- * own pages read that way on 2026-10-11 (vitejs/vite 83,280 stars: "83.3k"; withastro/astro 63,156: "63.2k").
+ * decimal, rounded, and a trailing ".0" dropped (999, 1k, 1.2k, 12k, 12.3k, 63.2k for 63,156, 456.8k, 1.2M), as
+ * GitHub's own pages show them (83,280 stars read "83.3k", 63,156 read "63.2k").
  */
 export function formatCount(count: number): string {
   const whole = Math.max(0, Math.round(count));

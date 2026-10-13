@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * The snapshot worker's protocol (ADR 0035 §5: ingest off the UI thread). The page hands over files to import; the
+ * The snapshot worker's protocol (ingest off the UI thread). The page hands over files to import; the
  * worker reads, checks and encodes them and answers with records ready to store (`PreparedSnapshot`: Blobs and
  * listing metadata, never parsed assets), which the page writes to IndexedDB (../repository.ts); before an export
  * it reads a stored record in full (`check`). Each job reports its stages as it goes. A demo organisation is
  * prepared the same way, as a `PreparedSnapshot` with the same progress, but by a demo worker started for the job,
- * as the demo generator runs in the diagram's workers only (ADR 0029 as amended on 2026-10-11;
- * diagram/pipeline/demoRole.ts).
+ * as the demo generator runs in the diagram's workers only (diagram/pipeline/demoRole.ts; agents.md, Architecture
+ * and code).
  */
 import type { SnapshotMeta } from '../../storage/db';
 

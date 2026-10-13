@@ -23,8 +23,8 @@ export function clockTime(epochMs: number): string {
 
 /**
  * Who runs this instance: the backend's `hostedBy` line, "Hosted by NAME.", or null when it names nobody. The line
- * carries no non-affiliation statement (ADR 0018: the footer says it on every page); a backend from before 2026-10-12
- * ended it with the short line, which is cut off here.
+ * carries no non-affiliation statement (the footer says it on every page; agents.md, Non-affiliation, brand and
+ * legal): a statement at its end is cut off here.
  */
 export function hostedByLine(config: PublicConfig | null): string | null {
   const line = config?.hostedBy?.replace(/\s*Not affiliated with Google\b.*$/su, '').trim() ?? '';
@@ -32,8 +32,8 @@ export function hostedByLine(config: PublicConfig | null): string | null {
 }
 
 /**
- * What Google will ask, said before sign-in (ADR 0028 §6): the `cloudasset` scope reads like read-write on
- * Google's consent screen, although gcportrait only lists assets with it.
+ * What Google will ask, said before sign-in (agents.md, Security and privacy, OAuth scopes): the `cloudasset` scope
+ * reads like read-write on Google's consent screen, although gcportrait only lists assets with it.
  */
 export const CONSENT_NOTE =
   'Google will ask you to let gcportrait view your Google Cloud data and your Cloud Asset Inventory data. ' +

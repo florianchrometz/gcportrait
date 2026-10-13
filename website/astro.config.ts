@@ -23,7 +23,7 @@ import { analyticsEnabled } from './src/lib/analytics.js';
 import { DEMO_URL, IMPRESSUM_URL, PRIVACY_URL } from './src/site.js';
 
 /**
- * The website (ADR 0009): a static Astro site for GitHub Pages at
+ * The website: a static Astro site for GitHub Pages at
  * https://gcportrait.app (website/public/CNAME). Every page is a directory with an index.html and a trailing
  * slash, which is what GitHub Pages serves without redirects. No image service: the media are generated
  * (scripts/media.mjs) and used as they are, so sharp (whose libvips is LGPL) is not needed.
@@ -163,7 +163,7 @@ function installer(): AstroIntegration {
 }
 
 /**
- * The demo at /demo/ (src/site.ts DEMO_URL, ADR 0034): the static build of the app in demo-only mode, which needs no
+ * The demo at /demo/ (src/site.ts DEMO_URL): the static build of the app in demo-only mode, which needs no
  * server, placed into the site after Astro has written its pages. By default the build makes it itself, running the
  * root command (scripts/static-demo.mjs, `pnpm demo:static`) with `--out dist/demo` and the footer's legal links, so
  * `pnpm website:build` alone gives the whole site. With WEBSITE_DEMO_DIST set (a directory, relative to the repository
@@ -266,8 +266,8 @@ function staticDemo(): AstroIntegration {
 }
 
 /**
- * Every .astro source carries its SPDX header as an HTML comment after the front matter (agents.md rule 2), which
- * Astro would copy into every page once per component; the built pages leave them out.
+ * Every .astro source carries its SPDX header as an HTML comment after the front matter (agents.md, Licence and
+ * dependencies), which Astro would copy into every page once per component; the built pages leave them out.
  */
 function withoutSourceHeaders(): AstroIntegration {
   const header = /[ \t]*<!-- SPDX-License-Identifier: [^>]* -->\n?/g;

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * One render (ADR 0033): a snapshot and the render options (`RenderOptionsSchema` of `@gcportrait/model`) to the
- * bytes of an SVG, a PNG or a draw.io file, with the app's export file name and what was drawn. The same functions as `pnpm render`
- * (view.ts, draw.ts, raster.ts), so a demo view comes out byte for byte as the command line writes it.
+ * One render (agents.md, Exports and the render API): a snapshot and the render options
+ * (`RenderOptionsSchema` of `@gcportrait/model`) to the bytes of an SVG, a PNG or a draw.io file, with the
+ * app's export file name and what was drawn. The same functions as `pnpm render` (view.ts, draw.ts,
+ * raster.ts), so a demo view comes out byte for byte as the command line writes it.
  *
  * The view is resolved as the command line resolves it: a hash is decoded leniently by `decodeViewSpec`, as the app
  * decodes its URL (its `snapshot`, `selection` and `highlight` do not change the drawing); explicit fields are

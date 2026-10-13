@@ -21,7 +21,7 @@ import type { StreamSettings } from './worker/protocol';
 export interface PullTarget {
   readonly scope: SnapshotScope;
   readonly mode: AccessMode;
-  /** Required in user mode (ADR 0028 §1); never sent in service-account mode. */
+  /** Required in user mode; never sent in service-account mode. */
   readonly quotaProject?: string;
   /** A past read time (the timeline); now when absent. */
   readonly readTime?: string;

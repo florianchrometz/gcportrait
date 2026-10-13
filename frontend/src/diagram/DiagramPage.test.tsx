@@ -42,8 +42,8 @@ function countingWorkers(): { counts: { scene: number; layout: number }; factory
 describe('the diagram page', () => {
   it('draws demo S from the hash: named and described with no affiliation line, with the legend, fitted, the scope in the breadcrumb', async () => {
     // The title block's lines are titleBlock.test.ts's and the baselines'. The canvas's <title> and <desc> are drawn
-    // by DiagramCanvas itself, outside the Drawing, so the placement rule (ADR 0018) on the live canvas is checked
-    // here.
+    // by DiagramCanvas itself, outside the Drawing, so the placement rule (no affiliation line in a drawing) on the
+    // live canvas is checked here.
     const { counts, factory } = countingWorkers();
     const { container } = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: factory });
     const svg = await drawn(container);

@@ -205,7 +205,7 @@ export interface BenchCase {
 
 /**
  * S, M and L at `auto` and `all`; L overview at `projects` (skill §8's check view, which routes in three
- * passes: ADR 0027); XL collapsed (`folders`).
+ * passes); XL collapsed (`folders`).
  */
 export const BENCH_CASES: readonly BenchCase[] = [
   ...(['S', 'M', 'L'] as const).flatMap((fixture) =>

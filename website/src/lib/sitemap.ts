@@ -2,7 +2,7 @@
 /**
  * The pages the sitemap lists: every page of the site except the 404 page, in menu order, and the demo's entry page
  * (/demo/, src/site.ts DEMO_URL; the static demo the build places there), but none of the demo's other routes
- * (/demo/diagram and the like are states of the same app, ADR 0034). The site checker (scripts/check-site.ts) compares
+ * (/demo/diagram and the like are states of the same app). The site checker (scripts/check-site.ts) compares
  * it with the pages the build wrote. The Impressum and the privacy notice are not pages of this site (src/site.ts,
  * LEGAL_LINKS).
  */

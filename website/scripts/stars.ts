@@ -18,7 +18,7 @@
  *   would move something (a box where the build had none, on most widths) must leave the header's HTML as it was. A reload within the hour asks
  *   nothing and shows the kept facts; a reload with facts older than an hour asks again. Also, at 1440 pixels: a
  *   repository without a release (the release's 404) shows the counts and keeps the build's version.
- * - A failure, to both requests: GitHub's 404 (its answer for the private repository today) at every width; a 403 with
+ * - A failure, to both requests: GitHub's 404 (its answer for a private repository) at every width; a 403 with
  *   the rate limit spent, a 429, a 500, a body that is not JSON, counts that are not numbers, an answer slower than the
  *   page's 4 seconds, and no network, at 1440 and 390 pixels. The header's HTML and every box stay as they were;
  *   sessionStorage holds the note that the browser asked, without facts; a reload within the hour asks nothing.
@@ -33,8 +33,9 @@
  *   it runs the cases above and this one too, at 1440 and 390 pixels in both themes, with the marker added to the
  *   served landing page.
  * With `--real`, once (light, 1440 pixels): GitHub itself answers the page's own requests, with a cookie set for
- * api.github.com that must not be sent; a failure (today a 404) must change nothing and be kept, so a reload asks
- * GitHub nothing; facts must show. On a build that saw the repository as not public there is no request to make.
+ * api.github.com that must not be sent; a failure (a private repository's 404) must change nothing and be kept, so a
+ * reload asks GitHub nothing; facts must show. On a build that saw the repository as not public there is no request
+ * to make.
  *
  *   pnpm --filter @gcportrait/website stars [--count 1301] [--forks 42] [--release v1.0.0] [--real] [--shots DIR]
  *                                           [--dist DIR]

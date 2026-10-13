@@ -50,7 +50,7 @@ describe('titleBlock (style skill §7)', () => {
       tone: 'muted',
       baseline: 50,
     });
-    // Three lines and no more: the non-affiliation statement is in the app footer, never in a drawing (2026-10-11).
+    // Three lines and no more: the non-affiliation statement is in the app footer, never in a drawing.
     expect(Object.keys(block).sort()).toEqual(['height', 'meta', 'scope', 'tagline', 'width']);
     expect([block.scope, block.meta, block.tagline].map((line) => line.text).join('\n')).not.toMatch(
       /affiliated/i,

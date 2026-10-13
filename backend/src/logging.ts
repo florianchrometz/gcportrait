@@ -7,7 +7,7 @@ import type { ServerConfig } from './config.js';
 
 /**
  * Structured JSON logging (pino) shaped for Cloud Logging, with credentials and user identity kept out of
- * every line (agents.md rule 10; ADR 0035 §4, principles 1 and 2). Request and response bodies are never
+ * every line (agents.md, Security and privacy, principles 1 and 2). Request and response bodies are never
  * logged.
  */
 
@@ -54,9 +54,10 @@ export function sanitizeHeaders(headers: IncomingHttpHeaders): Record<string, st
 }
 
 /**
- * The URL as logged: the path, and `?[redacted]` in place of any query string. The API takes its input as JSON
- * bodies and the SPA keeps its view in the URL hash, which never reaches the server, so a query string carries
- * nothing worth logging; it could carry an OAuth code or a token sent there by mistake (ADR 0035 §4, principle 2).
+ * The URL as logged: the path, and `?[redacted]` in place of any query string. The API takes its input as
+ * JSON bodies and the SPA keeps its view in the URL hash, which never reaches the server, so a query string
+ * carries nothing worth logging; it could carry an OAuth code or a token sent there by mistake (agents.md,
+ * Security and privacy, principle 2).
  */
 export function sanitizeUrl(url: string): string {
   const queryStart = url.indexOf('?');
@@ -70,7 +71,7 @@ export function sanitizeUrl(url: string): string {
  */
 const CREDENTIAL_HEADERS = [
   'authorization',
-  // The caller's Google token as the app sends it (ADR 0031; stream/caller.ts).
+  // The caller's Google token as the app sends it (stream/caller.ts).
   'x-gcportrait-token',
   'proxy-authorization',
   'cookie',
@@ -99,8 +100,9 @@ const SEVERITY_BY_LEVEL: Readonly<Record<string, string>> = {
 
 /**
  * The request as logged. The client address is left out on purpose: it identifies a person as much as an
- * email does, and the backend never persists user identity (ADR 0005). Rate limiting still keys on it in
- * memory; it just never reaches a log line. `x-forwarded-for` is not on LOGGED_HEADERS for the same reason.
+ * email does, so logs never carry it (agents.md, Security and privacy, The backend). Rate limiting still keys
+ * on it in memory; it just never reaches a log line. `x-forwarded-for` is not on LOGGED_HEADERS for the same
+ * reason.
  */
 function serializeRequest(request: FastifyRequest) {
   return {

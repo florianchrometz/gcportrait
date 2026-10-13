@@ -1,5 +1,5 @@
 {
-  // The render library (ADR 0033): Node code (fs, zlib, WebAssembly) around the frontend's SVG components, which it
+  // The render library: Node code (fs, zlib, WebAssembly) around the frontend's SVG components, which it
   // imports through `@gcportrait/frontend`'s entry point (src/headless.ts there). Sources and tests are one project.
   // tsc checks the frontend through its project reference; at run time tsx (`pnpm render`, the backend in
   // development) and Vitest compile the frontend's .tsx files with the frontend's own JSX settings, and the backend's

@@ -23,7 +23,7 @@ const read = (repoPath: string): string => readFileSync(path.join(repoRoot(), re
 
 const paint = (fill: string, stroke: string, strokeWidth: string): Paint => ({ fill, stroke, strokeWidth });
 
-/** The mark as the maintainer approved it (website/public/favicon.svg until 2026-10-11): kept exactly. */
+/** The mark as the maintainer approved it (brand/icon.svg): kept exactly. */
 const APPROVED: Drawing = {
   viewBox: '0 0 48 48',
   shapes: [

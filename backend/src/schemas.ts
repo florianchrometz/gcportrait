@@ -5,7 +5,7 @@ import { z } from 'zod';
  * Response contracts. Each is written once as a zod schema (the type comes from z.infer) and handed to
  * Fastify as JSON Schema produced by zod's own converter, so Fastify's built-in serializer
  * (fast-json-stringify) emits only the declared fields and fails loudly when a required one is missing.
- * See backend/README.md for why this was chosen over a type-provider package.
+ * See backend/README.md for why it is used rather than a type-provider package.
  */
 
 export const HealthResponseSchema = z.object({
@@ -27,8 +27,8 @@ export const PublicConfigResponseSchema = z.object({
   hostedBy: z.string().nullable(),
   demo: z.literal(false),
   /**
-   * Demo-only mode (DEMO_ONLY; ADR 0032): no sign-in, no service-account mode, no route that calls Google; the
-   * Connect page offers the demo organisations only.
+   * Demo-only mode (DEMO_ONLY; agents.md, Modes and hosting): no sign-in, no service-account mode, no route
+   * that calls Google; the Connect page offers the demo organisations only.
    */
   demoOnly: z.boolean(),
   /**
@@ -42,7 +42,7 @@ export const PublicConfigResponseSchema = z.object({
     impressumUrl: z.string().nullable(),
     privacyUrl: z.string().nullable(),
   }),
-  /** The render API's limits (`POST /api/render`, ADR 0033), or null where the route is off (RENDER_API, DEMO_ONLY). */
+  /** The render API's limits (`POST /api/render`), or null where the route is off (RENDER_API, DEMO_ONLY). */
   render: z
     .object({
       maxAssets: z.number().int(),

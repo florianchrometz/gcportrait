@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * Scope names as the person types them and as the backend takes them (skill cai-ingestion §1): `organizations/ID`,
- * `folders/ID`, `projects/ID_OR_NUMBER`. Zod-free (ADR 0029: the UI thread ships no zod): the two patterns repeat
+ * `folders/ID`, `projects/ID_OR_NUMBER`. Zod-free (the UI thread ships no zod): the two patterns repeat
  * `NUMERIC_ID_PATTERN` and `PROJECT_REF_PATTERN` of `@gcportrait/model`, and scopeName.test.ts checks them against the
  * model's schemas, so they cannot drift. The backend validates again (backend/src/upstream/scope.ts).
  */

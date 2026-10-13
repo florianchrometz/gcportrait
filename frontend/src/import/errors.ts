@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * What went wrong with a live pull or an export read, in words a person can act on (docs/permissions.md, ADR 0028
- * §3). Google's message is always shown as it came (skill cai-ingestion §4); the title and the advice come from the
+ * What went wrong with a live pull or an export read, in words a person can act on (docs/permissions.md).
+ * Google's message is always shown as it came (skill cai-ingestion §4); the title and the advice come from the
  * HTTP status, Google's canonical code and the `ErrorInfo` reason, never from the message text. Permission problems
  * point to the Permissions page, whose check (the preflight) names the missing grant and its command.
  */

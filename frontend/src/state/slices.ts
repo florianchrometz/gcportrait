@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The application state (ADR 0035 §5: the URL hash holds everything that defines a view), in exactly
+ * The application state (the URL hash holds everything that defines a view; agents.md, Product rules), in exactly
  * seven slices. Plain data, no behaviour: `store.ts` changes it, `hooks.ts` reads it in React.
  *
  * | Slice | What | Source of truth |

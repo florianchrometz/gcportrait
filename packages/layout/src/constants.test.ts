@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The tuning constants the ADRs, the skills and the README state as numbers, pinned in one place so a change is
- * deliberate and lands with its documentation. The behaviour tests use the constants by name; this table holds
- * their values.
+ * The tuning constants agents.md, the skills and the README state as numbers, pinned in one place so a change
+ * is deliberate and lands with its documentation. The behaviour tests use the constants by name; this table
+ * holds their values.
  */
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ROUTING, DEFAULT_SIZING } from './constants.js';
@@ -12,14 +12,14 @@ import { HUG_DISTANCE, OVERSHOOT_LIMIT } from './testing/quality.js';
 
 describe('documented constants', () => {
   it.each([
-    ['NEAR_TIE (ADR 0026: near ties within 2 %)', NEAR_TIE, 0.02],
+    ['NEAR_TIE (skill gcp-diagram-layout §4: near ties within 2 %)', NEAR_TIE, 0.02],
     [
-      'DEFAULT_ROUTING.singlePassWork (ADR 0027 rule 4: 420 000 settled states)',
+      'DEFAULT_ROUTING.singlePassWork (skill gcp-diagram-layout §5: 420 000 settled states)',
       DEFAULT_ROUTING.singlePassWork,
       420_000,
     ],
     [
-      'DEFAULT_ROUTING.oneRoundWork (ADR 0027 rule 4: 340 000 settled states)',
+      'DEFAULT_ROUTING.oneRoundWork (skill gcp-diagram-layout §5: 340 000 settled states)',
       DEFAULT_ROUTING.oneRoundWork,
       340_000,
     ],
@@ -30,7 +30,7 @@ describe('documented constants', () => {
       3 * DEFAULT_SIZING.cardMaxWidth,
     ],
     ['HUG_DISTANCE (src/testing/quality.ts: a segment within 20 px of a border hugs it)', HUG_DISTANCE, 20],
-    ['OVERSHOOT_LIMIT (ADR 0027: routes more than 1 000 px past both ends)', OVERSHOOT_LIMIT, 1000],
+    ['OVERSHOOT_LIMIT (README: routes more than 1 000 px past both ends)', OVERSHOOT_LIMIT, 1000],
   ])('%s', (_name, value, documented) => {
     expect(value).toBe(documented);
   });

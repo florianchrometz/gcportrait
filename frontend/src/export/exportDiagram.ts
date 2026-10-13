@@ -156,10 +156,10 @@ export async function exportPngFile(
 }
 
 /**
- * The draw.io file (ADR 0036): the export's drawing, as the SVG export draws it, translated into draw.io's cells
- * (drawio/translate.ts) by a module this loads on demand, so it is no part of the first paint. A "current viewport"
- * export keeps the cells that meet the visible area, whole, and puts the title block above and the legend below
- * everything it keeps. `version` is the instance's (the file's `agent`).
+ * The draw.io file (agents.md, Exports and the render API): the export's drawing, as the SVG export draws it,
+ * translated into draw.io's cells (drawio/translate.ts) by a module this loads on demand, so it is no part of the
+ * first paint. A "current viewport" export keeps the cells that meet the visible area, whole, and puts the title
+ * block above and the legend below everything it keeps. `version` is the instance's (the file's `agent`).
  */
 export async function exportDrawioFile(
   source: ExportSource,

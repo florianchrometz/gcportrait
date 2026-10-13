@@ -13,7 +13,7 @@ export type PublicConfig = {
   readonly saMode: boolean;
   /**
    * Whether service-account mode's gate also refuses a scope the account can see on its own (the backend's
-   * SA_MODE_STRICT_EXPOSURE). An older backend that does not send it counts as off.
+   * SA_MODE_STRICT_EXPOSURE). Absent, it counts as off.
    */
   readonly saStrictExposure?: boolean;
   readonly backendServiceAccount: string | null;
@@ -22,13 +22,13 @@ export type PublicConfig = {
   readonly sourceUrl: string;
   /**
    * Who runs this instance, "Hosted by NAME." (the backend's HOSTED_BY), or null when it names nobody. The Connect
-   * page shows it next to "Sign in with Google" (`hostedByLine`); absent, as from an older backend, it shows nothing.
+   * page shows it next to "Sign in with Google" (`hostedByLine`); absent, it shows nothing.
    */
   readonly hostedBy?: string | null;
   readonly demo: boolean;
   /**
    * Demo-only mode (the backend's DEMO_ONLY): no sign-in, nothing read from Google Cloud; the Connect page
-   * offers the demo organisations only (demoOnly.ts). An older backend that does not send it counts as off.
+   * offers the demo organisations only (demoOnly.ts). Absent, it counts as off.
    */
   readonly demoOnly?: boolean;
   /**
@@ -42,7 +42,7 @@ export type PublicConfig = {
 
 /**
  * Whether the instance publishes an Impressum and a privacy notice as texts of its own, and where it links pages
- * published elsewhere (null or absent: it links none; an older backend sends only the booleans). A page is one or the
+ * published elsewhere (null or absent: it links none). A page is one or the
  * other (the backend refuses both).
  */
 export type LegalPages = {

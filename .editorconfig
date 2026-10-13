@@ -19,13 +19,3 @@ trim_trailing_whitespace = false
 # Licence texts are kept verbatim.
 max_line_length = off
 trim_trailing_whitespace = false
-
-[legacy/**]
-# Frozen reference tree: never reformatted.
-charset = unset
-end_of_line = unset
-indent_style = unset
-indent_size = unset
-insert_final_newline = unset
-trim_trailing_whitespace = unset
-max_line_length = unset

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * The data worker's protocol (ADR 0035 §5: ingest and graph build off the UI thread). The page asks for
+ * The data worker's protocol (ingest and graph build off the UI thread). The page asks for
  * the lens list or for the Scene of a view; the worker loads the view's snapshot (a demo organisation, generated
  * by `@gcportrait/demo-data` and read by `@gcportrait/ingest`, or a snapshot stored in IndexedDB), builds its
  * Graph once (`@gcportrait/graph` with the compiled catalog), keeps it, and answers each view with its Scene and
  * report, the icons the Scene draws, the type names of its product-container zones and its nodes' console links.
  * The `demo` request prepares a demo organisation for the snapshot library ("Try the demo"); the page
  * sends it to a worker started for the job (demoRole.ts, the same protocol), so the data worker's requests never
- * wait behind it; the demo generator runs in workers only (ADR 0029). The layout runs in its own worker
+ * wait behind it; the demo generator runs in workers only. The layout runs in its own worker
  * (`@gcportrait/layout`'s protocol).
  */
 import type { ConsoleLink } from '@gcportrait/catalog';

@@ -3,7 +3,7 @@
  * SVG → PNG with resvg, by the export rules of skill gcp-diagram-style §8: 2× by default (`scale` up to 3, or a
  * target `width` in pixels), on the theme's canvas colour, with a 24 px margin (drawing units) around the drawing.
  * The rasteriser is resvg's WebAssembly build (`@resvg/resvg-wasm`, pinned exactly: the pixels depend on its
- * version; ADR 0033), so the same SVG gives the same pixels on every platform, in `pnpm render` and in the
+ * version), so the same SVG gives the same pixels on every platform, in `pnpm render` and in the
  * backend alike. Text is set with the self-hosted Roboto faces only (no system fonts exist for wasm), so "Google
  * Sans" in the label stack falls through to Roboto, whose advances the layout measured.
  *

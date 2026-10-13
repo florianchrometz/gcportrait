@@ -84,7 +84,7 @@ export type MockedFacts = { readonly stars: number; readonly forks: number; read
 
 /**
  * Answers the repository widget's requests in `context` without asking GitHub: with `facts` (the repository's counts and
- * the latest release's tag), or with GitHub's 404 to both (its answer for the private repository today: nothing
+ * the latest release's tag), or with GitHub's 404 to both (its answer for a private repository: nothing
  * changes) when `facts` is undefined. Any other request to api.github.com is refused. The checks load many pages;
  * asking GitHub for each would spend the 60 unauthenticated requests an hour of the machine's address, and the answer
  * would change from run to run.

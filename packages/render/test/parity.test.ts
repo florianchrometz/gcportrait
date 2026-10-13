@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The WebAssembly rasteriser against the native binding it replaced (ADR 0033): `@resvg/resvg-wasm` and
- * `@resvg/resvg-js` (a dev dependency, used here only) at the same version, with the same fonts, must give the same
- * PNG bytes for the views the decision was measured on and for a capped geometry. The native side is the command
- * line's former rasteriser, step for step: the faces unwrapped to font files, system fonts off.
+ * The WebAssembly rasteriser against the native binding: `@resvg/resvg-wasm` and `@resvg/resvg-js` (a dev
+ * dependency, used here only) at the same version, with the same fonts, must give the same PNG bytes for six
+ * demo views and for a capped geometry. The native side is set up step for step like the WebAssembly one: the
+ * faces unwrapped to font files, system fonts off.
  */
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

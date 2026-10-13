@@ -32,13 +32,14 @@ export type ServerConfig = {
   readonly logFormat: LogFormat;
   /** Public Google OAuth web client id used by the SPA for sign-in, or null when sign-in is not configured. */
   readonly oauthClientId: string | null;
-  /** Whether the operator enabled service-account mode (ADR 0004). */
+  /** Whether the operator enabled service-account mode (agents.md, Modes and hosting). */
   readonly saModeEnabled: boolean;
   /**
-   * Whether the service-account gate also runs its exposure check (ADR 0028 §4 step 2, optional since its
-   * amendment): the account's own `get` of a scope must be refused, so a scope whose details are public, or on which
-   * the account holds more than `roles/cloudasset.viewer`, is refused. On with `SA_MODE_STRICT_EXPOSURE=true`, off
-   * when it is `false` or unset; any other value stops start-up ({@link parseConfig}).
+   * Whether the service-account gate also runs its optional exposure check (agents.md, Security and privacy,
+   * The service-account gate): the account's own `get` of a scope must be refused, so a scope whose details
+   * are public, or on which the account holds more than `roles/cloudasset.viewer`, is refused. On with
+   * `SA_MODE_STRICT_EXPOSURE=true`, off when it is `false` or unset; any other value stops start-up
+   * ({@link parseConfig}).
    */
   readonly saStrictExposure: boolean;
   /**
@@ -64,10 +65,10 @@ export type ServerConfig = {
    */
   readonly sourceUrl: string;
   /**
-   * Demo-only mode (`DEMO_ONLY=true`, ADR 0032): the instance serves the app and its demo
-   * organisations only. No sign-in (an OAuth client id is refused), no service-account mode, and none of the routes
-   * that call Google (scope search, preflight, live pull, export read) is registered; /api/config says so with
-   * `demoOnly`, and the SPA's Connect page then offers only the demo.
+   * Demo-only mode (`DEMO_ONLY=true`; agents.md, Modes and hosting): the instance serves the app and its demo
+   * organisations only. No sign-in (an OAuth client id is refused), no service-account mode, and none of the
+   * routes that call Google (scope search, preflight, live pull, export read) is registered; /api/config says
+   * so with `demoOnly`, and the SPA's Connect page then offers only the demo.
    */
   readonly demoOnly: boolean;
   /** The Impressum and privacy notice the instance publishes (`LEGAL_DIR` or `LEGAL_BUNDLE`; legal.ts). */
@@ -79,7 +80,7 @@ export type ServerConfig = {
    */
   readonly legalUrls: LegalUrls;
   /**
-   * The render API (`POST /api/render`, ADR 0033) and its limits, or null when it is off: `RENDER_API=false`, or a
+   * The render API (`POST /api/render`) and its limits, or null when it is off: `RENDER_API=false`, or a
    * demo-only instance, which never has it.
    */
   readonly render: RenderLimits | null;
@@ -88,7 +89,10 @@ export type ServerConfig = {
 /** The addresses of the legal pages an operator publishes elsewhere, or null per page. */
 export type LegalUrls = { readonly impressum: string | null; readonly privacy: string | null };
 
-/** The limits of `POST /api/render` (ADR 0033 §7); each is an environment variable. */
+/**
+ * The limits of `POST /api/render` (agents.md, Exports and the render API); each is an environment
+ * variable.
+ */
 export type RenderLimits = {
   /** Assets per render, for every source (`RENDER_MAX_ASSETS`). */
   readonly maxAssets: number;
@@ -101,10 +105,10 @@ export type RenderLimits = {
 };
 
 /**
- * The default for SOURCE_URL: gcportrait's public repository. A placeholder until the hand-off (docs/handoff.md),
- * when the maintainer sets the real repository here and in the frontend's `DEFAULT_SOURCE_URL`
- * (frontend/src/source.ts); config.test.ts fails while the two, or the e2e expectation, disagree. Whoever runs a
- * modified version sets SOURCE_URL to the source of that version.
+ * The default for SOURCE_URL: the project's repository, the same as the frontend's `DEFAULT_SOURCE_URL`
+ * (frontend/src/source.ts); config.test.ts fails while the two, or the e2e expectation, disagree. A fork
+ * changes all of them (docs/contributing.md, Releases). Whoever runs a modified version sets SOURCE_URL to
+ * the source of that version.
  */
 export const DEFAULT_SOURCE_URL = 'https://github.com/florianchrometz/gcportrait';
 
@@ -164,7 +168,8 @@ const EnvSchema = z.object({
     z.enum(['true', 'false'], { error: 'must be "true" or "false" (or unset, which means off)' }),
   ),
   BACKEND_SA_EMAIL: optional(z.email()),
-  // Plain text on one line. Never Google: gcportrait is not affiliated with Google (ADR 0018).
+  // Plain text on one line. Never Google: gcportrait is not affiliated with Google (agents.md,
+  // Non-affiliation, brand and legal).
   HOSTED_BY: optional(
     z
       .string()
@@ -196,7 +201,7 @@ const EnvSchema = z.object({
   // Or links to legal pages the operator publishes elsewhere (their own website), one per page.
   LEGAL_IMPRESSUM_URL: optional(LegalUrlSchema),
   LEGAL_PRIVACY_URL: optional(LegalUrlSchema),
-  // The render API (ADR 0033): exactly "true" or "false" (unset: on, except on a demo-only instance), and its limits.
+  // The render API: exactly "true" or "false" (unset: on, except on a demo-only instance), and its limits.
   RENDER_API: optional(
     z.enum(['true', 'false'], { error: 'must be "true" or "false" (or unset, which means on)' }),
   ),
@@ -333,7 +338,7 @@ export function parseConfig(
   });
 }
 
-/** The render API's limits, the defaults where a variable is unset (ADR 0033 §7). */
+/** The render API's limits, the defaults where a variable is unset. */
 function renderLimitsOf(vars: z.infer<typeof EnvSchema>): RenderLimits {
   return Object.freeze({
     maxAssets: vars.RENDER_MAX_ASSETS ?? 60000,

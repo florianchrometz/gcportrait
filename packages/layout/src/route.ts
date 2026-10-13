@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Stage 5: orthogonal routing over the gutter network (skill gcp-diagram-layout §5; ADR 0027).
+ * Stage 5: orthogonal routing over the gutter network (skill gcp-diagram-layout §5).
  *
  * Holders. Lanes are held per holder: an edge of its own, or a bundle (ports.ts: the edges of one kind that
  * meet a hub at the same end and from the same side share one port there). A bundle's members share their
@@ -12,24 +12,24 @@
  * gutter's cost is spread over its length, see network.ts). A bundle's member pays no pressure for its own
  * bundle's lanes and only `BUNDLE_LENGTH` of the length where its bundle already runs, so it joins the trunk.
  * A search state is a node plus the axis the route arrived along, so a bend is a change of axis at a node;
- * the route starts along its source's gutter (its stub turns onto it) and ends along its target's, or
- * (ADR 0027) along its source's and its target's port line (portlines.ts: a straight way out of a rect
- * nothing stands beside, which only that port's edge or bundle may use). A stretch along a zone's border
- * inside its padding band (a ring side between the zone's corners, `hugSpans` in gutters.ts) costs
- * `hugFactor` (1.5) × its length, but at most `hugCap` (320) more than its length over the whole side
- * (`hugFactors`), and one in the canvas margin `marginFactor` (2) × (ADR 0027); every gap and every line
- * through free space costs its length. So no line is cheaper per px than another running parallel to it
- * through the same free space (which would pay a route to go round through the margin to reach it), and
- * avoiding a long border is worth no more than a short way round (without the cap 9 000 px along a ring top
- * cost 4 500 px extra, and routes dropped 2 000 px to a row gap and climbed back to avoid it). A step runs
- * along either line through the node (the other one costing a bend) to the next intersection, passing the
- * other edges' attach points, which only split the line. The heuristic (Manhattan distance, scaled by the
- * cheapest length factor, plus the bends the remaining path needs at least) is consistent, so the first time
- * the goal is taken from the queue its cost is minimal; in single-pass mode it is weighted by
- * `SINGLE_PASS_WEIGHT` (weighted A*: at most that factor above the cheapest). Ties go to the state nearer the
- * goal, then to the lower state number, so the search is deterministic. Every state the search settles counts
- * as work (`Pass.work`); the first pass switches to the weighted estimate for its remaining edges once its
- * work reaches `Routing.singlePassWork` (single-pass mode).
+ * the route starts along its source's gutter (its stub turns onto it) and ends along its target's, or along
+ * its source's and its target's port line (portlines.ts: a straight way out of a rect nothing stands beside,
+ * which only that port's edge or bundle may use). A stretch along a zone's border inside its padding band (a
+ * ring side between the zone's corners, `hugSpans` in gutters.ts) costs `hugFactor` (1.5) × its length, but
+ * at most `hugCap` (320) more than its length over the whole side (`hugFactors`), and one in the canvas
+ * margin `marginFactor` (2) ×; every gap and every line through free space costs its length. So no line is
+ * cheaper per px than another running parallel to it through the same free space (which would pay a route to
+ * go round through the margin to reach it), and avoiding a long border is worth no more than a short way
+ * round (without the cap 9 000 px along a ring top would cost 4 500 px extra, and routes would drop 2 000 px
+ * to a row gap and climb back to avoid it). A step runs along either line through the node (the other one
+ * costing a bend) to the next intersection, passing the other edges' attach points, which only split the
+ * line. The heuristic (Manhattan distance, scaled by the cheapest length factor, plus the bends the remaining
+ * path needs at least) is consistent, so the first time the goal is taken from the queue its cost is minimal;
+ * in single-pass mode it is weighted by `SINGLE_PASS_WEIGHT` (weighted A*: at most that factor above the
+ * cheapest). Ties go to the state nearer the goal, then to the lower state number, so the search is
+ * deterministic. Every state the search settles counts as work (`Pass.work`); the first pass switches to the
+ * weighted estimate for its remaining edges once its work reaches `Routing.singlePassWork` (single-pass
+ * mode).
  *
  * Re-route. After a widening re-pack (`previous`), every edge keeps its ports' sides and bundle and its place in
  * the routing order, and its route is laid onto the widened gutters: the same gutter pieces (keyed by container
@@ -93,7 +93,7 @@ export const STRAY = 1.5;
 /**
  * In single-pass mode (the first pass's search work reached `Routing.singlePassWork`), the search's estimate
  * for the rest of that pass is weighted by this much (weighted A*: a route costs at most this factor more than
- * the cheapest), so a very large layout stays within its budget; three-pass mode searches exactly (ADR 0027).
+ * the cheapest), so a very large layout stays within its budget; three-pass mode searches exactly.
  */
 export const SINGLE_PASS_WEIGHT = 1.5;
 
@@ -147,7 +147,7 @@ export interface Pass {
   readonly work: number;
   /**
    * The first pass's search reached `Routing.singlePassWork` before its last edge: the rest of it was searched
-   * weighted and this pass is final (single-pass mode, ADR 0027).
+   * weighted and this pass is final (single-pass mode).
    */
   readonly single: boolean;
   /**
@@ -200,7 +200,7 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
     bundleIds.add(entry.bundle.index);
   }
   const holders = edges.length - bundled + bundleIds.size;
-  // Single-pass mode is decided by the first pass's own search work (ADR 0027): it searches exactly, counting
+  // Single-pass mode is decided by the first pass's own search work (skill §5): it searches exactly, counting
   // the states it settles, and once that reaches `singlePassWork` it searches the rest of its edges weighted
   // and is final. A later pass never switches.
   let work = 0;
@@ -321,7 +321,7 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
   const { ownerStart, owners, exclusive } = network;
   const bend = routing.bendCost;
   // What each segment costs per px: 1, or along a border `hugFactor` with the surcharge capped per ring side
-  // (`hugCap`), or in the canvas margin `marginFactor` (ADR 0027 rule 2).
+  // (`hugCap`), or in the canvas margin `marginFactor`.
   const lengthFactor = hugFactors(network, routing);
   let minFactor = 1;
   for (const factor of lengthFactor) minFactor = Math.min(minFactor, factor);
@@ -1023,7 +1023,7 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
  * side of its node, as its elbow reaches into one of them.
  */
 /**
- * What each segment of the network costs per px of its length (ADR 0027 rule 2): 1 through a gap or free
+ * What each segment of the network costs per px of its length (skill §5): 1 through a gap or free
  * space; along a ring side (`HUG_RING`) `hugFactor`, except that the surcharge over the whole side is at most
  * `hugCap` (a side longer than `hugCap / (hugFactor − 1)` pays proportionally less per px), so going round to
  * avoid a long border never pays more than about `hugCap`; in the canvas margin (`HUG_MARGIN`) `marginFactor`.

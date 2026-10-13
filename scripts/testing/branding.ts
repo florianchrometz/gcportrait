@@ -5,7 +5,7 @@ import path from 'node:path';
 import { REPO } from './temp-tree.js';
 
 /**
- * A string constant of frontend/src/branding.ts, the one source of the non-affiliation wording (ADR 0018), read from
+ * A string constant of frontend/src/branding.ts, the one source of the non-affiliation wording, read from
  * the file (the tooling does not import the app): `export const NAME = ...;` with its string literals joined. Throws
  * when the file declares no such constant, so a renamed constant fails the test instead of comparing with ''.
  */

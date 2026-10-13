@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 #
-# spike-quota-project.sh: re-runs the call matrix of the quota-project spike against Cloud Asset Inventory and
-# Resource Manager with access tokens you supply, and prints one summary line per call.
-# The matrix and what was observed: docs/spikes/quota-project.md. The decisions taken from it:
-# docs/adr/0028-quota-project-and-sa-gate.md.
+# probe-google-apis.sh: runs a matrix of calls against Cloud Asset Inventory and Resource Manager with access
+# tokens you supply, and prints one summary line per call. The answers are the ones the backend's
+# classification rests on (.agents/skills/cai-ingestion/SKILL.md §9, "What Google's APIs answer"; agents.md,
+# Security and privacy): run it before changing what the backend relies on.
 #
 # Tokens are read from standard input only (never from arguments, the environment or a file) and are
 # handed to curl on its standard input (-H @-), so they appear in no process list, file or log. Response
@@ -16,11 +16,11 @@
 # itself is printed.
 #
 # Usage:
-#   gcloud auth print-access-token | scripts/spike-quota-project.sh --project PROJECT_ID
+#   gcloud auth print-access-token | scripts/probe-google-apis.sh --project PROJECT_ID
 #
 #   { gcloud auth print-access-token
 #     gcloud auth print-access-token --impersonate-service-account=BACKEND_SA_EMAIL
-#   } | scripts/spike-quota-project.sh --project PROJECT_ID --sa
+#   } | scripts/probe-google-apis.sh --project PROJECT_ID --sa
 #
 # Options:
 #   --project ID                 project to scan, and the quota project of the rows that send one (required)
@@ -59,7 +59,7 @@ usage() {
 }
 
 die() {
-  printf 'spike-quota-project: %s\n' "$1" >&2
+  printf 'probe-google-apis: %s\n' "$1" >&2
   exit 2
 }
 
@@ -323,7 +323,7 @@ refused() { # ID CALL DETAIL
   fi
 }
 
-# The service-account gate (docs/adr/0028-quota-project-and-sa-gate.md §4), as the backend must run it.
+# The service-account gate (agents.md, Security and privacy), as the backend runs it.
 # Step 2 passes only on Resource Manager's IAM denial of exactly resourcemanager.<kind>.get, the kind taken
 # from SCOPE: one ErrorInfo, reason IAM_PERMISSION_DENIED, domain cloudresourcemanager.googleapis.com. Any
 # other answer, a 403 for another reason (SERVICE_DISABLED, USER_PROJECT_DENIED, a VPC Service Controls or

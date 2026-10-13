@@ -19,7 +19,7 @@ export default defineConfig({
       // index.ts only re-exports.
       exclude: ['src/**/*.test.ts', 'src/testing/**', 'src/index.ts'],
       reporter: [['text', { skipFull: false }], 'text-summary'],
-      // Pure core (agents.md rule 9): everything is unit-tested. The few uncovered branches are defensive
+      // Pure core: everything is unit-tested. The few uncovered branches are defensive
       // fallbacks that valid input cannot reach (an empty zod issue list, a non-Error thrown by JSON.parse).
       thresholds: { statements: 99, branches: 98, functions: 100, lines: 100 },
     },

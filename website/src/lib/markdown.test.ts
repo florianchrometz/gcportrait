@@ -37,15 +37,15 @@ describe('rewriteHref', () => {
   });
 
   it('sends anything else in the repository to GitHub, folders as trees', () => {
-    expect(rewriteHref('adr/0018-non-affiliation-statement.md', 'docs/faq.md', PAGES)).toBe(
-      `${REPOSITORY_URL}/blob/main/docs/adr/0018-non-affiliation-statement.md`,
+    expect(rewriteHref('legal/data-processing-inventory.md', 'docs/faq.md', PAGES)).toBe(
+      `${REPOSITORY_URL}/blob/main/docs/legal/data-processing-inventory.md`,
     );
-    expect(rewriteHref('../agents.md#hard-rules', 'docs/faq.md', PAGES)).toBe(
-      `${REPOSITORY_URL}/blob/main/agents.md#hard-rules`,
+    expect(rewriteHref('../agents.md#security-and-privacy', 'docs/faq.md', PAGES)).toBe(
+      `${REPOSITORY_URL}/blob/main/agents.md#security-and-privacy`,
     );
     expect(rewriteHref('../infra/', 'docs/faq.md', PAGES)).toBe(`${REPOSITORY_URL}/tree/main/infra`);
-    expect(rewriteHref('adr', 'docs/faq.md', PAGES, (target) => target === 'docs/adr')).toBe(
-      `${REPOSITORY_URL}/tree/main/docs/adr`,
+    expect(rewriteHref('media', 'docs/faq.md', PAGES, (target) => target === 'docs/media')).toBe(
+      `${REPOSITORY_URL}/tree/main/docs/media`,
     );
   });
 });

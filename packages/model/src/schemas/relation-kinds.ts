@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The relation-kind table (skill gcp-asset-catalog §4) as data, in a module that imports no zod (types only),
- * so the renderer and the legend on the app's UI thread read it without the schema library (ADR 0029).
+ * so the renderer and the legend on the app's UI thread read it without the schema library.
  * relation.ts declares its row schema (`RelationKindInfoSchema`) and re-exports the table; relation.test.ts
  * checks every row against that schema. Nothing else keeps a second copy of this table.
  */

@@ -3,7 +3,7 @@
  * The closed vocabularies of the model as plain tuples, and a type guard for each, in a module that imports no
  * zod: the lens ids, the detail levels, the relation kinds, the focus kinds, the demo sizes and the snapshot ref.
  * The schemas are built from these tuples (`z.enum(LENS_IDS)` in lens.ts, and so on), so there is one list of
- * each; code that only needs to list or test a value (the app's UI thread, which ships no zod: ADR 0029) imports
+ * each; code that only needs to list or test a value (the app's UI thread, which ships no zod) imports
  * these instead of a schema's `options` or `safeParse`. vocabulary.test.ts checks every guard against its schema.
  */
 import type { DemoSize, FocusKind, SnapshotRef } from './view-spec.js';
@@ -55,7 +55,7 @@ export const FOCUS_KIND_IDS = [
   'application',
 ] as const;
 
-/** The synthetic demo organisations (ADR 0014), smallest first. */
+/** The synthetic demo organisations, smallest first. */
 export const DEMO_SIZES = ['S', 'M', 'L', 'XL'] as const;
 
 /** The prefix of a demo organisation's snapshot ref (`demo:M`). */

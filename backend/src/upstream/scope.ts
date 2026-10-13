@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * Cloud Asset Inventory scopes as request bodies name them (skill cai-ingestion §1):
- * `organizations/ID`, `folders/ID` or `projects/ID_OR_NUMBER`. A scope is validated here, with the identifier
- * schemas of `@gcportrait/model`, before anything reaches Google, and the same parsed value builds every URL of
- * one request (ADR 0028 §4: "the same string is used in all three calls").
+ * Cloud Asset Inventory scopes as request bodies name them (skill cai-ingestion §1): `organizations/ID`,
+ * `folders/ID` or `projects/ID_OR_NUMBER`. A scope is validated here, with the identifier schemas of
+ * `@gcportrait/model`, before anything reaches Google, and the same parsed value builds every URL of one
+ * request (the gate uses the same string in all three of its calls).
  */
 import { NumericIdSchema, type ScopeKind } from '@gcportrait/model';
 import { z } from 'zod';
