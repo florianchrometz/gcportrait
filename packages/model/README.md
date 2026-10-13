@@ -114,6 +114,7 @@ instead of a schema's `options` or `safeParse`. `vocabulary.test.ts` proves each
 | `LENS_IDS`, `DETAIL_LEVEL_IDS`, `RELATION_KIND_IDS`, `FOCUS_KIND_IDS`, `DEMO_SIZES` | the option lists of `LensIdSchema`, `DetailLevelSchema`, `RelationKindSchema`, `FocusKindSchema`, `DemoSizeSchema`, in order |
 | `isLensId`, `isDetailLevel`, `isRelationKind`, `isFocusKind`, `isDemoSize`, `isSnapshotRef` | type guards that accept exactly what the schemas accept |
 | `DEMO_REF_PREFIX` | `demo:`, the prefix of a demo organisation's snapshot ref |
+| `LARGE_SNAPSHOT_ASSETS` | 10 000: the app asks before it draws a snapshot of more assets (the large-snapshot guard, `frontend/src/snapshots/LargeSnapshotGuard.tsx`; docs/modes.md, "At a glance") |
 | `RELATION_KINDS` | the relation-kind table (`schemas/relation-kinds.ts`, below) |
 | `normalizeViewSpec`, `DEFAULT_VIEW_SPEC`, `VIEW_SPEC_MAX_FLIPS`, `VIEW_SPEC_MAX_DEPTH`, `encodeViewSpec`, `decodeViewSpec` | the URL-hash codec and its normaliser (`codec/normalize.ts`, section "URL-hash codec") |
 

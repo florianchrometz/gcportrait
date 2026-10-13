@@ -14,6 +14,7 @@ import {
   DEMO_SIZES,
   DETAIL_LEVEL_IDS,
   FOCUS_KIND_IDS,
+  LARGE_SNAPSHOT_ASSETS,
   LENS_IDS,
   RELATION_KIND_IDS,
   isDemoSize,
@@ -150,5 +151,12 @@ describe('isSnapshotRef', () => {
       }),
       { numRuns: 500, examples: [...ACCEPTED, ...REJECTED].map((ref): [unknown] => [ref]) },
     );
+  });
+});
+
+describe('LARGE_SNAPSHOT_ASSETS', () => {
+  it('is the 10 000 assets the guide names, a whole positive count', () => {
+    expect(LARGE_SNAPSHOT_ASSETS).toBe(10_000);
+    expect(Number.isSafeInteger(LARGE_SNAPSHOT_ASSETS)).toBe(true);
   });
 });

@@ -94,12 +94,27 @@ describe('the Snapshots page', () => {
     await expectNoAxeViolations();
   });
 
-  it('loads a snapshot into the diagram through the hash', async () => {
+  it('loads a snapshot into the diagram through the hash, a large one once the person has said so', async () => {
     const { container, table } = await openPage();
     await userEvent.click(
-      within(table).getByRole('button', { name: 'Load example.com, read 2026-10-07 18:22 UTC, export.json' }),
+      within(table).getByRole('button', { name: 'Load example.com, read 2026-10-08 00:00 UTC, demo:M' }),
     );
-    expect(currentLocation(container)).toBe(`/diagram#snapshot=${IMPORTED}`);
+    expect(currentLocation(container)).toBe('/diagram#snapshot=demo:M');
+    await userEvent.click(screen.getByRole('link', { name: 'Snapshots' }));
+    const again = await screen.findByRole('table', { name: 'Snapshots stored in this browser' });
+    // 51,242 assets: the large-snapshot guard asks first (snapshots/LargeSnapshotGuard.test.tsx).
+    await userEvent.click(
+      within(again).getByRole('button', { name: 'Load example.com, read 2026-10-07 18:22 UTC, export.json' }),
+    );
+    expect(currentLocation(container)).toBe('/snapshots');
+    await userEvent.click(
+      within(screen.getByRole('alertdialog', { name: 'Draw a large snapshot?' })).getByRole('button', {
+        name: 'Draw it anyway',
+      }),
+    );
+    await waitFor(() => {
+      expect(currentLocation(container)).toBe(`/diagram#snapshot=${IMPORTED}`);
+    });
   });
 
   it('exports a snapshot as a file', async () => {

@@ -10,14 +10,19 @@
  * opens on the new snapshot, after any notes the import left. For an export without its operation.json the person
  * may type when it was taken (`parseTypedReadTime`), for either way in; the
  * sidecar's read time wins when both are given, and without either the read time is the latest asset change,
- * marked as estimated. The snapshot is then an extra tick on its scope's timeline at that time.
+ * marked as estimated. The snapshot is then an extra tick on its scope's timeline at that time. A snapshot of
+ * more than 10 000 assets asks before the diagram opens (snapshots/LargeSnapshotGuard.tsx): for dropped files once
+ * they are read and stored, for a Cloud Storage read the moment its count passes 10 000 while it streams; Cancel
+ * keeps the stored files' snapshot undrawn (the Snapshots page lists it) and stops a read (nothing is stored).
  */
+import type { SnapshotRef } from '@gcportrait/model';
 import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement } from 'react';
 
 import { cx } from '../classNames';
 import { CommandBlock } from '../preflight/CommandBlock';
 import { JobStatus, type JobState } from '../snapshots/JobStatus';
-import { formatUtc } from '../snapshots/labels';
+import { formatCount, formatUtc } from '../snapshots/labels';
+import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
 import { useSnapshotLibrary } from '../snapshots/SnapshotLibraryProvider';
 import { SnapshotJobError } from '../snapshots/worker/client';
 import { useAppState, useDiagramActions } from '../state';
@@ -41,6 +46,7 @@ export const READ_ACTION = 'Read from Cloud Storage';
 
 export function LoadExport(): ReactElement {
   const library = useSnapshotLibrary();
+  const guard = useLargeSnapshotGuard();
   const { setSnapshot } = useDiagramActions();
   const signedIn = useAppState((state) => state.connect.session.status === 'signed-in');
   const scope = useAppState((state) => state.connect.scope);
@@ -52,7 +58,8 @@ export function LoadExport(): ReactElement {
   const [sidecarProblem, setSidecarProblem] = useState<string | null>(null);
   const [files, setFiles] = useState<JobState>({ kind: 'idle' });
   const [fileNotes, setFileNotes] = useState<{
-    readonly ref: string;
+    readonly ref: SnapshotRef;
+    readonly assets: number;
     readonly notes: readonly string[];
   } | null>(null);
   const [subject, setSubject] = useState('the files');
@@ -74,6 +81,25 @@ export function LoadExport(): ReactElement {
     };
   }, []);
 
+  /**
+   * Opens the diagram on the snapshot the files made, once the person has said so when it is large; Cancel leaves
+   * it stored and undrawn, and says so.
+   */
+  const open = (ref: SnapshotRef, assets: number): void => {
+    if (!guard.asks(assets, ref)) {
+      setSnapshot(ref);
+      return;
+    }
+    void guard.confirm({ assets, ref }).then((draw) => {
+      if (draw) setSnapshot(ref);
+      else if (mounted.current)
+        setFiles({
+          kind: 'idle',
+          message: `The snapshot of ${formatCount(assets)} assets is stored in this browser and was not drawn; Load it from the Snapshots page to draw it.`,
+        });
+    });
+  };
+
   const importFiles = (chosen: readonly File[]): void => {
     if (busy || chosen.length === 0) return;
     setSubject(chosen.map((file) => file.name).join(', '));
@@ -92,13 +118,14 @@ export function LoadExport(): ReactElement {
         typedReadTime === undefined ? {} : { readTime: typedReadTime },
       )
       .then(
-        ({ refs, warnings }) => {
+        ({ refs, records, warnings }) => {
           if (!mounted.current) return;
           const ref = refs.at(-1);
           setFiles({ kind: 'idle' });
           if (ref === undefined) return;
-          if (warnings.length === 0) setSnapshot(ref);
-          else setFileNotes({ ref, notes: warnings });
+          const assets = records.find((record) => record.id === ref)?.meta.assetCount ?? 0;
+          if (warnings.length === 0) open(ref, assets);
+          else setFileNotes({ ref, assets, notes: warnings });
         },
         (error: unknown) => {
           if (!mounted.current) return;
@@ -222,7 +249,7 @@ export function LoadExport(): ReactElement {
                   type="button"
                   className={styles.primary}
                   onClick={() => {
-                    setSnapshot(fileNotes.ref);
+                    open(fileNotes.ref, fileNotes.assets);
                   }}
                 >
                   Open the diagram

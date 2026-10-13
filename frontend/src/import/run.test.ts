@@ -1,7 +1,7 @@
 // @vitest-environment node
 // SPDX-License-Identifier: MIT
 import { generateOrganization, toCaiAsset, toCaiNdjson } from '@gcportrait/demo-data';
-import { migrateSnapshot, type Snapshot } from '@gcportrait/model';
+import { LARGE_SNAPSHOT_ASSETS, migrateSnapshot, type Snapshot } from '@gcportrait/model';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AuthControls } from '../auth';
@@ -12,7 +12,7 @@ import { stubBackend } from '../test/backend';
 import { describeFailure } from './errors';
 import { IDLE_PROGRESS, importProgressReducer, type ImportAction } from './progress';
 import { runExportRead, runLivePull, streamRequestOf, type ImportDependencies, type PullTarget } from './run';
-import { frames, streamBody as body } from './testing';
+import { frames, line, streamBody as body } from './testing';
 import { inProcessImportWorker } from './worker/inProcess';
 
 const READ_TIME = '2026-10-10T11:59:58.123456Z';
@@ -255,6 +255,80 @@ describe('a live pull', () => {
     expect(actions.at(-1)?.type).toBe('cancelled');
     expect(stream.cancelled()).toBe(true);
     expect(library.calls).toEqual([]);
+  });
+});
+
+describe('a read that passes LARGE_SNAPSHOT_ASSETS', () => {
+  /** Demo M's frames with the backend's count saying 10 500 after the first page. */
+  const LARGE_FRAMES = M_FRAMES.replace(
+    line({ t: 'progress', pages: 1, assets: 500 }),
+    line({ t: 'progress', pages: 21, assets: LARGE_SNAPSHOT_ASSETS + 500 }),
+  );
+
+  it('asks once, with the count read so far and what is read; yes stores it', async () => {
+    expect(LARGE_FRAMES).not.toBe(M_FRAMES);
+    backend(() => new Response(body(LARGE_FRAMES, { chunk: 4096 }).stream));
+    const library = fakeLibrary();
+    const asked: (readonly [number, string])[] = [];
+    const confirmLarge: ImportDependencies['confirmLarge'] = (assets, kind) => {
+      asked.push([assets, kind]);
+      return Promise.resolve(true);
+    };
+    const { dispatch, actions } = recorder();
+    const imported = await runLivePull(
+      { ...dependencies(auth(), library), confirmLarge },
+      TARGET,
+      dispatch,
+      new AbortController().signal,
+    );
+    if (imported === null) throw new Error(JSON.stringify(actions.at(-1)));
+    expect(asked).toEqual([[LARGE_SNAPSHOT_ASSETS + 500, 'pull']]);
+    expect(library.calls).toEqual(['storePrepared api']);
+  });
+
+  it('no stops the read: cancelled, nothing stored', async () => {
+    const stream = body(LARGE_FRAMES, { chunk: 4096, hang: true });
+    backend(() => new Response(stream.stream));
+    const library = fakeLibrary();
+    const { dispatch, actions } = recorder();
+    const imported = await runLivePull(
+      { ...dependencies(auth(), library), confirmLarge: () => Promise.resolve(false) },
+      TARGET,
+      dispatch,
+      new AbortController().signal,
+    );
+    expect(imported).toBeNull();
+    expect(actions.at(-1)?.type).toBe('cancelled');
+    expect(library.calls).toEqual([]);
+  });
+
+  it('a small read never asks; a failed one takes its open question back', async () => {
+    backend(() => new Response(body(M_FRAMES).stream));
+    const confirmLarge = vi.fn<NonNullable<ImportDependencies['confirmLarge']>>(() => Promise.resolve(true));
+    const { dispatch } = recorder();
+    expect(
+      await runLivePull({ ...dependencies(), confirmLarge }, TARGET, dispatch, new AbortController().signal),
+    ).not.toBeNull();
+    expect(confirmLarge).not.toHaveBeenCalled();
+
+    const cut = LARGE_FRAMES.slice(0, LARGE_FRAMES.indexOf('"t":"done"') - 1);
+    backend(() => new Response(body(cut).stream));
+    let withdrawn = false;
+    const open: ImportDependencies['confirmLarge'] = (_assets, _kind, signal) =>
+      new Promise<boolean>((resolve) => {
+        signal.addEventListener('abort', () => {
+          withdrawn = true;
+          resolve(false);
+        });
+      });
+    const failed = await runLivePull(
+      { ...dependencies(), confirmLarge: open },
+      TARGET,
+      dispatch,
+      new AbortController().signal,
+    );
+    expect(failed).toBeNull();
+    expect(withdrawn).toBe(true);
   });
 });
 

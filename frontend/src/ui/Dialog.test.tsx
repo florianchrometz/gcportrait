@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type ReactElement } from 'react';
+import { useRef, useState, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '../test/axe';
@@ -88,5 +88,62 @@ describe('Dialog (modal)', () => {
     fireEvent.pointerDown(backdrop);
     expect(onClose.mock.calls).toEqual([['escape'], ['close'], ['backdrop']]);
     expect(document.activeElement).toBe(opener);
+  });
+
+  it('as an alert dialog: no Close button, focus on the given action, Escape closes, the backdrop does not', async () => {
+    const onClose = vi.fn();
+    function Alert(): ReactElement {
+      const [open, setOpen] = useState(false);
+      const cancel = useRef<HTMLButtonElement>(null);
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Draw
+          </button>
+          <Dialog
+            open={open}
+            alert
+            title="Draw a large snapshot?"
+            description="It has 51,242 assets."
+            initialFocus={cancel}
+            onClose={(reason) => {
+              onClose(reason);
+              setOpen(false);
+            }}
+            actions={
+              <>
+                <button ref={cancel} type="button">
+                  Cancel
+                </button>
+                <button type="button">Draw it anyway</button>
+              </>
+            }
+          >
+            <label>
+              <input type="checkbox" /> Do not ask again
+            </label>
+          </Dialog>
+        </>
+      );
+    }
+    renderInPage(<Alert />);
+    await userEvent.click(screen.getByRole('button', { name: 'Draw' }));
+    const dialog = screen.getByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await expectNoAxeViolations(dialog);
+    const backdrop = dialog.parentElement;
+    if (backdrop === null) throw new Error('no backdrop');
+    fireEvent.pointerDown(backdrop);
+    expect(screen.getByRole('alertdialog')).toBeDefined();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(onClose.mock.calls).toEqual([['escape']]);
   });
 });

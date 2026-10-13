@@ -64,6 +64,25 @@ describe('chips', () => {
     expect(onSelect).toHaveBeenLastCalledWith('run/api');
   });
 
+  it('a double-click on a chip drills in and leaves no flip: its first click’s flip is undone in place', () => {
+    const onFlip = vi.fn();
+    const onDrillIn = vi.fn();
+    const { container } = render(<DiagramCanvas {...props({ onFlip, onDrillIn })} />);
+    const chip = chipOf(canvas(container), 'projects/data');
+    fireEvent.click(chip, { detail: 1 });
+    fireEvent.click(chip, { detail: 2 });
+    fireEvent.dblClick(chip);
+    expect(onFlip.mock.calls).toEqual([['projects/data'], ['projects/data', { history: 'replace' }]]);
+    expect(onDrillIn.mock.calls).toEqual([['projects/data', { history: 'replace' }]]);
+    // A double-click on an open zone's body flipped nothing: a plain drill-in.
+    const folder = element(canvas(container), '.dg-zone[data-id="folders/1"]');
+    fireEvent.click(folder, { detail: 1 });
+    fireEvent.click(folder, { detail: 2 });
+    fireEvent.dblClick(folder);
+    expect(onFlip).toHaveBeenCalledTimes(2);
+    expect(onDrillIn).toHaveBeenLastCalledWith('folders/1');
+  });
+
   it('Enter or Space on a focused chip expands it; a held key flips once', () => {
     const onFlip = vi.fn();
     const onSelect = vi.fn();

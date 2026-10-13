@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * The closed vocabularies of the model as plain tuples, and a type guard for each, in a module that imports no
- * zod: the lens ids, the detail levels, the relation kinds, the focus kinds, the demo sizes and the snapshot ref.
+ * zod: the lens ids, the detail levels, the relation kinds, the focus kinds, the demo sizes and the snapshot ref,
+ * and the size above which the app asks before it draws a snapshot.
  * The schemas are built from these tuples (`z.enum(LENS_IDS)` in lens.ts, and so on), so there is one list of
  * each; code that only needs to list or test a value (the app's UI thread, which ships no zod) imports
  * these instead of a schema's `options` or `safeParse`. vocabulary.test.ts checks every guard against its schema.
@@ -60,6 +61,13 @@ export const DEMO_SIZES = ['S', 'M', 'L', 'XL'] as const;
 
 /** The prefix of a demo organisation's snapshot ref (`demo:M`). */
 export const DEMO_REF_PREFIX = 'demo:';
+
+/**
+ * The most assets the app draws without asking first: drawing a larger snapshot at once is slow and heavy on
+ * memory (the diagram still works), so the app asks for a confirmation before it draws one (docs/modes.md). The
+ * app, its guide and the tests read this one value.
+ */
+export const LARGE_SNAPSHOT_ASSETS = 10_000;
 
 function member<T extends string>(list: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && (list as readonly string[]).includes(value);

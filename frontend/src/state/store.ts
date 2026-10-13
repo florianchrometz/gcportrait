@@ -29,10 +29,12 @@ import { UNAVAILABLE_SESSION } from '../auth/types';
 import { IDLE_PREFLIGHT } from '../preflight/state';
 import type { JumpMode } from '../diagram/camera';
 import { DEMO_CHOICES, snapshotView } from '../diagram/demoChoices';
+import { budgetOf } from '../diagram/autoDetail';
 import { collapseAllView, expandAllView } from '../diagram/disclosure/flips';
 import { DIAGRAM_PATH } from '../routes';
 import { stepTarget, withTick } from '../timeline/model';
 import { initialTimeline } from '../timeline/state';
+import { FALLBACK_VIEWPORT } from './pipeline';
 import type {
   AppState,
   ConnectSlice,
@@ -45,6 +47,7 @@ import type {
   UiSlice,
   ViewSlice,
 } from './slices';
+import { selectSceneKey } from './viewKey';
 
 /** Where a view write goes: always the diagram route, with the encoded hash (`''` or `#…`). */
 export interface HashTarget {
@@ -82,11 +85,15 @@ export interface ViewActions {
   /** Expands a collapsed zone or collapses an open one: toggles its flip (push). */
   readonly flip: (zoneId: string, options?: WriteOptions) => void;
   /**
-   * "Expand all" (push): opens the shallowest collapsed tier of the diagram on screen, the next detail level
-   * that opens anything, keeping the flips that open zones it still closes (diagram/disclosure/flips.ts).
+   * "Expand all" (push): opens the shallowest collapsed tier of the diagram on screen, the next detail level at
+   * which a chip opens, keeping the flips that open zones it still closes (diagram/disclosure/flips.ts). Worked
+   * out on the view's own drawing: pressed while another one is on screen, it waits until the view is drawn.
    */
   readonly expandAll: (options?: WriteOptions) => void;
-  /** "Collapse all" (push): resets every flip, and goes back to `auto` when the level in use is deeper. */
+  /**
+   * "Collapse all" (push): closes every zone opened by hand, and goes back to `auto` when the level in use is
+   * deeper; never opens anything. Waits for the view's own drawing as "Expand all" does.
+   */
   readonly collapseAll: (options?: WriteOptions) => void;
   /** Selects a node, or clears the selection (replace); selecting opens the drawer. */
   readonly select: (id: string | null, options?: WriteOptions) => void;
@@ -138,6 +145,9 @@ export interface AppStore {
   readonly jumpDone: (seq: number) => void;
   readonly actions: ViewActions;
 }
+
+/** The two actions worked out on the drawing on screen. */
+type Disclosure = 'expand' | 'collapse';
 
 export interface StoreOptions {
   /** The location the app starts at (the router's first location). */
@@ -247,6 +257,9 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
   const listeners = new Set<() => void>();
   let navigator: HashNavigator | null = null;
   let jumps = 0;
+  /** "Expand all" or "Collapse all" pressed while the drawing on screen was not yet the view's (`key`). */
+  let waiting: { readonly kind: Disclosure; readonly key: string; readonly history: HistoryMode } | null =
+    null;
 
   const set = (next: AppState): void => {
     if (next === state) return;
@@ -259,6 +272,39 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
     if (state.view.onDiagram && hash === state.view.hash) return;
     set(withView(state, { hash, spec: decodeViewSpec(hash), onDiagram: true }));
     navigator?.({ pathname: DIAGRAM_PATH, hash: hash === '' ? '' : `#${hash}` }, mode);
+  };
+
+  /**
+   * "Expand all" or "Collapse all" on the view's own drawing: the drawing on screen may still be the previous
+   * view's (a drill-in, a flip or a level just written), whose zones and levels are not this view's; the action
+   * then waits for the view's drawing (`flushWaiting`), and is dropped when the view moves on before it arrives.
+   */
+  const disclose = (kind: Disclosure, history: HistoryMode): void => {
+    const result = state.pipeline.result;
+    if (result === null) return;
+    const key = selectSceneKey(state);
+    if (result.key !== key) {
+      waiting = { kind, key, history };
+      return;
+    }
+    waiting = null;
+    const shown = result.answer;
+    const budget = budgetOf(state.pipeline.canvas ?? FALLBACK_VIEWPORT);
+    const next =
+      kind === 'expand'
+        ? expandAllView(state.view.spec, shown)
+        : collapseAllView(state.view.spec, shown, budget);
+    if (next !== null) writeView(next, history);
+  };
+
+  const flushWaiting = (): void => {
+    if (waiting === null) return;
+    const { kind, key, history } = waiting;
+    if (selectSceneKey(state) !== key) {
+      waiting = null;
+      return;
+    }
+    if (state.pipeline.result?.key === key) disclose(kind, history);
   };
 
   const write = (
@@ -325,14 +371,10 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
       );
     },
     expandAll: (options) => {
-      const shown = state.pipeline.result?.answer;
-      const next = shown === undefined ? null : expandAllView(state.view.spec, shown);
-      if (next !== null) writeView(next, options?.history ?? 'push');
+      disclose('expand', options?.history ?? 'push');
     },
     collapseAll: (options) => {
-      const shown = state.pipeline.result?.answer;
-      const next = shown === undefined ? null : collapseAllView(state.view.spec, shown);
-      if (next !== null) writeView(next, options?.history ?? 'push');
+      disclose('collapse', options?.history ?? 'push');
     },
     select: (id, options) => {
       write(
@@ -401,7 +443,9 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
     writeView,
     updatePipeline(update) {
       const pipeline = update(state.pipeline);
-      if (pipeline !== state.pipeline) set({ ...state, pipeline });
+      if (pipeline === state.pipeline) return;
+      set({ ...state, pipeline });
+      flushWaiting();
     },
     updateSnapshot(update) {
       const snapshot = update(state.snapshot);

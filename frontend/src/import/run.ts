@@ -4,9 +4,13 @@
  * backend for the stream with the session's token (`POST /api/assets/stream` or `POST /api/export/read`), hand the
  * body to the import worker as it arrives, store what it prepares through the snapshot library (IndexedDB), and
  * report every step to the progress reducer (progress.ts). Nothing is kept unless the whole stream was read: a pull
- * without its `done` frame, an error frame, a broken connection or a cancel stores nothing.
+ * without its `done` frame, an error frame, a broken connection or a cancel stores nothing. A pull or a read whose
+ * count passes `LARGE_SNAPSHOT_ASSETS` asks the person once, at that moment (`confirmLarge`, the large-snapshot
+ * guard): the stream goes on while they decide, nothing is stored before they have answered, and Cancel stops the
+ * read as the Cancel button does. The count is known only as the stream arrives: no earlier step (the permission
+ * check reads one asset) can tell.
  */
-import type { SnapshotRef, SnapshotScope } from '@gcportrait/model';
+import { LARGE_SNAPSHOT_ASSETS, type SnapshotRef, type SnapshotScope } from '@gcportrait/model';
 
 import { fetchWithToken, NotSignedInError, type AccessMode, type AuthControls } from '../auth';
 import type { SnapshotLibrary } from '../snapshots/library';
@@ -35,6 +39,12 @@ export interface ImportDependencies {
   /** The import worker's client, started on first use (its code loads then). */
   readonly worker: () => Promise<ImportClient>;
   readonly now?: () => number;
+  /**
+   * Asks whether to go on with a snapshot of more than `LARGE_SNAPSHOT_ASSETS` assets, given the count read so far
+   * and what is read; true goes on, false stops the read. Asked at most once per read; an aborted `signal` (the
+   * read ended another way) takes the question back. Absent: never asks.
+   */
+  readonly confirmLarge?: (assets: number, kind: ImportKind, signal: AbortSignal) => Promise<boolean>;
 }
 
 export const STREAM_PATH = '/api/assets/stream';
@@ -135,24 +145,46 @@ async function run(
   dispatch({ type: 'start', kind, at: now() });
   // The token the stream is read with: if Google refuses it mid-stream, the session hears so.
   const token = dependencies.auth.accessToken();
+  // The read stops on the caller's cancel, and when the person declines a large snapshot.
+  const reading = new AbortController();
+  const stop = (): void => {
+    reading.abort();
+  };
+  if (signal.aborted) stop();
+  else signal.addEventListener('abort', stop, { once: true });
+  // The person's answer, once asked (at most once per read).
+  const asked: { answer: Promise<boolean> | null } = { answer: null };
+  const ask = (assets: number): void => {
+    const { confirmLarge } = dependencies;
+    if (asked.answer !== null || confirmLarge === undefined || assets <= LARGE_SNAPSHOT_ASSETS) return;
+    const answer = confirmLarge(assets, kind, reading.signal);
+    asked.answer = answer;
+    void answer.then((go) => {
+      if (!go) stop();
+    });
+  };
   try {
-    const response = await open(dependencies, request.path, request.body, signal);
+    const response = await open(dependencies, request.path, request.body, reading.signal);
     const total = Number(response.headers.get(EXPORT_BYTES_HEADER) ?? Number.NaN);
     dispatch({ type: 'connected', at: now(), totalBytes: Number.isFinite(total) ? total : null });
     if (response.body === null) throw new Failed({ kind: 'network' });
     const client = await dependencies.worker();
     const { snapshot, warnings } = await client.run(request.settings, response.body, {
-      signal,
+      signal: reading.signal,
       onBytes: (bytes) => {
         dispatch({ type: 'received', bytes, at: now() });
       },
       onCounts: (counts) => {
         dispatch({ type: 'counted', pages: counts.pages, assets: counts.assets, at: now() });
+        ask(counts.assets);
       },
       onEncoding: () => {
         dispatch({ type: 'storing', at: now() });
       },
     });
+    // The whole snapshot is read: it is stored only once the person has answered, if they were asked.
+    ask(snapshot.meta.assetCount);
+    if (asked.answer !== null && !(await asked.answer)) throw new ImportCancelled();
     dispatch({ type: 'storing', at: now() });
     let ref: SnapshotRef;
     try {
@@ -167,7 +199,7 @@ async function run(
     });
     return { ref, warnings };
   } catch (error) {
-    if (error instanceof ImportCancelled || signal.aborted) {
+    if (error instanceof ImportCancelled || reading.signal.aborted) {
       dispatch({ type: 'cancelled', at: now() });
       return null;
     }
@@ -180,6 +212,10 @@ async function run(
       dependencies.auth.rejected(token);
     dispatch({ type: 'failed', at: now(), failure: describeFailure(failure, context) });
     return null;
+  } finally {
+    signal.removeEventListener('abort', stop);
+    // A question still open (the read failed while the person was deciding) is taken back.
+    stop();
   }
 }
 

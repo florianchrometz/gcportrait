@@ -17,6 +17,8 @@ import {
   commandsIn,
   generateLensDoc,
   helpFlags,
+  largeSnapshotAssets,
+  largeSnapshotProblems,
   lensTableLines,
   lensTypesLines,
   quickStartVariables,
@@ -402,6 +404,28 @@ describe('the variables in a document’s code', () => {
     expect(registry.tokens('gs://YOUR_PROJECT-YOUR_SERVICE-builds YOUR_Xs')).toEqual([
       'YOUR_PROJECT',
       'YOUR_SERVICE',
+    ]);
+  });
+});
+
+describe('the large-snapshot threshold in the modes guide', () => {
+  const MODULE = "export const DEMO_REF_PREFIX = 'demo:';\nexport const LARGE_SNAPSHOT_ASSETS = 10_000;\n";
+
+  it('reads the model’s number', () => {
+    expect(largeSnapshotAssets(MODULE)).toBe(10_000);
+    expect(largeSnapshotAssets('export const LARGE_SNAPSHOT_ASSETS = limit();')).toBeNull();
+  });
+
+  it('holds the guide to it, across a line break, and refuses another number or none', () => {
+    expect(largeSnapshotProblems('Drawing more than 10,000\nassets at once is slow.', MODULE)).toEqual([]);
+    expect(largeSnapshotProblems('Drawing more than 20,000 assets at once is slow.', MODULE)).toEqual([
+      'docs/modes.md: it says "more than 20,000 assets", the model 10,000',
+    ]);
+    expect(largeSnapshotProblems('Large snapshots are slow.', MODULE)).toEqual([
+      'docs/modes.md: it does not say "more than 10,000 assets"',
+    ]);
+    expect(largeSnapshotProblems('', 'nothing')).toEqual([
+      'packages/model/src/schemas/vocabulary.ts no longer declares LARGE_SNAPSHOT_ASSETS as a number',
     ]);
   });
 });

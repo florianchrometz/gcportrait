@@ -16,6 +16,7 @@ import { visibleAreaIn } from '../export/source';
 import { DIAGRAM_PATH } from '../routes';
 import { withExtraLabel } from '../timeline/extraTicks';
 import { useRememberDiagramHash } from '../shell/viewHash';
+import { useLargeSnapshotGate } from '../snapshots/LargeSnapshotGuard';
 import { useAppState, useAppStore, useDiagramActions, useDiagramPipeline, useView } from '../state';
 import { rejectedSnapshotRef } from '../views/snapshotRef';
 import { usePreference } from '../storage/preferences';
@@ -35,8 +36,9 @@ const STAGE_TEXT: Readonly<Record<DataStage | 'layout', string>> = {
 /**
  * The diagram workspace: the canvas, the details drawer (open while a node is selected) and the timeline bar.
  * The view comes from the URL hash through the app store; the store's pipeline
- * draws it (useDiagramPipeline: the canvas measured, the workers asked); selecting a node writes it back there
- * through the store's actions.
+ * draws it (useDiagramPipeline: the canvas measured, the workers asked), once the large-snapshot guard lets it
+ * (a snapshot of more than 10 000 assets the person has not chosen to draw yet waits for their answer); selecting
+ * a node writes it back there through the store's actions.
  */
 export function DiagramPage() {
   useDocumentTitle('Diagram');
@@ -48,7 +50,9 @@ export function DiagramPage() {
   const store = useAppStore();
   const actions = useDiagramActions();
   const canvasRef = useRef<HTMLElement>(null);
-  useDiagramPipeline(canvasRef);
+  // A snapshot of more than 10 000 assets is drawn once the person has said so (the large-snapshot guard).
+  const held = useLargeSnapshotGate(spec.snapshot);
+  useDiagramPipeline(canvasRef, held);
   const result = useAppState((state) => state.pipeline.result);
   const pending = useAppState((state) => state.pipeline.pending);
   const error = useAppState((state) => state.pipeline.error);

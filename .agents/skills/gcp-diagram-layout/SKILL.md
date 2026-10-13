@@ -175,7 +175,9 @@ card rect or a zone header rect. 4. Every Scene node has a rect. 5. Running twic
 - Flips (per-zone overrides) XOR the level default and live in the URL hash (max 48, oldest dropped).
 - Expanding a zone keeps the viewBox fixed and glides the camera 200 ms to frame the zone; changing the level
   re-fits the whole diagram.
-- "Expand all" opens the shallowest collapsed tier; "N of M shown" counts rects.
+- "Expand all" opens the shallowest collapsed tier and never closes anything; "Collapse all" closes what was
+  opened by hand (back to `auto` when the level in use is deeper) and never opens anything; each is offered
+  only when it changes the drawing on screen. "N of M shown" counts rects.
 
 ## 7. Performance budgets and targets
 

@@ -119,6 +119,13 @@ now, and what changed in the last five weeks?
 - **Every view is a link.** The URL hash holds everything that defines a view (the ViewSpec, through
   `@gcportrait/model`'s view codec), so a reload keeps it and a link shares it; the recipient needs the same
   snapshot (their own pull or a snapshot file).
+- **A large snapshot is drawn once the person confirms it.** Before the app draws a snapshot of more than
+  `LARGE_SNAPSHOT_ASSETS` (10 000, `@gcportrait/model`) assets it asks in an alert dialog ("Draw it anyway",
+  "Cancel", and "Do not ask again in this session", kept in the tab's sessionStorage only), because drawing
+  that many at once is slow and heavy on memory; every way that draws a snapshot goes through the one guard
+  (`frontend/src/snapshots/LargeSnapshotGuard.tsx`; [docs/modes.md](docs/modes.md), "At a glance"), a snapshot
+  the person chose to draw is not asked about again in the tab, and the render API and `pnpm render` never
+  ask.
 - **Filters, focus views and drill-in compose.** A filter applies in every focus view and under every
   drill-in, never only in the overview, because a filter that silently stops applying misleads the reader. A
   new lens, focus view or filter gets a table-driven case in `packages/graph` against the others.

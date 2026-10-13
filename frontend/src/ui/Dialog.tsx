@@ -6,8 +6,20 @@
  * focusable element of its content (else its Close button), Tab and Shift+Tab stay inside it, Escape and the
  * Close button close it (`onClose('escape' | 'close')`), a press on the backdrop too (`'backdrop'`); on closing,
  * focus goes back to where it was before it opened.
+ *
+ * An alert dialog (`alert`: the WAI-ARIA alertdialog pattern, `role="alertdialog"`) asks for a decision its own
+ * actions make: it has no Close button, a press on the backdrop does nothing, Escape still closes it (the way to
+ * cancel), and focus moves to `initialFocus` (its least destructive action) when given.
  */
-import { useEffect, useId, useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 import controls from './controls.module.css';
@@ -24,6 +36,10 @@ export interface DialogProps {
   readonly children?: ReactNode;
   /** The dialog's own actions (Apply, Delete), at its foot. */
   readonly actions?: ReactNode;
+  /** An alert dialog: a decision its actions make (no Close button; the backdrop does not close it). */
+  readonly alert?: boolean;
+  /** Where focus goes when it opens (else the first focusable element of its content). */
+  readonly initialFocus?: RefObject<HTMLElement | null>;
 }
 
 export function Dialog(props: DialogProps): ReactElement | null {
@@ -31,7 +47,15 @@ export function Dialog(props: DialogProps): ReactElement | null {
   return createPortal(<OpenDialog {...props} />, document.body);
 }
 
-function OpenDialog({ title, description, onClose, children, actions }: DialogProps): ReactElement {
+function OpenDialog({
+  title,
+  description,
+  onClose,
+  children,
+  actions,
+  alert = false,
+  initialFocus,
+}: DialogProps): ReactElement {
   const backdropRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -39,6 +63,7 @@ function OpenDialog({ title, description, onClose, children, actions }: DialogPr
   const titleId = useId();
   const descriptionId = useId();
   const onCloseRef = useRef(onClose);
+  const initialFocusRef = useRef(initialFocus);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -56,7 +81,9 @@ function OpenDialog({ title, description, onClose, children, actions }: DialogPr
       element.setAttribute('inert', '');
       made.push(element);
     }
-    if (bodyRef.current !== null) focusFirstIn(bodyRef.current, closeRef.current);
+    const first = initialFocusRef.current?.current ?? null;
+    if (first !== null) first.focus();
+    else if (bodyRef.current !== null) focusFirstIn(bodyRef.current, closeRef.current ?? dialogRef.current);
     return () => {
       for (const element of made) element.removeAttribute('inert');
       if (before instanceof HTMLElement || before instanceof SVGElement) before.focus();
@@ -68,12 +95,12 @@ function OpenDialog({ title, description, onClose, children, actions }: DialogPr
       ref={backdropRef}
       className={styles.backdrop}
       onPointerDown={(event) => {
-        if (event.target === event.currentTarget) onCloseRef.current('backdrop');
+        if (!alert && event.target === event.currentTarget) onCloseRef.current('backdrop');
       }}
     >
       <div
         ref={dialogRef}
-        role="dialog"
+        role={alert ? 'alertdialog' : 'dialog'}
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description === undefined ? undefined : descriptionId}
@@ -93,16 +120,18 @@ function OpenDialog({ title, description, onClose, children, actions }: DialogPr
           <h2 id={titleId} className={styles.title}>
             {title}
           </h2>
-          <button
-            ref={closeRef}
-            type="button"
-            className={controls.control}
-            onClick={() => {
-              onClose('close');
-            }}
-          >
-            Close
-          </button>
+          {alert ? null : (
+            <button
+              ref={closeRef}
+              type="button"
+              className={controls.control}
+              onClick={() => {
+                onClose('close');
+              }}
+            >
+              Close
+            </button>
+          )}
         </div>
         {description === undefined ? null : (
           <p id={descriptionId} className={styles.description}>

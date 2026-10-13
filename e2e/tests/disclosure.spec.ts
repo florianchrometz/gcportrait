@@ -6,6 +6,7 @@ import {
   cameraSettled,
   drawnCanvas,
   expectNoAxeViolations,
+  hashOf,
   inside,
   openDiagram,
   scratchShot,
@@ -18,10 +19,17 @@ import {
  * opens the projects level and keeps the network open, "N of M shown" follows, and a reload keeps the flips. Also:
  * the keyboard (Enter on a chip, then on the collapse button it moves to), the pointer's collapse button on an open
  * zone's header, "Collapse all", the notices (the 48-flip cap; Auto changing level when the window grows), and axe
- * in both themes. The counts are read from the page and compared, never pinned: they follow the demo generator and
- * the catalog. Screenshots go to e2e/.scratch/ (git-ignored).
+ * in both themes. At project level, on demo M's Shared VPC host (a view rooted at or focused on one project, which
+ * Auto opens whole): zones closed by hand stay closed under "Collapse all" and "Expand all" reopens them; a
+ * double-click on a project chip drills in without leaving a flip; a level carried in from the organisation opens
+ * on, with nothing for "Collapse all" to close; and a press that comes while the organisation is still on screen
+ * waits for the project's drawing. The counts are read from the page and compared, never pinned: they follow the
+ * demo generator and the catalog. Screenshots go to e2e/.scratch/ (git-ignored).
  */
 const DEMO_L = '/diagram#snapshot=demo:L';
+const DEMO_M = '/diagram#snapshot=demo:M';
+/** Demo M's Shared VPC host (Production): a network with its subnets, product containers and resources. */
+const HOST = '//cloudresourcemanager.googleapis.com/projects/10000000001';
 
 function bar(page: Page): Locator {
   return page.getByRole('group', { name: 'Expand and collapse' });
@@ -62,6 +70,21 @@ async function zoneOpen(svg: Locator, id: string): Promise<Locator> {
   await expect(zone).toHaveCount(1, { timeout: 30_000 });
   await expect(svg.locator(`.dg-chip[data-id="${id}"]`)).toHaveCount(0);
   return zone;
+}
+
+/** Waits until the drawing on screen shows `id` as a chip. */
+async function zoneClosed(svg: Locator, id: string): Promise<void> {
+  await expect(svg.locator(`.dg-chip[data-id="${id}"]`)).toHaveCount(1, { timeout: 30_000 });
+}
+
+function button(page: Page, name: 'Expand all' | 'Collapse all'): Locator {
+  return bar(page).getByRole('button', { name });
+}
+
+/** Whether the button is inert (`aria-disabled`) or not, once it says so. */
+async function expectInert(page: Page, name: 'Expand all' | 'Collapse all', inert: boolean): Promise<void> {
+  if (inert) await expect(button(page, name)).toHaveAttribute('aria-disabled', 'true');
+  else await expect(button(page, name)).not.toHaveAttribute('aria-disabled');
 }
 
 test('demo L: expand a project chip, see its networks as chips, expand all, and a reload keeps the flips', async ({
@@ -239,3 +262,115 @@ for (const scheme of ['light', 'dark'] as const) {
     });
   });
 }
+
+test.describe('at project level (demo M’s Shared VPC host)', () => {
+  test('zones closed by hand at Auto stay closed under Collapse all; Expand all reopens them', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, `${DEMO_M}&focus=project&focus.project=${encodeURIComponent(HOST)}`);
+    // Auto opens a view this small whole: nothing to expand or collapse.
+    const whole = await shownOf(page);
+    expect(whole.shown).toBe(whole.total);
+    await expectInert(page, 'Expand all', true);
+    await expectInert(page, 'Collapse all', true);
+
+    // Close the network, then the project, by hand.
+    const network =
+      (await svg.locator('.dg-zone[data-id*="/global/networks/"]').first().getAttribute('data-id')) ?? '';
+    for (const id of [network, HOST]) {
+      const collapse = svg.locator(`.dg-collapse[data-collapse="${id}"]`);
+      await svg.locator(`.dg-zone[data-id="${id}"]`).hover();
+      await collapse.click();
+      await zoneClosed(svg, id);
+    }
+    await expect.poll(() => flipsOf(page)).toHaveLength(2);
+    // Nothing is open by hand: Collapse all has nothing to close (it never reopens what was closed by hand).
+    await expectInert(page, 'Collapse all', true);
+    await expectInert(page, 'Expand all', false);
+    await scratchShot(page, '.', 'disclosure-M-project-closed-by-hand-light');
+
+    // Expand all reopens the project; the network, closed by hand inside it, then; and everything is open again.
+    await button(page, 'Expand all').click();
+    await zoneOpen(svg, HOST);
+    await zoneClosed(svg, network);
+    await expectInert(page, 'Expand all', false);
+    await button(page, 'Expand all').click();
+    await zoneOpen(svg, network);
+    await expect.poll(() => flipsOf(page)).toEqual([]);
+    await expect(shownCount(page)).toHaveText(shownText(whole));
+    await expectInert(page, 'Expand all', true);
+    await expectInert(page, 'Collapse all', true);
+    expect(hashOf(page)).not.toContain('detail=');
+  });
+
+  test('a double-click on a project chip drills in and leaves no flip behind; Back returns to the organisation', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DEMO_M);
+    await svg.locator(`.dg-chip[data-id="${HOST}"]`).dblclick();
+    await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&root=${HOST}`);
+    await drawnCanvas(page);
+    const whole = await shownOf(page);
+    await expect.poll(async () => (await shownOf(page)).shown).toBe(whole.total);
+    await expectInert(page, 'Expand all', true);
+    await expectInert(page, 'Collapse all', true);
+    await page.goBack();
+    await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M');
+    await zoneClosed(svg, HOST);
+  });
+
+  test('a level carried in from the organisation opens on; Collapse all has nothing deeper than Auto to close', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DEMO_M);
+    await button(page, 'Expand all').click();
+    await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&detail=projects');
+    const host = await zoneOpen(svg, HOST);
+    await host
+      .locator('.dg-body')
+      .first()
+      .click({ position: { x: 24, y: 8 } });
+    await page.getByRole('button', { name: 'Details', exact: true }).click();
+    await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&root=${HOST}&detail=projects`);
+    // The project's network is a chip at the projects level; Auto (everything) is deeper, so Collapse all is inert.
+    const network = svg.locator('.dg-chip[data-id*="/global/networks/"]');
+    await expect(network).toHaveCount(1, { timeout: 30_000 });
+    await expectInert(page, 'Collapse all', true);
+    await expect(button(page, 'Expand all')).toHaveAccessibleDescription(
+      'Opens the next detail level: Networks',
+    );
+    await button(page, 'Expand all').click();
+    await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&root=${HOST}&detail=networks`);
+    await expect(network).toHaveCount(0, { timeout: 30_000 });
+    await expect
+      .poll(async () => {
+        const now = await shownOf(page);
+        return now.shown === now.total;
+      })
+      .toBe(true);
+    await expectInert(page, 'Expand all', true);
+    await expectInert(page, 'Collapse all', true);
+  });
+
+  test('Collapse all pressed while the organisation is still on screen waits for the project’s drawing', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, `${DEMO_M}&detail=projects&selection=${encodeURIComponent(HOST)}`);
+    await expectInert(page, 'Collapse all', false);
+    // Details, then Collapse all in the same task: the organisation's drawing is still on screen when it is pressed.
+    const pressed = await page.evaluate(() => {
+      const named = (name: string): HTMLButtonElement | undefined =>
+        [...document.querySelectorAll('button')].find((element) => element.textContent === name);
+      named('Details')?.click();
+      const collapse = named('Collapse all');
+      const inert = collapse?.getAttribute('aria-disabled') ?? null;
+      collapse?.click();
+      return { inert, hash: decodeURIComponent(window.location.hash) };
+    });
+    expect(pressed).toEqual({ inert: null, hash: `#snapshot=demo:M&root=${HOST}&detail=projects` });
+    // Worked out on the project's drawing, it has nothing to close: the network stays a chip, nothing opens.
+    await expect(svg.locator('.dg-chip[data-id*="/global/networks/"]')).toHaveCount(1, { timeout: 30_000 });
+    await expectInert(page, 'Collapse all', true);
+    expect(hashOf(page)).toBe(`#snapshot=demo:M&root=${HOST}&detail=projects`);
+  });
+});

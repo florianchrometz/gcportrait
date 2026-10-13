@@ -28,7 +28,9 @@
  * - every value to fill in that the code of a document under docs/ or docs/legal/ names (a `YOUR_…` token, in a
  *   code block or inline code; docs/contributing.md, "Data, privacy and presentation") is a variable of the
  *   registry the website and the app take their fields from (COMMAND_VARIABLES,
- *   packages/model/src/schemas/command-variables.ts, which Node loads by type stripping).
+ *   packages/model/src/schemas/command-variables.ts, which Node loads by type stripping);
+ * - docs/modes.md names the size above which the app asks before it draws a snapshot ("more than 10,000 assets")
+ *   with the model's own `LARGE_SNAPSHOT_ASSETS` (packages/model/src/schemas/vocabulary.ts), and no other.
  *
  * Usage:
  *   node scripts/user-docs.mjs            check; exit 1 and list the problems when anything is stale
@@ -146,6 +148,9 @@ const VARIABLE_DIRS = Object.freeze(['docs', 'docs/legal']);
 
 /** Where the lens blocks go, and where the compiled catalog is. */
 export const LENS_DOC = 'docs/lenses-and-filters.md';
+/** The guide that names the large-snapshot threshold, and the module of the model that declares it. */
+export const LARGE_SNAPSHOT_DOC = 'docs/modes.md';
+export const VOCABULARY_MODULE = 'packages/model/src/schemas/vocabulary.ts';
 export const CATALOG_JSON = 'packages/catalog/dist/catalog.json';
 
 /** pnpm's own commands that may appear in a guide (`pnpm install`, `pnpm --filter X exec ...`). */
@@ -846,6 +851,37 @@ export function quickStartVariables(markdown, registry) {
 }
 
 /**
+ * The large-snapshot threshold as the model declares it (`export const LARGE_SNAPSHOT_ASSETS = 10_000;`), or null
+ * when the module declares no plain number.
+ * @param {string} source
+ * @returns {number | null}
+ */
+export function largeSnapshotAssets(source) {
+  const match = /^export const LARGE_SNAPSHOT_ASSETS = ([\d_]+);$/m.exec(source);
+  return match?.[1] === undefined ? null : Number(match[1].replaceAll('_', ''));
+}
+
+/**
+ * What is wrong with a guide's statement of the large-snapshot threshold: it must say "more than N assets" with
+ * the model's N, written as the app writes it ("10,000"), and name no other "more than … assets".
+ * @param {string} guide
+ * @param {string} source the model's vocabulary module
+ * @returns {string[]}
+ */
+export function largeSnapshotProblems(guide, source) {
+  const assets = largeSnapshotAssets(source);
+  if (assets === null) return [`${VOCABULARY_MODULE} no longer declares LARGE_SNAPSHOT_ASSETS as a number`];
+  const expected = assets.toLocaleString('en');
+  const stated = [...guide.replaceAll(/\s+/g, ' ').matchAll(/more than ([\d,]+) assets/g)].map(
+    (match) => match[1] ?? '',
+  );
+  if (stated.length === 0) return [`${LARGE_SNAPSHOT_DOC}: it does not say "more than ${expected} assets"`];
+  return stated
+    .filter((count) => count !== expected)
+    .map((count) => `${LARGE_SNAPSHOT_DOC}: it says "more than ${count} assets", the model ${expected}`);
+}
+
+/**
  * Every problem of the user guides against the tree; empty when they are current.
  * @param {string} root
  * @returns {string[]}
@@ -902,6 +938,13 @@ export function checkUserDocs(root) {
       if (problem !== null) problems.push(`${doc}: ${problem}`);
     }
   }
+
+  problems.push(
+    ...largeSnapshotProblems(
+      readFileSync(path.join(root, LARGE_SNAPSHOT_DOC), 'utf8'),
+      readFileSync(path.join(root, VOCABULARY_MODULE), 'utf8'),
+    ),
+  );
 
   const registry = readVariableRegistry(root);
   const quickStart = quickStartVariables(readFileSync(path.join(root, QUICK_START_DOC), 'utf8'), registry);

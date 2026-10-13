@@ -2,14 +2,17 @@
 import { generateOrganization, toCaiAsset } from '@gcportrait/demo-data';
 import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import type { ReactElement } from 'react';
+import { useLocation } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TEST_TOKEN } from '../auth/testing';
 import { readyConnect } from '../preflight/testing';
+import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
 import { fakeLibrary } from '../snapshots/testing';
 import { expectNoAxeViolations } from '../test/axe';
 import { stubBackend } from '../test/backend';
-import { currentLocation } from '../test/location';
+import { currentLocation, hashOf } from '../test/location';
 import { PullNow } from './PullNow';
 import { controlledBody, line, renderImport } from './testing';
 
@@ -25,6 +28,13 @@ function backend(answer: () => Response): ReturnType<typeof stubBackend>['calls'
 
 function button(): HTMLElement {
   return screen.getByRole('button', { name: 'Pull now' });
+}
+
+/** Whether the guard would ask before drawing 50 000 assets of the snapshot the location names. */
+function GuardProbe(): ReactElement {
+  const guard = useLargeSnapshotGuard();
+  const ref = hashOf(useLocation().hash).replace(/^snapshot=/, '');
+  return <p data-testid="guard-probe">{ref === '' ? '' : String(guard.asks(50_000, ref))}</p>;
 }
 
 beforeEach(() => {
@@ -162,6 +172,98 @@ describe('Pull now', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Try again' }));
     await waitFor(() => {
       expect(answers).toBe(2);
+    });
+  });
+
+  it('asks once, as soon as the count passes 10 000; Cancel stops the pull and stores nothing', async () => {
+    const body = controlledBody();
+    backend(() => new Response(body.stream));
+    const library = fakeLibrary();
+    const { container } = renderImport(<PullNow />, { connect: READY, library });
+    await userEvent.click(button());
+    body.send(line({ t: 'progress', pages: 0, assets: 0 }));
+    body.send(line({ t: 'page', assets: ASSETS.slice(0, 50) }));
+    body.send(line({ t: 'progress', pages: 21, assets: 10_500 }));
+    const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    expect(document.getElementById(dialog.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
+      'This pull has read 10,500 assets so far, and there may be more. Drawing more than 10,000 assets at ' +
+        'once is slow and heavy on memory; the diagram will still work. Cancel stops the pull; nothing is stored.',
+    );
+    // The stream goes on while the person decides: one question, however far the count goes.
+    body.send(line({ t: 'progress', pages: 22, assets: 11_000 }));
+    await waitFor(() => {
+      expect(screen.getByTestId('import-counters').textContent).toMatch(/^22 pages · 11,000 assets/);
+    });
+    expect(screen.getAllByRole('alertdialog')).toHaveLength(1);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => {
+      expect(screen.getByRole('status').textContent).toBe('Cancelled. Nothing was stored.');
+    });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(library.calls).toEqual([]);
+    expect(currentLocation(container)).toBe('/');
+  });
+
+  it('"Draw it anyway" goes on, stores it and opens the diagram, which does not ask again', async () => {
+    const body = controlledBody();
+    backend(() => new Response(body.stream));
+    const library = fakeLibrary();
+    const { container } = renderImport(
+      <>
+        <PullNow />
+        <GuardProbe />
+      </>,
+      { connect: READY, library },
+    );
+    await userEvent.click(button());
+    body.send(line({ t: 'progress', pages: 0, assets: 0 }));
+    body.send(line({ t: 'progress', pages: 21, assets: 10_500 }));
+    const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Draw it anyway' }));
+    body.send(line({ t: 'page', assets: ASSETS }));
+    body.send(line({ t: 'done', assets: ASSETS.length, readTime: READ_TIME }));
+    body.end();
+    await waitFor(() => {
+      expect(currentLocation(container)).toMatch(/^\/diagram#snapshot=[0-9A-HJKMNP-TV-Z]{26}$/);
+    });
+    expect(library.calls).toEqual(['storePrepared api']);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.getByTestId('guard-probe').textContent).toBe('false');
+  });
+
+  it('holds the stored snapshot until the person has answered, when the pull ends first', async () => {
+    const body = controlledBody();
+    backend(() => new Response(body.stream));
+    const library = fakeLibrary();
+    const { container } = renderImport(<PullNow />, { connect: READY, library });
+    await userEvent.click(button());
+    body.send(line({ t: 'progress', pages: 21, assets: 10_500 }));
+    body.send(line({ t: 'page', assets: ASSETS }));
+    body.send(line({ t: 'done', assets: ASSETS.length, readTime: READ_TIME }));
+    body.end();
+    const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    // Read in full, and nothing stored while the question is open.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(library.calls).toEqual([]);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Draw it anyway' }));
+    await waitFor(() => {
+      expect(currentLocation(container)).toMatch(/^\/diagram#snapshot=/);
+    });
+    expect(library.calls).toEqual(['storePrepared api']);
+  });
+
+  it('takes the question back when the pull fails while it is open', async () => {
+    const body = controlledBody();
+    backend(() => new Response(body.stream));
+    renderImport(<PullNow />, { connect: READY, library: fakeLibrary() });
+    await userEvent.click(button());
+    body.send(line({ t: 'progress', pages: 21, assets: 10_500 }));
+    await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    body.send(line({ t: 'error', message: 'Busy.', status: 503, code: 'UNAVAILABLE', retryable: true }));
+    body.end();
+    expect(await screen.findByRole('alert')).toBeDefined();
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
     });
   });
 });

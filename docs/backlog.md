@@ -36,8 +36,8 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **App decisions:** history entries for view changes; whether the drawer's column counts in the `auto`
   budget; the layout of a focus view; applications and perimeters by structure (an App Hub flag; a narrower
   `secures`); navigation exceptions and Escape on a selection; the console fallback; folding NICs; snapshot
-  ids on re-import; Collapse all reopening closed zones; Expand and Collapse all in the Detail control;
-  framing an expanded chip at 100 %; search ranking; the glide rules; axe-core's MPL-2.0 in the e2e tooling.
+  ids on re-import; Expand and Collapse all in the Detail control; framing an expanded chip at 100 %; search
+  ranking; the glide rules; axe-core's MPL-2.0 in the e2e tooling.
 - **Self-hosting decisions:** the preflight's 403 contracts; the Connect page's
   inline permission check.
 
@@ -113,8 +113,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
   data worker's per-request store read; the floating "N of M shown" bar; breadcrumb truncation; XL's
   Snapshot-menu radio; the dark scrim; `shares` bands on L and XL.
 - **Defects:** search mixes texts on XL; slow reveals reopen the drawer; focus after a jump link; renaming a
-  saved view can duplicate a name; a double-click leaves a stray flip; Expand all reads a stale drawing; a
-  pending `jumpTo`; another tab deleting the open snapshot.
+  saved view can duplicate a name; a pending `jumpTo`; another tab deleting the open snapshot.
 - **Connect and Permissions pages:** a permission check in flight at sign-out is not cancelled; the scope
   picker's hint lacks `aria-describedby`; a type-filtered pull is stored like a full one; an `operation.json`
   whose scope differs relabels silently; `ImportFailure.command` is never set; the sign-in e2e runs on Vite,
@@ -134,6 +133,13 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Command variables:** a stale `aria-invalid` after a fact changes; trim typed values on blur; clear the
   Copy status on a change; the Copy button's accessible name from typed values.
 - `ThemeProvider.test.tsx` may be flaky (no cause found); fix it if it fails again.
+
+- **Expand all enabled with nothing to do.** When the only flip it would drop names a zone drawn empty under the
+  current lens or filters, the scene builder ignores that flip but `expandAllView` still offers a view; make the
+  button inert there too (`frontend/src/diagram/disclosure/flips.ts`).
+- **Export dropped on the Connect page: ask before storing.** The large-snapshot question comes after the worker
+  stored the import, so Cancel leaves a stored, undrawn copy and dropping the files again stores a second one;
+  ask between counting and storing, as the live pull does (`frontend/src/import/`).
 
 ## 6. Performance
 

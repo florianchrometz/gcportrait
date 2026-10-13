@@ -168,8 +168,8 @@ a history entry (Back undoes them); continuous ones replace it; every action tak
 | `setFilters(patch \| fn)` | push | merges filter fields, or maps the current filters |
 | `drillIn(root \| null)` | push | re-roots the view (null: the organisation); drops the selection |
 | `flip(zoneId)` | push | toggles the zone's flip (`flipIdOf` of `@gcportrait/graph`) |
-| `expandAll()` | push | "Expand all": opens the shallowest collapsed tier of the diagram on screen (section "Progressive disclosure") |
-| `collapseAll()` | push | "Collapse all": resets every flip, and goes back to `auto` when the level in use is deeper |
+| `expandAll()` | push | "Expand all": opens the shallowest collapsed tier of the diagram on screen (section "Progressive disclosure"); pressed while another view's drawing is on screen, it waits for the view's own |
+| `collapseAll()` | push | "Collapse all": closes every zone opened by hand, and goes back to `auto` when the level in use is deeper; never opens anything; waits as `expandAll` does |
 | `setSnapshot(ref)` | push | opens a snapshot on `/diagram`, keeping lens and detail (`snapshotView`) |
 | `setView(fn)` | push | any other change (the timeline's tick, a saved view) |
 | `select(id \| null)` | replace | the selection; selecting opens the drawer (`ui.drawerOpen`) |
@@ -183,15 +183,17 @@ console links), `useLayout()`, `useSelection()`, `useUi()`, `usePopover(id)` (`[
 `ui.popover`, so one top-bar popup is open at a time), `selectScope` (the breadcrumb's scope),
 `useDiagramPipeline(canvasRef)` (the diagram page only).
 
-**The pipeline** (`pipeline.ts`, run by `useDiagramPipeline` on the diagram page). Whenever the view's scene key
-changes (everything but `selection` and `highlight`, so selecting never asks a worker for anything) the
+**The pipeline** (`pipeline.ts`, run by `useDiagramPipeline` on the diagram page). Whenever the view's scene
+key changes (everything but `selection` and `highlight`, so selecting never asks a worker for anything) the
 controller asks the data worker for the Scene and the layout worker for its Layout; a newer request aborts the
-older one (and both worker clients cancel a superseded request); the previous diagram of the same snapshot stays
-on screen meanwhile; the data worker's loading stages and a snapshot that cannot be loaded go into the `snapshot`
-slice. Leaving the page empties the slice. The scene key's timeline `tick` is the day that can be drawn now
-(`selectSceneKey`, `tickToDraw` of `timeline/model.ts`): a live day not read yet keeps the diagram on screen
-until it is cached; a day of a snapshot already loaded is read and built with its stages on the canvas but never
-takes the `snapshot` slice back to loading.
+older one (and both worker clients cancel a superseded request); the previous diagram of the same snapshot
+stays on screen meanwhile; the data worker's loading stages and a snapshot that cannot be loaded go into the
+`snapshot` slice. Leaving the page empties the slice. The scene key's timeline `tick` is the day that can be
+drawn now (`selectSceneKey` in `viewKey.ts`, `tickToDraw` of `timeline/model.ts`): a live day not read yet
+keeps the diagram on screen until it is cached; a day of a snapshot already loaded is read and built with its
+stages on the canvas but never takes the `snapshot` slice back to loading. While the large-snapshot guard asks
+whether to draw the view's snapshot (`useDiagramPipeline`'s `held`, section "Snapshots"), nothing is asked of
+a worker.
 
 **The measured canvas and `auto`.** The canvas element is measured synchronously before the first request and
 then by a `ResizeObserver` (`measureDiagramArea` in `diagram/autoDetail.ts`): its height and the width of its
@@ -263,7 +265,7 @@ an inert `disabled` (`aria-disabled`, a hint as the title, focusable, doing noth
 | `Combobox` | editable combobox with a results `Listbox` (`aria-autocomplete="list"`), a polite result count (`status` replaces it); options may carry a `group` and a decorative `icon`; `inputRef`, `keyShortcuts` (`aria-keyshortcuts`), `align`, `listClassName`; `busy` (results that arrive later; the listed options are an earlier text's, greyed and never active or chosen) and `enterChoosesFirst` | ↓ opens or moves, ↑ moves (both wrap), Alt+↓ opens, Enter chooses (with `enterChoosesFirst` the first when none is active), Escape closes then clears; a click chooses without taking focus; a press on the focused input reopens the list; while `busy`, ↓ ↑ Enter are kept and apply to the options that arrive |
 | `Listbox` | the listbox popup of the two comboboxes (presentational); consecutive options with one `group` name form a `role="group"` named by a heading row (APG "grouped options"); an option with a second line is named by its label and described by the line (`aria-labelledby`, `aria-describedby`), which a sized list cuts with an ellipsis (its title has it all); `busy`: `aria-busy`, options in the secondary text colour | pointer move activates, click chooses; the active option scrolls into view |
 | `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary) | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close` |
-| `Dialog` | modal dialog (`aria-modal`, labelled by its title, described by `description`) at the end of `<body>`, the rest made `inert` | focus moves in, Tab trapped, Escape, Close and the backdrop close, focus returns to the opener |
+| `Dialog` | modal dialog (`aria-modal`, labelled by its title, described by `description`) at the end of `<body>`, the rest made `inert`; `alert`: an alert dialog (`role="alertdialog"`, a decision its own actions make: no Close button) with `initialFocus` on its least destructive action | focus moves in, Tab trapped, Escape, Close and the backdrop close (an alert dialog: Escape only), focus returns to the opener |
 | `SegmentedControl` | radio group (`role="radiogroup"`, `role="radio"`), the checked option the one tab stop and check-marked | ← → ↑ ↓ move and choose (wrapping), Home End, click |
 | `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track |
 | `Tooltip` | `role="tooltip"`, always in the DOM, named by the trigger's `aria-describedby` | shows on focus at once and after a resting pointer, stays while the pointer is on it, Escape and blur hide it (WCAG 1.4.13) |
@@ -726,15 +728,19 @@ choice.", …), with a "Check permissions" link to the Permissions page while th
 `/api/export/read`; a refusal before the stream (the backend's JSON error) fails at once with its message. The
 response body is read on the page and handed chunk by chunk to the import worker (`worker/client.ts`; a chunk
 that owns its buffer is moved, not copied), which reads it with `@gcportrait/ingest` as it arrives
-(`worker/handler.ts`): frames for a pull, an export's own lines for a read. The page counts the bytes; the worker
-reports pages and assets; at the end it gives the snapshot its scope (the target's; for an export, the
+(`worker/handler.ts`): frames for a pull, an export's own lines for a read. The page counts the bytes; the
+worker reports pages and assets; at the end it gives the snapshot its scope (the target's; for an export, the
 sidecar's or the root the assets share, `snapshots/worker/scope.ts`, keeping the name the assets give the same
 scope), refuses a pull that ended without its `done` frame (cut short) and an export without assets, and
-prepares the record (`snapshots/worker/prepare.ts`). The library stores it (`storePrepared`, a new record under
-the snapshot's new ULID; refused without IndexedDB). A pull's snapshot has source `api` ("live pull", or "live
-pull, service account") and the read time Google reported (`readTimeSource: api`); an export read's has source
-`export` with its URI, and the sidecar's read time or an estimate. Cancel (and leaving the page) aborts the
-request and the read, and tells the worker to drop the job: nothing is stored.
+prepares the record (`snapshots/worker/prepare.ts`). The library stores it (`storePrepared`, a new record
+under the snapshot's new ULID; refused without IndexedDB). A count that passes `LARGE_SNAPSHOT_ASSETS` while
+it streams asks the large-snapshot guard once, at that moment (`confirmLarge`, from `useImportJob`): the
+stream goes on while the person decides, nothing is stored before they have answered, "Draw it anyway" lets
+the diagram open without asking again and Cancel stops the read. Only the stream can tell: the permission
+check reads one asset. A pull's snapshot has source `api` ("live pull", or "live pull, service account") and
+the read time Google reported (`readTimeSource: api`); an export read's has source `export` with its URI, and
+the sidecar's read time or an estimate. Cancel (and leaving the page) aborts the request and the read, and
+tells the worker to drop the job: nothing is stored.
 
 **An export's read time** (from an optional sidecar, `operation.json`, or set by the person, defaulting to the
 latest `updateTime`): an export that came without its operation.json may be given its read time in "When the
@@ -765,14 +771,15 @@ screen reader hears "Reading Cloud Asset Inventory…", not every counter.
 **The worker** is the fourth role of the diagram's worker script (`WORKER_ROLES.imports`), so the build shares
 ingest, the model and zod with the other roles; its code loads on first use.
 
-Tests: `progress.test.ts` (the reducer), `target.test.ts`, `sidecar.test.ts` (the typed read time, which read time
-wins, the future note), `commands.test.ts` (the gcloud commands with their variables), `errors.test.ts`,
+Tests: `progress.test.ts` (the reducer), `target.test.ts`, `sidecar.test.ts` (the typed read time, which read
+time wins, the future note), `commands.test.ts` (the gcloud commands with their variables), `errors.test.ts`,
 `run.test.ts` (Node, the in-process worker: the request, the stored snapshot, every failure, cancel, a broken
 connection, export reads with and without a sidecar, and a 5 000-asset organisation streamed into a stored
-snapshot in under 10 s, printing its time; a typed read time, and the sidecar's over it), `store.test.ts` (IndexedDB
-through fake-indexeddb, read back by the diagram's loader), `sidecarImport.test.ts` (the sidecar in the Snapshots page's import;
-a typed read time, the sidecar's over it, bundles keeping their own, the future note), `PullNow.test.tsx` and
-`LoadExport.test.tsx` (the controls in a harness, the read time field, axe included), and
+snapshot in under 10 s, printing its time; a typed read time, and the sidecar's over it), `store.test.ts`
+(IndexedDB through fake-indexeddb, read back by the diagram's loader), `sidecarImport.test.ts` (the sidecar in
+the Snapshots page's import; a typed read time, the sidecar's over it, bundles keeping their own, the future
+note), `PullNow.test.tsx` and `LoadExport.test.tsx` (the controls in a harness, the read time field, the
+large-snapshot question for dropped files, a pull and a Cloud Storage read, axe included), and
 `e2e/tests/live-pull.spec.ts` in Chromium.
 
 ## Snapshots (`src/snapshots/`)
@@ -797,6 +804,10 @@ src/snapshots/
   labels.ts             names and formats (scope, source, UTC times, decimal sizes, the demo sizes), and the
                         rows' names, no two alike, with the copy numbers the rows show (`distinctNames`)
   SnapshotLibraryProvider.tsx  context, listing, and the Snapshot menu's `snapshot.available` in the store
+  largeSnapshot.ts      the large-snapshot guard's rules: the threshold, a snapshot's size before it is drawn,
+                        the question's words, "Do not ask again in this session" in sessionStorage
+  LargeSnapshotGuard.tsx  the guard in React: its provider and alert dialog, `useLargeSnapshotGuard`, and the
+                        diagram page's `useLargeSnapshotGate`
   DemoEntry.tsx         the Connect page's demo card: size S–XL (ui/SegmentedControl), Try the demo, progress
   SnapshotTable.tsx, ImportPanel.tsx, StorageUsage.tsx, JobStatus.tsx   the Snapshots page's parts
   ScopeTimelines.tsx    "Timelines by scope": what is kept of each scope's timeline, with deleting
@@ -821,6 +832,23 @@ with its progress, and ends with the job; the library (its `demo` option; `main.
 progress bar ("Generating demo organisation M and its 35 days of history…", "Compressing for storage…",
 "Storing in this browser…"); a failure shows an alert. The diagram itself still generates demo organisations
 in its data worker, so they need no storage at all.
+
+**Large snapshots.** Drawing more than `LARGE_SNAPSHOT_ASSETS` (10 000, `@gcportrait/model`) assets at once is
+slow and heavy on memory, so the app draws such a snapshot only once the person has said so
+(`LargeSnapshotGuard.tsx`, in `App.tsx` inside the snapshot library's provider): an alert dialog says how many
+assets it has and that the diagram still works, with "Draw it anyway", "Cancel" (focused; Escape too) and "Do
+not ask again in this session" (`sessionStorage`, never `localStorage`; it takes effect with "Draw it
+anyway"). A snapshot the person chose to draw is remembered for the tab's life, so a timeline step, a lens, a
+filter, a flip or an export never asks again; a reload asks again unless the session setting was ticked. Each
+way in asks where Cancel leaves the person as they were: "Try the demo" before it generates anything (the
+size's count from `DEMO_SIZE_INFO`, or the stored copy's), the table's Load (the record's count), the Connect
+page's export import once the files are read and stored (Cancel keeps the snapshot stored and undrawn, and
+says so), a pull or a Cloud Storage read while it streams (`import/run.ts`). Every other way onto the diagram
+(a link, the Snapshot menu, a saved view, Back and Forward) meets `useLargeSnapshotGate` on the diagram page,
+which holds the pipeline (`useDiagramPipeline`'s `held`: no worker is asked for the snapshot) while the
+listing is read or the person is asked; Cancel goes back (`navigate(-1)`), or, on a page opened at that link,
+to the Snapshots page (a stored snapshot) or the Connect page (a demo organisation). The render API and `pnpm
+render` draw what they are asked and never ask.
 
 **The record** (`StoredSnapshot` in `storage/db.ts`): `id` is the snapshot's ref (its ULID, or `demo:<size>`);
 `blob` is the model `Snapshot` as JSON, gzip-compressed (`application/gzip`; plain `application/json` where
@@ -941,11 +969,14 @@ and every damage it refuses), `library.test.ts` (IndexedDB through fake-indexedd
 library, the export → import round trip, imports as copies, a refused import, damaged records refused at
 export, the data worker's loader, the memory fallback, and the data worker over stored snapshots: a deleted
 snapshot is not drawn from its kept Graph, and S imported after M was deleted draws S),
-`pages/SnapshotsPage.test.tsx` and `pages/ConnectPage.test.tsx` (the pages with a fake library, axe included; the
-read time typed at an import), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by
-scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a scope's days, focus and
-status, over fake-indexeddb; axe),
-and `e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S, import both as
+`pages/SnapshotsPage.test.tsx` and `pages/ConnectPage.test.tsx` (the pages with a fake library, axe included;
+the read time typed at an import), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by
+scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a scope's days, focus
+and status, over fake-indexeddb; axe), `LargeSnapshotGuard.test.tsx` (the guard's rules, and every way in with
+the fake library: "Try the demo" XL, Load, a link, the Snapshot menu; Cancel, Escape, "Draw it anyway", the
+session setting, no second question; axe), `e2e/tests/large-snapshot.spec.ts` in Chromium (demo mode: "Try the
+demo" XL asked about, cancelled, drawn, silenced for the tab; axe in both themes), and
+`e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S, import both as
 copies, load each, delete M's copy, go back to its view and see it is gone, import S again and see S drawn,
 and the same after a reload; a refused import; no IndexedDB, and a reload forgetting; axe on both pages in
 both themes).
@@ -1366,10 +1397,11 @@ src/diagram/disclosure/
 ```
 
 - **Chips.** A click on a chip (or Enter or Space on a focused one) expands it: `actions.flip`, a new history
-  entry. A double-click's second click flips nothing (a double-click on a container drills in). A chip
-  is still selected by its menu (right-click, Shift+F10), and hover still previews its trace. `DiagramCanvas`
-  does this only with its `onFlip` prop (the diagram page passes `actions.flip`); without it chips select as
-  before.
+  entry. A double-click's second click flips nothing, and the double-click on a container drills in after
+  undoing its first click's flip, in place (`onFlip` and `onDrillIn` with `replace`), so it leaves no flip
+  behind and Back returns to the drawing before it. A chip is still selected by its menu (right-click,
+  Shift+F10), and hover still previews its trace. `DiagramCanvas` does this only with its `onFlip` prop (the
+  diagram page passes `actions.flip`); without it chips select as before.
 - **Collapse button.** Every open zone of the interactive canvas has a button over its header icon
   (`role="button"`, "Collapse Project: demo-web-1", `data-collapse`), whose ⊟ face (a plate in `surface`
   with a `chipText` outline and glyph, the inverse of the chip's ⊞) shows while the pointer is on the zone
@@ -1385,15 +1417,24 @@ src/diagram/disclosure/
   centred at the current scale. Any other new drawing, a level change included, is fitted as before. After a
   flip from the keyboard focus follows the zone: onto its collapse button after expanding, back onto its chip
   after collapsing.
-- **Expand all** opens the shallowest collapsed tier: the next detail level that opens anything (rect counts
-  without flips), written as an explicit level. Flips whose zone is a chip on screen go (they keep a zone
-  closed), and so do flips that open a zone the new level opens anyway; a flip that opens a zone the new level
-  still closes stays, so nothing open closes. Flips naming no zone on screen stay. At `all` only the closing
-  flips go; chips the `depth` filter makes stay. Disabled (`aria-disabled`, still focusable, the reason in its
-  tooltip) when it would change nothing. Flips cannot do this job alone: demo L's folder level has 117 project
-  chips.
-- **Collapse all** resets every flip and, when the level in use is deeper than the one `auto` picks for this
-  view's budget, goes back to `auto`; it never opens anything (demo S at `folders` stays at `folders`).
+- **Expand all** opens the shallowest collapsed tier: the next detail level at which a chip on screen opens
+  (of the chips its level closes, not those closed by hand or by the `depth` filter), written as an explicit
+  level. Flips whose zone is a chip on screen go (they keep a zone closed), and so do flips that open a zone
+  the new level opens anyway; a flip that opens a zone the new level still closes stays, so nothing open
+  closes. Flips naming no zone on screen stay. With no deeper level to open only the closing flips go; chips
+  the `depth` filter makes stay. Flips cannot do this job alone: demo L's folder level has 117 project chips.
+- **Collapse all** closes every zone opened by hand and, when the level in use is deeper than the one `auto`
+  picks for this view at the canvas's size, goes back to `auto`. It never opens anything: a level chosen by
+  hand that is not deeper than `auto`'s stays (demo S at `folders` stays at `folders`; a project's view, where
+  `auto` opens everything, keeps its level), and a flip that keeps a zone on screen closed stays while the
+  level still opens that zone. Flips that name no zone of the view (the report's `unknownFlips`: another
+  root's or focus's) stay; the view's other flips go, those inside chips included.
+- **Available when they change the drawing.** Each button is inert (`aria-disabled`, still focusable, the
+  reason in its tooltip) when it would change nothing on screen: Expand all when no chip would open or reopen,
+  Collapse all when no open zone would close. Both are worked out on the drawing on screen with the view it
+  draws (its scene key, decoded), never on one view's hash with another view's drawing; a press while a newer
+  view is being drawn (a drill-in, a level just written) waits in the store until that view's own drawing
+  arrives and is worked out on it, and is dropped if the view moves on first.
 - **"N of M shown"**: the rects drawn (zones, chips and cards; a chip once) of the rects the view holds at
   `all` (the report's count without flips, never less than N), with thousands separators, in a status region.
 - **Notices** (a live region kept in the DOM, until dismissed or replaced): when a view change dropped flips
@@ -1403,12 +1444,17 @@ src/diagram/disclosure/
 
 Tests: `flips.test.ts` (against buildScene on demo M and L: expand then collapse, and collapse then expand,
 give back the level's own Scene, through the store's `flip` and the hash; the depth filter; the level table;
-Expand all from folders to all on demo L keeping what was open; Collapse all; the cap; auto changes),
-`canvas.test.tsx` (chips, the collapse button, the camera kept and the glide, focus after a keyboard flip,
+Expand all from folders to all on demo L keeping what was open; Collapse all keeping what was closed by hand
+and another view's flips; views rooted at and focused on a project at every level, with flips by hand or none:
+each button inert exactly when it would change nothing, Expand all never closing and Collapse all never
+opening, each after the other and until inert; the cap; auto changes), `canvas.test.tsx` (chips, a
+double-click leaving no flip, the collapse button, the camera kept and the glide, focus after a keyboard flip,
 axe), `DisclosureBar.test.tsx` (the page in jsdom with in-process workers, axe), `actions.test.ts` (the
-store's actions, history modes) and `e2e/tests/disclosure.spec.ts` (demo L in Chromium: expand a project chip,
-its networks as chips, expand all, "N of M", reload; the keyboard; the collapse button; both notices; axe in
-both themes). Specs that need a selection select a card or a zone, since a click on a chip expands it
+store's actions, history modes, a press while another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo
+L in Chromium: expand a project chip, its networks as chips, expand all, "N of M", reload; the keyboard; the
+collapse button; both notices; axe in both themes; a project's view on demo M: zones closed by hand, a
+double-click drill-in, a level carried in from the organisation, a press while the organisation is still on
+screen). Specs that need a selection select a card or a zone, since a click on a chip expands it
 (`diagram.spec.ts`, `a11y.spec.ts`).
 
 ## Details drawer (`src/drawer/`)

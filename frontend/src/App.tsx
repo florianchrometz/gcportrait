@@ -14,6 +14,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { SnapshotsPage } from './pages/SnapshotsPage';
 import { AppShell } from './shell/AppShell';
 import { ViewHashProvider } from './shell/viewHash';
+import { LargeSnapshotGuardProvider } from './snapshots/LargeSnapshotGuard';
 import type { SnapshotLibrary } from './snapshots/library';
 import { SnapshotLibraryProvider } from './snapshots/SnapshotLibraryProvider';
 import { AppStateProvider } from './state';
@@ -44,7 +45,8 @@ export type AppProps = {
 /**
  * The application: providers and routes (react-router, declarative mode). The router itself is supplied
  * by the caller: BrowserRouter in main.tsx, MemoryRouter in tests. The app store (src/state) sits inside it,
- * bound to its location; the sign-in (src/auth) inside the store, whose `connect` slice it fills.
+ * bound to its location; the sign-in (src/auth) inside the store, whose `connect` slice it fills; the
+ * large-snapshot guard (snapshots/LargeSnapshotGuard.tsx) inside the snapshot library, whose listing it reads.
  */
 export function App({ mode, database, preferences, diagramWorkers, snapshots }: AppProps) {
   return (
@@ -56,20 +58,22 @@ export function App({ mode, database, preferences, diagramWorkers, snapshots }: 
               <AppStateProvider>
                 <AuthProvider>
                   <SnapshotLibraryProvider library={snapshots}>
-                    <ViewHashProvider>
-                      <Routes>
-                        <Route element={<AppShell />}>
-                          <Route index element={<ConnectPage />} />
-                          <Route path="diagram" element={<DiagramPage />} />
-                          <Route path="snapshots" element={<SnapshotsPage />} />
-                          <Route path="permissions" element={<PermissionsPage />} />
-                          <Route path="settings" element={<SettingsPage />} />
-                          <Route path="impressum" element={<LegalPage id="impressum" />} />
-                          <Route path="privacy" element={<LegalPage id="privacy" />} />
-                          <Route path="*" element={<NotFoundPage />} />
-                        </Route>
-                      </Routes>
-                    </ViewHashProvider>
+                    <LargeSnapshotGuardProvider>
+                      <ViewHashProvider>
+                        <Routes>
+                          <Route element={<AppShell />}>
+                            <Route index element={<ConnectPage />} />
+                            <Route path="diagram" element={<DiagramPage />} />
+                            <Route path="snapshots" element={<SnapshotsPage />} />
+                            <Route path="permissions" element={<PermissionsPage />} />
+                            <Route path="settings" element={<SettingsPage />} />
+                            <Route path="impressum" element={<LegalPage id="impressum" />} />
+                            <Route path="privacy" element={<LegalPage id="privacy" />} />
+                            <Route path="*" element={<NotFoundPage />} />
+                          </Route>
+                        </Routes>
+                      </ViewHashProvider>
+                    </LargeSnapshotGuardProvider>
                   </SnapshotLibraryProvider>
                 </AuthProvider>
               </AppStateProvider>

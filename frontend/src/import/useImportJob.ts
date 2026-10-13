@@ -3,15 +3,24 @@
  * One live pull or export read at a time, for a Connect page control: its progress (progress.ts, ticking each
  * second while it runs, for the elapsed time), Cancel, and what follows success: the diagram opens on the new
  * snapshot (`actions.setSnapshot`), at once, or after the person has read the notes the import left (lines left
- * out, an estimated read time). Leaving the page cancels a running import; nothing is stored then.
+ * out, an estimated read time). Leaving the page cancels a running import; nothing is stored then. A read that
+ * passes 10 000 assets asks the large-snapshot guard (snapshots/LargeSnapshotGuard.tsx) as it streams; "Draw it
+ * anyway" goes on and the diagram then opens without asking again, Cancel stops the read.
  */
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
 import { useAuth } from '../auth';
+import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
 import { useSnapshotLibrary } from '../snapshots/SnapshotLibraryProvider';
 import { useDiagramActions } from '../state';
 import { useImportClient } from './ImportWorkerProvider';
-import { IDLE_PROGRESS, importProgressReducer, isRunning, type ImportProgress } from './progress';
+import {
+  IDLE_PROGRESS,
+  importProgressReducer,
+  isRunning,
+  type ImportKind,
+  type ImportProgress,
+} from './progress';
 import type { ImportDependencies, Imported } from './run';
 
 export type ImportRunner = (
@@ -36,6 +45,7 @@ const TICK_MS = 1000;
 export function useImportJob(): ImportJob {
   const auth = useAuth();
   const library = useSnapshotLibrary();
+  const guard = useLargeSnapshotGuard();
   const worker = useImportClient();
   const { setSnapshot } = useDiagramActions();
   const [progress, dispatch] = useReducer(importProgressReducer, IDLE_PROGRESS);
@@ -71,9 +81,21 @@ export function useImportJob(): ImportJob {
       const safeDispatch = (action: Parameters<typeof importProgressReducer>[1]): void => {
         if (mounted.current) dispatch(action);
       };
-      void runner({ auth, library, worker }, safeDispatch, job.signal)
+      // Whether the person chose to draw it when its count passed the threshold: it then opens without asking.
+      let chosen = false;
+      const confirmLarge = async (
+        assets: number,
+        kind: ImportKind,
+        signal: AbortSignal,
+      ): Promise<boolean> => {
+        chosen = await guard.confirm({ assets, reading: kind }, signal);
+        return chosen;
+      };
+      void runner({ auth, library, worker, confirmLarge }, safeDispatch, job.signal)
         .then((imported) => {
-          if (!mounted.current || imported === null) return;
+          if (imported === null) return;
+          if (chosen) guard.remember(imported.ref);
+          if (!mounted.current) return;
           if (imported.warnings.length === 0) setSnapshot(imported.ref);
           else setNotes(imported.warnings);
         })
@@ -81,7 +103,7 @@ export function useImportJob(): ImportJob {
           if (controller.current === job) controller.current = null;
         });
     },
-    [auth, library, worker, setSnapshot],
+    [auth, library, worker, guard, setSnapshot],
   );
 
   const cancel = useCallback((): void => {

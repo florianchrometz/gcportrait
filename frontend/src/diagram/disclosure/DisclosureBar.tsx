@@ -2,8 +2,9 @@
 /**
  * The diagram's progressive-disclosure bar (skill gcp-diagram-layout §6), floating at the
  * bottom right of the canvas: "N of M shown" (the rects drawn, of those the view holds at detail `all`),
- * "Expand all" (opens the shallowest collapsed tier) and "Collapse all" (resets every expand and collapse made
- * by hand, and returns to Auto when the level in use is deeper), and a notice when flips went over the 48 cap or
+ * "Expand all" (opens the shallowest collapsed tier and reopens zones closed by hand) and "Collapse all" (closes
+ * every zone opened by hand, keeps those closed by hand, and returns to Auto when the level in use is deeper),
+ * each available only when it would change the drawing on screen, and a notice when flips went over the 48 cap or
  * when Auto picked another level because the diagram area changed size. Everything comes from the app store and
  * goes back through its actions; nothing here is in the URL hash but what the actions write. Inert buttons stay
  * focusable (`aria-disabled`, with the reason in their tooltip), as the app's other unavailable controls.

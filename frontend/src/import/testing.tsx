@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * The Connect page's import controls in a test harness: a memory router, the app store with a given `connect`
- * slice, a stand-in sign-in, a snapshot library, and the in-process import worker. Imported by tests only.
+ * slice, a stand-in sign-in, a snapshot library with the large-snapshot guard, and the in-process import worker.
+ * Imported by tests only.
  */
 import { render, type RenderResult } from '@testing-library/react';
 import { useLayoutEffect, type ReactNode } from 'react';
@@ -10,6 +11,7 @@ import { MemoryRouter } from 'react-router';
 import type { AuthControls } from '../auth';
 import { AuthContext } from '../auth/context';
 import { testAuth } from '../auth/testing';
+import { LargeSnapshotGuardProvider } from '../snapshots/LargeSnapshotGuard';
 import type { SnapshotLibrary } from '../snapshots/library';
 import { SnapshotLibraryProvider } from '../snapshots/SnapshotLibraryProvider';
 import { AppStateProvider, useAppStore, type ConnectSlice } from '../state';
@@ -39,12 +41,14 @@ export function renderImport(
         <ConnectState connect={options.connect} />
         <AuthContext value={options.auth ?? testAuth()}>
           <SnapshotLibraryProvider library={options.library}>
-            <ImportWorkerProvider factory={inProcessImportWorker()}>
-              <main>
-                <h1>Connect</h1>
-                {children}
-              </main>
-            </ImportWorkerProvider>
+            <LargeSnapshotGuardProvider>
+              <ImportWorkerProvider factory={inProcessImportWorker()}>
+                <main>
+                  <h1>Connect</h1>
+                  {children}
+                </main>
+              </ImportWorkerProvider>
+            </LargeSnapshotGuardProvider>
           </SnapshotLibraryProvider>
         </AuthContext>
       </AppStateProvider>

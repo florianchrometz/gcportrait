@@ -10,4 +10,6 @@ afterEach(() => {
   document.documentElement.removeAttribute('data-theme');
   document.documentElement.removeAttribute('data-theme-preference');
   window.localStorage.clear();
+  // "Do not ask again in this session" (the large-snapshot guard) is a tab's: each test starts a new one.
+  window.sessionStorage.clear();
 });

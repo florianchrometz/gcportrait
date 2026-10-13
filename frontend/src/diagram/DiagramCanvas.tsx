@@ -83,9 +83,10 @@ export interface DiagramCanvasProps {
   readonly onSelect: (id: string | null) => void;
   /**
    * "Drill in" from a container's menu or a double-click on it: re-root the view at it. Absent: neither
-   * offers it.
+   * offers it. A double-click on a chip or a collapse button drills in `replace`ing the history entry its first
+   * click's flip made, after undoing that flip (`onFlip` with `replace`), so it leaves no flip behind.
    */
-  readonly onDrillIn?: (id: string) => void;
+  readonly onDrillIn?: (id: string, options?: HistoryOption) => void;
   /** The node under the pointer changed (its id, or null when the pointer left the nodes). */
   readonly onHover?: (id: string | null) => void;
   /**
@@ -99,7 +100,12 @@ export interface DiagramCanvasProps {
    * Expand a chip or collapse an open zone: toggle its flip (the store's `flip`). Absent: chips are
    * selected like any node and open zones have no collapse button.
    */
-  readonly onFlip?: (zoneId: string) => void;
+  readonly onFlip?: (zoneId: string, options?: HistoryOption) => void;
+}
+
+/** How a change enters the browser history (the store's `WriteOptions`): a new entry, or in place. */
+export interface HistoryOption {
+  readonly history?: 'push' | 'replace';
 }
 
 /** The node menu on screen: whose, where (viewport coordinates) and what it offers. */
@@ -256,6 +262,8 @@ export function DiagramCanvas({
   const flipRef = useRef<PendingFlip<DiagramModel> | null>(null);
   const keepCameraRef = useRef<DiagramModel | null>(null);
   const focusAfterRef = useRef<string | null>(null);
+  // The zone the last single click flipped: a double-click's first click, should a double-click follow.
+  const clickFlipRef = useRef<string | null>(null);
   // "Drill in" chosen from a node's menu (its menu then parks focus on the canvas, canvasFocus.ts); the model
   // the painter last drew (focus parked on the canvas moves on only when a new one is drawn); the drawing's frame
   // (`0` fits it).
@@ -512,9 +520,13 @@ export function DiagramCanvas({
       const flipped = flipTarget(event.target);
       if (flipped !== null) {
         // A double-click (reserved for drill-in) does not flip back what its first click flipped.
-        if (event.detail <= 1) flip(flipped, false);
+        if (event.detail <= 1) {
+          clickFlipRef.current = flipped;
+          flip(flipped, false);
+        }
         return;
       }
+      clickFlipRef.current = null;
       onSelectRef.current(nodeIdOf(event.target));
     };
     const onContextMenu = (event: MouseEvent): void => {
@@ -526,10 +538,21 @@ export function DiagramCanvas({
     };
     // A double-click on a container drills into it, as the menu's "Drill in" does (`onDrillIn`).
     const onDoubleClick = (event: MouseEvent): void => {
+      const clicked = clickFlipRef.current;
+      clickFlipRef.current = null;
       if (isConsoleAction(event.target)) return;
       const id = nodeIdOf(event.target);
       if (id === null || !canDrillIn(model, id)) return;
-      onDrillInRef.current?.(id);
+      if (clicked !== id) {
+        onDrillInRef.current?.(id);
+        return;
+      }
+      // Its first click flipped the zone (a chip opened, an open zone closed): the person meant to drill in. The
+      // flip is undone in its own history entry, which the drill-in then takes over, so Back returns to the
+      // drawing before the double-click and the drawing after it carries no flip.
+      flipRef.current = null;
+      onFlipRef.current?.(id, { history: 'replace' });
+      onDrillInRef.current?.(id, { history: 'replace' });
     };
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {

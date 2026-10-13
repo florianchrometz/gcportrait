@@ -9,7 +9,15 @@
  * 48-flip cap and an `auto` level change are told apart from every other change.
  */
 import { catalog } from '@gcportrait/catalog';
-import { buildSceneWithReport, DETAIL_LEVELS, flipIdOf } from '@gcportrait/graph';
+import {
+  buildPreparedScene,
+  buildSceneWithReport,
+  DETAIL_LEVELS,
+  flipIdOf,
+  prepareView,
+  preparedViewKey,
+  type PreparedView,
+} from '@gcportrait/graph';
 import {
   decodeViewSpec,
   normalizeViewSpec,
@@ -25,6 +33,7 @@ import {
 import { describe, expect, it } from 'vitest';
 
 import { createAppStore } from '../../state/store';
+import { autoLevel } from '../autoDetail';
 import { demoGraphSync } from '../testing/demoScenes';
 import { sceneZones as allZones, zoneOf as zoneIn } from '../testing/scenes';
 import {
@@ -44,6 +53,8 @@ const READ_TIME = '2026-10-08T00:00:00Z';
 const BUDGET = 74;
 /** A test on demo L builds its Scene several times: about a second, several under coverage. */
 const DEMO_L = 30_000;
+/** Demo M's and L's Shared VPC host (Production): a project with a network, subnets and product containers. */
+const SHARED_VPC_HOST = '//cloudresourcemanager.googleapis.com/projects/10000000001';
 
 function build(size: DemoSize, input: ViewSpecInput, budget = BUDGET): SceneBuild {
   return buildSceneWithReport(demoGraphSync(size), normalizeViewSpec(input), catalog, {
@@ -277,12 +288,222 @@ describe('Expand all', () => {
     expect(zoneIn(build('M', next ?? {}).scene, project.id)?.collapsed).toBeUndefined();
   });
 
-  it('skips a level that would open nothing', () => {
-    expect(nextOpeningLevel('projects', { folders: 10, projects: 40, networks: 40, all: 90 })).toBe('all');
-    expect(nextOpeningLevel('networks', { folders: 10, projects: 40, networks: 90, all: 90 })).toBeNull();
-    expect(nextOpeningLevel('folders', { folders: 10, projects: 40, networks: 50, all: 90 })).toBe(
-      'projects',
+  it('opens the shallowest level at which a chip on screen opens, skipping a level that opens nothing there', () => {
+    const level = (input: ViewSpecInput): string | null => {
+      const spec = normalizeViewSpec(input);
+      return nextOpeningLevel(spec, build('M', spec));
+    };
+    expect(level({ snapshot: 'demo:M', detail: 'folders' })).toBe('projects');
+    // Drilled into a project: its networks and product containers are chips, and the projects level opens none.
+    expect(level({ snapshot: 'demo:M', root: SHARED_VPC_HOST, detail: 'folders' })).toBe('networks');
+    expect(level({ snapshot: 'demo:M', root: SHARED_VPC_HOST, detail: 'projects' })).toBe('networks');
+    expect(level({ snapshot: 'demo:M', detail: 'all' })).toBeNull();
+    // A zone closed by hand is reopened, not opened by a level.
+    expect(level({ snapshot: 'demo:M', detail: 'all', flips: [flipIdOf(SHARED_VPC_HOST)] })).toBeNull();
+  });
+});
+
+describe('at project level: a view rooted at or focused on one project', () => {
+  /** The preparations of the views below, by organisation and prepared-view key (levels and flips share one). */
+  const prepared = new Map<string, PreparedView>();
+  const env = { readTime: READ_TIME, viewportBudget: BUDGET };
+
+  function buildView(size: DemoSize, input: ViewSpecInput): SceneBuild {
+    const spec = normalizeViewSpec(input);
+    const key = `${size} ${preparedViewKey(spec, env)}`;
+    let view = prepared.get(key);
+    if (view === undefined) {
+      view = prepareView(demoGraphSync(size), spec, catalog, env);
+      prepared.set(key, view);
+    }
+    return buildPreparedScene(view, spec, env);
+  }
+
+  /** The open zones that hold something (an empty zone is never a chip), and the chips. */
+  function drawn(shown: SceneBuild): { readonly open: Set<string>; readonly chips: Set<string> } {
+    const zones = allZones(shown.scene);
+    return {
+      open: new Set(zones.filter((z) => z.collapsed === undefined && z.children.length > 0).map((z) => z.id)),
+      chips: new Set(zones.filter((z) => z.collapsed !== undefined).map((z) => z.id)),
+    };
+  }
+
+  /**
+   * "Expand all" from `spec`: inert exactly when no chip is on screen (no `depth` filter here); otherwise every open
+   * zone stays open and a chip opens. Returns the view it wrote, or null.
+   */
+  function expandChecked(size: DemoSize, spec: ViewSpec, what: string): ViewSpec | null {
+    const shown = buildView(size, spec);
+    const before = drawn(shown);
+    const next = expandAllView(spec, shown);
+    expect(next === null, `Expand all inert: ${what}`).toBe(before.chips.size === 0);
+    if (next === null) return null;
+    const after = drawn(buildView(size, next));
+    for (const id of before.open) expect(after.open.has(id), `Expand all closed ${id}: ${what}`).toBe(true);
+    expect(
+      [...before.chips].some((id) => after.open.has(id)),
+      `Expand all opened nothing: ${what}`,
+    ).toBe(true);
+    return normalizeViewSpec(next);
+  }
+
+  /**
+   * "Collapse all" from `spec`: inert exactly when the view at its target level without the flips that open
+   * zones (the builder's own defaults) closes no open zone; otherwise no chip opens and an open zone closes.
+   */
+  function collapseChecked(size: DemoSize, spec: ViewSpec, what: string): ViewSpec | null {
+    const shown = buildView(size, spec);
+    const before = drawn(shown);
+    const { detail } = shown.report;
+    const automatic = autoLevel(detail, detail.budget);
+    const target =
+      spec.detail !== 'auto' && DETAIL_LEVELS.indexOf(automatic) < DETAIL_LEVELS.indexOf(detail.used)
+        ? automatic
+        : detail.used;
+    const opened = new Set([...before.open].map((id) => flipIdOf(id)));
+    const reset = drawn(
+      buildView(size, { ...spec, detail: target, flips: spec.flips.filter((token) => !opened.has(token)) }),
     );
+    const closes = [...before.open].some((id) => !reset.open.has(id));
+    const next = collapseAllView(spec, shown);
+    expect(next !== null, `Collapse all available: ${what}`).toBe(closes);
+    if (next === null) return null;
+    const after = drawn(buildView(size, next));
+    for (const id of before.chips)
+      expect(after.open.has(id), `Collapse all opened ${id}: ${what}`).toBe(false);
+    expect(
+      [...before.open].some((id) => !after.open.has(id)),
+      `Collapse all closed nothing: ${what}`,
+    ).toBe(true);
+    return normalizeViewSpec(next);
+  }
+
+  /** Presses `press` until it is inert (at most five times): the last view. */
+  function pressUntilInert(
+    press: (spec: ViewSpec, what: string) => ViewSpec | null,
+    spec: ViewSpec,
+    what: string,
+  ): ViewSpec {
+    let current = spec;
+    for (let count = 1; count <= 5; count += 1) {
+      const next = press(current, `${what}, press ${String(count)}`);
+      if (next === null) return current;
+      current = next;
+    }
+    throw new Error(`still not inert after five presses: ${what}`);
+  }
+
+  const VIEWS: ReadonlyArray<readonly [DemoSize, string]> = [
+    ['M', SHARED_VPC_HOST],
+    // Retail platform (prod): product containers and cards, no network.
+    ['M', '//cloudresourcemanager.googleapis.com/projects/10000000010'],
+    // Retail services (prod): cards only.
+    ['M', '//cloudresourcemanager.googleapis.com/projects/10000000011'],
+    ['L', SHARED_VPC_HOST],
+  ];
+  const LEVELS = ['auto', ...DETAIL_LEVELS] as const;
+
+  for (const [size, project] of VIEWS)
+    for (const mode of ['root', 'focus'] as const)
+      it(
+        `demo ${size}, ${mode} ${project.slice(project.lastIndexOf('/') + 1)}: Expand all and Collapse all at every level, by hand flips or none`,
+        () => {
+          let cases = 0;
+          for (const level of LEVELS) {
+            const view: ViewSpecInput = {
+              snapshot: `demo:${size}`,
+              detail: level,
+              ...(mode === 'root' ? { root: project } : { focus: { kind: 'project', params: { project } } }),
+            };
+            const plain = buildView(size, view);
+            const { open, chips } = drawn(plain);
+            const opened = [...chips].slice(0, 1).map((id) => flipIdOf(id));
+            const closed = [...open].slice(-1).map((id) => flipIdOf(id));
+            const variants: ReadonlyArray<readonly [string, readonly string[]]> = [
+              ['no flips', []],
+              ['a chip opened by hand', opened],
+              ['a zone closed by hand', closed],
+              ['both', [...opened, ...closed]],
+              // A flip of the organisation's view (another project's), which this view does not hold.
+              [
+                'another view’s flip',
+                [flipIdOf('//cloudresourcemanager.googleapis.com/projects/10000000002')],
+              ],
+            ];
+            for (const [name, flips] of variants) {
+              if (name !== 'no flips' && flips.length === 0) continue;
+              const spec = normalizeViewSpec({ ...view, flips: [...flips] });
+              const what = `${mode} at ${level}, ${name}`;
+              // Each alone, then one after the other, then each until it is inert.
+              const expanded = expandChecked(size, spec, what);
+              const collapsed = collapseChecked(size, spec, what);
+              if (expanded !== null) collapseChecked(size, expanded, `${what}, expanded`);
+              if (collapsed !== null) expandChecked(size, collapsed, `${what}, collapsed`);
+              const all = pressUntilInert(
+                (current, label) => expandChecked(size, current, label),
+                spec,
+                what,
+              );
+              expect(drawn(buildView(size, all)).chips.size, `everything open: ${what}`).toBe(0);
+              const none = pressUntilInert(
+                (current, label) => collapseChecked(size, current, label),
+                all,
+                what,
+              );
+              // Collapse all after Expand all: a zone closed by hand stays open (Expand all reopened it), and
+              // another view's flips are never touched.
+              expect(none.flips.filter((token) => !flips.includes(token))).toEqual([]);
+              cases += 1;
+            }
+          }
+          expect(cases).toBeGreaterThanOrEqual(LEVELS.length);
+        },
+        DEMO_L,
+      );
+
+  it('closing zones by hand at Auto (everything open): Collapse all keeps them closed, Expand all reopens them', () => {
+    const view: ViewSpecInput = {
+      snapshot: 'demo:M',
+      focus: { kind: 'project', params: { project: SHARED_VPC_HOST } },
+    };
+    const open = buildView('M', view);
+    expect(open.report.detail.used).toBe('all');
+    const zones = allZones(open.scene).filter((zone) => zone.children.length > 0);
+    const network = zones.find((zone) => zone.kind === 'vpc');
+    if (network === undefined) throw new Error('no network');
+    const spec = normalizeViewSpec({ ...view, flips: [flipIdOf(network.id), flipIdOf(SHARED_VPC_HOST)] });
+    const shown = buildView('M', spec);
+    expect(zoneIn(shown.scene, SHARED_VPC_HOST)?.collapsed).toBeDefined();
+    expect(collapseAllView(spec, shown)).toBeNull();
+    const expanded = expandAllView(spec, shown);
+    expect(expanded).toMatchObject({ detail: 'auto', flips: [flipIdOf(network.id)] });
+    // The network is hidden in the project's chip; once the project is open it shows closed, and Expand all
+    // reopens it too.
+    const again = normalizeViewSpec(expanded ?? {});
+    expect(expandAllView(again, buildView('M', again))).toMatchObject({ detail: 'auto', flips: [] });
+  });
+
+  it('a flip the drill-in left behind (the project itself, now the canvas) changes nothing here', () => {
+    const spec = normalizeViewSpec({
+      snapshot: 'demo:M',
+      root: SHARED_VPC_HOST,
+      flips: [flipIdOf(SHARED_VPC_HOST)],
+    });
+    const shown = buildView('M', spec);
+    expect(shown.report.unknownFlips).toEqual([flipIdOf(SHARED_VPC_HOST)]);
+    expect(expandAllView(spec, shown)).toBeNull();
+    expect(collapseAllView(spec, shown)).toBeNull();
+  });
+
+  it('a level carried in from the organisation (Expand all there, then a drill-in): Expand all opens on, and Collapse all, with Auto opening everything here, has nothing deeper than Auto to close', () => {
+    const spec = normalizeViewSpec({ snapshot: 'demo:M', root: SHARED_VPC_HOST, detail: 'projects' });
+    const shown = buildView('M', spec);
+    expect(autoLevel(shown.report.detail, shown.report.detail.budget)).toBe('all');
+    expect(collapseAllView(spec, shown)).toBeNull();
+    const next = expandAllView(spec, shown);
+    expect(next).toMatchObject({ detail: 'networks', flips: [] });
+    const all = normalizeViewSpec(next ?? {});
+    expect(collapseAllView(all, buildView('M', all))).toBeNull();
   });
 });
 
@@ -306,13 +527,19 @@ describe('Collapse all', () => {
   );
 
   it(
-    'never opens anything: a level shallower than auto’s stays, and only the flips go',
+    'never opens anything: a level shallower than auto’s stays, and so does a zone closed by hand',
     () => {
-      // Demo S never collapses at auto (at most 100 rects), so its folder level stays.
-      const spec = normalizeViewSpec({ snapshot: 'demo:S', detail: 'folders', flips: ['k3x9a1'] });
+      // Demo S never collapses at auto (at most 100 rects), so its folder level stays; its project chips stay.
+      const folder = allZones(build('S', { snapshot: 'demo:S', detail: 'all' }).scene).find(
+        (zone) => zone.kind === 'folder',
+      );
+      if (folder === undefined) throw new Error('no folder');
+      const spec = normalizeViewSpec({ snapshot: 'demo:S', detail: 'folders', flips: [flipIdOf(folder.id)] });
       const shown = build('S', spec);
       expect(shown.report.detail.rectCounts.all).toBeLessThanOrEqual(100);
-      expect(collapseAllView(spec, shown)).toMatchObject({ detail: 'folders', flips: [] });
+      // The folder closed by hand stays closed, so nothing would close: nothing to do.
+      expect(zoneIn(shown.scene, folder.id)?.collapsed).toBeDefined();
+      expect(collapseAllView(spec, shown)).toBeNull();
       // Nothing opened by hand and nothing deeper than auto: nothing to do.
       const plain = normalizeViewSpec({ snapshot: 'demo:S', detail: 'folders' });
       expect(collapseAllView(plain, build('S', plain))).toBeNull();
@@ -321,6 +548,47 @@ describe('Collapse all', () => {
     },
     DEMO_L,
   );
+
+  it(
+    'closes what was opened by hand and keeps what was closed by hand, at auto on demo L',
+    () => {
+      const base = build('L', { snapshot: 'demo:L' });
+      const project = projectChipWithNetworks(base.scene);
+      // An open folder that does not hold the project.
+      const folder = allZones(base.scene).find(
+        (zone) =>
+          zone.kind === 'folder' &&
+          zone.children.length > 0 &&
+          !allZones(zone.children).some((inner) => inner.id === project.id),
+      );
+      if (folder === undefined) throw new Error('no open folder');
+      const spec = normalizeViewSpec({
+        snapshot: 'demo:L',
+        flips: [flipIdOf(project.id), flipIdOf(folder.id), 'elsewhere1'],
+      });
+      const shown = build('L', spec);
+      expect(shown.report.unknownFlips).toEqual(['elsewhere1']);
+      const next = collapseAllView(spec, shown);
+      // The project opened by hand closes; the folder closed by hand stays closed; another view's flip stays.
+      expect(next).toMatchObject({ detail: 'auto', flips: [flipIdOf(folder.id), 'elsewhere1'] });
+      const after = build('L', next ?? {});
+      expect(zoneIn(after.scene, folder.id)?.collapsed).toBeDefined();
+      expect(openZoneIds(after.scene)).not.toContain(project.id);
+      expect(collapseAllView(normalizeViewSpec(next ?? {}), after)).toBeNull();
+    },
+    DEMO_L,
+  );
+
+  it('goes back to auto at the canvas’s budget, which a level chosen by hand never redraws at', () => {
+    // Demo M's networking lens: auto is the folder level at a budget of 74, the projects level at 124.
+    const spec = normalizeViewSpec({ snapshot: 'demo:M', lens: 'networking', detail: 'networks' });
+    const shown = build('M', spec, 74);
+    expect(collapseAllView(spec, shown)).toMatchObject({ detail: 'auto' });
+    expect(collapseAllView(spec, shown, 124)).toMatchObject({ detail: 'auto' });
+    // At a budget where auto opens the networks level itself, there is nothing deeper than auto to close.
+    expect(autoLevel(shown.report.detail, 400)).toBe('networks');
+    expect(collapseAllView(spec, shown, 400)).toBeNull();
+  });
 });
 
 describe('the 48-flip cap', () => {

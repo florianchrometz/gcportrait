@@ -2,7 +2,8 @@
 /**
  * The stored snapshots as a table: scope, read time, source, asset count, size and when
  * it was stored, with three actions per row: Load (the snapshot's ref into the hash, on the diagram page:
- * `actions.setSnapshot`), Export (the `.gcportrait.json` file, bundle.ts, once the snapshot worker has read the
+ * `actions.setSnapshot`; a snapshot of more than 10 000 assets asks first, LargeSnapshotGuard.tsx, and Cancel
+ * stays here), Export (the `.gcportrait.json` file, bundle.ts, once the snapshot worker has read the
  * record in full; a progress line meanwhile) and Delete (after a confirmation dialog). Each action's accessible name
  * starts with its visible word and adds the row's label ("Load example.com, read 2026-10-08 00:00 UTC, demo:M";
  * labels.ts `distinctNames`, which also tells copies of one file apart), so no two buttons share a name; copies
@@ -28,6 +29,7 @@ import {
   sourceLabel,
 } from './labels';
 import type { ListedSnapshot } from './repository';
+import { useLargeSnapshotGuard } from './LargeSnapshotGuard';
 import { refOf } from './library';
 import { useSnapshotLibrary } from './SnapshotLibraryProvider';
 import styles from './Snapshots.module.css';
@@ -49,6 +51,7 @@ export function SnapshotTable({
   readonly headingRef: RefObject<HTMLHeadingElement | null>;
 }): ReactElement {
   const library = useSnapshotLibrary();
+  const guard = useLargeSnapshotGuard();
   const { setSnapshot } = useDiagramActions();
   const [confirm, setConfirm] = useState<StoredSnapshot | null>(null);
   const [state, setState] = useState<JobState>({ kind: 'idle' });
@@ -182,7 +185,13 @@ export function SnapshotTable({
                           aria-label={`Load ${label}`}
                           onClick={() => {
                             const ref = refOf(record.id);
-                            if (ref !== null) setSnapshot(ref);
+                            if (ref === null) return;
+                            const assets = record.meta.assetCount;
+                            if (!guard.asks(assets, ref)) setSnapshot(ref);
+                            else
+                              void guard.confirm({ assets, ref }).then((draw) => {
+                                if (draw) setSnapshot(ref);
+                              });
                           }}
                         >
                           Load

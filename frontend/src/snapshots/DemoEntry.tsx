@@ -5,7 +5,8 @@
  * with its 35-day history (`@gcportrait/demo-data`), reads it through `@gcportrait/ingest`, and the library stores it
  * in IndexedDB as `demo:<size>` (in memory, until a reload, when the browser allows no storage); then the diagram
  * opens with `snapshot=demo:<size>` in the hash (`actions.setSnapshot`), focus moving to the page
- * (shell/AppShell.tsx). Progress and errors are shown under the button.
+ * (shell/AppShell.tsx). Progress and errors are shown under the button. A size of more than 10 000 assets (XL)
+ * asks first, before anything is generated (LargeSnapshotGuard.tsx); Cancel leaves the page as it was.
  */
 import type { DemoSize } from '@gcportrait/model';
 import { useEffect, useId, useRef, useState, type ReactElement } from 'react';
@@ -14,7 +15,9 @@ import { useDiagramActions } from '../state';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { JobStatus, type JobState } from './JobStatus';
 import { DEMO_SIZE_INFO, demoAbout, demoLabel } from './labels';
-import { useSnapshotLibrary } from './SnapshotLibraryProvider';
+import { sizeOf } from './largeSnapshot';
+import { useLargeSnapshotGuard } from './LargeSnapshotGuard';
+import { useSnapshotLibrary, useSnapshotListing } from './SnapshotLibraryProvider';
 import styles from './Snapshots.module.css';
 import { SnapshotJobError } from './worker/client';
 
@@ -22,6 +25,8 @@ const SIZE_OPTIONS = DEMO_SIZE_INFO.map((info) => ({ value: info.size, label: in
 
 export function DemoEntry({ action }: { readonly action: string }): ReactElement {
   const library = useSnapshotLibrary();
+  const listing = useSnapshotListing();
+  const guard = useLargeSnapshotGuard();
   const { setSnapshot } = useDiagramActions();
   const [size, setSize] = useState<DemoSize>('S');
   const [state, setState] = useState<JobState>({ kind: 'idle' });
@@ -36,8 +41,7 @@ export function DemoEntry({ action }: { readonly action: string }): ReactElement
     };
   }, []);
 
-  const start = (): void => {
-    if (busy) return;
+  const generate = (): void => {
     setState({ kind: 'busy', progress: null });
     library
       .tryDemo(size, (progress) => {
@@ -59,6 +63,21 @@ export function DemoEntry({ action }: { readonly action: string }): ReactElement
           });
         },
       );
+  };
+
+  const start = (): void => {
+    if (busy) return;
+    const ref = `demo:${size}` as const;
+    // Its count: the stored copy's, else the generator's rough one (the same organisation every time).
+    const known = sizeOf(ref, listing?.snapshots ?? null);
+    const assets = known === null || known === 'reading' ? { assets: 0, approximate: false } : known;
+    if (guard.asks(assets.assets, ref)) {
+      void guard.confirm({ ...assets, ref }).then((draw) => {
+        if (draw && mounted.current) generate();
+      });
+      return;
+    }
+    generate();
   };
 
   return (

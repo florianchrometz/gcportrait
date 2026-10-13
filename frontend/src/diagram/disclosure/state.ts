@@ -3,15 +3,19 @@
  * Progressive disclosure through the app store: selectors over the store's state for the
  * "N of M shown" indicator and whether "Expand all" and "Collapse all" would change anything (the actions
  * themselves are the store's, `actions.expandAll` and `actions.collapseAll`), and the two notices (flips over
- * the 48 cap, the `auto` level changed with the canvas size), worked out from the store's changes. Every
- * selector returns a primitive or null, as `useAppState` asks; the work behind them is cached per view and
- * result.
+ * the 48 cap, the `auto` level changed with the canvas size), worked out from the store's changes. The buttons
+ * describe the drawing on screen with the view it draws (its scene key, decoded), so they never mix one view's
+ * hash with another view's drawing while a new one is prepared; the store's actions wait for the view's own
+ * drawing. Every selector returns a primitive or null, as `useAppState` asks; the work behind them is cached per
+ * drawing and canvas budget.
  */
-import type { ViewSpec } from '@gcportrait/model';
+import { decodeViewSpec, type ViewSpec } from '@gcportrait/model';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAppStore } from '../../state/hooks';
-import type { AppState } from '../../state/slices';
+import { FALLBACK_VIEWPORT } from '../../state/pipeline';
+import type { AppState, PipelineResult } from '../../state/slices';
+import { budgetOf } from '../autoDetail';
 import {
   autoLevelShift,
   collapseAllView,
@@ -44,9 +48,21 @@ export function selectRectsTotal(state: AppState): number | null {
   return shown === null ? null : rectsShown(shown).total;
 }
 
+const DRAWN_SPECS = new WeakMap<PipelineResult, ViewSpec>();
+
+/** The view the drawing on screen draws: its scene key, decoded (the hash without selection and highlight). */
+function drawnSpec(result: PipelineResult): ViewSpec {
+  let spec = DRAWN_SPECS.get(result);
+  if (spec === undefined) {
+    spec = decodeViewSpec(result.key);
+    DRAWN_SPECS.set(result, spec);
+  }
+  return spec;
+}
+
 interface Availability {
-  readonly spec: ViewSpec;
-  readonly shown: ShownScene;
+  readonly result: PipelineResult;
+  readonly budget: number;
   readonly expand: boolean;
   readonly collapse: boolean;
 }
@@ -54,15 +70,17 @@ interface Availability {
 let cached: Availability | null = null;
 
 function availability(state: AppState): Availability | null {
-  const shown = shownScene(state);
-  if (shown === null) return null;
-  const { spec } = state.view;
-  if (cached?.spec !== spec || cached.shown !== shown) {
+  const result = state.view.onDiagram ? state.pipeline.result : null;
+  if (result === null) return null;
+  // `auto` as the pipeline would pick it now: at the canvas's size, which a level chosen by hand never redraws.
+  const budget = budgetOf(state.pipeline.canvas ?? FALLBACK_VIEWPORT);
+  if (cached?.result !== result || cached.budget !== budget) {
+    const spec = drawnSpec(result);
     cached = {
-      spec,
-      shown,
-      expand: expandAllView(spec, shown) !== null,
-      collapse: collapseAllView(spec, shown) !== null,
+      result,
+      budget,
+      expand: expandAllView(spec, result.answer) !== null,
+      collapse: collapseAllView(spec, result.answer, budget) !== null,
     };
   }
   return cached;
@@ -80,9 +98,9 @@ export function selectCanCollapseAll(state: AppState): boolean {
 
 /** The level "Expand all" would open ("Projects"), or null when it would only reopen zones closed by hand. */
 export function selectExpandLevelName(state: AppState): string | null {
-  const shown = shownScene(state);
-  if (shown === null) return null;
-  const level = nextOpeningLevel(shown.report.detail.used, shown.report.detail.rectCounts);
+  const result = state.view.onDiagram ? state.pipeline.result : null;
+  if (result === null) return null;
+  const level = nextOpeningLevel(drawnSpec(result), result.answer);
   return level === null ? null : LEVEL_NAMES[level];
 }
 

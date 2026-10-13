@@ -128,6 +128,7 @@ describe('public surface', () => {
         'DEMO_SIZES',
         'DETAIL_LEVEL_IDS',
         'FOCUS_KIND_IDS',
+        'LARGE_SNAPSHOT_ASSETS',
         'LENS_IDS',
         'RELATION_KIND_IDS',
         'isDemoSize',

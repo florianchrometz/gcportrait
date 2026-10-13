@@ -16,11 +16,13 @@ import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useSyncEx
 import { measureDiagramArea } from '../diagram/autoDetail';
 import type { SceneAnswer } from '../diagram/pipeline/protocol';
 import { useDiagramSession } from '../diagram/session';
-import { tickToDraw } from '../timeline/model';
 import { AppStoreContext } from './context';
-import { createPipelineController, sceneKey } from './pipeline';
+import { createPipelineController } from './pipeline';
 import type { AppState, SelectionSlice, UiSlice } from './slices';
 import type { AppStore, ViewActions } from './store';
+import { selectSceneKey } from './viewKey';
+
+export { selectSceneKey } from './viewKey';
 
 export function useAppStore(): AppStore {
   const store = useContext(AppStoreContext);
@@ -98,42 +100,14 @@ export function selectDrawnDay(state: AppState): string | null | undefined {
   return source.tick ?? null;
 }
 
-// The view with the timeline day the pipeline draws, when that is not the view's own `tick`, by view and day.
-const DRAWN_VIEWS = new WeakMap<ViewSpec, Map<string, ViewSpec>>();
-
-function drawnView(spec: ViewSpec, day: string | undefined): ViewSpec {
-  const known = DRAWN_VIEWS.get(spec) ?? new Map<string, ViewSpec>();
-  DRAWN_VIEWS.set(spec, known);
-  const key = day ?? '';
-  let view = known.get(key);
-  if (view === undefined) {
-    const next: ViewSpec = { ...spec };
-    if (day === undefined) delete next.tick;
-    else next.tick = day;
-    view = next;
-    known.set(key, view);
-  }
-  return view;
-}
-
-/**
- * The scene key of the view: what the pipeline draws. Its timeline `tick` is the day that can be drawn now
- * (`tickToDraw`): a live day not read yet keeps the diagram on screen until it is.
- */
-export function selectSceneKey(state: AppState): string {
-  const { spec } = state.view;
-  const result = state.pipeline.result?.answer.source ?? null;
-  const day = tickToDraw(spec, state.timeline, result);
-  return sceneKey(day === spec.tick ? spec : drawnView(spec, day));
-}
-
 /**
  * Runs the diagram pipeline for the diagram page: measures the canvas element (synchronously before the first
  * request, then with a ResizeObserver), asks for the view's Scene and Layout whenever its scene key changes and,
  * for detail `auto`, when a resize would pick another level (state/pipeline.ts), and empties the pipeline slice
- * when the page goes away.
+ * when the page goes away. While `held` (the large-snapshot guard is asking whether to draw the view's
+ * snapshot, snapshots/LargeSnapshotGuard.tsx) it asks for nothing, so no worker starts on the snapshot.
  */
-export function useDiagramPipeline(canvasRef: { readonly current: HTMLElement | null }): void {
+export function useDiagramPipeline(canvasRef: { readonly current: HTMLElement | null }, held = false): void {
   const store = useAppStore();
   const { workers } = useDiagramSession();
   const key = useAppState(selectSceneKey);
@@ -154,11 +128,12 @@ export function useDiagramPipeline(canvasRef: { readonly current: HTMLElement | 
   }, [controller, canvasRef]);
 
   useEffect(() => {
+    if (held) return undefined;
     controller.run(key);
     return () => {
       controller.cancel();
     };
-  }, [controller, key]);
+  }, [controller, key, held]);
 
   useEffect(
     () => () => {

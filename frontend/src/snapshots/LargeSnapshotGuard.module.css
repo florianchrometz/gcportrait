@@ -1,0 +1,21 @@
+/* SPDX-License-Identifier: MIT */
+
+/* The large-snapshot question (LargeSnapshotGuard.tsx): its "Do not ask again in this session" box, and its
+   primary action at the dialog's foot. Tokens only, so both themes follow. */
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.draw {
+  font-size: var(--font-size-control);
+}
