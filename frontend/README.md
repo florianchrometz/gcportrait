@@ -2,9 +2,9 @@
 
 # @gcportrait/frontend
 
-The gcportrait single-page app: React 19, Vite and TypeScript (strict), desktop only (at least 1280×800, no
-responsive breakpoints), light and dark themes, everything the user loads kept in the browser's IndexedDB
-(AGENTS.md, Product rules; Architecture and code). It may import the shared `@gcportrait/*` packages through
+The gcportrait single-page app: React 19, Vite and TypeScript (strict), for phones, tablets and desktops (three
+layouts, every control at every width: section "Layouts"), light and dark themes, everything the user loads kept
+in the browser's IndexedDB (AGENTS.md, Product rules; Architecture and code). It may import the shared `@gcportrait/*` packages through
 their entry points but never the backend. One workspace imports it: the render library
 ([`@gcportrait/render`](../packages/render/README.md)), behind both `pnpm render` and the backend's
 `POST /api/render`, reaches the diagram's SVG components and the app's own data readers through
@@ -37,6 +37,7 @@ alone, axe on every page) are the gcp-diagram-style skill's §13.
 | `pnpm demo:static` (root) | The static demo (section "Static demo" below): this package's build with `VITE_STATIC_DEMO=1`, for `/demo/`, into the repository's `dist/demo/`. |
 | `pnpm --filter @gcportrait/frontend test` | Unit tests (Vitest, jsdom, Testing Library, fake-indexeddb). |
 | `pnpm --filter @gcportrait/frontend lint` / `typecheck` | ESLint and `tsc -b` for this package. |
+| `pnpm --filter @gcportrait/frontend mobile` | The phone and tablet check in Chromium: the e2e suite's `mobile` project (`e2e/tests/mobile.spec.ts`; section "Layouts"), against the demo mode's Vite server (started, or reused when it runs). |
 
 Demo and normal mode use different ports and separate Vite dependency caches (`node_modules/.vite` and
 `node_modules/.vite-demo`), so both can run at once; the e2e suite runs both and reuses servers already
@@ -82,15 +83,17 @@ src/storage/            db.ts (schema, migrations, guarded open), connection.ts 
                         again when another tab's upgrade closes it), preferences.ts (typed preference store)
 src/shell/              AppShell (skip links, top bar, main, the route announcer, the footer with the non-affiliation notice
                         and SourceLink, "Source (MIT)"), viewHash (the Diagram link's memory of the last
-                        view)
+                        view), parity.test.tsx (every control at every width; section "Layouts")
 src/shell/topbar/       TopBar (composes only) and one file per control group (section "Top bar" below)
 src/ui/                 headless accessible primitives: Menu, MenuButton, Select, Combobox, Listbox, Popover,
-                        Dialog, SegmentedControl, Slider, Tooltip (section "UI primitives" below)
+                        Dialog, SegmentedControl, Slider, Tooltip (section "UI primitives" below); screen.ts, the
+                        layouts' breakpoints and useScreen (section "Layouts" below)
 src/pages/              Connect, Diagram, Snapshots, Permissions, Settings, not found; pages/diagram/: the
                         diagram page's TimelineBar (the timeline)
 src/timeline/           the timeline: tick math, cache keys, the read scheduler, playback, the bar's model,
                         the controller, the data worker's side (worker/) (section "Timeline" below)
-src/drawer/             the details drawer beside the canvas (section "Details drawer" below)
+src/drawer/             the details drawer beside the canvas, or over it on a phone or a tablet (section "Details
+                        drawer" below)
 src/search/             search: the index and the locator in the data worker, the reveal decision table, the
                         results hook and the reveal dialog (section "Search" below)
 src/snapshots/          the snapshot library: the demo entry, the Snapshots page's parts, the IndexedDB records,
@@ -110,7 +113,8 @@ src/legal/              the legal pages: /impressum and /privacy from GET /api/l
                         never produces HTML (markdown.ts, RenderMarkdown.tsx), the footer's "Impressum · Privacy",
                         which links a served page or one published elsewhere (`legal.impressumUrl`, `privacyUrl`;
                         section "Legal links and the favicon" below)
-src/test/               test setup and helpers (renderApp, renderInPage, axe in jsdom, a controllable matchMedia)
+src/test/               test setup and helpers (renderApp, renderInPage, axe in jsdom, a controllable matchMedia, a
+                        window of a given width)
 ```
 
 ## Routes and the URL hash
@@ -197,10 +201,10 @@ a worker.
 
 **The measured canvas and `auto`.** The canvas element is measured synchronously before the first request and
 then by a `ResizeObserver` (`measureDiagramArea` in `diagram/autoDetail.ts`): its height and the width of its
-row, so the details drawer opening beside it changes nothing (a selection must never re-lay the diagram out
-under the node just clicked). At 1280 × 800 that is about 1280 × 624 (the top bar, the timeline bar and the
-footer take the rest), a budget of 57 rects; until the canvas has a size (jsdom), the minimum viewport
-1280 × 800 stands in. Each request is made at the latest measured size. A resize asks for the view again only
+row, so the details drawer opening beside it (or over it, on a phone or a tablet) changes nothing (a selection
+must never re-lay the diagram out under the node just clicked). In a 1280 × 800 window that is about 1280 × 624
+(the top bar, the timeline bar and the footer take the rest), a budget of 57 rects; until the canvas has a size
+(jsdom), 1280 × 800 stands in. Each request is made at the latest measured size. A resize asks for the view again only
 when its detail is `auto` and the Scene report's rect counts say the new budget would pick another level, with
 a hysteresis band (`AUTO_HYSTERESIS`, 10 %): the next level opens once the budget clears its rect count by 10 %,
 the current one closes once the budget falls 10 % below its own, so dragging a window edge across a threshold
@@ -214,7 +218,10 @@ search hit's glide, skill gcp-diagram-style §6; centre in a line and scale geom
 reduced motion; a pan or zoom by the person stops it; a centring jump to the node already selected pulses its
 selection ring again; a `reveal` never replaces a centring jump to the same node still waiting to be drawn; with
 `mode: 'reveal'` only the short pan of `revealTransform`, section "Details drawer") as soon as the node is drawn,
-then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer.
+then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump, and the pan that
+follows keyboard focus, keep the node in the part of the canvas that a panel lying over it leaves in view
+(`clearRoom`: an element marked `data-canvas-overlay` along the canvas's whole right or lower edge, the details
+drawer of a phone or a tablet); on a desktop nothing lies over the canvas and the room is the canvas.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH and
@@ -234,6 +241,12 @@ its controls could never work). A control that cannot act yet keeps an inert sta
 doing nothing): Export while nothing is drawn, Copy link away from the diagram, Focus, Filters and Search
 without a snapshot.
 
+On a phone or a tablet the same controls fold into two sheets (section "Layouts"): **More** holds the navigation
+and the app row's actions, **View** the view row's controls but the breadcrumb, the search last as a field the
+sheet's width (`sheets.ts` names them in the store's `ui.sheet`). A tablet keeps the two rows (the wordmark, the
+demo badge and More; the breadcrumb and View); a phone has one: the mark, the breadcrumb on `/diagram`, View and
+More, with the demo badge at the top of More.
+
 | File | Control | State |
 |---|---|---|
 | `Breadcrumb.tsx` | the scope and the drill-in trail; each crumb drills out (`actions.drillIn`) | working |
@@ -246,7 +259,89 @@ without a snapshot.
 | `ExportMenu.tsx` | Export menu, the last control of the app row: a filled primary button (`--color-primary` fill, `--color-on-primary` text; the inert state has no fill) whose menu opens leftwards from the bar's right edge (the export flow is `src/export/`) | working (inert while nothing is drawn) |
 | `SnapshotMenu.tsx` | Snapshot menu (`ui/MenuButton`): the open snapshot (scope, read time, source), `snapshot.available`, `actions.setSnapshot`, the Snapshots page | working |
 | `../../views/SavedViewsDialog.tsx`, `../../views/CopyLink.tsx` | "Saved views" (a `ui/Dialog`) and "Copy link" (a toast), mounted in the app row after the Snapshot menu | working |
+| `sheets.ts` | the folds' ids, `VIEW_SHEET` and `MORE_SHEET` (`TopBar.tsx`; `SearchBox.tsx` opens View for `/` on a phone or a tablet) | working |
 | `AccountMenu.tsx` | the account slot, before Export at the end of the app row (live mode, once someone signed in): the account's letter and a `ui/Popover` named by the email (with "(ends HH:MM)" when renewal needs a click), its panel showing how long the sign-in lasts, "Stay signed in", "Sign in again" after an expiry ("Session expired" on the button) and "Sign out"; a polite live region says when the sign-in is about to end or has ended (section "Sign-in") | working |
+
+## Layouts (`src/ui/screen.ts`)
+
+The app serves phones, tablets and desktops with the same controls (AGENTS.md, Product rules). `ui/screen.ts` names
+the three layouts and their breakpoints, in rem: the phone up to 47.99rem (portrait and landscape), the tablet from
+48rem to 79.99rem, the desktop from 80rem (1280 px at the default text size); `useScreen()` follows the window
+through `matchMedia` (a window without it, as in jsdom, is a desktop). Media queries cannot read custom properties,
+so the stylesheets write the same queries out (`MEDIA`): `(max-width: 79.99rem)` for what the phone and the tablet
+share, `(max-width: 47.99rem)` for the phone alone. One container query asks for a part's own room instead:
+`CONTAINER.shortCanvas`, `(max-height: 10.49rem)`, a phone's canvas too short for the disclosure bar above the
+half-height drawer. `ui/screen.test.ts` refuses any other width or container query in any stylesheet and checks
+`--breakpoint-tablet` and `--breakpoint-desktop` in `styles/tokens.css` against the constants. Where the folding needs the DOM to change (a fold's button, the order of the timeline bar's parts), the
+component reads `useScreen()`; everything else is CSS.
+
+| Part | Desktop | Tablet | Phone |
+|---|---|---|---|
+| Top bar | the app row, and on `/diagram` the view row | the same two rows; the navigation and the app row's actions fold into More, the view row's controls but the breadcrumb into View | one row: the mark (the wordmark for assistive technology only), the breadcrumb on `/diagram`, View and More; the demo badge at the top of More |
+| Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe or a focused crumb brings the others into view, and the edge where they are cut fades out | as on a tablet |
+| Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
+| Timeline bar | one row | the readout below the slider | the slider across the width on a line as tall as its 44-pixel thumb, the day markers under the track inside it, the readout below, then the buttons and the playback options |
+| Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways) |
+| Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
+
+**Folds.** View and More are `ui/Popover` sheets (`sheet`). On a desktop they are `inline`: no button, the anchor
+and the panel `display: contents`, so the controls are the rows' own flex items and the desktop's layout and tab
+order are what they were. On a phone or a tablet each is a button and a non-modal dialog hanging from the bar's
+lower edge, never taller than most of the window. The panel is the same element either way, so a control keeps its
+state when the window crosses the desktop's breakpoint; crossing the phone's moves the view controls between the
+rows, which mounts them again (their state is the store's). A sheet's content stays mounted while it is closed
+(hidden), so the Saved views dialog opened from More stays open, and a press in it, while it makes the sheet inert,
+does not close the sheet. One sheet at a time (`ui.sheet`, `useSheet`), kept apart from the one popup at a time
+(`ui.popover`): a menu, a list or a popover opens inside the sheet without closing it, in the flow under its control
+(`popup.module.css`, `.sheet`), its column the sheet's width whatever it holds: a menu item longer than that (the
+Snapshot menu's "Open: …" line) wraps, as does a control's label in the sheet (the account's address), and the
+account panel is as wide as the sheet, so a sheet never scrolls sideways. Escape closes that popup first (a popup
+that handled the key leaves the sheet open), then the sheet, with focus back on View or More; a new page or another
+layout closes the sheet, and so does Sign out in the account panel (focus then starts at the page); `/` opens View
+onto the search box. No control has a second copy: a fold moves the one there is.
+
+**Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
+`--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons, jump
+links and handle, the pickers' chips, the Filters' and Settings' choices, the segments, the slider's thumb, the
+footer's links) have their own rules for it. The bars and the drawer keep clear of a phone's notch, rounded corners
+and home indicator with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`). The canvas takes d3-zoom's
+own touch input, with the browser's gestures kept off the drawing (`touch-action: none`): one finger pans, a tap
+selects a node (and opens the drawer), two fingers pinch to zoom. A node's menu (a right-click or Shift+F10 on a
+desktop) has no touch gesture yet, and drill-in none of its own: a double tap drills in only where the browser
+reports it as a double-click (Chromium does), and its target can be a neighbouring node. Their actions are in the
+drawer (Details drills in, "Open in Cloud Console ↗", Copy), and a chip opens with a tap.
+
+**Out of sight, out of reach.** The chrome over the canvas never hides a control that can take focus: the drawer's
+content scrolls inside it and never reaches past its edge (onto the timeline bar), the disclosure bar moves clear of
+the drawer (to the bottom left on a tablet, above the sheet on a phone, by the sheet's `data-sheet`; hidden while the
+sheet is open on a canvas too short for it there, `CONTAINER.shortCanvas` on the bar's frame), the canvas's content
+is hidden (`visibility`) while the phone's sheet covers it at full height, and the skip links show over the top bar.
+In a half-height sheet too short for the drawer's Close button (a small phone turned sideways), focus scrolls the
+header up to the handle's inner half, so the button's middle stays in view. A control is either in sight when it has focus and tappable at its centre, or not focusable at all.
+
+**Tables and hidden text.** A table too wide for its page scrolls sideways in its own box (`tableWrap` in
+`snapshots/` and `preflight/`), and that box is positioned, as is the permission check's panel (`panel` in
+`preflight/`). Text for assistive technology only (`.visually-hidden`: a caption, the words of an Actions header, a
+live region) is absolutely placed; without a positioned box around it, it is placed against the window instead,
+outside the table's box and the page's own scroll box (`<main>`), where it makes the whole document scroll sideways
+and down, a phone lays the page out wider than its screen, and a swipe slides the top bar and the footer off it. On a phone, the Permissions page's reference (what each mode needs, with its commands) is a list under a heading
+per mode rather than a three-column table, which would leave a command a few characters' width
+(`preflight/PermissionsGuide.tsx`, by `useScreen()`; the same command blocks either way).
+
+**Checks.** `shell/parity.test.tsx` renders the diagram page of demo S with a project selected, the Connect page of
+a live instance signed in and the Permissions page at 1440, 820 and 375 px (`test/viewport.ts`: a `matchMedia` for a
+width), opens every fold, menu, popover and dialog of the chrome,
+and fails on a control (a button, a link, a field, a menu item, a radio button, a slider or the drawer's splitter,
+by role and accessible name) that the desktop offers and a narrower width does not, on a second copy of one, and on
+any control added but View and More. It sees the DOM and the accessibility tree only: whether a control is in
+sight and can be tapped is the browser check's. `pnpm --filter @gcportrait/frontend mobile` (the e2e suite's `mobile`
+project, `e2e/tests/mobile.spec.ts`) measures the layouts in Chromium at phone and tablet widths in both themes and
+on phones turned sideways (568 × 320 to 844 × 390), with every menu and panel of View and More opened, on a live
+instance signed in and on the Snapshots page with a snapshot stored: sideways scrolling, a page laid out wider than
+the window or scrolling up and down by itself, text squeezed into a column a few characters wide, the top bar's
+items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets, every control
+one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe; and Sign out from
+More, a long trail, the sheet's heights and the canvas's touch input by finger.
 
 ## UI primitives (`src/ui/`)
 
@@ -264,7 +359,7 @@ an inert `disabled` (`aria-disabled`, a hint as the title, focusable, doing noth
 | `Select` | select-only combobox (`role="combobox"` button + `Listbox`), focus stays on the button, `aria-activedescendant`; options may carry a `description` (the lenses'), `listClassName` sizes the list | closed: ↑ ↓ Enter Space open on the current option, Home End, a typed character; open: ↑ ↓ (no wrap), Home End, type-ahead, Enter Space choose, Tab chooses and moves on, Escape closes |
 | `Combobox` | editable combobox with a results `Listbox` (`aria-autocomplete="list"`), a polite result count (`status` replaces it); options may carry a `group` and a decorative `icon`; `inputRef`, `keyShortcuts` (`aria-keyshortcuts`), `align`, `listClassName`; `busy` (results that arrive later; the listed options are an earlier text's, greyed and never active or chosen) and `enterChoosesFirst` | ↓ opens or moves, ↑ moves (both wrap), Alt+↓ opens, Enter chooses (with `enterChoosesFirst` the first when none is active), Escape closes then clears; a click chooses without taking focus; a press on the focused input reopens the list; while `busy`, ↓ ↑ Enter are kept and apply to the options that arrive |
 | `Listbox` | the listbox popup of the two comboboxes (presentational); consecutive options with one `group` name form a `role="group"` named by a heading row (APG "grouped options"); an option with a second line is named by its label and described by the line (`aria-labelledby`, `aria-describedby`), which a sized list cuts with an ellipsis (its title has it all); `busy`: `aria-busy`, options in the secondary text colour | pointer move activates, click chooses; the active option scrolls into view |
-| `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary) | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close` |
+| `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary); `sheet`: a fold of other controls, its content kept mounted (hidden) while closed, and `inline`: the same content in place without a button (section "Layouts") | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close`; a sheet leaves an Escape its content handled alone and ignores presses while a modal dialog makes it inert |
 | `Dialog` | modal dialog (`aria-modal`, labelled by its title, described by `description`) at the end of `<body>`, the rest made `inert`; `alert`: an alert dialog (`role="alertdialog"`, a decision its own actions make: no Close button) with `initialFocus` on its least destructive action | focus moves in, Tab trapped, Escape, Close and the backdrop close (an alert dialog: Escape only), focus returns to the opener |
 | `SegmentedControl` | radio group (`role="radiogroup"`, `role="radio"`), the checked option the one tab stop and check-marked | ← → ↑ ↓ move and choose (wrapping), Home End, click |
 | `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track |
@@ -328,7 +423,8 @@ The chrome has one design. Its colours, focus ring, control metrics, spacing and
 `src/styles/tokens.css` (section "Theme and token policy" above), defined for both themes under
 `<html data-theme="light|dark">`; every stylesheet of the chrome is a CSS module beside its component and uses those
 tokens only (`ui/tokens.test.ts`: no raw colour, every colour token in both themes, and the filled primary buttons'
-text at 4.5 : 1 on their fill). The text is Roboto and Roboto Mono, self-hosted. The diagram has a token table of its
+text at 4.5 : 1 on their fill). A sheet asks for a width only with the layouts' media queries, in rem, at the end of
+the sheet (section "Layouts"; `ui/screen.test.ts`). The text is Roboto and Roboto Mono, self-hosted. The diagram has a token table of its
 own (`src/diagram/theme/`, section "Diagram theme and contrast" below), which the chrome's tokens never reach.
 
 ## Storage schema (IndexedDB, database `gcportrait`)
@@ -1355,9 +1451,12 @@ name (a taken name is updated), lists the saved views newest first with a summar
 link*: the diagram page's URL with the view's hash to the clipboard, and a toast (a polite status message kept
 in the DOM).
 
-**Width.** The view row fits the 1280 px minimum viewport (AGENTS.md, Product rules): the breadcrumb takes the
-free space without widening the row (inline-size containment, crumbs cut with an ellipsis, the root's kept
-whole), the Focus summary is cut at 8 em, and the detail segments are narrower than the primitive's default.
+**Width.** On a desktop the view row fits a 1280 px window (the desktop layout's narrowest; AGENTS.md, Product
+rules): the breadcrumb takes the free space without widening the row (inline-size containment, crumbs cut with an
+ellipsis, the root's kept whole), the Focus summary is cut at 8 em, and the detail segments are narrower than the
+primitive's default. On a phone or a tablet the controls but the breadcrumb are in the View sheet, one under the
+other, the Focus and Filters panels as wide as the sheet (Filters in one column), and the breadcrumb is cut from the
+left, so its current level always shows (section "Layouts").
 Every popup is keyboard operable: Escape first closes an open list or clears a picker's text, then closes the
 popover.
 
@@ -1387,8 +1486,9 @@ src/diagram/disclosure/
   state.ts             selectors over the store (selectRectsShown, selectRectsTotal, selectCanExpandAll,
                        selectCanCollapseAll, selectExpandLevelName, selectUsedLevelName; primitives,
                        cached per view and result) and useDisclosureNotice
-  DisclosureBar.tsx    the bar at the canvas's bottom right: "N of M shown", Expand all, Collapse all,
-                       the notice
+  DisclosureBar.tsx    the bar at the canvas's bottom right (on a tablet the bottom left; on a phone a compact row
+                       across the canvas's foot, above the details sheet while it is open): "N of M shown",
+                       Expand all, Collapse all, the notice
   CollapseButton.tsx   an open zone's collapse button (interactive canvas only), disclosure.css its states
   flipCamera.ts        the camera after a flip: keep the viewBox, glide 200 ms to frame the zone
   openAround.ts        in the data worker: the flips that open the chips around a node until it is drawn as
@@ -1467,6 +1567,18 @@ it can, at the same scale, in `REVEAL_MS` (200 ms; at once with reduced motion),
 they fit, the nodes its selection trace reaches stay in view, 24 px from the edges; it does nothing when they
 already are, and nothing while a centring jump (search) is on its way to the node. It asks again when the
 selection changes and when the width changes.
+
+On a phone or a tablet the drawer lies over the canvas instead (section "Layouts"), marked `data-canvas-overlay`, so
+the reveal keeps the node in the part of the canvas it leaves in view: on a tablet a panel along the canvas's right
+edge, at most half the canvas wide, its handle a 44-pixel strip on that edge; on a phone a sheet over the canvas's
+lower half (`SHEET_HEIGHT`: half or the whole of the canvas's height, less the strip the handle stands in), whose
+handle along its top edge (`ResizeHandle` with `axis="height"`, the same name) moves freely while dragged and,
+let go, settles at the nearer of the two heights, or closes the sheet when let go well below half; ↑ and End take
+it to full height, ↓ and Home to half; it opens at half height each time. The sheet's `data-sheet` (`half`,
+`full`) lets the page's stylesheets keep the disclosure bar above it at half height and hide the canvas's content
+while it covers the canvas at full height (no focus lands out of sight). Either way the header and the details
+scroll together in one box (`.content`, `display: contents` on a desktop), so nothing in the drawer reaches past its
+edge whatever its height. Close and Escape close it as on a desktop.
 
 ```
 src/drawer/
@@ -1702,7 +1814,10 @@ The bar at the bottom of the diagram page (`pages/diagram/TimelineBar.tsx`) move
 snapshot's last 35 days (AGENTS.md, Product rules; skill cai-ingestion §5;
 [docs/timeline.md](../docs/timeline.md)). The view's day is its `tick` in the URL hash (`YYYY-MM-DD`; the
 snapshot's own day is no tick; an extra tick's read time, `YYYY-MM-DDTHH:MM:SSZ`), so a timeline position is a
-link like any view, and a hash with a tick opens on that day.
+link like any view, and a hash with a tick opens on that day. On a desktop the bar is one row; on a tablet its
+readout takes a line of its own below the slider; on a phone the slider spans the width, with the readout and then
+the step and play buttons and the playback options below it (`PART_ORDER` in `TimelineBar.tsx`, which is also the
+tab order; section "Layouts").
 
 ```
 src/timeline/

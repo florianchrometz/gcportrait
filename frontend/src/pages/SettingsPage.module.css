@@ -53,3 +53,16 @@
   color: var(--color-on-surface-variant);
   font-size: var(--font-size-control);
 }
+
+/* A phone or a tablet: each choice's label is a 44-pixel row; on a phone the theme choices stack. */
+@media (max-width: 79.99rem) {
+  .choiceLabel {
+    min-height: var(--touch-target);
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

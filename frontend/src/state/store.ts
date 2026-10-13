@@ -182,7 +182,7 @@ const IDLE_PIPELINE: PipelineSlice = {
   requests: 0,
 };
 
-const INITIAL_UI: UiSlice = { drawerOpen: true, searchOpen: false, popover: null, jump: null };
+const INITIAL_UI: UiSlice = { drawerOpen: true, searchOpen: false, popover: null, sheet: null, jump: null };
 
 /** Until auth/AuthProvider.tsx has asked the backend: no sign-in, the person's own account. */
 const INITIAL_CONNECT: ConnectSlice = {

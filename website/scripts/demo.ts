@@ -5,7 +5,8 @@
  * else), in a real browser. Run after `pnpm website:build`. Exit code 0 when clean, 1 with every problem listed, 2 on a
  * usage error.
  *
- * In Playwright's Chromium at 1440 × 900 (the app is desktop-only), in the light and the dark theme:
+ * In Playwright's Chromium at 1440 × 900 (a desktop window; the app's own phone and tablet check covers the narrower
+ * layouts), in the light and the dark theme:
  * - /demo/ boots the app on its Connect page in the theme asked for: only "Try the demo" with the sizes S to XL, the
  *   way to one's own project, the footer's non-affiliation notice, "Source (MIT)" and the Impressum and the
  *   privacy notice on the maintainer's website (each in a new tab), the favicon; axe-core finds nothing;

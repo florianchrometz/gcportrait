@@ -12,7 +12,8 @@ body:
 
         **Do not paste real organisation data.** No organisation, folder or project names or numbers, no email
         addresses, IP addresses or domains, and no access tokens. Redact screenshots and logs before attaching
-        them. gcportrait supports desktop browsers at 1280×800 or larger.
+        them. gcportrait supports phones, tablets and desktops: say which device and browser, and the window's
+        size if you know it.
   - type: textarea
     id: what-happened
     attributes:

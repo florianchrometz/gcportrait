@@ -1,0 +1,1100 @@
+// SPDX-License-Identifier: MIT
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
+import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
+
+import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TOKENINFO_URL } from '../fixtures/gis.js';
+import { stubConfig } from '../fixtures/live.js';
+import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } from './support.js';
+
+/**
+ * The app's phone and tablet check (the `mobile` project of playwright.config.ts; `pnpm --filter
+ * @gcportrait/frontend mobile`): Chromium emulating a touch device at 2×, at 320, 375, 390 and 430 CSS pixels (the
+ * phone layout) and 820 (the tablet layout), each at its device's height, in the light and the dark theme, plus phones
+ * turned sideways (568 × 320, 640 × 360 and 667 × 375, a phone's layout; 844 × 390, a tablet's). On the Connect,
+ * Permissions, Snapshots and Settings pages; the Snapshots page again with a snapshot stored (an export of demo
+ * organisation S imported, so both of its tables have a row); a live instance's Connect page signed out and signed in (Google's
+ * sign-in stood in for, fixtures/gis.ts, with a long work address), its Permissions page and the Account panel inside
+ * More (also at 1024 × 768), and its Impressum and Privacy pages; and on the diagram of demo S and of demo M at rest,
+ * with the View sheet open (and in it the Lens list, the Focus and Filters panels and the search's results), with the
+ * More sheet open (and from it the Snapshot, Theme and Export menus and the Saved views dialog) and with the details
+ * drawer open, it fails when
+ * - the page scrolls sideways, is laid out wider than the window (which a phone shows zoomed out, or lets slide
+ *   sideways under a finger), scrolls up and down by itself (the page's own box does that, between the top bar and the
+ *   footer), an element reaches past the viewport's edge without a box that scrolls or clips it, or a box scrolls
+ *   sideways (a code block or a table may, and the breadcrumb, which rests at its end): a sheet whose menu or panel
+ *   holds a line longer than the sheet is wide (the Snapshot menu's "Open: …", an account's address), or text for
+ *   assistive technology only that escapes the box scrolling its table;
+ * - text is squeezed into a column a few characters wide (broken inside its words onto more lines than it has words,
+ *   in a box narrower than 6 em: a command in a table's third column);
+ * - two items of the top bar overlap, or one leaves the viewport;
+ * - two parts of the timeline bar overlap (the slider's thumb, its day markers and end dates; each line of the
+ *   readout; each button and radio button), or one leaves the bar;
+ * - the details drawer, or anything in it that no box inside it scrolls, reaches past the canvas it lies over (onto the
+ *   top bar, the timeline bar or the footer);
+ * - a target (a link or button that is not inline text, a field that is not in a line of code, a slider thumb, a menu
+ *   item, an option, a radio button, a splitter, a <summary>; a checkbox or radio input by its label) is smaller than
+ *   44 × 44 CSS pixels;
+ * - a control one reaches with Tab (in the open sheet or dialog when there is one, as their focus stays inside; not in
+ *   the folded part of a closed <details>) is out of sight when it has focus or cannot be tapped: focused, which
+ *   scrolls the box it is in to it, the point at its centre is not the control but something over it (WCAG 2.2's
+ *   2.4.11 and target size);
+ * - the canvas is shorter than a quarter of the window, or the drawer, open at its first height, leaves less than a
+ *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
+ *   nor (a canvas under 10.5 rem) hidden until the sheet closes;
+ * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
+ * Then, on a phone: a sheet closes with Escape and gives focus back to its button; Sign out in the Account panel
+ * closes More and starts focus again at the page; `/` opens the View sheet onto the search; a long drill-in trail
+ * rests at its current level, and a swipe brings its first crumb into view, which a tap drills out to; a tap on a node
+ * opens the drawer as a sheet over the lower half of the canvas, the disclosure bar above it, which its handle takes to
+ * the canvas's full height (hiding the canvas's content) and back, by key and by a finger, and which follows a finger
+ * down below half, fades once letting go would close it, and closes when let go there; one finger dragged across the
+ * canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in place.
+ */
+
+const SIZES = [
+  { width: 320, height: 568 },
+  { width: 375, height: 667 },
+  { width: 390, height: 844 },
+  { width: 430, height: 932 },
+  { width: 820, height: 1180 },
+] as const;
+const SIDEWAYS = [
+  { width: 568, height: 320 },
+  { width: 640, height: 360 },
+  { width: 667, height: 375 },
+  { width: 844, height: 390 },
+] as const;
+const PAGES = [
+  { path: '/', heading: 'Connect' },
+  { path: '/permissions', heading: 'Permissions' },
+  { path: '/snapshots', heading: 'Snapshots' },
+  { path: '/settings', heading: 'Settings' },
+] as const;
+const DIAGRAMS = ['/diagram#snapshot=demo:S', '/diagram#snapshot=demo:M'] as const;
+/** Demo M drilled in to a project five levels down: a trail longer than a phone's top bar. */
+const DEEP_TRAIL = `/diagram#snapshot=demo:M&root=${encodeURIComponent('//cloudresourcemanager.googleapis.com/projects/10000000025')}`;
+/** The normal-mode server of playwright.config.ts: an instance that serves its own legal pages. */
+const LIVE_URL = 'http://localhost:5173';
+/** A legal text with what a phone has to wrap: a long address, a long word, inline code, a list. */
+const LEGAL_TEXT = [
+  '# Impressum',
+  '',
+  'Example Ltd., 1 Example Street, 10115 Example City. Contact: legal@example.com, https://www.example.com/legal/contact-and-imprint-information-for-this-instance.',
+  '',
+  '## Responsible for the content',
+  '',
+  '- Ada Example, `Telecommunications-Digital-Services-Act` Section 5',
+  '- Supervisory authority: Datenschutzaufsichtsbehörde Musterstadt',
+].join('\n');
+/** A live instance with Google sign-in and service-account mode, as the sign-in spec configures it. */
+const LIVE_CONFIG = {
+  sourceUrl: DEFAULT_SOURCE_URL,
+  oauthClientId: TEST_CLIENT_ID,
+  saMode: true,
+  backendServiceAccount: 'gcportrait-backend@example.com',
+  hostedBy: 'Hosted by Example Ltd.',
+} as const;
+/** A work account's long address, for the Account panel. */
+const LONG_EMAIL = 'firstname.middlename.lastname@platform-engineering.example-company.example.com';
+/** The stand-in for Google's sign-in hands out this fake token. */
+const FAKE_TOKEN = 'e2e-fake-access-token-mobile-4d2e';
+/** The smallest touch target, in CSS pixels (WCAG 2.5.5's 44 × 44; a little rounding allowed). */
+const TARGET = 43.5;
+const REPO = path.resolve(import.meta.dirname, '..', '..');
+/** When the export of demo organisation S was taken, as its operation.json says. */
+const EXPORT_READ_TIME = '2026-10-05T14:30:00Z';
+
+test.use({ isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+
+/** This worker's export of demo organisation S, once generated. */
+let exported: readonly string[] | undefined;
+
+/**
+ * Demo organisation S on 5 October as an export of `organizations/30000000001` (the demo generator's `cai-export`
+ * format, as extra-ticks.spec.ts writes demo M's) and its operation.json, written once per worker under the test
+ * output: imported, it is a stored snapshot and an extra tick on its scope's timeline, a row in each of the Snapshots
+ * page's tables.
+ */
+function demoExport(testInfo: TestInfo): readonly string[] {
+  if (exported !== undefined) return exported;
+  const dir = path.join(
+    testInfo.project.outputDir,
+    'mobile-export',
+    `worker-${String(testInfo.workerIndex)}`,
+  );
+  mkdirSync(dir, { recursive: true });
+  const lines = path.join(dir, 'export.json');
+  execFileSync(
+    'pnpm',
+    [
+      '--silent',
+      '--filter',
+      '@gcportrait/demo-data',
+      'generate',
+      '--size',
+      'S',
+      '--format',
+      'cai-export',
+      '--tick',
+      '2026-10-05',
+      '--out',
+      lines,
+    ],
+    { cwd: REPO, stdio: 'ignore' },
+  );
+  const operation = path.join(dir, 'operation.json');
+  writeFileSync(
+    operation,
+    JSON.stringify({
+      name: 'organizations/30000000001/operations/ExportAssets/RESOURCE/7',
+      metadata: {
+        '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsRequest',
+        contentType: 'RESOURCE',
+        parent: 'organizations/30000000001',
+      },
+      done: true,
+      response: {
+        '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsResponse',
+        readTime: EXPORT_READ_TIME,
+      },
+    }),
+  );
+  exported = [lines, operation];
+  return exported;
+}
+
+/** Overflow, squeezed text, the top bar's items, touch targets: the problems of the page as it is now. */
+function layoutProblems(page: Page): Promise<string[]> {
+  const size = page.viewportSize();
+  if (size === null) throw new Error('no viewport');
+  return page.evaluate(
+    ({ minimum, screen }) => {
+      const problems: string[] = [];
+      const width = document.documentElement.clientWidth;
+      const name = (element: Element): string => {
+        const label = element.getAttribute('aria-label') ?? element.textContent;
+        const text = label.trim().replace(/\s+/g, ' ').slice(0, 30);
+        const role = element.getAttribute('role');
+        return `<${element.tagName.toLowerCase()}${role === null ? '' : ` role=${role}`}>${text === '' ? '' : ` "${text}"`}`;
+      };
+      // Laid out, visible, and not in the folded part of a closed <details> (whose content keeps a box, unrendered).
+      const shown = (element: Element): boolean => {
+        const box = element.getBoundingClientRect();
+        return (
+          box.width > 0 &&
+          box.height > 0 &&
+          getComputedStyle(element).visibility !== 'hidden' &&
+          element.checkVisibility()
+        );
+      };
+      // Text for assistive technology only (.visually-hidden): absolutely placed and clipped to nothing.
+      const visuallyHidden = (element: Element): boolean => {
+        for (let at: Element | null = element; at !== null; at = at.parentElement) {
+          const style = getComputedStyle(at);
+          const clip = style.getPropertyValue('clip');
+          if (
+            style.position === 'absolute' &&
+            ((clip !== '' && clip !== 'auto') || style.clipPath !== 'none')
+          )
+            return true;
+        }
+        return false;
+      };
+      const scrolledOrClipped = (element: Element): boolean => {
+        for (
+          let parent = element.parentElement;
+          parent !== null && parent !== document.body;
+          parent = parent.parentElement
+        ) {
+          if (getComputedStyle(parent).overflowX !== 'visible') return true;
+        }
+        return false;
+      };
+      // The drawing itself (the diagram's nodes and lines) is the canvas's, not the chrome's.
+      const inDrawing = (element: Element): boolean => element.closest('svg.dg-canvas') !== null;
+
+      const scrollWidth = document.documentElement.scrollWidth;
+      if (scrollWidth > width)
+        problems.push(`the page scrolls sideways (${String(scrollWidth)} > ${String(width)} px)`);
+      // A phone lays a page out as wide as what reaches furthest right, then zooms out or lets it slide: the layout is
+      // then wider than the window, and the page's own scroll widths agree with it.
+      if (window.innerWidth > screen.width + 0.5)
+        problems.push(
+          `the page is laid out wider than the window (${String(window.innerWidth)} > ${String(screen.width)} px)`,
+        );
+      // The shell is as tall as the window and its page scrolls inside it: the document scrolling up and down means
+      // something lies outside the box that scrolls the page (text for assistive technology only, placed where the page
+      // box would have clipped it), and a swipe moves the top bar and the footer off screen.
+      const root = document.scrollingElement ?? document.documentElement;
+      if (root.scrollHeight > root.clientHeight + 1)
+        problems.push(
+          `the page itself scrolls up and down (${String(root.scrollHeight)} > ${String(root.clientHeight)} px)`,
+        );
+      const outside: string[] = [];
+      for (const element of document.body.querySelectorAll('*')) {
+        const box = element.getBoundingClientRect();
+        if (box.width === 0 && box.height === 0) continue;
+        if (box.left >= -0.5 && box.right <= width + 0.5) continue;
+        if (visuallyHidden(element) || scrolledOrClipped(element) || inDrawing(element)) continue;
+        outside.push(`${name(element)} at ${String(Math.round(box.left))}–${String(Math.round(box.right))}`);
+      }
+      if (outside.length > 0) {
+        problems.push(
+          `${String(outside.length)} element(s) reach past the viewport (0–${String(width)}): ${outside.slice(0, 4).join('; ')}`,
+        );
+      }
+      // A box that scrolls sideways where nothing is meant to (a code block or a table may).
+      const sideways: string[] = [];
+      for (const element of document.body.querySelectorAll('*')) {
+        const overflow = getComputedStyle(element).overflowX;
+        if (overflow !== 'auto' && overflow !== 'scroll') continue;
+        if (
+          element.closest('pre, table, svg') !== null ||
+          element.querySelector(':scope > table, :scope > pre') !== null ||
+          element.matches('header nav[aria-label="Scope"]')
+        )
+          continue;
+        if (!shown(element)) continue;
+        if (element.scrollWidth > element.clientWidth + 1)
+          sideways.push(
+            `${name(element)} (${String(element.scrollWidth)} > ${String(element.clientWidth)} px)`,
+          );
+      }
+      if (sideways.length > 0)
+        problems.push(
+          `${String(sideways.length)} box(es) scroll sideways: ${sideways.slice(0, 4).join('; ')}`,
+        );
+
+      // Text squeezed into a column a few characters wide: broken inside its words onto more lines than it has words, in
+      // a box narrower than 6 em (its first box that is not inline: a code block in a table's cell).
+      const squeezed: string[] = [];
+      const texts = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      for (let node = texts.nextNode(); node !== null; node = texts.nextNode()) {
+        const text = (node.textContent ?? '').trim();
+        const parent = node.parentElement;
+        if (
+          text.length < 12 ||
+          parent === null ||
+          !shown(parent) ||
+          visuallyHidden(parent) ||
+          inDrawing(parent)
+        )
+          continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const lines = new Set([...range.getClientRects()].map((line) => Math.round(line.top))).size;
+        if (lines <= text.split(/\s+/).length + 1) continue;
+        let block: Element = parent;
+        while (block.parentElement !== null && /^(inline|contents)/.test(getComputedStyle(block).display))
+          block = block.parentElement;
+        const style = getComputedStyle(block);
+        const room = block.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        if (room < 6 * parseFloat(getComputedStyle(parent).fontSize))
+          squeezed.push(
+            `${name(block)} ${String(Math.round(room))} px wide: "${text.slice(0, 24)}" on ${String(lines)} lines`,
+          );
+      }
+      if (squeezed.length > 0)
+        problems.push(
+          `${String(squeezed.length)} text(s) squeezed into a narrow column: ${squeezed.slice(0, 4).join('; ')}`,
+        );
+
+      // The top bar's own items (not those of an open sheet, which lies over the bar's lower edge by design).
+      const items = [...document.querySelectorAll('header a[href], header button, header input')].filter(
+        (item) => shown(item) && !visuallyHidden(item) && item.closest('[role="dialog"]') === null,
+      );
+      items.forEach((item, index) => {
+        const a = item.getBoundingClientRect();
+        if (a.left < -0.5 || a.right > width + 0.5) {
+          if (!scrolledOrClipped(item)) problems.push(`the top bar's ${name(item)} leaves the viewport`);
+        }
+        for (const other of items.slice(index + 1)) {
+          if (item.contains(other) || other.contains(item)) continue;
+          const b = other.getBoundingClientRect();
+          const overlap =
+            Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+            Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+          if (overlap > 1) problems.push(`the top bar's ${name(item)} and ${name(other)} overlap`);
+        }
+      });
+
+      // The details drawer lies over the canvas: neither it nor what it holds reaches past the canvas, but what a box
+      // inside it scrolls (and clips) and its handle, a strip centred on its edge.
+      const drawer = document.querySelector('aside[aria-label="Details"]:not([hidden])');
+      const canvas = document.getElementById('diagram-canvas')?.getBoundingClientRect();
+      if (drawer !== null && canvas !== undefined && shown(drawer)) {
+        const clippedInside = (element: Element): boolean => {
+          for (let at = element.parentElement; at !== null && at !== drawer; at = at.parentElement) {
+            const style = getComputedStyle(at);
+            if (style.overflowX !== 'visible' || style.overflowY !== 'visible') return true;
+          }
+          return false;
+        };
+        const past: string[] = [];
+        for (const element of [drawer, ...drawer.querySelectorAll('*')]) {
+          if (element !== drawer && clippedInside(element)) continue;
+          const box = element.getBoundingClientRect();
+          if (box.width === 0 && box.height === 0) continue;
+          if (
+            box.left < canvas.left - 0.5 ||
+            box.right > canvas.right + 0.5 ||
+            box.top < canvas.top - 0.5 ||
+            box.bottom > canvas.bottom + 0.5
+          )
+            past.push(
+              `${name(element)} at ${[box.left, box.top, box.right, box.bottom].map((n) => String(Math.round(n))).join(',')}`,
+            );
+        }
+        if (past.length > 0)
+          problems.push(
+            `the drawer reaches past the canvas (${[canvas.left, canvas.top, canvas.right, canvas.bottom].map((n) => String(Math.round(n))).join(',')}): ${past.slice(0, 4).join('; ')}`,
+          );
+      }
+
+      // The timeline bar's parts lie side by side or one under the other, never over each other, and inside the bar: the
+      // slider (its thumb's touch box, the day markers under its track and the dates at its ends, which may touch each
+      // other), the bar's title, each line of the readout, each button and radio button.
+      const timeline = document.querySelector('section[aria-label="Timeline"]');
+      if (timeline !== null && shown(timeline)) {
+        const bar = timeline.getBoundingClientRect();
+        const slider = timeline.querySelector('[role="slider"]');
+        const parts: { readonly group: Element; readonly label: string; readonly box: DOMRect }[] = [];
+        const add = (group: Element, label: string, box: DOMRect): void => {
+          if (box.width > 0 && box.height > 0) parts.push({ group, label, box });
+        };
+        if (slider !== null) {
+          add(slider, name(slider), slider.getBoundingClientRect());
+          for (const marker of timeline.querySelectorAll('[data-day]'))
+            add(
+              slider,
+              `the marker of ${marker.getAttribute('data-day') ?? '?'}`,
+              marker.getBoundingClientRect(),
+            );
+        }
+        // Text shown for the eye only: the dates at the slider's ends (with the slider) and the title.
+        for (const text of timeline.querySelectorAll('[aria-hidden="true"]')) {
+          const words = text.textContent.trim();
+          if (words === '' || text.closest('button') !== null || !shown(text)) continue;
+          add(
+            /\d/.test(words) && slider !== null ? slider : text,
+            `"${words}"`,
+            text.getBoundingClientRect(),
+          );
+        }
+        const readout = timeline.querySelector('[data-testid="timeline-readout"]');
+        if (readout !== null) {
+          const text = document.createRange();
+          text.selectNodeContents(readout);
+          for (const line of text.getClientRects())
+            add(readout, `the readout "${readout.textContent.slice(0, 30)}"`, line);
+        }
+        for (const control of timeline.querySelectorAll('button, [role="radio"]'))
+          if (shown(control)) add(control, name(control), control.getBoundingClientRect());
+        const over: string[] = [];
+        parts.forEach((part, index) => {
+          const { box } = part;
+          if (
+            box.top < bar.top - 0.5 ||
+            box.bottom > bar.bottom + 0.5 ||
+            box.left < bar.left - 0.5 ||
+            box.right > bar.right + 0.5
+          )
+            over.push(`${part.label} leaves the bar`);
+          for (const other of parts.slice(index + 1)) {
+            if (other.group === part.group) continue;
+            const area =
+              Math.max(0, Math.min(box.right, other.box.right) - Math.max(box.left, other.box.left)) *
+              Math.max(0, Math.min(box.bottom, other.box.bottom) - Math.max(box.top, other.box.top));
+            if (area > 1) over.push(`${part.label} and ${other.label}`);
+          }
+        });
+        if (over.length > 0)
+          problems.push(`the timeline bar's parts overlap: ${[...new Set(over)].slice(0, 4).join('; ')}`);
+      }
+
+      const TARGETS = [
+        'a[href]',
+        'button',
+        'summary',
+        'input:not([type="hidden"])',
+        'select',
+        'textarea',
+        '[role="slider"]',
+        '[role="separator"][tabindex]',
+        '[role="radio"]',
+        '[role="menuitem"]',
+        '[role="menuitemradio"]',
+        '[role="menuitemcheckbox"]',
+        '[role="option"]',
+        '[role="checkbox"]',
+        '[role="switch"]',
+        '[role="tab"]',
+      ].join(', ');
+      const small: string[] = [];
+      const seen = new Set<Element>();
+      for (const element of document.querySelectorAll(TARGETS)) {
+        // A checkbox or a radio button is pressed through its label.
+        const input =
+          element instanceof HTMLInputElement && (element.type === 'checkbox' || element.type === 'radio');
+        const target = input ? (element.closest('label') ?? element) : element;
+        if (seen.has(target)) continue;
+        seen.add(target);
+        if (!shown(target) || visuallyHidden(target) || inDrawing(target)) continue;
+        // A skip link shows only while it has focus.
+        if (target.matches('a[href^="#"]') && target.getBoundingClientRect().bottom <= 0) continue;
+        // Text: a link in a sentence, a field in a line of code (a fillable command, whose value the Variables panel's
+        // own field also takes).
+        if (getComputedStyle(target).display === 'inline' || target.closest('pre, code') !== null) continue;
+        const box = target.getBoundingClientRect();
+        if (box.width < minimum || box.height < minimum) {
+          small.push(`${name(target)} ${String(Math.round(box.width))}×${String(Math.round(box.height))}`);
+        }
+      }
+      if (small.length > 0) {
+        problems.push(`${String(small.length)} target(s) under 44 × 44 px: ${small.slice(0, 6).join('; ')}`);
+      }
+      return problems;
+    },
+    { minimum: TARGET, screen: size },
+  );
+}
+
+/**
+ * The controls one reaches with Tab (not the drawing's own nodes) that are out of sight when focused or cannot be
+ * tapped. Inside the innermost open dialog or sheet when there is one (their focus trap keeps Tab there), else on the
+ * whole page: each is focused, which scrolls the boxes it is in (the page, the drawer, the breadcrumb) to it, and the
+ * point at its centre must be the control (or its label) rather than something lying over it. Focus and every box's
+ * scroll position are put back afterwards.
+ */
+async function hiddenControls(page: Page): Promise<string[]> {
+  // A key pressed first: focus moved from script then shows as keyboard focus does (`:focus-visible`), skip links
+  // included.
+  await page.keyboard.press('Shift');
+  return page.evaluate(() => {
+    const problems: string[] = [];
+    // Laid out, visible, and not in the folded part of a closed <details> (whose content keeps a box, unrendered).
+    const shown = (element: Element): boolean => {
+      const box = element.getBoundingClientRect();
+      return (
+        box.width > 0 &&
+        box.height > 0 &&
+        getComputedStyle(element).visibility !== 'hidden' &&
+        element.checkVisibility()
+      );
+    };
+    const visuallyHidden = (element: Element): boolean => {
+      for (let at: Element | null = element; at !== null; at = at.parentElement) {
+        const style = getComputedStyle(at);
+        const clip = style.getPropertyValue('clip');
+        if (style.position === 'absolute' && ((clip !== '' && clip !== 'auto') || style.clipPath !== 'none'))
+          return true;
+      }
+      return false;
+    };
+    const name = (element: Element): string => {
+      const label = element.getAttribute('aria-label') ?? element.textContent;
+      const text = label.trim().replace(/\s+/g, ' ').slice(0, 30);
+      const role = element.getAttribute('role');
+      return `<${element.tagName.toLowerCase()}${role === null ? '' : ` role=${role}`}>${text === '' ? '' : ` "${text}"`}`;
+    };
+    const before = document.activeElement;
+    const scrolled = [
+      document.scrollingElement ?? document.documentElement,
+      ...document.querySelectorAll('*'),
+    ]
+      .filter((box) => box.scrollWidth > box.clientWidth || box.scrollHeight > box.clientHeight)
+      .map((box) => ({ box, left: box.scrollLeft, top: box.scrollTop }));
+    const dialogs = [...document.querySelectorAll('[role="dialog"], dialog[open]')].filter(shown);
+    const innermost = dialogs.filter(
+      (dialog) => !dialogs.some((other) => other !== dialog && dialog.contains(other)),
+    );
+    const scope = innermost.at(-1) ?? document.body;
+    const tabbable = scope.querySelectorAll<HTMLElement>(
+      'a[href], button, input:not([type="hidden"]), select, textarea, summary, [tabindex]',
+    );
+    for (const element of tabbable) {
+      if (element.tabIndex < 0 || element.closest('svg.dg-canvas, [inert]') !== null) continue;
+      if ((element instanceof HTMLButtonElement || element instanceof HTMLInputElement) && element.disabled)
+        continue;
+      if (!shown(element)) continue;
+      element.focus();
+      // Text for assistive technology only (a skip link shows once focused, and is checked then).
+      if (visuallyHidden(element)) continue;
+      // The centre of each of its boxes (a link in a sentence may wrap onto two lines): one of them is the control.
+      const label = element instanceof HTMLInputElement ? element.closest('label') : null;
+      let hit: Element | null = null;
+      let ok = false;
+      for (const part of element.getClientRects()) {
+        const x = part.left + part.width / 2;
+        const y = part.top + part.height / 2;
+        hit =
+          x >= 0 && y >= 0 && x < window.innerWidth && y < window.innerHeight
+            ? document.elementFromPoint(x, y)
+            : null;
+        ok = hit !== null && (element.contains(hit) || label?.contains(hit) === true);
+        if (ok) break;
+      }
+      const box = element.getBoundingClientRect();
+      if (!ok)
+        problems.push(
+          `${name(element)} at ${[box.left, box.top, box.right, box.bottom].map((n) => String(Math.round(n))).join(',')} is ${hit === null ? 'out of sight' : `under ${name(hit)}`} when focused`,
+        );
+    }
+    if (before instanceof HTMLElement || before instanceof SVGElement) before.focus();
+    else (document.activeElement as HTMLElement | null)?.blur();
+    for (const { box, left, top } of scrolled) {
+      box.scrollLeft = left;
+      box.scrollTop = top;
+    }
+    return problems;
+  });
+}
+
+/** How much of the canvas the window shows, and how much of it the open drawer leaves in view (fractions). */
+function canvasRoom(page: Page): Promise<{ readonly ofWindow: number; readonly uncovered: number }> {
+  return page.evaluate(() => {
+    const canvas = document.getElementById('diagram-canvas')?.getBoundingClientRect();
+    if (canvas === undefined || canvas.height <= 0) return { ofWindow: 0, uncovered: 0 };
+    const drawer = document
+      .querySelector('aside[aria-label="Details"]:not([hidden])')
+      ?.getBoundingClientRect();
+    const covered =
+      drawer === undefined
+        ? 0
+        : Math.max(0, Math.min(canvas.right, drawer.right) - Math.max(canvas.left, drawer.left)) *
+          Math.max(0, Math.min(canvas.bottom, drawer.bottom) - Math.max(canvas.top, drawer.top));
+    return {
+      ofWindow: canvas.height / window.innerHeight,
+      uncovered: 1 - covered / (canvas.width * canvas.height),
+    };
+  });
+}
+
+/**
+ * The state on screen has no layout problem, no axe violation (unless `axe` is false: a state checked at another
+ * size already) and, with `focus`, no control out of sight or untappable (a state with nothing open that focus
+ * would close: not a list or a menu, which close when focus leaves them).
+ */
+async function expectClean(
+  page: Page,
+  where: string,
+  { axe = true, focus = false }: { readonly axe?: boolean; readonly focus?: boolean } = {},
+): Promise<void> {
+  expect(await layoutProblems(page), where).toEqual([]);
+  if (focus) expect(await hiddenControls(page), `${where}: controls out of sight or untappable`).toEqual([]);
+  if (axe) await expectNoAxeViolations(page);
+}
+
+/** The fold `name` of the top bar ("View", "More"): its button and its sheet. */
+function fold(page: Page, name: string): { readonly button: Locator; readonly sheet: Locator } {
+  const banner = page.getByRole('banner');
+  return {
+    button: banner.getByRole('button', { name, exact: true }),
+    sheet: banner.getByRole('dialog', { name, exact: true }),
+  };
+}
+
+async function openSheet(page: Page, name: string): Promise<Locator> {
+  const { button, sheet } = fold(page, name);
+  await button.click();
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+async function closeSheet(page: Page, name: string): Promise<void> {
+  const { button, sheet } = fold(page, name);
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
+  await expect(button).toBeFocused();
+}
+
+/** Selects the first card (or, at the folder level, zone) drawn inside the canvas through the address, which opens the
+ * details drawer. */
+async function selectACard(page: Page, svg: Locator): Promise<void> {
+  const id = await svg.evaluate((element) => {
+    const canvas = element.getBoundingClientRect();
+    for (const node of element.querySelectorAll('.dg-card[data-id], .dg-zone[data-id]')) {
+      const box = node.getBoundingClientRect();
+      if (
+        box.top >= canvas.top &&
+        box.bottom <= canvas.bottom &&
+        box.left >= canvas.left &&
+        box.right <= canvas.right
+      )
+        return node.getAttribute('data-id');
+    }
+    return element.querySelector('.dg-card[data-id], .dg-zone[data-id]')?.getAttribute('data-id') ?? null;
+  });
+  expect(id).not.toBeNull();
+  await page.evaluate((selection) => {
+    window.location.hash = `${window.location.hash.slice(1)}&selection=${encodeURIComponent(selection)}`;
+  }, id ?? '');
+  await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  test.describe(`${theme} theme`, () => {
+    test.use({ colorScheme: theme });
+
+    for (const size of SIZES) {
+      test.describe(`${String(size.width)} × ${String(size.height)}`, () => {
+        test.use({ viewport: size });
+
+        test('the Connect, Permissions, Snapshots and Settings pages flow without sideways scrolling', async ({
+          page,
+        }) => {
+          for (const { path, heading } of PAGES) {
+            await page.goto(path);
+            await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+            await page.evaluate(async () => {
+              await document.fonts.ready;
+            });
+            await expectClean(page, `${path} at rest`, { focus: true });
+            await openSheet(page, 'More');
+            await expectClean(page, `${path} with More open`, {
+              axe: size.width === 375 || size.width === 820,
+              focus: true,
+            });
+            await closeSheet(page, 'More');
+            await expect(page.getByRole('contentinfo')).toBeInViewport();
+          }
+        });
+
+        test('the Impressum and Privacy pages of an instance that serves them flow without sideways scrolling', async ({
+          page,
+        }) => {
+          await stubConfig(page, {
+            sourceUrl: DEFAULT_SOURCE_URL,
+            legal: { impressum: true, privacy: true, impressumUrl: null, privacyUrl: null },
+          });
+          await page.route('**/api/legal', (route) =>
+            route.fulfill({
+              json: { impressum: LEGAL_TEXT, privacy: LEGAL_TEXT.replace('Impressum', 'Privacy') },
+            }),
+          );
+          for (const id of ['impressum', 'privacy'] as const) {
+            await page.goto(`${LIVE_URL}/${id}`);
+            await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+            await expect(
+              page.getByRole('contentinfo').getByRole('navigation', { name: 'Legal' }),
+            ).toBeVisible();
+            await page.evaluate(async () => {
+              await document.fonts.ready;
+            });
+            await expectClean(page, `/${id}`, { focus: true });
+          }
+        });
+
+        for (const address of DIAGRAMS) {
+          test(`the diagram ${address.slice(address.indexOf('#'))}: at rest, with View, More and the drawer open`, async ({
+            page,
+          }) => {
+            const svg = await openDiagram(page, address);
+            const room = await canvasRoom(page);
+            expect(room.ofWindow, 'the canvas’s share of the window').toBeGreaterThanOrEqual(0.25);
+            await expectClean(page, 'at rest', { focus: true });
+            const view = await openSheet(page, 'View');
+            await expectClean(page, 'with View open', { focus: true });
+            // The sheet's own popups open inside it: the Lens list, the Filters panel.
+            await view.getByRole('combobox', { name: 'Lens' }).click();
+            await expect(page.getByRole('listbox')).toBeVisible();
+            await expectClean(page, 'with the Lens list open');
+            await page.keyboard.press('Escape');
+            await expect(view).toBeVisible();
+            await view.getByRole('button', { name: /^Focus/ }).click();
+            await expect(view.getByRole('dialog', { name: /^Focus/ })).toBeVisible();
+            await expectClean(page, 'with the Focus panel open', { focus: true });
+            await page.keyboard.press('Escape');
+            await view.getByRole('button', { name: /^Filters/ }).click();
+            await expect(view.getByRole('dialog', { name: 'Filters' })).toBeVisible();
+            await expectClean(page, 'with the Filters panel open', { focus: true });
+            await page.keyboard.press('Escape');
+            // The search's results open under the field, in the sheet.
+            const search = view.getByRole('combobox', { name: 'Search assets' });
+            await search.fill('a');
+            await expect(view.getByRole('listbox')).toBeVisible();
+            await expectClean(page, 'with the search results open');
+            await search.fill('');
+            await expect(view.getByRole('listbox')).toBeHidden();
+            await closeSheet(page, 'View');
+            const more = await openSheet(page, 'More');
+            await expectClean(page, 'with More open', { focus: true });
+            // Each menu of More opens inside the sheet, its longest item (the Snapshot menu's "Open: …" line) wrapping.
+            for (const menu of ['Snapshot', 'Theme', 'Export']) {
+              await more.getByRole('button', { name: menu, exact: true }).click();
+              await expect(page.getByRole('menu', { name: menu })).toBeVisible();
+              await expectClean(page, `with the ${menu} menu open`);
+              await page.keyboard.press('Escape');
+              await expect(page.getByRole('menu', { name: menu })).toBeHidden();
+            }
+            await more.getByRole('button', { name: 'Saved views', exact: true }).click();
+            await expect(page.getByRole('dialog', { name: 'Saved views' })).toBeVisible();
+            await expectClean(page, 'with the Saved views dialog open', { focus: true });
+            await page.keyboard.press('Escape');
+            await expect(more.getByRole('button', { name: 'Saved views', exact: true })).toBeFocused();
+            await closeSheet(page, 'More');
+            await selectACard(page, svg);
+            const open = await canvasRoom(page);
+            expect(
+              open.uncovered,
+              'the share of the canvas the drawer leaves in view',
+            ).toBeGreaterThanOrEqual(1 / 3);
+            await expectClean(page, 'with the drawer open', { focus: true });
+          });
+        }
+      });
+    }
+  });
+}
+
+test('the Snapshots page with a snapshot stored: its tables scroll inside their own boxes, at every size and in both themes', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize(SIZES[1]);
+  await page.goto('/snapshots');
+  await expect(page.getByRole('heading', { level: 1, name: 'Snapshots' })).toBeVisible();
+  await page
+    .getByTestId('snapshot-drop-zone')
+    .locator('input[type="file"]')
+    .setInputFiles([...demoExport(testInfo)]);
+  await expect(page.getByText(/^Imported example\.com, read /)).toBeVisible({ timeout: 60_000 });
+  for (const theme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: theme });
+    for (const size of [...SIZES, ...SIDEWAYS]) {
+      const where = `/snapshots with a snapshot stored, ${theme}, ${String(size.width)} × ${String(size.height)}`;
+      await page.setViewportSize(size);
+      await page.reload();
+      await expect(page.getByRole('table', { name: 'Snapshots stored in this browser' })).toBeVisible();
+      await expect(page.getByRole('table', { name: /^Timeline of / })).toBeVisible();
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+      await expectClean(page, where, { axe: size.width === 375 || size.width === 820, focus: true });
+      await expect(page.getByRole('contentinfo'), where).toBeInViewport();
+    }
+  }
+});
+
+for (const size of SIDEWAYS) {
+  test(`a phone turned sideways, ${String(size.width)} × ${String(size.height)}: the diagram keeps room for the canvas`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    const svg = await openDiagram(page, DIAGRAMS[1]);
+    expect((await canvasRoom(page)).ofWindow).toBeGreaterThanOrEqual(0.25);
+    await expectClean(page, 'at rest', { focus: true });
+    await selectACard(page, svg);
+    expect((await canvasRoom(page)).uncovered).toBeGreaterThanOrEqual(1 / 3);
+    // Expand all and Collapse all: above the half-height sheet, inside the canvas, or (a canvas too short for them
+    // there) hidden until the sheet closes.
+    const expand = page.getByRole('button', { name: 'Expand all', exact: true });
+    const canvas = await page.locator('#diagram-canvas').boundingBox();
+    if (await expand.isVisible()) {
+      expect((await expand.boundingBox())?.y ?? -Infinity).toBeGreaterThanOrEqual(canvas?.y ?? Infinity);
+    } else {
+      expect(canvas?.height ?? Infinity).toBeLessThan(10.5 * 16);
+    }
+    await expectClean(page, 'with the drawer open', { focus: true });
+    const details = page.getByRole('complementary', { name: 'Details' });
+    await details.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(details).toBeHidden();
+    await expect(expand).toBeVisible();
+  });
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  for (const size of [...SIZES, { width: 1024, height: 768 }]) {
+    test(`${theme} theme, ${String(size.width)} × ${String(size.height)}: a live instance's Connect page signed out and signed in, its Permissions page, and the Account panel inside More; Sign out closes the sheet`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(size);
+      await page.emulateMedia({ colorScheme: theme });
+      await stubConfig(page, LIVE_CONFIG);
+      await stubGoogle(page, { tokens: [FAKE_TOKEN], expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant' });
+      // A long work address: the account's button and its panel wrap it.
+      await page.route(TOKENINFO_URL, (route) =>
+        route.fulfill({
+          json: {
+            aud: TEST_CLIENT_ID,
+            azp: TEST_CLIENT_ID,
+            email: LONG_EMAIL,
+            scope: ALL_SCOPES,
+            expires_in: '3599',
+          },
+        }),
+      );
+      await page.goto(LIVE_URL);
+      await expect(page.getByRole('heading', { level: 1, name: 'Connect' })).toBeVisible();
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+      await expectClean(page, 'the Connect page, signed out', { focus: true });
+      await page
+        .getByRole('region', { name: 'Choose a source' })
+        .getByRole('button', { name: 'Sign in with Google' })
+        .click();
+      // Signed in: focus moves on to the next step's heading.
+      await expect(page.getByRole('heading', { name: 'Read your environment' })).toBeFocused();
+      const more = await openSheet(page, 'More');
+      const account = more.getByRole('button', { name: LONG_EMAIL, exact: true });
+      await expect(account).toBeVisible();
+      await closeSheet(page, 'More');
+      await expectClean(page, 'the Connect page, signed in', { focus: true });
+      await openSheet(page, 'More');
+      await expectClean(page, 'signed in, with More open', { axe: false, focus: true });
+      await account.click();
+      const panel = more.getByRole('dialog', { name: 'Account' });
+      await expect(panel).toBeVisible();
+      await expect(panel.getByText(/^Signed in with Google/)).toBeVisible();
+      await expectClean(page, 'with the Account panel open', { focus: true });
+      await page.keyboard.press('Escape');
+      await expect(panel).toBeHidden();
+      await expect(account).toBeFocused();
+      // To the Permissions page in the app (the sign-in lives in this tab's memory only).
+      await more.getByRole('link', { name: 'Permissions', exact: true }).click();
+      await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
+      await expect(fold(page, 'More').sheet).toBeHidden();
+      await expectClean(page, 'the Permissions page, signed in', { focus: true });
+      await openSheet(page, 'More');
+      await account.click();
+      await panel.getByRole('button', { name: 'Sign out', exact: true }).click();
+      await expect(fold(page, 'More').sheet).toBeHidden();
+      await expect(page.locator('#main')).toBeFocused();
+      await expect(fold(page, 'More').button).toBeVisible();
+    });
+  }
+}
+
+test.describe('on a phone, 375 × 667', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('the sheets close with Escape onto their buttons, and `/` opens View onto the search', async ({
+    page,
+  }) => {
+    await openDiagram(page, DIAGRAMS[0]);
+    const view = await openSheet(page, 'View');
+    // The sheet holds the view row's controls, the same ones the desktop shows in the row.
+    await expect(view.getByRole('combobox', { name: 'Lens' })).toBeVisible();
+    await expect(view.getByRole('button', { name: /^Focus/ })).toBeVisible();
+    await expect(view.getByRole('button', { name: /^Filters/ })).toBeVisible();
+    await expect(view.getByRole('radiogroup', { name: 'Detail' })).toBeVisible();
+    await expect(view.getByRole('combobox', { name: 'Search assets' })).toBeVisible();
+    await closeSheet(page, 'View');
+    const more = await openSheet(page, 'More');
+    for (const link of ['Connect', 'Diagram', 'Snapshots', 'Permissions', 'Settings'])
+      await expect(more.getByRole('link', { name: link, exact: true })).toBeVisible();
+    for (const button of ['Snapshot', 'Saved views', 'Copy link', 'Theme', 'Export'])
+      await expect(more.getByRole('button', { name: button, exact: true })).toBeVisible();
+    // A menu inside the sheet: Escape closes the menu only.
+    await more.getByRole('button', { name: 'Theme', exact: true }).click();
+    await expect(page.getByRole('menu', { name: 'Theme' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu', { name: 'Theme' })).toBeHidden();
+    await expect(more).toBeVisible();
+    await closeSheet(page, 'More');
+    await page.locator('body').press('/');
+    await expect(page.getByRole('combobox', { name: 'Search assets' })).toBeFocused();
+    await expect(fold(page, 'View').sheet).toBeVisible();
+  });
+
+  test('a long drill-in trail rests at its current level; a swipe brings its first crumb into view, and a tap drills out to it', async ({
+    page,
+  }) => {
+    await openDiagram(page, DEEP_TRAIL);
+    const nav = page.getByRole('banner').getByRole('navigation', { name: 'Scope' });
+    const crumbs = nav.getByRole('listitem');
+    await expect(crumbs).toHaveCount(5);
+    const top = nav.getByRole('button', { name: 'example.com', exact: true });
+    const within = async (crumb: Locator): Promise<boolean> => {
+      const [box, room] = await Promise.all([crumb.boundingBox(), nav.boundingBox()]);
+      return (
+        box !== null &&
+        room !== null &&
+        box.x >= room.x - 0.5 &&
+        box.x + box.width <= room.x + room.width + 0.5
+      );
+    };
+    // At rest: the current level in full, the top of the trail scrolled out of view on the left.
+    await expect.poll(() => within(crumbs.last())).toBe(true);
+    expect(await within(top)).toBe(false);
+    // Every crumb, focused, is in sight and can be tapped.
+    expect(await hiddenControls(page)).toEqual([]);
+    // The edge where crumbs are cut fades out.
+    await expect(nav).toHaveAttribute('data-cut', '');
+    const room = await nav.boundingBox();
+    if (room === null) throw new Error('no breadcrumb');
+    const client = await page.context().newCDPSession(page);
+    const y = room.y + room.height / 2;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: room.x + 8, y }],
+    });
+    for (let step = 1; step <= 12; step += 1) {
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [{ x: room.x + 8 + step * 40, y }],
+      });
+    }
+    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect.poll(() => within(top)).toBe(true);
+    const box = await top.boundingBox();
+    if (box === null) throw new Error('no crumb');
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    await expect.poll(() => new URLSearchParams(new URL(page.url()).hash.slice(1)).get('root')).toBeNull();
+    await expect(crumbs).toHaveCount(1);
+  });
+
+  test('a tap on a node opens the drawer over the lower half of the canvas, the disclosure bar above it; its handle takes it to full height and back, and closes it', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DIAGRAMS[0]);
+    const card = await svg.evaluate((element) => {
+      const canvas = element.getBoundingClientRect();
+      for (const node of element.querySelectorAll('.dg-card[data-id], .dg-zone[data-id]')) {
+        const box = node.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        const y = box.top + Math.min(box.height / 2, 6);
+        if (x > canvas.left && x < canvas.right && y > canvas.top && y < canvas.top + canvas.height / 2)
+          return { x, y };
+      }
+      return null;
+    });
+    expect(card).not.toBeNull();
+    await page.touchscreen.tap(card?.x ?? 0, card?.y ?? 0);
+    const drawer = page.getByRole('complementary', { name: 'Details' });
+    await expect(drawer).toBeVisible();
+    const canvas = await page.locator('#diagram-canvas').boundingBox();
+    const half = await drawer.boundingBox();
+    if (canvas === null || half === null) throw new Error('no canvas or drawer');
+    expect(half.height).toBeCloseTo(canvas.height / 2, -1);
+    // The disclosure bar rides above the sheet and its handle, its buttons in sight and tappable.
+    const expand = page.getByRole('button', { name: 'Expand all', exact: true });
+    await expect(expand).toBeVisible();
+    const bar = await expand.boundingBox();
+    expect((bar?.y ?? Infinity) + (bar?.height ?? 0)).toBeLessThanOrEqual(half.y - 22);
+    await expectClean(page, 'the sheet at half height', { axe: false, focus: true });
+
+    const handle = drawer.getByRole('separator', { name: 'Resize the details drawer' });
+    await expect(handle).toHaveAttribute('aria-orientation', 'horizontal');
+    await handle.focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(handle).toHaveAttribute('aria-valuenow', '100');
+    await expect(drawer).toHaveAttribute('data-sheet', 'full');
+    // Full height: the sheet covers the canvas but for the strip its handle stands in, and what the canvas holds is
+    // out of sight and out of reach.
+    expect((await drawer.boundingBox())?.height ?? 0).toBeCloseTo(canvas.height - 22, -1);
+    await expect(expand).toBeHidden();
+    await expect(svg).toBeHidden();
+    await expectClean(page, 'the sheet at full height', { focus: true });
+    await page.keyboard.press('Home');
+    await expect(handle).toHaveAttribute('aria-valuenow', '50');
+    await expect(expand).toBeVisible();
+
+    // By a finger: dragged up past the middle it settles at full height, a little down it settles back at half, and
+    // well below half it closes.
+    const client = await page.context().newCDPSession(page);
+    const drag = async (from: number, to: number, { lift = true } = {}): Promise<void> => {
+      const edge = await handle.boundingBox();
+      if (edge === null) throw new Error('no handle');
+      const x = edge.x + edge.width / 2;
+      const y = edge.y + edge.height / 2;
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [{ x, y: y + from }],
+      });
+      for (let step = 1; step <= 8; step += 1) {
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchMove',
+          touchPoints: [{ x, y: y + from + ((to - from) * step) / 8 }],
+        });
+      }
+      if (lift) await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    await drag(0, -canvas.height * 0.3);
+    await expect(handle).toHaveAttribute('aria-valuenow', '100');
+    await drag(0, canvas.height * 0.3);
+    await expect(handle).toHaveAttribute('aria-valuenow', '50');
+    // Held well below half: the sheet follows the finger down and fades, as letting go there closes it.
+    await drag(0, canvas.height * 0.4, { lift: false });
+    await expect(drawer).toHaveAttribute('data-dismissing', '');
+    expect((await drawer.boundingBox())?.height ?? Infinity).toBeLessThan(canvas.height * 0.2);
+    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect(drawer).toBeHidden();
+  });
+
+  test('one finger dragged across the canvas pans the drawing', async ({ page }) => {
+    const svg = await openDiagram(page, DIAGRAMS[1]);
+    const box = await page.locator('#diagram-canvas').boundingBox();
+    if (box === null) throw new Error('no canvas');
+    const transform = (): Promise<string | null> =>
+      svg.evaluate((element) => element.querySelector('.dg-viewport')?.getAttribute('transform') ?? null);
+    const before = await transform();
+    const client = await page.context().newCDPSession(page);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    for (let step = 1; step <= 8; step += 1) {
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [{ x: x - step * 10, y: y - step * 5 }],
+      });
+    }
+    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect.poll(transform).not.toBe(before);
+    await drawnCanvas(page);
+  });
+
+  test('two fingers pinched apart zoom the drawing in, and a tap on a project chip opens it in place', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DIAGRAMS[1]);
+    const box = await page.locator('#diagram-canvas').boundingBox();
+    if (box === null) throw new Error('no canvas');
+    const scale = async (): Promise<number> => Number(await svg.getAttribute('data-scale'));
+    const before = await scale();
+    const client = await page.context().newCDPSession(page);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const fingers = (apart: number): { x: number; y: number; id: number }[] => [
+      { x: x - apart, y, id: 0 },
+      { x: x + apart, y, id: 1 },
+    ];
+    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: fingers(20) });
+    for (let step = 1; step <= 8; step += 1) {
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: fingers(20 + step * 12),
+      });
+    }
+    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect.poll(scale).toBeGreaterThan(before * 2);
+
+    // Back to the drawing fitted to the canvas.
+    await page.reload();
+    await drawnCanvas(page);
+    const chip = await svg.evaluate((element) => {
+      const canvas = element.getBoundingClientRect();
+      for (const node of element.querySelectorAll('.dg-chip[data-id]')) {
+        const area = node.getBoundingClientRect();
+        const at = { x: area.left + area.width / 2, y: area.top + area.height / 2 };
+        if (
+          at.x > canvas.left &&
+          at.x < canvas.right &&
+          at.y > canvas.top &&
+          at.y < canvas.top + canvas.height / 2
+        )
+          return at;
+      }
+      return null;
+    });
+    expect(chip).not.toBeNull();
+    await page.touchscreen.tap(chip?.x ?? 0, chip?.y ?? 0);
+    await expect
+      .poll(() => new URLSearchParams(new URL(page.url()).hash.slice(1)).get('flips'))
+      .not.toBeNull();
+  });
+});

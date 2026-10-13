@@ -2,8 +2,12 @@
 
 /* The permission check: its action, the checklist and the copy-ready commands. App chrome tokens only
    (skill gcp-diagram-style §9), so both themes follow; a status reads in words and by its mark's shape, never by
-   colour alone. Desktop only. */
+   colour alone. */
+/* Positioned, so its live region (for assistive technology only; .visually-hidden, absolutely placed) stays inside
+   the page's own scroll box rather than at its place below the window's edge, where it would make the whole
+   document scroll. */
 .panel {
+  position: relative;
   display: grid;
   gap: var(--space-3);
 }
@@ -266,8 +270,11 @@
   font-size: var(--font-size-footnote);
 }
 
-/* The reference table of what each mode needs. */
+/* The reference table of what each mode needs, on a tablet and a desktop. Positioned, so its caption (for assistive
+   technology only; .visually-hidden, absolutely placed) stays inside the box that scrolls it rather than past it,
+   where it would make the page scroll. */
 .tableWrap {
+  position: relative;
   overflow-x: auto;
 }
 
@@ -291,6 +298,49 @@
 
 .table code {
   overflow-wrap: anywhere;
+}
+
+/* The same reference on a phone (PermissionsGuide.tsx): a heading per mode, its needs listed under it, each need a
+   card with its commands under its words, as wide as the page. */
+.modes {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.mode {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.needs {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.need {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-size: var(--font-size-control);
+}
+
+/* A phone: a command takes the width of its box and its Copy button goes under it, so a line of the command holds
+   more than a few characters. */
+@media (max-width: 47.99rem) {
+  .command {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .copy {
+    justify-self: start;
+  }
 }
 
 .explainer {

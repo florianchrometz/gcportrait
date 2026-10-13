@@ -3,8 +3,10 @@
  * The details drawer in the app, in jsdom with the real data and layout handlers in-process, on demo
  * organisation S: selecting a VM opens it with the VM's facts, relations grouped by kind, the console link and
  * the raw JSON; a jump link selects its target; the copy buttons report; Escape closes it and gives focus back
- * to the card; the resize handle works with the keyboard and keeps the width in the preferences; a container
- * offers "Drill in"; selecting never asks for a new Scene or layout; axe finds nothing.
+ * to the card; the resize handle works with the keyboard and keeps the width in the preferences; on a phone the
+ * drawer is a sheet at half height that its handle takes to full height and back (`data-sheet`), its header and
+ * details in the one box that scrolls; a container offers "Drill in"; selecting never asks for a new Scene or layout;
+ * axe finds nothing.
  */
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -16,6 +18,7 @@ import { expectNoAxeViolations } from '../test/axe';
 import { stubClipboard } from '../test/clipboard';
 import { drawn } from '../test/diagram';
 import { currentLocation, renderApp } from '../test/renderApp';
+import { installViewport } from '../test/viewport';
 
 /** In-process workers that count the Scene, layout and details requests. */
 function countingWorkers(): {
@@ -184,6 +187,48 @@ describe('the details drawer', () => {
     await waitFor(async () => {
       expect(await preferences.get('drawerWidth')).toBe(380);
     });
+  }, 30_000);
+
+  it('is a sheet on a phone: half height, taken to full height and back by its handle', async () => {
+    const viewport = installViewport(375);
+    try {
+      const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
+      const { container } = renderApp(`/diagram#snapshot=demo:S&detail=folders&selection=${project}`, {
+        diagramWorkers: createInProcessWorkers,
+      });
+      await drawn(container);
+      const aside = drawer();
+      const handle = within(aside).getByRole('separator', { name: 'Resize the details drawer' });
+      expect(handle.getAttribute('aria-orientation')).toBe('horizontal');
+      expect(aside.getAttribute('data-sheet')).toBe('half');
+      expect(aside.style.height).toBe('50%');
+      // The header and the details share one box (what scrolls inside the sheet).
+      const heading = within(aside).getByRole('heading', { level: 2 });
+      const name = within(aside).getByRole('button', { name: 'Copy resource name' });
+      const box = heading.closest('aside > div');
+      expect(box?.contains(name)).toBe(true);
+      fireEvent.keyDown(handle, { key: 'ArrowUp' });
+      expect(handle.getAttribute('aria-valuenow')).toBe('100');
+      expect(aside.getAttribute('data-sheet')).toBe('full');
+      fireEvent.keyDown(handle, { key: 'Home' });
+      expect(aside.getAttribute('data-sheet')).toBe('half');
+      // Dragged down, the sheet follows below half; far enough that letting go closes it, it fades; let go there,
+      // it closes.
+      fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientY: 300 });
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 310 });
+      expect(aside.style.height).toBe('40%');
+      expect(aside.hasAttribute('data-dismissing')).toBe(false);
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 900 });
+      expect(aside.style.height).toBe('0%');
+      expect(aside.hasAttribute('data-dismissing')).toBe(true);
+      expect(handle.getAttribute('aria-valuenow')).toBe('50');
+      fireEvent.pointerUp(handle, { pointerId: 1, clientY: 900 });
+      await waitFor(() => {
+        expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
+      });
+    } finally {
+      viewport.uninstall();
+    }
   }, 30_000);
 
   it('offers "Details" as a container’s primary action', async () => {

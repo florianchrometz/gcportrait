@@ -148,3 +148,15 @@
   color: var(--color-on-surface-variant);
   cursor: not-allowed;
 }
+
+/* A phone or a tablet: a variable's column is never wider than the panel, and its field never wider than the column. */
+@media (max-width: 79.99rem) {
+  .list {
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+  }
+
+  .input {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

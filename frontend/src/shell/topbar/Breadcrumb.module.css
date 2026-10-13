@@ -4,7 +4,7 @@
    navigation's text is the crumbs' labels), each cut with an ellipsis when the trail runs long; crumbs one can
    drill out to are text buttons, underlined on hover. It takes the view row's free space and never widens the
    row (inline-size containment: its content does not count towards the row's minimum width), so the controls
-   stay within the 1280 px minimum viewport whatever the trail. Tokens only (both themes). */
+   stay within a 1280 px desktop window whatever the trail. Tokens only (both themes). */
 .breadcrumb {
   flex: 1 1 auto;
   min-width: 120px;
@@ -76,4 +76,40 @@
 .note {
   color: var(--color-error);
   font-weight: var(--font-weight-regular);
+}
+
+/*
+ * Narrower than a desktop: the trail scrolls sideways in its box (no scroll bar drawn; a swipe moves it, and so does a
+ * focused crumb) and rests at its end (Breadcrumb.tsx, useTrailAtItsEnd), so the current level always shows and the
+ * crumbs before it are cut from the left, the edge where they are cut fading out (`data-cut`). A crumb scrolled into
+ * view by focus stops clear of that fade (scroll-padding). The crumbs keep their width; a current level wider than the
+ * box alone ends in an ellipsis. A crumb to drill out to is a 44-pixel target.
+ */
+@media (max-width: 79.99rem) {
+  .breadcrumb {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--space-6);
+    scrollbar-width: none;
+  }
+
+  .breadcrumb[data-cut] {
+    mask-image: linear-gradient(to right, transparent, var(--color-on-surface) var(--space-6));
+  }
+
+  .crumb {
+    flex-shrink: 0;
+    max-width: 12em;
+  }
+
+  .crumb:last-child {
+    max-width: 100%;
+  }
+
+  .link {
+    height: var(--control-height);
+    min-width: var(--control-height);
+  }
 }

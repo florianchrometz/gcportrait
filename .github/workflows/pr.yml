@@ -16,7 +16,7 @@
 #   layout-budget   the layout's strict budgets and bench table; non-blocking (below)
 #   catalog-check   pnpm catalog:build, pnpm catalog:check
 #   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
-#   e2e             Playwright on Chromium in three shards: functional, export faithfulness, axe
+#   e2e             Playwright on Chromium in three shards: functional, export faithfulness, axe, phones and tablets
 #   website         the website built and checked (pnpm website:build, website:check), then its phone-width check
 #   provenance      pnpm provenance, then a self-test that the guard still rejects a planted banned file
 #   licenses        pnpm run licenses
@@ -193,10 +193,11 @@ jobs:
 
   # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's
   # faithfulness checks, which compare the PNG Chromium draws with resvg's drawing of the same view on this runner,
-  # and axe in both themes. Three shards of the one suite, each starting its own two dev servers. There are no
-  # screenshot baselines: the committed visual baselines are SVG text (e2e/baselines/diagram/, compared by the
-  # frontend's unit tests) and the render golden PNG (drawn by resvg's WebAssembly build, compared by the unit
-  # tests), so nothing here depends on the operating system that wrote a baseline.
+  # axe in both themes, and the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts; alone:
+  # `pnpm --filter @gcportrait/frontend mobile`). Three shards of the one suite, each starting its own two dev
+  # servers. There are no screenshot baselines: the committed visual baselines are SVG text (e2e/baselines/diagram/,
+  # compared by the frontend's unit tests) and the render golden PNG (drawn by resvg's WebAssembly build, compared by
+  # the unit tests), so nothing here depends on the operating system that wrote a baseline.
   e2e:
     name: e2e (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
@@ -213,7 +214,7 @@ jobs:
       - uses: ./.github/actions/playwright
         with:
           browsers: chromium
-      - name: Playwright (functional, export, axe), shard ${{ matrix.shard }} of 3
+      - name: Playwright (functional, export, axe, phones and tablets), shard ${{ matrix.shard }} of 3
         env:
           SHARD: ${{ matrix.shard }}
         run: pnpm run e2e --shard="$SHARD/3"

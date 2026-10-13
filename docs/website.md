@@ -133,10 +133,10 @@ words and, on a narrow screen, inline code wrap rather than push the page sidewa
 
 ## Mobile
 
-The website serves phones as well as desktops. The app itself, and so the demo at `/demo/`, stays
-desktop-only: the desktop-only rule (AGENTS.md, "Product rules") is about the app, not this site, and the
-phone and Lighthouse checks leave the demo out (the sitemap lists it). Every page works from 320 to 430 CSS
-pixels wide in both themes without sideways scrolling, and the animated demos play on phones too.
+The website serves phones as well as desktops, and so does the app, the demo at `/demo/` included (AGENTS.md,
+"Product rules"). The site's phone and Lighthouse checks leave the demo out (the sitemap lists it): the app
+has its own phone and tablet check (`pnpm --filter @gcportrait/frontend mobile`). Every page works from 320 to
+430 CSS pixels wide in both themes without sideways scrolling, and the animated demos play on phones too.
 
 **Layout.** One stylesheet and no device detection: the grids use `auto-fit` columns and fall to one column by
 themselves, and the breakpoints are in rem (48rem for the header, the footer and the touch targets, 49rem

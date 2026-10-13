@@ -17,6 +17,17 @@
  * clear of the drawer; it never lays the diagram out again. Escape and Close clear the selection and give focus
  * back to the node on the canvas. The width (360–420 px) follows the handle on the left edge and is kept in the
  * preferences.
+ *
+ * Narrower than a desktop (ui/screen.ts) the drawer lies over the canvas instead of beside it: on a tablet a panel
+ * along its right edge, on a phone a sheet over its lower half, which its handle (the top edge) takes up to the whole
+ * height and back to half, so the upper half of the canvas stays in view while it is open at half height; it opens
+ * at half height each time. Its header and details then scroll together inside it, so nothing it holds ever reaches
+ * past its edge whatever its height. Both close as the drawer does (Close, Escape), the phone's sheet also when its
+ * handle is dragged down well below half and let go (dragged down, the sheet follows the finger, and fades once
+ * letting go would close it). The canvas's camera keeps the node in the part of the canvas the
+ * drawer leaves in view (`data-canvas-overlay`); the sheet's `data-sheet` (`half`, `full`) tells the page's
+ * stylesheets where it is: what floats over the canvas moves above the sheet at half height, and the canvas's content
+ * is hidden while the sheet covers it at full height (pages/DiagramPage.module.css), so no focus lands out of sight.
  */
 import {
   useCallback,
@@ -49,13 +60,15 @@ import {
   useAppStore,
   useDiagramActions,
 } from '../state';
+import { DIAGRAM_CANVAS_ID } from '../keyboard/SkipToCanvas';
 import { DRAWER_WIDTH, usePreference } from '../storage/preferences';
 import { useTheme } from '../theme/useTheme';
+import { useScreen } from '../ui/screen';
 import { withExtraLabel } from '../timeline/extraTicks';
 import { CopyButton } from './CopyButton';
 import styles from './DetailsDrawer.module.css';
 import { JumpLink } from './JumpLink';
-import { ResizeHandle } from './ResizeHandle';
+import { clampHeight, dismissing, ResizeHandle, SHEET_HEIGHT } from './ResizeHandle';
 import {
   danglingExplanation,
   DIRECTION_ARROWS,
@@ -397,6 +410,10 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
   const { workers } = useDiagramSession();
   const [storedWidth, storeWidth] = usePreference('drawerWidth', DRAWER_WIDTH.min);
   const [dragWidth, setDragWidth] = useState<number | null>(null);
+  // The phone's sheet: its height in percent of the canvas's (half to full), while dragged and as left.
+  const sheet = useScreen() === 'phone';
+  const [height, setHeight] = useState<number>(SHEET_HEIGHT.min);
+  const [dragHeight, setDragHeight] = useState<number | null>(null);
   const [rawOpen, setRawOpen] = useState(false);
   const [status, setStatus] = useState<{ readonly id: string; readonly text: string } | null>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -426,12 +443,20 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
   const changes = changesState.status === 'ready' ? changesState.value : null;
   const offset = drawnReadTime === undefined ? 0 : viewerOffsetMinutes(drawnReadTime);
   const width = dragWidth ?? storedWidth;
+  const sheetHeight = dragHeight ?? height;
+
+  // The sheet opens at half height each time.
+  useEffect(() => {
+    if (!visible) setHeight(SHEET_HEIGHT.min);
+  }, [visible]);
 
   // Opening the drawer or selecting another node keeps the node and its trace in view beside the drawer: a
-  // short pan of the camera, never a new layout (the canvas waits until the node is drawn).
+  // short pan of the camera, never a new layout (the canvas waits until the node is drawn). While the phone's sheet
+  // covers the canvas (full height) the pan waits, and comes when the sheet goes back down to half.
+  const covering = sheet && height >= SHEET_HEIGHT.max;
   useEffect(() => {
-    if (visible) actions.jumpTo(selection, { mode: 'reveal' });
-  }, [visible, selection, actions]);
+    if (visible && !covering) actions.jumpTo(selection, { mode: 'reveal' });
+  }, [visible, selection, actions, covering]);
 
   const say = useCallback(
     (text: string): void => {
@@ -509,6 +534,16 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
     if (id !== null) actions.jumpTo(id, { mode: 'reveal' });
   };
 
+  // The sheet's height as it settled; back at half from full, the effect above pans to the node again.
+  const commitHeight = (next: number): void => {
+    setDragHeight(null);
+    setHeight(clampHeight(next));
+  };
+
+  // One percent of the sheet's height in CSS px: the canvas's height over 100.
+  const pixelsPerPercent = (): number =>
+    (asideRef.current?.ownerDocument.getElementById(DIAGRAM_CANVAS_ID)?.clientHeight ?? 0) / 100;
+
   const onKeyDown = (event: KeyboardEvent<HTMLElement>): void => {
     if (event.key !== 'Escape' || event.defaultPrevented) return;
     event.preventDefault();
@@ -535,13 +570,34 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
       id={drawerId}
       className={styles.drawer}
       aria-label="Details"
+      // Over the canvas on a phone or a tablet: the canvas's camera keeps a node clear of it (diagram/DiagramCanvas).
+      data-canvas-overlay=""
       hidden={!visible}
-      style={{ width }}
+      data-sheet={sheet ? (sheetHeight >= SHEET_HEIGHT.max ? 'full' : 'half') : undefined}
+      // Dragged down far enough that letting go closes it: the sheet fades (DetailsDrawer.module.css).
+      data-dismissing={sheet && dragHeight !== null && dismissing(dragHeight) ? '' : undefined}
+      style={sheet ? { height: `${String(sheetHeight)}%` } : { width }}
       onKeyDown={onKeyDown}
     >
-      <ResizeHandle width={width} controls={drawerId} onChange={setDragWidth} onCommit={commitWidth} />
+      {sheet ? (
+        <ResizeHandle
+          axis="height"
+          value={sheetHeight}
+          controls={drawerId}
+          pixelsPerUnit={pixelsPerPercent}
+          onChange={setDragHeight}
+          onCommit={commitHeight}
+          onDismiss={() => {
+            setDragHeight(null);
+            close();
+          }}
+        />
+      ) : (
+        <ResizeHandle value={width} controls={drawerId} onChange={setDragWidth} onCommit={commitWidth} />
+      )}
       {selection === null ? null : (
-        <>
+        // One box for the header and the details: the drawer's grid on a desktop, what scrolls on narrower screens.
+        <div className={styles.content}>
           <div className={styles.header}>
             <div className={styles.titleRow}>
               <NodeIcon model={model} id={selection} />
@@ -652,7 +708,7 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
               </>
             )}
           </div>
-        </>
+        </div>
       )}
     </aside>
   );

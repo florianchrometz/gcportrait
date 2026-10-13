@@ -192,5 +192,14 @@ covered by it.
 
 ### Does it work on a phone or a tablet?
 
-No: gcportrait is built for desktop browsers, at least 1280 × 800 pixels. Architecture diagrams of a real
-organisation need the room.
+Yes. The app has a layout for phones, one for tablets and one for desktops, with the same controls in each. On
+a phone or a tablet the top bar's controls fold behind two buttons, View (lens, focus, filters, detail and
+search) and More (the pages, the snapshot, saved views, Copy link, Export, the theme and the account); the
+details open as a panel over the diagram's right side on a tablet and as a sheet over its lower half on a
+phone, which you drag up to the full height and back, or down to close it; the timeline and the other bars
+wrap onto more lines. When the breadcrumb is longer than the bar, swipe it sideways to reach the levels above
+the one you are on. On the diagram one finger pans, two fingers pinch to zoom and a tap selects a node. A
+node's menu (a right-click on a desktop) has no touch gesture, and drill-in has none of its own: a double tap
+drills in only in browsers that treat it as a double-click (Chrome does), and it can land on a neighbouring
+node. The details offer the same actions (Details drills in, Open in Cloud Console, Copy). Dense diagrams
+still read best on a large screen, and the exports are the same on every device.

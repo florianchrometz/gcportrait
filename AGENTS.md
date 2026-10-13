@@ -11,11 +11,11 @@ it stands, with the reason for it in one sentence. Humans new to the repository 
 |---|---|
 | [How this file works](#how-this-file-works) | One rules file, the skills as handbooks, how to cite a rule, how a rule changes |
 | [What gcportrait is and is not](#what-gcportrait-is-and-is-not) | The question it answers, its users, what version 1 does, the non-goals |
-| [Product rules](#product-rules) | Desktop only, both themes, the demo, the timeline, "as of", views as links, composition, the source link |
+| [Product rules](#product-rules) | Phones, tablets and desktops, both themes, the demo, the timeline, "as of", views as links, composition, the source link |
 | [Data and graph semantics](#data-and-graph-semantics) | Data over code, the Snapshot, synthetic data, the catalog and the graph builder |
 | [Layout and drawing rules](#layout-and-drawing-rules) | The layout engine, pure cores, packing, routing, progressive disclosure |
 | [Exports and the render API](#exports-and-the-render-api) | SVG, PNG and draw.io, `pnpm render`, `POST /api/render` |
-| [Style and accessibility](#style-and-accessibility) | Themes, WCAG 2.2 AA, Google's colour semantics, icons, fonts |
+| [Style and accessibility](#style-and-accessibility) | Themes, WCAG 2.2 AA, touch targets and breakpoints, Google's colour semantics, icons, fonts |
 | [Security and privacy](#security-and-privacy) | The seven principles, tokens, the backend, the quota project, the service-account gate, OAuth scopes |
 | [Modes and hosting](#modes-and-hosting) | The ways in, demo-only mode, the static demo, hosted surfaces, the website, telemetry, legal pages, self-hosting |
 | [Non-affiliation, brand and legal](#non-affiliation-brand-and-legal) | The statement's three texts and where each goes, the maintainer's name, the reserved name and icon |
@@ -74,23 +74,67 @@ now, and what changed in the last five weeks?
   commands, your own account or the instance's service account), imports (a live pull or export files, both
   into one Snapshot), renders, explores (lenses, focus views, filters, drill-in, search, the selection trace,
   the details drawer with a Cloud Console link), moves through 35 days of history, exports SVG, PNG and
-  draw.io, draws any view on the server through its API, follows the system theme in light and dark, ships a
-  demo, and is self-hosted with one installer line and a published image.
+  draw.io, draws any view on the server through its API, follows the system theme in light and dark, works on
+  phones, tablets and desktops with the same controls, ships a demo, and is self-hosted with one installer
+  line and a published image.
 - **Three ways to use it**, with the same diagrams in each: self-hosted (one Cloud Run service in a project of
   the operator's), the web app, and the API (`POST /api/render`).
 - **Not planned:** editing diagrams, cost data, IAM policy analysis beyond showing identities, multi-cloud,
-  phone or tablet layouts of the app, storing snapshots on a server, and real-time feeds. Features wanted but
-  not scheduled are under "Later" in [docs/backlog.md](docs/backlog.md).
+  storing snapshots on a server, and real-time feeds. Features wanted but not scheduled are under "Later" in
+  [docs/backlog.md](docs/backlog.md).
 - **An independent open-source project**, not affiliated with Google ([Non-affiliation, brand and
   legal](#non-affiliation-brand-and-legal)), licensed under the MIT License with its name and icon reserved
   ([Licence and dependencies](#licence-and-dependencies)).
 
 ## Product rules
 
-- **Desktop only**: a minimum viewport of 1280 × 800, and no responsive breakpoints for phones or tablets in
-  the app; reviewers reject them. Architecture diagrams of real organisations are dense and are read and
-  exported on large screens, and every further form factor costs design, layout and test effort everywhere.
-  The e2e suite runs at 1440 × 900. The website serves phones (`pnpm website:mobile` checks it).
+- **Phones, tablets and desktops, every control at each.** The app has three layouts, chosen by the window's
+  width in rem (`frontend/src/ui/screen.ts`): the phone up to 47.99rem, in portrait and in landscape; the
+  tablet from 48rem to 79.99rem; the desktop from 80rem. Every control, menu item, page, dialog and keyboard
+  action of the desktop exists at every width, reachable by touch and by keyboard under the same accessible
+  name, and nothing is desktop-only, because people open a view where they are (a link in a chat, a check
+  during an incident) and a control missing on one screen makes what it does impossible there. The layouts
+  fold the same components, never copies of them:
+  - the desktop shows every control in place, in the top bar's two rows, with the details drawer beside the
+    canvas;
+  - narrower, the top bar's controls fold into two sheets: More holds the navigation and the app row's
+    actions, View the view row's controls but the breadcrumb, with the search as a field the sheet's width; a
+    tablet keeps the two rows, a phone has one (the mark, the breadcrumb, View and More); the breadcrumb
+    scrolls sideways and rests at its end, so the current level always shows and a swipe or a focused crumb
+    brings the levels above it into view;
+  - every sheet and menu is the app's own Menu, Popover or Dialog: Escape closes it and gives focus back to
+    its opener, a modal one traps focus, an action that takes its own control away (Sign out) closes the sheet
+    too, and a popup inside a sheet opens in the sheet, as wide as the sheet, its long lines (a snapshot's
+    description, an account's address) wrapping, so a sheet never scrolls sideways;
+  - the chrome never covers the whole canvas while someone works on it: on a tablet the drawer is a panel over
+    at most half the canvas's right side, on a phone a sheet over its lower half that its handle takes to the
+    whole height (then the canvas's content is hidden until it comes down) and back, and a camera jump keeps
+    the node in the part left in view; what floats over the canvas moves clear of the drawer (the disclosure
+    bar to the bottom left on a tablet, above the sheet on a phone, or, on a canvas too short for it there,
+    hidden while the sheet is open), and the drawer's content scrolls inside it, never past its edge; the
+    timeline bar and the disclosure bar wrap onto more lines instead, a phone's timeline with the slider across
+    the width on a line as tall as its touch target, the day markers under its track inside that line, the
+    readout below it and the buttons below the readout;
+  - no control is ever out of sight when it has focus or under something when tapped: a control the chrome
+    covers is moved clear of it or hidden with what covers it;
+  - a page flows in the width it has and only its own box scrolls, never the document, because a document
+    that slides sideways or down under a finger takes the top bar and the footer off screen: text for
+    assistive technology only (`.visually-hidden`, absolutely placed) lies inside a positioned box of the page
+    (a table's own scroll box, the permission check's panel) rather than placed against the window past the
+    page's edge; a table too wide for the page scrolls sideways in that box of its own; and a table whose cells
+    would squeeze a command to a few characters a line, where it can be neither read nor checked (the
+    Permissions page's reference), is a list on a phone, each command as wide as the page.
+
+  The touch model: on a phone and a tablet every target is at least 44 × 44 CSS pixels and the bars keep clear
+  of the safe-area insets ([Style and accessibility](#style-and-accessibility)); the canvas takes one finger
+  to pan, two to pinch and a tap to select, with the browser's own gestures kept off the drawing. A node's
+  menu has no touch gesture, and drill-in has none of its own (a double tap drills in only where the browser
+  reports it as a double-click, as Chromium does, and may land on a neighbouring node), so both are in the
+  details drawer as well. The e2e suite's functional specs run at 1440 × 900;
+  `frontend/src/shell/parity.test.tsx` fails on a control the desktop offers and a narrower width lacks (in
+  the DOM and the accessibility tree), and `pnpm --filter @gcportrait/frontend mobile` measures the phone and
+  tablet layouts in a browser, including that every control is in sight when focused and can be tapped. The
+  website serves phones too (`pnpm website:mobile` checks it).
 - **Both themes, every time.** A visual change is done when it looks right in light and dark and passes the
   contrast tests, because users and their documents come in both ([Style and
   accessibility](#style-and-accessibility)).
@@ -319,10 +363,22 @@ normalisers and the authoring procedure; [packages/graph/README.md](packages/gra
 - **Light and dark themes** for the app and the diagrams, following the system setting with a manual override
   (`system`, `light`, `dark`) stored in IndexedDB and applied before the first paint, so no page flashes in
   the wrong theme.
-- **WCAG 2.2 AA** on every page, the diagram included, in both themes: contrast tests cover every palette pair
-  (`frontend/src/diagram/theme/theme.test.ts`) and the e2e suite runs axe in both themes. The one documented
-  exception is the decorative subnet and VPC zone strokes; the title text and card strokes inside them pass
-  instead.
+- **WCAG 2.2 AA** on every page, the diagram included, in both themes and at every width: contrast tests cover
+  every palette pair (`frontend/src/diagram/theme/theme.test.ts`) and the e2e suite runs axe in both themes,
+  at the desktop's size and at the phone's and the tablet's (`pnpm --filter @gcportrait/frontend mobile`). The
+  one documented exception is the decorative subnet and VPC zone strokes; the title text and card strokes
+  inside them pass instead.
+- **44-pixel targets and the safe area on phones and tablets.** Below the desktop's breakpoint every target is
+  at least 44 × 44 CSS pixels (WCAG 2.5.5; `--control-height` grows to `--touch-target`), a link inside a
+  sentence and a field inside a line of code excepted, and the bars that stay on screen pad themselves with
+  `env(safe-area-inset-*)`, because a finger is less precise than a pointer and a phone's notch, rounded
+  corners and home indicator hide what lies under them.
+- **Breakpoints in rem, from one place.** A stylesheet asks for a width only with the layouts' media queries,
+  written in rem as `MEDIA` in `frontend/src/ui/screen.ts` has them (media queries cannot read custom
+  properties; `--breakpoint-tablet` and `--breakpoint-desktop` in `tokens.css` name the widths), and for a
+  part's own room only with `CONTAINER`'s container queries, in rem too (a phone's canvas too short for the
+  disclosure bar above the half-height sheet); `frontend/src/ui/screen.test.ts` refuses any other, so the
+  layouts follow the reader's text size and every part folds at the same widths.
 - **Google's colour semantics win; the values are adjusted.** Where Google's architecture-diagram conventions
   and WCAG conflict, what a tint means stays and its value changes until contrast passes, so the diagrams read
   as Google Cloud-style and stay readable.
@@ -736,11 +792,12 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
 - **CI** (`.github/workflows/pr.yml`) runs every job at once on each pull request and push to `main`: lint,
   typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the size
-  budgets, e2e in three Chromium shards, the website, provenance (with a self-test that plants a banned file
-  and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Its `required` job
-  is the one check branch protection targets, green only when every other job but `layout-budget` is, so the
-  ruleset never changes when a job does. Every action is pinned by commit. The audit gate fails on high and
-  critical advisories unless `scripts/audit-allowlist.json` accepts one with an expiry.
+  budgets, e2e in three Chromium shards (the desktop specs and the phone and tablet check), the website,
+  provenance (with a self-test that plants a banned file and requires the guard to fail), licences, the
+  dependency audit and workflows-and-shell. Its `required` job is the one check branch protection targets,
+  green only when every other job but `layout-budget` is, so the ruleset never changes when a job does. Every
+  action is pinned by commit. The audit gate fails on high and critical advisories unless
+  `scripts/audit-allowlist.json` accepts one with an expiry.
 - **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
   or applied in a commit that passes the checks) or declined with its reason in
   [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.
@@ -869,6 +926,7 @@ that each works from the same rules and none is favoured.
 | Dependency audit: high and critical advisories fail unless `scripts/audit-allowlist.json` accepts them with an expiry (needs the network; CI's `audit` job; docs/security.md) | `node scripts/check-audit.mjs` |
 | Build, then the SPA's size budgets (UI thread 350 kB, workers 400 kB gzipped; Quality gates, testing and CI) | `pnpm build`, then `pnpm size` |
 | End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`) |
+| The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways (Product rules; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to AGENTS.md and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Validate the asset catalog and report coverage (exit 1 on any violation) | `pnpm catalog:check` (`--group <group>` / `--file <path>` for one group's or file's problems, `--verbose` for rule traces, `pnpm -s catalog:check --json` for JSON) |

@@ -217,7 +217,8 @@ Light: `primary #1A73E8`, `on-primary #FFFFFF`, `surface #FFFFFF`, `surface-cont
 `on-surface #202124`, `on-surface-variant #5F6368`, `outline #DADCE0`, `error #D93025`.
 Dark: `primary #8AB4F8`, `on-primary #062E6F`, `surface #1F1F1F`, `surface-container #303134`,
 `on-surface #E8EAED`, `on-surface-variant #9AA0A6`, `outline #5F6368`, `error #F28B82`.
-Focus ring: 2 px `primary` with 2 px `surface` gap. Controls 32 px tall, 8 px radius, 13 px text.
+Focus ring: 2 px `primary` with 2 px `surface` gap. Controls 32 px tall, 8 px radius, 13 px text; on a phone or a
+tablet (narrower than 80rem) 44 px tall, and every other target at least 44 × 44 px (`--touch-target`).
 On the diagram canvas the ring is the diagram token `focus` with 2 px `canvas` gaps, kept at least 2 px on screen
 at any zoom: dark `#8AB4F8` (the dark `primary`), light `focus #185ABC` (Google Blue 800), because the
 light `primary` reaches only 2.62 : 1 against the light project tint a focused card's ring lies on and
@@ -293,7 +294,8 @@ Non-colour cues: every edge kind differs by dash or head, every zone kind by tit
 
 ## 13. Accessibility
 
-Every page, the diagram included, meets WCAG 2.2 AA in both themes (AGENTS.md, "Style and accessibility").
+Every page, the diagram included, meets WCAG 2.2 AA in both themes and at every width, the phone's, the
+tablet's and the desktop's (AGENTS.md, "Style and accessibility").
 
 - **Keyboard.** Tab moves through the header controls in reading order; on the canvas the arrow keys, Home
   and End move focus between the cards of a zone; Enter opens the details drawer for the focused card; `/`
@@ -306,5 +308,6 @@ Every page, the diagram included, meets WCAG 2.2 AA in both themes (AGENTS.md, "
   header mark or badge, timeline changes by outline, ghost or dot (§10, "Non-colour cues").
 - **Motion** follows the reduced-motion setting (no selection pulse).
 - **Checked by** the e2e suite (`e2e/tests/a11y.spec.ts`): axe reports zero violations on every page in both
-  themes, and on the diagram also with the keyboard inside a zone and with a node's menu and the drawer open.
-  The frontend README describes the keyboard model per module.
+  themes, and on the diagram also with the keyboard inside a zone and with a node's menu and the drawer open;
+  `e2e/tests/mobile.spec.ts` at phone and tablet widths, with the top bar's sheets and the drawer open,
+  together with 44-pixel targets. The frontend README describes the keyboard model per module.

@@ -9,6 +9,7 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -b",
     "test": "playwright test",
+    "mobile": "playwright test --project=mobile",
     "install-browsers": "playwright install chromium"
   },
   "devDependencies": {

@@ -115,13 +115,36 @@ interface OpenMenu {
   readonly items: readonly MenuItem[];
 }
 
-/** The canvas size when the element has none yet (jsdom, a hidden page): the minimum viewport, 1280 × 800. */
+/** The canvas size when the element has none yet (jsdom, a hidden page): a 1280 × 800 window's. */
 const FALLBACK_SIZE = { width: 1280, height: 800 };
 
 function canvasSize(svg: SVGSVGElement): { width: number; height: number } {
   const width = svg.clientWidth;
   const height = svg.clientHeight;
   return width > 0 && height > 0 ? { width, height } : FALLBACK_SIZE;
+}
+
+/**
+ * The part of the canvas a camera jump keeps a node in: the canvas, less a panel over it (`data-canvas-overlay`: the
+ * details drawer of a phone or a tablet, AGENTS.md "Product rules") along its whole right edge or its whole lower
+ * edge. On a desktop the drawer stands beside the canvas, covers none of it, and the room is the canvas.
+ */
+function clearRoom(svg: SVGSVGElement): { width: number; height: number } {
+  const size = canvasSize(svg);
+  const box = svg.getBoundingClientRect();
+  if (box.width <= 0 || box.height <= 0) return size;
+  let { width, height } = size;
+  for (const overlay of svg.ownerDocument.querySelectorAll('[data-canvas-overlay]')) {
+    if (overlay.closest('[hidden]') !== null) continue;
+    const over = overlay.getBoundingClientRect();
+    const across = Math.min(box.right, over.right) - Math.max(box.left, over.left);
+    const down = Math.min(box.bottom, over.bottom) - Math.max(box.top, over.top);
+    if (across <= 0 || down <= 0) continue;
+    if (down >= box.height - 1 && over.right >= box.right - 1) width = Math.min(width, over.left - box.left);
+    else if (across >= box.width - 1 && over.bottom >= box.bottom - 1)
+      height = Math.min(height, over.top - box.top);
+  }
+  return { width: Math.max(1, width), height: Math.max(1, height) };
 }
 
 /** Whether an element shows its focus ring (`:focus-visible`; a browser without the selector shows it always). */
@@ -473,7 +496,7 @@ export function DiagramCanvas({
       // The person moved on: a glide still on its way (a search hit's) stops where it is, and the camera pans
       // from there.
       glideRef.current?.stop();
-      const size = canvasSize(svg);
+      const size = clearRoom(svg);
       const to = keyboardTransform(revealBox(rect), size.width, size.height, zoomTransform(svg));
       if (to === null) return;
       glideRef.current = { id, mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
@@ -699,7 +722,7 @@ export function DiagramCanvas({
     const rect = model.input.layout.rects[jump.id];
     if (svg === null || behaviour === null || rect === undefined) return;
     const mode = jump.mode ?? 'centre';
-    const size = canvasSize(svg);
+    const size = clearRoom(svg);
     const current = zoomTransform(svg);
     const running = glideRef.current;
     const centring = running?.mode === 'centre' && running.id === jump.id && running.running();

@@ -56,3 +56,18 @@
   color: var(--color-on-surface-variant);
   cursor: not-allowed;
 }
+
+/* A phone or a tablet: every segment a 44-pixel target, the segments wrapping onto a second line where the row is too
+   narrow for them. */
+@media (max-width: 79.99rem) {
+  .group {
+    flex-wrap: wrap;
+    height: auto;
+  }
+
+  .segment {
+    justify-content: center;
+    min-width: var(--control-height);
+    min-height: var(--control-height);
+  }
+}

@@ -79,3 +79,70 @@ describe('Popover', () => {
     await expectNoAxeViolations();
   });
 });
+
+/** A sheet holding a list that handles Escape itself while open, as the View sheet's Lens list does. */
+function Sheet({ inline = false }: { readonly inline?: boolean }) {
+  return (
+    <Popover label="View" sheet inline={inline}>
+      <input
+        aria-label="Lens"
+        onKeyDown={(event) => {
+          if (event.key === 'Escape' && event.currentTarget.value !== '') {
+            event.preventDefault();
+            event.currentTarget.value = '';
+          }
+        }}
+      />
+      <button type="button">Filters</button>
+    </Popover>
+  );
+}
+
+describe('Popover as a sheet', () => {
+  it('in place: no button, the content where the popover stands, no dialog', () => {
+    renderInPage(<Sheet inline />);
+    expect(screen.queryByRole('button', { name: 'View' })).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'Lens' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Filters' })).toBeDefined();
+  });
+
+  it('folded: the content stays mounted while closed, out of reach until the sheet opens', async () => {
+    renderInPage(<Sheet />);
+    const button = screen.getByRole('button', { name: 'View' });
+    const input = screen.getByRole('textbox', { name: 'Lens', hidden: true });
+    expect(screen.queryByRole('textbox', { name: 'Lens' })).toBeNull();
+    await userEvent.click(button);
+    expect(screen.getByRole('dialog', { name: 'View' })).toBeDefined();
+    // The same element, not a second one.
+    expect(screen.getByRole('textbox', { name: 'Lens' })).toBe(input);
+    await expectNoAxeViolations();
+  });
+
+  it('leaves an Escape its content handled alone, closes on the next onto its button', async () => {
+    renderInPage(<Sheet />);
+    const button = screen.getByRole('button', { name: 'View' });
+    await userEvent.click(button);
+    const input = screen.getByRole('textbox', { name: 'Lens' });
+    await userEvent.type(input, 'net');
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: 'View' })).toBeDefined();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('stays open on a press while a modal dialog over it makes it inert', async () => {
+    const { container } = renderInPage(<Sheet />);
+    await userEvent.click(screen.getByRole('button', { name: 'View' }));
+    const outside = document.createElement('div');
+    document.body.append(outside);
+    container.setAttribute('inert', '');
+    fireEvent.pointerDown(outside);
+    expect(screen.getByRole('dialog', { name: 'View', hidden: true })).toBeDefined();
+    container.removeAttribute('inert');
+    fireEvent.pointerDown(outside);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    outside.remove();
+  });
+});

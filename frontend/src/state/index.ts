@@ -11,6 +11,7 @@ export {
   useDiagramPipeline,
   useLayout,
   usePopover,
+  useSheet,
   useScene,
   useSelection,
   useUi,

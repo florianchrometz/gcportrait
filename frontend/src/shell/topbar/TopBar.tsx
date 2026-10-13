@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
-import type { ReactElement } from 'react';
-import { Link, NavLink, type To } from 'react-router';
+import { useEffect, type ReactElement } from 'react';
+import { Link, NavLink, useLocation, type To } from 'react-router';
 
 import { UNKNOWN_VERSION } from '../../api/staticConfig';
 import { WORDMARK } from '../../branding';
 import { cx } from '../../classNames';
 import { useDemoOnly } from '../../demoOnly';
 import { useAppMode } from '../../mode';
-import { useAppState } from '../../state';
+import { useAppState, useAppStore, useSheet } from '../../state';
+import { Popover } from '../../ui/Popover';
+import { useScreen } from '../../ui/screen';
 import { CopyLinkButton } from '../../views/CopyLink';
 import { SavedViewsButton } from '../../views/SavedViewsDialog';
 import { useDiagramLinkTarget } from '../viewHash';
@@ -19,6 +21,7 @@ import { FiltersControl } from './FiltersControl';
 import { FocusControl } from './FocusControl';
 import { LensSelect } from './LensSelect';
 import { SearchBox } from './SearchBox';
+import { MORE_SHEET, VIEW_SHEET } from './sheets';
 import { SnapshotMenu } from './SnapshotMenu';
 import { ThemeToggle } from './ThemeToggle';
 import styles from './TopBar.module.css';
@@ -48,6 +51,14 @@ function brandMarkSource(): string {
  * through the app store (src/state), never the router or the renderer. A control that cannot act yet (Export while
  * nothing is drawn, Copy link away from the diagram) stays in place, inert (aria-disabled, still focusable). The
  * order below is the tab order and the visual order.
+ *
+ * Narrower than a desktop (ui/screen.ts) the same controls fold into two sheets (ui/Popover `sheet`), so every one of
+ * them stays reachable by touch and by keyboard: "More" holds the primary navigation and the app row's actions,
+ * "View" the view row's controls but the breadcrumb, the search last as a field the sheet's width. On a tablet the
+ * two rows stay (the wordmark, the badge and More; the breadcrumb and View); on a phone it is one row: the mark, the
+ * breadcrumb (on the diagram page: the snapshot's scope down to the level drawn, resting at its end), View and More,
+ * with the demo badge at the top of More. On a desktop the sheets are inline: no buttons, the rows as they are.
+ * A sheet closes on a new page.
  */
 export function TopBar(): ReactElement {
   const { demo } = useAppMode();
@@ -61,6 +72,13 @@ export function TopBar(): ReactElement {
       : undefined,
   );
   const diagramTarget = useDiagramLinkTarget();
+  const screen = useScreen();
+  const narrow = screen !== 'desktop';
+  const phone = screen === 'phone';
+  const [moreOpen, setMoreOpen] = useSheet(MORE_SHEET);
+  const [viewOpen, setViewOpen] = useSheet(VIEW_SHEET);
+  const store = useAppStore();
+  const { pathname } = useLocation();
   const navItems: readonly NavItem[] = [
     { label: 'Connect', to: '/', end: true },
     { label: 'Diagram', to: diagramTarget },
@@ -69,46 +87,85 @@ export function TopBar(): ReactElement {
     { label: 'Settings', to: '/settings' },
   ];
 
+  // Another page, or another layout: no sheet stays open.
+  useEffect(() => {
+    store.updateUi((ui) => (ui.sheet === null ? ui : { ...ui, sheet: null, popover: null }));
+  }, [store, pathname, screen]);
+
+  const badge =
+    demo || demoOnly ? (
+      <span key="badge" className={styles.demoBadge} data-testid="demo-badge">
+        Demo mode
+      </span>
+    ) : null;
+
+  const viewFold = (
+    <Popover
+      key="view"
+      label="View"
+      sheet
+      inline={!narrow}
+      open={viewOpen}
+      onOpenChange={setViewOpen}
+      align="end"
+      className={styles.fold}
+      panelClassName={cx(styles.sheet, styles.viewSheet)}
+    >
+      <LensSelect />
+      <FocusControl />
+      <FiltersControl />
+      <DetailControl />
+      <SearchBox />
+    </Popover>
+  );
+
   return (
-    <header className={styles.topBar}>
+    <header className={cx(styles.topBar, phone && styles.phone)}>
       <div className={styles.appRow}>
-        <Link to="/" className={styles.wordmark}>
+        <Link key="home" to="/" className={styles.wordmark}>
           <img src={brandMarkSource()} alt="" className={styles.mark} data-testid="brand-mark" />
-          {WORDMARK}
+          {phone ? <span className="visually-hidden">{WORDMARK}</span> : WORDMARK}
         </Link>
-        {demo || demoOnly ? (
-          <span className={styles.demoBadge} data-testid="demo-badge">
-            Demo mode
-          </span>
-        ) : null}
-        <nav aria-label="Primary" className={styles.nav}>
-          <ul className={styles.navList}>
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <NavLink to={item.to} end={item.end ?? false} className={navClassName}>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className={styles.actions}>
-          <SnapshotMenu />
-          <SavedViewsButton />
-          <CopyLinkButton />
-          <ThemeToggle />
-          <AccountMenu />
-          <ExportMenu version={version} />
-        </div>
+        {phone ? null : badge}
+        {phone && onDiagram ? <Breadcrumb key="breadcrumb" /> : null}
+        {phone && onDiagram ? viewFold : null}
+        <Popover
+          key="more"
+          label="More"
+          sheet
+          inline={!narrow}
+          open={moreOpen}
+          onOpenChange={setMoreOpen}
+          align="end"
+          className={styles.fold}
+          panelClassName={cx(styles.sheet, styles.moreSheet)}
+        >
+          {phone ? badge : null}
+          <nav key="nav" aria-label="Primary" className={styles.nav}>
+            <ul className={styles.navList}>
+              {navItems.map((item) => (
+                <li key={item.label}>
+                  <NavLink to={item.to} end={item.end ?? false} className={navClassName}>
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div key="actions" className={styles.actions}>
+            <SnapshotMenu />
+            <SavedViewsButton />
+            <CopyLinkButton />
+            <ThemeToggle />
+            <AccountMenu />
+            <ExportMenu version={version} />
+          </div>
+        </Popover>
       </div>
-      {onDiagram ? (
+      {onDiagram && !phone ? (
         <div className={styles.viewRow}>
           <Breadcrumb />
-          <LensSelect />
-          <FocusControl />
-          <FiltersControl />
-          <DetailControl />
-          <SearchBox />
+          {viewFold}
         </div>
       ) : null}
     </header>

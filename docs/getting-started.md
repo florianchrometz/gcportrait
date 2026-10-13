@@ -24,6 +24,10 @@ docker run --rm --publish 127.0.0.1:8080:8080 ghcr.io/florianchrometz/gcportrait
 
 To run it from the source instead, [contributing.md](contributing.md) has the setup (`pnpm dev:demo`).
 
+The app works on a phone, a tablet and a desktop with the same controls. On a phone or a tablet the top bar's
+controls are behind View and More, and on the diagram one finger pans, two pinch to zoom and a tap selects
+([faq.md](faq.md#does-it-work-on-a-phone-or-a-tablet) says what a touch screen does and does not do there).
+
 ## 2. A first tour
 
 1. On the Connect page, pick a size (S about 100 assets, M about 1 000, L about 6 000, XL about 50 000) and

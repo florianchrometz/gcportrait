@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The Filters popover (FiltersControl.tsx): switches on the left, the pickers on the right, sized to fit under
-   the top bar at the minimum desktop viewport (1280 × 800). Tokens only (both themes). */
+   the top bar of a desktop window (from 1280 × 800). Tokens only (both themes). On a phone or a tablet it opens in
+   the View sheet: one column, the switches as 44-pixel rows. */
 .panel {
   display: grid;
   grid-template-columns: 17rem 22rem;
@@ -112,4 +113,18 @@
   color: var(--color-on-primary);
   font-size: var(--font-size-footnote);
   font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 79.99rem) {
+  .panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .check {
+    min-height: var(--touch-target);
+  }
+
+  .footer {
+    flex-wrap: wrap;
+  }
 }

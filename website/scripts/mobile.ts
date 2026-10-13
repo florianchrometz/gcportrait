@@ -3,8 +3,9 @@
  * `pnpm --filter @gcportrait/website mobile`: the built site (website/dist) on phones, in a real browser. Run after
  * `pnpm website:build`. Exit code 0 when clean, 1 with every problem listed, 2 on a usage error.
  *
- * Layout (Playwright's Chromium): every page of the sitemap but the demo (the desktop-only app at /demo/) and the 404
- * page, at 320, 375, 390 and 430 CSS pixels wide,
+ * Layout (Playwright's Chromium): every page of the sitemap but the demo (the app at /demo/, which has its own phone
+ * and tablet check, `pnpm --filter @gcportrait/frontend mobile`) and the 404 page, at 320, 375, 390 and 430 CSS
+ * pixels wide,
  * in the light and the dark theme, with the disclosures (the header's menu, the docs menu and contents) folded and
  * then unfolded. It fails when
  * - the page scrolls sideways, or an element reaches past the viewport's edge without a box that scrolls it;
@@ -68,8 +69,9 @@ const TARGET = 43.5;
 class UsageError extends Error {}
 
 /**
- * The site's pages: the sitemap's and the 404 page, without the demo (/demo/), which is the app: desktop-only
- * (AGENTS.md, Product rules), checked by the e2e suite and `pnpm --filter @gcportrait/website demo`.
+ * The site's pages: the sitemap's and the 404 page, without the demo (/demo/), which is the app, checked by the e2e
+ * suite (its phone and tablet layouts by `pnpm --filter @gcportrait/frontend mobile`) and `pnpm --filter
+ * @gcportrait/website demo`.
  */
 function sitemapPages(dist: string): string[] {
   const sitemap = readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');

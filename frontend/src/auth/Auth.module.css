@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The sign-in surfaces (src/auth/ and the top bar's AccountMenu). App chrome tokens only (skill
-   gcp-diagram-style §9), so both themes follow; desktop only. The filled primary button and the alert come from
+   gcp-diagram-style §9), so both themes follow. The filled primary button and the alert come from
    the snapshots' sheet (the Connect page's other primary action, "Try the demo", looks the same). */
 
 .stack {
@@ -66,10 +66,33 @@
   gap: var(--space-2);
 }
 
+/* The account panel: 320 px under its button on a desktop; on a phone or a tablet, where the button is in the More
+   sheet (shell/topbar/TopBar.tsx), as wide as the sheet lets it be, its text wrapping. */
 .panel {
   display: grid;
   gap: var(--space-3);
   width: 320px;
+}
+
+@media (max-width: 79.99rem) {
+  .panel {
+    width: auto;
+  }
+
+  /* The panel opens under the button, beside the avatar: that column takes what the avatar leaves, and the avatar
+     stays level with the button's first line. */
+  .slot {
+    align-items: flex-start;
+  }
+
+  .slot > .avatar {
+    margin-top: calc((var(--control-height) - 28px) / 2);
+  }
+
+  .slot > :last-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 .account {

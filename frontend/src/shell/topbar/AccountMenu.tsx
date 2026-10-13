@@ -5,7 +5,8 @@
  * account, how long the sign-in lasts, "Stay signed in" when a silent renewal could not run, and "Sign out". After an
  * expiry the button reads "Session expired" and the panel offers "Sign in again". Nothing shows while signed
  * out (the Connect page has the sign-in) or in demo mode. A polite live region says when the sign-in is about to
- * end or has ended, wherever the person is in the app.
+ * end or has ended, wherever the person is in the app. On a phone or a tablet the slot is in the More sheet, which
+ * "Sign out" closes too: focus starts again at the page, never outside an open sheet.
  */
 import { useState, type ReactElement } from 'react';
 
@@ -16,8 +17,9 @@ import type { SessionState } from '../../auth/types';
 import { cx } from '../../classNames';
 import { useAppMode } from '../../mode';
 import actions from '../../snapshots/Snapshots.module.css';
-import { useAppState, usePopover } from '../../state';
+import { useAppState, usePopover, useSheet } from '../../state';
 import { Popover } from '../../ui/Popover';
+import { MORE_SHEET } from './sheets';
 
 function statusLine(session: SessionState): string {
   if (session.status === 'expired') {
@@ -46,6 +48,7 @@ export function AccountMenu(): ReactElement | null {
   const session = useAppState((state) => state.connect.session);
   const auth = useAuth();
   const [open, setOpen] = usePopover('account');
+  const [, setMoreOpen] = useSheet(MORE_SHEET);
   const [farewell, setFarewell] = useState('');
   if (demo) return null;
 
@@ -108,6 +111,7 @@ export function AccountMenu(): ReactElement | null {
                     className={styles.secondary}
                     onClick={() => {
                       close();
+                      setMoreOpen(false);
                       setFarewell('Signed out of Google.');
                       auth.signOut();
                       // The button that had focus goes away with the account: start again at the page.

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The snapshot pieces of the Connect and Snapshots pages (src/snapshots/). App chrome tokens only (skill
-   gcp-diagram-style §9), so both themes follow; desktop only. */
+   gcp-diagram-style §9), so both themes follow. */
 
 .stack {
   display: grid;
@@ -95,7 +95,11 @@ div.wide {
   max-width: 1180px;
 }
 
+/* A table that does not fit scrolls sideways in its own box. The box is positioned: what the table holds for assistive
+   technology only (its caption, the words of its Actions header; .visually-hidden, absolutely placed) then stays
+   inside it, where it would otherwise sit past the table's right edge, outside the box, and make the page scroll. */
 .tableWrap {
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--color-outline);
   border-radius: 12px;
@@ -153,6 +157,14 @@ div.wide {
   display: flex;
   gap: var(--space-1);
   justify-content: flex-end;
+}
+
+/* A phone or a tablet: a row's actions wrap onto more lines when its table is short of room, so the table fits a
+   tablet's page whole and is narrower on a phone, where it scrolls sideways in its box. */
+@media (max-width: 79.99rem) {
+  .actions {
+    flex-wrap: wrap;
+  }
 }
 
 .dropZone {

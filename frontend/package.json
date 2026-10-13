@@ -2,7 +2,7 @@
   "name": "@gcportrait/frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "gcportrait single-page app (React + Vite, desktop).",
+  "description": "gcportrait single-page app (React + Vite; phones, tablets and desktops).",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -18,7 +18,8 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "mobile": "pnpm --filter @gcportrait/e2e run mobile"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.3.0",

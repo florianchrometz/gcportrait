@@ -9,7 +9,7 @@
  * worker for anything.
  *
  * The canvas is measured by the page (`measure`, from a ResizeObserver); each request is made at the latest
- * measured size (the minimum viewport, 1280 × 800, until there is one). A resize asks for the view
+ * measured size (a 1280 × 800 window's, until there is one). A resize asks for the view
  * again only when detail `auto` would pick another level, with hysteresis (diagram/autoDetail.ts).
  */
 import { isLayoutCancelled, LayoutWorkerError } from '@gcportrait/layout';
@@ -23,7 +23,7 @@ import type { DiagramWorkers } from '../diagram/pipeline/workers';
 import type { PipelineError, PipelineSlice, SnapshotStage } from './slices';
 import type { AppStore } from './store';
 
-/** The canvas size used until the canvas has been measured: the minimum viewport, 1280 × 800. */
+/** The canvas size used until the canvas has been measured: a 1280 × 800 window's. */
 export const FALLBACK_VIEWPORT: Viewport = { width: 1280, height: 800 };
 
 export { sceneKey } from './sceneKey';

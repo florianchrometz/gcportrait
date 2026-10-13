@@ -125,8 +125,9 @@ written the site, `astro.config.ts` (`staticDemo`) runs that command with `--out
 links (`IMPRESSUM_URL`, `PRIVACY_URL`), or copies the bundle `WEBSITE_DEMO_DIST` names (relative to the repository
 root, built for `/demo/`; the workflows build the demo as a step of its own first), so `pnpm website:build` alone gives
 the whole site. `DEMO_URL` in `src/site.ts` is `/demo/`: every "Try the demo" link points there, and the sitemap lists
-it (but none of the app's other routes). The page checks leave it out (it is the desktop-only app), and so do the
-phone and Lighthouse checks; `checkDemo` in `scripts/check-site.ts` and `scripts/demo.ts` check it instead.
+it (but none of the app's other routes). The page checks leave it out (it is the app, not a page of the site), and so
+do the phone and Lighthouse checks; `checkDemo` in `scripts/check-site.ts` and `scripts/demo.ts` check it instead, and
+the app's own phone and tablet check (`pnpm --filter @gcportrait/frontend mobile`) its layouts.
 `pnpm website:dev` serves the last `pnpm demo:static` bundle at `/demo/` (its start page and files: Astro's
 trailing-slash rule answers a reload on `/demo/diagram` with a 404 in development; the built site has every route). `scripts/serve.ts` answers `/demo/diagram`
 with `demo/diagram.html` and redirects a folder's address to its trailing slash, as GitHub Pages does.

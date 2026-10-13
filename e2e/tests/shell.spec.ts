@@ -229,7 +229,7 @@ for (const scheme of ['light', 'dark'] as const) {
   test(`the Export button ends the top bar at its right edge, filled in the primary colour (${scheme}); its menu opens inside the window`, async ({
     page,
   }) => {
-    // The smallest desktop window the app is built for (AGENTS.md, Product rules).
+    // The desktop layout's smallest window (AGENTS.md, Product rules).
     const VIEWPORT = { width: 1280, height: 800 };
     await page.setViewportSize(VIEWPORT);
     await page.emulateMedia({ colorScheme: scheme });

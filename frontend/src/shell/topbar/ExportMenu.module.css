@@ -153,3 +153,11 @@
   padding: 0;
   border: 0;
 }
+
+/* A phone or a tablet: in the More sheet the button is as wide as the sheet, its menu opens in the sheet (ui/popup
+   `.sheet`), and the status line is never wider than the button. */
+@media (max-width: 79.99rem) {
+  .status {
+    max-width: 100%;
+  }
+}

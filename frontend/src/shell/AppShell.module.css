@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: MIT */
 
-/* Desktop only (AGENTS.md, Product rules): the shell never shrinks below 1280 px; narrower windows scroll. */
+/* The frame of every page, from a phone to a desktop (AGENTS.md, Product rules; ui/screen.ts): the top bar, the page
+   (the only part that scrolls) and the footer, as tall as the window. */
 .shell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  min-width: 1280px;
   height: 100%;
   background: var(--color-surface);
 }
@@ -63,4 +63,47 @@
 
 .skipLink:focus-visible {
   transform: none;
+}
+
+/*
+ * A phone or a tablet: the skip links show over the top bar, which then stacks above the page (its sheets hang over
+ * the canvas and the drawer; TopBar.module.css), clear of a phone's notch, 44 pixels tall. The footer's notice wraps
+ * beside its links while it keeps 16 rem of the line (so the footer stays one 44-pixel line on a phone turned
+ * sideways, where the canvas needs the height), and above them when narrower, its lines clear of a phone's rounded
+ * corners and home indicator (the safe-area insets); the links that stand on their own ("Source (MIT)", the legal
+ * pages) are 44-pixel targets; the maintainer's name stays a link inside the sentence.
+ */
+@media (max-width: 79.99rem) {
+  .skipLink {
+    top: max(var(--space-2), env(safe-area-inset-top, 0px));
+    left: max(var(--space-2), env(safe-area-inset-left, 0px));
+    z-index: 16;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+  }
+
+  .footer {
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-4);
+    row-gap: 0;
+    padding: var(--space-1) max(var(--space-3), env(safe-area-inset-right, 0px))
+      max(var(--space-1), env(safe-area-inset-bottom, 0px))
+      max(var(--space-3), env(safe-area-inset-left, 0px));
+  }
+
+  .footer > p {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+
+  .footer > .footerLink,
+  .footer nav .footerLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+  }
 }

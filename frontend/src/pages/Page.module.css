@@ -39,3 +39,19 @@
   color: var(--color-on-surface-variant);
   font-size: var(--font-size-control);
 }
+
+/* A phone: less room around the text, the page's sides clear of a phone's rounded corners (the safe-area insets). */
+@media (max-width: 47.99rem) {
+  .page {
+    gap: var(--space-4);
+    padding: var(--space-6) max(var(--space-4), env(safe-area-inset-right, 0px)) var(--space-6)
+      max(var(--space-4), env(safe-area-inset-left, 0px));
+  }
+}
+
+/* A phone or a tablet: the page's one column is the room it has, never as wide as its widest field or table. */
+@media (max-width: 79.99rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

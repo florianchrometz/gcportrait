@@ -13,6 +13,7 @@ import { fakeLibrary } from '../snapshots/testing';
 import { expectNoAxeViolations } from '../test/axe';
 import { publicConfig, stubBackend, type StubbedBackend } from '../test/backend';
 import { renderApp } from '../test/renderApp';
+import { installViewport } from '../test/viewport';
 import { GIS_SCRIPT_URL } from './gis';
 import { hostedByLine } from './labels';
 import { installGis, signInThroughGis, TEST_CLIENT_ID, tokenResponse, type FakeGis } from './testing';
@@ -146,6 +147,31 @@ describe('sign-in on the Connect page', () => {
     expect(within(sourceCard()).getByRole('button', { name: 'Sign in with Google' })).toBeDefined();
     expect(screen.queryByRole('heading', { name: 'Read your environment' })).toBeNull();
     expect(document.activeElement?.id).toBe('main');
+  });
+
+  it('on a phone, signs out from the Account panel inside More: the sheet closes and focus starts at the page', async () => {
+    const viewport = installViewport(375);
+    try {
+      const { gis } = live();
+      renderApp('/', { demo: false, snapshots: fakeLibrary() });
+      // The account's button is in the More sheet, closed: signed in once the page moves on to reading.
+      await signInThroughGis(gis, await signInButton());
+      await screen.findByRole('heading', { name: 'Read your environment' });
+      const banner = screen.getByRole('banner');
+      await userEvent.click(within(banner).getByRole('button', { name: 'More' }));
+      const more = within(banner).getByRole('dialog', { name: 'More' });
+      await userEvent.click(within(more).getByRole('button', { name: 'ada@example.com' }));
+      const panel = within(more).getByRole('dialog', { name: 'Account' });
+      await userEvent.click(within(panel).getByRole('button', { name: 'Sign out' }));
+      expect(gis.revoked).toEqual(['secret-token-1']);
+      expect(within(banner).queryByRole('dialog', { name: 'More' })).toBeNull();
+      expect(within(banner).getByRole('button', { name: 'More' }).getAttribute('aria-expanded')).toBe(
+        'false',
+      );
+      expect(document.activeElement?.id).toBe('main');
+    } finally {
+      viewport.uninstall();
+    }
   });
 
   it('signs out from the card and puts focus on "Sign in with Google"', async () => {

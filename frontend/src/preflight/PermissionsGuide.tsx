@@ -4,7 +4,9 @@
  * - `PermissionsReference`: what each way of reading needs, as a table, its commands in the command group of
  *   the scope picked (an organisation's when none is) with their variables as fields to fill in place, prefilled
  *   from what the app knows (the scope, the quota project, the account, this instance's service account;
- *   commands/useCommandVariables.ts), and the Variables panel to fill each once for the whole page;
+ *   commands/useCommandVariables.ts), and the Variables panel to fill each once for the whole page; on a phone, where
+ *   a third column would leave a command a few characters' width, the same rows as a list under a heading per mode,
+ *   each command under its need, as wide as the page (the same command blocks, so the same controls);
  * - `ServiceAccountExplainer`: service-account mode in the words of docs/permissions.md §3, with the account's
  *   email, and the gate.
  */
@@ -14,6 +16,7 @@ import { SCOPE_ID_VARIABLES } from '../commands/values';
 import { VariablesPanel } from '../commands/VariablesPanel';
 import { exportCommand } from '../import/commands';
 import type { ScopeChoice, ScopeKind } from '../scope/scopeName';
+import { useScreen } from '../ui/screen';
 import { CommandBlock } from './CommandBlock';
 import { EMAIL_PLACEHOLDER, serviceAccountParagraphs } from './copy';
 import styles from './Preflight.module.css';
@@ -95,37 +98,75 @@ export function referenceRows({ scope, serviceAccount }: PermissionsReferencePro
 
 export function PermissionsReference(props: PermissionsReferenceProps): ReactElement {
   const rows = referenceRows(props);
+  const phone = useScreen() === 'phone';
   return (
     <>
       <VariablesPanel commands={rows.flatMap((row) => row.commands)} />
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <caption className="visually-hidden">What each way of reading Cloud Asset Inventory needs</caption>
-          <thead>
-            <tr>
-              <th scope="col">Mode</th>
-              <th scope="col">Needed</th>
-              <th scope="col">Command</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.mode}:${row.need}`}>
-                <td>{row.mode}</td>
-                <td>{row.need}</td>
-                <td>
-                  {row.commands.length === 0
-                    ? '—'
-                    : row.commands.map((command) => (
-                        <CommandBlock key={command} command={command} context="reference" />
-                      ))}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {phone ? <ReferenceList rows={rows} /> : <ReferenceTable rows={rows} />}
     </>
+  );
+}
+
+function Commands({ row }: { readonly row: Row }): ReactElement {
+  return (
+    <>
+      {row.commands.map((command) => (
+        <CommandBlock key={command} command={command} context="reference" />
+      ))}
+    </>
+  );
+}
+
+function ReferenceTable({ rows }: { readonly rows: readonly Row[] }): ReactElement {
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <caption className="visually-hidden">What each way of reading Cloud Asset Inventory needs</caption>
+        <thead>
+          <tr>
+            <th scope="col">Mode</th>
+            <th scope="col">Needed</th>
+            <th scope="col">Command</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={`${row.mode}:${row.need}`}>
+              <td>{row.mode}</td>
+              <td>{row.need}</td>
+              <td>{row.commands.length === 0 ? '—' : <Commands row={row} />}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** The rows on a phone: a heading per mode (the rows of a mode follow each other), its needs listed under it. */
+function ReferenceList({ rows }: { readonly rows: readonly Row[] }): ReactElement {
+  const modes: { readonly mode: string; readonly rows: Row[] }[] = [];
+  for (const row of rows) {
+    const last = modes.at(-1);
+    if (last?.mode === row.mode) last.rows.push(row);
+    else modes.push({ mode: row.mode, rows: [row] });
+  }
+  return (
+    <div className={styles.modes}>
+      {modes.map(({ mode, rows: needs }) => (
+        <div key={mode} className={styles.mode}>
+          <h3 className={styles.itemTitle}>{mode}</h3>
+          <ul className={styles.needs}>
+            {needs.map((row) => (
+              <li key={row.need} className={styles.need}>
+                <p>{row.need}</p>
+                <Commands row={row} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 

@@ -1,81 +1,164 @@
 // SPDX-License-Identifier: MIT
 /**
- * The drawer's resize handle on its left edge: a focusable window splitter (WAI-ARIA `separator` with a value)
- * whose value is the drawer's width. Dragging it moves the edge; with the keyboard, ← and → move it by
- * {@link WIDTH_STEP} px (← widens the drawer, as the edge moves left), Home and End go to the narrowest and the
- * widest. `onChange` reports widths while dragging; `onCommit` the width to keep when a drag ends or a key moved
- * it.
+ * The drawer's resize handle: a focusable window splitter (WAI-ARIA `separator` with a value). Beside the canvas (a
+ * desktop) and over its right side (a tablet) it is the drawer's left edge and its value the drawer's width: dragging
+ * moves the edge; ← and → move it by {@link WIDTH_STEP} px (← widens the drawer, as the edge moves left), Home and
+ * End go to the narrowest and the widest. On a phone the drawer is a sheet over the lower part of the canvas and the
+ * handle its top edge (`axis="height"`), its value the sheet's height in percent of the canvas's. The sheet rests at
+ * one of two heights: half ({@link SHEET_HEIGHT}`.min`, never the whole canvas) and full; dragging moves the edge
+ * freely, down below half too (the sheet follows the finger on its way out; {@link dismissing} tells when letting go
+ * there closes it), and, let go, the sheet settles at the nearer of the two, or closes (`onDismiss`) when let go well
+ * below half ({@link DISMISS_BELOW}); ↑ and End take it to full, ↓ and Home to half. `onChange` reports values while
+ * dragging; `onCommit` the value to keep when a drag ends or a key moved it. Its value for assistive technology stays
+ * between half and full. Its name is the same in either role.
  */
 import { useRef, type KeyboardEvent, type PointerEvent, type ReactElement } from 'react';
 
+import { cx } from '../classNames';
 import { DRAWER_WIDTH } from '../storage/preferences';
 import styles from './DetailsDrawer.module.css';
 
 /** How far one arrow key moves the edge (CSS px). */
 export const WIDTH_STEP = 10;
 
+/** The phone's sheet: its two heights in percent of the canvas's, half and full. */
+export const SHEET_HEIGHT = { min: 50, max: 100 } as const;
+
+/** A drag of the sheet's edge let go this far below half (percent of the canvas's height) closes the sheet. */
+export const DISMISS_BELOW = 20;
+
 export function clampWidth(width: number): number {
   return Math.round(Math.min(DRAWER_WIDTH.max, Math.max(DRAWER_WIDTH.min, width)));
 }
 
-export interface ResizeHandleProps {
-  readonly width: number;
-  /** The drawer's id (`aria-controls`). */
-  readonly controls: string;
-  readonly onChange: (width: number) => void;
-  readonly onCommit: (width: number) => void;
+export function clampHeight(height: number): number {
+  return Math.round(Math.min(SHEET_HEIGHT.max, Math.max(SHEET_HEIGHT.min, height)));
 }
 
-export function ResizeHandle({ width, controls, onChange, onCommit }: ResizeHandleProps): ReactElement {
-  const drag = useRef<{ readonly pointer: number; readonly x: number; readonly width: number } | null>(null);
+/** A height while dragged: from nothing to full, so the sheet follows the finger below half on its way out. */
+export function followHeight(height: number): number {
+  return Math.round(Math.min(SHEET_HEIGHT.max, Math.max(0, height)));
+}
+
+/** Whether a sheet dragged to `height` closes when let go there. */
+export function dismissing(height: number): boolean {
+  return height < SHEET_HEIGHT.min - DISMISS_BELOW;
+}
+
+/** The height the sheet settles at: the nearer of half and full. */
+export function settleHeight(height: number): number {
+  return height >= (SHEET_HEIGHT.min + SHEET_HEIGHT.max) / 2 ? SHEET_HEIGHT.max : SHEET_HEIGHT.min;
+}
+
+/** The sheet's height in words. */
+export function heightText(height: number): string {
+  if (height <= SHEET_HEIGHT.min) return 'half the canvas high';
+  if (height >= SHEET_HEIGHT.max) return 'the canvas’s full height';
+  return `${String(height)} percent of the canvas high`;
+}
+
+export type ResizeAxis = 'width' | 'height';
+
+export interface ResizeHandleProps {
+  /** `width` (the default): the drawer's left edge, in CSS px; `height`: the phone's sheet's top edge, in percent. */
+  readonly axis?: ResizeAxis;
+  readonly value: number;
+  /** The drawer's id (`aria-controls`). */
+  readonly controls: string;
+  /** With `height`: how many CSS px one percent is (the canvas's height over 100), read when a drag starts. */
+  readonly pixelsPerUnit?: () => number;
+  readonly onChange: (value: number) => void;
+  readonly onCommit: (value: number) => void;
+  /** With `height`: the sheet's edge was dragged down well below half and let go. */
+  readonly onDismiss?: () => void;
+}
+
+export function ResizeHandle({
+  axis = 'width',
+  value,
+  controls,
+  pixelsPerUnit,
+  onChange,
+  onCommit,
+  onDismiss,
+}: ResizeHandleProps): ReactElement {
+  const drag = useRef<{
+    readonly pointer: number;
+    readonly at: number;
+    readonly value: number;
+    readonly unit: number;
+  } | null>(null);
+  const tall = axis === 'height';
+  const clamp = tall ? clampHeight : clampWidth;
+  const follow = tall ? followHeight : clampWidth;
+  const range = tall ? SHEET_HEIGHT : DRAWER_WIDTH;
+
+  // The value a pointer at `event` makes, before clamping: the edge follows it (leftwards widens, upwards heightens).
+  const dragged = (event: PointerEvent<HTMLDivElement>): number | null => {
+    const start = drag.current;
+    if (start?.pointer !== event.pointerId) return null;
+    const moved = start.at - (tall ? event.clientY : event.clientX);
+    return start.value + moved / start.unit;
+  };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>): void => {
     if (event.button !== 0) return;
     event.preventDefault();
-    drag.current = { pointer: event.pointerId, x: event.clientX, width };
+    const unit = tall ? (pixelsPerUnit?.() ?? 0) : 1;
+    drag.current = {
+      pointer: event.pointerId,
+      at: tall ? event.clientY : event.clientX,
+      value,
+      unit: unit > 0 ? unit : 1,
+    };
     const target = event.currentTarget;
     if (typeof target.setPointerCapture === 'function') target.setPointerCapture(event.pointerId);
     target.focus();
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>): void => {
-    const start = drag.current;
-    if (start?.pointer !== event.pointerId) return;
-    onChange(clampWidth(start.width + start.x - event.clientX));
+    const next = dragged(event);
+    if (next !== null) onChange(follow(next));
   };
   const end = (event: PointerEvent<HTMLDivElement>): void => {
-    const start = drag.current;
-    if (start?.pointer !== event.pointerId) return;
+    const next = dragged(event);
+    if (next === null) return;
     drag.current = null;
-    onCommit(clampWidth(start.width + start.x - event.clientX));
+    if (tall && onDismiss !== undefined && dismissing(next)) onDismiss();
+    else onCommit(tall ? settleHeight(next) : clamp(next));
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    const next =
-      event.key === 'ArrowLeft'
-        ? width + WIDTH_STEP
+    const next = tall
+      ? event.key === 'ArrowUp' || event.key === 'End'
+        ? range.max
+        : event.key === 'ArrowDown' || event.key === 'Home'
+          ? range.min
+          : null
+      : event.key === 'ArrowLeft'
+        ? value + WIDTH_STEP
         : event.key === 'ArrowRight'
-          ? width - WIDTH_STEP
+          ? value - WIDTH_STEP
           : event.key === 'Home'
-            ? DRAWER_WIDTH.min
+            ? range.min
             : event.key === 'End'
-              ? DRAWER_WIDTH.max
+              ? range.max
               : null;
     if (next === null) return;
     event.preventDefault();
-    onCommit(clampWidth(next));
+    onCommit(clamp(next));
   };
 
   return (
     <div
       role="separator"
-      aria-orientation="vertical"
+      aria-orientation={tall ? 'horizontal' : 'vertical'}
       aria-label="Resize the details drawer"
       aria-controls={controls}
-      aria-valuemin={DRAWER_WIDTH.min}
-      aria-valuemax={DRAWER_WIDTH.max}
-      aria-valuenow={width}
-      aria-valuetext={`${String(width)} pixels wide`}
+      aria-valuemin={range.min}
+      aria-valuemax={range.max}
+      aria-valuenow={tall ? clampHeight(value) : value}
+      aria-valuetext={tall ? heightText(value) : `${String(value)} pixels wide`}
       tabIndex={0}
-      className={styles.handle}
+      className={cx(styles.handle, tall && styles.sheetHandle)}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={end}

@@ -7,6 +7,28 @@
   height: 100%;
 }
 
+/* Narrower than a desktop (ui/screen.ts): one column, the drawer over the canvas in the canvas's cell
+   (drawer/DetailsDrawer.module.css), the timeline bar below. */
+@media (max-width: 79.99rem) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .canvas {
+    grid-row: 1;
+    grid-column: 1;
+  }
+}
+
+/* A phone: while the drawer's sheet covers the canvas (`data-sheet="full"`), what the canvas holds (the drawing, the
+   disclosure bar) is hidden from view, from focus and from assistive technology alike, as it is out of sight; it
+   comes back when the sheet goes down to half height or closes. */
+@media (max-width: 47.99rem) {
+  .workspace:has(> [data-sheet='full']:not([hidden])) > .canvas > * {
+    visibility: hidden;
+  }
+}
+
 .canvas {
   position: relative;
   display: grid;

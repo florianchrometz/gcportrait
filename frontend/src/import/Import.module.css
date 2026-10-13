@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The Connect page's live pull and export load (src/import/). App chrome tokens only (skill
-   gcp-diagram-style §9), so both themes follow; desktop only. */
+   gcp-diagram-style §9), so both themes follow. */
 
 .stack {
   display: grid;
@@ -216,6 +216,14 @@
 
 .details[open] > summary {
   margin-bottom: var(--space-2);
+}
+
+/* A phone or a tablet: the summary is a 44-pixel touch target, its text in the middle of it. */
+@media (max-width: 79.99rem) {
+  .details > summary {
+    min-height: var(--touch-target);
+    padding-block: var(--space-3);
+  }
 }
 
 /* A step's command (preflight/CommandBlock.tsx: its fields, its Copy button), under the step's words. */

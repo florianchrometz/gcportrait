@@ -59,3 +59,11 @@ input.control::placeholder {
   color: var(--color-on-surface-variant);
   font-size: var(--font-size-control);
 }
+
+/* A phone or a tablet: a field's label and its control share a line while they fit, and wrap otherwise. */
+@media (max-width: 79.99rem) {
+  .field {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+}

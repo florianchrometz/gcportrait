@@ -1,10 +1,43 @@
 // SPDX-License-Identifier: MIT
-import { useEffect, useRef, type ReactElement } from 'react';
+import { useEffect, useLayoutEffect, useRef, type ReactElement, type RefObject } from 'react';
 
 import { selectScope, useAppState, useDiagramActions, useScene } from '../../state';
+import { useScreen } from '../../ui/screen';
 import { trailOf } from '../../views/trail';
 import { useViewChoices } from '../../views/useViewChoices';
 import styles from './Breadcrumb.module.css';
+
+/**
+ * Narrower than a desktop the trail scrolls sideways in its box instead of shrinking its crumbs: it rests scrolled to
+ * its end, where the current level is, whenever the trail changes or a crumb or the box changes size (a font that
+ * loaded, a phone turned), and `data-cut` marks a box scrolled away from its start, so the stylesheet fades the edge
+ * where crumbs are out of view. A swipe or a focused crumb scrolls the others into view.
+ */
+function useTrailAtItsEnd(navRef: RefObject<HTMLElement | null>, active: boolean, trail: string): void {
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!active || nav === null) return undefined;
+    const mark = (): void => {
+      nav.toggleAttribute('data-cut', nav.scrollLeft > 0.5);
+    };
+    const toEnd = (): void => {
+      nav.scrollLeft = nav.scrollWidth - nav.clientWidth;
+      mark();
+    };
+    toEnd();
+    nav.addEventListener('scroll', mark, { passive: true });
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(toEnd) : null;
+    if (observer !== null) {
+      observer.observe(nav);
+      for (const crumb of nav.querySelectorAll('li')) observer.observe(crumb);
+    }
+    return () => {
+      nav.removeEventListener('scroll', mark);
+      observer?.disconnect();
+      nav.removeAttribute('data-cut');
+    };
+  }, [navRef, active, trail]);
+}
 
 /**
  * The scope breadcrumb with the drill-in trail: the scope the diagram shows ("example.com",
@@ -17,7 +50,7 @@ import styles from './Breadcrumb.module.css';
  *
  * A crumb drilled out to becomes the current one, which is no button, so the button that had focus goes away:
  * focus then moves to the new current crumb (focusable from script only), and the next Tab carries on from the
- * breadcrumb.
+ * breadcrumb. On a phone or a tablet the trail scrolls sideways, resting at the current level (useTrailAtItsEnd).
  */
 export function Breadcrumb(): ReactElement {
   const scope = useAppState(selectScope);
@@ -26,7 +59,9 @@ export function Breadcrumb(): ReactElement {
   const choices = useViewChoices();
   const { drillIn } = useDiagramActions();
   const currentRef = useRef<HTMLSpanElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const drilledOut = useRef(false);
+  const narrow = useScreen() !== 'desktop';
 
   // After a drill-out from a crumb, focus goes to the crumb that is now the current one.
   useEffect(() => {
@@ -36,9 +71,25 @@ export function Breadcrumb(): ReactElement {
     if (active === null || active === active.ownerDocument.body) currentRef.current?.focus();
   }, [root]);
 
+  const outcome = answer?.report.root;
+  const used = outcome?.used !== undefined && outcome.used === root;
+  const refused = root !== undefined && outcome?.requested === root && outcome.error !== undefined;
+  const crumbs =
+    scope === null
+      ? []
+      : trailOf({
+          scope,
+          root,
+          containers: choices?.containers ?? null,
+          organization: choices?.organization ?? null,
+          ...(used && answer !== null ? { rootLabel: answer.scene.metadata.rootLabel } : {}),
+        });
+  const last = crumbs.length - 1;
+  useTrailAtItsEnd(navRef, narrow, crumbs.map((crumb) => `${crumb.id ?? ''} ${crumb.label}`).join('\n'));
+
   if (scope === null) {
     return (
-      <nav aria-label="Scope" className={styles.breadcrumb}>
+      <nav ref={navRef} aria-label="Scope" className={styles.breadcrumb}>
         <ol className={styles.list}>
           <li className={styles.crumb}>No scope loaded</li>
         </ol>
@@ -46,20 +97,8 @@ export function Breadcrumb(): ReactElement {
     );
   }
 
-  const outcome = answer?.report.root;
-  const used = outcome?.used !== undefined && outcome.used === root;
-  const refused = root !== undefined && outcome?.requested === root && outcome.error !== undefined;
-  const crumbs = trailOf({
-    scope,
-    root,
-    containers: choices?.containers ?? null,
-    organization: choices?.organization ?? null,
-    ...(used && answer !== null ? { rootLabel: answer.scene.metadata.rootLabel } : {}),
-  });
-  const last = crumbs.length - 1;
-
   return (
-    <nav aria-label="Scope" className={styles.breadcrumb}>
+    <nav ref={navRef} aria-label="Scope" className={styles.breadcrumb}>
       <ol className={styles.list}>
         {crumbs.map((crumb, index) =>
           index === last ? (

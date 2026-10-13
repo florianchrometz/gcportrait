@@ -82,4 +82,24 @@
   --space-6: 24px;
   --space-8: 32px;
   --drawer-width: 360px;
+
+  /*
+   * The layouts (ui/screen.ts, AGENTS.md "Product rules"): the tablet from 48rem, the desktop from 80rem, the phone
+   * below the tablet. Media queries cannot read custom properties, so the stylesheets write the queries out
+   * (`(max-width: 47.99rem)`, `(min-width: 48rem) and (max-width: 79.99rem)`, `(max-width: 79.99rem)`,
+   * `(min-width: 48rem)`, `(min-width: 80rem)`); these two name the widths, and ui/screen.test.ts keeps all three in
+   * step.
+   */
+  --breakpoint-tablet: 48rem;
+  --breakpoint-desktop: 80rem;
+
+  /* The smallest target on a phone or a tablet (WCAG 2.5.5): 44 × 44 CSS pixels. */
+  --touch-target: 44px;
+}
+
+/* A phone or a tablet: every control is a touch target. */
+@media (max-width: 79.99rem) {
+  :root {
+    --control-height: var(--touch-target);
+  }
 }

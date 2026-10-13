@@ -2,7 +2,8 @@
 
 /* The pickers of the Filters and Focus popovers (PickerField.tsx): a label, the chosen values as chips and the
    search combobox, whose results list is given a width and a scroll height here (ui/Listbox keeps the active
-   result in view). App chrome tokens only, so both themes follow; desktop only. */
+   result in view). App chrome tokens only, so both themes follow. On a phone or a tablet a chip and its remove button are touch
+   targets, and the results are as wide as the field. */
 .field {
   display: grid;
   gap: var(--space-1);
@@ -102,4 +103,21 @@
 .search [role='option'] > span > span:first-child {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 79.99rem) {
+  .chip {
+    height: var(--touch-target);
+    border-radius: calc(var(--touch-target) / 2);
+  }
+
+  .remove {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+
+  .search [role='listbox'] {
+    width: auto;
+    max-width: 100%;
+  }
 }

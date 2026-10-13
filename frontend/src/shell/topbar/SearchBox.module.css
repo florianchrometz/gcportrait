@@ -2,7 +2,8 @@
 
 /* The search box (SearchBox.tsx): a wider input than the other controls, and its results list under it,
    right-aligned (the box ends the view row), wide enough for a type and a project on the second line, and
-   scrolling when long. Tokens only, so both themes follow (desktop only: no breakpoints). */
+   scrolling when long. Tokens only, so both themes follow. On a phone or a tablet the box is a field as wide as the
+   View sheet that holds it, and its results open in the sheet under it (ui/popup.module.css, `.sheet`). */
 .box input {
   width: 260px;
 }
@@ -17,4 +18,19 @@
   min-width: 0;
   padding-top: var(--space-1);
   padding-bottom: var(--space-1);
+}
+
+@media (max-width: 79.99rem) {
+  .box {
+    display: block;
+  }
+
+  .box,
+  .box input {
+    width: 100%;
+  }
+
+  .results {
+    max-height: none;
+  }
 }

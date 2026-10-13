@@ -107,6 +107,26 @@ describe('Combobox (editable, results listbox)', () => {
     expect(input.getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('leaves an Escape with nothing to close or clear to what holds the box', async () => {
+    const seen: boolean[] = [];
+    renderInPage(
+      <div
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') seen.push(event.defaultPrevented);
+        }}
+      >
+        <Search onChoose={() => undefined} />
+      </div>,
+    );
+    const input = screen.getByRole<HTMLInputElement>('combobox', { name: 'Search assets' });
+    await userEvent.type(input, 'vpc');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Escape}');
+    // Closed the list, cleared the text, then nothing of its own: the last one is not prevented.
+    expect(seen).toEqual([true, true, false]);
+  });
+
   it('chooses a result with a click without losing focus', async () => {
     const chosen = vi.fn();
     renderInPage(<Search onChoose={chosen} />);

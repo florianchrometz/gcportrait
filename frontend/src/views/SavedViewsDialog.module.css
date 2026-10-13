@@ -95,3 +95,18 @@
 .rename {
   flex: 1 1 auto;
 }
+
+/* A phone (ui/screen.ts): the name field and its button wrap onto two lines when the dialog is too narrow for both, and
+   a saved view's actions go below its name. */
+@media (max-width: 47.99rem) {
+  .save,
+  .rename,
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .save input,
+  .rename input {
+    flex-basis: 10rem;
+  }
+}

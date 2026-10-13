@@ -21,7 +21,7 @@ export const VIEWPORT_AREA_PER_RECT = 14_000;
 export const MIN_VIEWPORT_BUDGET = 24;
 export const MAX_VIEWPORT_BUDGET = 250;
 
-/** The smallest supported viewport (desktop only, at least 1280×800: AGENTS.md, Product rules). */
+/** The viewport a view is fitted to when none is given: a 1280 × 800 window, the desktop layout's narrowest. */
 export const MIN_VIEWPORT = { width: 1280, height: 800 } as const;
 
 /**

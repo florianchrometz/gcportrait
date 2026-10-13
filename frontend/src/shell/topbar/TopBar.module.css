@@ -138,3 +138,119 @@
 .searchSlot {
   margin-left: auto;
 }
+
+/*
+ * Narrower than a desktop (ui/screen.ts, AGENTS.md "Product rules"): the same controls, folded into the View and More
+ * sheets (ui/Popover `sheet`), every target at least 44 px (the token --control-height grows to it). The bar stays on
+ * top of the page and clear of a phone's notch and rounded corners (the safe-area insets); a sheet hangs from the
+ * bar's lower edge, over the page, never as tall as the window.
+ */
+@media (max-width: 79.99rem) {
+  .topBar {
+    position: relative;
+    z-index: 15;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .appRow,
+  .viewRow {
+    height: auto;
+    min-height: 52px;
+    gap: var(--space-2);
+    padding: var(--space-1) max(var(--space-3), env(safe-area-inset-right, 0px)) var(--space-1)
+      max(var(--space-3), env(safe-area-inset-left, 0px));
+  }
+
+  .wordmark {
+    min-height: var(--control-height);
+  }
+
+  /* The fold's button at the row's end; its sheet hangs from the bar, not from the button. */
+  .topBar .fold {
+    position: static;
+    margin-left: auto;
+  }
+
+  .topBar .sheet {
+    top: 100%;
+    right: max(var(--space-2), env(safe-area-inset-right, 0px));
+    left: auto;
+    width: min(24rem, calc(100% - 2 * var(--space-2)));
+    min-width: 0;
+    padding: var(--space-3);
+  }
+
+  .sheet > * {
+    min-width: 0;
+  }
+
+  /* In a sheet the controls are one under the other, each as wide as the sheet; a label too long for it (the account's
+     email) wraps instead of pushing the sheet wider. */
+  .sheet [aria-haspopup] {
+    justify-content: space-between;
+    width: 100%;
+    height: auto;
+    min-height: var(--control-height);
+    text-align: start;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .nav {
+    margin-left: 0;
+  }
+
+  .moreSheet .navList {
+    display: grid;
+    gap: 0;
+  }
+
+  .moreSheet .navLink {
+    display: flex;
+    height: auto;
+    min-height: var(--control-height);
+  }
+
+  .moreSheet .actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    margin-left: 0;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-outline);
+  }
+
+  .moreSheet .demoBadge {
+    justify-self: start;
+  }
+
+  .viewSheet {
+    gap: var(--space-3);
+  }
+
+  .searchSlot {
+    margin-left: 0;
+  }
+}
+
+/* A phone: one row, the mark (its name for assistive technology only), the breadcrumb, View and More. */
+@media (max-width: 47.99rem) {
+  .appRow {
+    gap: var(--space-1);
+  }
+
+  .phone .wordmark {
+    justify-content: center;
+    min-width: var(--control-height);
+    padding: 0;
+  }
+
+  .topBar .sheet {
+    left: max(var(--space-2), env(safe-area-inset-left, 0px));
+    width: auto;
+  }
+
+  .phone .fold > button {
+    padding: 0 var(--space-2);
+  }
+}

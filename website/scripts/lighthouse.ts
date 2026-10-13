@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * `pnpm website:lighthouse`: Lighthouse on every page of the built site (the sitemap's pages but the desktop-only demo
- * at /demo/), in the light and the dark theme, with Lighthouse's desktop and mobile settings, against website/dist
+ * `pnpm website:lighthouse`: Lighthouse on every page of the built site (the sitemap's pages but the demo at /demo/,
+ * which is the app), in the light and the dark theme, with Lighthouse's desktop and mobile settings, against website/dist
  * served the way GitHub Pages serves it (scripts/serve.ts). Prints the four category scores per page and fails when one is under its threshold
  * (accessibility, best practices and SEO 95, performance 90). Reports go to out/lighthouse/ (git-ignored).
  *
@@ -55,7 +55,7 @@ async function main(): Promise<number> {
       ? values.preset
       : ['desktop', 'mobile'];
   const sitemap = readFileSync(path.join(WEBSITE, 'dist', 'sitemap.xml'), 'utf8');
-  // The site's pages; the demo (/demo/) is the desktop-only app, checked by the e2e suite and `… demo`.
+  // The site's pages; the demo (/demo/) is the app, checked by the e2e suite and `… demo`.
   const all = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
     .map((match) => (match[1] ?? '').slice(SITE_URL.length))
     .filter((page) => !page.startsWith(DEMO_URL));

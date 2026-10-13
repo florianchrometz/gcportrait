@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The timeline bar (TimelineBar.tsx): the second row of the diagram workspace, across both columns
-   (DiagramPage.module.css), 48 px tall so the canvas keeps its size. Chrome tokens only (skill gcp-diagram-style §9),
+   (DiagramPage.module.css), 48 px tall on a desktop so the canvas keeps its size, two lines on a tablet and three on a
+   phone (the end of this sheet). Chrome tokens only (skill gcp-diagram-style §9),
    so both themes follow; every marker shape keeps 3 : 1 against the bar's surface container in both themes. */
 .timeline {
   grid-column: 1 / -1;
@@ -12,6 +13,14 @@
   padding: 0 var(--space-4);
   border-top: 1px solid var(--color-outline);
   background: var(--color-surface-container);
+}
+
+/* The parts that group several controls (the slider between its edge dates, the readout with "Try again", the
+   playback options) draw no box on a desktop: their controls are the bar's own flex items. */
+.track,
+.readoutRow,
+.options {
+  display: contents;
 }
 
 .buttons {
@@ -260,5 +269,76 @@
 
   .playing [role='slider'] {
     transition: none;
+  }
+}
+
+/*
+ * A tablet (ui/screen.ts): the slider, its buttons and the playback options on the first line, the readout on a line
+ * of its own below them. Every target 44 px (--control-height), the edges of a phone's screen kept clear.
+ */
+@media (max-width: 79.99rem) {
+  .timeline {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+    height: auto;
+    padding: var(--space-1) max(var(--space-3), env(safe-area-inset-right, 0px)) var(--space-1)
+      max(var(--space-3), env(safe-area-inset-left, 0px));
+  }
+
+  /* The slider's line is as tall as its touch band (ui/Slider), which holds the row of markers under the track: the
+     line below it (a phone's readout) starts under both, never under a marker. */
+  .track {
+    display: flex;
+    flex: 1 1 12rem;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    min-height: var(--touch-target);
+  }
+
+  .readoutRow,
+  .options {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .options {
+    flex-wrap: wrap;
+  }
+
+  .readoutRow {
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+
+  .readout {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .iconButton {
+    width: var(--control-height);
+  }
+}
+
+/* A phone: the slider across the whole width, the readout under it, then the buttons and the playback options. */
+@media (max-width: 47.99rem) {
+  .title {
+    display: none;
+  }
+
+  .track {
+    flex: 1 0 100%;
+  }
+
+  .buttons,
+  .options {
+    flex: 0 1 auto;
+  }
+
+  .options {
+    margin-left: auto;
   }
 }

@@ -2,7 +2,8 @@
 
 /* The Focus control (FocusControl.tsx): the button's summary of the focus (cut with an ellipsis at a width that
    keeps the top bar within 1280 px; its title and the button's name have all of it), and the popover's kind
-   select, parameter picker, notes and Clear focus button. Tokens only (both themes). */
+   select, parameter picker, notes and Clear focus button. Tokens only (both themes). On a phone or a tablet the
+   panel opens in the View sheet, as wide as the sheet. */
 .summary {
   display: inline-block;
   overflow: hidden;
@@ -64,4 +65,10 @@
 
 .clear:hover {
   background: var(--color-surface-container);
+}
+
+@media (max-width: 79.99rem) {
+  .panel {
+    width: auto;
+  }
 }

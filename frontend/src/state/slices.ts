@@ -9,7 +9,7 @@
  * | `snapshot` | which snapshot is loaded, loading stage, errors, what can be chosen | the pipeline's answers |
  * | `pipeline` | Scene and Layout of the view, request status, the measured canvas | the two workers |
  * | `selection` | selected, highlighted (both from the hash) and hovered (the canvas) ids | hash; canvas |
- * | `ui` | drawer, search, the open popover, a pending camera jump | the page only, never the hash |
+ * | `ui` | drawer, search, the open popover and sheet, a pending camera jump | the page only, never the hash |
  * | `connect` | the backend's public config, the sign-in session (never the token), the access mode | auth/ |
  * | `timeline` | the snapshot's timeline, its live days' reads, playback (the `tick` itself is in the view) | timeline/ |
  */
@@ -105,6 +105,11 @@ export interface UiSlice {
   readonly searchOpen: boolean;
   /** The one open top-bar popup ('lens', 'snapshot', 'filters', …), if any. */
   readonly popover: string | null;
+  /**
+   * The open fold of the top bar on a phone or a tablet ('view', 'more'), if any: a sheet that holds popups of its
+   * own, so it is kept apart from `popover`.
+   */
+  readonly sheet: string | null;
   /**
    * A camera glide the renderer has not made yet: to node `id` (`seq` tells repeated jumps apart), centring it
    * or (`mode: 'reveal'`, the details drawer's) only panning it into view; absent `mode` is `centre`.

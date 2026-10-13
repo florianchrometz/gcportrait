@@ -13,12 +13,17 @@ import { defineConfig, devices } from '@playwright/test';
  *   (backend/src/auth/sa-harness.testing.ts); demo-only.spec.ts to the real backend in demo-only mode
  *   (backend/src/demo-only-harness.testing.ts); both through fixtures/harness.ts.
  *
+ * - `mobile` runs mobile.spec.ts against demo mode: the phone and tablet layouts (AGENTS.md, Product rules) in
+ *   Chromium emulating a touch device, at the widths the spec sets (`pnpm --filter @gcportrait/frontend mobile` runs it
+ *   alone).
+ *
  * Locally a server that is already running on either port is reused; CI always starts fresh ones. Chromium
- * only for now, at a desktop viewport (desktop only, at least 1280×800; AGENTS.md, Product rules).
+ * only for now; the functional specs at a desktop window of 1440 × 900.
  */
 const DEMO_URL = 'http://localhost:5174';
 const LIVE_URL = 'http://localhost:5173';
 const LIVE_SPECS = /(?:live|signin|preflight|live-pull|sa-mode|demo-only|permissions-variables)\.spec\.ts$/;
+const MOBILE_SPECS = /mobile\.spec\.ts$/;
 const VIEWPORT = { width: 1440, height: 900 };
 const isCI = process.env.CI !== undefined && process.env.CI !== '';
 
@@ -48,8 +53,13 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: LIVE_SPECS,
+      testIgnore: [LIVE_SPECS, MOBILE_SPECS],
       use: { ...devices['Desktop Chrome'], viewport: VIEWPORT, baseURL: DEMO_URL },
+    },
+    {
+      name: 'mobile',
+      testMatch: MOBILE_SPECS,
+      use: { ...devices['Desktop Chrome'], baseURL: DEMO_URL },
     },
     {
       name: 'chromium-live',

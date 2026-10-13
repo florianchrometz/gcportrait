@@ -10,6 +10,9 @@
  * ("export 2026-10-05 14:30") in their tooltip, the slider's value text and the readout, selectable like days, and
  * played through only once "Play extras" is pressed.
  *
+ * Narrower than a desktop the same parts wrap (`PART_ORDER`): a tablet's readout goes below the slider, a phone's
+ * slider spans the width with the readout and then the buttons below it.
+ *
  * The view's day is its `tick` in the URL hash (the snapshot's own day is no tick), written through the store's
  * actions only: the slider in place (continuous), the buttons as history entries. The timeline controller
  * (timeline/controller.ts) runs while the bar is mounted.
@@ -25,8 +28,23 @@ import { usePlayback } from '../../timeline/usePlayback';
 import { useTimelineController } from '../../timeline/useTimelineController';
 import { markerTitle, readout, valueText } from '../../timeline/words';
 import { SegmentedControl } from '../../ui/SegmentedControl';
+import { useScreen, type Screen } from '../../ui/screen';
 import { Slider } from '../../ui/Slider';
 import styles from './TimelineBar.module.css';
+
+/**
+ * The order of the bar's parts, which is its tab order: on a desktop one row (the title, the step and play buttons,
+ * the slider between the first and the last day, the readout, the playback options); on a tablet the same row with the
+ * readout on a line of its own below it; on a phone the slider across the whole width first, the readout under it,
+ * and the buttons and options last (the title left out: the slider's name says it).
+ */
+const PART_ORDER: Readonly<
+  Record<Screen, readonly ('title' | 'buttons' | 'track' | 'readout' | 'options')[]>
+> = {
+  desktop: ['title', 'buttons', 'track', 'readout', 'options'],
+  tablet: ['title', 'buttons', 'track', 'options', 'readout'],
+  phone: ['track', 'readout', 'buttons', 'options'],
+};
 
 const SPEEDS = PLAYBACK_INTERVALS.map((interval) => ({
   value: String(interval),
@@ -93,6 +111,7 @@ export function TimelineBar(): ReactElement {
     [spec, timeline, onScreen, pending],
   );
   const playback = usePlayback(model);
+  const screen = useScreen();
 
   const position = model === null ? null : (model.position ?? model.own);
   const max = (model?.ticks.length ?? TIMELINE_DAYS) - 1;
@@ -135,17 +154,17 @@ export function TimelineBar(): ReactElement {
     actions.setView((current) => withTick(current, day), { history: 'replace' });
   };
 
-  return (
-    <section
-      className={cx(styles.timeline, playback.playing && styles.playing)}
-      aria-label="Timeline"
-      data-ready={model === null ? 'false' : 'true'}
-    >
-      {/* The bar's visible name; the slider keeps its own (visually hidden here), so it reads as a date range. */}
-      <span className={styles.title} aria-hidden="true">
+  // The bar's parts, in the order of the layout (see above): keyed, so a part moves with its state when the order
+  // changes.
+  const parts: Readonly<Record<'title' | 'buttons' | 'track' | 'readout' | 'options', ReactElement>> = {
+    // The bar's visible name; the slider keeps its own (visually hidden here), so it reads as a date range.
+    title: (
+      <span key="title" className={styles.title} aria-hidden="true">
         Timeline
       </span>
-      <div className={styles.buttons}>
+    ),
+    buttons: (
+      <div key="buttons" className={styles.buttons}>
         <button
           type="button"
           className={styles.iconButton}
@@ -187,69 +206,91 @@ export function TimelineBar(): ReactElement {
           <Glyph kind="next" />
         </button>
       </div>
-      <span className={styles.edge} aria-hidden="true">
-        {first === undefined ? '' : tickLabel(first)}
-      </span>
-      <Slider
-        label="Timeline"
-        className={cx(styles.slider)}
-        min={0}
-        max={max}
-        value={value}
-        onChange={moveTo}
-        valueText={(index) => (model === null ? (notReady ?? '') : valueText(model, index))}
-        disabled={notReady ?? false}
-        marks={model === null ? null : <Markers model={model} />}
-      />
-      <span className={styles.edge} aria-hidden="true">
-        {last === undefined ? '' : tickLabel(last)}
-      </span>
-      <p
-        className={styles.readout}
-        role="status"
-        aria-live={playback.playing ? 'off' : 'polite'}
-        title={said.detail ?? said.text}
-        data-testid="timeline-readout"
-      >
-        {said.text}
-      </p>
-      {said.retry && positionDay !== null ? (
-        <button
-          type="button"
-          className={styles.textButton}
-          onClick={() => {
-            retry(positionDay);
-          }}
+    ),
+    track: (
+      <div key="track" className={styles.track}>
+        <span className={styles.edge} aria-hidden="true">
+          {first === undefined ? '' : tickLabel(first)}
+        </span>
+        <Slider
+          label="Timeline"
+          className={cx(styles.slider)}
+          min={0}
+          max={max}
+          value={value}
+          onChange={moveTo}
+          valueText={(index) => (model === null ? (notReady ?? '') : valueText(model, index))}
+          disabled={notReady ?? false}
+          marks={model === null ? null : <Markers model={model} />}
+        />
+        <span className={styles.edge} aria-hidden="true">
+          {last === undefined ? '' : tickLabel(last)}
+        </span>
+      </div>
+    ),
+    readout: (
+      <div key="readout" className={styles.readoutRow}>
+        <p
+          className={styles.readout}
+          role="status"
+          aria-live={playback.playing ? 'off' : 'polite'}
+          title={said.detail ?? said.text}
+          data-testid="timeline-readout"
         >
-          Try again
-        </button>
-      ) : null}
-      {model?.ticks.some((tick) => tick.extra !== undefined) !== true ? null : (
-        <button
-          type="button"
-          className={styles.textButton}
-          aria-pressed={playExtras}
-          title={
-            playExtras
-              ? 'Playback goes through the extra ticks (exports and pulls) too'
-              : 'Playback skips the extra ticks (exports and pulls); press to include them'
-          }
-          onClick={() => {
-            store.updateTimeline((current) => ({ ...current, playExtras: !current.playExtras }));
+          {said.text}
+        </p>
+        {said.retry && positionDay !== null ? (
+          <button
+            type="button"
+            className={styles.textButton}
+            onClick={() => {
+              retry(positionDay);
+            }}
+          >
+            Try again
+          </button>
+        ) : null}
+      </div>
+    ),
+    options: (
+      <div key="options" className={styles.options}>
+        {model?.ticks.some((tick) => tick.extra !== undefined) !== true ? null : (
+          <button
+            type="button"
+            className={styles.textButton}
+            aria-pressed={playExtras}
+            title={
+              playExtras
+                ? 'Playback goes through the extra ticks (exports and pulls) too'
+                : 'Playback skips the extra ticks (exports and pulls); press to include them'
+            }
+            onClick={() => {
+              store.updateTimeline((current) => ({ ...current, playExtras: !current.playExtras }));
+            }}
+          >
+            Play extras
+          </button>
+        )}
+        <SegmentedControl
+          label="Speed"
+          options={SPEEDS}
+          value={String(timeline.interval)}
+          onChange={(next) => {
+            const chosen = PLAYBACK_INTERVALS.find((interval) => String(interval) === next);
+            if (chosen !== undefined) playback.setInterval(chosen);
           }}
-        >
-          Play extras
-        </button>
-      )}
-      <SegmentedControl
-        label="Speed"
-        options={SPEEDS}
-        value={String(timeline.interval)}
-        onChange={(next) => {
-          const chosen = PLAYBACK_INTERVALS.find((interval) => String(interval) === next);
-          if (chosen !== undefined) playback.setInterval(chosen);
-        }}
-      />
+        />
+      </div>
+    ),
+  };
+
+  return (
+    <section
+      className={cx(styles.timeline, playback.playing && styles.playing)}
+      aria-label="Timeline"
+      data-ready={model === null ? 'false' : 'true'}
+    >
+      {PART_ORDER[screen].map((part) => parts[part])}
     </section>
   );
 }

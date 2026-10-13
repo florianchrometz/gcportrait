@@ -83,7 +83,7 @@
  * (src/lib/brand.ts), and a stylesheet applies the logo's dark colours.
  *
  * The demo (src/site.ts DEMO_URL, /demo/) is the app, not a page of the site, so the page rules above leave
- * it out (it is desktop-only, has its own title and no footer of the site's); the sitemap lists its entry page only.
+ * it out (it has its own layouts, its own title and no footer of the site's); the sitemap lists its entry page only.
  * Instead (checkDemo): /demo/index.html and a byte-for-byte copy of it for each of the app's routes; no file of it
  * naming TelemetryDeck or the site's analytics app id (the demo is the app's build, which sends no analytics); exactly one
  * Content Security Policy `<meta>`, before anything the page loads, that is the backend's demo-only policy without what

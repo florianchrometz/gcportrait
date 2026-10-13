@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
  * The diagram's progressive-disclosure bar (skill gcp-diagram-layout §6), floating at the
- * bottom right of the canvas: "N of M shown" (the rects drawn, of those the view holds at detail `all`),
- * "Expand all" (opens the shallowest collapsed tier and reopens zones closed by hand) and "Collapse all" (closes
+ * bottom right of the canvas (on a tablet the bottom left, on a phone a row above the details sheet; clear of the
+ * drawer either way, DisclosureBar.module.css): "N of M shown" (the rects drawn, of those the view holds at detail
+ * `all`), "Expand all" (opens the shallowest collapsed tier and reopens zones closed by hand) and "Collapse all" (closes
  * every zone opened by hand, keeps those closed by hand, and returns to Auto when the level in use is deeper),
  * each available only when it would change the drawing on screen, and a notice when flips went over the 48 cap or
  * when Auto picked another level because the diagram area changed size. Everything comes from the app store and
@@ -51,56 +52,60 @@ export function DisclosureBar(): ReactElement | null {
     ? 'Closes every zone opened by hand and goes back to the automatic detail level'
     : `Nothing opened by hand at the ${usedLevel ?? 'current'} level`;
 
+  // The frame is the canvas's area on a phone, which the bar's place depends on (DisclosureBar.module.css); no box
+  // otherwise.
   return (
-    <div className={styles.bar}>
-      {/* A live region kept in the DOM while empty, so a new notice is announced. */}
-      <div role="status" className={styles.live}>
-        {notice === null ? null : (
-          <div className={styles.notice}>
-            <p className={styles.noticeText}>{notice}</p>
-            <button type="button" className={controls.control} onClick={dismiss}>
-              Dismiss
-            </button>
+    <div className={styles.frame}>
+      <div className={styles.bar}>
+        {/* A live region kept in the DOM while empty, so a new notice is announced. */}
+        <div role="status" className={styles.live}>
+          {notice === null ? null : (
+            <div className={styles.notice}>
+              <p className={styles.noticeText}>{notice}</p>
+              <button type="button" className={controls.control} onClick={dismiss}>
+                Dismiss
+              </button>
+            </div>
+          )}
+        </div>
+        {shown === null || total === null ? null : (
+          <div className={styles.panel} role="group" aria-label="Expand and collapse">
+            <p className={styles.count} role="status">
+              {shownText(shown, total)}
+            </p>
+            <Tooltip content={expandHint} placement="above">
+              {(describedBy) => (
+                <button
+                  type="button"
+                  className={controls.control}
+                  aria-describedby={describedBy}
+                  aria-disabled={canExpand ? undefined : true}
+                  onClick={() => {
+                    if (canExpand) actions.expandAll();
+                  }}
+                >
+                  Expand all
+                </button>
+              )}
+            </Tooltip>
+            <Tooltip content={collapseHint} placement="above">
+              {(describedBy) => (
+                <button
+                  type="button"
+                  className={controls.control}
+                  aria-describedby={describedBy}
+                  aria-disabled={canCollapse ? undefined : true}
+                  onClick={() => {
+                    if (canCollapse) actions.collapseAll();
+                  }}
+                >
+                  Collapse all
+                </button>
+              )}
+            </Tooltip>
           </div>
         )}
       </div>
-      {shown === null || total === null ? null : (
-        <div className={styles.panel} role="group" aria-label="Expand and collapse">
-          <p className={styles.count} role="status">
-            {shownText(shown, total)}
-          </p>
-          <Tooltip content={expandHint} placement="above">
-            {(describedBy) => (
-              <button
-                type="button"
-                className={controls.control}
-                aria-describedby={describedBy}
-                aria-disabled={canExpand ? undefined : true}
-                onClick={() => {
-                  if (canExpand) actions.expandAll();
-                }}
-              >
-                Expand all
-              </button>
-            )}
-          </Tooltip>
-          <Tooltip content={collapseHint} placement="above">
-            {(describedBy) => (
-              <button
-                type="button"
-                className={controls.control}
-                aria-describedby={describedBy}
-                aria-disabled={canCollapse ? undefined : true}
-                onClick={() => {
-                  if (canCollapse) actions.collapseAll();
-                }}
-              >
-                Collapse all
-              </button>
-            )}
-          </Tooltip>
-        </div>
-      )}
     </div>
   );
 }

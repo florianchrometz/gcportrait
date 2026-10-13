@@ -31,6 +31,7 @@ import { selectDrawnDay, useAppState, useAppStore, useDiagramActions } from '../
 import { useTheme } from '../../theme/useTheme';
 import { Combobox, type ComboboxOption } from '../../ui/Combobox';
 import styles from './SearchBox.module.css';
+import { VIEW_SHEET } from './sheets';
 import topBar from './TopBar.module.css';
 
 /** Text typed into the box: against which highlight and snapshot it was typed. */
@@ -95,7 +96,18 @@ export function SearchBox(): ReactElement {
   // until the person types, presses a key in it or presses on it.
   const settled = useRef(false);
 
-  // `/` focuses the box from anywhere but a text field (style skill §13), unless a modal dialog has made it inert.
+  // `/` focuses the box from anywhere but a text field (style skill §13), unless a modal dialog has made it inert. On a
+  // phone or a tablet the box is in the top bar's View sheet: a closed sheet opens first, and the box takes focus once
+  // it shows (after the sheet has put focus on its first control).
+  const sheet = useAppState((state) => state.ui.sheet);
+  const focusWhenShown = useRef(false);
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!focusWhenShown.current || input === null || input.closest('[hidden]') !== null) return;
+    focusWhenShown.current = false;
+    input.focus();
+    input.select();
+  }, [sheet]);
   useEffect(() => {
     if (!available) return undefined;
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -105,6 +117,11 @@ export function SearchBox(): ReactElement {
       const input = inputRef.current;
       if (input === null || input.closest('[inert]') !== null) return;
       event.preventDefault();
+      if (input.closest('[hidden]') !== null) {
+        focusWhenShown.current = true;
+        store.updateUi((ui) => ({ ...ui, sheet: VIEW_SHEET, popover: null }));
+        return;
+      }
       input.focus();
       input.select();
     };
@@ -112,7 +129,7 @@ export function SearchBox(): ReactElement {
     return () => {
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [available]);
+  }, [available, store]);
 
   // While `results.pending`, `answer` is the previous text's: listed, greyed, never chosen (`busy`).
   const answer = results.answer;

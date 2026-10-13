@@ -122,7 +122,8 @@ Open <http://localhost:8080>, choose "Try the demo" and pick M. To run it from s
 
 On organisation M, press `/`, search for `10.0.14.5` and press Enter: the virtual machine with that address is
 selected, its path traced and its details open. Then switch the Lens to Networking and step through the days
-with `[` and `]`. gcportrait is built for desktop browsers (1280 × 800 or larger).
+with `[` and `]`. gcportrait works on phones, tablets and desktops with the same controls
+([docs/faq.md](docs/faq.md#does-it-work-on-a-phone-or-a-tablet)); dense diagrams read best on a large screen.
 [docs/getting-started.md](docs/getting-started.md) has the full first tour.
 
 ## Features
@@ -311,9 +312,8 @@ lists what is left, the known limitations and the decisions still open.
 and OS inventory layers, Cloud Asset Inventory's relationship data where Security Command Center Premium
 provides it, comparing snapshots across scopes, and sharing saved views.
 
-**Not planned:** editing diagrams, cost data, IAM policy analysis beyond showing identities, multi-cloud, a
-phone or tablet layout for the app, storing snapshots on a server, and real-time feeds
-([AGENTS.md](AGENTS.md), "What gcportrait is and is not").
+**Not planned:** editing diagrams, cost data, IAM policy analysis beyond showing identities, multi-cloud,
+storing snapshots on a server, and real-time feeds ([AGENTS.md](AGENTS.md), "What gcportrait is and is not").
 
 ## Contributing
 

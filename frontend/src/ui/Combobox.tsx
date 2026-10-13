@@ -7,10 +7,11 @@
  * the results: `onValueChange` on every edit, `options` for the current text, `onChoose` for the chosen one.
  *
  * Keys: ↓ opens or moves down, ↑ moves up (both wrap), Alt+↓ opens without moving, Enter chooses the active
- * result, Escape closes the results and, when they are closed already, clears the text. A pointer over a result
- * makes it active, a click chooses it. A polite status line says how many results there are (or `noResults`;
- * `status` replaces it, for results that arrive later or a total beyond the list). Options may carry a group
- * name and a decorative icon (the search results, grouped by kind: Listbox.tsx).
+ * result, Escape closes the results and, when they are closed already, clears the text (with neither to do, it is
+ * left to the box's surroundings). A pointer over a result makes it active, a click chooses it. A polite status
+ * line says how many results there are (or `noResults`; `status` replaces it, for results that arrive later or a
+ * total beyond the list). Options may carry a group name and a decorative icon (the search results, grouped by
+ * kind: Listbox.tsx).
  *
  * Results that arrive later (the search, answered by a worker): while `busy`, the options listed are an
  * earlier text's. They stay listed, so the list does not flicker, but greyed and `aria-busy`, and none can be made
@@ -180,11 +181,17 @@ export function Combobox({
         return;
       }
       case 'Escape':
-        event.preventDefault();
         queued.current = null;
-        if (shown) setOpen(false);
-        else onValueChange('');
         setActive(-1);
+        // Handled only when there is something to close or clear: otherwise it is left to what holds the box (a
+        // sheet closes on it).
+        if (shown) {
+          event.preventDefault();
+          setOpen(false);
+        } else if (value !== '') {
+          event.preventDefault();
+          onValueChange('');
+        }
         return;
       default:
     }

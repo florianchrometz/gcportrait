@@ -151,7 +151,7 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 | `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then its `bench` table in the job summary. **Non-blocking**: it warns when a strict budget is missed, while `unit (layout)` enforces twice the budgets |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
-| `e2e (1/3)` to `e2e (3/3)` | `pnpm e2e --shard=N/3`, Chromium |
+| `e2e (1/3)` to `e2e (3/3)` | `pnpm e2e --shard=N/3`, Chromium: the desktop specs and the app's phone and tablet check (`mobile` project) |
 | `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` |
 | `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard |
 | `licenses` | `pnpm run licenses` |
@@ -171,7 +171,8 @@ Some of these gates are not part of `pnpm check`; run these three locally when y
 |---|---|
 | `pnpm build` | Builds every workspace that has a build script: `frontend/dist` (Vite), `backend/dist` (tsc and the bundles), the compiled catalog, the icon module and the website. `pnpm build:app` leaves the website out, as CI's `build` job does. |
 | `pnpm size` | After `pnpm build`: sorts the build by thread and fails when either budget is exceeded, gzipped, fonts and the fetched JSON data tables excluded ([AGENTS.md](../AGENTS.md), "Quality gates, testing and CI"): the UI thread (the entry script, its static imports and the CSS; a lazy chunk only when it is part of the first paint of `/diagram`) 350 kB, the workers (every worker script and every chunk a worker loads) 400 kB. Lazy UI chunks outside the first paint are listed and count against neither. It also fails when a UI-thread chunk contains zod (its minified signatures): zod belongs in the workers. |
-| `pnpm e2e` | Playwright: functional, export and axe accessibility tests in light and dark, against demo mode (port 5174) and normal mode (port 5173). It starts both dev servers itself, or reuses ones already running. Run `pnpm --filter @gcportrait/e2e install-browsers` once per machine first. |
+| `pnpm e2e` | Playwright: functional, export and axe accessibility tests in light and dark, against demo mode (port 5174) and normal mode (port 5173), and the app's phone and tablet check (below). It starts both dev servers itself, or reuses ones already running. Run `pnpm --filter @gcportrait/e2e install-browsers` once per machine first. |
+| `pnpm --filter @gcportrait/frontend mobile` | The app's phone and tablet check alone (the e2e suite's `mobile` project, `e2e/tests/mobile.spec.ts`): Chromium emulating a touch device at 320, 375, 390, 430 and 820 CSS pixels and four phones turned sideways, in both themes, on the Connect, Permissions, Snapshots and Settings pages (the Snapshots page also with a snapshot stored), a live instance's pages signed out and signed in (its Account panel inside More, its Impressum and Privacy pages) and the diagram of demo S and M with the View and More sheets, every menu and panel in them and the details drawer open. It fails on sideways scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a narrow column, an element past the viewport, overlapping top-bar items, parts of the timeline bar over each other, a details drawer reaching past the canvas, a target under 44 × 44 px, a control out of sight when it has focus or covered where it is tapped, a canvas the chrome leaves too little of, and an axe violation, and checks the sheets' keys, a long breadcrumb swiped and tapped, the drawer's handle by key and by finger, a one-finger pan, a two-finger pinch and taps on the canvas. CI runs it in the e2e shards. |
 
 The phone-width check runs its layout half only (Chromium at 320 to 430 CSS pixels in both themes: sideways
 overflow, the header, 44 px touch targets, axe). Its playback half, the landing page's animated demos on an
@@ -326,7 +327,11 @@ dependency must pass `pnpm run licenses`.
   private IP ranges.
 - Tokens and secrets never touch disk, logs or URLs. `.env` files are git-ignored and the provenance check
   never reads them; never paste credentials into an issue or a pull request.
-- Desktop only (at least 1280×800): no breakpoints for phones or tablets.
+- Phones, tablets and desktops, with every control at each ([AGENTS.md](../AGENTS.md), "Product rules"): a
+  narrower layout folds the same components into sheets, never copies them; targets are 44 × 44 px on a phone
+  and a tablet; a width is asked for only with the layouts' media queries in rem
+  (`frontend/src/ui/screen.ts`). `frontend/src/shell/parity.test.tsx` and `pnpm --filter @gcportrait/frontend
+  mobile` check it.
 - Both themes, every time: anything visible must look right and pass the checks in light and dark.
 - The non-affiliation statement ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal") goes in the
   footer of every route of the app and every page of the website and, as the long form above, in

@@ -83,6 +83,25 @@ export function usePopover(id: string): readonly [boolean, (open: boolean) => vo
   return [open, setOpen] as const;
 }
 
+/**
+ * Whether the top bar's fold `id` ('view', 'more') is open as a sheet, and a setter: one sheet at a time. A popup
+ * inside the sheet (`usePopover`) leaves it open; opening or closing a sheet closes any popup.
+ */
+export function useSheet(id: string): readonly [boolean, (open: boolean) => void] {
+  const store = useAppStore();
+  const open = useAppState((state) => state.ui.sheet === id);
+  const setOpen = useCallback(
+    (next: boolean): void => {
+      store.updateUi((ui) => {
+        if (next) return ui.sheet === id && ui.popover === null ? ui : { ...ui, sheet: id, popover: null };
+        return ui.sheet === id ? { ...ui, sheet: null, popover: null } : ui;
+      });
+    },
+    [store, id],
+  );
+  return [open, setOpen] as const;
+}
+
 /** The scope the diagram on screen shows ("example.com"), for the breadcrumb; null when nothing is drawn. */
 export function selectScope(state: AppState): string | null {
   if (!state.view.onDiagram || state.view.spec.snapshot === '') return null;
