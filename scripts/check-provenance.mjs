@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Provenance guard (agents.md, Licence and dependencies, and Names that never appear). Fails when a file of
+ * Provenance guard (AGENTS.md, Licence and dependencies, and Names that never appear). Fails when a file of
  * the tree
  *   (a) mentions a forbidden name or carries a Google copyright notice (see FORBIDDEN_TERMS), in its contents
  *       or in its path (file or directory names),
@@ -10,7 +10,7 @@
  *       which no header form and no header-free rule is defined,
  *   (d) is a symbolic link,
  *   (e) writes a banned term (see BANNED_TERMS): Google's name with its company suffix, a citation of a
- *       decision record, a numbered rule of agents.md, or a phrase that records how something was built
+ *       decision record, a numbered rule of AGENTS.md, or a phrase that records how something was built
  *       rather than saying what it is, in its contents or in its path,
  *   (f) writes an id of a work item: a task, a phase or, in Markdown, a decision (see PLAN_IDS),
  *   (g) names the denied network-copyleft licence family (see LICENCE_NAME_TERMS) in its path, or in its
@@ -119,9 +119,9 @@ const FORBIDDEN_NAME_EXEMPTIONS = Object.freeze([
 
 /** The messages of rule (e), by the kind of term. */
 const STATE_THE_RULE =
-  'state the rule, or point to the section of agents.md that holds it ("agents.md, <heading>")';
-const SAY_WHAT_IS = 'a file says what is, not how it came to be (agents.md, Documentation)';
-const NEVER_APPEARS = 'it never appears (agents.md, Names that never appear)';
+  'state the rule, or point to the section of AGENTS.md that holds it ("AGENTS.md, <heading>")';
+const SAY_WHAT_IS = 'a file says what is, not how it came to be (AGENTS.md, Documentation)';
+const NEVER_APPEARS = 'it never appears (AGENTS.md, Names that never appear)';
 
 /** The three-letter abbreviation of a decision record, assembled. */
 const DECISION_RECORD = ['A', 'DR'].join('');
@@ -470,7 +470,7 @@ function regexTerm({ label, message, pattern, secret = false, binary, quick }) {
  * - Citations of a decision record (the abbreviation, alone or with a number, in any case, but never inside a
  *   base64 run such as an integrity hash or a data URI; the abbreviation spelled out, or a decision record
  *   with a number; a folder of them in a relative path, which starts after a space, a quote or a bracket)
- *   and a numbered rule of agents.md: a rule is cited by the heading of its section in agents.md, or stated.
+ *   and a numbered rule of AGENTS.md: a rule is cited by the heading of its section in AGENTS.md, or stated.
  * - Build-record phrases: wording that tells how, when or by whom something was made, checked or decided,
  *   rather than what it is (BUILD_RECORD_PATTERNS and PHRASE_DIGESTS).
  * @type {readonly Term[]}
@@ -480,7 +480,7 @@ const BANNED_TERMS = Object.freeze([
     label: "Google's name with its company suffix",
     pattern: new RegExp(['\\bGoogle', `${['L', 'LC'].join('')}\\b`].join('[\\s,]+'), 'i'),
     message:
-      'write "Google" or "Google Cloud" without the company suffix (agents.md, Non-affiliation, brand and legal)',
+      'write "Google" or "Google Cloud" without the company suffix (AGENTS.md, Non-affiliation, brand and legal)',
     binary: true,
   }),
   regexTerm({
@@ -512,10 +512,10 @@ const BANNED_TERMS = Object.freeze([
     binary: false,
   }),
   regexTerm({
-    label: 'a numbered rule of agents.md',
+    label: 'a numbered rule of AGENTS.md',
     pattern:
       /\bagents\.md\b[`'"]?(?:'s)?[,:]?\s+(?:[a-z]+\s+)?rules?\s+#?\d|\brules?\s+#?\d+\s+(?:of|in)\s+[`'"]?agents\.md\b/i,
-    message: 'cite agents.md by the heading of the section that holds the rule ("agents.md, <heading>")',
+    message: 'cite AGENTS.md by the heading of the section that holds the rule ("AGENTS.md, <heading>")',
     binary: true,
   }),
   ...BUILD_RECORD_PATTERNS.map((pattern) =>
@@ -552,7 +552,7 @@ const PLAN_IDS = Object.freeze([
 
 /**
  * Rule (g): the denied network-copyleft licence family. gcportrait is MIT, and the dependency deny list
- * refuses copyleft that reaches beyond its own files (agents.md, Licence and dependencies); this family's
+ * refuses copyleft that reaches beyond its own files (AGENTS.md, Licence and dependencies); this family's
  * names appear only where the deny list and verbatim licence texts need them, so that they cannot creep into
  * a header, a manifest, a footer or a document. Matched case-insensitively per line, in contents and in
  * paths; the short form only at the start of a word, so that a hash or an identifier that happens to contain
@@ -661,7 +661,7 @@ function checkPath(relPath, problems) {
       relPath,
       line: undefined,
       rule: 'licence-name',
-      message: `path mentions "${term.label}"; gcportrait is MIT (agents.md, Licence and dependencies), and this family has no file here`,
+      message: `path mentions "${term.label}"; gcportrait is MIT (AGENTS.md, Licence and dependencies), and this family has no file here`,
     });
   }
   /** @type {Set<string>} */
@@ -821,7 +821,7 @@ function checkPlanIds(relPath, lines, problems) {
         rule: 'plan-id',
         message:
           `"${match[0]}" reads as ${id.label} of a work plan; say what the thing is or does ` +
-          '(agents.md, Documentation)',
+          '(AGENTS.md, Documentation)',
       });
     }
   });
@@ -843,7 +843,7 @@ function checkLicenceNames(relPath, lines, problems) {
         line: index + 1,
         rule: 'licence-name',
         message:
-          `mentions "${term.label}"; gcportrait is MIT (agents.md, Licence and dependencies): this name belongs ` +
+          `mentions "${term.label}"; gcportrait is MIT (AGENTS.md, Licence and dependencies): this name belongs ` +
           'to the dependency deny list and the verbatim licence texts only',
       });
     }
@@ -1054,7 +1054,7 @@ function checkBinary(relPath, content, problems) {
       relPath,
       line: undefined,
       rule: 'licence-name',
-      message: `mentions "${term.label}" in its binary contents; gcportrait is MIT (agents.md, Licence and dependencies)`,
+      message: `mentions "${term.label}" in its binary contents; gcportrait is MIT (AGENTS.md, Licence and dependencies)`,
     });
   }
 }
@@ -1073,7 +1073,7 @@ function checkBannedFiles(relPath, text, problems) {
       relPath,
       line: undefined,
       rule: 'banned-file',
-      message: `${extension} files are not allowed: no Go code, no Graphviz templates (agents.md, Licence and dependencies)`,
+      message: `${extension} files are not allowed: no Go code, no Graphviz templates (AGENTS.md, Licence and dependencies)`,
     });
     return true;
   }
@@ -1082,7 +1082,7 @@ function checkBannedFiles(relPath, text, problems) {
       relPath,
       line: lineAt(text, text.search(GIZMO_LINE)),
       rule: 'banned-file',
-      message: `looks like a Gizmo graph query (${GIZMO_DESCRIPTION}); not allowed (agents.md, Licence and dependencies)`,
+      message: `looks like a Gizmo graph query (${GIZMO_DESCRIPTION}); not allowed (AGENTS.md, Licence and dependencies)`,
     });
   }
   return false;
@@ -1237,7 +1237,7 @@ function describeRules() {
     `  directories named: ${SKIPPED_DIR_NAMES.join(', ')}`,
     `  build output named ${SKIPPED_BUILD_DIR_NAMES.join(' or ')}: at the root, directly under a top-level directory or`,
     '    directly under a package in packages/ (as .gitignore ignores them; deeper ones are walked)',
-    `  root paths: ${SKIPPED_ROOT_PATHS.map((p) => `${p}/`).join(', ')}`,
+    `  root paths: ${SKIPPED_ROOT_PATHS.join(', ')}`,
     '  local environment files: .env, .env.* (except .env.example)',
     `  git-ignored files: ${SKIPPED_FILE_PATTERNS.map((p) => p.rule).join(', ')}`,
     'Read: every file. A binary file, by its extension:',

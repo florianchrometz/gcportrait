@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The Connect page's mode selector: read with the person's own account (user mode, the default) or, when the
- * backend offers it, through this instance's service account, with the gate explained (agents.md, Security
+ * backend offers it, through this instance's service account, with the gate explained (AGENTS.md, Security
  * and privacy, The service-account gate). The choice is the store's `connect.mode`; the scope picker,
  * the preflight and "Pull now" read it from there.
  */

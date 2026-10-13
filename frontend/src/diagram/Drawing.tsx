@@ -215,7 +215,7 @@ export function planDrawing(
 
   const { metadata } = model.input.scene;
   // The same title block on the canvas and in a standalone file (the export, the baselines, `pnpm render`): it
-  // ends with the tagline, and the non-affiliation statement stays in the app footer (agents.md,
+  // ends with the tagline, and the non-affiliation statement stays in the app footer (AGENTS.md,
   // Non-affiliation, brand and legal).
   const block = titleBlock(
     metadata.rootLabel,

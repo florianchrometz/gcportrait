@@ -14,7 +14,7 @@ import { expectNoAxeViolations, scratchShot } from './support.js';
  * values outlive a reload in the tab's sessionStorage. Run by the `chromium-live` project on `pnpm dev`'s
  * Vite server (every backend and Google call answered in the page): signed out, signed in, demo-only and
  * service-account cases; axe and screenshots in both themes. The demo mode case:
- * permissions-variables-demo.spec.ts. Synthetic values only (agents.md, Security and privacy, principle 6).
+ * permissions-variables-demo.spec.ts. Synthetic values only (AGENTS.md, Security and privacy, principle 6).
  */
 const ACCOUNT = 'gcportrait-backend@demo-host.iam.gserviceaccount.com';
 const TOKEN = 'e2e-fake-access-token-variables-7c2e';

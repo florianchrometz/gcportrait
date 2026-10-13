@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * @gcportrait/model — the single definition of every shared type (agents.md, Data and graph semantics). Types
+ * @gcportrait/model — the single definition of every shared type (AGENTS.md, Data and graph semantics). Types
  * are inferred from the zod schemas; this file is the package's only public surface. The values the app's UI
  * thread uses (the URL-hash codec, the vocabularies, the relation table) come from modules that import no
- * zod, so a bundler that keeps only what is imported leaves the schema library out of that thread (agents.md,
+ * zod, so a bundler that keeps only what is imported leaves the schema library out of that thread (AGENTS.md,
  * Architecture and code).
  */
 export {

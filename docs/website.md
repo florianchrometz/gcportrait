@@ -12,7 +12,7 @@ view as SVG or PNG without the app. Its landing page gives each way its proof (t
 it, a still of the app and the demo, a render request with the sample export it returns), shows the features
 with screenshots and animated demos of the demo organisations, and presents the author, with the Person
 structured data; the site also renders the user guides of this folder and publishes the asset catalog's
-coverage ([agents.md](../agents.md), "Modes and hosting"). It serves the sign-in-free demo itself, at the
+coverage ([AGENTS.md](../AGENTS.md), "Modes and hosting"). It serves the sign-in-free demo itself, at the
 address <https://gcportrait.app/demo/>: a static build of the app in demo-only mode ([The demo](#the-demo)), and
 links to the self-hosting guide. Everything is hosted on GitHub: one GitHub Pages site for the website and the demo,
 the images on ghcr.io, releases and CI on GitHub Actions. The site is the `website/` package, a static Astro
@@ -34,6 +34,7 @@ the release workflow writes from the changesets at every tag (`scripts/release-n
 | [Analytics](#analytics) | The site's page views, counted with TelemetryDeck: on in the deploying build only, never in the app or the demo, Do Not Track and Global Privacy Control respected, what is sent and what is not, the switch for forks, the checks. |
 | [Favicon and logo](#favicon-and-logo) | One drawing from one file, `brand/icon.svg`, for the favicon, the header's and footer's logo and the app's favicon. |
 | [The installer](#the-installer) | `/install.sh`, the one-line installer: `infra/install.sh` copied by the build, its content type, kept out of search. |
+| [The landing page's start buttons](#the-landing-pages-start-buttons) | "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host": where they go, the new tab, the marks. |
 | [The demo](#the-demo) | The static build of the app at `/demo/`: what it holds, how it is built and checked, the routes, its Content Security Policy and what a static host cannot send. |
 | [Deploying to GitHub Pages](#deploying-to-github-pages) | The one-time setup, then every push to `main`. |
 | [DNS records](#dns-records) | The exact records for `gcportrait.app` and `www.gcportrait.app`: nothing else, the demo included. |
@@ -70,22 +71,26 @@ for `/demo/`), which is what the workflows do after building the demo as a step 
 the demo is built (or found) after Astro has written the site's pages, so `pnpm website:build` alone gives the
 whole site.
 
-`pnpm website:check` fails a page that lacks a unique title or description, the canonical URL on
-`https://gcportrait.app` (the 404 page instead must be `noindex` and name no canonical URL), OpenGraph and
-Twitter card tags with a 1200×630 image, parseable JSON-LD (never an Organization), one level-1 heading, alt
-text and dimensions on its images, the footer notice in the footer ("Not affiliated with Google / Google
-Cloud. gcportrait is an independent open-source project by Florian Chrometz.", the name linked to the
-maintainer's website; [agents.md](../agents.md), "Non-affiliation, brand and legal"), the footer's links to
-the Impressum and the privacy notice on the maintainer's website (each once, `rel="noopener"`, named as an
-external site; [Legal pages](#legal-pages)), or the header's one link to the repository (same tab, named
-"gcportrait on GitHub", `data-repository` naming that repository); that loads anything from another host (a
-script, stylesheet, font, image, video, audio, frame or embedded object, through any attribute that loads,
-every `srcset` candidate included, or through CSS: any address on another host in a stylesheet of the build, a
-`<style>` block or a `style` attribute, so `url()`, `@import`, `image-set()` and `@font-face`); that has a
-script (inline, or a file of the build) asking any other host than the site itself, except the repository
-widget's requests: a `fetch` of `https://api.github.com/repos/…` written out in the script with exactly one
-`credentials: 'omit'` at the top level of the options written out in the call ([GitHub repository
-widget](#github-repository-widget)), and the page views: TelemetryDeck's ingestion host,
+`pnpm website:check` fails a page that lacks a unique title (at most 60 characters) or description (50 to 160
+characters), as search results show them whole, the canonical URL on `https://gcportrait.app` (the 404 page
+instead must be `noindex` and name no canonical URL), OpenGraph and Twitter card tags with a 1200×630 image,
+parseable JSON-LD (never an Organization, and like every meta tag without the non-affiliation statement, which
+belongs in the footer and the long-form texts, not in metadata), one level-1 heading, alt text and dimensions
+on its images, a button to the Cloud Shell tutorial or the Cloud Run Button that opens in the same tab, does
+not say it opens a new one or loads its mark as an image (the landing page's hero must offer both; [The
+landing page's start buttons](#the-landing-pages-start-buttons)), the footer notice in the footer ("Not
+affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz.",
+the name linked to the maintainer's website; [AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal"),
+the footer's links to the Impressum and the privacy notice on the maintainer's website (each once,
+`rel="noopener"`, named as an external site; [Legal pages](#legal-pages)), or the header's one link to the
+repository (same tab, named "gcportrait on GitHub", `data-repository` naming that repository); that loads
+anything from another host (a script, stylesheet, font, image, video, audio, frame or embedded object, through
+any attribute that loads, every `srcset` candidate included, or through CSS: any address on another host in a
+stylesheet of the build, a `<style>` block or a `style` attribute, so `url()`, `@import`, `image-set()` and
+`@font-face`); that has a script (inline, or a file of the build) asking any other host than the site itself,
+except the repository widget's requests: a `fetch` of `https://api.github.com/repos/…` written out in the
+script with exactly one `credentials: 'omit'` at the top level of the options written out in the call ([GitHub
+repository widget](#github-repository-widget)), and the page views: TelemetryDeck's ingestion host,
 `https://nom.telemetrydeck.com/`, allowed by name, as a POST without credentials, where the SDK's own request
 (whose address is its target, a variable) is accepted once, in the one script that names that address
 ([Analytics](#analytics)); a `fetch` of an address it does not write out, options it does not write out or
@@ -129,7 +134,7 @@ words and, on a narrow screen, inline code wrap rather than push the page sidewa
 ## Mobile
 
 The website serves phones as well as desktops. The app itself, and so the demo at `/demo/`, stays
-desktop-only: the desktop-only rule (agents.md, "Product rules") is about the app, not this site, and the
+desktop-only: the desktop-only rule (AGENTS.md, "Product rules") is about the app, not this site, and the
 phone and Lighthouse checks leave the demo out (the sitemap lists it). Every page works from 320 to 430 CSS
 pixels wide in both themes without sideways scrolling, and the animated demos play on phones too.
 
@@ -755,6 +760,30 @@ type is none of the three, when the sitemap lists it or when `robots.txt` lets i
 installer reaches people with the next deploy of the site; the deploy scripts it downloads come from the
 release it names.
 
+## The landing page's start buttons
+
+The hero offers, beside "Self-host", the two ways to start without a terminal of one's own that the README's
+badges offer: "Open in Cloud Shell" (the guided tutorial, `docs/cloudshell-tutorial.md`) and "Run on Google
+Cloud" (the Cloud Run Button with `app.json`). The self-hosting section further down has the same two below
+the installer, each with its line of explanation. Both are written by `src/components/StartLink.astro`:
+
+- **The README's addresses.** `CLOUD_SHELL_URL` and `CLOUD_RUN_BUTTON_URL` in `src/site.ts` are the links of
+  the README's badges, and `scripts/cloud-run-button.test.ts` holds them equal.
+- **A new tab.** Each opens a page of Google's where a deploy runs for minutes, so the button opens a new tab
+  (`target="_blank"`, `rel="noopener"`) and keeps the site open beside it; its name ends with " (opens in a
+  new tab)", visually hidden, as a link to the demo does.
+- **The site's own marks.** Each is a site button (`.button`) with a small drawing of the site's own, inline
+  and in the text's colour in both themes: a terminal window, and a cloud with an arrow going up into it. The
+  badges' images from `gstatic.com` and `deploy.cloud.run` are not used, because the site loads nothing from
+  another host.
+- **Phones.** The hero's buttons wrap; below 30rem each line of buttons fills the width, so every button keeps
+  its 44-pixel target (`pnpm website:mobile`).
+
+`pnpm website:check` fails a button to either address that opens in the same tab, lacks `rel="noopener"` or
+the note, or shows its mark as an image, and a landing page whose hero does not offer each once. A guide's
+link to either address (the README badge, rendered as its alt text) is a link in a text, not a button, and
+opens like every other link of a guide.
+
 ## The demo
 
 The demo at <https://gcportrait.app/demo/> is the app itself, built in demo-only mode for a static host: no
@@ -914,7 +943,7 @@ curl -sI https://gcportrait.app/ | head -1   # HTTP/2 200, once the certificate 
 ## Legal pages
 
 The site has no Impressum and no privacy notice of its own: the maintainer runs no service and keeps both
-texts on their own website, and the footer of every page links them ([agents.md](../agents.md), "Modes and
+texts on their own website, and the footer of every page links them ([AGENTS.md](../AGENTS.md), "Modes and
 hosting"):
 
 | Link | Address |

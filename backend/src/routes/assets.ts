@@ -8,7 +8,7 @@
  * quotaProject? }`; the pull's fields, mode rule and credentials are ../stream/pull.ts's, shared with the render
  * route.
  * - `mode: "user"`: the caller's bearer token is forwarded, and `quotaProject` is required: it goes into
- *   `x-goog-user-project`, so the user's own project pays (never the instance's project; agents.md, Security
+ *   `x-goog-user-project`, so the user's own project pays (never the instance's project; AGENTS.md, Security
  *   and privacy, Quota project and the permission check).
  * - `mode: "sa"`: only when the operator enabled service-account mode, and only through the service-account
  *   gate (../auth/gate.ts), which runs before every CAI call (a pass is remembered for at most five minutes

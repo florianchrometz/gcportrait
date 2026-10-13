@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The "synthetic only" guard (agents.md, Data and graph semantics; skill cai-ingestion §7): one sweep
+ * The "synthetic only" guard (AGENTS.md, Data and graph semantics; skill cai-ingestion §7): one sweep
  * over text (a fixture file, an NDJSON export, a JSON document, a source file) that reports anything that looks
  * like real organisation data. It is the only implementation: the demo-data generator, the catalog compiler's
  * fixture check and the ingest tests all call it, with the one allowlist below. Pure, no dependencies, and

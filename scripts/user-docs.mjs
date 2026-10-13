@@ -12,7 +12,7 @@
  * - no user document logs what was checked when and where (a dated verification line or section, a heading
  *   about how it was verified, a dated note of when something changed or was decided, a machine and its
  *   versions, a measured or timed run, the record of a first version, a shell prompt with its output in
- *   code): a user document says what to do, and keeps no record of runs (agents.md, Documentation). The user
+ *   code): a user document says what to do, and keeps no record of runs (AGENTS.md, Documentation). The user
  *   documents are the guides, the documents whose commands are checked, and LOG_FREE_DOCS;
  * - the self-hosting guide asks for nothing but QUICK_START_VARIABLES: the website's Variables panel lists the
  *   variables of a page's code, and the page that starts a deploy asks for the project id, the OAuth client id and
@@ -69,15 +69,15 @@ const COMMAND_DOCS = Object.freeze([
 
 /**
  * Other documents, checked for verification logs only (their commands are not all the scripts'): the README,
- * the rules (agents.md) and the skills, the contributor references and the package READMEs. Every document
- * says what is, never how it came to be (agents.md, Documentation). Not listed: the generated THIRD_PARTY.md
+ * the rules (AGENTS.md) and the skills, the contributor references and the package READMEs. Every document
+ * says what is, never how it came to be (AGENTS.md, Documentation). Not listed: the generated THIRD_PARTY.md
  * and CHANGELOGs, the changesets, docs/contributing.md (its troubleshooting table names Node versions), and
  * the catalog's and the icons' READMEs (dates of Google's own retirements and of the icon download are data
  * there).
  */
 export const LOG_FREE_DOCS = Object.freeze([
   'README.md',
-  'agents.md',
+  'AGENTS.md',
   '.agents/README.md',
   '.agents/skills/cai-ingestion/SKILL.md',
   '.agents/skills/contributor-workflow/SKILL.md',

@@ -349,7 +349,7 @@ describe('POST /api/scopes/search', () => {
     const send = (headers: Record<string, string>) =>
       app.inject({ method: 'POST', url: '/api/scopes/search', headers, payload: { query: '' } });
     // What the app sends behind Identity-Aware Proxy: its own header, IAP's assertion, no Authorization
-    // (agents.md, Security and privacy, Tokens).
+    // (AGENTS.md, Security and privacy, Tokens).
     const behindIap = await send({
       'x-gcportrait-token': CALLER_TOKEN,
       'x-goog-iap-jwt-assertion': 'eyJhbGciOiJFUzI1NiJ9.iap.signature',

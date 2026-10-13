@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Bundle-size budgets for the SPA (agents.md, Quality gates, testing and CI). The build in frontend/dist is
+ * Bundle-size budgets for the SPA (AGENTS.md, Quality gates, testing and CI). The build in frontend/dist is
  * split by thread and each part has its own budget, both gzipped:
  *
  *   UI thread  350 kB  the entry script, every chunk it imports statically, and the CSS index.html links, plus a
@@ -34,7 +34,7 @@
  * Each file is gzipped on its own at zlib's default level, the level most web servers use, and the gzipped
  * sizes are summed per part. 1 kB is 1000 bytes.
  *
- * No zod on the UI thread (zod runs in the workers only; agents.md, Architecture and code): every JavaScript
+ * No zod on the UI thread (zod runs in the workers only; AGENTS.md, Architecture and code): every JavaScript
  * file the UI thread loads (the initial chunks, the lazy ones and anything unclassified) is searched for
  * zod's signatures (`ZOD_SIGNATURES` below: names a minifier keeps, such as zod 4's `._zod` property and its
  * `"$ZodType"` constructor names), and a match fails the check whatever the sizes; the workers may bundle

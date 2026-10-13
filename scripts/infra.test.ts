@@ -335,7 +335,7 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
         const help = run(script, ['--help'], []);
         expect(help.status).toBe(0);
         expect(help.out.split('\n')[0]).toBe(`gcportrait infra/${script}`);
-        // The long form, wrapped, after the options (agents.md, Non-affiliation, brand and legal).
+        // The long form, wrapped, after the options (AGENTS.md, Non-affiliation, brand and legal).
         expect(help.out.trimEnd().split('\n\n').at(-1)?.replace(/\s+/g, ' ')).toBe(LONG_FORM);
         expect(help.calls).toEqual([]);
         // A run: the first line, before anything is asked of Google; no affiliation line in the run's output.

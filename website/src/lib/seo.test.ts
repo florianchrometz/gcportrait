@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
 
+import { NON_AFFILIATION_LONG } from '../site.js';
 import {
   FEATURE_LIST,
+  articleLd,
   canonicalUrl,
   fullTitle,
   jsonLdText,
@@ -38,9 +40,12 @@ describe('page metadata', () => {
     expect(app['@type']).toBe('SoftwareApplication');
     expect(app.license).toBe('https://opensource.org/licenses/MIT');
     expect(app.sameAs).toEqual(['https://github.com/florianchrometz/gcportrait']);
+    // The statement is in the footer and the author section, never in metadata.
     expect(app.description).toEqual(
-      expect.stringContaining('is not affiliated with, endorsed by, or sponsored by Google'),
+      expect.stringMatching(/^gcportrait renders the actual state of a Google Cloud/),
     );
+    expect(JSON.stringify(app)).not.toContain('affiliated');
+    expect(JSON.stringify(app)).not.toContain(NON_AFFILIATION_LONG);
     expect(app.applicationCategory).toBe('DeveloperApplication');
     expect(app.featureList).toEqual([...FEATURE_LIST]);
     expect(FEATURE_LIST.map((feature) => feature.split(':')[0])).toEqual(['Self-hosted', 'Web app', 'API']);
@@ -49,5 +54,15 @@ describe('page metadata', () => {
     expect(person['@type']).toBe('Person');
     for (const data of [app, sourceCodeLd(), person])
       expect(JSON.stringify(data)).not.toContain('Organization');
+  });
+
+  it('names a guide’s author as the author section’s Person, with the name search engines attribute to', () => {
+    const article = articleLd({ title: 'API', description: 'd', path: '/docs/api/', author: AUTHOR });
+    expect(article.author).toEqual({
+      '@type': 'Person',
+      '@id': 'https://gcportrait.app/#author',
+      name: AUTHOR.name,
+      url: 'https://florian-chrometz.de',
+    });
   });
 });

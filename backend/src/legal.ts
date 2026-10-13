@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 /**
- * The instance's legal pages (agents.md, Modes and hosting): an Impressum and a privacy notice, written by
+ * The instance's legal pages (AGENTS.md, Modes and hosting): an Impressum and a privacy notice, written by
  * whoever runs the instance and handed to the backend at start-up, never kept in the repository (they name a
  * person and an address). The SPA shows them at /impressum and /privacy, rendered from Markdown with a
  * renderer that never emits raw HTML (frontend/src/legal/), and links them from its footer only when they

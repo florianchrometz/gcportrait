@@ -3,10 +3,13 @@
  * `pnpm website:check`: checks the built site (website/dist) for what every page must have and what no page may do
  * (docs/website.md). Run after `pnpm website:build`. Exit code 0 when clean, 1 with every problem listed.
  *
- * Every page: a unique title and description (50 to 170 characters), the canonical URL on https://gcportrait.app (the
- * 404 page instead: noindex and no canonical URL), OpenGraph and Twitter card tags with a 1200×630 image and its alt
- * text, valid JSON-LD and never an Organization (nothing may read as Google's), `lang`, one level-1 heading,
- * alt text on every image, nothing loaded from another host (self-hosted fonts and media only), the footer notice in
+ * Every page: a unique title (at most 60 characters) and description (50 to 160 characters), as search results show
+ * them whole, the canonical URL on https://gcportrait.app (the 404 page instead: noindex and no canonical URL),
+ * OpenGraph and Twitter card tags with a 1200×630 image and its alt text, valid JSON-LD and never an Organization
+ * (nothing may read as Google's), no affiliation statement in its metadata (meta tags, JSON-LD: the statement belongs
+ * in the footer and long-form texts), `lang`, one level-1 heading, alt text on every image, nothing loaded from
+ * another host (self-hosted fonts and media only), every button to the Cloud Shell tutorial or the Cloud Run Button
+ * opening a new tab that its name announces, with its mark drawn inline (checkStartLinks), the footer notice in
  * the footer ("Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project
  * by", the maintainer's name linked to their website, and a full stop), the footer's links to the Impressum and the
  * privacy notice on the maintainer's website (src/site.ts, LEGAL_LINKS: each once, `rel="noopener"`, named as an
@@ -47,7 +50,7 @@
  * Sample exports (docs/website.md, "Sample exports"): every link of the exports section (`a[data-export]`, on the
  * landing page and /exports/) points at a file of the build itself, a PNG, an SVG or a draw.io file; a download link
  * has its `download` name; no SVG it offers carries an affiliation line, in its title block, its <title>, its <desc> or
- * anywhere else (the statement is in the footer and the long form, never in a drawing: agents.md, Non-affiliation,
+ * anywhere else (the statement is in the footer and the long form, never in a drawing: AGENTS.md, Non-affiliation,
  * brand and legal), and none loads anything from elsewhere; every draw.io file reads as diagrams.net reads it
  * (compressed), with no affiliation line in its labels and no address but Google Fonts' stylesheet its labels name for
  * the user's diagrams.net; every "Open in diagrams.net" link (`drawio-open`) is `https://app.diagrams.net/?url=` with
@@ -102,6 +105,8 @@ import { inflateRawSync } from 'node:zlib';
 import { commandVariable, variableTokens } from '@gcportrait/model';
 
 import {
+  CLOUD_RUN_BUTTON_URL,
+  CLOUD_SHELL_URL,
   DEMO_URL,
   EXPORT_DISCLAIMER,
   FOOTER_NOTICE,
@@ -581,7 +586,49 @@ export function checkDemoLinks(
 }
 
 /**
- * The footer notice in the footer (agents.md, Non-affiliation, brand and legal): its text up to the maintainer's
+ * The two ways to start without a terminal of one's own, as README.md's badges name them, at the addresses those badges
+ * use (src/site.ts): the Cloud Shell tutorial and the Cloud Run Button.
+ */
+export const START_LINKS: readonly { readonly href: string; readonly label: string }[] = [
+  { href: CLOUD_SHELL_URL, label: 'Open in Cloud Shell' },
+  { href: CLOUD_RUN_BUTTON_URL, label: 'Run on Google Cloud' },
+];
+
+/**
+ * The site's buttons to the Cloud Shell tutorial and the Cloud Run Button (src/components/StartLink.astro): every button
+ * (`class="button"`) to either address reads as the README's badge, opens a new tab (`target="_blank"`,
+ * `rel="noopener"`), says so in its name (the new-tab note, visually hidden) and draws its mark inline, never as an image
+ * (`<img>`), which would load from another host. A guide's link to either address is text, not a button, and is left as
+ * it is. On the landing page (`landing`), the hero offers both.
+ */
+export function checkStartLinks(html: string, where: (message: string) => void, landing = false): void {
+  for (const match of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+    const attributes = tags(`<a${match[1] ?? ''}>`, 'a')[0] ?? {};
+    const start = START_LINKS.find((link) => link.href === attributes.href);
+    if (start === undefined || !(attributes.class ?? '').split(/\s+/).includes('button')) continue;
+    const inner = match[2] ?? '';
+    const text = textContent(inner);
+    const name = `the "${start.label}" button`;
+    if (text !== `${start.label}${NEW_TAB_NOTE}`) where(`${name} reads "${text}"`);
+    if (attributes.target !== '_blank') where(`${name} does not open a new tab (target="_blank")`);
+    if (!(attributes.rel ?? '').split(/\s+/).includes('noopener')) where(`${name} has no rel="noopener"`);
+    if (!text.endsWith(NEW_TAB_NOTE.trim()))
+      where(`${name} does not say it opens a new tab ("${NEW_TAB_NOTE.trim()}", visually hidden)`);
+    if (/<img\b/i.test(inner) || !/<svg\b/i.test(inner))
+      where(`${name} does not draw its mark inline (<svg>, no <img>)`);
+  }
+  if (!landing) return;
+  const hero = /<section\b[^>]*class="[^"]*\bhero\b[^"]*"[^>]*>[\s\S]*?<\/section>/i.exec(html)?.[0] ?? '';
+  for (const start of START_LINKS) {
+    const buttons = tags(hero, 'a').filter(
+      (anchor) => anchor.href === start.href && (anchor.class ?? '').split(/\s+/).includes('button'),
+    );
+    if (buttons.length !== 1) where(`${String(buttons.length)} "${start.label}" buttons in the hero (one)`);
+  }
+}
+
+/**
+ * The footer notice in the footer (AGENTS.md, Non-affiliation, brand and legal): its text up to the maintainer's
  * name, the name as a link to their website, and a full stop.
  */
 export function checkFooterNotice(html: string, where: (message: string) => void): void {
@@ -764,6 +811,11 @@ export function checkDemo(demo: DemoFiles, brandSource: string | undefined): str
   return problems;
 }
 
+/** The longest title, and the shortest and longest description, that search results show whole. */
+export const TITLE_MAX = 60;
+export const DESCRIPTION_MIN = 50;
+export const DESCRIPTION_MAX = 160;
+
 /** The problems of one page (`path` is its URL path, "/docs/" or "/404.html"). */
 export function checkPage(page: Page): string[] {
   const problems: string[] = [];
@@ -774,10 +826,15 @@ export function checkPage(page: Page): string[] {
   if (!/<html lang="en"/.test(html)) where('<html> has no lang="en"');
   const title = /<title>([^<]*)<\/title>/.exec(html)?.[1];
   if (title === undefined || title.trim() === '') where('no <title>');
+  else if (decode(title).length > TITLE_MAX) {
+    where(`the title has ${String(decode(title).length)} characters (at most ${String(TITLE_MAX)})`);
+  }
   const description = meta(html, 'name', 'description');
   if (description === undefined) where('no meta description');
-  else if (description.length < 50 || description.length > 170) {
-    where(`the meta description has ${String(description.length)} characters (50 to 170)`);
+  else if (description.length < DESCRIPTION_MIN || description.length > DESCRIPTION_MAX) {
+    where(
+      `the meta description has ${String(description.length)} characters (${String(DESCRIPTION_MIN)} to ${String(DESCRIPTION_MAX)})`,
+    );
   }
   const notFound = page.path === '/404.html';
   const canonical = tags(html, 'link').find((attributes) => attributes.rel === 'canonical')?.href;
@@ -815,9 +872,19 @@ export function checkPage(page: Page): string[] {
     try {
       const data: unknown = JSON.parse(match[1] ?? '');
       if (JSON.stringify(data).includes('"Organization"')) where('JSON-LD names an Organization');
+      if (statesAffiliation(JSON.stringify(data)))
+        where(
+          'JSON-LD states an affiliation (the statement belongs in the footer and long-form texts, not metadata)',
+        );
     } catch {
       where('a JSON-LD block does not parse');
     }
+  }
+  for (const attributes of tags(html, 'meta')) {
+    if (statesAffiliation(attributes.content ?? ''))
+      where(
+        `<meta ${attributes.name ?? attributes.property ?? ''}> states an affiliation (the statement belongs in the footer and long-form texts, not metadata)`,
+      );
   }
   const h1 = html.match(/<h1\b/g)?.length ?? 0;
   if (h1 !== 1) where(`${String(h1)} level-1 headings`);
@@ -887,6 +954,7 @@ export function checkPage(page: Page): string[] {
   checkVariables(page, where);
   checkFooterNotice(html, where);
   if (page.path === '/') checkLandingStatement(html, where);
+  checkStartLinks(html, where, page.path === '/');
   checkLegalLinks(html, where);
   checkDemoLinks(html, where, `${SITE_URL}${page.path}`);
   const github = tags(html, 'a').filter((anchor) =>
@@ -924,7 +992,7 @@ export function statesAffiliation(text: string): boolean {
 
 /**
  * What an exported SVG the site offers must not say or do: no affiliation line in its title block (any <text> of the
- * drawing), its <title>, its <desc> or anywhere else in the file (the <desc> keeps neutral metadata only; agents.md,
+ * drawing), its <title>, its <desc> or anywhere else in the file (the <desc> keeps neutral metadata only; AGENTS.md,
  * Non-affiliation, brand and legal), and nothing loaded from elsewhere.
  */
 export function exportSvgProblems(text: string): string[] {
@@ -1482,6 +1550,6 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     process.exit(1);
   }
   console.log(
-    `website:check: ${String(count)} pages OK (metadata, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
+    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the Cloud Shell and Cloud Run buttons opening a new tab, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
   );
 }

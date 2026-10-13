@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * How the render route runs a render job (agents.md, Exports and the render API). The default runner starts a
+ * How the render route runs a render job (AGENTS.md, Exports and the render API). The default runner starts a
  * fresh `worker_threads` worker per render and terminates it when the render ends, times out or loses its
  * client: rasterising takes seconds of CPU that would otherwise stall `/healthz` and every stream, and the
  * WebAssembly rasteriser's memory (about 10 bytes per PNG pixel) is only given back when its thread ends. The

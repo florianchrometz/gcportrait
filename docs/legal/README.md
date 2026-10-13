@@ -10,7 +10,7 @@ trademarks of Google and are used under Google's icon usage terms.
 by a lawyer yet.
 
 The maintainer runs no service: no sign-in instance, no accounts, nothing to agree to
-([agents.md](../../agents.md), "Modes and hosting"). The hosted surfaces are the website `gcportrait.app` and
+([AGENTS.md](../../AGENTS.md), "Modes and hosting"). The hosted surfaces are the website `gcportrait.app` and
 its sign-in-free demo at `gcportrait.app/demo/`, a static build of the app in demo-only mode, both served by
 one GitHub Pages site, and neither processes personal data by design: no sign-in, no cookies, no server of its
 own, no server-side storage, and no analytics but the website's own page views. What remains are the hosting

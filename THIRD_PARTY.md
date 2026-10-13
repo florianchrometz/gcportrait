@@ -5,7 +5,7 @@
 gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`, Copyright (c)
 2026 Florian Chrometz; see `LICENSE`), except the gcportrait name and the gcportrait icon
 ([below](#the-gcportrait-name-and-icon)). It contains no third-party source code. Third-party material is limited to
-the three categories below ([agents.md](agents.md), "Licence and dependencies"); each keeps its own licence or
+the three categories below ([AGENTS.md](AGENTS.md), "Licence and dependencies"); each keeps its own licence or
 terms, and none of it is covered by the MIT License.
 
 ## The gcportrait name and icon

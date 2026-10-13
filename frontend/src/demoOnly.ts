@@ -3,7 +3,7 @@ import type { LegalPages } from './api/config';
 import { useAppState } from './state';
 
 /**
- * Demo-only mode (agents.md, Modes and hosting): an instance whose backend runs with DEMO_ONLY=true, such as the
+ * Demo-only mode (AGENTS.md, Modes and hosting): an instance whose backend runs with DEMO_ONLY=true, such as the
  * maintainer's sign-in-free demo. Unlike the build-time demo mode (`useAppMode().demo`, no backend at all), the app
  * learns it at run time from GET /api/config (`demoOnly`), which auth/AuthProvider.tsx fetched into the store. The
  * Connect page then offers the demo organisations only, with the way to deploy gcportrait to one's own project; the

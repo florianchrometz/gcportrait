@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-import { readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { fullTitle } from '../lib/seo.js';
 import mediaList from './media.json' with { type: 'json' };
 import { DOC_MENU_EXTRAS, DOC_PAGES, NOT_ON_SITE, menuItems } from './docs.js';
 
@@ -31,7 +32,16 @@ describe('the docs manifest (src/data/docs.ts)', () => {
       expect(page.slug).toMatch(/^[a-z]+(?:-[a-z]+)*$/);
       expect(cards.has(`docs-${page.slug}`), `media.json has no card docs-${page.slug}`).toBe(true);
       expect(page.description.length, page.slug).toBeGreaterThanOrEqual(50);
-      expect(page.description.length, page.slug).toBeLessThanOrEqual(170);
+      expect(page.description.length, page.slug).toBeLessThanOrEqual(160);
+    }
+  });
+
+  it('gives every page a document title search results show whole (60 characters), naming the product once', () => {
+    for (const page of DOC_PAGES) {
+      const heading = /^# (.+)$/m.exec(readFileSync(path.join(REPO, page.source), 'utf8'))?.[1] ?? page.label;
+      const title = fullTitle({ title: page.searchTitle ?? heading, path: `/docs/${page.slug}/` });
+      expect(title.length, title).toBeLessThanOrEqual(60);
+      expect(title.split('gcportrait'), title).toHaveLength(2);
     }
   });
 

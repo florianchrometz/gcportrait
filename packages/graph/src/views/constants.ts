@@ -21,7 +21,7 @@ export const VIEWPORT_AREA_PER_RECT = 14_000;
 export const MIN_VIEWPORT_BUDGET = 24;
 export const MAX_VIEWPORT_BUDGET = 250;
 
-/** The smallest supported viewport (desktop only, at least 1280×800: agents.md, Product rules). */
+/** The smallest supported viewport (desktop only, at least 1280×800: AGENTS.md, Product rules). */
 export const MIN_VIEWPORT = { width: 1280, height: 800 } as const;
 
 /**
@@ -38,7 +38,7 @@ export function viewportBudget(width: number, height: number): number {
 export const DEFAULT_VIEWPORT_BUDGET = viewportBudget(MIN_VIEWPORT.width, MIN_VIEWPORT.height);
 
 /**
- * The icon key of a card whose type and service the catalog does not know (agents.md, Product rules): the
+ * The icon key of a card whose type and service the catalog does not know (AGENTS.md, Product rules): the
  * generic cloud mark, the end of the icon fallback chain. `packages/icons` resolves it like any other key.
  */
 export const GENERIC_ICON = 'cloud_generic';

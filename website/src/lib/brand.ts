@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * gcportrait's mark from its one source file, brand/icon.svg at the repository root (brand/README.md; agents.md,
+ * gcportrait's mark from its one source file, brand/icon.svg at the repository root (brand/README.md; AGENTS.md,
  * Non-affiliation, brand and legal). The website's favicon is that file as it is (astro.config.ts copies it to
  * /favicon.svg), and the logo in the header and the footer (src/components/Logo.astro) draws the same shapes in the
  * same colours, read from the file here at build time. The app's favicon is the same file (frontend/vite.config.ts,

@@ -13,7 +13,7 @@ import { expectNoAxeViolations } from '../test/axe';
 import { publicConfig, stubBackend, type StubbedBackend } from '../test/backend';
 import { currentLocation, renderApp } from '../test/renderApp';
 
-/** Synthetic texts only (agents.md, Data and graph semantics). */
+/** Synthetic texts only (AGENTS.md, Data and graph semantics). */
 const IMPRESSUM = [
   '# Impressum',
   '',

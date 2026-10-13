@@ -40,8 +40,8 @@ describe('rewriteHref', () => {
     expect(rewriteHref('legal/data-processing-inventory.md', 'docs/faq.md', PAGES)).toBe(
       `${REPOSITORY_URL}/blob/main/docs/legal/data-processing-inventory.md`,
     );
-    expect(rewriteHref('../agents.md#security-and-privacy', 'docs/faq.md', PAGES)).toBe(
-      `${REPOSITORY_URL}/blob/main/agents.md#security-and-privacy`,
+    expect(rewriteHref('../AGENTS.md#security-and-privacy', 'docs/faq.md', PAGES)).toBe(
+      `${REPOSITORY_URL}/blob/main/AGENTS.md#security-and-privacy`,
     );
     expect(rewriteHref('../infra/', 'docs/faq.md', PAGES)).toBe(`${REPOSITORY_URL}/tree/main/infra`);
     expect(rewriteHref('media', 'docs/faq.md', PAGES, (target) => target === 'docs/media')).toBe(

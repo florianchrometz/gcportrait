@@ -16,7 +16,7 @@ interface Props {
 const { doc } = Astro.props;
 const author = authorSection();
 const meta = {
-  title: doc.title,
+  title: doc.searchTitle ?? doc.title,
   description: doc.description,
   path: doc.path,
   type: 'article' as const,

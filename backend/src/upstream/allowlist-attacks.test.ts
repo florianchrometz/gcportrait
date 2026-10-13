@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The backend is not an open proxy (agents.md, Security and privacy, principle 3): attempts to make it call
+ * The backend is not an open proxy (AGENTS.md, Security and privacy, principle 3): attempts to make it call
  * anything but the four Google API hosts, directly through the allowlist and through the bodies of the routes
  * that call Google.
  */

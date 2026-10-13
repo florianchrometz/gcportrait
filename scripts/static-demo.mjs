@@ -42,7 +42,7 @@ const FRONTEND = path.join(ROOT, 'frontend');
 export const DEFAULT_OUT = path.join(ROOT, 'dist', 'demo');
 
 /**
- * The maintainer's Impressum and privacy notice, which the maintainer's demo links (agents.md, Modes and
+ * The maintainer's Impressum and privacy notice, which the maintainer's demo links (AGENTS.md, Modes and
  * hosting). The website's footer links the same pages (IMPRESSUM_URL and PRIVACY_URL in website/src/site.ts);
  * scripts/static-demo.test.ts fails while the two differ. Someone who publishes a static demo of their own
  * links their own pages with --impressum-url and --privacy-url.

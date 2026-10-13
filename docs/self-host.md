@@ -2,10 +2,6 @@
 
 # Self-hosting gcportrait
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 A gcportrait instance is one Cloud Run service in a Google Cloud project of yours: the app and a small
 stateless backend that keeps nothing, no database, no bucket, no stored token. Everyone signs in with their
 own Google account and sees only what their own IAM permissions allow. This page takes you there in three

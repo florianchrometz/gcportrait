@@ -32,13 +32,13 @@ const QUOTE = '"';
 function mixedCase(name: string): string {
   return name.replace(/[a-z]/g, (letter, index: number) => (index % 2 === 0 ? letter : letter.toUpperCase()));
 }
-// Decision records: the abbreviation, spelled out, a folder of them, and a numbered rule of agents.md.
+// Decision records: the abbreviation, spelled out, a folder of them, and a numbered rule of AGENTS.md.
 const RECORD = ['A', 'DR'].join('');
 const RECORD_SPELLED = ['Architecture', 'Decision', 'Record'].join(' ');
 const RECORD_NUMBERED = ['decision', 'record', '42'].join(' ');
 const RECORD_FOLDER = ['handbook', RECORD.toLowerCase()].join('/');
-const RULE_NUMBER = ['agents.md', 'rule', '9'].join(' ');
-const RULE_OF = ['rule', '12', 'of', 'agents.md'].join(' ');
+const RULE_NUMBER = ['AGENTS.md', 'rule', '9'].join(' ');
+const RULE_OF = ['rule', '12', 'of', 'AGENTS.md'].join(' ');
 // Build-record wording the checker refuses by pattern.
 const VERIFIED = ['Verified', 'on'].join(' ');
 const AMENDED_ON = ['amended', 'on'].join(' ');
@@ -153,7 +153,7 @@ describe('check-provenance', () => {
    * The failing cases: files planted into the clean tree, the lines the check must print for them
    * (`<file>:<line> [rule] …`), and, where the case pins it, the summary's count of problems and files;
    * `absent` must not be reported. `refuse` lists phrases whose digests the run refuses as well
-   * (`--also-refuse`). Every row is a rule of the provenance guard (agents.md, Licence and dependencies,
+   * (`--also-refuse`). Every row is a rule of the provenance guard (AGENTS.md, Licence and dependencies,
    * and Names that never appear): keep them all.
    */
   type Failing = {
@@ -290,7 +290,7 @@ describe('check-provenance', () => {
     {
       // A citation with and without a number, a plural, one broken across a line, in any case and with or
       // without a separator before the number, spelled out, links into a folder of records (relative and
-      // from the root), a folder of records as a path, and a numbered rule of agents.md in both orders.
+      // from the root), a folder of records as a path, and a numbered rule of AGENTS.md in both orders.
       name: 'citations of decision records and numbered rules',
       files: {
         'backend/src/cache.ts': `${TS_HEADER}\n// The cache (${RECORD} 12 §3).\nexport {};\n`,
@@ -316,13 +316,13 @@ describe('check-provenance', () => {
         ].join('\n'),
       },
       lines: [
-        `backend/src/cache.ts:2  [banned-term] mentions "${RECORD} 12" (a citation of a decision record); state the rule, or point to the section of agents.md that holds it`,
+        `backend/src/cache.ts:2  [banned-term] mentions "${RECORD} 12" (a citation of a decision record); state the rule, or point to the section of AGENTS.md that holds it`,
         `docs/modes.md:3  [banned-term] mentions "${RECORD}" (a citation of a decision record)`,
         `docs/modes.md:4  [banned-term] mentions "${RECORD.toLowerCase()}/" (a citation of a decision record)`,
         `docs/index.md:3  [banned-term] mentions "${RECORD}s"`,
         `docs/index.md:4  [banned-term] mentions "${RECORD.toLowerCase()}/"`,
         `${RECORD_FOLDER}/notes.md  [banned-term] path mentions "${RECORD.toLowerCase()}/"`,
-        `backend/src/rules.ts:2  [banned-term] mentions "${RULE_NUMBER}" (a numbered rule of agents.md)`,
+        `backend/src/rules.ts:2  [banned-term] mentions "${RULE_NUMBER}" (a numbered rule of AGENTS.md)`,
         `backend/src/rules.ts:3  [banned-term] mentions "${RULE_OF}"`,
         `docs/forms.md:3  [banned-term] mentions "${RECORD.toLowerCase()} 0042"`,
         `docs/forms.md:4  [banned-term] mentions "${RECORD.charAt(0)}${RECORD.slice(1).toLowerCase()} 9"`,
@@ -355,7 +355,7 @@ describe('check-provenance', () => {
         'infra/notes.yaml': `${HASH_HEADER}\n# kept ${AS_DECIDED}\nkey: value\n`,
       },
       lines: [
-        `docs/records.md:3  [banned-term] mentions "${VERIFIED}" (a build-record phrase); a file says what is, not how it came to be (agents.md, Documentation)`,
+        `docs/records.md:3  [banned-term] mentions "${VERIFIED}" (a build-record phrase); a file says what is, not how it came to be (AGENTS.md, Documentation)`,
         `docs/records.md:4  [banned-term] mentions "${AMENDED_ON}" (a build-record phrase)`,
         `docs/records.md:5  [banned-term] mentions "${AS_AMENDED}"`,
         `docs/records.md:6  [banned-term] mentions "${AS_DECIDED}"`,
@@ -440,7 +440,7 @@ describe('check-provenance', () => {
         'docs/name.md': `${MD_HEADER}\n\nWrite ${COMPANY}\n${SUFFIX} nowhere.\n`,
       },
       lines: [
-        `backend/src/colours.ts:3  [banned-term] mentions "${RULE_NUMBER}" across a line break (a numbered rule of agents.md)`,
+        `backend/src/colours.ts:3  [banned-term] mentions "${RULE_NUMBER}" across a line break (a numbered rule of AGENTS.md)`,
         `backend/src/pure.ts:2  [banned-term] mentions "${RULE_OF}" across a line break`,
         `infra/notes.sh:3  [banned-term] mentions "${AS_AMENDED}" across a line break (a build-record phrase)`,
         `docs/cache.md:3  [banned-term] mentions "review of ${DATE}" across a line break`,
@@ -459,7 +459,7 @@ describe('check-provenance', () => {
         'docs/notes/week.md': `${MD_HEADER}\n\nDecided as ${DECISION_ID} in ${TASK_ID}.\n`,
       },
       lines: [
-        `src/layout.ts:2  [plan-id] "${TASK_ID}" reads as a task id of a work plan; say what the thing is or does (agents.md, Documentation)`,
+        `src/layout.ts:2  [plan-id] "${TASK_ID}" reads as a task id of a work plan; say what the thing is or does (AGENTS.md, Documentation)`,
         `docs/guide-two.md:3  [plan-id] "${PHASE.toLowerCase()}" reads as a phase`,
         `docs/guide-two.md:3  [plan-id] "${DECISION_ID}" reads as a decision id`,
         `.changeset/step.md:5  [plan-id] "${PHASE}" reads as a phase`,
@@ -487,7 +487,7 @@ describe('check-provenance', () => {
         ].join('\n'),
       },
       lines: [
-        `src/footer.ts:2  [licence-name] mentions "${LICENCE_SHORT}"; gcportrait is MIT (agents.md, Licence and dependencies)`,
+        `src/footer.ts:2  [licence-name] mentions "${LICENCE_SHORT}"; gcportrait is MIT (AGENTS.md, Licence and dependencies)`,
         `docs/licence.md:3  [licence-name] mentions "${LICENCE_LONG}"`,
         `scripts/licenses/${LICENCE_SHORT}-3.0-only.txt  [licence-name] path mentions "${LICENCE_SHORT}"`,
         `CHANGELOG.md:5  [licence-name] mentions "${LICENCE_SHORT}"`,
@@ -618,7 +618,7 @@ describe('check-provenance', () => {
         'src/events.ts': `${TS_HEADER}\nexport function fire(bus: { emit(name: string): void }, graph: { V(id: number): void }): void {\n  bus.emit('ready');\n  graph.V(1);\n}\n`,
       },
       lines: [
-        'cmd/main.go  [banned-file] .go files are not allowed: no Go code, no Graphviz templates (agents.md, Licence and dependencies)',
+        'cmd/main.go  [banned-file] .go files are not allowed: no Go code, no Graphviz templates (AGENTS.md, Licence and dependencies)',
         'templates/graph.dot  [banned-file]',
         'templates/graph.gv  [banned-file]',
         'queries/all.js:2  [banned-file]',
@@ -686,7 +686,7 @@ describe('check-provenance', () => {
         `export const uri = 'data:image/png;base64,xy/${RECORD.toLowerCase()}/z${RECORD}b';`,
         `export const ${RECORD}IATIC = 'quadr/';`,
         `// PADRES, ${RECORD}x, x${RECORD}, ${RECORD.toLowerCase()}enaline and ${RECORD.toLowerCase()}ift are words, not citations.`,
-        '// Words that only look like a banned term when two lines are read as one: see agents.md',
+        '// Words that only look like a banned term when two lines are read as one: see AGENTS.md',
         '// rules apply; kept as',
         '// amendments allow; the review of',
         '// the 2030-10-08 ticks; rule 12 of',
@@ -858,6 +858,24 @@ describe('check-provenance', () => {
     );
   });
 
+  it('skips the assistants’ local instruction files and folders, as .gitignore ignores them', () => {
+    // What `pnpm agents:setup` writes, a link among it, and what a person keeps for their own tool.
+    tree.write('CLAUDE.md', `@AGENTS.md\n\nA line with ${NAME_A}.\n`);
+    tree.write('GEMINI.md', '@./AGENTS.md\n');
+    tree.write('packages/model/AGENTS.override.md', 'no header\n');
+    tree.write('.cursor/rules/agents.mdc', '---\nalwaysApply: true\n---\n');
+    tree.write('.github/copilot-instructions.md', 'no header\n');
+    tree.write('.github/instructions/ts.instructions.md', 'no header\n');
+    tree.write('.gemini/settings.json', '{}\n');
+    tree.write('.agents/skills/one/SKILL.md', `---\nname: one\n---\n${MD_HEADER}\n`);
+    tree.write('.claude/skills/.keep', '');
+    symlinkSync('../../.agents/skills/one', path.join(tree.root, '.claude/skills/one'));
+    expect(check().status).toBe(0);
+    // A file of the same name elsewhere than .github/ is walked like any other.
+    tree.write('docs/copilot-instructions.md', 'no header\n');
+    expect(check().stderr).toContain('docs/copilot-instructions.md  [spdx-header] missing SPDX header');
+  });
+
   it('checks every file git tracks, also under a path the walk skips', () => {
     tree.write('coverage/kept.ts', `${TS_HEADER}\nexport const name = '${NAME_A}';\n`);
     tree.write('src/.claude/notes.md', `${MD_HEADER}\n\nA line with ${NAME_B}.\n`);
@@ -906,7 +924,7 @@ describe('check-provenance', () => {
     );
     expect(result.stdout).toContain('a citation of a decision record (3 patterns, not printed)');
     expect(result.stdout).toMatch(/a build-record phrase \(3 patterns and \d+ phrase digests, not printed\)/);
-    expect(result.stdout).toContain('a numbered rule of agents.md: /');
+    expect(result.stdout).toContain('a numbered rule of AGENTS.md: /');
     expect(result.stdout).toContain('in Markdown (.md .mdx .markdown), with no exemption');
     expect(result.stdout).toContain(`"${LICENCE_SHORT}", "${LICENCE_LONG}"`);
     expect(result.stdout).toContain('THIRD_PARTY.md (the dependency deny list names it)');

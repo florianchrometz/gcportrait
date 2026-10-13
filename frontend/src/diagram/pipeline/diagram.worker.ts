@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The diagram's worker script (ingest, graph build and layout off the UI thread; agents.md, Architecture and code).
+ * The diagram's worker script (ingest, graph build and layout off the UI thread; AGENTS.md, Architecture and code).
  * The page starts it twice, as two dedicated workers: the data worker (ingest, graph and Scene; dataRole.ts) and the
  * layout worker (layoutRole.ts), told apart by the name the page gives each instance (roles.ts); src/snapshots starts
  * a third instance for file import (snapshots/worker/role.ts; it loads no demo generator) and src/import a

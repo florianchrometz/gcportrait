@@ -1,6 +1,28 @@
 # SPDX-License-Identifier: MIT
-# Per-user assistant settings (machine-specific).
+# AI assistants: AGENTS.md and .agents/skills/ are the one source of instructions (AGENTS.md, "Assistants"). A
+# tool's own instruction file and its per-user settings stay local; `pnpm agents:setup` writes the pointer files.
+# Keep scripts/lib/repo-files.mjs (ASSISTANT_*) in step: the provenance check skips these too.
 .claude/
+CLAUDE.md
+CLAUDE.local.md
+.gemini/
+GEMINI.md
+.codex/
+AGENTS.local.md
+AGENTS.override.md
+.cursor/
+.cursorrules
+.windsurf/
+.windsurfrules
+.clinerules
+.roo/
+.roorules
+.junie/
+.kiro/
+.amazonq/
+.continue/
+/.github/copilot-instructions.md
+/.github/instructions/
 
 # Node / pnpm
 node_modules/

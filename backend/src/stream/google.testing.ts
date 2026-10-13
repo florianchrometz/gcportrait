@@ -3,7 +3,7 @@
  * A pretend Google for the stream tests (never built into dist/: tsconfig.build.json leaves `*.testing.ts`
  * out): Cloud Asset Inventory's `assets.list` and Cloud Storage's JSON API as an `UpstreamFetch`, recording
  * every call, on top of what every pretend Google shares (../upstream/google.testing.ts). The data is
- * synthetic (agents.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,
+ * synthetic (AGENTS.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,
  * organisation 30000000001, example.com.
  */
 import {

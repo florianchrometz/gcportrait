@@ -4,7 +4,7 @@ import { isSourceUrl, SOURCE_LINK_TEXT } from '../source';
 import { useAppState } from '../state';
 
 /**
- * The footer's link to the app's source and its licence, on every route (agents.md, Product rules): a courtesy to the
+ * The footer's link to the app's source and its licence, on every route (AGENTS.md, Product rules): a courtesy to the
  * people who use an instance. Demo mode links to the build-time URL (VITE_SOURCE_URL) and never calls the backend;
  * live mode shows the same URL at once and then
  * the backend's `sourceUrl` from GET /api/config, the operator's SOURCE_URL, so a self-hosted instance links to

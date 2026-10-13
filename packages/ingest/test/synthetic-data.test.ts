@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * No real organisation data (agents.md, Data and graph semantics; skill cai-ingestion §7): every fixture, the generated synthetic
+ * No real organisation data (AGENTS.md, Data and graph semantics; skill cai-ingestion §7): every fixture, the generated synthetic
  * export behind the budget test, and the package's own source and test files pass the one "synthetic only"
  * guard of `@gcportrait/model/testing` (example.com / example.org addresses, platform hosts, organisation
  * 30000000001, folder and project numbers below 100000000000, `demo-…` project ids, private and documentation

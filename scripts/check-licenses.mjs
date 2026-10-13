@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Licence guard for npm dependencies (agents.md, Licence and dependencies; Security and privacy,
+ * Licence guard for npm dependencies (AGENTS.md, Licence and dependencies; Security and privacy,
  * principle 7).
  *
  *   node scripts/check-licenses.mjs               verify (CI and `pnpm check`)
@@ -71,7 +71,7 @@ const ALLOWED_LICENSES = Object.freeze([
  * Licences accepted for named packages only, each with the reason it is acceptable there. A listed package
  * is accepted under exactly the licence named here (or anything on ALLOWED_LICENSES); keep the list short.
  *
- * SIL OFL 1.1, fonts only (agents.md, Licence and dependencies): the app self-hosts its Roboto fonts (the
+ * SIL OFL 1.1, fonts only (AGENTS.md, Licence and dependencies): the app self-hosts its Roboto fonts (the
  * production CSP and the offline demo rule out a font CDN). The font files are bundled unmodified into
  * frontend/dist and so are redistributed with the production image. OFL 1.1 permits that (the fonts may not
  * be sold on their own) provided the copyright notice and the licence accompany every copy; the frontend

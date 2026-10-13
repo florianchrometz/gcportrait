@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/preflight` (docs/permissions.md; agents.md, Security and privacy, Quota project and the
+ * `POST /api/preflight` (docs/permissions.md; AGENTS.md, Security and privacy, Quota project and the
  * permission check): checks, with the caller's own token, what a pull of one scope needs, and answers the
  * checklist with copy-ready `gcloud` commands (../preflight/run.ts; the contract in ../preflight/schemas.ts).
  *

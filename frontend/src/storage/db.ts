@@ -4,7 +4,7 @@ import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction, type St
 
 /**
  * The browser database (IndexedDB through `idb`). Snapshots, saved views, preferences and the timeline
- * tick cache live here and nowhere else: asset data never leaves the browser (agents.md, Security
+ * tick cache live here and nowhere else: asset data never leaves the browser (AGENTS.md, Security
  * and privacy, principle 1). `preferences` (storage/preferences.ts), `savedViews` (views/savedViewStore.ts),
  * `snapshots` (src/snapshots/) and `tickCache` (storage/tickCache.ts, the timeline's fetched ticks)
  * are in use. The page reads all of them through one connection (storage/connection.ts); the data worker

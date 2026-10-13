@@ -3,7 +3,7 @@
  * A search result's icon: the artwork the canvas draws the node with (resolved in the data worker, sent with
  * the answer), 16 px inside a 20 px box, decorative. On the dark theme Google's colour and grey marks sit on the
  * same light plate the diagram gives them (skill gcp-diagram-style §2, "Rules for dark"); the artwork itself is
- * never altered (agents.md, Style and accessibility).
+ * never altered (AGENTS.md, Style and accessibility).
  */
 import type { Icon } from '@gcportrait/icons';
 import type { ReactElement } from 'react';

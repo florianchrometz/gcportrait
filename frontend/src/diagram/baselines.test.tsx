@@ -48,7 +48,7 @@ const THEMES: readonly DiagramTheme[] = ['light', 'dark'];
 
 /**
  * What every drawing must show, whatever else changes (style skill §7, §11), and what none may: the
- * non-affiliation line, in the title block or in `<desc>` (the statement goes in the app footer only; agents.md,
+ * non-affiliation line, in the title block or in `<desc>` (the statement goes in the app footer only; AGENTS.md,
  * Non-affiliation, brand and legal).
  */
 function expectInvariants(svg: string, rootLabel: string, day = '2026-10-08'): void {

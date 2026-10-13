@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: MIT -->
 
-# agents.md: the rules of gcportrait
+# AGENTS.md: the rules of gcportrait
 
 This file holds every rule of gcportrait in one place, for the people and the AI assistants (Claude Code,
 Gemini CLI, Codex, Cursor, Copilot or whatever comes next) who change this repository. Each rule is stated as
@@ -26,15 +26,20 @@ it stands, with the reason for it in one sentence. Humans new to the repository 
 | [Documentation](#documentation) | Where things are written down, and how; the README's order |
 | [How to work a task](#how-to-work-a-task) | From an issue to a reviewed pull request; git |
 | [Skills](#skills) | Which handbook to load for which work |
+| [Assistants](#assistants) | What each assistant reads by itself, and the local pointer files `pnpm agents:setup` writes |
 | [Commands](#commands) | Every command, with what it does |
 | [Names that never appear](#names-that-never-appear) | Strings the provenance check refuses |
 
 ## How this file works
 
-- **agents.md is the one rules file.** Every rule of the project is here and is kept current. There is no
-  `CLAUDE.md`, no `GEMINI.md` and no other tool-specific instruction file: copies of the same rules for
-  different tools drift apart and favour some tools over others. Per-user assistant settings (such as
-  `.claude/`) are git-ignored, and the provenance check skips them.
+- **AGENTS.md is the one rules file**, under the name the assistants look for: Claude Code, Codex, Cursor and
+  GitHub Copilot read `AGENTS.md` by that name, in capitals, which a case-sensitive file system tells apart
+  from any other spelling. Every rule of the project is here and is kept current. No instruction file of a
+  particular tool is committed (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules/`, `.github/copilot-instructions.md`,
+  `AGENTS.override.md` and the like are git-ignored, as are per-user settings such as `.claude/`, and the
+  provenance check skips them all): copies of the same rules for different tools drift apart and favour some
+  tools over others. Who wants such a file locally writes one that points here with `pnpm agents:setup`
+  ([Assistants](#assistants)).
 - **The skills are handbooks.** Each skill in `.agents/skills/` is a plain Markdown procedure for one domain
   (`SKILL.md` with a `name` and a `description` in its frontmatter, optional `references/`): it says how the
   work is done and which constants it uses, and points here for the rules it applies. A skill never restates
@@ -42,8 +47,8 @@ it stands, with the reason for it in one sentence. Humans new to the repository 
   tool.
 - **A rule is stated as it is.** Present tense, its reason in one sentence, no history: not who decided it,
   not when, not what it replaced.
-- **Cite a rule by this file and its heading**: "agents.md, Security and privacy", or for a numbered principle
-  "agents.md, Security and privacy, principle 2". The headings are anchors: renaming one updates every
+- **Cite a rule by this file and its heading**: "AGENTS.md, Security and privacy", or for a numbered principle
+  "AGENTS.md, Security and privacy, principle 2". The headings are anchors: renaming one updates every
   citation in the same change. A comment or a guide that needs a rule's reason points here instead of
   retelling it.
 - **A rule changes in the same pull request as the code it governs**, here and in the skill that applies it.
@@ -328,7 +333,7 @@ The gcp-diagram-style skill holds both palettes, the tokens, the contrast pairs 
 ## Security and privacy
 
 The seven principles, numbered so that [docs/threat-model.md](docs/threat-model.md) and
-[docs/security.md](docs/security.md) can cite them ("agents.md, Security and privacy, principle 4"):
+[docs/security.md](docs/security.md) can cite them ("AGENTS.md, Security and privacy, principle 4"):
 
 1. **Asset data never leaves the person's browser except to be fetched.** The backend streams it from Google
    and forgets it; snapshots, saved views, cached days and preferences live in the browser's IndexedDB. An
@@ -464,12 +469,14 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
   enable sign-in run their own instance with their own OAuth client.
 - **The website explains gcportrait and is built to be found.** It presents the project and its features with
   screenshots and animated demos of the demo organisations, and renders the user guides. Every page has a
-  unique title and description, a canonical URL on `https://gcportrait.app`, OpenGraph and Twitter card tags
-  with a 1200 × 630 image, parseable JSON-LD and an entry in the sitemap; the JSON-LD never names an
-  Organization, so that nothing reads as Google's. The landing page presents the maintainer in an author
-  section with links and Person structured data ([docs/author.md](docs/author.md)). People find a tool through
-  search and link previews, and judge an open-source project by who stands behind it. `pnpm website:check`
-  enforces all of it ([docs/website.md](docs/website.md)).
+  unique title (at most 60 characters) and description (50 to 160), as search results show them whole, a
+  canonical URL on `https://gcportrait.app`, OpenGraph and Twitter card tags with a 1200 × 630 image,
+  parseable JSON-LD and an entry in the sitemap; the JSON-LD never names an Organization, so that nothing
+  reads as Google's, and no metadata carries the non-affiliation statement, which belongs in the footer and
+  the long-form texts. The landing page presents the maintainer in an author section with links and Person
+  structured data ([docs/author.md](docs/author.md)). People find a tool through search and link previews, and
+  judge an open-source project by who stands behind it. `pnpm website:check` enforces all of it
+  ([docs/website.md](docs/website.md)).
 - **No telemetry, except the website's page views.** The app, the static demo and every self-hosted instance
   send no usage data, error reports or page views anywhere: an instance runs in someone else's project and
   must never phone home. The website alone counts its own pages' views with TelemetryDeck, through its npm SDK
@@ -502,7 +509,9 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
     MiB;
   - the "Open in Cloud Shell" tutorial ([docs/cloudshell-tutorial.md](docs/cloudshell-tutorial.md)) and the
     "Run on Google Cloud" button (`app.json` with `infra/cloud-run-button.sh`) sit next to the manual steps in
-    the README and the self-hosting guide.
+    the README and the self-hosting guide, and beside "Self-host" on the website's landing page, where they
+    open a new tab that their name announces and draw a mark of the site's own (the site loads nothing from
+    another host).
 
 ## Non-affiliation, brand and legal
 
@@ -531,15 +540,17 @@ Where each goes:
 - **The footer notice** is in the app's footer on every route (next to the "Source (MIT)" link) and the
   website's footer on every page.
 - **The long form** is in every long-form text: the root README (the box under "Not affiliated with Google"),
-  the docs index and [docs/contributing.md](docs/contributing.md), the top of each user guide, the Cloud Shell
+  the docs index, the Cloud Shell
   tutorial, [packages/icons/README.md](packages/icons/README.md), the release notes, the image's
   `org.opencontainers.image.description` label, the close of the infra scripts' and the installer's `--help`,
   the Connect page's About block, and on the website the author section (the closing paragraph of
-  [docs/author.md](docs/author.md)), the licence page and the guides.
+  [docs/author.md](docs/author.md)) and the licence page. The guides and the contributing page carry it in the
+  footer only: a page says it once.
 - **Nowhere else.** No drawing carries a statement: not the canvas, an exported SVG, PNG or draw.io file, a
   render of `pnpm render`, the render API or the layout's debug script, nor the website's sample exports. Nor
   does a command-line banner, an API header, the backend's `hostedBy` line ("Hosted by NAME." alone, or null),
-  the Permissions page or a snapshot file. A reviewer who finds it there treats it as a defect.
+  the Permissions page, a snapshot file or the website's metadata (a meta tag, the JSON-LD). A reviewer who
+  finds it there treats it as a defect.
 
 Rules that go with it:
 
@@ -550,8 +561,8 @@ Rules that go with it:
   [packages/icons/README.md](packages/icons/README.md).
 - The maintainer is named only in the footer notice, the author sections (the README's
   "Author", [docs/author.md](docs/author.md) and the website's author section) and copyright notices
-  (`LICENSE`, the licence sections that quote it, the package metadata's `author`), and never by any programme
-  membership.
+  (`LICENSE`, the licence sections that quote it, the package metadata's `author`) and the structured data that
+  names a page's author for search engines, and never by any programme membership.
 - The gcportrait name and the gcportrait icon are not covered by the MIT License: "They identify this project
   and may not be used to present other software or services as gcportrait or as endorsed by it; forks must use
   their own name and icon." [brand/LICENSE.md](brand/LICENSE.md) holds the text; `brand/icon.svg` is the one
@@ -790,9 +801,9 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
    on the M fixture, looked at in both themes.
 6. Write the pull request with the template: what, why, how verified (commands and their results),
    screenshots, changeset, provenance statement. Update the docs, the skills and this file in the same pull
-   request, and take the item off the backlog. **A pull request stays small and about one feature or one
-   function**, because a focused change is quick to review and to merge; a rewrite of a whole part is proposed
-   in an issue first and then made in small steps.
+   request, and take the item off the backlog. **A pull request is one change: small, about one feature or one
+   function, with its changeset**, because a focused change is quick to review and to merge; a rewrite of a
+   whole part is proposed in an issue first and then made in small steps.
 7. Finish with a short, honest report: what was built, what was verified (commands and their real results,
    failures included), what was left out. A reviewer, human or agent, checks the acceptance criteria of the
    issue or backlog item, the skills' rules and this file before merging.
@@ -809,6 +820,30 @@ every clone and fork stays valid. Whether and where history is ever cut is the m
 | [.agents/skills/gcp-asset-catalog/SKILL.md](.agents/skills/gcp-asset-catalog/SKILL.md) | add or change an asset type, relation rule, lens, icon mapping, console URL, or run the coverage tool |
 | [.agents/skills/cai-ingestion/SKILL.md](.agents/skills/cai-ingestion/SKILL.md) | call Cloud Asset Inventory, parse exports, handle permissions, quota projects, timeline readTime, or write demo data |
 | [.agents/skills/contributor-workflow/SKILL.md](.agents/skills/contributor-workflow/SKILL.md) | start any task, prepare a PR, self-host for testing, release, or review someone else's change |
+
+## Assistants
+
+`AGENTS.md` and the skills under `.agents/skills/` are the one source of instructions for every assistant, so
+that each works from the same rules and none is favoured.
+
+| Tool | Reads by itself | What `pnpm agents:setup` writes |
+|---|---|---|
+| Claude Code | `AGENTS.md` while no `CLAUDE.md` is present; skills only from `.claude/skills/` | `CLAUDE.md` with an `@AGENTS.md` import, and a link `.claude/skills/NAME` to each skill |
+| Gemini CLI | `GEMINI.md`; the skills under `.agents/skills/` | `GEMINI.md` with an `@./AGENTS.md` import |
+| Codex CLI | `AGENTS.md` and the skills under `.agents/skills/` | nothing |
+| Cursor | `AGENTS.md`, `.cursor/rules/*.mdc` and the skills under `.agents/skills/` | `.cursor/rules/agents.mdc`, applied in every chat |
+| GitHub Copilot | `AGENTS.md`, `.github/copilot-instructions.md` and the skills under `.agents/skills/` | `.github/copilot-instructions.md` |
+
+- **A pointer file holds no rule.** Each says in one paragraph "Read AGENTS.md and the skills under
+  .agents/skills/ first; this file only points there.", with the tool's import line where it has one; it is
+  git-ignored and the provenance check skips it. A rule goes here, so that no copy can drift.
+- **`pnpm agents:setup` is safe to run at any time**: it never overwrites a file that exists (`--force` does,
+  but never a folder, and it never writes through a link), changes nothing that is in place, links a skill
+  added since and removes the link to one that is gone; `--tool claude` (gemini, codex, cursor, copilot)
+  limits it to one tool. `scripts/agents-setup.mjs` names the documentation each row of the table follows.
+- **The rules file is `AGENTS.md` in git as on disk.** On a case-insensitive file system (macOS, Windows) git
+  does not notice a rename that changes only the case, so such a rename is made with `git mv -f`;
+  `scripts/agents-setup.test.ts` fails while git tracks another spelling.
 
 ## Commands
 
@@ -828,6 +863,7 @@ every clone and fork stays valid. Whether and where history is ever cut is the m
 | Build, then the SPA's size budgets (UI thread 350 kB, workers 400 kB gzipped; Quality gates, testing and CI) | `pnpm build`, then `pnpm size` |
 | End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`) |
 | Add a changeset | `pnpm changeset` |
+| Write the local, git-ignored pointer files that lead an assistant to AGENTS.md and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Validate the asset catalog and report coverage (exit 1 on any violation) | `pnpm catalog:check` (`--group <group>` / `--file <path>` for one group's or file's problems, `--verbose` for rule traces, `pnpm -s catalog:check --json` for JSON) |
 | Per-group catalog coverage (owned official types, mapped by role, unmapped, missing) | `pnpm catalog:coverage` (`--group <group>`, `--json`) |
 | Compile the catalog into its git-ignored module (also run by install, lint, typecheck and test) | `pnpm catalog:build` |

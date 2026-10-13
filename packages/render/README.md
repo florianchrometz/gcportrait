@@ -2,7 +2,7 @@
 
 # @gcportrait/render
 
-The render library (agents.md, Exports and the render API): a snapshot and a view drawn as the app draws them,
+The render library (AGENTS.md, Exports and the render API): a snapshot and a view drawn as the app draws them,
 as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on every platform. `pnpm render`
 ([`@gcportrait/render-cli`](../render-cli/README.md)) and the backend's `POST /api/render`
 ([docs/api.md](../../docs/api.md)) both draw through it, so a demo view comes out byte for byte the same from
@@ -12,7 +12,7 @@ either.
 > affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks
 > of Google and are used under Google's icon usage terms.
 
-The drawings carry no affiliation line (agents.md, Non-affiliation, brand and legal): the title block holds
+The drawings carry no affiliation line (AGENTS.md, Non-affiliation, brand and legal): the title block holds
 the scope, the lens with the read time and the tagline. Neither does anything that travels with them: not the
 command line's output, not the API's answer; the statement is in the app's footer and the long-form texts
 only.
@@ -58,7 +58,7 @@ The one package that may import the frontend (`eslint.config.js`): `model`, `cat
 WebAssembly); the draw.io translator it reaches through the frontend is plain TypeScript with fflate (MIT) as
 its compressor, the same code the browser runs. Dependencies: the workspace packages above,
 `@resvg/resvg-wasm` (MPL-2.0) and `@fontsource/roboto` and `@fontsource/roboto-mono` (OFL-1.1, the font
-exception of agents.md, Licence and dependencies; the backend's image copies the faces with their licences).
+exception of AGENTS.md, Licence and dependencies; the backend's image copies the faces with their licences).
 Dev only: `@resvg/resvg-js` (the parity test), `pngjs`. The backend's image ships resvg-wasm's glue code in
 `backend/dist/render-worker.mjs` and its module as `backend/dist/render-assets/resvg.wasm`; the package has no
 licence file of its own, so `THIRD_PARTY_NOTICES.txt` and `server-dependencies.txt` name those files, where

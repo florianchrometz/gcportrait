@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The layout worker protocol (ingest, graph build and layout each run off the UI thread: agents.md,
+ * The layout worker protocol (ingest, graph build and layout each run off the UI thread: AGENTS.md,
  * Architecture and code; skill gcp-diagram-layout §7: "memoise by Scene hash; cancel superseded requests;
  * never block the UI thread").
  *

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The root README's order (agents.md, Documentation): what gcportrait is and does first, then the quick
+ * The root README's order (AGENTS.md, Documentation): what gcportrait is and does first, then the quick
  * starts, the features with their images, the contributing sections, and the non-affiliation statement and the
  * licence at the bottom. Its wording is free; this test holds the order and the pieces each part must show.
  */

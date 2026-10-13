@@ -6,7 +6,7 @@ description: Facts and rules for getting data into gcportrait from Google Cloud 
 
 # Cloud Asset Inventory ingestion
 
-The rules this handbook applies are in [agents.md](../../../agents.md) ("Security and privacy", "Data and
+The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Security and privacy", "Data and
 graph semantics" and "Product rules"); this file holds the facts about Google's APIs and the procedures built
 on them.
 
@@ -102,10 +102,10 @@ Scope formats: `organizations/123`, `folders/456`, `projects/my-id` or `projects
 Quota project: user-credential calls to CAI need a project where the caller holds `serviceusage.services.use`
 and where `cloudasset.googleapis.com` is enabled. We send `x-goog-user-project: <quota project>`. Preflight
 order: the scanned project (project scope) → the user's chosen project → error with the three conditions
-listed. Service-account mode sends no quota header: the account's own project pays (agents.md, "Security and
+listed. Service-account mode sends no quota header: the account's own project pays (AGENTS.md, "Security and
 privacy"), which deploy.sh makes the instance's project.
 
-Service-account mode gate (agents.md, "Security and privacy"): before using the backend identity for a scope,
+Service-account mode gate (AGENTS.md, "Security and privacy"): before using the backend identity for a scope,
 the backend asks `testIamPermissions` on the scope with the **caller's** token for
 `resourcemanager.{organizations,folders,projects}.get`, and goes on only when that permission comes back. A
 public `get` counts as the caller's; `SA_MODE_STRICT_EXPOSURE=true` adds the exposure check (the account's own
@@ -215,7 +215,7 @@ Google's documentation (check a page again before relying on a limit it states):
 ## 9. What Google's APIs answer
 
 Observed with a user token and with a service account that holds only `roles/cloudasset.viewer`; the backend's
-classification (agents.md, "Security and privacy", "Quota project and the permission check") and its tests'
+classification (AGENTS.md, "Security and privacy", "Quota project and the permission check") and its tests'
 recorded answers (`backend/src/upstream/google.testing.ts`, `backend/src/preflight/google.testing.ts`) rest on
 these. Check them again with real calls before changing what the backend relies on: `gcloud auth
 print-access-token | scripts/probe-google-apis.sh --project YOUR_PROJECT` runs the call matrix with the tokens

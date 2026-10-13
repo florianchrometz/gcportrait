@@ -10,7 +10,7 @@
  * pixels wide. Everything goes to docs/media/exports/ with a manifest (each file's sample, demo size, lens,
  * theme, size in pixels, bytes, hash and the command that made it), which the website reads.
  *
- * No file carries the non-affiliation line (agents.md, Non-affiliation, brand and legal): the statement is in
+ * No file carries the non-affiliation line (AGENTS.md, Non-affiliation, brand and legal): the statement is in
  * the footers of the app and the website and in the long form, never in a drawing, so neither an SVG's title
  * block nor its <title> or <desc> may hold it, nor a draw.io file's labels, and `--check` fails a file that
  * does.

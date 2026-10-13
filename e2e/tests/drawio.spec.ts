@@ -22,7 +22,7 @@ import { decodePng, mismatch, OUT_DIR, REPO_ROOT, renderWithResvg } from './expo
 import { openDiagram, TAGLINE } from './support.js';
 
 /**
- * The draw.io export's fidelity (agents.md, Exports and the render API): the `.drawio` file the Export menu
+ * The draw.io export's fidelity (AGENTS.md, Exports and the render API): the `.drawio` file the Export menu
  * downloads, drawn by mxGraph (the library diagrams.net is built on) in Chromium, against the SVG export of
  * the same view: demo S, M and L in both themes.
  *
@@ -340,7 +340,7 @@ for (const size of ['S', 'M', 'L'] as const) {
       const drawio = await download(page, DRAWIO_ACTION, label, `${size}-${theme}`);
 
       // The file: its name, as diagrams.net reads it, compressed, and nothing an export must not carry
-      // (agents.md, Non-affiliation, brand and legal).
+      // (AGENTS.md, Non-affiliation, brand and legal).
       expect(drawio.name).toMatch(FILE_NAME);
       const file = readDrawio(drawio.bytes);
       expect(file.compressed).toBe(true);

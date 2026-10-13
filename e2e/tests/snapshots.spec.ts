@@ -7,7 +7,7 @@ import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './s
 
 /**
  * The demo entry and the Snapshots page in demo mode: "Try the demo" generates a demo organisation in a
- * worker started for the job (the demo generator runs in workers only; agents.md, Architecture and code),
+ * worker started for the job (the demo generator runs in workers only; AGENTS.md, Architecture and code),
  * stores it in IndexedDB and opens it on the diagram; the size can be switched and survives a reload; stored
  * snapshots export as `.gcportrait.json` files that import back (read by the worker, loaded by the diagram's
  * data worker from IndexedDB) as separate copies, each under a new id (the demo organisations' files share
@@ -107,7 +107,7 @@ test('try demo S, switch to M, reload: M is still loaded; export both, import th
     history: { ticks: unknown[] };
   };
   expect(bundle.format).toBe('gcportrait.snapshot');
-  // No non-affiliation line travels with an exported file (footers and long-form texts only; agents.md,
+  // No non-affiliation line travels with an exported file (footers and long-form texts only; AGENTS.md,
   // Non-affiliation, brand and legal).
   expect(bundle.notice).toBeUndefined();
   expect(bundle.snapshot.assets).toHaveLength(952);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The options of a rendered export (agents.md, Exports and the render API): which view of a snapshot to draw,
+ * The options of a rendered export (AGENTS.md, Exports and the render API): which view of a snapshot to draw,
  * in which theme, as SVG, PNG or a draw.io file, at which PNG scale or width, the draw.io file compressed or
  * not and with or without the fonts' stylesheet, and the viewport the `auto` detail level fits. One schema
  * for the render library (`@gcportrait/render`'s `renderView`) and the backend's `POST /api/render`, which

@@ -2,7 +2,7 @@
 /**
  * The render job (job.ts) on its own messages: every chunk acknowledged once read, progress, exactly one
  * result or error, the asset limit as soon as it is passed, the app's messages for files it cannot read, and
- * the run's channel (runner.ts) failing a push once the job failed. Synthetic data only (agents.md, Security
+ * the run's channel (runner.ts) failing a push once the job failed. Synthetic data only (AGENTS.md, Security
  * and privacy, principle 6).
  */
 import { RenderOptionsSchema, type RenderOptionsInput } from '@gcportrait/model';

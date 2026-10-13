@@ -72,7 +72,7 @@ anything else.
 |---|---|
 | `packages/model/**` | no other `@gcportrait` package |
 | `packages/*/**` (demo-data, ingest, catalog, layout, icons) | `model` (`icons` imports none) |
-| `packages/graph/**` | `model`, `catalog` (the catalog owns rule semantics; agents.md, "Data and graph semantics") |
+| `packages/graph/**` | `model`, `catalog` (the catalog owns rule semantics; AGENTS.md, "Data and graph semantics") |
 | `packages/graph/test/**` | `model`, `catalog`, `demo-data` (a dev dependency: the demo and view tests build the demo organisations) |
 | `packages/graph/scripts/**` | `model`, `catalog`, `demo-data`, `ingest` (the `render-scene` command) |
 | `packages/layout/test/**`, `packages/layout/scripts/**` | `model`, `graph`, `catalog`, `demo-data` (dev dependencies: the golden, performance and debug-render Scenes are built from the demo organisations) |
@@ -101,7 +101,7 @@ and `model` itself). The dotted edges are development dependencies: nothing unde
 imports `demo-data` or `ingest`, and nothing under
 `packages/layout/src/` imports anything but `model`. `render` is the one edge that points up, from
 `packages/` to the app: it exists so the picture `pnpm render` and the render API draw is the app's picture,
-read by the app's own code, and it is recorded in `eslint.config.js` ([agents.md](../agents.md), "Architecture
+read by the app's own code, and it is recorded in `eslint.config.js` ([AGENTS.md](../AGENTS.md), "Architecture
 and code"); moving the pure SVG components into a package of their own would turn it
 downward (section 5).
 
@@ -221,7 +221,7 @@ gcp-diagram-layout skill §2 (and a type's own `nestsIn` claims), relation edges
 and number swapped), aliases (service-account e-mails, project ids and numbers), dangling references, indexes
 (type, project, IP, domain), weak-edge precedence, merged peerings and reciprocal `connects`, the derived
 Shared VPC `shares` edges (attachments into another project's subnet or a Shared VPC host's network,
-agents.md, "Data and graph semantics"), optional virtual region containers, and the timeline diff. The *views*
+AGENTS.md, "Data and graph semantics"), optional virtual region containers, and the timeline diff. The *views*
 turn a Graph and a `ViewSpec` into the `Scene` the layout consumes: drill-in root, focus view, lens, filters
 (applied under every drill-in and focus), detail level with chips, bundles and flips, and selection pointers.
 
@@ -313,7 +313,7 @@ the theme's canvas colour, with a 24 px margin and an optional pixel cap, or a d
 the SVG by the frontend's translator. The same pixels (and draw.io bytes) on every platform, and no native
 addon, so the backend's image can carry it: its render worker reads the wasm module and the faces from
 `backend/dist/render-assets/`, which `writeAssetDir` writes. Drawings carry no affiliation line
-([agents.md](../agents.md), "Non-affiliation, brand and legal").
+([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal").
 
 **Entry point.** `packages/render/src/index.ts`: `renderView`, `snapshotFromDemo`, `snapshotFromBundle`,
 `createSnapshotReader`, `prepareView`, `createDemoViews`, `drawSvg`, `drawPng`, `drawDrawio`, `rasterise`,
@@ -372,7 +372,7 @@ never touches disk.
 | `keyboard/` | the app-wide keys: "Skip to the diagram", `[` and `]` for the timeline, shortcut matching across keyboard layouts |
 | `timeline/` | the timeline bar's logic: 35 daily ticks (`today` passed in, labels in local dates), the tick in the ViewSpec, a stored history's days replayed in the data worker, a live scope's days read on demand through `/api/assets/stream` with `readTime` into IndexedDB's tick cache (keyed per scope and read time), the debounced read and idle prefetch with two in flight, playback; the extra ticks (the scope's stored exports and manual pulls among the days, `extraTicks.ts`) |
 | `export/` | the export flow: standalone SVG, PNG at 2×/3×, clipboard, file delivery |
-| `auth/` | Google sign-in: the GIS token client loaded on demand, the token held in memory only, silent renewal, expiry, sign-out with revocation; the store's `connect` slice (backend config, session, mode); the Connect page's sign-in card and mode selector; `fetchWithToken` for the backend calls (the token in `X-Gcportrait-Token`; agents.md, "Security and privacy") |
+| `auth/` | Google sign-in: the GIS token client loaded on demand, the token held in memory only, silent renewal, expiry, sign-out with revocation; the store's `connect` slice (backend config, session, mode); the Connect page's sign-in card and mode selector; `fetchWithToken` for the backend calls (the token in `X-Gcportrait-Token`; AGENTS.md, "Security and privacy") |
 | `import/` | the live pull and the export load: "Pull now" (scope, mode and quota project from the permission check), the Connect page's export card (dropped files through the Snapshots page's import, with the export's `operation.json`; a `gs://` URI read by the backend), the import worker (a fourth role of the worker script: the backend's stream read by `@gcportrait/ingest` as it arrives), the progress reducer and the error advice; a read time typed for an export without its `operation.json` |
 | `storage/`, `theme/`, `pages/` | the IndexedDB wrapper, the page's one connection (`connection.ts`), preferences and the tick cache (`tickCache.ts`); the theme; the routes' pages |
 
@@ -384,7 +384,7 @@ it (`diffFrom`): the answer then carries the diff of the two days and its Scene 
 longer draws, and `changes` answers what changed about one node between two days; before it reuses the Graph
 it keeps for a stored snapshot it asks IndexedDB whether the record is unchanged. One worker script serves
 five roles (data, layout, snapshots, imports and demo), so the model, zod and ingest are bundled once for the
-workers; the demo generator runs in workers only (agents.md, "Architecture and code"): the data role loads it
+workers; the demo generator runs in workers only (AGENTS.md, "Architecture and code"): the data role loads it
 on first use to draw a demo organisation, and the demo role, started for one "Try the demo" job and ended with
 it, to prepare one. [frontend/README.md](../frontend/README.md) is the reference for each module.
 
@@ -468,7 +468,7 @@ and waiting for an item of [backlog.md](backlog.md) or a maintainer decision:
 - **Second maps and second declarations in frontend code.** `ZONE_MARKS` (zone kind → icon key) lives in
   `frontend/src/diagram/theme/styles.ts`; a product container carries its catalog type's icon in
   the Scene, so the map is only the fallback for folders, projects, networks and zones without one, but
-  agents.md, "Data and graph semantics", still wants it in the icons data. `ZONE_KIND_RANK` is declared once
+  AGENTS.md, "Data and graph semantics", still wants it in the icons data. `ZONE_KIND_RANK` is declared once
   (`@gcportrait/model`, shared by the graph and the layout), and so is the `ConsoleLink` type (the
   frontend imports the catalog engine's, `packages/catalog/src/engine/console.ts`). One declaration is still
   doubled: the chip count line (`chipCountLine` in `packages/layout` sizes the chip,
@@ -482,7 +482,7 @@ and waiting for an item of [backlog.md](backlog.md) or a maintainer decision:
 - **One chip-opening loop.** Search's `locate` and the drawer's `reveal` both use
   `frontend/src/diagram/disclosure/openAround.ts`: toggle the flip of the chip that shows a node and rebuild
   the Scene, one level deeper each time, in the data worker.
-- **The bundle budgets** (agents.md, "Quality gates, testing and CI"). `pnpm size` budgets the UI thread
+- **The bundle budgets** (AGENTS.md, "Quality gates, testing and CI"). `pnpm size` budgets the UI thread
   (350 kB gzipped) and the workers (400 kB) apart and prints the table per chunk. The UI thread ships no
   zod: the URL-hash codec and the vocabularies it reads come from `@gcportrait/model` modules without it, so a
   UI-thread import of a schema would bring it back, and `pnpm size` fails on it. The demo generator runs in

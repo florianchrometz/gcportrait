@@ -11,14 +11,14 @@ process and on every platform. The drawing is done by the render library,
 instance draws through its API is byte for byte what this command writes (`--hash` takes the API's
 `x-gcportrait-view` header). The website's sample exports (`node scripts/exports.mjs`), the render golden
 under [`e2e/baselines/render/`](../../e2e/baselines/render/README.md) and contributors' and agents' visual
-self-checks (agents.md, "How to work a task") use it.
+self-checks (AGENTS.md, "How to work a task") use it.
 
 > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not
 > affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks
 > of Google and are used under Google's icon usage terms.
 
 Every run prints the command's name, `gcportrait render`, as the first line of standard error. Neither its
-output, `index.json` nor the drawings carry an affiliation line (footers and long-form texts only: agents.md,
+output, `index.json` nor the drawings carry an affiliation line (footers and long-form texts only: AGENTS.md,
 Non-affiliation, brand and legal). Every SVG and PNG has the app's own title block, the same three lines as
 the canvas, ending with the tagline `gcportrait.app - Visualize your Google Cloud Infrastructure`, and the
 SVG's `<desc>` holds the scope, the lens, the read time and "Drawn with gcportrait." only.
@@ -155,7 +155,7 @@ A failing golden test leaves the actual file (and for the PNG a picture of the d
 ## Dependencies
 
 `@gcportrait/render` (which brings `@resvg/resvg-wasm` 2.6.2, MPL-2.0, pinned exactly, the `@fontsource`
-Roboto packages, OFL-1.1, the font exception of agents.md, Licence and dependencies, and through the
+Roboto packages, OFL-1.1, the font exception of AGENTS.md, Licence and dependencies, and through the
 frontend's draw.io translator fflate 0.8.2, MIT, pinned exactly), `pixelmatch` 7.2.0 (ISC) and `pngjs` 7.0.0
 (MIT) for the comparisons, and the workspace packages above.
 

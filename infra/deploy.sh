@@ -18,7 +18,7 @@
 # its default), so re-running with one more flag changes only that. It enables the APIs the instance needs,
 # creates the backend service account with no roles at all, builds the image with Cloud Build (--build) or
 # pulls the published one from GitHub Container Registry through an Artifact Registry remote repository
-# (agents.md, Modes and hosting), deploys the Cloud Run service, optionally puts Identity-Aware Proxy in
+# (AGENTS.md, Modes and hosting), deploys the Cloud Run service, optionally puts Identity-Aware Proxy in
 # front, then prints the next steps (open the address, create the OAuth client, redeploy with its id), then
 # the address, the account and the rest. It never grants anything on an organisation, folder or other project,
 # never creates a key, and never stores a credential. infra/uninstall.sh removes what it made.
@@ -592,7 +592,7 @@ else
 fi
 # deploy.sh grants this account nothing. Report what it holds on the project, if anything, because a role that
 # includes resourcemanager.projects.get makes the service-account gate refuse this project as a scope
-# (agents.md, Security and privacy, The service-account gate).
+# (AGENTS.md, Security and privacy, The service-account gate).
 HELD_ROLES="$(gcloud projects get-iam-policy "$PROJECT" --flatten='bindings[].members' \
   --filter="bindings.members:serviceAccount:${BACKEND_SA_EMAIL}" --format='value(bindings.role)' 2>/dev/null || true)"
 if [ -n "$HELD_ROLES" ]; then

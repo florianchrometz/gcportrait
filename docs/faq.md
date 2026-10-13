@@ -2,10 +2,6 @@
 
 # Frequently asked questions
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 Short answers, each with a link to where the long one is.
 
 **The diagram**

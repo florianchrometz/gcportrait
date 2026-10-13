@@ -7,7 +7,7 @@
 > trademarks of Google and are used under Google's icon usage terms.
 
 The Google Cloud product icons, as Google Cloud provides them at <https://cloud.google.com/icons>, vendored
-unmodified, plus a few icons of gcportrait's own, behind the icon keys the asset catalog uses (agents.md,
+unmodified, plus a few icons of gcportrait's own, behind the icon keys the asset catalog uses (AGENTS.md,
 Non-affiliation, brand and legal; the icon rules of the gcp-diagram-style skill). The icons are Google
 Cloud's, not gcportrait's (see [Trademark, usage terms and copyright](#trademark-usage-terms-and-copyright)).
 The package is data and lookups only: no DOM, no Node APIs, so the app, its workers and the headless renderer

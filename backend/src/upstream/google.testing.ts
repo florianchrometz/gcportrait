@@ -6,7 +6,7 @@
  * sleeps, Cloud Asset Inventory's pager and the instance's identity. The fakes of single APIs build on it:
  * ../preflight/google.testing.ts (Resource Manager, tokeninfo and the gate's answers) and
  * ../stream/google.testing.ts (synthetic assets, Cloud Asset Inventory and Cloud Storage). Everything is
- * synthetic (agents.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,
+ * synthetic (AGENTS.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,
  * example.com.
  */
 import pino from 'pino';

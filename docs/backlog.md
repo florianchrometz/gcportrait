@@ -3,8 +3,8 @@
 # Backlog
 
 The open work on gcportrait: questions only the maintainer can settle, what is left before the first release,
-and follow-ups. Start a task from an item here or from an issue ([agents.md](../agents.md), "How to work a
-task"); a change to a rule updates agents.md in the same pull request. Take an item off this list in the pull
+and follow-ups. Start a task from an item here or from an issue ([AGENTS.md](../AGENTS.md), "How to work a
+task"); a change to a rule updates AGENTS.md in the same pull request. Take an item off this list in the pull
 request that settles it. The asset catalog keeps its own, more detailed backlog in
 [catalog-followups.md](catalog-followups.md). Each item names its area and, where known, the file.
 
@@ -28,7 +28,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
   budget, a higher minimum rate, or a configurable `STREAM_STALL_MS` (O11).
 - **Service-account mode at organisation scope** is open to every member of the customer's domain who can sign
   in, since Google grants `resourcemanager.organizations.get` domain-wide by default; a stricter rule for
-  organisations ([agents.md](../agents.md), "Security and privacy", "The service-account gate";
+  organisations ([AGENTS.md](../AGENTS.md), "Security and privacy", "The service-account gate";
   [permissions.md](permissions.md)).
 - **The demo-only Connect page's privacy sentence** ("This demo processes no personal data … stores nothing on
   its server") against the request logs and the in-memory rate limiter of a self-hosted demo-only instance on
@@ -78,7 +78,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 ## 4. Self-hosting and backend
 
 - **To verify on a real instance:** `deploy.sh --iap` with user mode, sign-in, a pull
-  ([agents.md](../agents.md), "Security and privacy", "Tokens"); `infra/uninstall.sh --disable-apis`, and APIs
+  ([AGENTS.md](../AGENTS.md), "Security and privacy", "Tokens"); `infra/uninstall.sh --disable-apis`, and APIs
   enabled by a stopped run are never labelled, so `--disable-apis` keeps them (`API_LABELS`); the "Open in
   Cloud Shell" tutorial and the "Run on Google Cloud" button clicked through.
 - **Record the consent screen** of a real sign-in: its wording for each scope, whether Google's Data Access

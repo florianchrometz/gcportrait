@@ -7,7 +7,7 @@ not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the G
 trademarks of Google and are used under Google's icon usage terms.
 
 What gcportrait protects, from whom, where the trust boundaries run and what holds at each of them. The
-security and privacy principles it cites ("principle N") are those of [agents.md](../agents.md), "Security and
+security and privacy principles it cites ("principle N") are those of [AGENTS.md](../AGENTS.md), "Security and
 privacy". The checklist of the controls, with the tests and commands that hold each, is
 [security.md](security.md); this document says why the controls are the ones that matter.
 [permissions.md](permissions.md) describes service-account mode for the people who use it,
@@ -23,13 +23,13 @@ privacy". The checklist of the controls, with the tests and commands that hold e
 | The image | `ghcr.io/florianchrometz/gcportrait`, built and published by `.github/workflows/release.yml` on a tag | anyone who pulls it |
 | A browser | the SPA: React, its workers, IndexedDB for snapshots and preferences, the token in memory | the person using it |
 
-There is no hosted sign-in instance ([agents.md](../agents.md), "Modes and hosting"): no instance of the
+There is no hosted sign-in instance ([AGENTS.md](../AGENTS.md), "Modes and hosting"): no instance of the
 maintainer's reads anyone's Google Cloud.
 
 ## 2. Assets
 
 1. **The person's Google access token** (scopes `cloud-platform.read-only`, `cloudasset`, `userinfo.email`;
-   [agents.md](../agents.md), "Security and privacy", "OAuth scopes"). Whoever holds it reads, for about an
+   [AGENTS.md](../AGENTS.md), "Security and privacy", "OAuth scopes"). Whoever holds it reads, for about an
    hour, everything the person may read in Google Cloud. The most valuable thing that ever passes through
    gcportrait.
 2. **The instance's service-account token** (service-account mode): reads every scope a customer granted the
@@ -42,7 +42,7 @@ maintainer's reads anyone's Google Cloud.
 7. **The supply chain**: the source, the npm dependencies, the base images, the CI workflows and the image on
    ghcr.io; and the licence obligations that travel with what is conveyed.
 8. **The project's standing**: no implied affiliation with Google, the gcportrait name and icon, which the MIT
-   License does not cover ([agents.md](../agents.md), "Non-affiliation, brand and legal").
+   License does not cover ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal").
 
 ## 3. Actors
 
@@ -118,7 +118,7 @@ risk of section 8.
 
 The risk is a confused deputy: an instance's account that a customer granted `roles/cloudasset.viewer` on
 `organizations/X` must not read X for every person who can sign in to that instance. The gate
-([agents.md](../agents.md), "Security and privacy", "The service-account gate"; `backend/src/auth/gate.ts`)
+([AGENTS.md](../AGENTS.md), "Security and privacy", "The service-account gate"; `backend/src/auth/gate.ts`)
 asks Resource Manager's `testIamPermissions` with the **caller's** token for the scope's `get` permission
 before every call as the account, every page of a stream included; a pass is remembered for at most five
 minutes per token hash and scope, never past the token's expiry, never a refusal. Nothing is asked as the

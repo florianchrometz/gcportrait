@@ -3,17 +3,13 @@
 # Contributing to gcportrait
 
 This guide takes you from a fork to a green `pnpm check` and an open pull request. It is written for people
-and AI assistants alike. [agents.md](../agents.md) holds every rule of the project in one place, and
+and AI assistants alike. [AGENTS.md](../AGENTS.md) holds every rule of the project in one place, and
 [.agents/skills/contributor-workflow/SKILL.md](../.agents/skills/contributor-workflow/SKILL.md) is the
 checklist version that reviewers use.
 
-> gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons
-> are trademarks of Google and are used under Google's icon usage terms.
-
-What gcportrait does, with its features, screenshots and animated demos, is on the [root
+> What gcportrait does, with its features, screenshots and animated demos, is on the [root
 README](../README.md), whose "Roadmap" section says what comes later; [backlog.md](backlog.md) lists the open
-work, and [agents.md](../agents.md) every rule. [packages.md](packages.md) maps the packages.
+work, and [AGENTS.md](../AGENTS.md) every rule. [packages.md](packages.md) maps the packages.
 Not ready for a pull request? Open an issue from one of the forms (a bug report, a feature request or an
 asset type request; the chooser also links the user guides and the sign-in-free demo), and reproduce a
 problem in demo mode first: the demo organisations are synthetic and safe to share.
@@ -49,6 +45,17 @@ the same way: `git clone https://github.com/florianchrometz/gcportrait.git`.
 `packages/*`. CI installs with `pnpm install --frozen-lockfile`, so commit `pnpm-lock.yaml` whenever you add,
 remove or upgrade a dependency. pnpm 10 runs no dependency install scripts unless `pnpm-workspace.yaml` allows
 them.
+
+### With an AI assistant
+
+[AGENTS.md](../AGENTS.md) and the skills under `.agents/skills/` are the one source of instructions for every
+assistant; Codex CLI, Cursor and GitHub Copilot read both as they are. The repository commits no file of a
+particular tool. `pnpm agents:setup` writes the local, git-ignored pointer files that close the gaps, each one
+paragraph that points to AGENTS.md and the skills: `CLAUDE.md` with an `@AGENTS.md` import and a link per
+skill under `.claude/skills/` for Claude Code, `GEMINI.md` with an `@./AGENTS.md` import for Gemini CLI, a
+Cursor rule and Copilot's instructions file. It never overwrites a file of yours without `--force`, and
+running it again changes nothing; `--tool claude` writes one tool's files only ([AGENTS.md](../AGENTS.md),
+"Assistants"). A rule goes in AGENTS.md, never in a pointer file.
 
 ## 3. Run the app
 
@@ -120,7 +127,7 @@ licenses: OK. 565 installed packages are under allowed licences; the workspace p
 - **Licences:** after you add, remove or upgrade a dependency, run `pnpm run licenses --write` to regenerate
   the dependency table in `THIRD_PARTY.md`, and commit it. `--write` cannot fix a licence on the deny list or
   outside the allowlist: choose another package, or propose a change to the licence rules
-  ([agents.md](../agents.md), "Licence and dependencies"). The report names the project licence
+  ([AGENTS.md](../AGENTS.md), "Licence and dependencies"). The report names the project licence
   (`MIT`) and why every allowed licence is compatible with it; `THIRD_PARTY.md` has the reasoning.
   Always type `pnpm run licenses`; plain `pnpm licenses` is pnpm's own built-in command.
 - **Provenance:** every problem is printed as `path:line  [rule] message` (the rule is one of
@@ -163,7 +170,7 @@ Some of these gates are not part of `pnpm check`; run these three locally when y
 | Command | What it does |
 |---|---|
 | `pnpm build` | Builds every workspace that has a build script: `frontend/dist` (Vite), `backend/dist` (tsc and the bundles), the compiled catalog, the icon module and the website. `pnpm build:app` leaves the website out, as CI's `build` job does. |
-| `pnpm size` | After `pnpm build`: sorts the build by thread and fails when either budget is exceeded, gzipped, fonts and the fetched JSON data tables excluded ([agents.md](../agents.md), "Quality gates, testing and CI"): the UI thread (the entry script, its static imports and the CSS; a lazy chunk only when it is part of the first paint of `/diagram`) 350 kB, the workers (every worker script and every chunk a worker loads) 400 kB. Lazy UI chunks outside the first paint are listed and count against neither. It also fails when a UI-thread chunk contains zod (its minified signatures): zod belongs in the workers. |
+| `pnpm size` | After `pnpm build`: sorts the build by thread and fails when either budget is exceeded, gzipped, fonts and the fetched JSON data tables excluded ([AGENTS.md](../AGENTS.md), "Quality gates, testing and CI"): the UI thread (the entry script, its static imports and the CSS; a lazy chunk only when it is part of the first paint of `/diagram`) 350 kB, the workers (every worker script and every chunk a worker loads) 400 kB. Lazy UI chunks outside the first paint are listed and count against neither. It also fails when a UI-thread chunk contains zod (its minified signatures): zod belongs in the workers. |
 | `pnpm e2e` | Playwright: functional, export and axe accessibility tests in light and dark, against demo mode (port 5174) and normal mode (port 5173). It starts both dev servers itself, or reuses ones already running. Run `pnpm --filter @gcportrait/e2e install-browsers` once per machine first. |
 
 The phone-width check runs its layout half only (Chromium at 320 to 430 CSS pixels in both themes: sideways
@@ -232,22 +239,22 @@ a layout change.
 
 ## 5. Rules every change follows
 
-Every rule is in [agents.md](../agents.md); these are the ones the checks enforce or that reviewers most often
+Every rule is in [AGENTS.md](../AGENTS.md); these are the ones the checks enforce or that reviewers most often
 catch.
 
 ### Provenance
 
-gcportrait is original work, licensed under the MIT License (`MIT`; [agents.md](../agents.md), "Licence and
+gcportrait is original work, licensed under the MIT License (`MIT`; [AGENTS.md](../AGENTS.md), "Licence and
 dependencies"), and whoever receives it may rely on that licence alone, so nothing may bring in someone else's
 licence or an obligation that would force the project to publish its code or relicense its combined work.
 
 - Never copy, port or paraphrase another licensed project. If your solution reads like a translation of
   someone else's code, start over.
 - No Go files, no Graphviz `.dot` or `.gv` files, no Gizmo graph queries, and no symbolic links.
-- The strings of agents.md, "Names that never appear", never appear in a file's contents or its name: Google's
+- The strings of AGENTS.md, "Names that never appear", never appear in a file's contents or its name: Google's
   name with its company suffix (Google is "Google" or "Google Cloud"), a few project names, decision-record
-  numbers and links, numbered rules of agents.md, phrases that record how something was built rather than what
-  it is, and work-item ids. Say what a thing is or does, and cite a rule by its heading in agents.md.
+  numbers and links, numbered rules of AGENTS.md, phrases that record how something was built rather than what
+  it is, and work-item ids. Say what a thing is or does, and cite a rule by its heading in AGENTS.md.
   `--list-exempt` prints the rules. Some phrases are known to the check only by their SHA-256 digest;
   `node scripts/check-provenance.mjs --digest-of "<phrase>"` prints the entry that adds one to
   `PHRASE_DIGESTS`.
@@ -321,7 +328,7 @@ dependency must pass `pnpm run licenses`.
   never reads them; never paste credentials into an issue or a pull request.
 - Desktop only (at least 1280×800): no breakpoints for phones or tablets.
 - Both themes, every time: anything visible must look right and pass the checks in light and dark.
-- The non-affiliation statement ([agents.md](../agents.md), "Non-affiliation, brand and legal") goes in the
+- The non-affiliation statement ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal") goes in the
   footer of every route of the app and every page of the website and, as the long form above, in
   documentation, READMEs and release notes; never in a drawing or an export. Never call the project official
   or Google's, and never name Google with its company suffix.
@@ -338,14 +345,14 @@ dependency must pass `pnpm run licenses`.
 ## 6. Making a change
 
 1. **Pick the work.** An issue or an item of [backlog.md](backlog.md); a change to a rule updates
-   [agents.md](../agents.md) in the same pull request. Load the skills its area needs from `.agents/skills/`
-   ([agents.md](../agents.md), "Skills"), and read the README of every package you change.
+   [AGENTS.md](../AGENTS.md) in the same pull request. Load the skills its area needs from `.agents/skills/`
+   ([AGENTS.md](../AGENTS.md), "Skills"), and read the README of every package you change.
 2. **Branch.** Name it after the topic: `<topic>-<slug>` or `<issue>-<slug>`, for example `ingest-parser` or
    `412-gutter-lanes`.
 3. **Tests first** for `packages/*`; fixtures first for catalog work; an e2e test for anything a user does.
 4. **Docs in the same pull request:** the package README if behaviour changed, the user guide under `docs/` if
    users will notice it (the guides are listed in [README.md](README.md#user-guides); a guide says what to do,
-   with no record of when or where it was checked), and `agents.md` and the skill that applies it if a rule
+   with no record of when or where it was checked), and `AGENTS.md` and the skill that applies it if a rule
    changed. `node scripts/user-docs.mjs` (part of `pnpm test`) fails while a guide names a `pnpm` script, an
    `infra/` flag or a setting the tree does not have, logs a verification, or while the generated lens tables
    differ from the catalog (`--write` regenerates them).
@@ -372,9 +379,10 @@ explicitly if you want `pnpm changeset status` to pass. Changeset files need no 
 
 ## 7. Opening a pull request
 
-Pull requests are highly welcome. Keep each one small and about one feature or one function: a focused change
-is quick to review and to merge, while a full rewrite of a part is hard to review and is better proposed in an
-issue first, then made in small steps.
+Pull requests are highly welcome, preferably small ones about one feature or one function rather than full
+rewrites: a focused change is quick to review and to merge, while a rewrite of a whole part is hard to review
+and is better proposed in an issue first, then made in small steps. Open one pull request per change, with its
+changeset ([Changesets](#changesets)).
 
 Push your branch and open a pull request against `main`. The template asks for:
 
@@ -468,7 +476,7 @@ Actions), and nothing else besides GitHub's own `GITHUB_TOKEN`:
 
 Under Settings > Advanced Security, Dependabot alerts and Dependabot security updates are on
 ([security.md](security.md), finding O7). Every pull request Dependabot opens is adopted on `main` or declined
-with its reason in [backlog.md](backlog.md), never closed unread ([agents.md](../agents.md), "Quality gates,
+with its reason in [backlog.md](backlog.md), never closed unread ([AGENTS.md](../AGENTS.md), "Quality gates,
 testing and CI").
 
 **A fork** publishes to its own `ghcr.io/OWNER/gcportrait` and changes the repository it names: the app's

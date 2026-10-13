@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * No real organisation data in the backend's tests (agents.md, Security and privacy, principle 6): every test
+ * No real organisation data in the backend's tests (AGENTS.md, Security and privacy, principle 6): every test
  * and test helper under src/, found by name so a new one is checked without being listed, and the two files
  * of other areas that the service-account tests' data reaches (the e2e spec that drives the harness, and the
  * permissions guide whose cases they mirror), which this test only reads. A few files hold a value the guard

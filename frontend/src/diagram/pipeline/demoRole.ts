@@ -4,7 +4,7 @@
  * one job and ended with it (workers.ts, `createBrowserDemoJob`). Preparing demo XL (its 35-day history generated,
  * read and encoded for storage) takes seconds; in the data worker, which answers one request at a time, it would hold
  * back every Scene request behind it, and its history would stay in the data worker's memory afterwards.
- * The generator is loaded by no other thread than a worker (agents.md, Architecture and code): the data worker for
+ * The generator is loaded by no other thread than a worker (AGENTS.md, Architecture and code): the data worker for
  * drawing the demo organisations, this one for preparing them; both load the same chunk (demo.ts).
  *
  * It answers the data protocol's `demo` request (protocol.ts) with `job-progress` messages and `demo` or `error`;

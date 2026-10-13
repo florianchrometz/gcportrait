@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The Google calls of the scope picker, the preflight and the service-account gate (docs/permissions.md;
- * agents.md, Security and privacy, Quota project and the permission check; skill cai-ingestion §1), made
+ * AGENTS.md, Security and privacy, Quota project and the permission check; skill cai-ingestion §1), made
  * through the allowlisted client of request.ts (`requestJson`: the four hosts only, no redirect, 60 s,
  * retries) with:
  *

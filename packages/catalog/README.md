@@ -3,7 +3,7 @@
 # @gcportrait/catalog
 
 The asset catalog: what gcportrait knows about each Cloud Asset Inventory asset type, kept as data
-(agents.md, Data and graph semantics; the entry schema and the roles in skill gcp-asset-catalog §2–§3), plus
+(AGENTS.md, Data and graph semantics; the entry schema and the roles in skill gcp-asset-catalog §2–§3), plus
 the one rule engine that reads it. The graph builder (`@gcportrait/graph`) evaluates relations, labels,
 addresses, aliases and default visibility through this package, so rule semantics live here only. The skill
 [gcp-asset-catalog](../../.agents/skills/gcp-asset-catalog/SKILL.md) is the contributor guide; this file

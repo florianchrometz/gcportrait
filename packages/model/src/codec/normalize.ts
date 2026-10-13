@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * `normalizeViewSpec` and the view constants, without zod (agents.md, Architecture and code). The URL-hash
+ * `normalizeViewSpec` and the view constants, without zod (AGENTS.md, Architecture and code). The URL-hash
  * codec (view-hash.ts) runs on the app's UI thread for every hash it reads and writes, so its parse path is
  * plain code: each field is checked by a small predicate that accepts exactly what the field's schema in
  * schemas/view-spec.ts accepts (the same patterns from schemas/patterns.ts and tuples from

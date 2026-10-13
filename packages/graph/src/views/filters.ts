@@ -3,7 +3,7 @@
  * Steps (c) and (d) of the scene builder: the lens and the cross-cutting filters (docs/lenses-and-filters.md)
  * turn the focus's part of the universe into the set of visible nodes and the edges drawn between them.
  * Everything here works on whatever the root and the focus left, so the filters apply the same under drill-in
- * and under every focus (filters compose with focus views and drill-in: agents.md, Product rules).
+ * and under every focus (filters compose with focus views and drill-in: AGENTS.md, Product rules).
  *
  * 1. Candidates: nodes the lens rules pass (`lens.ts`) whose location, project and folder pass `regions`,
  *    `projects` and `folders`; the focus's anchors always. Folders above a kept node stay as structure when

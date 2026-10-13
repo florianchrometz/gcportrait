@@ -17,6 +17,11 @@ export type DocPage = {
   readonly source: string;
   /** The page's name in the docs menu. */
   readonly label: string;
+  /**
+   * The page's title in search results and link previews, where the guide's heading would make the document title
+   * longer than the 60 characters a search result shows, or name the product twice; the page itself shows the heading.
+   */
+  readonly searchTitle?: string;
   readonly description: string;
   /** The menu group. */
   readonly group: 'Start' | 'Use' | 'Run your own';
@@ -35,6 +40,7 @@ export const DOC_PAGES: readonly DocPage[] = [
     slug: 'modes',
     source: 'docs/modes.md',
     label: 'Modes',
+    searchTitle: 'Modes: user, service account, files and demo',
     description:
       'The ways gcportrait reads Google Cloud: your own account, the instance’s service account, export files, and the synthetic demo.',
     group: 'Start',
@@ -43,6 +49,7 @@ export const DOC_PAGES: readonly DocPage[] = [
     slug: 'permissions',
     source: 'docs/permissions.md',
     label: 'Permissions',
+    searchTitle: 'Permissions to read your Google Cloud',
     description:
       'What reading a scope needs: the permission matrix with copy-ready gcloud commands, the quota project, and the service-account grant.',
     group: 'Start',
@@ -83,6 +90,7 @@ export const DOC_PAGES: readonly DocPage[] = [
     slug: 'self-host',
     source: 'docs/self-host.md',
     label: 'Self-host',
+    searchTitle: 'Self-hosting on Google Cloud Run',
     description:
       'Run gcportrait on Cloud Run in your own Google Cloud project: one installer line with your project id, the OAuth client, one redeploy.',
     group: 'Run your own',

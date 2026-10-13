@@ -13,7 +13,7 @@ import { expectNoAxeViolations, scratchShot } from './support.js';
  * (fixtures/gis.ts). The spec signs in, searches and picks a scope, picks a quota project, runs the check,
  * reads the checklist and its commands, copies one, switches to service-account mode, and checks that the
  * token only ever travels in gcportrait's own X-Gcportrait-Token header to this backend, never in
- * Authorization (agents.md, Security and privacy, Tokens).
+ * Authorization (AGENTS.md, Security and privacy, Tokens).
  */
 
 const ACCOUNT = 'gcportrait-backend@demo-host.iam.gserviceaccount.com';

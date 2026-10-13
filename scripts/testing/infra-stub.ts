@@ -54,7 +54,7 @@ exit 1
 `;
 
 export const TOKEN = 'stub-access-token';
-/** A synthetic project number (below 100000000000; agents.md, Data and graph semantics). */
+/** A synthetic project number (below 100000000000; AGENTS.md, Data and graph semantics). */
 export const NUMBER = '98765432101';
 /** The digest ghcr.io's stand-in reports for every image. */
 export const DIGEST = `sha256:${'d'.repeat(64)}`;

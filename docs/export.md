@@ -2,10 +2,6 @@
 
 # Exporting a diagram: SVG, PNG and draw.io
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 The **Export** menu in the diagram page's top bar saves the view on screen as an SVG file, a PNG file or a
 draw.io file, or copies the PNG to the clipboard. The draw.io file (`.drawio`) opens in
 [diagrams.net](https://app.diagrams.net) and draw.io as an editable diagram that looks like the picture: it is

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render API's error answers (agents.md, Exports and the render API): the server's shape plus the fields
+ * The render API's error answers (AGENTS.md, Exports and the render API): the server's shape plus the fields
  * the gate's refusal body already has, `{ statusCode, error, message, requestId, code, retryable?, reason?,
  * upstream? }`, always sent before any byte of an image. `code` says what happened in a word a script can
  * test; `reason` is Google's `ErrorInfo` reason when a pull's error frame carried one; `upstream` is Google's

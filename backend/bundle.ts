@@ -158,7 +158,7 @@ function licenceReport(packages: readonly PackageInfo[], shippedIn: ShippedIn): 
   return `${[header, ...sections, ...mplText].join('\n\n')}\n`;
 }
 
-/** Fails on a native addon, which neither bundle can carry (agents.md, Exports and the render API). */
+/** Fails on a native addon, which neither bundle can carry (AGENTS.md, Exports and the render API). */
 function refuseNativeAddons(metafile: Metafile, what: string): void {
   const native = Object.keys(metafile.inputs).filter((input) => input.endsWith('.node'));
   if (native.length > 0) throw new Error(`bundle: ${what} would need native addons: ${native.join(', ')}`);

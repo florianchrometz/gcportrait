@@ -22,7 +22,7 @@ sameAs: # Person.sameAs, and the links under the section: profile pages, https o
 The bio: one paragraph of 60 to 120 words, in the third person, for the Google Cloud community: what Florian
 does, his work with Google Cloud, what he writes or speaks about, and where to find him. Its first 300
 characters become the description in search results (Person.description). Name no programme membership and
-nothing that suggests Google's endorsement (agents.md, "Non-affiliation, brand and legal"). This comment does
+nothing that suggests Google's endorsement (AGENTS.md, "Non-affiliation, brand and legal"). This comment does
 not appear on the site.
 -->
 
@@ -36,8 +36,7 @@ architecture diagram, without drawing it by hand. More about Florian is on his p
 
 Florian Chrometz builds and maintains gcportrait, which draws a Google Cloud environment as it actually is:
 every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and
-pull requests are welcome on [GitHub](https://github.com/florianchrometz/gcportrait); more about Florian is
-on his [personal website](https://florian-chrometz.de).
+pull requests are welcome on [GitHub](https://github.com/florianchrometz/gcportrait).
 
 gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
 not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are

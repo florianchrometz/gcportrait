@@ -2,10 +2,6 @@
 
 # API
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 Every route an instance serves under `/api`, for scripts: health and settings, the scope search and permission
 check, the live pull and export read the app streams from, and `POST /api/render`, which draws a view as SVG,
 PNG or a draw.io file on the server, byte for byte what `pnpm render` and the app's export draw. A demo-only

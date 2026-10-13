@@ -3,7 +3,7 @@
 # @gcportrait/demo-data
 
 Deterministic synthetic Google Cloud organisations for gcportrait's demo mode, tests, screenshots and website
-(demo mode is first-class: agents.md, Product rules). Four sizes, each with a 35-day history, emitted either
+(demo mode is first-class: AGENTS.md, Product rules). Four sizes, each with a 35-day history, emitted either
 as Cloud Asset Inventory records (the shape `assets.list` and `exportAssets` produce) or as the normalised
 `Asset` / `Snapshot` of `@gcportrait/model`. Everything is synthetic: `example.com` / `example.org` names,
 project numbers below 100000000000, one organisation per size (`30000000001` to `30000000004`), and addresses

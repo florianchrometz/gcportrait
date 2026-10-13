@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The non-affiliation statement outside the app (agents.md, Non-affiliation, brand and legal): every copy the
+ * The non-affiliation statement outside the app (AGENTS.md, Non-affiliation, brand and legal): every copy the
  * tooling, the image, the release, the infra scripts and the docs keep of the long form is
  * frontend/src/branding.ts's, word for word. The app pins the wording itself (frontend/src/App.test.tsx); the
  * website checks its own copy (website/src/site.test.ts). And no text file of the repository names Google by

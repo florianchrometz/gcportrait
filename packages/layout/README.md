@@ -11,7 +11,7 @@ never across a card or a header (stages 4–5), and the invariants that check bo
 protocol runs it off the UI thread, cancels superseded requests between stages and memoises the last eight
 Layouts by a structural hash of the Scene ("Worker" below).
 
-The package is a pure core (agents.md, Layout and drawing rules): no DOM, no randomness, no clock (unless the
+The package is a pure core (AGENTS.md, Layout and drawing rules): no DOM, no randomness, no clock (unless the
 caller passes one for timings), no I/O; `src/` compiles without DOM or Node types. Text is never measured from
 the DOM: widths come from a font metrics table generated at build time from the Roboto files the app
 self-hosts. It imports `@gcportrait/model` only.
@@ -65,7 +65,7 @@ assertLayout(scene, layout); // throws LayoutInvariantError in development build
 
 ## Worker
 
-The app lays out in a dedicated worker (agents.md, Layout and drawing rules; skill §7: "memoise by Scene hash;
+The app lays out in a dedicated worker (AGENTS.md, Layout and drawing rules; skill §7: "memoise by Scene hash;
 cancel superseded requests; never block the UI thread"). `src/worker.ts` is the protocol, `src/client.ts` the
 page side; both are plain functions of `postMessage`, so the same code runs in a Web Worker, a Node
 `worker_threads` worker (`scripts/lib/layout-worker.ts`, used by the bench and the tests) or in-process in a
@@ -546,7 +546,7 @@ catalog, the graph's Scene builder or the demo data changes them. Look at the ch
 When a graph or catalog change and a layout change land separately, whichever lands second regenerates them.
 
 **Packing aspect and fill.** The golden test checks every container with at least four children against
-the packing criterion (agents.md, Layout and drawing rules):
+the packing criterion (AGENTS.md, Layout and drawing rules):
 
 - its children box must leave at most 60 % empty (fill ≥ 40 %; skill §9);
 - it must be within 20 % of its target, unless an independent oracle (`src/testing/oracle.ts`, brute force
@@ -605,7 +605,7 @@ dashed square (a 16 px one on a chip, its ⊞ glyph, followed by the count line 
 `chipCountLine`). With `--aspects` it adds each container's children box with its aspect, target, child count
 and fill. It exists to look at the packing and the routing; it is not the SVG renderer or `pnpm render`: no
 icons, no legend, no dim mode. Like every drawing it carries no affiliation line, and neither do its banner
-and those of the other tools, which name the command only (agents.md, Non-affiliation, brand and legal). Zone
+and those of the other tools, which name the command only (AGENTS.md, Non-affiliation, brand and legal). Zone
 strokes follow skill gcp-diagram-style §4 (1 px for folders, regions, product containers and groups; 1.5 px
 for projects, VPC networks and subnets). A relative `--out` is taken from the directory the command was
 started in (`INIT_CWD`, which pnpm sets), not from the package directory pnpm runs the script in.

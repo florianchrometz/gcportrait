@@ -4,7 +4,7 @@
 
 **A fact sheet, not legal advice; not yet reviewed by a lawyer.**
 
-Every processing of personal data by what the maintainer hosts ([agents.md](../../agents.md), "Modes and
+Every processing of personal data by what the maintainer hosts ([AGENTS.md](../../AGENTS.md), "Modes and
 hosting"): the website `gcportrait.app` and its demo at `gcportrait.app/demo/` (a static build of the app in
 demo-only mode), both static files on one GitHub Pages site. The privacy notice, on the maintainer's website
 at <https://florian-chrometz.de/legal/privacy-policy> and linked from every page of both

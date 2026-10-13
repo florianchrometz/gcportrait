@@ -2,10 +2,6 @@
 
 # The timeline: the last 35 days of a scope
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 The bar at the bottom of the diagram page moves the diagram through time. Every view you can draw today (any
 lens, focus, filter, detail level or drill-in) can also be drawn as it was on any of the last 35 days, and the
 diagram then marks what was added, removed or changed since the day you came from. This guide explains what a

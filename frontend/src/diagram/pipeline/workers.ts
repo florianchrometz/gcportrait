@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The two workers the diagram uses (agents.md, Architecture and code): the data worker (ingest, graph and Scene;
+ * The two workers the diagram uses (AGENTS.md, Architecture and code): the data worker (ingest, graph and Scene;
  * it draws the demo organisations too) and the layout worker, two dedicated instances of one worker script
  * (diagram.worker.ts), each named after its role. The app creates them lazily, once, the first time a diagram
  * needs them (`sharedWorkers`); tests pass an in-process pair (inProcess.ts) through the same interface. "Try the

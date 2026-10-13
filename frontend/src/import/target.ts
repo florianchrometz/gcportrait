@@ -2,7 +2,7 @@
 /**
  * What "Pull now" pulls: the scope picked on the Connect page, read in the mode chosen, once the
  * permission check (the preflight) says it is ready for exactly that scope, mode and quota project. In user
- * mode the quota project is the one the check found usable (required, never the instance's own; agents.md,
+ * mode the quota project is the one the check found usable (required, never the instance's own; AGENTS.md,
  * Security and privacy, Quota project and the permission check).
  * Until then the button says what is missing. Pure: reads the app store's `connect` slice.
  */

@@ -5,7 +5,7 @@
  * listing metadata, never parsed assets), which the page writes to IndexedDB (../repository.ts); before an export
  * it reads a stored record in full (`check`). Each job reports its stages as it goes. A demo organisation is
  * prepared the same way, as a `PreparedSnapshot` with the same progress, but by a demo worker started for the job,
- * as the demo generator runs in the diagram's workers only (diagram/pipeline/demoRole.ts; agents.md, Architecture
+ * as the demo generator runs in the diagram's workers only (diagram/pipeline/demoRole.ts; AGENTS.md, Architecture
  * and code).
  */
 import type { SnapshotMeta } from '../../storage/db';

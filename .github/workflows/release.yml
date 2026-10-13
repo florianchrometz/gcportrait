@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 #
-# Release pipeline (agents.md, Releases; contributor-workflow skill §7). On a `v*` tag it checks and builds
+# Release pipeline (AGENTS.md, Releases; contributor-workflow skill §7). On a `v*` tag it checks and builds
 # the tag, publishes the container image to GitHub Container Registry and creates the GitHub release. Run by
 # hand (Actions > Release > Run workflow, on any branch) it publishes the same image as `dev` only: no version
 # tags, no `latest`, no GitHub release.
@@ -14,7 +14,7 @@
 # which infra/deploy.sh deploys by default, moves only for the newest release: never for a pre-release
 # (v1.2.0-rc.1 gets only its own version tag), and not for a patch of an older line pushed after a newer
 # release (v1.1.5 after v1.2.0). The image carries OCI labels and index annotations: the source repository,
-# the licence (MIT) and, as its description, the long form of the non-affiliation statement (agents.md,
+# the licence (MIT) and, as its description, the long form of the non-affiliation statement (AGENTS.md,
 # Non-affiliation, brand and legal). Build provenance and SBOM attestations are switched off, so the index
 # lists exactly the two platforms; the SBOMs travel with the release instead. The job then checks that the
 # image can be pulled anonymously, as Artifact Registry's remote repository pulls it for infra/deploy.sh: a

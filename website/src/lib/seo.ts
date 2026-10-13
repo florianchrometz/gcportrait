@@ -3,17 +3,10 @@
  * Search and link-preview metadata of every page: the title, the description, the canonical URL on
  * https://gcportrait.app, OpenGraph and Twitter card tags with the page's 1200×630 social image, and JSON-LD.
  * The structured data names gcportrait's author as a Person; no Organization, and nothing that could read as
- * Google's (agents.md, Non-affiliation, brand and legal).
+ * Google's. The non-affiliation statement is not metadata: it belongs in the footer and the long-form texts
+ * (AGENTS.md, Non-affiliation, brand and legal), so no description here carries it.
  */
-import {
-  LICENSE_URL,
-  NON_AFFILIATION_LONG,
-  PRODUCT_NAME,
-  REPOSITORY_URL,
-  SITE_URL,
-  TAGLINE,
-  siteUrl,
-} from '../site.js';
+import { LICENSE_URL, PRODUCT_NAME, REPOSITORY_URL, SITE_URL, TAGLINE, siteUrl } from '../site.js';
 
 export type JsonValue =
   string | number | boolean | null | readonly JsonValue[] | { readonly [key: string]: JsonValue };
@@ -86,7 +79,10 @@ export const FEATURE_LIST = [
   'API: POST /api/render returns any view of a live scope, an export file, a snapshot or a demo organisation as SVG, PNG or draw.io, without the web app',
 ] as const;
 
-/** The landing page's SoftwareApplication: free, MIT, its source on GitHub, its author a Person. */
+/**
+ * The landing page's SoftwareApplication: free, MIT, its source on GitHub, its author a Person. Its description says what
+ * gcportrait does, the three ways, and nothing else.
+ */
 export function softwareApplicationLd(options: {
   readonly author: Author | undefined;
   readonly screenshot?: string;
@@ -102,8 +98,7 @@ export function softwareApplicationLd(options: {
       'architecture diagram from Cloud Asset Inventory data, three ways: self-hosted, as one Cloud Run service in your ' +
       'own Google Cloud project; as a web app with lenses, search, a 35-day timeline, SVG, PNG and draw.io export, ' +
       'light and dark themes and a demo mode; and through an API that returns any view as SVG, PNG or draw.io ' +
-      'without the web app. ' +
-      NON_AFFILIATION_LONG,
+      'without the web app.',
     featureList: [...FEATURE_LIST],
     url: `${SITE_URL}/`,
     applicationCategory: 'DeveloperApplication',
@@ -158,7 +153,11 @@ export function breadcrumbLd(trail: readonly { readonly name: string; readonly p
   };
 }
 
-/** A guide's TechArticle, its author the maintainer. */
+/**
+ * A guide's TechArticle. Its author is the Person of the landing page's author section, given by its id and website
+ * without the name: the site names the maintainer in the author section and the footer notice only (AGENTS.md,
+ * Non-affiliation, brand and legal).
+ */
 export function articleLd(options: {
   readonly title: string;
   readonly description: string;
@@ -175,6 +174,13 @@ export function articleLd(options: {
     about: { '@id': `${SITE_URL}/#software` },
     ...(options.author === undefined
       ? {}
-      : { author: { '@type': 'Person', name: options.author.name, url: options.author.url } }),
+      : {
+          author: {
+            '@type': 'Person',
+            '@id': `${SITE_URL}/#author`,
+            name: options.author.name,
+            url: options.author.url,
+          },
+        }),
   };
 }

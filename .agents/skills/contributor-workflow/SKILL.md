@@ -6,23 +6,25 @@ description: The way work gets done on gcportrait — provenance rules, local lo
 
 # Contributor workflow
 
-The rules this handbook applies are in [agents.md](../../../agents.md) ("How to work a task", "Licence and
+The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("How to work a task", "Licence and
 dependencies", "Quality gates, testing and CI", "Releases", "Documentation" and "Names that never appear");
 this file is the procedure and the checklists.
 
 ## 1. Before you start
 
-- Read `agents.md` and the issue or the [docs/backlog.md](../../../docs/backlog.md) item you work on. Load the
-  skills its area needs (agents.md, "Skills").
+- Read `AGENTS.md` and the issue or the [docs/backlog.md](../../../docs/backlog.md) item you work on. Load the
+  skills its area needs (AGENTS.md, "Skills"). A tool that does not read `AGENTS.md` or `.agents/skills/` by
+  itself gets local, git-ignored pointer files from `pnpm agents:setup` (AGENTS.md, "Assistants"); a rule
+  never goes into one of them.
 - You are writing original code. Nothing is copied, ported or paraphrased from another licensed project.
-  gcportrait's own code is `MIT` (agents.md, "Licence and dependencies"), and nothing may bring in an
+  gcportrait's own code is `MIT` (AGENTS.md, "Licence and dependencies"), and nothing may bring in an
   obligation that would force the project to publish or relicense its combined work under someone else's
   terms. `scripts/check-provenance.mjs` enforces: no `.go`, `.dot` or `.gv` files and no Gizmo queries, no
-  symbolic links, none of the strings of agents.md, "Names that never appear" (in contents, binary metadata
+  symbolic links, none of the strings of AGENTS.md, "Names that never appear" (in contents, binary metadata
   included, and in file and directory names), text files in UTF-8 without NUL bytes, the names of denied
   licences only in the deny list and the verbatim licence texts, and an
   SPDX header on every text source file, checked against the `license` field of the root `package.json`
-  (`MIT`; the forms per file type are in agents.md, "Licence and dependencies", and `docs/contributing.md`
+  (`MIT`; the forms per file type are in AGENTS.md, "Licence and dependencies", and `docs/contributing.md`
   §5). The header line to add to a new file:
   `// SPDX-License-Identifier: MIT` (TypeScript and JavaScript),
   `# SPDX-License-Identifier: MIT` (YAML, shell and the `#`-comment dotfiles),
@@ -111,7 +113,7 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
   LC_ALL=C.UTF-8 CI=true` (`docs/contributing.md` §4, "Continuous integration", has each job's command, its
   time and the artifacts a failed job uploads).
 - Both themes verified for visual work; contrast tests green.
-- Docs updated: package README, user docs under `docs/` or `website/` if behaviour changed, `agents.md` and
+- Docs updated: package README, user docs under `docs/` or `website/` if behaviour changed, `AGENTS.md` and
   the skill if a rule changed.
 - Changeset added (`pnpm changeset`, or `pnpm changeset add --minor <pkg> -m "..."`) with a user-facing
   summary, unless the change does not affect users.
@@ -134,6 +136,10 @@ What each layer tests (the tests a change adds belong in the layer it touches):
 
 ## 5. PR checklist (template)
 
+Pull requests are highly welcome, preferably small ones about one feature or one function rather than full
+rewrites: one change per pull request, with its changeset. A rewrite of a whole part is proposed in an issue
+first, then made in small steps (AGENTS.md, "How to work a task").
+
 - What changed and why (link the issue or the `docs/backlog.md` item).
 - How it was verified: demo fixture(s) used, real scope (yes/no, never its name), commands and results.
 - Screenshots (light + dark) for visual changes; baseline updates called out.
@@ -151,8 +157,8 @@ What each layer tests (the tests a change adds belong in the layer it touches):
 4. Tests: do new rules have fixtures? Do layout changes keep invariants and update goldens deliberately?
 5. Both themes, contrast, accessibility (axe) for UI changes.
 6. Security: tokens, host allowlist, logs, CSP untouched or improved.
-7. Non-affiliation (agents.md, "Non-affiliation, brand and legal"): the footers and long-form texts carry the
-   statement, no drawing or export does; nothing calls the project official or Google's, and no text names
+7. Non-affiliation (AGENTS.md, "Non-affiliation, brand and legal"): the footers and long-form texts carry the
+   statement, no drawing, export or page metadata does; nothing calls the project official or Google's, and no text names
    Google with its company suffix; Google's icons are unmodified.
 8. Docs and changeset present.
 

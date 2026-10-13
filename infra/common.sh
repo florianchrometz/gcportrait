@@ -42,7 +42,7 @@ SA_MARKER="Created by gcportrait infra/deploy.sh"
 API_LABEL_PREFIX="gcportrait-api-"
 
 # The published image: .github/workflows/release.yml pushes it to GitHub Container Registry on every v* tag
-# (linux/amd64 and linux/arm64; tags X.Y.Z, X.Y and latest) and, run by hand, as `dev` (agents.md, Releases).
+# (linux/amd64 and linux/arm64; tags X.Y.Z, X.Y and latest) and, run by hand, as `dev` (AGENTS.md, Releases).
 # `deploy.sh --image TAG` deploys PUBLISHED_IMAGE:TAG; without --image and --build it deploys :latest.
 PUBLISHED_IMAGE="ghcr.io/florianchrometz/gcportrait"
 # The source repository: the clone that --build needs, which deploy.sh's advice names. A fork changes it with
@@ -235,7 +235,7 @@ has_control_or_format_char() {
 
 # hosted_by_problem TEXT: empty when the backend accepts TEXT (already trimmed) as HOSTED_BY, else why not.
 # The backend's rules (backend/src/config.ts): at most 80 characters, plain text on one line without < or >,
-# not naming Google (agents.md, Non-affiliation, brand and legal). Checked here so that a bad value fails
+# not naming Google (AGENTS.md, Non-affiliation, brand and legal). Checked here so that a bad value fails
 # before anything is deployed, instead of as a new revision that does not start.
 hosted_by_problem() {
   local value="$1"

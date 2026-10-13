@@ -1,0 +1,41 @@
+---
+/**
+ * A button that starts gcportrait on Google Cloud without a terminal of one's own, at the address README.md's badge
+ * for it uses (src/site.ts): "Open in Cloud Shell", the guided tutorial (docs/cloudshell-tutorial.md, CLOUD_SHELL_URL),
+ * or "Run on Google Cloud", the Cloud Run Button with app.json (CLOUD_RUN_BUTTON_URL). Both open a page of Google's
+ * where the deploy runs for minutes, so the button opens a new tab (`target="_blank"`, `rel="noopener"`), the site stays
+ * open beside it, and its name says so to assistive technology (NEW_TAB_NOTE, visually hidden). Its mark is the site's
+ * own small drawing in the text's colour, inline (a terminal window with its prompt; a cloud with an arrow going up into
+ * it), as the site serves no image from another host. `pnpm website:check` holds every link to either address to this.
+ * Other attributes (a class, Astro's scoping attribute) go onto the link.
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+import { CLOUD_RUN_BUTTON_URL, CLOUD_SHELL_URL, NEW_TAB_NOTE } from '../site.js';
+
+type Props = Omit<HTMLAttributes<'a'>, 'href' | 'target' | 'rel'> & {
+  /** Which way to start: the Cloud Shell tutorial or the Cloud Run Button. */
+  readonly to: 'cloud-shell' | 'cloud-run';
+};
+const { to, class: className, ...attributes } = Astro.props;
+const START = {
+  'cloud-shell': { href: CLOUD_SHELL_URL, label: 'Open in Cloud Shell' },
+  'cloud-run': { href: CLOUD_RUN_BUTTON_URL, label: 'Run on Google Cloud' },
+} as const;
+const start = START[to];
+---
+
+<!-- SPDX-License-Identifier: MIT -->
+<a {...attributes} class:list={['button', className]} href={start.href} target="_blank" rel="noopener" data-start={to}>{
+    to === 'cloud-shell' ? (
+      <svg class="start-mark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M4.75 6.25 6.75 8l-2 1.75M8.5 10.25h2.75" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    ) : (
+      <svg class="start-mark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M4.75 12.5a2.75 2.75 0 0 1-.4-5.47 4 4 0 0 1 7.6-1.03 3.25 3.25 0 0 1-.2 6.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /><path d="M8 11.25V7.25M6.5 8.75 8 7.25l1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    )
+  }{start.label}<span class="visually-hidden">{NEW_TAB_NOTE}</span></a>
+
+<style>
+  .start-mark {
+    flex: none;
+  }
+</style>

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The diagram's SVG as draw.io cells (agents.md, Exports and the render API). One drawing, three files: the
+ * The diagram's SVG as draw.io cells (AGENTS.md, Exports and the render API). One drawing, three files: the
  * translator walks the markup the diagram's components drew (the same markup the SVG export and the PNG come from)
  * and turns every primitive into a draw.io cell at the same place and size, with the same colours, strokes, dashes,
  * corner radii, fonts and lines of text, so the file is the picture by construction. The structure comes from the

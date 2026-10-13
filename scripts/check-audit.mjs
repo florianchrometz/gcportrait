@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Dependency audit gate (agents.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
+ * Dependency audit gate (AGENTS.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
  * `pnpm audit` over the production dependencies and over the whole tree (development dependencies included),
  * failing on any high or critical advisory that is not accepted in scripts/audit-allowlist.json.
  *

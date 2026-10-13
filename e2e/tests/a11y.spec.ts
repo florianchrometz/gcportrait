@@ -5,7 +5,7 @@ import { expectNoAxeViolations, openDiagram } from './support.js';
 
 /**
  * axe-core (all non-experimental rules, best practices included) on every page of the app in demo mode, in
- * light and dark (WCAG 2.2 AA; agents.md, Style and accessibility; the gcp-diagram-style skill's
+ * light and dark (WCAG 2.2 AA; AGENTS.md, Style and accessibility; the gcp-diagram-style skill's
  * accessibility rules): the Connect, Diagram (empty), Snapshots, Permissions, Settings and not-found pages;
  * the diagram with demo organisations S, M and L drawn, at rest, with the keyboard inside a zone, and with a
  * node's menu and the details drawer open; the Snapshot menu open. Every node of each drawing is a named

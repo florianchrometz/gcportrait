@@ -16,7 +16,7 @@ import {
  * it (the hash is the only state of a view). Lens (and the default-detail rule), detail, focus with its
  * parameter pickers, every filter, the breadcrumb's drill-in trail (and double-click drill-in), the Snapshot
  * menu, Copy link, saved views (IndexedDB, across a reload). Filters apply under a drill-in and under a focus
- * (filters, focus views and drill-in compose; agents.md, Product rules). Axe on the open popovers and the
+ * (filters, focus views and drill-in compose; AGENTS.md, Product rules). Axe on the open popovers and the
  * dialog in both themes; screenshots of them go to e2e/.scratch/controls/ (git-ignored).
  */
 

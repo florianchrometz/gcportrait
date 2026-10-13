@@ -6,7 +6,7 @@ import { storedEverywhere, type GoogleStubs } from './gis.js';
 /**
  * What the live specs (run by the `chromium-live` project against `pnpm dev`'s Vite server) share: the
  * backend's GET /api/config answered inside the browser, the Permissions page's check section, and the checks
- * that the access token travels only in gcportrait's own header and is kept nowhere (agents.md, Security and
+ * that the access token travels only in gcportrait's own header and is kept nowhere (AGENTS.md, Security and
  * privacy, Tokens). Everything is synthetic.
  */
 

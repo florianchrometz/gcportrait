@@ -13,7 +13,7 @@ drill-in, focus views, lenses, filters and detail levels, composed in a fixed or
 
 The package is a pure core: no I/O, no clock, no randomness, no DOM; `src/` compiles without Node types. The
 same snapshot and catalog always give a deep-equal graph, whatever the order of the assets. It imports
-`@gcportrait/model` and `@gcportrait/catalog` only (agents.md, Architecture and code): every rule semantic
+`@gcportrait/model` and `@gcportrait/catalog` only (AGENTS.md, Architecture and code): every rule semantic
 (JSONPaths, normalisers, templates, `hiddenWhen`) is evaluated by the catalog's engine, never re-implemented
 here.
 
@@ -76,7 +76,7 @@ project, edges that matched only with their project segment swapped, nodes neste
    uses too).
 2. **Nodes.** For a mapped type: the catalog's label, subtitle, role, product, `ips`, `domains` and default
    visibility (`hidden` for role `hidden` or a matching `hiddenWhen`; `hiddenWhenMatched` marks the latter).
-   For a type the catalog does not map (unknown types still render: agents.md, Product rules): a generic card
+   For a type the catalog does not map (unknown types still render: AGENTS.md, Product rules): a generic card
    labelled `data.displayName`, else the last segment of `data.name`, else of the asset name; product = the
    service host; no addresses; visible; role `core` when another asset's rule points at it and `leaf`
    otherwise (it has no rules, hence no outgoing edges; it is never a container, because only the catalog can
@@ -214,7 +214,7 @@ parameter that names nothing usable falls back and is reported.
 ### Composition order
 
 The steps compose in this order; each works on what the previous one left, so every filter applies under a
-drill-in and under every focus view (filters compose with focus views and drill-in: agents.md, Product rules).
+drill-in and under every focus view (filters compose with focus views and drill-in: AGENTS.md, Product rules).
 
 | Step | What it does |
 |---|---|

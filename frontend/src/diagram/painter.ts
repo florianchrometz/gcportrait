@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * Highlight painting (skill gcp-diagram-style §6: highlight changes mutate attributes only, never re-layout;
- * agents.md, Architecture and code). The selection trace (trace.ts) of the selected node stays painted until the
+ * AGENTS.md, Architecture and code). The selection trace (trace.ts) of the selected node stays painted until the
  * selection changes:
  * the zones on its path to the root get an `accent.path` ring on their border, its traced lines (the lines
  * touching it or anything inside it, and its `routes`/`connects` chain) are shown again on top in

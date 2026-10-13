@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Google's error answers, read once for every route (agents.md, Security and privacy, Quota project and the
+ * Google's error answers, read once for every route (AGENTS.md, Security and privacy, Quota project and the
  * permission check; skill cai-ingestion §9). Google APIs answer an error with the envelope `{"error":
  * {"code", "message", "status", "details": [...]}}`; Cloud Storage's JSON API leaves out `status`. The
  * backend classifies by HTTP status and the `ErrorInfo` reason, never by message text, and passes the message

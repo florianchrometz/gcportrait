@@ -287,7 +287,7 @@ describe('the third-party statements about the Google Cloud product icons', () =
 
   it('THIRD_PARTY.md says they are Google Cloud’s, provided at cloud.google.com/icons, not licensed by gcportrait', () => {
     const text = read('THIRD_PARTY.md');
-    // "Google" or "Google Cloud", never the company's legal name (agents.md, Non-affiliation, brand and
+    // "Google" or "Google Cloud", never the company's legal name (AGENTS.md, Non-affiliation, brand and
     // legal).
     expect(text).not.toContain(['Google', 'LLC'].join(' '));
     expect(text).toContain('https://cloud.google.com/icons');

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * One render (agents.md, Exports and the render API): a snapshot and the render options
+ * One render (AGENTS.md, Exports and the render API): a snapshot and the render options
  * (`RenderOptionsSchema` of `@gcportrait/model`) to the bytes of an SVG, a PNG or a draw.io file, with the
  * app's export file name and what was drawn. The same functions as `pnpm render` (view.ts, draw.ts,
  * raster.ts), so a demo view comes out byte for byte as the command line writes it.

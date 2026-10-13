@@ -3,7 +3,7 @@
  * Replaying a history (the base and the daily mutations) to the organisation at one tick. Kept apart from the
  * generator (generate.ts, builder/, topology/, history/plan.ts) and importing none of it, so a caller that only
  * replays a stored history, such as the app's snapshot worker reading an imported bundle, bundles none of the
- * generator (agents.md, Architecture and code: the demo generator runs in workers only).
+ * generator (AGENTS.md, Architecture and code: the demo generator runs in workers only).
  */
 import type { Asset, Tick } from '@gcportrait/model';
 import type { DemoHistory, DemoOrganization } from './types.js';

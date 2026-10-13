@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Applies a project licence to the whole tree. gcportrait is MIT (agents.md, Licence and dependencies), so
+ * Applies a project licence to the whole tree. gcportrait is MIT (AGENTS.md, Licence and dependencies), so
  * this is needed only if the project licence changes. LICENSE carries a closing note written by hand, on what
  * the MIT License does not cover (the gcportrait name and icon, brand/LICENSE.md; the third-party material,
  * THIRD_PARTY.md); a run writes the bare licence text, so the note has to be put back after it.

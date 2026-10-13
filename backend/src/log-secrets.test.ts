@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * No token and no email in any log line, at the most verbose level (agents.md, Security and privacy,
+ * No token and no email in any log line, at the most verbose level (AGENTS.md, Security and privacy,
  * principle 2; docs/security.md §7). The server runs at `LOG_LEVEL=trace` against a pretend Google, and every
  * route is driven the way a person, a script and an attacker would: the token in each header the backend
  * reads, in a query string, in a body, in a malformed header and in Google's own error messages;
  * service-account mode with its gate and audit line; retries, refusals and failures. Every line written is
- * then searched for the tokens and the email. Everything is synthetic (agents.md, Security and privacy,
+ * then searched for the tokens and the email. Everything is synthetic (AGENTS.md, Security and privacy,
  * principle 6).
  */
 import type { FastifyInstance, InjectOptions } from 'fastify';

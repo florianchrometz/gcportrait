@@ -41,7 +41,7 @@ import { StreamSlots } from './stream/slots.js';
 import { createUpstreamClient, type UpstreamOptions } from './upstream/request.js';
 
 /**
- * The gcportrait backend (agents.md, Security and privacy, The backend): stateless, no database, no stored
+ * The gcportrait backend (AGENTS.md, Security and privacy, The backend): stateless, no database, no stored
  * credentials. It serves the health checks (/healthz for the container's probes, /api/healthz from outside:
  * Cloud Run's front end answers /healthz itself), /api/config, /api/legal, the scope search and the
  * permission preflight, the live pull and the export read with the caller's token or, behind its gate, the

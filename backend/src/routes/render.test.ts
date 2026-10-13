@@ -6,7 +6,7 @@
  * the lock, the slots), every error code with `Retry-After` on the retryable ones, the limits, the gate
  * before every page of a pull, the page budget, slot and lock given back, uploads that time out or cannot be
  * read, a page that arrives after the client left, and one log line of counts without secrets. Everything is
- * synthetic (agents.md, Security and privacy, principle 6).
+ * synthetic (AGENTS.md, Security and privacy, principle 6).
  */
 import { readFileSync } from 'node:fs';
 import { request as httpRequest } from 'node:http';
@@ -277,7 +277,7 @@ describe('POST /api/render: the bytes `pnpm render` writes', () => {
       'x-gcportrait-scale': '2',
     });
     // No non-affiliation header: the statement goes in footers and long-form texts, never with an export
-    // (agents.md, Non-affiliation, brand and legal).
+    // (AGENTS.md, Non-affiliation, brand and legal).
     expect(response.headers['x-gcportrait-notice']).toBeUndefined();
     expect([...response.rawPayload.subarray(0, 8)]).toEqual(PNG_MAGIC);
     expect(response.rawPayload.equals(readFileSync(GOLDEN))).toBe(true);
@@ -625,7 +625,7 @@ describe('POST /api/render: refusals', () => {
     expect(none.headers['www-authenticate']).toBe('Bearer');
     expect(errorOf(none.body)).toMatchObject({ statusCode: 401, code: 'UNAUTHENTICATED' });
     expect(calls()).toEqual([]);
-    // Authorization: Bearer is taken when X-Gcportrait-Token is absent (agents.md, Security and privacy,
+    // Authorization: Bearer is taken when X-Gcportrait-Token is absent (AGENTS.md, Security and privacy,
     // Tokens).
     const bearer = await post(
       app,

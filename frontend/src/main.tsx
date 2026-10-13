@@ -28,7 +28,7 @@ const connection = createDatabaseConnection();
 const preferences = createPreferenceStore(connection.database);
 // The data worker draws the diagrams; "Try the demo" prepares a demo organisation in a worker of its own, started for
 // the job, so the job never holds back the data worker's Scene requests. The demo generator runs in workers
-// only (agents.md, Architecture and code).
+// only (AGENTS.md, Architecture and code).
 const diagramWorkers = sharedWorkers(createBrowserWorkers);
 const snapshots = createSnapshotLibrary({
   database: connection.database,

@@ -2,7 +2,7 @@
 import type { AuthControls } from './context';
 
 /**
- * The request header that carries the session's Google token to this backend (agents.md, Security and privacy,
+ * The request header that carries the session's Google token to this backend (AGENTS.md, Security and privacy,
  * Tokens). Not `Authorization`: Identity-Aware Proxy in front of an instance (`deploy.sh --iap`) treats that header
  * as its own credential, so a person's token in it would never get past IAP. The backend reads this one first
  * (backend/src/stream/caller.ts, whose TOKEN_HEADER a backend test checks against this value).

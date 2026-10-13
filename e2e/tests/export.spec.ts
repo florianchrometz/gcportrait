@@ -183,7 +183,7 @@ test('downloads the whole diagram as SVG: well-formed, titled, with the legend, 
   );
   expect(parsed.titleBlock).toContain('Overview lens · read 2026-10-08T00:00:00+00:00');
   // The canvas's three lines, ending with the tagline; the statement is in the app footer only, never in a
-  // drawing (title block or <desc>; agents.md, Non-affiliation, brand and legal).
+  // drawing (title block or <desc>; AGENTS.md, Non-affiliation, brand and legal).
   expect(parsed.titleLines).toEqual([
     'example.com',
     'Overview lens · read 2026-10-08T00:00:00+00:00',

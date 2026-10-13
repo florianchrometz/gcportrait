@@ -6,7 +6,7 @@
  *
  * - The fields: `{ scope, readTime?, assetTypes?, mode, quotaProject? }`. In `user` mode `quotaProject` is
  *   required: it goes into `x-goog-user-project`, so the user's own project pays (never the instance's;
- *   agents.md, Security and privacy, Quota project and the permission check). In `sa` mode it is refused: the
+ *   AGENTS.md, Security and privacy, Quota project and the permission check). In `sa` mode it is refused: the
  *   instance's own project pays.
  * - Service-account mode only when the operator enabled it (403 otherwise), and only with the instance's identity
  *   (501 otherwise): the gate is never skipped.

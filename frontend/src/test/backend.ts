@@ -2,7 +2,7 @@
 /**
  * The backend as the tests stand it in: GET /api/config's answer (`publicConfig`), and a `fetch` that answers the
  * routes a test names, records every call with its parsed JSON body, and fails any other request as a dropped
- * connection would (`stubBackend`). Synthetic values only (agents.md, Data and graph semantics). Imported by tests
+ * connection would (`stubBackend`). Synthetic values only (AGENTS.md, Data and graph semantics). Imported by tests
  * only.
  */
 import { vi, type Mock } from 'vitest';

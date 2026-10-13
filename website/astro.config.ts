@@ -266,7 +266,7 @@ function staticDemo(): AstroIntegration {
 }
 
 /**
- * Every .astro source carries its SPDX header as an HTML comment after the front matter (agents.md, Licence and
+ * Every .astro source carries its SPDX header as an HTML comment after the front matter (AGENTS.md, Licence and
  * dependencies), which Astro would copy into every page once per component; the built pages leave them out.
  */
 function withoutSourceHeaders(): AstroIntegration {

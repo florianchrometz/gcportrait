@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * The static demo (agents.md, Modes and hosting): the app built in demo-only mode for a static host, the
+ * The static demo (AGENTS.md, Modes and hosting): the app built in demo-only mode for a static host, the
  * maintainer's demo at https://gcportrait.app/demo/ on GitHub Pages. Shared by the frontend's build
  * (frontend/vite.config.ts, which writes the bundle when VITE_STATIC_DEMO=1) and the root command that runs
  * it (scripts/static-demo.mjs, `pnpm demo:static`). Plain ESM, Node built-ins only.

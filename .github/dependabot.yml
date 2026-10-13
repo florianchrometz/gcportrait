@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 #
-# Dependabot version updates (agents.md, Security and privacy, principle 7). Every update still has to pass
+# Dependabot version updates (AGENTS.md, Security and privacy, principle 7). Every update still has to pass
 # the CI gates, including the licence allow-list. A proposal is never closed unread: its update is adopted on
-# main, or declined with its reason in docs/backlog.md (agents.md, Quality gates, testing and CI).
+# main, or declined with its reason in docs/backlog.md (AGENTS.md, Quality gates, testing and CI).
 version: 2
 updates:
   # The pnpm workspace: from the root, Dependabot reads pnpm-workspace.yaml and pnpm-lock.yaml and updates
@@ -20,7 +20,7 @@ updates:
       # Held at 6.0.x until typescript-eslint supports a newer TypeScript (see tsconfig.base.json).
       - dependency-name: typescript
         update-types: ['version-update:semver-minor', 'version-update:semver-major']
-      # The Node type definitions follow the Node 22 runtime (.nvmrc; agents.md, Architecture and code), not
+      # The Node type definitions follow the Node 22 runtime (.nvmrc; AGENTS.md, Architecture and code), not
       # the newest Node.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
@@ -41,6 +41,6 @@ updates:
     schedule:
       interval: weekly
     ignore:
-      # The Node 22 line (.nvmrc; agents.md, Architecture and code), not the newest Node.
+      # The Node 22 line (.nvmrc; AGENTS.md, Architecture and code), not the newest Node.
       - dependency-name: node
         update-types: ['version-update:semver-major']

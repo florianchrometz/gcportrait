@@ -9,7 +9,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
  */
 
 /*
- * The non-affiliation statement as the app must show it (agents.md, Non-affiliation, brand and legal). Kept
+ * The non-affiliation statement as the app must show it (AGENTS.md, Non-affiliation, brand and legal). Kept
  * literal on purpose: these are the expectations, not copies of frontend/src/branding.ts.
  */
 /** The title block's third line, on the canvas and in every export. */

@@ -2,10 +2,6 @@
 
 # Permissions: what gcportrait needs to read your Google Cloud
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 gcportrait only ever reads. It draws an organisation, a folder or a project (the *scope*) from Cloud Asset
 Inventory, in one of three ways:
 

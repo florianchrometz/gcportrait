@@ -9,5 +9,5 @@ pnpm-lock.yaml
 THIRD_PARTY.md
 
 # Markdown is hand-wrapped prose at 110 columns. Prettier would pad every table far beyond that width and
-# rewrite emphasis markers, churning the hand-maintained docs, agents.md and skills without improving them.
+# rewrite emphasis markers, churning the hand-maintained docs, AGENTS.md and skills without improving them.
 *.md

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive diagram (agents.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that
+ * The interactive diagram (AGENTS.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that
  * d3-zoom pans and zooms (`scaleExtent [0.05, 200]`, wheel and drag; double-click is reserved for drill-in and does
  * not zoom), level of detail by the effective scale, and hover, selection (with its trace) and keyboard focus painted
  * by the highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting

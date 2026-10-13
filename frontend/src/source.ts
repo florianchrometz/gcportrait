@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 /**
- * The app's link to its own source (agents.md, Product rules). gcportrait is licensed under the MIT License, which
+ * The app's link to its own source (AGENTS.md, Product rules). gcportrait is licensed under the MIT License, which
  * asks nothing of an instance's operator here; the link is a courtesy to the people who use an instance: it says
  * where the source of the version they use is published, and under which licence. The shell footer shows it on every
  * route as "Source (MIT)" (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the backend's

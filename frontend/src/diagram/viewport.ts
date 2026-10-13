@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Camera arithmetic for the canvas (zoom and pan with d3-zoom, `scaleExtent [0.05, 200]`; agents.md, Architecture and
+ * Camera arithmetic for the canvas (zoom and pan with d3-zoom, `scaleExtent [0.05, 200]`; AGENTS.md, Architecture and
  * code). Pure.
  */
 import type { Rect } from '@gcportrait/layout';

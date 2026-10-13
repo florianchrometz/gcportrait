@@ -4,7 +4,7 @@
 
 The gcportrait single-page app: React 19, Vite and TypeScript (strict), desktop only (at least 1280×800, no
 responsive breakpoints), light and dark themes, everything the user loads kept in the browser's IndexedDB
-(agents.md, Product rules; Architecture and code). It may import the shared `@gcportrait/*` packages through
+(AGENTS.md, Product rules; Architecture and code). It may import the shared `@gcportrait/*` packages through
 their entry points but never the backend. One workspace imports it: the render library
 ([`@gcportrait/render`](../packages/render/README.md)), behind both `pnpm render` and the backend's
 `POST /api/render`, reaches the diagram's SVG components and the app's own data readers through
@@ -21,8 +21,8 @@ Snapshots page (`src/snapshots/`), progressive disclosure (`src/diagram/disclosu
 Connect page's sign-in card and mode selector, the top bar's account menu and the store's `connect` slice), the
 live pull and the export load (`src/import/`: "Pull now" and the Connect page's export card, with a role of its
 own in the worker script) and the Export menu (`src/export/`), each in its section below. The bundle is budgeted
-by thread (agents.md, Quality gates, testing and CI), with no zod on the UI thread and the demo generator only
-in workers (agents.md, Architecture and code); section "Performance" says how the app stays fast on demo L and
+by thread (AGENTS.md, Quality gates, testing and CI), with no zod on the UI thread and the demo generator only
+in workers (AGENTS.md, Architecture and code); section "Performance" says how the app stays fast on demo L and
 XL, and the accessibility rules it follows (the keyboard map, accessible names, focus rings, colour never
 alone, axe on every page) are the gcp-diagram-style skill's §13.
 
@@ -248,7 +248,7 @@ without a snapshot.
 
 ## UI primitives (`src/ui/`)
 
-Headless, accessible, small (no component library; agents.md, Architecture and code). Each takes the app chrome
+Headless, accessible, small (no component library; AGENTS.md, Architecture and code). Each takes the app chrome
 tokens only (both themes; `ui/tokens.test.ts` fails on a raw colour or a colour token one theme lacks), is
 keyboard operable and has Testing Library tests with axe (`src/test/axe.ts`: axe-core in jsdom, all rules but
 colour contrast, which needs a rendering browser; the e2e suite runs axe in Chromium on whole pages in both
@@ -364,7 +364,7 @@ Google's sign-in script is never loaded.
 
 ## Static demo
 
-`VITE_STATIC_DEMO=1` builds the static demo (agents.md, Modes and hosting): the maintainer's demo at
+`VITE_STATIC_DEMO=1` builds the static demo (AGENTS.md, Modes and hosting): the maintainer's demo at
 <https://gcportrait.app/demo/>, served by the website's GitHub Pages site. Build it with `pnpm demo:static` at
 the root (`scripts/static-demo.mjs`), which sets the variables, runs this package's build and checks the bundle;
 [docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
@@ -399,7 +399,7 @@ in a browser.
 
 ## Branding and the non-affiliation notice (`src/branding.ts`)
 
-The non-affiliation statement goes in the footer and in long-form texts only (agents.md, Non-affiliation, brand
+The non-affiliation statement goes in the footer and in long-form texts only (AGENTS.md, Non-affiliation, brand
 and legal), every string defined once in `src/branding.ts`:
 
 | Constant | Text | Where |
@@ -427,7 +427,7 @@ gcportrait is licensed under the MIT License, which asks nothing of an instance'
 shell footer still links the source on every route, next to the non-affiliation notice, as a courtesy to the people
 who use an instance: a "Source (MIT)" link (`shell/SourceLink.tsx`, the text and default in `source.ts`) that says
 where the source of the version they use is published and under which licence. By default it points at the
-project's repository (agents.md, Product rules). Exports stay as they are.
+project's repository (AGENTS.md, Product rules). Exports stay as they are.
 
 | Mode | Link target |
 |---|---|
@@ -480,7 +480,7 @@ the static demo's.
 
 ## Sign-in (`src/auth/`)
 
-User mode's Google sign-in (agents.md, Security and privacy, principle 2 and Tokens): Google Identity
+User mode's Google sign-in (AGENTS.md, Security and privacy, principle 2 and Tokens): Google Identity
 Services' **token client**, in the browser only. The access token is held in memory, inside the token
 session's closure, and nowhere else: never in the app store, IndexedDB, localStorage, sessionStorage, a
 cookie, the URL or a log. Reloading the page or closing the tab ends the session.
@@ -517,7 +517,7 @@ hand the token back ([backend/README.md](../backend/README.md), "Security and lo
 
 **Scopes** (`OAUTH_SCOPES` in `session.ts`): `cloud-platform.read-only` (Resource Manager accepts it, Cloud
 Asset Inventory does not), `cloudasset` (the reverse) and `userinfo.email` (so that tokeninfo names the account
-in the account menu); never all of `cloud-platform` (agents.md, Security and privacy, OAuth scopes). Before
+in the account menu); never all of `cloud-platform` (AGENTS.md, Security and privacy, OAuth scopes). Before
 sign-in the card says that Google describes `cloudasset` as "See, edit, configure, and delete your Google Cloud
 Asset data" and that gcportrait only lists assets with it, and shows the backend's `hostedBy` line (who runs the
 instance). With granular consent a person may leave a scope out: a grant without both Cloud scopes is
@@ -718,7 +718,7 @@ src/import/
 **What "Pull now" pulls** (`target.ts`): the store's `connect` slice must have a signed-in session, a scope, and a
 permission check (`connect.preflight`) that answered `ready` for exactly that scope, mode and quota project.
 In user mode the pull uses the quota project the check found usable (required; never the instance's project:
-agents.md, Security and privacy); in service-account mode none. Until then the button is inert (`aria-disabled`,
+AGENTS.md, Security and privacy); in service-account mode none. Until then the button is inert (`aria-disabled`,
 focusable) and its hint says what is missing ("Choose a scope first.", "Check the permissions again for this
 choice.", …), with a "Check permissions" link to the Permissions page while the check is what is missing.
 
@@ -777,7 +777,7 @@ a typed read time, the sidecar's over it, bundles keeping their own, the future 
 
 ## Snapshots (`src/snapshots/`)
 
-Snapshots live in this browser only (agents.md, Security and privacy, principle 1): the Connect page's "Try the
+Snapshots live in this browser only (AGENTS.md, Security and privacy, principle 1): the Connect page's "Try the
 demo" makes them, the Snapshots page lists, loads, exports, imports and deletes them, and the diagram's data
 worker reads them. One object, the **snapshot library** (`library.ts`), does everything; `main.tsx` creates it
 over the app's IndexedDB connection and the snapshot worker, and `SnapshotLibraryProvider` (in `App.tsx`, inside
@@ -810,7 +810,7 @@ src/snapshots/
 
 **Try the demo.** The person picks a size (S, M, L or XL; S by default) and presses "Try the demo". A worker
 started for the job (`diagram/pipeline/demoRole.ts`, so the diagram's data worker's Scene requests never wait
-behind an XL job), with the demo generator (on neither the UI thread nor the snapshot worker: agents.md,
+behind an XL job), with the demo generator (on neither the UI thread nor the snapshot worker: AGENTS.md,
 Architecture and code), generates the organisation's 35-day history with `@gcportrait/demo-data` (the base and
 the daily mutations, never 35 copies), reads its last day through `@gcportrait/ingest` exactly as it reads
 `demo:<size>` for a diagram (`diagram/pipeline/demo.ts`, loaded on first use; `demo.test.ts` checks the two
@@ -952,7 +952,7 @@ both themes).
 
 ## Diagram renderer (`src/diagram/`)
 
-The diagram page draws the view in the URL hash (agents.md, Architecture and code; the gcp-diagram-style and
+The diagram page draws the view in the URL hash (AGENTS.md, Architecture and code; the gcp-diagram-style and
 gcp-diagram-layout skills): the hash's ViewSpec names a snapshot (a demo organisation, `#snapshot=demo:S|M|L`,
 or a stored snapshot), the **data worker** turns it into a Scene and resolves
 the icons it draws, the **layout worker** lays the Scene out, and the page renders the Layout as SVG in React.
@@ -1133,7 +1133,7 @@ ends an edge with a final segment shorter than its head (6 px against a 7 px hea
 the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the layout's routing owns that
 segment.
 
-**Bundle.** `pnpm size` budgets the build by thread (agents.md, Quality gates, testing and CI; gzipped, fonts
+**Bundle.** `pnpm size` budgets the build by thread (AGENTS.md, Quality gates, testing and CI; gzipped, fonts
 and the JSON data tables excluded): the UI thread's initial chunks (the entry, its static imports and the CSS)
 350 kB, and the workers' chunks 400 kB in total; a lazily imported UI chunk counts only when it is part of the
 first paint of `/diagram`. What keeps them well within it: the icons travel with the Scene (above),
@@ -1324,7 +1324,7 @@ name (a taken name is updated), lists the saved views newest first with a summar
 link*: the diagram page's URL with the view's hash to the clipboard, and a toast (a polite status message kept
 in the DOM).
 
-**Width.** The view row fits the 1280 px minimum viewport (agents.md, Product rules): the breadcrumb takes the
+**Width.** The view row fits the 1280 px minimum viewport (AGENTS.md, Product rules): the breadcrumb takes the
 free space without widening the row (inline-size containment, crumbs cut with an ellipsis, the root's kept
 whole), the Focus summary is cut at 8 em, and the detail segments are narrower than the primitive's default.
 Every popup is keyboard operable: Escape first closes an open list or clears a picker's text, then closes the
@@ -1653,7 +1653,7 @@ and once per offer checked. The search-jump target of layout skill §7 is set on
 ## Timeline (`src/timeline/`)
 
 The bar at the bottom of the diagram page (`pages/diagram/TimelineBar.tsx`) moves the view through the open
-snapshot's last 35 days (agents.md, Product rules; skill cai-ingestion §5;
+snapshot's last 35 days (AGENTS.md, Product rules; skill cai-ingestion §5;
 [docs/timeline.md](../docs/timeline.md)). The view's day is its `tick` in the URL hash (`YYYY-MM-DD`; the
 snapshot's own day is no tick; an extra tick's read time, `YYYY-MM-DDTHH:MM:SSZ`), so a timeline position is a
 link like any view, and a hash with a tick opens on that day.
@@ -2063,4 +2063,4 @@ state is `aria-checked`.
 Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the flow,
 the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium, and
 `e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with mxGraph and holds it to the SVG export
-(within the fidelity limits of agents.md, Exports and the render API).
+(within the fidelity limits of AGENTS.md, Exports and the render API).

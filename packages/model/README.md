@@ -2,7 +2,7 @@
 
 # @gcportrait/model
 
-The single definition of every type that crosses a package boundary in gcportrait (agents.md, Data and graph
+The single definition of every type that crosses a package boundary in gcportrait (AGENTS.md, Data and graph
 semantics): Asset and Snapshot, relation kinds, Graph, ViewSpec, Scene, the asset catalog's shapes, the
 timeline's Tick and Diff, and the URL-hash codec for views. Every type is inferred from a zod schema
 (`z.infer`); nothing is declared twice. The package sits at the bottom of the dependency graph, imports no
@@ -106,7 +106,7 @@ Version 1 is the first format, so there is no upgrade step yet.
 ### Without zod
 
 The schemas are built from plain tuples in `schemas/vocabulary.ts`, which imports no zod; code that only lists
-or tests a value (the app's UI thread, which ships no zod: agents.md, Architecture and code) imports these
+or tests a value (the app's UI thread, which ships no zod: AGENTS.md, Architecture and code) imports these
 instead of a schema's `options` or `safeParse`. `vocabulary.test.ts` proves each guard equal to its schema.
 
 | Export | What |
@@ -260,7 +260,7 @@ in its description, and stored under its own `assetType`.
 ## Catalog rule engine contract
 
 What `@gcportrait/catalog`'s rule engine reads next to an asset, and what it hands to the graph builder (the
-catalog owns rule semantics: agents.md, Data and graph semantics).
+catalog owns rule semantics: AGENTS.md, Data and graph semantics).
 
 | Export | What |
 |---|---|

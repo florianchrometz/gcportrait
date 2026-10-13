@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 
 /**
- * The security headers of every response (agents.md, Security and privacy; docs/security.md §6): the Content
+ * The security headers of every response (AGENTS.md, Security and privacy; docs/security.md §6): the Content
  * Security Policy, Cross-Origin-Opener-Policy and -Embedder-Policy, and Permissions-Policy. server.ts sends
  * them with @fastify/helmet (which adds HSTS, nosniff, X-Frame-Options, Referrer-Policy and
  * Cross-Origin-Resource-Policy).

@@ -26,7 +26,7 @@ export type StaticOptions = Omit<DrawingOptions, 'interactive' | 'overlays'> & {
  * wording). The description reads on its own (an image viewer or an editor shows it without the title):
  * the scope, the lens, the read time at the viewer's offset, a timeline day's changes when it was compared with
  * another day ("Changes since 2026-09-07: 1 added, 1 removed, 1 changed.") and what drew it. Neutral
- * metadata only: no affiliation sentence (agents.md, Non-affiliation, brand and legal).
+ * metadata only: no affiliation sentence (AGENTS.md, Non-affiliation, brand and legal).
  */
 export function documentText(model: DiagramModel, utcOffsetMinutes: number): { title: string; desc: string } {
   const { metadata } = model.input.scene;

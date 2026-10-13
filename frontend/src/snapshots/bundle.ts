@@ -9,7 +9,7 @@
  * ```
  *
  * A bundle carries no non-affiliation line: the statement goes in footers and long-form texts, never with an exported
- * file (agents.md, Non-affiliation, brand and legal). The reader ignores every key it does not read.
+ * file (AGENTS.md, Non-affiliation, brand and legal). The reader ignores every key it does not read.
  *
  * `snapshot` is the model's Snapshot (read back through `migrateSnapshot`, so its own `schemaVersion` migrates
  * as the model's policy says); `history`, present for demo organisations, is their 35-day history as a base and

@@ -3,7 +3,7 @@
  * `renderView` against the command line's own outputs: the renderer's SVG baselines (e2e/baselines/diagram/,
  * which `pnpm render` reproduces) and the committed golden PNG (e2e/baselines/render/), byte for byte; the
  * view from a hash and from explicit fields; the refused root and focus; the pixel limit; the file name and
- * the title block, which never carries the affiliation line (agents.md, Non-affiliation, brand and legal);
+ * the title block, which never carries the affiliation line (AGENTS.md, Non-affiliation, brand and legal);
  * the draw.io file, the same drawing translated (its golden is render-cli's).
  */
 import { readFileSync } from 'node:fs';

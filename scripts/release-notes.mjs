@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 /**
- * The long-form non-affiliation statement (agents.md, Non-affiliation, brand and legal);
+ * The long-form non-affiliation statement (AGENTS.md, Non-affiliation, brand and legal);
  * scripts/release-notes.test.ts keeps it equal to the app's.
  */
 export const NON_AFFILIATION_LONG =

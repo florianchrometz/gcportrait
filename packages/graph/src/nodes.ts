@@ -15,7 +15,7 @@ import type { Asset, CatalogType, GraphNode, NodeRole } from '@gcportrait/model'
 
 /**
  * The node of an asset. For a type the catalog maps, role, label, subtitle, product, addresses, host names
- * and default visibility come from its entry. For a type it does not map (it still renders: agents.md,
+ * and default visibility come from its entry. For a type it does not map (it still renders: AGENTS.md,
  * Product rules) the node is a
  * generic card: label from `data.displayName`, else the last segment of `data.name`, else of the asset name;
  * product = the service host; no addresses; visible; and the provisional role `leaf` that

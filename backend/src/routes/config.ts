@@ -18,7 +18,7 @@ import { PublicConfigResponseSchema, toFastifySchema, type PublicConfigResponse 
 
 /**
  * The `hostedBy` line: "Hosted by NAME.", or null without a name. It carries no non-affiliation line: the
- * app's footer says that on every page (footers and long-form texts only; agents.md, Non-affiliation, brand
+ * app's footer says that on every page (footers and long-form texts only; AGENTS.md, Non-affiliation, brand
  * and legal).
  */
 export function hostedByLine(hostedBy: string | null): string | null {

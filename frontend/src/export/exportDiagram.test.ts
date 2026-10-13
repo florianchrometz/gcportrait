@@ -43,7 +43,7 @@ describe('the SVG file', () => {
   it('is named gcportrait_<scope>_<lens>_<readTime>.svg and carries no affiliation line', async () => {
     // How the title block, <title> and <desc> are written into a file is serialize.test.tsx's; here, that the export
     // flow hands them this source's text and the viewer's offset, and that the whole file it writes carries no
-    // affiliation line anywhere (agents.md, Non-affiliation, brand and legal).
+    // affiliation line anywhere (AGENTS.md, Non-affiliation, brand and legal).
     const source = sourceWith();
     const file = exportSvgFile(source, { area: 'whole', theme: 'light' });
     expect(file.fileName).toBe('gcportrait_example.com_overview_20261008T000000Z.svg');

@@ -11,7 +11,7 @@
  * on the same Scene laid out without routing (the arrangement the router pins): it fills its rows, and every
  * container with at least four children is checked against its packing target by an independent oracle
  * (src/testing/oracle.ts) and against a fill floor (skill §9, "huge empty zones"), by the packing criterion
- * (agents.md, Layout and drawing rules): within 20 % unless no arrangement with full rows reaches 20 % or
+ * (AGENTS.md, Layout and drawing rules): within 20 % unless no arrangement with full rows reaches 20 % or
  * every one that does needs more area than the chosen one framed to the target; fill ≥ 40 %. The L
  * organisation is too large to commit as JSON: L × networking (at `auto` and `all`) and L × overview and
  * load-balancing (at `auto`) are compared by their summaries (counts, the routing report with its fallbacks,

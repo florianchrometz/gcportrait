@@ -214,14 +214,41 @@ describe('the buttons in README.md, docs/self-host.md and docs/self-host-options
     expect(read('docs/self-host.md').split('\n')).not.toContain(runOnGoogleCloud);
   });
 
-  it('the landing page shows both below its installer line, the Cloud Run Button last', () => {
+  // The website's buttons (website/src/components/StartLink.astro) go where the README's badges go: one address each,
+  // in website/src/site.ts.
+  const siteConstant = (name: string): string =>
+    new RegExp(`export const ${name} =\\s*'([^']+)';`).exec(read('website/src/site.ts'))?.[1] ?? '';
+
+  it('the website’s buttons go to the addresses of the README’s badges', () => {
+    expect(openInCloudShell.endsWith(`(${siteConstant('CLOUD_SHELL_URL')})`)).toBe(true);
+    expect(runOnGoogleCloud.endsWith(`(${siteConstant('CLOUD_RUN_BUTTON_URL')})`)).toBe(true);
+    const button = read('website/src/components/StartLink.astro');
+    expect(button).toContain("'cloud-shell': { href: CLOUD_SHELL_URL, label: 'Open in Cloud Shell' }");
+    expect(button).toContain("'cloud-run': { href: CLOUD_RUN_BUTTON_URL, label: 'Run on Google Cloud' }");
+  });
+
+  it('the landing page shows both beside "Self-host" in its hero and again below its installer line', () => {
     const page = read('website/src/pages/index.astro');
+    const at = (needle: string): number[] => {
+      const found: number[] = [];
+      for (let index = page.indexOf(needle); index >= 0; index = page.indexOf(needle, index + 1))
+        found.push(index);
+      return found;
+    };
+    const cloudShell = at('<StartLink to="cloud-shell" />');
+    const cloudRun = at('<StartLink to="cloud-run" />');
+    expect(cloudShell).toHaveLength(2);
+    expect(cloudRun).toHaveLength(2);
+    expect(page).toMatch(
+      /<a class="button" href="\/docs\/self-host\/">Self-host<\/a>\s*<StartLink to="cloud-shell" \/>\s*<StartLink to="cloud-run" \/>/,
+    );
+    const hero = page.indexOf('<section class="hero">');
     const installer = page.indexOf('<Fragment set:html={deployBlock.html} />');
-    const cloudShell = page.indexOf('href={CLOUD_SHELL_URL}');
-    const cloudRun = page.indexOf('href={CLOUD_RUN_BUTTON_URL}');
+    expect(hero).toBeGreaterThan(-1);
+    expect(cloudShell[0]).toBeGreaterThan(hero);
+    expect(cloudShell[0]).toBeLessThan(page.indexOf('</section>', hero));
     expect(installer).toBeGreaterThan(-1);
-    expect(cloudShell).toBeGreaterThan(installer);
-    expect(cloudRun).toBeGreaterThan(cloudShell);
-    expect(page.split('href={CLOUD_RUN_BUTTON_URL}')).toHaveLength(2);
+    expect(cloudShell[1]).toBeGreaterThan(installer);
+    expect(cloudRun[1]).toBeGreaterThan(cloudShell[1] ?? Infinity);
   });
 });

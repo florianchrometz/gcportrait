@@ -3,7 +3,7 @@
  * The title block (skill gcp-diagram-style §7): top-left inside the SVG, so exports carry it. It names the scope
  * and the lens, gives the data's read time in ISO-8601 with the viewer's UTC offset, and ends with the tagline
  * in `muted` at 10.5 px. The same three lines on the interactive canvas and in every export: the
- * non-affiliation statement is in the app footer only, never in a drawing (agents.md, Non-affiliation, brand and
+ * non-affiliation statement is in the app footer only, never in a drawing (AGENTS.md, Non-affiliation, brand and
  * legal).
  */
 import { measureText } from '@gcportrait/layout';

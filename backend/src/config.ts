@@ -32,10 +32,10 @@ export type ServerConfig = {
   readonly logFormat: LogFormat;
   /** Public Google OAuth web client id used by the SPA for sign-in, or null when sign-in is not configured. */
   readonly oauthClientId: string | null;
-  /** Whether the operator enabled service-account mode (agents.md, Modes and hosting). */
+  /** Whether the operator enabled service-account mode (AGENTS.md, Modes and hosting). */
   readonly saModeEnabled: boolean;
   /**
-   * Whether the service-account gate also runs its optional exposure check (agents.md, Security and privacy,
+   * Whether the service-account gate also runs its optional exposure check (AGENTS.md, Security and privacy,
    * The service-account gate): the account's own `get` of a scope must be refused, so a scope whose details
    * are public, or on which the account holds more than `roles/cloudasset.viewer`, is refused. On with
    * `SA_MODE_STRICT_EXPOSURE=true`, off when it is `false` or unset; any other value stops start-up
@@ -65,7 +65,7 @@ export type ServerConfig = {
    */
   readonly sourceUrl: string;
   /**
-   * Demo-only mode (`DEMO_ONLY=true`; agents.md, Modes and hosting): the instance serves the app and its demo
+   * Demo-only mode (`DEMO_ONLY=true`; AGENTS.md, Modes and hosting): the instance serves the app and its demo
    * organisations only. No sign-in (an OAuth client id is refused), no service-account mode, and none of the
    * routes that call Google (scope search, preflight, live pull, export read) is registered; /api/config says
    * so with `demoOnly`, and the SPA's Connect page then offers only the demo.
@@ -90,7 +90,7 @@ export type ServerConfig = {
 export type LegalUrls = { readonly impressum: string | null; readonly privacy: string | null };
 
 /**
- * The limits of `POST /api/render` (agents.md, Exports and the render API); each is an environment
+ * The limits of `POST /api/render` (AGENTS.md, Exports and the render API); each is an environment
  * variable.
  */
 export type RenderLimits = {
@@ -168,7 +168,7 @@ const EnvSchema = z.object({
     z.enum(['true', 'false'], { error: 'must be "true" or "false" (or unset, which means off)' }),
   ),
   BACKEND_SA_EMAIL: optional(z.email()),
-  // Plain text on one line. Never Google: gcportrait is not affiliated with Google (agents.md,
+  // Plain text on one line. Never Google: gcportrait is not affiliated with Google (AGENTS.md,
   // Non-affiliation, brand and legal).
   HOSTED_BY: optional(
     z

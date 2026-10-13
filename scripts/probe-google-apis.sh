@@ -3,7 +3,7 @@
 #
 # probe-google-apis.sh: runs a matrix of calls against Cloud Asset Inventory and Resource Manager with access
 # tokens you supply, and prints one summary line per call. The answers are the ones the backend's
-# classification rests on (.agents/skills/cai-ingestion/SKILL.md §9, "What Google's APIs answer"; agents.md,
+# classification rests on (.agents/skills/cai-ingestion/SKILL.md §9, "What Google's APIs answer"; AGENTS.md,
 # Security and privacy): run it before changing what the backend relies on.
 #
 # Tokens are read from standard input only (never from arguments, the environment or a file) and are
@@ -323,7 +323,7 @@ refused() { # ID CALL DETAIL
   fi
 }
 
-# The service-account gate (agents.md, Security and privacy), as the backend runs it.
+# The service-account gate (AGENTS.md, Security and privacy), as the backend runs it.
 # Step 2 passes only on Resource Manager's IAM denial of exactly resourcemanager.<kind>.get, the kind taken
 # from SCOPE: one ErrorInfo, reason IAM_PERMISSION_DENIED, domain cloudresourcemanager.googleapis.com. Any
 # other answer, a 403 for another reason (SERVICE_DISABLED, USER_PROJECT_DENIED, a VPC Service Controls or

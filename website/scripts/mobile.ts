@@ -69,7 +69,7 @@ class UsageError extends Error {}
 
 /**
  * The site's pages: the sitemap's and the 404 page, without the demo (/demo/), which is the app: desktop-only
- * (agents.md, Product rules), checked by the e2e suite and `pnpm --filter @gcportrait/website demo`.
+ * (AGENTS.md, Product rules), checked by the e2e suite and `pnpm --filter @gcportrait/website demo`.
  */
 function sitemapPages(dist: string): string[] {
   const sitemap = readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');

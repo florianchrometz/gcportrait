@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Demo-only mode (DEMO_ONLY=true; agents.md, Modes and hosting): the route matrix against the normal mode,
+ * Demo-only mode (DEMO_ONLY=true; AGENTS.md, Modes and hosting): the route matrix against the normal mode,
  * the configuration it reports and refuses, the legal pages, the CSP, the rate limit and the SPA. Fastify
  * inject, no network: a request that reached Google would fail on the fetch below.
  */
@@ -26,7 +26,7 @@ writeFileSync(path.join(dist, 'index.html'), INDEX_HTML);
 writeFileSync(path.join(dist, 'assets', 'index-abc123.js'), 'console.log("app");\n');
 const legal = path.join(scratch, 'legal');
 mkdirSync(legal);
-/** Synthetic texts (agents.md, Security and privacy, principle 6). */
+/** Synthetic texts (AGENTS.md, Security and privacy, principle 6). */
 const IMPRESSUM = '# Impressum\n\nExample Operator, Example Street 1, 12345 Example City\n';
 writeFileSync(path.join(legal, 'impressum.md'), IMPRESSUM);
 
@@ -87,7 +87,7 @@ describe('the route matrix', () => {
         { authorization: 'Bearer' },
         { authorization: 'Bearer two words' },
         { authorization: 'bearer\ttoken' },
-        // A malformed dedicated header is never replaced by Authorization (agents.md, Security and privacy,
+        // A malformed dedicated header is never replaced by Authorization (AGENTS.md, Security and privacy,
         // Tokens).
         { 'x-gcportrait-token': 'not a token', authorization: 'Bearer ya29.demo-only-test-token' },
       ];

@@ -4,9 +4,9 @@
 
 The stateless Fastify 5 service that runs on Cloud Run (Node 22, ESM). It serves the built SPA, and forwards
 Cloud Asset Inventory requests with the user's token or, behind a gate, the service account, without storing
-anything (agents.md, Security and privacy). It may import `@gcportrait/model`, `@gcportrait/ingest`,
+anything (AGENTS.md, Security and privacy). It may import `@gcportrait/model`, `@gcportrait/ingest`,
 `@gcportrait/catalog` and `@gcportrait/render`; it reaches the frontend only through the render library, and
-only in its render worker (`src/render/`), never in `dist/server.mjs` (agents.md, Architecture and code).
+only in its render worker (`src/render/`), never in `dist/server.mjs` (AGENTS.md, Architecture and code).
 
 ## Scripts
 
@@ -49,13 +49,13 @@ only in its render worker (`src/render/`), never in `dist/server.mjs` (agents.md
 | `POST /api/render` | An SVG, PNG or draw.io file of a view of a scope (a live pull), an uploaded export or bundle, or a demo organisation (`src/routes/render.ts`, section "Render API"). Needs the caller's token; absent with `RENDER_API=false`. |
 | `GET /*` | SPA files and the SPA fallback (production image only), as above. |
 
-**Demo-only mode** (`DEMO_ONLY=true`; agents.md, Modes and hosting): the routes that need the caller's token,
+**Demo-only mode** (`DEMO_ONLY=true`; AGENTS.md, Modes and hosting): the routes that need the caller's token,
 the render API among them, are not registered, so they answer the JSON 404 of an unknown route (with a
 sentence saying why); everything else above stays, rate limits included, and the CSP allows no Google host.
 `src/demo-only.test.ts` holds the route matrix; `src/demo-only-harness.testing.ts` runs this mode for
 `e2e/tests/demo-only.spec.ts`.
 
-**The caller's token** (`src/stream/caller.ts`; agents.md, Security and privacy, Tokens) comes in
+**The caller's token** (`src/stream/caller.ts`; AGENTS.md, Security and privacy, Tokens) comes in
 `X-Gcportrait-Token: TOKEN`, the header the app sends, which Identity-Aware Proxy in front of an instance
 leaves alone. Only a request without that header may send `Authorization: Bearer TOKEN` instead (scripts
 against a public instance; the scheme in any letter case); a malformed `X-Gcportrait-Token` is a 401, never
@@ -147,7 +147,7 @@ its source can point `SOURCE_URL` there.
 - **Request ids**: a well-formed incoming `x-request-id` is kept, otherwise a UUID is minted. It is echoed in the
   response and logged as `requestId`.
 - **Logs** (pino, JSON on stdout): `message` and `severity` fields so Cloud Logging classifies lines without a
-  router rule. No credential, session or user identity ever reaches a log line (agents.md, Security and
+  router rule. No credential, session or user identity ever reaches a log line (AGENTS.md, Security and
   privacy, The backend). The request serializer logs method, path, host and the request headers, but only an
   **allowlist** of harmless headers keeps its value (`LOGGED_HEADERS` in `src/logging.ts`: `accept*`,
   `content-length`, `content-type`, `host`, `origin`, `traceparent`, `user-agent`, `x-cloud-trace-context`,
@@ -187,7 +187,7 @@ syntax). Organisations accept only `domain:` and `directoryCustomerId:` queries,
 matched here, as is text the terms do not cover. `nextPageToken` carries the three kinds' own page tokens; one
 kind failing is listed in `problems`, every kind failing is a 403 (the token lacks the OAuth scope) or 502.
 
-**`POST /api/preflight`.** The permission check of user mode and the service-account gate (agents.md, Security
+**`POST /api/preflight`.** The permission check of user mode and the service-account gate (AGENTS.md, Security
 and privacy, Quota project and the permission check, and The service-account gate), in `src/preflight/run.ts`:
 
 | Mode | Item | Checked by | `missing` gives |
@@ -297,7 +297,7 @@ time).
 ## Service-account mode
 
 The backend may read a scope with its own identity, after proving that the caller may see that scope
-(agents.md, Security and privacy, principle 4 and The service-account gate; the user guide is
+(AGENTS.md, Security and privacy, principle 4 and The service-account gate; the user guide is
 [docs/permissions.md](../docs/permissions.md)). `SA_MODE_ENABLED=true` turns it on.
 
 **The identity** (`src/auth/identity.ts`). At start-up `src/main.ts` resolves Application Default Credentials
@@ -378,7 +378,7 @@ schema in `src/schemas.ts`, the TypeScript type is `z.infer` of it, and Fastify 
 (built into zod 4). Fastify's serializer (fast-json-stringify) then emits only the declared fields, fails
 loudly when a required field is missing, and keeps the fast serialization path. This is used rather than
 `fastify-type-provider-zod` for three reasons. It keeps zod as the single definition of every contract (types
-that cross a package boundary are zod schemas, declared once; agents.md, Data and graph semantics). It adds no
+that cross a package boundary are zod schemas, declared once; AGENTS.md, Data and graph semantics). It adds no
 dependency (the provider's current major also pulls in `@fastify/swagger` and `openapi-types` as required
 peers). And request bodies are validated with zod schemas too, some of them from `@gcportrait/model`, either
 the same way or with an explicit `schema.parse`.
@@ -413,7 +413,7 @@ is the user's reference (request, sources, headers, errors, limits); here is how
   (`src/render/in-process.ts`).
 - **The answer** goes out through `sendPieces` (`src/stream/ndjson.ts`, the streams' writer and stall rule)
   with the export's file name, the view's hash, and the detail level and scale used; no non-affiliation line
-  travels with it (agents.md, Non-affiliation, brand and legal). One log line per render, counts only: source
+  travels with it (AGENTS.md, Non-affiliation, brand and legal). One log line per render, counts only: source
   kind, format, theme, assets, bytes, ms, outcome.
 - **A draw.io file** (`application/vnd.jgraph.mxfile`, `.drawio`) is the SVG's drawing translated into draw.io's
   cells by the frontend's translator (`frontend/src/export/drawio/`, through the render library's `drawDrawio`);

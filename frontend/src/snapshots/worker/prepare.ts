@@ -3,7 +3,7 @@
  * A snapshot made ready to store (`PreparedSnapshot`, protocol.ts): its documents encoded for IndexedDB (../codec.ts)
  * and its listing metadata. Shared by the snapshot worker's imports (handler.ts) and the demo job
  * (diagram/pipeline/demo.ts, run by the demo worker, demoRole.ts), which prepares the demo organisations because the
- * demo generator runs in the diagram's workers only (agents.md, Architecture and code). Each step is reported as
+ * demo generator runs in the diagram's workers only (AGENTS.md, Architecture and code). Each step is reported as
  * it starts.
  */
 import type { DemoHistory } from '@gcportrait/demo-data';

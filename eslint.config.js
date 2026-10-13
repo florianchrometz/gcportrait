@@ -11,7 +11,7 @@
  *    the rest of the boundary policy is a short allow-list that reads best as plain data (below) without a
  *    second plugin's element/rule vocabulary to learn.
  *  - core `no-restricted-imports` patterns, generated per workspace from WORKSPACE_DEPENDENCIES below, keep
- *    the dependency direction of docs/packages.md §2 (frontend/backend → packages → model; agents.md,
+ *    the dependency direction of docs/packages.md §2 (frontend/backend → packages → model; AGENTS.md,
  *    Architecture and code) and force imports through the package entry point (`@gcportrait/<pkg>`, never a
  *    deep path).
  */
@@ -34,7 +34,7 @@ const WORKSPACE_DEPENDENCIES = [
   { files: 'packages/*/**', allowed: ['model'] },
   { files: 'packages/model/**', allowed: [] },
   // The graph builder evaluates catalog rules through @gcportrait/catalog's rule engine: the catalog owns
-  // rule semantics (agents.md, Data and graph semantics).
+  // rule semantics (AGENTS.md, Data and graph semantics).
   { files: 'packages/graph/**', allowed: ['model', 'catalog'] },
   // Its tests build the demo organisations with @gcportrait/demo-data (a dev dependency; tests only).
   { files: 'packages/graph/test/**', allowed: ['model', 'catalog', 'demo-data'] },
@@ -48,7 +48,7 @@ const WORKSPACE_DEPENDENCIES = [
   // The render library is Node code on top of the app, not a library under it: it reads data and draws
   // views with the frontend's own readers and SVG components (@gcportrait/frontend's entry point, src/headless.ts)
   // so its output is the app's picture. It is the one package that may import the frontend; the frontend may not
-  // import it (agents.md, Architecture and code).
+  // import it (AGENTS.md, Architecture and code).
   {
     files: 'packages/render/**',
     allowed: ['model', 'catalog', 'graph', 'layout', 'demo-data', 'frontend'],
@@ -56,7 +56,7 @@ const WORKSPACE_DEPENDENCIES = [
   // `pnpm render`: the command line around the render library. Nothing imports it.
   { files: 'packages/render-cli/**', allowed: ['model', 'graph', 'demo-data', 'render'] },
   { files: 'frontend/**', allowed: ['model', 'catalog', 'graph', 'layout', 'icons', 'ingest', 'demo-data'] },
-  // The backend reaches the frontend only through the render library, in its render worker (agents.md,
+  // The backend reaches the frontend only through the render library, in its render worker (AGENTS.md,
   // Architecture and code).
   { files: 'backend/**', allowed: ['model', 'catalog', 'ingest', 'render'] },
   { files: 'website/**', allowed: ['model', 'catalog', 'demo-data'] },

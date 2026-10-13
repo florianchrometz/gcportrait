@@ -7,7 +7,7 @@
  *
  * Arguments: `--legal-dir PATH` (optional) becomes LEGAL_DIR. It prints `{"ready":{"port":N}}` once listening and
  * `{"google":"URL"}` should anything try to reach Google (nothing may). Everything is synthetic
- * (agents.md, Security and privacy, principle 6).
+ * (AGENTS.md, Security and privacy, principle 6).
  */
 import { ConfigError, parseConfig } from './config.js';
 import { buildServer } from './server.js';

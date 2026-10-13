@@ -47,7 +47,7 @@ type Fixture = (typeof FIXTURES)[number];
 
 /**
  * The banner: the command's name, first in the summary and alone on standard error with `--json`. It carries
- * no affiliation line (it belongs in footers and long-form texts only: agents.md, Non-affiliation, brand and
+ * no affiliation line (it belongs in footers and long-form texts only: AGENTS.md, Non-affiliation, brand and
  * legal).
  */
 export const BANNER = 'gcportrait render-scene';

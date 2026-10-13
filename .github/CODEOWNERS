@@ -7,11 +7,11 @@
 
 *                   @florianchrometz
 
-# Asset catalog: types, relation rules, lenses, console links (data over code; agents.md, Data and graph
+# Asset catalog: types, relation rules, lenses, console links (data over code; AGENTS.md, Data and graph
 # semantics).
 /packages/catalog/  @florianchrometz
 
-# Layout engine: invariants, determinism, golden layouts (agents.md, Layout and drawing rules).
+# Layout engine: invariants, determinism, golden layouts (AGENTS.md, Layout and drawing rules).
 /packages/layout/   @florianchrometz
 
 # Deployment: Dockerfile, deploy.sh, uninstall.sh, the Cloud Run Button hook.

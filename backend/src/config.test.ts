@@ -158,7 +158,7 @@ describe('parseConfig', () => {
     ['SOURCE_URL', 'javascript:alert(1)//secretvalue', /SOURCE_URL: must be an http:\/\/ or https:\/\/ URL/],
     ['SOURCE_URL', 'ftp://example.com/secretvalue', /SOURCE_URL: must be an http:\/\/ or https:\/\/ URL/],
     ['SOURCE_URL', 'secretvalue', /SOURCE_URL: must be an http:\/\/ or https:\/\/ URL/],
-    // Whoever runs an instance is not Google (agents.md, Non-affiliation, brand and legal).
+    // Whoever runs an instance is not Google (AGENTS.md, Non-affiliation, brand and legal).
     ['HOSTED_BY', 'Google Cloud secretvalue', /HOSTED_BY: must not name Google/],
     ['HOSTED_BY', 'the googlers secretvalue', /HOSTED_BY: must not name Google/],
     ['HOSTED_BY', 'two\nlines secretvalue', /HOSTED_BY: must be plain text on one line/],

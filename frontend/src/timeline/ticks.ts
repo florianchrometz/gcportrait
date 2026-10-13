@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The timeline's ticks (agents.md, Product rules; skill cai-ingestion §5): `today` at 00:00 UTC and the 34
+ * The timeline's ticks (AGENTS.md, Product rules; skill cai-ingestion §5): `today` at 00:00 UTC and the 34
  * days before it, oldest first. A tick's read time is `YYYY-MM-DDT00:00:00Z`; the latest tick of a live scope uses
  * "now" instead (`readTime: null`), so it is never in the future and shows the scope as it is. Ticks are labelled in
  * the viewer's local date: the label is the local date of the instant the tick shows.

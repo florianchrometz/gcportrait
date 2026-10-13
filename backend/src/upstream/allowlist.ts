@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The upstream host allowlist (agents.md, Security and privacy, principle 3; docs/security.md §1): the
+ * The upstream host allowlist (AGENTS.md, Security and privacy, principle 3; docs/security.md §1): the
  * backend calls Google on the caller's behalf only at these four hosts, over HTTPS, on the default port, so
  * it can never be used as an open proxy. Every upstream request goes through {@link allowedUpstreamUrl}
  * before it is sent. (The SPA's own CSP is narrower: the browser talks only to the OAuth host,

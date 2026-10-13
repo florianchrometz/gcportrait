@@ -18,7 +18,7 @@
  * Google (host, path, method, whose token, whether a quota header was sent: never a token), `{"audit":{…}}` per
  * audit line of the gate, and `{"leak":"…"}` if a log line ever carried a token or the caller's email.
  * Arguments: `--caller-token TOKEN` (required), `--strict` (SA_MODE_STRICT_EXPOSURE=true). Everything is
- * synthetic (agents.md, Security and privacy, principle 6): organisation 30000000001, `demo-` projects,
+ * synthetic (AGENTS.md, Security and privacy, principle 6): organisation 30000000001, `demo-` projects,
  * numbers below 100000000000, example.com.
  */
 import { Writable } from 'node:stream';

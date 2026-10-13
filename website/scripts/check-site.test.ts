@@ -10,6 +10,8 @@ import { brandDrawing, type Drawing } from '../src/lib/brand.js';
 import { repoRoot } from '../src/lib/repo.js';
 import { field, logoMarkup } from '../src/lib/testing/helpers.js';
 import {
+  CLOUD_RUN_BUTTON_URL,
+  CLOUD_SHELL_URL,
   EXPORT_DISCLAIMER,
   FOOTER_NOTICE_LEAD,
   IMPRESSUM_URL,
@@ -38,6 +40,7 @@ import {
   checkLinks,
   checkPage,
   checkRepositoryLinks,
+  checkStartLinks,
   cssAddresses,
   diagramsNetFile,
   INSTALLER_SOURCE,
@@ -81,6 +84,14 @@ function page(
 }
 
 const VIEWPORT = '<meta name="viewport" content="width=device-width, initial-scale=1">';
+
+/** A start button as src/components/StartLink.astro writes it: a new tab, its mark inline, the new-tab note. */
+function startButton(href: string, label: string): string {
+  return `<a class="button" href="${href.replace(/&/g, '&amp;')}" target="_blank" rel="noopener" data-start="x"><svg class="start-mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h14"/></svg>${label}<span class="visually-hidden"> (opens in a new tab)</span></a>`;
+}
+
+/** The landing page's hero with "Self-host" and the two start buttons beside it. */
+const LANDING_HERO = `<section class="hero"><div class="button-row"><a class="button" href="/docs/self-host/">Self-host</a> ${startButton(CLOUD_SHELL_URL, 'Open in Cloud Shell')} ${startButton(CLOUD_RUN_BUTTON_URL, 'Run on Google Cloud')}</div></section>`;
 
 const GOOD_HEAD = [
   VIEWPORT,
@@ -148,6 +159,34 @@ describe('checkPage', () => {
     expect(found).toContain('<img src> loads from another host');
     expect(found).toContain('<link href> loads from another host');
     expect(found).toContain('text runs into an element without a space');
+  });
+
+  it('keeps titles and descriptions to what search results show whole, and the statement out of the metadata', () => {
+    const long = 'A title that goes on and on about what the page holds, far past the limit';
+    expect(
+      problems('', { head: GOOD_HEAD.replace(/<title>[^<]*<\/title>/, `<title>${long}</title>`) }),
+    ).toContain(`the title has ${String(long.length)} characters (at most 60)`);
+    const description = 'd'.repeat(161);
+    expect(
+      problems('', {
+        head: GOOD_HEAD.replace(/(<meta name="description" content=")[^"]*/, `$1${description}`),
+      }),
+    ).toContain('the meta description has 161 characters (50 to 160)');
+    const statement = NON_AFFILIATION_LONG.replace(/'/g, '&#39;');
+    const stated = problems('', {
+      head: GOOD_HEAD.replace(
+        '<meta property="og:description" content="d">',
+        `<meta property="og:description" content="${statement}">`,
+      ).replace(
+        '{"@type":"TechArticle"}',
+        JSON.stringify({
+          '@type': 'SoftwareApplication',
+          description: `It draws diagrams. ${NON_AFFILIATION_LONG}`,
+        }),
+      ),
+    });
+    expect(stated).toContain('JSON-LD states an affiliation');
+    expect(stated).toContain('<meta og:description> states an affiliation');
   });
 
   it('accepts diagrams.net as a link target and refuses it as a resource, as any other host', () => {
@@ -224,12 +263,12 @@ describe('checkPage', () => {
       const landing = { path: '/' };
       expect(
         problems(
-          '<pre class="wrap" tabindex="0"><code>infra/deploy.sh --project YOUR_PROJECT</code></pre>',
+          `${LANDING_HERO}<pre class="wrap" tabindex="0"><code>infra/deploy.sh --project YOUR_PROJECT</code></pre>`,
           landing,
         ),
       ).toBe('');
       // The landing page's commands have fields: a Copy button for each code block, as a docs page has.
-      expect(problems(GOOD, landing)).toBe('');
+      expect(problems(`${LANDING_HERO}${GOOD}`, landing)).toBe('');
       expect(
         problems(
           `${panel('YOUR_PROJECT')}<pre class="wrap" tabindex="0"><code>infra/deploy.sh --project ${field('YOUR_PROJECT')}</code></pre>`,
@@ -1034,6 +1073,49 @@ describe('checkDemoLinks (every "Try the demo" link goes to /demo/, in a new tab
     expect(found('<a href="../demo/">the demo</a>', 'https://gcportrait.app/docs/').join('\n')).toContain(
       'does not open a new tab',
     );
+  });
+});
+
+describe('checkStartLinks (the Cloud Shell and Cloud Run buttons, in a new tab)', () => {
+  const found = (html: string, landing = false): string[] => {
+    const problems: string[] = [];
+    checkStartLinks(html, (message) => problems.push(message), landing);
+    return problems;
+  };
+  const NOTE = '<span class="visually-hidden"> (opens in a new tab)</span>';
+  const MARK = '<svg class="start-mark" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1h14"/></svg>';
+  const SHELL = startButton(CLOUD_SHELL_URL, 'Open in Cloud Shell');
+  const RUN = startButton(CLOUD_RUN_BUTTON_URL, 'Run on Google Cloud');
+
+  it('accepts both buttons in a new tab with their mark, and the hero offering both', () => {
+    expect(found(`${LANDING_HERO}<section>${SHELL}${RUN}</section>`, true)).toEqual([]);
+    // A guide's link to either address is text, not a button.
+    expect(
+      found(`<p><a href="${CLOUD_SHELL_URL.replace(/&/g, '&amp;')}">Open in Cloud Shell</a></p>`),
+    ).toEqual([]);
+  });
+
+  it('refuses a button in the same tab, without noopener, without the note or with an image for its mark', () => {
+    expect(found(SHELL.replace(' target="_blank"', '').replace(' rel="noopener"', ''))).toEqual([
+      'the "Open in Cloud Shell" button does not open a new tab (target="_blank")',
+      'the "Open in Cloud Shell" button has no rel="noopener"',
+    ]);
+    expect(
+      found(RUN.replace(NOTE, '').replace(MARK, '<img src="https://deploy.cloud.run/button.svg" alt="">')),
+    ).toEqual([
+      'the "Run on Google Cloud" button reads "Run on Google Cloud"',
+      'the "Run on Google Cloud" button does not say it opens a new tab ("(opens in a new tab)", visually hidden)',
+      'the "Run on Google Cloud" button does not draw its mark inline (<svg>, no <img>)',
+    ]);
+  });
+
+  it('requires the landing page’s hero to offer each once', () => {
+    expect(
+      found(
+        `<section class="hero"><a class="button" href="/docs/self-host/">Self-host</a>${SHELL}</section>${RUN}`,
+        true,
+      ),
+    ).toEqual(['0 "Run on Google Cloud" buttons in the hero (one)']);
   });
 });
 

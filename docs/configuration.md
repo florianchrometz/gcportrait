@@ -2,10 +2,6 @@
 
 # Configuration reference
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 Every setting of a gcportrait instance, its default and who sets it. [self-host.md](self-host.md) is the guide
 and [self-host-options.md](self-host-options.md) explains each option with an example; this page is the
 reference. Nothing configured here is a secret, and no credential is ever configured through the environment:

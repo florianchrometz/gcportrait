@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * @gcportrait/render — the render library (agents.md, Exports and the render API): a snapshot and a view
+ * @gcportrait/render — the render library (AGENTS.md, Exports and the render API): a snapshot and a view
  * drawn as the app draws them (the frontend's SVG components rendered without a browser), rasterised by
  * resvg's WebAssembly build or translated into a draw.io file, byte-stable for the same input on every
  * platform. `pnpm render` (`@gcportrait/render-cli`) and the backend's `POST /api/render` both draw through

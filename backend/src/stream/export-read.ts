@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Reading a Cloud Asset Inventory export from Cloud Storage with the caller's token (agents.md, Data and
+ * Reading a Cloud Asset Inventory export from Cloud Storage with the caller's token (AGENTS.md, Data and
  * graph semantics; the cai-ingestion skill §1): the export's own NDJSON lines, streamed through as they
  * arrive.
  *

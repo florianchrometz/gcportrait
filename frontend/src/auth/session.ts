@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The token lifecycle of user mode (agents.md, Security and privacy, principle 2): Google Identity Services' token
+ * The token lifecycle of user mode (AGENTS.md, Security and privacy, principle 2): Google Identity Services' token
  * client, an access token held in this closure only (never in the store, storage, a URL or a log), renewed
  * silently before it ends, dropped when it ends, revoked on sign-out.
  *
@@ -40,7 +40,7 @@ import {
 import { TokenRefusedError, type TokenInfo } from './tokeninfo';
 import { SIGNED_OUT_SESSION, type SessionProblem, type SessionState } from './types';
 
-/** Resource Manager accepts it, Cloud Asset Inventory does not (agents.md, Security and privacy, OAuth scopes). */
+/** Resource Manager accepts it, Cloud Asset Inventory does not (AGENTS.md, Security and privacy, OAuth scopes). */
 export const SCOPE_CLOUD_PLATFORM_READ_ONLY = 'https://www.googleapis.com/auth/cloud-platform.read-only';
 /** Cloud Asset Inventory accepts it, Resource Manager does not. */
 export const SCOPE_CLOUD_ASSET = 'https://www.googleapis.com/auth/cloudasset';

@@ -19,8 +19,39 @@ export const FALLBACK_LICENSE_ID = 'LicenseRef-gcportrait-unset';
 export const HEADER_WINDOW = 10;
 
 /**
+ * The AI assistants' own folders: per-user settings and a tool's instruction files, git-ignored at any depth, as
+ * AGENTS.md and .agents/skills/ are the one source of instructions (AGENTS.md, "Assistants"; `pnpm agents:setup`
+ * writes the local pointer files). Keep in step with the assistants' block of .gitignore.
+ */
+export const ASSISTANT_DIR_NAMES = Object.freeze([
+  '.claude',
+  '.gemini',
+  '.codex',
+  '.cursor',
+  '.windsurf',
+  '.roo',
+  '.junie',
+  '.kiro',
+  '.amazonq',
+  '.continue',
+]);
+
+/** The AI assistants' own instruction files, git-ignored at any depth (see ASSISTANT_DIR_NAMES). */
+export const ASSISTANT_FILE_NAMES = Object.freeze([
+  'CLAUDE.md',
+  'CLAUDE.local.md',
+  'GEMINI.md',
+  'AGENTS.local.md',
+  'AGENTS.override.md',
+  '.cursorrules',
+  '.windsurfrules',
+  '.clinerules',
+  '.roorules',
+]);
+
+/**
  * Directory names that are never walked, wherever they occur: VCS data, and the directories .gitignore
- * ignores at any depth (installed dependencies, coverage reports, tool caches, per-user assistant settings).
+ * ignores at any depth (installed dependencies, coverage reports, tool caches, the assistants' own folders).
  * Keep this list in step with the unanchored directory entries of .gitignore.
  */
 export const SKIPPED_DIR_NAMES = Object.freeze([
@@ -30,7 +61,9 @@ export const SKIPPED_DIR_NAMES = Object.freeze([
   'coverage',
   '.astro',
   '.vite',
-  '.claude',
+  ...ASSISTANT_DIR_NAMES,
+  // `.clinerules` may be a folder as well as a file.
+  '.clinerules',
 ]);
 
 /**
@@ -43,14 +76,17 @@ export const SKIPPED_BUILD_DIR_NAMES = Object.freeze(['dist', 'build']);
 const SKIPPED_BUILD_DIR = /^(?:[^/]+\/|packages\/[^/]+\/)?(?:dist|build)$/;
 
 /**
- * Root-relative paths that are never walked: the scratch output directory of `pnpm render`, and the
- * Playwright output directories, which .gitignore ignores under e2e/ only.
+ * Root-relative paths that are never walked: the scratch output directory of `pnpm render`, the
+ * Playwright output directories, which .gitignore ignores under e2e/ only, and GitHub Copilot's instruction
+ * files (see ASSISTANT_DIR_NAMES), which .gitignore ignores under .github/ only.
  */
 export const SKIPPED_ROOT_PATHS = Object.freeze([
   'out',
   'e2e/test-results',
   'e2e/playwright-report',
   'e2e/blob-report',
+  '.github/copilot-instructions.md',
+  '.github/instructions',
 ]);
 
 /**
@@ -59,6 +95,10 @@ export const SKIPPED_ROOT_PATHS = Object.freeze([
  * (see isSkippedFileName). Keep this list in step with .gitignore.
  */
 export const SKIPPED_FILE_PATTERNS = Object.freeze([
+  {
+    pattern: new RegExp(`^(?:${ASSISTANT_FILE_NAMES.map((name) => name.replace(/\./g, '\\.')).join('|')})$`),
+    rule: ASSISTANT_FILE_NAMES.join(', '),
+  },
   { pattern: /\.log$/, rule: '*.log' },
   { pattern: /\.tsbuildinfo$/, rule: '*.tsbuildinfo' },
   { pattern: /\.local\.(?:png|svg)$/, rule: '*.local.png, *.local.svg' },

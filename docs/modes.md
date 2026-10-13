@@ -2,10 +2,6 @@
 
 # Modes: your account, the service account, export files and the demo
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 Every diagram is drawn from a *snapshot*: the assets of one scope (an organisation, a folder or a project) as
 Cloud Asset Inventory reported them at one moment. There are four ways to get one, and they differ in what
 they read, what they need and who they read as. This guide compares them, says which instance offers which,

@@ -1,11 +1,13 @@
 ---
 /**
- * The landing page: gcportrait as Google Cloud architecture diagrams you
- * self-host, use as a web app and drive through an API. The hero names the three and offers "Try the demo" (the
- * sign-in-free demo), "Self-host" and "Use the API"; then the three ways, each with its proof (the deploy command, a
+ * The landing page: gcportrait as Google Cloud architecture diagrams you self-host, use as a web app and drive through
+ * an API. The hero names the three and offers "Try the demo" (the sign-in-free demo), "Self-host" with the two ways to
+ * start without a terminal of one's own beside it ("Open in Cloud Shell" and "Run on Google Cloud", in a new tab:
+ * src/components/StartLink.astro) and "Use the API"; then the three ways, each with its proof (the deploy command, a
  * still of the app and the demo, a render request with the sample export it returns) and its guide; the features, each
  * marked with the way it serves (the last one: the light and the dark theme side by side), the sample exports, how it
- * works, self-hosting in 10 minutes, the service-account grant, questions, the author.
+ * works, self-hosting in 10 minutes (with the same two buttons below the installer), the service-account grant,
+ * questions, the author.
  *
  * Its commands are fillable as the docs pages' are (docs/website.md, "Fillable commands"): rendered by the same
  * functions of src/lib/markdown.ts, with the Variables panel and its script after the grant command, and the values
@@ -17,6 +19,7 @@ import Base from '../layouts/Base.astro';
 import DemoLink from '../components/DemoLink.astro';
 import DemoVideo from '../components/DemoVideo.astro';
 import ExportCard from '../components/ExportCard.astro';
+import StartLink from '../components/StartLink.astro';
 import ThemedPicture from '../components/ThemedPicture.astro';
 import Variables from '../components/Variables.astro';
 import { authorSection } from '../lib/author.js';
@@ -26,7 +29,7 @@ import { sampleExports } from '../lib/exports.js';
 import { renderCommandBlock, renderInlineCode } from '../lib/markdown.js';
 import { scene, socialImage, still } from '../lib/media.js';
 import { personLd, softwareApplicationLd, sourceCodeLd } from '../lib/seo.js';
-import { CLOUD_RUN_BUTTON_URL, CLOUD_SHELL_URL, IMAGE, INSTALL_COMMAND } from '../site.js';
+import { IMAGE, INSTALL_COMMAND } from '../site.js';
 
 const author = authorSection();
 const report = coverageReport();
@@ -145,6 +148,8 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <div class="button-row">
         <DemoLink class="button button-primary">Try the demo</DemoLink>
         <a class="button" href="/docs/self-host/">Self-host</a>
+        <StartLink to="cloud-shell" />
+        <StartLink to="cloud-run" />
         <a class="button" href="/docs/api/">Use the API</a>
       </div>
       <p class="muted small">
@@ -521,11 +526,11 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
         <div class="alternatives">
           <p class="small">Other ways to start:</p>
           <div class="button-row">
-            <a class="button" href={CLOUD_SHELL_URL}>Open in Cloud Shell</a>
+            <StartLink to="cloud-shell" />
           </div>
           <p class="muted small">Guided: a tutorial in Cloud Shell, in your browser, takes you through the same steps.</p>
           <div class="button-row">
-            <a class="button" href={CLOUD_RUN_BUTTON_URL}>Run on Google Cloud</a>
+            <StartLink to="cloud-run" />
           </div>
           <p class="muted small">
             Built from source: Google’s Cloud Run Button builds the image in Cloud Shell and deploys it, with fewer

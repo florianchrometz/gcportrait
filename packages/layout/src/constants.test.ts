@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The tuning constants agents.md, the skills and the README state as numbers, pinned in one place so a change
+ * The tuning constants AGENTS.md, the skills and the README state as numbers, pinned in one place so a change
  * is deliberate and lands with its documentation. The behaviour tests use the constants by name; this table
  * holds their values.
  */

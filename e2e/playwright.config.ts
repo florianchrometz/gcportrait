@@ -14,7 +14,7 @@ import { defineConfig, devices } from '@playwright/test';
  *   (backend/src/demo-only-harness.testing.ts); both through fixtures/harness.ts.
  *
  * Locally a server that is already running on either port is reused; CI always starts fresh ones. Chromium
- * only for now, at a desktop viewport (desktop only, at least 1280×800; agents.md, Product rules).
+ * only for now, at a desktop viewport (desktop only, at least 1280×800; AGENTS.md, Product rules).
  */
 const DEMO_URL = 'http://localhost:5174';
 const LIVE_URL = 'http://localhost:5173';

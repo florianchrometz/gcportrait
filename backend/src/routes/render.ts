@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/render` (agents.md, Exports and the render API): a view of a scope, an uploaded export or
+ * `POST /api/render` (AGENTS.md, Exports and the render API): a view of a scope, an uploaded export or
  * bundle, or a demo organisation, drawn on the server as SVG, PNG or a draw.io file (`"format": "drawio"`,
  * compressed unless `"compressed": false`; the pixel limits are a PNG's only) with the code `pnpm render`
  * runs (`@gcportrait/render`, in a fresh worker per render: ../render/runner.ts), so an instance's users can

@@ -9,7 +9,7 @@ body:
       value: |
         Some boundaries are deliberate: gcportrait is a viewer, not a drawing tool; it is for desktop browsers
         (1280×800 and up); asset data stays in your browser and the backend stores nothing. Every rule of the
-        project is in agents.md; a proposal that changes one says which. To ask for a new asset type, use the
+        project is in AGENTS.md; a proposal that changes one says which. To ask for a new asset type, use the
         "Asset type request" form instead.
   - type: textarea
     id: problem

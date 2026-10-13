@@ -9,7 +9,7 @@ import { checkSection, choose, environment, expectTokenNowhere } from '../fixtur
 import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
 
 /**
- * Service-account mode (agents.md, Security and privacy, The service-account gate) end to end, run by the
+ * Service-account mode (AGENTS.md, Security and privacy, The service-account gate) end to end, run by the
  * `chromium-live` project against `pnpm dev`'s Vite server. Unlike the other live specs, the backend here is
  * the real one: the spec starts `backend/src/auth/sa-harness.testing.ts` as a process (it is never imported)
  * and sends the browser's `/api` requests to it, so the routes, the service-account gate and the Application
@@ -218,7 +218,7 @@ test.describe('service-account mode, default gate (caller check only)', () => {
     );
 
     // Without the app in the way, the backend refuses the stream all the same: with the token in the app's
-    // own header (as behind IAP) and in Authorization (the non-IAP path for scripts) alike (agents.md,
+    // own header (as behind IAP) and in Authorization (the non-IAP path for scripts) alike (AGENTS.md,
     // Security and privacy, Tokens).
     for (const headers of [{ 'x-gcportrait-token': TOKEN }, { authorization: `Bearer ${TOKEN}` }]) {
       const direct = await request.post(`${harness.url}/api/assets/stream`, {

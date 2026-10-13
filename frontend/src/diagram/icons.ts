@@ -3,7 +3,7 @@
  * The icons a diagram draws (style skill §4). The data worker resolves them with `@gcportrait/icons`
  * (iconTable.ts) and sends them with the Scene, so the icon table (170 kB of artwork) never loads on the UI
  * thread: the page only receives the few dozen icons a view needs. This module is the UI thread's side, a
- * lookup with no import of the icon table. The artwork is Google's and is never altered (skill §1; agents.md, Style
+ * lookup with no import of the icon table. The artwork is Google's and is never altered (skill §1; AGENTS.md, Style
  * and accessibility).
  */
 import type { Icon } from '@gcportrait/icons';

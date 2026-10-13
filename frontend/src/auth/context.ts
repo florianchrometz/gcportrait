@@ -16,7 +16,7 @@ export interface AuthControls {
   /**
    * The access token while it is usable, else null. Call it when a request is made (in an event handler or an
    * effect, not while rendering) and send it only to this backend, in `X-Gcportrait-Token` (fetchWithToken;
-   * agents.md, Security and privacy, Tokens).
+   * AGENTS.md, Security and privacy, Tokens).
    */
   readonly accessToken: () => string | null;
   /** The backend answered 401 for this token: the session expires (if the token is still the current one). */

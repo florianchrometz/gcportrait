@@ -217,7 +217,7 @@ export const TARGET_ASPECT = 1.6;
 export const ROOT_ASPECT = 1.75;
 
 /**
- * The band around the packing target ("within 20 % of target": agents.md, Layout and drawing rules): a
+ * The band around the packing target ("within 20 % of target": AGENTS.md, Layout and drawing rules): a
  * children box within this relative deviation of the target needs no empty frame, so among those the most
  * compact arrangement wins (src/pack.ts).
  */

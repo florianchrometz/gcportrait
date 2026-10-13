@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 #
-# The website (docs/website.md; agents.md, Modes and hosting): the Astro site in website/, built on every
+# The website (docs/website.md; AGENTS.md, Modes and hosting): the Astro site in website/, built on every
 # pull request and every push to main, and deployed to GitHub Pages at https://gcportrait.app from main once the
 # maintainer switches it on. The same Pages site serves the demo at https://gcportrait.app/demo/: a static build of the
 # app in demo-only mode. Everything is hosted on GitHub; there is no other host. docs/website.md is the guide

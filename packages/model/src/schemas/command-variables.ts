@@ -34,7 +34,7 @@ const PROJECT_ID_HINT =
 const NUMBER_HINT = 'digits only';
 const HOST_HINT = 'a host name such as gcportrait.example.com, without https:// or a path';
 
-/** The registry, in the order a page about running gcportrait meets them. Examples are synthetic (agents.md, Data and graph semantics). */
+/** The registry, in the order a page about running gcportrait meets them. Examples are synthetic (AGENTS.md, Data and graph semantics). */
 export const COMMAND_VARIABLES = [
   {
     name: 'YOUR_PROJECT',

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The website's fixed facts: where it and the demo live, the repository, the image, and the non-affiliation
- * wording (agents.md, Modes and hosting, and Non-affiliation, brand and legal).
+ * wording (AGENTS.md, Modes and hosting, and Non-affiliation, brand and legal).
  *
  * The website may not import the frontend (eslint.config.js, WORKSPACE_DEPENDENCIES), so the non-affiliation strings
  * are copies of frontend/src/branding.ts; src/site.test.ts reads that file as text and fails while they differ.
@@ -79,7 +79,7 @@ export const PRODUCT_NAME = 'gcportrait';
 export const TAGLINE = 'A portrait of your Google Cloud environment.';
 
 /**
- * The non-affiliation statement's long form (agents.md, Non-affiliation, brand and legal): the README, the website's
+ * The non-affiliation statement's long form (AGENTS.md, Non-affiliation, brand and legal): the README, the website's
  * long-form texts (the landing page's author section, from docs/author.md, the licence page, the guides), the docs, the
  * icons README, the release notes.
  */
@@ -114,7 +114,7 @@ export const EXPORT_DISCLAIMER = 'Not affiliated with Google / Google Cloud.';
 
 /**
  * The Impressum and the privacy notice of the website and the demo: pages of the maintainer's own website, which the
- * footer of every page links (agents.md, Modes and hosting). The site has no legal pages of its own;
+ * footer of every page links (AGENTS.md, Modes and hosting). The site has no legal pages of its own;
  * docs/legal/data-processing-inventory.md lists the facts the privacy notice covers. `pnpm website:check` requires both
  * links on every page.
  */
@@ -152,7 +152,7 @@ export const TELEMETRYDECK_APP_ID = '935EC0BB-BC12-4EE3-82C3-7F73D73116DD';
 export const TELEMETRYDECK_TARGET = 'https://nom.telemetrydeck.com/v2/';
 
 /**
- * The licence of gcportrait's own work (agents.md, Licence and dependencies), as SPDX names it, and its page at the
+ * The licence of gcportrait's own work (AGENTS.md, Licence and dependencies), as SPDX names it, and its page at the
  * Open Source Initiative.
  */
 export const LICENSE_ID = 'MIT';

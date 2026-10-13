@@ -301,7 +301,7 @@ jobs:
       - name: Dependency licence allow-list and THIRD_PARTY.md staleness
         run: pnpm run licenses
 
-  # The dependency audit (agents.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
+  # The dependency audit (AGENTS.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
   # `pnpm audit` over the production dependencies and over the whole tree, read from the lockfile (no
   # install). A high or critical advisory fails the job unless scripts/audit-allowlist.json accepts it, with a
   # reason and an expiry date at most 90 days out; moderate and low ones are listed. It asks the npm
@@ -327,7 +327,7 @@ jobs:
   # (rhysd/actionlint) checks every workflow: syntax, expressions, job dependencies, the inputs of local
   # actions and, through the pinned shellcheck, the shell of every `run:` step in the workflow files (not
   # those of the composite actions, which only install). shellcheck then checks every shell script: the
-  # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, agents.md, Commands),
+  # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, AGENTS.md, Commands),
   # the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit (all other
   # projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
   workflows-and-shell:

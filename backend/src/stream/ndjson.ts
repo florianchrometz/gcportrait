@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Streaming an NDJSON response (the backend streams and forgets; agents.md, Security and privacy, principle
+ * Streaming an NDJSON response (the backend streams and forgets; AGENTS.md, Security and privacy, principle
  * 1). The producer is an async generator of lines, and it is asked for its next line only once the response
  * has written the previous one out to the connection: `Readable.from` alone pulls the next line as soon as a
  * line has been queued on the socket, whether or not the client takes it, so a client that stops reading

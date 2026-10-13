@@ -55,9 +55,9 @@ pnpm e2e     →
 - [ ] **Provenance:** Original work; nothing copied from other projects.
 - [ ] `pnpm check` passes locally (format, lint, typecheck, unit, catalog, provenance, licences).
 - [ ] New text files start with the `SPDX-License-Identifier: MIT` line in their comment form
-      (agents.md, Licence and dependencies); a new dependency passes `pnpm run licenses`.
+      (AGENTS.md, Licence and dependencies); a new dependency passes `pnpm run licenses`.
 - [ ] `pnpm e2e` passes locally, or the description says that I rely on CI for it.
 - [ ] Anything visible was checked in light and dark themes; contrast tests pass.
 - [ ] A changeset is included (`pnpm changeset`), or this change does not affect users.
-- [ ] Package READMEs, docs, skills and agents.md are updated where behaviour or a rule changed.
+- [ ] Package READMEs, docs, skills and AGENTS.md are updated where behaviour or a rule changed.
 - [ ] No real organisation data, tokens or secrets in code, fixtures, screenshots or logs.

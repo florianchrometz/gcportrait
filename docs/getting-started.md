@@ -2,10 +2,6 @@
 
 # Getting started
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 gcportrait draws a Google Cloud organisation, folder or project as an architecture diagram from Cloud Asset
 Inventory data, three ways: self-hosted in a Google Cloud project of yours ([self-host.md](self-host.md)), as
 a web app, and through an API that returns any view as SVG, PNG or draw.io ([api.md](api.md)). The quickest

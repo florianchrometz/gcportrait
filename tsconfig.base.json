@@ -1,5 +1,5 @@
 {
-  // Shared compiler settings for every gcportrait workspace: strict TypeScript everywhere (agents.md,
+  // Shared compiler settings for every gcportrait workspace: strict TypeScript everywhere (AGENTS.md,
   // Architecture and code).
   // This preset resolves modules like a bundler and is used as-is by browser code (frontend/).
   // Node code (backend/, e2e/, repo tooling) and shared packages extend tsconfig.node.json instead.

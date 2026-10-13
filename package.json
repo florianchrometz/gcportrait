@@ -47,6 +47,7 @@
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run catalog:check && pnpm run provenance && pnpm run licenses",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "agents:setup": "node scripts/agents-setup.mjs",
     "changeset": "changeset",
     "release:version": "changeset version"
   },

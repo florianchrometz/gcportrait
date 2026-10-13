@@ -6,7 +6,7 @@ description: Visual rules for gcportrait diagrams and app chrome — zone tints,
 
 # gcportrait diagram style
 
-The rules this handbook applies are in [agents.md](../../../agents.md) ("Style and accessibility", "Exports
+The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Style and accessibility", "Exports
 and the render API" and "Non-affiliation, brand and legal"); this file holds the palettes, the sizes and the
 checklists that carry them out.
 
@@ -20,7 +20,7 @@ Google's colour *semantics* (what a tint means) and adjust *values* until contra
    zones with a title, white (light) or near-black (dark) resource cards, ink-coloured orthogonal arrows. The
    diagrams are Google Cloud-*style*; the project is independent and not affiliated with Google, and the app
    and website footers and the long-form texts say so, never a drawing or an export
-   (agents.md, "Non-affiliation, brand and legal"; §7).
+   (AGENTS.md, "Non-affiliation, brand and legal"; §7).
 2. Colour means **containment type**, never status. The only non-containment colours are the four accents
    (selection, ancestor path, domain peer, timeline change) and they are overlays, not fills.
 3. Icons are never recoloured, stretched, outlined or redrawn. If an official icon is illegible at 16 px, draw
@@ -92,7 +92,7 @@ tint; §10 gives each token its contrast figure.
 - Labels: `"Google Sans", "Google Sans Text", Roboto, system-ui, sans-serif`. Google Sans is used only when
   the viewer's system has it; ship Roboto (self-hosted woff2, 400/500/700). Do not fetch fonts from a CDN at
   runtime in the SPA (CSP, offline demo). The app bundles Roboto and Roboto Mono from the `@fontsource`
-  packages (OFL-1.1, accepted for these two only; agents.md, "Licence and dependencies") and ships their
+  packages (OFL-1.1, accepted for these two only; AGENTS.md, "Licence and dependencies") and ships their
   licences in `dist/licenses/`.
 - Identifiers, IPs, CIDRs: `"Roboto Mono", ui-monospace, monospace`.
 - Sizes at scale 1: zone title 15 px (depth 0–1) / 13 px (deeper), 500 weight; card title 13 px 700; card
@@ -199,7 +199,7 @@ selected (§6), timeline markers when a tick is active. Title block top-left: sc
 (SVG, PNG, `pnpm render`, the render API, the layout's debug renders): no drawing carries the non-affiliation
 statement, neither in the title block nor in the SVG's `<desc>`, which holds neutral metadata only (scope, lens,
 read time, "Drawn with gcportrait."). The statement lives in the app footer and the website footer and in the
-long form (agents.md, "Non-affiliation, brand and legal"). Legend and title block are hidden from the
+long form (AGENTS.md, "Non-affiliation, brand and legal"). Legend and title block are hidden from the
 interactive canvas when the user disables them in settings, but always included in exports.
 
 ## 8. Export rules
@@ -293,7 +293,7 @@ Non-colour cues: every edge kind differs by dash or head, every zone kind by tit
 
 ## 13. Accessibility
 
-Every page, the diagram included, meets WCAG 2.2 AA in both themes (agents.md, "Style and accessibility").
+Every page, the diagram included, meets WCAG 2.2 AA in both themes (AGENTS.md, "Style and accessibility").
 
 - **Keyboard.** Tab moves through the header controls in reading order; on the canvas the arrow keys, Home
   and End move focus between the cards of a zone; Enter opens the details drawer for the focused card; `/`

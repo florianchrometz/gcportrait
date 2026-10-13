@@ -7,7 +7,7 @@ not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the G
 trademarks of Google and are used under Google's icon usage terms.
 
 The security controls of the backend and the image, as a checklist: each control, where it lives, and the
-tests that hold it. They carry out the security and privacy principles of [agents.md](../agents.md), "Security
+tests that hold it. They carry out the security and privacy principles of [AGENTS.md](../AGENTS.md), "Security
 and privacy"; [threat-model.md](threat-model.md) says what is protected from whom and why these are the
 controls that matter. The commands that check them are in [section 13](#13-checking-the-controls), and
 [section 12](#12-open-findings) lists what is still open, with a severity.
@@ -297,7 +297,7 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
   grouped, at most five open pull requests; TypeScript held to 6.0.x and `@types/node` to Node 22 on purpose),
   GitHub Actions (weekly, the shared setup action included) and the two base images of `infra/Dockerfile`
   (weekly, digests; Node held to 22). Every update passes the same CI gates, the licence and audit gates
-  included, and is adopted on `main` or declined with its reason ([agents.md](../agents.md), "Quality gates,
+  included, and is adopted on `main` or declined with its reason ([AGENTS.md](../AGENTS.md), "Quality gates,
   testing and CI"). Every action of every workflow and of the composite actions is pinned to a commit, with
   its release as a comment. **Dependabot alerts** and **Dependabot security updates** (Settings → Code
   security) are repository settings, not files (O7). Not in place yet: a minimum package age for updates
@@ -330,7 +330,7 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
 | # | Finding | Severity | What would close it |
 |---|---|---|---|
 | O1 | The backend accepts any valid Google token, not only those issued to its own OAuth client. A public instance can therefore be used with a token from any client, `gcloud`'s included. Reading still needs the caller's own permissions, so no data is exposed beyond what the token already reads. | low | The maintainer's decision: checking the audience (tokeninfo, remembered per token hash) would close it and stop scripts that use `gcloud auth print-access-token`. |
-| O2 | Anyone with a Google account can use a public instance's capacity, within the limits of section 3; the limits are per address and per token, in memory, per instance. | medium for a public self-hosted instance; none for a demo-only one (no routes that call Google) | Deploy private instances with `--iap` (self-host-options.md). A shared limit across instances would need state, which the stateless backend avoids ([agents.md](../agents.md), "Security and privacy"). |
+| O2 | Anyone with a Google account can use a public instance's capacity, within the limits of section 3; the limits are per address and per token, in memory, per instance. | medium for a public self-hosted instance; none for a demo-only one (no routes that call Google) | Deploy private instances with `--iap` (self-host-options.md). A shared limit across instances would need state, which the stateless backend avoids ([AGENTS.md](../AGENTS.md), "Security and privacy"). |
 | O3 | `TRUST_PROXY_HOPS=1` behind Cloud Run's front end is not checked on a deployed instance. | low | On a deployed instance, check the address the rate limit keys on (a header-reporting build, or two clients). |
 | O4 | A stream still running 8 s after SIGTERM is cut and the process exits 1. | low | Acceptable: the browser reports the pull as failed and it can be repeated; Cloud Run sends SIGTERM to instances it retires. |
 | O5 | The build account of `deploy.sh --build` holds Storage Admin on its own bucket, which also allows changing that bucket's IAM policy or deleting it. | low | A custom role (Storage Object Admin plus `storage.buckets.get`); needs a real `--build` run to verify. |

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
 /**
- * Product name, tagline and the non-affiliation statement, defined once (agents.md, Non-affiliation, brand and
- * legal). Change the wording only together with agents.md and every copy listed below.
+ * Product name, tagline and the non-affiliation statement, defined once (AGENTS.md, Non-affiliation, brand and
+ * legal). Change the wording only together with AGENTS.md and every copy listed below.
  *
  * Where each goes:
  * - `TAGLINE`: the third and last line of the diagram's title block, on the canvas and in every export.

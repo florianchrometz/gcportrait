@@ -104,7 +104,7 @@ skipped. A stream abandoned early (error frame, strict mode) is cancelled and it
 
 Detected per line, so they can be mixed in one input. An object is a frame when it has a `t` field and no
 `name`; an object with a `name` is always an asset, so an asset that happens to carry a `t` field is never
-dropped (no asset is ever dropped: agents.md, Product rules).
+dropped (no asset is ever dropped: AGENTS.md, Product rules).
 
 | Line | Dialect | Handling |
 |---|---|---|

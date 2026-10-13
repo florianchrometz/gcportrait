@@ -27,7 +27,7 @@ export const PublicConfigResponseSchema = z.object({
   hostedBy: z.string().nullable(),
   demo: z.literal(false),
   /**
-   * Demo-only mode (DEMO_ONLY; agents.md, Modes and hosting): no sign-in, no service-account mode, no route
+   * Demo-only mode (DEMO_ONLY; AGENTS.md, Modes and hosting): no sign-in, no service-account mode, no route
    * that calls Google; the Connect page offers the demo organisations only.
    */
   demoOnly: z.boolean(),

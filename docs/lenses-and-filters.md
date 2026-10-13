@@ -2,10 +2,6 @@
 
 # Lenses, focus views, filters and drill-in
 
-gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-trademarks of Google and are used under Google's icon usage terms.
-
 A snapshot of an organisation holds hundreds or thousands of assets; a readable diagram shows a part of them.
 The top bar of the diagram page chooses that part with five controls: the **lens** (which kinds of resources
 and arrows), the **focus** (which projects), the **filters** (what else to keep or leave out), the **detail**

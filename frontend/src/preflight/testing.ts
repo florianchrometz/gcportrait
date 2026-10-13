@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * Preflight answers as the backend writes them (backend/src/preflight/schemas.ts), and the app store's `connect`
- * slice once a check found a scope ready, for the tests. Synthetic only (agents.md, Data and graph semantics):
+ * slice once a check found a scope ready, for the tests. Synthetic only (AGENTS.md, Data and graph semantics):
  * `demo-` project ids, example.com. Imported by tests only.
  */
 import { signedInSession } from '../auth/testing';
