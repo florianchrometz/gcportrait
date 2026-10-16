@@ -8,7 +8,7 @@
 # `catalog-check` compiles it once more as a step of its own, so a catalog that cannot be compiled at all shows up
 # there by name.
 #
-# The jobs and what they run (the same commands as locally; docs/contributing.md has the table with timings):
+# The jobs and what they run (the same commands as locally; docs/contributing.md has the table of the jobs):
 #
 #   lint            pnpm format:check, pnpm lint
 #   typecheck       pnpm typecheck
