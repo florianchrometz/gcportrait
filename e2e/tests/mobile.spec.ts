@@ -50,7 +50,7 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  * - an open View or More sheet, with the disclosure bar's row while it shows, leaves less than a third of the canvas in
  *   view, or the sheet reaches below three quarters of the canvas's height (at every size, the sideways ones too);
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
- * Then, on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
+ * And on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
  * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
  * onto the search; a long drill-in trail rests at its current level, and a swipe brings its first crumb into view,
  * which a tap drills out to; a tap on a node opens the drawer as a sheet over the lower half of the canvas, the
@@ -58,6 +58,9 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
  * when let go there; one finger dragged across the canvas pans the drawing, two pinched apart zoom it in, and a tap on
  * a project chip opens it in place.
+ * The pages and diagrams at each size in the light theme come first, the tests that set their own sizes next, and the
+ * same pages and diagrams in the dark theme last, so that each shard of a CI leg gets half of the slow diagram tests
+ * (pagesAndDiagrams).
  */
 
 const SIZES = [
@@ -734,7 +737,14 @@ async function selectACard(page: Page, svg: Locator): Promise<void> {
   await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
 }
 
-for (const theme of ['light', 'dark'] as const) {
+/**
+ * At each of the five sizes in one theme: the Connect, Permissions, Snapshots and Settings pages, a live instance's
+ * Impressum and Privacy pages, and the diagrams of demo S and M, this spec's slow tests. The light theme's come first
+ * in the file and the dark theme's last, with the tests that set their own sizes in between, because `--shard` splits
+ * a leg's tests by count in file order (playwright.config.ts): the split of CI's phones and tablets legs then falls
+ * among the quick tests in the middle, and each half gets one theme's diagram tests.
+ */
+function pagesAndDiagrams(theme: 'light' | 'dark'): void {
   test.describe(`${theme} theme`, () => {
     test.use({ colorScheme: theme });
 
@@ -851,6 +861,8 @@ for (const theme of ['light', 'dark'] as const) {
     }
   });
 }
+
+pagesAndDiagrams('light');
 
 test('the Snapshots page with a snapshot stored and a day cached: a card per row on a phone, its tables whole on a tablet, nothing scrolling sideways, at every size and in both themes', async ({
   page,
@@ -1299,3 +1311,5 @@ test.describe('on a phone, 375 × 667', () => {
       .not.toBeNull();
   });
 });
+
+pagesAndDiagrams('dark');
