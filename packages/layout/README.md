@@ -712,6 +712,15 @@ default) < 2 s in a worker. The harness is `scripts/lib/bench.ts`; it measures:
   miss, its first top-level label given another suffix of digits of one width, as scrubbing through timeline
   days whose Scenes differ produces, with the memo of 8 full both times): it must not grow by 16 MiB or more.
 
+**The machine.** The budgets, and the typical figures below, describe a quiet M1-class machine: a laptop or
+desktop whose cores are as fast as an M1's, one core per layout and no other load. On it L overview at `all`
+takes about two thirds of its 400 ms through the worker. The budgets do not scale with the machine that
+measures them, since a budget that moved with it would no longer say what the app promises. A shared
+GitHub-hosted runner (2 to 4 vCPUs, other jobs on the same host) is slower single-threaded and varies from run
+to run, so its strict figures are expected above the budgets by a margin. `bench` prints the machine it runs
+on as its second line (Node, platform, CPU model, cores, load average), so a figure quoted anywhere carries
+its machine.
+
 **Two limits, as in `@gcportrait/ingest`.** A wall-clock budget means something only on a machine that is not
 busy with other work. `pnpm test` (and the blocking CI `unit` job) runs the budget tests in parallel with
 every other test file and asserts a regression ceiling of 2 × the budget (25 XL layouts for the memory check);
@@ -734,16 +743,16 @@ instrumentation (`LAYOUT_COVERAGE`) each case is laid out once and the time limi
 `--warm-up`, `--memory`; exit 1 when a budget is missed or the heap grew).
 
 **In CI** the strict run is the `layout-budget` job of `.github/workflows/pr.yml`, **non-blocking**
-(`continue-on-error`): it prints the bench table into the job summary and raises a warning when a budget is
-missed. The reason is the margin against the runner, not the budget: on a fast desktop machine L overview at
-`all` takes about two thirds of its 400 ms through the worker, and a shared GitHub-hosted runner (2 to 4
-vCPUs, other jobs on the same host) is usually slower single-threaded and varies from run to run, so a
-blocking strict job would fail for reasons outside the change and be re-run until green. The 2 × ceiling in
-the blocking `unit` job catches real regressions on any runner; run `test:budget` locally for every layout
-change and quote its figures in the pull request. Removing `continue-on-error` makes the job blocking, e.g. on
-a larger or self-hosted runner.
+(`continue-on-error`): it prints the runner's CPU and the bench table into the job summary, with a note that
+the budgets describe a quiet M1-class machine and that the runner's figures are expected above them, and
+raises a warning when a budget is missed. A blocking strict job on that runner would fail for reasons outside
+the change and be re-run until green; the 2 × ceiling in the blocking `unit` job catches real regressions on
+any runner. Run `test:budget` locally for every layout change and quote its figures in the pull request, with
+the machine `bench` names. Removing `continue-on-error` and adding the job to `required` makes it blocking,
+e.g. on a larger or self-hosted runner.
 
-Typical figures of `test:budget` (strict; `bench` prints the same table for the machine it runs on):
+Typical figures of `test:budget` (strict) on a quiet M1-class machine (`bench` prints the same table for the
+machine it runs on):
 
 | Case | Rects | Edges | Mode (passes) | In-process | Worker round trip | In the worker | Budget |
 |---|---|---|---|---|---|---|---|

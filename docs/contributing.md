@@ -148,7 +148,7 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 | `lint` | `pnpm format:check`, then `pnpm lint` |
 | `typecheck` | `pnpm typecheck` |
 | `unit (layout)`, `unit (frontend)`, `unit (all other projects)` | `pnpm test --project layout`; `pnpm test --project frontend`; `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included |
-| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then its `bench` table in the job summary. **Non-blocking**: it warns when a strict budget is missed, while `unit (layout)` enforces twice the budgets |
+| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary. **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
 | `e2e (1/3)` to `e2e (3/3)` | `pnpm e2e --shard=N/3`, Chromium: the desktop specs and the app's phone and tablet check (`mobile` project) |
@@ -225,8 +225,9 @@ only after it has run once, so add it after the first push to `main`.
 - **Locale and time zone.** A unit test that passes on your machine can fail on the runner when it formats a
   date or a number in the viewer's locale without fixing one: reproduce it with `TZ=UTC LC_ALL=C.UTF-8`
   (above). The end-to-end specs that read dates fix `en-GB` and UTC themselves.
-- **The layout's budgets.** `unit (layout)` holds the layout to twice its budgets on whatever runner it gets;
-  `layout-budget`'s summary shows the strict figures, and so the runner's margin.
+- **The layout's budgets.** They describe a quiet M1-class machine, not a shared runner. `unit (layout)` holds
+  the layout to twice its budgets on whatever runner it gets; `layout-budget`'s summary shows the runner's CPU
+  and its strict figures, which are expected above the budgets by a margin.
 
 For a visual change (layout, renderer, icons, palette), also render the M fixture in both themes and look at
 the PNGs (`pnpm render --fixture M --lens networking --png out.png`, then `--theme dark`), walk the checklists

@@ -121,14 +121,16 @@ jobs:
   # (`pnpm --filter @gcportrait/layout test:budget`), then the bench's table in the job summary.
   #
   # Non-blocking on purpose (continue-on-error, and `required` does not wait for it): the budgets are
-  # wall-clock figures for a desktop. On a fast desktop machine L overview at detail `all` uses most of its
-  # 400 ms through the worker, and a shared GitHub-hosted runner is usually slower single-threaded and varies
-  # from run to run, so a blocking strict job would fail for reasons outside the change and be re-run until
-  # green. What blocks is the `unit (layout)` leg: the same measurements under `pnpm test` assert 2 x the
-  # budgets, which catches real regressions on any runner. This job shows the strict figures on every pull
-  # request and raises a warning when one is missed; the strict run is part of the layout's local checks
-  # (packages/layout/README.md, "Performance"). To make it blocking (e.g. on a larger or self-hosted runner,
-  # once its margin is known), remove continue-on-error and add it to `required`.
+  # wall-clock figures for a quiet M1-class machine (a laptop or desktop whose cores are as fast as an M1's, one
+  # core per layout, no other load), and they do not scale with the machine that measures them. A shared
+  # GitHub-hosted runner is slower single-threaded and varies from run to run, so its figures are expected
+  # above the budgets by a margin, and a blocking strict job would fail for reasons outside the change and be
+  # re-run until green. What blocks is the `unit (layout)` leg: the same measurements under `pnpm test` assert
+  # 2 x the budgets, which catches real regressions on any runner. This job shows the runner's CPU and the
+  # strict figures on every pull request, says which machine the budgets describe, and raises a warning when
+  # one is missed; the strict run is part of the layout's local checks (packages/layout/README.md,
+  # "Performance"). To make it blocking (e.g. on a larger or self-hosted runner, once its margin is known),
+  # remove continue-on-error and add it to `required`.
   layout-budget:
     name: layout-budget
     runs-on: ubuntu-latest
@@ -139,24 +141,37 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: Layout budgets, strict (S 10 ms, M 60 ms, L 400 ms, XL collapsed 2 s in a worker)
+      - name: Layout budgets, strict, for a quiet M1-class machine (S 10 ms, M 60 ms, L 400 ms, XL collapsed 2 s in a worker)
         run: pnpm --filter @gcportrait/layout test:budget
+      # The summary names the runner's CPU: the figures are this runner's, not those of the machine the budgets
+      # describe. lscpu names the CPU on every hosted runner (/proc/cpuinfo has no model name on Arm); newer
+      # versions indent the line under its vendor.
       - name: Bench figures in the job summary
         if: always()
+        shell: bash
         run: |
+          set -euo pipefail
           status=0
           pnpm --silent --filter @gcportrait/layout bench > layout-bench.txt 2>&1 || status=$?
           cat layout-bench.txt
+          cpu=$(LC_ALL=C lscpu | awk '/^[[:space:]]*Model name:/ && !found { sub(/^[^:]*:[[:space:]]*/, ""); print; found = 1 }')
           {
-            echo '### Layout bench (strict budgets, non-blocking)'
+            echo '### Layout bench on a shared runner (the strict budgets describe a quiet M1-class machine)'
+            echo
+            echo "Runner: ${cpu:-unknown CPU}, $(nproc) cores, $(uname -sm)."
+            echo
             echo '```text'
             cat layout-bench.txt
             echo '```'
+            echo
+            echo 'The strict budgets (gcp-diagram-layout skill §7) describe a quiet M1-class machine: one fast core per'
+            echo "layout, no other load. The figures above are this shared runner's and are expected to exceed the"
+            echo 'budgets by a margin, so this job only reports; the blocking unit (layout) leg asserts twice the budgets.'
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
       - name: Warn when a budget is missed
         if: failure()
-        run: echo "::warning title=Layout budget::A strict layout budget (gcp-diagram-layout skill §7) was missed on this runner; see the job summary. The blocking unit (layout) leg asserts 2 x the budgets."
+        run: echo "::warning title=Layout budget::A strict layout budget was missed on this shared runner. The budgets (gcp-diagram-layout skill §7) describe a quiet M1-class machine, so the runner's figures in the job summary are expected to exceed them by a margin; the blocking unit (layout) leg asserts twice the budgets."
 
   catalog-check:
     name: catalog-check

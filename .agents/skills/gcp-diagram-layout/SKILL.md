@@ -191,6 +191,9 @@ The layout's budgets, through a worker, enforced by `pnpm --filter @gcportrait/l
 | L | ≈ 6 000 | < 400 ms |
 | XL | ≈ 50 000 (collapsed defaults) | < 2 s |
 
+The budgets describe a quiet M1-class machine: a laptop or desktop whose cores are as fast as an M1's, one
+core per layout, no other load.
+
 Memoise by Scene hash; cancel superseded requests; never block the UI thread. The pipeline around it has its
 own budgets: ingest of XL < 1.5 s and the graph build of M < 150 ms (`test:budget` in `packages/ingest` and
 `packages/graph`), and the bundle budgets (`pnpm size`; AGENTS.md, "Quality gates, testing and CI").
