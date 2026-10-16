@@ -791,6 +791,9 @@ for (const theme of ['light', 'dark'] as const) {
           test(`the diagram ${address.slice(address.indexOf('#'))}: at rest, with View, More and the drawer open`, async ({
             page,
           }) => {
+            // Twelve axe runs over the whole diagram, seven of them after a walk of every control's focus
+            // and tap: 24 to 30 s on a moderately busy machine, against Playwright's 30 s default.
+            test.slow();
             const svg = await openDiagram(page, address);
             const room = await canvasRoom(page);
             expect(room.ofWindow, 'the canvas’s share of the window').toBeGreaterThanOrEqual(0.25);

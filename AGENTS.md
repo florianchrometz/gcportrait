@@ -801,8 +801,9 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   UI thread is kept at or under 320 kB to leave room. Two budgets keep work that runs in workers, after the
   page is up, from competing with the first paint, while the workers still have a ceiling.
 - **The performance budgets** run in the unit tests at twice their value on any machine and strictly in
-  `pnpm --filter @gcportrait/<pkg> test:budget` ([Layout and drawing rules](#layout-and-drawing-rules); the
-  app's targets in the layout skill §7).
+  `pnpm --filter @gcportrait/<pkg> test:budget`, and a local unit run skips a missed one with the load as its
+  reason while the machine is overloaded, which CI never does ([Layout and drawing
+  rules](#layout-and-drawing-rules); the app's targets in the layout skill §7).
 - **Tests first** for pure packages; fixtures first for catalog work; golden layouts and visual baselines for
   renderer work. The contributor-workflow skill (§4) says what each test layer covers.
 - **Baselines and goldens change only on purpose**, through their update commands, with the diff explained in

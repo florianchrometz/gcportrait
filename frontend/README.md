@@ -365,9 +365,11 @@ pan, a pinch, taps, double taps, a long press) and a mouse's drag and double-cli
 Headless, accessible, small (no component library; AGENTS.md, Architecture and code). Each takes the app chrome
 tokens only (both themes; `ui/tokens.test.ts` fails on a raw colour or a colour token one theme lacks), is
 keyboard operable and has Testing Library tests with axe (`src/test/axe.ts`: axe-core in jsdom, all rules but
-colour contrast, which needs a rendering browser; the e2e suite runs axe in Chromium on whole pages in both
-themes). Those with a popup take an optional controlled `open` / `onOpenChange` (the store's `usePopover`) and
-an inert `disabled` (`aria-disabled`, a hint as the title, focusable, doing nothing).
+colour contrast, which needs a rendering browser, one audit at a time, each waiting for the one before it, so
+that a test timing out mid-audit costs the next one time, not its result; the e2e suite runs axe in Chromium
+on whole pages in both themes). Those with a popup take an optional controlled `open` / `onOpenChange` (the
+store's `usePopover`) and an inert `disabled` (`aria-disabled`, a hint as the title, focusable, doing
+nothing).
 
 | Primitive | Pattern | Keyboard and pointer |
 |---|---|---|

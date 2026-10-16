@@ -29,6 +29,7 @@
  *   node scripts/check-provenance.mjs --root <dir>        check another tree (used by the tests)
  *   node scripts/check-provenance.mjs --list-exempt       print the rules and exemptions, then exit
  *   node scripts/check-provenance.mjs --digest-of <text>  print the PHRASE_DIGESTS entry of a phrase
+ *                                                         (repeated: one line per phrase, in order)
  *   --also-refuse <entry>                                 refuse one more phrase digest (used by the tests)
  *
  * Exit code 0 when the tree is clean, 1 on any violation, 2 on a usage error. Plain ESM, Node built-ins only.
@@ -1297,7 +1298,7 @@ function parseCli(argv) {
     options: {
       root: { type: 'string' },
       'list-exempt': { type: 'boolean' },
-      'digest-of': { type: 'string' },
+      'digest-of': { type: 'string', multiple: true },
       'also-refuse': { type: 'string', multiple: true },
     },
     strict: true,
@@ -1322,16 +1323,16 @@ function main(argv) {
     console.log(describeRules());
     return 0;
   }
-  const phrase = parsed.values['digest-of'];
-  if (phrase !== undefined) {
-    const entry = digestEntryOf(phrase);
-    if (entry === undefined) {
+  const phrases = parsed.values['digest-of'];
+  if (phrases !== undefined) {
+    const entries = phrases.map(digestEntryOf);
+    if (entries.some((entry) => entry === undefined)) {
       console.error(
         `provenance: --digest-of takes a phrase of 1 to ${String(MAX_PHRASE_WORDS)} words, a directory ("name/") or "<word> <date>"`,
       );
       return 2;
     }
-    console.log(entry);
+    console.log(entries.join('\n'));
     return 0;
   }
   const root = path.resolve(parsed.values.root ?? fileURLToPath(new URL('..', import.meta.url)));

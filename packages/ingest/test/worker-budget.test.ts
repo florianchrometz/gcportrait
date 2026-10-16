@@ -8,14 +8,19 @@
  * reading, transfer, parsing, normalisation, the project index and the structured clone of the 50 000-asset
  * result back to this thread.
  *
- * The worker is warmed up with a small job first (module loading through tsx is not ingest work), and the
- * measured job runs three times; the best run counts. A wall-clock budget is only meaningful on a machine
- * that is not busy with other work, so the strict 1.5 s assertion runs when GCPORTRAIT_INGEST_BUDGET=strict
- * (`pnpm --filter @gcportrait/ingest test:budget`, which runs this file alone). Inside the shared, parallel
- * test run the same measurement guards against gross regressions only (under 3× the budget) and prints the
- * figures (`--silent=false`).
+ * The worker is warmed up with a small job first (module loading through tsx is not ingest work). A
+ * wall-clock budget is only meaningful on a machine that is not busy with other work, so the strict 1.5 s
+ * assertion runs when GCPORTRAIT_INGEST_BUDGET=strict (`pnpm --filter @gcportrait/ingest test:budget`, which
+ * runs this file alone). Inside the shared, parallel test run the same measurement guards against gross
+ * regressions only (under 3× the budget) and prints the figures (`--silent=false`). Both measure by the rule
+ * of `@gcportrait/model/testing` that every package timing its work applies: a run over the limit is
+ * measured again after a pause, at most `BATCHES` runs and only while another fits in the test's timeout, and
+ * the best run counts (`measureBatches`); under a local `pnpm test`, never on CI (where the ceiling is the
+ * check that blocks) and never strictly, a best run still over the ceiling while the machine's load average
+ * is above 1.5 per core is skipped with the load and the figures as its reason (`skipIfOverloaded`).
  */
 import { ProjectIndexSchema, SnapshotSchema } from '@gcportrait/model';
+import { BATCHES, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
@@ -31,7 +36,8 @@ import { syntheticExport } from './synthetic-org.js';
 
 const ASSETS = 50_000;
 const BUDGET_MS = 1_500;
-const RUNS = 3;
+/** One run per batch: a run takes about a second on a quiet machine. */
+const PLAN = { batches: BATCHES, runs: 1, warmUp: 0 };
 const STRICT = process.env['GCPORTRAIT_INGEST_BUDGET'] === 'strict';
 /** What the best run must stay under: the budget itself when strict, else a regression ceiling. */
 const LIMIT_MS = STRICT ? BUDGET_MS : 3 * BUDGET_MS;
@@ -104,25 +110,38 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
   it(
     `parses it in under ${String(LIMIT_MS)} ms${STRICT ? ' (strict budget)' : ' (regression ceiling)'}`,
     { timeout: 120_000 },
-    async () => {
-      const timings: number[] = [];
-      let result: IngestResult | undefined;
-      for (let run = 1; run <= RUNS; run += 1) {
-        const started = performance.now();
-        result = await worker.run(`run-${String(run)}`, blob);
-        timings.push(performance.now() - started);
-      }
-      const best = Math.min(...timings);
+    async ({ skip, task }) => {
+      let jobs = 0;
+      const {
+        best: { ms: best, result },
+        medians,
+        outOfTime,
+      } = await measureBatches(
+        async (runs) => {
+          const timings: number[] = [];
+          let last: IngestResult | undefined;
+          for (let run = 0; run < runs; run += 1) {
+            jobs += 1;
+            const started = performance.now();
+            last = await worker.run(`run-${String(jobs)}`, blob);
+            timings.push(performance.now() - started);
+          }
+          if (last === undefined) throw new Error('no result');
+          return { ms: Math.min(...timings), result: last };
+        },
+        (figures) => figures.ms,
+        { plan: PLAN, limit: LIMIT_MS, timeoutMs: task.timeout, laterWarmUp: 0 },
+      );
       console.log(
         [
           `ingest budget: ${String(ASSETS)} assets, ${(size / 2 ** 20).toFixed(1)} MiB (${(size / ASSETS).toFixed(0)} B per line)`,
           `worker start-up incl. tsx and a 20-line warm-up job: ${bootMs.toFixed(0)} ms`,
-          `runs: ${timings.map((ms) => `${ms.toFixed(0)} ms`).join(', ')}; best ${best.toFixed(0)} ms (budget ${String(BUDGET_MS)} ms; asserted < ${String(LIMIT_MS)} ms, ${STRICT ? 'strict' : 'regression ceiling, set GCPORTRAIT_INGEST_BUDGET=strict for the budget'})`,
+          `runs: ${medians.map((ms) => `${ms.toFixed(0)} ms`).join(', ')}; best ${best.toFixed(0)} ms (budget ${String(BUDGET_MS)} ms; asserted < ${String(LIMIT_MS)} ms, ${STRICT ? 'strict' : 'regression ceiling, set GCPORTRAIT_INGEST_BUDGET=strict for the budget'})` +
+            (outOfTime ? ' · no further run fits in the timeout' : ''),
           `throughput (best run): ${(size / 2 ** 20 / (best / 1000)).toFixed(0)} MiB/s`,
         ].join('\n'),
       );
 
-      if (result === undefined) throw new Error('no result');
       expect(result.snapshot.stats.count).toBe(ASSETS);
       expect(result.snapshot.stats.bytes).toBe(size);
       expect(result.report.malformed).toBe(0);
@@ -136,6 +155,14 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
         inferred: {},
       });
       expect(SnapshotSchema.safeParse(result.snapshot).success).toBe(true);
+      skipIfOverloaded({
+        value: best,
+        limit: LIMIT_MS,
+        strict: STRICT,
+        what: `ingest of ${String(ASSETS)} assets over its ${String(LIMIT_MS)} ms ceiling`,
+        figures: `best run ${best.toFixed(0)} ms of ${medians.map((ms) => ms.toFixed(0)).join(', ')} ms`,
+        skip,
+      });
       expect(best).toBeLessThan(LIMIT_MS);
     },
   );

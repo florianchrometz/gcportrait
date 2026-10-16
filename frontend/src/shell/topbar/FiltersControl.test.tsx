@@ -62,6 +62,9 @@ describe('the Filters popover', () => {
     await expectNoAxeViolations();
   }, 40_000);
 
+  // This test and the next run axe over the page with demo S drawn, which takes about 6 s of the test's 11 s
+  // on a machine at load 2.5 per core and three or four times that once every core is busy several times
+  // over: 90 s rather than the others' 40.
   it('writes each switch and the depth into the hash, counts them on the badge, and resets', async () => {
     const app = renderControls('/diagram#snapshot=demo:S');
     await drawn(app.container);
@@ -107,7 +110,7 @@ describe('the Filters popover', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Reset filters' }));
     expect(app.hash()).toBe('snapshot=demo:S');
     expect(inTopBar().getByRole('button', { name: 'Filters' })).toBe(filtersButton());
-  }, 40_000);
+  }, 90_000);
 
   it('picks regions, projects, folders and types from the snapshot, and removes them', async () => {
     const app = renderControls('/diagram#snapshot=demo:S');
@@ -136,7 +139,7 @@ describe('the Filters popover', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Remove demo-web-1 from projects' }));
     expect(app.hash()).not.toContain('projects=');
     expect(document.activeElement).toBe(within(dialog).getByRole('combobox', { name: 'Add to projects' }));
-  }, 40_000);
+  }, 90_000);
 
   it('lets Escape close the results, then clear the text, then close the popover', async () => {
     const app = renderControls('/diagram#snapshot=demo:S');

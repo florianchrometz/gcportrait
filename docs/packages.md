@@ -126,7 +126,7 @@ inferred types, plus the URL-hash codec for views. Imports no other workspace pa
 | Vocabularies without zod | `LENS_IDS`, `DETAIL_LEVEL_IDS`, `RELATION_KIND_IDS`, `FOCUS_KIND_IDS`, `DEMO_SIZES` and the guards `isLensId`, `isDetailLevel`, `isRelationKind`, `isFocusKind`, `isDemoSize`, `isSnapshotRef`: what the app's UI thread lists and tests values with |
 | Scene | `SceneSchema`/`Scene`, `SceneZone`, `SceneCard`, `SceneEdge`; `SceneEnvSchema`/`SceneEnv`, `SceneBuildSchema`/`SceneBuild`, `SceneReport` |
 | Catalog | `CatalogSchema`/`Catalog`, `CatalogEntrySchema`, `CatalogZoneKindSchema`, `LensSchema`, `RelationRuleSchema`; `ProjectIndexSchema`/`ProjectIndex`, `buildProjectIndex`, `projectIndexBuilder` (the one number↔id pairing rule), `aliasKey`, `EvaluatedRelation`, `RelationTarget` |
-| Testing (`@gcportrait/model/testing`) | `findNonSyntheticData`, `assertSyntheticOnly`: the one "synthetic only" guard for fixtures and generated data |
+| Testing (`@gcportrait/model/testing`) | `findNonSyntheticData`, `assertSyntheticOnly`: the one "synthetic only" guard for fixtures and generated data; `measureBatches`, `skipIfOverloaded`: the one rule for the tests' wall-clock limits (measured again while over, skipped on an overloaded machine but never on CI) |
 | Timeline | `TickSchema`/`Tick` (a day, or an extra tick's read time to the second in UTC), `DiffSchema`/`Diff` |
 
 The builder schemas check invariants as well as shapes (`GraphBuildSchema`: report and graph agree;

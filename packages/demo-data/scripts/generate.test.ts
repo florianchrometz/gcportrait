@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { assertSyntheticOnly } from '@gcportrait/model/testing';
+import { BATCHES, assertSyntheticOnly, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   DEMO_SIZES,
@@ -40,9 +40,11 @@ interface Stats {
 
 describe('committed fixtures', () => {
   let rendered: Map<string, string>;
+  // All four organisations with their history, XL included: about 1.5 s on a quiet machine, several times
+  // that while every other test file runs on a busy one, more than the default 10 s hook timeout allows.
   beforeAll(() => {
     rendered = renderFixtures();
-  });
+  }, 60_000);
 
   it.each(['S.ndjson', 'M.ndjson', 'stats.json'])(
     '%s matches a fresh generation byte for byte (run `pnpm --filter @gcportrait/demo-data fixtures` after an intended change)',
@@ -86,34 +88,93 @@ describe('committed fixtures', () => {
 
 describe('performance', () => {
   /**
-   * A wall-clock budget fails when other processes take the machine's cores (under heavy load XL can take four
-   * times as long as its quiet 1.6 s to generate and 6.2 s to sweep): a retry measures again.
+   * Wall-clock limits, measured by the rule of `@gcportrait/model/testing` that every package timing its
+   * work applies: a run over its limit is measured again after a pause, at most `BATCHES` runs and only while
+   * another fits in the test's timeout, and the best run counts (`measureBatches`; other processes taking the
+   * machine's cores make XL take four times its quiet 1.2 s to generate and 4 s to sweep). Under a local
+   * `pnpm test`, never on CI (where the limit is the check that blocks), a best run still over its limit
+   * while the machine's load average is above 1.5 per core is skipped with the load and the figures as its
+   * reason (`skipIfOverloaded`).
    */
-  const RETRY = { retry: 2 };
+  const PLAN = { batches: BATCHES, runs: 1, warmUp: 0 };
+  const GENERATE_MS = 5000;
+  const SWEEP_MS = 20_000;
   // XL (≈50 000 assets) is generated once: the timing test generates it, and the sweep reuses that, or generates
   // it itself when it runs alone.
   let xl: DemoOrganization | undefined;
 
-  it('generates XL, history included, in under five seconds', RETRY, () => {
-    const start = performance.now();
-    const org = generateOrganization({ size: 'XL' });
-    const elapsed = performance.now() - start;
-    xl = org;
+  /** Times `work` `runs` times; the fastest run and its result. */
+  function timed<T>(work: () => T): (runs: number) => { ms: number; value: T } {
+    return (runs) => {
+      let fastest: { ms: number; value: T } | undefined;
+      for (let run = 0; run < Math.max(1, runs); run += 1) {
+        const start = performance.now();
+        const value = work();
+        const ms = performance.now() - start;
+        if (fastest === undefined || ms < fastest.ms) fastest = { ms, value };
+      }
+      if (fastest === undefined) throw new Error('no run');
+      return fastest;
+    };
+  }
+
+  function runs(medians: readonly number[]): string {
+    return medians.map((ms) => ms.toFixed(0)).join(', ');
+  }
+
+  it(`generates XL, history included, in under ${String(GENERATE_MS)} ms`, async ({ skip, task }) => {
+    const { best, medians } = await measureBatches(
+      timed(() => generateOrganization({ size: 'XL' })),
+      (figures) => figures.ms,
+      { plan: PLAN, limit: GENERATE_MS, timeoutMs: task.timeout, laterWarmUp: 0 },
+    );
+    xl = best.value;
     const stats = JSON.parse(committed('stats.json')) as Stats;
-    expect(computeStats(org.assets).count).toBe(stats.sizes['XL']?.count);
-    expect(elapsed).toBeLessThan(5000);
+    expect(computeStats(best.value.assets).count).toBe(stats.sizes['XL']?.count);
+    skipIfOverloaded({
+      value: best.ms,
+      limit: GENERATE_MS,
+      strict: false,
+      what: `the XL generation over its ${String(GENERATE_MS)} ms limit`,
+      figures: `best run ${best.ms.toFixed(0)} ms of ${runs(medians)} ms`,
+      skip,
+    });
+    expect(best.ms).toBeLessThan(GENERATE_MS);
   });
 
-  it('sweeps XL with the synthetic-only guard in linear time', RETRY, () => {
-    xl ??= generateOrganization({ size: 'XL' });
-    const text = toCaiNdjson(xl.assets);
-    const start = performance.now();
-    expect(() => {
-      assertSyntheticOnly(text, {}, 'XL');
-    }).not.toThrow();
-    // The guard masks e-mail addresses in one pass over the text, not one copy of it per address.
-    expect(performance.now() - start).toBeLessThan(20_000);
-  });
+  // XL generated when this test runs alone, its NDJSON and a sweep of about 4 s on a quiet machine; on a busy
+  // one a sweep can take 20 s and up to five are measured, more than the project's 60 s test timeout.
+  it(
+    'sweeps XL with the synthetic-only guard in linear time',
+    { timeout: 180_000 },
+    async ({ skip, task }) => {
+      const started = performance.now();
+      xl ??= generateOrganization({ size: 'XL' });
+      const text = toCaiNdjson(xl.assets);
+      const { best, medians } = await measureBatches(
+        timed(() => {
+          assertSyntheticOnly(text, {}, 'XL');
+        }),
+        (figures) => figures.ms,
+        {
+          plan: PLAN,
+          limit: SWEEP_MS,
+          timeoutMs: task.timeout - (performance.now() - started),
+          laterWarmUp: 0,
+        },
+      );
+      // The guard masks e-mail addresses in one pass over the text, not one copy of it per address.
+      skipIfOverloaded({
+        value: best.ms,
+        limit: SWEEP_MS,
+        strict: false,
+        what: `the XL sweep over its ${String(SWEEP_MS)} ms limit`,
+        figures: `best run ${best.ms.toFixed(0)} ms of ${runs(medians)} ms`,
+        skip,
+      });
+      expect(best.ms).toBeLessThan(SWEEP_MS);
+    },
+  );
 });
 
 describe('README', () => {

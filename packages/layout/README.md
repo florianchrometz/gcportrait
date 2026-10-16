@@ -725,14 +725,15 @@ its machine.
 busy with other work. `pnpm test` (and the blocking CI `unit` job) runs the budget tests in parallel with
 every other test file and asserts a regression ceiling of 2 × the budget (25 XL layouts for the memory check);
 `pnpm --filter @gcportrait/layout test:budget` (`GCPORTRAIT_LAYOUT_BUDGET=strict`) runs the two budget files
-alone, one after the other, and asserts the budgets themselves (100 XL layouts). In both, a case over its
-limit is measured again after a 250 ms pause, at most 5 batches (`BATCHES`) and only while another batch fits
-in 95 % of the test's timeout (`measureBatches`: under heavy load five L batches outlast it, and a timed-out
-test shows no figure), and its best batch's median counts; every batch's median is printed. Under a local
-`pnpm test` a case still over its ceiling after the last batch is skipped, with its figures and the load as
-the reason (and a `skipped:` line on standard error names the case, since the reporter does not;
-`noteSkipped`), while the machine's one-minute load average is above 1.5 per core (`OVERLOAD_PER_CORE`,
-`overloadReason` in `scripts/lib/bench.ts`): four times oversubscribed, a small layout reads several times its
+alone, one after the other, and asserts the budgets themselves (100 XL layouts). Both measure by the rule of
+`@gcportrait/model/testing` that `@gcportrait/ingest` and `@gcportrait/demo-data` time their work by too. A
+case over its limit is measured again after a 250 ms pause, at most 5 batches (`BATCHES`) and only while
+another batch fits in 95 % of the test's timeout (`measureBatches`: under heavy load five L batches outlast
+it, and a timed-out test shows no figure), and its best batch's median counts; every batch's median is
+printed. Under a local `pnpm test` a case still over its ceiling after the last batch is skipped, with its
+figures and the load as the reason (and a `skipped:` line on standard error names the case, since the
+reporter does not; `skipIfOverloaded`), while the machine's one-minute load average is above 1.5 per core
+(`OVERLOAD_PER_CORE`, `overloadReason`): four times oversubscribed, a small layout reads several times its
 quiet figure at its best of five batches, so the ceiling would measure the machine. On CI (`CI` set, `onCi`)
 the ceiling is the budget check that blocks, so it never skips, and neither does `test:budget`. The worker
 test builds every demo Scene before it measures anything, so its small cases do not start while the other test
@@ -873,6 +874,7 @@ catalog and a stale one would silently change them.
   worker): see above.
 - `scripts/*.test.ts`: the metrics command (`--check`) and its font helpers (`scripts/lib/fonts.test.ts`:
   unicode ranges, WOFF unwrapping), the debug renderer (both themes, no affiliation line in the drawing, SVG
-  and PNG output), the bench (its banner, which names the command only, a short S run, its usage and argument errors, when
-  an overloaded machine skips a missed ceiling) and the measure command (routing and packing figures, JSON,
-  its usage and argument errors).
+  and PNG output), the bench (its banner, which names the command only, a short S run, its usage and argument
+  errors) and the measure command (routing and packing figures, JSON, its usage and argument errors). The
+  rule by which an overloaded machine skips a missed ceiling is tested where it lives, in `@gcportrait/model`
+  (`src/testing/budget.test.ts`).

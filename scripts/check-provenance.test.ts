@@ -96,11 +96,19 @@ function utf16(text: string, order: 'le' | 'be' = 'le'): Buffer {
   return order === 'be' ? buffer.swap16() : buffer;
 }
 
-/** The PHRASE_DIGESTS entry the checker prints for a phrase. */
-function digestOf(phrase: string): string {
-  const result = runScript('check-provenance.mjs', ['--digest-of', phrase]);
+/**
+ * The PHRASE_DIGESTS entries the checker prints for phrases, in their order: one run for all of them, since a
+ * node process takes a moment to start and a busy machine multiplies it.
+ */
+function digestsOf(...phrases: readonly string[]): string[] {
+  const result = runScript(
+    'check-provenance.mjs',
+    phrases.flatMap((phrase) => ['--digest-of', phrase]),
+  );
   expect(result.stderr).toBe('');
-  return result.stdout.trim();
+  const entries = result.stdout.trim().split('\n');
+  expect(entries).toHaveLength(phrases.length);
+  return entries;
 }
 
 /** Writes a small tree that satisfies every rule. */
@@ -655,7 +663,8 @@ describe('check-provenance', () => {
   for (const { name, files, lines, summary, absent = [], refuse = [] } of FAILING) {
     it(`fails on ${name}`, () => {
       for (const [relPath, content] of Object.entries(files)) tree.write(relPath, content);
-      const result = check(...refuse.flatMap((phrase) => ['--also-refuse', digestOf(phrase)]));
+      const digests = refuse.length === 0 ? [] : digestsOf(...refuse);
+      const result = check(...digests.flatMap((digest) => ['--also-refuse', digest]));
       expect(result.status).toBe(1);
       for (const line of lines) expect(result.stderr).toContain(line);
       for (const text of absent) expect(result.stderr).not.toContain(text);
@@ -901,17 +910,36 @@ describe('check-provenance', () => {
   });
 
   it('prints the digest entry of a phrase with --digest-of, the same for every form it stands for', () => {
-    const joined = digestOf(JOINED_PHRASE);
+    const forms = ['Blue_Lantern', 'BlueLanterns', 'blue-lanterns', 'bluelantern'];
+    const [joined, ...entries] = digestsOf(
+      JOINED_PHRASE,
+      ...forms,
+      'blue lantern',
+      SPACED_PHRASE,
+      'Copper   Kettles',
+      DIRECTORY,
+      './Vault/',
+      DATED_WORD,
+      'Voyage <date>',
+    );
     expect(joined).toMatch(/^words:11:[0-9a-f]{8}:[0-9a-f]{64}$/);
-    for (const form of ['Blue_Lantern', 'BlueLanterns', 'blue-lanterns', 'bluelantern'])
-      expect(digestOf(form)).toBe(joined);
-    expect(digestOf('blue lantern')).toMatch(/^words:12:/);
-    expect(digestOf(SPACED_PHRASE)).toBe(digestOf('Copper   Kettles'));
-    expect(digestOf(DIRECTORY)).toMatch(/^path:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
-    expect(digestOf('./Vault/')).toBe(digestOf(DIRECTORY));
-    expect(digestOf(DATED_WORD)).toMatch(/^dated:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
-    expect(digestOf('Voyage <date>')).toBe(digestOf(DATED_WORD));
-    expect(runScript('check-provenance.mjs', ['--digest-of', 'one two three four']).status).toBe(2);
+    for (const entry of entries.slice(0, forms.length)) expect(entry).toBe(joined);
+    const [spaced, kettle, kettles, directory, vault, dated, voyage] = entries.slice(forms.length);
+    expect(spaced).toMatch(/^words:12:/);
+    expect(kettle).toBe(kettles);
+    expect(directory).toMatch(/^path:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
+    expect(vault).toBe(directory);
+    expect(dated).toMatch(/^dated:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
+    expect(voyage).toBe(dated);
+    // One phrase it cannot take refuses the whole run, and prints no entry.
+    const refused = runScript('check-provenance.mjs', [
+      '--digest-of',
+      JOINED_PHRASE,
+      '--digest-of',
+      'one two three four',
+    ]);
+    expect(refused.status).toBe(2);
+    expect(refused.stdout).toBe('');
     expect(check('--also-refuse', 'words:3:0:abc').status).toBe(2);
   });
 

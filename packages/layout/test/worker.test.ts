@@ -11,9 +11,10 @@
  *   `test:budget` (GCPORTRAIT_LAYOUT_BUDGET=strict) the budget itself (scripts/lib/bench.ts). A case over its
  *   limit is measured again, up to `BATCHES` times after a pause while another batch fits in the test's
  *   timeout, and its best batch counts (`measureBatches`); under a local `pnpm test` a case still over its
- *   ceiling while the machine's load average is above 1.5 per core is skipped with the figures as its reason
- *   (`overloadReason`), never on CI (where this ceiling is the budget check that blocks) and never under
- *   `test:budget`. Under coverage each case is laid out once and no time limit is checked (`budgetPlan`).
+ *   ceiling while the machine's load average is above 1.5 per core is skipped with the load and the figures
+ *   as its reason (`skipIfOverloaded`), never on CI (where this ceiling is the budget check that blocks) and
+ *   never under `test:budget` (the rule of `@gcportrait/model/testing`, the same in every package). Under
+ *   coverage each case is laid out once and no time limit is checked (`budgetPlan`).
  * - **Memoisation**: a repeated request is answered from the worker's memo in under 1 ms (in-process: the
  *   handler and the client on one thread, so the figure is the protocol's own) with a byte-identical Layout;
  *   through the real worker the round trip of a hit is printed.
@@ -23,6 +24,7 @@
  *   `pnpm test`), each a memo miss: the worker must not accumulate (growth under 16 MiB).
  */
 import { performance } from 'node:perf_hooks';
+import { measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createLayoutClient, createLayoutWorkerHandler, type LayoutResult } from '../src/index.js';
 import {
@@ -32,7 +34,6 @@ import {
   budgetPlan,
   instrumented,
   limitOf,
-  measureBatches,
   measureCancellation,
   measureInWorker,
   measureMemo,
@@ -40,8 +41,6 @@ import {
   median,
   mib,
   ms,
-  noteSkipped,
-  overloadReason,
   strictBudget,
   type BenchCase,
 } from '../scripts/lib/bench.js';
@@ -88,12 +87,14 @@ describe('budgets through a worker', () => {
           (outOfTime ? ' · no further batch fits in the timeout' : ''),
       );
       if (INSTRUMENTED) return;
-      const overloaded = best.roundTrip >= limit ? overloadReason({ strict: STRICT }) : undefined;
-      if (overloaded !== undefined) {
-        const note = `${overloaded} (median round trip ${ms(best.roundTrip)})`;
-        noteSkipped(`worker ${fixture} ${lens} ${detail} over its ${String(limit)} ms ceiling`, note);
-        skip(note);
-      }
+      skipIfOverloaded({
+        value: best.roundTrip,
+        limit,
+        strict: STRICT,
+        what: `worker ${fixture} ${lens} ${detail} over its ${String(limit)} ms ceiling`,
+        figures: `median round trip ${ms(best.roundTrip)}`,
+        skip,
+      });
       expect(best.roundTrip).toBeLessThan(limit);
     },
   );

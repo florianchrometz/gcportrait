@@ -183,9 +183,10 @@ webkit`).
 
 **Running a job as the runner does.** Each job's commands are in the table. The runner's time zone is UTC, its
 locale is `C.UTF-8` (Node formats dates and numbers as `en-US` then) and `CI` is set, which changes three
-things: the layout's twice-the-budget tests are never skipped for a busy machine, Playwright retries a failed
-test twice, starts fresh dev servers and writes an HTML report, and `test.only` fails the run. To reproduce a
-failure that does not happen on your machine:
+things: the tests' wall-clock limits (the layout's and the ingest's budget ceilings, the demo organisations'
+generation) are never skipped for a busy machine, Playwright retries a failed test twice, starts fresh dev
+servers and writes an HTML report, and `test.only` fails the run. To reproduce a failure that does not happen
+on your machine:
 
 ```sh
 TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner

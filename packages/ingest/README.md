@@ -241,10 +241,12 @@ services, firewalls, service accounts, buckets, BigQuery tables with schemas, Pu
 services and KMS keys; 76.3 MiB, 1 599 bytes per line on average. The file is posted as a `Blob` through
 `postIngestJob` to a `worker_threads` worker running the package's handler; the clock runs from the first
 message to the `done` reply arriving on the main thread, so it includes reading, transfer, parsing,
-normalisation, the project index and the structured clone of the result back. Each measurement is the best
-of three runs after a warm-up job. On a desktop machine with little else running the best run takes about
-1 s; with the machine's cores busy several times over it takes 1.3 to 2 s, which is why the strict check runs
-alone (below).
+normalisation, the project index and the structured clone of the result back. The worker runs a warm-up
+job first; a run over the limit is measured again after a 250 ms pause, at most five runs and only while
+another fits in 95 % of the test's timeout, and the best run counts (`measureBatches` of
+`@gcportrait/model/testing`, the rule every package that times its work applies). On a desktop machine with
+little else running a run takes about 1 s; with the machine's cores busy several times over it takes 1.3 to
+2 s, which is why the strict check runs alone (below).
 
 In-process the input takes about 500 ms to ingest (JSON.parse about 240 ms, the project index about 80 ms,
 normalisation through `AssetSchema` about 45 ms); posting the 50 000-asset result back to the page (structured
@@ -255,8 +257,12 @@ A wall-clock budget only means something on a machine that is not busy with othe
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
 unit job) the same measurement asserts a regression ceiling of 3 × 1.5 s instead, which still catches an
-order-of-magnitude slowdown on a busy machine. Add `--silent=false` to print the figures there (Vitest ignores
-flags after a `--`).
+order-of-magnitude slowdown on a busy machine. Under a local `pnpm test` a best run still over the ceiling
+while the machine's one-minute load average is above 1.5 per core is skipped, with the load and the figures
+as the reason and a `skipped:` line on standard error (`skipIfOverloaded`): four times oversubscribed, the
+figure measures the machine. On CI (`CI` set) the ceiling is the check that blocks, so it never skips, and
+neither does `test:budget`. Add `--silent=false` to print the figures there (Vitest ignores flags after a
+`--`).
 
 ## Tests
 

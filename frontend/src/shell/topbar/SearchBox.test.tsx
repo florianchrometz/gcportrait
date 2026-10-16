@@ -24,6 +24,13 @@ const WEB_VM = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-
 const KMS_KEY =
   '//cloudkms.googleapis.com/projects/demo-sec-1/locations/europe-west3/keyRings/kr-europe-west3/cryptoKeys/cmek-shared';
 
+/**
+ * How long a chosen result may take to reach the hash: the data worker first locates the node in the view
+ * (search/useReveal.ts), here in-process on the test's own thread, which a busy machine stretches to seconds,
+ * past `waitFor`'s default of one.
+ */
+const LOCATED = { timeout: 10_000 };
+
 function open(path: string): AppRender {
   return renderApp(path, { diagramWorkers: createInProcessWorkers });
 }
@@ -93,7 +100,7 @@ describe('SearchBox', () => {
     await userEvent.keyboard('{Enter}');
     await waitFor(() => {
       expect(app.hash()).toContain(`selection=${ORDERS_API}`);
-    });
+    }, LOCATED);
     expect(app.hash()).toContain('highlight=orders');
     expect(
       within(screen.getByRole('complementary', { name: 'Details' })).getByText(ORDERS_API),
@@ -114,7 +121,7 @@ describe('SearchBox', () => {
     await userEvent.keyboard('{ArrowDown}{Enter}');
     await waitFor(() => {
       expect(app.hash()).toContain(`selection=${WEB_VM}`);
-    });
+    }, LOCATED);
     expect(app.hash()).toMatch(/flips=[^&]+/);
     await waitFor(
       () => {
@@ -209,7 +216,7 @@ describe('SearchBox', () => {
     await userEvent.keyboard('{Enter}');
     await waitFor(() => {
       expect(app.hash()).toContain(`selection=${ORDERS_API}`);
-    });
+    }, LOCATED);
     expect(app.hash()).toContain(`highlight=${ORDERS_API}`);
     expect(input.value).toBe(ORDERS_API);
   }, 30_000);
@@ -236,7 +243,7 @@ describe('SearchBox', () => {
     await userEvent.keyboard('{Enter}');
     await waitFor(() => {
       expect(app.hash()).toContain('highlight=orders');
-    });
+    }, LOCATED);
     expect(input.value).toBe('orders');
 
     // A view without a highlight (here a saved view; a link or Back alike): the box is empty.

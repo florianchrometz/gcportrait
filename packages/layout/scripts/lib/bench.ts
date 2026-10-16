@@ -13,10 +13,15 @@
  *   between each, its progress messages, and the clone of the Layout back. The worker measures with its memo
  *   off, so every run lays out; its clock gives the layout's own time (`report.timings.total`) as well.
  * - **Medians** of `runs` (10) after `warmUp` (3) runs.
+ * - **A busy machine.** The budget tests measure a case again while it is over its limit and skip a missed
+ *   2 × ceiling on an overloaded machine, never on CI and never under `test:budget`, by the rule every
+ *   package that times its work applies (`measureBatches` and `skipIfOverloaded` of
+ *   `@gcportrait/model/testing`).
  */
 import { cpus, loadavg } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import type { DetailLevel, LensId, Scene } from '@gcportrait/model';
+import { BATCHES, type BudgetPlan } from '@gcportrait/model/testing';
 import { layoutScene, type Layout, type StageTimings } from '../../src/index.js';
 import type { NodeLayoutWorker } from './node-worker.js';
 import type { Fixture } from './scenes.js';
@@ -44,22 +49,7 @@ export function limitOf(fixture: Fixture, strict: boolean): number {
 export const RUNS = 10;
 export const WARM_UP = 3;
 
-/**
- * The budget tests measure a case again while its median is over the limit, at most `BATCHES` batches of
- * `RUNS` with a `PAUSE_MS` pause between them, and the best batch's median counts: under `pnpm test` they start
- * while every other test file runs and compete with them for the cores (a small layout then reads up to four
- * times its quiet figure). The bench measures once.
- */
-export const BATCHES = 5;
-export const PAUSE_MS = 250;
 export const LENSES: readonly LensId[] = ['overview', 'networking', 'load-balancing'];
-
-/** How a budget test measures one case: `batches` batches of `runs` layouts, the first after `warmUp` more. */
-export interface BudgetPlan {
-  readonly batches: number;
-  readonly runs: number;
-  readonly warmUp: number;
-}
 
 /** Whether the run is instrumented for coverage (`LAYOUT_COVERAGE`: vitest.config.ts sets it under `--coverage`). */
 export function instrumented(): boolean {
@@ -67,134 +57,17 @@ export function instrumented(): boolean {
 }
 
 /**
- * The budget tests' plan: up to `BATCHES` batches of `RUNS` after `WARM_UP`; under coverage instrumentation,
- * which slows a layout several times over and under which no time limit is checked, one layout per case, so the
- * coverage run still lays every case out without spending minutes on figures nobody checks.
+ * The budget tests' plan: up to `BATCHES` batches of `RUNS` layouts after `WARM_UP` (`measureBatches`
+ * measures a case again while its median is over the limit: under `pnpm test` the budget tests start while
+ * every other test file runs, and a small layout then reads up to four times its quiet figure); under
+ * coverage instrumentation, which slows a layout several times over and under which no time limit is
+ * checked, one layout per case, so the coverage run still lays every case out without spending minutes on
+ * figures nobody checks. The bench measures once.
  */
 export function budgetPlan(): BudgetPlan {
   return instrumented()
     ? { batches: 1, runs: 1, warmUp: 0 }
     : { batches: BATCHES, runs: RUNS, warmUp: WARM_UP };
-}
-
-/** The share of a budget test's timeout its batches may take (`anotherBatchFits`). */
-export const BATCH_TIMEOUT_SHARE = 0.95;
-
-/**
- * Whether another batch of `batchMs` fits, after a `PAUSE_MS` pause, in what is left of a test's timeout once
- * `elapsedMs` have passed. Under heavy load five batches of an L case outlast the timeout, and a timed-out test
- * reports no figure at all.
- */
-export function anotherBatchFits(elapsedMs: number, batchMs: number, timeoutMs: number): boolean {
-  return elapsedMs + PAUSE_MS + batchMs < BATCH_TIMEOUT_SHARE * timeoutMs;
-}
-
-/** What `measureBatches` measured: the best batch, every batch's median, and why it stopped early if it did. */
-export interface Batches<F> {
-  readonly best: F;
-  readonly medians: readonly number[];
-  /** Another batch would not have fitted in the test's timeout (`anotherBatchFits`). */
-  readonly outOfTime: boolean;
-}
-
-/** How `measureBatches` runs: the budget plan, the limit a batch's median stays under, the test's timeout. */
-export interface BatchOptions {
-  readonly plan: BudgetPlan;
-  readonly limit: number;
-  readonly timeoutMs: number;
-  /** Warm-up layouts before each batch after the first (the first has `plan.warmUp`). */
-  readonly laterWarmUp: number;
-}
-
-/**
- * Measures a budget case in batches: `measure(runs, warmUp)` once, then again after a `PAUSE_MS` pause while
- * every median so far is over the limit, at most `plan.batches` times, and only while another batch, as long
- * per layout as the last one, fits in the test's timeout. The batch with the lowest median is the best.
- * Stopping early only leaves fewer batches to choose from, so it can fail or skip a case but never pass one
- * that more batches would have failed.
- */
-export async function measureBatches<F>(
-  measure: (runs: number, warmUp: number) => F | Promise<F>,
-  medianOf: (figures: F) => number,
-  { plan, limit, timeoutMs, laterWarmUp }: BatchOptions,
-): Promise<Batches<F>> {
-  const started = performance.now();
-  const medians: number[] = [];
-  let best: { figures: F; median: number } | undefined;
-  let perLayout = 0;
-  let outOfTime = false;
-  for (let batch = 0; batch < plan.batches; batch += 1) {
-    if (batch > 0) {
-      const next = perLayout * (plan.runs + laterWarmUp);
-      if (!anotherBatchFits(performance.now() - started, next, timeoutMs)) {
-        outOfTime = true;
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
-    }
-    const warmUp = batch === 0 ? plan.warmUp : laterWarmUp;
-    const batchStarted = performance.now();
-    const figures = await measure(plan.runs, warmUp);
-    perLayout = (performance.now() - batchStarted) / Math.max(1, plan.runs + warmUp);
-    const value = medianOf(figures);
-    medians.push(value);
-    if (best === undefined || value < best.median) best = { figures, median: value };
-    if (value < limit) break;
-  }
-  if (best === undefined) throw new Error('a budget plan needs at least one batch');
-  return { best: best.figures, medians, outOfTime };
-}
-
-/** The one-minute load average per core above which `pnpm test` skips a missed 2 × ceiling (`overloadReason`). */
-export const OVERLOAD_PER_CORE = 1.5;
-
-/**
- * Whether the run is on CI (`CI` set and not `false` or `0`, as GitHub Actions sets it). There the 2 × ceiling
- * under `pnpm test` is the budget check that blocks a pull request (the strict `layout-budget` job is
- * `continue-on-error`), so it never skips.
- */
-export function onCi(): boolean {
-  const value = process.env['CI'];
-  return value !== undefined && value !== '' && value !== 'false' && value !== '0';
-}
-
-/** What a missed limit is judged against (`overloadReason`); each field defaults to the running machine. */
-export interface OverloadContext {
-  /** `test:budget` (`strictBudget()`): the budget itself is asserted, whatever the load. */
-  readonly strict: boolean;
-  /** On CI (`onCi()`): the 2 × ceiling is the blocking budget guard. */
-  readonly ci: boolean;
-  /** The one-minute load average. */
-  readonly load: number;
-  readonly cores: number;
-}
-
-/**
- * Why a case over its limit is skipped rather than failed, or `undefined` when it must fail. The strict run
- * (`test:budget`) and every run on CI always fail. Under a local `pnpm test` the 2 × ceiling is a regression
- * guard for a machine with cores to spare: when the one-minute load average is above `OVERLOAD_PER_CORE` per
- * core (other suites running beside this one; four times oversubscribed, a small layout reads several times its
- * quiet figure even at its best of five batches), the figure says more about the machine than about the layout.
- */
-export function overloadReason({
-  strict = strictBudget(),
-  ci = onCi(),
-  load = loadavg()[0] ?? 0,
-  cores = cpus().length,
-}: Partial<OverloadContext> = {}): string | undefined {
-  if (strict || ci) return undefined;
-  const perCore = load / Math.max(1, cores);
-  if (perCore <= OVERLOAD_PER_CORE) return undefined;
-  return `machine overloaded: load average ${load.toFixed(1)} on ${String(cores)} cores (${perCore.toFixed(1)} per core, over ${String(OVERLOAD_PER_CORE)}); the 2 × ceiling is not held against the layout`;
-}
-
-/**
- * Prints a budget case skipped by `overloadReason` on standard error. The default reporter counts a skipped case
- * without naming it and shows the console output of failed tests only; a direct write still reaches the
- * terminal.
- */
-export function noteSkipped(what: string, note: string): void {
-  process.stderr.write(`skipped: ${what}; ${note}\n`);
 }
 
 export interface BenchCase {
