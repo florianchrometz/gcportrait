@@ -1761,6 +1761,7 @@ function ghostGrounds(
   model: DiagramModel,
   palette: DiagramPalette,
   background: ReadonlyMap<string, string>,
+  overlays: ReadonlySet<string>,
 ): Map<string, GhostGround> {
   const grounds = new Map<string, GhostGround>();
   for (const [id, rect] of model.ghosts) {
@@ -1768,15 +1769,19 @@ function ghostGrounds(
       rect.parent === null
         ? palette.canvas
         : (grounds.get(rect.parent)?.body ?? background.get(rect.parent) ?? palette.canvas);
-    grounds.set(id, { behind, body: blendOver(ghostFill(palette, rect, behind), GHOST_OPACITY, behind) });
+    const fill = ghostFill(palette, rect, behind, overlays.has(id));
+    grounds.set(id, { behind, body: blendOver(fill, GHOST_OPACITY, behind) });
   }
   return grounds;
 }
 
-/** A ghost's own fill before its opacity: a card's, or its zone's tint (a region's: what it lies on). */
-function ghostFill(palette: DiagramPalette, rect: LayoutRect, behind: string): string {
+/**
+ * A ghost's own fill before its opacity: a card's, or its zone's tint (a region's, and an overlay's, which have
+ * none: what it lies on).
+ */
+function ghostFill(palette: DiagramPalette, rect: LayoutRect, behind: string, overlay: boolean): string {
   if (rect.kind === 'card') return palette.card.fill;
-  const fill = palette.zone[zoneTintOf(rect.kind, rect.depth)].fill;
+  const fill = overlay ? 'none' : palette.zone[zoneTintOf(rect.kind, rect.depth)].fill;
   return fill === 'none' ? behind : fill;
 }
 
@@ -1795,15 +1800,18 @@ function ghostContainer(model: DiagramModel, rect: LayoutRect): string | null {
  * A ghost (skill §6): what the view drew on the day on screen before and no longer draws, where the layout
  * placed it (its old place among its siblings), for one day. Its body (fill and icon) at 50 %, its label and a
  * "removed" line in the readable grey of that body (an open zone's title placed as the zone's, with its halo), and
- * a dashed `accent.removed` outline at full strength on a canvas band. Not a node: no `data-id`, no tab stop,
- * never selected; the pointer on it is on the zone it lies in (`data-in`, painter.ts `nodeIdOf`); its tooltip and
- * name say what it was.
+ * a dashed `accent.removed` outline at full strength on a canvas band. The ghost of the earlier day's overlay zone
+ * (a perimeter drawn around its projects) is drawn as an overlay: untinted, with its header mark, and the overlay's
+ * dashed outline (`OverlayOutline`) `OVERLAY_INSET` inside the red one, where a `secures` overlay lies in its target.
+ * Not a node: no `data-id`, no tab stop, never selected; the pointer on it is on the zone it lies in (`data-in`,
+ * painter.ts `nodeIdOf`); its tooltip and name say what it was.
  */
 function Ghost({
   context,
   id,
   rect,
   reason,
+  overlay,
   since,
   ground,
 }: {
@@ -1811,12 +1819,14 @@ function Ghost({
   id: string;
   rect: LayoutRect;
   reason: GhostReason;
+  /** The earlier day drew it as the view's overlay zone. */
+  overlay: boolean;
   since: string;
   ground: GhostGround;
 }): ReactElement {
   const { palette, model, options } = context;
   const node = model.nodes.get(id);
-  const fill = ghostFill(palette, rect, ground.behind);
+  const fill = ghostFill(palette, rect, ground.behind, overlay);
   const ink = readableOn(ground.body, [palette.muted, palette.mutedOnTint]);
   const zone = rect.role === 'zone';
   const radius = zone ? ZONE_RADIUS : CARD_RADIUS;
@@ -1830,6 +1840,15 @@ function Ghost({
     height: fmt(rect.height),
     rx: radius,
   };
+  // An overlay's dashes, inside the ghost's outline (where a `secures` overlay lies in its target).
+  const overlayLine = overlay ? (
+    <OverlayOutline
+      palette={palette}
+      box={ringBox(rect, -OVERLAY_INSET)}
+      radius={Math.max(radius - OVERLAY_INSET, 2)}
+      className="dg-ghost-overlay"
+    />
+  ) : null;
   let content: ReactNode;
   if (zone) {
     // An open zone's ghost: its header mark and its title with the ghost's line after a middle dot, top-left for a
@@ -1852,6 +1871,7 @@ function Ghost({
           <rect {...outline} fill={fill} />
           {placedIcon(context, icon, left, iconY)}
         </g>
+        {overlayLine}
         <text
           className="dg-label"
           xmlSpace="preserve"
@@ -1879,6 +1899,7 @@ function Ghost({
           <rect {...outline} fill={fill} />
           {placedIcon(context, icon, rect.x + SIZING.cardPadding, rect.y + (rect.height - ICON) / 2)}
         </g>
+        {overlayLine}
         <text
           className="dg-label"
           x={fmt(textX)}
@@ -1939,7 +1960,8 @@ function Ghosts({ context, diff }: { context: Context; diff: DiffMarks }): React
   const { model, palette, options } = context;
   if (model.ghosts.length === 0) return null;
   const since = sincePhrase(diff.since, diff.forward, options.utcOffsetMinutes);
-  const grounds = ghostGrounds(model, palette, context.background);
+  const overlays = new Set(diff.overlays);
+  const grounds = ghostGrounds(model, palette, context.background, overlays);
   return (
     <g className="dg-ghosts">
       {model.ghosts.map(([id, rect]) => (
@@ -1949,6 +1971,7 @@ function Ghosts({ context, diff }: { context: Context; diff: DiffMarks }): React
           id={id}
           rect={rect}
           reason={diff.ghosts.get(id) ?? 'removed'}
+          overlay={overlays.has(id)}
           since={since}
           ground={grounds.get(id) ?? { behind: palette.canvas, body: palette.canvas }}
         />

@@ -14,7 +14,6 @@
  */
 import { catalog } from '@gcportrait/catalog';
 import {
-  buildGraph,
   buildPreparedScene,
   buildSceneWithReport,
   DETAIL_LEVELS,
@@ -28,7 +27,6 @@ import {
   LENS_IDS,
   normalizeViewSpec,
   VIEW_SPEC_MAX_FLIPS,
-  type Asset,
   type DemoSize,
   type Graph,
   type LensId,
@@ -37,7 +35,6 @@ import {
   type SceneEnv,
   type SceneNode,
   type SceneZone,
-  type Snapshot,
   type ViewSpec,
   type ViewSpecInput,
 } from '@gcportrait/model';
@@ -49,7 +46,14 @@ import { autoLevel } from '../autoDetail';
 import { tickDiff, type DiffDayData } from '../diff/tickDiff';
 import type { EarlierZone } from '../diff/types';
 import { demoHistory } from '../pipeline/demo';
-import { demoDayGraph, demoGraphSync, sceneEnv } from '../testing/demoScenes';
+import {
+  demoDayGraph,
+  demoGraphSync,
+  demoMNextDay,
+  DEMO_M_PERIMETER,
+  perimeterRemoved,
+  sceneEnv,
+} from '../testing/demoScenes';
 import { sceneZones as allZones, parentsOf, zoneOf as zoneIn } from '../testing/scenes';
 import {
   autoLevelShift,
@@ -1046,26 +1050,10 @@ describe('on a timeline day the ghosts count', () => {
   });
 
   describe('the zones the ghosts depend on are judged as the earlier day drew them', () => {
-    /** Demo M's perimeter, and one of the two projects it secures (Retail services). */
-    const PERIMETER =
-      '//accesscontextmanager.googleapis.com/accessPolicies/40000000001/servicePerimeters/data_perimeter';
-    const SECURED = '//cloudresourcemanager.googleapis.com/projects/10000000011';
+    const { perimeter: PERIMETER, secured: SECURED } = DEMO_M_PERIMETER;
     /** Partner exchange, in the Networking folder of the Platform folder, and the network it holds. */
     const PARTNER = '//cloudresourcemanager.googleapis.com/projects/10000000003';
     const PARTNER_NETWORK = '//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner';
-
-    /** Demo M's day 2026-09-16 and a next day made of its assets as `change` leaves them. */
-    async function nextDay(
-      change: (graph: Graph, assets: readonly Asset[]) => Asset[],
-    ): Promise<readonly [Day, Day]> {
-      const before = await demoDay('2026-09-16');
-      const snapshot: Snapshot = {
-        ...before.snapshot,
-        readTime: '2026-09-17T00:00:00Z',
-        assets: change(before.graph, before.snapshot.assets),
-      };
-      return [before, { snapshot, graph: buildGraph(snapshot, catalog), tick: '2026-09-17' }];
-    }
 
     /** The node `id` and every node the Graph nests in it. */
     function nestedIn(graph: Graph, id: string): Set<string> {
@@ -1091,11 +1079,7 @@ describe('on a timeline day the ghosts count', () => {
     }
 
     it('a perimeter removed with a project it secured: the ghost of its overlay zone opens at every level', async () => {
-      const [before, after] = await nextDay((_graph, assets) =>
-        assets.filter(
-          (asset) => asset.name !== PERIMETER && !asset.ancestors.includes('projects/10000000011'),
-        ),
-      );
+      const [before, after] = await perimeterRemoved();
       const spec = normalizeViewSpec({
         snapshot: 'demo:M',
         detail: 'folders',
@@ -1116,7 +1100,7 @@ describe('on a timeline day the ghosts count', () => {
     });
 
     it('a project moved out of two folders, the network it held removed: the network’s ghost is as deep as the earlier day drew it', async () => {
-      const [before, after] = await nextDay((graph, assets) => {
+      const [before, after] = await demoMNextDay((graph, assets) => {
         const removed = nestedIn(graph, PARTNER_NETWORK);
         return assets.flatMap((asset) => {
           if (removed.has(asset.name)) return [];

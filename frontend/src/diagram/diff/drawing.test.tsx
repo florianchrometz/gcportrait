@@ -5,17 +5,27 @@
  * changed dot in `accent.path` on its `pathCasing` disc, the ghost (its body at 50 %, a dashed `accent.removed`
  * outline at full strength on a canvas band) where the layout placed it, the legend's rows only for what is drawn,
  * the description, the accessible names; a ghost is never a node (no id, no tab stop, no drill-in, no flip, not
- * counted), and pointing at it is pointing at the zone it lies in.
+ * counted), and pointing at it is pointing at the zone it lies in. On demo M's two days with its perimeter removed,
+ * the ghost of the perimeter focus's overlay zone is drawn as an overlay: untinted, its header mark, the overlay's
+ * dashes inside the red outline, and the legend's `secures` row.
  */
+import { normalizeViewSpec } from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { canDrillIn } from '../actions';
 import { rectsShown, zonesByFlip } from '../disclosure/flips';
 import { buildDiagramModel, type DiagramModel } from '../model';
 import { nodeIdOf } from '../painter';
+import { ringBox } from '../geometry/rings';
 import { renderDiagramSvg } from '../static';
 import { DEMO_S } from '../testing/demoData';
-import { demoDiagram, demoDiffDiagram } from '../testing/demoScenes';
+import {
+  demoDiagram,
+  demoDiffDiagram,
+  DEMO_M_PERIMETER,
+  diffDiagramOf,
+  perimeterRemoved,
+} from '../testing/demoScenes';
 import { one, parseSvg as parse, renderDrawing as render } from '../testing/drawing';
 import {
   ADDED_WIDTH,
@@ -25,7 +35,13 @@ import {
   GHOST_DASH,
   GHOST_OPACITY,
   GHOST_STROKE_WIDTH,
+  OVERLAY_DASH,
+  OVERLAY_INSET,
+  OVERLAY_OPACITY,
+  OVERLAY_WIDTH,
+  PATH_CASING,
   RING_GAP,
+  zoneTintOf,
 } from '../theme/styles';
 import { PALETTES } from '../theme/tokens';
 import { addedPathData, changedDotCentre } from './marks';
@@ -110,6 +126,85 @@ describe.each(['light', 'dark'] as const)('the markers of a diff day, %s theme',
     );
     const texts = Array.from(ghost.getElementsByTagName('text')).map((text) => text.textContent);
     expect(texts).toEqual(['demo-data-1-scratch-1', 'removed']);
+  });
+});
+
+/** Demo M's day after its perimeter was removed, its perimeter focus at the folder level, as the app draws it. */
+async function perimeterModel(): Promise<DiagramModel> {
+  const [before, after] = await perimeterRemoved();
+  const spec = normalizeViewSpec({
+    snapshot: 'demo:M',
+    detail: 'folders',
+    focus: { kind: 'perimeter', params: { perimeter: 'data_perimeter' } },
+  });
+  return buildDiagramModel(diffDiagramOf(before, after, spec).input);
+}
+
+describe.each(['light', 'dark'] as const)('the ghost of an overlay zone, %s theme', (theme) => {
+  const palette = PALETTES[theme];
+  const { perimeter: PERIMETER, secured: SECURED } = DEMO_M_PERIMETER;
+
+  it('is drawn as an overlay: untinted, its header mark, the overlay’s dashes inside the red outline', async () => {
+    const model = await perimeterModel();
+    // The drawn day has no overlay: the earlier day's says what the ghost was.
+    expect(model.overlayZones.size).toBe(0);
+    expect(model.input.diff?.earlier[PERIMETER]?.overlay).toBe(true);
+    expect(model.diff?.overlays).toEqual([PERIMETER]);
+    const rect = model.input.layout.rects[PERIMETER];
+    if (rect === undefined) throw new Error('the perimeter’s ghost is not drawn');
+    expect(rect.role).toBe('zone');
+    const doc = render(model, { theme });
+    const ghost = one(doc, `.dg-ghost[data-ghost="${PERIMETER}"]`);
+    expect(ghost.getAttribute('data-reason')).toBe('removed');
+    // No tint: its body is what it lies on (the canvas), with its header mark at 50 %.
+    const body = one(ghost, 'g[opacity]');
+    expect(body.getAttribute('opacity')).toBe(String(GHOST_OPACITY));
+    expect(one(body, 'rect').getAttribute('fill')).toBe(palette.canvas);
+    expect(body.getElementsByTagName('use').length + body.getElementsByTagName('svg').length).toBe(1);
+    // The overlay's dashes, on their casing and canvas core, 4 px inside the ghost's border.
+    const inner = ringBox(rect, -OVERLAY_INSET);
+    const casing = one(ghost, '.dg-overlay-casing');
+    expect(casing.getAttribute('stroke')).toBe(palette.pathCasing);
+    expect(casing.getAttribute('stroke-width')).toBe(String(OVERLAY_WIDTH + 2 * PATH_CASING));
+    expect(one(ghost, '.dg-overlay-backing').getAttribute('stroke')).toBe(palette.canvas);
+    const dashes = one(ghost, '.dg-ghost-overlay');
+    expect(dashes.getAttribute('stroke')).toBe(palette.accentPath);
+    expect(dashes.getAttribute('stroke-opacity')).toBe(String(OVERLAY_OPACITY));
+    expect(dashes.getAttribute('stroke-dasharray')).toBe(OVERLAY_DASH);
+    expect(dashes.getAttribute('fill')).toBe('none');
+    for (const [name, value] of [
+      ['x', inner.x],
+      ['y', inner.y],
+      ['width', inner.width],
+      ['height', inner.height],
+    ] as const) {
+      expect(Number(dashes.getAttribute(name)), name).toBeCloseTo(value, 1);
+    }
+    // The removed accent on the border, painted over the rest.
+    const line = one(ghost, '.dg-ghost-line');
+    expect(line.getAttribute('stroke')).toBe(palette.accentRemoved);
+    expect(line.getAttribute('stroke-dasharray')).toBe(GHOST_DASH);
+    expect(Number(line.getAttribute('x'))).toBeCloseTo(rect.x, 1);
+    const order = Array.from(ghost.children).map((child) => child.getAttribute('class'));
+    expect(order.indexOf('dg-ghost-overlay')).toBeLessThan(order.indexOf('dg-ghost-line'));
+    expect(ghost.getElementsByTagName('title')[0]?.textContent).toMatch(
+      /^Removed since 2026-09-16: .*: data_perimeter\b/,
+    );
+  });
+
+  it('leaves the ghosts that were no overlay tinted, and adds the overlay’s row to the legend', async () => {
+    const model = await perimeterModel();
+    const doc = render(model, { theme });
+    const project = one(doc, `.dg-ghost[data-ghost="${SECURED}"]`);
+    expect(project.querySelector('.dg-ghost-overlay, .dg-overlay-casing')).toBeNull();
+    const rect = model.input.layout.rects[SECURED];
+    if (rect === undefined || rect.kind === 'card')
+      throw new Error('the secured project’s ghost is not drawn');
+    expect(one(project, 'g[opacity] rect').getAttribute('fill')).toBe(
+      palette.zone[zoneTintOf(rect.kind, rect.depth)].fill,
+    );
+    const rows = Array.from(doc.querySelectorAll('.dg-legend text')).map((text) => text.textContent);
+    expect(rows).toEqual(expect.arrayContaining(['secures — data_perimeter', 'removed since 2026-09-16']));
   });
 });
 

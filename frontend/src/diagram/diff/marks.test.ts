@@ -2,7 +2,8 @@
 /**
  * The timeline markers' painter (marks.ts; skill gcp-diagram-style §6): which rects get the added outline
  * (the outermost of an added subtree), the changed dot (changed nodes, and chips with changes inside) or are ghosts,
- * and where the outline and the dot go. The words they use are words.test.ts's.
+ * which ghosts are drawn as overlays (the earlier day's overlay zones), and where the outline and the dot go. The
+ * words they use are words.test.ts's.
  */
 import { layoutScene } from '@gcportrait/layout';
 import { describe, expect, it } from 'vitest';
@@ -80,6 +81,37 @@ describe('which rects get which marker', () => {
     expect(marks?.added).not.toContain('run/old');
     expect(marks?.changed).not.toContain('run/old');
     expect(marks?.totals).toEqual({ added: 4, removed: 3, changed: 2 });
+  });
+
+  it('draws the ghost of a zone the earlier day drew as the view’s overlay as an overlay, and no other', () => {
+    // A perimeter drawn around a project the day before, both removed, beside a folder that is still there.
+    const source = scene([
+      zone('perimeters/gone', 'product-container', 'data-perimeter', [
+        zone('projects/gone', 'project', 'Retail services', [card('run/gone', 'orders-api')]),
+      ]),
+      zone('folders/1', 'folder', 'Platform', [card('run/kept', 'storefront')]),
+    ]);
+    const earlier = (overlay: boolean, parent: string | null) =>
+      ({ kind: 'project', parent, overlay, collapsed: false, empty: false }) as const;
+    const diff: TickDiff = {
+      since: SINCE,
+      added: [],
+      removed: ['perimeters/gone', 'projects/gone', 'run/gone'],
+      changed: [],
+      ghosts: { 'perimeters/gone': 'removed', 'projects/gone': 'removed', 'run/gone': 'removed' },
+      earlier: {
+        'perimeters/gone': { ...earlier(true, null), kind: 'product-container' },
+        'projects/gone': earlier(false, 'perimeters/gone'),
+        // A zone that is no ghost, even one marked as an overlay, is drawn as the drawn day says.
+        'folders/1': { ...earlier(true, null), kind: 'folder' },
+      },
+      inside: {},
+    };
+    const marks = diffMarks(diff, layoutScene(source), '2026-10-08T00:00:00Z');
+    expect(marks?.overlays).toEqual(['perimeters/gone']);
+    expect(
+      diffMarks({ ...diff, earlier: {} }, layoutScene(source), '2026-10-08T00:00:00Z')?.overlays,
+    ).toEqual([]);
   });
 
   it('says whether the day compared with is earlier (since) or later (compared with)', () => {

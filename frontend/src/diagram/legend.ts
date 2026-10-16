@@ -80,9 +80,16 @@ export function securesLabel(model: DiagramModel, sources: readonly string[]): s
   return `secures — ${String(distinct.length)} policies`;
 }
 
-/** The sources of every `secures` overlay drawn: the policies' nodes, and a perimeter focus's overlay zones. */
+/**
+ * The sources of every `secures` overlay drawn: the policies' nodes, and a perimeter focus's overlay zones, a
+ * timeline day's ghost of one included.
+ */
 export function securesSources(model: DiagramModel): string[] {
-  return [...model.overlayEdges.map((edge) => edge.path.from), ...model.overlayZones];
+  return [
+    ...model.overlayEdges.map((edge) => edge.path.from),
+    ...model.overlayZones,
+    ...(model.diff?.overlays ?? []),
+  ];
 }
 
 /** The rows of a timeline day's markers drawn, naming the day compared with at the viewer's offset. */
@@ -151,9 +158,10 @@ export function composeLegend(model: DiagramModel, utcOffsetMinutes = 0): Legend
   for (const kind of RELATION_KIND_IDS) {
     if (kinds.has(kind)) rows.push({ type: 'relation', kind, label: relationLabel(kind) });
   }
-  if (model.overlayEdges.length > 0 || model.overlayZones.size > 0) {
+  const secures = securesSources(model);
+  if (secures.length > 0) {
     // A policy's name can be long; the row is cut at a card's widest and keeps the full name as its tooltip.
-    const full = securesLabel(model, securesSources(model));
+    const full = securesLabel(model, secures);
     const label = fitText(full, 400, LEGEND.fontSize, LEGEND_LABEL_MAX);
     rows.push(label === full ? { type: 'overlay', label } : { type: 'overlay', label, title: full });
   }

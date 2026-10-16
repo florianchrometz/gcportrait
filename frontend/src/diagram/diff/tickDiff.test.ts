@@ -3,9 +3,10 @@
 /**
  * The timeline diff of a drawn day (tickDiff.ts) on demo organisation S's history, worked out as the data
  * worker does: the diff is `diffSnapshots` of the two days, by name and order-independent; what the view drew the
- * day before and no longer draws comes back as ghosts in its old container, with the reason, and the zones the
- * ghosts depend on are listed as that day drew them; chips count what changed inside them; nothing changes when the
- * days are alike, and nothing is ghosted when the drill-in root moved.
+ * day before and no longer draws comes back as ghosts in its old container, with the reason, holding only what is
+ * gone (on demo M's two days with its perimeter removed, a project it secured that is still there, inside a chip,
+ * comes back with nothing), and the zones the ghosts depend on are listed as that day drew them; chips count what
+ * changed inside them; nothing changes when the days are alike, and nothing is ghosted when the drill-in root moved.
  */
 import { catalog } from '@gcportrait/catalog';
 import { buildGraph, buildSceneWithReport, diffSnapshots } from '@gcportrait/graph';
@@ -14,8 +15,14 @@ import { normalizeViewSpec, SceneSchema, type Snapshot, type ViewSpecInput } fro
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { DEMO_S } from '../testing/demoData';
-import { demoDayGraph, sceneEnv as env } from '../testing/demoScenes';
-import { parentsOf as parents, sceneZones } from '../testing/scenes';
+import {
+  demoDayGraph,
+  DEMO_M_PERIMETER,
+  perimeterRemoved,
+  sceneEnv as env,
+  type DemoDay,
+} from '../testing/demoScenes';
+import { parentsOf as parents, sceneZones, zoneOf } from '../testing/scenes';
 import { openView, tickDiff, type TickDiffInput } from './tickDiff';
 
 beforeAll(async () => {
@@ -204,6 +211,78 @@ describe('ghosts', () => {
     const { diff } = tickDiff(input);
     expect(diff.removed).toContain(network);
     expect(diff.ghosts).toEqual({});
+  });
+});
+
+describe('what a ghost holds', () => {
+  const { perimeter: PERIMETER, secured: SECURED, stillThere: STILL_THERE } = DEMO_M_PERIMETER;
+
+  /** The input of a diff between two days for a view, the drawn Scene built as the worker does. */
+  function pairInput(before: DemoDay, after: DemoDay, view: ViewSpecInput): TickDiffInput {
+    const spec = normalizeViewSpec(view);
+    const { scene, report } = buildSceneWithReport(after.graph, spec, catalog, env(after.snapshot));
+    return {
+      before,
+      after,
+      spec,
+      scene,
+      report,
+      catalog,
+      envBefore: env(before.snapshot),
+      envAfter: env(after.snapshot),
+    };
+  }
+
+  it('is only what is gone: a project the removed perimeter secured that is still there, inside a chip, comes back with nothing', async () => {
+    const [before, after] = await perimeterRemoved();
+    // Every zone open but those deeper than one asset zone. The earlier day drew the perimeter around its two
+    // projects, each open; the drawn day has no perimeter, so the view falls back to the organisation.
+    const input = pairInput(before, after, {
+      snapshot: 'demo:M',
+      detail: 'all',
+      filters: { depth: 1 },
+      focus: { kind: 'perimeter', params: { perimeter: 'data_perimeter' } },
+    });
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    expect(parents(earlier.scene).get(STILL_THERE)).toBe(PERIMETER);
+    expect(zoneOf(earlier.scene, STILL_THERE)?.collapsed).toBeUndefined();
+    // The project that is still there is not drawn on the drawn day: a chip holds it (its folder's, or one around).
+    expect(parents(input.scene).has(STILL_THERE)).toBe(false);
+    let holder = after.graph.containment.parent[STILL_THERE];
+    while (holder !== undefined && !parents(input.scene).has(holder)) {
+      holder = after.graph.containment.parent[holder];
+    }
+    expect(holder === undefined ? undefined : zoneOf(input.scene, holder)?.collapsed).toBeDefined();
+
+    const { scene, diff } = tickDiff(input);
+    expect(diff.ghosts).toMatchObject({ [PERIMETER]: 'removed', [SECURED]: 'removed' });
+    // Neither it nor anything in it is a ghost, nor anything else the drawn day still has.
+    expect(Object.hasOwn(diff.ghosts, STILL_THERE)).toBe(false);
+    expect(Object.hasOwn(diff.earlier, STILL_THERE)).toBe(false);
+    const removed = new Set(diff.removed);
+    for (const id of Object.keys(diff.ghosts)) expect(removed.has(id), id).toBe(true);
+    expect(zoneOf(scene, PERIMETER)?.children.map((child) => child.id)).toEqual([SECURED]);
+    expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + Object.keys(diff.ghosts).length);
+  });
+
+  it('brings back the region zones around what is gone, with the reason of the ghost around them', async () => {
+    // Demo S's reports project, marked for deletion, with region zones shown: what it held lies in its region.
+    const input = await inputOf('2026-09-16', '2026-09-17', { filters: { showRegions: true } });
+    const { scene, diff } = tickDiff(input);
+    expect(diff.ghosts[REPORTS_PROJECT]).toBe('hidden');
+    const project = zoneOf(scene, REPORTS_PROJECT);
+    const regions = sceneZones(project?.children ?? []).filter((zone) => zone.kind === 'region');
+    expect(regions.length).toBeGreaterThan(0);
+    for (const region of regions) {
+      // No asset, so not in the diff: the ghost around it gives its reason, and it holds what was removed.
+      expect(diff.removed, region.id).not.toContain(region.id);
+      expect(diff.ghosts[region.id], region.id).toBe('hidden');
+      expect(region.children.length, region.id).toBeGreaterThan(0);
+      for (const child of region.children) {
+        const zone = child.type === 'zone' && child.kind === 'region';
+        expect(diff.ghosts[child.id], child.id).toBe(zone ? 'hidden' : 'removed');
+      }
+    }
   });
 });
 

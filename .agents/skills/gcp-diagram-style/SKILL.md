@@ -185,8 +185,10 @@ tint; §10 gives each token its contrast figure.
   As drawn: the outline 2 px, centred 8 px outside the node, between 2 px `canvas` gaps (the selection
   ring's construction), on the outermost node of an added subtree only; the ghost's *body* (fill and icon) at
   50 %, its label in the readable grey of that body, its dashed outline (1.5 px, `5 3`) at full strength on a
-  `canvas` band 1 px wider each side (at 50 % the red is below 3 : 1 on the canvas); the dot centred on the
-  rounded top-right corner on a `pathCasing` disc 1 px wider; a chip holding a change gets the dot. Each
+  `canvas` band 1 px wider each side (at 50 % the red is below 3 : 1 on the canvas); the ghost of a zone the
+  earlier day drew as the view's overlay (a perimeter around its projects) untinted, as the overlay was, with
+  the overlay's dashed outline (§5) 4 px inside the red one and the legend's `secures` row; the dot centred on
+  the rounded top-right corner on a `pathCasing` disc 1 px wider; a chip holding a change gets the dot. Each
   legend row only while its marker is drawn ("added since 2026-09-07"; "compared with" when the day compared
   with is later).
 

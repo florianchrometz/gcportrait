@@ -11,7 +11,8 @@
  *   chip that holds something the view would draw that changed, was added or was removed (it says what in its
  *   name).
  * - **Removed**: the ghosts the data worker put into the Scene, drawn where the layout placed them (their old
- *   place among their siblings); never interactive.
+ *   place among their siblings); never interactive. A ghost of a zone the earlier day drew as the view's overlay (a
+ *   perimeter drawn around its projects; the diff's `earlier`) is drawn as an overlay, untinted with its dashes.
  *
  * The markers last as long as the day does: the next day is compared with this one.
  */
@@ -34,6 +35,8 @@ export interface DiffMarks {
   readonly changed: readonly string[];
   /** Ghost rects and why each is one, in paint order. */
   readonly ghosts: ReadonlyMap<string, GhostReason>;
+  /** The ghosts of zones the earlier day drew as the view's overlay, drawn as overlays, in paint order. */
+  readonly overlays: readonly string[];
   /** Drawn nodes that were added or changed themselves (an added subtree's every node): their names say so. */
   readonly status: ReadonlyMap<string, 'added' | 'changed'>;
   /** Chips' counts of what changed inside them. */
@@ -51,6 +54,7 @@ export function diffMarks(diff: TickDiff | undefined, layout: Layout, readTime: 
   const added = new Set(diff.added);
   const changed = new Set(diff.changed);
   const ghosts = new Map<string, GhostReason>();
+  const overlays: string[] = [];
   const outlined: string[] = [];
   const dotted: string[] = [];
   const status = new Map<string, 'added' | 'changed'>();
@@ -59,6 +63,7 @@ export function diffMarks(diff: TickDiff | undefined, layout: Layout, readTime: 
     const ghost = Object.hasOwn(diff.ghosts, id) ? diff.ghosts[id] : undefined;
     if (ghost !== undefined) {
       ghosts.set(id, ghost);
+      if (Object.hasOwn(diff.earlier, id) && diff.earlier[id]?.overlay === true) overlays.push(id);
       continue;
     }
     if (added.has(id)) {
@@ -77,6 +82,7 @@ export function diffMarks(diff: TickDiff | undefined, layout: Layout, readTime: 
     added: outlined,
     changed: dotted,
     ghosts,
+    overlays,
     status,
     inside,
     totals: { added: diff.added.length, removed: diff.removed.length, changed: diff.changed.length },

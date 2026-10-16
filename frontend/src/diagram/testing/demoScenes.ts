@@ -4,7 +4,8 @@
  * CAI NDJSON → ingest), the graph and Scene builders with the compiled catalog at the default 1280×800 rect
  * budget, and the layout. Synchronous parts are cached per organisation; nothing here touches a DOM. A day of an
  * organisation's history is read as the data worker reads it (timeline/worker/replay.ts), and a day compared with
- * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts). For the tests that
+ * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts), also for a two-day pair
+ * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`). For the tests that
  * only need the scene builder: the builder's environment for a snapshot (`sceneEnv`), and a demo Graph built
  * synchronously straight from the generator (`demoGraphSync`). Demo data without a Scene is in demoData.ts.
  */
@@ -14,6 +15,7 @@ import { buildGraph, buildSceneWithReport, DEFAULT_VIEWPORT_BUDGET } from '@gcpo
 import { layoutScene, type Layout } from '@gcportrait/layout';
 import {
   normalizeViewSpec,
+  type Asset,
   type DemoSize,
   type DetailLevel,
   type Graph,
@@ -21,10 +23,11 @@ import {
   type SceneEnv,
   type SceneReport,
   type Snapshot,
+  type ViewSpec,
 } from '@gcportrait/model';
 
 import { historySnapshot } from '../../timeline/worker/replay';
-import { tickDiff } from '../diff/tickDiff';
+import { tickDiff, type DiffDayData } from '../diff/tickDiff';
 import type { TickDiff } from '../diff/types';
 import { diagramIcons } from '../iconTable';
 import type { DiagramInput } from '../model';
@@ -135,6 +138,43 @@ export interface DemoDiffDiagram extends DemoDiagram {
   readonly diff: TickDiff;
 }
 
+/** A day as the data worker holds it for a diff, with the console links of its assets. */
+export type DiffDay = DiffDayData & { readonly console: ConsoleSource };
+
+/**
+ * Day `after` for a view, compared with day `before` as if that day had been on screen before: its Scene with the
+ * ghosts, its layout and its diff, as the app would draw it.
+ */
+export function diffDiagramOf(before: DiffDay, after: DiffDay, spec: ViewSpec): DemoDiffDiagram {
+  const built = buildSceneWithReport(after.graph, spec, catalog, sceneEnv(after.snapshot));
+  const { scene, diff } = tickDiff({
+    before,
+    after,
+    spec,
+    scene: built.scene,
+    report: built.report,
+    catalog,
+    envBefore: sceneEnv(before.snapshot),
+    envAfter: sceneEnv(after.snapshot),
+  });
+  const layout = layoutScene(scene);
+  return {
+    input: {
+      scene,
+      layout,
+      lensTitle: catalog.lenses[spec.lens].title,
+      overlayZones: built.report.overlays.map((overlay) => overlay.zone),
+      icons: diagramIcons(scene),
+      zoneTypes: zoneTypeNames(scene, after.graph),
+      consoleLinks: consoleLinks(scene, after.console),
+      diff,
+    },
+    report: built.report,
+    layout,
+    diff,
+  };
+}
+
 /**
  * Day `day` of a demo organisation for a lens and detail level, compared with day `since` as if that day had been
  * on screen before: its Scene with the ghosts, its layout and its diff, as the app would draw it.
@@ -148,33 +188,58 @@ export async function demoDiffDiagram(
 ): Promise<DemoDiffDiagram> {
   const [before, after] = await Promise.all([demoDayGraph(size, since), demoDayGraph(size, day)]);
   const history = demoHistory(size);
-  const spec = normalizeViewSpec({ snapshot: `demo:${size}`, lens, detail });
-  const built = buildSceneWithReport(after.graph, spec, catalog, sceneEnv(after.snapshot));
   const tickOf = (at: string): { tick?: string } => (at === history.today ? {} : { tick: at });
-  const { scene, diff } = tickDiff({
-    before: { snapshot: before.snapshot, graph: before.graph, ...tickOf(since) },
-    after: { snapshot: after.snapshot, graph: after.graph, ...tickOf(day) },
-    spec,
-    scene: built.scene,
-    report: built.report,
-    catalog,
-    envBefore: sceneEnv(before.snapshot),
-    envAfter: sceneEnv(after.snapshot),
-  });
-  const layout = layoutScene(scene);
-  return {
-    input: {
-      scene,
-      layout,
-      lensTitle: catalog.lenses[lens].title,
-      overlayZones: built.report.overlays.map((overlay) => overlay.zone),
-      icons: diagramIcons(scene),
-      zoneTypes: zoneTypeNames(scene, after.graph),
-      consoleLinks: consoleLinks(scene, after.console),
-      diff,
-    },
-    report: built.report,
-    layout,
-    diff,
+  return diffDiagramOf(
+    { ...before, ...tickOf(since) },
+    { ...after, ...tickOf(day) },
+    normalizeViewSpec({ snapshot: `demo:${size}`, lens, detail }),
+  );
+}
+
+/** A day of demo M's history, or one made from it, as the data worker holds it, with its tick. */
+export type DemoDay = DiffDay & { readonly tick: string };
+
+/** Demo M's day `day` (`YYYY-MM-DD`), as the data worker holds it, with its tick. */
+export async function demoMDay(day: string): Promise<DemoDay> {
+  return { ...(await demoDayGraph('M', day)), tick: day };
+}
+
+/**
+ * Demo M's day 2026-09-16 and a next day, 2026-09-17, made of its assets as `change` leaves them: a two-day pair
+ * the demo history does not have.
+ */
+export async function demoMNextDay(
+  change: (graph: Graph, assets: readonly Asset[]) => Asset[],
+): Promise<readonly [DemoDay, DemoDay]> {
+  const before = await demoMDay('2026-09-16');
+  const snapshot: Snapshot = {
+    ...before.snapshot,
+    readTime: '2026-09-17T00:00:00Z',
+    assets: change(before.graph, before.snapshot.assets),
   };
+  const after = { snapshot, graph: buildGraph(snapshot, catalog), console: consoleSource(snapshot) };
+  return [before, { ...after, tick: '2026-09-17' }];
+}
+
+/** Demo M's perimeter and the two projects it secures (a perimeter focus draws it around them as an overlay). */
+export const DEMO_M_PERIMETER = {
+  perimeter:
+    '//accesscontextmanager.googleapis.com/accessPolicies/40000000001/servicePerimeters/data_perimeter',
+  /** Retail services (`demo-svc-1`), which `perimeterRemoved` removes with the perimeter, with all it holds. */
+  secured: '//cloudresourcemanager.googleapis.com/projects/10000000011',
+  /** The data project (`demo-data-1`), which is still there the next day, in its folder. */
+  stillThere: '//cloudresourcemanager.googleapis.com/projects/10000000012',
+} as const;
+
+/**
+ * Demo M's perimeter removed between two days (`demoMNextDay`), and with it Retail services, one of the two
+ * projects it secures, with everything in it; the other one, the data project, is still there.
+ */
+export function perimeterRemoved(): Promise<readonly [DemoDay, DemoDay]> {
+  return demoMNextDay((_graph, assets) =>
+    assets.filter(
+      (asset) =>
+        asset.name !== DEMO_M_PERIMETER.perimeter && !asset.ancestors.includes('projects/10000000011'),
+    ),
+  );
 }

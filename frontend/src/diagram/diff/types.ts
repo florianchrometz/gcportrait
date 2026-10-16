@@ -32,9 +32,9 @@ export interface DiffCounts {
 
 /**
  * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden`: it changed so
- * that the view no longer draws it, like a project marked for deletion. Inside a ghost, what neither was removed
- * nor changed (a region of a removed project, an untouched asset of a project marked for deletion) takes the reason
- * of the ghost around it.
+ * that the view no longer draws it, like a project marked for deletion. Inside a ghost only what was removed comes
+ * back, and the zones that are no asset around it (a region of a removed project) take the reason of the ghost
+ * around them; an asset still there on the drawn day is never a ghost inside another.
  */
 export type GhostReason = 'removed' | 'hidden';
 
@@ -48,7 +48,10 @@ export interface EarlierZone {
   readonly kind: ZoneKind;
   /** The zone it lay in (null: the canvas). */
   readonly parent: string | null;
-  /** The view's overlay zone there (a perimeter drawn around its projects): open at every level. */
+  /**
+   * The view's overlay zone there (a perimeter drawn around its projects): open at every level, and its ghost is
+   * drawn as an overlay (diff/marks.ts).
+   */
   readonly overlay: boolean;
   /** Drawn as a chip. */
   readonly collapsed: boolean;

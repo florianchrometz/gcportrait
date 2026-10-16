@@ -10,21 +10,28 @@
  *   earlier day too, at the detail level the drawn Scene uses and with the same flips, and every node it drew there
  *   that the drawn Scene does not draw, and that was removed or changed (a project marked for deletion is changed,
  *   and the view no longer draws it or anything in it), goes back into the drawn Scene in its old container, with
- *   whatever it held then that is not drawn now. The layout then places it among its siblings by the same order
- *   it placed it the day before (zones before cards, then by label), so it lands where it was and nothing overlaps
- *   it. A ghost needs its container: one whose container is not drawn as an open zone now (gone, or collapsed into
- *   a chip) gets none; a chip counts it instead (below). The ghosts keep their ids: a removed asset is in no Graph
- *   of the drawn day, so no id is drawn twice.
+ *   what it held then that is gone now. The layout then places it among its siblings by the same order it placed it
+ *   the day before (zones before cards, then by label), so it lands where it was and nothing overlaps it. A ghost
+ *   needs its container: one whose container is not drawn as an open zone now (gone, or collapsed into a chip) gets
+ *   none; a chip counts it instead (below). The ghosts keep their ids: a removed asset is in no Graph of the drawn
+ *   day, so no id is drawn twice.
+ * - **What a ghost holds** is only what is gone: the assets the diff found removed (absent from the drawn day's
+ *   snapshot), and the zones that are no asset (a region or zone, a bundle) around them (a closed one unless the
+ *   drawn day's Graph still holds it). An asset still there on the drawn day never comes back inside a ghost,
+ *   whatever that day's Scene draws of it (drawn elsewhere, held by a chip, left out by the lens or the filters): a
+ *   perimeter removed between the days takes none of the projects it secured that are still there, wherever the
+ *   drawn day puts them.
  * - **What the ghosts depend on** (`TickDiff.earlier`): every ghost zone and every zone around a ghost on the earlier
- *   day, up to the canvas, with its container, whether it was the view's overlay there and the state it was drawn
- *   in. The disclosure buttons judge by these whether a press keeps the ghosts, since the drawn day may hold such a
- *   zone elsewhere, or not hold the perimeter whose overlay it was.
+ *   day, up to the canvas, with its container, whether it was the view's overlay there (the drawing draws such a
+ *   ghost as an overlay, diff/marks.ts) and the state it was drawn in. The disclosure buttons judge by these whether
+ *   a press keeps the ghosts, since the drawn day may hold such a zone elsewhere, or not hold the perimeter whose
+ *   overlay it was.
  * - **Inside chips:** what a collapsed zone holds is not drawn, so a chip counts the added, removed and changed
  *   nodes inside it that the view would draw were it open (the view built with every zone open: detail `all`, no
  *   flips, no `depth` filter; on the drawn day for added and changed nodes, on the earlier day for removed ones).
  *   The extra builds happen only when the Scene has a chip and the days differ.
  */
-import { buildSceneWithReport, diffSnapshots } from '@gcportrait/graph';
+import { BUNDLE_ID_PREFIX, buildSceneWithReport, diffSnapshots, isVirtualNode } from '@gcportrait/graph';
 import {
   normalizeViewSpec,
   type Catalog,
@@ -108,6 +115,11 @@ export function hasChip(scene: Scene): boolean {
 
 function isOpenZone(node: SceneNode | undefined): boolean {
   return node?.type === 'zone' && node.collapsed === undefined;
+}
+
+/** Whether a Scene node is an asset: not one of the builder's virtual regions and zones, nor a bundle. */
+function isAsset(id: string): boolean {
+  return !isVirtualNode(id) && !id.startsWith(BUNDLE_ID_PREFIX);
 }
 
 function compare(a: string, b: string): number {
@@ -228,17 +240,29 @@ function ghostsOf(
       empty: node.collapsed === undefined && node.children.length === 0,
     });
   };
-  // Removed is removed; a changed node the view no longer draws is hidden; anything else inside a ghost (a region
-  // of a removed project, an asset that did not change in a project marked for deletion) is what its ghost is.
-  const ghost = (node: SceneNode, around: GhostReason): SceneNode => {
-    const reason: GhostReason = removed.has(node.id) ? 'removed' : changed.has(node.id) ? 'hidden' : around;
+  // A ghost with what comes back inside it.
+  const ghost = (node: SceneNode, reason: GhostReason): SceneNode => {
     reasons.set(node.id, reason);
     if (node.type === 'card') return node;
     keep(node);
-    return {
-      ...node,
-      children: node.children.filter((child) => gone(child.id)).map((child) => ghost(child, reason)),
-    };
+    return { ...node, children: node.children.flatMap((child) => inside(child, reason)) };
+  };
+  // What a child of a ghost on the earlier day comes back as inside it (nothing, or itself): a removed asset as a
+  // removed ghost; an asset still there on the drawn day never, wherever that day draws it, or whether it does; a
+  // zone that is no asset with the reason of the ghost around it, when it holds something that comes back (an open
+  // one) or the drawn day's Graph holds no such zone any more (a chip, whose contents the Scene leaves out).
+  const inside = (child: SceneNode, around: GhostReason): SceneNode[] => {
+    if (!gone(child.id)) return [];
+    if (removed.has(child.id)) return [ghost(child, 'removed')];
+    if (child.type !== 'zone' || isAsset(child.id)) return [];
+    if (child.collapsed !== undefined) {
+      return Object.hasOwn(input.after.graph.nodes, child.id) ? [] : [ghost(child, around)];
+    }
+    const children = child.children.flatMap((grandchild) => inside(grandchild, around));
+    if (children.length === 0) return [];
+    reasons.set(child.id, around);
+    keep(child);
+    return [{ ...child, children }];
   };
   for (const [id, node] of then.nodes) {
     if (!gone(id) || !(removed.has(id) || changed.has(id))) continue;
