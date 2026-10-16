@@ -146,20 +146,6 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
   completes); crossing the phone's breakpoint (turning a phone) mounts the view controls again, so a search text
   not yet sent is lost.
 
-- **Expand all enabled with nothing to do.** When the only flip it would drop names a zone drawn empty under the
-  current lens or filters, the scene builder ignores that flip but `expandAllView` still offers a view; make the
-  button inert there too (`frontend/src/diagram/disclosure/flips.ts`).
-- **Export dropped on the Connect page: ask before storing.** The large-snapshot question comes after the worker
-  stored the import, so Cancel leaves a stored, undrawn copy and dropping the files again stores a second one;
-  ask between counting and storing, as the live pull does (`frontend/src/import/`).
-
-- **Detail control on a 375 px phone.** In the View sheet the segmented control wraps "All" onto a second line and
-  that segment keeps its left divider, so a stray vertical line shows at the start of the wrapped row
-  (`frontend/src/ui/SegmentedControl.module.css`).
-- **Snapshots tables on phones.** The tables scroll sideways inside their own boxes (a 718 px table in a 286 to
-  396 px box); focus brings each button into view, but reading a row means scrolling sideways. A list per row at
-  phone widths, as the Permissions page now does, would read better (`frontend/src/snapshots/`).
-
 ## 6. Performance
 
 Against the app's targets in the [layout skill](../.agents/skills/gcp-diagram-layout/SKILL.md), §7:
