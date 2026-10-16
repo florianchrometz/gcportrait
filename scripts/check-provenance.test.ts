@@ -786,6 +786,16 @@ describe('check-provenance', () => {
     );
   });
 
+  it('skips a .git file at the root, as a linked work tree or a submodule has one', () => {
+    // A linked work tree's `.git` is a file naming the git directory, not a directory: VCS data either way,
+    // never a source file that needs a header.
+    tree.write('.git', `gitdir: ${path.join(tree.root, '..', 'repo', '.git', 'worktrees', 'topic')}\n`);
+    const result = check();
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('provenance: OK. 14 files scanned');
+  });
+
   it('reports symbolic links instead of following them', () => {
     // The link targets live under node_modules/, which the walker skips; only the links themselves are
     // visible.

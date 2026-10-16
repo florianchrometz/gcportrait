@@ -52,7 +52,8 @@ export const ASSISTANT_FILE_NAMES = Object.freeze([
 /**
  * Directory names that are never walked, wherever they occur: VCS data, and the directories .gitignore
  * ignores at any depth (installed dependencies, coverage reports, tool caches, the assistants' own folders).
- * Keep this list in step with the unanchored directory entries of .gitignore.
+ * Keep this list in step with the unanchored directory entries of .gitignore. `.git` is skipped as a file
+ * too: in a linked work tree and in a submodule it is a file that names the git directory.
  */
 export const SKIPPED_DIR_NAMES = Object.freeze([
   '.git',
@@ -425,6 +426,8 @@ export function listRepoFiles(root) {
     );
     for (const entry of entries) {
       const relPath = relDir === '' ? entry.name : `${relDir}/${entry.name}`;
+      // VCS data, whether a directory or a linked work tree's or a submodule's file naming the git directory.
+      if (entry.name === '.git') continue;
       if (entry.isSymbolicLink()) {
         if (isSkippedDir(relPath, entry.name)) continue;
         files.push({ absPath: path.join(root, relPath), relPath, isSymlink: true });
