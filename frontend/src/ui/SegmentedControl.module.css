@@ -57,17 +57,60 @@
   cursor: not-allowed;
 }
 
-/* A phone or a tablet: every segment a 44-pixel target, the segments wrapping onto a second line where the row is too
-   narrow for them. */
+/*
+ * A phone or a tablet: every segment a 44-pixel target, the segments wrapping onto more rows where one row is too narrow
+ * for them. Where a row breaks depends on the width and the labels, and no selector names the segment that starts a row
+ * or the segments on the group's corners, so nothing here depends on it:
+ * - the dividers are the group's outline colour showing through 1-pixel gaps between opaque segments; a gap lies only
+ *   between two segments, so a wrapped row starts without a line at its left and has a hairline above it;
+ * - the segments of a wrapped row share its width, so no row ends in a patch of divider colour;
+ * - the group clips its segments to its rounded corners, wherever they fall.
+ * That clip would cut off a focus ring drawn around a segment, so here the ring lies inside it: 2 px primary at its edge,
+ * then the 2 px surface gap (§9). A control that fits on one row looks as it does on a desktop, 44 px tall, and keeps
+ * its width; separate, spaced segments would need no dividers, but they are wider than a row of joined ones, which a
+ * phone's timeline bar has no room for.
+ */
 @media (max-width: 79.99rem) {
   .group {
     flex-wrap: wrap;
+    gap: 1px;
     height: auto;
+    overflow: clip;
+    background: var(--color-outline);
+    background-clip: padding-box;
   }
 
   .segment {
+    flex: 1 1 auto;
     justify-content: center;
     min-width: var(--control-height);
     min-height: var(--control-height);
+    background: var(--color-surface);
+  }
+
+  .segment + .segment {
+    border-left: 0;
+  }
+
+  .segment:first-child,
+  .segment:last-child {
+    border-radius: 0;
+  }
+
+  .segment:focus-visible {
+    outline: var(--focus-ring-width) solid transparent;
+    outline-offset: calc(-1 * var(--focus-ring-width));
+    box-shadow:
+      inset 0 0 0 var(--focus-ring-width) var(--color-primary),
+      inset 0 0 0 calc(var(--focus-ring-width) + var(--focus-ring-gap)) var(--color-surface);
+  }
+
+  /* Forced colours give the group and its segments the same background, which hides the gaps: there the dividers are
+     the segments' outlines, which lie in the gaps (and on the group's border, where the clip hides them), and a focused
+     segment's ring is its transparent outline, which forced colours make visible. */
+  @media (forced-colors: active) {
+    .segment {
+      outline: 1px solid;
+    }
   }
 }

@@ -34,6 +34,8 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  *   readout; each button and radio button), or one leaves the bar;
  * - the details drawer, or anything in it that no box inside it scrolls, reaches past the canvas it lies over (onto the
  *   top bar, the timeline bar or the footer);
+ * - a segmented control's segment that starts a row (the Detail control wrapped in the View sheet) draws a border at its
+ *   left, a stray divider beside the group's outline;
  * - a target (a link or button that is not inline text, a field that is not in a line of code, a slider thumb, a menu
  *   item, an option, a radio button, a splitter, a <summary>; a checkbox or radio input by its label) is smaller than
  *   44 × 44 CSS pixels;
@@ -415,6 +417,33 @@ function layoutProblems(page: Page): Promise<string[]> {
         if (over.length > 0)
           problems.push(`the timeline bar's parts overlap: ${[...new Set(over)].slice(0, 4).join('; ')}`);
       }
+
+      // A segmented control (ui/SegmentedControl, a radio group) wraps its segments onto more rows where one row is too
+      // narrow for them: a segment that starts a row, its left edge on the group's inner left edge, draws no border at
+      // its left, which would stand there as a stray divider beside the group's own outline. (Its size is a target's,
+      // checked below.)
+      const strayDividers: string[] = [];
+      for (const group of document.querySelectorAll('[role="radiogroup"]')) {
+        if (!shown(group)) continue;
+        const label = document.getElementById(group.getAttribute('aria-labelledby') ?? '')?.textContent;
+        const inner = group.getBoundingClientRect().left + group.clientLeft;
+        for (const segment of group.querySelectorAll('[role="radio"]')) {
+          if (!shown(segment) || Math.abs(segment.getBoundingClientRect().left - inner) > 0.5) continue;
+          const style = getComputedStyle(segment);
+          const drawn =
+            parseFloat(style.borderLeftWidth) > 0 &&
+            !['none', 'hidden'].includes(style.borderLeftStyle) &&
+            !/^(transparent|rgba\(.*,\s*0\))$/.test(style.borderLeftColor);
+          if (drawn)
+            strayDividers.push(
+              `${name(segment)} of ${label === undefined ? name(group) : `"${label}"`} (${style.borderLeftWidth} ${style.borderLeftStyle})`,
+            );
+        }
+      }
+      if (strayDividers.length > 0)
+        problems.push(
+          `${String(strayDividers.length)} segment(s) start a row with a divider at their left: ${strayDividers.slice(0, 4).join('; ')}`,
+        );
 
       const TARGETS = [
         'a[href]',

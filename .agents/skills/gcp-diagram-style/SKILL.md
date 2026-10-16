@@ -219,6 +219,10 @@ Dark: `primary #8AB4F8`, `on-primary #062E6F`, `surface #1F1F1F`, `surface-conta
 `on-surface #E8EAED`, `on-surface-variant #9AA0A6`, `outline #5F6368`, `error #F28B82`.
 Focus ring: 2 px `primary` with 2 px `surface` gap. Controls 32 px tall, 8 px radius, 13 px text; on a phone or a
 tablet (narrower than 80rem) 44 px tall, and every other target at least 44 × 44 px (`--touch-target`).
+A segmented control there wraps its segments onto rows that fill its width, divided by 1 px gaps in `outline`
+(never a segment's own border, which would stand alone at the start of a wrapped row), and clips them to its
+rounded corners, so its focused segment carries the ring inside its edge: 2 px `primary`, then the 2 px
+`surface` gap.
 On the diagram canvas the ring is the diagram token `focus` with 2 px `canvas` gaps, kept at least 2 px on screen
 at any zoom: dark `#8AB4F8` (the dark `primary`), light `focus #185ABC` (Google Blue 800), because the
 light `primary` reaches only 2.62 : 1 against the light project tint a focused card's ring lies on and
