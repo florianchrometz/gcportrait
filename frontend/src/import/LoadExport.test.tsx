@@ -2,11 +2,13 @@
 import { generateOrganization, toCaiNdjson } from '@gcportrait/demo-data';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState, type ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { signedInSession } from '../auth/testing';
 import { SIGNED_OUT_SESSION } from '../auth/types';
-import { fakeLibrary, storedRecord } from '../snapshots/testing';
+import { fakeLibrary, storedRecord, type FakeLibrary } from '../snapshots/testing';
+import type { StoredSnapshot } from '../storage/db';
 import type { ConnectSlice } from '../state';
 import { expectNoAxeViolations } from '../test/axe';
 import { stubBackend } from '../test/backend';
@@ -31,6 +33,21 @@ const SIGNED_IN: Partial<ConnectSlice> = { session: signedInSession(), scope: nu
 
 function readButton(): HTMLElement {
   return screen.getByRole('button', { name: 'Read from Cloud Storage' });
+}
+
+/** The words of a dialog (its accessible description). */
+function descriptionOf(dialog: HTMLElement): string {
+  return document.getElementById(dialog.getAttribute('aria-describedby') ?? '')?.textContent ?? '';
+}
+
+/** Drops export.json on the card; the import reads it into `records` (the worker's answer), with `warnings`. */
+async function drop(
+  library: FakeLibrary,
+  records: readonly StoredSnapshot[],
+  warnings: readonly string[] = [],
+): Promise<void> {
+  await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
+  await act(() => library.answer({ ok: { refs: records.map((record) => record.id), records, warnings } }));
 }
 
 beforeEach(() => {
@@ -202,42 +219,115 @@ describe('Load export', () => {
     await expectNoAxeViolations();
   });
 
-  it('asks before drawing a large export it read from files; Cancel keeps it stored and undrawn', async () => {
+  it('asks before storing a large export read from files; Cancel stores nothing, and the files ask again', async () => {
     const library = fakeLibrary();
     const { container } = renderImport(<LoadExport />, { connect: SIGNED_IN, library });
-    await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
     const record = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0C', { source: 'export', assetCount: 12_345 });
-    await act(() => library.answer({ ok: { refs: [record.id], records: [record], warnings: [] } }));
+    await drop(library, [record]);
     const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
-    expect(document.getElementById(dialog.getAttribute('aria-describedby') ?? '')?.textContent).toMatch(
-      /^This snapshot has 12,345 assets\. /,
-    );
+    expect(descriptionOf(dialog)).toMatch(/^This snapshot has 12,345 assets\. /);
+    // Asked once the files are read, before anything is stored.
+    expect(library.records.size).toBe(0);
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByText('Cancelled. Nothing was stored.')).toBeDefined();
     expect(currentLocation(container)).toBe('/');
-    expect(
-      await screen.findByText(
-        'The snapshot of 12,345 assets is stored in this browser and was not drawn; Load it from the Snapshots ' +
-          'page to draw it.',
-      ),
-    ).toBeDefined();
-    // Stored once, never imported again.
-    expect(library.calls).toEqual(['importFiles export.json']);
-    expect(library.records.has(record.id)).toBe(true);
+    expect(library.records.size).toBe(0);
+    // The same files dropped again ask again, and Escape stores nothing either.
+    await drop(library, [record]);
+    await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+    expect(await screen.findByText('Cancelled. Nothing was stored.')).toBeDefined();
+    expect(library.records.size).toBe(0);
+    expect(library.calls).toEqual(['importFiles export.json', 'importFiles export.json']);
+    expect(currentLocation(container)).toBe('/');
   });
 
-  it('opens a large export once the person says so, after its notes too', async () => {
+  it('stores a large export once "Draw it anyway" is pressed, and opens it after its notes without asking again', async () => {
     const library = fakeLibrary();
     const { container } = renderImport(<LoadExport />, { connect: SIGNED_IN, library });
-    await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
     const record = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0D', { source: 'export', assetCount: 12_345 });
     const note = 'The export does not say when it was taken, so its read time is the latest asset change.';
-    await act(() => library.answer({ ok: { refs: [record.id], records: [record], warnings: [note] } }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Open the diagram' }));
-    const dialog = screen.getByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    await drop(library, [record], [note]);
+    const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    expect(library.records.size).toBe(0);
     await userEvent.click(within(dialog).getByRole('button', { name: 'Draw it anyway' }));
+    expect(await screen.findByText(note)).toBeDefined();
+    expect([...library.records.keys()]).toEqual([record.id]);
+    await userEvent.click(screen.getByRole('button', { name: 'Open the diagram' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
     await waitFor(() => {
       expect(currentLocation(container)).toBe(`/diagram#snapshot=${record.id}`);
     });
+    expect([...library.records.keys()]).toEqual([record.id]);
+  });
+
+  it('asks about the snapshot several files open, the last: Cancel stores none of them', async () => {
+    const library = fakeLibrary();
+    const { container } = renderImport(<LoadExport />, { connect: SIGNED_IN, library });
+    const small = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0E', { source: 'export', assetCount: 952 });
+    const large = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0F', { source: 'export', assetCount: 12_345 });
+    await drop(library, [small, large]);
+    const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    expect(descriptionOf(dialog)).toMatch(/^This snapshot has 12,345 assets\. /);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByText('Cancelled. Nothing was stored.')).toBeDefined();
+    expect(library.records.size).toBe(0);
+    // A large snapshot the files do not open is stored undrawn without a question (its Load asks), as the
+    // Snapshots page's import stores it.
+    await drop(library, [large, small]);
+    await waitFor(() => {
+      expect(currentLocation(container)).toBe(`/diagram#snapshot=${small.id}`);
+    });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect([...library.records.keys()].sort()).toEqual([small.id, large.id]);
+  });
+
+  it('does not ask again in this session once the box was ticked', async () => {
+    const library = fakeLibrary();
+    const { container } = renderImport(<LoadExport />, { connect: SIGNED_IN, library });
+    const first = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0G', { source: 'export', assetCount: 12_345 });
+    await drop(library, [first]);
+    const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Do not ask again in this session' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Draw it anyway' }));
+    await waitFor(() => {
+      expect(currentLocation(container)).toBe(`/diagram#snapshot=${first.id}`);
+    });
+    // The next large export is stored and opened at once.
+    const second = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0H', { source: 'export', assetCount: 23_456 });
+    await drop(library, [second]);
+    await waitFor(() => {
+      expect(currentLocation(container)).toBe(`/diagram#snapshot=${second.id}`);
+    });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect([...library.records.keys()].sort()).toEqual([first.id, second.id]);
+  });
+
+  it('takes the question back when the card leaves the page, and stores nothing', async () => {
+    const library = fakeLibrary();
+    const leave: { current: () => void } = { current: () => undefined };
+    function Leaving(): ReactElement | null {
+      const [shown, setShown] = useState(true);
+      leave.current = () => {
+        setShown(false);
+      };
+      return shown ? <LoadExport /> : null;
+    }
+    renderImport(<Leaving />, { connect: SIGNED_IN, library });
+    const record = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0J', { source: 'export', assetCount: 12_345 });
+    await drop(library, [record]);
+    await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
+    act(() => {
+      leave.current();
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+    await act(() => Promise.resolve());
+    expect(library.records.size).toBe(0);
   });
 
   it('asks while a Cloud Storage read passes 10 000 assets; Cancel stops reading it', async () => {

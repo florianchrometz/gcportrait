@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
  * A snapshot library for the page tests: records in memory, every call logged, and the jobs answered by the
- * test (`answer`) so it can look at the page while one runs. Nothing is generated, compressed or parsed (jsdom's
- * Blob cannot stream); the worker, the codec and IndexedDB are tested on their own (library.test.ts).
+ * test (`answer`) so it can look at the page while one runs; an import's answer is stored once its `confirm`, if
+ * it has one, says yes. Nothing is generated, compressed or parsed (jsdom's Blob cannot stream); the worker, the
+ * codec and IndexedDB are tested on their own (library.test.ts).
  */
 import type { DemoSize, SnapshotRef } from '@gcportrait/model';
 
@@ -102,6 +103,13 @@ export function fakeLibrary(
       const at = importOptions?.readTime === undefined ? '' : ` at ${importOptions.readTime}`;
       calls.push(`importFiles ${files.map((file) => file.name).join(',')}${at}`);
       const result = await wait<Imported>(onProgress);
+      // The test's answer is what the worker prepared: asked about before any of it is stored, as the library does.
+      const candidates = result.refs.map((ref) => ({
+        ref,
+        assets: result.records.find((record) => record.id === ref)?.meta.assetCount ?? 0,
+      }));
+      if (importOptions?.confirm !== undefined && !(await importOptions.confirm(candidates)))
+        return { refs: [], records: [], warnings: [], declined: true };
       for (const record of result.records) records.set(record.id, { record, persisted: true });
       changed();
       return result;

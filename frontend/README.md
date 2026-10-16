@@ -880,8 +880,9 @@ snapshot in under 10 s, printing its time; a typed read time, and the sidecar's 
 (IndexedDB through fake-indexeddb, read back by the diagram's loader), `sidecarImport.test.ts` (the sidecar in
 the Snapshots page's import; a typed read time, the sidecar's over it, bundles keeping their own, the future
 note), `PullNow.test.tsx` and `LoadExport.test.tsx` (the controls in a harness, the read time field, the
-large-snapshot question for dropped files, a pull and a Cloud Storage read, axe included), and
-`e2e/tests/live-pull.spec.ts` in Chromium.
+large-snapshot question for dropped files before anything is stored (Cancel, Escape and leaving the page store
+nothing, "Draw it anyway" stores once, several files ask about the one they open, the session setting), a pull
+and a Cloud Storage read, axe included), and `e2e/tests/live-pull.spec.ts` in Chromium.
 
 ## Snapshots (`src/snapshots/`)
 
@@ -943,13 +944,15 @@ anyway"). A snapshot the person chose to draw is remembered for the tab's life, 
 filter, a flip or an export never asks again; a reload asks again unless the session setting was ticked. Each
 way in asks where Cancel leaves the person as they were: "Try the demo" before it generates anything (the
 size's count from `DEMO_SIZE_INFO`, or the stored copy's), the table's Load (the record's count), the Connect
-page's export import once the files are read and stored (Cancel keeps the snapshot stored and undrawn, and
-says so), a pull or a Cloud Storage read while it streams (`import/run.ts`). Every other way onto the diagram
-(a link, the Snapshot menu, a saved view, Back and Forward) meets `useLargeSnapshotGate` on the diagram page,
-which holds the pipeline (`useDiagramPipeline`'s `held`: no worker is asked for the snapshot) while the
-listing is read or the person is asked; Cancel goes back (`navigate(-1)`), or, on a page opened at that link,
-to the Snapshots page (a stored snapshot) or the Connect page (a demo organisation). The render API and `pnpm
-render` draw what they are asked and never ask.
+page's export import once the files are read and before anything is stored (the library's `confirm`, asked
+about the snapshot the import opens, the last: Cancel stores none of the files' snapshots, so the same files
+dropped again ask again), a pull or a Cloud Storage read while it streams (`import/run.ts`). The Snapshots
+page's import draws nothing and so does not ask. Every other way onto the diagram (a link, the Snapshot menu,
+a saved view, Back and Forward) meets `useLargeSnapshotGate` on the diagram page, which holds the pipeline
+(`useDiagramPipeline`'s `held`: no worker is asked for the snapshot) while the listing is read or the person
+is asked; Cancel goes back (`navigate(-1)`), or, on a page opened at that link, to the Snapshots page (a
+stored snapshot) or the Connect page (a demo organisation). The render API and `pnpm render` draw what they
+are asked and never ask.
 
 **The record** (`StoredSnapshot` in `storage/db.ts`): `id` is the snapshot's ref (its ULID, or `demo:<size>`);
 `blob` is the model `Snapshot` as JSON, gzip-compressed (`application/gzip`; plain `application/json` where
@@ -1067,20 +1070,20 @@ that does not end with its snapshot included), `diagram/pipeline/demo.test.ts` (
 worker's own snapshot, through the data protocol and client), `worker/handler.test.ts` (imports of one and
 several export files, malformed lines, several roots, bundles under new ids and the copy notes, the check job
 and every damage it refuses), `library.test.ts` (IndexedDB through fake-indexeddb: the repository, the
-library, the export → import round trip, imports as copies, a refused import, damaged records refused at
-export, the data worker's loader, the memory fallback, and the data worker over stored snapshots: a deleted
-snapshot is not drawn from its kept Graph, and S imported after M was deleted draws S),
-`pages/SnapshotsPage.test.tsx` and `pages/ConnectPage.test.tsx` (the pages with a fake library, axe included;
-the read time typed at an import), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by
-scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a scope's days, focus
-and status, over fake-indexeddb; axe), `LargeSnapshotGuard.test.tsx` (the guard's rules, and every way in with
-the fake library: "Try the demo" XL, Load, a link, the Snapshot menu; Cancel, Escape, "Draw it anyway", the
-session setting, no second question; axe), `e2e/tests/large-snapshot.spec.ts` in Chromium (demo mode: "Try the
-demo" XL asked about, cancelled, drawn, silenced for the tab; axe in both themes), and
-`e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S, import both as
-copies, load each, delete M's copy, go back to its view and see it is gone, import S again and see S drawn,
-and the same after a reload; a refused import; no IndexedDB, and a reload forgetting; axe on both pages in
-both themes).
+library, the export → import round trip, imports as copies, an import asked about before it is stored (no
+stores nothing, yes stores it once), a refused import, damaged records refused at export, the data worker's
+loader, the memory fallback, and the data worker over stored snapshots: a deleted snapshot is not drawn from
+its kept Graph, and S imported after M was deleted draws S), `pages/SnapshotsPage.test.tsx` and
+`pages/ConnectPage.test.tsx` (the pages with a fake library, axe included; the read time typed at an import),
+`scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by scope in time order, copies, sizes,
+summaries; deleting an extra tick, a cached day and a scope's days, focus and status, over fake-indexeddb;
+axe), `LargeSnapshotGuard.test.tsx` (the guard's rules, and every way in with the fake library: "Try the demo"
+XL, Load, a link, the Snapshot menu; Cancel, Escape, "Draw it anyway", the session setting, no second
+question; axe), `e2e/tests/large-snapshot.spec.ts` in Chromium (demo mode: "Try the demo" XL asked about,
+cancelled, drawn, silenced for the tab; axe in both themes), and `e2e/tests/snapshots.spec.ts` in Chromium
+(try demo S, switch to M, reload, export M and S, import both as copies, load each, delete M's copy, go back
+to its view and see it is gone, import S again and see S drawn, and the same after a reload; a refused import;
+no IndexedDB, and a reload forgetting; axe on both pages in both themes).
 
 ## Diagram renderer (`src/diagram/`)
 

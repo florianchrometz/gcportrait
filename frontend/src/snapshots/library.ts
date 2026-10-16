@@ -4,10 +4,11 @@
  * (SnapshotLibraryProvider). Importing files runs in the snapshot worker (worker/, created on first use);
  * generating a demo organisation runs in a worker started for the job (`demo`: main.tsx passes
  * `createBrowserDemoJob`, diagram/pipeline/workers.ts; the demo generator runs in workers only). What either
- * prepares is saved through the repository (IndexedDB; a demo organisation in memory
- * until a reload when IndexedDB refuses it, an import never); exporting writes the `.gcportrait.json` bundle
- * (bundle.ts) from a stored record's documents as they are, once the snapshot worker has read them in full (`check`),
- * so a damaged record is never written to a file. Every change is announced to `subscribe`rs (the provider re-lists).
+ * prepares is saved through the repository (IndexedDB; a demo organisation in memory until a reload when IndexedDB
+ * refuses it, an import never), an import's only once its `confirm`, when it has one, has said yes; exporting writes
+ * the `.gcportrait.json` bundle (bundle.ts) from a stored record's documents as they are, once the snapshot worker
+ * has read them in full (`check`), so a damaged record is never written to a file. Every change is announced to
+ * `subscribe`rs (the provider re-lists).
  */
 import { isSnapshotRef, type DemoSize, type SnapshotRef } from '@gcportrait/model';
 
@@ -36,6 +37,25 @@ export interface Imported {
   readonly refs: readonly SnapshotRef[];
   readonly records: readonly StoredSnapshot[];
   readonly warnings: readonly string[];
+  /** True when `confirm` said no: nothing was stored, and `refs`, `records` and `warnings` are empty. */
+  readonly declined?: boolean;
+}
+
+/** A snapshot an import has read and prepared but not stored yet: the ref it is to be stored under, its size. */
+export interface ImportCandidate {
+  readonly ref: SnapshotRef;
+  readonly assets: number;
+}
+
+export interface ImportOptions {
+  /** The read time the person typed for an export that came without its operation.json (RFC 3339, UTC). */
+  readonly readTime?: string;
+  /**
+   * Asked once the files are read and prepared, before anything is stored, with the snapshots the import would
+   * store, in the order it returns them (the Connect page asks the large-snapshot question here): true stores them,
+   * false stores none (`declined`). Absent: they are stored at once.
+   */
+  readonly confirm?: (candidates: readonly ImportCandidate[]) => Promise<boolean>;
 }
 
 export interface SnapshotLibrary {
@@ -56,13 +76,10 @@ export interface SnapshotLibrary {
    * new record under a new id, so it never replaces a stored one and no ref ever names two snapshots (a warning
    * says when a file's snapshot is stored already). A snapshot IndexedDB refuses (the quota) is not stored, and a
    * warning says so; when none could be stored, it fails. An export's read time is `options.readTime` (typed by
-   * the person) unless its operation.json names one.
+   * the person) unless its operation.json names one. With `options.confirm`, nothing is stored until it has said
+   * yes, and nothing at all when it says no.
    */
-  importFiles(
-    files: readonly File[],
-    onProgress?: OnProgress,
-    options?: { readonly readTime?: string },
-  ): Promise<Imported>;
+  importFiles(files: readonly File[], onProgress?: OnProgress, options?: ImportOptions): Promise<Imported>;
   /**
    * Stores a snapshot prepared elsewhere (a live pull or an export read, src/import/) as a new record, and
    * returns its ref. Fails (a `SnapshotJobError`) without browser storage, when its id is already stored (a ref
@@ -168,6 +185,12 @@ export function createSnapshotLibrary(options: SnapshotLibraryOptions): Snapshot
         taken,
         options?.readTime,
       );
+      // The person's say before anything is stored: what each snapshot would be stored under, and its size.
+      const candidates = snapshots.flatMap((prepared) =>
+        isRef(prepared.id) ? [{ ref: prepared.id, assets: prepared.meta.assetCount }] : [],
+      );
+      if (options?.confirm !== undefined && !(await options.confirm(candidates)))
+        return { refs: [], records: [], warnings: [], declined: true };
       onProgress?.({ stage: 'store' });
       const records: StoredSnapshot[] = [];
       const refs: SnapshotRef[] = [];

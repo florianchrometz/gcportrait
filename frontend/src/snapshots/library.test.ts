@@ -15,7 +15,12 @@ import { demoExportNdjson } from '../import/fixtures';
 import type { GcportraitDB } from '../storage/db';
 import { useFreshIndexedDb } from '../test/indexedDb';
 import { GZIP_TYPE, decodeJson } from './codec';
-import { createSnapshotLibrary, type DemoPreparer, type SnapshotLibrary } from './library';
+import {
+  createSnapshotLibrary,
+  type DemoPreparer,
+  type ImportCandidate,
+  type SnapshotLibrary,
+} from './library';
 import {
   loadAnySnapshot,
   loadStoredHistory,
@@ -25,7 +30,7 @@ import {
 import { createSnapshotRepository } from './repository';
 import { storedRecord } from './testing';
 import { createInProcessSnapshotWorker } from './worker/inProcess';
-import { DAMAGED_RECORD } from './worker/protocol';
+import { DAMAGED_RECORD, type JobProgress } from './worker/protocol';
 
 const NOW = new Date('2026-10-10T12:00:00.000Z');
 const IMPORTED = '01J9Z3K5Q8XW2V4N6P7R8S9T0A';
@@ -194,6 +199,44 @@ describe('the library', () => {
       sizes.M,
       sizes.S,
     ]);
+  });
+
+  it('asks before it stores an import: no stores nothing, yes stores it once, under the ref it was asked about', async () => {
+    const snapshots = library(database());
+    const changes = vi.fn();
+    snapshots.subscribe(changes);
+    const file = (): File => new File([demoExportNdjson('S')], 'export.json');
+    const steps: string[] = [];
+    const asked: (readonly ImportCandidate[])[] = [];
+    const answering =
+      (yes: boolean) =>
+      async (candidates: readonly ImportCandidate[]): Promise<boolean> => {
+        asked.push(candidates);
+        steps.push(`asked with ${String((await snapshots.list()).length)} stored`);
+        return yes;
+      };
+    const onProgress = (progress: JobProgress): void => {
+      if (progress.stage === 'store') steps.push('store');
+    };
+    expect(await snapshots.importFiles([file()], onProgress, { confirm: answering(false) })).toEqual({
+      refs: [],
+      records: [],
+      warnings: [],
+      declined: true,
+    });
+    expect(await snapshots.list()).toEqual([]);
+    expect(changes).not.toHaveBeenCalled();
+    // The same file again, and yes: stored once.
+    const imported = await snapshots.importFiles([file()], onProgress, { confirm: answering(true) });
+    expect(steps).toEqual(['asked with 0 stored', 'asked with 0 stored', 'store']);
+    const [record] = imported.records;
+    if (record === undefined) throw new Error('one snapshot imported');
+    expect(imported.declined).toBeUndefined();
+    expect(asked[1]).toEqual([{ ref: record.id, assets: record.meta.assetCount }]);
+    expect(asked[0]?.map(({ assets }) => assets)).toEqual([record.meta.assetCount]);
+    expect(imported.refs).toEqual([record.id]);
+    expect((await snapshots.list()).map((listed) => listed.record.id)).toEqual([record.id]);
+    expect(changes).toHaveBeenCalledTimes(1);
   });
 
   it('does not store an import IndexedDB refuses, and says so', async () => {

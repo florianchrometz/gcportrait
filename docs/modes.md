@@ -32,10 +32,11 @@ with the same lenses, filters, timeline and export. Nothing in gcportrait writes
 
 **Large snapshots.** Drawing more than 10,000 assets at once is slow and heavy on memory (the diagram still
 works), so the app asks before it draws a larger snapshot, "Draw it anyway" or "Cancel": before "Try the demo"
-generates XL, before a stored snapshot opens, and for a pull or a Cloud Storage read as soon as its count
-passes 10,000, where Cancel stops the read and nothing is stored. "Do not ask again in this session" stops the
-question in that browser tab until it is closed, and a snapshot you chose to draw is not asked about again
-there when you change the view.
+generates XL, before a stored snapshot opens, for export files dropped on the Connect page once they are read
+and before they are stored, and for a pull or a Cloud Storage read as soon as its count passes 10,000; for the
+files, the pull and the read, Cancel stores nothing. "Do not ask again in this session" stops the question in
+that browser tab until it is closed, and a snapshot you chose to draw is not asked about again there when you
+change the view.
 
 ## 2. Your account (user mode)
 

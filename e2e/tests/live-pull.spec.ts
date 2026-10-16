@@ -17,7 +17,8 @@ import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './s
  * Vite server, with the backend stubbed inside the browser: GET /api/config, the scope search and the preflight
  * (in the backend's contract), POST /api/assets/stream (the NDJSON frames of backend/src/stream/asset-list.ts) and
  * POST /api/export/read (an export's lines), and Google's sign-in script and tokeninfo (fixtures/gis.ts). The
- * streams go through the real import worker into IndexedDB, and the diagram is drawn from what was stored.
+ * streams go through the real import worker into IndexedDB, and the diagram is drawn from what was stored. Dropped
+ * files of more than 10 000 assets ask before anything is stored, and Cancel stores nothing.
  * Everything is synthetic: organisation 30000000001, `demo-` projects, example.com.
  */
 
@@ -170,6 +171,30 @@ function exportLines(): string {
   return ASSETS.map(({ assetType, updateTime, ...rest }) =>
     JSON.stringify({ ...rest, asset_type: assetType, update_time: updateTime }),
   ).join('\n');
+}
+
+/**
+ * The organisation with `buckets` more storage buckets in demo-app-1, as `exportAssets` writes it: an export of more
+ * than `LARGE_SNAPSHOT_ASSETS` (10 000) assets when `buckets` is 10 000.
+ */
+function largeExportLines(buckets: number): string {
+  const lines = [exportLines()];
+  for (let index = 1; index <= buckets; index += 1)
+    lines.push(
+      JSON.stringify({
+        name: `//storage.googleapis.com/demo-bucket-${String(index)}`,
+        asset_type: 'storage.googleapis.com/Bucket',
+        resource: {
+          version: 'v1',
+          data: { name: `demo-bucket-${String(index)}` },
+          parent: '//cloudresourcemanager.googleapis.com/projects/10000000002',
+          location: 'europe-west3',
+        },
+        ancestors: ['projects/10000000002', 'folders/20000000001', 'organizations/30000000001'],
+        update_time: '2026-10-07T18:22:41.123456Z',
+      }),
+    );
+  return lines.join('\n');
 }
 
 const OPERATION = JSON.stringify(
@@ -385,6 +410,45 @@ test('Load export reads dropped files with their operation.json, then opens the 
   // The sidecar's read time, not an estimate from the latest change.
   await expect(row).toContainText('2026-10-08 06:00 UTC');
   await expect(row).not.toContainText('estimated');
+});
+
+test('Load export asks before it stores dropped files of more than 10 000 assets: Cancel stores nothing', async ({
+  page,
+}) => {
+  await stubBackend(page);
+  await page.goto('/');
+  const files = [
+    { name: 'export.json', mimeType: 'application/json', buffer: Buffer.from(largeExportLines(10_000)) },
+    { name: 'operation.json', mimeType: 'application/json', buffer: Buffer.from(OPERATION) },
+  ];
+  const question = page.getByRole('alertdialog', { name: 'Draw a large snapshot?' });
+  await exportCard(page).getByTestId('export-files').setInputFiles(files);
+  await expect(question).toBeVisible({ timeout: 60_000 });
+  await expect(question).toHaveAccessibleDescription(/^This snapshot has 10,\d{3} assets\. /);
+  await question.getByRole('button', { name: 'Cancel' }).click();
+  await expect(question).toBeHidden();
+  await expect(
+    exportCard(page).getByRole('status').filter({ hasText: 'Cancelled. Nothing was stored.' }),
+  ).toBeVisible();
+  expect(new URL(page.url()).pathname).toBe('/');
+  await primaryNav(page).getByRole('link', { name: 'Snapshots' }).click();
+  await expect(page.getByText(/^No snapshots are stored in this browser yet./)).toBeVisible();
+
+  // The same files again ask again; "Draw it anyway" stores them once and opens the diagram without asking again.
+  await primaryNav(page).getByRole('link', { name: 'Connect' }).click();
+  await exportCard(page).getByTestId('export-files').setInputFiles(files);
+  await expect(question).toBeVisible({ timeout: 60_000 });
+  await question.getByRole('button', { name: 'Draw it anyway' }).click();
+  await expect(page).toHaveURL(/\/diagram#snapshot=[0-9A-HJKMNP-TV-Z]{26}$/, { timeout: 60_000 });
+  await drawnCanvas(page);
+  await expect(question).toHaveCount(0);
+  await primaryNav(page).getByRole('link', { name: 'Snapshots' }).click();
+  await expect(
+    page
+      .getByRole('table', { name: 'Snapshots stored in this browser' })
+      .getByRole('row')
+      .filter({ hasText: 'export.json' }),
+  ).toHaveCount(1);
 });
 
 test('Load export reads a gs:// export through the backend, signed in', async ({ page }) => {

@@ -10,10 +10,17 @@
  * opens on the new snapshot, after any notes the import left. For an export without its operation.json the person
  * may type when it was taken (`parseTypedReadTime`), for either way in; the
  * sidecar's read time wins when both are given, and without either the read time is the latest asset change,
- * marked as estimated. The snapshot is then an extra tick on its scope's timeline at that time. A snapshot of
- * more than 10 000 assets asks before the diagram opens (snapshots/LargeSnapshotGuard.tsx): for dropped files once
- * they are read and stored, for a Cloud Storage read the moment its count passes 10 000 while it streams; Cancel
- * keeps the stored files' snapshot undrawn (the Snapshots page lists it) and stops a read (nothing is stored).
+ * marked as estimated. The snapshot is then an extra tick on its scope's timeline at that time.
+ *
+ * A snapshot of more than 10 000 assets asks before it is stored and drawn (snapshots/LargeSnapshotGuard.tsx), and
+ * Cancel stores nothing and leaves the card as it was. Dropped files ask once they are read, before the library
+ * stores anything (`confirm`, library.importFiles). They may hold several snapshots (each bundle its own, beside one
+ * export), of which the import opens the last, so they ask once, about that one: Cancel stores none of them, "Draw
+ * it anyway" stores each once and opens the last without asking again; the others are stored undrawn, as the
+ * Snapshots page's import stores them, and its Load asks about a large one (should the browser refuse to store the
+ * last, the diagram page asks about the one opened instead). A Cloud Storage read asks the moment its count passes
+ * 10 000 while it streams (import/run.ts), and Cancel stops the read. Leaving the page before the person has
+ * answered takes the question back, and nothing is stored.
  */
 import type { SnapshotRef } from '@gcportrait/model';
 import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement } from 'react';
@@ -21,8 +28,9 @@ import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement }
 import { cx } from '../classNames';
 import { CommandBlock } from '../preflight/CommandBlock';
 import { JobStatus, type JobState } from '../snapshots/JobStatus';
-import { formatCount, formatUtc } from '../snapshots/labels';
+import { formatUtc } from '../snapshots/labels';
 import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
+import type { ImportCandidate } from '../snapshots/library';
 import { useSnapshotLibrary } from '../snapshots/SnapshotLibraryProvider';
 import { SnapshotJobError } from '../snapshots/worker/client';
 import { useAppState, useDiagramActions } from '../state';
@@ -59,7 +67,6 @@ export function LoadExport(): ReactElement {
   const [files, setFiles] = useState<JobState>({ kind: 'idle' });
   const [fileNotes, setFileNotes] = useState<{
     readonly ref: SnapshotRef;
-    readonly assets: number;
     readonly notes: readonly string[];
   } | null>(null);
   const [subject, setSubject] = useState('the files');
@@ -68,6 +75,8 @@ export function LoadExport(): ReactElement {
   const fileInput = useRef<HTMLInputElement>(null);
   const sidecarInput = useRef<HTMLInputElement>(null);
   const mounted = useRef(true);
+  // Aborted when the card leaves the page: a large-snapshot question still open is taken back.
+  const leaving = useRef<AbortSignal | undefined>(undefined);
   const ids = { drop: useId(), uri: useId(), uriHint: useId(), sidecar: useId() };
   const reading = files.kind === 'busy';
   const busy = reading || job.running;
@@ -76,28 +85,23 @@ export function LoadExport(): ReactElement {
 
   useEffect(() => {
     mounted.current = true;
+    const left = new AbortController();
+    leaving.current = left.signal;
     return () => {
       mounted.current = false;
+      left.abort();
     };
   }, []);
 
   /**
-   * Opens the diagram on the snapshot the files made, once the person has said so when it is large; Cancel leaves
-   * it stored and undrawn, and says so.
+   * The question before the files' snapshots are stored: about the one the import opens, the last; true (a small
+   * one, one already chosen, the session setting, or "Draw it anyway", which the guard remembers for its ref, so the
+   * diagram page does not ask again) stores them.
    */
-  const open = (ref: SnapshotRef, assets: number): void => {
-    if (!guard.asks(assets, ref)) {
-      setSnapshot(ref);
-      return;
-    }
-    void guard.confirm({ assets, ref }).then((draw) => {
-      if (draw) setSnapshot(ref);
-      else if (mounted.current)
-        setFiles({
-          kind: 'idle',
-          message: `The snapshot of ${formatCount(assets)} assets is stored in this browser and was not drawn; Load it from the Snapshots page to draw it.`,
-        });
-    });
+  const confirm = (candidates: readonly ImportCandidate[]): Promise<boolean> => {
+    const opened = candidates.at(-1);
+    if (opened === undefined) return Promise.resolve(true);
+    return guard.confirm({ assets: opened.assets, ref: opened.ref }, leaving.current);
   };
 
   const importFiles = (chosen: readonly File[]): void => {
@@ -115,17 +119,20 @@ export function LoadExport(): ReactElement {
         (progress) => {
           if (mounted.current) setFiles({ kind: 'busy', progress });
         },
-        typedReadTime === undefined ? {} : { readTime: typedReadTime },
+        typedReadTime === undefined ? { confirm } : { readTime: typedReadTime, confirm },
       )
       .then(
-        ({ refs, records, warnings }) => {
+        ({ refs, warnings, declined }) => {
           if (!mounted.current) return;
+          if (declined === true) {
+            setFiles({ kind: 'idle', message: 'Cancelled. Nothing was stored.' });
+            return;
+          }
           const ref = refs.at(-1);
           setFiles({ kind: 'idle' });
           if (ref === undefined) return;
-          const assets = records.find((record) => record.id === ref)?.meta.assetCount ?? 0;
-          if (warnings.length === 0) open(ref, assets);
-          else setFileNotes({ ref, assets, notes: warnings });
+          if (warnings.length === 0) setSnapshot(ref);
+          else setFileNotes({ ref, notes: warnings });
         },
         (error: unknown) => {
           if (!mounted.current) return;
@@ -249,7 +256,7 @@ export function LoadExport(): ReactElement {
                   type="button"
                   className={styles.primary}
                   onClick={() => {
-                    open(fileNotes.ref, fileNotes.assets);
+                    setSnapshot(fileNotes.ref);
                   }}
                 >
                   Open the diagram

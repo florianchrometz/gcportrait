@@ -8,11 +8,12 @@
  *
  * Who asks, and where Cancel leaves the person: "Try the demo" before it generates the organisation (snapshots/
  * DemoEntry.tsx; the Connect page), Load on the Snapshots page (SnapshotTable.tsx), the Connect page's export
- * import once the files are read (import/LoadExport.tsx; the snapshot stays stored, undrawn), a live pull or an
- * export read from Cloud Storage the moment its count passes the threshold while it streams (import/run.ts;
- * Cancel stops the read and nothing is stored), and the diagram page itself for any other way in (a link, the
- * Snapshot menu, a saved view, Back and Forward: `useLargeSnapshotGate`, which holds the pipeline until the person
- * answers; Cancel goes back where the person came from).
+ * import once the files are read and before anything is stored (import/LoadExport.tsx; Cancel stores nothing), a
+ * live pull or an export read from Cloud Storage the moment its count passes the threshold while it streams
+ * (import/run.ts; Cancel stops the read and nothing is stored), and the diagram page itself for any other way in (a
+ * link, the Snapshot menu, a saved view, Back and Forward: `useLargeSnapshotGate`, which holds the pipeline until
+ * the person answers; Cancel goes back where the person came from). The Snapshots page's import draws nothing, so
+ * it does not ask.
  */
 import { DEMO_REF_PREFIX, type SnapshotRef } from '@gcportrait/model';
 import {
