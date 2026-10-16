@@ -185,9 +185,9 @@ webkit`).
 
 **Running a job as the runner does.** Each job's commands are in the table. The runner's time zone is UTC, its
 locale is `C.UTF-8` (Node formats dates and numbers as `en-US` then) and `CI` is set, which changes three
-things: the tests' wall-clock limits (the layout's and the ingest's budget ceilings, the demo organisations'
-generation) are never skipped for a busy machine, Playwright retries a failed test twice, starts fresh dev
-servers and writes an HTML report, and `test.only` fails the run. To reproduce a failure that does not happen
+things: the tests' wall-clock limits (the layout's, the ingest's and the graph build's budget ceilings, the
+demo organisations' generation) are never skipped for a busy machine, Playwright retries a failed test twice,
+starts fresh dev servers and writes an HTML report, and `test.only` fails the run. To reproduce a failure that does not happen
 on your machine:
 
 ```sh
