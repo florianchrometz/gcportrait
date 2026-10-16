@@ -6,11 +6,13 @@
  *
  * A detail level decides which zones start collapsed, and a flip (`flipIdOf(zone id)` in `ViewSpec.flips`) XORs
  * that default for one zone (the scene builder's step (e), `@gcportrait/graph`). Both actions are worked out on
- * the drawing on screen and the view it draws, and each is offered only when it would change that drawing:
- * "Expand all" opens the shallowest collapsed tier (the next detail level at which a chip on screen opens) and
- * reopens zones closed by hand, never closing anything; "Collapse all" closes every zone opened by hand and,
+ * the drawing on screen and the view it draws, and each is offered only when the view it writes draws another
+ * Scene: "Expand all" opens the shallowest collapsed tier (the next detail level at which a chip on screen opens)
+ * and reopens zones closed by hand, never closing anything; "Collapse all" closes every zone opened by hand and,
  * when the level in use is deeper than the one `auto` picks, returns to `auto`, never opening anything (a zone
- * closed by hand stays closed). Flips that name no zone of the view (another root's or focus's) are left alone.
+ * closed by hand stays closed). Flips that name no zone of the view (another root's or focus's) are left alone. A
+ * zone drawn empty (nothing inside under the view's lens and filters) is never a chip and the builder ignores its
+ * flip, so a change to that flip alone changes nothing on screen and leaves both buttons inert.
  */
 import { BUNDLE_ID_PREFIX, DETAIL_LEVELS, flipIdOf, isVirtualNode, zoneOpensAt } from '@gcportrait/graph';
 import {
@@ -44,7 +46,10 @@ export interface ZoneState {
   readonly label: string;
   /** Drawn as a chip. */
   readonly collapsed: boolean;
-  /** Open with nothing inside: never a chip, whatever the level. */
+  /**
+   * Open with nothing inside but a timeline day's ghosts: never a chip, whatever the level, and the scene builder
+   * ignores its flip.
+   */
   readonly empty: boolean;
   readonly overlay: boolean;
   /** How many asset zones enclose it, itself included when it is one (the `depth` filter's measure). */
@@ -72,7 +77,9 @@ export function zonesByFlip(shown: ShownScene): ReadonlyMap<string, ZoneState> {
         kind: node.kind,
         label: node.label,
         collapsed: node.collapsed !== undefined,
-        empty: node.collapsed === undefined && node.children.length === 0,
+        // A ghost is no asset of the drawn day: the builder saw the zone without it.
+        empty:
+          node.collapsed === undefined && node.children.every((child) => Object.hasOwn(ghosts, child.id)),
         overlay,
         depth: own,
         counted,
@@ -118,44 +125,75 @@ export function nextOpeningLevel(spec: ViewSpec, shown: ShownScene): ConcreteDet
   return next;
 }
 
+/** A press of "Expand all" or "Collapse all": the view it writes and whether that view draws the Scene on screen. */
+interface Press {
+  readonly view: ViewSpecInput;
+  readonly unchanged: boolean;
+}
+
 /**
- * "Expand all": the view with the shallowest collapsed tier open, or null when it would open nothing on screen.
+ * Whether the view on screen at `level` with `flips` (in place of its own level and flips) draws the Scene on
+ * screen: every zone on screen keeps its state, a chip staying a chip and an open zone open, so what the chips hold
+ * stays hidden and the scene builder decides every zone as it did. A zone drawn empty keeps its state whatever its
+ * flip says, as the builder ignores a flip on a zone with nothing inside.
+ */
+function drawsAsShown(
+  zones: ReadonlyMap<string, ZoneState>,
+  level: ConcreteDetailLevel,
+  flips: readonly string[],
+  depthLimit: number | undefined,
+): boolean {
+  const flipped = new Set(flips);
+  for (const [token, zone] of zones) {
+    if (zone.empty) continue;
+    const collapsed = collapsedByDefault(zone, level, depthLimit) !== flipped.has(token);
+    if (collapsed !== zone.collapsed) return false;
+  }
+  return true;
+}
+
+function expandAll(spec: ViewSpec, shown: ShownScene): Press {
+  const next = nextOpeningLevel(spec, shown);
+  const level = next ?? shown.report.detail.used;
+  const depth = spec.filters.depth;
+  const zones = zonesByFlip(shown);
+  const flips = spec.flips.filter((token) => {
+    const zone = zones.get(token);
+    if (zone === undefined) return true;
+    if (zone.collapsed) return false;
+    return collapsedByDefault(zone, level, depth);
+  });
+  return {
+    view: { ...spec, detail: next ?? spec.detail, flips },
+    unchanged: drawsAsShown(zones, level, flips, depth),
+  };
+}
+
+/**
+ * The view "Expand all" writes for the drawing on screen, whether or not it changes that drawing
+ * ({@link expandAllView} is null when it does not).
  *
  * The detail level becomes the next one at which a chip on screen opens ({@link nextOpeningLevel}). Of the
  * flips, a flip whose zone is a chip on screen (it keeps a zone closed that its level opens) goes, and so does a
  * flip that opens a zone the new level opens anyway; a flip that opens a zone the new level still closes stays,
  * so nothing open closes. Flips that name no zone on screen (inside a chip, or another view's) stay. With no
  * deeper level to open, only the closing flips go; chips the `depth` filter makes stay (the filter is the
- * person's own choice).
+ * person's own choice). The flip of a zone drawn empty goes or stays as it would if the zone held something.
  */
-export function expandAllView(spec: ViewSpec, shown: ShownScene): ViewSpecInput | null {
-  const next = nextOpeningLevel(spec, shown);
-  const level = next ?? shown.report.detail.used;
-  const zones = zonesByFlip(shown);
-  const flips = spec.flips.filter((token) => {
-    const zone = zones.get(token);
-    if (zone === undefined) return true;
-    if (zone.collapsed) return false;
-    return collapsedByDefault(zone, level, spec.filters.depth);
-  });
-  if (next === null && flips.length === spec.flips.length) return null;
-  return { ...spec, detail: next ?? spec.detail, flips };
+export function expandAllTarget(spec: ViewSpec, shown: ShownScene): ViewSpecInput {
+  return expandAll(spec, shown).view;
 }
 
 /**
- * "Collapse all": the view with every zone opened by hand closed and, when the level in use is deeper than the
- * one `auto` picks for this view at `budget` (the canvas's; the drawing's own by default), back at `auto`; null
- * when no zone on screen would close. It never opens anything: a level the person chose that is not deeper than
- * `auto`'s stays, and a flip that keeps a zone on screen closed stays while the level still opens that zone (one
- * the level closes anyway goes, since it would open it). Every other flip of the view goes, those of zones hidden
- * inside a chip included; flips that name no zone of the view (the report's `unknownFlips`: another root's or
- * focus's) stay, as they change nothing here.
+ * "Expand all": the view with the shallowest collapsed tier open ({@link expandAllTarget}), or null when that
+ * view draws the Scene on screen (no chip on screen would open or reopen).
  */
-export function collapseAllView(
-  spec: ViewSpec,
-  shown: ShownScene,
-  budget: number = shown.report.detail.budget,
-): ViewSpecInput | null {
+export function expandAllView(spec: ViewSpec, shown: ShownScene): ViewSpecInput | null {
+  const press = expandAll(spec, shown);
+  return press.unchanged ? null : press.view;
+}
+
+function collapseAll(spec: ViewSpec, shown: ShownScene, budget: number): Press {
   const { detail } = shown.report;
   const automatic = autoLevel(detail, budget);
   const toAuto = spec.detail !== 'auto' && rank(automatic) < rank(detail.used);
@@ -168,12 +206,43 @@ export function collapseAllView(
     const zone = zones.get(token);
     return zone !== undefined && zone.collapsed && !collapsedByDefault(zone, level, depth);
   });
-  // An open zone on screen closes when the new level closes it: its own flip, if any, opened it and is gone.
-  const closes = [...zones.values()].some(
-    (zone) => !zone.collapsed && !zone.empty && collapsedByDefault(zone, level, depth),
-  );
-  if (!closes) return null;
-  return { ...spec, detail: toAuto ? 'auto' : spec.detail, flips };
+  return {
+    view: { ...spec, detail: toAuto ? 'auto' : spec.detail, flips },
+    unchanged: drawsAsShown(zones, level, flips, depth),
+  };
+}
+
+/**
+ * The view "Collapse all" writes for the drawing on screen at `budget` (the canvas's; the drawing's own by
+ * default), whether or not it changes that drawing ({@link collapseAllView} is null when it does not).
+ *
+ * Every zone opened by hand closes and, when the level in use is deeper than the one `auto` picks for this view
+ * at `budget`, the level goes back to `auto`. It never opens anything: a level the person chose that is not deeper
+ * than `auto`'s stays, and a flip that keeps a zone on screen closed stays while the level still opens that zone
+ * (one the level closes anyway goes, since it would open it). Every other flip of the view goes, those of zones
+ * hidden inside a chip and of zones drawn empty included; flips that name no zone of the view (the report's
+ * `unknownFlips`: another root's or focus's) stay, as they change nothing here.
+ */
+export function collapseAllTarget(
+  spec: ViewSpec,
+  shown: ShownScene,
+  budget: number = shown.report.detail.budget,
+): ViewSpecInput {
+  return collapseAll(spec, shown, budget).view;
+}
+
+/**
+ * "Collapse all": the view with every zone opened by hand closed and back at `auto` when the level in use is
+ * deeper ({@link collapseAllTarget}), or null when that view draws the Scene on screen (no open zone on screen
+ * would close).
+ */
+export function collapseAllView(
+  spec: ViewSpec,
+  shown: ShownScene,
+  budget: number = shown.report.detail.budget,
+): ViewSpecInput | null {
+  const press = collapseAll(spec, shown, budget);
+  return press.unchanged ? null : press.view;
 }
 
 /**

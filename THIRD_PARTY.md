@@ -183,7 +183,7 @@ here but are checked against the same allowlist and deny list on every run.
 | `eslint-import-resolver-typescript` | ISC | (root) | dev |
 | `eslint-plugin-import-x` | MIT | (root) | dev |
 | `fake-indexeddb` | Apache-2.0 | frontend | dev |
-| `fast-check` | MIT | packages/catalog, packages/graph, packages/ingest, packages/layout, packages/model | dev |
+| `fast-check` | MIT | frontend, packages/catalog, packages/graph, packages/ingest, packages/layout, packages/model | dev |
 | `fastify` | MIT | backend | runtime |
 | `fflate` | MIT | frontend | runtime |
 | `fuse.js` | Apache-2.0 | frontend | runtime |

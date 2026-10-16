@@ -1486,7 +1486,8 @@ src/diagram/disclosure/
   flips.ts             pure: which zones start collapsed (collapsedByDefault, with the scene builder's own level
                        table, `zoneOpensAt` from `@gcportrait/graph`; flips.test.ts checks it against
                        buildScene on demo M and L, overlays and bundles included), "Expand all"
-                       (expandAllView), "Collapse all" (collapseAllView), "N of M" (rectsShown), the cap
+                       (expandAllView; expandAllTarget, the view a press writes), "Collapse all"
+                       (collapseAllView; collapseAllTarget), "N of M" (rectsShown), the cap
                        (flipsDroppedByCap), an auto level change (autoLevelShift)
   state.ts             selectors over the store (selectRectsShown, selectRectsTotal, selectCanExpandAll,
                        selectCanCollapseAll, selectExpandLevelName, selectUsedLevelName; primitives,
@@ -1535,11 +1536,13 @@ src/diagram/disclosure/
   level still opens that zone. Flips that name no zone of the view (the report's `unknownFlips`: another
   root's or focus's) stay; the view's other flips go, those inside chips included.
 - **Available when they change the drawing.** Each button is inert (`aria-disabled`, still focusable, the
-  reason in its tooltip) when it would change nothing on screen: Expand all when no chip would open or reopen,
-  Collapse all when no open zone would close. Both are worked out on the drawing on screen with the view it
-  draws (its scene key, decoded), never on one view's hash with another view's drawing; a press while a newer
-  view is being drawn (a drill-in, a level just written) waits in the store until that view's own drawing
-  arrives and is worked out on it, and is dropped if the view moves on first.
+  reason in its tooltip) when the view it would write draws the Scene on screen: Expand all when no chip would
+  open or reopen, Collapse all when no open zone would close. A zone drawn empty (nothing inside under the
+  view's lens and filters, or only a timeline day's ghosts) is never a chip and the scene builder ignores its
+  flip, so a flip of such a zone alone leaves both inert. Both are worked out on the drawing on screen with
+  the view it draws (its scene key, decoded), never on one view's hash with another view's drawing; a press
+  while a newer view is being drawn (a drill-in, a level just written) waits in the store until that view's
+  own drawing arrives and is worked out on it, and is dropped if the view moves on first.
 - **"N of M shown"**: the rects drawn (zones, chips and cards; a chip once) of the rects the view holds at
   `all` (the report's count without flips, never less than N), with thousands separators, in a status region.
 - **Notices** (a live region kept in the DOM, until dismissed or replaced): when a view change dropped flips
@@ -1550,17 +1553,19 @@ src/diagram/disclosure/
 Tests: `flips.test.ts` (against buildScene on demo M and L: expand then collapse, and collapse then expand,
 give back the level's own Scene, through the store's `flip` and the hash; the depth filter; the level table;
 Expand all from folders to all on demo L keeping what was open; Collapse all keeping what was closed by hand
-and another view's flips; views rooted at and focused on a project at every level, with flips by hand or none:
-each button inert exactly when it would change nothing, Expand all never closing and Collapse all never
-opening, each after the other and until inert; the cap; auto changes), `canvas.test.tsx` (chips, a
-double-click leaving no flip, the collapse button, the camera kept and the glide, focus after a keyboard flip,
-axe), `DisclosureBar.test.tsx` (the page in jsdom with in-process workers, axe), `actions.test.ts` (the
-store's actions, history modes, a press while another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo
-L in Chromium: expand a project chip, its networks as chips, expand all, "N of M", reload; the keyboard; the
-collapse button; both notices; axe in both themes; a project's view on demo M: zones closed by hand, a
-double-click drill-in, a level carried in from the organisation, a press while the organisation is still on
-screen). Specs that need a selection select a card or a zone, since a click on a chip expands it
-(`diagram.spec.ts`, `a11y.spec.ts`).
+and another view's flips; views rooted at and focused on a project at every level, with flips by hand, of
+zones drawn empty or none: each button inert exactly when it would change nothing, Expand all never closing
+and Collapse all never opening, each after the other and until inert; a zone drawn empty, under a lens or
+holding only ghosts; a fast-check property over random views of demo M and L, across lenses, focus views,
+levels, the depth filter and flips: each button inert exactly when the view it writes draws the Scene on
+screen; the cap; auto changes), `canvas.test.tsx` (chips, a double-click leaving no flip, the collapse
+button, the camera kept and the glide, focus after a keyboard flip, axe), `DisclosureBar.test.tsx` (the page
+in jsdom with in-process workers, axe), `actions.test.ts` (the store's actions, history modes, a press while
+another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo L in Chromium: expand a project chip, its
+networks as chips, expand all, "N of M", reload; the keyboard; the collapse button; both notices; axe in both
+themes; a project's view on demo M: zones closed by hand, a double-click drill-in, a level carried in from the
+organisation, a press while the organisation is still on screen). Specs that need a selection select a card or
+a zone, since a click on a chip expands it (`diagram.spec.ts`, `a11y.spec.ts`).
 
 ## Details drawer (`src/drawer/`)
 

@@ -5,8 +5,9 @@
  * (the store's `flip`, through the URL hash) XORs the level default, so expanding a chip and collapsing it again
  * gives back the level's own Scene, and so does collapsing an open zone and expanding it again; the builder's own
  * level table (`zoneOpensAt`) predicts which zones of a drawn Scene start collapsed; "Expand all" opens the
- * shallowest collapsed tier and keeps what was open; "Collapse all" goes back to the automatic level's default; the
- * 48-flip cap and an `auto` level change are told apart from every other change.
+ * shallowest collapsed tier and keeps what was open; "Collapse all" goes back to the automatic level's default; each
+ * is inert exactly when the view it writes draws the Scene on screen (a property over random views and flips, a
+ * zone drawn empty among them); the 48-flip cap and an `auto` level change are told apart from every other change.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
@@ -20,6 +21,7 @@ import {
 } from '@gcportrait/graph';
 import {
   decodeViewSpec,
+  LENS_IDS,
   normalizeViewSpec,
   VIEW_SPEC_MAX_FLIPS,
   type DemoSize,
@@ -30,6 +32,7 @@ import {
   type ViewSpec,
   type ViewSpecInput,
 } from '@gcportrait/model';
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { createAppStore } from '../../state/store';
@@ -38,8 +41,10 @@ import { demoGraphSync } from '../testing/demoScenes';
 import { sceneZones as allZones, zoneOf as zoneIn } from '../testing/scenes';
 import {
   autoLevelShift,
+  collapseAllTarget,
   collapseAllView,
   collapsedByDefault,
+  expandAllTarget,
   expandAllView,
   flipsDroppedByCap,
   nextOpeningLevel,
@@ -55,12 +60,44 @@ const BUDGET = 74;
 const DEMO_L = 30_000;
 /** Demo M's and L's Shared VPC host (Production): a project with a network, subnets and product containers. */
 const SHARED_VPC_HOST = '//cloudresourcemanager.googleapis.com/projects/10000000001';
+/** A project of demo M and L that holds no network: the networking lens draws it empty. */
+const NO_NETWORK = '//cloudresourcemanager.googleapis.com/projects/10000000018';
+/** Detail `auto` and every level. */
+const LEVELS = ['auto', ...DETAIL_LEVELS] as const;
 
 function build(size: DemoSize, input: ViewSpecInput, budget = BUDGET): SceneBuild {
   return buildSceneWithReport(demoGraphSync(size), normalizeViewSpec(input), catalog, {
     readTime: READ_TIME,
     viewportBudget: budget,
   });
+}
+
+/** The preparations of the views built by `buildView`, by organisation and prepared-view key. */
+const prepared = new Map<string, PreparedView>();
+const ENV = { readTime: READ_TIME, viewportBudget: BUDGET };
+
+/**
+ * What `build` builds, from one preparation per lens, focus, root and filters: views that differ only in their
+ * level, flips or `depth` filter share it.
+ */
+function buildView(size: DemoSize, input: ViewSpecInput): SceneBuild {
+  const spec = normalizeViewSpec(input);
+  const key = `${size} ${preparedViewKey(spec, ENV)}`;
+  let view = prepared.get(key);
+  if (view === undefined) {
+    view = prepareView(demoGraphSync(size), spec, catalog, ENV);
+    prepared.set(key, view);
+  }
+  return buildPreparedScene(view, spec, ENV);
+}
+
+/** The open zones that hold something (an empty zone is never a chip), and the chips. */
+function drawn(shown: SceneBuild): { readonly open: Set<string>; readonly chips: Set<string> } {
+  const zones = allZones(shown.scene);
+  return {
+    open: new Set(zones.filter((z) => z.collapsed === undefined && z.children.length > 0).map((z) => z.id)),
+    chips: new Set(zones.filter((z) => z.collapsed !== undefined).map((z) => z.id)),
+  };
 }
 
 function openZoneIds(scene: Scene): string[] {
@@ -304,30 +341,6 @@ describe('Expand all', () => {
 });
 
 describe('at project level: a view rooted at or focused on one project', () => {
-  /** The preparations of the views below, by organisation and prepared-view key (levels and flips share one). */
-  const prepared = new Map<string, PreparedView>();
-  const env = { readTime: READ_TIME, viewportBudget: BUDGET };
-
-  function buildView(size: DemoSize, input: ViewSpecInput): SceneBuild {
-    const spec = normalizeViewSpec(input);
-    const key = `${size} ${preparedViewKey(spec, env)}`;
-    let view = prepared.get(key);
-    if (view === undefined) {
-      view = prepareView(demoGraphSync(size), spec, catalog, env);
-      prepared.set(key, view);
-    }
-    return buildPreparedScene(view, spec, env);
-  }
-
-  /** The open zones that hold something (an empty zone is never a chip), and the chips. */
-  function drawn(shown: SceneBuild): { readonly open: Set<string>; readonly chips: Set<string> } {
-    const zones = allZones(shown.scene);
-    return {
-      open: new Set(zones.filter((z) => z.collapsed === undefined && z.children.length > 0).map((z) => z.id)),
-      chips: new Set(zones.filter((z) => z.collapsed !== undefined).map((z) => z.id)),
-    };
-  }
-
   /**
    * "Expand all" from `spec`: inert exactly when no chip is on screen (no `depth` filter here); otherwise every open
    * zone stays open and a chip opens. Returns the view it wrote, or null.
@@ -393,32 +406,35 @@ describe('at project level: a view rooted at or focused on one project', () => {
     throw new Error(`still not inert after five presses: ${what}`);
   }
 
-  const VIEWS: ReadonlyArray<readonly [DemoSize, string]> = [
+  const VIEWS: ReadonlyArray<readonly [DemoSize, string, LensId?]> = [
     ['M', SHARED_VPC_HOST],
     // Retail platform (prod): product containers and cards, no network.
     ['M', '//cloudresourcemanager.googleapis.com/projects/10000000010'],
     // Retail services (prod): cards only.
     ['M', '//cloudresourcemanager.googleapis.com/projects/10000000011'],
+    // A project the networking lens draws empty.
+    ['M', NO_NETWORK, 'networking'],
     ['L', SHARED_VPC_HOST],
   ];
-  const LEVELS = ['auto', ...DETAIL_LEVELS] as const;
 
-  for (const [size, project] of VIEWS)
+  for (const [size, project, lens] of VIEWS)
     for (const mode of ['root', 'focus'] as const)
       it(
-        `demo ${size}, ${mode} ${project.slice(project.lastIndexOf('/') + 1)}: Expand all and Collapse all at every level, by hand flips or none`,
+        `demo ${size}, ${mode} ${project.slice(project.lastIndexOf('/') + 1)}${lens === undefined ? '' : `, ${lens} lens`}: Expand all and Collapse all at every level, by hand flips or none`,
         () => {
           let cases = 0;
           for (const level of LEVELS) {
             const view: ViewSpecInput = {
               snapshot: `demo:${size}`,
               detail: level,
+              ...(lens === undefined ? {} : { lens }),
               ...(mode === 'root' ? { root: project } : { focus: { kind: 'project', params: { project } } }),
             };
             const plain = buildView(size, view);
             const { open, chips } = drawn(plain);
             const opened = [...chips].slice(0, 1).map((id) => flipIdOf(id));
             const closed = [...open].slice(-1).map((id) => flipIdOf(id));
+            const empty = [...zonesByFlip(plain)].flatMap(([token, zone]) => (zone.empty ? [token] : []));
             const variants: ReadonlyArray<readonly [string, readonly string[]]> = [
               ['no flips', []],
               ['a chip opened by hand', opened],
@@ -429,6 +445,8 @@ describe('at project level: a view rooted at or focused on one project', () => {
                 'another view’s flip',
                 [flipIdOf('//cloudresourcemanager.googleapis.com/projects/10000000002')],
               ],
+              // Flips the scene builder ignores: a zone with nothing inside is never a chip.
+              ['flips of zones drawn empty', empty],
             ];
             for (const [name, flips] of variants) {
               if (name !== 'no flips' && flips.length === 0) continue;
@@ -589,6 +607,141 @@ describe('Collapse all', () => {
     expect(autoLevel(shown.report.detail, 400)).toBe('networks');
     expect(collapseAllView(spec, shown, 400)).toBeNull();
   });
+});
+
+describe('a zone drawn empty: its flip changes nothing on screen', () => {
+  it('demo M focused on a project the networking lens empties: with its flip, both buttons are inert at every level', () => {
+    for (const detail of LEVELS) {
+      const view: ViewSpecInput = {
+        snapshot: 'demo:M',
+        lens: 'networking',
+        detail,
+        focus: { kind: 'project', params: { project: NO_NETWORK } },
+      };
+      const plain = buildView('M', view);
+      expect(zonesByFlip(plain).get(flipIdOf(NO_NETWORK))?.empty, detail).toBe(true);
+      const spec = normalizeViewSpec({ ...view, flips: [flipIdOf(NO_NETWORK)] });
+      const shown = buildView('M', spec);
+      // The scene builder ignores the flip.
+      expect(shown.scene).toEqual(plain.scene);
+      expect(expandAllView(spec, shown), `Expand all at ${detail}`).toBeNull();
+      expect(collapseAllView(spec, shown), `Collapse all at ${detail}`).toBeNull();
+    }
+  });
+
+  it('a zone that holds only a timeline day’s ghosts is drawn empty: Collapse all has nothing to close in it', () => {
+    // Demo M's Shared VPC host as the canvas at the projects level (Auto opens everything here, so Collapse all keeps
+    // the level), with its network opened by hand.
+    const view: ViewSpecInput = { snapshot: 'demo:M', root: SHARED_VPC_HOST, detail: 'projects' };
+    const chip = allZones(buildView('M', view).scene).find(
+      (zone) => zone.kind === 'vpc' && zone.collapsed !== undefined,
+    );
+    if (chip === undefined) throw new Error('no network chip');
+    const spec = normalizeViewSpec({ ...view, flips: [flipIdOf(chip.id)] });
+    const shown = buildView('M', spec);
+    const children = zoneIn(shown.scene, chip.id)?.children ?? [];
+    expect(children.length).toBeGreaterThan(0);
+    expect(collapseAllView(spec, shown)).toMatchObject({ detail: 'projects', flips: [] });
+    // What it holds stands in for a day's ghosts: the drawn day's builder saw the network empty and ignores its
+    // flip, so nothing on screen would close.
+    const ghosts = Object.fromEntries(children.map((child) => [child.id, 'removed' as const]));
+    const withGhosts = { ...shown, diff: { ghosts } };
+    expect(zonesByFlip(withGhosts).get(flipIdOf(chip.id))?.empty).toBe(true);
+    expect(collapseAllView(spec, withGhosts)).toBeNull();
+  });
+});
+
+describe('each button is inert exactly when the view it writes draws the Scene on screen (property)', () => {
+  /** Where a view looks: the organisation, a drill-in, and a focus of each kind that demo M and L both hold. */
+  const PLACES: ReadonlyArray<Pick<ViewSpecInput, 'root' | 'focus'>> = [
+    {},
+    { root: SHARED_VPC_HOST },
+    { focus: { kind: 'project', params: { project: NO_NETWORK } } },
+    { focus: { kind: 'project', params: { project: SHARED_VPC_HOST } } },
+    { focus: { kind: 'shared-vpc', params: { host: SHARED_VPC_HOST } } },
+    { focus: { kind: 'standalone-projects', params: {} } },
+    { focus: { kind: 'perimeter', params: { perimeter: 'data_perimeter' } } },
+  ];
+  /** Where a flip comes from: a zone drawn empty, a zone on screen, any zone of the view, another view. */
+  const SOURCES = ['empty', 'shown', 'any', 'elsewhere'] as const;
+  const views = fc.record({
+    lens: fc.constantFrom(...LENS_IDS),
+    place: fc.constantFrom(...PLACES),
+    detail: fc.constantFrom(...LEVELS),
+    depth: fc.constantFrom(undefined, 2),
+    picks: fc.array(fc.tuple(fc.constantFrom(...SOURCES), fc.nat()), { maxLength: 4 }),
+  });
+  /** Random views per organisation: demo L's Scenes are ten times larger, so it gets fewer. */
+  const RUNS: ReadonlyArray<readonly [DemoSize, number]> = [
+    ['M', 100],
+    ['L', 40],
+  ];
+
+  for (const [size, numRuns] of RUNS)
+    it(
+      `on demo ${size} across lenses, focus views, levels, the depth filter and flips: Expand all never closes and Collapse all never opens`,
+      () => {
+        fc.assert(
+          fc.property(views, ({ lens, place, detail, depth, picks }) => {
+            const base: ViewSpecInput = {
+              snapshot: `demo:${size}`,
+              lens,
+              detail,
+              ...place,
+              ...(depth === undefined ? {} : { filters: { depth } }),
+            };
+            const onScreen = zonesByFlip(buildView(size, base));
+            const sources: Readonly<Record<(typeof SOURCES)[number], readonly string[]>> = {
+              empty: [...onScreen].flatMap(([token, zone]) => (zone.empty ? [token] : [])),
+              shown: [...onScreen.keys()],
+              // Every zone of the view: at `all` without the depth filter nothing is a chip.
+              any: [...zonesByFlip(buildView(size, { ...base, detail: 'all', filters: {} })).keys()],
+              elsewhere: ['elsewhere1'],
+            };
+            const flips = new Set(
+              picks.flatMap(([source, index]) => {
+                const list = sources[source];
+                const token = list[index % Math.max(list.length, 1)];
+                return token === undefined ? [] : [token];
+              }),
+            );
+            const spec = normalizeViewSpec({ ...base, flips: [...flips] });
+            const shown = buildView(size, spec);
+            const scene = JSON.stringify(shown.scene);
+            const before = drawn(shown);
+            const what = JSON.stringify({ lens, ...place, detail, depth, flips: spec.flips });
+
+            const expandTarget = expandAllTarget(spec, shown);
+            const expanded = buildView(size, expandTarget);
+            const expand = expandAllView(spec, shown);
+            expect(expand === null, `Expand all inert: ${what}`).toBe(
+              JSON.stringify(expanded.scene) === scene,
+            );
+            if (expand !== null) {
+              expect(expand).toEqual(expandTarget);
+              const after = drawn(expanded);
+              for (const id of before.open)
+                expect(after.open.has(id), `Expand all closed ${id}: ${what}`).toBe(true);
+            }
+
+            const collapseTarget = collapseAllTarget(spec, shown);
+            const collapsed = buildView(size, collapseTarget);
+            const collapse = collapseAllView(spec, shown);
+            expect(collapse === null, `Collapse all inert: ${what}`).toBe(
+              JSON.stringify(collapsed.scene) === scene,
+            );
+            if (collapse !== null) {
+              expect(collapse).toEqual(collapseTarget);
+              const after = drawn(collapsed);
+              for (const id of before.chips)
+                expect(after.open.has(id), `Collapse all opened ${id}: ${what}`).toBe(false);
+            }
+          }),
+          { numRuns },
+        );
+      },
+      DEMO_L,
+    );
 });
 
 describe('the 48-flip cap', () => {
