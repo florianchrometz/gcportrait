@@ -360,8 +360,12 @@ unchanged pixels transparent, repeated frames merged), the WebM with the browser
 Mediabunny's muxer. The Snapshots still pins the page's clock to 2026-10-08 09:30 UTC, so its "Stored" column
 reads the same in every run, and scrolls the page until its import area shows whole under the stored snapshots
 and the timelines. The trace still selects a forwarding rule and then fits the camera to its trace beside the
-details drawer. The list of stills, scenes and cards, with their alt texts, is `website/src/data/media.json`;
-what each one does is in `scripts/media.mjs`. Only the synthetic demo organisations are ever captured.
+details drawer. The drawer still selects the bastion VM and fits the camera to the VM's project beside the
+drawer, its disk and the project's other machines around it: its trace also reaches a subnetwork across the
+organisation, too far off to fit with every card readable. The list of stills, scenes and cards, with their
+alt texts, is `website/src/data/media.json`; what each one does is in `scripts/media.mjs`. The README's
+pictures carry the same alt texts, and `scripts/readme.test.ts` fails when one differs from the website's.
+Only the synthetic demo organisations are ever captured.
 
 The hero shows the whole of demo S, where every zone, the Shared VPC, the title block and the legend are
 visible: fitted to 1440×900, demo M's overview shows only its folders and collapsed projects (38 of 369 items,

@@ -153,7 +153,7 @@ with `[` and `]`. gcportrait works on phones, tablets and desktops with the same
 Shared VPC and every other reference become arrows routed through the gaps, never across a box.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/hero-dark.png">
-  <img src="docs/media/stills/hero-light.png" width="400" alt="The whole synthetic demo organisation S in the Overview lens: folders and projects as nested zones, the Shared VPC host's network and subnetworks as tinted zones, resources as cards with Google Cloud product icons, orthogonal arrows, a title block and a legend.">
+  <img src="docs/media/stills/hero-light.png" width="400" alt="gcportrait drawing the whole synthetic demo organisation S in the Overview lens: folders and projects as nested zones, the Shared VPC host's network and subnetworks as tinted zones, resources as cards with Google Cloud product icons, orthogonal arrows for the references between them, a title block and a legend.">
 </picture>
 </td>
 <td width="50%" valign="top">
@@ -163,7 +163,7 @@ security and more. Focus on a project, a Shared VPC or a perimeter; filter by re
 and depth. The API takes the same view. <a href="docs/lenses-and-filters.md">Guide</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/lenses-dark.gif">
-  <img src="docs/media/animated/lenses-light.gif" width="400" alt="Animation: the Lens picker switches the demo organisation S from the Overview to the Networking lens and then to the Load balancing lens.">
+  <img src="docs/media/animated/lenses-light.gif" width="400" alt="Animation: the Lens picker switches the demo organisation S from the Overview to the Networking lens and then to the Load balancing lens; each redraws the same organisation for a different question.">
 </picture>
 </td>
 </tr>
@@ -185,7 +185,7 @@ resources outlined, removed ones as ghosts where they stood, changed ones marked
 days. <a href="docs/timeline.md">Guide</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/timeline-dark.gif">
-  <img src="docs/media/animated/timeline-light.gif" width="400" alt="Animation: the timeline jumps from day to day; new resources are outlined in green, removed ones stand as faded, dashed ghosts and changed ones carry an amber dot.">
+  <img src="docs/media/animated/timeline-light.gif" width="400" alt="Animation: the Workloads folder of the demo organisation S on the timeline, which jumps from 4 September to 8, 14 and 25 September; each day is drawn compared with the one before. On 8 September a new Pub/Sub subscription is outlined in green, on 14 September the next one is outlined and the first stands as a faded, dashed ghost, and on 25 September the decommissioned reporting project with its bucket, network, subnetwork and virtual machine stands as a ghost, a second machine in the web group is outlined, two more removed resources are ghosts and amber dots mark the changed ones. The view then zooms in on the ghost of the reporting project, marked removed, and moves to the legend, whose rows read added, removed and changed since 14 September.">
 </picture>
 </td>
 </tr>
@@ -196,7 +196,7 @@ days. <a href="docs/timeline.md">Guide</a></p>
 expand it in place, double-click to make it the whole canvas; the breadcrumb leads back out.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/drill-in-dark.gif">
-  <img src="docs/media/animated/drill-in-light.gif" width="400" alt="Animation: a click on a collapsed project expands it in place, then a double-click on another project drills into it, with the breadcrumb leading back out.">
+  <img src="docs/media/animated/drill-in-light.gif" width="400" alt="Animation: a click on a collapsed project expands it in place, then a double-click on another project drills into it so that it fills the canvas, with the breadcrumb leading back out.">
 </picture>
 </td>
 <td width="50%" valign="top">

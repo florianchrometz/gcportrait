@@ -2,13 +2,15 @@
 /**
  * The root README's order (AGENTS.md, Documentation): what gcportrait is and does first, then the quick
  * starts, the features with their images, the contributing sections, and the non-affiliation statement and the
- * licence at the bottom. Its wording is free; this test holds the order and the pieces each part must show.
+ * licence at the bottom. Its wording is free; this test holds the order and the pieces each part must show, and
+ * the alt text of each generated still and animated demo it shows to the website's (website/src/data/media.json).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { paths, readConfig } from './lib/media-core.mjs';
 import { REPO } from './testing/temp-tree.js';
 
 const README = readFileSync(path.join(REPO, 'README.md'), 'utf8');
@@ -45,6 +47,58 @@ const positions = (text: string, needles: readonly string[]): number[] =>
 const mediaPaths = (text: string): string[] =>
   [...text.matchAll(/\b(?:src|srcset)="(docs\/media\/[^"]+)"/g)].map((match) => match[1] ?? '');
 
+/** An attribute's value as the text it stands for (the character references an attribute may need). */
+const attributeText = (value: string): string =>
+  value
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&');
+
+/** An attribute of one HTML tag, as text; undefined when the tag has none. */
+const attribute = (tag: string, name: string): string | undefined => {
+  const value = new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
+  return value === undefined ? undefined : attributeText(value);
+};
+
+/** An image of the README: its `src` and `alt`, and in a `<picture>` the file a dark colour scheme shows. */
+type Image = { readonly src: string; readonly alt: string | undefined; readonly dark: string | undefined };
+
+/** Each image of a text, a `<picture>` as one with its `<img>`. */
+const images = (text: string): Image[] =>
+  [...text.matchAll(/<picture>[\s\S]*?<\/picture>|<img\b[^>]*>/g)].flatMap(([html]) => {
+    const img = /<img\b[^>]*>/.exec(html)?.[0];
+    const src = img === undefined ? undefined : attribute(img, 'src');
+    if (img === undefined || src === undefined) return [];
+    const source = /<source\b[^>]*\smedia="\(prefers-color-scheme: dark\)"[^>]*>/.exec(html)?.[0];
+    return [
+      {
+        src,
+        alt: attribute(img, 'alt'),
+        dark: source === undefined ? undefined : attribute(source, 'srcset'),
+      },
+    ];
+  });
+
+/** The website's alt text of each generated still and animated demo, by the path of each of its files here. */
+const WEBSITE_ALTS = (() => {
+  const config = readConfig(REPO);
+  const alts = new Map<string, string>();
+  for (const theme of config.themes) {
+    for (const still of config.stills) alts.set(`docs/media/${paths.still(still.id, theme)}`, still.alt);
+    for (const scene of config.scenes) alts.set(`docs/media/${paths.gif(scene.id, theme)}`, scene.alt);
+  }
+  return alts;
+})();
+
+/**
+ * Whether a picture shows its medium in the theme the reader is not using (the dark file by default, the light
+ * one for a dark colour scheme): it is about the theme, and its alt text says so in words of its own.
+ */
+const showsOtherTheme = (image: Image): boolean =>
+  /-dark\.\w+$/.test(image.src) && image.dark === image.src.replace(/-dark(\.\w+)$/, '-light$1');
+
 describe('the README', () => {
   it('keeps its sections in order, the statement and the licence last', () => {
     expect([...SECTIONS.keys()]).toEqual(ORDER);
@@ -76,6 +130,41 @@ describe('the README', () => {
     expect(media.filter((file) => file.endsWith('.gif')).length).toBeGreaterThanOrEqual(3);
     expect(media.filter((file) => /\.(?:png|webp)$/.test(file)).length).toBeGreaterThanOrEqual(3);
     expect(media.some((file) => file.includes('-dark'))).toBe(true);
+  });
+
+  it('describes each still and animated demo in the website’s words, so neither copy drifts from the other', () => {
+    const shown = images(README).filter((image) => WEBSITE_ALTS.has(image.src) && !showsOtherTheme(image));
+    expect(shown.length).toBeGreaterThanOrEqual(6);
+    const differing = shown
+      .filter((image) => image.alt !== WEBSITE_ALTS.get(image.src))
+      .map((image) => ({ src: image.src, readme: image.alt, website: WEBSITE_ALTS.get(image.src) }));
+    expect(differing).toEqual([]);
+  });
+
+  it('reads the images of its pictures, their dark-scheme files and their alt texts', () => {
+    const html = [
+      '<p><img src="docs/media/stills/hero-light.png" alt="A &quot;whole&quot; organisation &amp; more"></p>',
+      '<picture>',
+      '  <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/hero-light.png">',
+      '  <img src="docs/media/stills/hero-dark.png" width="400" alt="The other theme.">',
+      '</picture>',
+      '<picture>',
+      '  <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/trace-dark.gif">',
+      '  <img src="docs/media/animated/trace-light.gif" alt="">',
+      '</picture>',
+    ].join('\n');
+    const found = images(html);
+    expect(found).toEqual([
+      { src: 'docs/media/stills/hero-light.png', alt: 'A "whole" organisation & more', dark: undefined },
+      {
+        src: 'docs/media/stills/hero-dark.png',
+        alt: 'The other theme.',
+        dark: 'docs/media/stills/hero-light.png',
+      },
+      { src: 'docs/media/animated/trace-light.gif', alt: '', dark: 'docs/media/animated/trace-dark.gif' },
+    ]);
+    expect(found.map(showsOtherTheme)).toEqual([false, true, false]);
+    expect(WEBSITE_ALTS.get('docs/media/animated/trace-dark.gif')).toMatch(/^Animation: /);
   });
 
   it('points only at media that exist', () => {

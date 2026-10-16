@@ -368,6 +368,35 @@ async function frameNode(page, selector, notches, target) {
   await panBy(page, target.x - at.x, target.y - at.y);
 }
 
+/** The room the stills keep between what they fit and the canvas's edges: the app's own around a node it glides to. */
+const FIT_ROOM = 48;
+
+/**
+ * Fits the camera to a part of the drawing, on the canvas as it stands (beside the details drawer while it is open):
+ * as many whole wheel notches about the part's centre as leave FIT_ROOM pixels of canvas around it, then a pan that
+ * centres it. It only zooms in: a part larger than the canvas is centred at the scale it has. `measure` returns the
+ * part's box on screen and is asked again after the zoom. The pointer rests off the canvas after each step, so no
+ * hover preview stands in for the selection's trace.
+ * @param {Page} page @param {() => Promise<Box>} measure
+ */
+async function fitCamera(page, measure) {
+  const canvas = await boxOf(page, 'svg.dg-canvas');
+  const part = await measure();
+  const fits = Math.min(
+    (canvas.width - 2 * FIT_ROOM) / part.width,
+    (canvas.height - 2 * FIT_ROOM) / part.height,
+  );
+  // A wheel notch scales by 2^0.2 (d3-zoom's default for a delta of 100 pixels).
+  await zoomAt(page, centre(part), Math.floor(Math.log2(fits) / 0.2));
+  await page.mouse.move(RESTING.x, RESTING.y);
+  await sleep(400);
+  const at = centre(await measure());
+  const middle = centre(canvas);
+  await panBy(page, middle.x - at.x, middle.y - at.y);
+  await page.mouse.move(RESTING.x, RESTING.y);
+  await sleep(800);
+}
+
 /** @param {string} id */
 function nodeSelector(id) {
   return `svg.dg-canvas [data-id="${id}"]`;
@@ -403,8 +432,7 @@ const STILLS = {
     await sleep(400);
   },
   // The selection trace on a load balancer: the global HTTPS forwarding rule of the web project, selected, then the
-  // camera fitted to its trace beside the details drawer: as many wheel notches as leave 48 px of canvas around it
-  // (the room the app keeps around a node it glides to), and a pan that centres it.
+  // camera fitted to its trace beside the details drawer.
   trace: async (page, url) => {
     await openView(page, url, '/diagram#snapshot=demo:M&lens=load-balancing&detail=all');
     await frameNode(page, nodeSelector(DEMO.httpsRule), 6, { x: 420, y: 360 });
@@ -412,8 +440,7 @@ const STILLS = {
     await page.getByRole('complementary', { name: 'Details' }).waitFor({ state: 'visible' });
     await page.mouse.move(RESTING.x, RESTING.y);
     await sleep(800);
-    // The screen box of the selected rule, the resources its trace reaches and its traced lines. The pointer rests off
-    // the canvas, so no hover preview stands in for the selection's trace.
+    // The screen box of the selected rule, the resources its trace reaches and its traced lines.
     const traced = async () =>
       /** @type {Box} */ (
         await page.evaluate(`(() => {
@@ -430,21 +457,14 @@ const STILLS = {
           };
         })()`)
       );
-    const canvas = await boxOf(page, 'svg.dg-canvas');
-    const room = 48;
-    const trace = await traced();
-    const fits = Math.min((canvas.width - 2 * room) / trace.width, (canvas.height - 2 * room) / trace.height);
-    // A wheel notch scales by 2^0.2 (d3-zoom's default for a delta of 100 pixels).
-    await zoomAt(page, centre(trace), Math.floor(Math.log2(fits) / 0.2));
-    await page.mouse.move(RESTING.x, RESTING.y);
-    await sleep(400);
-    const at = centre(await traced());
-    const middle = centre(canvas);
-    await panBy(page, middle.x - at.x, middle.y - at.y);
-    await page.mouse.move(RESTING.x, RESTING.y);
-    await sleep(800);
+    await fitCamera(page, traced);
   },
-  // The details drawer of the bastion VM.
+  // The details drawer of the bastion VM, selected, then the camera fitted to the VM's project beside the drawer: the
+  // VM, its disk (what its trace reaches in the project), the project's other machines and the traced line that leaves
+  // for its subnetwork. The trace also reaches that subnetwork, in the Shared VPC host's network across the
+  // organisation, so a frame that held it would shrink every card past reading; and selecting the VM pans the camera
+  // to show as much of that trace as fits (frontend/src/diagram/camera.ts, revealTransform), which leaves the VM at the
+  // drawer's edge.
   drawer: async (page, url) => {
     await openView(page, url, '/diagram#snapshot=demo:M&lens=compute&detail=all');
     await frameNode(page, nodeSelector(DEMO.bastion), 6, { x: 420, y: 380 });
@@ -452,6 +472,7 @@ const STILLS = {
     await page.getByRole('complementary', { name: 'Details' }).waitFor({ state: 'visible' });
     await page.mouse.move(RESTING.x, RESTING.y);
     await sleep(800);
+    await fitCamera(page, () => boxOf(page, nodeSelector(DEMO.retailBatch)));
   },
   // A day compared with the day before: 23 to 24 September, the web group's scale-out.
   timeline: async (page, url) => {
