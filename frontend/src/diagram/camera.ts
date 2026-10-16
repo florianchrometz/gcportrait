@@ -11,6 +11,11 @@
  * The keyboard's camera is here too: a move to an item pans just enough to show it, and first zooms in to
  * the scale at which labels are drawn when the camera is further out (`keyboardTransform`); the zoom keys scale by
  * `ZOOM_STEP` about the focused item (`zoomStepTransform`).
+ *
+ * And the fingers' (touch.ts): one finger keeps what it touched under it (`panTransform`), two keep what they touched
+ * under them as near as a scale and a pan can, so they zoom about their midpoint and pan with it (`pinchTransform`),
+ * and a double tap zooms in by `DOUBLE_TAP_ZOOM` about the point tapped (`doubleTapTransform`), all within the scale
+ * extent a mouse wheel has.
  */
 import type { Rect } from '@gcportrait/layout';
 
@@ -211,4 +216,59 @@ export function zoomStepTransform(
   const at = box === null ? { x: width / 2, y: height / 2 } : screenCentre(box, current);
   const zoomed = zoomAbout(current, k, at.x, at.y);
   return box === null ? zoomed : (revealTransform(box, box, width, height, zoomed) ?? zoomed);
+}
+
+/** A point on the canvas, in CSS px from its top-left corner (or, where a name says so, in drawing units). */
+export interface ScreenPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** The drawing's point (drawing units) that `camera` shows at the canvas point `at`. */
+export function drawingPointAt(camera: CameraTransform, at: ScreenPoint): ScreenPoint {
+  return { x: (at.x - camera.x) / camera.k, y: (at.y - camera.y) / camera.k };
+}
+
+/**
+ * One finger's pan: the camera at the scale of `current` that shows the drawing's point `held` (drawing units, what
+ * the finger touched) under the finger at `at`, so what lay under it stays under it.
+ */
+export function panTransform(current: CameraTransform, held: ScreenPoint, at: ScreenPoint): CameraTransform {
+  return { k: current.k, x: at.x - held.x * current.k, y: at.y - held.y * current.k };
+}
+
+function midpoint(a: ScreenPoint, b: ScreenPoint): ScreenPoint {
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
+/**
+ * Two fingers' pinch: the camera that keeps the drawing's points `held` (drawing units, what the two fingers touched)
+ * under the fingers at `at` as near as a scale and a pan can. The scale is the fingers' distance over the points'
+ * (within the scale extent; `current`'s when the points are one), and the points' midpoint is drawn at the fingers'
+ * midpoint, which may itself move, so a pinch zooms about its midpoint and pans with it.
+ */
+export function pinchTransform(
+  current: CameraTransform,
+  held: readonly [ScreenPoint, ScreenPoint],
+  at: readonly [ScreenPoint, ScreenPoint],
+): CameraTransform {
+  const apart = Math.hypot(held[1].x - held[0].x, held[1].y - held[0].y);
+  const fingers = Math.hypot(at[1].x - at[0].x, at[1].y - at[0].y);
+  const k = apart > 0 ? clampScale(fingers / apart) : current.k;
+  const drawn = midpoint(held[0], held[1]);
+  const now = midpoint(at[0], at[1]);
+  return { k, x: now.x - drawn.x * k, y: now.y - drawn.y * k };
+}
+
+/** A double tap scales the camera by this factor (a mouse's double-click is drill-in's, and zooms nothing). */
+export const DOUBLE_TAP_ZOOM = 2;
+
+/**
+ * A double tap at `at`: the camera `current` scaled by `DOUBLE_TAP_ZOOM` about that point, within the scale
+ * extent; null when the extent leaves nothing to do.
+ */
+export function doubleTapTransform(current: CameraTransform, at: ScreenPoint): CameraTransform | null {
+  const k = clampScale(current.k * DOUBLE_TAP_ZOOM);
+  if (k === current.k) return null;
+  return zoomAbout(current, k, at.x, at.y);
 }

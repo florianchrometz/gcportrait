@@ -24,6 +24,15 @@
  * frame the zone (disclosure/flipCamera.ts); after a flip from the keyboard, focus follows the zone (its collapse
  * button, or its chip). Without `onFlip` a chip is selected like any node.
  *
+ * Fingers (touch.ts; AGENTS.md, Product rules, the touch model) come as pointer events of `pointerType` `touch`, read
+ * here into gestures rather than by d3-zoom: one finger pans, two pinch about their midpoint and pan, a tap does what a
+ * click does (selects, clears, or flips a chip), a double tap zooms in about its point (on a chip or a collapse button
+ * the first tap's flip stands instead, as a double-click's second click does not flip it back), and a long press
+ * (500 ms, without moving) shows what hover shows a mouse, the trace's preview and the tooltip there, until the next
+ * finger touches; a long press on the selected node's console action also shows its label, and leaves the browser's
+ * own menu for its link. The browser's click, double-click, right-click and mouse events made from a finger are the
+ * finger's, already read; a mouse and a pen keep everything above exactly as it is.
+ *
  * The keyboard (style skill §13; keyboard/navigation.ts): the drawing is one tab stop (roving `tabindex`; at first
  * its top-left solid node); the arrow keys move between the items of a zone (cards, chips, card-sized zones and the
  * open zones inside it, which take focus on their collapse button), ↓ on an open zone goes inside it, an arrow with
@@ -47,6 +56,7 @@ import type { Rect } from '@gcportrait/layout';
 import { Menu, type MenuCloseReason, type MenuItem } from '../ui/Menu';
 import { canDrillIn, nodeMenuItems } from './actions';
 import {
+  doubleTapTransform,
   easeInOut,
   focusTransform,
   GLIDE_MS,
@@ -56,6 +66,7 @@ import {
   revealTransform,
   zoomStepTransform,
   type JumpMode,
+  type ScreenPoint,
 } from './camera';
 import { isCanvasFocusParked, parkCanvasFocus, unparkCanvasFocus } from './canvasFocus';
 import { DiagramDrawing, planDrawing, type DrawingOptions } from './Drawing';
@@ -68,6 +79,8 @@ import { levelOfDetail, LOD_CLASSES, lodClasses } from './lod';
 import type { DiagramModel } from './model';
 import { createPainter, isConsoleAction, nodeElement, nodeIdOf, type Painter } from './painter';
 import type { DiagramTheme } from './theme/tokens';
+import { createTouchGestures, type TouchGestures, type TouchHandlers } from './touch';
+import styles from './touchHint.module.css';
 import { computeTrace } from './trace';
 import { fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
 
@@ -256,6 +269,55 @@ function applyLevelOfDetail(svg: SVGSVGElement, scale: number): void {
   svg.setAttribute('data-scale', String(Math.round(scale * 1000) / 1000));
 }
 
+/** Whether an event names a finger as its pointer: a pointer event of a touch (and Chromium's click of a tap). */
+function isTouchEvent(event: Event): boolean {
+  return 'pointerType' in event && event.pointerType === 'touch';
+}
+
+/**
+ * What a finger's gestures do on the drawing (the painter effect's): what `TouchHandlers` gives the canvas, but the
+ * camera, which is the pan and zoom effect's; and `release`, which takes off what a long press showed.
+ */
+interface TouchActions extends Pick<TouchHandlers, 'tap' | 'doubleTap' | 'longPress'> {
+  readonly release: () => void;
+}
+
+const NO_TOUCH_ACTIONS: TouchActions = {
+  release: () => undefined,
+  tap: () => undefined,
+  doubleTap: () => undefined,
+  longPress: () => undefined,
+};
+
+/** What a long press shows by the finger: its text, and the point pressed (the canvas's CSS px). */
+interface HeldHint {
+  readonly text: string;
+  readonly at: ScreenPoint;
+}
+
+/** How far above the finger a long press's hint stands (CSS px): a fingertip would cover it nearer. */
+const HINT_LIFT = 40;
+/** The room a long press's hint keeps from the canvas's edges (CSS px). */
+const HINT_MARGIN = 8;
+
+/**
+ * What a long press on `target` names: the tooltip a resting mouse would show there (the `<title>` of the target or
+ * of the nearest element around it that has one, short of the drawing's own: a ghost's, a `secures` overlay's, a legend
+ * row's, the console action's, the collapse button's), or else the node's accessible name; null on the bare canvas.
+ */
+function heldText(svg: SVGSVGElement, target: EventTarget | null): string | null {
+  if (!(target instanceof Element) || !svg.contains(target)) return null;
+  for (let at: Element | null = target; at !== null && at !== svg; at = at.parentElement) {
+    for (const child of Array.from(at.children)) {
+      if (child.localName !== 'title') continue;
+      const text = child.textContent.trim();
+      if (text !== '') return text;
+    }
+  }
+  const id = nodeIdOf(target);
+  return id === null ? null : (nodeElement(svg, id)?.getAttribute('aria-label') ?? null);
+}
+
 export function DiagramCanvas({
   model,
   theme,
@@ -293,6 +355,13 @@ export function DiagramCanvas({
   const drillChosenRef = useRef(false);
   const drawnModelRef = useRef<DiagramModel | null>(null);
   const frameRef = useRef<Rect | null>(null);
+  // What a finger's gestures do on the drawing now (the painter effect's), the gestures themselves (a click, a
+  // double-click or a right-click while they say a finger is touching is the finger's, which they read already), and
+  // what a long press shows by the finger.
+  const touchActionsRef = useRef<TouchActions>(NO_TOUCH_ACTIONS);
+  const gesturesRef = useRef<TouchGestures | null>(null);
+  const hintRef = useRef<HTMLParagraphElement>(null);
+  const [hint, setHint] = useState<HeldHint | null>(null);
   const titleId = useId();
   const [menu, setMenu] = useState<OpenMenu | null>(null);
   const [status, setStatus] = useState('');
@@ -365,13 +434,45 @@ export function DiagramCanvas({
   });
 
   // Pan and zoom, set up once per <svg>: the transform goes straight onto the viewport group. A layout effect,
-  // like the fit below (which needs the behaviour), so the first frame the browser paints is already fitted.
+  // like the fit below (which needs the behaviour), so the first frame the browser paints is already fitted. A mouse's
+  // drag and wheel are d3-zoom's; fingers are read from pointer events into gestures (touch.ts), which move the same
+  // camera, so d3-zoom's own touch listeners stay off.
   useLayoutEffect(() => {
     const svg = svgRef.current;
     const viewport = viewportRef.current;
     if (svg === null || viewport === null) return undefined;
+    const gestures = createTouchGestures({
+      camera: () => zoomTransform(svg),
+      moveCamera: (to) => {
+        // A finger moved the camera: a glide still on its way stops where it is (a tap leaves it, so the glide that
+        // frames a chip the first tap of a double tap opened goes on), and what a long press showed by the finger goes.
+        glideRef.current?.stop();
+        touchActionsRef.current.release();
+        behaviour.transform(select(svg), zoomIdentity.translate(to.x, to.y).scale(to.k));
+      },
+      begin: () => {
+        touchActionsRef.current.release();
+      },
+      tap: (target, at) => {
+        touchActionsRef.current.tap(target, at);
+      },
+      doubleTap: (target, at) => {
+        touchActionsRef.current.doubleTap(target, at);
+      },
+      longPress: (target, at) => {
+        touchActionsRef.current.longPress(target, at);
+      },
+    });
+    gesturesRef.current = gestures;
     const behaviour = zoom<SVGSVGElement, unknown>()
       .scaleExtent([...SCALE_EXTENT])
+      .touchable(false)
+      // d3-zoom's own rule (no secondary button; Ctrl only with the wheel, a touchpad's pinch), and the mouse events the
+      // browser makes from a finger (a tap's mousedown) are the finger's.
+      .filter((event: MouseEvent) => {
+        if (event.type === 'mousedown' && gestures.touching()) return false;
+        return (!event.ctrlKey || event.type === 'wheel') && event.button === 0;
+      })
       .extent((): [[number, number], [number, number]] => {
         const size = canvasSize(svg);
         return [
@@ -388,11 +489,56 @@ export function DiagramCanvas({
     const selection = select(svg);
     selection.call(behaviour).on('dblclick.zoom', null);
     zoomRef.current = behaviour;
+    // A finger's presses are heard on the canvas, its moves and lifts on the window, where they go once the node it
+    // pressed is redrawn mid-gesture. A mouse's and a pen's pointer events pass by.
+    const view = svg.ownerDocument.defaultView;
+    const local = (event: PointerEvent): ScreenPoint => {
+      const box = svg.getBoundingClientRect();
+      return { x: event.clientX - box.left, y: event.clientY - box.top };
+    };
+    const onDown = (event: PointerEvent): void => {
+      if (event.pointerType === 'touch')
+        gestures.down(event.pointerId, local(event), event.target, event.isPrimary);
+    };
+    const onMove = (event: PointerEvent): void => {
+      if (event.pointerType === 'touch') gestures.move(event.pointerId, local(event));
+    };
+    const onUp = (event: PointerEvent): void => {
+      if (event.pointerType === 'touch') gestures.up(event.pointerId, local(event));
+    };
+    const onCancel = (event: PointerEvent): void => {
+      if (event.pointerType === 'touch') gestures.cancel(event.pointerId);
+    };
+    svg.addEventListener('pointerdown', onDown);
+    view?.addEventListener('pointermove', onMove);
+    view?.addEventListener('pointerup', onUp);
+    view?.addEventListener('pointercancel', onCancel);
     return () => {
+      svg.removeEventListener('pointerdown', onDown);
+      view?.removeEventListener('pointermove', onMove);
+      view?.removeEventListener('pointerup', onUp);
+      view?.removeEventListener('pointercancel', onCancel);
+      gestures.dispose();
+      gesturesRef.current = null;
       selection.on('.zoom', null);
       zoomRef.current = null;
     };
   }, []);
+
+  // A long press's hint stands above the finger (under it where the canvas has no room above), inside the canvas.
+  useLayoutEffect(() => {
+    const element = hintRef.current;
+    const svg = svgRef.current;
+    if (hint === null || element === null || svg === null) return;
+    const size = canvasSize(svg);
+    const { offsetWidth: width, offsetHeight: height } = element;
+    const left = Math.max(HINT_MARGIN, Math.min(hint.at.x - width / 2, size.width - HINT_MARGIN - width));
+    const above = hint.at.y - HINT_LIFT - height;
+    const top =
+      above >= HINT_MARGIN ? above : Math.min(hint.at.y + HINT_LIFT, size.height - HINT_MARGIN - height);
+    element.style.left = `${String(Math.round(left))}px`;
+    element.style.top = `${String(Math.round(Math.max(0, top)))}px`;
+  }, [hint]);
 
   // A chip expanded or a zone collapsed here: the drawing with that flip keeps the camera where it was
   // (the fit below leaves it) and glides 200 ms to frame the zone; after a flip from the keyboard, focus follows
@@ -457,10 +603,29 @@ export function DiagramCanvas({
       hovered = id;
       onHoverRef.current?.(id);
     };
+    // What a long press showed (touch.ts): the hover, the hint by the finger, the console action's label. It stays
+    // until the next finger touches or moves the camera, a mouse moves over the drawing, or the drawing is replaced.
+    let held = false;
+    const release = (): void => {
+      if (!held) return;
+      held = false;
+      hover(null);
+      setHint(null);
+      svg.querySelector('.dg-console-action')?.classList.remove('is-held');
+    };
+    // A click, a double-click or a right-click is a finger's when it says so (Chromium's) or comes while a finger is
+    // on the canvas or has just left it: the gestures read it already.
+    const fromFinger = (event: Event): boolean =>
+      isTouchEvent(event) || gesturesRef.current?.touching() === true;
+    // A finger's hover is its long press's: the pointer events a touch makes on its way (over, then out after the
+    // lift) are not a resting pointer.
     const onPointerOver = (event: Event): void => {
+      if (isTouchEvent(event)) return;
+      release();
       hover(nodeIdOf(event.target));
     };
-    const onPointerLeave = (): void => {
+    const onPointerLeave = (event: Event): void => {
+      if (isTouchEvent(event)) return;
       hover(null);
     };
     const onPointerDown = (event: PointerEvent): void => {
@@ -533,26 +698,71 @@ export function DiagramCanvas({
     // The drawing's tab stop (a node, or an open zone's collapse button), by its node id.
     const tabStopId = (): string | null =>
       nodeIdOf(svg.querySelector('.dg-zones [tabindex="0"], .dg-nodes [tabindex="0"]'));
-    const onClick = (event: MouseEvent): void => {
-      // The console action is a link of its own: it opens its page (a new tab) and changes nothing here.
-      if (isConsoleAction(event.target)) return;
-      // A drag pans the canvas; only a click that stayed put selects.
-      const moved = pressed !== null && Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y) > 4;
-      pressed = null;
-      if (moved) return;
-      const flipped = flipTarget(event.target);
+    // A click (`detail`: its count) or a finger's tap that stayed put: a chip expands, a collapse button collapses its
+    // zone, anything else is selected (the bare canvas clears the selection).
+    const activate = (target: EventTarget | null, detail: number): void => {
+      const flipped = flipTarget(target);
       if (flipped !== null) {
         // A double-click (reserved for drill-in) does not flip back what its first click flipped.
-        if (event.detail <= 1) {
+        if (detail <= 1) {
           clickFlipRef.current = flipped;
           flip(flipped, false);
         }
         return;
       }
       clickFlipRef.current = null;
-      onSelectRef.current(nodeIdOf(event.target));
+      onSelectRef.current(nodeIdOf(target));
+    };
+    const onClick = (event: MouseEvent): void => {
+      // A finger's tap was read as one already (touch.ts); the click the browser makes of it changes nothing more.
+      if (fromFinger(event)) return;
+      // The console action is a link of its own: it opens its page (a new tab) and changes nothing here.
+      if (isConsoleAction(event.target)) return;
+      // A drag pans the canvas; only a click that stayed put selects.
+      const moved = pressed !== null && Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y) > 4;
+      pressed = null;
+      if (moved) return;
+      activate(event.target, event.detail);
+    };
+    // A double tap at a point: one step in, about that point (camera.ts, `doubleTapTransform`), as a glide.
+    const zoomInAt = (at: ScreenPoint): void => {
+      const behaviour = zoomRef.current;
+      if (behaviour === null) return;
+      const to = doubleTapTransform(zoomTransform(svg), at);
+      if (to === null) return;
+      glideRef.current?.stop();
+      glideRef.current = { id: '', mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
+    };
+    touchActionsRef.current = {
+      release,
+      tap: (target) => {
+        // The console action's link opens with the browser's click, as a mouse's does.
+        if (!isConsoleAction(target)) activate(target, 1);
+      },
+      doubleTap: (target, at) => {
+        if (isConsoleAction(target)) return;
+        // Its first tap opened a chip or closed a zone: that flip stands, framed by its own glide, as a double-click's
+        // second click does not flip back what its first flipped. Anywhere else the drawing zooms in about the point.
+        const flipped = clickFlipRef.current;
+        clickFlipRef.current = null;
+        if (flipped === null) zoomInAt(at);
+      },
+      longPress: (target, at) => {
+        release();
+        held = true;
+        hover(nodeIdOf(target));
+        if (isConsoleAction(target)) svg.querySelector('.dg-console-action')?.classList.add('is-held');
+        const text = heldText(svg, target);
+        setHint(text === null ? null : { text, at });
+      },
     };
     const onContextMenu = (event: MouseEvent): void => {
+      // A finger's long press shows what hover shows (above), never the node's menu; on the console action the
+      // browser keeps its own menu for the link.
+      if (fromFinger(event)) {
+        if (!isConsoleAction(event.target)) event.preventDefault();
+        return;
+      }
       const id = nodeIdOf(event.target);
       if (id === null) return;
       event.preventDefault();
@@ -561,6 +771,8 @@ export function DiagramCanvas({
     };
     // A double-click on a container drills into it, as the menu's "Drill in" does (`onDrillIn`).
     const onDoubleClick = (event: MouseEvent): void => {
+      // A finger's double tap was read as one already (touch.ts).
+      if (fromFinger(event)) return;
       const clicked = clickFlipRef.current;
       clickFlipRef.current = null;
       if (isConsoleAction(event.target)) return;
@@ -700,6 +912,11 @@ export function DiagramCanvas({
       svg.removeEventListener('keydown', onKeyDown);
       svg.removeEventListener('focusin', onFocusIn);
       svg.removeEventListener('focusout', onFocusOut);
+      touchActionsRef.current = NO_TOUCH_ACTIONS;
+      if (held) {
+        setHint(null);
+        svg.querySelector('.dg-console-action')?.classList.remove('is-held');
+      }
       painter.dispose();
       painterRef.current = null;
       // The painter's hover goes with it (a hover waits for the pointer's next move).
@@ -801,6 +1018,12 @@ export function DiagramCanvas({
           at={menu.at}
           onClose={closeMenu}
         />
+      )}
+      {hint === null ? null : (
+        // The same words assistive technology has already (the node's name, the element's own `<title>`).
+        <p ref={hintRef} className={styles.hint} aria-hidden="true">
+          {hint.text}
+        </p>
       )}
       <p className="visually-hidden" role="status">
         {status}

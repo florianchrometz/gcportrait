@@ -25,7 +25,8 @@ docker run --rm --publish 127.0.0.1:8080:8080 ghcr.io/florianchrometz/gcportrait
 To run it from the source instead, [contributing.md](contributing.md) has the setup (`pnpm dev:demo`).
 
 The app works on a phone, a tablet and a desktop with the same controls. On a phone or a tablet the top bar's
-controls are behind View and More, and on the diagram one finger pans, two pinch to zoom and a tap selects
+controls are behind View and More, and on the diagram one finger pans, two pinch to zoom, a tap selects, a
+double tap zooms in, and pressing and holding a node shows what resting a mouse on it shows
 ([faq.md](faq.md#does-it-work-on-a-phone-or-a-tablet) says what a touch screen does and does not do there).
 
 ## 2. A first tour

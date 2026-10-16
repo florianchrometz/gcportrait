@@ -13,9 +13,9 @@ import { defineConfig, devices } from '@playwright/test';
  *   (backend/src/auth/sa-harness.testing.ts); demo-only.spec.ts to the real backend in demo-only mode
  *   (backend/src/demo-only-harness.testing.ts); both through fixtures/harness.ts.
  *
- * - `mobile` runs mobile.spec.ts against demo mode: the phone and tablet layouts (AGENTS.md, Product rules) in
- *   Chromium emulating a touch device, at the widths the spec sets (`pnpm --filter @gcportrait/frontend mobile` runs it
- *   alone).
+ * - `mobile` runs mobile.spec.ts and touch.spec.ts against demo mode: the phone and tablet layouts (AGENTS.md, Product
+ *   rules) and the canvas's touch gestures, in Chromium emulating a touch device at the sizes the specs set (`pnpm
+ *   --filter @gcportrait/frontend mobile` runs it alone).
  *
  * Locally a server that is already running on either port is reused; CI always starts fresh ones. Chromium
  * only for now; the functional specs at a desktop window of 1440 × 900.
@@ -23,7 +23,7 @@ import { defineConfig, devices } from '@playwright/test';
 const DEMO_URL = 'http://localhost:5174';
 const LIVE_URL = 'http://localhost:5173';
 const LIVE_SPECS = /(?:live|signin|preflight|live-pull|sa-mode|demo-only|permissions-variables)\.spec\.ts$/;
-const MOBILE_SPECS = /mobile\.spec\.ts$/;
+const MOBILE_SPECS = /(?:mobile|touch)\.spec\.ts$/;
 const VIEWPORT = { width: 1440, height: 900 };
 const isCI = process.env.CI !== undefined && process.env.CI !== '';
 

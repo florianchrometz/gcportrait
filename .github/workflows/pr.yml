@@ -208,11 +208,12 @@ jobs:
 
   # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's
   # faithfulness checks, which compare the PNG Chromium draws with resvg's drawing of the same view on this runner,
-  # axe in both themes, and the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts; alone:
-  # `pnpm --filter @gcportrait/frontend mobile`). Three shards of the one suite, each starting its own two dev
-  # servers. There are no screenshot baselines: the committed visual baselines are SVG text (e2e/baselines/diagram/,
-  # compared by the frontend's unit tests) and the render golden PNG (drawn by resvg's WebAssembly build, compared by
-  # the unit tests), so nothing here depends on the operating system that wrote a baseline.
+  # axe in both themes, and the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts and the
+  # canvas's touch gestures in touch.spec.ts; alone: `pnpm --filter @gcportrait/frontend mobile`). Three shards of the
+  # one suite, each starting its own two dev servers. There are no screenshot baselines: the committed visual
+  # baselines are SVG text (e2e/baselines/diagram/, compared by the frontend's unit tests) and the render golden PNG
+  # (drawn by resvg's WebAssembly build, compared by the unit tests), so nothing here depends on the operating system
+  # that wrote a baseline.
   e2e:
     name: e2e (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest

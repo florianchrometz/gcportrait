@@ -14,8 +14,11 @@
   height: 100%;
   background: var(--dg-canvas);
   cursor: grab;
+  /* Fingers pan, pinch and tap the drawing (touch.ts): the browser's own gestures stay off it, and only off it, so
+     the page around it pinch-zooms as the browser does. A tap flashes no highlight over the canvas. */
   touch-action: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dg-canvas:active {
@@ -44,11 +47,11 @@
 
 /*
  * The selected node's "Open in Cloud Console ↗" action: a link, opened only when activated, in the node's
- * top-right corner. Icon-only at rest; on hover and keyboard focus the labelled pill replaces it where
- * the painter found it fits inside the node (data-expand). Keyboard focus fills the pill in the focus colour
- * (its own indicator, so the browser's outline around the link's box is not needed), on a 2 px canvas-coloured
- * rim: on a selected open project in the light theme the focus colour (#185ABC) reaches 3.78 : 1 on the
- * tint and 6.51 on the rim (the chrome's primary, used before, only 2.62 on the tint).
+ * top-right corner. Icon-only at rest; on hover, keyboard focus and a finger's long press (`is-held`) the
+ * labelled pill replaces it where the painter found it fits inside the node (data-expand). Keyboard focus fills
+ * the pill in the focus colour (its own indicator, so the browser's outline around the link's box is not needed),
+ * on a 2 px canvas-coloured rim: on a selected open project in the light theme the focus colour (#185ABC) reaches
+ * 3.78 : 1 on the tint and 6.51 on the rim (the chrome's primary, used before, only 2.62 on the tint).
  */
 .dg-console-action {
   cursor: pointer;
@@ -60,11 +63,11 @@
   stroke-width: 1.5px;
 }
 
-.dg-console-action[data-expand='true']:is(:hover, :focus-visible) .dg-console-full {
+.dg-console-action[data-expand='true']:is(:hover, :focus-visible, .is-held) .dg-console-full {
   display: inline;
 }
 
-.dg-console-action[data-expand='true']:is(:hover, :focus-visible) .dg-console-compact {
+.dg-console-action[data-expand='true']:is(:hover, :focus-visible, .is-held) .dg-console-compact {
   display: none;
 }
 

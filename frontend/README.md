@@ -309,12 +309,13 @@ fold moves the one there is.
 `--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons, jump
 links and handle, the pickers' chips, the Filters' and Settings' choices, the segments, the slider's thumb, the
 footer's links) have their own rules for it. The bars and the drawer keep clear of a phone's notch, rounded corners
-and home indicator with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`). The canvas takes d3-zoom's
-own touch input, with the browser's gestures kept off the drawing (`touch-action: none`): one finger pans, a tap
-selects a node (and opens the drawer), two fingers pinch to zoom. A node's menu (a right-click or Shift+F10 on a
-desktop) has no touch gesture yet, and drill-in none of its own: a double tap drills in only where the browser
-reports it as a double-click (Chromium does), and its target can be a neighbouring node. Their actions are in the
-drawer (Details drills in, "Open in Cloud Console ↗", Copy), and a chip opens with a tap.
+and home indicator with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`). The canvas reads a finger
+itself (section "Diagram renderer", paragraph "Touch"): one finger pans, two pinch, a tap selects (and opens the
+drawer) or opens a chip, a double tap zooms in, a long press shows what hover shows a mouse. A node's menu (a
+right-click or Shift+F10 on a desktop) and drill-in have no touch gesture: their actions are in the drawer (Details
+drills in, "Open in Cloud Console ↗", Copy). The browser's own gestures stay off the canvas alone (`touch-action:
+none`), so every page pinch-zooms as the browser does (`index.html`'s viewport sets no `maximum-scale` or
+`user-scalable`).
 
 **Out of sight, out of reach.** The chrome over the canvas never hides a control that can take focus: the drawer's
 content scrolls inside it and never reaches past its edge (onto the timeline bar), the disclosure bar moves clear of
@@ -352,7 +353,8 @@ than the window or scrolling up and down by itself, text squeezed into a column 
 bar's items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets,
 every control one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe;
 and a theme picked in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input
-by finger.
+by finger. The same project runs `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a
+pan, a pinch, taps, double taps, a long press) and a mouse's drag and double-click on the same page.
 
 ## UI primitives (`src/ui/`)
 
@@ -1126,7 +1128,8 @@ src/diagram/
   session.tsx              DiagramSessionProvider: the workers, the catalog's lens titles, the export source
                            (the pipeline itself is the app store's: src/state/pipeline.ts, section "App state")
   autoDetail.ts            detail `auto` against the measured canvas: the level rule, the hysteresis band
-  camera.ts                the camera glide of `jumpTo`: the end camera and the eased steps
+  camera.ts                the camera glide of `jumpTo`: the end camera and the eased steps; the keyboard's and
+                           the fingers' cameras (pan, pinch, double tap)
   disclosure/              progressive disclosure: flips and levels, the store's selectors and notices,
                            the collapse button, the camera after a flip, the "N of M shown" bar (section below)
   model.ts                 Scene + Layout → what the renderer and the painter need (paint order, chains, dim,
@@ -1142,6 +1145,7 @@ src/diagram/
                            their markers, secures overlays, legend, title block
   DiagramSvg.tsx, static.tsx  the drawing as a standalone SVG document / string (baselines)
   DiagramCanvas.tsx        the interactive canvas: d3-zoom, level of detail, pointer and keyboard events
+  touch.ts                 a finger's pointer events read as gestures: pan, pinch, tap, double tap, long press
   painter.ts               the selection trace, hover preview, selection, console action and focus, painted by
                            classes and attributes, and the traced lines it clones from per-kind prototypes
   geometry/edgePath.ts     orthogonal paths with rounded elbows; heads on a straight stretch
@@ -1201,8 +1205,9 @@ tint most of the drawn chips have, as chips take their zone's tint), so
 nothing in the diagram overlaps them. The Settings page's "Show the legend and the title block on
 the canvas" (`diagramOverlays`, default on) hides them on the canvas only; the standalone SVG always has them.
 
-**Interaction.** d3-zoom pans and zooms the drawing's group (`scaleExtent [0.05, 200]`; double-click does
-nothing, it is kept for drill-in). A new view is fitted to the canvas (never enlarged past 100 %); a theme
+**Interaction.** d3-zoom pans and zooms the drawing's group with a mouse's or a pen's drag and the wheel
+(`scaleExtent [0.05, 200]`; double-click does not zoom, it is kept for drill-in), and the canvas moves the same
+camera for a finger (paragraph "Touch" below). A new view is fitted to the canvas (never enlarged past 100 %); a theme
 change or a selection keeps the camera. Level of detail by the effective scale sets classes on the `<svg>`
 (`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×. Hover previews
 the node's selection trace (below): its path to the root in `accent.path` 3 px (path rings the painter places
@@ -1212,6 +1217,29 @@ selects (on a chip it expands it instead: section "Progressive disclosure"): the
 (`selection=`, history replaced), the `accent.select` ring (3 px between 2 px canvas-coloured gaps) pulses
 twice in a second (no animation with reduced motion), the node's lines are traced (below), and the details
 drawer opens (section "Details drawer" below). Escape or Close clears it.
+
+**Touch.** A finger comes as pointer events of `pointerType` `touch` (AGENTS.md, Product rules, the touch model),
+which `touch.ts` reads into gestures on a clock it is given and the canvas carries out; d3-zoom's own touch
+listeners stay off (`touchable(false)`), and a mouse and a pen keep its drag and wheel, the click, the double-click,
+the right-click and hover exactly as above:
+
+| Gesture | What it does |
+|---|---|
+| One finger moved past 10 px (`TAP_SLOP`) | Pans: the drawing's point it touched stays under it (`camera.ts`, `panTransform`), at the camera's scale then. Never a selection. |
+| Two fingers | Pinch: the scale is their distance over that of the points they touched (within `SCALE_EXTENT`), and those points' midpoint stays under theirs, which pans with them (`pinchTransform`). Lifting one leaves the other panning; a third is ignored. |
+| A tap (lifted within 10 px, before 500 ms) | What a click does: selects, clears the selection on the bare canvas, opens a chip, closes a zone by its collapse button; on the console action the browser's own click opens the link. |
+| A double tap (the second tap within 300 ms of the first's lift and 24 px of where it touched) | Zooms in two times about its point (`doubleTapTransform`), as a 200 ms glide (at once with reduced motion). On a chip or a collapse button the first tap's flip stands and nothing zooms: the flip's own glide frames the zone, as after one tap. |
+| A long press (500 ms within 10 px, `LONG_PRESS_MS`) | What hover shows a mouse: the trace's preview, and by the finger (above it, or below where the canvas has no room above, inside the canvas, `touchHint.module.css`) the tooltip a resting mouse would show there (a ghost's, a `secures` overlay's, a legend row's, the console action's or the collapse button's `<title>`) or else the node's accessible name; on the console action its labelled pill too (`is-held`), and the browser keeps its own menu for the link. It selects nothing and opens no menu; the next finger, a finger's pan or pinch, a mouse over the drawing or a new drawing takes it off. |
+
+A click, a double-click or a right-click is the finger's, and changes nothing more, when it says so (Chromium's click
+of a tap has `pointerType` `touch`) or comes while a finger is on the canvas or has left it less than 500 ms ago
+(`TOUCH_MOUSE_MS`); a `mousedown` in that time is kept from d3-zoom, so a tap never starts a mouse drag. A pan or a
+pinch stops a glide on its way, as a mouse's drag does; a tap leaves it, so the glide that frames a chip the first tap
+of a double tap opened goes on. A finger's moves and lifts are heard on the window, where they go once the node it
+pressed is redrawn mid-gesture. `touch.test.ts` drives the gestures on a clock the test runs, `camera.test.ts` the
+arithmetic, and `DiagramCanvas.touch.test.tsx` every gesture on the canvas with synthetic pointer events: a pan that
+never selects, a pinch whose midpoint stays put, taps, double taps, a long press, a glide a tap leaves and a pan stops,
+and a mouse's and a pen's own input after a finger.
 
 **Selection trace and console affordance.** `trace.ts` computes, from the Layout alone (no Graph), the
 trace of a node: the zones on its path to the root, the lines touching it or anything inside it, the

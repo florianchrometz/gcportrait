@@ -130,15 +130,28 @@ now, and what changed in the last five weeks?
     one per row, its cells as labelled lines.
 
   The touch model: on a phone and a tablet every target is at least 44 × 44 CSS pixels and the bars keep clear
-  of the safe-area insets ([Style and accessibility](#style-and-accessibility)); the canvas takes one finger
-  to pan, two to pinch and a tap to select, with the browser's own gestures kept off the drawing. A node's
-  menu has no touch gesture, and drill-in has none of its own (a double tap drills in only where the browser
-  reports it as a double-click, as Chromium does, and may land on a neighbouring node), so both are in the
-  details drawer as well. The e2e suite's functional specs run at 1440 × 900;
-  `frontend/src/shell/parity.test.tsx` fails on a control the desktop offers and a narrower width lacks (in
-  the DOM and the accessibility tree), and `pnpm --filter @gcportrait/frontend mobile` measures the phone and
-  tablet layouts in a browser, including that every control is in sight when focused and can be tapped. The
-  website serves phones too (`pnpm website:mobile` checks it).
+  of the safe-area insets ([Style and accessibility](#style-and-accessibility)). The canvas reads a finger
+  from its pointer events (`pointerType` `touch`, `frontend/src/diagram/touch.ts`) and leaves a mouse and a
+  pen their own input (d3-zoom's drag and wheel, the click, the double-click that drills in, the right-click
+  menu, hover), so a device with a touch screen and a mouse works with both:
+  - one finger pans and two pinch about their midpoint, what they touched staying under them; neither selects;
+  - a tap (lifted within 10 px, before 500 ms) does what a click does: it selects, clears the selection on the
+    bare canvas, opens a chip and closes a zone by its collapse button;
+  - a double tap (a second tap touching within 300 ms of the first's lift and 24 px of where it touched) zooms
+    in two times about its point, but on a chip or a collapse button leaves the first tap's flip as it is;
+  - a long press (500 ms within 10 px) shows what hover shows, the trace's preview and by the finger the
+    tooltip there or the node's name, until the next touch, and selects nothing;
+  - the clicks, double-clicks and right-clicks a browser makes of a finger change nothing more;
+  - the camera's limits and glides are the same for every pointer, and only the canvas keeps the browser's
+    gestures off (`touch-action: none`), so the pages pinch-zoom as the browser does.
+
+  A node's menu and drill-in have no touch gesture, because a long press is where people look for what a
+  thing is and a double tap where they look for zoom; the details drawer carries both. The e2e suite's
+  functional specs run at 1440 × 900 and `e2e/tests/touch.spec.ts` uses the canvas by finger at a phone's
+  size; `frontend/src/shell/parity.test.tsx` fails on a control the desktop offers and a narrower width lacks
+  (in the DOM and the accessibility tree), and `pnpm --filter @gcportrait/frontend mobile` runs the touch spec
+  and measures the phone and tablet layouts in a browser, including that every control is in sight when
+  focused and can be tapped. The website serves phones too (`pnpm website:mobile` checks it).
 - **Both themes, every time.** A visual change is done when it looks right in light and dark and passes the
   contrast tests, because users and their documents come in both ([Style and
   accessibility](#style-and-accessibility)).
@@ -761,8 +774,9 @@ infra/         Dockerfile, install.sh, deploy.sh, uninstall.sh, compose.yaml, cl
   - ingest, the graph build and the layout run in workers, and the UI thread only renders; the demo generator
     runs in workers only (the data worker, and a demo worker per "Try the demo" job), and zod never loads on
     the UI thread (its codec and vocabularies come from zod-free modules);
-  - the diagram is SVG drawn by React; zoom and pan use d3-zoom with `scaleExtent [0.05, 200]`; double-click
-    is reserved for drill-in; the level of detail follows the effective scale;
+  - the diagram is SVG drawn by React; zoom and pan use d3-zoom with `scaleExtent [0.05, 200]` for a mouse and
+    a pen, and the canvas's own gesture reader for a finger within the same extent; double-click is reserved
+    for drill-in; the level of detail follows the effective scale;
   - search is Fuse.js over the graph's node index;
   - the work a view sends to the renderer is proportional to the view, not to the organisation.
 
@@ -930,7 +944,7 @@ that each works from the same rules and none is favoured.
 | Dependency audit: high and critical advisories fail unless `scripts/audit-allowlist.json` accepts them with an expiry (needs the network; CI's `audit` job; docs/security.md) | `node scripts/check-audit.mjs` |
 | Build, then the SPA's size budgets (UI thread 350 kB, workers 400 kB gzipped; Quality gates, testing and CI) | `pnpm build`, then `pnpm size` |
 | End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`) |
-| The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways (Product rules; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
+| The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways; and the canvas's gestures by finger at 390 × 844 (`e2e/tests/touch.spec.ts`; Product rules, the touch model; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to AGENTS.md and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Validate the asset catalog and report coverage (exit 1 on any violation) | `pnpm catalog:check` (`--group <group>` / `--file <path>` for one group's or file's problems, `--verbose` for rule traces, `pnpm -s catalog:check --json` for JSON) |

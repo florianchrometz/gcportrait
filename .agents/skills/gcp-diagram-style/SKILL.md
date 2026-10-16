@@ -163,19 +163,21 @@ tint; §10 gives each token its contrast figure.
     without a console template) opens the page in a new tab only when activated; the drawer opens. The action
     sits inside the node, in its top-right corner over the border: at rest a 16 px circle around an
     `accent.select` ↗ glyph (1.5 px) with a 1 px `accent.select` outline on `canvas`, concentric with a card's
-    8 px corner (an open zone's: 2 px further in); on hover and keyboard focus it grows leftwards into a 16 px
-    pill with its label in `accent.select` 11 px/500 where that pill fits inside the node (an open zone keeps
-    the circle, so the label never covers its header); its tooltip and accessible name say what it opens. It
-    never reaches outside the node, so it never covers a neighbour (two rows of cards are 20 px apart). It is a
-    tab stop after the node while the node is selected (Escape there clears the selection and returns focus to
-    the node); keyboard focus fills it in `primary` with its glyph and label in `canvas`. The node's menu
-    offers the same link.
+    8 px corner (an open zone's: 2 px further in); on hover, keyboard focus and a long press it grows
+    leftwards into a 16 px pill with its label in `accent.select` 11 px/500 where that pill fits inside the
+    node (an open zone keeps the circle, so the label never covers its header); its tooltip and accessible
+    name say what it opens. It never reaches outside the node, so it never covers a neighbour (two rows of
+    cards are 20 px apart). It is a tab stop after the node while the node is selected (Escape there clears
+    the selection and returns focus to the node); keyboard focus fills it in `primary` with its glyph and
+    label in `canvas`. The node's menu offers the same link.
   - *Legend:* a column "selected", "trace", "path to root" while a node is selected.
   - Paint order: zones, nodes, `secures` overlays, lines, the path, reach and selection rings, the traced lines
     (so no ring's gap hides a traced head), the focus ring, the console action, the legend.
 - Hover previews the same trace transiently without changing the selection; the hovered node also gets a path
   ring (its path starts there). With a selection, only cards, chips and card-sized zones preview, so resting
-  the pointer on an open zone never hides the selection's trace.
+  the pointer on an open zone never hides the selection's trace. On a touch screen a long press is the hover:
+  the same preview, with the tooltip there (or else the node's name) in a chrome tooltip's look above the
+  finger, inside the canvas, until the next touch (AGENTS.md, Product rules, the touch model).
 - Search hit: as select plus a 200 ms glide to centre; collapsed ancestors expand first.
 - Domain/related peers: `accent.peer` outline; the direct edge between peers turns `accent.peer` and dashed.
 - Timeline: added → `accent.peer` outline for one tick; removed → ghost card (dashed `accent.removed`, 50 %
@@ -310,8 +312,12 @@ tablet's and the desktop's (AGENTS.md, "Style and accessibility").
 - **Focus.** Focus rings reach 3 : 1 against what they are drawn over, at any zoom (§9, §10).
 - **Colour never carries meaning alone**: edge kinds differ by dash or head, zone kinds by title position,
   header mark or badge, timeline changes by outline, ghost or dot (§10, "Non-colour cues").
+- **Touch.** On the canvas a finger pans, pinches, taps to select, double-taps to zoom in and long-presses for
+  what hover shows (AGENTS.md, Product rules, the touch model); a node's menu and drill-in are in the details
+  drawer.
 - **Motion** follows the reduced-motion setting (no selection pulse).
 - **Checked by** the e2e suite (`e2e/tests/a11y.spec.ts`): axe reports zero violations on every page in both
   themes, and on the diagram also with the keyboard inside a zone and with a node's menu and the drawer open;
   `e2e/tests/mobile.spec.ts` at phone and tablet widths, with the top bar's sheets and the drawer open,
-  together with 44-pixel targets. The frontend README describes the keyboard model per module.
+  together with 44-pixel targets; `e2e/tests/touch.spec.ts` the canvas's gestures by finger on a phone. The
+  frontend README describes the keyboard model per module.

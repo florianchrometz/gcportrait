@@ -131,7 +131,7 @@ What each layer tests (the tests a change adds belong in the layer it touches):
 | theme | vitest | contrast for every palette pair in both themes (`frontend/src/diagram/theme/theme.test.ts`) |
 | frontend | vitest + Testing Library | the store, the URL-hash codec, the export serialiser, components, the renderer's SVG baselines, every control at every width (`shell/parity.test.tsx`) |
 | backend | vitest + Fastify `inject`, stand-ins for Google's APIs | the gate, the host allowlist, streaming and its caps, retries, the preflight matrix, the render API |
-| e2e | Playwright | the demo flows (load, search, drill-in, filters, timeline, export PNG and SVG, theme), axe in both themes (style skill §13), the live paths against stand-ins, the phone and tablet layouts (`mobile.spec.ts`: overflow, 44-pixel targets, the canvas's room, axe) |
+| e2e | Playwright | the demo flows (load, search, drill-in, filters, timeline, export PNG and SVG, theme), axe in both themes (style skill §13), the live paths against stand-ins, the phone and tablet layouts (`mobile.spec.ts`: overflow, 44-pixel targets, the canvas's room, axe), the canvas's gestures by finger (`touch.spec.ts`) |
 | render | vitest | the render golden PNG (`pnpm render`, tolerance-free) |
 | repository | vitest (`tooling`) and node scripts | provenance (SPDX headers, banned files, the names that never appear, work-item ids, text encoding), licences, the bundle budgets, the user guides against the tree, the infra scripts against stand-ins of `gcloud` and `curl` |
 

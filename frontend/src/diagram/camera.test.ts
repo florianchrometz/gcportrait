@@ -3,17 +3,23 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  DOUBLE_TAP_ZOOM,
+  doubleTapTransform,
+  drawingPointAt,
   easeInOut,
   focusTransform,
   GLIDE_PADDING,
   glideAt,
   keyboardTransform,
+  panTransform,
+  pinchTransform,
   REVEAL_MARGIN,
   ZOOM_STEP,
   zoomAbout,
   zoomStepTransform,
 } from './camera';
 import { SUBTITLE_MIN_SCALE } from './lod';
+import { SCALE_EXTENT, type CameraTransform } from './viewport';
 
 const CANVAS = { width: 1280, height: 624 };
 
@@ -139,5 +145,110 @@ describe('the keyboard camera', () => {
     if (to === null) throw new Error('no zoom');
     expect(to.k).toBeCloseTo(ZOOM_STEP);
     expect(onScreen(card, to).right).toBeLessThanOrEqual(1280);
+  });
+});
+
+/** Where the drawing's point (`wx`, `wy`) lies on screen under `camera`. */
+const onScreen = (camera: CameraTransform, wx: number, wy: number): { x: number; y: number } => ({
+  x: wx * camera.k + camera.x,
+  y: wy * camera.k + camera.y,
+});
+
+describe('the fingers’ camera', () => {
+  const start = { x: -120, y: 40, k: 0.8 };
+
+  it('reads the drawing’s point under a canvas point', () => {
+    const held = drawingPointAt(start, { x: 300, y: 200 });
+    expect(onScreen(start, held.x, held.y)).toEqual({ x: 300, y: 200 });
+  });
+
+  it('pans with one finger: what it touched stays under it, at the camera’s scale', () => {
+    const held = drawingPointAt(start, { x: 300, y: 200 });
+    const to = panTransform(start, held, { x: 260, y: 230 });
+    expect(to.k).toBe(0.8);
+    expect(to.x).toBeCloseTo(-160);
+    expect(to.y).toBeCloseTo(70);
+    // A camera fitted anew mid-gesture: the point still comes under the finger, at that camera's scale.
+    const refitted = panTransform({ x: 5, y: 5, k: 0.3 }, held, { x: 260, y: 230 });
+    expect(refitted.k).toBe(0.3);
+    expect(onScreen(refitted, held.x, held.y).x).toBeCloseTo(260);
+    expect(onScreen(refitted, held.x, held.y).y).toBeCloseTo(230);
+  });
+
+  it('pinches about the fingers’ midpoint, which stays where it was when they move apart around it', () => {
+    const held = [
+      drawingPointAt(start, { x: 400, y: 300 }),
+      drawingPointAt(start, { x: 500, y: 300 }),
+    ] as const;
+    const pinched = pinchTransform(start, held, [
+      { x: 350, y: 300 },
+      { x: 550, y: 300 },
+    ]);
+    expect(pinched.k).toBeCloseTo(1.6);
+    // The drawing's point at the midpoint (450, 300) is still drawn there.
+    const middle = drawingPointAt(start, { x: 450, y: 300 });
+    expect(onScreen(pinched, middle.x, middle.y).x).toBeCloseTo(450);
+    expect(onScreen(pinched, middle.x, middle.y).y).toBeCloseTo(300);
+  });
+
+  it('pans with the midpoint as it pinches, and keeps the scale when the fingers only move together', () => {
+    const held = [
+      drawingPointAt(start, { x: 100, y: 100 }),
+      drawingPointAt(start, { x: 200, y: 200 }),
+    ] as const;
+    const moved = pinchTransform(start, held, [
+      { x: 130, y: 90 },
+      { x: 230, y: 190 },
+    ]);
+    expect(moved.k).toBeCloseTo(start.k);
+    expect(moved.x).toBeCloseTo(start.x + 30);
+    expect(moved.y).toBeCloseTo(start.y - 10);
+    // Two fingers that touched one point give no distance to scale by.
+    const one = drawingPointAt(start, { x: 10, y: 10 });
+    const together = pinchTransform(
+      start,
+      [one, one],
+      [
+        { x: 20, y: 10 },
+        { x: 20, y: 10 },
+      ],
+    );
+    expect(together.k).toBe(start.k);
+    expect(onScreen(together, one.x, one.y).x).toBeCloseTo(20);
+  });
+
+  it('keeps a pinch within the scale extent, its midpoint still fixed', () => {
+    const near = { x: 0, y: 0, k: 0.1 };
+    const out = pinchTransform(
+      near,
+      [drawingPointAt(near, { x: 0, y: 0 }), drawingPointAt(near, { x: 10, y: 0 })],
+      [
+        { x: 4, y: 0 },
+        { x: 6, y: 0 },
+      ],
+    );
+    expect(out.k).toBe(SCALE_EXTENT[0]);
+    expect(onScreen(out, 50, 0).x).toBeCloseTo(5);
+    const deep = { x: 0, y: 0, k: 150 };
+    const closer = pinchTransform(
+      deep,
+      [drawingPointAt(deep, { x: 0, y: 0 }), drawingPointAt(deep, { x: 10, y: 0 })],
+      [
+        { x: -45, y: 0 },
+        { x: 55, y: 0 },
+      ],
+    );
+    expect(closer.k).toBe(SCALE_EXTENT[1]);
+  });
+
+  it('zooms in by DOUBLE_TAP_ZOOM about the point of a double tap, and not past the scale extent', () => {
+    const to = doubleTapTransform(start, { x: 300, y: 200 });
+    if (to === null) throw new Error('no zoom');
+    expect(to.k).toBeCloseTo(start.k * DOUBLE_TAP_ZOOM);
+    const tapped = drawingPointAt(start, { x: 300, y: 200 });
+    expect(onScreen(to, tapped.x, tapped.y).x).toBeCloseTo(300);
+    expect(onScreen(to, tapped.x, tapped.y).y).toBeCloseTo(200);
+    expect(doubleTapTransform({ x: 0, y: 0, k: 150 }, { x: 0, y: 0 })?.k).toBe(SCALE_EXTENT[1]);
+    expect(doubleTapTransform({ x: 0, y: 0, k: SCALE_EXTENT[1] }, { x: 0, y: 0 })).toBeNull();
   });
 });

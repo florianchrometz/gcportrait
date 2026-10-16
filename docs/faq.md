@@ -198,8 +198,11 @@ search) and More (the pages, the snapshot, saved views, Copy link, Export, the t
 details open as a panel over the diagram's right side on a tablet and as a sheet over its lower half on a
 phone, which you drag up to the full height and back, or down to close it; the timeline and the other bars
 wrap onto more lines. When the breadcrumb is longer than the bar, swipe it sideways to reach the levels above
-the one you are on. On the diagram one finger pans, two fingers pinch to zoom and a tap selects a node. A
-node's menu (a right-click on a desktop) has no touch gesture, and drill-in has none of its own: a double tap
-drills in only in browsers that treat it as a double-click (Chrome does), and it can land on a neighbouring
-node. The details offer the same actions (Details drills in, Open in Cloud Console, Copy). Dense diagrams
-still read best on a large screen, and the exports are the same on every device.
+the one you are on. On the diagram one finger pans, two fingers pinch to zoom, a tap selects a node (or opens
+a collapsed project), a double tap zooms in where you tap, and pressing and holding a node for half a second
+shows its name and previews its connections, as resting a mouse on it does, without selecting it; the next
+touch takes that away. A node's menu (a right-click on a desktop) and drilling in (a double-click on a
+desktop) have no touch gesture: the details offer the same actions (Details drills in, Open in Cloud Console,
+Copy). A mouse or a pen on a touch screen works as on a desktop, and the page around the diagram zooms with
+two fingers as any page does. Dense diagrams still read best on a large screen, and the exports are the same
+on every device.
