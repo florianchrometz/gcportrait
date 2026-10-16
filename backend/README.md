@@ -22,14 +22,14 @@ only in its render worker (`src/render/`), never in `dist/server.mjs` (AGENTS.md
 ## Development vs production serving
 
 - **Development.** Vite serves the SPA on :5173 and proxies `/api` to this service on :8080. There is no
-  `frontend/dist`, so this service answers only the API. Any other path gets a 404 JSON body that points to the
-  Vite dev server.
-- **Production image.** `frontend/dist` (or `STATIC_DIR`) holds the build and is served from here. Hashed files
-  under `assets/` get `cache-control: public, max-age=31536000, immutable`; other files revalidate (`no-cache`).
-  A GET or HEAD for a client-side route (a path whose last segment has no dot, such as `/diagram`) gets
-  `index.html` (the SPA fallback); a missing file such as `/assets/missing.js` gets a 404. `index.html` is read
-  once at start-up and served from memory, so the CSP hash of its inline theme script always matches what is
-  sent.
+  `frontend/dist`, so this service answers only the API. Any other path gets a 404 JSON body that points to
+  the Vite dev server.
+- **Production image.** `frontend/dist` (or `STATIC_DIR`) holds the build and is served from here. Hashed
+  files under `assets/` get `cache-control: public, max-age=31536000, immutable`; other files revalidate
+  (`no-cache`). A GET or HEAD for a client-side route (a path whose last segment has no dot, such as
+  `/diagram`) gets `index.html` (the SPA fallback); a missing file such as `/assets/missing.js` gets a 404.
+  `index.html` is read once at start-up and served from memory, so the CSP hash of its inline theme script
+  always matches what is sent.
 - **API paths are never shadowed.** Routes under `/api` are matched first. Static files are refused for `/api`
   paths even if the build contains an `api/` folder. An unknown `/api/*` path always gets a 404 JSON body
   `{ statusCode, error, message, requestId }`.
@@ -70,20 +70,21 @@ API responses carry `cache-control: no-store` and `x-request-id`.
 stops start-up with a message that names the variable but not its value. `backend/.env.example` documents
 every variable: `PORT`, `HOST`, `LOG_LEVEL`, `LOG_FORMAT`, `OAUTH_CLIENT_ID`, `SA_MODE_ENABLED` (only the
 exact string `true` enables it; every other value leaves it off, and a value other than `true`/`false` is
-logged as a start-up warning), `SA_MODE_STRICT_EXPOSURE` (`true` or `false`, off when unset; any other value stops start-up), `DEMO_ONLY`
-(the same rule; with it, `OAUTH_CLIENT_ID` and `SA_MODE_ENABLED=true` stop start-up), `LEGAL_DIR` or
-`LEGAL_BUNDLE` (legal pages served as texts, read and checked once at start-up, `src/legal.ts`),
-`LEGAL_IMPRESSUM_URL` and `LEGAL_PRIVACY_URL` (legal pages linked instead: https URLs; a page linked and served at
-once stops start-up), `BACKEND_SA_EMAIL`
-(with service-account mode on, optional and checked against the account Application Default Credentials resolve
-to; section "Service-account mode"), `HOSTED_BY` (who runs the instance: plain text on one line,
-at most 80 characters, and never naming Google), `STATIC_DIR`, `TRUST_PROXY_HOPS`, `APP_VERSION`,
-`SOURCE_URL`, and the render API's `RENDER_API`, `RENDER_MAX_ASSETS`, `RENDER_MAX_PIXELS`, `RENDER_TIMEOUT_MS` and
-`RENDER_MAX_BODY_BYTES` (section "Render API"). Nothing in it is a secret, and no credential is ever configured through the environment: the
-OAuth client's secret is never used (the browser's token client needs only the id; see
-[docs/self-host-options.md](../docs/self-host-options.md), "The OAuth client in detail"). The service account's own credentials are found the
-way Application Default Credentials are (`GOOGLE_APPLICATION_CREDENTIALS`, gcloud's file, the metadata server),
-never through a variable of this service.
+logged as a start-up warning), `SA_MODE_STRICT_EXPOSURE` (`true` or `false`, off when unset; any other value
+stops start-up), `DEMO_ONLY` (the same rule; with it, `OAUTH_CLIENT_ID` and `SA_MODE_ENABLED=true` stop
+start-up), `LEGAL_DIR` or `LEGAL_BUNDLE` (legal pages served as texts, read and checked once at start-up,
+`src/legal.ts`), `LEGAL_IMPRESSUM_URL` and `LEGAL_PRIVACY_URL` (legal pages linked instead: https URLs; a page
+linked and served at once stops start-up), `BACKEND_SA_EMAIL` (with service-account mode on, optional and
+checked against the account Application Default Credentials resolve to; section "Service-account mode"),
+`HOSTED_BY` (who runs the instance: plain text on one line, at most 80 characters, and never naming Google),
+`STATIC_DIR`, `TRUST_PROXY_HOPS`, `APP_VERSION`, `SOURCE_URL`, and the render API's `RENDER_API`,
+`RENDER_MAX_ASSETS`, `RENDER_MAX_PIXELS`, `RENDER_TIMEOUT_MS` and `RENDER_MAX_BODY_BYTES` (section "Render
+API"). Nothing in it is a secret, and no credential is ever configured through the environment: the OAuth
+client's secret is never used (the browser's token client needs only the id; see
+[docs/self-host-options.md](../docs/self-host-options.md), "The OAuth client in detail"). The service
+account's own credentials are found the way Application Default Credentials are
+(`GOOGLE_APPLICATION_CREDENTIALS`, gcloud's file, the metadata server), never through a variable of this
+service.
 
 `SOURCE_URL` (an `http://` or `https://` URL; anything else stops start-up) is where the source of the running
 version is published. The app links to it in its footer, "Source (MIT)" on every route, linking to `sourceUrl`
@@ -96,21 +97,20 @@ its source can point `SOURCE_URL` there.
 ## Security and logging
 
 - **Headers** (`@fastify/helmet`): a CSP with no `unsafe-*` source. It allows `'self'` for scripts, styles,
-  fonts, workers and connections, `data:` images, and connections to `oauth2.googleapis.com`, the one Google API
-  host the browser itself calls (tokeninfo, and revoking a token on sign-out); `cloudasset`,
-  `cloudresourcemanager` and `storage` stay out, since only the backend calls them.
-  The SPA's inline theme script is allowed by its SHA-256 hash, computed from the served `index.html`
-  (`src/security.ts`). Google Identity Services adds exactly two sources:
-  `script-src https://accounts.google.com/gsi/client` (its client script, which the SPA loads only when someone
-  presses "Sign in with Google") and `connect-src https://accounts.google.com/gsi/` (its own endpoints). Sign-in
-  happens in a window of Google's, not a frame, so `frame-src` stays closed. The script also tries to add a
-  stylesheet for Google's sign-in button; the CSP refuses it on purpose (one console message per page load of
-  the script), because the token client draws nothing on the page. Demo-only mode allows no Google source at
-  all. Also set: HSTS, `nosniff`, `frame-ancestors 'none'` plus the matching `X-Frame-Options: DENY` for
-  browsers without CSP framing support, `Referrer-Policy: no-referrer`, same-origin CORP, and a
-  `Permissions-Policy` that switches off every device, sensor and media feature Chromium knows except
-  `clipboard-write` for the page itself (the copy buttons). [docs/security.md](../docs/security.md) lists each
-  control with the tests that hold it.
+  fonts, workers and connections, `data:` images, and connections to `oauth2.googleapis.com`, the one Google
+  API host the browser itself calls (tokeninfo, and revoking a token on sign-out); `cloudasset`,
+  `cloudresourcemanager` and `storage` stay out, since only the backend calls them. The SPA's inline theme
+  script is allowed by its SHA-256 hash, computed from the served `index.html` (`src/security.ts`). Google
+  Identity Services adds exactly two sources: `script-src https://accounts.google.com/gsi/client` (its client
+  script, which the SPA loads only when someone presses "Sign in with Google") and
+  `connect-src https://accounts.google.com/gsi/` (its own endpoints). Sign-in happens in a window of Google's,
+  not a frame, so `frame-src` stays closed. The script also tries to add a stylesheet for Google's sign-in
+  button; the CSP refuses it on purpose (one console message per page load of the script), because the token
+  client draws nothing on the page. Demo-only mode allows no Google source at all. Also set: HSTS, `nosniff`,
+  `frame-ancestors 'none'` plus the matching `X-Frame-Options: DENY` for browsers without CSP framing support,
+  `Referrer-Policy: no-referrer`, same-origin CORP, and a `Permissions-Policy` that switches off every device,
+  sensor and media feature Chromium knows except `clipboard-write` for the page itself (the copy buttons).
+  [docs/security.md](../docs/security.md) lists each control with the tests that hold it.
 - **Cross-origin isolation in demo-only mode**: `Cross-Origin-Opener-Policy: same-origin` and
   `Cross-Origin-Embedder-Policy: require-corp`, so the page is cross-origin isolated; it loads nothing from
   another origin there. With sign-in the opener policy stays as below and no embedder policy is sent
@@ -137,15 +137,15 @@ its source can point `SOURCE_URL` there.
   that is not authorised) sends `same-origin` itself, so then the link breaks anyway and the app says the
   window closed or showed an error.
 - **Rate limiting** (`@fastify/rate-limit`): 600 requests per minute per client address on every route except
-  `/healthz`, unknown paths included. A 429 has the JSON error shape. The routes that call Google add a limit per
-  token hash (below). Behind Cloud Run set `TRUST_PROXY_HOPS=1` so the limit keys on the real client
+  `/healthz`, unknown paths included. A 429 has the JSON error shape. The routes that call Google add a limit
+  per token hash (below). Behind Cloud Run set `TRUST_PROXY_HOPS=1` so the limit keys on the real client
   address. Fastify 5 accepts a bare hop count for `trustProxy` but deliberately fails closed with it (it
   trusts no address, because a hop count cannot tell a proxy from a client that connects directly and sends
   its own `X-Forwarded-For`). `src/server.ts` therefore passes a trust function, `(address, hop) => hop < n`,
   which restores hop-count trust on purpose. That is only safe where clients cannot reach the container
   directly, as on Cloud Run; leave `TRUST_PROXY_HOPS` at 0 anywhere else.
-- **Request ids**: a well-formed incoming `x-request-id` is kept, otherwise a UUID is minted. It is echoed in the
-  response and logged as `requestId`.
+- **Request ids**: a well-formed incoming `x-request-id` is kept, otherwise a UUID is minted. It is echoed in
+  the response and logged as `requestId`.
 - **Logs** (pino, JSON on stdout): `message` and `severity` fields so Cloud Logging classifies lines without a
   router rule. No credential, session or user identity ever reaches a log line (AGENTS.md, Security and
   privacy, The backend). The request serializer logs method, path, host and the request headers, but only an
@@ -165,19 +165,19 @@ its source can point `SOURCE_URL` there.
 
 ## Scope search and preflight
 
-Both routes call Google with the caller's own token, through the allowlisted client (`src/upstream/request.ts`:
-the four hosts of `src/upstream/allowlist.ts` only, matched exactly on the parsed URL, https on the default
-port, no redirect followed (`redirect: "manual"`: a 3xx is an answer like any other status, never retried),
-60 s, 25 MiB, retries of 429 and 5xx by skill cai-ingestion §4). `src/upstream/google.ts` makes the calls: it
-forwards the bearer token verbatim, sends the incoming request id upstream as `x-request-id`, and logs one line
-per call with a fixed operation name, the host, the status, the attempts and the time (never a URL path, which
-carries the scope, a header value or a body). Answers are classified by HTTP status and the `ErrorInfo` reason,
-never by message text; Google's message is passed on only from a JSON error body, never from an
-HTML page, cut at 2 000 characters. One parser reads Google's error envelope for every route
-(`src/upstream/google-error.ts`), so the preflight and the streams classify an answer alike. Each route has its
-own rate limit per token hash (`src/upstream/token-limit.ts`, in memory, keyed by the token's SHA-256), in
-addition to the server-wide limit per client address; a request without a token (above, "The caller's token") is
-refused with 401 before anything is sent upstream.
+Both routes call Google with the caller's own token, through the allowlisted client
+(`src/upstream/request.ts`: the four hosts of `src/upstream/allowlist.ts` only, matched exactly on the parsed
+URL, https on the default port, no redirect followed (`redirect: "manual"`: a 3xx is an answer like any other
+status, never retried), 60 s, 25 MiB, retries of 429 and 5xx by skill cai-ingestion §4).
+`src/upstream/google.ts` makes the calls: it forwards the bearer token verbatim, sends the incoming request id
+upstream as `x-request-id`, and logs one line per call with a fixed operation name, the host, the status, the
+attempts and the time (never a URL path, which carries the scope, a header value or a body). Answers are
+classified by HTTP status and the `ErrorInfo` reason, never by message text; Google's message is passed on
+only from a JSON error body, never from an HTML page, cut at 2 000 characters. One parser reads Google's error
+envelope for every route (`src/upstream/google-error.ts`), so the preflight and the streams classify an answer
+alike. Each route has its own rate limit per token hash (`src/upstream/token-limit.ts`, in memory, keyed by
+the token's SHA-256), in addition to the server-wide limit per client address; a request without a token
+(above, "The caller's token") is refused with 401 before anything is sent upstream.
 
 **`POST /api/scopes/search`.** Resource Manager v3 `organizations:search`, `folders:search` and
 `projects:search` side by side. The text becomes at most five terms of `[A-Za-z0-9._-]`; folders are queried
@@ -205,10 +205,10 @@ and `outcome` is `ready`, `blocked`, `sign-in` or `retry`. An answer the table d
 and fails closed with Google's status, reason and message. Google's tokeninfo (a POST, the token in the form
 body) runs next to the first check: its email fills `--member` (`YOUR_EMAIL` when the token carries none, or
 when the address could carry shell syntax), and a token it calls invalid ends the preflight with 401. In
-service-account mode the checks are the gate's own (section "Service-account mode"), run afresh: when it does not
-pass, the route answers its 403 (or 401, 503) with the checklist as `preflight`, never a 200; the account's items
-are `no-credentials` when its token cannot be had. Service-account mode off (`SA_MODE_ENABLED`) answers 403, and
-a build without the instance's identity 501.
+service-account mode the checks are the gate's own (section "Service-account mode"), run afresh: when it does
+not pass, the route answers its 403 (or 401, 503) with the checklist as `preflight`, never a 200; the
+account's items are `no-credentials` when its token cannot be had. Service-account mode off
+(`SA_MODE_ENABLED`) answers 403, and a build without the instance's identity 501.
 
 Tests: `src/preflight/run.test.ts` (every checklist row × 200/403/404/429/5xx, the answer table, the 15
 synthetic answers to the gate's caller check plus a 404, the commands, the email),
@@ -240,20 +240,22 @@ status when Cloud Storage leaves it out), `reason` (the one `ErrorInfo` reason, 
   body `{ contentType: "RESOURCE", pageSize: 500, readTime?, assetTypes?, pageToken? }`, following
   `nextPageToken` until a page has none (a repeated token ends the stream with an error frame);
 - user mode: `quotaProject` is required and sent as `x-goog-user-project`; service-account mode: never a quota
-  header, and the gate (section "Service-account mode") runs before every page, a pass remembered for up to five
-  minutes; without the instance's identity (the `serviceAccount` option of `buildServer`) the mode answers 501,
-  so the gate is never skipped, and a gate that closes in the middle of a stream ends it with an `error` frame;
-- frames: `{"t":"progress","pages":0,"assets":0}` at once, then per page `{"t":"page","assets":[…]}` (the assets
-  as Google sent them; a page without an `assets` key is an empty page) and `{"t":"progress","pages":n,"assets":m}`,
-  and at the end `{"t":"done","assets":m,"readTime":"…"}` with the first page's `readTime`, or one `error` frame;
+  header, and the gate (section "Service-account mode") runs before every page, a pass remembered for up to
+  five minutes; without the instance's identity (the `serviceAccount` option of `buildServer`) the mode
+  answers 501, so the gate is never skipped, and a gate that closes in the middle of a stream ends it with an
+  `error` frame;
+- frames: `{"t":"progress","pages":0,"assets":0}` at once, then per page `{"t":"page","assets":[…]}` (the
+  assets as Google sent them; a page without an `assets` key is an empty page) and
+  `{"t":"progress","pages":n,"assets":m}`, and at the end `{"t":"done","assets":m,"readTime":"…"}` with the
+  first page's `readTime`, or one `error` frame;
 - retries 429, 5xx, timeouts and transport failures with exponential backoff and jitter (500 ms, ×2, at most
-  8 s, 5 attempts: `src/upstream/retry.ts`, `src/upstream/request.ts`); 400, 401, 403 and 404 end the stream at
-  once (a `readTime` before the scope existed is `status: 404, code: "NOT_FOUND"`);
+  8 s, 5 attempts: `src/upstream/retry.ts`, `src/upstream/request.ts`); 400, 401, 403 and 404 end the stream
+  at once (a `readTime` before the scope existed is `status: 404, code: "NOT_FOUND"`);
 - caps: 60 s per page attempt, 25 MiB per page (`RESPONSE_TOO_LARGE`, never retried), and a process-wide
   budget of 64 MiB of page bytes held at once (`src/stream/page-budget.ts`): a page is claimed as its bytes
-  arrive and given back once the response has written its frame out to the connection (or at once when the page
-  ends the stream with an error frame); a page the budget cannot hold is retried like a timeout, then ends the
-  stream with a retryable `INSTANCE_BUSY` frame (503);
+  arrive and given back once the response has written its frame out to the connection (or at once when the
+  page ends the stream with an error frame); a page the budget cannot hold is retried like a timeout, then
+  ends the stream with a retryable `INSTANCE_BUSY` frame (503);
 - slow clients (`src/stream/ndjson.ts`): both streaming routes ask for their next line only once the
   previous one has been written out to the connection, and a line over 1 MiB goes out in 1 MiB pieces. A piece
   that has to wait (the connection's buffers being full) must be taken whole within 60 s (`STREAM_STALL_MS`),
@@ -272,10 +274,10 @@ status when Cloud Storage leaves it out), `reason` (the one `ErrorInfo` reason, 
 (`…/storage/v1/b/BUCKET/o/OBJECT?alt=media`, after a metadata lookup for its size); a URI ending in `/`, or
 one that names no object, reads every object under that prefix in name order (`?prefix=`, folder placeholders
 skipped), as `--output-path-prefix` writes them. The export's own lines are streamed as they arrive, a line
-break added between objects that need one, and a failure ends the stream with an `error` frame on a line of its
-own. The headers `x-gcportrait-export-objects` and `x-gcportrait-export-bytes` announce what the read covers.
-Caps: 60 s without a byte (an idle timeout), 1 GiB, 10 000 objects listed under a prefix (folder placeholders
-included); nothing under the prefix is a 404 frame.
+break added between objects that need one, and a failure ends the stream with an `error` frame on a line of
+its own. The headers `x-gcportrait-export-objects` and `x-gcportrait-export-bytes` announce what the read
+covers. Caps: 60 s without a byte (an idle timeout), 1 GiB, 10 000 objects listed under a prefix (folder
+placeholders included); nothing under the prefix is a 404 frame.
 
 Each stream logs one line when it ends (`asset stream ended`, `export read ended`): the mode, pages, assets or
 objects and bytes, retries, how it ended (`done` or the error code), `finished`, `client-gone` or
@@ -285,10 +287,10 @@ attempt, the status and the delay. When the client goes away, the stream's signa
 in flight and any backoff wait, and the stream slot is given back.
 
 Tests (`src/routes/assets.test.ts`, `src/routes/export.test.ts`, `src/stream/stream.test.ts`,
-`src/upstream/request.test.ts`, `src/upstream/retry.test.ts`, `src/upstream/google-error.test.ts`) run against a
-pretend Google (`src/stream/google.testing.ts`, synthetic data, checked by the synthetic-data guard):
-pagination, the request Google receives, every error answer as a frame (read back with `@gcportrait/ingest`,
-a dev dependency for this), retries and their delays (recorded, and on fake timers), timeouts, the 25 MiB cap
+`src/upstream/request.test.ts`, `src/upstream/retry.test.ts`, `src/upstream/google-error.test.ts`) run against
+a pretend Google (`src/stream/google.testing.ts`, synthetic data, checked by the synthetic-data guard):
+pagination, the request Google receives, every error answer as a frame (read back with `@gcportrait/ingest`, a
+dev dependency for this), retries and their delays (recorded, and on fake timers), timeouts, the 25 MiB cap
 declared and streamed, the stream cap and the rate limit, the gate before every page, logs without secrets,
 cancellation when a real client disconnects, and a 5 000-asset organisation streamed over a real connection
 into `@gcportrait/ingest` (ten pages answered after 50 ms each, within a budget of 10 s; the test prints its
@@ -387,38 +389,39 @@ the same way or with an explicit `schema.parse`.
 
 `POST /api/render` draws a view as SVG, PNG or a draw.io file (`"format": "drawio"`, compressed unless
 `"compressed": false`, with or without `fontSource`) with the render library (`@gcportrait/render`), the code
-`pnpm render` runs, so a demo view comes out byte for byte as the command line writes it. [docs/api.md](../docs/api.md)
-is the user's reference (request, sources, headers, errors, limits); here is how it is built.
+`pnpm render` runs, so a demo view comes out byte for byte as the command line writes it.
+[docs/api.md](../docs/api.md) is the user's reference (request, sources, headers, errors, limits); here is how
+it is built.
 
-- **Registration** (`src/server.ts`): with the routes that call Google, so never in demo-only mode, and only while
-  `RENDER_API` is not `false`. Its own Fastify context registers `@fastify/multipart` (so no other route accepts
-  multipart) and adds a `code` to every error answer that lacks one (`src/render/errors.ts`).
-- **Order of checks** (`src/routes/render.ts`): the token and its limit (10 renders a minute per token hash) → the
-  schema (`RenderOptionsSchema` of `@gcportrait/model` plus `source`) → the source's authority: a pull's mode
-  and gate exactly as on the stream (`src/stream/pull.ts`, shared with `src/routes/assets.ts`), tokeninfo's
-  `valid` for a demo or an upload → one render per instance (`src/render/lock.ts`, `429 RENDER_BUSY`) → a stream
-  slot for a pull → the job. `RENDER_TIMEOUT_MS` runs from the lock; the lock, the slot and the job are given back
-  however the answer ends.
-- **A pull** iterates `assetListFrames` with the stream's client, credentials, page budget and slots, hands each
-  frame to the job and asks for the next only once the job has read it, which gives the page's budget claim
-  back; it stops once its `progress` passes `RENDER_MAX_ASSETS`, and an `error` frame becomes the HTTP error
-  with Google's status, code and `ErrorInfo` reason (a server error of Google's as 502). **An upload** streams
-  the multipart `file` part (busboy, at most `RENDER_MAX_BODY_BYTES`) to the job the same way.
+- **Registration** (`src/server.ts`): with the routes that call Google, so never in demo-only mode, and only
+  while `RENDER_API` is not `false`. Its own Fastify context registers `@fastify/multipart` (so no other route
+  accepts multipart) and adds a `code` to every error answer that lacks one (`src/render/errors.ts`).
+- **Order of checks** (`src/routes/render.ts`): the token and its limit (10 renders a minute per token hash) →
+  the schema (`RenderOptionsSchema` of `@gcportrait/model` plus `source`) → the source's authority: a pull's
+  mode and gate exactly as on the stream (`src/stream/pull.ts`, shared with `src/routes/assets.ts`),
+  tokeninfo's `valid` for a demo or an upload → one render per instance (`src/render/lock.ts`,
+  `429 RENDER_BUSY`) → a stream slot for a pull → the job. `RENDER_TIMEOUT_MS` runs from the lock; the lock,
+  the slot and the job are given back however the answer ends.
+- **A pull** iterates `assetListFrames` with the stream's client, credentials, page budget and slots, hands
+  each frame to the job and asks for the next only once the job has read it, which gives the page's budget
+  claim back; it stops once its `progress` passes `RENDER_MAX_ASSETS`, and an `error` frame becomes the HTTP
+  error with Google's status, code and `ErrorInfo` reason (a server error of Google's as 502). **An upload**
+  streams the multipart `file` part (busboy, at most `RENDER_MAX_BODY_BYTES`) to the job the same way.
 - **The job** (`src/render/job.ts`, messages in `src/render/protocol.ts`) runs in a fresh `worker_threads`
   worker per render (`src/render/runner.ts`, `src/render/worker.ts`) with a 1 GiB heap, terminated when the
-  render ends, times out or loses its client: rasterising would otherwise stall `/healthz` and the streams, and
-  the WebAssembly rasteriser's memory (about 10 bytes per PNG pixel) is only freed with its thread. The library
-  reads the data with the app's own code (the import handler for NDJSON and frames, `parseBundle`, the demo
-  loader), so the API draws what the app would. The tests run the same job in process
+  render ends, times out or loses its client: rasterising would otherwise stall `/healthz` and the streams,
+  and the WebAssembly rasteriser's memory (about 10 bytes per PNG pixel) is only freed with its thread. The
+  library reads the data with the app's own code (the import handler for NDJSON and frames, `parseBundle`, the
+  demo loader), so the API draws what the app would. The tests run the same job in process
   (`src/render/in-process.ts`).
 - **The answer** goes out through `sendPieces` (`src/stream/ndjson.ts`, the streams' writer and stall rule)
   with the export's file name, the view's hash, and the detail level and scale used; no non-affiliation line
   travels with it (AGENTS.md, Non-affiliation, brand and legal). One log line per render, counts only: source
   kind, format, theme, assets, bytes, ms, outcome.
-- **A draw.io file** (`application/vnd.jgraph.mxfile`, `.drawio`) is the SVG's drawing translated into draw.io's
-  cells by the frontend's translator (`frontend/src/export/drawio/`, through the render library's `drawDrawio`);
-  the job passes the instance's version (`APP_VERSION`, else the package's) for the file's `agent`. The body
-  limit applies to its uploads as to any render's; `RENDER_MAX_PIXELS` is a PNG's only.
+- **A draw.io file** (`application/vnd.jgraph.mxfile`, `.drawio`) is the SVG's drawing translated into
+  draw.io's cells by the frontend's translator (`frontend/src/export/drawio/`, through the render library's
+  `drawDrawio`); the job passes the instance's version (`APP_VERSION`, else the package's) for the file's
+  `agent`. The body limit applies to its uploads as to any render's; `RENDER_MAX_PIXELS` is a PNG's only.
 
 ## Graceful shutdown
 
@@ -433,19 +436,19 @@ image runs a bundle: `bundle` (`bundle.ts`, esbuild) writes `dist/server.mjs`, o
 every npm dependency and workspace package inlined, its source map (`node --enable-source-maps` maps stack
 traces back to `src/`), and `dist/licenses/server-dependencies.txt`, the licence of every npm package inlined,
 since a bundle drops the licence files `node_modules` would carry. The image then needs no `node_modules`, no
-pnpm and no compiler (`infra/Dockerfile`, [docs/self-host-options.md](../docs/self-host-options.md#run-the-image-locally)). The bundle keeps the
-package layout: `src/config.ts` finds `package.json` and `../frontend/dist` relative to `dist/`, so the image
-copies `backend/package.json` next to it. `tsc -p tsconfig.build.json` (part of `build`) still emits the
-unbundled `dist/*.js` as a compile check; they import the workspace packages' TypeScript and do not run on their
-own. The render job's files are left out of that check (they reach the frontend's components through the render
+pnpm and no compiler (`infra/Dockerfile`,
+[docs/self-host-options.md](../docs/self-host-options.md#run-the-image-locally)). The bundle keeps the package
+layout: `src/config.ts` finds `package.json` and `../frontend/dist` relative to `dist/`, so the image copies
+`backend/package.json` next to it. `tsc -p tsconfig.build.json` (part of `build`) still emits the unbundled
+`dist/*.js` as a compile check; they import the workspace packages' TypeScript and do not run on their own.
+The render job's files are left out of that check (they reach the frontend's components through the render
 library; `tsc -b` checks them through the project references).
 
 The render API adds a second bundle, `dist/render-worker.mjs` (the render library, the frontend's headless
-closure with the draw.io translator and its compressor, fflate, `react-dom/server` and resvg-wasm's glue code, with
-React's production build), which `server.mjs` never
-imports: its runner only starts it, by a path esbuild defines at build time. `dist/render-assets/`, written by the
-library's `writeAssetDir`, holds what the worker reads at run time without `node_modules`: resvg's WebAssembly
-module, unmodified, and the Roboto faces in their loading order with their licences. The bundle step fails on
-any native addon (`.node`), and the licence report covers both bundles and the copied packages
-(`src/render/bundle.test.ts` builds into a temporary directory and draws the golden PNG with the bundled
-worker).
+closure with the draw.io translator and its compressor, fflate, `react-dom/server` and resvg-wasm's glue code,
+with React's production build), which `server.mjs` never imports: its runner only starts it, by a path esbuild
+defines at build time. `dist/render-assets/`, written by the library's `writeAssetDir`, holds what the worker
+reads at run time without `node_modules`: resvg's WebAssembly module, unmodified, and the Roboto faces in
+their loading order with their licences. The bundle step fails on any native addon (`.node`), and the licence
+report covers both bundles and the copied packages (`src/render/bundle.test.ts` builds into a temporary
+directory and draws the golden PNG with the bundled worker).

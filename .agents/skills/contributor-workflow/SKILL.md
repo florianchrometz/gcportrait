@@ -160,8 +160,8 @@ first, then made in small steps (AGENTS.md, "How to work a task").
 5. Both themes, contrast, accessibility (axe) for UI changes.
 6. Security: tokens, host allowlist, logs, CSP untouched or improved.
 7. Non-affiliation (AGENTS.md, "Non-affiliation, brand and legal"): the footers and long-form texts carry the
-   statement, no drawing, export or page metadata does; nothing calls the project official or Google's, and no text names
-   Google with its company suffix; Google's icons are unmodified.
+   statement, no drawing, export or page metadata does; nothing calls the project official or Google's, and no
+   text names Google with its company suffix; Google's icons are unmodified.
 8. Docs and changeset present.
 
 ## 7. Releases

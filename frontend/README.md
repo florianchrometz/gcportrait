@@ -2,12 +2,12 @@
 
 # @gcportrait/frontend
 
-The gcportrait single-page app: React 19, Vite and TypeScript (strict), for phones, tablets and desktops (three
-layouts, every control at every width: section "Layouts"), light and dark themes, everything the user loads kept
-in the browser's IndexedDB (AGENTS.md, Product rules; Architecture and code). It may import the shared `@gcportrait/*` packages through
-their entry points but never the backend. One workspace imports it: the render library
-([`@gcportrait/render`](../packages/render/README.md)), behind both `pnpm render` and the backend's
-`POST /api/render`, reaches the diagram's SVG components and the app's own data readers through
+The gcportrait single-page app: React 19, Vite and TypeScript (strict), for phones, tablets and desktops
+(three layouts, every control at every width: section "Layouts"), light and dark themes, everything the user
+loads kept in the browser's IndexedDB (AGENTS.md, Product rules; Architecture and code). It may import the
+shared `@gcportrait/*` packages through their entry points but never the backend. One workspace imports it:
+the render library ([`@gcportrait/render`](../packages/render/README.md)), behind both `pnpm render` and the
+backend's `POST /api/render`, reaches the diagram's SVG components and the app's own data readers through
 `src/headless.ts`, the package's only entry point (`exports` in `package.json`), which the app itself never
 imports, so `react-dom/server` stays out of the bundle. The backend bundles that path into its render worker
 (`backend/dist/render-worker.mjs`), never into the server.
@@ -18,13 +18,13 @@ and headless accessible primitives (`src/ui/`). On them sit the diagram renderer
 controls (`src/views/`), search (`src/search/`), the details drawer (`src/drawer/`), the demo entry and the
 Snapshots page (`src/snapshots/`), progressive disclosure (`src/diagram/disclosure/`), the keyboard model
 (`src/keyboard/`, `src/diagram/keyboard/`), the timeline (`src/timeline/`), Google sign-in (`src/auth/`: the
-Connect page's sign-in card and mode selector, the top bar's account menu and the store's `connect` slice), the
-live pull and the export load (`src/import/`: "Pull now" and the Connect page's export card, with a role of its
-own in the worker script) and the Export menu (`src/export/`), each in its section below. The bundle is budgeted
-by thread (AGENTS.md, Quality gates, testing and CI), with no zod on the UI thread and the demo generator only
-in workers (AGENTS.md, Architecture and code); section "Performance" says how the app stays fast on demo L and
-XL, and the accessibility rules it follows (the keyboard map, accessible names, focus rings, colour never
-alone, axe on every page) are the gcp-diagram-style skill's §13.
+Connect page's sign-in card and mode selector, the top bar's account menu and the store's `connect` slice),
+the live pull and the export load (`src/import/`: "Pull now" and the Connect page's export card, with a role
+of its own in the worker script) and the Export menu (`src/export/`), each in its section below. The bundle is
+budgeted by thread (AGENTS.md, Quality gates, testing and CI), with no zod on the UI thread and the demo
+generator only in workers (AGENTS.md, Architecture and code); section "Performance" says how the app stays
+fast on demo L and XL, and the accessibility rules it follows (the keyboard map, accessible names, focus
+rings, colour never alone, axe on every page) are the gcp-diagram-style skill's §13.
 
 ## Scripts
 
@@ -119,14 +119,15 @@ src/test/               test setup and helpers (renderApp, renderInPage, axe in 
 
 ## Routes and the URL hash
 
-`/` Connect, `/diagram`, `/snapshots`, `/permissions`, `/settings`, `/impressum`, `/privacy`; anything else shows a
-not-found page inside the shell. Below a base path (the static demo's `/demo/`, Vite's `base`), the router's basename
-is that path and every route lives below it; the "Copy link" button writes the link with it too. The URL **hash is reserved for the ViewSpec** (`@gcportrait/model`) and the router never writes it. The app
-uses `BrowserRouter`, not a hash router. `shell/viewHash.tsx` remembers the last hash seen on `/diagram`, and
-the Diagram navigation link restores it, so leaving the diagram for Settings and coming back keeps the view. On
-`/diagram` itself the link keeps the current hash. Code changes the view only through the app store's actions
-(`useDiagramActions()`, section "App state" below), which write the hash through the router, so the router's
-location and this memory stay current. The skip link moves focus without touching the hash.
+`/` Connect, `/diagram`, `/snapshots`, `/permissions`, `/settings`, `/impressum`, `/privacy`; anything else
+shows a not-found page inside the shell. Below a base path (the static demo's `/demo/`, Vite's `base`), the
+router's basename is that path and every route lives below it; the "Copy link" button writes the link with it
+too. The URL **hash is reserved for the ViewSpec** (`@gcportrait/model`) and the router never writes it. The
+app uses `BrowserRouter`, not a hash router. `shell/viewHash.tsx` remembers the last hash seen on `/diagram`,
+and the Diagram navigation link restores it, so leaving the diagram for Settings and coming back keeps the
+view. On `/diagram` itself the link keeps the current hash. Code changes the view only through the app store's
+actions (`useDiagramActions()`, section "App state" below), which write the hash through the router, so the
+router's location and this memory stay current. The skip link moves focus without touching the hash.
 
 **A route change** ("Try the demo", a top-bar link, Back, a saved view applied from another page) moves focus
 to `<main>` and announces the new page's title in a polite live region (`AppShell`), as a page load would,
@@ -137,8 +138,8 @@ nothing; a hash change alone (a view change on the diagram) is no route change.
 ## App state (`src/state/`)
 
 One small hand-written store (`store.ts`, no state library), read in React through `useSyncExternalStore`
-(`hooks.ts`) and bound to the router by `AppStateProvider` (inside the router, in `App.tsx`). It has exactly seven
-slices (`slices.ts`):
+(`hooks.ts`) and bound to the router by `AppStateProvider` (inside the router, in `App.tsx`). It has exactly
+seven slices (`slices.ts`):
 
 | Slice | Holds | Source of truth | Written by |
 |---|---|---|---|
@@ -151,18 +152,18 @@ slices (`slices.ts`):
 | `timeline` | `ref` (the view's snapshot), `info` (its timeline from the data worker: a stored `history`, or a `live` scope), `today` and `now` (the timeline's last day; a live scope's from the app's clock), a live scope's day `status` (`loading`, `cached`, `error`) and `failures`, the read's `progress`, `blocked` (why days cannot be read), `playback`, `interval`; `extras` (the extra ticks: the scope's stored exports and pulls, null until known) and `playExtras`; the view's `tick` itself stays in the hash | the data worker's Scene answer; the tick cache; the reads; the snapshot library's listing (`extras`) | the timeline controller (`timeline/controller.ts`) and playback, through `updateTimeline`; `extras` by the snapshot library's binding (`bindExtraTicks`); reset when the snapshot changes (the interval and `playExtras` kept) |
 
 **The hash is the source of truth of the view.** The provider feeds every router location to `syncLocation`
-(in a layout effect, before paint): on `/diagram` the `view` slice becomes the hash and its decoding, so unknown
-keys are ignored and a malformed value falls back to its default field by field; elsewhere it is the default view.
-A view change goes out through `writeView`: the new ViewSpec is encoded with `encodeViewSpec`, the slice mirrors
-that hash at once (two writes in one handler build on each other) and the navigator (react-router's `navigate`,
-keeping the query string on the same route) puts it into the URL; when the router reports the same hash back
-nothing changes. A hash the store only read is never rewritten (unknown keys stay in the address bar until the
-next write drops them). Nothing outside the `view` slice ever reaches the hash.
+(in a layout effect, before paint): on `/diagram` the `view` slice becomes the hash and its decoding, so
+unknown keys are ignored and a malformed value falls back to its default field by field; elsewhere it is the
+default view. A view change goes out through `writeView`: the new ViewSpec is encoded with `encodeViewSpec`,
+the slice mirrors that hash at once (two writes in one handler build on each other) and the navigator
+(react-router's `navigate`, keeping the query string on the same route) puts it into the URL; when the router
+reports the same hash back nothing changes. A hash the store only read is never rewritten (unknown keys stay
+in the address bar until the next write drops them). Nothing outside the `view` slice ever reaches the hash.
 
-**Actions** (`useDiagramActions()`, one object for the life of the app; `ViewActions` in `store.ts`). Feature code
-changes the view only through them, never through the router, the workers or the renderer. Discrete changes push
-a history entry (Back undoes them); continuous ones replace it; every action takes `{ history }` to override
-(a filter slider being dragged: `replace`):
+**Actions** (`useDiagramActions()`, one object for the life of the app; `ViewActions` in `store.ts`). Feature
+code changes the view only through them, never through the router, the workers or the renderer. Discrete
+changes push a history entry (Back undoes them); continuous ones replace it; every action takes `{ history }`
+to override (a filter slider being dragged: `replace`):
 
 | Action | History | What it does |
 |---|---|---|
@@ -202,50 +203,50 @@ a worker.
 **The measured canvas and `auto`.** The canvas element is measured synchronously before the first request and
 then by a `ResizeObserver` (`measureDiagramArea` in `diagram/autoDetail.ts`): its height and the width of its
 row, so the details drawer opening beside it (or over it, on a phone or a tablet) changes nothing (a selection
-must never re-lay the diagram out under the node just clicked). In a 1280 × 800 window that is about 1280 × 624
-(the top bar, the timeline bar and the footer take the rest), a budget of 57 rects; until the canvas has a size
-(jsdom), 1280 × 800 stands in. Each request is made at the latest measured size. A resize asks for the view again only
-when its detail is `auto` and the Scene report's rect counts say the new budget would pick another level, with
-a hysteresis band (`AUTO_HYSTERESIS`, 10 %): the next level opens once the budget clears its rect count by 10 %,
-the current one closes once the budget falls 10 % below its own, so dragging a window edge across a threshold
-does not flap. `autoLevel` restates the scene builder's rule (deepest level within the budget; never collapse
-100 rects or fewer); `autoDetail.test.ts` checks it agrees with `buildSceneWithReport` on demo S, M and L. The
-render CLI keeps its own documented default viewport (1280 × 800, `--viewport`).
+must never re-lay the diagram out under the node just clicked). In a 1280 × 800 window that is about 1280 ×
+624 (the top bar, the timeline bar and the footer take the rest), a budget of 57 rects; until the canvas has a
+size (jsdom), 1280 × 800 stands in. Each request is made at the latest measured size. A resize asks for the
+view again only when its detail is `auto` and the Scene report's rect counts say the new budget would pick
+another level, with a hysteresis band (`AUTO_HYSTERESIS`, 10 %): the next level opens once the budget clears
+its rect count by 10 %, the current one closes once the budget falls 10 % below its own, so dragging a window
+edge across a threshold does not flap. `autoLevel` restates the scene builder's rule (deepest level within the
+budget; never collapse 100 rects or fewer); `autoDetail.test.ts` checks it agrees with `buildSceneWithReport`
+on demo S, M and L. The render CLI keeps its own documented default viewport (1280 × 800, `--viewport`).
 
-**The renderer's side.** `DiagramCanvas` takes two store-facing props: `jump` (a pending `jumpTo`), which it makes
-as a glide (`diagram/camera.ts`: the node centred at 100 % or closer, or fitted when larger; 200 ms eased, the
-search hit's glide, skill gcp-diagram-style §6; centre in a line and scale geometric; at once with
+**The renderer's side.** `DiagramCanvas` takes two store-facing props: `jump` (a pending `jumpTo`), which it
+makes as a glide (`diagram/camera.ts`: the node centred at 100 % or closer, or fitted when larger; 200 ms
+eased, the search hit's glide, skill gcp-diagram-style §6; centre in a line and scale geometric; at once with
 reduced motion; a pan or zoom by the person stops it; a centring jump to the node already selected pulses its
-selection ring again; a `reveal` never replaces a centring jump to the same node still waiting to be drawn; with
-`mode: 'reveal'` only the short pan of `revealTransform`, section "Details drawer") as soon as the node is drawn,
-then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump, and the pan that
-follows keyboard focus, keep the node in the part of the canvas that a panel lying over it leaves in view
-(`clearRoom`: an element marked `data-canvas-overlay` along the canvas's whole right or lower edge, the details
-drawer of a phone or a tablet); on a desktop nothing lies over the canvas and the room is the canvas.
+selection ring again; a `reveal` never replaces a centring jump to the same node still waiting to be drawn;
+with `mode: 'reveal'` only the short pan of `revealTransform`, section "Details drawer") as soon as the node
+is drawn, then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump, and
+the pan that follows keyboard focus, keep the node in the part of the canvas that a panel lying over it leaves
+in view (`clearRoom`: an element marked `data-canvas-overlay` along the canvas's whole right or lower edge,
+the details drawer of a phone or a tablet); on a desktop nothing lies over the canvas and the room is the
+canvas.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
-selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH and
-REPLACE navigations, Back, links, the query string), `pipeline.test.ts` (in-process workers: results, supersede,
-the measured size, hysteresis, errors), `diagram/autoDetail.test.ts`, `diagram/camera.test.ts` and
+selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
+and REPLACE navigations, Back, links, the query string), `pipeline.test.ts` (in-process workers: results,
+supersede, the measured size, hysteresis, errors), `diagram/autoDetail.test.ts`, `diagram/camera.test.ts` and
 `diagram/DiagramCanvas.camera.test.tsx`.
 
 ## Top bar (`src/shell/topbar/`)
 
 `TopBar.tsx` only composes; each control group is its own file and talks to
-the app store (never to the router or the renderer). The composition order is the tab order and the visual order
-(`TopBar.test.tsx`). The app row (gcportrait's mark and the wordmark, the navigation, then Snapshot, Saved views, Copy
-link, Theme, the account once someone has signed in, and last, at the bar's right edge, Export, the bar's one filled
-primary button) is on every page; the view row
-(breadcrumb, Lens, Focus, Filters, Detail, Search) is rendered on `/diagram` only (away from the diagram
-its controls could never work). A control that cannot act yet keeps an inert state (`aria-disabled`, focusable,
-doing nothing): Export while nothing is drawn, Copy link away from the diagram, Focus, Filters and Search
-without a snapshot.
+the app store (never to the router or the renderer). The composition order is the tab order and the visual
+order (`TopBar.test.tsx`). The app row (gcportrait's mark and the wordmark, the navigation, then Snapshot,
+Saved views, Copy link, Theme, the account once someone has signed in, and last, at the bar's right edge,
+Export, the bar's one filled primary button) is on every page; the view row (breadcrumb, Lens, Focus, Filters,
+Detail, Search) is rendered on `/diagram` only (away from the diagram its controls could never work). A
+control that cannot act yet keeps an inert state (`aria-disabled`, focusable, doing nothing): Export while
+nothing is drawn, Copy link away from the diagram, Focus, Filters and Search without a snapshot.
 
-On a phone or a tablet the same controls fold into two sheets (section "Layouts"): **More** holds the navigation
-and the app row's actions, **View** the view row's controls but the breadcrumb, the search last as a field the
-sheet's width (`sheets.ts` names them in the store's `ui.sheet`). A tablet keeps the two rows (the wordmark, the
-demo badge and More; the breadcrumb and View); a phone has one: the mark, the breadcrumb on `/diagram`, View and
-More, with the demo badge at the top of More.
+On a phone or a tablet the same controls fold into two sheets (section "Layouts"): **More** holds the
+navigation and the app row's actions, **View** the view row's controls but the breadcrumb, the search last as
+a field the sheet's width (`sheets.ts` names them in the store's `ui.sheet`). A tablet keeps the two rows (the
+wordmark, the demo badge and More; the breadcrumb and View); a phone has one: the mark, the breadcrumb on
+`/diagram`, View and More, with the demo badge at the top of More.
 
 | File | Control | State |
 |---|---|---|
@@ -264,16 +265,17 @@ More, with the demo badge at the top of More.
 
 ## Layouts (`src/ui/screen.ts`)
 
-The app serves phones, tablets and desktops with the same controls (AGENTS.md, Product rules). `ui/screen.ts` names
-the three layouts and their breakpoints, in rem: the phone up to 47.99rem (portrait and landscape), the tablet from
-48rem to 79.99rem, the desktop from 80rem (1280 px at the default text size); `useScreen()` follows the window
-through `matchMedia` (a window without it, as in jsdom, is a desktop). Media queries cannot read custom properties,
-so the stylesheets write the same queries out (`MEDIA`): `(max-width: 79.99rem)` for what the phone and the tablet
-share, `(max-width: 47.99rem)` for the phone alone. One container query asks for a part's own room instead:
-`CONTAINER.shortCanvas`, `(max-height: 10.49rem)`, a phone's canvas too short for the disclosure bar above the
-half-height drawer. `ui/screen.test.ts` refuses any other width or container query in any stylesheet and checks
-`--breakpoint-tablet` and `--breakpoint-desktop` in `styles/tokens.css` against the constants. Where the folding needs the DOM to change (a fold's button, the order of the timeline bar's parts), the
-component reads `useScreen()`; everything else is CSS.
+The app serves phones, tablets and desktops with the same controls (AGENTS.md, Product rules). `ui/screen.ts`
+names the three layouts and their breakpoints, in rem: the phone up to 47.99rem (portrait and landscape), the
+tablet from 48rem to 79.99rem, the desktop from 80rem (1280 px at the default text size); `useScreen()`
+follows the window through `matchMedia` (a window without it, as in jsdom, is a desktop). Media queries cannot
+read custom properties, so the stylesheets write the same queries out (`MEDIA`): `(max-width: 79.99rem)` for
+what the phone and the tablet share, `(max-width: 47.99rem)` for the phone alone. One container query asks for
+a part's own room instead: `CONTAINER.shortCanvas`, `(max-height: 10.49rem)`, a phone's canvas too short for
+the disclosure bar above the half-height drawer. `ui/screen.test.ts` refuses any other width or container
+query in any stylesheet and checks `--breakpoint-tablet` and `--breakpoint-desktop` in `styles/tokens.css`
+against the constants. Where the folding needs the DOM to change (a fold's button, the order of the timeline
+bar's parts), the component reads `useScreen()`; everything else is CSS.
 
 | Part | Desktop | Tablet | Phone |
 |---|---|---|---|
@@ -284,92 +286,97 @@ component reads `useScreen()`; everything else is CSS.
 | Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways); hidden while View or More is open |
 | Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
-**Folds.** View and More are `ui/Popover` sheets (`sheet`). On a desktop they are `inline`: no button, the anchor
-and the panel `display: contents`, so the controls are the rows' own flex items and the desktop's layout and tab
-order are what they were. On a phone or a tablet each is a button and a non-modal dialog hanging from the bar's
-lower edge, never taller than most of the window, and on `/diagram` at most two thirds of the canvas's height:
-the bar carries the canvas's measured height as `--canvas-height` (`TopBar.module.css`, `.overCanvas`), so the
-canvas's lower third shows the drawing change below the sheet while a lens or a filter is chosen in it (the
-disclosure bar's row steps aside meanwhile on a phone); what does not fit scrolls inside the sheet, and focus
-scrolls a control into view there. The panel is the same element either way, so a control keeps its
-state when the window crosses the desktop's breakpoint; crossing the phone's moves the view controls between the
-rows, which mounts them again (their state is the store's). A sheet's content stays mounted while it is closed
-(hidden), so the Saved views dialog opened from More stays open, and a press in it, while it makes the sheet inert,
-does not close the sheet. One sheet at a time (`ui.sheet`, `useSheet`), kept apart from the one popup at a time
-(`ui.popover`): a menu, a list or a popover opens inside the sheet without closing it, in the flow under its control
-(`popup.module.css`, `.sheet`), its column the sheet's width whatever it holds: a menu item longer than that (the
-Snapshot menu's "Open: …" line) wraps, as does a control's label in the sheet (the account's address), and the
-account panel is as wide as the sheet, so a sheet never scrolls sideways. Escape closes that popup first (a popup
-that handled the key leaves the sheet open), then the sheet, with focus back on View or More; a new page or another
-layout closes the sheet, and so does Sign out in the account panel (focus then starts at the page); `/` opens View
-onto the search box. A pick in More that changes the view or the theme (a snapshot in the Snapshot menu, a
-saved view applied, a theme in the Theme menu) closes it too, focus back on More (`ui/Popover` puts focus back
-on a sheet's button when the sheet closes with focus inside it or dropped to the body). A snapshot or a saved
-view picked away from the diagram opens the diagram page, a new page, which closes the sheet by itself and
-starts focus at the page. Copy link and Export's own menu keep the sheet open. No control has a second copy: a
-fold moves the one there is.
+**Folds.** View and More are `ui/Popover` sheets (`sheet`). On a desktop they are `inline`: no button, the
+anchor and the panel `display: contents`, so the controls are the rows' own flex items and the desktop's
+layout and tab order are what they were. On a phone or a tablet each is a button and a non-modal dialog
+hanging from the bar's lower edge, never taller than most of the window, and on `/diagram` at most two thirds
+of the canvas's height: the bar carries the canvas's measured height as `--canvas-height`
+(`TopBar.module.css`, `.overCanvas`), so the canvas's lower third shows the drawing change below the sheet
+while a lens or a filter is chosen in it (the disclosure bar's row steps aside meanwhile on a phone); what
+does not fit scrolls inside the sheet, and focus scrolls a control into view there. The panel is the same
+element either way, so a control keeps its state when the window crosses the desktop's breakpoint; crossing
+the phone's moves the view controls between the rows, which mounts them again (their state is the store's). A
+sheet's content stays mounted while it is closed (hidden), so the Saved views dialog opened from More stays
+open, and a press in it, while it makes the sheet inert, does not close the sheet. One sheet at a time
+(`ui.sheet`, `useSheet`), kept apart from the one popup at a time (`ui.popover`): a menu, a list or a popover
+opens inside the sheet without closing it, in the flow under its control (`popup.module.css`, `.sheet`), its
+column the sheet's width whatever it holds: a menu item longer than that (the Snapshot menu's "Open: …" line)
+wraps, as does a control's label in the sheet (the account's address), and the account panel is as wide as the
+sheet, so a sheet never scrolls sideways. Escape closes that popup first (a popup that handled the key leaves
+the sheet open), then the sheet, with focus back on View or More; a new page or another layout closes the
+sheet, and so does Sign out in the account panel (focus then starts at the page); `/` opens View onto the
+search box. A pick in More that changes the view or the theme (a snapshot in the Snapshot menu, a saved view
+applied, a theme in the Theme menu) closes it too, focus back on More (`ui/Popover` puts focus back on a
+sheet's button when the sheet closes with focus inside it or dropped to the body). A snapshot or a saved view
+picked away from the diagram opens the diagram page, a new page, which closes the sheet by itself and starts
+focus at the page. Copy link and Export's own menu keep the sheet open. No control has a second copy: a fold
+moves the one there is.
 
 **Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
-`--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons, jump
-links and handle, the pickers' chips, the Filters' and Settings' choices, the segments, the slider's thumb, the
-footer's links) have their own rules for it. The bars and the drawer keep clear of a phone's notch, rounded corners
-and home indicator with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`). The canvas reads a finger
-itself (section "Diagram renderer", paragraph "Touch"): one finger pans, two pinch, a tap selects (and opens the
-drawer) or opens a chip, a double tap zooms in, a long press shows what hover shows a mouse. A node's menu (a
-right-click or Shift+F10 on a desktop) and drill-in have no touch gesture: their actions are in the drawer (Details
-drills in, "Open in Cloud Console ↗", Copy). The browser's own gestures stay off the canvas alone (`touch-action:
-none`), so every page pinch-zooms as the browser does (`index.html`'s viewport sets no `maximum-scale` or
-`user-scalable`).
+`--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons,
+jump links and handle, the pickers' chips, the Filters' and Settings' choices, the segments, the slider's
+thumb, the footer's links) have their own rules for it. The bars and the drawer keep clear of a phone's notch,
+rounded corners and home indicator with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`). The
+canvas reads a finger itself (section "Diagram renderer", paragraph "Touch"): one finger pans, two pinch, a
+tap selects (and opens the drawer) or opens a chip, a double tap zooms in, a long press shows what hover shows
+a mouse. A node's menu (a right-click or Shift+F10 on a desktop) and drill-in have no touch gesture: their
+actions are in the drawer (Details drills in, "Open in Cloud Console ↗", Copy). The browser's own gestures
+stay off the canvas alone (`touch-action: none`), so every page pinch-zooms as the browser does
+(`index.html`'s viewport sets no `maximum-scale` or `user-scalable`).
 
-**Out of sight, out of reach.** The chrome over the canvas never hides a control that can take focus: the drawer's
-content scrolls inside it and never reaches past its edge (onto the timeline bar), the disclosure bar moves clear of
-the drawer (to the bottom left on a tablet, above the sheet on a phone, by the sheet's `data-sheet`; hidden while the
-sheet is open on a canvas too short for it there, `CONTAINER.shortCanvas` on the bar's frame), the canvas's content
-is hidden (`visibility`) while the phone's sheet covers it at full height, and the skip links show over the top bar.
-In a half-height sheet too short for the drawer's Close button (a small phone turned sideways), focus scrolls the
-header up to the handle's inner half, so the button's middle stays in view. A control is either in sight when it has focus and tappable at its centre, or not focusable at all.
+**Out of sight, out of reach.** The chrome over the canvas never hides a control that can take focus: the
+drawer's content scrolls inside it and never reaches past its edge (onto the timeline bar), the disclosure bar
+moves clear of the drawer (to the bottom left on a tablet, above the sheet on a phone, by the sheet's
+`data-sheet`; hidden while the sheet is open on a canvas too short for it there, `CONTAINER.shortCanvas` on
+the bar's frame), the canvas's content is hidden (`visibility`) while the phone's sheet covers it at full
+height, and the skip links show over the top bar. In a half-height sheet too short for the drawer's Close
+button (a small phone turned sideways), focus scrolls the header up to the handle's inner half, so the
+button's middle stays in view. A control is either in sight when it has focus and tappable at its centre, or
+not focusable at all.
 
 **Tables and hidden text.** A table too wide for its page scrolls sideways in its own box (`tableWrap` in
 `snapshots/` and `preflight/`), and that box is positioned, as is the permission check's panel (`panel` in
-`preflight/`). Text for assistive technology only (`.visually-hidden`: a caption, the words of an Actions header, a
-live region) is absolutely placed; without a positioned box around it, it is placed against the window instead,
-outside the table's box and the page's own scroll box (`<main>`), where it makes the whole document scroll sideways
-and down, a phone lays the page out wider than its screen, and a swipe slides the top bar and the footer off it. On a phone, the Permissions page's reference (what each mode needs, with its commands) is a list under a heading
-per mode rather than a three-column table, which would leave a command a few characters' width
-(`preflight/PermissionsGuide.tsx`, by `useScreen()`; the same command blocks either way). The Snapshots page's
-tables, whose rows a phone could show only by scrolling them sideways, are a list of cards there, one per row,
-each column a labelled line of a description list over the row's buttons (`snapshots/RowTable.tsx`, by
-`useScreen()`; the same columns and the same buttons either way).
+`preflight/`). Text for assistive technology only (`.visually-hidden`: a caption, the words of an Actions
+header, a live region) is absolutely placed; without a positioned box around it, it is placed against the
+window instead, outside the table's box and the page's own scroll box (`<main>`), where it makes the whole
+document scroll sideways and down, a phone lays the page out wider than its screen, and a swipe slides the top
+bar and the footer off it. On a phone, the Permissions page's reference (what each mode needs, with its
+commands) is a list under a heading per mode rather than a three-column table, which would leave a command a
+few characters' width (`preflight/PermissionsGuide.tsx`, by `useScreen()`; the same command blocks either
+way). The Snapshots page's tables, whose rows a phone could show only by scrolling them sideways, are a list
+of cards there, one per row, each column a labelled line of a description list over the row's buttons
+(`snapshots/RowTable.tsx`, by `useScreen()`; the same columns and the same buttons either way).
 
 **Checks.** `shell/parity.test.tsx` renders the diagram page of demo S with a project selected, the Connect
 page of a live instance signed in, the Permissions page and the Snapshots page with two snapshots stored (its
 rows' facts the same in a table and on a card) at 1440, 820 and 375 px (`test/viewport.ts`: a `matchMedia` for
 a width), opens every fold, menu, popover and dialog of the chrome,
-and fails on a control (a button, a link, a field, a menu item, a radio button, a slider or the drawer's splitter,
-by role and accessible name) that the desktop offers and a narrower width does not, on a second copy of one, and on
-any control added but View and More. It sees the DOM and the accessibility tree only: whether a control is in
-sight and can be tapped is the browser check's. `pnpm --filter @gcportrait/frontend mobile` (the e2e suite's `mobile`
-project, `e2e/tests/mobile.spec.ts`) measures the layouts in Chromium at phone and tablet widths in both themes and
-on phones turned sideways (568 × 320 to 844 × 390), with every menu and panel of View and More opened, on a live
-instance signed in and on the Snapshots page with a snapshot stored (a card per row on a phone, where no box
-scrolls sideways, not even a table's; the tables whole on a tablet): sideways scrolling, a page laid out wider
-than the window or scrolling up and down by itself, text squeezed into a column a few characters wide, the top
-bar's items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets,
-every control one reaches with Tab in sight when focused and tappable at its centre, the canvas's room (the
-share of it an open drawer, View or More sheet leaves in view), axe; and a theme picked in More, Sign out from
-More, a long trail, the sheet's heights and the canvas's touch input by finger. The same project runs `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a
-pan, a pinch, taps, double taps, a long press) and a mouse's drag and double-click on the same page.
+and fails on a control (a button, a link, a field, a menu item, a radio button, a slider or the drawer's
+splitter, by role and accessible name) that the desktop offers and a narrower width does not, on a second copy
+of one, and on any control added but View and More. It sees the DOM and the accessibility tree only: whether a
+control is in sight and can be tapped is the browser check's. `pnpm --filter @gcportrait/frontend mobile` (the
+e2e suite's `mobile` project, `e2e/tests/mobile.spec.ts`) measures the layouts in Chromium at phone and tablet
+widths in both themes and on phones turned sideways (568 × 320 to 844 × 390), with every menu and panel of
+View and More opened, on a live instance signed in and on the Snapshots page with a snapshot stored (a card
+per row on a phone, where no box scrolls sideways, not even a table's; the tables whole on a tablet): sideways
+scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a
+column a few characters wide, the top bar's items, the timeline bar's parts (none over another), the drawer
+within the canvas, 44-pixel targets, every control one reaches with Tab in sight when focused and tappable at
+its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view), axe; and a
+theme picked in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input by
+finger. The same project runs `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a pan,
+a pinch, taps, double taps, a long press) and a mouse's drag and double-click on the same page.
 
 ## UI primitives (`src/ui/`)
 
-Headless, accessible, small (no component library; AGENTS.md, Architecture and code). Each takes the app chrome
-tokens only (both themes; `ui/tokens.test.ts` fails on a raw colour or a colour token one theme lacks), is
-keyboard operable and has Testing Library tests with axe (`src/test/axe.ts`: axe-core in jsdom, all rules but
-colour contrast, which needs a rendering browser, one audit at a time, each waiting for the one before it, so
-that a test timing out mid-audit costs the next one time, not its result; the e2e suite runs axe in Chromium
-on whole pages in both themes). Those with a popup take an optional controlled `open` / `onOpenChange` (the
-store's `usePopover`) and an inert `disabled` (`aria-disabled`, a hint as the title, focusable, doing
-nothing).
+Headless, accessible, small (no component library; AGENTS.md, Architecture and code). Each takes the app
+chrome tokens only (both themes; `ui/tokens.test.ts` fails on a raw colour or a colour token one theme lacks),
+is keyboard operable and has Testing Library tests with axe (`src/test/axe.ts`: axe-core in jsdom, all rules
+but colour contrast, which needs a rendering browser, one audit at a time, each waiting for the one before it,
+so that a test timing out mid-audit costs the next one time, not its result; the e2e suite runs axe in
+Chromium on whole pages in both themes). Those with a popup take an optional controlled `open` /
+`onOpenChange` (the store's `usePopover`) and an inert `disabled` (`aria-disabled`, a hint as the title,
+focusable, doing nothing).
 
 | Primitive | Pattern | Keyboard and pointer |
 |---|---|---|
@@ -403,15 +410,16 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
   `--font-family-sans`, `--font-size-card-title`, ...). Component CSS modules use these properties only, never
   raw colour values. A new colour goes into the skill first, then into the tokens, in both themes.
 - `<html data-theme="light|dark">` selects the palette. The user's preference is `system`, `light` or `dark`;
-  `system` follows `prefers-color-scheme` live (a `change` listener) and is resolved to light or dark before it
-  reaches the attribute. `useTheme()` gives `{ preference, resolved, setPreference }`.
-- No flash of the wrong theme: IndexedDB is the store of record but cannot be read before first paint, so every
-  change is also mirrored to `localStorage["gcportrait.theme"]`. The inline script in `index.html` reads that
-  mirror and sets `data-theme` before anything renders. `src/theme/bootstrap.test.ts` runs the real script
-  against `resolveTheme()` for every combination, so the two cannot drift. If the mirror is missing, the app
-  adopts the IndexedDB value as soon as it loads. The backend's CSP allows exactly this inline script by hash.
-- Fonts: Roboto (400, 500, 700) and Roboto Mono (400) are self-hosted from the `@fontsource/*` npm packages and
-  bundled by Vite (never inlined, never fetched from a CDN). "Google Sans" heads the stack but has no
+  `system` follows `prefers-color-scheme` live (a `change` listener) and is resolved to light or dark before
+  it reaches the attribute. `useTheme()` gives `{ preference, resolved, setPreference }`.
+- No flash of the wrong theme: IndexedDB is the store of record but cannot be read before first paint, so
+  every change is also mirrored to `localStorage["gcportrait.theme"]`. The inline script in `index.html` reads
+  that mirror and sets `data-theme` before anything renders. `src/theme/bootstrap.test.ts` runs the real
+  script against `resolveTheme()` for every combination, so the two cannot drift. If the mirror is missing,
+  the app adopts the IndexedDB value as soon as it loads. The backend's CSP allows exactly this inline script
+  by hash.
+- Fonts: Roboto (400, 500, 700) and Roboto Mono (400) are self-hosted from the `@fontsource/*` npm packages
+  and bundled by Vite (never inlined, never fetched from a CDN). "Google Sans" heads the stack but has no
   `@font-face`, so it is used only when installed on the viewer's system.
 - Font licences: the Roboto fonts are licensed under the SIL Open Font License 1.1, which requires the
   copyright notice and the licence to travel with every redistributed copy. Because the font files are copied
@@ -420,43 +428,45 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
   `gcportrait:font-licences` plugin in `vite.config.ts`; the build fails if a `LICENSE` is missing). The
   backend serves them like any other file. Add a package to `BUNDLED_FONT_PACKAGES` when you bundle another
   font.
-- Own licence: the build also copies gcportrait's own `LICENSE` (the MIT License, with a closing note on what it does
-  not cover: the gcportrait name and icon, and the third-party material) from the repository root, byte for byte, to
-  `dist/licenses/gcportrait-LICENSE.txt` (the `gcportrait:own-licence` plugin), so the built app and the image that
-  ships it carry it.
+- Own licence: the build also copies gcportrait's own `LICENSE` (the MIT License, with a closing note on what
+  it does not cover: the gcportrait name and icon, and the third-party material) from the repository root,
+  byte for byte, to `dist/licenses/gcportrait-LICENSE.txt` (the `gcportrait:own-licence` plugin), so the built
+  app and the image that ships it carry it.
 - Inlined packages' licences: a bundle drops the `LICENSE` files of the npm packages it inlines (React, d3,
   fuse.js, zod, ...), while their licences ask for the notice to travel with every copy. The
   `gcportrait:inlined-licences` plugin collects the modules of every chunk, of the app and of each worker, and
   writes name, version, declared licence and licence text of each package they came from to
   `dist/licenses/third-party-LICENSES.txt`. `backend/bundle.ts` does the same for the server.
-- Focus ring: 2 px primary with a 2 px surface gap on `:focus-visible`, drawn as box shadows plus a transparent
-  outline so forced-colours mode still shows it.
-- Placeholder controls (the top-bar slots, the Connect page actions, the timeline slider without a snapshot) are marked
-  `aria-disabled="true"`, not `disabled`: they stay in the tab order with the focus ring, are announced as
-  unavailable, and do nothing when activated (the `ui/` primitives have the same inert state through their
-  `disabled` prop). The Lens picker is a select-only combobox on `ui/Select` (a button with `role="combobox"`;
-  focus stays on the button, options through `aria-activedescendant`); the Snapshot menu and the Theme menu are
-  menu buttons with radio items on `ui/MenuButton`; Detail is a segmented control (`ui/SegmentedControl`); Focus
-  and Filters are popover buttons, inert until a snapshot is open; the view row is shown on the diagram page only.
+- Focus ring: 2 px primary with a 2 px surface gap on `:focus-visible`, drawn as box shadows plus a
+  transparent outline so forced-colours mode still shows it.
+- Placeholder controls (the top-bar slots, the Connect page actions, the timeline slider without a snapshot)
+  are marked `aria-disabled="true"`, not `disabled`: they stay in the tab order with the focus ring, are
+  announced as unavailable, and do nothing when activated (the `ui/` primitives have the same inert state
+  through their `disabled` prop). The Lens picker is a select-only combobox on `ui/Select` (a button with
+  `role="combobox"`; focus stays on the button, options through `aria-activedescendant`); the Snapshot menu
+  and the Theme menu are menu buttons with radio items on `ui/MenuButton`; Detail is a segmented control
+  (`ui/SegmentedControl`); Focus and Filters are popover buttons, inert until a snapshot is open; the view row
+  is shown on the diagram page only.
 - Both themes are checked by axe in the e2e suite (`e2e/tests/a11y.spec.ts`) on every page in demo mode
-  (`/`, `/diagram`, `/snapshots`, `/permissions`, `/settings`, a page not found), on the diagram with demo S, M
-  and L drawn (at rest, with the keyboard inside a zone, with a node's menu and the drawer open), and on the
+  (`/`, `/diagram`, `/snapshots`, `/permissions`, `/settings`, a page not found), on the diagram with demo S,
+  M and L drawn (at rest, with the keyboard inside a zone, with a node's menu and the drawer open), and on the
   live-mode Connect page.
 
 ## Styling
 
 The chrome has one design. Its colours, focus ring, control metrics, spacing and type scale are the tokens of
 `src/styles/tokens.css` (section "Theme and token policy" above), defined for both themes under
-`<html data-theme="light|dark">`; every stylesheet of the chrome is a CSS module beside its component and uses those
-tokens only (`ui/tokens.test.ts`: no raw colour, every colour token in both themes, and the filled primary buttons'
-text at 4.5 : 1 on their fill). A sheet asks for a width only with the layouts' media queries, in rem, at the end of
-the sheet (section "Layouts"; `ui/screen.test.ts`). The text is Roboto and Roboto Mono, self-hosted. The diagram has a token table of its
-own (`src/diagram/theme/`, section "Diagram theme and contrast" below), which the chrome's tokens never reach.
+`<html data-theme="light|dark">`; every stylesheet of the chrome is a CSS module beside its component and uses
+those tokens only (`ui/tokens.test.ts`: no raw colour, every colour token in both themes, and the filled
+primary buttons' text at 4.5 : 1 on their fill). A sheet asks for a width only with the layouts' media
+queries, in rem, at the end of the sheet (section "Layouts"; `ui/screen.test.ts`). The text is Roboto and
+Roboto Mono, self-hosted. The diagram has a token table of its own (`src/diagram/theme/`, section "Diagram
+theme and contrast" below), which the chrome's tokens never reach.
 
 ## Storage schema (IndexedDB, database `gcportrait`)
 
-`src/storage/db.ts` wraps IndexedDB with `idb`. The schema is versioned: `MIGRATIONS[i]` upgrades version `i` to
-`i + 1` inside the version-change transaction, and `DB_VERSION` is the number of migrations. Never edit a
+`src/storage/db.ts` wraps IndexedDB with `idb`. The schema is versioned: `MIGRATIONS[i]` upgrades version `i`
+to `i + 1` inside the version-change transaction, and `DB_VERSION` is the number of migrations. Never edit a
 shipped migration; append one.
 
 | Store | Key | Value | Indexes | Used |
@@ -472,59 +482,61 @@ memory for the session. **One connection** (`storage/connection.ts`): `main.tsx`
 provides it (`DatabaseContext`); the preferences, the saved views and the snapshot library read the database
 through its `database()` getter for every operation. A connection that blocks a newer schema in another tab
 closes itself (or the browser terminates it), and the next read opens it again for all three at once, so none
-is left on a closed connection (with an older schema than another tab's, the reopening fails and they fall back
-to memory). The data worker opens its own (`snapshots/load.ts`).
+is left on a closed connection (with an older schema than another tab's, the reopening fails and they fall
+back to memory). The data worker opens its own (`snapshots/load.ts`).
 
 ## Demo mode
 
-`VITE_DEMO=1` (what `pnpm dev:demo` sets) shows a "Demo mode" badge in the top bar, makes the Connect page offer
-only "Try the demo" (a size from S to XL, generated, stored and opened; section "Snapshots"),
-drops the `/api` proxy, and makes no backend calls at all: the backend status line on the Connect page exists
-only in normal mode, and the footer's source link uses the build-time `VITE_SOURCE_URL` (section "Source
-offer"). In both modes the Snapshot menu and the empty diagram canvas offer the demo organisations
-S, M and L (`#snapshot=demo:M`); they are generated in the browser, in the data worker, and never fetched (the
-worker fetches only the build's data tables, below). Demo mode has no sign-in: the account menu is absent and
+`VITE_DEMO=1` (what `pnpm dev:demo` sets) shows a "Demo mode" badge in the top bar, makes the Connect page
+offer only "Try the demo" (a size from S to XL, generated, stored and opened; section "Snapshots"), drops the
+`/api` proxy, and makes no backend calls at all: the backend status line on the Connect page exists only in
+normal mode, and the footer's source link uses the build-time `VITE_SOURCE_URL` (section "Source offer"). In
+both modes the Snapshot menu and the empty diagram canvas offer the demo organisations S, M and L
+(`#snapshot=demo:M`); they are generated in the browser, in the data worker, and never fetched (the worker
+fetches only the build's data tables, below). Demo mode has no sign-in: the account menu is absent and
 Google's sign-in script is never loaded.
 
 ## Static demo
 
 `VITE_STATIC_DEMO=1` builds the static demo (AGENTS.md, Modes and hosting): the maintainer's demo at
 <https://gcportrait.app/demo/>, served by the website's GitHub Pages site. Build it with `pnpm demo:static` at
-the root (`scripts/static-demo.mjs`), which sets the variables, runs this package's build and checks the bundle;
-[docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
+the root (`scripts/static-demo.mjs`), which sets the variables, runs this package's build and checks the
+bundle; [docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
 
-- **Demo-only, without a backend.** The app does not ask `GET /api/config`: `src/api/staticConfig.ts` builds the
-  answer a demo-only instance gives (no OAuth client, no service-account mode, `demoOnly: true`) from
+- **Demo-only, without a backend.** The app does not ask `GET /api/config`: `src/api/staticConfig.ts` builds
+  the answer a demo-only instance gives (no OAuth client, no service-account mode, `demoOnly: true`) from
   `VITE_APP_VERSION`, `VITE_SOURCE_URL`, `VITE_LEGAL_IMPRESSUM_URL` and `VITE_LEGAL_PRIVACY_URL`, and
-  `auth/AuthProvider.tsx` puts it into the store at once. From there the app is a demo-only instance (`useDemoOnly()`):
-  the Connect page with the demo, the way to one's own project and the privacy note, the demo badge, the
-  Permissions note. `mode.demo` stays false, so the footer's source link and the legal links come from that
-  configuration. `AuthProvider.tsx` compares `import.meta.env.VITE_STATIC_DEMO` with `'1'` where it is used, so the
-  build sees a constant and leaves the sign-in code out: the static bundle has no Google sign-in script, no tokeninfo
-  and no `/api/config` (`pnpm website:check` looks for their hosts).
-- **Base path.** `base: '/demo/'` (another with `--base`); `main.tsx` gives the router `routerBasename(BASE_URL)`, and
-  the "Copy link" button puts the base into the link (`appPath`). Assets, workers, the data tables and the licence
-  links follow the base by themselves.
-- **Pages.** The build (`staticDemoPages` in `vite.config.ts`, with `scripts/lib/static-demo.mjs`) writes the Content
-  Security Policy into index.html as the first `<meta>` after the charset (the backend's demo-only policy without
-  `frame-ancestors`, the theme bootstrap's hash computed from the written page) and `<meta name="referrer"
-  content="no-referrer">`, then a copy of index.html per route (`diagram.html`, `snapshots.html`, `permissions.html`,
-  `settings.html`, `impressum.html`, `privacy.html`), which a static host serves at the route's address.
+  `auth/AuthProvider.tsx` puts it into the store at once. From there the app is a demo-only instance
+  (`useDemoOnly()`): the Connect page with the demo, the way to one's own project and the privacy note, the
+  demo badge, the Permissions note. `mode.demo` stays false, so the footer's source link and the legal links
+  come from that configuration. `AuthProvider.tsx` compares `import.meta.env.VITE_STATIC_DEMO` with `'1'`
+  where it is used, so the build sees a constant and leaves the sign-in code out: the static bundle has no
+  Google sign-in script, no tokeninfo and no `/api/config` (`pnpm website:check` looks for their hosts).
+- **Base path.** `base: '/demo/'` (another with `--base`); `main.tsx` gives the router
+  `routerBasename(BASE_URL)`, and the "Copy link" button puts the base into the link (`appPath`). Assets,
+  workers, the data tables and the licence links follow the base by themselves.
+- **Pages.** The build (`staticDemoPages` in `vite.config.ts`, with `scripts/lib/static-demo.mjs`) writes the
+  Content Security Policy into index.html as the first `<meta>` after the charset (the backend's demo-only
+  policy without `frame-ancestors`, the theme bootstrap's hash computed from the written page) and
+  `<meta name="referrer" content="no-referrer">`, then a copy of index.html per route (`diagram.html`,
+  `snapshots.html`, `permissions.html`, `settings.html`, `impressum.html`, `privacy.html`), which a static
+  host serves at the route's address.
 - **Legal pages.** The footer links the configured pages elsewhere in a new tab, marked as external and named
   "Impressum (opens HOST in a new tab)" (`legal/ExternalLegalLink.tsx`; section "Legal links and the favicon"
-  below); `/impressum` and `/privacy` link to them; the Connect page's privacy note does too. A live instance whose backend reports `LEGAL_IMPRESSUM_URL` or `LEGAL_PRIVACY_URL` links them
-  the same way.
+  below); `/impressum` and `/privacy` link to them; the Connect page's privacy note does too. A live instance
+  whose backend reports `LEGAL_IMPRESSUM_URL` or `LEGAL_PRIVACY_URL` links them the same way.
 
-`src/api/staticConfig.test.ts`, `src/routes.test.ts`, `src/pages/ConnectPage.staticDemo.test.tsx` (the whole app with
-the static configuration: no request at all, the footer, `/impressum` and `/privacy`, axe; its Connect page and the
-Permissions page's note are a demo-only instance's, which `pages/ConnectPage.demoOnly.test.tsx` checks for both sources
-of the configuration) and `scripts/static-demo.test.ts` at the root cover it; `pnpm --filter @gcportrait/website demo` drives the built demo
-in a browser.
+`src/api/staticConfig.test.ts`, `src/routes.test.ts`, `src/pages/ConnectPage.staticDemo.test.tsx` (the whole
+app with the static configuration: no request at all, the footer, `/impressum` and `/privacy`, axe; its
+Connect page and the Permissions page's note are a demo-only instance's, which
+`pages/ConnectPage.demoOnly.test.tsx` checks for both sources of the configuration) and
+`scripts/static-demo.test.ts` at the root cover it; `pnpm --filter @gcportrait/website demo` drives the built
+demo in a browser.
 
 ## Branding and the non-affiliation notice (`src/branding.ts`)
 
-The non-affiliation statement goes in the footer and in long-form texts only (AGENTS.md, Non-affiliation, brand
-and legal), every string defined once in `src/branding.ts`:
+The non-affiliation statement goes in the footer and in long-form texts only (AGENTS.md, Non-affiliation,
+brand and legal), every string defined once in `src/branding.ts`:
 
 | Constant | Text | Where |
 |---|---|---|
@@ -537,21 +549,21 @@ canvas or in an export), not in a snapshot bundle, not on the Permissions page, 
 `hostedBy` line, which the Connect page shows as "Hosted by NAME." alone and not at all without one
 (`auth/labels.ts` cuts a statement at its end off).
 
-The title block stops at the tagline on the canvas and in a static drawing alike (`DiagramSvg`: the export, the
-baselines, `pnpm render`); no drawing carries the affiliation line, and `documentText`'s `<desc>` ends with
-"Drawn with gcportrait.". Both footer links take the footer's text colour, underlined, and the chrome focus
-ring (style skill §9); `App.test.tsx` and `e2e/tests/shell.spec.ts` check the footer on every route and in both
-themes. The copies of the long form outside the app (the website, the release notes, the third-party notices, the
-image label, `infra/common.sh`, the icons README) are compared with this file by their tests
+The title block stops at the tagline on the canvas and in a static drawing alike (`DiagramSvg`: the export,
+the baselines, `pnpm render`); no drawing carries the affiliation line, and `documentText`'s `<desc>` ends
+with "Drawn with gcportrait.". Both footer links take the footer's text colour, underlined, and the chrome
+focus ring (style skill §9); `App.test.tsx` and `e2e/tests/shell.spec.ts` check the footer on every route and
+in both themes. The copies of the long form outside the app (the website, the release notes, the third-party
+notices, the image label, `infra/common.sh`, the icons README) are compared with this file by their tests
 (`scripts/non-affiliation-copies.test.ts`, `website/src/site.test.ts`, `packages/icons/scripts/data.test.ts`).
 
 ## Source link
 
 gcportrait is licensed under the MIT License, which asks nothing of an instance's operator here. The
-shell footer still links the source on every route, next to the non-affiliation notice, as a courtesy to the people
-who use an instance: a "Source (MIT)" link (`shell/SourceLink.tsx`, the text and default in `source.ts`) that says
-where the source of the version they use is published and under which licence. By default it points at the
-project's repository (AGENTS.md, Product rules). Exports stay as they are.
+shell footer still links the source on every route, next to the non-affiliation notice, as a courtesy to the
+people who use an instance: a "Source (MIT)" link (`shell/SourceLink.tsx`, the text and default in
+`source.ts`) that says where the source of the version they use is published and under which licence. By
+default it points at the project's repository (AGENTS.md, Product rules). Exports stay as they are.
 
 | Mode | Link target |
 |---|---|
@@ -564,9 +576,9 @@ unset, blank or not an http(s) URL, it falls back to `DEFAULT_SOURCE_URL`,
 `https://github.com/florianchrometz/gcportrait`, the same default as the backend's `SOURCE_URL` (a test in
 `backend/src/config.test.ts` fails while the two, or the e2e expectation, disagree). A fork changes both
 defaults ([docs/contributing.md](../docs/contributing.md), "Releases"); whoever runs a modified version
-and publishes its source can point `SOURCE_URL` (and, for a demo build, `VITE_SOURCE_URL`) there. The link takes
-the footer's text colour with an underline: the primary blue on the light footer reaches only 4.3 : 1, short
-of what 11 px text needs.
+and publishes its source can point `SOURCE_URL` (and, for a demo build, `VITE_SOURCE_URL`) there. The link
+takes the footer's text colour with an underline: the primary blue on the light footer reaches only 4.3 : 1,
+short of what 11 px text needs.
 
 ## Legal links and the favicon
 
@@ -580,27 +592,27 @@ what the instance publishes, as `legal` in `GET /api/config` (or the static demo
 | published elsewhere (`legal.impressumUrl` / `legal.privacyUrl`: `LEGAL_IMPRESSUM_URL`, `LEGAL_PRIVACY_URL`, or the static demo's `VITE_LEGAL_IMPRESSUM_URL`, `VITE_LEGAL_PRIVACY_URL`; an `https://` URL without credentials, anything else links nothing) | the same words, linking that page in a new tab (`target="_blank"`, `rel="noopener"`; `legal/ExternalLegalLink.tsx`): the sign-in lives in the tab's memory only, so following the link in the same tab would end a signed-in session (the website, which has no session, keeps its own legal links in the same tab). An arrow after the text (hidden from assistive technology) and the accessible name "Impressum (opens HOST in a new tab)", the visible text first (WCAG 2.5.3); `/impressum`, `/privacy` and the demo-only Connect page's privacy note link the same way |
 | neither, or the build-time demo mode (no backend) | nothing; with no page at all the footer has no "Legal" navigation |
 
-The links take the footer's text colour, underlined, with the chrome focus ring, like the footer's other links.
-`legal/LegalPage.test.tsx` and `pages/ConnectPage.staticDemo.test.tsx` cover the three cases with axe;
-`e2e/tests/shell.spec.ts` drives them in a browser (the configuration answered in the page), in both themes, and
-follows a link elsewhere into a new tab, the app's tab staying where it was.
+The links take the footer's text colour, underlined, with the chrome focus ring, like the footer's other
+links. `legal/LegalPage.test.tsx` and `pages/ConnectPage.staticDemo.test.tsx` cover the three cases with axe;
+`e2e/tests/shell.spec.ts` drives them in a browser (the configuration answered in the page), in both themes,
+and follows a link elsewhere into a new tab, the app's tab staying where it was.
 
-**Favicon.** The app's favicon is gcportrait's mark from its one source, `brand/icon.svg` at the repository root
-([brand/README.md](../brand/README.md)), as it is: `brandFavicon` in `vite.config.ts` writes it into every build as
-`favicon.svg`, serves it there in development, and adds `<link rel="icon" href="BASEfavicon.svg"
-type="image/svg+xml">` to `index.html` under the build's base path (`/favicon.svg` for an instance, whose backend
-serves it under `img-src 'self'`; `/demo/favicon.svg` in the static demo). There is no copy in the tree (no
-`public/` folder). One file serves both themes: its `<style>` carries the dark colours under
-`prefers-color-scheme: dark`. The top bar shows the same file beside the wordmark, as an `<img>` with an empty `alt`
-from `BASE_URL` (`import.meta.env.BASE_URL` + `favicon.svg`), 24 pixels square and centred on the wordmark, with the
-website header's gap (0.6rem) before the name (`TopBar.test.tsx` checks the path in an instance's build and in the
-static demo's, `TopBar.css.test.ts` the size and the gap). An image's `prefers-color-scheme` follows the
-`color-scheme` the theme sets on `<html>`, so the mark takes the app's theme even when it differs from the system's
-(`e2e/tests/shell.spec.ts`). There is no PNG fallback: it would be a second, derived file to keep in step with the
-source, and a PNG cannot follow the theme; a browser without SVG favicons shows its default icon.
-`e2e/tests/shell.spec.ts` checks the link, that the served file is `brand/icon.svg` byte for byte, and that the
-browser draws its light and dark tints by colour scheme; `scripts/static-demo.mjs` and `pnpm website:check` check
-the static demo's.
+**Favicon.** The app's favicon is gcportrait's mark from its one source, `brand/icon.svg` at the repository
+root ([brand/README.md](../brand/README.md)), as it is: `brandFavicon` in `vite.config.ts` writes it into
+every build as `favicon.svg`, serves it there in development, and adds
+`<link rel="icon" href="BASEfavicon.svg" type="image/svg+xml">` to `index.html` under the build's base path
+(`/favicon.svg` for an instance, whose backend serves it under `img-src 'self'`; `/demo/favicon.svg` in the
+static demo). There is no copy in the tree (no `public/` folder). One file serves both themes: its `<style>`
+carries the dark colours under `prefers-color-scheme: dark`. The top bar shows the same file beside the
+wordmark, as an `<img>` with an empty `alt` from `BASE_URL` (`import.meta.env.BASE_URL` + `favicon.svg`), 24
+pixels square and centred on the wordmark, with the website header's gap (0.6rem) before the name
+(`TopBar.test.tsx` checks the path in an instance's build and in the static demo's, `TopBar.css.test.ts` the
+size and the gap). An image's `prefers-color-scheme` follows the `color-scheme` the theme sets on `<html>`, so
+the mark takes the app's theme even when it differs from the system's (`e2e/tests/shell.spec.ts`). There is no
+PNG fallback: it would be a second, derived file to keep in step with the source, and a PNG cannot follow the
+theme; a browser without SVG favicons shows its default icon. `e2e/tests/shell.spec.ts` checks the link, that
+the served file is `brand/icon.svg` byte for byte, and that the browser draws its light and dark tints by
+colour scheme; `scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
 
 ## Sign-in (`src/auth/`)
 
@@ -640,13 +652,13 @@ and GIS's `/gsi/` endpoints, and its COOP is `same-origin-allow-popups` so that 
 hand the token back ([backend/README.md](../backend/README.md), "Security and logging").
 
 **Scopes** (`OAUTH_SCOPES` in `session.ts`): `cloud-platform.read-only` (Resource Manager accepts it, Cloud
-Asset Inventory does not), `cloudasset` (the reverse) and `userinfo.email` (so that tokeninfo names the account
-in the account menu); never all of `cloud-platform` (AGENTS.md, Security and privacy, OAuth scopes). Before
-sign-in the card says that Google describes `cloudasset` as "See, edit, configure, and delete your Google Cloud
-Asset data" and that gcportrait only lists assets with it, and shows the backend's `hostedBy` line (who runs the
-instance). With granular consent a person may leave a scope out: a grant without both Cloud scopes is
-revoked at once and the card asks to sign in again and allow both; one without the email only shows "Google
-account".
+Asset Inventory does not), `cloudasset` (the reverse) and `userinfo.email` (so that tokeninfo names the
+account in the account menu); never all of `cloud-platform` (AGENTS.md, Security and privacy, OAuth scopes).
+Before sign-in the card says that Google describes `cloudasset` as "See, edit, configure, and delete your
+Google Cloud Asset data" and that gcportrait only lists assets with it, and shows the backend's `hostedBy`
+line (who runs the instance). With granular consent a person may leave a scope out: a grant without both Cloud
+scopes is revoked at once and the card asks to sign in again and allow both; one without the email only shows
+"Google account".
 
 **The token lifecycle** (`createTokenSession`; every dependency passed in, so `session.test.ts` runs it with a
 fake GIS and fake timers):
@@ -677,9 +689,10 @@ then the scope (`scope/ScopeStep.tsx`, the same as on the Permissions page) and 
 (`import/PullNow.tsx`); they read the mode and the session from the store. After an expiry the section stays,
 its mode selector and scope inert. The permission check (`connect.preflight`, which "Pull now" relies on)
 answered for one account, so `AuthProvider` clears it on a sign-out and when another account than the one last
-signed in signs in, after an expiry or a sign-out (`anotherAccount` in `types.ts`; an account whose email Google
-did not say counts as another). That holds whichever page is open; `preflight/usePreflight.ts` also cancels a
-check still under way when the Permissions page sees the sign-out. The scope and the quota project picked stay.
+signed in signs in, after an expiry or a sign-out (`anotherAccount` in `types.ts`; an account whose email
+Google did not say counts as another). That holds whichever page is open; `preflight/usePreflight.ts` also
+cancels a check still under way when the Permissions page sees the sign-out. The scope and the quota project
+picked stay.
 
 **For code that calls the backend with the token**: read the session and the mode from
 the store (`useAppState((s) => s.connect)`), and make each request with `fetchWithToken(useAuth(), '/api/…',
@@ -693,11 +706,11 @@ and which of them are revoked, dispose, the address kept through a renewal but n
 tokeninfo does not answer, `anotherAccount`), `gis.test.ts` (the loader), `tokeninfo.test.ts`,
 `fetch.test.ts`, `AuthProvider.test.tsx` (the store's `connect` slice; the permission check cleared on a
 sign-out and for another account, also one whose address tokeninfo did not give, and kept through a renewal
-and for the same account), `SignIn.test.tsx` (the whole app in live mode with a fake GIS: sign-in, one configuration
-request per page, the mode selector, sign-out, a blocked window, a press that brings the window back, no
-script without a client, expiry and signing in again, axe), and `e2e/tests/signin.spec.ts` (a stub GIS script
-served for Google's, on Playwright's clock: sign-in, renewal, "Stay signed in", expiry, sign-out with
-revocation, the token never in storage, IndexedDB, cookies, the DOM, any URL or the console, axe in both
+and for the same account), `SignIn.test.tsx` (the whole app in live mode with a fake GIS: sign-in, one
+configuration request per page, the mode selector, sign-out, a blocked window, a press that brings the window
+back, no script without a client, expiry and signing in again, axe), and `e2e/tests/signin.spec.ts` (a stub
+GIS script served for Google's, on Playwright's clock: sign-in, renewal, "Stay signed in", expiry, sign-out
+with revocation, the token never in storage, IndexedDB, cookies, the DOM, any URL or the console, axe in both
 themes).
 
 ## Scope picker and permission check (`src/scope/`, `src/preflight/`)
@@ -705,9 +718,9 @@ themes).
 The Permissions page (`pages/PermissionsPage.tsx`) checks a scope with the signed-in person's token
 and says what is missing, with copy-ready `gcloud` commands; below it, what each mode needs (the table of
 [docs/permissions.md](../docs/permissions.md), its commands' variables as fields prefilled from what the page
-knows; section "Fillable commands") and service-account mode in that guide's words, with the instance's account
-and the gate. Signed out it shows the sign-in card; in demo mode
-it checks nothing and keeps the guidance.
+knows; section "Fillable commands") and service-account mode in that guide's words, with the instance's
+account and the gate. Signed out it shows the sign-in card; in demo mode it checks nothing and keeps the
+guidance.
 
 ```
 src/scope/
@@ -737,10 +750,10 @@ src/preflight/
 
 **Picking a scope.** Search text goes to `/api/scopes/search` (the backend turns it into Resource Manager
 queries); a typed `organizations/ID`, `folders/ID` or `projects/ID` is offered first as "Use …", and text that
-starts like a scope name but is not one gets a hint. With the field empty, the list shows the recent scopes and
-the first scopes the person can see. A choice goes to `connect.scope` and to the recent scopes, and brings back
-the quota project last picked for that scope; the quota project goes to `connect.quotaProject` and
-is remembered per scope. Only ids and display names are stored, never a token or an email.
+starts like a scope name but is not one gets a hint. With the field empty, the list shows the recent scopes
+and the first scopes the person can see. A choice goes to `connect.scope` and to the recent scopes, and brings
+back the quota project last picked for that scope; the quota project goes to `connect.quotaProject` and is
+remembered per scope. Only ids and display names are stored, never a token or an email.
 
 **The check.** `usePreflight` sends `{ scope, mode, quotaProject? }` (the quota project in user mode only) and
 keeps the answer in `connect.preflight` with the request it answers, so the Connect page and the Permissions
@@ -751,34 +764,35 @@ your environment" section can show for its scope step.
 **Service-account mode.** The "Service-account mode" section names the account from `/api/config`
 (`backendServiceAccount`, the identity the backend resolved) and words the gate as the instance runs it:
 `saStrictExposure` (optional in `api/config.ts`; absent counts as off) decides whether `copy.ts` and
-`PermissionsGuide.tsx` say that a scope the account can see on its own is refused, or that a scope whose details
-are public is open to everyone signed in; the mode selector's note follows the same field. A check the gate
-refuses comes back as a 403 (or 503) whose body carries the checklist as `preflight`; `preflight/api.ts` shows
-that checklist like any other answer (its outcome is never `ready`), and a 403 without one stays an error.
+`PermissionsGuide.tsx` say that a scope the account can see on its own is refused, or that a scope whose
+details are public is open to everyone signed in; the mode selector's note follows the same field. A check the
+gate refuses comes back as a 403 (or 503) whose body carries the checklist as `preflight`; `preflight/api.ts`
+shows that checklist like any other answer (its outcome is never `ready`), and a 403 without one stays an
+error.
 
 Tests: `scope/scope.test.ts` (the patterns against the model's schemas, names, hints, the recent scopes and
-quota projects, the search answer), `preflight/preflight.test.ts` (the guard, the request with the token, error
-answers, a sentence for every item and finding, the reference table's commands),
+quota projects, the search answer), `preflight/preflight.test.ts` (the guard, the request with the token,
+error answers, a sentence for every item and finding, the reference table's commands),
 `pages/PermissionsPage.test.tsx` (the whole app in live mode with a fake GIS and a stubbed backend: sign-in on
-the page, search, a typed name and its hint, the recent scopes, the quota project, the check, the checklist and
-its commands, copying, an out-of-date result, service-account mode, the account and the gate's wording from
-`/api/config`, a refused service-account check shown as its checklist, a failed check, demo mode; axe), and
-`e2e/tests/preflight.spec.ts` in Chromium.
+the page, search, a typed name and its hint, the recent scopes, the quota project, the check, the checklist
+and its commands, copying, an out-of-date result, service-account mode, the account and the gate's wording
+from `/api/config`, a refused service-account check shown as its checklist, a failed check, demo mode; axe),
+and `e2e/tests/preflight.spec.ts` in Chromium.
 
 ## Fillable commands (`src/commands/`)
 
-Every command the app shows (the Permissions page's checklist and reference table, the Connect page's "How to make an
-export with gcloud") names the values to fill in as tokens of the one registry the website's docs share,
-`COMMAND_VARIABLES` in `@gcportrait/model` (`YOUR_ORG_ID`, `YOUR_FOLDER_ID`, `YOUR_PROJECT_ID`, `YOUR_EMAIL`,
-`YOUR_SA_EMAIL`, `YOUR_QUOTA_PROJECT`, `YOUR_BUCKET`, `YOUR_OPERATION_NAME`; label, description, synthetic example,
-format, secret). `preflight/CommandBlock.tsx` renders each registered token as a labelled text box inside the code,
-as wide as its text, the token as its placeholder (dashed while empty, solid once filled), and a Copy button that
-copies the command with the values, an unfilled one as its token. The button is described by a note under the
-command ("1 value to fill"), and a polite live region says "Copied." or "Copied, with 1 value still to fill:
-YOUR_BUCKET.". A value not of the variable's format is marked when its field is left (`aria-invalid`, "Check Folder
-number: digits only." in the note), never refused. The Permissions page's reference table has the Variables panel
-(`commands/VariablesPanel.tsx`): each of its variables with its label, token, description and example, to fill once,
-and "Clear values".
+Every command the app shows (the Permissions page's checklist and reference table, the Connect page's "How to
+make an export with gcloud") names the values to fill in as tokens of the one registry the website's docs
+share, `COMMAND_VARIABLES` in `@gcportrait/model` (`YOUR_ORG_ID`, `YOUR_FOLDER_ID`, `YOUR_PROJECT_ID`,
+`YOUR_EMAIL`, `YOUR_SA_EMAIL`, `YOUR_QUOTA_PROJECT`, `YOUR_BUCKET`, `YOUR_OPERATION_NAME`; label, description,
+synthetic example, format, secret). `preflight/CommandBlock.tsx` renders each registered token as a labelled
+text box inside the code, as wide as its text, the token as its placeholder (dashed while empty, solid once
+filled), and a Copy button that copies the command with the values, an unfilled one as its token. The button
+is described by a note under the command ("1 value to fill"), and a polite live region says "Copied." or
+"Copied, with 1 value still to fill: YOUR_BUCKET.". A value not of the variable's format is marked when its
+field is left (`aria-invalid`, "Check Folder number: digits only." in the note), never refused. The
+Permissions page's reference table has the Variables panel (`commands/VariablesPanel.tsx`): each of its
+variables with its label, token, description and example, to fill once, and "Clear values".
 
 | Where | What it does |
 |---|---|
@@ -787,36 +801,38 @@ and "Clear values".
 | `useCommandVariables.ts` | the values on screen: what was typed over the facts the app store knows |
 | `VariableField.tsx`, `VariablesPanel.tsx`, `Commands.module.css` | the inline field, the panel, their styles (chrome tokens; the field's border 5.74 : 1 light, 4.93 : 1 dark on the code's surface) |
 
-**One value per variable.** Every field of a variable, in every command and in the panel, shows one value, so filling
-it once fills every command; the store is the app's, so another page of the app in the same tab shows it too. A
-value is what the person typed over what the app knows (`connect` in the store): the scope picked, under its kind's
-variable (and `YOUR_SCOPE_ID`, `YOUR_SCOPE_KIND`), the quota project (or a project scope itself), the signed-in
-account's email and the instance's service account from `/api/config` (in service-account mode only); an email that
-could carry shell syntax is never a fact. An entry keeps the fact it was typed over, so a typed value lasts while
-the app knows the same thing, and a new fact (another scope picked, another account) shows again. Signed out, in demo
-mode and on a demo-only instance nothing is known and the fields start empty.
+**One value per variable.** Every field of a variable, in every command and in the panel, shows one value, so
+filling it once fills every command; the store is the app's, so another page of the app in the same tab shows
+it too. A value is what the person typed over what the app knows (`connect` in the store): the scope picked,
+under its kind's variable (and `YOUR_SCOPE_ID`, `YOUR_SCOPE_KIND`), the quota project (or a project scope
+itself), the signed-in account's email and the instance's service account from `/api/config` (in
+service-account mode only); an email that could carry shell syntax is never a fact. An entry keeps the fact it
+was typed over, so a typed value lasts while the app knows the same thing, and a new fact (another scope
+picked, another account) shows again. Signed out, in demo mode and on a demo-only instance nothing is known
+and the fields start empty.
 
 **For the session, never a secret.** The entries are kept in sessionStorage, so a reload shows them again and
-nothing outlives the tab; another tab starts empty. A variable marked secret in the registry is never kept (none of
-the app's commands has one), entries of unknown variables or of the wrong shape are dropped on reading, and where
-storage is blocked the values stay in memory. The access token is never a value (`e2e/tests/permissions-variables.spec.ts`
-searches every storage for it).
+nothing outlives the tab; another tab starts empty. A variable marked secret in the registry is never kept
+(none of the app's commands has one), entries of unknown variables or of the wrong shape are dropped on
+reading, and where storage is blocked the values stay in memory. The access token is never a value
+(`e2e/tests/permissions-variables.spec.ts` searches every storage for it).
 
-Tests: `commands/values.test.ts` (the copied text, the notes, the value a variable shows, the facts, what the session
-keeps, and that every command the app shows names only registered variables and no other placeholder),
-`commands/commands.test.tsx` (shared values across commands and the panel, prefilled and editable, the copy and its
-announcement, the note, the format hint, a reload, Clear values, no secret kept, blocked storage, axe), and
-`e2e/tests/permissions-variables.spec.ts` in Chromium (signed out, signed in, demo-only and demo mode: fill in one
-command and the others follow, the clipboard reads the filled command, a reload keeps it and another tab does not;
-axe and screenshots with filled, unfilled and invalid fields in both themes, to `e2e/.scratch/permissions-variables/`).
+Tests: `commands/values.test.ts` (the copied text, the notes, the value a variable shows, the facts, what the
+session keeps, and that every command the app shows names only registered variables and no other placeholder),
+`commands/commands.test.tsx` (shared values across commands and the panel, prefilled and editable, the copy
+and its announcement, the note, the format hint, a reload, Clear values, no secret kept, blocked storage,
+axe), and `e2e/tests/permissions-variables.spec.ts` in Chromium (signed out, signed in, demo-only and demo
+mode: fill in one command and the others follow, the clipboard reads the filled command, a reload keeps it and
+another tab does not; axe and screenshots with filled, unfilled and invalid fields in both themes, to
+`e2e/.scratch/permissions-variables/`).
 
 ## Live pull and export load (`src/import/`)
 
-The two ways from Google Cloud into a snapshot in this browser, both on the Connect page (skill cai-ingestion §1):
-"Pull now" reads the scope checked on the Permissions page or in "Read your environment" from Cloud Asset
-Inventory, and the export card loads a Cloud Asset Inventory export. Both end with the diagram opened on the new
-snapshot (`actions.setSnapshot`), at once, or after the notes the import left (lines left out, an estimated read
-time) with "Open the diagram".
+The two ways from Google Cloud into a snapshot in this browser, both on the Connect page (skill cai-ingestion
+§1): "Pull now" reads the scope checked on the Permissions page or in "Read your environment" from Cloud Asset
+Inventory, and the export card loads a Cloud Asset Inventory export. Both end with the diagram opened on the
+new snapshot (`actions.setSnapshot`), at once, or after the notes the import left (lines left out, an
+estimated read time) with "Open the diagram".
 
 ```
 src/import/
@@ -840,12 +856,13 @@ src/import/
   testing.tsx           the components' test harness
 ```
 
-**What "Pull now" pulls** (`target.ts`): the store's `connect` slice must have a signed-in session, a scope, and a
-permission check (`connect.preflight`) that answered `ready` for exactly that scope, mode and quota project.
-In user mode the pull uses the quota project the check found usable (required; never the instance's project:
-AGENTS.md, Security and privacy); in service-account mode none. Until then the button is inert (`aria-disabled`,
-focusable) and its hint says what is missing ("Choose a scope first.", "Check the permissions again for this
-choice.", …), with a "Check permissions" link to the Permissions page while the check is what is missing.
+**What "Pull now" pulls** (`target.ts`): the store's `connect` slice must have a signed-in session, a scope,
+and a permission check (`connect.preflight`) that answered `ready` for exactly that scope, mode and quota
+project. In user mode the pull uses the quota project the check found usable (required; never the instance's
+project: AGENTS.md, Security and privacy); in service-account mode none. Until then the button is inert
+(`aria-disabled`, focusable) and its hint says what is missing ("Choose a scope first.", "Check the
+permissions again for this choice.", …), with a "Check permissions" link to the Permissions page while the
+check is what is missing.
 
 **The stream** (`run.ts`): `fetchWithToken` (src/auth) posts the body to `/api/assets/stream` or
 `/api/export/read`; a refusal before the stream (the backend's JSON error) fails at once with its message. The
@@ -870,15 +887,15 @@ Nothing was stored.", as a cancel while reading does.
 
 **An export's read time** (from an optional sidecar, `operation.json`, or set by the person, defaulting to the
 latest `updateTime`): an export that came without its operation.json may be given its read time in "When the
-export was taken (UTC, optional)" (`ReadTimeField.tsx`, on the export card and on the Snapshots page's import):
-`2026-10-05 14:30`, with or without seconds, `T`, `Z`, `UTC` or an offset, read as UTC (`parseTypedReadTime`); a
-text that is no such time, or a time later than this computer's clock, is said under the field
-(`aria-invalid`, `aria-describedby`) and the import refuses it. The snapshot then has `readTimeSource: user` and no
-estimate. The operation.json's read time wins over a typed one, and a note says so when they differ
-(`exportReadTime`); without either the read time is the latest asset change, marked as estimated. A read time later
-than the import's clock (a sidecar from a machine whose clock ran ahead) is noted (`futureReadTimeNote`): the
-timeline shows that snapshot at the present (section "Timeline", extra ticks). Either way the snapshot is an extra
-tick on its scope's timeline at that time.
+export was taken (UTC, optional)" (`ReadTimeField.tsx`, on the export card and on the Snapshots page's
+import): `2026-10-05 14:30`, with or without seconds, `T`, `Z`, `UTC` or an offset, read as UTC
+(`parseTypedReadTime`); a text that is no such time, or a time later than this computer's clock, is said under
+the field (`aria-invalid`, `aria-describedby`) and the import refuses it. The snapshot then has
+`readTimeSource: user` and no estimate. The operation.json's read time wins over a typed one, and a note says
+so when they differ (`exportReadTime`); without either the read time is the latest asset change, marked as
+estimated. A read time later than the import's clock (a sidecar from a machine whose clock ran ahead) is noted
+(`futureReadTimeNote`): the timeline shows that snapshot at the present (section "Timeline", extra ticks).
+Either way the snapshot is an extra tick on its scope's timeline at that time.
 
 **Errors** (`errors.ts`): an `error` frame ends the ingest with Google's message, status and code; its
 `ErrorInfo` reason is read back from the end of the stream, where the frame is (the worker keeps the last
@@ -889,10 +906,10 @@ before the scope existed, a bucket that cannot be read, Google busy or slow (wit
 problems link the permission check ("Check permissions", the Permissions page), whose checklist names the
 missing grant and its command.
 
-**The progress** (`progress.ts`, `ImportStatus.tsx`): "12 pages · 5,400 assets · 3.2 MB · 0:04" (for an export:
-"… · 1.5 MB of 4.0 MB · …", from the backend's `x-gcportrait-export-bytes`), under a progress bar (a share of
-the bytes for an export, indeterminate for a pull) and next to Cancel. Only the stage is a live region, so a
-screen reader hears "Reading Cloud Asset Inventory…", not every counter.
+**The progress** (`progress.ts`, `ImportStatus.tsx`): "12 pages · 5,400 assets · 3.2 MB · 0:04" (for an
+export: "… · 1.5 MB of 4.0 MB · …", from the backend's `x-gcportrait-export-bytes`), under a progress bar (a
+share of the bytes for an export, indeterminate for a pull) and next to Cancel. Only the stage is a live
+region, so a screen reader hears "Reading Cloud Asset Inventory…", not every counter.
 
 **The worker** is the fourth role of the diagram's worker script (`WORKER_ROLES.imports`), so the build shares
 ingest, the model and zod with the other roles; its code loads on first use.
@@ -914,11 +931,11 @@ leaving the page then, neither storing anything, a pull and a Cloud Storage read
 
 ## Snapshots (`src/snapshots/`)
 
-Snapshots live in this browser only (AGENTS.md, Security and privacy, principle 1): the Connect page's "Try the
-demo" makes them, the Snapshots page lists, loads, exports, imports and deletes them, and the diagram's data
-worker reads them. One object, the **snapshot library** (`library.ts`), does everything; `main.tsx` creates it
-over the app's IndexedDB connection and the snapshot worker, and `SnapshotLibraryProvider` (in `App.tsx`, inside
-the app store) hands it to the pages with its listing, re-read after every change.
+Snapshots live in this browser only (AGENTS.md, Security and privacy, principle 1): the Connect page's "Try
+the demo" makes them, the Snapshots page lists, loads, exports, imports and deletes them, and the diagram's
+data worker reads them. One object, the **snapshot library** (`library.ts`), does everything; `main.tsx`
+creates it over the app's IndexedDB connection and the snapshot worker, and `SnapshotLibraryProvider` (in
+`App.tsx`, inside the app store) hands it to the pages with its listing, re-read after every change.
 
 ```
 src/snapshots/
@@ -988,16 +1005,16 @@ are asked and never ask.
 
 **The record** (`StoredSnapshot` in `storage/db.ts`): `id` is the snapshot's ref (its ULID, or `demo:<size>`);
 `blob` is the model `Snapshot` as JSON, gzip-compressed (`application/gzip`; plain `application/json` where
-`CompressionStream` is missing), read back only through `migrateSnapshot`; `history`, for demo organisations, is
-the `DemoHistory` (`{ size, seed, today, base, ticks }`) encoded the same way, which `snapshotAt` of
-`@gcportrait/demo-data` replays (`loadStoredHistory` in `load.ts`, for the timeline); `meta` is what the
-table lists without reading the blobs (scope, read time, source kind, asset count, `bytes` = the stored size of
-`blob` + `history`, `savedAt`, `schemaVersion`, and optionally `detail`, `estimatedReadTime`, `historyTicks`). The
-optional fields need no migration. Compressed, demo M takes 0.3 MB, L 1.9 MB and XL 13.9 MB (172 MB as JSON);
-generating, reading and compressing XL takes about 5 s in Node.
+`CompressionStream` is missing), read back only through `migrateSnapshot`; `history`, for demo organisations,
+is the `DemoHistory` (`{ size, seed, today, base, ticks }`) encoded the same way, which `snapshotAt` of
+`@gcportrait/demo-data` replays (`loadStoredHistory` in `load.ts`, for the timeline); `meta` is what the table
+lists without reading the blobs (scope, read time, source kind, asset count, `bytes` = the stored size of
+`blob` + `history`, `savedAt`, `schemaVersion`, and optionally `detail`, `estimatedReadTime`, `historyTicks`).
+The optional fields need no migration. Compressed, demo M takes 0.3 MB, L 1.9 MB and XL 13.9 MB (172 MB as
+JSON); generating, reading and compressing XL takes about 5 s in Node.
 
-**The snapshot file: `.gcportrait.json`.** Export writes one format, a bundle that round-trips: one JSON object
-whose `format` key comes first, so a reader recognises it from its first bytes:
+**The snapshot file: `.gcportrait.json`.** Export writes one format, a bundle that round-trips: one JSON
+object whose `format` key comes first, so a reader recognises it from its first bytes:
 
 ```json
 {"format":"gcportrait.snapshot","version":1,"exportedAt":"2026-10-10T12:00:00.000Z","generator":"gcportrait",
@@ -1006,46 +1023,49 @@ whose `format` key comes first, so a reader recognises it from its first bytes:
 
 The reader ignores every key it does not read.
 
-`snapshot` is read through `migrateSnapshot` (its own `schemaVersion` follows the model's migration policy), and
-`history` is checked asset by asset, replayed to its last day, and must end with the bundle's snapshot (its last
-day holds the same assets, by name: `parseHistoryOf`) before anything is stored; a bundle `version` above 1 is
-refused with "Update gcportrait". The file is written from the stored blobs without parsing them on the page
-(`bundleParts`), after the snapshot worker has read them in full (the `check` job: the snapshot through
-`migrateSnapshot`, the history through `parseHistoryOf`), so a damaged record (one that does not decompress, is
-not JSON, is no valid snapshot, or carries another snapshot's history) is refused with the reason instead of
-being written to a file that would not import; the table shows "Checking …" meanwhile (a second or two for XL).
-It is named like the diagram's exports: `gcportrait_<scope>_<readTime>.gcportrait.json`. An exported bundle
-imports back to the same snapshot and history (`library.test.ts`, `parse.test.ts`, and the e2e spec). Raw CAI
-NDJSON is imported but never written: it would lose the scope and the read time.
+`snapshot` is read through `migrateSnapshot` (its own `schemaVersion` follows the model's migration policy),
+and `history` is checked asset by asset, replayed to its last day, and must end with the bundle's snapshot
+(its last day holds the same assets, by name: `parseHistoryOf`) before anything is stored; a bundle `version`
+above 1 is refused with "Update gcportrait". The file is written from the stored blobs without parsing them on
+the page (`bundleParts`), after the snapshot worker has read them in full (the `check` job: the snapshot
+through `migrateSnapshot`, the history through `parseHistoryOf`), so a damaged record (one that does not
+decompress, is not JSON, is no valid snapshot, or carries another snapshot's history) is refused with the
+reason instead of being written to a file that would not import; the table shows "Checking …" meanwhile (a
+second or two for XL). It is named like the diagram's exports:
+`gcportrait_<scope>_<readTime>.gcportrait.json`. An exported bundle imports back to the same snapshot and
+history (`library.test.ts`, `parse.test.ts`, and the e2e spec). Raw CAI NDJSON is imported but never written:
+it would lose the scope and the read time.
 
 **Ids: a ref names one snapshot for good.** Every import is a new record under a new ULID (ingest's `ulid`; a
 bundle's document `id` is rewritten to match), never the id its file carries, even when that id is free. An id
-can be free because its snapshot was deleted, and every demo organisation's file carries the same deterministic
-id, so keeping it would let a ref name one snapshot before a delete and another after it; whatever is kept by ref
-(the data worker's Graph, the top bar's view choices, saved views, links) would then show the wrong snapshot. So
-an import never replaces a stored record, and a deleted ref names nothing from then on. The library hands the
-worker the stored ids (`taken` in the import request): a new id never collides with one, and a bundle whose own id
-is among them (a file exported from an imported copy) gets a note saying it is a copy of a stored snapshot, as
-does the second of two files with the same id in one import. A file exported from a demo organisation imported
-twice makes two copies; the table tells them apart (below). The data worker also asks the store before it reuses
-the Graph it kept for a stored ref (`storedSnapshotVersion`: when the record was saved, or `missing`), so a
-snapshot deleted on the Snapshots page, or in another tab, is not drawn from memory: its view says "No snapshot …
-is stored in this browser.", as it does after a reload.
+can be free because its snapshot was deleted, and every demo organisation's file carries the same
+deterministic id, so keeping it would let a ref name one snapshot before a delete and another after it;
+whatever is kept by ref (the data worker's Graph, the top bar's view choices, saved views, links) would then
+show the wrong snapshot. So an import never replaces a stored record, and a deleted ref names nothing from
+then on. The library hands the worker the stored ids (`taken` in the import request): a new id never collides
+with one, and a bundle whose own id is among them (a file exported from an imported copy) gets a note saying
+it is a copy of a stored snapshot, as does the second of two files with the same id in one import. A file
+exported from a demo organisation imported twice makes two copies; the table tells them apart (below). The
+data worker also asks the store before it reuses the Graph it kept for a stored ref (`storedSnapshotVersion`:
+when the record was saved, or `missing`), so a snapshot deleted on the Snapshots page, or in another tab, is
+not drawn from memory: its view says "No snapshot … is stored in this browser.", as it does after a reload.
 
-**Import.** The Snapshots page's drop zone and its "Choose files…" button (the keyboard's way in) take any number
-of files. The snapshot worker sorts them: a `.gcportrait.json` name or a bundle's first bytes make a bundle, each
-its own snapshot; all other files together are one Cloud Asset Inventory export (one file, or every file of a
-`uriPrefix` export), read by `ingest` with its streaming reader (progress per MiB: bytes of the total and assets
-so far). An export's `operation.json` among the files (a name with "operation" ending in `.json`, whose content is
-an `exportAssets` operation: `import/sidecar.ts`) is not read as lines: it gives the snapshot its read time
-(`readTimeSource: export-sidecar`, not an estimate) and its scope; alone, it fails the import. An export's scope is the root its assets' `ancestors` share (`worker/scope.ts`: an organisation, named by
-its `displayName` when the export holds the Organization asset; a project without an organisation by its id); its
-read time is the latest asset change, which the table labels "estimated" (skill cai-ingestion §1), unless the lines are the
-backend's frames. Files whose assets name several roots (files of different exports) are still read as one
-snapshot under the root most of them share, with a note saying so. Malformed lines are left out and the first
-five listed; a file without any asset, a broken or newer bundle, or an invalid history fails the import with an
-alert naming the file and its problems. A snapshot IndexedDB refuses (the quota) is not stored, not even in
-memory (the data worker could not open it): the import says so, and fails when nothing could be stored.
+**Import.** The Snapshots page's drop zone and its "Choose files…" button (the keyboard's way in) take any
+number of files. The snapshot worker sorts them: a `.gcportrait.json` name or a bundle's first bytes make a
+bundle, each its own snapshot; all other files together are one Cloud Asset Inventory export (one file, or
+every file of a `uriPrefix` export), read by `ingest` with its streaming reader (progress per MiB: bytes of
+the total and assets so far). An export's `operation.json` among the files (a name with "operation" ending in
+`.json`, whose content is an `exportAssets` operation: `import/sidecar.ts`) is not read as lines: it gives the
+snapshot its read time (`readTimeSource: export-sidecar`, not an estimate) and its scope; alone, it fails the
+import. An export's scope is the root its assets' `ancestors` share (`worker/scope.ts`: an organisation, named
+by its `displayName` when the export holds the Organization asset; a project without an organisation by its
+id); its read time is the latest asset change, which the table labels "estimated" (skill cai-ingestion §1),
+unless the lines are the backend's frames. Files whose assets name several roots (files of different exports)
+are still read as one snapshot under the root most of them share, with a note saying so. Malformed lines are
+left out and the first five listed; a file without any asset, a broken or newer bundle, or an invalid history
+fails the import with an alert naming the file and its problems. A snapshot IndexedDB refuses (the quota) is
+not stored, not even in memory (the data worker could not open it): the import says so, and fails when nothing
+could be stored.
 
 **Cancel.** While the files are read, Cancel under the progress bar ("Cancel importing", "Cancel importing
 the export" on the Connect page's card; `JobStatus.tsx`) stops the import, and leaving the page does the same
@@ -1057,54 +1077,55 @@ can arrive, before encoding, before answering), and a job still queued never sta
 still answers for it is dropped. The library checks the signal after each step too; aborted while it
 stores, it deletes what this import had stored.
 
-**Load, export, delete, storage.** Load puts the ref into the hash on `/diagram` (`actions.setSnapshot`); the data
-worker reads a ULID from IndexedDB (`load.ts`, stage "Reading the assets"); a missing one, or a damaged one
-(it does not decompress or parse, or the model cannot read it), is an error on the canvas in a sentence for
-people. Export checks the record (above) and saves the bundle through `export/deliver.ts`. Delete and "Delete all
-snapshots…" ask first in a `ui/Dialog`; focus then goes to the section heading. Each row's buttons are named after
-the row ("Load example.com, read 2026-10-08 00:00 UTC, demo:M": scope, read time, source detail; copies of one
-file also by when they were stored, then, for copies stored in the same minute, "copy 2", numbered in the order
-they were stored), and so are the Snapshot menu's stored entries; the Stored cell shows that copy number too, so
-no two rows look alike. The Storage section sums the stored sizes, those kept in memory apart ("2 snapshots take
-1.2 MB in this browser; 1 more takes 0.3 MB in memory, until this page is reloaded or closed.": a demo organisation
-IndexedDB refused), and shows the browser's own estimate, `navigator.storage.estimate()` (the whole site's usage
-against its quota), when the browser answers; it asks again three seconds after each change, because the estimate
-lags behind writes, and says that it can.
+**Load, export, delete, storage.** Load puts the ref into the hash on `/diagram` (`actions.setSnapshot`); the
+data worker reads a ULID from IndexedDB (`load.ts`, stage "Reading the assets"); a missing one, or a damaged
+one (it does not decompress or parse, or the model cannot read it), is an error on the canvas in a sentence
+for people. Export checks the record (above) and saves the bundle through `export/deliver.ts`. Delete and
+"Delete all snapshots…" ask first in a `ui/Dialog`; focus then goes to the section heading. Each row's buttons
+are named after the row ("Load example.com, read 2026-10-08 00:00 UTC, demo:M": scope, read time, source
+detail; copies of one file also by when they were stored, then, for copies stored in the same minute, "copy
+2", numbered in the order they were stored), and so are the Snapshot menu's stored entries; the Stored cell
+shows that copy number too, so no two rows look alike. The Storage section sums the stored sizes, those kept
+in memory apart ("2 snapshots take 1.2 MB in this browser; 1 more takes 0.3 MB in memory, until this page is
+reloaded or closed.": a demo organisation IndexedDB refused), and shows the browser's own estimate,
+`navigator.storage.estimate()` (the whole site's usage against its quota), when the browser answers; it asks
+again three seconds after each change, because the estimate lags behind writes, and says that it can.
 
 **Timelines by scope** (`ScopeTimelines.tsx`, `scopeEntries.ts`). Below the stored snapshots, the
 page shows each scope this browser keeps something of as its timeline: a part per scope (a region named by its
-heading: the scope's name, then its kind and id; a scope known only from cached days is named by those), sorted by
-name, with a summary ("1 snapshot, 2 extra ticks and 5 cached days: 1.7 MB in this browser.") and a table in time
-order (oldest first, as the timeline bar runs; at one instant a day, then a snapshot, then an extra tick): its
-snapshots with a history ("Snapshot · Demo · 35-day history"), its exports and manual pulls, which are the extra
-ticks of every timeline of that scope ("Extra tick · Export file", where its read time came from, its detail, and
-how many copies were read in the same second; an estimated read time says "estimated" under it, a typed one
-"entered"), and the days its timeline read from Cloud Asset Inventory into the tick cache ("Cached day", when it was
-read), each with its asset count and size. An extra tick is deleted after a confirmation ("Delete this extra tick?":
-it is a stored snapshot, so files exported keep it; the timeline loses it at once), a cached day at once (the
-timeline reads it again when the view comes back to it), and "Delete the cached days of …" (shown only while the scope
-has any) deletes the scope's whole tick cache after a confirmation. Focus then goes to the scope's heading, or to
-the section's when the scope's part is gone with its last entry, and a polite status says what was deleted. The
-cached days are read through the page's IndexedDB connection (`storage/tickCache.ts`: `list`, `remove`,
-`removeScope`), again whenever the listing changes. The stored snapshots table also marks a read time typed in at the
-import ("entered when it was imported"), as it marks an estimate.
+heading: the scope's name, then its kind and id; a scope known only from cached days is named by those),
+sorted by name, with a summary ("1 snapshot, 2 extra ticks and 5 cached days: 1.7 MB in this browser.") and a
+table in time order (oldest first, as the timeline bar runs; at one instant a day, then a snapshot, then an
+extra tick): its snapshots with a history ("Snapshot · Demo · 35-day history"), its exports and manual pulls,
+which are the extra ticks of every timeline of that scope ("Extra tick · Export file", where its read time
+came from, its detail, and how many copies were read in the same second; an estimated read time says
+"estimated" under it, a typed one "entered"), and the days its timeline read from Cloud Asset Inventory into
+the tick cache ("Cached day", when it was read), each with its asset count and size. An extra tick is deleted
+after a confirmation ("Delete this extra tick?": it is a stored snapshot, so files exported keep it; the
+timeline loses it at once), a cached day at once (the timeline reads it again when the view comes back to it),
+and "Delete the cached days of …" (shown only while the scope has any) deletes the scope's whole tick cache
+after a confirmation. Focus then goes to the scope's heading, or to the section's when the scope's part is
+gone with its last entry, and a polite status says what was deleted. The cached days are read through the
+page's IndexedDB connection (`storage/tickCache.ts`: `list`, `remove`, `removeScope`), again whenever the
+listing changes. The stored snapshots table also marks a read time typed in at the import ("entered when it
+was imported"), as it marks an estimate.
 
 **Without IndexedDB** (`openDatabase()` resolves to null: some private windows) the page says so; records are
-kept in memory until the page is reloaded or closed (in-app navigation keeps them), the demo organisations work
-(the diagram generates them), and importing is off, because the data worker could not read an imported snapshot;
-a file dropped on the drop zone is refused there, not opened by the browser (which would leave the page and lose
-what is kept in memory).
+kept in memory until the page is reloaded or closed (in-app navigation keeps them), the demo organisations
+work (the diagram generates them), and importing is off, because the data worker could not read an imported
+snapshot; a file dropped on the drop zone is refused there, not opened by the browser (which would leave the
+page and lose what is kept in memory).
 
-**The worker.** The snapshot worker is a third role of the diagram's worker script (`WORKER_ROLES.snapshots`), so
-the build shares ingest, the model and zod with the data role instead of bundling them again; its own chunk is
-about 3.6 kB gzipped. It replays histories with demo-data's generator-free `history/replay.ts`, so it loads none
-of the generator. It prepares records (Blobs and listing metadata, never parsed assets, so nothing big
+**The worker.** The snapshot worker is a third role of the diagram's worker script (`WORKER_ROLES.snapshots`),
+so the build shares ingest, the model and zod with the data role instead of bundling them again; its own chunk
+is about 3.6 kB gzipped. It replays histories with demo-data's generator-free `history/replay.ts`, so it loads
+none of the generator. It prepares records (Blobs and listing metadata, never parsed assets, so nothing big
 crosses back to the page); the page writes them to IndexedDB.
 
-**The Snapshot menu.** `SnapshotLibraryProvider` writes the menu's choices into the store's `snapshot.available`
-(the demo organisations S, M and L, then every stored snapshot: a stored XL demo as "Demo organisation XL (extra
-large)", any other by its row's name, "example.com, read 2026-10-07 18:22 UTC, export.json"); the menu
-(`shell/topbar/SnapshotMenu.tsx`) reads only the store.
+**The Snapshot menu.** `SnapshotLibraryProvider` writes the menu's choices into the store's
+`snapshot.available` (the demo organisations S, M and L, then every stored snapshot: a stored XL demo as "Demo
+organisation XL (extra large)", any other by its row's name, "example.com, read 2026-10-07 18:22 UTC,
+export.json"); the menu (`shell/topbar/SnapshotMenu.tsx`) reads only the store.
 
 Tests: `codec.test.ts`, `labels.test.ts` (names, rows told apart, the demo sizes' facts against the
 generator), `worker/scope.test.ts`, `worker/parse.test.ts` (the bundle round trip and every refusal, a history
@@ -1204,12 +1225,13 @@ the same metrics the layout sized the box with; chips in the zone's tint with th
 beside the label, so a chip's kind never rests on its tint alone) above a ⊞ glyph (drawn, not a font
 character) beside the count line, in a short form ("2 net · 39 res") when the full one does not fit the 148 px
 chip. A product container's header shows its catalog type's icon (the Scene carries it: a GKE
-cluster, a dataset, an instance group). Icons come from `@gcportrait/icons`: the data worker resolves each key the Scene names through the
-package's fallback chain (`resolveIcon`) and sends the icons with the Scene, so the 170 kB icon table never
-loads on the UI thread; the drawing defines each once and places it with `<use>`, adding only position and
-size to the artwork's root element (`placeIconMarkup`, the package's `placeIcon` contract, byte for byte: a
-test compares them). The artwork is never edited, and Google's colour marks sit on the light plate on dark
-canvases. A zone without a header icon in the Scene gets its kind's mark (`ZONE_MARKS`).
+cluster, a dataset, an instance group). Icons come from `@gcportrait/icons`: the data worker resolves each key
+the Scene names through the package's fallback chain (`resolveIcon`) and sends the icons with the Scene, so
+the 170 kB icon table never loads on the UI thread; the drawing defines each once and places it with `<use>`,
+adding only position and size to the artwork's root element (`placeIconMarkup`, the package's `placeIcon`
+contract, byte for byte: a test compares them). The artwork is never edited, and Google's colour marks sit on
+the light plate on dark canvases. A zone without a header icon in the Scene gets its kind's mark
+(`ZONE_MARKS`).
 
 **Edges.** Stroke, dash and head per relation kind are the skill's §5 table, keyed by the default-style id the
 model's `RELATION_KINDS` gives each kind (`EDGE_STYLES`), so there is no second per-kind map. Two `<marker>`s
@@ -1234,31 +1256,31 @@ traced lines (below; a hidden copy of every line would nearly double a large vie
 
 **Legend and title block.** Both are inside the SVG: the title block in a band above the layout's canvas
 (scope, "<lens> lens · read <readTime>" in ISO-8601 at the viewer's UTC offset, and the tagline in `muted`,
-10.5 px; the same three lines in a standalone drawing, with no affiliation line in any drawing, section "Branding and
-the non-affiliation notice"), the legend in a band below it (bottom-left, `surface` panel with a
+10.5 px; the same three lines in a standalone drawing, with no affiliation line in any drawing, section
+"Branding and the non-affiliation notice"), the legend in a band below it (bottom-left, `surface` panel with a
 `border` stroke, rows only for the tints, samples and relation kinds on screen, "dim = not focused" in dim
 mode, and a timeline day's markers drawn, "added since 2026-09-07" and so on; the collapsed-zone sample in the
-tint most of the drawn chips have, as chips take their zone's tint), so
-nothing in the diagram overlaps them. The Settings page's "Show the legend and the title block on
-the canvas" (`diagramOverlays`, default on) hides them on the canvas only; the standalone SVG always has them.
+tint most of the drawn chips have, as chips take their zone's tint), so nothing in the diagram overlaps them.
+The Settings page's "Show the legend and the title block on the canvas" (`diagramOverlays`, default on) hides
+them on the canvas only; the standalone SVG always has them.
 
 **Interaction.** d3-zoom pans and zooms the drawing's group with a mouse's or a pen's drag and the wheel
-(`scaleExtent [0.05, 200]`; double-click does not zoom, it is kept for drill-in), and the canvas moves the same
-camera for a finger (paragraph "Touch" below). A new view is fitted to the canvas (never enlarged past 100 %); a theme
-change or a selection keeps the camera. Level of detail by the effective scale sets classes on the `<svg>`
-(`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×. Hover previews
-the node's selection trace (below): its path to the root in `accent.path` 3 px (path rings the painter places
-on each border, on a 1 px `pathCasing` band on each side; one ring per level of the deepest chain is drawn
-once, hidden), its traced lines and the nodes they reach. A click (that did not pan) or Enter/Space
-selects (on a chip it expands it instead: section "Progressive disclosure"): the selection goes into the hash
-(`selection=`, history replaced), the `accent.select` ring (3 px between 2 px canvas-coloured gaps) pulses
-twice in a second (no animation with reduced motion), the node's lines are traced (below), and the details
-drawer opens (section "Details drawer" below). Escape or Close clears it.
+(`scaleExtent [0.05, 200]`; double-click does not zoom, it is kept for drill-in), and the canvas moves the
+same camera for a finger (paragraph "Touch" below). A new view is fitted to the canvas (never enlarged past
+100 %); a theme change or a selection keeps the camera. Level of detail by the effective scale sets classes on
+the `<svg>` (`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×.
+Hover previews the node's selection trace (below): its path to the root in `accent.path` 3 px (path rings the
+painter places on each border, on a 1 px `pathCasing` band on each side; one ring per level of the deepest
+chain is drawn once, hidden), its traced lines and the nodes they reach. A click (that did not pan) or
+Enter/Space selects (on a chip it expands it instead: section "Progressive disclosure"): the selection goes
+into the hash (`selection=`, history replaced), the `accent.select` ring (3 px between 2 px canvas-coloured
+gaps) pulses twice in a second (no animation with reduced motion), the node's lines are traced (below), and
+the details drawer opens (section "Details drawer" below). Escape or Close clears it.
 
-**Touch.** A finger comes as pointer events of `pointerType` `touch` (AGENTS.md, Product rules, the touch model),
-which `touch.ts` reads into gestures on a clock it is given and the canvas carries out; d3-zoom's own touch
-listeners stay off (`touchable(false)`), and a mouse and a pen keep its drag and wheel, the click, the double-click,
-the right-click and hover exactly as above:
+**Touch.** A finger comes as pointer events of `pointerType` `touch` (AGENTS.md, Product rules, the touch
+model), which `touch.ts` reads into gestures on a clock it is given and the canvas carries out; d3-zoom's own
+touch listeners stay off (`touchable(false)`), and a mouse and a pen keep its drag and wheel, the click, the
+double-click, the right-click and hover exactly as above:
 
 | Gesture | What it does |
 |---|---|
@@ -1268,15 +1290,16 @@ the right-click and hover exactly as above:
 | A double tap (the second tap within 300 ms of the first's lift and 24 px of where it touched) | Zooms in two times about its point (`doubleTapTransform`), as a 200 ms glide (at once with reduced motion). On a chip or a collapse button the first tap's flip stands and nothing zooms: the flip's own glide frames the zone, as after one tap. |
 | A long press (500 ms within 10 px, `LONG_PRESS_MS`) | What hover shows a mouse: the trace's preview, and by the finger (above it, or below where the canvas has no room above, inside the canvas, `touchHint.module.css`) the tooltip a resting mouse would show there (a ghost's, a `secures` overlay's, a legend row's, the console action's or the collapse button's `<title>`) or else the node's accessible name; on the console action its labelled pill too (`is-held`), and the browser keeps its own menu for the link. It selects nothing and opens no menu; the next finger, a finger's pan or pinch, a mouse over the drawing or a new drawing takes it off. |
 
-A click, a double-click or a right-click is the finger's, and changes nothing more, when it says so (Chromium's click
-of a tap has `pointerType` `touch`) or comes while a finger is on the canvas or has left it less than 500 ms ago
-(`TOUCH_MOUSE_MS`); a `mousedown` in that time is kept from d3-zoom, so a tap never starts a mouse drag. A pan or a
-pinch stops a glide on its way, as a mouse's drag does; a tap leaves it, so the glide that frames a chip the first tap
-of a double tap opened goes on. A finger's moves and lifts are heard on the window, where they go once the node it
-pressed is redrawn mid-gesture. `touch.test.ts` drives the gestures on a clock the test runs, `camera.test.ts` the
-arithmetic, and `DiagramCanvas.touch.test.tsx` every gesture on the canvas with synthetic pointer events: a pan that
-never selects, a pinch whose midpoint stays put, taps, double taps, a long press, a glide a tap leaves and a pan stops,
-and a mouse's and a pen's own input after a finger.
+A click, a double-click or a right-click is the finger's, and changes nothing more, when it says so
+(Chromium's click of a tap has `pointerType` `touch`) or comes while a finger is on the canvas or has left it
+less than 500 ms ago (`TOUCH_MOUSE_MS`); a `mousedown` in that time is kept from d3-zoom, so a tap never
+starts a mouse drag. A pan or a pinch stops a glide on its way, as a mouse's drag does; a tap leaves it, so
+the glide that frames a chip the first tap of a double tap opened goes on. A finger's moves and lifts are
+heard on the window, where they go once the node it pressed is redrawn mid-gesture. `touch.test.ts` drives the
+gestures on a clock the test runs, `camera.test.ts` the arithmetic, and `DiagramCanvas.touch.test.tsx` every
+gesture on the canvas with synthetic pointer events: a pan that never selects, a pinch whose midpoint stays
+put, taps, double taps, a long press, a glide a tap leaves and a pan stops, and a mouse's and a pen's own
+input after a finger.
 
 **Selection trace and console affordance.** `trace.ts` computes, from the Layout alone (no Graph), the
 trace of a node: the zones on its path to the root, the lines touching it or anything inside it, the
@@ -1307,39 +1330,39 @@ top-right corner (`marks.ts`: `consoleActionAnchor`, `consoleActionBox`), so it 
 20 px pill hung 9 px under the card would lie on the card below, two rows of cards being 20 px apart): at
 rest a 16 px circle around a ↗ glyph, concentric with a card's 8 px corner (2 px further in on an open zone's
 10 px corner); on hover and keyboard focus the stylesheet swaps in the labelled 16 px pill where the painter
-found it fits inside the node (`data-expand`, `consoleActionExpands`; an open zone keeps the circle, so the label
-never covers its header). Each variant carries a `<title>` tooltip ("Open in Cloud Console ↗ (opens a new
-tab)"), and the painter names the link ("Open bastion in Cloud Console (opens a new tab)"). While shown it is a
-tab stop after the node (the painter sets its `tabindex`; DOM order puts it after every node), keyboard focus
-fills it in the focus colour with its glyph and label in `canvas` (6.51 : 1 light on the `focus`
-`#185ABC`, 7.82 dark), and Escape on it
-clears the selection and puts focus back on the node. `marks.test.ts` checks, for every card, chip and
-card-sized zone of demo M's compute lens at `all` and `auto`, that both pills lie inside the node and share no
-area with any rect but the zones around it. Nothing opens it but its activation, and a click on it changes
-nothing in the app. The node menu
-(`actions.ts`, on `ui/Menu`) opens on a right-click, on Shift+F10 or the context-menu key on a focused node,
-and on Enter on the selected node, and selects the node: "Open in Cloud Console" (or "Open project in Cloud
-Console", a link item), "Copy resource name" (the clipboard, with a status message) and, for containers (open
-zones and chips that stand for an asset), "Drill in", which re-roots the view in the hash. Escape closes it and
-puts focus back on the node. The drawer header takes the same action from `consoleActionOf`, or for a node the view does not draw
-from `consoleAction` with the link its details carry. Cards, chips and card-sized zones are buttons named by type and label ("Cloud Run
-service: orders-api"); one of them is the drawing's tab stop (roving `tabindex`, at first the top-left solid node;
-the keys: paragraph "Keyboard" below), followed by the selected node's console action and keyboard focus draws the focus ring (2 px `focus` between canvas gaps, never thinner on screen than at 100 %); open zones are named
-graphics objects, product containers by their asset type when the data worker knows it ("Compute Engine
-instance group: api-mig"); edges are hidden from assistive technology. Lens titles come from the catalog's
-lens files through the data worker. The canvas fits the camera in a layout effect, before the first paint, and
-sets `data-diagram-ready="true"` on the `<svg>` (what the tests wait for) only once the painter and its
-pointer and keyboard listeners are attached, so whoever sees the flag can hover, focus and select at once. A
-theme or settings change re-renders the same elements, which keep the classes and attributes the painter set:
-the old painter takes its marks off when it is replaced, the new one paints the selection and the keyboard
-focus again, and a hover waits for the pointer's next move.
+found it fits inside the node (`data-expand`, `consoleActionExpands`; an open zone keeps the circle, so the
+label never covers its header). Each variant carries a `<title>` tooltip ("Open in Cloud Console ↗ (opens a
+new tab)"), and the painter names the link ("Open bastion in Cloud Console (opens a new tab)"). While shown it
+is a tab stop after the node (the painter sets its `tabindex`; DOM order puts it after every node), keyboard
+focus fills it in the focus colour with its glyph and label in `canvas` (6.51 : 1 light on the `focus`
+`#185ABC`, 7.82 dark), and Escape on it clears the selection and puts focus back on the node. `marks.test.ts`
+checks, for every card, chip and card-sized zone of demo M's compute lens at `all` and `auto`, that both pills
+lie inside the node and share no area with any rect but the zones around it. Nothing opens it but its
+activation, and a click on it changes nothing in the app. The node menu (`actions.ts`, on `ui/Menu`) opens on
+a right-click, on Shift+F10 or the context-menu key on a focused node, and on Enter on the selected node, and
+selects the node: "Open in Cloud Console" (or "Open project in Cloud Console", a link item), "Copy resource
+name" (the clipboard, with a status message) and, for containers (open zones and chips that stand for an
+asset), "Drill in", which re-roots the view in the hash. Escape closes it and puts focus back on the node. The
+drawer header takes the same action from `consoleActionOf`, or for a node the view does not draw from
+`consoleAction` with the link its details carry. Cards, chips and card-sized zones are buttons named by type
+and label ("Cloud Run service: orders-api"); one of them is the drawing's tab stop (roving `tabindex`, at
+first the top-left solid node; the keys: paragraph "Keyboard" below), followed by the selected node's console
+action and keyboard focus draws the focus ring (2 px `focus` between canvas gaps, never thinner on screen than
+at 100 %); open zones are named graphics objects, product containers by their asset type when the data worker
+knows it ("Compute Engine instance group: api-mig"); edges are hidden from assistive technology. Lens titles
+come from the catalog's lens files through the data worker. The canvas fits the camera in a layout effect,
+before the first paint, and sets `data-diagram-ready="true"` on the `<svg>` (what the tests wait for) only
+once the painter and its pointer and keyboard listeners are attached, so whoever sees the flag can hover,
+focus and select at once. A theme or settings change re-renders the same elements, which keep the classes and
+attributes the painter set: the old painter takes its marks off when it is replaced, the new one paints the
+selection and the keyboard focus again, and a hover waits for the pointer's next move.
 
 **Known limits.** Edges are not hoverable (no count tooltip). `@resvg/resvg-js` 2.6.2 (the layout's debug
-rasteriser, and the render CLI's) panics when an icon's nested `<svg>` lies outside a *cropped* viewBox; the whole
-drawing rasterises fine, so a viewport export should crop the bitmap rather than the viewBox. Where the layout
-ends an edge with a final segment shorter than its head (6 px against a 7 px head, at L detail `projects`),
-the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the layout's routing owns that
-segment.
+rasteriser, and the render CLI's) panics when an icon's nested `<svg>` lies outside a *cropped* viewBox; the
+whole drawing rasterises fine, so a viewport export should crop the bitmap rather than the viewBox. Where the
+layout ends an edge with a final segment shorter than its head (6 px against a 7 px head, at L detail
+`projects`), the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the layout's routing
+owns that segment.
 
 **Bundle.** `pnpm size` budgets the build by thread (AGENTS.md, Quality gates, testing and CI; gzipped, fonts
 and the JSON data tables excluded): the UI thread's initial chunks (the entry, its static imports and the CSS)
@@ -1351,10 +1374,10 @@ serves every worker (`diagram.worker.ts`), so the modules the roles share (the m
 once, with each role's code in its own chunk; the demo generator (about 69 kB) is a chunk of its own that only
 the data worker loads, on first use (`pipeline/demo.ts`); and the two generated data tables the data worker
 reads, the compiled asset catalog (about 600 kB) and the icon table (about 170 kB), ship as JSON files
-(`assets/catalog-data-<hash>.json`, `assets/icon-table-<hash>.json`) that the worker fetches when its data role
-starts (`vite.config.ts`, `dataTablesAsJson`: the catalog is data, the icons are images). JSON is
-cheaper to parse than the same object literals as script and the bytes on the wire are the same. The worker is
-a module worker (`worker.format: 'es'`). The dev server and the tests import the modules as they are. To see
+(`assets/catalog-data-<hash>.json`, `assets/icon-table-<hash>.json`) that the worker fetches when its data
+role starts (`vite.config.ts`, `dataTablesAsJson`: the catalog is data, the icons are images). JSON is cheaper
+to parse than the same object literals as script and the bytes on the wire are the same. The worker is a
+module worker (`worker.format: 'es'`). The dev server and the tests import the modules as they are. To see
 what a chunk holds, build with source maps into a scratch directory (`vite build --sourcemap --outDir <dir>`;
 never into `dist/`, which the backend serves) and attribute each chunk's bytes to its sources.
 
@@ -1363,19 +1386,19 @@ never into `dist/`, which the backend serves) and attribute each chunk's bytes t
 `theme/tokens.ts` holds the style skill's §2 palettes and `theme/tokens.css` the same values as `--dg-*`
 custom properties under `<html data-theme>`. The drawing writes the theme's values as SVG attributes (so a
 serialised SVG carries its colours); the interactive states in `diagram.css` use the custom properties. Every
-value is the skill's: the folder, product-container and virtual-region outlines and `edge.dim` are each theme's
-`muted` (light `#5F6368`, 3.52 : 1 on the project tint at worst; dark `#9AA0A6`, 4.07 : 1 on the nested tint at
-worst; a fainter grey fails a §10 pair), the dark `zone.subnet` stroke is `#B39B4C` (4.53 : 1 on its fill, 4.55
-on the VPC tint; unlike the dark `accent.path`, so card-sized subnets do not look highlighted), and two tokens
-go beyond the base palette: `mutedOnTint`, secondary text (a zone's id, a card-sized zone's subtitle) where
-`muted` is below 4.5 on the tint (light project 3.52: `#3C4043`, the light `chip.text`, 6.09; dark project 4.38
-and nested 4.07: `#BDC1C6`, the dark card stroke, 6.39 and 5.94), so ids stay lighter than the title; and
-`pathCasing`, the band the path to the root and the `secures` overlay sit on (light `muted` `#5F6368`, on which
-the amber `#F9AB00` reaches 3.13 : 1 and which reaches 3.52 on the project tint; not `ink`, whose
-black-and-amber band would read as hazard tape; dark `canvas`, 11.75), as the selection ring sits on its canvas
-gap: the light amber reaches only 1.13–1.93 on the light fills. `SKILL_DEPARTURES` is empty: should a §2 value
-fail a §10 pair, the departure goes there with the value it replaces and its ratio until the skill adopts one.
-Dark values §2 leaves out are derived: dark `edge` and `chip.text` = `ink`.
+value is the skill's: the folder, product-container and virtual-region outlines and `edge.dim` are each
+theme's `muted` (light `#5F6368`, 3.52 : 1 on the project tint at worst; dark `#9AA0A6`, 4.07 : 1 on the
+nested tint at worst; a fainter grey fails a §10 pair), the dark `zone.subnet` stroke is `#B39B4C` (4.53 : 1
+on its fill, 4.55 on the VPC tint; unlike the dark `accent.path`, so card-sized subnets do not look
+highlighted), and two tokens go beyond the base palette: `mutedOnTint`, secondary text (a zone's id, a
+card-sized zone's subtitle) where `muted` is below 4.5 on the tint (light project 3.52: `#3C4043`, the light
+`chip.text`, 6.09; dark project 4.38 and nested 4.07: `#BDC1C6`, the dark card stroke, 6.39 and 5.94), so ids
+stay lighter than the title; and `pathCasing`, the band the path to the root and the `secures` overlay sit on
+(light `muted` `#5F6368`, on which the amber `#F9AB00` reaches 3.13 : 1 and which reaches 3.52 on the project
+tint; not `ink`, whose black-and-amber band would read as hazard tape; dark `canvas`, 11.75), as the selection
+ring sits on its canvas gap: the light amber reaches only 1.13–1.93 on the light fills. `SKILL_DEPARTURES` is
+empty: should a §2 value fail a §10 pair, the departure goes there with the value it replaces and its ratio
+until the skill adopts one. Dark values §2 leaves out are derived: dark `edge` and `chip.text` = `ink`.
 
 `theme/theme.test.ts` (it lives with the tokens rather than in `packages/layout`)
 checks the table against the skill's §2 tables value for value (`mutedOnTint` and `pathCasing` included),
@@ -1411,15 +1434,16 @@ networking and load-balancing lenses × both themes as standalone SVG (read time
 `e2e/baselines/diagram/<fixture>-<lens>-<detail>-<theme>.svg` (24 files, about 2.9 MB), plus four
 selected states: demo S with the global forwarding rule `web-https-fr` selected in the load-balancing
 lens and the VM `web-1mnl` in the overview lens, both themes, drawn with their trace by `DiagramSvg`'s
-`selection` option (`…-selected-forwarding-rule.svg`, `…-selected-vm.svg`), and four timeline days compared with the
-day before: demo S in the overview lens on 8 September after the 7th (an added subscription, a removed
-bucket's ghost, a changed project's dot, the three legend rows) and on 17 September after the 16th (the deleted
-reports project as a ghost zone holding the ghosts of what it held), both themes (`…-diff-2026-09-08.svg`,
-`…-diff-2026-09-17.svg`, drawn from `demoDiffDiagram` in `testing/demoScenes.ts` as the data worker draws them). It also checks that
-each carries the legend, the title block with the tagline, no affiliation line and no text below 10.5 px, and draws XL at
-`folders` in both themes against the same checks without keeping it as a baseline (its six files would be
-2.5 MB of folder-level chips that M and L at `auto` already cover). Update them deliberately, look at the changed files (a browser opens them; the render CLI, `pnpm render`,
-rasterises them) and say why in the pull request:
+`selection` option (`…-selected-forwarding-rule.svg`, `…-selected-vm.svg`), and four timeline days compared
+with the day before: demo S in the overview lens on 8 September after the 7th (an added subscription, a
+removed bucket's ghost, a changed project's dot, the three legend rows) and on 17 September after the 16th
+(the deleted reports project as a ghost zone holding the ghosts of what it held), both themes
+(`…-diff-2026-09-08.svg`, `…-diff-2026-09-17.svg`, drawn from `demoDiffDiagram` in `testing/demoScenes.ts` as
+the data worker draws them). It also checks that each carries the legend, the title block with the tagline, no
+affiliation line and no text below 10.5 px, and draws XL at `folders` in both themes against the same checks
+without keeping it as a baseline (its six files would be 2.5 MB of folder-level chips that M and L at `auto`
+already cover). Update them deliberately, look at the changed files (a browser opens them; the render CLI,
+`pnpm render`, rasterises them) and say why in the pull request:
 
 ```sh
 pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u
@@ -1430,45 +1454,45 @@ run would then cover every file), and pnpm passes `--` on to Vitest, which then 
 
 **Keyboard (`keyboard/navigation.ts`, `keyboard/zoom.ts`, `src/keyboard/`).** Tab reaches the header controls,
 then the drawing's one tab stop. The arrow keys move to the nearest item of the same zone in that direction
-(cards, chips, card-sized zones, and the open zones inside it, which take focus on their collapse button); ↓ on an
-open zone goes inside it, an arrow with nothing that way carries on among the zone's neighbours and ↑ reaches the
-zone's header; Home and End go to the zone's first and last item. Enter or Space selects (the drawer opens),
-Escape clears the selection and then returns to the zone around the item, Shift+F10 opens the item's menu. The
-camera pans just enough to show the item, and first zooms in to the subtitle scale (0.55, `lod.ts`; not the label
-scale, 0.35, where a card's text is about 4.5 px) when it is further out (`camera.ts`,
-`keyboardTransform`; at once with reduced motion). `+` and `-` zoom one step (× 1.5) about the
-focused item and `0` fits the drawing. `/` focuses search; `[` and `]` call `stepTick` (one day back and
-forward). A single-key shortcut is
-matched by the character typed (`keyboard/shortcuts.ts`, `isShortcutKey`): Shift, Option and AltGr may have been
-needed for it (`[` is Option+5 on a German Mac, AltGr+8 on a German PC), Cmd or Ctrl alone make it the browser's.
-The focus ring goes around a focused card or open zone in the diagram token `focus` (light `#185ABC`, which reaches
-3.78 : 1 on the light project tint where the chrome's `primary` reaches 2.62; dark `#8AB4F8`), 2 px between 2 px
-canvas gaps in drawing units at 100 % and closer and in screen pixels further out (`marks.ts`,
-`focusRingPlacement`; the canvas tells the painter the scale). "Skip to the diagram" (`keyboard/SkipToCanvas.tsx`)
-focuses the drawing's tab stop, or the canvas area while nothing is drawn, without touching the hash. After
-"Drill in" (the node's menu, the drawer) focus waits on the `<svg>` (`canvasFocus.ts`) and goes to the new view's
-tab stop once it is drawn; after a drill-out from the breadcrumb it goes to the crumb that is now current. Live
-regions: search results and "N of M shown" (their own), the loading stage (kept in the DOM while idle), the
-drawer's details error (`role="alert"`), the timeline keys' message when they cannot move (a keyed remount, so a
-repeat is announced), the timeline bar's readout (quiet during playback).
+(cards, chips, card-sized zones, and the open zones inside it, which take focus on their collapse button); ↓
+on an open zone goes inside it, an arrow with nothing that way carries on among the zone's neighbours and ↑
+reaches the zone's header; Home and End go to the zone's first and last item. Enter or Space selects (the
+drawer opens), Escape clears the selection and then returns to the zone around the item, Shift+F10 opens the
+item's menu. The camera pans just enough to show the item, and first zooms in to the subtitle scale (0.55,
+`lod.ts`; not the label scale, 0.35, where a card's text is about 4.5 px) when it is further out (`camera.ts`,
+`keyboardTransform`; at once with reduced motion). `+` and `-` zoom one step (× 1.5) about the focused item
+and `0` fits the drawing. `/` focuses search; `[` and `]` call `stepTick` (one day back and forward). A
+single-key shortcut is matched by the character typed (`keyboard/shortcuts.ts`, `isShortcutKey`): Shift,
+Option and AltGr may have been needed for it (`[` is Option+5 on a German Mac, AltGr+8 on a German PC), Cmd or
+Ctrl alone make it the browser's. The focus ring goes around a focused card or open zone in the diagram token
+`focus` (light `#185ABC`, which reaches 3.78 : 1 on the light project tint where the chrome's `primary`
+reaches 2.62; dark `#8AB4F8`), 2 px between 2 px canvas gaps in drawing units at 100 % and closer and in
+screen pixels further out (`marks.ts`, `focusRingPlacement`; the canvas tells the painter the scale). "Skip to
+the diagram" (`keyboard/SkipToCanvas.tsx`) focuses the drawing's tab stop, or the canvas area while nothing is
+drawn, without touching the hash. After "Drill in" (the node's menu, the drawer) focus waits on the `<svg>`
+(`canvasFocus.ts`) and goes to the new view's tab stop once it is drawn; after a drill-out from the breadcrumb
+it goes to the crumb that is now current. Live regions: search results and "N of M shown" (their own), the
+loading stage (kept in the DOM while idle), the drawer's details error (`role="alert"`), the timeline keys'
+message when they cannot move (a keyed remount, so a repeat is announced), the timeline bar's readout (quiet
+during playback).
 
 The Playwright suite checks the renderer's behaviour in Chromium (`e2e/tests/diagram.spec.ts`), the selection
-trace (`trace.spec.ts`: a VM's path to the root and NIC, subnet and disk lines, a global forwarding rule's chain
-to its instance groups and NEGs, hover preview, persistence across zoom) and the console affordance
+trace (`trace.spec.ts`: a VM's path to the root and NIC, subnet and disk lines, a global forwarding rule's
+chain to its instance groups and NEGs, hover preview, persistence across zoom) and the console affordance
 (`console-link.spec.ts`: the card's action and the menu's link with the VM's page, nothing opened without
 activation, a new tab on activation, drill-in, the project fallback for a template stripped from the catalog
-the test serves), the keyboard model (`keyboard.spec.ts`: a tour without the pointer, the Tab order, the
-skip link, every focus indicator at 3 : 1 against its neighbours and, pixel by pixel, against the unfocused screen
-on demo L zoomed out, the zoom keys, `[` on German layouts, focus across drill-in and drill-out, reduced motion),
-and runs axe on every page and on demo S, M and L, in both themes (`e2e/tests/a11y.spec.ts`).
+the test serves), the keyboard model (`keyboard.spec.ts`: a tour without the pointer, the Tab order, the skip
+link, every focus indicator at 3 : 1 against its neighbours and, pixel by pixel, against the unfocused screen
+on demo L zoomed out, the zoom keys, `[` on German layouts, focus across drill-in and drill-out, reduced
+motion), and runs axe on every page and on demo S, M and L, in both themes (`e2e/tests/a11y.spec.ts`).
 
 ## View controls (`src/views/`)
 
-The top bar's view controls ([docs/lenses-and-filters.md](../docs/lenses-and-filters.md); layout skill §6) write
-the view into the URL hash through the store's actions
-and read it back from there; none keeps a copy that could drift (a draft that is not a view yet, such as a focus
-kind waiting for its parameter or a picker's typed text, lives only while its popup is open). A reload, Back,
-a copied link and a saved view therefore all restore exactly what the controls show.
+The top bar's view controls ([docs/lenses-and-filters.md](../docs/lenses-and-filters.md); layout skill §6)
+write the view into the URL hash through the store's actions and read it back from there; none keeps a copy
+that could drift (a draft that is not a view yet, such as a focus kind waiting for its parameter or a picker's
+typed text, lives only while its popup is open). A reload, Back, a copied link and a saved view therefore all
+restore exactly what the controls show.
 
 ```
 src/views/
@@ -1504,8 +1528,8 @@ lens files) is the ceiling of `auto`: the scene builder never opens the lens dee
 labelled, instead of 172 rects below the label scale. The detail level follows the lens while it is `auto` or
 the current lens's own default (as a link may hold it): switching lenses then sets `auto`. Once the
 person has chosen another level, it stays across lens switches. The hash holds no more than the level, so
-choosing a lens's own default counts as following it; until the catalog's lens list has arrived, a switch keeps
-an explicit level. The search reveal dialog's "Switch to the Everything lens" follows the same rule
+choosing a lens's own default counts as following it; until the catalog's lens list has arrived, a switch
+keeps an explicit level. The search reveal dialog's "Switch to the Everything lens" follows the same rule
 (`search/locate.ts`, `applySteps`).
 
 **The controls.** *Lens*: the eleven lenses with title and description (the list is 30 rem wide; a description
@@ -1533,22 +1557,22 @@ link*: the diagram page's URL with the view's hash to the clipboard, and a toast
 in the DOM).
 
 **Width.** On a desktop the view row fits a 1280 px window (the desktop layout's narrowest; AGENTS.md, Product
-rules): the breadcrumb takes the free space without widening the row (inline-size containment, crumbs cut with an
-ellipsis, the root's kept whole), the Focus summary is cut at 8 em, and the detail segments are narrower than the
-primitive's default. On a phone or a tablet the controls but the breadcrumb are in the View sheet, one under the
-other, the Focus and Filters panels as wide as the sheet (Filters in one column), and the breadcrumb is cut from the
-left, so its current level always shows (section "Layouts").
-Every popup is keyboard operable: Escape first closes an open list or clears a picker's text, then closes the
-popover.
+rules): the breadcrumb takes the free space without widening the row (inline-size containment, crumbs cut with
+an ellipsis, the root's kept whole), the Focus summary is cut at 8 em, and the detail segments are narrower
+than the primitive's default. On a phone or a tablet the controls but the breadcrumb are in the View sheet,
+one under the other, the Focus and Filters panels as wide as the sheet (Filters in one column), and the
+breadcrumb is cut from the left, so its current level always shows (section "Layouts"). Every popup is
+keyboard operable: Escape first closes an open list or clears a picker's text, then closes the popover.
 
 Tests: `filterForm.test.ts` (every field both ways, the hash round trip, canonical form, counts),
-`viewRules.test.ts` (the lens rule, focus kinds, the trail, summaries), `choices.test.ts` (demo S and M against
-the scene builder: every offered focus parameter applies, every region keeps something; the worker's answer and
-its cache), `savedViewStore.test.ts` (fake-indexeddb: save, list, rename, delete, a new connection, memory
-fallback), the controls' tests next to each slot file (`ui/tokens.test.ts` guards the views' stylesheets with the rest
-of the chrome: tokens both themes define, no raw colour), `SavedViewsDialog.test.tsx` (save, list, apply, rename,
-delete, a reload, axe; the view is the hash, so no diagram is drawn), `CopyLink.test.tsx` (the URL with its hash to the
-clipboard, the toast, inert away from the diagram) and `e2e/tests/controls.spec.ts` in Chromium on demo M.
+`viewRules.test.ts` (the lens rule, focus kinds, the trail, summaries), `choices.test.ts` (demo S and M
+against the scene builder: every offered focus parameter applies, every region keeps something; the worker's
+answer and its cache), `savedViewStore.test.ts` (fake-indexeddb: save, list, rename, delete, a new connection,
+memory fallback), the controls' tests next to each slot file (`ui/tokens.test.ts` guards the views'
+stylesheets with the rest of the chrome: tokens both themes define, no raw colour),
+`SavedViewsDialog.test.tsx` (save, list, apply, rename, delete, a reload, axe; the view is the hash, so no
+diagram is drawn), `CopyLink.test.tsx` (the URL with its hash to the clipboard, the toast, inert away from the
+diagram) and `e2e/tests/controls.spec.ts` in Chromium on demo M.
 
 ## Progressive disclosure (`src/diagram/disclosure/`)
 
@@ -1587,12 +1611,12 @@ src/diagram/disclosure/
 - **Collapse button.** Every open zone of the interactive canvas has a button over its header icon
   (`role="button"`, "Collapse Project: demo-web-1", `data-collapse`), whose ⊟ face (a plate in `surface`
   with a `chipText` outline and glyph, the inverse of the chip's ⊞) shows while the pointer is on the zone
-  and on keyboard focus, filled in the focus colour with the glyph in `canvas` (6.51 : 1 light, 7.82 dark) on a
-  2 px canvas rim. Activating it adds the inverse flip. It is no tab stop of its own: the painter makes it the
-  drawing's roving tab stop when its zone is the node in question (a selected open zone, after a keyboard flip,
-  or an arrow key or Escape moving to the zone), and then draws the focus ring around the zone too, which
-  keeps its screen size when the plate is a few pixels. Exports and baselines never draw it (`DrawingOptions.collapsible`, interactive
-  only).
+  and on keyboard focus, filled in the focus colour with the glyph in `canvas` (6.51 : 1 light, 7.82 dark) on
+  a 2 px canvas rim. Activating it adds the inverse flip. It is no tab stop of its own: the painter makes it
+  the drawing's roving tab stop when its zone is the node in question (a selected open zone, after a keyboard
+  flip, or an arrow key or Escape moving to the zone), and then draws the focus ring around the zone too,
+  which keeps its screen size when the plate is a few pixels. Exports and baselines never draw it
+  (`DrawingOptions.collapsible`, interactive only).
 - **Camera and focus.** The drawing that carries a flip made on the canvas keeps the camera (no fit: the
   viewBox stays) and glides 200 ms to the zone (`FLIP_GLIDE_MS`; at once with reduced motion): an expanded
   zone is framed like a jump (centred, at 100 % or closer, or fitted when larger), a collapsed zone's chip is
@@ -1674,23 +1698,24 @@ select a card or a zone, since a click on a chip expands it (`diagram.spec.ts`, 
 The right drawer of the diagram page: it opens when a node is selected (a click, or Enter on a focused
 card), beside the canvas, 360–420 px wide. The canvas is measured by its row's width (section "App state"), so
 opening it never lays the diagram out again; instead the drawer asks the canvas for a short **reveal pan**
-(`actions.jumpTo(id, { mode: 'reveal' })`): `revealTransform` in `diagram/camera.ts` moves the camera as little as
-it can, at the same scale, in `REVEAL_MS` (200 ms; at once with reduced motion), so that the node and, as far as
-they fit, the nodes its selection trace reaches stay in view, 24 px from the edges; it does nothing when they
-already are, and nothing while a centring jump (search) is on its way to the node. It asks again when the
-selection changes and when the width changes.
+(`actions.jumpTo(id, { mode: 'reveal' })`): `revealTransform` in `diagram/camera.ts` moves the camera as
+little as it can, at the same scale, in `REVEAL_MS` (200 ms; at once with reduced motion), so that the node
+and, as far as they fit, the nodes its selection trace reaches stay in view, 24 px from the edges; it does
+nothing when they already are, and nothing while a centring jump (search) is on its way to the node. It asks
+again when the selection changes and when the width changes.
 
-On a phone or a tablet the drawer lies over the canvas instead (section "Layouts"), marked `data-canvas-overlay`, so
-the reveal keeps the node in the part of the canvas it leaves in view: on a tablet a panel along the canvas's right
-edge, at most half the canvas wide, its handle a 44-pixel strip on that edge; on a phone a sheet over the canvas's
-lower half (`SHEET_HEIGHT`: half or the whole of the canvas's height, less the strip the handle stands in), whose
-handle along its top edge (`ResizeHandle` with `axis="height"`, the same name) moves freely while dragged and,
-let go, settles at the nearer of the two heights, or closes the sheet when let go well below half; ↑ and End take
-it to full height, ↓ and Home to half; it opens at half height each time. The sheet's `data-sheet` (`half`,
-`full`) lets the page's stylesheets keep the disclosure bar above it at half height and hide the canvas's content
-while it covers the canvas at full height (no focus lands out of sight). Either way the header and the details
-scroll together in one box (`.content`, `display: contents` on a desktop), so nothing in the drawer reaches past its
-edge whatever its height. Close and Escape close it as on a desktop.
+On a phone or a tablet the drawer lies over the canvas instead (section "Layouts"), marked
+`data-canvas-overlay`, so the reveal keeps the node in the part of the canvas it leaves in view: on a tablet a
+panel along the canvas's right edge, at most half the canvas wide, its handle a 44-pixel strip on that edge;
+on a phone a sheet over the canvas's lower half (`SHEET_HEIGHT`: half or the whole of the canvas's height,
+less the strip the handle stands in), whose handle along its top edge (`ResizeHandle` with `axis="height"`,
+the same name) moves freely while dragged and, let go, settles at the nearer of the two heights, or closes the
+sheet when let go well below half; ↑ and End take it to full height, ↓ and Home to half; it opens at half
+height each time. The sheet's `data-sheet` (`half`, `full`) lets the page's stylesheets keep the disclosure
+bar above it at half height and hide the canvas's content while it covers the canvas at full height (no focus
+lands out of sight). Either way the header and the details scroll together in one box (`.content`,
+`display: contents` on a desktop), so nothing in the drawer reaches past its edge whatever its height. Close
+and Escape close it as on a desktop.
 
 ```
 src/drawer/
@@ -1713,34 +1738,35 @@ catalog subtitle, Close, then **Drill in** (the primary action, for a container 
 `container`, not a builder's region) and **Open in Cloud Console ↗**: the catalog engine's `consoleLinkFor`
 (the type's `console` template; a template whose variables are missing gives no resource link), worded by
 `consoleAction` as on the card and in its menu; a type without a template offers "Open project in Cloud
-Console ↗" (its project's console home), and an asset outside any project nothing. Then: the full resource name
-with a Copy button, the asset type, the parent (the container the Graph nests it in) and the project (id and
-number) as jump links, the location, the IP addresses and domains (the catalog's `ips` and `domains` paths, each
-with Copy), labels (`data.labels`, GKE's `data.resourceLabels`) and tags (Compute's network tags
+Console ↗" (its project's console home), and an asset outside any project nothing. Then: the full resource
+name with a Copy button, the asset type, the parent (the container the Graph nests it in) and the project (id
+and number) as jump links, the location, the IP addresses and domains (the catalog's `ips` and `domains`
+paths, each with Copy), labels (`data.labels`, GKE's `data.resourceLabels`) and tags (Compute's network tags
 `data.tags.items`, or a `data.tags` list) as badges; the **relations** grouped by kind in the model's order
 (`RelationKindSchema`), each headed by the legend's words (`relationLabel`): a container's children
 (`contains`, the first 100 and a count), then every relation edge of the Graph it is an end of, outgoing (→)
 before `peers` (↔) before incoming (←), each by label, with the target's type and, for a target sitting
 directly in a VPC network (a subnet), "in <network>" (a NIC's own weak `attaches` to the network yields to the
-subnet in the Graph, so that is where the network shows); the **dangling references** with their raw values and
-why they name nothing (a project outside the snapshot, such as a public image project or a Google-managed
+subnet in the Graph, so that is where the network shows); the **dangling references** with their raw values
+and why they name nothing (a project outside the snapshot, such as a public image project or a Google-managed
 tenant; an asset not in the snapshot; an identity no asset has; a value the catalog could not read as a name);
 and **Raw JSON**, a toggle that shows `resource.data` pretty-printed, with Copy. Copy results are announced in
 the header's status line.
 
 **Where it comes from.** The data worker answers two requests of its protocol (`pipeline/protocol.ts`):
-`details` (a snapshot and a node id → `NodeDetails | null`, a lookup in the Graph it keeps; null for a bundle the
-scene draws, which is no asset) and `reveal` (a view, its viewport and a node id → `{ shown, flips }`). Selecting
-asks for the details only, never for a Scene or a layout. `revealFlips` asks the scene builder itself which
-Scene node shows the node (`report.selection.shownAs`, the chip it is collapsed into), toggles that chip's flip
-and builds again until the node shows as itself (about 18 ms per step on demo M), so the rule of what collapses
-where is never restated; toggling a collapsed zone's flip always opens it.
+`details` (a snapshot and a node id → `NodeDetails | null`, a lookup in the Graph it keeps; null for a bundle
+the scene draws, which is no asset) and `reveal` (a view, its viewport and a node id → `{ shown, flips }`).
+Selecting asks for the details only, never for a Scene or a layout. `revealFlips` asks the scene builder
+itself which Scene node shows the node (`report.selection.shownAs`, the chip it is collapsed into), toggles
+that chip's flip and builds again until the node shows as itself (about 18 ms per step on demo M), so the rule
+of what collapses where is never restated; toggling a collapsed zone's flip always opens it.
 
 **Jump links.** Every target, the parent and the project are jump links: a target already drawn is selected
 (`actions.select`, history replaced); one hidden in a collapsed zone gets its `reveal` answer and the view is
 written with the new flips and the selection in one step (`actions.setView`, a history entry, as a flip is); a
 target the lens, a filter, the focus or the drill-in leaves out is selected anyway (its details show) and the
-status line says it is not drawn in this view. The reveal pan then brings the target into view once it is drawn.
+status line says it is not drawn in this view. The reveal pan then brings the target into view once it is
+drawn.
 
 **Keyboard and width.** Escape anywhere in the drawer and Close clear the selection and put focus back on the
 node on the canvas (its card becomes the drawing's tab stop; the canvas itself when it is not drawn). The
@@ -1749,38 +1775,40 @@ handle on the left edge is a focusable window splitter (`role="separator"` with 
 preferences (`drawerWidth`, clamped to 360–420 on read).
 
 **What changed.** While the diagram is a timeline day compared with the day on screen before it (section
-"Timeline diff overlay"), the drawer has a "What changed" section after the facts, from the data worker's `changes`
-request (both days named, so the answer is the two days the canvas compares; `drawer/changes.ts`): how the node itself
-changed ("Added since 2026-09-07.", "Removed …: it is not in this day’s data.", "Changed …: its update time
-moved.", "Not changed itself …"), its `updateTime` on each day it exists, for a changed asset the fields of
-`resource.data` that differ, each with its dotted path and short before → after values (`fieldDiff.ts`: keys in
-code-point order, arrays index by index, at most 12 listed and the rest counted, values cut at 60 characters, depth
-16), and for a container what inside it, at any depth, was added, removed or changed, each by label with a jump link
-(25 listed, the rest counted). A removed node's link selects it: its ghost when the view draws one (the reveal pan
-brings it into view, and the drawer shows it as the earlier day had it), otherwise the status line says the view draws
-no ghost of it. Without a diff there is no section. The details are kept per day drawn as well (kept per snapshot
-and node alone, a step would show the day before's details).
+"Timeline diff overlay"), the drawer has a "What changed" section after the facts, from the data worker's
+`changes` request (both days named, so the answer is the two days the canvas compares; `drawer/changes.ts`):
+how the node itself changed ("Added since 2026-09-07.", "Removed …: it is not in this day’s data.", "Changed
+…: its update time moved.", "Not changed itself …"), its `updateTime` on each day it exists, for a changed
+asset the fields of `resource.data` that differ, each with its dotted path and short before → after values
+(`fieldDiff.ts`: keys in code-point order, arrays index by index, at most 12 listed and the rest counted,
+values cut at 60 characters, depth 16), and for a container what inside it, at any depth, was added, removed
+or changed, each by label with a jump link (25 listed, the rest counted). A removed node's link selects it:
+its ghost when the view draws one (the reveal pan brings it into view, and the drawer shows it as the earlier
+day had it), otherwise the status line says the view draws no ghost of it. Without a diff there is no section.
+The details are kept per day drawn as well (kept per snapshot and node alone, a step would show the day
+before's details).
 
-Tests: `drawer/fieldDiff.test.ts` (paths, kinds, quoting, the cap, previews, depth, and every field each change of
-demo S's and M's histories touched), `drawer/changes.test.ts` (demo S from 7 to 8 September: a changed project's
-update times and field, an added subscription, a removed bucket, a container's lists, the cap, either direction),
-`drawer/WhatChanged.test.tsx` (in the app with in-process workers: the section after `]`, a click on a ghost, the jump
-links to a removed and an added node, the next step, none without a diff, axe), `drawer/console.test.ts` (console URLs for thirteen catalog types from synthetic assets, missing
+Tests: `drawer/fieldDiff.test.ts` (paths, kinds, quoting, the cap, previews, depth, and every field each
+change of demo S's and M's histories touched), `drawer/changes.test.ts` (demo S from 7 to 8 September: a
+changed project's update times and field, an added subscription, a removed bucket, a container's lists, the
+cap, either direction), `drawer/WhatChanged.test.tsx` (in the app with in-process workers: the section after
+`]`, a click on a ghost, the jump links to a removed and an added node, the next step, none without a diff,
+axe), `drawer/console.test.ts` (console URLs for thirteen catalog types from synthetic assets, missing
 variables, types without a template, assets outside any project), `drawer/details.test.ts` (grouping order,
 directions, the children cap, the subnet's network, dangling reasons, labels and tags, and demo M's bastion VM
-and its project), `drawer/reveal.test.ts` (flips on demo M, a node the lens leaves out, and `revealTransform`),
-`drawer/DetailsDrawer.test.tsx` (the drawer in the app with in-process workers: facts, relations, console link,
-raw JSON, copy, a jump, Escape and focus, the handle and the preference, Drill in, axe in jsdom), and
-`e2e/tests/drawer.spec.ts` in Chromium on demo M (the bastion VM's subnet, network and disk relations and
-console page, the reveal pan, a jump to the subnet and one that flips chips open, raw JSON, Escape, resizing
-and its persistence across a reload, drilling into the project, axe in both themes).
+and its project), `drawer/reveal.test.ts` (flips on demo M, a node the lens leaves out, and
+`revealTransform`), `drawer/DetailsDrawer.test.tsx` (the drawer in the app with in-process workers: facts,
+relations, console link, raw JSON, copy, a jump, Escape and focus, the handle and the preference, Drill in,
+axe in jsdom), and `e2e/tests/drawer.spec.ts` in Chromium on demo M (the bastion VM's subnet, network and disk
+relations and console page, the reveal pan, a jump to the subnet and one that flips chips open, raw JSON,
+Escape, resizing and its persistence across a reload, drilling into the project, axe in both themes).
 
 ## Search (`src/search/`)
 
 The top bar's search box (a Fuse.js index; skill gcp-diagram-style §6 "Search hit" and §13) finds any node of
-the view's snapshot, drawn or not, and lands on it: selected, glided to the centre of the canvas in 200 ms, its
-selection ring pulsing; the collapsed zones around it flipped open first; or, when the view leaves it out, an
-offer to change the view.
+the view's snapshot, drawn or not, and lands on it: selected, glided to the centre of the canvas in 200 ms,
+its selection ring pulsing; the collapsed zones around it flipped open first; or, when the view leaves it out,
+an offer to change the view.
 
 ```
 src/search/
@@ -1832,47 +1860,48 @@ Each field has its own Fuse index (built once; a searcher per query is cheap), b
 several keys multiplies them: a node that half-matches many fields would rank above one whose label holds the
 query exactly. Each index holds the field's distinct values, each mapped to the nodes that have it (a type
 name, a product, a project id or a folder name is shared by many nodes and searched once); a name segment or
-display name that repeats the label is left out (the label's match ranks higher), and the substring-only fields
-(threshold 0) are matched with `includes`, not Fuse. **Typos**: a field's threshold is capped at 2 typos for
-the whole query (`MAX_TYPOS`), so a pasted domain stays as fast and as strict as a short word, and at 1
-(`STRONG_TYPOS`) once the query has matched some node exactly, by a prefix or in a range: a two-typo guess
-inside a longer label ("bastion" in "notifications") is noise next to the real match, while a misspelt name
-("bastoin") that matches nothing better still finds its node. Fuzzy matching starts at 2 characters.
+display name that repeats the label is left out (the label's match ranks higher), and the substring-only
+fields (threshold 0) are matched with `includes`, not Fuse. **Typos**: a field's threshold is capped at 2
+typos for the whole query (`MAX_TYPOS`), so a pasted domain stays as fast and as strict as a short word, and
+at 1 (`STRONG_TYPOS`) once the query has matched some node exactly, by a prefix or in a range: a two-typo
+guess inside a longer label ("bastion" in "notifications") is noise next to the real match, while a misspelt
+name ("bastoin") that matches nothing better still finds its node. Fuzzy matching starts at 2 characters.
 **Containers** (folders, projects, networks, clusters, instance groups, …) are boosted in every tier: their
 score × 0.6 (`CONTAINER_BOOST`), so "web" lists the instance groups and the projects named "… web (…)" before
-the VMs and addresses that start with it, and "compute instance" the instance groups before the instances. Ties
-go to nodes drawn by default, then to the types the default lens (overview) draws, so a VM comes before its disk
-of the same name, then `core` before `leaf`, then label and id. In Node, with ten typical queries (a name,
-an IP, a project id, two words, a domain), demo M builds its index in 12 ms and answers in 1–3 ms; demo L (6 382
-assets) in 60 ms and 4–21 ms; demo XL (51 242 assets) in 480 ms and 37–154 ms, off the UI thread. Each query
-still holds the data worker's queue (Scene requests wait behind it) for that long; the 120 ms debounce keeps
-typing from queueing several.
+the VMs and addresses that start with it, and "compute instance" the instance groups before the instances.
+Ties go to nodes drawn by default, then to the types the default lens (overview) draws, so a VM comes before
+its disk of the same name, then `core` before `leaf`, then label and id. In Node, with ten typical queries (a
+name, an IP, a project id, two words, a domain), demo M builds its index in 12 ms and answers in 1–3 ms; demo
+L (6 382 assets) in 60 ms and 4–21 ms; demo XL (51 242 assets) in 480 ms and 37–154 ms, off the UI thread.
+Each query still holds the data worker's queue (Scene requests wait behind it) for that long; the 120 ms
+debounce keeps typing from queueing several.
 
-**The box** (`SearchBox.tsx`, on `ui/Combobox`). `/` focuses it from anywhere but a text field (and not while a
-modal dialog has made it inert); `aria-keyshortcuts="/"`. Typing lists at most 20 results, grouped by kind in
-the order of each kind's best result (ARIA groups named by their heading), each with its icon (on the dark
+**The box** (`SearchBox.tsx`, on `ui/Combobox`). `/` focuses it from anywhere but a text field (and not while
+a modal dialog has made it inert); `aria-keyshortcuts="/"`. Typing lists at most 20 results, grouped by kind
+in the order of each kind's best result (ARIA groups named by their heading), each with its icon (on the dark
 theme Google's colour marks keep their light plate), its label, and type · project · what matched when it is
-not the label (an IP, a domain, a folder above) · "hidden by default"; a polite status line says how many nodes
-matched ("138 results, the first 20 listed"). ↑ ↓ move, Enter or a click chooses (Enter with no active result
-chooses the first, the best: paste an address and press Enter), Escape closes the list and then clears the
-text, a press on the focused box opens it again. **Only the current text's results can be chosen**: while its
-answer is on its way (the debounce, then the worker), the previous text's results stay listed so the list does
-not flicker, but `aria-busy`, greyed and never active or chosen (`ui/Combobox` `busy`), and the status line is
-empty rather than the old count; ↓, ↑ and Enter pressed meanwhile apply to the new results when they arrive, so
-typing over a text and pressing Enter at once lands on the new text's best result. The chosen result's search
-text becomes the view's `highlight` (the hash; a link carries it; clearing the box removes it), a full
-resource name included; while typing it is the box's own draft, for that highlight and that snapshot. Choosing
-a result drops the draft, and so does any change of the highlight or of the snapshot, for good (otherwise
-text typed before a choice would come back in every later view without a highlight; `SearchBox.test.tsx` covers it).
-After a choice the list stays closed when focus comes back to the box (the dialog closing) until the person
-types, presses a key in it or presses on it. Without a snapshot, or on a snapshot that could not be loaded, the
-box is inert with a hint; away from the diagram it is not shown (the view row is the diagram page's).
+not the label (an IP, a domain, a folder above) · "hidden by default"; a polite status line says how many
+nodes matched ("138 results, the first 20 listed"). ↑ ↓ move, Enter or a click chooses (Enter with no active
+result chooses the first, the best: paste an address and press Enter), Escape closes the list and then clears
+the text, a press on the focused box opens it again. **Only the current text's results can be chosen**: while
+its answer is on its way (the debounce, then the worker), the previous text's results stay listed so the list
+does not flicker, but `aria-busy`, greyed and never active or chosen (`ui/Combobox` `busy`), and the status
+line is empty rather than the old count; ↓, ↑ and Enter pressed meanwhile apply to the new results when they
+arrive, so typing over a text and pressing Enter at once lands on the new text's best result. The chosen
+result's search text becomes the view's `highlight` (the hash; a link carries it; clearing the box removes
+it), a full resource name included; while typing it is the box's own draft, for that highlight and that
+snapshot. Choosing a result drops the draft, and so does any change of the highlight or of the snapshot, for
+good (otherwise text typed before a choice would come back in every later view without a highlight;
+`SearchBox.test.tsx` covers it). After a choice the list stays closed when focus comes back to the box (the
+dialog closing) until the person types, presses a key in it or presses on it. Without a snapshot, or on a
+snapshot that could not be loaded, the box is inert with a hint; away from the diagram it is not shown (the
+view row is the diagram page's).
 
-**Choosing a result** (`useReveal.ts`). The data worker locates the node in the view in the hash (`locate.ts`):
-it builds the view with the node as its selection and reads `report.selection.shownAs`; while that is a chip, it
-toggles the chip's flip (what a click on it does) and builds again, one level deeper each time
-(`diagram/disclosure/openAround.ts`, the loop the drawer's jump links share). Then the
-decision table (`reveal.ts`):
+**Choosing a result** (`useReveal.ts`). The data worker locates the node in the view in the hash
+(`locate.ts`): it builds the view with the node as its selection and reads `report.selection.shownAs`; while
+that is a chip, it toggles the chip's flip (what a click on it does) and builds again, one level deeper each
+time (`diagram/disclosure/openAround.ts`, the loop the drawer's jump links share). Then the decision table
+(`reveal.ts`):
 
 | The node in the current view | What happens |
 |---|---|
@@ -1888,37 +1917,38 @@ decision table (`reveal.ts`):
 | none of these, or no offer works | say why, change nothing |
 
 Every offer is checked in the worker by building the view it proposes (flips included) and finding the node in
-it; offers that would not show it are dropped. The reveal dialog (`ui/Dialog`, modal) says why in words and lists
-the offers, focus on the first; choosing one switches to its view (one history entry) and lands on the node;
-Close or Escape keeps the view, and focus goes back to the box. A locate answer is for the view it was asked
-about: if the view changed meanwhile, before the answer or while the dialog was open (browser Back), the node is
-located again in the view as it is now, and accepting an offer of the older view does that instead of applying
-it. The status line's reveal message ("Opened … to show …") is emptied when the person types again. The
-details drawer's own pan (`reveal` jumps) never replaces a centring jump to the same node that is still waiting
-for its layout.
+it; offers that would not show it are dropped. The reveal dialog (`ui/Dialog`, modal) says why in words and
+lists the offers, focus on the first; choosing one switches to its view (one history entry) and lands on the
+node; Close or Escape keeps the view, and focus goes back to the box. A locate answer is for the view it was
+asked about: if the view changed meanwhile, before the answer or while the dialog was open (browser Back), the
+node is located again in the view as it is now, and accepting an offer of the older view does that instead of
+applying it. The status line's reveal message ("Opened … to show …") is emptied when the person types again.
+The details drawer's own pan (`reveal` jumps) never replaces a centring jump to the same node that is still
+waiting for its layout.
 
-Tests: `rank.test.ts` (tiers: an exact name beats a fuzzy label whatever the boost; a project's id and the nodes
-in it; prefix before fuzzy; display names, domains, names above; the container boost and its limit; more exact
-fields first, the default lens's types first; typos in labels, fewer in context fields; path-like queries; IPv4
-exact, prefix and in a range; word starts; queries of several words; one typo next to a better match; limit and
-total), `reveal.test.ts` (the decision table row by row, and no empty or
-repeated offer for any combination of facts), `locate.test.ts` (demo S and M with the real catalog: shown,
-expanded and drawn, drill-in out of a root and a focus, the lens, hidden by role and by rule, excluded,
-filtered, unknown nodes), `service.test.ts` (documents, the e2e suite's four searches on demo M, icons, one index
-per Graph, parsers), `text.test.ts`, `shell/topbar/SearchBox.test.tsx` (the box in the app with in-process
-workers: `/`, grouped results with icons and the count, choosing, flips, the dialog and its offer, a text pasted
-over earlier results with Enter at once lands on the new best result, a full resource name stays in the box,
-Escape, inert away from the diagram and on a snapshot that could not be loaded, axe with the list and with the
-dialog open), `ui/Combobox.test.tsx` (`busy`: greyed and unchoosable, Enter and ↓ kept for the new options;
+Tests: `rank.test.ts` (tiers: an exact name beats a fuzzy label whatever the boost; a project's id and the
+nodes in it; prefix before fuzzy; display names, domains, names above; the container boost and its limit; more
+exact fields first, the default lens's types first; typos in labels, fewer in context fields; path-like
+queries; IPv4 exact, prefix and in a range; word starts; queries of several words; one typo next to a better
+match; limit and total), `reveal.test.ts` (the decision table row by row, and no empty or repeated offer for
+any combination of facts), `locate.test.ts` (demo S and M with the real catalog: shown, expanded and drawn,
+drill-in out of a root and a focus, the lens, hidden by role and by rule, excluded, filtered, unknown nodes),
+`service.test.ts` (documents, the e2e suite's four searches on demo M, icons, one index per Graph, parsers),
+`text.test.ts`, `shell/topbar/SearchBox.test.tsx` (the box in the app with in-process workers: `/`, grouped
+results with icons and the count, choosing, flips, the dialog and its offer, a text pasted over earlier
+results with Enter at once lands on the new best result, a full resource name stays in the box, Escape, inert
+away from the diagram and on a snapshot that could not be loaded, axe with the list and with the dialog open),
+`ui/Combobox.test.tsx` (`busy`: greyed and unchoosable, Enter and ↓ kept for the new options;
 `enterChoosesFirst`; a press reopens), `state/store.test.ts` (a reveal keeps a pending centring jump), and
 `e2e/tests/search.spec.ts` (demo M, both themes: an IP, a domain, a project id and a label each land on the
-right card, centred; a new text with Enter at once lands on its best result, never an earlier text's; a click on
-a result lands; the groups and axe with the list open; the dialog's offer).
+right card, centred; a new text with Enter at once lands on its best result, never an earlier text's; a click
+on a result lands; the groups and axe with the list open; the dialog's offer).
 
 **Known limits.** The search text in `highlight` is not painted on the canvas (only the chosen node is
-selected). IPv6 ranges are not matched by containment. On XL a query holds the data worker for up to ~150 ms and a
-locate (once per chosen result) for 0.9–1.7 s, measured in Node: the scene builder runs once per zone opened
-and once per offer checked. The search-jump target of layout skill §7 is set on L; no target covers XL yet.
+selected). IPv6 ranges are not matched by containment. On XL a query holds the data worker for up to ~150 ms
+and a locate (once per chosen result) for 0.9–1.7 s, measured in Node: the scene builder runs once per zone
+opened and once per offer checked. The search-jump target of layout skill §7 is set on L; no target covers XL
+yet.
 
 ## Timeline (`src/timeline/`)
 
@@ -1927,9 +1957,9 @@ snapshot's last 35 days (AGENTS.md, Product rules; skill cai-ingestion §5;
 [docs/timeline.md](../docs/timeline.md)). The view's day is its `tick` in the URL hash (`YYYY-MM-DD`; the
 snapshot's own day is no tick; an extra tick's read time, `YYYY-MM-DDTHH:MM:SSZ`), so a timeline position is a
 link like any view, and a hash with a tick opens on that day. On a desktop the bar is one row; on a tablet its
-readout takes a line of its own below the slider; on a phone the slider spans the width, with the readout and then
-the step and play buttons and the playback options below it (`PART_ORDER` in `TimelineBar.tsx`, which is also the
-tab order; section "Layouts").
+readout takes a line of its own below the slider; on a phone the slider spans the width, with the readout and
+then the step and play buttons and the playback options below it (`PART_ORDER` in `TimelineBar.tsx`, which is
+also the tab order; section "Layouts").
 
 ```
 src/timeline/
@@ -1956,17 +1986,18 @@ src/timeline/
 (`SceneSource.timeline`):
 
 - **A stored history** (the demo organisations, generated in the data worker and kept; an imported bundle that
-  carries one, read from IndexedDB): its 35 days end on the history's last day (`DemoHistory.today`, so the demo's
-  timeline is the same on every day), which is the snapshot itself; every other day is replayed in the data worker
-  (`snapshotAt` of `@gcportrait/demo-data`, then read as CAI NDJSON through `@gcportrait/ingest` with the snapshot's
-  scope and a clock fixed at the day's read time, as `diagram/pipeline/demo.ts` reads the last day), so every day is
-  available at once.
-- **A live scope** (a live pull or an export without a history): the days end on the app's UTC day (the controller's
-  clock, the one place "now" enters the timeline); the snapshot's own day is the snapshot; every other day is read
-  from Cloud Asset Inventory at that day's 00:00 UTC (the latest day at "now": no `readTime`) by `POST
-  /api/assets/stream` with `readTime` (the live pull, through the import worker), and stored in IndexedDB's
-  `tickCache` under its cache key (`storage/tickCache.ts`). A latest day read at "now" counts as cached only while
-  it is still the latest. Days before the window are dropped when a newer day of the scope is stored.
+  carries one, read from IndexedDB): its 35 days end on the history's last day (`DemoHistory.today`, so the
+  demo's timeline is the same on every day), which is the snapshot itself; every other day is replayed in the
+  data worker (`snapshotAt` of `@gcportrait/demo-data`, then read as CAI NDJSON through `@gcportrait/ingest`
+  with the snapshot's scope and a clock fixed at the day's read time, as `diagram/pipeline/demo.ts` reads the
+  last day), so every day is available at once.
+- **A live scope** (a live pull or an export without a history): the days end on the app's UTC day (the
+  controller's clock, the one place "now" enters the timeline); the snapshot's own day is the snapshot; every
+  other day is read from Cloud Asset Inventory at that day's 00:00 UTC (the latest day at "now": no
+  `readTime`) by `POST /api/assets/stream` with `readTime` (the live pull, through the import worker), and
+  stored in IndexedDB's `tickCache` under its cache key (`storage/tickCache.ts`). A latest day read at "now"
+  counts as cached only while it is still the latest. Days before the window are dropped when a newer day of
+  the scope is stored.
 
 **What is drawn.** A day goes through the normal pipeline: the data worker builds its Graph (kept with the
 last three days' for the loaded snapshot) and Scene, and the layout worker lays it out, whose memo leaves the
@@ -1979,18 +2010,18 @@ the search results). The scene key's tick is the day that can be drawn now (`tic
 once; a live day once it is cached, the diagram on screen staying until then. The title block shows the day's
 read time.
 
-**Reads** (`controller.ts`, `scheduler.ts`). Never all 35: when the view rests on a live day that is not cached for
-300 ms, that day; at idle (`requestIdleCallback`), its two neighbours, the one in the direction the view moved
-first; at most two reads in flight; a read the view moved away from (no longer the day or a neighbour) is cancelled
-and keeps nothing, its write to the tick cache included (`fetchTick.ts`, `storage/tickCache.ts`: the write
-takes the read's signal, writes nothing once it is aborted and takes back a day whose abort lands while it is
-written, putting back what it replaced), so the cache holds only days a timeline counted as read; a failed day is
-read again only when the view comes back to it or on "Try again"; nothing is read while the view stays where the
-page opened it on the snapshot's own day (a neighbour is a whole read of the scope). Days are read
-only with a signed-in session whose permission check is ready for the snapshot's scope; otherwise the readout
-says what is missing (demo mode reads nothing; cached days are still drawn). A read asks the tick cache
-for its day first: a day another tab of the browser stored after the page listed the cached days counts as
-read from there (`cached`), without a read from Google Cloud.
+**Reads** (`controller.ts`, `scheduler.ts`). Never all 35: when the view rests on a live day that is not
+cached for 300 ms, that day; at idle (`requestIdleCallback`), its two neighbours, the one in the direction the
+view moved first; at most two reads in flight; a read the view moved away from (no longer the day or a
+neighbour) is cancelled and keeps nothing, its write to the tick cache included (`fetchTick.ts`,
+`storage/tickCache.ts`: the write takes the read's signal, writes nothing once it is aborted and takes back a
+day whose abort lands while it is written, putting back what it replaced), so the cache holds only days a
+timeline counted as read; a failed day is read again only when the view comes back to it or on "Try again";
+nothing is read while the view stays where the page opened it on the snapshot's own day (a neighbour is a
+whole read of the scope). Days are read only with a signed-in session whose permission check is ready for the
+snapshot's scope; otherwise the readout says what is missing (demo mode reads nothing; cached days are still
+drawn). A read asks the tick cache for its day first: a day another tab of the browser stored after the page
+listed the cached days counts as read from there (`cached`), without a read from Google Cloud.
 
 **The bar.** One marker per day under the slider (`ui/Slider`'s `marks`), its state shown by shape: a hollow
 ring (not read yet), a filled dot (ready), a turning dashed ring (loading; it stands still with reduced
@@ -2008,67 +2039,67 @@ jumps instead of gliding), each step waiting for the day's diagram, in place in 
 last available day, on any press, key or wheel turn (but a press of the play button, or Enter or Space on it),
 when a step cannot be drawn, or when the snapshot changes.
 
-**Extra ticks** (exports and manual pulls appear as extra, labelled ticks; [docs/timeline.md](../docs/timeline.md);
-`extraTicks.ts`). Every export (a file or a `gs://` object) and every manual pull stored in this browser is an
-extra tick on the timeline of every other snapshot of its scope (same kind and id; each demo organisation has
-its own, so an export of demo M is an extra tick of demo M only), on a stored history and on a live
-scope alike. One read before the timeline's first day is not on the bar; a link naming it says so:
+**Extra ticks** (exports and manual pulls appear as extra, labelled ticks;
+[docs/timeline.md](../docs/timeline.md); `extraTicks.ts`). Every export (a file or a `gs://` object) and every
+manual pull stored in this browser is an extra tick on the timeline of every other snapshot of its scope (same
+kind and id; each demo organisation has its own, so an export of demo M is an extra tick of demo M only), on a
+stored history and on a live scope alike. One read before the timeline's first day is not on the bar; a link
+naming it says so:
 
-- **Its id** is its read time to the second in UTC, `2026-10-05T14:30:00Z`: what the view's `tick` names in the hash
-  (the model's `TickSchema` takes a day or such a time), so a link names it the same way in every browser that holds
-  that export, and it never collides with a day. A link naming one this browser does not hold draws the snapshot
-  itself and the readout says so.
-- **Its place** is the instant it shows: among the days in time order (a day before an extra tick read at its 00:00;
-  an extra tick of today before a live scope's latest day, read at "now"); a read time later than "now" sits at "now"
-  with a warning (never a tick in the future). Snapshots of the scope read in the same second are one tick, shown by
-  the copy stored last (the data worker draws the same one: `pickExtra`); the open snapshot is never one of its own
-  extra ticks, nor is a copy read at its own read time.
-- **The bar** draws it as a diamond instead of a dot (hollow while ready when its read time is an estimate, its
-  `readTimeSource`), named "export 2026-10-05 14:30" or "pull 2026-10-05 14:30 (estimated)" in the viewer's local
-  time (to the second when two share a minute): in its tooltip (it takes the pointer; a press on it selects it), the
-  slider's value text (with where its read time came from) and the readout ("export 2026-10-05 14:30 · extra tick",
-  the details in its tooltip). It is selected, stepped onto with `[` and `]` and drawn like a day (at once: it is
-  stored here; nothing is read from Google Cloud, and reads of live days around it are cancelled), but playback goes
-  through extra ticks only once "Play extras" is pressed (a toggle shown only when there are extra ticks, kept for
-  the page's life like the speed).
-- **Where they come from.** The snapshot library's binding (`bindExtraTicks`, run by `SnapshotLibraryProvider` with
-  every listing) writes the open timeline's extra ticks into the slice's `extras` once the timeline is known; until
-  then they are null, and a view whose tick names one is drawn as it asks and the bar waits, so a reload never
-  flashes the snapshot itself. The data worker finds the stored snapshot by the tick's id each time a view names it
-  (`findStoredExtra` in `snapshots/load.ts`, through the tick source), so a deleted one is never drawn from memory.
-  The Snapshots page lists them per scope and deletes them (section "Snapshots", "Timelines by scope").
+- **Its id** is its read time to the second in UTC, `2026-10-05T14:30:00Z`: what the view's `tick` names in
+  the hash (the model's `TickSchema` takes a day or such a time), so a link names it the same way in every
+  browser that holds that export, and it never collides with a day. A link naming one this browser does not
+  hold draws the snapshot itself and the readout says so.
+- **Its place** is the instant it shows: among the days in time order (a day before an extra tick read at its
+  00:00; an extra tick of today before a live scope's latest day, read at "now"); a read time later than "now"
+  sits at "now" with a warning (never a tick in the future). Snapshots of the scope read in the same second
+  are one tick, shown by the copy stored last (the data worker draws the same one: `pickExtra`); the open
+  snapshot is never one of its own extra ticks, nor is a copy read at its own read time.
+- **The bar** draws it as a diamond instead of a dot (hollow while ready when its read time is an estimate,
+  its `readTimeSource`), named "export 2026-10-05 14:30" or "pull 2026-10-05 14:30 (estimated)" in the
+  viewer's local time (to the second when two share a minute): in its tooltip (it takes the pointer; a press
+  on it selects it), the slider's value text (with where its read time came from) and the readout ("export
+  2026-10-05 14:30 · extra tick", the details in its tooltip). It is selected, stepped onto with `[` and `]`
+  and drawn like a day (at once: it is stored here; nothing is read from Google Cloud, and reads of live days
+  around it are cancelled), but playback goes through extra ticks only once "Play extras" is pressed (a toggle
+  shown only when there are extra ticks, kept for the page's life like the speed).
+- **Where they come from.** The snapshot library's binding (`bindExtraTicks`, run by `SnapshotLibraryProvider`
+  with every listing) writes the open timeline's extra ticks into the slice's `extras` once the timeline is
+  known; until then they are null, and a view whose tick names one is drawn as it asks and the bar waits, so a
+  reload never flashes the snapshot itself. The data worker finds the stored snapshot by the tick's id each
+  time a view names it (`findStoredExtra` in `snapshots/load.ts`, through the tick source), so a deleted one
+  is never drawn from memory. The Snapshots page lists them per scope and deletes them (section "Snapshots",
+  "Timelines by scope").
 
-Tests: `ticks.test.ts` (fixed `today`: 35 ticks, the latest at "now", month, year and leap-day boundaries, local
-labels), `cacheKey.test.ts`, `scheduler.test.ts` (order, the in-flight limit, cancellation), `playback.test.ts` (the
-state machine), `model.test.ts`, `controller.test.ts` (on a real store with a fake cache and reader: the debounced
-read, the idle prefetch in order, two in flight, cancellation, failures, cached and stale days, the reasons days
-cannot be read), `fetchTick.test.ts` (the in-process import worker and a pretend backend; a cancel as the day's
-write begins or while it is written keeps nothing and ends the read as cancelled), `storage/tickCache.test.ts`
-(fake-indexeddb, the version-2 migration; listing and deleting; a write cancelled before or while it is made
-keeps nothing and puts back what it replaced),
-`worker/source.test.ts`,
-`worker/handler.test.ts` (a day through the data handler), `state/pipeline.test.ts` (a timeline day drawn without the
-snapshot going back to loading), `TimelineBar.test.tsx` (the app on
-demo S: markers, keys, buttons, a link's day, playback, axe), and `e2e/tests/timeline.spec.ts` in Chromium on demo M
-(scrubbing to the day a project was deleted, `[` and `]`, a link with a tick and a reload, playback that runs and
-stops, axe in both themes). Extra ticks: `extraTicks.test.ts` (ids, which snapshots are a timeline's,
-duplicates, the merge and its order, the clamp at "now" with its warning, labels, the model, stepping, playback with
-and without them, the words, the store binding and its null), `extraTicks.worker.test.ts` (`findStoredExtra` over
-fake-indexeddb, the tick source, the data handler drawing one and the snapshot itself once it is deleted),
-`extraTicks.bar.test.tsx` (the bar on demo S with a fake library: diamonds, tooltips, `[` onto one, a link, "Play
-extras", axe), and `e2e/tests/extra-ticks.spec.ts` in Chromium on demo M (an export of the demo organisation with its
-operation.json imported on the Snapshots page, selected on the timeline by a press and by `[`/`]`, drawn, kept by a
-reload, deleted on the Snapshots page; an estimated and a typed read time; playback with and without "Play
-extras"; axe in both themes).
+Tests: `ticks.test.ts` (fixed `today`: 35 ticks, the latest at "now", month, year and leap-day boundaries,
+local labels), `cacheKey.test.ts`, `scheduler.test.ts` (order, the in-flight limit, cancellation),
+`playback.test.ts` (the state machine), `model.test.ts`, `controller.test.ts` (on a real store with a fake
+cache and reader: the debounced read, the idle prefetch in order, two in flight, cancellation, failures,
+cached and stale days, the reasons days cannot be read), `fetchTick.test.ts` (the in-process import worker and
+a pretend backend; a cancel as the day's write begins or while it is written keeps nothing and ends the read
+as cancelled), `storage/tickCache.test.ts` (fake-indexeddb, the version-2 migration; listing and deleting; a
+write cancelled before or while it is made keeps nothing and puts back what it replaced),
+`worker/source.test.ts`, `worker/handler.test.ts` (a day through the data handler), `state/pipeline.test.ts`
+(a timeline day drawn without the snapshot going back to loading), `TimelineBar.test.tsx` (the app on demo S:
+markers, keys, buttons, a link's day, playback, axe), and `e2e/tests/timeline.spec.ts` in Chromium on demo M
+(scrubbing to the day a project was deleted, `[` and `]`, a link with a tick and a reload, playback that runs
+and stops, axe in both themes). Extra ticks: `extraTicks.test.ts` (ids, which snapshots are a timeline's,
+duplicates, the merge and its order, the clamp at "now" with its warning, labels, the model, stepping,
+playback with and without them, the words, the store binding and its null), `extraTicks.worker.test.ts`
+(`findStoredExtra` over fake-indexeddb, the tick source, the data handler drawing one and the snapshot itself
+once it is deleted), `extraTicks.bar.test.tsx` (the bar on demo S with a fake library: diamonds, tooltips, `[`
+onto one, a link, "Play extras", axe), and `e2e/tests/extra-ticks.spec.ts` in Chromium on demo M (an export of
+the demo organisation with its operation.json imported on the Snapshots page, selected on the timeline by a
+press and by `[`/`]`, drawn, kept by a reload, deleted on the Snapshots page; an estimated and a typed read
+time; playback with and without "Play extras"; axe in both themes).
 
 ## Timeline diff overlay (`src/diagram/diff/`)
 
 A timeline day drawn after another day of the same snapshot shows what changed between the two
-([docs/timeline.md](../docs/timeline.md); skills gcp-diagram-style §6–§7 and cai-ingestion §5): **added** nodes get
-an `accent.peer` outline, **removed** ones
-come back for that day as **ghosts** where they stood, and **changed** ones (another `updateTime`) get a 6 px
-`accent.path` dot on their top-right corner. The legend gains a row for each marker drawn, and the details drawer a
-"What changed" section (section "Details drawer").
+([docs/timeline.md](../docs/timeline.md); skills gcp-diagram-style §6–§7 and cai-ingestion §5): **added**
+nodes get an `accent.peer` outline, **removed** ones come back for that day as **ghosts** where they stood,
+and **changed** ones (another `updateTime`) get a 6 px `accent.path` dot on their top-right corner. The legend
+gains a row for each marker drawn, and the details drawer a "What changed" section (section "Details drawer").
 
 ```
 src/diagram/diff/
@@ -2081,106 +2112,110 @@ src/diagram/diff/
   words.ts      the legend rows, the names' additions, the ghosts' tooltips, the drawing's description
 ```
 
-**Which two days.** The store's pipeline (`state/pipeline.ts`) asks `diffFrom` before each Scene request. Another day
-of the snapshot on screen is compared with the day on screen, whatever moved the view (a step, the slider, playback,
-Back), in either direction: stepping back, the earlier day is "compared with 2026-09-24" rather than "since". The same
-day again (another lens, a filter, a flip, a resize) keeps the day the diagram on screen was compared with, so the
-markers last as long as the day is on screen and the next day replaces them ("for one tick"). Another snapshot, or
-nothing on screen (a link opened, a reload), is compared with nothing: no markers. The day compared with is where the
-person came from, not part of the view, so it is not in the hash: a shared link or a reload shows its day plain.
+**Which two days.** The store's pipeline (`state/pipeline.ts`) asks `diffFrom` before each Scene request.
+Another day of the snapshot on screen is compared with the day on screen, whatever moved the view (a step, the
+slider, playback, Back), in either direction: stepping back, the earlier day is "compared with 2026-09-24"
+rather than "since". The same day again (another lens, a filter, a flip, a resize) keeps the day the diagram
+on screen was compared with, so the markers last as long as the day is on screen and the next day replaces
+them ("for one tick"). Another snapshot, or nothing on screen (a link opened, a reload), is compared with
+nothing: no markers. The day compared with is where the person came from, not part of the view, so it is not
+in the hash: a shared link or a reload shows its day plain.
 
-**The diff** is `diffSnapshots` of `@gcportrait/graph` between the two days' snapshots (by asset name, independent of
-either's order, `updateTime` compared as an instant), worked out by the data worker with the drawn day's Scene, where
-both days' Graphs are kept, and sent with it (`SceneAnswer.diff`). A day the timeline no longer has is not
-compared.
+**The diff** is `diffSnapshots` of `@gcportrait/graph` between the two days' snapshots (by asset name,
+independent of either's order, `updateTime` compared as an instant), worked out by the data worker with the
+drawn day's Scene, where both days' Graphs are kept, and sent with it (`SceneAnswer.diff`). A day the timeline
+no longer has is not compared.
 
-**Ghosts are put into the Scene and placed by the layout (decision).** A removed node is drawn as a ghost card at its
-last position. It could be overlaid at the rect the previous Layout gave it, but the new Layout packs its
-container without it, so that rect may hold something else now, and the UI thread would need the previous Layout and a
-rule for containers that moved. Instead the data worker builds the view on the earlier day too (at the detail level the
-drawn Scene uses, with the same flips), takes every node drawn there that the drawn Scene does not draw and that was
-removed or changed (a project marked for deletion has changed and the view hides it: "not drawn now"), with what it
-held that is not drawn now, and puts it back into its old container in the drawn Scene. The layout's deterministic
-sibling order (zones before cards, then by label: `@gcportrait/layout` `order.ts`) places it where it stood among its
-siblings, nothing overlaps it, and lines route around it; for that day the diagram makes room for it. A ghost needs its
-container: one whose container is not drawn open now (gone, or collapsed into a chip) gets none, and the chip counts it
-instead; a drill-in whose root moved draws none. Inside a ghost, what neither was removed nor changed takes the ghost's
-reason. Ghost ids are the removed assets' names, in no Graph of the drawn day.
+**Ghosts are put into the Scene and placed by the layout (decision).** A removed node is drawn as a ghost card
+at its last position. It could be overlaid at the rect the previous Layout gave it, but the new Layout packs
+its container without it, so that rect may hold something else now, and the UI thread would need the previous
+Layout and a rule for containers that moved. Instead the data worker builds the view on the earlier day too
+(at the detail level the drawn Scene uses, with the same flips), takes every node drawn there that the drawn
+Scene does not draw and that was removed or changed (a project marked for deletion has changed and the view
+hides it: "not drawn now"), with what it held that is not drawn now, and puts it back into its old container
+in the drawn Scene. The layout's deterministic sibling order (zones before cards, then by label:
+`@gcportrait/layout` `order.ts`) places it where it stood among its siblings, nothing overlaps it, and lines
+route around it; for that day the diagram makes room for it. A ghost needs its container: one whose container
+is not drawn open now (gone, or collapsed into a chip) gets none, and the chip counts it instead; a drill-in
+whose root moved draws none. Inside a ghost, what neither was removed nor changed takes the ghost's reason.
+Ghost ids are the removed assets' names, in no Graph of the drawn day.
 
-**A ghost is no node.** The model keeps the ghosts apart (`DiagramModel.ghosts`), so nothing walks, focuses or selects
-them: no `data-id`, no tab stop, no trace, no drill-in, no flip (`zonesByFlip`), not counted in "N of M shown"
-(`rectsShown`). The pointer on a ghost is on the open zone it lies in (`data-in`, `nodeIdOf` in painter.ts). Each is a
-named `graphics-symbol` with a `<title>` ("Removed since 2026-09-07: Cloud Storage bucket: demo-data-1-scratch-1"):
-its body (fill and icon) at 50 %, its label and a "removed" ("not drawn now") line in the readable grey of that body,
-an open zone's title placed as a zone's (a folder's top-left, others centred) with its halo, and a dashed
-`accent.removed` outline (1.5 px, `5 3`) at full strength on a `canvas` band 1 px wider on each side: at 50 % the red
-would reach only 2.22 : 1 (light) and 2.73 (dark) on the canvas.
+**A ghost is no node.** The model keeps the ghosts apart (`DiagramModel.ghosts`), so nothing walks, focuses or
+selects them: no `data-id`, no tab stop, no trace, no drill-in, no flip (`zonesByFlip`), not counted in "N of
+M shown" (`rectsShown`). The pointer on a ghost is on the open zone it lies in (`data-in`, `nodeIdOf` in
+painter.ts). Each is a named `graphics-symbol` with a `<title>` ("Removed since 2026-09-07: Cloud Storage
+bucket: demo-data-1-scratch-1"): its body (fill and icon) at 50 %, its label and a "removed" ("not drawn now")
+line in the readable grey of that body, an open zone's title placed as a zone's (a folder's top-left, others
+centred) with its halo, and a dashed `accent.removed` outline (1.5 px, `5 3`) at full strength on a `canvas`
+band 1 px wider on each side: at 50 % the red would reach only 2.22 : 1 (light) and 2.73 (dark) on the canvas.
 
-**Chips.** What a collapsed zone holds is not drawn, so a chip holding something the view would draw that was added,
-removed or changed gets the changed dot, and its accessible name says how many of each (", changes inside since
-2026-09-07: 2 removed, 1 changed"). "Would draw" is the view built with every zone open (detail `all`, no flips, no
-`depth` filter) on the drawn day (added, changed) and on the earlier one (removed); these builds happen only when the
-Scene has a chip.
+**Chips.** What a collapsed zone holds is not drawn, so a chip holding something the view would draw that was
+added, removed or changed gets the changed dot, and its accessible name says how many of each (", changes
+inside since 2026-09-07: 2 removed, 1 changed"). "Would draw" is the view built with every zone open (detail
+`all`, no flips, no `depth` filter) on the drawn day (added, changed) and on the earlier one (removed); these
+builds happen only when the Scene has a chip.
 
-**Drawing** (`Drawing.tsx` with `marks.ts`; the sizes in `theme/styles.ts`): the ghosts after the nodes; then, under the
-overlays and the lines, the added outlines (2 px `accent.peer` centred 8 px outside the node's border, between 2 px
-`canvas` gaps, every gap drawn before any line, on the outermost node of an added subtree only; clear of the selection
-ring, its gaps and the reach ring) and the changed dots (radius 3, centred on the middle of the rounded top-right
-corner, on a `pathCasing` disc 1 px wider). The legend's rows ("added since 2026-09-07", "removed …", "changed …", the
-day at the viewer's offset as the title block's read time, so the bar's local labels agree) appear only while their
-marker is drawn; the description adds "Changes since 2026-09-07: 2 added, 2 removed, 1 changed." (the whole diff).
-The names of added and changed nodes end ", added since …" and ", changed since …". The markers are part of the day's
-drawing (they come with its Scene), so the canvas, the export and the baselines show the same; hover and selection
-paint by attributes and classes, and add only the traced lines they clone from the hidden prototypes.
+**Drawing** (`Drawing.tsx` with `marks.ts`; the sizes in `theme/styles.ts`): the ghosts after the nodes; then,
+under the overlays and the lines, the added outlines (2 px `accent.peer` centred 8 px outside the node's
+border, between 2 px `canvas` gaps, every gap drawn before any line, on the outermost node of an added subtree
+only; clear of the selection ring, its gaps and the reach ring) and the changed dots (radius 3, centred on the
+middle of the rounded top-right corner, on a `pathCasing` disc 1 px wider). The legend's rows ("added since
+2026-09-07", "removed …", "changed …", the day at the viewer's offset as the title block's read time, so the
+bar's local labels agree) appear only while their marker is drawn; the description adds "Changes since
+2026-09-07: 2 added, 2 removed, 1 changed." (the whole diff). The names of added and changed nodes end ",
+added since …" and ", changed since …". The markers are part of the day's drawing (they come with its Scene),
+so the canvas, the export and the baselines show the same; hover and selection paint by attributes and
+classes, and add only the traced lines they clone from the hidden prototypes.
 
 **An extra tick compared with** is named by its label in every phrase ("added since export 2026-10-05 14:30"),
 not by its date, which would read as the day itself: the page adds the label to the diff's `since` from
 the timeline's extra ticks (`withExtraLabel` of `timeline/extraTicks.ts`; `DiagramPage.tsx`, the drawer's
 "What changed").
 
-**Contrast** (`theme/theme.test.ts`, "timeline markers on every fill", and the skill's §10): the light green reaches
-2.92 : 1 and the light red 2.78 on the project tint, so both lie on `canvas` (5.02 and 4.77); the light amber reaches
-1.13–1.93 on every fill and 3.13 on its `pathCasing` disc, which reaches 3.52 on the project tint at worst; in dark
-every accent reaches 3 : 1 on every fill (4.50, the red on the nested tint, at worst). A ghost's label reaches 4.5 : 1
-on its body on every fill (card ghosts, zone ghosts on every parent, card ghosts inside zone ghosts): 4.53 light and
-4.57 dark at worst.
+**Contrast** (`theme/theme.test.ts`, "timeline markers on every fill", and the skill's §10): the light green
+reaches 2.92 : 1 and the light red 2.78 on the project tint, so both lie on `canvas` (5.02 and 4.77); the
+light amber reaches 1.13–1.93 on every fill and 3.13 on its `pathCasing` disc, which reaches 3.52 on the
+project tint at worst; in dark every accent reaches 3 : 1 on every fill (4.50, the red on the nested tint, at
+worst). A ghost's label reaches 4.5 : 1 on its body on every fill (card ghosts, zone ghosts on every parent,
+card ghosts inside zone ghosts): 4.53 light and 4.57 dark at worst.
 
 **Cost.** In Node, on the deletion day of the demo history (16 to 17 September, overview at `auto`): L
-builds its Scene in 52 ms and the diff in 140 ms, XL in 371 ms and 1.1 s (the folder level, so both open views are
-built). No budget covers the diff build alone; it is part of the timeline step on L that layout skill §7 targets.
-The data worker keeps the views it builds per Graph (`pipeline/sceneMemo.ts`): stepping on day by day, the earlier
-day's view and open view were built the step before, so a step builds two Scenes instead of four, and a step back
-to a day still kept builds none; the open view of a day drawn without a diff is built right after its answer, and
-every open view is finished from the drawn view's preparation (`sharedPreparation`, `prepareView` of
-`@gcportrait/graph`). A day is read through `@gcportrait/ingest` only for the assets no day of its history held
-before (`pipeline/historyRead.ts`), and its Graph evaluates the catalog's rules only for those (`BuildMemo` of
-`@gcportrait/graph`). In a production demo build a step back onto a day not kept yet takes 113–194 ms on L and
-the first one from the snapshot's own day 163–188 ms on a fresh page (197–205 ms after the page has rested two
-minutes), 0.71–0.75 s on XL, and a step onto a kept day 30–32 ms on L and 44–80 ms on XL; section "Performance".
+builds its Scene in 52 ms and the diff in 140 ms, XL in 371 ms and 1.1 s (the folder level, so both open views
+are built). No budget covers the diff build alone; it is part of the timeline step on L that layout skill §7
+targets. The data worker keeps the views it builds per Graph (`pipeline/sceneMemo.ts`): stepping on day by
+day, the earlier day's view and open view were built the step before, so a step builds two Scenes instead of
+four, and a step back to a day still kept builds none; the open view of a day drawn without a diff is built
+right after its answer, and every open view is finished from the drawn view's preparation
+(`sharedPreparation`, `prepareView` of `@gcportrait/graph`). A day is read through `@gcportrait/ingest` only
+for the assets no day of its history held before (`pipeline/historyRead.ts`), and its Graph evaluates the
+catalog's rules only for those (`BuildMemo` of `@gcportrait/graph`). In a production demo build a step back
+onto a day not kept yet takes 113–194 ms on L and the first one from the snapshot's own day 163–188 ms on a
+fresh page (197–205 ms after the page has rested two minutes), 0.71–0.75 s on XL, and a step onto a kept day
+30–32 ms on L and 44–80 ms on XL; section "Performance".
 
-Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the diff, order independence, ghosts in their
-old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend on,
-backwards, drill-in, chips' counts),
-`diff/marks.test.ts` (the marker painter: which rects, where, the words), `diff/drawing.test.tsx` (the markers in the
-drawing in both themes, paint order, legend rows, description, names, a ghost is no node), `diff/handler.test.ts`
-(the data worker's `scene` with `diffFrom` and `changes`), `legend.test.ts`, `theme/theme.test.ts`, the baselines
-(section "Visual baselines"), the drawer's tests (section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium
-on demo M (scrubbing from 23 to 24 September in the compute lens at `all`: the new VM outlined, the deleted test VM's
-ghost, the group manager's dot and the legend rows; its drawer's update times and `targetSize`; `[` back, "compared
-with"; another lens keeps the markers; axe in both themes; screenshots in `e2e/.scratch/diff/`).
+Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the diff, order independence, ghosts
+in their old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend
+on, backwards, drill-in, chips' counts), `diff/marks.test.ts` (the marker painter: which rects, where, the
+words), `diff/drawing.test.tsx` (the markers in the drawing in both themes, paint order, legend rows,
+description, names, a ghost is no node), `diff/handler.test.ts` (the data worker's `scene` with `diffFrom` and
+`changes`), `legend.test.ts`, `theme/theme.test.ts`, the baselines (section "Visual baselines"), the drawer's
+tests (section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M (scrubbing from 23 to 24
+September in the compute lens at `all`: the new VM outlined, the deleted test VM's ghost, the group manager's
+dot and the legend rows; its drawer's update times and `targetSize`; `[` back, "compared with"; another lens
+keeps the markers; axe in both themes; screenshots in `e2e/.scratch/diff/`).
 
 ## Performance
 
 The app-level targets and how to measure them are in the gcp-diagram-layout skill, §7
-([.agents/skills/gcp-diagram-layout/SKILL.md](../.agents/skills/gcp-diagram-layout/SKILL.md)): a production demo
-build (`VITE_DEMO=1 vite build`) in Chromium through Playwright and CDP at 1280 × 800. Measured that way: the
-first diagram of demo S, M, L and XL at the collapsed default in 0.22, 0.28, 0.62 and 2.6 s
-(medians; targets: L under 3 s, XL under 8 s); on L a lens switch (median 38 ms), a chip expanded (70–98 ms),
-a search hit landed (7–117 ms) and a timeline step each under 300 ms: a step back onto a day not built yet
-113–194 ms, the first step back from the snapshot's own day 163–188 ms on a fresh page (20 runs, median 182
-ms) and 197–205 ms after the page has rested for two minutes; no long task while panning or zooming the
-collapsed defaults; the heap back within 20 % of a warm baseline after 100 switches on M (+13.9 %, the data
-worker +7.1 %) and 60 on L (+4.9 %). What keeps it there:
+([.agents/skills/gcp-diagram-layout/SKILL.md](../.agents/skills/gcp-diagram-layout/SKILL.md)): a production
+demo build (`VITE_DEMO=1 vite build`) in Chromium through Playwright and CDP at 1280 × 800. Measured that way:
+the first diagram of demo S, M, L and XL at the collapsed default in 0.22, 0.28, 0.62 and 2.6 s (medians;
+targets: L under 3 s, XL under 8 s); on L a lens switch (median 38 ms), a chip expanded (70–98 ms), a search
+hit landed (7–117 ms) and a timeline step each under 300 ms: a step back onto a day not built yet 113–194 ms,
+the first step back from the snapshot's own day 163–188 ms on a fresh page (20 runs, median 182 ms) and
+197–205 ms after the page has rested for two minutes; no long task while panning or zooming the collapsed
+defaults; the heap back within 20 % of a warm baseline after 100 switches on M (+13.9 %, the data worker +7.1
+%) and 60 on L (+4.9 %). What keeps it there:
 
 - **A day read from its difference** (`pipeline/historyRead.ts`): a day of a history is its base with the
   mutations replayed, so an asset no mutation touched is the same object on every day, and every history asset
@@ -2235,12 +2270,12 @@ the day whole and builds its Graph afresh (the steps after it are read from thei
 
 ## Export (`src/export/`)
 
-The top bar's Export menu (skill gcp-diagram-style §7–§8, [docs/export.md](../docs/export.md)) saves the diagram on screen as an SVG,
-a PNG or a draw.io file (`.drawio`, which diagrams.net and draw.io open as an editable diagram) or copies the PNG to
-the clipboard. Its options: the whole diagram or the current viewport; the light or the dark theme (it follows the
-app until the person picks one); PNG at 2× or 3×; embedded fonts for the SVG.
-Files are named `gcportrait_<scope>_<lens>_<readTime>.<ext>`: the canvas's root label, the lens id and the read
-time at UTC in ISO-8601 basic format, each reduced to `A–Z a–z 0–9 . -`, for example
+The top bar's Export menu (skill gcp-diagram-style §7–§8, [docs/export.md](../docs/export.md)) saves the
+diagram on screen as an SVG, a PNG or a draw.io file (`.drawio`, which diagrams.net and draw.io open as an
+editable diagram) or copies the PNG to the clipboard. Its options: the whole diagram or the current viewport;
+the light or the dark theme (it follows the app until the person picks one); PNG at 2× or 3×; embedded fonts
+for the SVG. Files are named `gcportrait_<scope>_<lens>_<readTime>.<ext>`: the canvas's root label, the lens
+id and the read time at UTC in ISO-8601 basic format, each reduced to `A–Z a–z 0–9 . -`, for example
 `gcportrait_example.com_overview_20261008T000000Z.png`. While nothing is drawn the button is inert
 (`aria-disabled`, still focusable).
 
@@ -2264,85 +2299,87 @@ src/export/
 src/shell/topbar/ExportMenu.tsx   the menu button and its menu (a top-bar slot)
 ```
 
-**A new drawing, not a recoloured canvas.** The canvas is drawn in the app's theme, may hide the legend and the
-title block (a setting), and carries the interactive scaffolding. Re-colouring it by value is ambiguous (light
-`ink` is also the project stroke, the card stroke and the path casing; in dark each has its own token), so each
-export renders the view once more, off-screen, in the chosen theme with both overlays, and clones that `<svg>`.
-The serialiser then: resolves every `var(--dg-…)` in an attribute or `style` declaration with the export theme's
-token table (`cssVariables` in `theme/tokens.ts`; an unknown variable without a fallback is an error) and turns
-`style` declarations into presentation attributes; drops what only the canvas has (focused-edge copies, rings,
-tab stops, roles, state and level-of-detail classes, the camera transform); sets `<title>` (scope, lens) and
-`<desc>` (scope, lens, read time, "Drawn with gcportrait": `documentText`, the same wording the canvas and the
-baselines carry; no affiliation sentence); refuses a drawing without the title block, and one drawn in
-another theme. The title block is the canvas's own (the export adds no affiliation line, so the canvas's live
-drawing exports as it is). Two encodings keep older editors (Illustrator, Inkscape 0.92) drawing what
-browsers draw, without changing the picture: `xlink:href` beside `href` on every `<use>`, and each haloed zone
-title written as a stroke-only halo copy under a fill-only label instead of relying on `paint-order`. Icons stay
-inline and unaltered. Apart from these encodings the file is the renderer's own drawing of the view: resvg
-draws it and the renderer's baseline of the same view pixel for pixel alike (`e2e/tests/export.spec.ts`).
+**A new drawing, not a recoloured canvas.** The canvas is drawn in the app's theme, may hide the legend and
+the title block (a setting), and carries the interactive scaffolding. Re-colouring it by value is ambiguous
+(light `ink` is also the project stroke, the card stroke and the path casing; in dark each has its own token),
+so each export renders the view once more, off-screen, in the chosen theme with both overlays, and clones that
+`<svg>`. The serialiser then: resolves every `var(--dg-…)` in an attribute or `style` declaration with the
+export theme's token table (`cssVariables` in `theme/tokens.ts`; an unknown variable without a fallback is an
+error) and turns `style` declarations into presentation attributes; drops what only the canvas has
+(focused-edge copies, rings, tab stops, roles, state and level-of-detail classes, the camera transform); sets
+`<title>` (scope, lens) and `<desc>` (scope, lens, read time, "Drawn with gcportrait": `documentText`, the
+same wording the canvas and the baselines carry; no affiliation sentence); refuses a drawing without the title
+block, and one drawn in another theme. The title block is the canvas's own (the export adds no affiliation
+line, so the canvas's live drawing exports as it is). Two encodings keep older editors (Illustrator, Inkscape
+0.92) drawing what browsers draw, without changing the picture: `xlink:href` beside `href` on every `<use>`,
+and each haloed zone title written as a stroke-only halo copy under a fill-only label instead of relying on
+`paint-order`. Icons stay inline and unaltered. Apart from these encodings the file is the renderer's own
+drawing of the view: resvg draws it and the renderer's baseline of the same view pixel for pixel alike
+(`e2e/tests/export.spec.ts`).
 
 **Current viewport.** The visible area of the canvas, intersected with the layout's bounds (nothing in view is
 an error with a hint). The content keeps its coordinates and is clipped to the area (`clip-path`); the title
 block moves into a band above it and the legend into a band below it, 24 px away, so the title block and the
 legend are in the file even when they are scrolled away.
 
-**PNG.** (frame + 2 × 24 px) × scale, rounded up; the margin is in drawing units (48 px at 2×), filled with the
-theme's canvas colour, as is the canvas behind the image. A canvas is capped at 16 384 px a side and 2^27 px in
-all (`CANVAS_LIMITS`); a larger export is drawn at the largest two-decimal scale that fits and the status line
-says so. The SVG goes into an `<img>` as a `data:` URL (the production CSP allows `img-src data:`; an SVG image
-from one does not taint the canvas). An SVG drawn as an image cannot use the page's fonts, so the PNG's SVG
-always embeds the Roboto faces; Chromium loads those asynchronously inside the image, after `decode()` resolves,
-and paints text invisible until then. The PNG's SVG therefore carries one sentinel glyph per embedded face in
-its top margin band; a small canvas draws only that band until every sentinel shows (at most 5 s), then the
-image is drawn once and the band is painted over with the background.
+**PNG.** (frame + 2 × 24 px) × scale, rounded up; the margin is in drawing units (48 px at 2×), filled with
+the theme's canvas colour, as is the canvas behind the image. A canvas is capped at 16 384 px a side and 2^27
+px in all (`CANVAS_LIMITS`); a larger export is drawn at the largest two-decimal scale that fits and the
+status line says so. The SVG goes into an `<img>` as a `data:` URL (the production CSP allows `img-src data:`;
+an SVG image from one does not taint the canvas). An SVG drawn as an image cannot use the page's fonts, so the
+PNG's SVG always embeds the Roboto faces; Chromium loads those asynchronously inside the image, after
+`decode()` resolves, and paints text invisible until then. The PNG's SVG therefore carries one sentinel glyph
+per embedded face in its top margin band; a small canvas draws only that band until every sentinel shows (at
+most 5 s), then the image is drawn once and the band is painted over with the background.
 
 **draw.io.** `exportDrawioFile(source, settings, version?)` writes the diagram as a `.drawio` file
-(`application/vnd.jgraph.mxfile`) that diagrams.net opens as an editable diagram looking like the PNG. It renders the
-export's drawing as the SVG export does (`render.tsx`), serialises it and translates that markup into draw.io's
-cells (`drawio/translate.ts`), so the file is the picture by construction: every rect, circle, line, path, text and
-icon of the drawing becomes a cell at the same place and size, with the same colours, stroke widths, dashes
-(`fixDash`), corner radii (`arcSize` = 2 × `rx`, as mxGraph halves it), fonts and lines. The structure comes from
-markers the diagram's components write on their groups, on the canvas too: `data-kind="zone"` and `"node"` with
-`data-id`, a short index `data-n` (the rect's place in the layout) and `data-parent` (the index of the zone it lies
-in; zones become nested containers with their title as their own label, nodes groups of body, icon and one text
-cell inside their zone), `data-ends="12 34"` on each line's path (the indices of the nodes at the drawn path's start
-and end; edges get their waypoints and their ends fixed at the arrowheads' tips), and `data-kind="title"` and
-`"legend"`. Naming the ends by index keeps the markers small: they add 4 to 7 % to an SVG, where the asset names
-repeated on every line would add up to a third. Three layers keep the paint order:
-"Diagram", "Connections", "Title and legend". Text is HTML labels with each run of another weight, colour or face
-as a span, placed so each baseline lands where the SVG's is (label.ts says how); a zone's title and a badge's
-text are their cell's own label, placed by whole-pixel `spacingLeft` and `spacingTop` (draw.io drops a fraction) on
-the pixel the exact place rounds to; icons are images of their own SVG (`data:image/svg+xml,<base64>`, draw.io's
-form in a style); the page's background is the theme's canvas, and `adaptiveColors="none"` keeps diagrams.net's
-dark interface from recolouring the diagram. The fonts are Roboto and Roboto Mono, named with Google Fonts'
-stylesheet (`fontSource`), which diagrams.net loads. A "current viewport" file keeps the cells that meet the visible
-area, whole, with the crop's corner at 0,0; as a zone kept whole can reach beyond the crop, the title block goes
-above and the legend below everything kept, never over it. The diagram is compressed as diagrams.net saves it (fflate's raw deflate of
-the URI-encoded XML, base64): the same bytes in the browser and in Node. The page's id is a hash of its name, the
-read time, the theme and the view drawn (the export source's `view`, the pipeline's scene key, which the render
-library computes alike with `drawnViewKey`), so the files of several views, themes and days keep different page ids
-when their pages are copied into one diagram. The translator and fflate are a chunk of
-their own, loaded when the draw.io file is asked for, never part of the first paint; the render library draws the
-same file from the static render (`renderDiagramSvg`) through `headless.ts`, and `exportDiagram.test.ts` checks the
-two are byte for byte the same. Tests: `drawio/translate.test.ts` (hand-made drawings: a zone with two nodes and a
-line, nested zones, dashed and dotted lines with their heads, labels, the crop, both forms of the file) and
-`drawio/demo.test.ts` (demo S in both themes: every zone, node, line and text line, the labels within half a
-pixel of their places, two crops with the bands clear of what they keep, the same bytes twice).
+(`application/vnd.jgraph.mxfile`) that diagrams.net opens as an editable diagram looking like the PNG. It
+renders the export's drawing as the SVG export does (`render.tsx`), serialises it and translates that markup
+into draw.io's cells (`drawio/translate.ts`), so the file is the picture by construction: every rect, circle,
+line, path, text and icon of the drawing becomes a cell at the same place and size, with the same colours,
+stroke widths, dashes (`fixDash`), corner radii (`arcSize` = 2 × `rx`, as mxGraph halves it), fonts and lines.
+The structure comes from markers the diagram's components write on their groups, on the canvas too:
+`data-kind="zone"` and `"node"` with `data-id`, a short index `data-n` (the rect's place in the layout) and
+`data-parent` (the index of the zone it lies in; zones become nested containers with their title as their own
+label, nodes groups of body, icon and one text cell inside their zone), `data-ends="12 34"` on each line's
+path (the indices of the nodes at the drawn path's start and end; edges get their waypoints and their ends
+fixed at the arrowheads' tips), and `data-kind="title"` and `"legend"`. Naming the ends by index keeps the
+markers small: they add 4 to 7 % to an SVG, where the asset names repeated on every line would add up to a
+third. Three layers keep the paint order: "Diagram", "Connections", "Title and legend". Text is HTML labels
+with each run of another weight, colour or face as a span, placed so each baseline lands where the SVG's is
+(label.ts says how); a zone's title and a badge's text are their cell's own label, placed by whole-pixel
+`spacingLeft` and `spacingTop` (draw.io drops a fraction) on the pixel the exact place rounds to; icons are
+images of their own SVG (`data:image/svg+xml,<base64>`, draw.io's form in a style); the page's background is
+the theme's canvas, and `adaptiveColors="none"` keeps diagrams.net's dark interface from recolouring the
+diagram. The fonts are Roboto and Roboto Mono, named with Google Fonts' stylesheet (`fontSource`), which
+diagrams.net loads. A "current viewport" file keeps the cells that meet the visible area, whole, with the
+crop's corner at 0,0; as a zone kept whole can reach beyond the crop, the title block goes above and the
+legend below everything kept, never over it. The diagram is compressed as diagrams.net saves it (fflate's raw
+deflate of the URI-encoded XML, base64): the same bytes in the browser and in Node. The page's id is a hash of
+its name, the read time, the theme and the view drawn (the export source's `view`, the pipeline's scene key,
+which the render library computes alike with `drawnViewKey`), so the files of several views, themes and days
+keep different page ids when their pages are copied into one diagram. The translator and fflate are a chunk of
+their own, loaded when the draw.io file is asked for, never part of the first paint; the render library draws
+the same file from the static render (`renderDiagramSvg`) through `headless.ts`, and `exportDiagram.test.ts`
+checks the two are byte for byte the same. Tests: `drawio/translate.test.ts` (hand-made drawings: a zone with
+two nodes and a line, nested zones, dashed and dotted lines with their heads, labels, the crop, both forms of
+the file) and `drawio/demo.test.ts` (demo S in both themes: every zone, node, line and text line, the labels
+within half a pixel of their places, two crops with the bands clear of what they keep, the same bytes twice).
 
-**Clipboard.** `navigator.clipboard.write` with a `ClipboardItem` created at once around the pending PNG, so the
-click still counts as the user's gesture while the PNG is drawn; a browser without image support gets a plain
-message ("Use Download PNG instead"), a refusal says so.
+**Clipboard.** `navigator.clipboard.write` with a `ClipboardItem` created at once around the pending PNG, so
+the click still counts as the user's gesture while the PNG is drawn; a browser without image support gets a
+plain message ("Use Download PNG instead"), a refusal says so.
 
 **The menu.** A WAI-ARIA menu button: options as `menuitemradio` / `menuitemcheckbox` items in labelled groups
-(Area, Theme, PNG resolution, SVG file), then the four `menuitem` actions (Download SVG, Download PNG, Download
-draw.io (.drawio), Copy PNG; the area and the theme apply to the three files, and the draw.io file's `agent` carries
-the instance's version, which the top bar passes from GET /api/config). Options keep the menu open; an action
-closes it, returns focus to the button and reports in a status line (a live region kept in the DOM while empty).
-Keyboard: Enter, Space or ↓ opens on the first item, ↑ on the last; ↑ ↓ Home End move (roving tab index);
-Escape closes; Tab leaves. The check marks have empty alternative text, so an item's name is its label and its
-state is `aria-checked`.
+(Area, Theme, PNG resolution, SVG file), then the four `menuitem` actions (Download SVG, Download PNG,
+Download draw.io (.drawio), Copy PNG; the area and the theme apply to the three files, and the draw.io file's
+`agent` carries the instance's version, which the top bar passes from GET /api/config). Options keep the menu
+open; an action closes it, returns focus to the button and reports in a status line (a live region kept in the
+DOM while empty). Keyboard: Enter, Space or ↓ opens on the first item, ↑ on the last; ↑ ↓ Home End move
+(roving tab index); Escape closes; Tab leaves. The check marks have empty alternative text, so an item's name
+is its label and its state is `aria-checked`.
 
-Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the flow,
-the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium, and
-`e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with maxGraph and holds it to the SVG
+Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the
+flow, the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium,
+and `e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with maxGraph and holds it to the SVG
 export (within the fidelity limits of AGENTS.md, Exports and the render API).

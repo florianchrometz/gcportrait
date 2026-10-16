@@ -15,21 +15,21 @@ pnpm e2e                                          # from the repository root
 ```
 
 The diagram's visual baselines are not Playwright screenshots (CI runs on Linux; screenshots taken on another
-platform never match). They are the renderer's SVG text, `baselines/diagram/<fixture>-<lens>-<detail>-<theme>.svg`:
-demo S, M and L at detail `auto` and M at `all`, × overview, networking and load-balancing, × light and dark
-(24 files). The frontend's unit tests write and compare them (`frontend/src/diagram/baselines.test.tsx`); update
-them only for an intended visual change, look at the changed SVGs, and say why in the pull request:
+platform never match). They are the renderer's SVG text,
+`baselines/diagram/<fixture>-<lens>-<detail>-<theme>.svg`: demo S, M and L at detail `auto` and M at `all`, ×
+overview, networking and load-balancing, × light and dark (24 files). The frontend's unit tests write and
+compare them (`frontend/src/diagram/baselines.test.tsx`); update them only for an intended visual change, look
+at the changed SVGs, and say why in the pull request:
 
 ```sh
 pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u   # the file before -u
 ```
 
 `baselines/render/` holds the render goldens, `S-overview-auto-light.png` and `S-overview-auto-light.drawio`:
-exactly what `pnpm render --fixture S --lens overview` writes, compared tolerance-free by the headless renderer's
-tests
-([`packages/render-cli`](../packages/render-cli/README.md); its README next to the file says how to update
-it). A person reviews a render against the style skill's fact-check list (gcp-diagram-style §11) and the
-layout skill's checks (gcp-diagram-layout §8).
+exactly what `pnpm render --fixture S --lens overview` writes, compared tolerance-free by the headless
+renderer's tests ([`packages/render-cli`](../packages/render-cli/README.md); its README next to the file says
+how to update it). A person reviews a render against the style skill's fact-check list (gcp-diagram-style §11)
+and the layout skill's checks (gcp-diagram-layout §8).
 
 `playwright.config.ts` starts two Vite dev servers as its `webServer`s and runs five projects:
 

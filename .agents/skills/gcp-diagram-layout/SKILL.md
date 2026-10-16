@@ -18,33 +18,36 @@ consume are in `@gcportrait/model`.
 
 ## 1. What a correct diagram looks like
 
-- The organisation is the canvas. Folders are large grey zones, projects are blue zones inside them, VPCs green
-  inside projects, subnets yellow inside VPCs, resources are cards inside the deepest container they belong to.
+- The organisation is the canvas. Folders are large grey zones, projects are blue zones inside them, VPCs
+  green inside projects, subnets yellow inside VPCs, resources are cards inside the deepest container they
+  belong to.
 - Children of a zone form a tidy grid that is wider than tall (target aspect 1.6, root 1.75). Rows are
   left-aligned; cards in a row share a baseline; zones in a row share their top edge, except that short
   siblings may stack one above the other beside a taller one (§4).
 - Arrows are orthogonal, run through the gaps between boxes, never over a card or through a zone header, and
-  attach to the border of their target. Parallel arrows in the same gap are spaced in lanes, never overlapping.
+  attach to the border of their target. Parallel arrows in the same gap are spaced in lanes, never
+  overlapping.
 - Nothing jiggles: the same input always yields the same picture, and expanding one zone moves its siblings
   but does not reflow unrelated parts of the diagram more than necessary.
 - Big orgs open collapsed: projects as chips with counts; one click opens a chip in place.
 
 ## 2. Nesting order and containment
 
-Outermost first: Organization › Folder* › Project › [Region/Zone virtual] › VPC Network › Subnetwork › resource.
-Product-specific inner containers: GKE Cluster › Namespace › workload; BigQuery Dataset › Table/Model/Routine;
-KMS KeyRing › CryptoKey; AlloyDB Cluster › Instance; Spanner Instance › Database; Bigtable Instance ›
-Cluster/Table; Dataplex Lake › Zone › Asset; Apigee Organization › Environment/Instance; VMware Private Cloud ›
-Cluster; Dataform Repository › Workspace/ReleaseConfig; Service Directory Namespace › Service › Endpoint.
-App Hub Application › Service/Workload is a logical grouping, not a network or product boundary: today it nests
-in its project as a product container, and the application focus view and drill-in use it. The intent is to
-draw applications in a logical lens only; that is not built yet (`docs/catalog-followups.md` §1.5).
+Outermost first: Organization › Folder* › Project › [Region/Zone virtual] › VPC Network › Subnetwork ›
+resource. Product-specific inner containers: GKE Cluster › Namespace › workload; BigQuery Dataset ›
+Table/Model/Routine; KMS KeyRing › CryptoKey; AlloyDB Cluster › Instance; Spanner Instance › Database;
+Bigtable Instance › Cluster/Table; Dataplex Lake › Zone › Asset; Apigee Organization › Environment/Instance;
+VMware Private Cloud › Cluster; Dataform Repository › Workspace/ReleaseConfig; Service Directory Namespace ›
+Service › Endpoint. App Hub Application › Service/Workload is a logical grouping, not a network or product
+boundary: today it nests in its project as a product container, and the application focus view and drill-in
+use it. The intent is to draw applications in a logical lens only; that is not built yet
+(`docs/catalog-followups.md` §1.5).
 
 Decision rules (applied in `packages/graph`, consumed by layout):
-1. One `attaches` target that is a subnet → nest in the subnet. One VPC target and no subnet → nest in the VPC.
-   Several or none → stay in the project; draw the `attaches` edges.
-2. Never nest across projects. Shared VPC: resource stays in its service project; a `shares` edge joins the two
-   project zones; the host subnet gets a "shared with N" badge.
+1. One `attaches` target that is a subnet → nest in the subnet. One VPC target and no subnet → nest in the
+   VPC. Several or none → stay in the project; draw the `attaches` edges.
+2. Never nest across projects. Shared VPC: resource stays in its service project; a `shares` edge joins the
+   two project zones; the host subnet gets a "shared with N" badge.
 3. Virtual Region/Zone containers only when the view enables them; they group by `location` directly under
    the project and do not interrupt VPC/subnet nesting (a subnet is regional, a VPC global; resources inside a
    subnet are already regional).
@@ -54,9 +57,10 @@ Decision rules (applied in `packages/graph`, consumed by layout):
    error with the offending ids (never a half-drawn diagram).
 6. Unknown asset types (no catalog entry) render as generic cards: nested by `parent` and `ancestors` like any
    asset (into their project); labelled from `data.displayName`, else the last segment of `data.name`, else of
-   the asset name; the icon by product, then by category, then the generic mark; no edges of their own (another
-   type's rule may still point at one, which makes it `core`, else it is a `leaf`). `pnpm catalog:check`
-   reports the official types the catalog does not map. Never drop an asset (AGENTS.md, "Product rules").
+   the asset name; the icon by product, then by category, then the generic mark; no edges of their own
+   (another type's rule may still point at one, which makes it `core`, else it is a `leaf`).
+   `pnpm catalog:check` reports the official types the catalog does not map. Never drop an asset (AGENTS.md,
+   "Product rules").
 
 ## 3. Sizing constants (scale 1)
 
@@ -87,8 +91,9 @@ DOM.
 - Order children deterministically: zones before cards; within each, by kind rank (VPC before other
   containers), then by label (locale-independent, code-point order), then by id.
 - Mixed children: cards first in a grid of `c` columns (each column as wide as its widest card), then zones in
-  rows below, any number per row; a zone row's height is the tallest cell in it. A cell is one zone, or a stack
-  of consecutive zones one above the other, left-aligned, beside a single zone at least as tall in its row.
+  rows below, any number per row; a zone row's height is the tallest cell in it. A cell is one zone, or a
+  stack of consecutive zones one above the other, left-aligned, beside a single zone at least as tall in its
+  row.
 - Choose `c` and the zone rows among the arrangements whose rows are all full (no row but the last
   of its block has room for the next child, and the card grid could not take one more column) and, when any
   is, wider than tall: the one with the smallest frame wins, where a children box within 20 % of the target
@@ -140,19 +145,19 @@ property tests enforce full rows.
   to reach the cheaper line. A route uses only the gutters of the containers it has to cross.
 - Lanes: each segment tracks used lanes; an edge takes the lowest free lane that keeps 8 px clear of other
   routes; the gutter width grows to fit. Passes: route; then up to three rounds (two above 500 lane holders:
-  an edge on its own, or a hub bundle once) of widening the gaps whose lanes do not fit and re-packing with the
-  arrangements pinned, then laying every route onto the widened gutters (re-searched only where gutters no
+  an edge on its own, or a hub bundle once) of widening the gaps whose lanes do not fit and re-packing with
+  the arrangements pinned, then laying every route onto the widened gutters (re-searched only where gutters no
   longer line up); a round runs only while some lane does not fit. The first pass's search work (the A* states
   it settles) decides single-pass mode: once it reaches 420 000 the rest of the pass is searched weighted
-  (each route at most 1.5 × the cheapest) and it is final; above 340 000 one widening round at most, a band
-  so that a view loses a round before it loses the widening (a stateless layout keeps no memory of an earlier
+  (each route at most 1.5 × the cheapest) and it is final; above 340 000 one widening round at most, a band so
+  that a view loses a round before it loses the widening (a stateless layout keeps no memory of an earlier
   decision, so the band is its hysteresis).
 - Ports: an edge leaves/enters a rect at the side facing the other endpoint, at a port slot spaced 12 px along
-  that side, never on a zone header; top and left sides use a grid shifted by half a spacing, so stubs of rects
-  facing each other across a gap may run 6 px apart. Edges to a zone target end at its border; edges to a
-  collapsed zone are re-targeted to its chip; an edge with both ends in one chip is not drawn (counted).
-- Hub bundles: the edges of one kind that meet one rect at the same end are bundled from 3 (from 2 on a crowded
-  side): one shared port, one trunk, one head; one bundle per kind.
+  that side, never on a zone header; top and left sides use a grid shifted by half a spacing, so stubs of
+  rects facing each other across a gap may run 6 px apart. Edges to a zone target end at its border; edges to
+  a collapsed zone are re-targeted to its chip; an edge with both ends in one chip is not drawn (counted).
+- Hub bundles: the edges of one kind that meet one rect at the same end are bundled from 3 (from 2 on a
+  crowded side): one shared port, one trunk, one head; one bundle per kind.
 - Merging: reciprocal `peers` edges become one double-headed edge; identical (from, to, kind) edges collapse
   with a count label on hover. `secures` edges are routed as lines; the renderer draws them as overlays.
 - Fallback: when no gutter path exists (should not happen), A* over a coarse grid avoiding card rects, with
@@ -170,8 +175,8 @@ card rect or a zone header rect. 4. Every Scene node has a rect. 5. Running twic
 - `auto` picks the deepest level whose rect count ≤ budget = viewport px² / 14000, clamped to [24, 250], and
   it never opens deeper than the lens's `defaultDetail`, its ceiling (`autoDetailLevel` in
   `@gcportrait/graph`, the report's `detail.ceiling`): a lens opens readable at any size; but any Scene with
-  ≤ 100 rects renders fully, whatever the ceiling. An explicit level is not capped. A lens switch sets `auto` while the level follows the
-  lens (`frontend/src/views/lensDetail.ts`).
+  ≤ 100 rects renders fully, whatever the ceiling. An explicit level is not capped. A lens switch sets `auto`
+  while the level follows the lens (`frontend/src/views/lensDetail.ts`).
 - Flips (per-zone overrides) XOR the level default and live in the URL hash (max 48, oldest dropped).
 - Expanding a zone keeps the viewBox fixed and glides the camera 200 ms to frame the zone; changing the level
   re-fits the whole diagram.

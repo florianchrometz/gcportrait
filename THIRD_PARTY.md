@@ -2,20 +2,21 @@
 
 # Third-party material
 
-gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`, Copyright (c)
-2026 Florian Chrometz; see `LICENSE`), except the gcportrait name and the gcportrait icon
-([below](#the-gcportrait-name-and-icon)). It contains no third-party source code. Third-party material is limited to
-the three categories below ([AGENTS.md](AGENTS.md), "Licence and dependencies"); each keeps its own licence or
-terms, and none of it is covered by the MIT License.
+gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`, Copyright
+(c) 2026 Florian Chrometz; see `LICENSE`), except the gcportrait name and the gcportrait icon
+([below](#the-gcportrait-name-and-icon)). It contains no third-party source code. Third-party material is
+limited to the three categories below ([AGENTS.md](AGENTS.md), "Licence and dependencies"); each keeps its own
+licence or terms, and none of it is covered by the MIT License.
 
 ## The gcportrait name and icon
 
-The gcportrait name and the gcportrait icon are not covered by the MIT License. They identify this project and may
-not be used to present other software or services as gcportrait or as endorsed by it; forks must use their own name
-and icon. The icon is `brand/icon.svg` and every rendering of it: the favicons, the website's logo and the app's mark,
-the wordmarks under `docs/media/brand/` and the mark on the link-preview images. [brand/LICENSE.md](brand/LICENSE.md)
-has the details. Both are the maintainer's own, not third-party material; they are named here because this file
-travels with every copy of the image and says what the MIT License leaves out.
+The gcportrait name and the gcportrait icon are not covered by the MIT License. They identify this project and
+may not be used to present other software or services as gcportrait or as endorsed by it; forks must use their
+own name and icon. The icon is `brand/icon.svg` and every rendering of it: the favicons, the website's logo
+and the app's mark, the wordmarks under `docs/media/brand/` and the mark on the link-preview images.
+[brand/LICENSE.md](brand/LICENSE.md) has the details. Both are the maintainer's own, not third-party material;
+they are named here because this file travels with every copy of the image and says what the MIT License
+leaves out.
 
 gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
 not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
@@ -23,19 +24,20 @@ trademarks of Google and are used under Google's icon usage terms.
 
 ## Why the dependency licences are compatible
 
-gcportrait is offered under the MIT License, and whoever receives it may rely on that licence alone. A dependency
-may therefore only carry a licence that does not force gcportrait to publish its code or to relicense its combined
-work under other terms: an MIT project cannot carry copyleft code whose reach goes beyond the dependency's own files.
-`scripts/check-licenses.mjs` enforces that on every run of `pnpm run licenses` (part of `pnpm check` and CI):
+gcportrait is offered under the MIT License, and whoever receives it may rely on that licence alone. A
+dependency may therefore only carry a licence that does not force gcportrait to publish its code or to
+relicense its combined work under other terms: an MIT project cannot carry copyleft code whose reach goes
+beyond the dependency's own files. `scripts/check-licenses.mjs` enforces that on every run of
+`pnpm run licenses` (part of `pnpm check` and CI):
 
 - **Allowed:** MIT, MIT-0, ISC, 0BSD, BSD-2-Clause, BSD-3-Clause, Apache-2.0, CC0-1.0, Unlicense,
-  BlueOak-1.0.0, Python-2.0 and MPL-2.0, plus OFL-1.1 for the self-hosted font packages only (below). Every one is
-  permissive or file-scoped weak copyleft, and none changes the licence of the combined work, which stays MIT: the
-  permissive licences ask only for their notices to be kept; Apache-2.0 also asks for its licence text and any
-  `NOTICE` file to travel with a copy (below); MPL-2.0 binds only its own files, which are used unmodified, and its
-  section 3.3 lets them be part of a Larger Work under other terms, such as gcportrait's MIT License; the OFL-1.1
-  covers the font files alone and imposes nothing on the software that uses them. None requires gcportrait to
-  publish its code or to relicense its combined work.
+  BlueOak-1.0.0, Python-2.0 and MPL-2.0, plus OFL-1.1 for the self-hosted font packages only (below). Every
+  one is permissive or file-scoped weak copyleft, and none changes the licence of the combined work, which
+  stays MIT: the permissive licences ask only for their notices to be kept; Apache-2.0 also asks for its
+  licence text and any `NOTICE` file to travel with a copy (below); MPL-2.0 binds only its own files, which
+  are used unmodified, and its section 3.3 lets them be part of a Larger Work under other terms, such as
+  gcportrait's MIT License; the OFL-1.1 covers the font files alone and imposes nothing on the software that
+  uses them. None requires gcportrait to publish its code or to relicense its combined work.
 - **Denied, with the message "would impose obligations on gcportrait's combined work or is unverifiable":**
   GPL, LGPL, AGPL (network copyleft: a work that includes it must be offered as a whole under the AGPL, to its
   network users too), SSPL, CC-BY-SA, CC-BY-NC, EUPL, OSL, CPAL, EPL and CDDL in any version, custom terms
@@ -71,18 +73,18 @@ and stay under their own terms (categories 2 and 3).
    (`PACKAGE_LICENSE_EXCEPTIONS` in `scripts/check-licenses.mjs`). The font files are bundled
    unmodified into `frontend/dist` and therefore redistributed with the production image, and OFL-1.1 requires
    the copyright notice and licence to accompany them: the frontend build writes each package's own `LICENSE`,
-   unmodified, to `frontend/dist/licenses/` (see `frontend/README.md`), and the website's build does the same in
-   `website/dist/licenses/`. OFL-1.1 does not extend to software that merely uses the fonts, so it places no
-   condition on gcportrait's own licence. Add a font package to both lists, or none.
+   unmodified, to `frontend/dist/licenses/` (see `frontend/README.md`), and the website's build does the same
+   in `website/dist/licenses/`. OFL-1.1 does not extend to software that merely uses the fonts, so it places
+   no condition on gcportrait's own licence. Add a font package to both lists, or none.
 
-   **TelemetryDeck's SDK, on the website only.** `@telemetrydeck/sdk` 2.0.4 (MIT; its `LICENSE` file is the MIT
-   License without the attribution clause, Copyright (c) 2020 Daniel Jilg) counts the page views of the website at
-   `gcportrait.app` ([docs/website.md](docs/website.md), "Analytics"). The website's build installs it from npm and
-   bundles it, unmodified, into a file of its own that the site's pages load from the site itself, only in a build
-   with analytics on, and then writes its `LICENSE` next to the fonts' as
-   `website/dist/licenses/telemetrydeck-sdk-LICENSE.txt`. Nothing of it is in the image, the app or the static demo at
-   `/demo/` (`pnpm website:check` refuses the demo naming it), so neither a self-hosted instance nor the demo sends
-   anything to TelemetryDeck.
+   **TelemetryDeck's SDK, on the website only.** `@telemetrydeck/sdk` 2.0.4 (MIT; its `LICENSE` file is the
+   MIT License without the attribution clause, Copyright (c) 2020 Daniel Jilg) counts the page views of the
+   website at `gcportrait.app` ([docs/website.md](docs/website.md), "Analytics"). The website's build installs
+   it from npm and bundles it, unmodified, into a file of its own that the site's pages load from the site
+   itself, only in a build with analytics on, and then writes its `LICENSE` next to the fonts' as
+   `website/dist/licenses/telemetrydeck-sdk-LICENSE.txt`. Nothing of it is in the image, the app or the static
+   demo at `/demo/` (`pnpm website:check` refuses the demo naming it), so neither a self-hosted instance nor
+   the demo sends anything to TelemetryDeck.
 
    **maxGraph, a development tool.** `@maxgraph/core` 0.25.0 (Apache-2.0, the maxGraph project contributors
    and JGraph Ltd), the maintained successor of mxGraph, the JavaScript library diagrams.net is built on, is a

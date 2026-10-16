@@ -108,11 +108,11 @@ tint; §10 gives each token its contrast figure.
 - Stroke widths: folders, virtual regions (dashed `4 3`) and product containers (`zone.other`, `zone.nested`)
   1 px; projects, VPC networks and subnetworks 1.5 px; cards 1.5 px (`zoneStroke` and `CARD_STROKE_WIDTH` in
   `frontend/src/diagram/theme/styles.ts`). Chips and card-sized zones keep their zone's stroke.
-- Cards: height 44, width 148–220 from text metrics, radius 8, 24 px icon left, title + subtitle right. Subtitle
-  shows the single most useful fact (IP, region, machine type, tier) chosen by the catalog entry.
-- Collapsed chips: same tint as the zone, 1 px stroke, the zone's header mark (14 px) beside the label and a `⊞`
-  glyph beside the count line ("2 networks · 39 resources"), so a chip's kind is never shown by its tint alone
-  (WCAG 1.4.1).
+- Cards: height 44, width 148–220 from text metrics, radius 8, 24 px icon left, title + subtitle right.
+  Subtitle shows the single most useful fact (IP, region, machine type, tier) chosen by the catalog entry.
+- Collapsed chips: same tint as the zone, 1 px stroke, the zone's header mark (14 px) beside the label and a
+  `⊞` glyph beside the count line ("2 networks · 39 resources"), so a chip's kind is never shown by its tint
+  alone (WCAG 1.4.1).
 - Badges (tags, "shared with N projects", counts of hidden children): 10.5 px pill in `surface` with `muted`
   text, top-right of the zone header.
 
@@ -129,7 +129,8 @@ tint; §10 gives each token its contrast figure.
 | `shares` | ink 1.5 px | 8 4 | filled 7×5 |
 | `secures` | drawn as a dashed overlay zone (`accent.path` at 50 %, dashed 6 4, 2 px, on a `pathCasing` band 1 px each side over a `canvas` core) 4 px inside the target's border, not a line | | |
 
-- Edges are orthogonal with 6 px rounded elbows; arrowheads end 2 px inside the target border; never on a header.
+- Edges are orthogonal with 6 px rounded elbows; arrowheads end 2 px inside the target border; never on a
+  header.
 - Above 30 drawn edges, dim mode: every line in `edge.dim`, 1.2 px, keeps its kind's head *shape* at 7×5 in
   `edge.dim` (filled, hollow or open; both ends for `peers`), and the line stops at the head's base so the tip
   reaches the target border as in normal mode: the legend's head samples stay true, and peers (double-headed)
@@ -144,20 +145,19 @@ tint; §10 gives each token its contrast figure.
 
 - Select: the **selection trace** stays painted until the selection changes (ids, not elements, carry it, so
   it survives pan, zoom, a theme change and a new layout of the same view):
-  - *Path to the root:* every zone around the node up to the top level (the canvas is the organisation) gets an
-    `accent.path` 3 px ring on its border, on a `pathCasing` band 1 px each side (light `muted` #5F6368, which
-    reaches 3 : 1 on every light fill and the amber 3.13 : 1 on it; dark `canvas`).
+  - *Path to the root:* every zone around the node up to the top level (the canvas is the organisation) gets
+    an `accent.path` 3 px ring on its border, on a `pathCasing` band 1 px each side (light `muted` #5F6368,
+    which reaches 3 : 1 on every light fill and the amber 3.13 : 1 on it; dark `canvas`).
   - *Traced lines:* every line touching the node or anything inside it, plus the `routes` and `connects` chain
     through the node, followed transitively downstream (along `routes`) and upstream (against it) up to 8 hops
     each way, cycle-safe; `connects` is followed both ways. Only chains *through* the node count: a backend
-    service reaches back to its forwarding rules and on to its backends, never sideways to the other backends of
-    its URL map. Each traced line is redrawn on top in `accent.select` 3 px over a `canvas` casing 4 px on each
-    side, its kind's dash rhythm scaled to 3 px (`1 3` at 1.2 px → `2.5 7.5`: dotted kinds stay dotted, `peers`
-    `9 7.5`, `shares` `16 8`), its heads in `accent.select`. An
-    end inside a collapsed zone is its chip, so the chain runs on through chips. In dim mode the trace is the
-    focused set.
-  - *Reached nodes:* the far ends of the traced lines get a 1.5 px `accent.select` ring outside a 2 px `canvas`
-    gap.
+    service reaches back to its forwarding rules and on to its backends, never sideways to the other backends
+    of its URL map. Each traced line is redrawn on top in `accent.select` 3 px over a `canvas` casing 4 px on
+    each side, its kind's dash rhythm scaled to 3 px (`1 3` at 1.2 px → `2.5 7.5`: dotted kinds stay dotted,
+    `peers` `9 7.5`, `shares` `16 8`), its heads in `accent.select`. An end inside a collapsed zone is its
+    chip, so the chain runs on through chips. In dim mode the trace is the focused set.
+  - *Reached nodes:* the far ends of the traced lines get a 1.5 px `accent.select` ring outside a 2 px
+    `canvas` gap.
   - *The node:* an `accent.select` 3 px ring between 2 px `canvas` gaps with a 1 s two-step pulse (none with
     reduced motion); its "Open in Cloud Console ↗" action ("Open project in Cloud Console ↗" for a type
     without a console template) opens the page in a new tab only when activated; the drawer opens. The action
@@ -171,8 +171,8 @@ tint; §10 gives each token its contrast figure.
     the selection and returns focus to the node); keyboard focus fills it in `primary` with its glyph and
     label in `canvas`. The node's menu offers the same link.
   - *Legend:* a column "selected", "trace", "path to root" while a node is selected.
-  - Paint order: zones, nodes, `secures` overlays, lines, the path, reach and selection rings, the traced lines
-    (so no ring's gap hides a traced head), the focus ring, the console action, the legend.
+  - Paint order: zones, nodes, `secures` overlays, lines, the path, reach and selection rings, the traced
+    lines (so no ring's gap hides a traced head), the focus ring, the console action, the legend.
 - Hover previews the same trace transiently without changing the selection; the hovered node also gets a path
   ring (its path starts there). With a selection, only cards, chips and card-sized zones preview, so resting
   the pointer on an open zone never hides the selection's trace. On a touch screen a long press is the hover:
@@ -185,30 +185,31 @@ tint; §10 gives each token its contrast figure.
   As drawn: the outline 2 px, centred 8 px outside the node, between 2 px `canvas` gaps (the selection
   ring's construction), on the outermost node of an added subtree only; the ghost's *body* (fill and icon) at
   50 %, its label in the readable grey of that body, its dashed outline (1.5 px, `5 3`) at full strength on a
-  `canvas` band 1 px wider each side (at 50 % the red is below 3 : 1 on the canvas); the dot centred on the rounded
-  top-right corner on a `pathCasing` disc 1 px wider; a chip holding a change gets the dot. Each legend row only while
-  its marker is drawn ("added since 2026-09-07"; "compared with" when the day compared with is later).
+  `canvas` band 1 px wider each side (at 50 % the red is below 3 : 1 on the canvas); the dot centred on the
+  rounded top-right corner on a `pathCasing` disc 1 px wider; a chip holding a change gets the dot. Each
+  legend row only while its marker is drawn ("added since 2026-09-07"; "compared with" when the day compared
+  with is later).
 
 ## 7. Legend and title block
 
 Inside the SVG, bottom-left, `surface` panel with `border` stroke. Rows only for what is on screen: zone tints
-present, "Resource" card sample, each relation kind present, the `secures` row named by its policy (§5), "dim =
-not focused" when active (a dimmed line with its 7×5 head), the selection trace's column while a node is
-selected (§6), timeline markers when a tick is active. Title block top-left: scope display name (15 px/500,
+present, "Resource" card sample, each relation kind present, the `secures` row named by its policy (§5),
+"dim = not focused" when active (a dimmed line with its 7×5 head), the selection trace's column while a node
+is selected (§6), timeline markers when a tick is active. Title block top-left: scope display name (15 px/500,
 `ink`), lens and `readTime` in ISO-8601 with the viewer's timezone offset (11 px, `muted`), then the tagline
 "gcportrait.app - Visualize your Google Cloud Infrastructure" (10.5 px/400, `muted`; `TAGLINE` in
 `frontend/src/branding.ts`). The title block stops there, on the interactive canvas and in every export alike
 (SVG, PNG, `pnpm render`, the render API, the layout's debug renders): no drawing carries the non-affiliation
-statement, neither in the title block nor in the SVG's `<desc>`, which holds neutral metadata only (scope, lens,
-read time, "Drawn with gcportrait."). The statement lives in the app footer and the website footer and in the
-long form (AGENTS.md, "Non-affiliation, brand and legal"). Legend and title block are hidden from the
+statement, neither in the title block nor in the SVG's `<desc>`, which holds neutral metadata only (scope,
+lens, read time, "Drawn with gcportrait."). The statement lives in the app footer and the website footer and
+in the long form (AGENTS.md, "Non-affiliation, brand and legal"). Legend and title block are hidden from the
 interactive canvas when the user disables them in settings, but always included in exports.
 
 ## 8. Export rules
 
-- SVG: resolve every CSS variable to an attribute; inline icons (already inline); include `<title>` and `<desc>`
-  with scope, lens, readTime; fonts via a `font-family` stack (no @font-face embedding by default; an "embed
-  fonts" option exists and adds the Roboto subset as data URIs).
+- SVG: resolve every CSS variable to an attribute; inline icons (already inline); include `<title>` and
+  `<desc>` with scope, lens, readTime; fonts via a `font-family` stack (no @font-face embedding by default; an
+  "embed fonts" option exists and adds the Roboto subset as data URIs).
 - PNG: 2× default, 3× option, theme background filled, 24 px margin.
 - Whole diagram or current viewport; file name `gcportrait_<scope>_<lens>_<readTime>.<ext>`.
 - Clipboard copy for PNG.
@@ -219,19 +220,17 @@ Light: `primary #1A73E8`, `on-primary #FFFFFF`, `surface #FFFFFF`, `surface-cont
 `on-surface #202124`, `on-surface-variant #5F6368`, `outline #DADCE0`, `error #D93025`.
 Dark: `primary #8AB4F8`, `on-primary #062E6F`, `surface #1F1F1F`, `surface-container #303134`,
 `on-surface #E8EAED`, `on-surface-variant #9AA0A6`, `outline #5F6368`, `error #F28B82`.
-Focus ring: 2 px `primary` with 2 px `surface` gap. Controls 32 px tall, 8 px radius, 13 px text; on a phone or a
-tablet (narrower than 80rem) 44 px tall, and every other target at least 44 × 44 px (`--touch-target`).
-A segmented control there wraps its segments onto rows that fill its width, divided by 1 px gaps in `outline`
+Focus ring: 2 px `primary` with 2 px `surface` gap. Controls 32 px tall, 8 px radius, 13 px text; on a phone
+or a tablet (narrower than 80rem) 44 px tall, and every other target at least 44 × 44 px (`--touch-target`). A
+segmented control there wraps its segments onto rows that fill its width, divided by 1 px gaps in `outline`
 (never a segment's own border, which would stand alone at the start of a wrapped row), and clips them to its
 rounded corners, so its focused segment carries the ring inside its edge: 2 px `primary`, then the 2 px
-`surface` gap.
-On the diagram canvas the ring is the diagram token `focus` with 2 px `canvas` gaps, kept at least 2 px on screen
-at any zoom: dark `#8AB4F8` (the dark `primary`), light `focus #185ABC` (Google Blue 800), because the
-light `primary` reaches only 2.62 : 1 against the light project tint a focused card's ring lies on and
-`#185ABC` reaches 3.78 there and more on every other fill (the focused console action and collapse plate use it
-too).
-Implemented as CSS custom properties in `frontend/src/styles/tokens.css`; a new colour goes into this
-skill first, then into the tokens, in both themes.
+`surface` gap. On the diagram canvas the ring is the diagram token `focus` with 2 px `canvas` gaps, kept at
+least 2 px on screen at any zoom: dark `#8AB4F8` (the dark `primary`), light `focus #185ABC` (Google Blue
+800), because the light `primary` reaches only 2.62 : 1 against the light project tint a focused card's ring
+lies on and `#185ABC` reaches 3.78 there and more on every other fill (the focused console action and collapse
+plate use it too). Implemented as CSS custom properties in `frontend/src/styles/tokens.css`; a new colour goes
+into this skill first, then into the tokens, in both themes.
 
 ## 10. WCAG 2.2 checks (automated in `frontend/src/diagram/theme/theme.test.ts`)
 
@@ -264,13 +263,14 @@ tint; the dark project and nested tints), so an id stays lighter than its title.
 
 Known tension: `zone.subnet` stroke `#FDE293` on `#FFEEBD` is below 3 : 1. The test marks this pair as
 "decorative stroke" and requires the subnet **title text** and the **card stroke** inside it to pass instead;
-the subnet border is a 1.5 px hairline whose meaning is carried by the fill and the title. Do not "fix" this by
-darkening the subnet fill; that breaks the Google look. The same exemption applies to `zone.vpc`. In dark both
-pass; the dark subnet stroke is `#B39B4C` (4.53 : 1 on its fill), not the accent amber `#FDD663`, so a subnet
-never looks highlighted.
+the subnet border is a 1.5 px hairline whose meaning is carried by the fill and the title. Do not "fix" this
+by darkening the subnet fill; that breaks the Google look. The same exemption applies to `zone.vpc`. In dark
+both pass; the dark subnet stroke is `#B39B4C` (4.53 : 1 on its fill), not the accent amber `#FDD663`, so a
+subnet never looks highlighted.
 
-Non-colour cues: every edge kind differs by dash or head, every zone kind by title position, header mark or badge
-(a chip by its zone's header mark), timeline changes by outline/ghost/dot, so colour-blind viewers lose nothing.
+Non-colour cues: every edge kind differs by dash or head, every zone kind by title position, header mark or
+badge (a chip by its zone's header mark), timeline changes by outline/ghost/dot, so colour-blind viewers lose
+nothing.
 
 ## 11. Fact-check list for a render (use for review)
 
@@ -280,11 +280,11 @@ Non-colour cues: every edge kind differs by dash or head, every zone kind by tit
 4. Are all edges orthogonal, with rounded elbows, heads on borders (never headers), no crossing of cards?
 5. Are dash patterns and heads correct per relation kind? Peering double-headed and dashed?
 6. Dim mode engaged above 30 edges, dimmed lines with 7×5 heads reaching their target? Traced lines cased,
-   on top, heads in `accent.select`, dotted kinds still dotted; the path to the root ringed; `secures` overlays
-   inside their targets; the console action inside the selected node, never over a neighbour?
+   on top, heads in `accent.select`, dotted kinds still dotted; the path to the root ringed; `secures`
+   overlays inside their targets; the console action inside the selected node, never over a neighbour?
 7. Legend lists only what is present, is inside the SVG, and survives export?
-8. Title block present with scope, lens, readTime and the tagline, the same three lines on the canvas and in an
-   export, and no non-affiliation line in it or in `<desc>` (the footer carries the notice, §7)?
+8. Title block present with scope, lens, readTime and the tagline, the same three lines on the canvas and in
+   an export, and no non-affiliation line in it or in `<desc>` (the footer carries the notice, §7)?
 9. Both themes rendered and the contrast test green?
 10. Nothing below 10.5 px at scale 1; LOD thresholds respected?
 11. Exported SVG opens in a browser and in Inkscape with identical geometry; PNG has the theme background?
@@ -305,8 +305,8 @@ tablet's and the desktop's (AGENTS.md, "Style and accessibility").
 
 - **Keyboard.** Tab moves through the header controls in reading order; on the canvas the arrow keys, Home
   and End move focus between the cards of a zone; Enter opens the details drawer for the focused card; `/`
-  focuses search; `[` and `]` step the timeline one day back and forward. Every action a pointer can take has a
-  keyboard path (the console action is a tab stop after its selected node, §6).
+  focuses search; `[` and `]` step the timeline one day back and forward. Every action a pointer can take has
+  a keyboard path (the console action is a tab stop after its selected node, §6).
 - **Names.** Every card, chip and zone has an accessible name made of its type and its label ("Cloud Run
   service" and the service's name).
 - **Focus.** Focus rings reach 3 : 1 against what they are drawn over, at any zoom (§9, §10).

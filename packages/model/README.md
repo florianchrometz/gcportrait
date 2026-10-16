@@ -141,8 +141,8 @@ index value names an existing node.
 
 ## Graph builder report
 
-What `@gcportrait/graph`'s builder reports next to the Graph (containment: skill gcp-diagram-layout §2): the UI
-reads it for zone badges, the drawer and the cycle error.
+What `@gcportrait/graph`'s builder reports next to the Graph (containment: skill gcp-diagram-layout §2): the
+UI reads it for zone badges, the drawer and the cycle error.
 
 | Export | What |
 |---|---|
@@ -215,8 +215,8 @@ The layout's own output type belongs to `packages/layout`.
 ## Scene builder environment and report
 
 What `@gcportrait/graph`'s scene builder (`buildScene`, `buildSceneWithReport`) reads next to the
-Graph and the ViewSpec, and what it reports next to the Scene. The Scene stays the layout's input; the report is
-what the UI needs around it. A refused root or focus is reported here, never thrown.
+Graph and the ViewSpec, and what it reports next to the Scene. The Scene stays the layout's input; the report
+is what the UI needs around it. A refused root or focus is reported here, never thrown.
 
 | Export | What |
 |---|---|
@@ -374,17 +374,17 @@ are not part of the public API.
 
 Helpers for tests and data tooling that the app must not ship, behind their own subpath export (the one
 exception to "import a package through its entry point" in `eslint.config.js`): the "synthetic only" guard,
-`findNonSyntheticData(text, options?)` (findings with kind, value and line), `assertSyntheticOnly(text, options?,
-label?)` and `formatSyntheticFindings`. It is the only guard in the repository: demo-data, the catalog compiler
-(fixtures) and the ingest tests (fixtures, generated exports, sources) all call it with its one allowlist:
-`example.com/.org/.net`, platform hosts (`googleapis.com`, `gserviceaccount.com`, `run.app`, `pkg.dev`,
-`k8s.io`, `knative.dev`, and the managed services' own hosts `gateway.dev`, `sourcemanager.dev`,
-`developerconnect.dev`, `looker.app`, `blockchainnodeengine.com`, `domains.cloudrun.com` and
-`ghs.googlehosted.com`, …), the demo organisations 30000000001 to 30000000004 (one per size; also in
-`organizationId` and Resource Manager v1 `{ type, id }` parents), project and folder numbers below 100000000000
-(also inside Cloud Run hosts), `demo-…` project ids in self-links, full names and `projectId` (and Google's own
-image and tenant projects), and private, shared (100.64.0.0/10), link-local, loopback and
-documentation address ranges. It runs in one pass over the text.
+`findNonSyntheticData(text, options?)` (findings with kind, value and line),
+`assertSyntheticOnly(text, options?, label?)` and `formatSyntheticFindings`. It is the only guard in the
+repository: demo-data, the catalog compiler (fixtures) and the ingest tests (fixtures, generated exports,
+sources) all call it with its one allowlist: `example.com/.org/.net`, platform hosts (`googleapis.com`,
+`gserviceaccount.com`, `run.app`, `pkg.dev`, `k8s.io`, `knative.dev`, and the managed services' own hosts
+`gateway.dev`, `sourcemanager.dev`, `developerconnect.dev`, `looker.app`, `blockchainnodeengine.com`,
+`domains.cloudrun.com` and `ghs.googlehosted.com`, …), the demo organisations 30000000001 to 30000000004 (one
+per size; also in `organizationId` and Resource Manager v1 `{ type, id }` parents), project and folder numbers
+below 100000000000 (also inside Cloud Run hosts), `demo-…` project ids in self-links, full names and
+`projectId` (and Google's own image and tenant projects), and private, shared (100.64.0.0/10), link-local,
+loopback and documentation address ranges. It runs in one pass over the text.
 
 It also holds the rule for the tests' wall-clock limits, the one every package that times its work applies
 (the layout's budgets, the ingest budget, the graph build's budget, the demo organisations' generation):

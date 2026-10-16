@@ -137,11 +137,11 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
   details drawer carries both actions; a long press shows what hover shows, a double tap zooms, and on a chip
   leaves the tap's flip); the phone and tablet check runs in Chromium's emulation only, not in WebKit or on a
   real device; on a small phone turned sideways (568 × 320) the canvas is about 90 px tall, so the half-height
-  sheet shows little more than the node's name (drag it up to read the details) and Expand all and Collapse all
-  hide while it is open; a disclosure notice shown while the sheet is at half height can still be cut by the
-  canvas's top on a short canvas; a sheet stays open when the app moves focus out of it by itself (the Connect
-  page's heading once a sign-in started before the sheet was opened completes); crossing the phone's breakpoint
-  (turning a phone) mounts the view controls again, so a search text not yet sent is lost.
+  sheet shows little more than the node's name (drag it up to read the details) and Expand all and Collapse
+  all hide while it is open; a disclosure notice shown while the sheet is at half height can still be cut by
+  the canvas's top on a short canvas; a sheet stays open when the app moves focus out of it by itself (the
+  Connect page's heading once a sign-in started before the sheet was opened completes); crossing the phone's
+  breakpoint (turning a phone) mounts the view controls again, so a search text not yet sent is lost.
 
 ## 6. Performance
 

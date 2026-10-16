@@ -14,10 +14,10 @@ with screenshots and animated demos of the demo organisations, and presents the 
 structured data; the site also renders the user guides of this folder and publishes the asset catalog's
 coverage ([AGENTS.md](../AGENTS.md), "Modes and hosting"). It serves the sign-in-free demo itself, at the
 address <https://gcportrait.app/demo/>: a static build of the app in demo-only mode ([The demo](#the-demo)), and
-links to the self-hosting guide. Everything is hosted on GitHub: one GitHub Pages site for the website and the demo,
-the images on ghcr.io, releases and CI on GitHub Actions. The site is the `website/` package, a static Astro
-build for GitHub Pages; [website/README.md](../website/README.md) describes its code. This guide is for the
-maintainer: building it, its generated media, the demo, deploying it, the DNS records and the legal pages.
+links to the self-hosting guide. Everything is hosted on GitHub: one GitHub Pages site for the website and the
+demo, the images on ghcr.io, releases and CI on GitHub Actions. The site is the `website/` package, a static
+Astro build for GitHub Pages; [website/README.md](../website/README.md) describes its code. This guide is for
+the maintainer: building it, its generated media, the demo, deploying it, the DNS records and the legal pages.
 What changed in each version is not a page of the site: its "Changelog" links, in the header's menu and the
 footer, go to the repository's [releases page](https://github.com/florianchrometz/gcportrait/releases), which
 the release workflow writes from the changesets at every tag (`scripts/release-notes.mjs`); the repository's

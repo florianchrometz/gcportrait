@@ -15,8 +15,8 @@ and before running or fixing `pnpm catalog:check`. The catalog is *data*; code r
 References in this directory:
 - `references/cai-supported-asset-types.<YYYY-MM-DD>.txt` — every identifier on Google's supported-types page
   at that date (one per line), with a `.products.json` companion that names each type's product section and
-  links its API reference. `pnpm catalog:fetch-official` (`scripts/catalog-fetch-official.mjs`) writes the next
-  dated pair into this directory; the compiler checks against the newest one, and the weekly
+  links its API reference. `pnpm catalog:fetch-official` (`scripts/catalog-fetch-official.mjs`) writes the
+  next dated pair into this directory; the compiler checks against the newest one, and the weekly
   `catalog-drift.yml` workflow compares it with a fresh fetch, so keep that name and place.
 - `references/catalog-seed.md` — per-product relation hints (fields to read, targets, normalisers) for the
   Tier 0/1 types. It was the starting point of every catalog group; verify every path against a fixture. Its
@@ -86,26 +86,26 @@ types:
 
 More optional fields: `zoneKind` (containers: `vpc | subnet | region | product | group`, how the scene draws
 the zone; `product` by default; the VPC network and subnetwork are `vpc` and `subnet`), `aliases` (JSONPaths
-whose values are other keys of the asset, e.g. `[ "$.data.email" ]` on `iam.googleapis.com/ServiceAccount`; the
-graph's alias index maps each value's `aliasKey` to the asset, which is what `serviceAccountEmail` targets), and
-`nestsIn` (one rule or a list, `{ to, normalize, …, kind? }`, the container the asset nests in, such
-as a VM's managed instance group; `kind` is drawn instead when it cannot nest there). A relation rule
-may say `reverse: true` to draw the edge from the target to the asset (a replica's `masterInstanceName` draws
+whose values are other keys of the asset, e.g. `[ "$.data.email" ]` on `iam.googleapis.com/ServiceAccount`;
+the graph's alias index maps each value's `aliasKey` to the asset, which is what `serviceAccountEmail`
+targets), and `nestsIn` (one rule or a list, `{ to, normalize, …, kind? }`, the container the asset nests in,
+such as a VM's managed instance group; `kind` is drawn instead when it cannot nest there). A relation rule may
+say `reverse: true` to draw the edge from the target to the asset (a replica's `masterInstanceName` draws
 primary `replicates` replica).
 
 Template filters: `lastSegment`, `projectFromName`, `regionFromName`, `short(n)`, `lower`,
-`parentSegment(<collection>)` (the segment after `<collection>/` in the value: `{{name | parentSegment(clusters)}}`
-names a Kubernetes namespace's cluster, `parentSegment(lakes)` a Dataplex zone's lake), `first(<variables>)`
-(the first present of the listed variables when the value is missing), and `plural(<word>)` /
-`plural(<word>, <words>)` (a count with its noun: `{{data.size | plural(instance)}}` → `1 instance`,
-`4 instances`; use it wherever a subtitle counts). Console URLs are built in one place, `consoleUrlFor` of the
-engine (the app's card action, menu and drawer all use it); a type without a `console` template gets its
-project's console home in the app, and `catalog:check` counts such types. Labels and subtitles drop a ` · `
-segment whose expressions are all missing, unit words included. Available
-variables: `name`, `assetType`, `location`, `projectId`, `projectNumber`, `data.*` (with `.key` and `[n]`
-steps). The entry, lens and compiled-catalog schemas live in `@gcportrait/model` (`CatalogEntrySchema`,
-`LensSchema`, `CatalogSchema`); the template grammar is enforced there (`TEMPLATE_VARIABLES`,
-`TEMPLATE_FILTERS`), so a new variable or filter is a change to `packages/model` as well.
+`parentSegment(<collection>)` (the segment after `<collection>/` in the value:
+`{{name | parentSegment(clusters)}}` names a Kubernetes namespace's cluster, `parentSegment(lakes)` a Dataplex
+zone's lake), `first(<variables>)` (the first present of the listed variables when the value is missing), and
+`plural(<word>)` / `plural(<word>, <words>)` (a count with its noun: `{{data.size | plural(instance)}}` →
+`1 instance`, `4 instances`; use it wherever a subtitle counts). Console URLs are built in one place,
+`consoleUrlFor` of the engine (the app's card action, menu and drawer all use it); a type without a `console`
+template gets its project's console home in the app, and `catalog:check` counts such types. Labels and
+subtitles drop a ` · ` segment whose expressions are all missing, unit words included. Available variables:
+`name`, `assetType`, `location`, `projectId`, `projectNumber`, `data.*` (with `.key` and `[n]` steps). The
+entry, lens and compiled-catalog schemas live in `@gcportrait/model` (`CatalogEntrySchema`, `LensSchema`,
+`CatalogSchema`); the template grammar is enforced there (`TEMPLATE_VARIABLES`, `TEMPLATE_FILTERS`), so a new
+variable or filter is a change to `packages/model` as well.
 
 ## 3. Roles (tiers) — decision guide
 
@@ -116,8 +116,8 @@ steps). The entry, lens and compiled-catalog schemas live in `@gcportrait/model`
 | `leaf` | worth seeing but no cross-references beyond its parent (health check, SSL policy, dashboard) | card, no edges |
 | `hidden` | high cardinality or operational record (builds, job runs, versions, record sets, reports, settings singletons) | imported, not drawn by default; counted in the parent's badge; `includeTypes` reveals |
 
-Rule of thumb: if an org of 50 projects would produce more than ~20 of these per project and a reader would not
-put them on a whiteboard, it is `hidden`.
+Rule of thumb: if an org of 50 projects would produce more than ~20 of these per project and a reader would
+not put them on a whiteboard, it is `hidden`.
 
 A type the catalog does not map still renders: a generic card nested by `parent`, with the product or category
 icon and no edges (gcp-diagram-layout skill §2, rule 6). `pnpm catalog:check` reports every official type that
@@ -126,9 +126,9 @@ is neither mapped nor listed with a reason, so unknown types are visible, never 
 ## 4. Relation kinds
 
 Thirteen kinds (`RELATION_KINDS` in `@gcportrait/model`). Each has a meaning, a direction and a default
-visibility; its line style is the gcp-diagram-style skill's §5, and `docs/lenses-and-filters.md` §3 explains the
-kinds to users. A lens draws the kinds its `relationKinds` lists; "general lenses" below means every lens that is
-not about identities or security.
+visibility; its line style is the gcp-diagram-style skill's §5, and `docs/lenses-and-filters.md` §3 explains
+the kinds to users. A lens draws the kinds its `relationKinds` lists; "general lenses" below means every lens
+that is not about identities or security.
 
 | Kind | Meaning | Direction | Drawn |
 |---|---|---|---|
@@ -199,13 +199,13 @@ Never hard-code either.
    graph's demo and view tests run on the real catalog: a rule that adds an edge or zone kind to a lens's view
    of the demo can change a pinned composition row there, which the change then updates with its reason.
 7. Delete the type's line under `types` in the group file (`owns` stays). A new icon key goes into
-   `icon-keys.json`, and its artwork into `packages/icons/mapping.json`, in the same change (a key missing from
-   `icon-keys.json` is a warning, a failure with `--strict-icons`; the icons package's tests fail on a key that
-   does not resolve); never modify Google artwork.
+   `icon-keys.json`, and its artwork into `packages/icons/mapping.json`, in the same change (a key missing
+   from `icon-keys.json` is a warning, a failure with `--strict-icons`; the icons package's tests fail on a
+   key that does not resolve); never modify Google artwork.
 8. `pnpm catalog:check --group <group>` → `OK for group <group>` (`--verbose` shows rule → fixture value →
    normalised name for every rule; notes are other groups' problems and do not fail it);
-   `pnpm --filter @gcportrait/catalog test` → green, except that its one whole-catalog test ("compiles without a
-   single violation") fails while another group is mid-edit and names that group. Both build the compiled
+   `pnpm --filter @gcportrait/catalog test` → green, except that its one whole-catalog test ("compiles without
+   a single violation") fails while another group is mid-edit and names that group. Both build the compiled
    catalog first (a type with a violation of its own is left out of it); it is git-ignored, never commit it.
 9. If the type is Tier 0/1 and common, the demo should show it. While several groups work at once, do not edit
    `packages/demo-data` (its generator files are shared by every group); name the type and the fields a

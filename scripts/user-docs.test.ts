@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
  * scripts/user-docs.mjs: the user guides' generated lens blocks and the staleness checks that keep
- * docs/configuration.md and every command in the guides true to the tree. The last test is the check itself, on
- * the repository: it fails when a guide is stale (run `node scripts/user-docs.mjs` for the list, `--write` for
- * the generated blocks).
+ * docs/configuration.md and every command in the guides true to the tree, and the width of every Markdown file.
+ * The last test is the check itself, on the repository: it fails when a guide is stale or a Markdown line too
+ * wide (run `node scripts/user-docs.mjs` for the list, `--write` for the generated blocks).
  */
 import path from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   backendEnvironment,
@@ -21,6 +21,8 @@ import {
   largeSnapshotProblems,
   lensTableLines,
   lensTypesLines,
+  markdownWidthProblems,
+  overlongLines,
   quickStartVariables,
   readVariableRegistry,
   replaceBlock,
@@ -28,9 +30,10 @@ import {
   typesByService,
   unregisteredTokens,
   verificationLogLines,
+  WIDTH,
   wrapWords,
 } from './user-docs.mjs';
-import { SCRIPTS_DIR } from './testing/temp-tree.js';
+import { SCRIPTS_DIR, createTempTree, type TempTree } from './testing/temp-tree.js';
 
 const REPO = path.resolve(SCRIPTS_DIR, '..');
 
@@ -426,6 +429,137 @@ describe('the large-snapshot threshold in the modes guide', () => {
     ]);
     expect(largeSnapshotProblems('', 'nothing')).toEqual([
       'packages/model/src/schemas/vocabulary.ts no longer declares LARGE_SNAPSHOT_ASSETS as a number',
+    ]);
+  });
+});
+
+/** Prose of exactly `columns` columns, in words of four letters. */
+const prose = (columns: number): string => {
+  const text = 'word '.repeat(Math.ceil(columns / 5)).slice(0, columns);
+  return text.endsWith(' ') ? `${text.slice(0, -1)}x` : text;
+};
+
+describe('the width of a Markdown document', () => {
+  it('reports a line over 110 columns with its number and width, in prose, a list item and a heading', () => {
+    expect(WIDTH).toBe(110);
+    const markdown = [
+      '# Title',
+      prose(110),
+      prose(111),
+      `- ${prose(109)}`,
+      `  ${prose(120)}`,
+      `## ${prose(108)}`,
+    ].join('\n');
+    expect(overlongLines(markdown)).toEqual([
+      { line: 3, columns: 111 },
+      { line: 4, columns: 111 },
+      { line: 5, columns: 122 },
+      { line: 6, columns: 111 },
+    ]);
+  });
+
+  it('counts code points, not bytes or UTF-16 units', () => {
+    // 110 code points: two of them outside the Basic Multilingual Plane, an arrow of three bytes.
+    const wide = `${prose(104)} → ${String.fromCodePoint(0x1d465)} ${String.fromCodePoint(0x1d466)}`;
+    expect(Array.from(wide)).toHaveLength(110);
+    expect(wide.length).toBe(112);
+    expect(overlongLines(wide)).toEqual([]);
+    expect(overlongLines(`${wide}x`)).toEqual([{ line: 1, columns: 111 }]);
+  });
+
+  it('exempts the frontmatter, fenced code, table rows, URLs and a line of one word or one HTML tag', () => {
+    const markdown = [
+      '---',
+      `description: ${prose(130)}`,
+      '---',
+      '<!-- SPDX-License-Identifier: MIT -->',
+      '',
+      `| ${prose(126)} |`,
+      `  | ${prose(124)} |`,
+      `See ${prose(100)} https://example.com/a and more.`,
+      `Or gs://bucket-name/${prose(110)}, or mailto:someone@example.com ${prose(100)}.`,
+      '````sh',
+      prose(130),
+      '```',
+      prose(130),
+      '````',
+      '- A list item with code:',
+      '',
+      '  ~~~text',
+      `  ${prose(130)}`,
+      '  ~~~',
+      '',
+      `  \`${'x'.repeat(128)}\``,
+      `- \`${'y'.repeat(128)}\``,
+      `<img src="docs/media/a.png" width="400" alt="${prose(100)}">`,
+      `  <walkthrough-open-file filePath="docs/a.md">${'z'.repeat(100)}</walkthrough-open-file>,`,
+      `<!-- user-docs:x:start (${prose(110)}) -->`,
+      prose(111),
+    ].join('\n');
+    expect(overlongLines(markdown)).toEqual([{ line: 26, columns: 111 }]);
+  });
+
+  it('holds prose beside an HTML tag, and a line after a closed fence, to the width', () => {
+    const markdown = [
+      `<p>${prose(108)}`,
+      `<a href="docs/a.md">${prose(91)}</a>`,
+      '```',
+      prose(130),
+      '```',
+      prose(111),
+    ].join('\n');
+    expect(overlongLines(markdown)).toEqual([
+      { line: 1, columns: 111 },
+      { line: 2, columns: 115 },
+      { line: 6, columns: 111 },
+    ]);
+  });
+});
+
+describe('the width of the Markdown files of a tree', () => {
+  let tree: TempTree;
+
+  beforeEach(() => {
+    tree = createTempTree('user-docs-width');
+  });
+
+  afterEach(() => {
+    tree.remove();
+  });
+
+  it('fails on a line over 110 columns outside the exemptions, in every Markdown file the tree holds', () => {
+    tree.write(
+      'docs/guide.md',
+      [
+        '<!-- SPDX-License-Identifier: MIT -->',
+        '',
+        prose(111),
+        '',
+        `| ${prose(126)} |`,
+        `A link to https://example.com/${prose(100)}.`,
+        '```',
+        prose(130),
+        '```',
+      ].join('\n'),
+    );
+    tree.write('README.md', `${prose(110)}\n`);
+    tree.write('packages/x/README.md', `# x\n\n${prose(112)}\n`);
+    expect(markdownWidthProblems(tree.root)).toEqual([
+      'docs/guide.md:3: 111 columns, the limit is 110',
+      'packages/x/README.md:3: 112 columns, the limit is 110',
+    ]);
+  });
+
+  it('skips the generated CHANGELOGs, the changesets, what the walk skips and files other than Markdown', () => {
+    tree.write('CHANGELOG.md', `${prose(130)}\n`);
+    tree.write('packages/x/CHANGELOG.md', `${prose(130)}\n`);
+    tree.write('.changeset/a-change.md', `---\n'x': patch\n---\n\n${prose(130)}\n`);
+    tree.write('node_modules/y/README.md', `${prose(130)}\n`);
+    tree.write('notes.txt', `${prose(130)}\n`);
+    expect(markdownWidthProblems(tree.root)).toEqual([]);
+    tree.write('.changeset/README.md', `${prose(111)}\n`);
+    expect(markdownWidthProblems(tree.root)).toEqual([
+      '.changeset/README.md:1: 111 columns, the limit is 110',
     ]);
   });
 });

@@ -28,9 +28,10 @@ pnpm e2e     →
 
 <!-- Required for any visual change: the same view in both themes, from demo mode (`pnpm render`, or the
      running app). Call out every golden or baseline you regenerated, and why, with before and after images:
-     the renderer's SVG baselines (`pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u`),
-     the render golden PNG (`pnpm --filter @gcportrait/render-cli test:golden:update`), the layout's golden
-     JSON (`pnpm --filter @gcportrait/layout test:golden:update`). Otherwise "n/a". -->
+     the renderer's SVG baselines
+     (`pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u`), the render golden PNG
+     (`pnpm --filter @gcportrait/render-cli test:golden:update`), the layout's golden JSON
+     (`pnpm --filter @gcportrait/layout test:golden:update`). Otherwise "n/a". -->
 
 | Light | Dark |
 | --- | --- |

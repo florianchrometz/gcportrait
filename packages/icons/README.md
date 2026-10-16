@@ -3,8 +3,8 @@
 # @gcportrait/icons
 
 > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-> trademarks of Google and are used under Google's icon usage terms.
+> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons
+> are trademarks of Google and are used under Google's icon usage terms.
 
 The Google Cloud product icons, as Google Cloud provides them at <https://cloud.google.com/icons>, vendored
 unmodified, plus a few icons of gcportrait's own, behind the icon keys the asset catalog uses (AGENTS.md,
@@ -36,10 +36,10 @@ if (theme === 'dark' && fallback.plateOnDark) drawPlate(); // style skill §2: c
 | `Icon`, `IconKind`, `IconSet` | the types (`kind`: `official`, `own`, `category`, `generic`; `set`: `core`, `legacy`, `category`, `own`) |
 
 `Icon.svg` is a complete SVG document without `width` or `height`; `viewBox` is `0 0 24 24` (legacy icons, own
-drawings) or `0 0 512 512` (core and category marks). `plateOnDark` is true for Google's colour and grey marks:
-on dark canvases they sit on a small light plate (`#FFFFFF` at 92 % opacity, radius 4) so the artwork stays as
-designed; the two-tone blue icons and the own drawings need none. Never recolour, outline, stretch or restyle
-`svg`.
+drawings) or `0 0 512 512` (core and category marks). `plateOnDark` is true for Google's colour and grey
+marks: on dark canvases they sit on a small light plate (`#FFFFFF` at 92 % opacity, radius 4) so the artwork
+stays as designed; the two-tone blue icons and the own drawings need none. Never recolour, outline, stretch or
+restyle `svg`.
 
 ## Trademark, usage terms and copyright
 
@@ -68,8 +68,8 @@ gcportrait uses the icons to label the Google Cloud products in diagrams of the 
 - marks its own drawings as its own (`kind: 'own'`, `isOwnDrawing`, a comment in each file, an amber outline
   on the contact sheet), and never presents them as Google Cloud's.
 
-None of Google's SVG files carries a copyright notice, so nothing was stripped; the transforms keep any comment
-that might hold one, and the provenance check needs no exemption for `vendored/`.
+None of Google's SVG files carries a copyright notice, so nothing was stripped; the transforms keep any
+comment that might hold one, and the provenance check needs no exemption for `vendored/`.
 
 ## What is vendored, and from where
 
@@ -114,21 +114,21 @@ mark, sub-products the two-tone icon, and products without an icon of their own 
   `essential_contacts`, `krm_api_hosting`, `resource_manager`), developer tools (`application_design_center`,
   `cloud_workstations`, `developer_connect`, `infrastructure_manager`, `secure_source_manager`), Web3
   (`blockchain_node_engine`), compute (`cluster_director`, `os_config`), data analytics (`dataform`,
-  `managed_service_for_apache_kafka`), AI and machine learning (`financial_services`, `gemini`), web and mobile
-  (`firebase`, `firebase_data_connect`), media services (`live_stream`, `transcoder`, `video_stitcher`),
-  storage (`managed_lustre`, `netapp_volumes`, `parallelstore`, `storage_transfer_service`), migration
-  (`migration_center`), databases (`oracle_database`), networking (`secure_web_proxy`,
-  `serverless_vpc_access`, `service_directory`, `service_networking`), AI applications and agents
-  (`vertex_ai_search`). Google's overview lists Gemini as a core product, but the core ZIP ships no Gemini
-  mark, so `gemini` uses the AI and machine learning mark.
+  `managed_service_for_apache_kafka`), AI and machine learning (`financial_services`, `gemini`), web and
+  mobile (`firebase`, `firebase_data_connect`), media services (`live_stream`, `transcoder`,
+  `video_stitcher`), storage (`managed_lustre`, `netapp_volumes`, `parallelstore`,
+  `storage_transfer_service`), migration (`migration_center`), databases (`oracle_database`), networking
+  (`secure_web_proxy`, `serverless_vpc_access`, `service_directory`, `service_networking`), AI applications
+  and agents (`vertex_ai_search`). Google's overview lists Gemini as a core product, but the core ZIP ships no
+  Gemini mark, so `gemini` uses the AI and machine learning mark.
 - **Own drawings (4 keys)**, see below.
 
 Every key's category follows the product-to-category lists of Google's overview; products it does not list
 (media, Firebase, resource hierarchy, several newer products) were placed by their documentation's product
 family. The legacy ZIP also holds icons whose names resemble a catalog product but may belong to another
-(`transfer`, `connectors`, `service_discovery`, `os_configuration_management`, `private_connectivity`); none is
-used, because a wrong product's icon misleads more than a category mark. Keys of the catalog that the mapping
-does not list stop `vendor.mjs` with the list.
+(`transfer`, `connectors`, `service_discovery`, `os_configuration_management`, `private_connectivity`); none
+is used, because a wrong product's icon misleads more than a category mark. Keys of the catalog that the
+mapping does not list stop `vendor.mjs` with the list.
 
 The 22 category marks used are keys too (`category_networking`, …), and `cloud_generic` (Google's generic
 cloud icon from the legacy set, `kind: 'generic'`) is the last resort of `resolveIcon`.
@@ -159,8 +159,8 @@ recorded (so nothing was recoloured or edited since), and each file is a fixed p
 
 ## Own drawings
 
-Drawn for gcportrait on the 24 px grid in the two-tone palette (`#4285F4` + `#AECBFA`), each file starting with
-the comment "Own drawing for gcportrait (…): not a Google icon.":
+Drawn for gcportrait on the 24 px grid in the two-tone palette (`#4285F4` + `#AECBFA`), each file starting
+with the comment "Own drawing for gcportrait (…): not a Google icon.":
 
 | Key | What it shows | Why it is ours |
 |---|---|---|

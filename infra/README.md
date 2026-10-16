@@ -19,16 +19,16 @@ curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT
 ```
 
 The project id is all it needs. The installer downloads the deploy scripts of the newest release, checks them
-against the release's `checksums.txt`, keeps them in a folder `gcportrait-vX.Y.Z` and runs its `infra/deploy.sh`
-with the release's image; every other flag passes through to deploy.sh. deploy.sh ends with the next steps: open
-the address, create the OAuth client (the console link and the origins it prints), redeploy with
-`--oauth-client-id`, with the exact command.
+against the release's `checksums.txt`, keeps them in a folder `gcportrait-vX.Y.Z` and runs its
+`infra/deploy.sh` with the release's image; every other flag passes through to deploy.sh. deploy.sh ends with
+the next steps: open the address, create the OAuth client (the console link and the origins it prints),
+redeploy with `--oauth-client-id`, with the exact command.
 
-A release's deploy scripts are `deploy.sh`, `common.sh`, `uninstall.sh`, `install.sh` and this README, with the
-release's tag in `VERSION` next to this folder. Run them by their path: `infra/deploy.sh --image vX.Y.Z
---project YOUR_PROJECT ...` in the folder that holds `VERSION` (the installer's `gcportrait-vX.Y.Z`), or
-`gcportrait-vX.Y.Z/infra/deploy.sh ...` from where the installer ran. The commands deploy.sh prints at its end
-name the scripts by their path from the directory you ran it in.
+A release's deploy scripts are `deploy.sh`, `common.sh`, `uninstall.sh`, `install.sh` and this README, with
+the release's tag in `VERSION` next to this folder. Run them by their path:
+`infra/deploy.sh --image vX.Y.Z --project YOUR_PROJECT ...` in the folder that holds `VERSION` (the
+installer's `gcportrait-vX.Y.Z`), or `gcportrait-vX.Y.Z/infra/deploy.sh ...` from where the installer ran. The
+commands deploy.sh prints at its end name the scripts by their path from the directory you ran it in.
 
 | File | What it does |
 |---|---|
@@ -43,14 +43,14 @@ name the scripts by their path from the directory you ran it in.
 
 ## Where the image comes from
 
-- **A release (the default).** `.github/workflows/release.yml` publishes `ghcr.io/florianchrometz/gcportrait` on
-  every `v*` tag, with the deploy scripts and `checksums.txt` attached to the GitHub release. `deploy.sh`
+- **A release (the default).** `.github/workflows/release.yml` publishes `ghcr.io/florianchrometz/gcportrait`
+  on every `v*` tag, with the deploy scripts and `checksums.txt` attached to the GitHub release. `deploy.sh`
   (without `--build`) first asks ghcr.io, anonymously, whether the image exists, then creates once per project
   and region an Artifact Registry remote repository `ghcr` (upstream `https://ghcr.io`, labelled
-  `managed-by=gcportrait-deploy`) and deploys `REGION-docker.pkg.dev/PROJECT/ghcr/florianchrometz/gcportrait:TAG`
-  from it. Cloud Run could run a public ghcr.io image directly, but Google recommends the remote repository for
-  availability; it keeps a copy of each image it fetched. `uninstall.sh` deletes the repository with the last
-  instance that deploys from it.
+  `managed-by=gcportrait-deploy`) and deploys
+  `REGION-docker.pkg.dev/PROJECT/ghcr/florianchrometz/gcportrait:TAG` from it. Cloud Run could run a public
+  ghcr.io image directly, but Google recommends the remote repository for availability; it keeps a copy of
+  each image it fetched. `uninstall.sh` deletes the repository with the last instance that deploys from it.
 - **Your checkout.** In a clone of the repository, `deploy.sh --build` uploads the checkout and builds
   `Dockerfile` with Cloud Build in your project, into a repository and with a build account of the instance's
   own.

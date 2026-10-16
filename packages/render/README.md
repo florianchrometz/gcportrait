@@ -8,9 +8,9 @@ as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on
 ([docs/api.md](../../docs/api.md)) both draw through it, so a demo view comes out byte for byte the same from
 either.
 
-> gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not
-> affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks
-> of Google and are used under Google's icon usage terms.
+> gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
+> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons
+> are trademarks of Google and are used under Google's icon usage terms.
 
 The drawings carry no affiliation line (AGENTS.md, Non-affiliation, brand and legal): the title block holds
 the scope, the lens with the read time and the tagline. Neither does anything that travels with them: not the

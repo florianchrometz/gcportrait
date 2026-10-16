@@ -63,8 +63,8 @@ the engine cannot reach for Node APIs by accident; `tsconfig.tooling.json` check
 | Tests, lint, types (each builds the catalog first) | `pnpm --filter @gcportrait/catalog test` (also `lint`, `typecheck`) |
 
 **The compiled catalog is a build artefact.** The package is consumed from source (`exports` points at
-`src/index.ts`) by Vite, Vitest, tsc and ESLint, so `src/generated/compiled-catalog.ts` must exist before any of
-them runs, but it is never committed: every catalog change would regenerate that one file, and groups
+`src/index.ts`) by Vite, Vitest, tsc and ESLint, so `src/generated/compiled-catalog.ts` must exist before any
+of them runs, but it is never committed: every catalog change would regenerate that one file, and groups
 authoring in parallel would all conflict on it. It is written by `pnpm catalog:build`, which runs on its own:
 
 - in `pnpm install` (the root `prepare` script), so a fresh clone and every CI job have it;
@@ -171,9 +171,9 @@ at work.
 
 Each product file is a `CatalogEntrySchema` from `@gcportrait/model` (strict: a misspelt key is an error):
 `product` (the official product section name on the supported-types page), `service`, `icon`, and `types`
-keyed by asset type, each a `CatalogTypeEntrySchema` with `role` (`container | core | leaf | hidden`), `label`,
-`subtitle`, `icon`, `console`, `ips`, `domains`, `relations`, `contains`, `nestsIn`, `zoneKind`, `aliases`,
-`hiddenWhen`, `notes` and `deprecated`. A relation rule is
+keyed by asset type, each a `CatalogTypeEntrySchema` with `role` (`container | core | leaf | hidden`),
+`label`, `subtitle`, `icon`, `console`, `ips`, `domains`, `relations`, `contains`, `nestsIn`, `zoneKind`,
+`aliases`, `hiddenWhen`, `notes` and `deprecated`. A relation rule is
 `{ kind, to, normalize, weak?, reverse?, versionLevel?, service?, pattern?, k8sKind? }`; `service` names the
 service of the target for the `name` and `siblingName` normalisers, which otherwise use the asset's own
 service; `pattern` is `siblingName`'s (required there), `k8sKind` is `k8sRef`'s, `versionLevel` is `kmsKey`'s.
@@ -192,19 +192,19 @@ service; `pattern` is `siblingName`'s (required there), `k8sKind` is `k8sRef`'s,
   (default `product`). The VPC network and subnetwork are `vpc` and `subnet`; the graph builder reads this
   instead of knowing those types.
 - `aliases`: JSONPaths whose values are alternative keys for the asset (an IAM service account's
-  `$.data.email`). The graph builder indexes each value by the model's `aliasKey` (trimmed, lower-cased), which
-  is also how normalisers such as `serviceAccountEmail` write alias targets, so such a relation resolves to the
-  asset. Each path must yield a key on some fixture.
+  `$.data.email`). The graph builder indexes each value by the model's `aliasKey` (trimmed, lower-cased),
+  which is also how normalisers such as `serviceAccountEmail` write alias targets, so such a relation resolves
+  to the asset. Each path must yield a key on some fixture.
 
 ### JSONPath (`to`, `ips`, `domains`, `contains`, `aliases`)
 
 A subset implemented in `src/engine/jsonpath.ts` rather than taken from a library, so that every path is
 validated at compile time and evaluation never runs script: `$` then any of `.name`, `.*`, `[*]`, `[n]`
 (negative counts from the end), `['any key']`, unions `['a','b']` and `[0,1]`, and filters `[?(…)]` whose body
-is a predicate (below) with `@` for the current item, e.g. `$.data.metadata.items[?(@.key=='created-by')].value`.
-Recursive descent (`..`), slices and script expressions are rejected. A path selects values in document
-order; a missing member selects nothing, `null` is a value. Paths are not flattened: use `[*]` to step into a
-list.
+is a predicate (below) with `@` for the current item, e.g.
+`$.data.metadata.items[?(@.key=='created-by')].value`. Recursive descent (`..`), slices and script expressions
+are rejected. A path selects values in document order; a missing member selects nothing, `null` is a value.
+Paths are not flattened: use `[*]` to step into a list.
 
 ### Predicates (`hiddenWhen`, filters)
 
@@ -248,8 +248,8 @@ details drawer all show its result. `typesWithoutConsole(catalog)` lists the typ
 template. `tooling/console.test.ts` checks 15 types' links against their fixtures (a Kubernetes namespace's
 cluster through `parentSegment(clusters)`), the encoding and the fallback; `ConsoleLink` is declared here once
 and the app imports it. Kubernetes `PersistentVolume`, `PersistentVolumeClaim` and `StorageClass` link the GKE
-object pages, like the other Kubernetes types. App Hub `Service`, `Workload` and `ServiceProjectAttachment` and
-the Hub `Membership` have no template: their only pages are list pages (the App Hub applications page, the
+object pages, like the other Kubernetes types. App Hub `Service`, `Workload` and `ServiceProjectAttachment`
+and the Hub `Membership` have no template: their only pages are list pages (the App Hub applications page, the
 Kubernetes clusters page), so they fall back to their project (`docs/catalog-followups.md` §1.4).
 
 **Counting subtitles.** A count before a noun goes through `plural(word)` ("1 shard", "3 shards");
@@ -288,8 +288,8 @@ path's `projects/<p>`, else the asset name's project segment, else its project's
 `{projectId}` and `{projectNumber}` translate that through the project index; `{location}` is an object's
 `location`, `region` or `zone`, else the path's `locations|regions|zones/<l>`, else the asset's location;
 `{region}` is that location with a zone turned into its region, `{zone}` a zone only; `{.key}` is the object's
-string property. A placeholder without a value yields no name, and the value dangles as read. Which spelling of
-the project a pattern writes does not matter: the graph matches either (packages/graph/README.md).
+string property. A placeholder without a value yields no name, and the value dangles as read. Which spelling
+of the project a pattern writes does not matter: the graph matches either (packages/graph/README.md).
 
 **`k8sRef` resolution.** The kind is the object's `kind`, else the rule's `k8sKind`; the group is the object's
 `group` or `apiGroup` (`''` is the core group), else its `apiVersion`'s group, else the rule's group when the

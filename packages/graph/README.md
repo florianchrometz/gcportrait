@@ -62,18 +62,18 @@ report.focus; // { status: 'applied', … } or { status: 'error', error: { code,
 | `GENERIC_ICON` | `cloud_generic`, the icon of a card whose type and service the catalog does not know |
 
 The report (`GraphReportSchema` in `@gcportrait/model`) is the data the UI needs next to the
-graph: `sharedVpc` (pairs with their attachments), `sharedWith` (host-side target → number of service projects:
-the subnet's "shared with N projects" badge), `cycles`, `danglingByNode`, `unmappedTypes` (types drawn as
-generic cards, with counts) and `counts` (assets, duplicate names dropped, virtual nodes, weak edges that
-yielded, peerings and reciprocal `connects` merged, alias conflicts, nodes kept out of a container in another
-project, edges that matched only with their project segment swapped, nodes nested by their own `nestsIn`).
-`GraphBuildSchema` checks that report and graph agree, so tests use it as their oracle.
+graph: `sharedVpc` (pairs with their attachments), `sharedWith` (host-side target → number of service
+projects: the subnet's "shared with N projects" badge), `cycles`, `danglingByNode`, `unmappedTypes` (types
+drawn as generic cards, with counts) and `counts` (assets, duplicate names dropped, virtual nodes, weak edges
+that yielded, peerings and reciprocal `connects` merged, alias conflicts, nodes kept out of a container in
+another project, edges that matched only with their project segment swapped, nodes nested by their own
+`nestsIn`). `GraphBuildSchema` checks that report and graph agree, so tests use it as their oracle.
 
 ## Pipeline
 
-1. **Assets.** One per name, sorted by name (a repeated name keeps the latest `updateTime`, then the smaller data
-   text; counted). The project index comes from the model's `buildProjectIndex` (the one pairing rule ingest
-   uses too).
+1. **Assets.** One per name, sorted by name (a repeated name keeps the latest `updateTime`, then the smaller
+   data text; counted). The project index comes from the model's `buildProjectIndex` (the one pairing rule
+   ingest uses too).
 2. **Nodes.** For a mapped type: the catalog's label, subtitle, role, product, `ips`, `domains` and default
    visibility (`hidden` for role `hidden` or a matching `hiddenWhen`; `hiddenWhenMatched` marks the latter).
    For a type the catalog does not map (unknown types still render: AGENTS.md, Product rules): a generic card
@@ -85,18 +85,18 @@ project, edges that matched only with their project segment swapped, nodes neste
    `xpnProjectStatus: HOST` is marked `sharedVpcHost`.
 3. **Aliases** (below).
 4. **Relations.** Each asset's rules through `evaluateRelations`; each target is resolved against the nodes
-   (with canonical project matching, below) and the aliases. A `reverse` rule's relation is drawn from the node
-   it names to the asset. Unresolved targets become dangling references of the asset (below). Self-references
-   are dropped; a relation produced twice is kept once, weak only if every copy is weak. Each type's `nestsIn`
-   rules (`evaluateNestsIn`) name the containers the asset nests in, resolved the same way.
-5. **Containment** (decision table below), a forest by construction. Then a `nestsIn` rule's `kind` is drawn to
-   every named container the asset did not nest in, and copies of one (from, kind, to) edge merge, whichever
-   asset drew them (a reverse rule and the target's own rule), strong if any copy is.
+   (with canonical project matching, below) and the aliases. A `reverse` rule's relation is drawn from the
+   node it names to the asset. Unresolved targets become dangling references of the asset (below).
+   Self-references are dropped; a relation produced twice is kept once, weak only if every copy is weak. Each
+   type's `nestsIn` rules (`evaluateNestsIn`) name the containers the asset nests in, resolved the same way.
+5. **Containment** (decision table below), a forest by construction. Then a `nestsIn` rule's `kind` is drawn
+   to every named container the asset did not nest in, and copies of one (from, kind, to) edge merge,
+   whichever asset drew them (a reverse rule and the target's own rule), strong if any copy is.
 6. **Weak edges and reciprocal links.** A weak edge yields to a stronger edge of the same kind from the same
-   asset whose target lies inside the weak edge's target: a NIC's network yields to its subnet. A weak edge with
-   nothing stronger inside its target stays in `edges` with `weak: true`. Reciprocal `peers` edges (both
-   networks list the peering) and reciprocal `connects` edges (a tunnel and its router naming each other) merge
-   into one edge from the smaller id; a one-sided edge stays as it is.
+   asset whose target lies inside the weak edge's target: a NIC's network yields to its subnet. A weak edge
+   with nothing stronger inside its target stays in `edges` with `weak: true`. Reciprocal `peers` edges (both
+   networks list the peering) and reciprocal `connects` edges (a tunnel and its router naming each other)
+   merge into one edge from the smaller id; a one-sided edge stays as it is.
 7. **Shared VPC.** A resolved `attaches` edge from one project into another project's **subnetwork**, or into
    a **network** of a project marked `sharedVpcHost`, is evidence for a pair: one `shares` edge from the
    service project's node to the host project's node, the attachment listed in `report.sharedVpc`, and the
@@ -123,14 +123,15 @@ A candidate is refused, and the next one tried, when it is the node itself, when
 (organisation, folder, project) would nest in anything but the hierarchy, when it lies in another project
 (rule 2: never nest across projects, so a Shared VPC resource stays in its service project and is counted in
 `counts.crossProjectRefused`), or when it would close a cycle (rule 5: the cycle's ids are recorded in
-`report.cycles`, starting at the smallest id, in child → parent order). Cycles cannot come from correct catalog
-data; the guard exists so that a wrong rule degrades into a reported warning instead of a broken diagram.
+`report.cycles`, starting at the smallest id, in child → parent order). Cycles cannot come from correct
+catalog data; the guard exists so that a wrong rule degrades into a reported warning instead of a broken
+diagram.
 
 **Virtual regions (rule 3).** With `showRegions`, each project's *direct* children that have a non-global
 location move into a region container (`europe-west3`, or a multi-region such as `eu`, lower-cased) and, for a
 zone, a zone container inside it. VPCs are global and stay under the project; subnets and everything nested in
-them stay where they are. Virtual nodes are `container`s of type `gcportrait.virtual/Region` or `…/Zone`, carry
-the project's id and number, and are in `byType` and `byProject` like any node.
+them stay where they are. Virtual nodes are `container`s of type `gcportrait.virtual/Region` or `…/Zone`,
+carry the project's id and number, and are in `byType` and `byProject` like any node.
 
 ## Aliases and dangling references
 
@@ -144,9 +145,10 @@ dangles with the value as read. `contains` names and `nestsIn` targets resolve t
 Some references name no asset by themselves. The alias index (`indexes.aliases`) maps them to node ids:
 
 - **Catalog aliases** → the asset: every value a type's `aliases` paths read (an IAM service account's
-  `$.data.email`, in the catalog's entry for the type), keyed by the model's `aliasKey` (trimmed, lower-cased),
-  which is exactly how normalisers such as `serviceAccountEmail` write their alias requests. The builder keeps
-  no list of aliased types of its own: a type without `aliases` in the catalog is known by its name only.
+  `$.data.email`, in the catalog's entry for the type), keyed by the model's `aliasKey` (trimmed,
+  lower-cased), which is exactly how normalisers such as `serviceAccountEmail` write their alias requests. The
+  builder keeps no list of aliased types of its own: a type without `aliases` in the catalog is known by its
+  name only.
 - **Project ids and numbers** → the Resource Manager project node (named by number); the id comes from the
   snapshot's project index. Compute names use ids, most newer APIs numbers; normalisers translate through the
   index, so both resolve.
@@ -155,15 +157,15 @@ The first claim of a key (in name order) wins; later claims by other nodes are c
 `counts.aliasConflicts`.
 
 A relation whose target matches no node is a **dangling reference**: it goes to `graph.dangling` (never to
-`edges`, never drawn) with `from`, `kind`, `to` (the normalised name, the alias, or — when the normaliser did not
-understand the value — the raw text) and `dangling.raw` (the value as read from the asset). `danglingByNode`
-counts them per node for the drawer. A `reverse` reference that dangles stays with the asset that holds it, and
-so does a `nestsIn` target with a `kind`. In the demo organisation M they are 49, all outside what the demo
-models: public images (Google's image projects), Google-managed tenant projects (private services access
-peerings, Private Service Connect producers, Cloud IDS, Apigee), Google-managed logging writer identities,
-`gke.gcr.io` images, the `all-apis` bundle of a Private Service Connect endpoint for Google APIs, and the
-partner VMs' Compute default service account, which the demo does not generate as an IAM asset. S also names
-Artifact Registry repositories and GKE nodes it does not generate (catalog follow-ups §2); otherwise no
+`edges`, never drawn) with `from`, `kind`, `to` (the normalised name, the alias, or — when the normaliser did
+not understand the value — the raw text) and `dangling.raw` (the value as read from the asset).
+`danglingByNode` counts them per node for the drawer. A `reverse` reference that dangles stays with the asset
+that holds it, and so does a `nestsIn` target with a `kind`. In the demo organisation M they are 49, all
+outside what the demo models: public images (Google's image projects), Google-managed tenant projects (private
+services access peerings, Private Service Connect producers, Cloud IDS, Apigee), Google-managed logging writer
+identities, `gke.gcr.io` images, the `all-apis` bundle of a Private Service Connect endpoint for Google APIs,
+and the partner VMs' Compute default service account, which the demo does not generate as an IAM asset. S also
+names Artifact Registry repositories and GKE nodes it does not generate (catalog follow-ups §2); otherwise no
 reference into the organisation dangles.
 
 ## Indexes
@@ -235,7 +237,8 @@ drill-in and under every focus view (filters compose with focus views and drill-
 
 Perimeters and applications are recognised by structure, not by asset type: a perimeter is any node whose
 `secures` edges reach projects, an application any container; the catalog's rules decide what that covers. The
-focus's anchor (the perimeter overlay, the application zone) is always drawn, whatever the lens and the filters.
+focus's anchor (the perimeter overlay, the application zone) is always drawn, whatever the lens and the
+filters.
 
 | Level | Collapsed by default |
 |---|---|
@@ -257,61 +260,63 @@ group shows its product's mark; folders, projects, networks, subnets, regions an
 draw their zone kind's own mark.
 
 **Order.** Every list is sorted in code-point order: zones before cards; zones by kind (folder, project, VPC,
-subnet, region, product container, bundle); then by label; then by id. Edges by (from, to, kind). The output does
-not depend on the order of the graph's records (property-tested), so the layout never jiggles.
+subnet, region, product container, bundle); then by label; then by id. Edges by (from, to, kind). The output
+does not depend on the order of the graph's records (property-tested), so the layout never jiggles.
 
-**The report** (`SceneReportSchema` in the model; `SceneBuildSchema` checks it agrees with the scene): `root` and
-`focus` outcomes, `detail` (requested, used, budget, rect counts at every level: "N of M shown"), `legend` (zone
-and edge kinds on screen, whether chips, external stubs or an overlay are present: skill gcp-diagram-style §7),
-`overlays`, `external`, `selection`, `highlight`, `unknownFlips` (flips that match no zone of this view),
-`warnings`, and `counts` (universe, focus, visible, stubs, held back, zones, cards, chips, bundles, edges, the
-relations they stand for, dangling references of visible nodes).
+**The report** (`SceneReportSchema` in the model; `SceneBuildSchema` checks it agrees with the scene): `root`
+and `focus` outcomes, `detail` (requested, used, budget, rect counts at every level: "N of M shown"), `legend`
+(zone and edge kinds on screen, whether chips, external stubs or an overlay are present: skill
+gcp-diagram-style §7), `overlays`, `external`, `selection`, `highlight`, `unknownFlips` (flips that match no
+zone of this view), `warnings`, and `counts` (universe, focus, visible, stubs, held back, zones, cards, chips,
+bundles, edges, the relations they stand for, dangling references of visible nodes).
 
-**Not done here, on purpose.** The lens's `defaultDetail` is the UI's to apply when the user switches lenses; the
-scene builder takes `viewSpec.detail` as given. Search (`highlight` as text) is the UI's; the builder only
+**Not done here, on purpose.** The lens's `defaultDetail` is the UI's to apply when the user switches lenses;
+the scene builder takes `viewSpec.detail` as given. Search (`highlight` as text) is the UI's; the builder only
 resolves a highlight that is a node id.
 
 ### The composition table
 
 `test/views/composition.test.ts`, on the demo organisations S and M with the real compiled catalog, plus a
 test-only App Hub application added in `test/views/fixtures.ts` (`shop` in demo-svc-1, registering the
-`orders-api` Cloud Run service, the `orders-db` Cloud SQL instance and demo-web-1's `web-mig` group; the demo's
-own `storefront` application could replace it, catalog follow-ups §2). Access Context Manager perimeters
-`secure` their projects through the catalog's own rules:
+`orders-api` Cloud Run service, the `orders-db` Cloud SQL instance and demo-web-1's `web-mig` group; the
+demo's own `storefront` application could replace it, catalog follow-ups §2). Access Context Manager
+perimeters `secure` their projects through the catalog's own rules:
 
 1. **Every lens × every focus view (and none) × the standard filter set**, on S and M: 2 × 11 × 6 × 13 = 1 716
    cases (filters: none, hide empty projects, hide empty folders, both, hide disconnected, all three, include
-   types, exclude types, depth 1, depth 2, regions, projects, show regions with regions). Each is checked by an
-   independent oracle (`test/views/oracle.ts`) that re-derives the semantics from the graph, the view and the
-   catalog lens: nothing at or above the root, focus membership, lens and type filters, location, project and
-   folder filters, edge kinds and that every edge stands for a relation, hide filters, depth, the detail level
-   (`auto`'s choice included), `attaches` never drawn to its own container, and sibling order.
+   types, exclude types, depth 1, depth 2, regions, projects, show regions with regions). Each is checked by
+   an independent oracle (`test/views/oracle.ts`) that re-derives the semantics from the graph, the view and
+   the catalog lens: nothing at or above the root, focus membership, lens and type filters, location, project
+   and folder filters, edge kinds and that every edge stands for a relation, hide filters, depth, the detail
+   level (`auto`'s choice included), `attaches` never drawn to its own container, and sibling order.
 2. **Drill-in on a folder (Workloads), a project (demo-web-1) and a VPC (vpc-shared-prod)** × the filter set ×
    three lenses, on S and M (234 cases, same oracle).
 3. **Filters under drill-in and focus**: in each of those three drill-ins and five focus views, each filter
    (exclude types, include types, regions, depth 1 and 2, hide empty projects, hide empty folders, hide empty
-   both, hide disconnected) changes the view *exactly when* the unfiltered view holds something it must change,
-   and the filtered view passes the oracle (144 cases). The matrix of where each filter bites is pinned per size,
-   and every filter bites under at least one drill-in and at least one focus view.
+   both, hide disconnected) changes the view *exactly when* the unfiltered view holds something it must
+   change, and the filtered view passes the oracle (144 cases). The matrix of where each filter bites is
+   pinned per size, and every filter bites under at least one drill-in and at least one focus view.
 4. **Named rows** with specific expectations (top-level ids in order, ids present and absent, chips and open
    zones, children, badges, edge and zone kinds, detail level, rect count, stubs, overlays, focus outcome,
    selection): every lens and every focus view at least once, and the three drill-ins. Where a correct catalog
-   entry may add to a zone (the load-balancing focus's external host project, which a backend service attaching
-   to the host VPC also reaches), the row checks its children and stubs as lower bounds; the networking view of
-   the whole organisation asks for folder detail rather than `auto`, whose choice depends on how many cards
-   the catalog draws. Rows about the edges (security, identity, App Hub) pin the legend's edge kinds exactly;
-   the others list the kinds they need at least, so a catalog entry that adds a relation kind leaves them be.
-   Where S and M differ only in what their data holds, one row carries both, with the size's own expectations.
+   entry may add to a zone (the load-balancing focus's external host project, which a backend service
+   attaching to the host VPC also reaches), the row checks its children and stubs as lower bounds; the
+   networking view of the whole organisation asks for folder detail rather than `auto`, whose choice depends
+   on how many cards the catalog draws. Rows about the edges (security, identity, App Hub) pin the legend's
+   edge kinds exactly; the others list the kinds they need at least, so a catalog entry that adds a relation
+   kind leaves them be. Where S and M differ only in what their data holds, one row carries both, with the
+   size's own expectations.
 
 Unit tests next to the code (`src/views/*.test.ts`, on the synthetic organisation of `src/testing/views.ts`)
 cover each step's rules and errors, and `test/views/scene.property.test.ts` checks with fast-check over random
 views (any lens, valid and junk focus parameters and roots, any filter combination drawn from the
-organisation's own ids, types and locations, any detail level, budget, flips and selection) on S and M that the
-scene is deterministic and independent of record order, valid with a consistent report (every edge joins two
-scene nodes; a chip holds nothing and nothing it contains is drawn elsewhere), accepted by the oracle, and that
-the filter stage is idempotent. Planted faults (filters skipped under a focus or a drill-in, no fixpoint, depth
-off by one, unmerged chip edges, sibling order by id, no 100-rect floor, hidden nodes always shown, stubs ignoring
-the lens, wrong chip counts, nesting drawn as arrows, zones not matching their region) each fail tests.
+organisation's own ids, types and locations, any detail level, budget, flips and selection) on S and M that
+the scene is deterministic and independent of record order, valid with a consistent report (every edge joins
+two scene nodes; a chip holds nothing and nothing it contains is drawn elsewhere), accepted by the oracle, and
+that the filter stage is idempotent. Planted faults (filters skipped under a focus or a drill-in, no fixpoint,
+depth off by one, unmerged chip edges, sibling order by id, no 100-rect floor, hidden nodes always shown,
+stubs ignoring the lens, wrong chip counts, nesting drawn as arrows, zones not matching their region) each
+fail tests.
 
 ### `pnpm render-scene`
 
@@ -326,12 +331,12 @@ pnpm render-scene --help
 
 `scripts/render-scene.ts` (run with tsx) loads the demo organisation — S and M from demo-data's committed
 NDJSON fixtures, L generated and serialised to NDJSON — ingests it with `@gcportrait/ingest` (fixed clock and
-entropy), builds the graph and the scene with the real catalog, and prints a summary: the level used and the rect
-count at every level, root and focus, zones by kind, chips by kind, cards, edges by kind and the relations they
-stand for, stubs, overlays, held-back nodes, dangling references and warnings. Options: `--lens`, `--focus
-kind=…,name=value`, `--root`, `--detail`, `--filter key=value` (repeatable; booleans, comma-separated lists,
-`depth`), `--flip zone-id` (repeatable), `--budget N` or `--viewport WxH`, `--selection`, `--highlight`, `--json`.
-Invalid input exits with code 2 and the usage.
+entropy), builds the graph and the scene with the real catalog, and prints a summary: the level used and the
+rect count at every level, root and focus, zones by kind, chips by kind, cards, edges by kind and the
+relations they stand for, stubs, overlays, held-back nodes, dangling references and warnings. Options:
+`--lens`, `--focus kind=…,name=value`, `--root`, `--detail`, `--filter key=value` (repeatable; booleans,
+comma-separated lists, `depth`), `--flip zone-id` (repeatable), `--budget N` or `--viewport WxH`,
+`--selection`, `--highlight`, `--json`. Invalid input exits with code 2 and the usage.
 
 ### Performance
 
@@ -371,14 +376,14 @@ pnpm --filter @gcportrait/graph test test/views      # the scene composition tab
   unit tests of each step (canonical project matching, reverse relations and merged copies, reciprocal
   `connects`, the Shared VPC rule with and without a host, `nestsIn` nesting with its fallback kind).
 - `src/build.property.test.ts` — fast-check over random organisations (some projects Shared VPC hosts) and
-  random catalog rules (random roles and network zone kinds): the result is always `GraphBuildSchema`-valid (an
-  acyclic, consistent forest; resolved edges vs. dangling; report agrees); idempotent and order-independent;
-  every asset has exactly one parent except the organisation; never nested across projects, and a
-  cross-project attachment is listed in a Shared VPC pair exactly when it goes into a subnet or into a host's
-  network; weak edges yield exactly when a stronger edge points inside their target; rings of containers
-  declaring each other are always broken and reported once; and random NIC topologies over two projects (the
-  second a host or not) match an independent oracle for rules 1 and 2 and weak precedence; and a build with the
-  builder's memo, after other days of the organisation, equals a build without one.
+  random catalog rules (random roles and network zone kinds): the result is always `GraphBuildSchema`-valid
+  (an acyclic, consistent forest; resolved edges vs. dangling; report agrees); idempotent and
+  order-independent; every asset has exactly one parent except the organisation; never nested across projects,
+  and a cross-project attachment is listed in a Shared VPC pair exactly when it goes into a subnet or into a
+  host's network; weak edges yield exactly when a stronger edge points inside their target; rings of
+  containers declaring each other are always broken and reported once; and random NIC topologies over two
+  projects (the second a host or not) match an independent oracle for rules 1 and 2 and weak precedence; and a
+  build with the builder's memo, after other days of the organisation, equals a build without one.
 - `src/memo.test.ts` — the builder's memo reuses an unchanged asset object's work only, and starts afresh for
   another catalog object or project index.
 - `src/names.property.test.ts` — fast-check over random boxes named with project ids or numbers and references

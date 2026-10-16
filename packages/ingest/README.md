@@ -4,10 +4,10 @@
 
 Turns Cloud Asset Inventory data into a model `Snapshot` (the data flow in
 [docs/packages.md](../../docs/packages.md); the CAI facts in the cai-ingestion skill): a streaming
-NDJSON line reader, a normaliser from the CAI asset shape to the model `Asset`, project number ↔ id resolution,
-snapshot assembly with stats, and a worker protocol. It reads both CAI export files (`exportAssets`, one asset
-per line, snake_case envelope keys) and `assets.list` results (camelCase), as plain lines or inside the
-backend's `/api/assets/stream` frames, from files, `fetch` bodies, streams and strings.
+NDJSON line reader, a normaliser from the CAI asset shape to the model `Asset`, project number ↔ id
+resolution, snapshot assembly with stats, and a worker protocol. It reads both CAI export files
+(`exportAssets`, one asset per line, snake_case envelope keys) and `assets.list` results (camelCase), as plain
+lines or inside the backend's `/api/assets/stream` frames, from files, `fetch` bodies, streams and strings.
 
 The package is a pure core. It compiles without DOM or Node types, depends only on `@gcportrait/model`, has no
 side effects, never reads the clock or a random source itself, and runs the same in a Web Worker, in Node and
@@ -60,10 +60,11 @@ await postIngestJob((message, transfer) => worker.postMessage(message, transfer)
 
 Types: `IngestOptions` (= `IngestSettings` + `clock`, `entropy`, `onEvent`), `IngestSettings` (the
 serialisable part a worker `start` message carries), `IngestResult`, `IngestReport`, `IngestEvent`,
-`ReadTimeSource`, `ReadTimeOrigin`, `UpstreamSummary`, `UnresolvedProjects`, `IngestProblem`, `IngestProblemCode`,
-`IngestInput`, `IngestSource`, `IngestChunk`, `TextLine`, the worker message unions `IngestWorkerRequest` and
-`IngestWorkerResponse`, and the structural stream types `ByteStream`, `ByteStreamReader`, `BlobLike`. The
-project index is the model's `ProjectIndex` (import it from `@gcportrait/model`); ingest declares no copy.
+`ReadTimeSource`, `ReadTimeOrigin`, `UpstreamSummary`, `UnresolvedProjects`, `IngestProblem`,
+`IngestProblemCode`, `IngestInput`, `IngestSource`, `IngestChunk`, `TextLine`, the worker message unions
+`IngestWorkerRequest` and `IngestWorkerResponse`, and the structural stream types `ByteStream`,
+`ByteStreamReader`, `BlobLike`. The project index is the model's `ProjectIndex` (import it from
+`@gcportrait/model`); ingest declares no copy.
 
 ### Options
 
@@ -149,8 +150,8 @@ else in the envelope (`resource.version`, the discovery fields) is dropped.
 
 ## Project numbers and ids
 
-CAI puts project *numbers* in `ancestors` and `resource.parent`, while Compute names, self-links and many other
-names use project *ids*. `report.projects` pairs them. It is exactly the model's `ProjectIndex`
+CAI puts project *numbers* in `ancestors` and `resource.parent`, while Compute names, self-links and many
+other names use project *ids*. `report.projects` pairs them. It is exactly the model's `ProjectIndex`
 (`{ numberById, idByNumber }`, `ProjectIndexSchema` in `@gcportrait/model`) and is built by the model's one
 pairing rule (`projectIndexBuilder`, the code behind `buildProjectIndex` in `@gcportrait/model`), so
 `report.projects` equals `buildProjectIndex(snapshot.assets)`. That function builds the index of a snapshot
@@ -201,8 +202,9 @@ Bad lines never stop a normal ingest. Each one is counted in `report.malformed`,
 `IngestError('malformed')` with the problem attached.
 
 The report also has `parts`, `lines`, `blankLines`, `assetLines`, `frameLines`, `duplicates`,
-`readTimeSource`, `upstream` (`pages`, `complete`, `reportedAssets?`, `readTime?`; only when frames were seen),
-`projects` and `unresolvedProjects`. The whole `IngestResult` is plain data: it survives `postMessage`, `structuredClone` and JSON.
+`readTimeSource`, `upstream` (`pages`, `complete`, `reportedAssets?`, `readTime?`; only when frames were
+seen), `projects` and `unresolvedProjects`. The whole `IngestResult` is plain data: it survives `postMessage`,
+`structuredClone` and JSON.
 
 ## Worker protocol
 

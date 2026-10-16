@@ -645,8 +645,8 @@ Rules that go with it:
   [packages/icons/README.md](packages/icons/README.md).
 - The maintainer is named only in the footer notice, the author sections (the README's
   "Author", [docs/author.md](docs/author.md) and the website's author section) and copyright notices
-  (`LICENSE`, the licence sections that quote it, the package metadata's `author`) and the structured data that
-  names a page's author for search engines, and never by any programme membership.
+  (`LICENSE`, the licence sections that quote it, the package metadata's `author`) and the structured data
+  that names a page's author for search engines, and never by any programme membership.
 - The gcportrait name and the gcportrait icon are not covered by the MIT License: "They identify this project
   and may not be used to present other software or services as gcportrait or as endorsed by it; forks must use
   their own name and icon." [brand/LICENSE.md](brand/LICENSE.md) holds the text; `brand/icon.svg` is the one
@@ -860,7 +860,9 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   enforce it, because the repository is all a reader sees.
 - **Cite rules by this file and its heading**; a guide says what to do and links the guide or section that
   explains more.
-- **Markdown is hand-wrapped at 110 columns** and not formatted by Prettier; it carries the SPDX header.
+- **Markdown is hand-wrapped at 110 columns**, table rows, lines that hold a URL, fenced code, the YAML
+  frontmatter and a line of one word or one HTML tag excepted, which `node scripts/user-docs.mjs` checks, and
+  not formatted by Prettier; it carries the SPDX header.
 - **A value the reader fills in** is written `YOUR_` and capitals as one word (`YOUR_PROJECT`), a variable of
   `COMMAND_VARIABLES` in `@gcportrait/model`, which the website turns into a field and the user-docs check
   holds the guides to; capitals without `YOUR_` stay text.
@@ -945,7 +947,7 @@ that each works from the same rules and none is favoured.
 | Fix formatting | `pnpm format` |
 | One package / one test project | `pnpm --filter @gcportrait/<pkg> test` (also `lint`, `typecheck`) / `pnpm test --project <name>` |
 | Provenance rules and exemptions | `pnpm provenance` / `node scripts/check-provenance.mjs --list-exempt` |
-| Check the user guides under docs/ against the tree (commands, flags, settings; no records of runs) / regenerate their lens tables after a lens change (also part of `pnpm test`) | `node scripts/user-docs.mjs` / `node scripts/user-docs.mjs --write` |
+| Check the user guides under docs/ against the tree (commands, flags, settings; no records of runs) and every Markdown file's width (110 columns, with the exemptions of Documentation) / regenerate their lens tables after a lens change (also part of `pnpm test`) | `node scripts/user-docs.mjs` / `node scripts/user-docs.mjs --write` |
 | Dependency licences (`run` is required): allowlist, deny list, the project licence's compatibility | `pnpm run licenses` (`--write` regenerates THIRD_PARTY.md, `node scripts/check-licenses.mjs --list-rules` prints the rules with reasons) |
 | Dependency audit: high and critical advisories fail unless `scripts/audit-allowlist.json` accepts them with an expiry (needs the network; CI's `audit` job; docs/security.md) | `node scripts/check-audit.mjs` |
 | Build, then the SPA's size budgets (UI thread 350 kB, workers 400 kB gzipped; Quality gates, testing and CI) | `pnpm build`, then `pnpm size` |

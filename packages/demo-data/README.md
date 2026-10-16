@@ -273,12 +273,12 @@ restarts (an older pod incarnation is removed, a new one with a new name is adde
 export buckets and DNS records of today that were created inside the window and that nothing names: a
 template that names one calls `OrgBuilder.referenced`, which keeps it out of the window), transients (test
 VMs, scratch tables and buckets, debugging firewall rules and subscriptions that live one to six days),
-retirements (such assets deleted during the window) and field changes (a disk resize, a new Cloud Run revision, a firewall
-rule that gains a source range, a Cloud Armor rate-limit rule, a firewall policy that gains a rule, a
-Memorystore or Spanner resize, a Composer upgrade, … — `src/history/mutators.ts`, one per type). From M up
-the transients and retirements are also drawn from scheduled snapshots, Dataflow batch jobs, Batch jobs and
-Cloud Run job executions. The draw is weighted by kind and M's daily rates are low, so the default M history
-shows only some of them (Cloud Run executions and a Batch job); L shows all four.
+retirements (such assets deleted during the window) and field changes (a disk resize, a new Cloud Run
+revision, a firewall rule that gains a source range, a Cloud Armor rate-limit rule, a firewall policy that
+gains a rule, a Memorystore or Spanner resize, a Composer upgrade, … — `src/history/mutators.ts`, one per
+type). From M up the transients and retirements are also drawn from scheduled snapshots, Dataflow batch jobs,
+Batch jobs and Cloud Run job executions. The draw is weighted by kind and M's daily rates are low, so the
+default M history shows only some of them (Cloud Run executions and a Batch job); L shows all four.
 
 ## Output shapes
 

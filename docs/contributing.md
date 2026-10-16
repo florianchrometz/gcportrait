@@ -187,8 +187,8 @@ webkit`).
 locale is `C.UTF-8` (Node formats dates and numbers as `en-US` then) and `CI` is set, which changes three
 things: the tests' wall-clock limits (the layout's, the ingest's and the graph build's budget ceilings, the
 demo organisations' generation) are never skipped for a busy machine, Playwright retries a failed test twice,
-starts fresh dev servers and writes an HTML report, and `test.only` fails the run. To reproduce a failure that does not happen
-on your machine:
+starts fresh dev servers and writes an HTML report, and `test.only` fails the run. To reproduce a failure that
+does not happen on your machine:
 
 ```sh
 TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner
@@ -212,8 +212,9 @@ only after it has run once, so add it after the first push to `main`.
 
 **Runs on GitHub.** What to expect, and what to do:
 
-- **Caches.** A repository's first run finds neither the pnpm store nor the Playwright browsers cached, so every job
-  downloads them and takes a minute or two longer. A pull request reads the caches that `main`'s runs saved.
+- **Caches.** A repository's first run finds neither the pnpm store nor the Playwright browsers cached, so
+  every job downloads them and takes a minute or two longer. A pull request reads the caches that `main`'s
+  runs saved.
 - **Visual baselines.** There are no screenshot baselines that depend on the machine that wrote them, so e2e
   runs on the plain `ubuntu-latest` runner, not in Playwright's container. The renderer's baselines
   (`e2e/baselines/diagram/`) are SVG text, compared as text by the frontend's unit tests. The render golden
@@ -364,8 +365,9 @@ dependency must pass `pnpm run licenses`.
    users will notice it (the guides are listed in [README.md](README.md#user-guides); a guide says what to do,
    with no record of when or where it was checked), and `AGENTS.md` and the skill that applies it if a rule
    changed. `node scripts/user-docs.mjs` (part of `pnpm test`) fails while a guide names a `pnpm` script, an
-   `infra/` flag or a setting the tree does not have, logs a verification, or while the generated lens tables
-   differ from the catalog (`--write` regenerates them).
+   `infra/` flag or a setting the tree does not have, logs a verification, while the generated lens tables
+   differ from the catalog (`--write` regenerates them), or while a Markdown line is wider than 110 columns
+   outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation".
 5. **Add a changeset** (below) if users will notice the change.
 6. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
 7. **Open the pull request** (section 7).
@@ -514,4 +516,4 @@ pulls through a remote repository in the self-hoster's own project.
 | Every CI job fails at "Install dependencies" with `ERR_PNPM_OUTDATED_LOCKFILE` | `pnpm-lock.yaml` does not match a `package.json`: run `pnpm install` and commit the lockfile. |
 | A test fails on CI but not on your machine | Run it as the runner does: `TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project <name>` (section 4, "Continuous integration"). |
 | `pnpm size` passes but says `frontend/dist does not exist yet` | It measured nothing: run `pnpm build` first. |
-| `user-docs: FAILED` (or `scripts/user-docs.test.ts` fails) | A user guide is stale: the message names the guide and the command, flag, variable or lens block. Fix the guide, or run `node scripts/user-docs.mjs --write` for the lens blocks after a catalog lens change. |
+| `user-docs: FAILED` (or `scripts/user-docs.test.ts` fails) | A user guide is stale: the message names the guide and the command, flag, variable or lens block. Fix the guide, or run `node scripts/user-docs.mjs --write` for the lens blocks after a catalog lens change. A line `path:line: N columns, the limit is 110` is a Markdown line to rewrap by hand (only the line breaks move). |

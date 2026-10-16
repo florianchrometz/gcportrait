@@ -278,7 +278,11 @@ were not confirmed against the live console.
 - Parallelstore's documentation redirects to Managed Lustre: the product may be on a deprecation path.
 - No verifiable console link for Oracle Autonomous Database.
 
-### Pub/Sub, Managed Kafka, Dataflow, Dataproc, Metastore, Composer, Data Fusion, Dataform, Dataplex, Data Lineage, Datastream, Database Migration, Healthcare, Looker, Storage Transfer, Storage Insights, Storage Batch Operations
+### Data processing and messaging
+
+Services: Pub/Sub, Managed Kafka, Dataflow, Dataproc, Metastore, Composer, Data Fusion, Dataform, Dataplex,
+Data Lineage, Datastream, Database Migration, Healthcare, Looker, Storage Transfer, Storage Insights, Storage
+Batch Operations.
 
 - Formats unconfirmed: Dataproc `autoscalingConfig.policyUri` (documented as `…/locations/…`, the policy
   asset is named `…/regions/…`), Dataflow `jobMetadata.pubsubDetails` and whether CAI includes
@@ -296,7 +300,10 @@ were not confirmed against the live console.
 - Console URLs: Managed Kafka, Metastore, Datastream, DMS migrations, Healthcare, Dataform tabs, Dataproc
   batches, Dataplex tasks.
 
-### Vertex AI, Discovery Engine, Dialogflow, Document AI, Speech-to-Text, Retail, Gemini, Customer Experience Insights
+### AI
+
+Services: Vertex AI, Discovery Engine, Dialogflow, Document AI, Speech-to-Text, Retail, Gemini, Customer
+Experience Insights.
 
 - Tabular and time-series `Dataset.metadata.inputConfig`: the rules read the SDK/console shape
   (`gcsSource.uri[]`, `bigquerySource.uri`); the published schema sketches a discriminated union.
@@ -310,7 +317,11 @@ were not confirmed against the live console.
   legacy `vertex-ai/features`, and the `agent-platform` pages for agent engines, index endpoints, datasets,
   custom and tuning jobs, the Dialogflow CX agent deep link.
 
-### Security and identity (IAM, KMS, Secret and Parameter Manager, CA Service, Access Context Manager, Binary Authorization, Security Command Center, DLP, reCAPTCHA, BeyondCorp, IAP, Managed AD, IDS, Web Security Scanner, Assured Workloads, Org Policy)
+### Security and identity
+
+Services: IAM, KMS, Secret and Parameter Manager, CA Service, Access Context Manager, Binary Authorization,
+Security Command Center, DLP, reCAPTCHA, BeyondCorp, IAP, Managed AD, IDS, Web Security Scanner, Assured
+Workloads, Org Policy.
 
 - Binary Authorization `requireAttestationsBy` resolves with either project form (§1.1); whether
   `data.name` carries the id or the number is still unconfirmed.
@@ -330,7 +341,10 @@ were not confirmed against the live console.
 - Console links without context: AccessLevel and ServicePerimeter (no organisation), regional secrets (no
   location), CA Service, DLP, Parameter Manager, reCAPTCHA, IDS, Managed AD, Web Security Scanner.
 
-### Cloud Build, Artifact Registry, Container Registry, Cloud Deploy, Developer Connect, Secure Source Manager, Infra Manager, App Design Center, App Lifecycle Manager
+### Developer tooling and delivery
+
+Services: Cloud Build, Artifact Registry, Container Registry, Cloud Deploy, Developer Connect, Secure Source
+Manager, Infra Manager, App Design Center, App Lifecycle Manager.
 
 - Formats unconfirmed: App Design Center `Application.apphubApplication` and `serviceAccount`,
   `Component.sharedTemplateRevisionUri` (the `google/<template>/revisions/<rev>` catalog form always dangles),
@@ -346,7 +360,12 @@ were not confirmed against the live console.
 - Console URLs: Cloud Build worker pools and 1st/2nd gen repositories, Developer Connect, Secure Source
   Manager, Infra Manager, Cloud Deploy targets, custom target types and deploy policies.
 
-### Logging, Monitoring, OS Config, Asset Inventory, Billing, Service Usage and Management, Service Directory, App Hub, Backup and DR, Application Integration, Integration Connectors, Apigee, API hub, Firebase, media APIs, Financial Services, Blockchain Node Engine, KRM API Hosting, Workload Manager, Migration Center, Cloud Controls Partner
+### Operations and platform
+
+Services: Logging, Monitoring, OS Config, Asset Inventory, Billing, Service Usage and Management, Service
+Directory, App Hub, Backup and DR, Application Integration, Integration Connectors, Apigee, API hub, Firebase,
+media APIs, Financial Services, Blockchain Node Engine, KRM API Hosting, Workload Manager, Migration Center,
+Cloud Controls Partner.
 
 - Logging sinks into central log buckets resolve with either project form (§1.1); hiding every project's
   `_Default` and `_Required` buckets means a sink into another project's `_Default` bucket points at a hidden

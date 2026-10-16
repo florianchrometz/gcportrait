@@ -212,10 +212,10 @@ the zones around it and shows its details; if the lens hides it, a dialog offers
 <tr>
 <td width="50%" valign="top">
 <h3>Export SVG, PNG and draw.io</h3>
-<p>Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file that diagrams.net and draw.io open as an
-editable diagram looking like the picture (zones as containers, resources with their icons, connected lines),
-the whole diagram or the visible part, in either theme, with a title block, a legend and the date it shows.
-Every view is also a link, and a self-hosted instance draws the same files for scripts through its API
+<p>Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file that diagrams.net and draw.io open as
+an editable diagram looking like the picture (zones as containers, resources with their icons, connected
+lines), the whole diagram or the visible part, in either theme, with a title block, a legend and the date it
+shows. Every view is also a link, and a self-hosted instance draws the same files for scripts through its API
 (<code>POST /api/render</code>).
 <a href="docs/export.md">Guide</a> · <a href="docs/api.md">API</a></p>
 <picture>
@@ -368,8 +368,8 @@ website](https://gcportrait.app/#author).
 
 > [!IMPORTANT]
 > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
-> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
-> trademarks of Google and are used under Google's icon usage terms.
+> not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons
+> are trademarks of Google and are used under Google's icon usage terms.
 
 ## Licence
 

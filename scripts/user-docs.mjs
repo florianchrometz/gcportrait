@@ -30,7 +30,11 @@
  *   registry the website and the app take their fields from (COMMAND_VARIABLES,
  *   packages/model/src/schemas/command-variables.ts, which Node loads by type stripping);
  * - docs/modes.md names the size above which the app asks before it draws a snapshot ("more than 10,000 assets")
- *   with the model's own `LARGE_SNAPSHOT_ASSETS` (packages/model/src/schemas/vocabulary.ts), and no other.
+ *   with the model's own `LARGE_SNAPSHOT_ASSETS` (packages/model/src/schemas/vocabulary.ts), and no other;
+ * - every Markdown file of the tree (as scripts/lib/repo-files.mjs walks it, the generated CHANGELOGs and the
+ *   changesets aside) is wrapped at WIDTH columns, counted in code points, but where a line break cannot
+ *   shorten a line or must not go: the YAML frontmatter, fenced code, table rows, a line that holds a URL, and
+ *   a line of one word, an HTML tag or comment counting as one word (AGENTS.md, Documentation).
  *
  * Usage:
  *   node scripts/user-docs.mjs            check; exit 1 and list the problems when anything is stale
@@ -46,6 +50,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { isHeaderExempt, listRepoFiles } from './lib/repo-files.mjs';
 import { workspaceDirs } from './release-notes.mjs';
 
 /** The user guides: the commands in their code must exist, and they keep no verification log. */
@@ -167,8 +172,17 @@ const PNPM_COMMANDS = new Set([
   'audit',
 ]);
 
-/** Lines are wrapped at this width, as the hand-written Markdown is. */
-const WIDTH = 110;
+/** Lines are wrapped at this width, as the hand-written Markdown is (AGENTS.md, Documentation). */
+export const WIDTH = 110;
+
+/** A URL in a line: a scheme with `//` (`https://`, `gs://`) or `mailto:`. */
+const URL_IN_LINE = /\b[a-z][a-z\d+.-]*:\/\/|\bmailto:/i;
+
+/** An HTML tag or comment: a line break inside one would land in an attribute's value or a marker. */
+const HTML_TAG = /<!--.*?-->|<\/?[a-z][^<>]*>/gi;
+
+/** What opens a line before its first word: the indentation, blockquote markers and a list marker. */
+const LINE_OPENING = /^\s*(?:>\s*)*(?:(?:[-*+]|\d{1,9}[.)])\s+)?/;
 
 /**
  * @typedef {{
@@ -882,7 +896,79 @@ export function largeSnapshotProblems(guide, source) {
 }
 
 /**
- * Every problem of the user guides against the tree; empty when they are current.
+ * Whether a line is one word: once its opening (LINE_OPENING) is set aside, it has no space a line break could
+ * take, an HTML tag or comment counting as one word.
+ * @param {string} line
+ * @returns {boolean}
+ */
+function isOneWord(line) {
+  return !/\s/.test(line.replace(LINE_OPENING, '').replace(HTML_TAG, '<>').trimEnd());
+}
+
+/**
+ * The lines of a Markdown document wider than WIDTH columns, counted in code points, as 1-based line numbers with
+ * their widths; but not the YAML frontmatter (data, which the assistants read), fenced code with its fences, a
+ * table row, a line that holds a URL, or a line of one word, which no line break can shorten.
+ * @param {string} markdown
+ * @returns {Array<{ line: number, columns: number }>}
+ */
+export function overlongLines(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const frontmatterEnd = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
+  /** @type {Array<{ line: number, columns: number }>} */
+  const found = [];
+  /** @type {string | null} */
+  let fence = null;
+  lines.forEach((line, index) => {
+    if (index <= frontmatterEnd) return;
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+    if (marker !== undefined && (fence === null || marker.startsWith(fence))) {
+      fence = fence === null ? marker : null;
+      return;
+    }
+    if (fence !== null) return;
+    const columns = Array.from(line).length;
+    if (columns <= WIDTH || /^\s*\|/.test(line) || URL_IN_LINE.test(line) || isOneWord(line)) return;
+    found.push({ line: index + 1, columns });
+  });
+  return found;
+}
+
+/**
+ * The Markdown files the width rule holds, relative to `root`: every `.md` file of the tree as
+ * scripts/lib/repo-files.mjs walks it (what git tracks, and every other file outside the ignored directories),
+ * but those the provenance check exempts from the header as generated or consumed (the CHANGELOGs that
+ * `changeset version` writes, the changeset entries).
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function wrappedMarkdownFiles(root) {
+  return listRepoFiles(root)
+    .filter(
+      (file) =>
+        !file.isSymlink && file.relPath.toLowerCase().endsWith('.md') && !isHeaderExempt(file.relPath),
+    )
+    .map((file) => file.relPath);
+}
+
+/**
+ * Every line of the tree's Markdown files that is wider than WIDTH outside the exemptions (overlongLines), as
+ * `path:line: N columns, the limit is 110`.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function markdownWidthProblems(root) {
+  return wrappedMarkdownFiles(root).flatMap((relPath) =>
+    overlongLines(readFileSync(path.join(root, relPath), 'utf8')).map(
+      ({ line, columns }) =>
+        `${relPath}:${String(line)}: ${String(columns)} columns, the limit is ${String(WIDTH)}`,
+    ),
+  );
+}
+
+/**
+ * Every problem of the user guides against the tree, and every Markdown line too wide; empty when they are
+ * current.
  * @param {string} root
  * @returns {string[]}
  */
@@ -961,6 +1047,7 @@ export function checkUserDocs(root) {
       );
     }
   }
+  problems.push(...markdownWidthProblems(root));
   return problems;
 }
 
@@ -1003,7 +1090,7 @@ function main() {
     return;
   }
   process.stdout.write(
-    `user-docs: OK. ${String(GUIDES.length)} guides current with the tree; ${String(GUIDES.length + COMMAND_DOCS.length + LOG_FREE_DOCS.length)} user documents without a verification log; ${QUICK_START_DOC} asks only for ${QUICK_START_VARIABLES.join(', ')}.\n`,
+    `user-docs: OK. ${String(GUIDES.length)} guides current with the tree; ${String(GUIDES.length + COMMAND_DOCS.length + LOG_FREE_DOCS.length)} user documents without a verification log; ${QUICK_START_DOC} asks only for ${QUICK_START_VARIABLES.join(', ')}; ${String(wrappedMarkdownFiles(root).length)} Markdown files wrapped at ${String(WIDTH)} columns.\n`,
   );
 }
 

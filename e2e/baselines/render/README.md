@@ -12,11 +12,12 @@ build, `@resvg/resvg-wasm` 2.6.2, which draws the same bytes as the native `@res
 `backend/src/routes/render.test.ts` through the route and `backend/src/render/bundle.test.ts` in the bundled
 render worker.
 
-`S-overview-auto-light.drawio` is the same view as a draw.io file, as the render library's `drawDrawio` writes it:
-the SVG's drawing translated into draw.io's cells (`frontend/src/export/drawio/`), compressed as diagrams.net saves
-it, its `modified` the data's read time and its `agent` `gcportrait` without a version, so a release does not
-change it (`pnpm render --drawio` and the render API write the same bytes with their version there).
-`packages/render-cli/test/golden.test.ts` compares it byte for byte and draws it twice to the same bytes.
+`S-overview-auto-light.drawio` is the same view as a draw.io file, as the render library's `drawDrawio` writes
+it: the SVG's drawing translated into draw.io's cells (`frontend/src/export/drawio/`), compressed as
+diagrams.net saves it, its `modified` the data's read time and its `agent` `gcportrait` without a version, so
+a release does not change it (`pnpm render --drawio` and the render API write the same bytes with their
+version there). `packages/render-cli/test/golden.test.ts` compares it byte for byte and draws it twice to the
+same bytes.
 
 Regenerate them only for an intended visual change (layout, renderer, fonts, resvg version, the draw.io
 translator), look at the new files, and say why in the pull request:
