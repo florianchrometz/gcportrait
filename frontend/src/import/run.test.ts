@@ -10,7 +10,7 @@ import { decodeJson } from '../snapshots/codec';
 import { fakeLibrary, type FakeLibrary } from '../snapshots/testing';
 import { stubBackend } from '../test/backend';
 import { describeFailure } from './errors';
-import { IDLE_PROGRESS, importProgressReducer, type ImportAction } from './progress';
+import { IDLE_PROGRESS, importProgressReducer, stageText, type ImportAction } from './progress';
 import { runExportRead, runLivePull, streamRequestOf, type ImportDependencies, type PullTarget } from './run';
 import { frames, line, streamBody as body } from './testing';
 import { inProcessImportWorker } from './worker/inProcess';
@@ -428,5 +428,72 @@ describe('an export read from Cloud Storage', () => {
     expect(actions.reduce(importProgressReducer, IDLE_PROGRESS).failure?.title).toBe(
       'No assets were found in the export.',
     );
+  });
+});
+
+describe('a pull or a read cancelled while its snapshot is stored', () => {
+  const S_LINES = toCaiNdjson(generateOrganization({ size: 'S' }).assets, 'export');
+
+  /** A pull of demo M, or a Cloud Storage read of demo S's export, from a backend that streams it in full. */
+  function read(
+    kind: 'pull' | 'export',
+    dependencies: ImportDependencies,
+    dispatch: (action: ImportAction) => void,
+    signal: AbortSignal,
+  ): ReturnType<typeof runLivePull> {
+    if (kind === 'pull') {
+      backend(() => new Response(body(M_FRAMES).stream));
+      return runLivePull(dependencies, TARGET, dispatch, signal);
+    }
+    backend(() => new Response(body(S_LINES).stream));
+    return runExportRead(dependencies, 'gs://demo-exports/export.json', null, dispatch, signal);
+  }
+
+  /**
+   * The fake library, with the run's Cancel pressed as the store step begins (`before` the library is called) or
+   * while its write is in flight (`during`).
+   */
+  function cancelling(
+    library: FakeLibrary,
+    controller: AbortController,
+    when: 'before' | 'during',
+  ): ImportDependencies['library'] {
+    return {
+      storePrepared(prepared, options) {
+        if (when === 'before') controller.abort();
+        const storing = library.storePrepared(prepared, options);
+        controller.abort();
+        return storing;
+      },
+    };
+  }
+
+  it.each([
+    { read: 'a pull', kind: 'pull', when: 'before' },
+    { read: 'a pull', kind: 'pull', when: 'during' },
+    { read: 'a Cloud Storage read', kind: 'export', when: 'before' },
+    { read: 'a Cloud Storage read', kind: 'export', when: 'during' },
+  ] as const)('$read cancelled $when its write stores nothing and says so', async ({ kind, when }) => {
+    const library = fakeLibrary();
+    const changes = vi.fn();
+    library.subscribe(changes);
+    const controller = new AbortController();
+    const { dispatch, actions } = recorder();
+    const imported = await read(
+      kind,
+      { ...dependencies(auth(), library), library: cancelling(library, controller, when) },
+      dispatch,
+      controller.signal,
+    );
+    expect(imported).toBeNull();
+    expect(library.calls).toEqual([`storePrepared ${kind === 'pull' ? 'api' : 'export'}`]);
+    expect(library.records.size).toBe(0);
+    expect(changes).not.toHaveBeenCalled();
+    const types = actions.map((action) => action.type);
+    expect(types.at(-1)).toBe('cancelled');
+    expect(types).not.toContain('done');
+    const final = actions.reduce(importProgressReducer, IDLE_PROGRESS);
+    expect(final).toMatchObject({ phase: 'cancelled', result: null, failure: null });
+    expect(stageText(final)).toBe('Cancelled. Nothing was stored.');
   });
 });

@@ -305,6 +305,46 @@ describe('the library', () => {
     expect(changes).toHaveBeenCalledTimes(1);
   });
 
+  it('stores nothing of a pulled snapshot cancelled before or while it is written', async () => {
+    const db = await database();
+    const snapshots = library(Promise.resolve(db));
+    const changes = vi.fn();
+    snapshots.subscribe(changes);
+    const pulled = storedRecord(IMPORTED, { source: 'api' });
+    const prepared = { id: pulled.id, meta: pulled.meta, blob: pulled.blob };
+    const put = db.put.bind(db);
+    const written: string[] = [];
+    let abortOnPut: AbortController | null = null;
+    vi.spyOn(db, 'put').mockImplementation(async (...args: Parameters<typeof db.put>) => {
+      const key = await put(...args);
+      written.push(key);
+      abortOnPut?.abort();
+      return key;
+    });
+    // A signal aborted before the store: nothing is written.
+    const before = new AbortController();
+    before.abort();
+    await expect(snapshots.storePrepared(prepared, { signal: before.signal })).rejects.toBeInstanceOf(
+      SnapshotJobCancelled,
+    );
+    expect(written).toEqual([]);
+    // An abort that lands while the record is written: the record is deleted again.
+    const during = new AbortController();
+    abortOnPut = during;
+    await expect(snapshots.storePrepared(prepared, { signal: during.signal })).rejects.toBeInstanceOf(
+      SnapshotJobCancelled,
+    );
+    expect(written).toEqual([IMPORTED]);
+    expect(await db.get('snapshots', IMPORTED)).toBeUndefined();
+    expect(await snapshots.list()).toEqual([]);
+    expect(changes).not.toHaveBeenCalled();
+    // The same snapshot without a cancel is stored under its ref: the cancelled store left nothing in its way.
+    abortOnPut = null;
+    expect(await snapshots.storePrepared(prepared, { signal: new AbortController().signal })).toBe(IMPORTED);
+    expect((await snapshots.list()).map((listed) => listed.record.id)).toEqual([IMPORTED]);
+    expect(changes).toHaveBeenCalledTimes(1);
+  });
+
   it('does not store an import IndexedDB refuses, and says so', async () => {
     const db = await database();
     const snapshots = library(Promise.resolve(db));

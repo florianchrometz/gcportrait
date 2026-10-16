@@ -6,10 +6,11 @@
  * `createBrowserDemoJob`, diagram/pipeline/workers.ts; the demo generator runs in workers only). What either
  * prepares is saved through the repository (IndexedDB; a demo organisation in memory until a reload when IndexedDB
  * refuses it, an import never), an import's only once its `confirm`, when it has one, has said yes, and never once
- * its `signal` is aborted (the person cancelled, or left the page); exporting writes the `.gcportrait.json` bundle
- * (bundle.ts) from a stored record's documents as they are, once the snapshot worker has read them in full
- * (`check`), so a damaged record is never written to a file. Every change is announced to `subscribe`rs (the
- * provider re-lists).
+ * its `signal` is aborted (the person cancelled, or left the page); a live pull or an export read (src/import/)
+ * prepares its own and stores it here (`storePrepared`), never once its `signal` is aborted either. Exporting
+ * writes the `.gcportrait.json` bundle (bundle.ts) from a stored record's documents as they are, once the snapshot
+ * worker has read them in full (`check`), so a damaged record is never written to a file. Every change is
+ * announced to `subscribe`rs (the provider re-lists).
  */
 import { isSnapshotRef, type DemoSize, type SnapshotRef } from '@gcportrait/model';
 
@@ -65,6 +66,14 @@ export interface ImportOptions {
   readonly signal?: AbortSignal;
 }
 
+export interface StoreOptions {
+  /**
+   * Aborted when the person cancels the pull or the read, or leaves the page: the store rejects with
+   * `SnapshotJobCancelled` and nothing is stored (a record written before the abort arrived is deleted again).
+   */
+  readonly signal?: AbortSignal;
+}
+
 export interface SnapshotLibrary {
   /** Whether snapshots are kept in IndexedDB (false: in memory, until the page is reloaded or closed). */
   persistent(): Promise<boolean>;
@@ -91,9 +100,10 @@ export interface SnapshotLibrary {
   /**
    * Stores a snapshot prepared elsewhere (a live pull or an export read, src/import/) as a new record, and
    * returns its ref. Fails (a `SnapshotJobError`) without browser storage, when its id is already stored (a ref
-   * names one snapshot for good), or when IndexedDB refuses it (the quota).
+   * names one snapshot for good), or when IndexedDB refuses it (the quota). An aborted `options.signal` stores
+   * nothing and rejects with `SnapshotJobCancelled`.
    */
-  storePrepared(prepared: PreparedSnapshot): Promise<SnapshotRef>;
+  storePrepared(prepared: PreparedSnapshot, options?: StoreOptions): Promise<SnapshotRef>;
   /**
    * The `.gcportrait.json` file of a stored snapshot, once the snapshot worker has read its documents in full; fails
    * (a `SnapshotJobError` with the reason) when they are damaged.
@@ -132,6 +142,11 @@ function isRef(id: string): id is SnapshotRef {
 /** A stored record's id as the snapshot ref a view names, or null when it is not one. */
 export function refOf(id: string): SnapshotRef | null {
   return isRef(id) ? id : null;
+}
+
+/** Throws {@link SnapshotJobCancelled} once `signal` is aborted: a job the person cancelled (or left) stops. */
+function stopIfCancelled(signal: AbortSignal | undefined): void {
+  if (signal?.aborted === true) throw new SnapshotJobCancelled();
 }
 
 /** Prepares demo organisation `size`, reporting its progress (the data protocol's `demo` request, in a demo worker). */
@@ -184,16 +199,13 @@ export function createSnapshotLibrary(options: SnapshotLibraryOptions): Snapshot
     async importFiles(files, onProgress, options) {
       const signal = options?.signal;
       // Between every step: an import the person cancelled (or left) goes no further.
-      const stopIfCancelled = (): void => {
-        if (signal?.aborted === true) throw new SnapshotJobCancelled();
-      };
-      stopIfCancelled();
+      stopIfCancelled(signal);
       if (!(await repository.persistent()))
         throw new SnapshotJobError(
           'Importing needs browser storage, which this browser does not allow here.',
         );
       const taken = await repository.ids();
-      stopIfCancelled();
+      stopIfCancelled(signal);
       const { snapshots, warnings } = await started().client.importFiles(
         files,
         onProgress,
@@ -201,13 +213,13 @@ export function createSnapshotLibrary(options: SnapshotLibraryOptions): Snapshot
         options?.readTime,
         signal,
       );
-      stopIfCancelled();
+      stopIfCancelled(signal);
       // The person's say before anything is stored: what each snapshot would be stored under, and its size.
       const candidates = snapshots.flatMap((prepared) =>
         isRef(prepared.id) ? [{ ref: prepared.id, assets: prepared.meta.assetCount }] : [],
       );
       const yes = options?.confirm === undefined || (await options.confirm(candidates));
-      stopIfCancelled();
+      stopIfCancelled(signal);
       if (!yes) return { refs: [], records: [], warnings: [], declined: true };
       onProgress?.({ stage: 'store' });
       const records: StoredSnapshot[] = [];
@@ -242,14 +254,22 @@ export function createSnapshotLibrary(options: SnapshotLibraryOptions): Snapshot
       );
       return { refs, records, warnings: [...warnings, ...notes] };
     },
-    async storePrepared(prepared) {
+    async storePrepared(prepared, options) {
+      const signal = options?.signal;
+      stopIfCancelled(signal);
       if (!(await repository.persistent()))
         throw new SnapshotJobError(
           'Storing a snapshot needs browser storage, which this browser does not allow here.',
         );
       if (!isRef(prepared.id) || (await repository.ids()).includes(prepared.id))
         throw new SnapshotJobError('The snapshot could not be stored under a new name. Try again.');
+      stopIfCancelled(signal);
       const { persisted } = await save(prepared, false);
+      if (signal?.aborted === true) {
+        // Cancelled while it was written: the record is taken back, so nothing of it stays.
+        if (persisted) await repository.delete(prepared.id);
+        throw new SnapshotJobCancelled();
+      }
       if (!persisted)
         throw new SnapshotJobError(
           'This browser refused to store the snapshot: the space it allows this site may be full. Delete ' +

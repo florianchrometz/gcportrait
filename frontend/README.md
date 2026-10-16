@@ -861,7 +861,10 @@ the diagram open without asking again and Cancel stops the read. Only the stream
 check reads one asset. A pull's snapshot has source `api` ("live pull", or "live pull, service account") and
 the read time Google reported (`readTimeSource: api`); an export read's has source `export` with its URI, and
 the sidecar's read time or an estimate. Cancel (and leaving the page) aborts the request and the read, and
-tells the worker to drop the job: nothing is stored.
+tells the worker to drop the job: nothing is stored. While the snapshot is stored, the store takes the run's
+signal too (`storePrepared`'s `signal` option): aborted before the write, it writes nothing; aborted while the
+write is in flight, the library deletes the record after it. Either way the run ends as cancelled, "Cancelled.
+Nothing was stored.", as a cancel while reading does.
 
 **An export's read time** (from an optional sidecar, `operation.json`, or set by the person, defaulting to the
 latest `updateTime`): an export that came without its operation.json may be given its read time in "When the
@@ -894,16 +897,17 @@ ingest, the model and zod with the other roles; its code loads on first use.
 
 Tests: `progress.test.ts` (the reducer), `target.test.ts`, `sidecar.test.ts` (the typed read time, which read
 time wins, the future note), `commands.test.ts` (the gcloud commands with their variables), `errors.test.ts`,
-`run.test.ts` (Node, the in-process worker: the request, the stored snapshot, every failure, cancel, a broken
-connection, export reads with and without a sidecar, and a 5 000-asset organisation streamed into a stored
-snapshot in under 10 s, printing its time; a typed read time, and the sidecar's over it), `store.test.ts`
-(IndexedDB through fake-indexeddb, read back by the diagram's loader), `sidecarImport.test.ts` (the sidecar in
-the Snapshots page's import; a typed read time, the sidecar's over it, bundles keeping their own, the future
-note), `PullNow.test.tsx` and `LoadExport.test.tsx` (the controls in a harness, the read time field, the
-large-snapshot question for dropped files before anything is stored (Cancel, Escape and leaving the page store
-nothing, "Draw it anyway" stores once, several files ask about the one they open, the session setting), Cancel
-while dropped files are read (by pointer and by keyboard, focus back on "Choose files…") and leaving the page
-then, neither storing anything, a pull and a Cloud Storage read, axe included), and
+`run.test.ts` (Node, the in-process worker: the request, the stored snapshot, every failure, cancel while
+reading, cancel while storing for a pull and a Cloud Storage read (nothing stored, the status says so), a
+broken connection, export reads with and without a sidecar, and a 5 000-asset organisation streamed into a
+stored snapshot in under 10 s, printing its time; a typed read time, and the sidecar's over it),
+`store.test.ts` (IndexedDB through fake-indexeddb, read back by the diagram's loader), `sidecarImport.test.ts`
+(the sidecar in the Snapshots page's import; a typed read time, the sidecar's over it, bundles keeping their
+own, the future note), `PullNow.test.tsx` and `LoadExport.test.tsx` (the controls in a harness, the read time
+field, the large-snapshot question for dropped files before anything is stored (Cancel, Escape and leaving the
+page store nothing, "Draw it anyway" stores once, several files ask about the one they open, the session
+setting), Cancel while dropped files are read (by pointer and by keyboard, focus back on "Choose files…") and
+leaving the page then, neither storing anything, a pull and a Cloud Storage read, axe included), and
 `e2e/tests/live-pull.spec.ts` in Chromium.
 
 ## Snapshots (`src/snapshots/`)
@@ -1109,9 +1113,10 @@ and every damage it refuses, a cancelled import: the client rejects at once and 
 answer, the worker stops reading an 8 MiB export after its first MiB, a queued job never starts),
 `library.test.ts` (IndexedDB through fake-indexeddb: the repository, the library, the export → import round
 trip, imports as copies, an import asked about before it is stored (no stores nothing, yes stores it once),
-an import cancelled while it is read, asked about or stored (nothing stays), a refused import, damaged
-records refused at export, the data worker's loader, the memory fallback, and the data worker over stored
-snapshots: a deleted snapshot is not drawn from its kept Graph, and S imported after M was deleted draws S),
+an import cancelled while it is read, asked about or stored (nothing stays), a pulled snapshot whose store is
+cancelled before or while it is written (nothing stays), a refused import, damaged records refused at export,
+the data worker's loader, the memory fallback, and the data worker over stored snapshots: a deleted snapshot
+is not drawn from its kept Graph, and S imported after M was deleted draws S),
 `pages/SnapshotsPage.test.tsx` and `pages/ConnectPage.test.tsx` (the pages with a fake library, axe included;
 the read time typed at an import; Cancel while an import's files are read and leaving the page then, neither
 storing anything; a card per stored snapshot on a phone), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx`

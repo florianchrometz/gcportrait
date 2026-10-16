@@ -3,8 +3,10 @@
  * A snapshot library for the page tests: records in memory, every call logged, and the jobs answered by the
  * test (`answer`) so it can look at the page while one runs; an import's answer is stored once its `confirm`, if
  * it has one, says yes, and never once its `signal` is aborted (the import then rejects at once with
- * `SnapshotJobCancelled`, as the library's does). Nothing is generated, compressed or parsed (jsdom's Blob cannot
- * stream); the worker, the codec and IndexedDB are tested on their own (library.test.ts).
+ * `SnapshotJobCancelled`, as the library's does); a prepared snapshot (`storePrepared`) is not kept when its
+ * `signal` is aborted before its write ends, and the store rejects in the same way. Nothing is generated,
+ * compressed or parsed (jsdom's Blob cannot stream); the worker, the codec and IndexedDB are tested on their own
+ * (library.test.ts).
  */
 import type { DemoSize, SnapshotRef } from '@gcportrait/model';
 
@@ -132,14 +134,22 @@ export function fakeLibrary(
       changed();
       return result;
     },
-    storePrepared(prepared) {
+    async storePrepared(prepared, storeOptions) {
       calls.push(`storePrepared ${prepared.meta.source}`);
+      const cancelled = (): boolean => storeOptions?.signal?.aborted === true;
+      if (cancelled()) throw new SnapshotJobCancelled();
       records.set(prepared.id, {
         record: { ...prepared, meta: { ...prepared.meta, savedAt: '2026-10-10T12:00:00Z' } },
         persisted: true,
       });
+      // The write ends a moment later, as IndexedDB's does: an abort that lands meanwhile takes the record back.
+      await Promise.resolve();
+      if (cancelled()) {
+        records.delete(prepared.id);
+        throw new SnapshotJobCancelled();
+      }
       changed();
-      return Promise.resolve(prepared.id);
+      return prepared.id;
     },
     exportFile(id, onProgress) {
       calls.push(`exportFile ${id}`);

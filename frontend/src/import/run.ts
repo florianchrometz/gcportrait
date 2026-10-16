@@ -4,7 +4,8 @@
  * backend for the stream with the session's token (`POST /api/assets/stream` or `POST /api/export/read`), hand the
  * body to the import worker as it arrives, store what it prepares through the snapshot library (IndexedDB), and
  * report every step to the progress reducer (progress.ts). Nothing is kept unless the whole stream was read: a pull
- * without its `done` frame, an error frame, a broken connection or a cancel stores nothing. A pull or a read whose
+ * without its `done` frame, an error frame, a broken connection or a cancel stores nothing, a cancel while the
+ * snapshot is stored included (the store takes the run's signal and deletes what it wrote). A pull or a read whose
  * count passes `LARGE_SNAPSHOT_ASSETS` asks the person once, at that moment (`confirmLarge`, the large-snapshot
  * guard): the stream goes on while they decide, nothing is stored before they have answered, and Cancel stops the
  * read as the Cancel button does. The count is known only as the stream arrives: no earlier step (the permission
@@ -15,6 +16,7 @@ import { LARGE_SNAPSHOT_ASSETS, type SnapshotRef, type SnapshotScope } from '@gc
 import { fetchWithToken, NotSignedInError, type AccessMode, type AuthControls } from '../auth';
 import type { SnapshotLibrary } from '../snapshots/library';
 import { scopeName } from '../snapshots/labels';
+import { SnapshotJobCancelled } from '../snapshots/worker/client';
 import { describeFailure, type FailureContext, type ImportError } from './errors';
 import type { ImportAction, ImportKind } from './progress';
 import { exportReadTime, type ExportSidecar } from './sidecar';
@@ -188,8 +190,10 @@ async function run(
     dispatch({ type: 'storing', at: now() });
     let ref: SnapshotRef;
     try {
-      ref = await dependencies.library.storePrepared(snapshot);
+      // Cancelled while it is stored (or the page left): the library takes back what it wrote.
+      ref = await dependencies.library.storePrepared(snapshot, { signal: reading.signal });
     } catch (error) {
+      if (error instanceof SnapshotJobCancelled) throw new ImportCancelled();
       throw new Failed({ kind: 'storage', message: error instanceof Error ? error.message : String(error) });
     }
     dispatch({
