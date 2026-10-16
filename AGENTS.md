@@ -815,7 +815,7 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
 - **CI** (`.github/workflows/pr.yml`) runs every job at once on each pull request and push to `main`: lint,
   typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the size
-  budgets, e2e in four Chromium legs (two of the desktop specs, two of the phone and tablet check and the
+  budgets, e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and the
   `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants a
   banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Its
   `required` job is the one check branch protection targets, green only when every other job but

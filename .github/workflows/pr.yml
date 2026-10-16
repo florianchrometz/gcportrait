@@ -16,7 +16,7 @@
 #   layout-budget   the layout's strict budgets and bench table; non-blocking (below)
 #   catalog-check   pnpm catalog:build, pnpm catalog:check
 #   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
-#   e2e             Playwright on Chromium in four legs: the desktop specs in two, the phone and tablet ones in two
+#   e2e             Playwright on Chromium in five legs: the desktop specs in three, the phone and tablet ones in two
 #   website         the website built and checked (pnpm website:build, website:check), then its phone-width check
 #   provenance      pnpm provenance, then a self-test that the guard still rejects a planted banned file
 #   licenses        pnpm run licenses
@@ -211,9 +211,9 @@ jobs:
   # axe in both themes, the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts and the
   # canvas's touch gestures in touch.spec.ts; alone: `pnpm --filter @gcportrait/frontend mobile`) and the flows by
   # finger on a phone and a tablet (the `chromium-phone` and `chromium-tablet` projects, e2e/tests/handheld.spec.ts).
-  # Four legs, each starting its own two dev servers: the desktop window's projects (chromium-live and chromium) in
-  # two shards, and every other project (chromium-phone, chromium-tablet and mobile, named by negation so that a new
-  # project is never left out) in two. `--shard` splits a leg's tests by count, in the order of the config's
+  # Five legs, each starting its own two dev servers: the desktop window's projects (chromium-live and chromium) in
+  # three shards, and every other project (chromium-phone, chromium-tablet and mobile, named by negation so that a
+  # new project is never left out) in two. `--shard` splits a leg's tests by count, in the order of the config's
   # projects, which puts the quick ones first so that each shard gets a share of the slow ones (the `mobile`
   # project's take longest). There are no screenshot baselines: the committed visual baselines are SVG text
   # (e2e/baselines/diagram/, compared by the frontend's unit tests) and the render golden PNG (drawn by resvg's
@@ -227,14 +227,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - leg: desktop 1/2
+          - leg: desktop 1/3
             id: desktop-1
             projects: chromium-live chromium
-            shard: 1/2
-          - leg: desktop 2/2
+            shard: 1/3
+          - leg: desktop 2/3
             id: desktop-2
             projects: chromium-live chromium
-            shard: 2/2
+            shard: 2/3
+          - leg: desktop 3/3
+            id: desktop-3
+            projects: chromium-live chromium
+            shard: 3/3
           - leg: phones and tablets 1/2
             id: phones-and-tablets-1
             projects: '!chromium-live !chromium'

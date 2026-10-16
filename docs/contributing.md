@@ -151,7 +151,7 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 | `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary. **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
-| `e2e (desktop 1/2)`, `e2e (desktop 2/2)` | `pnpm e2e --project chromium-live --project chromium --shard=N/2`, Chromium: the desktop specs, in demo and normal mode |
+| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm e2e --project chromium-live --project chromium --shard=N/3`, Chromium: the desktop specs, in demo and normal mode |
 | `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm e2e --project chromium-phone --project chromium-tablet --project mobile --shard=N/2`, Chromium: every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) |
 | `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` |
 | `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard |
@@ -163,9 +163,10 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
 install from the cache, and the e2e legs and `website` about another minute on Chromium's system libraries.
-The four e2e legs are the longest jobs, which is why the suite is split in four. `--shard` splits a leg's
+The five e2e legs are the longest jobs, which is why the suite is split in five. `--shard` splits a leg's
 tests by count, in the order of the projects in `e2e/playwright.config.ts`, which puts each leg's lighter
-projects first so that both of its shards get a share of the slow tests; the run's page shows each job's time.
+projects first so that each of its shards gets a share of the slow tests; the run's page shows each job's
+time.
 
 Some of these gates are not part of `pnpm check`; run these three locally when you touch the app:
 
@@ -192,7 +193,7 @@ does not happen on your machine:
 
 ```sh
 TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner
-CI=true pnpm e2e --project chromium-live --project chromium --shard=2/2   # the e2e leg desktop 2/2
+CI=true pnpm e2e --project chromium-live --project chromium --shard=2/3   # the e2e leg desktop 2/3
 actionlint && shellcheck -x infra/*.sh                            # workflows-and-shell (Homebrew has both)
 ```
 
