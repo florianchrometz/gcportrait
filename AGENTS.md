@@ -149,11 +149,13 @@ now, and what changed in the last five weeks?
 
   A node's menu and drill-in have no touch gesture, because a long press is where people look for what a
   thing is and a double tap where they look for zoom; the details drawer carries both. The e2e suite's
-  functional specs run at 1440 × 900 and `e2e/tests/touch.spec.ts` uses the canvas by finger at a phone's
-  size; `frontend/src/shell/parity.test.tsx` fails on a control the desktop offers and a narrower width lacks
-  (in the DOM and the accessibility tree), and `pnpm --filter @gcportrait/frontend mobile` runs the touch spec
-  and measures the phone and tablet layouts in a browser, including that every control is in sight when
-  focused and can be tapped. The website serves phones too (`pnpm website:mobile` checks it).
+  functional specs run at 1440 × 900, `e2e/tests/touch.spec.ts` uses the canvas by finger at a phone's size
+  and `e2e/tests/handheld.spec.ts` the app's flows by finger at a phone's and a tablet's (the `chromium-phone`
+  and `chromium-tablet` projects); `frontend/src/shell/parity.test.tsx` fails on a control the desktop offers
+  and a narrower width lacks (in the DOM and the accessibility tree), and `pnpm --filter @gcportrait/frontend
+  mobile` runs the touch spec and measures the phone and tablet layouts in a browser, including that every
+  control is in sight when focused and can be tapped. The website serves phones too (`pnpm website:mobile`
+  checks it).
 - **Both themes, every time.** A visual change is done when it looks right in light and dark and passes the
   contrast tests, because users and their documents come in both ([Style and
   accessibility](#style-and-accessibility)).
@@ -812,12 +814,13 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
 - **CI** (`.github/workflows/pr.yml`) runs every job at once on each pull request and push to `main`: lint,
   typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the size
-  budgets, e2e in three Chromium shards (the desktop specs and the phone and tablet check), the website,
-  provenance (with a self-test that plants a banned file and requires the guard to fail), licences, the
-  dependency audit and workflows-and-shell. Its `required` job is the one check branch protection targets,
-  green only when every other job but `layout-budget` is, so the ruleset never changes when a job does. Every
-  action is pinned by commit. The audit gate fails on high and critical advisories unless
-  `scripts/audit-allowlist.json` accepts one with an expiry.
+  budgets, e2e in four Chromium shards (the desktop specs, the phone and tablet check, and the
+  `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants a
+  banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Its
+  `required` job is the one check branch protection targets, green only when every other job but
+  `layout-budget` is, so the ruleset never changes when a job does. Every action is pinned by commit. The
+  audit gate fails on high and critical advisories unless `scripts/audit-allowlist.json` accepts one with an
+  expiry.
 - **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
   or applied in a commit that passes the checks) or declined with its reason in
   [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.
@@ -945,7 +948,7 @@ that each works from the same rules and none is favoured.
 | Dependency licences (`run` is required): allowlist, deny list, the project licence's compatibility | `pnpm run licenses` (`--write` regenerates THIRD_PARTY.md, `node scripts/check-licenses.mjs --list-rules` prints the rules with reasons) |
 | Dependency audit: high and critical advisories fail unless `scripts/audit-allowlist.json` accepts them with an expiry (needs the network; CI's `audit` job; docs/security.md) | `node scripts/check-audit.mjs` |
 | Build, then the SPA's size budgets (UI thread 350 kB, workers 400 kB gzipped; Quality gates, testing and CI) | `pnpm build`, then `pnpm size` |
-| End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`) |
+| End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`; `--project chromium-phone --project chromium-tablet` for the app's flows by finger on a phone and a tablet alone) |
 | The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways; and the canvas's gestures by finger at 390 × 844 (`e2e/tests/touch.spec.ts`; Product rules, the touch model; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to AGENTS.md and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |

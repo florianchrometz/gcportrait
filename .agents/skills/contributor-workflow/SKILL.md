@@ -107,9 +107,10 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
   (commands + output in the PR).
 - `pnpm check` and `pnpm e2e` green locally; CI green. CI (`.github/workflows/pr.yml`) runs every job at once,
   each installing from the pnpm store cache: lint, typecheck, `unit` in three legs (layout, frontend, every
-  other project), catalog-check, build with the size budgets, `e2e` in three Chromium shards (the phone and
-  tablet check among them), website (built and checked, then at phone widths), provenance, licenses, audit and
-  workflows-and-shell (actionlint, shellcheck). Its `required` job is the one check branch protection targets:
+  other project), catalog-check, build with the size budgets, `e2e` in four Chromium shards (the phone and
+  tablet check and the `chromium-phone` and `chromium-tablet` projects among them), website (built and
+  checked, then at phone widths), provenance, licenses, audit and workflows-and-shell (actionlint,
+  shellcheck). Its `required` job is the one check branch protection targets:
   green only when all of them are; `layout-budget` only reports. A failure you cannot reproduce: run the
   command as the runner does, `TZ=UTC LC_ALL=C.UTF-8 CI=true` (`docs/contributing.md` §4, "Continuous
   integration", has each job's command, its time and the artifacts a failed job uploads).
@@ -131,7 +132,7 @@ What each layer tests (the tests a change adds belong in the layer it touches):
 | theme | vitest | contrast for every palette pair in both themes (`frontend/src/diagram/theme/theme.test.ts`) |
 | frontend | vitest + Testing Library | the store, the URL-hash codec, the export serialiser, components, the renderer's SVG baselines, every control at every width (`shell/parity.test.tsx`) |
 | backend | vitest + Fastify `inject`, stand-ins for Google's APIs | the gate, the host allowlist, streaming and its caps, retries, the preflight matrix, the render API |
-| e2e | Playwright | the demo flows (load, search, drill-in, filters, timeline, export PNG and SVG, theme), axe in both themes (style skill §13), the live paths against stand-ins, the phone and tablet layouts (`mobile.spec.ts`: overflow, 44-pixel targets, the canvas's room, axe), the canvas's gestures by finger (`touch.spec.ts`) |
+| e2e | Playwright | the demo flows (load, search, drill-in, filters, timeline, export PNG and SVG, theme), axe in both themes (style skill §13), the live paths against stand-ins, the phone and tablet layouts (`mobile.spec.ts`: overflow, 44-pixel targets, the canvas's room, axe), the canvas's gestures by finger (`touch.spec.ts`), the flows by finger on a phone and a tablet (`handheld.spec.ts`, tagged `@phone` and `@tablet`) |
 | render | vitest | the render golden PNG (`pnpm render`, tolerance-free) |
 | repository | vitest (`tooling`) and node scripts | provenance (SPDX headers, banned files, the names that never appear, work-item ids, text encoding), licences, the bundle budgets, the user guides against the tree, the infra scripts against stand-ins of `gcloud` and `curl` |
 

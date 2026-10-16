@@ -151,7 +151,7 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 | `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary. **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
-| `e2e (1/3)` to `e2e (3/3)` | `pnpm e2e --shard=N/3`, Chromium: the desktop specs and the app's phone and tablet check (`mobile` project) |
+| `e2e (1/4)` to `e2e (4/4)` | `pnpm e2e --shard=N/4`, Chromium: the desktop specs, the app's phone and tablet check (`mobile` project) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) |
 | `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` |
 | `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard |
 | `licenses` | `pnpm run licenses` |
@@ -162,7 +162,7 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
 install from the cache, and the e2e shards and `website` about another minute on Chromium's system libraries.
-The three e2e shards are the longest jobs, which is why the suite is split in three; the run's page shows each
+The four e2e shards are the longest jobs, which is why the suite is split in four; the run's page shows each
 job's time.
 
 Some of these gates are not part of `pnpm check`; run these three locally when you touch the app:
@@ -171,7 +171,7 @@ Some of these gates are not part of `pnpm check`; run these three locally when y
 |---|---|
 | `pnpm build` | Builds every workspace that has a build script: `frontend/dist` (Vite), `backend/dist` (tsc and the bundles), the compiled catalog, the icon module and the website. `pnpm build:app` leaves the website out, as CI's `build` job does. |
 | `pnpm size` | After `pnpm build`: sorts the build by thread and fails when either budget is exceeded, gzipped, fonts and the fetched JSON data tables excluded ([AGENTS.md](../AGENTS.md), "Quality gates, testing and CI"): the UI thread (the entry script, its static imports and the CSS; a lazy chunk only when it is part of the first paint of `/diagram`) 350 kB, the workers (every worker script and every chunk a worker loads) 400 kB. Lazy UI chunks outside the first paint are listed and count against neither. It also fails when a UI-thread chunk contains zod (its minified signatures): zod belongs in the workers. |
-| `pnpm e2e` | Playwright: functional, export and axe accessibility tests in light and dark, against demo mode (port 5174) and normal mode (port 5173), and the app's phone and tablet check (below). It starts both dev servers itself, or reuses ones already running. Run `pnpm --filter @gcportrait/e2e install-browsers` once per machine first. |
+| `pnpm e2e` | Playwright: functional, export and axe accessibility tests in light and dark, against demo mode (port 5174) and normal mode (port 5173), the app's phone and tablet check (below), and its flows by finger at a phone's and a tablet's size (`e2e/tests/handheld.spec.ts`; `pnpm e2e --project chromium-phone --project chromium-tablet` runs them alone). It starts both dev servers itself, or reuses ones already running. Run `pnpm --filter @gcportrait/e2e install-browsers` once per machine first. |
 | `pnpm --filter @gcportrait/frontend mobile` | The app's phone and tablet check alone (the e2e suite's `mobile` project, `e2e/tests/mobile.spec.ts`): Chromium emulating a touch device at 320, 375, 390, 430 and 820 CSS pixels and four phones turned sideways, in both themes, on the Connect, Permissions, Snapshots and Settings pages (the Snapshots page also with a snapshot stored), a live instance's pages signed out and signed in (its Account panel inside More, its Impressum and Privacy pages) and the diagram of demo S and M with the View and More sheets, every menu and panel in them and the details drawer open. It fails on sideways scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a narrow column, an element past the viewport, overlapping top-bar items, parts of the timeline bar over each other, a details drawer reaching past the canvas, a target under 44 × 44 px, a control out of sight when it has focus or covered where it is tapped, a canvas the chrome leaves too little of, and an axe violation, and checks the sheets' keys, a theme picked in More, a long breadcrumb swiped and tapped, the drawer's handle by key and by finger, a one-finger pan, a two-finger pinch and taps on the canvas. The same project runs `e2e/tests/touch.spec.ts`, the canvas's gestures by finger at 390 × 844 (a pan, a pinch, taps, double taps, a long press) and a mouse's drag and double-click on the same page. CI runs it in the e2e shards. |
 
 The phone-width check runs its layout half only (Chromium at 320 to 430 CSS pixels in both themes: sideways
@@ -189,7 +189,7 @@ failure that does not happen on your machine:
 
 ```sh
 TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner
-CI=true pnpm e2e --shard=2/3                                       # one e2e shard
+CI=true pnpm e2e --shard=2/4                                       # one e2e shard
 actionlint && shellcheck -x infra/*.sh                            # workflows-and-shell (Homebrew has both)
 ```
 

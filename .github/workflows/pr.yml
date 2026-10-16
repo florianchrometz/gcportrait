@@ -16,7 +16,7 @@
 #   layout-budget   the layout's strict budgets and bench table; non-blocking (below)
 #   catalog-check   pnpm catalog:build, pnpm catalog:check
 #   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
-#   e2e             Playwright on Chromium in three shards: functional, export faithfulness, axe, phones and tablets
+#   e2e             Playwright on Chromium in four shards: functional, export faithfulness, axe, phones and tablets
 #   website         the website built and checked (pnpm website:build, website:check), then its phone-width check
 #   provenance      pnpm provenance, then a self-test that the guard still rejects a planted banned file
 #   licenses        pnpm run licenses
@@ -208,20 +208,21 @@ jobs:
 
   # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's
   # faithfulness checks, which compare the PNG Chromium draws with resvg's drawing of the same view on this runner,
-  # axe in both themes, and the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts and the
-  # canvas's touch gestures in touch.spec.ts; alone: `pnpm --filter @gcportrait/frontend mobile`). Three shards of the
-  # one suite, each starting its own two dev servers. There are no screenshot baselines: the committed visual
-  # baselines are SVG text (e2e/baselines/diagram/, compared by the frontend's unit tests) and the render golden PNG
-  # (drawn by resvg's WebAssembly build, compared by the unit tests), so nothing here depends on the operating system
-  # that wrote a baseline.
+  # axe in both themes, the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts and the
+  # canvas's touch gestures in touch.spec.ts; alone: `pnpm --filter @gcportrait/frontend mobile`) and the flows by
+  # finger on a phone and a tablet (the `chromium-phone` and `chromium-tablet` projects, e2e/tests/handheld.spec.ts).
+  # Four shards of the one suite, each starting its own two dev servers. There are no screenshot baselines: the
+  # committed visual baselines are SVG text (e2e/baselines/diagram/, compared by the frontend's unit tests) and the
+  # render golden PNG (drawn by resvg's WebAssembly build, compared by the unit tests), so nothing here depends on the
+  # operating system that wrote a baseline.
   e2e:
-    name: e2e (${{ matrix.shard }}/3)
+    name: e2e (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -230,10 +231,10 @@ jobs:
       - uses: ./.github/actions/playwright
         with:
           browsers: chromium
-      - name: Playwright (functional, export, axe, phones and tablets), shard ${{ matrix.shard }} of 3
+      - name: Playwright (functional, export, axe, phones and tablets), shard ${{ matrix.shard }} of 4
         env:
           SHARD: ${{ matrix.shard }}
-        run: pnpm run e2e --shard="$SHARD/3"
+        run: pnpm run e2e --shard="$SHARD/4"
       - name: Upload the Playwright report, traces and export comparisons
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
