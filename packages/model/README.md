@@ -387,12 +387,12 @@ image and tenant projects), and private, shared (100.64.0.0/10), link-local, loo
 documentation address ranges. It runs in one pass over the text.
 
 It also holds the rule for the tests' wall-clock limits, the one every package that times its work applies
-(the layout's budgets, the ingest budget, the demo organisations' generation): `measureBatches` measures a
-case again after a 250 ms pause (`PAUSE_MS`) while it is over its limit, at most `BATCHES` (5) times and only
-while another batch fits in 95 % of the test's timeout (`anotherBatchFits`), and keeps the best batch;
-`skipIfOverloaded` skips a test whose best figure is still over its limit, with the load and the figures as
-the reason and a `skipped:` line on standard error (`noteSkipped`), when `overloadReason` finds the machine's
-one-minute load average above 1.5 per core (`OVERLOAD_PER_CORE`), but never on CI (`onCi`: `CI` set and not
-`false` or `0`) and never in a strict budget run. This package has no Node types, so the helpers reach the
-process, its clock and its timers through `globalThis` and `node:os` through `process.getBuiltinModule`;
-loaded anywhere else, they find no load and never skip.
+(the layout's budgets, the ingest budget, the graph build's budget, the demo organisations' generation):
+`measureBatches` measures a case again after a 250 ms pause (`PAUSE_MS`) while it is over its limit, at most
+`BATCHES` (5) times and only while another batch fits in 95 % of the test's timeout (`anotherBatchFits`), and
+keeps the best batch; `skipIfOverloaded` skips a test whose best figure is still over its limit, with the load
+and the figures as the reason and a `skipped:` line on standard error (`noteSkipped`), when `overloadReason`
+finds the machine's one-minute load average above 1.5 per core (`OVERLOAD_PER_CORE`), but never on CI
+(`onCi`: `CI` set and not `false` or `0`) and never in a strict budget run. This package has no Node types,
+so the helpers reach the process, its clock and its timers through `globalThis` and `node:os` through
+`process.getBuiltinModule`; loaded anywhere else, they find no load and never skip.

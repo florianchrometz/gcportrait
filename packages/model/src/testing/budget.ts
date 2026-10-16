@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The wall-clock limits of the tests, one rule for every package that times its own work (the layout's
- * budgets, the ingest budget, the demo organisations' generation):
+ * budgets, the ingest budget, the graph build's budget, the demo organisations' generation):
  *
  * - **Measured again while over.** A case over its limit is measured again after a `PAUSE_MS` pause, at most
  *   `plan.batches` times and only while another batch fits in the test's timeout, and its best batch counts

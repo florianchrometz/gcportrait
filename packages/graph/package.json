@@ -22,7 +22,7 @@
     "prerender-scene": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
     "render-scene": "tsx scripts/render-scene.ts",
     "pretest:budget": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
-    "test:budget": "GRAPH_BUDGET=1 vitest run test/performance.test.ts --silent=false"
+    "test:budget": "GCPORTRAIT_GRAPH_BUDGET=strict vitest run test/performance.test.ts --silent=false"
   },
   "dependencies": {
     "@gcportrait/catalog": "workspace:*",

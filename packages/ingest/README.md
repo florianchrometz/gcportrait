@@ -256,13 +256,13 @@ normaliser takes about 42 ms (export keys) and 44 ms (`assets.list` keys) per 50
 A wall-clock budget only means something on a machine that is not busy with other work, so the strict
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
-unit job) the same measurement asserts a regression ceiling of 3 × 1.5 s instead, which still catches an
-order-of-magnitude slowdown on a busy machine. Under a local `pnpm test` a best run still over the ceiling
-while the machine's one-minute load average is above 1.5 per core is skipped, with the load and the figures
-as the reason and a `skipped:` line on standard error (`skipIfOverloaded`): four times oversubscribed, the
-figure measures the machine. On CI (`CI` set) the ceiling is the check that blocks, so it never skips, and
-neither does `test:budget`. Add `--silent=false` to print the figures there (Vitest ignores flags after a
-`--`).
+unit job) the same measurement asserts a regression ceiling of 2 × 1.5 s instead, as every budget does there
+(AGENTS.md, "Quality gates, testing and CI"); a run on a CI runner takes 1.3 to 2.3 s in that parallel run.
+Under a local `pnpm test` a best run still over the ceiling while the machine's one-minute load average is
+above 1.5 per core is skipped, with the load and the figures as the reason and a `skipped:` line on standard
+error (`skipIfOverloaded`): four times oversubscribed, the figure measures the machine. On CI (`CI` set) the
+ceiling is the check that blocks, so it never skips, and neither does `test:budget`. Add `--silent=false` to
+print the figures there (Vitest ignores flags after a `--`).
 
 ## Tests
 

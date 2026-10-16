@@ -176,7 +176,7 @@ snapshot id.
 | `readLines`, `normaliseAsset`, `projectNumberOf`, `lookupProjectId`, `lookupProjectNumber`, `ulid`, `IngestError` | the building blocks |
 
 **Commands.** `pnpm --filter @gcportrait/ingest test:budget` runs the strict 1.5 s XL-in-a-worker budget on
-its own (the normal test run only asserts a 4.5 s regression ceiling). Reference:
+its own (the normal test run only asserts a 3 s regression ceiling, twice the budget). Reference:
 [packages/ingest/README.md](../packages/ingest/README.md).
 
 ### `@gcportrait/catalog` — the asset catalog and its rule engine
@@ -239,7 +239,8 @@ turn a Graph and a `ViewSpec` into the `Scene` the layout consumes: drill-in roo
 | `PROJECT_TYPE`, `NETWORK_TYPE`, `projectNodeId`, `isVirtualNode`, … | the few structural types the builder knows by identity |
 
 **Commands.** `pnpm render-scene` (section 4); `pnpm --filter @gcportrait/graph test:budget` (M builds in
-< 150 ms). Reference: [packages/graph/README.md](../packages/graph/README.md).
+< 150 ms, strictly; the normal test run asserts a 300 ms regression ceiling, twice the budget). Reference:
+[packages/graph/README.md](../packages/graph/README.md).
 
 ### `@gcportrait/layout` — the layout engine
 

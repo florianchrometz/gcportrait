@@ -358,10 +358,10 @@ the finish. The overview at `auto` on each demo organisation's own day, medians 
 ## Tests
 
 ```sh
-pnpm --filter @gcportrait/graph test                 # unit, property and demo tests (and the M budget)
+pnpm --filter @gcportrait/graph test                 # unit, property and demo tests (the M budget at 2 ×)
 pnpm --filter @gcportrait/graph test -- --coverage   # with V8 coverage (thresholds 99/95/100/100)
 FC_SEED=42 pnpm --filter @gcportrait/graph test -- --coverage   # the same random inputs on every run
-pnpm --filter @gcportrait/graph test:budget          # the build-time test alone, with the L figures
+pnpm --filter @gcportrait/graph test:budget          # the strict 150 ms budget alone, with the L figures
 pnpm --filter @gcportrait/graph test test/views      # the scene composition table and properties
 ```
 
@@ -409,10 +409,19 @@ Every graph test runs on the real compiled catalog; there are no test-only stand
 
 ## Performance
 
-`test/performance.test.ts` builds the M organisation ten times after a warm-up and asserts a median under
-150 ms, measuring again (up to twice) when a busy machine misses it; L (generated in the test) is measured for
-information, under `test:budget` only. Typical figures with the real catalog
-(`pnpm --filter @gcportrait/graph test:budget`):
+`test/performance.test.ts` builds the M organisation ten times after two warm-up builds and checks the median.
+**Two limits, as in `@gcportrait/ingest` and `@gcportrait/layout`**: `pnpm test` (and the blocking CI `unit`
+job) runs it in parallel with every other test file and asserts a regression ceiling of 2 × 150 ms, as every
+budget does there (AGENTS.md, "Quality gates, testing and CI"); `pnpm --filter @gcportrait/graph test:budget`
+(`GCPORTRAIT_GRAPH_BUDGET=strict`) runs this file alone and asserts the 150 ms budget itself. Both measure by
+the rule of `@gcportrait/model/testing` that every package timing its work applies: a batch whose median is
+over the limit is measured again after a 250 ms pause, at most five batches and only while another fits in
+95 % of the test's timeout, and the best batch's median counts (`measureBatches`). Under a local `pnpm test` a
+median still over the ceiling while the machine's one-minute load average is above 1.5 per core is skipped,
+with the load and the figures as the reason and a `skipped:` line on standard error (`skipIfOverloaded`); on
+CI (`CI` set) the ceiling is the check that blocks, so it never skips, and neither does `test:budget`. L
+(generated in the test) is measured for information, under `test:budget` only. Typical figures with the real
+catalog (`pnpm --filter @gcportrait/graph test:budget`):
 
 | Organisation | Assets | Median build | Notes |
 |---|---|---|---|

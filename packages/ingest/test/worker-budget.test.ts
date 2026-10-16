@@ -11,13 +11,14 @@
  * The worker is warmed up with a small job first (module loading through tsx is not ingest work). A
  * wall-clock budget is only meaningful on a machine that is not busy with other work, so the strict 1.5 s
  * assertion runs when GCPORTRAIT_INGEST_BUDGET=strict (`pnpm --filter @gcportrait/ingest test:budget`, which
- * runs this file alone). Inside the shared, parallel test run the same measurement guards against gross
- * regressions only (under 3× the budget) and prints the figures (`--silent=false`). Both measure by the rule
- * of `@gcportrait/model/testing` that every package timing its work applies: a run over the limit is
- * measured again after a pause, at most `BATCHES` runs and only while another fits in the test's timeout, and
- * the best run counts (`measureBatches`); under a local `pnpm test`, never on CI (where the ceiling is the
- * check that blocks) and never strictly, a best run still over the ceiling while the machine's load average
- * is above 1.5 per core is skipped with the load and the figures as its reason (`skipIfOverloaded`).
+ * runs this file alone). Inside the shared, parallel test run the same measurement asserts a regression
+ * ceiling of 2 × the budget, as every budget does there, and prints the figures (`--silent=false`). Both
+ * measure by the rule of `@gcportrait/model/testing` that every package timing its work applies: a run over
+ * the limit is measured again after a pause, at most `BATCHES` runs and only while another fits in the test's
+ * timeout, and the best run counts (`measureBatches`); under a local `pnpm test`, never on CI (where the
+ * ceiling is the check that blocks) and never strictly, a best run still over the ceiling while the machine's
+ * load average is above 1.5 per core is skipped with the load and the figures as its reason
+ * (`skipIfOverloaded`).
  */
 import { ProjectIndexSchema, SnapshotSchema } from '@gcportrait/model';
 import { BATCHES, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
@@ -40,7 +41,7 @@ const BUDGET_MS = 1_500;
 const PLAN = { batches: BATCHES, runs: 1, warmUp: 0 };
 const STRICT = process.env['GCPORTRAIT_INGEST_BUDGET'] === 'strict';
 /** What the best run must stay under: the budget itself when strict, else a regression ceiling. */
-const LIMIT_MS = STRICT ? BUDGET_MS : 3 * BUDGET_MS;
+const LIMIT_MS = STRICT ? BUDGET_MS : 2 * BUDGET_MS;
 
 const settings: IngestSettings = {
   scope: { kind: 'organization', id: '30000000001', displayName: 'example.com' },
@@ -108,7 +109,7 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
   });
 
   it(
-    `parses it in under ${String(LIMIT_MS)} ms${STRICT ? ' (strict budget)' : ' (regression ceiling)'}`,
+    `parses it in under ${String(LIMIT_MS)} ms (${STRICT ? 'strict budget' : '2 × budget'})`,
     { timeout: 120_000 },
     async ({ skip, task }) => {
       let jobs = 0;

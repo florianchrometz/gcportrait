@@ -732,20 +732,21 @@ to run, so its strict figures are expected above the budgets by a margin. `bench
 on as its second line (Node, platform, CPU model, cores, load average), so a figure quoted anywhere carries
 its machine.
 
-**Two limits, as in `@gcportrait/ingest`.** A wall-clock budget means something only on a machine that is not
-busy with other work. `pnpm test` (and the blocking CI `unit` job) runs the budget tests in parallel with
-every other test file and asserts a regression ceiling of 2 × the budget (25 XL layouts for the memory check);
-`pnpm --filter @gcportrait/layout test:budget` (`GCPORTRAIT_LAYOUT_BUDGET=strict`) runs the two budget files
-alone, one after the other, and asserts the budgets themselves (100 XL layouts). Both measure by the rule of
-`@gcportrait/model/testing` that `@gcportrait/ingest` and `@gcportrait/demo-data` time their work by too. A
-case over its limit is measured again after a 250 ms pause, at most 5 batches (`BATCHES`) and only while
-another batch fits in 95 % of the test's timeout (`measureBatches`: under heavy load five L batches outlast
-it, and a timed-out test shows no figure), and its best batch's median counts; every batch's median is
-printed. Under a local `pnpm test` a case still over its ceiling after the last batch is skipped, with its
-figures and the load as the reason (and a `skipped:` line on standard error names the case, since the
-reporter does not; `skipIfOverloaded`), while the machine's one-minute load average is above 1.5 per core
-(`OVERLOAD_PER_CORE`, `overloadReason`): four times oversubscribed, a small layout reads several times its
-quiet figure at its best of five batches, so the ceiling would measure the machine. On CI (`CI` set, `onCi`)
+**Two limits, as in `@gcportrait/ingest` and `@gcportrait/graph`.** A wall-clock budget means something only
+on a machine that is not busy with other work. `pnpm test` (and the blocking CI `unit` job) runs the budget
+tests in parallel with every other test file and asserts a regression ceiling of 2 × the budget (25 XL
+layouts for the memory check); `pnpm --filter @gcportrait/layout test:budget`
+(`GCPORTRAIT_LAYOUT_BUDGET=strict`) runs the two budget files alone, one after the other, and asserts the
+budgets themselves (100 XL layouts). Both measure by the rule of `@gcportrait/model/testing` that
+`@gcportrait/ingest`, `@gcportrait/graph` and `@gcportrait/demo-data` time their work by too. A case over its
+limit is measured again after a 250 ms pause, at most 5 batches (`BATCHES`) and only while another batch fits
+in 95 % of the test's timeout (`measureBatches`: under heavy load five L batches outlast it, and a timed-out
+test shows no figure), and its best batch's median counts; every batch's median is printed. Under a local
+`pnpm test` a case still over its ceiling after the last batch is skipped, with its figures and the load as
+the reason (and a `skipped:` line on standard error names the case, since the reporter does not;
+`skipIfOverloaded`), while the machine's one-minute load average is above 1.5 per core (`OVERLOAD_PER_CORE`,
+`overloadReason`): four times oversubscribed, a small layout reads several times its quiet figure at its best
+of five batches, so the ceiling would measure the machine. On CI (`CI` set, `onCi`)
 the ceiling is the budget check that blocks, so it never skips, and neither does `test:budget`. The worker
 test builds every demo Scene before it measures anything, so its small cases do not start while the other test
 files are at their busiest (a small layout's round trip reads up to four times its quiet figure then). The
