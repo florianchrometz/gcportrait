@@ -7,7 +7,9 @@
  * level table (`zoneOpensAt`) predicts which zones of a drawn Scene start collapsed; "Expand all" opens the
  * shallowest collapsed tier and keeps what was open; "Collapse all" goes back to the automatic level's default; each
  * is inert exactly when the view it writes draws the Scene on screen (a property over random views and flips, a
- * zone drawn empty among them); the 48-flip cap and an `auto` level change are told apart from every other change.
+ * zone drawn empty among them, whose flip each keeps as the person's choice), and on a timeline day exactly when it
+ * also draws the same ghosts (a property over demo M's days); the 48-flip cap and an `auto` level change are told
+ * apart from every other change.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
@@ -25,19 +27,23 @@ import {
   normalizeViewSpec,
   VIEW_SPEC_MAX_FLIPS,
   type DemoSize,
+  type Graph,
   type LensId,
   type Scene,
   type SceneBuild,
+  type SceneEnv,
   type SceneZone,
   type ViewSpec,
   type ViewSpecInput,
 } from '@gcportrait/model';
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { createAppStore } from '../../state/store';
 import { autoLevel } from '../autoDetail';
-import { demoGraphSync } from '../testing/demoScenes';
+import { tickDiff } from '../diff/tickDiff';
+import { demoHistory } from '../pipeline/demo';
+import { demoDayGraph, demoGraphSync, sceneEnv } from '../testing/demoScenes';
 import { sceneZones as allZones, zoneOf as zoneIn } from '../testing/scenes';
 import {
   autoLevelShift,
@@ -51,6 +57,7 @@ import {
   rectsShown,
   zonesByFlip,
   type DrawnView,
+  type ShownScene,
 } from './flips';
 
 const READ_TIME = '2026-10-08T00:00:00Z';
@@ -643,11 +650,75 @@ describe('a zone drawn empty: its flip changes nothing on screen', () => {
     expect(children.length).toBeGreaterThan(0);
     expect(collapseAllView(spec, shown)).toMatchObject({ detail: 'projects', flips: [] });
     // What it holds stands in for a day's ghosts: the drawn day's builder saw the network empty and ignores its
-    // flip, so nothing on screen would close.
+    // flip, which Collapse all keeps as the person's choice; the earlier day still draws the network open, so its
+    // ghosts stay and nothing on screen would close.
     const ghosts = Object.fromEntries(children.map((child) => [child.id, 'removed' as const]));
     const withGhosts = { ...shown, diff: { ghosts } };
-    expect(zonesByFlip(withGhosts).get(flipIdOf(chip.id))?.empty).toBe(true);
+    expect(zonesByFlip(withGhosts).get(flipIdOf(chip.id))).toMatchObject({ empty: true, ghosts: true });
+    expect(collapseAllTarget(spec, withGhosts)).toMatchObject({ flips: [flipIdOf(chip.id)] });
     expect(collapseAllView(spec, withGhosts)).toBeNull();
+  });
+});
+
+describe('a flip on a zone drawn empty is the person’s choice for when it holds something again', () => {
+  /** Demo M at the projects level, with the project that holds no network closed by hand. */
+  const CLOSED: ViewSpecInput = { snapshot: 'demo:M', detail: 'projects', flips: [flipIdOf(NO_NETWORK)] };
+
+  /** Demo M under the networking lens, which draws that project empty, with the flips given. */
+  function networking(input: ViewSpecInput): { readonly spec: ViewSpec; readonly shown: SceneBuild } {
+    const spec = normalizeViewSpec({ ...input, lens: 'networking' });
+    const shown = buildView('M', spec);
+    expect(zonesByFlip(shown).get(flipIdOf(NO_NETWORK))?.empty).toBe(true);
+    return { spec, shown };
+  }
+
+  /** A network chip of a view: something for a button to open, or, opened by hand, to close. */
+  function networkChip(input: ViewSpecInput): string {
+    const chip = allZones(buildView('M', input).scene).find(
+      (zone) => zone.kind === 'vpc' && zone.collapsed !== undefined,
+    );
+    if (chip === undefined) throw new Error('no network chip');
+    return chip.id;
+  }
+
+  /** Whether NO_NETWORK is a chip in the view, back under the overview lens. */
+  const closedOnOverview = (input: ViewSpecInput): boolean =>
+    zoneIn(buildView('M', { ...input, lens: 'overview' }).scene, NO_NETWORK)?.collapsed !== undefined;
+
+  it('Collapse all keeps the flip: closed by hand, the project is still closed back on the first lens', () => {
+    expect(closedOnOverview(CLOSED)).toBe(true);
+    // A network opened by hand under the networking lens gives Collapse all something to close.
+    const network = flipIdOf(networkChip({ ...CLOSED, lens: 'networking', flips: [] }));
+    const { spec, shown } = networking({ ...CLOSED, flips: [flipIdOf(NO_NETWORK), network] });
+    // At a budget where Auto is the projects level the level stays.
+    const next = collapseAllView(spec, shown, 124);
+    expect(next).toMatchObject({ detail: 'projects', flips: [flipIdOf(NO_NETWORK)] });
+    expect(closedOnOverview(next ?? {})).toBe(true);
+  });
+
+  it('Collapse all back to Auto lets the flip go where the new level closes the project anyway, so it stays closed', () => {
+    const { spec, shown } = networking(CLOSED);
+    const next = collapseAllView(spec, shown);
+    expect(next).toMatchObject({ detail: 'auto', flips: [] });
+    expect(buildView('M', { ...next, lens: 'overview' }).report.detail.used).toBe('folders');
+    expect(closedOnOverview(next ?? {})).toBe(true);
+    // Kept, the flip would say the opposite at the folder level: opened by hand.
+    expect(closedOnOverview({ ...next, flips: [flipIdOf(NO_NETWORK)] })).toBe(false);
+  });
+
+  it('Expand all keeps a closing flip, and lets an opening one go where the new level opens the project anyway', () => {
+    // Closed by hand at the projects level: Expand all opens the networks level and the project stays closed.
+    const { spec, shown } = networking(CLOSED);
+    const next = expandAllView(spec, shown);
+    expect(next).toMatchObject({ detail: 'networks', flips: [flipIdOf(NO_NETWORK)] });
+    expect(closedOnOverview(next ?? {})).toBe(true);
+    // Opened by hand at the folder level: Expand all opens the projects level, which opens the project anyway.
+    const opened: ViewSpecInput = { snapshot: 'demo:M', detail: 'folders', flips: [flipIdOf(NO_NETWORK)] };
+    expect(closedOnOverview(opened)).toBe(false);
+    const folders = networking(opened);
+    const projects = expandAllView(folders.spec, folders.shown);
+    expect(projects).toMatchObject({ detail: 'projects', flips: [] });
+    expect(closedOnOverview(projects ?? {})).toBe(false);
   });
 });
 
@@ -664,12 +735,14 @@ describe('each button is inert exactly when the view it writes draws the Scene o
   ];
   /** Where a flip comes from: a zone drawn empty, a zone on screen, any zone of the view, another view. */
   const SOURCES = ['empty', 'shown', 'any', 'elsewhere'] as const;
+  // Up to four flips: mostly one of a zone drawn empty (when the view has one), and up to three from anywhere.
   const views = fc.record({
     lens: fc.constantFrom(...LENS_IDS),
     place: fc.constantFrom(...PLACES),
     detail: fc.constantFrom(...LEVELS),
     depth: fc.constantFrom(undefined, 2),
-    picks: fc.array(fc.tuple(fc.constantFrom(...SOURCES), fc.nat()), { maxLength: 4 }),
+    empty: fc.option(fc.nat(), { nil: undefined, freq: 4 }),
+    picks: fc.array(fc.tuple(fc.constantFrom(...SOURCES), fc.nat()), { maxLength: 3 }),
   });
   /** Random views per organisation: demo L's Scenes are ten times larger, so it gets fewer. */
   const RUNS: ReadonlyArray<readonly [DemoSize, number]> = [
@@ -679,10 +752,11 @@ describe('each button is inert exactly when the view it writes draws the Scene o
 
   for (const [size, numRuns] of RUNS)
     it(
-      `on demo ${size} across lenses, focus views, levels, the depth filter and flips: Expand all never closes and Collapse all never opens`,
+      `on demo ${size} across lenses, focus views, levels, the depth filter and flips: Expand all never closes, Collapse all never opens, and a zone drawn empty keeps its flip’s meaning`,
       () => {
+        let emptyFlips = 0;
         fc.assert(
-          fc.property(views, ({ lens, place, detail, depth, picks }) => {
+          fc.property(views, ({ lens, place, detail, depth, empty, picks }) => {
             const base: ViewSpecInput = {
               snapshot: `demo:${size}`,
               lens,
@@ -699,17 +773,42 @@ describe('each button is inert exactly when the view it writes draws the Scene o
               elsewhere: ['elsewhere1'],
             };
             const flips = new Set(
-              picks.flatMap(([source, index]) => {
-                const list = sources[source];
-                const token = list[index % Math.max(list.length, 1)];
-                return token === undefined ? [] : [token];
-              }),
+              [...(empty === undefined ? [] : [['empty', empty] as const]), ...picks].flatMap(
+                ([source, index]) => {
+                  const list = sources[source];
+                  const token = list[index % Math.max(list.length, 1)];
+                  return token === undefined ? [] : [token];
+                },
+              ),
             );
             const spec = normalizeViewSpec({ ...base, flips: [...flips] });
             const shown = buildView(size, spec);
             const scene = JSON.stringify(shown.scene);
             const before = drawn(shown);
             const what = JSON.stringify({ lens, ...place, detail, depth, flips: spec.flips });
+            const emptyZones = [...zonesByFlip(shown)].filter(([, zone]) => zone.empty);
+            if (emptyZones.some(([token]) => flips.has(token))) emptyFlips += 1;
+
+            /**
+             * A press leaves the flip of a zone drawn empty as it is while the level stays, never adds one, and lets
+             * one go only where the level written gives the zone that state by default: what the flip meant stays.
+             */
+            const keepsEmptyFlips = (target: ViewSpecInput, written: SceneBuild, press: string): void => {
+              const next = new Set(normalizeViewSpec(target).flips);
+              const level = written.report.detail.used;
+              const used = shown.report.detail.used;
+              for (const [token, zone] of emptyZones) {
+                const label = `${press}, ${zone.id}: ${what}`;
+                if (!flips.has(token)) {
+                  expect(next.has(token), `${label} gained a flip`).toBe(false);
+                  continue;
+                }
+                if (level === used) expect(next.has(token), `${label} lost its flip`).toBe(true);
+                // Collapsed by the flip where its level opens the zone, open where its level closes it.
+                const meant = !collapsedByDefault(zone, used, depth);
+                expect(collapsedByDefault(zone, level, depth) !== next.has(token), label).toBe(meant);
+              }
+            };
 
             const expandTarget = expandAllTarget(spec, shown);
             const expanded = buildView(size, expandTarget);
@@ -717,6 +816,7 @@ describe('each button is inert exactly when the view it writes draws the Scene o
             expect(expand === null, `Expand all inert: ${what}`).toBe(
               JSON.stringify(expanded.scene) === scene,
             );
+            keepsEmptyFlips(expandTarget, expanded, 'Expand all');
             if (expand !== null) {
               expect(expand).toEqual(expandTarget);
               const after = drawn(expanded);
@@ -730,6 +830,7 @@ describe('each button is inert exactly when the view it writes draws the Scene o
             expect(collapse === null, `Collapse all inert: ${what}`).toBe(
               JSON.stringify(collapsed.scene) === scene,
             );
+            keepsEmptyFlips(collapseTarget, collapsed, 'Collapse all');
             if (collapse !== null) {
               expect(collapse).toEqual(collapseTarget);
               const after = drawn(collapsed);
@@ -739,9 +840,214 @@ describe('each button is inert exactly when the view it writes draws the Scene o
           }),
           { numRuns },
         );
+        expect(emptyFlips).toBeGreaterThan(0);
       },
       DEMO_L,
     );
+});
+
+describe('on a timeline day the ghosts count', () => {
+  beforeAll(async () => {
+    await import('../pipeline/demo');
+  });
+
+  /** Demo M's reports project, marked for deletion on 2026-09-17, when what it held is gone. */
+  const REPORTS = '//cloudresourcemanager.googleapis.com/projects/10000000008';
+  /** The preparations of the views built on each day's Graph, by prepared-view key. */
+  const dayViews = new WeakMap<Graph, Map<string, PreparedView>>();
+
+  /** The scene builder on one day's Graph, through one preparation per lens, focus, root and filters. */
+  function buildOn(graph: Graph, spec: ViewSpec, env: SceneEnv): SceneBuild {
+    let views = dayViews.get(graph);
+    if (views === undefined) {
+      views = new Map();
+      dayViews.set(graph, views);
+    }
+    const key = preparedViewKey(spec, env);
+    let view = views.get(key);
+    if (view === undefined) {
+      view = prepareView(graph, spec, catalog, env);
+      views.set(key, view);
+    }
+    return buildPreparedScene(view, spec, env);
+  }
+
+  interface DayDrawing {
+    /** The drawn day's Scene, as the scene builder made it for the view. */
+    readonly built: SceneBuild;
+    /** What is on screen: that Scene with the ghosts, compared with the day before. */
+    readonly shown: ShownScene & { readonly diff: ReturnType<typeof tickDiff>['diff'] };
+  }
+
+  /** Demo M's day `day` for a view, compared with day `since` as the data worker compares it. */
+  async function dayDrawing(since: string, day: string, input: ViewSpecInput): Promise<DayDrawing> {
+    const [before, after] = await Promise.all([demoDayGraph('M', since), demoDayGraph('M', day)]);
+    const spec = normalizeViewSpec(input);
+    const envBefore = sceneEnv(before.snapshot, BUDGET);
+    const envAfter = sceneEnv(after.snapshot, BUDGET);
+    const built = buildOn(after.graph, spec, envAfter);
+    const { scene, diff } = tickDiff({
+      before: { snapshot: before.snapshot, graph: before.graph, tick: since },
+      after: { snapshot: after.snapshot, graph: after.graph, tick: day },
+      spec,
+      scene: built.scene,
+      report: built.report,
+      catalog,
+      envBefore,
+      envAfter,
+      build: buildOn,
+    });
+    return { built, shown: { scene, report: built.report, diff } };
+  }
+
+  /** What a day's drawing shows: the Scene with its ghosts, and what the chips count inside them. */
+  const picture = (drawing: DayDrawing): string =>
+    JSON.stringify([drawing.shown.scene, drawing.shown.diff.inside]);
+
+  /** Every open zone with something inside that the automatic level closes, closed by hand. */
+  function closedAboveAuto(built: SceneBuild, depth: number | undefined): string[] {
+    const automatic = autoLevel(built.report.detail, built.report.detail.budget);
+    return [...zonesByFlip(built)].flatMap(([token, zone]) =>
+      !zone.collapsed && !zone.empty && collapsedByDefault(zone, automatic, depth) ? [token] : [],
+    );
+  }
+
+  it('Collapse all back to Auto that leaves every zone of the view as it is still turns an open ghost into a chip: it is live', async () => {
+    // The networking lens at the projects level, every project with something inside closed by hand: only the
+    // reports project's ghost, open with its network, opens at a level deeper than Auto's.
+    const view: ViewSpecInput = { snapshot: 'demo:M', lens: 'networking', detail: 'projects' };
+    const plain = await dayDrawing('2026-09-16', '2026-09-17', view);
+    const spec = normalizeViewSpec({ ...view, flips: closedAboveAuto(plain.built, undefined) });
+    const drawing = await dayDrawing('2026-09-16', '2026-09-17', spec);
+    expect(drawing.shown.diff.ghosts[REPORTS]).toBe('hidden');
+    const ghost = zoneIn(drawing.shown.scene, REPORTS);
+    expect(ghost?.collapsed).toBeUndefined();
+    expect(ghost?.children.length).toBeGreaterThan(0);
+
+    const target = collapseAllTarget(spec, drawing.shown);
+    expect(target).toMatchObject({ detail: 'auto', flips: [] });
+    const after = await dayDrawing('2026-09-16', '2026-09-17', target);
+    // The drawn day's Scene stays as it is; the earlier day, built at the folder level, draws the project as a chip.
+    expect(after.built.scene).toEqual(drawing.built.scene);
+    expect(after.built.report.detail.used).toBe('folders');
+    expect(Object.keys(after.shown.diff.ghosts)).toEqual([REPORTS]);
+    expect(zoneIn(after.shown.scene, REPORTS)?.collapsed).toBeDefined();
+    expect(collapseAllView(spec, drawing.shown)).toEqual(target);
+    // Without the ghosts the same press would change nothing.
+    expect(collapseAllView(spec, drawing.built)).toBeNull();
+  });
+
+  it('a zone of the view that holds only ghosts loses them when the level written closes it on the earlier day', async () => {
+    // The everything lens draws the reports project marked for deletion, its contents gone: ghosts only.
+    const view: ViewSpecInput = { snapshot: 'demo:M', lens: 'everything', detail: 'projects' };
+    const plain = await dayDrawing('2026-09-16', '2026-09-17', view);
+    const spec = normalizeViewSpec({ ...view, flips: closedAboveAuto(plain.built, undefined) });
+    const drawing = await dayDrawing('2026-09-16', '2026-09-17', spec);
+    expect(zonesByFlip(drawing.shown).get(flipIdOf(REPORTS))).toMatchObject({ empty: true, ghosts: true });
+
+    const target = collapseAllView(spec, drawing.shown);
+    expect(target).toMatchObject({ detail: 'auto' });
+    const after = await dayDrawing('2026-09-16', '2026-09-17', target ?? {});
+    expect(after.built.scene).toEqual(drawing.built.scene);
+    expect(after.shown.diff.ghosts).toEqual({});
+    expect(collapseAllView(spec, drawing.built)).toBeNull();
+  });
+
+  describe('each button is inert exactly when the view it writes draws the day with the same ghosts (property)', () => {
+    const history = demoHistory('M');
+    /** The days on which something was added or removed, each compared with the day before and the day after. */
+    const PAIRS = history.ticks.flatMap((tick, index): Array<readonly [string, string]> => {
+      const previous = history.ticks[index - 1];
+      if (previous === undefined || tick.mutations.every((mutation) => mutation.kind === 'change')) return [];
+      return [
+        [previous.tick, tick.tick],
+        [tick.tick, previous.tick],
+      ];
+    });
+    const PLACES: ReadonlyArray<Pick<ViewSpecInput, 'root' | 'focus'>> = [
+      {},
+      { root: SHARED_VPC_HOST },
+      { focus: { kind: 'shared-vpc', params: { host: SHARED_VPC_HOST } } },
+    ];
+    /** Where a flip comes from: a zone of the view drawn empty or on screen, a ghost zone, another view. */
+    const SOURCES = ['empty', 'shown', 'ghost', 'elsewhere'] as const;
+    const views = fc.record({
+      pair: fc.constantFrom(...PAIRS),
+      lens: fc.constantFrom(...LENS_IDS),
+      place: fc.constantFrom(...PLACES),
+      detail: fc.constantFrom(...LEVELS),
+      depth: fc.constantFrom(undefined, 2),
+      closeAboveAuto: fc.boolean(),
+      picks: fc.array(fc.tuple(fc.constantFrom(...SOURCES), fc.nat()), { maxLength: 4 }),
+    });
+    type TimelineView = typeof views extends fc.Arbitrary<infer T> ? T : never;
+    /** The views first checked: the reports project's day, where only the ghosts tell Auto from a deeper level. */
+    const EXAMPLES: ReadonlyArray<[TimelineView]> = (
+      ['networking', 'everything', 'overview'] as const
+    ).flatMap((lens) =>
+      (['projects', 'all'] as const).map((detail): [TimelineView] => [
+        {
+          pair: ['2026-09-16', '2026-09-17'],
+          lens,
+          place: {},
+          detail,
+          depth: undefined,
+          closeAboveAuto: true,
+          picks: [],
+        },
+      ]),
+    );
+
+    it(
+      'on demo M’s days across lenses, levels, the depth filter and flips, every zone Auto closes closed by hand among them',
+      async () => {
+        let ghosted = 0;
+        await fc.assert(
+          fc.asyncProperty(views, async ({ pair, lens, place, detail, depth, closeAboveAuto, picks }) => {
+            const [since, day] = pair;
+            const base: ViewSpecInput = {
+              snapshot: 'demo:M',
+              lens,
+              detail,
+              ...place,
+              ...(depth === undefined ? {} : { filters: { depth } }),
+            };
+            const plain = await dayDrawing(since, day, base);
+            const onScreen = zonesByFlip(plain.shown);
+            const sources: Readonly<Record<(typeof SOURCES)[number], readonly string[]>> = {
+              empty: [...onScreen].flatMap(([token, zone]) => (zone.empty ? [token] : [])),
+              shown: [...onScreen.keys()],
+              ghost: Object.keys(plain.shown.diff.ghosts).map((id) => flipIdOf(id)),
+              elsewhere: ['elsewhere1'],
+            };
+            const flips = new Set([
+              ...(closeAboveAuto ? closedAboveAuto(plain.built, depth) : []),
+              ...picks.flatMap(([source, index]) => {
+                const list = sources[source];
+                const token = list[index % Math.max(list.length, 1)];
+                return token === undefined ? [] : [token];
+              }),
+            ]);
+            const spec = normalizeViewSpec({ ...base, flips: [...flips] });
+            const drawing = await dayDrawing(since, day, spec);
+            if (Object.keys(drawing.shown.diff.ghosts).length > 0) ghosted += 1;
+            const what = JSON.stringify({ since, day, lens, ...place, detail, depth, flips: spec.flips });
+            const presses = [
+              ['Expand all', expandAllTarget(spec, drawing.shown), expandAllView(spec, drawing.shown)],
+              ['Collapse all', collapseAllTarget(spec, drawing.shown), collapseAllView(spec, drawing.shown)],
+            ] as const;
+            for (const [press, target, view] of presses) {
+              const after = await dayDrawing(since, day, target);
+              expect(view === null, `${press} inert: ${what}`).toBe(picture(after) === picture(drawing));
+            }
+          }),
+          { numRuns: 60, examples: [...EXAMPLES] },
+        );
+        expect(ghosted).toBeGreaterThan(0);
+      },
+      DEMO_L,
+    );
+  });
 });
 
 describe('the 48-flip cap', () => {

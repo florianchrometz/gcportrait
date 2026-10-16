@@ -1604,14 +1604,23 @@ src/diagram/disclosure/
   `auto` opens everything, keeps its level), and a flip that keeps a zone on screen closed stays while the
   level still opens that zone. Flips that name no zone of the view (the report's `unknownFlips`: another
   root's or focus's) stay; the view's other flips go, those inside chips included.
+- **Zones drawn empty.** A zone with nothing inside under the view's lens and filters, or only a timeline
+  day's ghosts, is never a chip and the scene builder ignores its flip. That flip is the person's choice for
+  when the zone holds something again (a lens switch back): both buttons leave it as it is, unless the level
+  they write gives the zone that state by default (Expand all to a level that opens it, Collapse all back to
+  an `auto` that closes it), where it goes as any zone's flip would. Either way the zone keeps the state the
+  person gave it.
 - **Available when they change the drawing.** Each button is inert (`aria-disabled`, still focusable, the
-  reason in its tooltip) when the view it would write draws the Scene on screen: Expand all when no chip would
-  open or reopen, Collapse all when no open zone would close. A zone drawn empty (nothing inside under the
-  view's lens and filters, or only a timeline day's ghosts) is never a chip and the scene builder ignores its
-  flip, so a flip of such a zone alone leaves both inert. Both are worked out on the drawing on screen with
-  the view it draws (its scene key, decoded), never on one view's hash with another view's drawing; a press
-  while a newer view is being drawn (a drill-in, a level just written) waits in the store until that view's
-  own drawing arrives and is worked out on it, and is dropped if the view moves on first.
+  reason in its tooltip) when the view it would write draws what is on screen: Expand all when no chip would
+  open or reopen, Collapse all when no open zone would close, so a flip of a zone drawn empty alone leaves
+  both inert. On a timeline day the ghosts count: the diff builds the earlier day at the level in use with the
+  view's flips, so a press back to `auto` that leaves every zone of the view as it is can still turn an open
+  ghost into a ghost chip or empty a zone that holds only ghosts; a zone that holds ghosts and every ghost
+  zone must keep its state too (demo M's day 2026-09-17, the reports project marked for deletion, every other
+  project closed by hand at the projects level: Collapse all is live). Both are worked out on the drawing on
+  screen with the view it draws (its scene key, decoded), never on one view's hash with another view's
+  drawing; a press while a newer view is being drawn (a drill-in, a level just written) waits in the store
+  until that view's own drawing arrives and is worked out on it, and is dropped if the view moves on first.
 - **"N of M shown"**: the rects drawn (zones, chips and cards; a chip once) of the rects the view holds at
   `all` (the report's count without flips, never less than N), with thousands separators, in a status region.
 - **Notices** (a live region kept in the DOM, until dismissed or replaced): when a view change dropped flips
@@ -1625,9 +1634,11 @@ Expand all from folders to all on demo L keeping what was open; Collapse all kee
 and another view's flips; views rooted at and focused on a project at every level, with flips by hand, of
 zones drawn empty or none: each button inert exactly when it would change nothing, Expand all never closing
 and Collapse all never opening, each after the other and until inert; a zone drawn empty, under a lens or
-holding only ghosts; a fast-check property over random views of demo M and L, across lenses, focus views,
-levels, the depth filter and flips: each button inert exactly when the view it writes draws the Scene on
-screen; the cap; auto changes), `canvas.test.tsx` (chips, a double-click leaving no flip, the collapse
+holding only ghosts, and its flip kept across a lens switch and back; a fast-check property over random views
+of demo M and L, across lenses, focus views, levels, the depth filter and flips: each button inert exactly
+when the view it writes draws the Scene on screen, and a zone drawn empty keeping what its flip means; one
+over demo M's timeline days: each button inert exactly when the view it writes draws the day with the same
+ghosts; the cap; auto changes), `canvas.test.tsx` (chips, a double-click leaving no flip, the collapse
 button, the camera kept and the glide, focus after a keyboard flip, axe), `DisclosureBar.test.tsx` (the page
 in jsdom with in-process workers, axe), `actions.test.ts` (the store's actions, history modes, a press while
 another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo L in Chromium: expand a project chip, its

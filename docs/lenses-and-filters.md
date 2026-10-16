@@ -620,9 +620,11 @@ Arrows into a chip end at the chip, merged with a count.
 
 **Expand all** opens the next level at which a chip on screen opens, and reopens zones you closed, keeping
 what is already open; **Collapse all** closes the zones you opened and goes back to `auto` when the level in
-use is deeper, keeping the zones you closed. Neither touches the zones of another drill-in or focus, and each
-is offered only when it would change the diagram on screen. **"N of M shown"** in the corner of the canvas
-counts the rectangles drawn against the rectangles the view holds when fully open.
+use is deeper, keeping the zones you closed. Neither touches the zones of another drill-in or focus, and a
+zone the current lens or filters leave empty keeps what you chose for it, for when it holds something again.
+Each is offered only when it would change the diagram on screen, a timeline day's ghosts included.
+**"N of M shown"** in the corner of the canvas counts the rectangles drawn against the rectangles the view
+holds when fully open.
 
 **Large flat organisations.** More than 120 things side by side (the projects of a flat organisation, or the
 resources of one zone) are bundled into alphabetical groups of 20 to 24, labelled with the shortest prefixes
