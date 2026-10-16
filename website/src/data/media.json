@@ -54,7 +54,7 @@
     {
       "id": "snapshots",
       "title": "The Snapshots page",
-      "alt": "The Snapshots page listing the demo snapshots stored in this browser, with import, export and delete actions; nothing is uploaded anywhere."
+      "alt": "The Snapshots page listing the demo organisations S and M stored in this browser, each with Load, Export and a red Delete button, then each scope's timeline and the import area; nothing is uploaded anywhere."
     }
   ],
   "scenes": [
