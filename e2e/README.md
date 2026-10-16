@@ -51,7 +51,11 @@ either. Helpers the specs share are in `tests/support.ts`, `tests/timelineSuppor
 desktop window of 1440×900, `mobile.spec.ts` at phone and tablet sizes, `touch.spec.ts` at a phone's and
 `handheld.spec.ts` at the phone's and the tablet's projects' sizes; light colour scheme unless a test asks for
 dark. `pnpm e2e --project chromium-phone --project chromium-tablet` runs the two handheld projects alone. CI
-runs the whole suite in four shards, `pnpm e2e --shard=N/4` for N from 1 to 4 (`.github/workflows/pr.yml`).
+runs the whole suite in four legs (`.github/workflows/pr.yml`): `pnpm e2e --project chromium-live --project
+chromium --shard=N/2` and every other project (`chromium-phone`, `chromium-tablet` and `mobile`, a new one
+included) with `--shard=N/2`, for N 1 and 2. `--shard` splits the tests by count, in the order of the projects
+in `playwright.config.ts`: `chromium-live` comes before `chromium` and the handheld projects before `mobile`,
+so that each shard gets a share of the slow tests.
 
 ## Specs
 

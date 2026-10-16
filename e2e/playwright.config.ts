@@ -72,7 +72,15 @@ export default defineConfig({
     colorScheme: 'light',
     trace: 'retain-on-failure',
   },
+  // `--shard` splits the projects it runs by test count in this order, which CI's e2e legs rely on
+  // (.github/workflows/pr.yml): the quick live tests before the desktop's, the handheld ones before mobile's
+  // heavy ones, so each shard of a leg gets a share of the slow tests.
   projects: [
+    {
+      name: 'chromium-live',
+      testMatch: LIVE_SPECS,
+      use: { ...devices['Desktop Chrome'], viewport: VIEWPORT, baseURL: LIVE_URL },
+    },
     {
       name: 'chromium',
       testIgnore: [LIVE_SPECS, MOBILE_SPECS],
@@ -95,11 +103,6 @@ export default defineConfig({
       name: 'mobile',
       testMatch: MOBILE_SPECS,
       use: { ...devices['Desktop Chrome'], baseURL: DEMO_URL },
-    },
-    {
-      name: 'chromium-live',
-      testMatch: LIVE_SPECS,
-      use: { ...devices['Desktop Chrome'], viewport: VIEWPORT, baseURL: LIVE_URL },
     },
   ],
   webServer: [devServer('dev:demo', DEMO_URL), devServer('dev', LIVE_URL)],
