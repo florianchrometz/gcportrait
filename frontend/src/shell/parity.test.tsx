@@ -2,8 +2,9 @@
 /**
  * Feature parity across the layouts (AGENTS.md, Product rules; ui/screen.ts): the diagram page, drawn from demo S with
  * a project selected (so the details drawer, the disclosure bar and the timeline bar are there), the Connect page
- * of a live instance signed in with Google (the account menu), and the Permissions page, whose reference table is a
- * list on a phone, each at a desktop's, a tablet's and a phone's width.
+ * of a live instance signed in with Google (the account menu), the Permissions page, whose reference table is a
+ * list on a phone, and the Snapshots page with snapshots stored, whose tables are a card per row on a phone, each at a
+ * desktop's, a tablet's and a phone's width.
  * With every folded sheet opened and every menu, popover and dialog of the chrome opened in turn, the same controls
  * are reachable at each width, by role and accessible name, and each as often: buttons, links, fields, menu items,
  * radio buttons, sliders and the drawer's splitter. A control the desktop offers and a narrower width does not fails
@@ -20,7 +21,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { installGis, signInThroughGis, TEST_CLIENT_ID } from '../auth/testing';
 import { TOKENINFO_URL } from '../auth/tokeninfo';
 import { createInProcessWorkers } from '../diagram/pipeline/inProcess';
-import { fakeLibrary } from '../snapshots/testing';
+import { fakeLibrary, storedRecord } from '../snapshots/testing';
 import { publicConfig, stubBackend } from '../test/backend';
 import { drawn } from '../test/diagram';
 import { renderApp } from '../test/renderApp';
@@ -118,6 +119,61 @@ async function signedIn(): Promise<void> {
 async function permissionsPage(): Promise<void> {
   renderApp('/permissions');
   await screen.findByRole('region', { name: 'What each mode needs' });
+}
+
+/** The tables of the Snapshots page: what it stores, and the timeline of the one scope both snapshots belong to. */
+const SNAPSHOT_TABLES = [
+  'Snapshots stored in this browser',
+  'Timeline of example.com (Organisation 30000000001) kept in this browser',
+] as const;
+
+/**
+ * The Snapshots page with a demo organisation (a snapshot with a history) and an export (an extra tick) stored: a row
+ * of each in its stored snapshots' table and in their scope's timeline.
+ */
+async function snapshotsPage(): Promise<void> {
+  renderApp('/snapshots', {
+    snapshots: fakeLibrary({
+      records: [
+        storedRecord('demo:M', { detail: 'demo:M', historyTicks: 35, savedAt: '2026-10-10T11:00:00Z' }),
+        storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0A', {
+          source: 'export',
+          detail: 'export.json',
+          estimatedReadTime: true,
+          readTime: '2026-10-07T18:22:41Z',
+          savedAt: '2026-10-10T12:00:00Z',
+        }),
+      ],
+    }),
+  });
+  await screen.findByRole('button', { name: /^Delete the extra tick / });
+}
+
+/** Each row of the Snapshots page's tables as its facts, `header: cell`, read from its table or from its card. */
+function snapshotRows(): string[][][] {
+  return SNAPSHOT_TABLES.map((name) => {
+    const table = screen.queryByRole('table', { name });
+    if (table !== null) {
+      const headers = within(table)
+        .getAllByRole('columnheader')
+        .map((header) => header.textContent);
+      return within(table)
+        .getAllByRole('row')
+        .slice(1)
+        .map((row) =>
+          [...row.querySelectorAll('th, td')]
+            .slice(0, -1)
+            .map((cell, index) => `${headers[index] ?? '?'}: ${cell.textContent}`),
+        );
+    }
+    return within(screen.getByRole('list', { name }))
+      .getAllByRole('listitem')
+      .map((card) => {
+        const terms = within(card).getAllByRole('term');
+        const definitions = within(card).getAllByRole('definition');
+        return terms.map((term, index) => `${term.textContent}: ${definitions[index]?.textContent ?? '?'}`);
+      });
+  });
 }
 
 /** Every control of the page `open` shows at `width`, every fold, menu, popover and dialog of the chrome opened once. */
@@ -248,6 +304,44 @@ describe('feature parity across the layouts', () => {
         expect(table).not.toBeNull();
         expect(modes).toEqual(['Variables']);
       }
+    }
+  }, 60_000);
+
+  it('offers every button of the Snapshots page’s rows at every width: tables on a tablet and a desktop, a card per row with the same facts on a phone', async () => {
+    const desktop = await controlsAt(WIDTHS.desktop, snapshotsPage);
+    const label = 'example.com, read 2026-10-08 00:00 UTC, demo:M';
+    expect([...desktop.keys()]).toEqual(
+      expect.arrayContaining([
+        `button:Load ${label}`,
+        `button:Export ${label}`,
+        `button:Delete ${label}`,
+        'button:Delete the extra tick example.com, read 2026-10-07 18:22 UTC, export.json',
+        'button:Delete all snapshots…',
+      ]),
+    );
+    const rows = snapshotRows();
+    expect(rows.map((table) => table.length)).toEqual([2, 2]);
+    expect(rows[0]?.[1]).toEqual([
+      'Scope: example.comOrganisation 30000000001',
+      'Read: 2026-10-08 00:00 UTC',
+      'Source: Demodemo:M · 35-day history',
+      'Assets: 952',
+      'Size: 123 kB',
+      'Stored: 2026-10-10 11:00 UTC',
+    ]);
+    for (const layout of ['tablet', 'phone'] as const) {
+      expectParity(desktop, await controlsAt(WIDTHS[layout], snapshotsPage), layout, ['More']);
+      const tables = SNAPSHOT_TABLES.map((name) => screen.queryByRole('table', { name }));
+      const lists = SNAPSHOT_TABLES.map((name) => screen.queryByRole('list', { name }));
+      if (layout === 'phone') {
+        expect(tables).toEqual([null, null]);
+        expect(lists.every((list) => list !== null)).toBe(true);
+      } else {
+        expect(tables.every((table) => table !== null)).toBe(true);
+        expect(lists).toEqual([null, null]);
+      }
+      // The same facts under the same words, a row's or a card's.
+      expect(snapshotRows(), layout).toEqual(rows);
     }
   }, 60_000);
 });

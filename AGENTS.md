@@ -123,9 +123,11 @@ now, and what changed in the last five weeks?
     that slides sideways or down under a finger takes the top bar and the footer off screen: text for
     assistive technology only (`.visually-hidden`, absolutely placed) lies inside a positioned box of the page
     (a table's own scroll box, the permission check's panel) rather than placed against the window past the
-    page's edge; a table too wide for the page scrolls sideways in that box of its own; and a table whose cells
+    page's edge; a table too wide for the page scrolls sideways in that box of its own; a table whose cells
     would squeeze a command to a few characters a line, where it can be neither read nor checked (the
-    Permissions page's reference), is a list on a phone, each command as wide as the page.
+    Permissions page's reference), is a list on a phone, each command as wide as the page; and a table whose
+    row a reader would have to scroll sideways to read (the Snapshots page's) is a list of cards on a phone,
+    one per row, its cells as labelled lines.
 
   The touch model: on a phone and a tablet every target is at least 44 × 44 CSS pixels and the bars keep clear
   of the safe-area insets ([Style and accessibility](#style-and-accessibility)); the canvas takes one finger

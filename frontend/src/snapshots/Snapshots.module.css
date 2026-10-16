@@ -159,12 +159,60 @@ div.wide {
   justify-content: flex-end;
 }
 
-/* A phone or a tablet: a row's actions wrap onto more lines when its table is short of room, so the table fits a
-   tablet's page whole and is narrower on a phone, where it scrolls sideways in its box. */
+/* A phone or a tablet: a row's actions wrap onto more lines when they are short of room (in a table on a tablet,
+   which then fits the page whole; under a card's lines on a phone). */
 @media (max-width: 79.99rem) {
   .actions {
     flex-wrap: wrap;
   }
+}
+
+/* The same rows on a phone (RowTable.tsx): a card per row, each column a labelled line (its header, then its cell),
+   the row's actions under them, as wide as the page, so a row is read without scrolling sideways. */
+.cards {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-size: var(--font-size-control);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--color-on-surface-variant);
+}
+
+.facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The row's header (the table's first column), as the table sets it. */
+.facts .head {
+  font-weight: var(--font-weight-medium);
+}
+
+.cardActions {
+  justify-content: flex-start;
+  gap: var(--space-2);
 }
 
 .dropZone {
@@ -197,4 +245,17 @@ div.wide {
 .scopeTitle {
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-medium);
+}
+
+/* A phone: a button that names its scope ("Delete the cached days of …") may be wider than the page, so its words
+   wrap inside it and it grows to hold them. The element selector outranks the control's own class whatever order the
+   two stylesheets load in. */
+@media (max-width: 47.99rem) {
+  button.wraps {
+    height: auto;
+    min-height: var(--control-height);
+    padding-block: var(--space-2);
+    white-space: normal;
+    text-align: start;
+  }
 }

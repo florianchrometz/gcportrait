@@ -4,10 +4,11 @@
  * of, its timeline as stored here, in time order (scopeEntries.ts): its snapshots with a history, its exports and
  * manual pulls (the extra ticks of the scope's timeline, timeline/extraTicks.ts) and the days its timeline read from
  * Cloud Asset Inventory and cached (storage/tickCache.ts), each with its asset count and size, and what they take
- * together. An extra tick is deleted after a confirmation (it is a stored snapshot: files exported keep it), a cached
- * day at once (the timeline reads it again when the view comes back to it), and "Delete the cached days…" deletes a
- * whole scope's cache after a confirmation. Focus goes to the scope's heading after a delete (to the section's when
- * the scope is gone), and a polite status says what was deleted.
+ * together: a table per scope, a card per entry on a phone (RowTable.tsx). An extra tick is deleted after a
+ * confirmation (it is a stored snapshot: files exported keep it), a cached day at once (the timeline reads it again
+ * when the view comes back to it), and "Delete the cached days…" deletes a whole scope's cache after a confirmation.
+ * Focus goes to the scope's heading after a delete (to the section's when the scope is gone), and a polite status says
+ * what was deleted.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
@@ -22,6 +23,7 @@ import { Dialog } from '../ui/Dialog';
 import { JobStatus, type JobState } from './JobStatus';
 import { distinctNames, formatBytes, formatCount, formatUtc, sourceLabel } from './labels';
 import type { ListedSnapshot } from './repository';
+import { RowTable, type RowColumn, type RowData } from './RowTable';
 import { scopeTimelines, type ScopeEntry, type ScopeTimeline } from './scopeEntries';
 import { useSnapshotLibrary } from './SnapshotLibraryProvider';
 import styles from './Snapshots.module.css';
@@ -74,6 +76,87 @@ export function ReadTimeNote({ meta }: { readonly meta: StoredSnapshot['meta'] }
   if (source === 'estimated') return <span className={styles.sub}>estimated</span>;
   if (source === 'user') return <span className={styles.sub}>entered</span>;
   return null;
+}
+
+/**
+ * A scope's timeline's columns: when it was read (a cached day by its day, or the time a latest day was read at
+ * "now"), what it is, its asset count and its size (a snapshot kept in memory marked).
+ */
+const TIMELINE_COLUMNS: readonly RowColumn<ScopeEntry>[] = [
+  {
+    header: 'Read',
+    nowrap: true,
+    cell: (entry) => {
+      if (entry.kind === 'day') {
+        const { tick } = entry;
+        return <time dateTime={tick.now ? tick.actualReadTime : tick.readTime}>{dayRead(tick)}</time>;
+      }
+      const { meta } = entry.listed.record;
+      return (
+        <>
+          <time dateTime={meta.readTime}>{formatUtc(meta.readTime)}</time>
+          <ReadTimeNote meta={meta} />
+        </>
+      );
+    },
+  },
+  {
+    header: 'What',
+    cell: (entry) => {
+      if (entry.kind === 'day')
+        return (
+          <>
+            Cached day
+            <span className={styles.sub}>
+              read from Cloud Asset Inventory on{' '}
+              <time dateTime={entry.tick.fetchedAt} className={styles.nowrap}>
+                {formatUtc(entry.tick.fetchedAt)}
+              </time>
+            </span>
+          </>
+        );
+      const { record } = entry.listed;
+      return (
+        <>
+          {snapshotWhat(record, entry.kind === 'extra')}
+          <span className={styles.sub}>
+            {entry.kind === 'extra'
+              ? extraNote(record, entry.shared)
+              : (record.meta.detail ?? 'its days are replayed on its timeline')}
+          </span>
+        </>
+      );
+    },
+  },
+  {
+    header: 'Assets',
+    numeric: true,
+    cell: (entry) =>
+      formatCount(entry.kind === 'day' ? entry.tick.assetCount : entry.listed.record.meta.assetCount),
+  },
+  {
+    header: 'Size',
+    numeric: true,
+    cell: (entry) =>
+      entry.kind === 'day' ? (
+        formatBytes(entry.tick.bytes)
+      ) : (
+        <>
+          {formatBytes(entry.listed.record.meta.bytes)}
+          {entry.listed.persisted ? null : <span className={styles.sub}>in memory</span>}
+        </>
+      ),
+  },
+];
+
+function entryKey(entry: ScopeEntry): string {
+  return entry.kind === 'day' ? entry.tick.key : entry.listed.record.id;
+}
+
+function entryData(entry: ScopeEntry): RowData {
+  return entry.kind === 'day'
+    ? { 'data-entry': 'day', 'data-day': entry.tick.day }
+    : { 'data-entry': entry.kind, 'data-snapshot': entry.listed.record.id };
 }
 
 type Confirm =
@@ -226,109 +309,50 @@ export function ScopeTimelines({
                 )}
               </h3>
               <p className={styles.note}>{scopeSummary(scope)}</p>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <caption className="visually-hidden">Timeline of {named} kept in this browser</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Read</th>
-                      <th scope="col">What</th>
-                      <th scope="col" className={styles.number}>
-                        Assets
-                      </th>
-                      <th scope="col" className={styles.number}>
-                        Size
-                      </th>
-                      <th scope="col">
-                        <span className="visually-hidden">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {scope.entries.map((entry) => {
-                      if (entry.kind === 'day') {
-                        const { tick } = entry;
-                        return (
-                          <tr key={tick.key} data-entry="day" data-day={tick.day}>
-                            <th scope="row" className={styles.nowrap}>
-                              <time dateTime={tick.now ? tick.actualReadTime : tick.readTime}>
-                                {dayRead(tick)}
-                              </time>
-                            </th>
-                            <td>
-                              Cached day
-                              <span className={styles.sub}>
-                                read from Cloud Asset Inventory on {formatUtc(tick.fetchedAt)}
-                              </span>
-                            </td>
-                            <td className={styles.number}>{formatCount(tick.assetCount)}</td>
-                            <td className={styles.number}>{formatBytes(tick.bytes)}</td>
-                            <td>
-                              <div className={styles.actions}>
-                                <button
-                                  type="button"
-                                  className={cx(controls.control, styles.danger)}
-                                  aria-label={`Delete the cached day ${tick.day} of ${named}`}
-                                  onClick={() => {
-                                    deleteDay(scope, tick);
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      }
-                      const { record } = entry.listed;
-                      const extra = entry.kind === 'extra';
-                      return (
-                        <tr key={record.id} data-entry={entry.kind} data-snapshot={record.id}>
-                          <th scope="row" className={styles.nowrap}>
-                            <time dateTime={record.meta.readTime}>{formatUtc(record.meta.readTime)}</time>
-                            <ReadTimeNote meta={record.meta} />
-                          </th>
-                          <td>
-                            {snapshotWhat(record, extra)}
-                            <span className={styles.sub}>
-                              {extra
-                                ? extraNote(record, entry.shared)
-                                : (record.meta.detail ?? 'its days are replayed on its timeline')}
-                            </span>
-                          </td>
-                          <td className={styles.number}>{formatCount(record.meta.assetCount)}</td>
-                          <td className={styles.number}>
-                            {formatBytes(record.meta.bytes)}
-                            {entry.listed.persisted ? null : <span className={styles.sub}>in memory</span>}
-                          </td>
-                          <td>
-                            {extra ? (
-                              <div className={styles.actions}>
-                                <button
-                                  type="button"
-                                  className={cx(controls.control, styles.danger)}
-                                  aria-haspopup="dialog"
-                                  aria-label={`Delete the extra tick ${labelOf(record)}`}
-                                  onClick={() => {
-                                    setConfirm({ kind: 'extra', scope, record });
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            ) : null}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <RowTable
+                caption={`Timeline of ${named} kept in this browser`}
+                columns={TIMELINE_COLUMNS}
+                rows={scope.entries}
+                keyOf={entryKey}
+                dataOf={entryData}
+                actions={(entry) => {
+                  if (entry.kind === 'day') {
+                    const { tick } = entry;
+                    return (
+                      <button
+                        type="button"
+                        className={cx(controls.control, styles.danger)}
+                        aria-label={`Delete the cached day ${tick.day} of ${named}`}
+                        onClick={() => {
+                          deleteDay(scope, tick);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    );
+                  }
+                  if (entry.kind !== 'extra') return null;
+                  const { record } = entry.listed;
+                  return (
+                    <button
+                      type="button"
+                      className={cx(controls.control, styles.danger)}
+                      aria-haspopup="dialog"
+                      aria-label={`Delete the extra tick ${labelOf(record)}`}
+                      onClick={() => {
+                        setConfirm({ kind: 'extra', scope, record });
+                      }}
+                    >
+                      Delete
+                    </button>
+                  );
+                }}
+              />
               {scope.days.length === 0 ? null : (
                 <div className={styles.row}>
                   <button
                     type="button"
-                    className={cx(controls.control, styles.danger)}
+                    className={cx(controls.control, styles.danger, styles.wraps)}
                     aria-haspopup="dialog"
                     onClick={() => {
                       setConfirm({ kind: 'scope', scope });

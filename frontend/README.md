@@ -331,22 +331,28 @@ live region) is absolutely placed; without a positioned box around it, it is pla
 outside the table's box and the page's own scroll box (`<main>`), where it makes the whole document scroll sideways
 and down, a phone lays the page out wider than its screen, and a swipe slides the top bar and the footer off it. On a phone, the Permissions page's reference (what each mode needs, with its commands) is a list under a heading
 per mode rather than a three-column table, which would leave a command a few characters' width
-(`preflight/PermissionsGuide.tsx`, by `useScreen()`; the same command blocks either way).
+(`preflight/PermissionsGuide.tsx`, by `useScreen()`; the same command blocks either way). The Snapshots page's
+tables, whose rows a phone could show only by scrolling them sideways, are a list of cards there, one per row,
+each column a labelled line of a description list over the row's buttons (`snapshots/RowTable.tsx`, by
+`useScreen()`; the same columns and the same buttons either way).
 
-**Checks.** `shell/parity.test.tsx` renders the diagram page of demo S with a project selected, the Connect page of
-a live instance signed in and the Permissions page at 1440, 820 and 375 px (`test/viewport.ts`: a `matchMedia` for a
-width), opens every fold, menu, popover and dialog of the chrome,
+**Checks.** `shell/parity.test.tsx` renders the diagram page of demo S with a project selected, the Connect
+page of a live instance signed in, the Permissions page and the Snapshots page with two snapshots stored (its
+rows' facts the same in a table and on a card) at 1440, 820 and 375 px (`test/viewport.ts`: a `matchMedia` for
+a width), opens every fold, menu, popover and dialog of the chrome,
 and fails on a control (a button, a link, a field, a menu item, a radio button, a slider or the drawer's splitter,
 by role and accessible name) that the desktop offers and a narrower width does not, on a second copy of one, and on
 any control added but View and More. It sees the DOM and the accessibility tree only: whether a control is in
 sight and can be tapped is the browser check's. `pnpm --filter @gcportrait/frontend mobile` (the e2e suite's `mobile`
 project, `e2e/tests/mobile.spec.ts`) measures the layouts in Chromium at phone and tablet widths in both themes and
 on phones turned sideways (568 × 320 to 844 × 390), with every menu and panel of View and More opened, on a live
-instance signed in and on the Snapshots page with a snapshot stored: sideways scrolling, a page laid out wider than
-the window or scrolling up and down by itself, text squeezed into a column a few characters wide, the top bar's
-items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets, every control
-one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe; and a theme picked
-in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input by finger.
+instance signed in and on the Snapshots page with a snapshot stored (a card per row on a phone, where no box
+scrolls sideways, not even a table's; the tables whole on a tablet): sideways scrolling, a page laid out wider
+than the window or scrolling up and down by itself, text squeezed into a column a few characters wide, the top
+bar's items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets,
+every control one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe;
+and a theme picked in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input
+by finger.
 
 ## UI primitives (`src/ui/`)
 
@@ -912,6 +918,7 @@ src/snapshots/
                         diagram page's `useLargeSnapshotGate`
   DemoEntry.tsx         the Connect page's demo card: size S–XL (ui/SegmentedControl), Try the demo, progress
   SnapshotTable.tsx, ImportPanel.tsx, StorageUsage.tsx, JobStatus.tsx   the Snapshots page's parts
+  RowTable.tsx          the rows of the page's two tables from one list of columns (a card per row on a phone)
   ScopeTimelines.tsx    "Timelines by scope": what is kept of each scope's timeline, with deleting
   scopeEntries.ts       its pure part: the stored snapshots and the cached days grouped by scope, in time order
   worker/               the snapshot worker: protocol, handler (import and check jobs), prepare.ts (a record ready to
@@ -1074,16 +1081,17 @@ library, the export → import round trip, imports as copies, an import asked ab
 stores nothing, yes stores it once), a refused import, damaged records refused at export, the data worker's
 loader, the memory fallback, and the data worker over stored snapshots: a deleted snapshot is not drawn from
 its kept Graph, and S imported after M was deleted draws S), `pages/SnapshotsPage.test.tsx` and
-`pages/ConnectPage.test.tsx` (the pages with a fake library, axe included; the read time typed at an import),
-`scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by scope in time order, copies, sizes,
-summaries; deleting an extra tick, a cached day and a scope's days, focus and status, over fake-indexeddb;
-axe), `LargeSnapshotGuard.test.tsx` (the guard's rules, and every way in with the fake library: "Try the demo"
-XL, Load, a link, the Snapshot menu; Cancel, Escape, "Draw it anyway", the session setting, no second
-question; axe), `e2e/tests/large-snapshot.spec.ts` in Chromium (demo mode: "Try the demo" XL asked about,
-cancelled, drawn, silenced for the tab; axe in both themes), and `e2e/tests/snapshots.spec.ts` in Chromium
-(try demo S, switch to M, reload, export M and S, import both as copies, load each, delete M's copy, go back
-to its view and see it is gone, import S again and see S drawn, and the same after a reload; a refused import;
-no IndexedDB, and a reload forgetting; axe on both pages in both themes).
+`pages/ConnectPage.test.tsx` (the pages with a fake library, axe included; the read time typed at an import; a
+card per stored snapshot on a phone), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by
+scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a scope's days, focus
+and status, over fake-indexeddb; axe), `LargeSnapshotGuard.test.tsx` (the guard's rules, and every way in with
+the fake library: "Try the demo" XL, Load, a link, the Snapshot menu; Cancel, Escape, "Draw it anyway", the
+session setting, no second question; axe), `e2e/tests/large-snapshot.spec.ts` in Chromium (demo mode: "Try the
+demo" XL asked about, cancelled, drawn, silenced for the tab; axe in both themes), and
+`e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S, import both as
+copies, load each, delete M's copy, go back to its view and see it is gone, import S again and see S drawn,
+and the same after a reload; a refused import; no IndexedDB, and a reload forgetting; axe on both pages in
+both themes).
 
 ## Diagram renderer (`src/diagram/`)
 

@@ -9,6 +9,7 @@ import { SnapshotJobError } from '../snapshots/worker/client';
 import { DAMAGED_RECORD } from '../snapshots/worker/protocol';
 import { expectNoAxeViolations } from '../test/axe';
 import { currentLocation, renderApp } from '../test/renderApp';
+import { installViewport } from '../test/viewport';
 
 vi.mock('../export/deliver', () => ({ saveFile: vi.fn() }));
 
@@ -92,6 +93,50 @@ describe('the Snapshots page', () => {
       ),
     ).toBeDefined();
     await expectNoAxeViolations();
+  });
+
+  it('lists each stored snapshot as a card on a phone, its facts as labelled lines over its three buttons', async () => {
+    const viewport = installViewport(375);
+    try {
+      const snapshots = library();
+      renderApp('/snapshots', { snapshots });
+      const list = await screen.findByRole('list', { name: 'Snapshots stored in this browser' });
+      expect(screen.queryByRole('table', { name: 'Snapshots stored in this browser' })).toBeNull();
+      const cards = within(list).getAllByRole('listitem');
+      expect(cards.map((card) => card.getAttribute('data-snapshot'))).toEqual([IMPORTED, 'demo:M']);
+      const [card] = cards;
+      if (card === undefined) throw new Error('no card');
+      expect(
+        within(card)
+          .getAllByRole('term')
+          .map((term) => term.textContent),
+      ).toEqual(['Scope', 'Read', 'Source', 'Assets', 'Size', 'Stored']);
+      expect(
+        within(card)
+          .getAllByRole('definition')
+          .map((definition) => definition.textContent),
+      ).toEqual([
+        'example.comOrganisation 30000000001',
+        '2026-10-07 18:22 UTCestimated from the latest change',
+        'Export fileexport.json',
+        '51,242',
+        '17.3 MB',
+        '2026-10-10 12:00 UTC',
+      ]);
+      const label = 'example.com, read 2026-10-07 18:22 UTC, export.json';
+      expect(
+        within(card)
+          .getAllByRole('button')
+          .map((button) => button.getAttribute('aria-label')),
+      ).toEqual([`Load ${label}`, `Export ${label}`, `Delete ${label}`]);
+      await userEvent.click(within(card).getByRole('button', { name: `Export ${label}` }));
+      await waitFor(() => {
+        expect(snapshots.calls).toContain(`exportFile ${IMPORTED}`);
+      });
+      await expectNoAxeViolations();
+    } finally {
+      viewport.uninstall();
+    }
   });
 
   it('loads a snapshot into the diagram through the hash, a large one once the person has said so', async () => {

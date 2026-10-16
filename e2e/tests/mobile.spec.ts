@@ -15,12 +15,13 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  * phone layout) and 820 (the tablet layout), each at its device's height, in the light and the dark theme, plus phones
  * turned sideways (568 × 320, 640 × 360 and 667 × 375, a phone's layout; 844 × 390, a tablet's). On the Connect,
  * Permissions, Snapshots and Settings pages; the Snapshots page again with a snapshot stored (an export of demo
- * organisation S imported, so both of its tables have a row); a live instance's Connect page signed out and signed in (Google's
- * sign-in stood in for, fixtures/gis.ts, with a long work address), its Permissions page and the Account panel inside
- * More (also at 1024 × 768), and its Impressum and Privacy pages; and on the diagram of demo S and of demo M at rest,
- * with the View sheet open (and in it the Lens list, the Focus and Filters panels and the search's results), with the
- * More sheet open (and from it the Snapshot, Theme and Export menus and the Saved views dialog) and with the details
- * drawer open, it fails when
+ * organisation S imported, so both of its tables have a row) and a day of its scope cached: a card per row on a phone,
+ * where no box scrolls sideways, not even a table's, and tables that fit the page on a tablet; a live instance's
+ * Connect page signed out and signed in (Google's sign-in stood in for, fixtures/gis.ts, with a long work address), its
+ * Permissions page and the Account panel inside More (also at 1024 × 768), and its Impressum and Privacy pages; and on
+ * the diagram of demo S and of demo M at rest, with the View sheet open (and in it the Lens list, the Focus and Filters
+ * panels and the search's results), with the More sheet open (and from it the Snapshot, Theme and Export menus and the
+ * Saved views dialog) and with the details drawer open, it fails when
  * - the page scrolls sideways, is laid out wider than the window (which a phone shows zoomed out, or lets slide
  *   sideways under a finger), scrolls up and down by itself (the page's own box does that, between the top bar and the
  *   footer), an element reaches past the viewport's edge without a box that scrolls or clips it, or a box scrolls
@@ -106,6 +107,8 @@ const LONG_EMAIL = 'firstname.middlename.lastname@platform-engineering.example-c
 const FAKE_TOKEN = 'e2e-fake-access-token-mobile-4d2e';
 /** The smallest touch target, in CSS pixels (WCAG 2.5.5's 44 × 44; a little rounding allowed). */
 const TARGET = 43.5;
+/** Where the tablet's layout starts (48rem at a 16-pixel rem, frontend/src/ui/screen.ts): narrower is a phone. */
+const TABLET_FROM = 768;
 const REPO = path.resolve(import.meta.dirname, '..', '..');
 /** When the export of demo organisation S was taken, as its operation.json says. */
 const EXPORT_READ_TIME = '2026-10-05T14:30:00Z';
@@ -167,6 +170,50 @@ function demoExport(testInfo: TestInfo): readonly string[] {
   );
   exported = [lines, operation];
   return exported;
+}
+
+/**
+ * A day of demo organisation S's scope as its timeline caches a day read from Cloud Asset Inventory (the tick cache of
+ * the app's IndexedDB, storage/tickCache.ts): a cached day on the scope's timeline on the Snapshots page, and its
+ * "Delete the cached days of …" button, which names the scope.
+ */
+function cacheADay(page: Page): Promise<void> {
+  return page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const opening = indexedDB.open('gcportrait');
+        opening.onerror = () => {
+          reject(opening.error ?? new Error('IndexedDB did not open'));
+        };
+        opening.onsuccess = () => {
+          const db = opening.result;
+          const scope = 'organizations/30000000001';
+          const readTime = '2026-10-04T00:00:00Z';
+          const writing = db.transaction('tickCache', 'readwrite');
+          writing.objectStore('tickCache').put({
+            key: JSON.stringify([scope, readTime, 'RESOURCE', '*']),
+            scope,
+            readTime,
+            day: '2026-10-04',
+            contentType: 'RESOURCE',
+            now: false,
+            actualReadTime: readTime,
+            fetchedAt: '2026-10-06T09:00:00.000Z',
+            assetCount: 40,
+            bytes: 1_000,
+            blob: new Blob(['{}']),
+          });
+          writing.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          writing.onerror = () => {
+            db.close();
+            reject(writing.error ?? new Error('the tick cache refused the day'));
+          };
+        };
+      }),
+  );
 }
 
 /** Overflow, squeezed text, the top bar's items, touch targets: the problems of the page as it is now. */
@@ -493,6 +540,26 @@ function layoutProblems(page: Page): Promise<string[]> {
 }
 
 /**
+ * Every box that scrolls sideways, a table's and a code block's included (which `layoutProblems` lets scroll), but the
+ * breadcrumb, which rests at its end: for a page where nothing is meant to.
+ */
+function sidewaysBoxes(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const found: string[] = [];
+    for (const element of document.body.querySelectorAll('*')) {
+      const overflow = getComputedStyle(element).overflowX;
+      if (overflow !== 'auto' && overflow !== 'scroll') continue;
+      if (element.matches('header nav[aria-label="Scope"]')) continue;
+      if (element.scrollWidth > element.clientWidth + 1)
+        found.push(
+          `<${element.tagName.toLowerCase()} class="${element.className}"> (${String(element.scrollWidth)} > ${String(element.clientWidth)} px)`,
+        );
+    }
+    return found;
+  });
+}
+
+/**
  * The controls one reaches with Tab (not the drawing's own nodes) that are out of sight when focused or cannot be
  * tapped. Inside the innermost open dialog or sheet when there is one (their focus trap keeps Tab there), else on the
  * whole page: each is focused, which scrolls the boxes it is in (the page, the drawer, the breadcrumb) to it, and the
@@ -780,7 +847,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-test('the Snapshots page with a snapshot stored: its tables scroll inside their own boxes, at every size and in both themes', async ({
+test('the Snapshots page with a snapshot stored and a day cached: a card per row on a phone, its tables whole on a tablet, nothing scrolling sideways, at every size and in both themes', async ({
   page,
 }, testInfo) => {
   test.setTimeout(240_000);
@@ -792,17 +859,51 @@ test('the Snapshots page with a snapshot stored: its tables scroll inside their 
     .locator('input[type="file"]')
     .setInputFiles([...demoExport(testInfo)]);
   await expect(page.getByText(/^Imported example\.com, read /)).toBeVisible({ timeout: 60_000 });
+  await cacheADay(page);
+  const stored = 'Snapshots stored in this browser';
+  const timeline = /^Timeline of /;
   for (const theme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: theme });
     for (const size of [...SIZES, ...SIDEWAYS]) {
       const where = `/snapshots with a snapshot stored, ${theme}, ${String(size.width)} × ${String(size.height)}`;
       await page.setViewportSize(size);
       await page.reload();
-      await expect(page.getByRole('table', { name: 'Snapshots stored in this browser' })).toBeVisible();
-      await expect(page.getByRole('table', { name: /^Timeline of / })).toBeVisible();
+      await expect(
+        page.getByRole('button', {
+          name: 'Delete the cached days of example.com (Organisation 30000000001)…',
+        }),
+        where,
+      ).toBeVisible();
+      if (size.width < TABLET_FROM) {
+        // One card per row: the stored export; on its scope's timeline the cached day and the export's extra tick. No
+        // table.
+        const card = page.getByRole('list', { name: stored }).getByRole('listitem');
+        await expect(card, where).toHaveCount(1);
+        await expect(page.getByRole('list', { name: timeline }).getByRole('listitem'), where).toHaveCount(2);
+        await expect(page.getByRole('table'), where).toHaveCount(0);
+        await expect(card.getByRole('term'), where).toHaveText([
+          'Scope',
+          'Read',
+          'Source',
+          'Assets',
+          'Size',
+          'Stored',
+        ]);
+        for (const action of ['Load', 'Export', 'Delete'])
+          await expect(
+            card.getByRole('button', { name: new RegExp(`^${action} example\\.com, read `) }),
+            where,
+          ).toBeVisible();
+      } else {
+        await expect(page.getByRole('table', { name: stored }), where).toBeVisible();
+        await expect(page.getByRole('table', { name: timeline }), where).toBeVisible();
+        await expect(page.getByRole('list', { name: stored }), where).toHaveCount(0);
+      }
       await page.evaluate(async () => {
         await document.fonts.ready;
       });
+      // Not even a box of its own: a row reads without scrolling sideways, and a tablet's page holds its tables whole.
+      expect(await sidewaysBoxes(page), where).toEqual([]);
       await expectClean(page, where, { axe: size.width === 375 || size.width === 820, focus: true });
       await expect(page.getByRole('contentinfo'), where).toBeInViewport();
     }

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * The stored snapshots as a table: scope, read time, source, asset count, size and when
- * it was stored, with three actions per row: Load (the snapshot's ref into the hash, on the diagram page:
- * `actions.setSnapshot`; a snapshot of more than 10 000 assets asks first, LargeSnapshotGuard.tsx, and Cancel
- * stays here), Export (the `.gcportrait.json` file, bundle.ts, once the snapshot worker has read the
- * record in full; a progress line meanwhile) and Delete (after a confirmation dialog). Each action's accessible name
+ * The stored snapshots as a table (a card per snapshot on a phone, RowTable.tsx): scope, read time, source, asset
+ * count, size and when it was stored, with three actions per row: Load (the snapshot's ref into the hash, on the
+ * diagram page: `actions.setSnapshot`; a snapshot of more than 10 000 assets asks first, LargeSnapshotGuard.tsx, and
+ * Cancel stays here), Export (the `.gcportrait.json` file, bundle.ts, once the snapshot worker has read the record in
+ * full; a progress line meanwhile) and Delete (after a confirmation dialog). Each action's accessible name
  * starts with its visible word and adds the row's label ("Load example.com, read 2026-10-08 00:00 UTC, demo:M";
  * labels.ts `distinctNames`, which also tells copies of one file apart), so no two buttons share a name; copies
  * stored in the same minute also show their number under the stored time, so no two rows look alike.
@@ -27,10 +27,12 @@ import {
   scopeKindAndId,
   scopeName,
   sourceLabel,
+  type RecordName,
 } from './labels';
 import type { ListedSnapshot } from './repository';
 import { useLargeSnapshotGuard } from './LargeSnapshotGuard';
 import { refOf } from './library';
+import { RowTable, type RowColumn } from './RowTable';
 import { useSnapshotLibrary } from './SnapshotLibraryProvider';
 import styles from './Snapshots.module.css';
 import { SnapshotJobError } from './worker/client';
@@ -40,6 +42,74 @@ function sourceDetail(record: StoredSnapshot): string {
   if (record.meta.detail !== undefined) parts.push(record.meta.detail);
   if (record.meta.historyTicks !== undefined) parts.push(`${String(record.meta.historyTicks)}-day history`);
   return parts.join(' · ');
+}
+
+/**
+ * The stored snapshots' columns: the scope, the read time (an estimate or a read time typed in marked), the source, the
+ * asset count, the size (one kept in memory marked) and when it was stored (copies stored in the same minute
+ * numbered, as `names` has them).
+ */
+function snapshotColumns(names: ReadonlyMap<string, RecordName>): readonly RowColumn<ListedSnapshot>[] {
+  return [
+    {
+      header: 'Scope',
+      cell: ({ record: { meta } }) => (
+        <>
+          {scopeName(meta.scope)}
+          {meta.scope.displayName === undefined ? null : (
+            <span className={styles.sub}>{scopeKindAndId(meta.scope)}</span>
+          )}
+        </>
+      ),
+    },
+    {
+      header: 'Read',
+      nowrap: true,
+      cell: ({ record: { meta } }) => (
+        <>
+          <time dateTime={meta.readTime}>{formatUtc(meta.readTime)}</time>
+          {meta.estimatedReadTime === true || meta.readTimeSource === 'estimated-max-update-time' ? (
+            <span className={styles.sub}>estimated from the latest change</span>
+          ) : meta.readTimeSource === 'user' ? (
+            <span className={styles.sub}>entered when it was imported</span>
+          ) : null}
+        </>
+      ),
+    },
+    {
+      header: 'Source',
+      cell: ({ record }) => (
+        <>
+          {sourceLabel(record.meta.source)}
+          <span className={styles.sub}>{sourceDetail(record)}</span>
+        </>
+      ),
+    },
+    { header: 'Assets', numeric: true, cell: ({ record }) => formatCount(record.meta.assetCount) },
+    {
+      header: 'Size',
+      numeric: true,
+      cell: ({ record, persisted }) => (
+        <>
+          {formatBytes(record.meta.bytes)}
+          {persisted ? null : <span className={styles.sub}>in memory</span>}
+        </>
+      ),
+    },
+    {
+      header: 'Stored',
+      nowrap: true,
+      cell: ({ record }) => {
+        const copy = names.get(record.id)?.copy;
+        return (
+          <>
+            <time dateTime={record.meta.savedAt}>{formatUtc(record.meta.savedAt)}</time>
+            {copy === undefined ? null : <span className={styles.sub}>copy {String(copy)}</span>}
+          </>
+        );
+      },
+    },
+  ];
 }
 
 export function SnapshotTable({
@@ -60,6 +130,7 @@ export function SnapshotTable({
   const exporting = useRef(false);
   const names = useMemo(() => distinctNames(snapshots.map(({ record }) => record)), [snapshots]);
   const labelOf = (record: StoredSnapshot): string => names.get(record.id)?.label ?? record.id;
+  const columns = useMemo(() => snapshotColumns(names), [names]);
 
   const fail = (title: string, error: unknown): void => {
     setState({
@@ -122,109 +193,58 @@ export function SnapshotTable({
           below.
         </p>
       ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <caption className="visually-hidden">Snapshots stored in this browser</caption>
-            <thead>
-              <tr>
-                <th scope="col">Scope</th>
-                <th scope="col">Read</th>
-                <th scope="col">Source</th>
-                <th scope="col" className={styles.number}>
-                  Assets
-                </th>
-                <th scope="col" className={styles.number}>
-                  Size
-                </th>
-                <th scope="col">Stored</th>
-                <th scope="col">
-                  <span className="visually-hidden">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {snapshots.map(({ record, persisted }) => {
-                const label = labelOf(record);
-                const copy = names.get(record.id)?.copy;
-                const { scope } = record.meta;
-                return (
-                  <tr key={record.id} data-snapshot={record.id}>
-                    <th scope="row">
-                      {scopeName(scope)}
-                      {scope.displayName === undefined ? null : (
-                        <span className={styles.sub}>{scopeKindAndId(scope)}</span>
-                      )}
-                    </th>
-                    <td className={styles.nowrap}>
-                      <time dateTime={record.meta.readTime}>{formatUtc(record.meta.readTime)}</time>
-                      {record.meta.estimatedReadTime === true ||
-                      record.meta.readTimeSource === 'estimated-max-update-time' ? (
-                        <span className={styles.sub}>estimated from the latest change</span>
-                      ) : record.meta.readTimeSource === 'user' ? (
-                        <span className={styles.sub}>entered when it was imported</span>
-                      ) : null}
-                    </td>
-                    <td>
-                      {sourceLabel(record.meta.source)}
-                      <span className={styles.sub}>{sourceDetail(record)}</span>
-                    </td>
-                    <td className={styles.number}>{formatCount(record.meta.assetCount)}</td>
-                    <td className={styles.number}>
-                      {formatBytes(record.meta.bytes)}
-                      {persisted ? null : <span className={styles.sub}>in memory</span>}
-                    </td>
-                    <td className={styles.nowrap}>
-                      <time dateTime={record.meta.savedAt}>{formatUtc(record.meta.savedAt)}</time>
-                      {copy === undefined ? null : <span className={styles.sub}>copy {String(copy)}</span>}
-                    </td>
-                    <td>
-                      <div className={styles.actions}>
-                        <button
-                          type="button"
-                          className={controls.control}
-                          aria-label={`Load ${label}`}
-                          onClick={() => {
-                            const ref = refOf(record.id);
-                            if (ref === null) return;
-                            const assets = record.meta.assetCount;
-                            if (!guard.asks(assets, ref)) setSnapshot(ref);
-                            else
-                              void guard.confirm({ assets, ref }).then((draw) => {
-                                if (draw) setSnapshot(ref);
-                              });
-                          }}
-                        >
-                          Load
-                        </button>
-                        <button
-                          type="button"
-                          className={controls.control}
-                          aria-label={`Export ${label}`}
-                          onClick={() => {
-                            exportRecord(record);
-                          }}
-                        >
-                          Export
-                        </button>
-                        <button
-                          type="button"
-                          className={cx(controls.control, styles.danger)}
-                          aria-haspopup="dialog"
-                          aria-label={`Delete ${label}`}
-                          onClick={() => {
-                            setConfirm(record);
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <RowTable
+          caption="Snapshots stored in this browser"
+          columns={columns}
+          rows={snapshots}
+          keyOf={({ record }) => record.id}
+          dataOf={({ record }) => ({ 'data-snapshot': record.id })}
+          actions={({ record }) => {
+            const label = labelOf(record);
+            return (
+              <>
+                <button
+                  type="button"
+                  className={controls.control}
+                  aria-label={`Load ${label}`}
+                  onClick={() => {
+                    const ref = refOf(record.id);
+                    if (ref === null) return;
+                    const assets = record.meta.assetCount;
+                    if (!guard.asks(assets, ref)) setSnapshot(ref);
+                    else
+                      void guard.confirm({ assets, ref }).then((draw) => {
+                        if (draw) setSnapshot(ref);
+                      });
+                  }}
+                >
+                  Load
+                </button>
+                <button
+                  type="button"
+                  className={controls.control}
+                  aria-label={`Export ${label}`}
+                  onClick={() => {
+                    exportRecord(record);
+                  }}
+                >
+                  Export
+                </button>
+                <button
+                  type="button"
+                  className={cx(controls.control, styles.danger)}
+                  aria-haspopup="dialog"
+                  aria-label={`Delete ${label}`}
+                  onClick={() => {
+                    setConfirm(record);
+                  }}
+                >
+                  Delete
+                </button>
+              </>
+            );
+          }}
+        />
       )}
       <JobStatus state={state} subject={subject} label="Working on the snapshot" />
       {confirm === null ? null : (
