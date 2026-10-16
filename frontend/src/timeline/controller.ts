@@ -6,7 +6,8 @@
  * - It learns the snapshot's timeline from the first Scene the data worker answers for it (`SceneSource.timeline`):
  *   a stored history (every day local, nothing to read) or a live scope, whose timeline ends on the app's day
  *   (`clock`, the one place the app's "now" enters the timeline) and whose cached days it lists from the tick
- *   cache.
+ *   cache. A read asks the cache for its day first: a day another tab of this browser stored since the listing
+ *   counts as read from there, without a read from Google Cloud.
  * - For a live scope it reads days on demand (skill cai-ingestion §5): when the view rests on a day that is
  *   not cached for `debounceMs`, that day; at idle, its two neighbours (the one in the direction of travel first);
  *   at most two reads in flight; a read the view moved away from (no longer the day or a neighbour) is cancelled.
@@ -21,7 +22,7 @@ import type { ImportFailure, ImportProgress } from '../import/progress';
 import { pullTargetOf } from '../import/target';
 import { scopeName } from '../snapshots/labels';
 import type { AppState, AppStore } from '../state';
-import type { TickCacheStore } from '../storage/tickCache';
+import type { StoredTick, TickCacheStore } from '../storage/tickCache';
 import { TICK_CONTENT_TYPE, tickCacheKey } from './cacheKey';
 import { TickReadFailed, type TickFetcher, type TickJob } from './fetchTick';
 import { ownDayOf, ticksOf } from './model';
@@ -120,6 +121,14 @@ export function liveTickKey(info: LiveInfo, day: string): string {
   return tickCacheKey({ scope: info.scopePath, readTime: dayReadTime(day), contentType: TICK_CONTENT_TYPE });
 }
 
+/**
+ * Whether a cached day counts as read on a timeline that ends `today`: kept under the day's own `key` (so never
+ * another scope's), and a latest day read at "now" only while it is still the latest (skill cai-ingestion §5).
+ */
+function countsAsRead(record: StoredTick, key: string, today: string): boolean {
+  return record.key === key && !(record.now && record.day !== today);
+}
+
 export function createTimelineController(options: TimelineControllerOptions): TimelineController {
   const { store, cache, fetchTick, demo } = options;
   const clock = options.clock ?? (() => Date.now());
@@ -160,9 +169,14 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
   };
 
   const scheduler: FetchScheduler<TickJob> = createFetchScheduler<TickJob>({
-    run: (job, signal) => {
+    run: async (job, signal) => {
       const forRef = ref;
-      return fetchTick(job, signal, (progress: ImportProgress) => {
+      // The cached days were listed when the timeline was adopted; another tab of this browser may have read the day
+      // since. Kept there, it counts as read without a read from Google Cloud (the job is done: the day is cached).
+      const kept = await cache.get(job.key).catch(() => undefined);
+      if (kept !== undefined && countsAsRead(kept, job.key, job.today)) return;
+      if (signal.aborted) throw new DOMException('The read was cancelled.', 'AbortError');
+      await fetchTick(job, signal, (progress: ImportProgress) => {
         if (signal.aborted) return;
         update(forRef, (current) =>
           current.progress === null || current.progress.day === job.day || job.day === position
@@ -288,9 +302,7 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
       if (ref !== forRef) return;
       const cached: Record<string, TickStatus> = {};
       for (const record of records) {
-        // A latest day read at "now" counts only while it is still the latest (skill cai-ingestion §5).
-        if (record.key !== liveTickKey(info, record.day) || (record.now && record.day !== today)) continue;
-        cached[record.day] = 'cached';
+        if (countsAsRead(record, liveTickKey(info, record.day), today)) cached[record.day] = 'cached';
       }
       listed = true;
       update(forRef, (current) => ({ ...current, status: { ...cached, ...current.status } }));

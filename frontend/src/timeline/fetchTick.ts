@@ -11,8 +11,8 @@
  * aborted, and a day whose abort lands while it is written is taken back), the pull ends as cancelled, and the read
  * rejects instead of resolving. The scheduler counts the day as not read the moment it cancels the read and ignores
  * the read's late answer (scheduler.ts), so a day kept anyway would sit in the cache while the bar marks it not read
- * yet, and the view coming back to it would read it again in full: keeping it would save no read. The cache holds
- * only the days the timeline counts as read.
+ * yet. The cache holds only days a timeline counted as read when it stored them: this page's, or another tab's,
+ * which the controller takes from the cache instead of reading them again (controller.ts asks it before a read).
  */
 import type { SnapshotScope } from '@gcportrait/model';
 

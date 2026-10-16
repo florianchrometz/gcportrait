@@ -1984,11 +1984,13 @@ read time.
 first; at most two reads in flight; a read the view moved away from (no longer the day or a neighbour) is cancelled
 and keeps nothing, its write to the tick cache included (`fetchTick.ts`, `storage/tickCache.ts`: the write
 takes the read's signal, writes nothing once it is aborted and takes back a day whose abort lands while it is
-written, putting back what it replaced), so the cache holds only the days the bar counts as read; a failed day is
+written, putting back what it replaced), so the cache holds only days a timeline counted as read; a failed day is
 read again only when the view comes back to it or on "Try again"; nothing is read while the view stays where the
 page opened it on the snapshot's own day (a neighbour is a whole read of the scope). Days are read
 only with a signed-in session whose permission check is ready for the snapshot's scope; otherwise the readout
-says what is missing (demo mode reads nothing; cached days are still drawn).
+says what is missing (demo mode reads nothing; cached days are still drawn). A read asks the tick cache
+for its day first: a day another tab of the browser stored after the page listed the cached days counts as
+read from there (`cached`), without a read from Google Cloud.
 
 **The bar.** One marker per day under the slider (`ui/Slider`'s `marks`), its state shown by shape: a hollow
 ring (not read yet), a filled dot (ready), a turning dashed ring (loading; it stands still with reduced

@@ -6,7 +6,8 @@
  * scope's, under their keys; a "now" copy only while it is the latest day) are listed first; the view's day is read
  * once it rests (debounced), its neighbours at idle in the direction of travel; at most two reads in flight; moving
  * away cancels; a failure is kept and not retried by prefetch; a day read becomes drawable (the scene key names it);
- * and it says why days cannot be read (demo mode, no sign-in, another scope).
+ * a day another tab stored after the listing is taken from the cache, not read again; and it says why days cannot be
+ * read (demo mode, no sign-in, another scope).
  */
 import type { Layout } from '@gcportrait/layout';
 import { describe, expect, it } from 'vitest';
@@ -64,11 +65,16 @@ function setup(
   const reads: Read[] = [];
   const delays: (() => void)[] = [];
   const idles: (() => void)[] = [];
+  const kept = new Map((options.cached ?? []).map((entry) => [entry.key, entry]));
   const cache: TickCacheStore = {
-    get: () => Promise.resolve(undefined),
+    get: (key) => Promise.resolve(kept.get(key)),
     put: () => Promise.resolve(),
-    listScope: (scope) => Promise.resolve((options.cached ?? []).filter((entry) => entry.scope === scope)),
+    listScope: (scope) => Promise.resolve([...kept.values()].filter((entry) => entry.scope === scope)),
     persistent: () => Promise.resolve(true),
+  };
+  /** Another tab of the browser stores a day, behind this controller's back. */
+  const storedElsewhere = (entry: StoredTick): void => {
+    kept.set(entry.key, entry);
   };
   const controller = createTimelineController({
     store,
@@ -111,7 +117,7 @@ function setup(
       return next;
     });
   };
-  return { store, controller, reads, flush, rest, idle, days, moveTo, delays };
+  return { store, controller, reads, flush, rest, idle, days, moveTo, delays, storedElsewhere };
 }
 
 describe('learning the timeline', () => {
@@ -164,11 +170,14 @@ describe('reading a live scope’s days', () => {
   }
 
   it('reads the view’s day once it rests, then its neighbours at idle, the direction of travel first', async () => {
-    const { store, reads, rest, idle, days, moveTo, controller } = await started();
+    const { store, reads, flush, rest, idle, days, moveTo, controller } = await started();
     moveTo('2026-10-03');
     moveTo('2026-10-02');
     expect(reads).toEqual([]);
     rest();
+    // The cache is asked first: the day is being read from then on.
+    expect(store.getState().timeline.status['2026-10-02']).toBe('loading');
+    await flush();
     expect(days()).toEqual(['2026-10-02']);
     expect(reads[0]?.job).toMatchObject({
       day: '2026-10-02',
@@ -180,6 +189,7 @@ describe('reading a live scope’s days', () => {
     });
     expect(store.getState().timeline.status['2026-10-02']).toBe('loading');
     idle();
+    await flush();
     // Two in flight at most: the older neighbour (the way the view moved) waits for one to end.
     expect(days()).toEqual(['2026-10-02', '2026-10-01']);
     reads[0]?.resolve();
@@ -190,33 +200,38 @@ describe('reading a live scope’s days', () => {
   });
 
   it('never reads the snapshot’s own day or a cached one, and reads the latest day at "now"', async () => {
-    const { rest, idle, days, moveTo, reads, controller } = await started();
+    const { flush, rest, idle, days, moveTo, reads, controller } = await started();
     moveTo('2026-10-05');
     rest();
     idle();
+    await flush();
     expect(days()).toEqual(['2026-10-04', '2026-10-06']);
     moveTo(null);
     rest();
     idle();
+    await flush();
     expect(days()).toEqual(['2026-10-06', '2026-10-08']);
     moveTo('2026-10-10');
     rest();
+    await flush();
     expect(reads.at(-1)?.job).toMatchObject({ day: '2026-10-10', readTime: null });
     controller.stop();
   });
 
   it('reads nothing, not even at idle, while the view stays where the page opened it on the snapshot’s own day', async () => {
-    const { reads, rest, idle, controller } = await started();
+    const { reads, flush, rest, idle, controller } = await started();
     rest();
     idle();
+    await flush();
     expect(reads).toEqual([]);
     controller.stop();
   });
 
   it('cancels a read the view moved away from', async () => {
-    const { store, reads, rest, moveTo, controller } = await started();
+    const { store, reads, flush, rest, moveTo, controller } = await started();
     moveTo('2026-09-20');
     rest();
+    await flush();
     expect(reads[0]?.job.day).toBe('2026-09-20');
     moveTo('2026-09-10');
     expect(reads[0]?.signal.aborted).toBe(true);
@@ -225,10 +240,11 @@ describe('reading a live scope’s days', () => {
   });
 
   it('makes a day drawable once read: the scene key names it, and shows the read’s progress', async () => {
-    const { store, reads, rest, moveTo, controller } = await started();
+    const { store, reads, flush, rest, moveTo, controller } = await started();
     moveTo('2026-10-02');
     expect(selectSceneKey(store.getState())).not.toContain('tick=');
     rest();
+    await flush();
     reads[0]?.progress({
       ...IDLE_PROGRESS,
       phase: 'reading',
@@ -249,9 +265,10 @@ describe('reading a live scope’s days', () => {
   });
 
   it('keeps a failure, never retries it at idle, and reads it again when the view comes back or on retry', async () => {
-    const { store, reads, rest, idle, days, moveTo, controller } = await started();
+    const { store, reads, flush, rest, idle, days, moveTo, controller } = await started();
     moveTo('2026-10-02');
     rest();
+    await flush();
     reads[0]?.reject(
       new TickReadFailed({ title: 'You cannot read example.com.', message: 'Permission denied.' }),
     );
@@ -261,22 +278,112 @@ describe('reading a live scope’s days', () => {
     moveTo('2026-10-03');
     rest();
     idle();
+    await flush();
     expect(days().filter((day) => day === '2026-10-02')).toHaveLength(1);
     moveTo('2026-10-02');
     rest();
+    await flush();
     expect(days().filter((day) => day === '2026-10-02')).toHaveLength(2);
     controller.retry('2026-10-02');
+    await flush();
     expect(reads.filter((read) => read.job.day === '2026-10-02')).toHaveLength(2);
     controller.stop();
   });
 
   it('forgets everything when the snapshot changes', async () => {
-    const { store, reads, rest, moveTo, controller } = await started();
+    const { store, reads, flush, rest, moveTo, controller } = await started();
     moveTo('2026-10-02');
     rest();
+    await flush();
     store.actions.setSnapshot(OTHER_REF);
     expect(reads[0]?.signal.aborted).toBe(true);
     expect(store.getState().timeline).toMatchObject({ ref: OTHER_REF, info: null, status: {} });
+    controller.stop();
+  });
+});
+
+describe('a day another tab of the browser stored after the cached days were listed', () => {
+  async function started() {
+    const harness = setup();
+    harness.store.updateConnect(() => connect());
+    harness.controller.start();
+    onScreen(harness.store, { ref: REF, timeline: LIVE });
+    await harness.flush();
+    return harness;
+  }
+
+  it('is taken from the cache when the view rests on it, without a fetch; its neighbours come next', async () => {
+    const { store, flush, rest, idle, days, moveTo, storedElsewhere, controller } = await started();
+    expect(store.getState().timeline.status).toEqual({});
+    storedElsewhere(record('2026-10-02'));
+    storedElsewhere(record('2026-10-01'));
+    moveTo('2026-10-02');
+    rest();
+    await flush();
+    expect(days()).toEqual([]);
+    expect(store.getState().timeline.status).toEqual({ '2026-10-02': 'cached' });
+    expect(selectSceneKey(store.getState())).toContain('tick=2026-10-02');
+    // At idle the neighbours: the older one (the way the view moved) is taken from the cache too, the newer one read.
+    idle();
+    await flush();
+    expect(days()).toEqual(['2026-10-03']);
+    expect(store.getState().timeline.status).toEqual({
+      '2026-10-01': 'cached',
+      '2026-10-02': 'cached',
+      '2026-10-03': 'loading',
+    });
+    controller.stop();
+  });
+
+  it('is taken from the cache on "Try again" after a failure', async () => {
+    const { store, reads, flush, rest, moveTo, storedElsewhere, controller } = await started();
+    moveTo('2026-10-02');
+    rest();
+    await flush();
+    reads[0]?.reject(new TickReadFailed({ title: 'Google Cloud did not answer.', message: 'Unavailable.' }));
+    await settled();
+    expect(store.getState().timeline.status['2026-10-02']).toBe('error');
+    storedElsewhere(record('2026-10-02'));
+    controller.retry('2026-10-02');
+    await flush();
+    // Its neighbours are read with it, the day itself not again.
+    expect(reads.map((read) => read.job.day)).toEqual(['2026-10-02', '2026-10-01', '2026-10-03']);
+    expect(store.getState().timeline.status['2026-10-02']).toBe('cached');
+    expect(store.getState().timeline.failures).toEqual({});
+    controller.stop();
+  });
+
+  it('counts only under its own scope’s key, and a "now" copy only while it is the latest day', async () => {
+    const other = { ...LIVE, scopePath: 'folders/20000000001' };
+    const { reads, flush, rest, days, moveTo, storedElsewhere, controller } = await started();
+    storedElsewhere(record('2026-10-04', {}, other));
+    storedElsewhere(record('2026-10-03', { now: true }));
+    storedElsewhere(record('2026-10-10', { now: true }));
+    moveTo('2026-10-04');
+    rest();
+    await flush();
+    moveTo('2026-10-03');
+    rest();
+    await flush();
+    // Both read from Google Cloud, the "now" copy's day again as of its 00:00 UTC.
+    expect(days()).toEqual(['2026-10-04', '2026-10-03']);
+    expect(reads.at(-1)?.job.readTime).toBe('2026-10-03T00:00:00Z');
+    // The latest day's "now" copy counts.
+    moveTo('2026-10-10');
+    rest();
+    await flush();
+    expect(reads.map((read) => read.job.day)).toEqual(['2026-10-04', '2026-10-03']);
+    controller.stop();
+  });
+
+  it('is neither fetched nor counted when the view moves away while the cache is asked', async () => {
+    const { store, reads, flush, rest, moveTo, controller } = await started();
+    moveTo('2026-10-02');
+    rest();
+    moveTo('2026-09-20');
+    await flush();
+    expect(reads).toEqual([]);
+    expect(store.getState().timeline.status).toEqual({});
     controller.stop();
   });
 });
@@ -288,12 +395,14 @@ describe('when reading becomes possible', () => {
     onScreen(store, { ref: REF, timeline: LIVE });
     await flush();
     rest();
+    await flush();
     expect(days()).toEqual([]);
     expect(store.getState().timeline.blocked).not.toBeNull();
     // The person signs in and checks the scope on the Connect page.
     store.updateConnect(() => connect());
     expect(store.getState().timeline.blocked).toBeNull();
     rest();
+    await flush();
     expect(days()).toEqual(['2026-10-02']);
     controller.stop();
   });
@@ -309,6 +418,7 @@ describe('why days cannot be read', () => {
     moveTo('2026-10-02');
     rest();
     idle();
+    await flush();
     expect(reads).toEqual([]);
     controller.stop();
     const signedOut = { ...connect(), session: SIGNED_OUT_SESSION };

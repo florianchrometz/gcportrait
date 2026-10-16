@@ -73,6 +73,9 @@ demand, as a "Pull now" reads the scope, but at that day's 00:00 UTC (`readTime`
 Reads are lazy, because each day is a full read of the scope:
 
 - a day is read once the view has rested on it for 300 ms, never all 35;
+- a day kept in this browser is not read again, even one another tab read after this page opened: it is
+  taken from what is kept once the view rests on it or next to it (until then its marker may show it not
+  read yet);
 - once the view rests, its two neighbours are read when the browser is idle, the one in the direction you were
   moving first;
 - at most two reads run at once, and a read of a day you moved away from (no longer the day on screen or a
