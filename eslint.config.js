@@ -22,6 +22,8 @@ import { importX } from 'eslint-plugin-import-x';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+import { ASSISTANT_DIR_NAMES } from './scripts/lib/repo-files.mjs';
+
 const SOURCE_FILES = ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'];
 
 /**
@@ -114,6 +116,8 @@ function dependencyDirection({ files, allowed }) {
 }
 
 export default defineConfig(
+  // The assistants' own, git-ignored folders (AGENTS.md, Assistants) are no source of the project; Claude Code also
+  // keeps whole worktrees of the repository under its, which linted as part of `.` cost a copy's memory each.
   globalIgnores(
     [
       '**/dist/',
@@ -125,6 +129,7 @@ export default defineConfig(
       'e2e/test-results/',
       'e2e/playwright-report/',
       'e2e/blob-report/',
+      ...ASSISTANT_DIR_NAMES.map((name) => `${name}/`),
     ],
     'gcportrait/ignores',
   ),
