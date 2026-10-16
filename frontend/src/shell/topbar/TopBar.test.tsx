@@ -129,7 +129,14 @@ describe('the top bar narrower than a desktop', () => {
   afterEach(() => {
     viewport?.uninstall();
     viewport = undefined;
+    vi.restoreAllMocks();
   });
+
+  /** jsdom lays nothing out: every element, the diagram's canvas among them, measures `width` × `height`. */
+  function measureEverything(width: number, height: number): void {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(width);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(height);
+  }
 
   it('on a tablet keeps two rows, the view row’s controls in View and the app row’s in More', async () => {
     viewport = installViewport(820);
@@ -160,6 +167,29 @@ describe('the top bar narrower than a desktop', () => {
     expect(within(more).getByRole('navigation', { name: 'Primary' })).toBeDefined();
     expect(within(more).getByRole('button', { name: 'Export' })).toBeDefined();
     await expectNoAxeViolations();
+  });
+
+  it('carries the canvas’s height on the diagram page for the sheets over it, and moves the disclosure bar aside while one is open', async () => {
+    viewport = installViewport(375);
+    measureEverything(375, 380);
+    const { container } = renderApp('/diagram#snapshot=demo:S');
+    const banner = screen.getByRole('banner');
+    // Two thirds of it cap the sheets (TopBar.module.css, `.overCanvas`; TopBar.css.test.ts).
+    expect(banner.style.getPropertyValue('--canvas-height')).toBe('380px');
+    expect(container.querySelector('[data-top-sheet]')).toBeNull();
+    await userEvent.click(within(banner).getByRole('button', { name: 'View' }));
+    expect(container.querySelector('[data-top-sheet]')).not.toBeNull();
+    await userEvent.click(within(banner).getByRole('button', { name: 'More' }));
+    expect(container.querySelector('[data-top-sheet]')).not.toBeNull();
+    await userEvent.click(within(banner).getByRole('link', { name: 'Settings' }));
+    // No canvas under the sheets on another page.
+    expect(banner.style.getPropertyValue('--canvas-height')).toBe('');
+  });
+
+  it('carries no canvas height on a desktop, where the sheets are in place', () => {
+    measureEverything(1440, 800);
+    renderApp('/diagram#snapshot=demo:S');
+    expect(screen.getByRole('banner').getAttribute('style')).toBeNull();
   });
 
   it('closes a sheet on a new page, and keeps one sheet open at a time', async () => {

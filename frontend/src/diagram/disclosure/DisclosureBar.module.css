@@ -130,6 +130,13 @@
     }
   }
 
+  /* While the top bar's View or More sheet is open (the frame's `data-top-sheet`), the row is hidden: the sheet leaves
+     the lower third of the canvas in view (shell/topbar/TopBar.module.css), and that strip shows the drawing a lens or
+     a filter chosen in the sheet changes rather than this row. It comes back when the sheet closes. */
+  .frame[data-top-sheet] .bar {
+    visibility: hidden;
+  }
+
   .panel {
     justify-content: flex-end;
     gap: var(--space-1);

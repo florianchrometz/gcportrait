@@ -47,6 +47,8 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  * - the canvas is shorter than a quarter of the window, or the drawer, open at its first height, leaves less than a
  *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
  *   nor (a canvas under 10.5 rem) hidden until the sheet closes;
+ * - an open View or More sheet, with the disclosure bar's row while it shows, leaves less than a third of the canvas in
+ *   view, or the sheet reaches below three quarters of the canvas's height (at every size, the sideways ones too);
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
  * Then, on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
  * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
@@ -934,6 +936,64 @@ for (const size of SIDEWAYS) {
     await details.getByRole('button', { name: 'Close', exact: true }).click();
     await expect(details).toBeHidden();
     await expect(expand).toBeVisible();
+  });
+}
+
+/**
+ * How much of the canvas the open sheet leaves in view, the disclosure bar's row counted with the sheet while it shows
+ * (a fraction of the canvas's area), and how far above the canvas's foot the sheet ends (a fraction of its height).
+ */
+function sheetRoom(sheet: Locator): Promise<{ readonly uncovered: number; readonly below: number }> {
+  return sheet.evaluate((element) => {
+    const canvas = document.getElementById('diagram-canvas')?.getBoundingClientRect();
+    if (canvas === undefined || canvas.height <= 0) return { uncovered: 0, below: 0 };
+    type Box = readonly [left: number, top: number, right: number, bottom: number];
+    const meet = (a: Box, b: Box): Box => [
+      Math.max(a[0], b[0]),
+      Math.max(a[1], b[1]),
+      Math.min(a[2], b[2]),
+      Math.min(a[3], b[3]),
+    ];
+    const area = (box: Box): number => Math.max(0, box[2] - box[0]) * Math.max(0, box[3] - box[1]);
+    const inCanvas = (rect: DOMRect): Box =>
+      meet(
+        [canvas.left, canvas.top, canvas.right, canvas.bottom],
+        [rect.left, rect.top, rect.right, rect.bottom],
+      );
+    const box = element.getBoundingClientRect();
+    const sheet = inCanvas(box);
+    const panel = document.querySelector('#diagram-canvas [role="group"][aria-label="Expand and collapse"]');
+    const row =
+      panel?.checkVisibility({ visibilityProperty: true }) === true
+        ? inCanvas(panel.getBoundingClientRect())
+        : null;
+    const covered = area(sheet) + (row === null ? 0 : area(row) - area(meet(sheet, row)));
+    return {
+      uncovered: 1 - covered / (canvas.width * canvas.height),
+      below: (canvas.bottom - box.bottom) / canvas.height,
+    };
+  });
+}
+
+for (const size of [...SIZES, ...SIDEWAYS]) {
+  test(`${String(size.width)} × ${String(size.height)}: an open View or More sheet leaves at least a third of the canvas in view, in both themes`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    for (const address of DIAGRAMS) {
+      await openDiagram(page, address);
+      for (const theme of ['light', 'dark'] as const) {
+        await page.emulateMedia({ colorScheme: theme });
+        for (const name of ['View', 'More']) {
+          const where = `${address.slice(address.indexOf('#'))}, ${theme} theme, ${name} open`;
+          const room = await sheetRoom(await openSheet(page, name));
+          expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
+          expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
+          await expectClean(page, where, { axe: false, focus: true });
+          await closeSheet(page, name);
+        }
+      }
+    }
   });
 }
 

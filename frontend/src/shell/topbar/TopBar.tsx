@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { useEffect, type ReactElement } from 'react';
+import { useEffect, type CSSProperties, type ReactElement } from 'react';
 import { Link, NavLink, useLocation, type To } from 'react-router';
 
 import { UNKNOWN_VERSION } from '../../api/staticConfig';
@@ -59,7 +59,10 @@ function brandMarkSource(): string {
  * breadcrumb (on the diagram page: the snapshot's scope down to the level drawn, resting at its end), View and More,
  * with the demo badge at the top of More. On a desktop the sheets are inline: no buttons, the rows as they are.
  * A sheet closes on a new page, and More after a pick that changes the view or the theme (a snapshot, a saved view,
- * a theme), focus back on its button (ui/Popover); Copy link, Export's menu and the account panel keep it open.
+ * a theme), focus back on its button (ui/Popover); Copy link, Export's menu and the account panel keep it open. On the
+ * diagram page a sheet hangs over the canvas, at most two thirds of the canvas's height (the bar carries that height
+ * as `--canvas-height`), its content scrolling inside it, so a third of the drawing stays in view while the controls
+ * in it change the view.
  */
 export function TopBar(): ReactElement {
   const { demo } = useAppMode();
@@ -78,6 +81,11 @@ export function TopBar(): ReactElement {
   const phone = screen === 'phone';
   const [moreOpen, setMoreOpen] = useSheet(MORE_SHEET);
   const [viewOpen, setViewOpen] = useSheet(VIEW_SHEET);
+  // The canvas's height as the diagram page measures it (state/hooks.ts), for the sheets hanging over it (their height
+  // is at most two thirds of it, TopBar.module.css `.overCanvas`).
+  const canvasHeight = useAppState((state) =>
+    narrow && state.view.onDiagram ? (state.pipeline.canvas?.height ?? null) : null,
+  );
   const store = useAppStore();
   const { pathname } = useLocation();
   const navItems: readonly NavItem[] = [
@@ -132,7 +140,14 @@ export function TopBar(): ReactElement {
   );
 
   return (
-    <header className={cx(styles.topBar, phone && styles.phone)}>
+    <header
+      className={cx(styles.topBar, phone && styles.phone, canvasHeight !== null && styles.overCanvas)}
+      style={
+        canvasHeight === null
+          ? undefined
+          : ({ '--canvas-height': `${String(canvasHeight)}px` } as CSSProperties)
+      }
+    >
       <div className={styles.appRow}>
         <Link key="home" to="/" className={styles.wordmark}>
           <img src={brandMarkSource()} alt="" className={styles.mark} data-testid="brand-mark" />

@@ -160,11 +160,12 @@
 }
 
 /* A sheet (Popover `sheet`, a phone or a tablet): the controls one under the other, scrolling inside the sheet when
-   they do not fit, never taller than most of the window, so the page stays in view below it. The popups of the
-   controls in it (a menu, a list, a panel) open in the flow under their control instead of floating over the
-   sheet, as wide as the sheet at most: their column is the sheet's width whatever they hold, and an item longer
-   than that (the Snapshot menu's "Open: …" line, a long scope or asset name) wraps onto more lines, breaking a long
-   word if it has to, so the sheet never scrolls sideways. */
+   they do not fit, never taller than most of the window, so the page stays in view below it (the top bar's sheets
+   over the diagram's canvas are lower still, at most two thirds of the canvas: shell/topbar/TopBar.module.css,
+   `.overCanvas`). The popups of the controls in it (a menu, a list, a panel) open in the flow under their control
+   instead of floating over the sheet, and scroll with it, as wide as the sheet at most: their column is the sheet's
+   width whatever they hold, and an item longer than that (the Snapshot menu's "Open: …" line, a long scope or asset
+   name) wraps onto more lines, breaking a long word if it has to, so the sheet never scrolls sideways. */
 .sheet {
   align-content: start;
   gap: var(--space-2);

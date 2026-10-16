@@ -108,15 +108,17 @@ now, and what changed in the last five weeks?
     own popup (Export's menu) keep it open, and a popup inside a sheet opens in the sheet, as wide as the
     sheet, its long lines (a snapshot's description, an account's address) wrapping, so a sheet never scrolls
     sideways;
-  - the chrome never covers the whole canvas while someone works on it: on a tablet the drawer is a panel over
-    at most half the canvas's right side, on a phone a sheet over its lower half that its handle takes to the
-    whole height (then the canvas's content is hidden until it comes down) and back, and a camera jump keeps
-    the node in the part left in view; what floats over the canvas moves clear of the drawer (the disclosure
-    bar to the bottom left on a tablet, above the sheet on a phone, or, on a canvas too short for it there,
-    hidden while the sheet is open), and the drawer's content scrolls inside it, never past its edge; the
-    timeline bar and the disclosure bar wrap onto more lines instead, a phone's timeline with the slider across
-    the width on a line as tall as its touch target, the day markers under its track inside that line, the
-    readout below it and the buttons below the readout;
+  - the chrome never covers the whole canvas while someone works on it: a View or More sheet hangs from the
+    top bar and leaves at least a third of the canvas in view, its content scrolling inside it; on a tablet
+    the drawer is a panel over at most half the canvas's right side, on a phone a sheet over its lower half
+    that its handle takes to the whole height (then the canvas's content is hidden until it comes down) and
+    back, and a camera jump keeps the node in the part left in view; what floats over the canvas moves clear
+    of the drawer (the disclosure bar to the bottom left on a tablet, above the sheet on a phone, or, on a
+    canvas too short for it there, hidden while the sheet is open; on a phone it is hidden while View or More
+    is open too), and the drawer's content scrolls inside it, never past its edge; the timeline bar and the
+    disclosure bar wrap onto more lines instead, a phone's timeline with the slider across the width on a line
+    as tall as its touch target, the day markers under its track inside that line, the readout below it and
+    the buttons below the readout;
   - no control is ever out of sight when it has focus or under something when tapped: a control the chrome
     covers is moved clear of it or hidden with what covers it;
   - a page flows in the width it has and only its own box scrolls, never the document, because a document

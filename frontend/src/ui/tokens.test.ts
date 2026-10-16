@@ -25,6 +25,15 @@ const DIAGRAM_TOKENS: Readonly<Record<string, readonly string[]>> = {
   'pages/DiagramPage.module.css': ['--dg-canvas'],
 };
 
+/**
+ * Measurements a component sets on its own element as a custom property, which a sheet may read, each with why: the
+ * top bar carries the diagram canvas's height, so the sheets hanging over the canvas leave a third of it in view
+ * (shell/topbar/TopBar.tsx).
+ */
+const MEASURED: Readonly<Record<string, readonly string[]>> = {
+  'shell/topbar/TopBar.module.css': ['--canvas-height'],
+};
+
 describe('the app chrome uses the chrome tokens only', () => {
   it('finds the primitives’ and the view controls’ sheets, and both themes’ tokens', () => {
     // A precondition of the rows below: a path or a selector that moved would leave nothing to check.
@@ -44,7 +53,7 @@ describe('the app chrome uses the chrome tokens only', () => {
   it.each(SHEETS)('%s has no raw colour, and only tokens both themes define', (path) => {
     const css = withoutComments(readSource(path));
     expect(css).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i);
-    const allowed = DIAGRAM_TOKENS[path] ?? [];
+    const allowed = [...(DIAGRAM_TOKENS[path] ?? []), ...(MEASURED[path] ?? [])];
     for (const match of css.matchAll(/var\((--[a-z0-9-]+)/g)) {
       const name = match[1] ?? '';
       if (allowed.includes(name)) continue;

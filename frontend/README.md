@@ -281,13 +281,17 @@ component reads `useScreen()`; everything else is CSS.
 | Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe or a focused crumb brings the others into view, and the edge where they are cut fades out | as on a tablet |
 | Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
 | Timeline bar | one row | the readout below the slider | the slider across the width on a line as tall as its 44-pixel thumb, the day markers under the track inside it, the readout below, then the buttons and the playback options |
-| Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways) |
+| Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways); hidden while View or More is open |
 | Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
 **Folds.** View and More are `ui/Popover` sheets (`sheet`). On a desktop they are `inline`: no button, the anchor
 and the panel `display: contents`, so the controls are the rows' own flex items and the desktop's layout and tab
 order are what they were. On a phone or a tablet each is a button and a non-modal dialog hanging from the bar's
-lower edge, never taller than most of the window. The panel is the same element either way, so a control keeps its
+lower edge, never taller than most of the window, and on `/diagram` at most two thirds of the canvas's height:
+the bar carries the canvas's measured height as `--canvas-height` (`TopBar.module.css`, `.overCanvas`), so the
+canvas's lower third shows the drawing change below the sheet while a lens or a filter is chosen in it (the
+disclosure bar's row steps aside meanwhile on a phone); what does not fit scrolls inside the sheet, and focus
+scrolls a control into view there. The panel is the same element either way, so a control keeps its
 state when the window crosses the desktop's breakpoint; crossing the phone's moves the view controls between the
 rows, which mounts them again (their state is the store's). A sheet's content stays mounted while it is closed
 (hidden), so the Saved views dialog opened from More stays open, and a press in it, while it makes the sheet inert,
@@ -351,9 +355,9 @@ instance signed in and on the Snapshots page with a snapshot stored (a card per 
 scrolls sideways, not even a table's; the tables whole on a tablet): sideways scrolling, a page laid out wider
 than the window or scrolling up and down by itself, text squeezed into a column a few characters wide, the top
 bar's items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets,
-every control one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe;
-and a theme picked in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input
-by finger. The same project runs `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a
+every control one reaches with Tab in sight when focused and tappable at its centre, the canvas's room (the
+share of it an open drawer, View or More sheet leaves in view), axe; and a theme picked in More, Sign out from
+More, a long trail, the sheet's heights and the canvas's touch input by finger. The same project runs `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a
 pan, a pinch, taps, double taps, a long press) and a mouse's drag and double-click on the same page.
 
 ## UI primitives (`src/ui/`)

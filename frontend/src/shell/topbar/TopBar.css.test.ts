@@ -3,6 +3,8 @@
 /**
  * The top bar's brand mark as its stylesheet sizes it (jsdom lays nothing out; e2e/tests/shell.spec.ts measures it in a
  * browser): a 24-pixel square, centred on the wordmark, with the website header's gap between the mark and the name.
+ * And the cap of a sheet over the diagram's canvas: two thirds of the canvas's height (e2e/tests/mobile.spec.ts
+ * measures the share of the canvas it leaves in view at every phone size).
  */
 import { describe, expect, it } from 'vitest';
 
@@ -30,5 +32,14 @@ describe('the brand mark in the top bar', () => {
     );
     const header = readSource('../../website/src/components/Header.astro');
     expect(declarations(header, '.wordmark {')).toContain('gap: 0.6rem');
+  });
+});
+
+describe('a sheet over the diagram’s canvas', () => {
+  it('is at most two thirds of the canvas’s height, which the bar carries', () => {
+    const css = readSource('shell/topbar/TopBar.module.css');
+    expect(declarations(css, '.overCanvas .sheet {')).toEqual([
+      'max-height: min(40rem, calc(var(--canvas-height) * 2 / 3))',
+    ]);
   });
 });

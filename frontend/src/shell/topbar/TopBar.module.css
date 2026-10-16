@@ -143,7 +143,8 @@
  * Narrower than a desktop (ui/screen.ts, AGENTS.md "Product rules"): the same controls, folded into the View and More
  * sheets (ui/Popover `sheet`), every target at least 44 px (the token --control-height grows to it). The bar stays on
  * top of the page and clear of a phone's notch and rounded corners (the safe-area insets); a sheet hangs from the
- * bar's lower edge, over the page, never as tall as the window.
+ * bar's lower edge, over the page, never as tall as the window, and over the diagram's canvas at most two thirds of
+ * the canvas's height.
  */
 @media (max-width: 79.99rem) {
   .topBar {
@@ -178,6 +179,16 @@
     width: min(24rem, calc(100% - 2 * var(--space-2)));
     min-width: 0;
     padding: var(--space-3);
+  }
+
+  /* On the diagram page a sheet hangs over the canvas, whose height the bar carries (`--canvas-height`, TopBar.tsx):
+     it is at most two thirds of that height, so the canvas's lower third stays in view below it, across the canvas's
+     width, and shows the drawing change as a lens, a filter or a theme is chosen in the sheet; what does not fit
+     scrolls inside the sheet (focus scrolls a control into view there). A share of the canvas, not of the window: the
+     timeline bar and the footer below the canvas leave it from 28 % of a phone's height (a small phone turned
+     sideways) to 75 % (a tall one), so no share of the window would leave a third of it on every phone. */
+  .overCanvas .sheet {
+    max-height: min(40rem, calc(var(--canvas-height) * 2 / 3));
   }
 
   .sheet > * {
