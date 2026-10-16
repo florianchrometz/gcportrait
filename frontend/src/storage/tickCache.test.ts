@@ -3,18 +3,19 @@
 /**
  * The tick cache in IndexedDB (fake-indexeddb): one entry per cache key, never shared across scopes; days before
  * the 35-day window dropped when a tick of the scope is stored; every scope's ticks listed and deleted one by one or
- * by scope (the Snapshots page); nothing kept without IndexedDB; and the version-1 store, keyed by
- * `[scope, readTime]`, which holds no data, replaced by version 2's.
+ * by scope (the Snapshots page); nothing kept of a tick whose read is cancelled before or while it is written;
+ * nothing kept without IndexedDB; and the version-1 store, keyed by `[scope, readTime]`, which holds no data,
+ * replaced by version 2's.
  */
 import 'fake-indexeddb/auto';
 
 import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TICK_CONTENT_TYPE, tickCacheKey } from '../timeline/cacheKey';
 import { DB_NAME, DB_VERSION, openDatabase, type GcportraitDB, type StoredTick } from './db';
-import { createTickCacheStore, staleTicks } from './tickCache';
+import { createTickCacheStore, staleTicks, TickWriteCancelled } from './tickCache';
 
 const realFactory = globalThis.indexedDB;
 const open: GcportraitDB[] = [];
@@ -112,6 +113,54 @@ describe('the tick cache', () => {
     expect(await cache.removeScope(FOLDER)).toBe(1);
     expect(await cache.removeScope(FOLDER)).toBe(0);
     expect((await cache.list()).map((entry) => entry.key)).toEqual([tick(ORG, '2026-10-02').key]);
+  });
+
+  it('keeps nothing of a tick whose read is cancelled before or while it is written', async () => {
+    const db = await database();
+    const cache = createTickCacheStore(Promise.resolve(db));
+    const transaction = db.transaction.bind(db);
+    let abortOnWrite: AbortController | null = null;
+    vi.spyOn(db, 'transaction').mockImplementation((...args: Parameters<typeof db.transaction>) => {
+      const opened = transaction(...args);
+      // The abort lands once the write's transaction is open.
+      abortOnWrite?.abort();
+      return opened;
+    });
+    const read = (entry: StoredTick): string => `${entry.day} ${entry.actualReadTime}`;
+    const listed = async (): Promise<string[]> => (await cache.listScope(ORG)).map(read).sort();
+    // The scope keeps a day about to leave the window and the latest day read at "now".
+    await cache.put(tick(ORG, '2026-09-05'), '2026-10-08');
+    const latest = tick(ORG, '2026-10-09', { now: true, actualReadTime: '2026-10-09T18:00:00Z' });
+    await cache.put(latest, '2026-10-09');
+    const kept = ['2026-09-05 2026-09-05T00:00:00Z', '2026-10-09 2026-10-09T18:00:00Z'];
+    expect(await listed()).toEqual(kept);
+    // A signal aborted before the write: nothing is written, and nothing dropped.
+    const before = new AbortController();
+    before.abort();
+    for (const day of ['2026-10-01', '2026-10-09'])
+      await expect(cache.put(tick(ORG, day), '2026-10-10', { signal: before.signal })).rejects.toBeInstanceOf(
+        TickWriteCancelled,
+      );
+    expect(await listed()).toEqual(kept);
+    // An abort that lands while a day is written: the day is taken back.
+    abortOnWrite = new AbortController();
+    await expect(
+      cache.put(tick(ORG, '2026-10-01'), '2026-10-10', { signal: abortOnWrite.signal }),
+    ).rejects.toBeInstanceOf(TickWriteCancelled);
+    expect(await cache.get(tick(ORG, '2026-10-01').key)).toBeUndefined();
+    // ... and while the day read at 00:00 replaces its "now" read: the "now" read is put back as it was. The day
+    // that left the window stays dropped (it cannot be shown).
+    abortOnWrite = new AbortController();
+    await expect(
+      cache.put(tick(ORG, '2026-10-09'), '2026-10-10', { signal: abortOnWrite.signal }),
+    ).rejects.toBeInstanceOf(TickWriteCancelled);
+    expect(await cache.get(latest.key)).toMatchObject({ now: true, actualReadTime: '2026-10-09T18:00:00Z' });
+    expect(await listed()).toEqual(['2026-10-09 2026-10-09T18:00:00Z']);
+    // Without a cancel the same days store: the cancelled writes left nothing in their way.
+    abortOnWrite = null;
+    await cache.put(tick(ORG, '2026-10-01'), '2026-10-10', { signal: new AbortController().signal });
+    await cache.put(tick(ORG, '2026-10-09'), '2026-10-10', { signal: new AbortController().signal });
+    expect(await listed()).toEqual(['2026-10-01 2026-10-01T00:00:00Z', '2026-10-09 2026-10-09T00:00:00Z']);
   });
 
   it('keeps nothing without IndexedDB', async () => {

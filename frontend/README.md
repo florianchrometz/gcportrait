@@ -1966,9 +1966,12 @@ read time.
 
 **Reads** (`controller.ts`, `scheduler.ts`). Never all 35: when the view rests on a live day that is not cached for
 300 ms, that day; at idle (`requestIdleCallback`), its two neighbours, the one in the direction the view moved
-first; at most two reads in flight; a read the view moved away from (no longer the day or a neighbour) is cancelled,
-a failed day is read again only when the view comes back to it or on "Try again"; nothing is read while the view
-stays where the page opened it on the snapshot's own day (a neighbour is a whole read of the scope). Days are read
+first; at most two reads in flight; a read the view moved away from (no longer the day or a neighbour) is cancelled
+and keeps nothing, its write to the tick cache included (`fetchTick.ts`, `storage/tickCache.ts`: the write
+takes the read's signal, writes nothing once it is aborted and takes back a day whose abort lands while it is
+written, putting back what it replaced), so the cache holds only the days the bar counts as read; a failed day is
+read again only when the view comes back to it or on "Try again"; nothing is read while the view stays where the
+page opened it on the snapshot's own day (a neighbour is a whole read of the scope). Days are read
 only with a signed-in session whose permission check is ready for the snapshot's scope; otherwise the readout
 says what is missing (demo mode reads nothing; cached days are still drawn).
 
@@ -2022,8 +2025,10 @@ Tests: `ticks.test.ts` (fixed `today`: 35 ticks, the latest at "now", month, yea
 labels), `cacheKey.test.ts`, `scheduler.test.ts` (order, the in-flight limit, cancellation), `playback.test.ts` (the
 state machine), `model.test.ts`, `controller.test.ts` (on a real store with a fake cache and reader: the debounced
 read, the idle prefetch in order, two in flight, cancellation, failures, cached and stale days, the reasons days
-cannot be read), `fetchTick.test.ts` (the in-process import worker and a pretend backend),
-`storage/tickCache.test.ts` (fake-indexeddb, the version-2 migration; listing and deleting),
+cannot be read), `fetchTick.test.ts` (the in-process import worker and a pretend backend; a cancel as the day's
+write begins or while it is written keeps nothing and ends the read as cancelled), `storage/tickCache.test.ts`
+(fake-indexeddb, the version-2 migration; listing and deleting; a write cancelled before or while it is made
+keeps nothing and puts back what it replaced),
 `worker/source.test.ts`,
 `worker/handler.test.ts` (a day through the data handler), `state/pipeline.test.ts` (a timeline day drawn without the
 snapshot going back to loading), `TimelineBar.test.tsx` (the app on

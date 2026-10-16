@@ -6,9 +6,12 @@
  * controller, after a read); the data worker reads one when the view names its tick (timeline/worker/source.ts).
  *
  * Ticks older than the timeline's 35 days cannot be shown and are dropped when a newer tick of the same scope is
- * stored (`staleTicks`). Without IndexedDB nothing is kept: the data worker could not read it, and a live snapshot
- * cannot exist without IndexedDB anyway (imports and pulls are refused then). The Snapshots page lists every cached
- * tick by scope and deletes one, or a whole scope's, to free storage (`list`, `remove`, `removeScope`).
+ * stored (`staleTicks`). A write takes the read's signal, so a read the timeline cancels keeps nothing: aborted
+ * before the write, nothing is written; aborted while it is written, the tick is taken back and the entry it
+ * replaced, if any, put back; either way it rejects with `TickWriteCancelled`. Without IndexedDB nothing is kept:
+ * the data worker could not read it, and a live snapshot cannot exist without IndexedDB anyway (imports and pulls
+ * are refused then). The Snapshots page lists every cached tick by scope and deletes one, or a whole scope's, to
+ * free storage (`list`, `remove`, `removeScope`).
  */
 import { addDays, TIMELINE_DAYS } from '../timeline/ticks';
 import { databaseOf, type DatabaseSource } from './connection';
@@ -16,13 +19,30 @@ import type { StoredTick } from './db';
 
 export type { StoredTick } from './db';
 
+/** A tick's write was cancelled (its read's signal aborted): nothing of it is kept. */
+export class TickWriteCancelled extends Error {
+  override readonly name = 'TickWriteCancelled';
+  constructor() {
+    super('The day was not stored: its read was cancelled.');
+  }
+}
+
+export interface TickWriteOptions {
+  /**
+   * The read's signal: aborted before the write, nothing is written; aborted while it is written, the tick is taken
+   * back and the entry it replaced put back. Either way the write rejects with {@link TickWriteCancelled}.
+   */
+  readonly signal?: AbortSignal;
+}
+
 export interface TickCacheStore {
   get(key: string): Promise<StoredTick | undefined>;
   /**
    * Stores a tick, replacing one under the same key, and drops the scope's ticks that lie before the 35-day window
-   * ending `today` (the app's day).
+   * ending `today` (the app's day). An aborted `options.signal` keeps nothing of the tick and rejects with
+   * {@link TickWriteCancelled}.
    */
-  put(tick: StoredTick, today: string): Promise<void>;
+  put(tick: StoredTick, today: string, options?: TickWriteOptions): Promise<void>;
   /** The cached ticks of a scope (every key it has; a Blob is a handle, read only when asked). */
   listScope(scope: string): Promise<readonly StoredTick[]>;
   /** Whether ticks can be stored here (false without IndexedDB). */
@@ -37,6 +57,11 @@ export interface TickCacheManager {
   remove(key: string): Promise<void>;
   /** Deletes every cached tick of a scope (`organizations/123`); resolves to how many there were. */
   removeScope(scope: string): Promise<number>;
+}
+
+/** Throws {@link TickWriteCancelled} once `signal` is aborted: a cancelled read writes nothing. */
+function stopIfCancelled(signal: AbortSignal | undefined): void {
+  if (signal?.aborted === true) throw new TickWriteCancelled();
 }
 
 /** The ticks of `entries` whose day lies before the 35-day window that ends `today`. */
@@ -60,15 +85,26 @@ export function createTickCacheStore(source: DatabaseSource): TickCacheStore & T
         return undefined;
       }
     },
-    async put(tick, today) {
+    async put(tick, today, options) {
+      const signal = options?.signal;
+      stopIfCancelled(signal);
       const db = await database();
       if (db === null) throw new Error('This browser does not let gcportrait store the days it reads.');
+      stopIfCancelled(signal);
       const transaction = db.transaction('tickCache', 'readwrite');
       const store = transaction.store;
       const kept = await store.index('byScope').getAll(tick.scope);
       for (const stale of staleTicks(kept, today)) await store.delete(stale.key);
       await store.put(tick);
       await transaction.done;
+      if (signal?.aborted === true) {
+        // Cancelled while it was written: the tick is taken back, and what it replaced put back (the days dropped
+        // as past the window stay dropped: they cannot be shown).
+        const replaced = kept.find((entry) => entry.key === tick.key);
+        if (replaced === undefined) await db.delete('tickCache', tick.key);
+        else await db.put('tickCache', replaced);
+        throw new TickWriteCancelled();
+      }
     },
     async listScope(scope) {
       const db = await database();

@@ -4,7 +4,8 @@
  * Reading a live day into the tick cache (fetchTick.ts) through the live pull, with the in-process import worker and
  * a pretend backend: the request names the scope, the day's read time (none for the latest day, "now"), the mode
  * and the quota project; the day is stored under its cache key with what Google reported, not as a snapshot;
- * progress arrives as the pull's; a failure carries Google's message verbatim; a cancel stores nothing.
+ * progress arrives as the pull's; a failure carries Google's message verbatim; a cancel stores nothing, one that
+ * lands as the day's write begins or while the day is written included, and the read ends as cancelled, not done.
  */
 import { generateOrganization, toCaiAsset } from '@gcportrait/demo-data';
 import { migrateSnapshot } from '@gcportrait/model';
@@ -14,7 +15,7 @@ import { NO_AUTH, type AuthControls } from '../auth';
 import { inProcessImportWorker } from '../import/worker/inProcess';
 import type { ImportProgress } from '../import/progress';
 import { decodeJson } from '../snapshots/codec';
-import type { StoredTick, TickCacheStore } from '../storage/tickCache';
+import { TickWriteCancelled, type StoredTick, type TickCacheStore } from '../storage/tickCache';
 import { liveTickKey } from './controller';
 import { createTickFetcher, TickReadFailed, type TickJob } from './fetchTick';
 
@@ -64,10 +65,20 @@ function memoryCache(): TickCacheStore & {
     stored,
     todays,
     get: (key) => Promise.resolve(stored.get(key)),
-    put: (tick, today) => {
+    // As the real store: nothing is written once the signal is aborted, and a tick whose abort lands while it is
+    // written (the write takes a moment) is taken back, what it replaced put back.
+    put: async (tick, today, options) => {
+      const aborted = (): boolean => options?.signal?.aborted === true;
+      if (aborted()) throw new TickWriteCancelled();
+      const replaced = stored.get(tick.key);
       stored.set(tick.key, tick);
       todays.push(today);
-      return Promise.resolve();
+      await Promise.resolve();
+      if (aborted()) {
+        if (replaced === undefined) stored.delete(tick.key);
+        else stored.set(tick.key, replaced);
+        throw new TickWriteCancelled();
+      }
     },
     listScope: () => Promise.resolve([...stored.values()]),
     persistent: () => Promise.resolve(true),
@@ -186,4 +197,49 @@ describe('reading a live day', () => {
     ).rejects.toThrow('cancelled');
     expect(cache.stored.size).toBe(0);
   });
+
+  /**
+   * The cache with the read cancelled as the day's write begins (`before` the cache is called) or while the day is
+   * written (`during`); `signals` are the signals the writes were given.
+   */
+  function cancelling(
+    cache: TickCacheStore,
+    controller: AbortController,
+    when: 'before' | 'during',
+  ): TickCacheStore & { readonly signals: (AbortSignal | undefined)[] } {
+    const signals: (AbortSignal | undefined)[] = [];
+    return {
+      ...cache,
+      signals,
+      put(tick, today, options) {
+        signals.push(options?.signal);
+        if (when === 'before') controller.abort();
+        const writing = cache.put(tick, today, options);
+        controller.abort();
+        return writing;
+      },
+    };
+  }
+
+  it.each(['before', 'during'] as const)(
+    'keeps nothing of a day cancelled %s its write, and ends the read as cancelled',
+    async (when) => {
+      backend(frames('2026-10-01T00:00:00Z'));
+      const cache = memoryCache();
+      const controller = new AbortController();
+      const writes = cancelling(cache, controller, when);
+      const worker = inProcessImportWorker()();
+      const read = createTickFetcher({ auth, cache: writes, worker: () => Promise.resolve(worker.client) });
+      const progress: ImportProgress[] = [];
+      await expect(
+        read(job('2026-10-01', '2026-10-01T00:00:00Z'), controller.signal, (next) => progress.push(next)),
+      ).rejects.toThrow('cancelled');
+      // The write was given the read's signal, and the cancel reached it.
+      expect(writes.signals).toHaveLength(1);
+      expect(writes.signals[0]?.aborted).toBe(true);
+      expect(cache.stored.size).toBe(0);
+      expect(progress.at(-1)).toMatchObject({ phase: 'cancelled', result: null, failure: null });
+      expect(progress.some((step) => step.phase === 'done')).toBe(false);
+    },
+  );
 });
