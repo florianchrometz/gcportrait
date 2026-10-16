@@ -15,6 +15,10 @@
  *   it. A ghost needs its container: one whose container is not drawn as an open zone now (gone, or collapsed into
  *   a chip) gets none; a chip counts it instead (below). The ghosts keep their ids: a removed asset is in no Graph
  *   of the drawn day, so no id is drawn twice.
+ * - **What the ghosts depend on** (`TickDiff.earlier`): every ghost zone and every zone around a ghost on the earlier
+ *   day, up to the canvas, with its container, whether it was the view's overlay there and the state it was drawn
+ *   in. The disclosure buttons judge by these whether a press keeps the ghosts, since the drawn day may hold such a
+ *   zone elsewhere, or not hold the perimeter whose overlay it was.
  * - **Inside chips:** what a collapsed zone holds is not drawn, so a chip counts the added, removed and changed
  *   nodes inside it that the view would draw were it open (the view built with every zone open: detail `all`, no
  *   flips, no `depth` filter; on the drawn day for added and changed nodes, on the earlier day for removed ones).
@@ -35,7 +39,7 @@ import {
   type ViewSpecInput,
 } from '@gcportrait/model';
 
-import type { DiffCounts, GhostReason, TickDiff } from './types';
+import type { DiffCounts, EarlierZone, GhostReason, TickDiff } from './types';
 
 /** One day as the data worker holds it: its snapshot and Graph, and its tick (absent: the snapshot's own day). */
 export interface DiffDayData {
@@ -186,29 +190,51 @@ function insideChips(
   return out;
 }
 
+interface Ghosts {
+  /** The ghost roots by the container they go into (null: the top level), each in id order. */
+  readonly roots: ReadonlyMap<string | null, SceneNode[]>;
+  readonly reasons: ReadonlyMap<string, GhostReason>;
+  /** The zones the ghosts depend on, as the earlier day drew them (`TickDiff.earlier`). */
+  readonly zones: ReadonlyMap<string, EarlierZone>;
+}
+
 /** The ghosts: the nodes the view drew on the earlier day that it no longer draws (see the file comment). */
 function ghostsOf(
   input: TickDiffInput,
   now: SceneIndex,
   removed: ReadonlySet<string>,
   changed: ReadonlySet<string>,
-): { readonly roots: ReadonlyMap<string | null, SceneNode[]>; readonly reasons: Map<string, GhostReason> } {
+): Ghosts {
   const roots = new Map<string | null, SceneNode[]>();
   const reasons = new Map<string, GhostReason>();
-  if (removed.size === 0 && changed.size === 0) return { roots, reasons };
+  const zones = new Map<string, EarlierZone>();
+  if (removed.size === 0 && changed.size === 0) return { roots, reasons, zones };
   // The earlier day at the level the drawn Scene uses (an `auto` view could pick another one there), same flips.
   const earlierView = normalizeViewSpec({ ...input.spec, detail: input.report.detail.used });
   const earlier = buildOn(input, input.before.graph, earlierView, input.envBefore);
   // Rooted elsewhere (a drill-in root that is gone today): the earlier containers are not today's.
-  if (earlier.report.root.used !== input.report.root.used) return { roots, reasons };
+  if (earlier.report.root.used !== input.report.root.used) return { roots, reasons, zones };
   const then = indexScene(earlier.scene);
+  const overlays = new Set(earlier.report.overlays.map((overlay) => overlay.zone));
   const gone = (id: string): boolean => !now.nodes.has(id);
+  // A zone of the earlier Scene, with what the scene builder decided its state from there.
+  const keep = (node: SceneNode): void => {
+    if (node.type !== 'zone') return;
+    zones.set(node.id, {
+      kind: node.kind,
+      parent: then.parent.get(node.id) ?? null,
+      overlay: overlays.has(node.id),
+      collapsed: node.collapsed !== undefined,
+      empty: node.collapsed === undefined && node.children.length === 0,
+    });
+  };
   // Removed is removed; a changed node the view no longer draws is hidden; anything else inside a ghost (a region
   // of a removed project, an asset that did not change in a project marked for deletion) is what its ghost is.
   const ghost = (node: SceneNode, around: GhostReason): SceneNode => {
     const reason: GhostReason = removed.has(node.id) ? 'removed' : changed.has(node.id) ? 'hidden' : around;
     reasons.set(node.id, reason);
     if (node.type === 'card') return node;
+    keep(node);
     return {
       ...node,
       children: node.children.filter((child) => gone(child.id)).map((child) => ghost(child, reason)),
@@ -223,9 +249,24 @@ function ghostsOf(
     const list = roots.get(up);
     if (list === undefined) roots.set(up, [root]);
     else list.push(root);
+    // The zones around it there, up to the canvas (or to one kept for another ghost, which holds the rest).
+    for (let around = up; around !== null && !zones.has(around); around = then.parent.get(around) ?? null) {
+      const zone = then.nodes.get(around);
+      if (zone !== undefined) keep(zone);
+    }
   }
   for (const list of roots.values()) list.sort((a, b) => compare(a.id, b.id));
-  return { roots, reasons };
+  return { roots, reasons, zones };
+}
+
+/** A map's entries as a record, in id order. */
+function sortedRecord<T>(map: ReadonlyMap<string, T>): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const id of [...map.keys()].sort(compare)) {
+    const value = map.get(id);
+    if (value !== undefined) out[id] = value;
+  }
+  return out;
 }
 
 /** The Scene with the ghost roots added to their containers' children (or the top level), and its rect count. */
@@ -252,12 +293,7 @@ function withGhosts(
 export function tickDiff(input: TickDiffInput): TickDiffResult {
   const diff = diffSnapshots(input.before.snapshot, input.after.snapshot);
   const now = indexScene(input.scene);
-  const { roots, reasons } = ghostsOf(input, now, new Set(diff.removed), new Set(diff.changed));
-  const ghosts: Record<string, GhostReason> = {};
-  for (const id of [...reasons.keys()].sort(compare)) {
-    const reason = reasons.get(id);
-    if (reason !== undefined) ghosts[id] = reason;
-  }
+  const { roots, reasons, zones } = ghostsOf(input, now, new Set(diff.removed), new Set(diff.changed));
   return {
     scene: withGhosts(input.scene, roots, reasons.size),
     diff: {
@@ -268,7 +304,8 @@ export function tickDiff(input: TickDiffInput): TickDiffResult {
       added: diff.added,
       removed: diff.removed,
       changed: diff.changed,
-      ghosts,
+      ghosts: sortedRecord(reasons),
+      earlier: sortedRecord(zones),
       inside: insideChips(input, now, diff),
     },
   };

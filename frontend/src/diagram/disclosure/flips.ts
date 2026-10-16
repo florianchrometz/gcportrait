@@ -16,6 +16,9 @@
  * flip, so a change to that flip alone changes nothing on screen and leaves both buttons inert. Such a flip is the
  * person's choice for when the zone holds something again (after a lens switch, say): both buttons leave it as it
  * is, unless the level they write gives the zone that state by default, when it goes as any zone's flip would.
+ * On a timeline day a ghost zone's flip is treated as a flip of the view's zones is, by the state the earlier day
+ * drew the zone in and what it was there (the diff's `earlier`), so neither button opens or closes a ghost against
+ * its rule either.
  */
 import { BUNDLE_ID_PREFIX, DETAIL_LEVELS, flipIdOf, isVirtualNode, zoneOpensAt } from '@gcportrait/graph';
 import {
@@ -30,7 +33,7 @@ import {
 } from '@gcportrait/model';
 
 import { autoLevel } from '../autoDetail';
-import type { TickDiff } from '../diff/types';
+import type { EarlierZone, TickDiff } from '../diff/types';
 
 /** What the disclosure logic reads of the Scene on screen (the data worker's `SceneAnswer` fits). */
 export interface ShownScene {
@@ -39,28 +42,24 @@ export interface ShownScene {
   /**
    * A timeline day's diff, whose ghosts the Scene holds besides the view. The diff builds the earlier day at the
    * level in use with the view's flips (diff/tickDiff.ts), so a press that leaves every zone of the view as it is
-   * can still change the ghosts (back at `auto`, an open ghost project becomes a ghost chip): the zones that hold
-   * ghosts and the ghost zones are part of the drawing the buttons compare with.
+   * can still change the ghosts (back at `auto`, an open ghost project becomes a ghost chip): the zones the ghosts
+   * depend on, as that day drew them (`earlier`), are part of the drawing the buttons compare with.
    */
-  readonly diff?: Pick<TickDiff, 'ghosts'>;
+  readonly diff?: Pick<TickDiff, 'ghosts' | 'earlier'>;
 }
 
 const rank = (level: ConcreteDetailLevel): number => DETAIL_LEVELS.indexOf(level);
 
-/** One zone of the Scene on screen, as the disclosure logic sees it. */
-export interface ZoneState {
-  readonly id: string;
+/** A zone as a drawing shows it, with what the scene builder decided its state from. */
+export interface ZoneFacts {
   readonly kind: ZoneKind;
-  readonly label: string;
   /** Drawn as a chip. */
   readonly collapsed: boolean;
   /**
-   * Open with nothing inside but a timeline day's ghosts: never a chip, whatever the level, and the scene builder
-   * ignores its flip.
+   * Open with nothing inside for the scene builder that drew it (to the drawn day's, a timeline day's ghosts are
+   * nothing): never a chip, whatever the level, and that builder ignores its flip.
    */
   readonly empty: boolean;
-  /** Holds a timeline day's ghost: the earlier day, built at the view's level and flips, drew it open. */
-  readonly ghosts: boolean;
   readonly overlay: boolean;
   /** How many asset zones enclose it, itself included when it is one (the `depth` filter's measure). */
   readonly depth: number;
@@ -68,11 +67,26 @@ export interface ZoneState {
   readonly counted: boolean;
 }
 
-/** The zones of a Scene on screen: the view's and a timeline day's ghost zones, each keyed by flip token. */
+/** One zone of the Scene on screen, as the disclosure logic sees it. */
+export interface ZoneState extends ZoneFacts {
+  readonly id: string;
+  readonly label: string;
+}
+
+/** The zones of a Scene on screen, each keyed by flip token. */
 interface Drawing {
+  /** The view's zones (a timeline day's ghosts are none of them). */
   readonly zones: ReadonlyMap<string, ZoneState>;
-  /** The ghost zones: one drawn open is `empty`, and holds `ghosts` unless it holds nothing at all. */
-  readonly ghostZones: ReadonlyMap<string, ZoneState>;
+  /**
+   * On a timeline day, the zones its ghosts depend on as the earlier day drew them (the diff's `earlier`): every
+   * ghost zone, and every zone around a ghost there.
+   */
+  readonly earlier: ReadonlyMap<string, ZoneFacts>;
+}
+
+/** Whether a zone counts for the `depth` filter, as the scene builder counts it. */
+function countsForDepth(id: string, overlay: boolean): boolean {
+  return !overlay && !isVirtualNode(id) && !id.startsWith(BUNDLE_ID_PREFIX);
 }
 
 function drawingOf(shown: ShownScene): Drawing {
@@ -80,21 +94,20 @@ function drawingOf(shown: ShownScene): Drawing {
   const ghosts = shown.diff?.ghosts ?? {};
   const isGhost = (node: SceneNode): boolean => Object.hasOwn(ghosts, node.id);
   const zones = new Map<string, ZoneState>();
-  const ghostZones = new Map<string, ZoneState>();
   const visit = (nodes: readonly SceneNode[], depth: number): void => {
     for (const node of nodes) {
-      if (node.type !== 'zone') continue;
+      // A ghost, and all it holds, is the earlier day's.
+      if (node.type !== 'zone' || isGhost(node)) continue;
       const overlay = overlays.has(node.id);
-      const counted = !overlay && !isVirtualNode(node.id) && !node.id.startsWith(BUNDLE_ID_PREFIX);
+      const counted = countsForDepth(node.id, overlay);
       const own = counted ? depth + 1 : depth;
-      (isGhost(node) ? ghostZones : zones).set(flipIdOf(node.id), {
+      zones.set(flipIdOf(node.id), {
         id: node.id,
         kind: node.kind,
         label: node.label,
         collapsed: node.collapsed !== undefined,
         // A ghost is no asset of the drawn day: the builder saw the zone without it.
         empty: node.collapsed === undefined && node.children.every(isGhost),
-        ghosts: node.children.some(isGhost),
         overlay,
         depth: own,
         counted,
@@ -103,7 +116,37 @@ function drawingOf(shown: ShownScene): Drawing {
     }
   };
   visit(shown.scene.children, 0);
-  return { zones, ghostZones };
+  return { zones, earlier: earlierZones(shown.diff?.earlier ?? {}) };
+}
+
+/**
+ * The zones a timeline day's ghosts depend on, keyed by flip token, each with its depth on the earlier day: the
+ * zones around each one are listed too, up to the canvas.
+ */
+function earlierZones(earlier: Readonly<Record<string, EarlierZone>>): ReadonlyMap<string, ZoneFacts> {
+  const depths = new Map<string, number>();
+  const depthOf = (id: string): number => {
+    const zone = Object.hasOwn(earlier, id) ? earlier[id] : undefined;
+    if (zone === undefined) return 0;
+    let depth = depths.get(id);
+    if (depth === undefined) {
+      depth = (zone.parent === null ? 0 : depthOf(zone.parent)) + (countsForDepth(id, zone.overlay) ? 1 : 0);
+      depths.set(id, depth);
+    }
+    return depth;
+  };
+  const zones = new Map<string, ZoneFacts>();
+  for (const [id, zone] of Object.entries(earlier)) {
+    zones.set(flipIdOf(id), {
+      kind: zone.kind,
+      collapsed: zone.collapsed,
+      empty: zone.empty,
+      overlay: zone.overlay,
+      depth: depthOf(id),
+      counted: countsForDepth(id, zone.overlay),
+    });
+  }
+  return zones;
 }
 
 /**
@@ -115,7 +158,7 @@ export function zonesByFlip(shown: ShownScene): ReadonlyMap<string, ZoneState> {
 }
 
 /** Whether the `depth` filter closes a zone, whatever the level. */
-function closedByDepth(zone: ZoneState, depthLimit: number | undefined): boolean {
+function closedByDepth(zone: ZoneFacts, depthLimit: number | undefined): boolean {
   return depthLimit !== undefined && zone.counted && zone.depth > depthLimit;
 }
 
@@ -124,7 +167,7 @@ function closedByDepth(zone: ZoneState, depthLimit: number | undefined): boolean
  * (`zoneOpensAt`, `@gcportrait/graph` step (e)) or the `depth` filter.
  */
 export function collapsedByDefault(
-  zone: ZoneState,
+  zone: ZoneFacts,
   level: ConcreteDetailLevel,
   depthLimit: number | undefined,
 ): boolean {
@@ -158,9 +201,9 @@ interface Press {
  * Whether the view on screen at `level` with `flips` (in place of its own level and flips) draws what is on screen:
  * every zone on screen keeps its state, a chip staying a chip and an open zone open, so what the chips hold stays
  * hidden and the scene builder decides every zone as it did. A zone drawn empty keeps its state whatever its flip
- * says, as the builder ignores a flip on a zone with nothing inside. On a timeline day the ghosts count too: a zone
- * that holds ghosts was open on the earlier day and each ghost zone was as it is drawn, so each of them keeps its
- * state there, the day the diff builds at the level and flips written.
+ * says, as the builder ignores a flip on a zone with nothing inside. On a timeline day the ghosts count too: each
+ * zone they depend on keeps the state the earlier day drew it in, on that day, which the diff builds at the level
+ * and flips written and which decides each zone by what it was there (where it lay, whether it was the overlay).
  */
 function drawsAsShown(
   drawing: Drawing,
@@ -169,12 +212,20 @@ function drawsAsShown(
   depthLimit: number | undefined,
 ): boolean {
   const flipped = new Set(flips);
-  const keeps = ([token, zone]: readonly [string, ZoneState]): boolean => {
-    if (zone.empty && !zone.ghosts) return true;
+  const keeps = ([token, zone]: readonly [string, ZoneFacts]): boolean => {
+    if (zone.empty) return true;
     const collapsed = collapsedByDefault(zone, level, depthLimit) !== flipped.has(token);
     return collapsed === zone.collapsed;
   };
-  return [...drawing.zones].every(keeps) && [...drawing.ghostZones].every(keeps);
+  return [...drawing.zones].every(keeps) && [...drawing.earlier].every(keeps);
+}
+
+/**
+ * The zone a flip names in the drawing on screen: a zone of the view or, on a timeline day, one its ghosts depend
+ * on (as the earlier day drew it), which a press treats alike; undefined when it names neither.
+ */
+function zoneOfFlip(drawing: Drawing, token: string): ZoneFacts | undefined {
+  return drawing.zones.get(token) ?? drawing.earlier.get(token);
 }
 
 /**
@@ -182,7 +233,7 @@ function drawsAsShown(
  * does unless the level written gives the zone, by default, the state the flip gives it at the level in use.
  */
 function keepsEmptyFlip(
-  zone: ZoneState,
+  zone: ZoneFacts,
   used: ConcreteDetailLevel,
   level: ConcreteDetailLevel,
   depthLimit: number | undefined,
@@ -197,7 +248,7 @@ function expandAll(spec: ViewSpec, shown: ShownScene): Press {
   const depth = spec.filters.depth;
   const drawing = drawingOf(shown);
   const flips = spec.flips.filter((token) => {
-    const zone = drawing.zones.get(token);
+    const zone = zoneOfFlip(drawing, token);
     if (zone === undefined) return true;
     if (zone.empty) return keepsEmptyFlip(zone, used, level, depth);
     if (zone.collapsed) return false;
@@ -219,6 +270,8 @@ function expandAll(spec: ViewSpec, shown: ShownScene): Press {
  * so nothing open closes. Flips that name no zone on screen (inside a chip, or another view's) stay. With no
  * deeper level to open, only the closing flips go; chips the `depth` filter makes stay (the filter is the
  * person's own choice). The flip of a zone drawn empty stays, unless it opens a zone the new level opens anyway.
+ * On a timeline day the flip of a ghost zone, or of a zone around a ghost, goes or stays by the same rules, by the
+ * state the earlier day drew the zone in.
  */
 export function expandAllTarget(spec: ViewSpec, shown: ShownScene): ViewSpecInput {
   return expandAll(spec, shown).view;
@@ -242,9 +295,9 @@ function collapseAll(spec: ViewSpec, shown: ShownScene, budget: number): Press {
   const drawing = drawingOf(shown);
   const elsewhere = new Set(shown.report.unknownFlips);
   const flips = spec.flips.filter((token) => {
-    if (elsewhere.has(token)) return true;
-    const zone = drawing.zones.get(token);
-    if (zone === undefined) return false;
+    // A ghost zone's flip is among the unknown ones: the drawn day's view holds no such zone.
+    const zone = zoneOfFlip(drawing, token);
+    if (zone === undefined) return elsewhere.has(token);
     if (zone.empty) return keepsEmptyFlip(zone, detail.used, level, depth);
     return zone.collapsed && !collapsedByDefault(zone, level, depth);
   });
@@ -264,7 +317,9 @@ function collapseAll(spec: ViewSpec, shown: ShownScene, budget: number): Press {
  * (one the level closes anyway goes, since it would open it), and so does the flip of a zone drawn empty, unless
  * it closes a zone the new level closes anyway. Every other flip of the view goes, those of zones hidden inside a
  * chip included; flips that name no zone of the view (the report's `unknownFlips`: another root's or focus's)
- * stay, as they change nothing here.
+ * stay, as they change nothing here. On a timeline day the flip of a ghost zone, or of a zone around a ghost, goes
+ * or stays by the same rules, by the state the earlier day drew the zone in: a flip that closed a ghost goes where
+ * the new level closes it anyway, so the ghost chip stays closed.
  */
 export function collapseAllTarget(
   spec: ViewSpec,

@@ -8,11 +8,13 @@
  * shallowest collapsed tier and keeps what was open; "Collapse all" goes back to the automatic level's default; each
  * is inert exactly when the view it writes draws the Scene on screen (a property over random views and flips, a
  * zone drawn empty among them, whose flip each keeps as the person's choice), and on a timeline day exactly when it
- * also draws the same ghosts (a property over demo M's days); the 48-flip cap and an `auto` level change are told
- * apart from every other change.
+ * also draws the same ghosts (a property over demo M's days), where a ghost's flip goes or stays as a zone's does
+ * and the ghosts are judged by the zones the earlier day drew (a perimeter removed, a project moved between the
+ * days); the 48-flip cap and an `auto` level change are told apart from every other change.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
+  buildGraph,
   buildPreparedScene,
   buildSceneWithReport,
   DETAIL_LEVELS,
@@ -26,13 +28,16 @@ import {
   LENS_IDS,
   normalizeViewSpec,
   VIEW_SPEC_MAX_FLIPS,
+  type Asset,
   type DemoSize,
   type Graph,
   type LensId,
   type Scene,
   type SceneBuild,
   type SceneEnv,
+  type SceneNode,
   type SceneZone,
+  type Snapshot,
   type ViewSpec,
   type ViewSpecInput,
 } from '@gcportrait/model';
@@ -41,10 +46,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { createAppStore } from '../../state/store';
 import { autoLevel } from '../autoDetail';
-import { tickDiff } from '../diff/tickDiff';
+import { tickDiff, type DiffDayData } from '../diff/tickDiff';
+import type { EarlierZone } from '../diff/types';
 import { demoHistory } from '../pipeline/demo';
 import { demoDayGraph, demoGraphSync, sceneEnv } from '../testing/demoScenes';
-import { sceneZones as allZones, zoneOf as zoneIn } from '../testing/scenes';
+import { sceneZones as allZones, parentsOf, zoneOf as zoneIn } from '../testing/scenes';
 import {
   autoLevelShift,
   collapseAllTarget,
@@ -98,8 +104,11 @@ function buildView(size: DemoSize, input: ViewSpecInput): SceneBuild {
   return buildPreparedScene(view, spec, ENV);
 }
 
-/** The open zones that hold something (an empty zone is never a chip), and the chips. */
-function drawn(shown: SceneBuild): { readonly open: Set<string>; readonly chips: Set<string> } {
+/** The open zones that hold something (an empty zone is never a chip), and the chips, a day's ghosts included. */
+function drawn(shown: { readonly scene: Scene }): {
+  readonly open: Set<string>;
+  readonly chips: Set<string>;
+} {
   const zones = allZones(shown.scene);
   return {
     open: new Set(zones.filter((z) => z.collapsed === undefined && z.children.length > 0).map((z) => z.id)),
@@ -646,15 +655,28 @@ describe('a zone drawn empty: its flip changes nothing on screen', () => {
     if (chip === undefined) throw new Error('no network chip');
     const spec = normalizeViewSpec({ ...view, flips: [flipIdOf(chip.id)] });
     const shown = buildView('M', spec);
-    const children = zoneIn(shown.scene, chip.id)?.children ?? [];
+    const network = zoneIn(shown.scene, chip.id);
+    const children = network?.children ?? [];
     expect(children.length).toBeGreaterThan(0);
     expect(collapseAllView(spec, shown)).toMatchObject({ detail: 'projects', flips: [] });
     // What it holds stands in for a day's ghosts: the drawn day's builder saw the network empty and ignores its
     // flip, which Collapse all keeps as the person's choice; the earlier day still draws the network open, so its
     // ghosts stay and nothing on screen would close.
     const ghosts = Object.fromEntries(children.map((child) => [child.id, 'removed' as const]));
-    const withGhosts = { ...shown, diff: { ghosts } };
-    expect(zonesByFlip(withGhosts).get(flipIdOf(chip.id))).toMatchObject({ empty: true, ghosts: true });
+    // The zones they depend on, as the data worker lists them: the network and the zones it holds, as drawn.
+    const earlier: Record<string, EarlierZone> = {};
+    const list = (nodes: readonly SceneNode[], parent: string | null): void => {
+      for (const node of nodes) {
+        if (node.type !== 'zone') continue;
+        const collapsed = node.collapsed !== undefined;
+        const empty = !collapsed && node.children.length === 0;
+        earlier[node.id] = { kind: node.kind, parent, overlay: false, collapsed, empty };
+        list(node.children, node.id);
+      }
+    };
+    list(network === undefined ? [] : [network], parentsOf(shown.scene).get(chip.id) ?? null);
+    const withGhosts = { ...shown, diff: { ghosts, earlier } };
+    expect(zonesByFlip(withGhosts).get(flipIdOf(chip.id))).toMatchObject({ empty: true });
     expect(collapseAllTarget(spec, withGhosts)).toMatchObject({ flips: [flipIdOf(chip.id)] });
     expect(collapseAllView(spec, withGhosts)).toBeNull();
   });
@@ -879,16 +901,24 @@ describe('on a timeline day the ghosts count', () => {
     readonly shown: ShownScene & { readonly diff: ReturnType<typeof tickDiff>['diff'] };
   }
 
-  /** Demo M's day `day` for a view, compared with day `since` as the data worker compares it. */
-  async function dayDrawing(since: string, day: string, input: ViewSpecInput): Promise<DayDrawing> {
-    const [before, after] = await Promise.all([demoDayGraph('M', since), demoDayGraph('M', day)]);
+  /** A day as the data worker holds it, with its tick. */
+  type Day = DiffDayData & { readonly tick: string };
+
+  /** Demo M's day `day`, read as the data worker reads it. */
+  async function demoDay(day: string): Promise<Day> {
+    const { snapshot, graph } = await demoDayGraph('M', day);
+    return { snapshot, graph, tick: day };
+  }
+
+  /** Day `after` for a view, compared with day `before` as the data worker compares them. */
+  function between(before: Day, after: Day, input: ViewSpecInput): DayDrawing {
     const spec = normalizeViewSpec(input);
     const envBefore = sceneEnv(before.snapshot, BUDGET);
     const envAfter = sceneEnv(after.snapshot, BUDGET);
     const built = buildOn(after.graph, spec, envAfter);
     const { scene, diff } = tickDiff({
-      before: { snapshot: before.snapshot, graph: before.graph, tick: since },
-      after: { snapshot: after.snapshot, graph: after.graph, tick: day },
+      before,
+      after,
       spec,
       scene: built.scene,
       report: built.report,
@@ -898,6 +928,12 @@ describe('on a timeline day the ghosts count', () => {
       build: buildOn,
     });
     return { built, shown: { scene, report: built.report, diff } };
+  }
+
+  /** Demo M's day `day` for a view, compared with day `since` as the data worker compares it. */
+  async function dayDrawing(since: string, day: string, input: ViewSpecInput): Promise<DayDrawing> {
+    const [before, after] = await Promise.all([demoDay(since), demoDay(day)]);
+    return between(before, after, input);
   }
 
   /** What a day's drawing shows: the Scene with its ghosts, and what the chips count inside them. */
@@ -937,13 +973,69 @@ describe('on a timeline day the ghosts count', () => {
     expect(collapseAllView(spec, drawing.built)).toBeNull();
   });
 
+  it('Collapse all lets the flip that closed a zone drawn only as a ghost go where Auto closes it anyway: the ghost chip stays closed', async () => {
+    // The networking lens at the projects level, every project with something inside closed by hand, and the
+    // reports project's ghost closed by hand too: the drawn day's view holds no such project, so its flip is among
+    // the report's unknown flips.
+    const view: ViewSpecInput = { snapshot: 'demo:M', lens: 'networking', detail: 'projects' };
+    const plain = await dayDrawing('2026-09-16', '2026-09-17', view);
+    const spec = normalizeViewSpec({
+      ...view,
+      flips: [...closedAboveAuto(plain.built, undefined), flipIdOf(REPORTS)],
+    });
+    const drawing = await dayDrawing('2026-09-16', '2026-09-17', spec);
+    expect(drawing.built.report.unknownFlips).toEqual([flipIdOf(REPORTS)]);
+    expect(zoneIn(drawing.shown.scene, REPORTS)?.collapsed).toBeDefined();
+
+    const target = collapseAllTarget(spec, drawing.shown);
+    expect(target).toMatchObject({ detail: 'auto', flips: [] });
+    const after = await dayDrawing('2026-09-16', '2026-09-17', target);
+    // The earlier day, built at the folder level, closes the project by default: kept, the flip would open it.
+    expect(after.built.report.detail.used).toBe('folders');
+    expect(zoneIn(after.shown.scene, REPORTS)?.collapsed).toBeDefined();
+    const kept = await dayDrawing('2026-09-16', '2026-09-17', { ...target, flips: [flipIdOf(REPORTS)] });
+    expect(zoneIn(kept.shown.scene, REPORTS)?.collapsed).toBeUndefined();
+    // The press draws what is on screen: the button is inert.
+    expect(picture(after)).toBe(picture(drawing));
+    expect(collapseAllView(spec, drawing.shown)).toBeNull();
+  });
+
+  it('Expand all lets the flip that opened a zone drawn only as a ghost go where the new level opens it anyway, and reopens one closed by hand', async () => {
+    // The networking lens at the folder level, the reports project's ghost opened by hand: Expand all opens the
+    // projects level, which opens the project by default on the earlier day; kept, the flip would close it.
+    const opened = normalizeViewSpec({
+      snapshot: 'demo:M',
+      lens: 'networking',
+      detail: 'folders',
+      flips: [flipIdOf(REPORTS)],
+    });
+    const drawing = await dayDrawing('2026-09-16', '2026-09-17', opened);
+    expect(drawing.built.report.unknownFlips).toEqual([flipIdOf(REPORTS)]);
+    expect(zoneIn(drawing.shown.scene, REPORTS)?.collapsed).toBeUndefined();
+    const target = expandAllView(opened, drawing.shown);
+    expect(target).toMatchObject({ detail: 'projects', flips: [] });
+    const after = await dayDrawing('2026-09-16', '2026-09-17', target ?? {});
+    expect(zoneIn(after.shown.scene, REPORTS)?.collapsed).toBeUndefined();
+
+    // At the projects level, the ghost closed by hand: Expand all reopens it, as it reopens a zone of the view.
+    const closed = normalizeViewSpec({ ...opened, detail: 'projects' });
+    const chip = await dayDrawing('2026-09-16', '2026-09-17', closed);
+    expect(zoneIn(chip.shown.scene, REPORTS)?.collapsed).toBeDefined();
+    const reopened = expandAllTarget(closed, chip.shown);
+    expect(reopened).toMatchObject({ detail: 'networks', flips: [] });
+    const open = await dayDrawing('2026-09-16', '2026-09-17', reopened);
+    expect(zoneIn(open.shown.scene, REPORTS)?.collapsed).toBeUndefined();
+  });
+
   it('a zone of the view that holds only ghosts loses them when the level written closes it on the earlier day', async () => {
     // The everything lens draws the reports project marked for deletion, its contents gone: ghosts only.
     const view: ViewSpecInput = { snapshot: 'demo:M', lens: 'everything', detail: 'projects' };
     const plain = await dayDrawing('2026-09-16', '2026-09-17', view);
     const spec = normalizeViewSpec({ ...view, flips: closedAboveAuto(plain.built, undefined) });
     const drawing = await dayDrawing('2026-09-16', '2026-09-17', spec);
-    expect(zonesByFlip(drawing.shown).get(flipIdOf(REPORTS))).toMatchObject({ empty: true, ghosts: true });
+    expect(zonesByFlip(drawing.shown).get(flipIdOf(REPORTS))).toMatchObject({ empty: true });
+    // The earlier day drew it open, around what is gone now.
+    expect(drawing.shown.diff.earlier[REPORTS]).toMatchObject({ collapsed: false, empty: false });
 
     const target = collapseAllView(spec, drawing.shown);
     expect(target).toMatchObject({ detail: 'auto' });
@@ -951,6 +1043,110 @@ describe('on a timeline day the ghosts count', () => {
     expect(after.built.scene).toEqual(drawing.built.scene);
     expect(after.shown.diff.ghosts).toEqual({});
     expect(collapseAllView(spec, drawing.built)).toBeNull();
+  });
+
+  describe('the zones the ghosts depend on are judged as the earlier day drew them', () => {
+    /** Demo M's perimeter, and one of the two projects it secures (Retail services). */
+    const PERIMETER =
+      '//accesscontextmanager.googleapis.com/accessPolicies/40000000001/servicePerimeters/data_perimeter';
+    const SECURED = '//cloudresourcemanager.googleapis.com/projects/10000000011';
+    /** Partner exchange, in the Networking folder of the Platform folder, and the network it holds. */
+    const PARTNER = '//cloudresourcemanager.googleapis.com/projects/10000000003';
+    const PARTNER_NETWORK = '//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner';
+
+    /** Demo M's day 2026-09-16 and a next day made of its assets as `change` leaves them. */
+    async function nextDay(
+      change: (graph: Graph, assets: readonly Asset[]) => Asset[],
+    ): Promise<readonly [Day, Day]> {
+      const before = await demoDay('2026-09-16');
+      const snapshot: Snapshot = {
+        ...before.snapshot,
+        readTime: '2026-09-17T00:00:00Z',
+        assets: change(before.graph, before.snapshot.assets),
+      };
+      return [before, { snapshot, graph: buildGraph(snapshot, catalog), tick: '2026-09-17' }];
+    }
+
+    /** The node `id` and every node the Graph nests in it. */
+    function nestedIn(graph: Graph, id: string): Set<string> {
+      const ids = new Set<string>();
+      const visit = (current: string): void => {
+        ids.add(current);
+        for (const child of graph.containment.children[current] ?? []) visit(child);
+      };
+      visit(id);
+      return ids;
+    }
+
+    /** Each button is inert exactly when the view it writes draws the day with the same ghosts. */
+    function judgedRight(before: Day, after: Day, spec: ViewSpec, drawing: DayDrawing): void {
+      const presses = [
+        ['Expand all', expandAllTarget(spec, drawing.shown), expandAllView(spec, drawing.shown)],
+        ['Collapse all', collapseAllTarget(spec, drawing.shown), collapseAllView(spec, drawing.shown)],
+      ] as const;
+      for (const [press, target, view] of presses) {
+        const written = between(before, after, target);
+        expect(view === null, `${press} inert`).toBe(picture(written) === picture(drawing));
+      }
+    }
+
+    it('a perimeter removed with a project it secured: the ghost of its overlay zone opens at every level', async () => {
+      const [before, after] = await nextDay((_graph, assets) =>
+        assets.filter(
+          (asset) => asset.name !== PERIMETER && !asset.ancestors.includes('projects/10000000011'),
+        ),
+      );
+      const spec = normalizeViewSpec({
+        snapshot: 'demo:M',
+        detail: 'folders',
+        focus: { kind: 'perimeter', params: { perimeter: 'data_perimeter' } },
+      });
+      const drawing = between(before, after, spec);
+      // The drawn day has no such perimeter: the view falls back to the organisation, with no overlay.
+      expect(drawing.built.report.overlays).toEqual([]);
+      expect(drawing.shown.diff.ghosts).toMatchObject({ [PERIMETER]: 'removed', [SECURED]: 'removed' });
+      // The earlier day drew the perimeter around its projects, chips at the folder level.
+      expect(zoneIn(drawing.shown.scene, PERIMETER)?.collapsed).toBeUndefined();
+      expect(zoneIn(drawing.shown.scene, SECURED)?.collapsed).toBeDefined();
+      expect(drawing.shown.diff.earlier[PERIMETER]).toMatchObject({ overlay: true, collapsed: false });
+      // Collapse all keeps the folder level and has no flip to let go: it would draw what is on screen.
+      expect(normalizeViewSpec(collapseAllTarget(spec, drawing.shown))).toEqual(spec);
+      expect(collapseAllView(spec, drawing.shown)).toBeNull();
+      judgedRight(before, after, spec, drawing);
+    });
+
+    it('a project moved out of two folders, the network it held removed: the network’s ghost is as deep as the earlier day drew it', async () => {
+      const [before, after] = await nextDay((graph, assets) => {
+        const removed = nestedIn(graph, PARTNER_NETWORK);
+        return assets.flatMap((asset) => {
+          if (removed.has(asset.name)) return [];
+          if (asset.name !== PARTNER) return [asset];
+          // Straight into the organisation, as the Sandbox project lies.
+          return [
+            {
+              ...asset,
+              parent: '//cloudresourcemanager.googleapis.com/organizations/30000000002',
+              ancestors: ['projects/10000000003', 'organizations/30000000002'],
+            },
+          ];
+        });
+      });
+      // Every zone open but those deeper than three asset zones: on the earlier day the network was the fourth.
+      const spec = normalizeViewSpec({
+        snapshot: 'demo:M',
+        lens: 'networking',
+        detail: 'all',
+        filters: { depth: 3 },
+      });
+      const drawing = between(before, after, spec);
+      expect(parentsOf(drawing.built.scene).get(PARTNER)).toBeNull();
+      expect(drawing.shown.diff.ghosts[PARTNER_NETWORK]).toBe('removed');
+      expect(zoneIn(drawing.shown.scene, PARTNER_NETWORK)?.collapsed).toBeDefined();
+      // Expand all has no deeper level to open and no flip to let go: it would draw what is on screen.
+      expect(normalizeViewSpec(expandAllTarget(spec, drawing.shown))).toEqual(spec);
+      expect(expandAllView(spec, drawing.shown)).toBeNull();
+      judgedRight(before, after, spec, drawing);
+    });
   });
 
   describe('each button is inert exactly when the view it writes draws the day with the same ghosts (property)', () => {
@@ -981,22 +1177,32 @@ describe('on a timeline day the ghosts count', () => {
       picks: fc.array(fc.tuple(fc.constantFrom(...SOURCES), fc.nat()), { maxLength: 4 }),
     });
     type TimelineView = typeof views extends fc.Arbitrary<infer T> ? T : never;
-    /** The views first checked: the reports project's day, where only the ghosts tell Auto from a deeper level. */
-    const EXAMPLES: ReadonlyArray<[TimelineView]> = (
-      ['networking', 'everything', 'overview'] as const
-    ).flatMap((lens) =>
-      (['projects', 'all'] as const).map((detail): [TimelineView] => [
-        {
-          pair: ['2026-09-16', '2026-09-17'],
-          lens,
-          place: {},
-          detail,
-          depth: undefined,
-          closeAboveAuto: true,
-          picks: [],
-        },
-      ]),
-    );
+    /** A view of the reports project's day, every zone Auto closes closed by hand, with the flips picked. */
+    const reportsDay = (
+      lens: LensId,
+      detail: TimelineView['detail'],
+      picks: TimelineView['picks'],
+    ): [TimelineView] => [
+      {
+        pair: ['2026-09-16', '2026-09-17'],
+        lens,
+        place: {},
+        detail,
+        depth: undefined,
+        closeAboveAuto: true,
+        picks,
+      },
+    ];
+    /**
+     * The views first checked: the reports project's day, where only the ghosts tell Auto from a deeper level, and
+     * where the networking lens draws the project only as a ghost, which the first ghost pick (in id order) flips.
+     */
+    const EXAMPLES: ReadonlyArray<[TimelineView]> = [
+      ...(['networking', 'everything', 'overview'] as const).flatMap((lens) =>
+        (['projects', 'all'] as const).map((detail) => reportsDay(lens, detail, [])),
+      ),
+      ...(['folders', 'projects'] as const).map((detail) => reportsDay('networking', detail, [['ghost', 0]])),
+    ];
 
     it(
       'on demo M’s days across lenses, levels, the depth filter and flips, every zone Auto closes closed by hand among them',
@@ -1036,9 +1242,19 @@ describe('on a timeline day the ghosts count', () => {
               ['Expand all', expandAllTarget(spec, drawing.shown), expandAllView(spec, drawing.shown)],
               ['Collapse all', collapseAllTarget(spec, drawing.shown), collapseAllView(spec, drawing.shown)],
             ] as const;
+            const before = drawn(drawing.shown);
             for (const [press, target, view] of presses) {
               const after = await dayDrawing(since, day, target);
               expect(view === null, `${press} inert: ${what}`).toBe(picture(after) === picture(drawing));
+              // Neither closes or opens against its rule, a ghost no more than a zone of the view.
+              const now = drawn(after.shown);
+              if (press === 'Expand all') {
+                for (const id of before.open)
+                  expect(now.open.has(id), `${press} closed ${id}: ${what}`).toBe(true);
+              } else {
+                for (const id of before.chips)
+                  expect(now.open.has(id), `${press} opened ${id}: ${what}`).toBe(false);
+              }
             }
           }),
           { numRuns: 60, examples: [...EXAMPLES] },

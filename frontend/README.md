@@ -1605,12 +1605,20 @@ src/diagram/disclosure/
   the new level opens anyway; a flip that opens a zone the new level still closes stays, so nothing open
   closes. Flips naming no zone on screen stay. With no deeper level to open only the closing flips go; chips
   the `depth` filter makes stay. Flips cannot do this job alone: demo L's folder level has 117 project chips.
+  On a timeline day the flip of a zone drawn only as a ghost goes or stays by the same rules, judged by the
+  state the earlier day drew the zone in, so no ghost closes either (demo M's day 2026-09-17 under the
+  networking lens at `folders`, the reports project's ghost opened by hand: the projects level opens it
+  anyway, and its flip goes).
 - **Collapse all** closes every zone opened by hand and, when the level in use is deeper than the one `auto`
   picks for this view at the canvas's size, goes back to `auto`. It never opens anything: a level chosen by
   hand that is not deeper than `auto`'s stays (demo S at `folders` stays at `folders`; a project's view, where
   `auto` opens everything, keeps its level), and a flip that keeps a zone on screen closed stays while the
   level still opens that zone. Flips that name no zone of the view (the report's `unknownFlips`: another
-  root's or focus's) stay; the view's other flips go, those inside chips included.
+  root's or focus's) stay; the view's other flips go, those inside chips included. On a timeline day the
+  flip of a zone drawn only as a ghost, among the `unknownFlips` since the drawn day's view holds no such
+  zone, goes or stays as the view's do, judged by the state the earlier day drew the zone in, so no ghost
+  chip opens either (the reports project's ghost closed by hand at the projects level: back at `auto`'s
+  folder level it stays a chip without its flip, which would open it there).
 - **Zones drawn empty.** A zone with nothing inside under the view's lens and filters, or only a timeline
   day's ghosts, is never a chip and the scene builder ignores its flip. That flip is the person's choice for
   when the zone holds something again (a lens switch back): both buttons leave it as it is, unless the level
@@ -1622,12 +1630,17 @@ src/diagram/disclosure/
   open or reopen, Collapse all when no open zone would close, so a flip of a zone drawn empty alone leaves
   both inert. On a timeline day the ghosts count: the diff builds the earlier day at the level in use with the
   view's flips, so a press back to `auto` that leaves every zone of the view as it is can still turn an open
-  ghost into a ghost chip or empty a zone that holds only ghosts; a zone that holds ghosts and every ghost
-  zone must keep its state too (demo M's day 2026-09-17, the reports project marked for deletion, every other
-  project closed by hand at the projects level: Collapse all is live). Both are worked out on the drawing on
-  screen with the view it draws (its scene key, decoded), never on one view's hash with another view's
-  drawing; a press while a newer view is being drawn (a drill-in, a level just written) waits in the store
-  until that view's own drawing arrives and is worked out on it, and is dropped if the view moves on first.
+  ghost into a ghost chip or empty a zone that holds only ghosts (demo M's day 2026-09-17, the reports project
+  marked for deletion, every other project closed by hand at the projects level: Collapse all is live). So
+  every zone the ghosts depend on, each ghost zone and each zone around a ghost up to the canvas, must keep
+  the state the earlier day drew it in, judged by what it was that day: the diff carries these zones
+  (`TickDiff.earlier`: kind, container, whether it was the view's overlay, state), since the drawn day may
+  hold a zone elsewhere (a project moved out of its folders, deeper or shallower for the `depth` filter) or
+  not hold the perimeter whose overlay, open at every level, a ghost was. Both are worked out on the
+  drawing on screen with the view it draws (its scene key, decoded), never on one view's hash with another
+  view's drawing; a press while a newer view is being drawn (a drill-in, a level just written) waits in the
+  store until that view's own drawing arrives and is worked out on it, and is dropped if the view moves on
+  first.
 - **"N of M shown"**: the rects drawn (zones, chips and cards; a chip once) of the rects the view holds at
   `all` (the report's count without flips, never less than N), with thousands separators, in a status region.
 - **Notices** (a live region kept in the DOM, until dismissed or replaced): when a view change dropped flips
@@ -1645,14 +1658,16 @@ holding only ghosts, and its flip kept across a lens switch and back; a fast-che
 of demo M and L, across lenses, focus views, levels, the depth filter and flips: each button inert exactly
 when the view it writes draws the Scene on screen, and a zone drawn empty keeping what its flip means; one
 over demo M's timeline days: each button inert exactly when the view it writes draws the day with the same
-ghosts; the cap; auto changes), `canvas.test.tsx` (chips, a double-click leaving no flip, the collapse
-button, the camera kept and the glide, focus after a keyboard flip, axe), `DisclosureBar.test.tsx` (the page
-in jsdom with in-process workers, axe), `actions.test.ts` (the store's actions, history modes, a press while
-another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo L in Chromium: expand a project chip, its
-networks as chips, expand all, "N of M", reload; the keyboard; the collapse button; both notices; axe in both
-themes; a project's view on demo M: zones closed by hand, a double-click drill-in, a level carried in from the
-organisation, a press while the organisation is still on screen). Specs that need a selection select a card or
-a zone, since a click on a chip expands it (`diagram.spec.ts`, `a11y.spec.ts`).
+ghosts, Expand all closing no zone or ghost and Collapse all opening none; a ghost's flip under both buttons
+on the reports project's day; a perimeter removed and a project moved between two days, judged by the
+earlier day's zones; the cap; auto changes), `canvas.test.tsx` (chips, a double-click leaving no flip, the
+collapse button, the camera kept and the glide, focus after a keyboard flip, axe), `DisclosureBar.test.tsx`
+(the page in jsdom with in-process workers, axe), `actions.test.ts` (the store's actions, history modes, a
+press while another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo L in Chromium: expand a project
+chip, its networks as chips, expand all, "N of M", reload; the keyboard; the collapse button; both notices;
+axe in both themes; a project's view on demo M: zones closed by hand, a double-click drill-in, a level carried
+in from the organisation, a press while the organisation is still on screen). Specs that need a selection
+select a card or a zone, since a click on a chip expands it (`diagram.spec.ts`, `a11y.spec.ts`).
 
 ## Details drawer (`src/drawer/`)
 
@@ -2056,7 +2071,8 @@ come back for that day as **ghosts** where they stood, and **changed** ones (ano
 ```
 src/diagram/diff/
   types.ts      DiffFrom (the day a Scene request asks to compare with), TickDiff (the answer: the diff, the ghosts
-                with their reason, the chips' counts), as they cross postMessage
+                with their reason, the zones they depend on as the earlier day drew them, the chips' counts),
+                as they cross postMessage
   base.ts       which day a new diagram is compared with (the store's pipeline asks before each Scene request)
   tickDiff.ts   data worker: diffSnapshots of the two days, the ghosts put back into the drawn Scene, the chips' counts
   marks.ts      UI thread: which rects get which marker, the outline's path, the dot's centre
@@ -2141,7 +2157,8 @@ the first one from the snapshot's own day 163–188 ms on a fresh page (197–20
 minutes), 0.71–0.75 s on XL, and a step onto a kept day 30–32 ms on L and 44–80 ms on XL; section "Performance".
 
 Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the diff, order independence, ghosts in their
-old container laid out without overlap, the deleted project's ghost zone, backwards, drill-in, chips' counts),
+old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend on,
+backwards, drill-in, chips' counts),
 `diff/marks.test.ts` (the marker painter: which rects, where, the words), `diff/drawing.test.tsx` (the markers in the
 drawing in both themes, paint order, legend rows, description, names, a ghost is no node), `diff/handler.test.ts`
 (the data worker's `scene` with `diffFrom` and `changes`), `legend.test.ts`, `theme/theme.test.ts`, the baselines

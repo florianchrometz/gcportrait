@@ -5,6 +5,7 @@
  * answers with that day's Scene (`TickDiff`). Types only, so the UI thread imports nothing of the worker's side
  * through this module.
  */
+import type { ZoneKind } from '@gcportrait/model';
 
 /** The day to compare the drawn day with: a timeline tick, or (`null`) the snapshot's own day. */
 export interface DiffFrom {
@@ -38,6 +39,24 @@ export interface DiffCounts {
 export type GhostReason = 'removed' | 'hidden';
 
 /**
+ * A zone of the earlier day's view (built at the detail level the drawn Scene uses, with the view's flips) that the
+ * ghosts depend on, as that day drew it: what the scene builder decided its state from there and the state it gave
+ * it. These can differ from the drawn day's (a zone moved, a perimeter removed), so the disclosure buttons judge
+ * a press's ghosts by them (disclosure/flips.ts).
+ */
+export interface EarlierZone {
+  readonly kind: ZoneKind;
+  /** The zone it lay in (null: the canvas). */
+  readonly parent: string | null;
+  /** The view's overlay zone there (a perimeter drawn around its projects): open at every level. */
+  readonly overlay: boolean;
+  /** Drawn as a chip. */
+  readonly collapsed: boolean;
+  /** Open with nothing inside: never a chip, and the scene builder ignored its flip. */
+  readonly empty: boolean;
+}
+
+/**
  * The drawn day compared with the previously displayed one (`diffSnapshots` of `@gcportrait/graph`, by asset
  * name: `added` are in the drawn day only, `removed` in the earlier one only, `changed` in both with another
  * `updateTime`), and what the Scene carries for it.
@@ -53,6 +72,11 @@ export interface TickDiff {
    * longer draws, each in its old container, so the layout places it where it was (a ghost card for one tick).
    */
   readonly ghosts: Readonly<Record<string, GhostReason>>;
+  /**
+   * The zones the ghosts depend on, by node id, as the earlier day drew them: every ghost zone, and every zone
+   * around a ghost there (those all the way up to the canvas, each open).
+   */
+  readonly earlier: Readonly<Record<string, EarlierZone>>;
   /**
    * The collapsed zones (chips) of the Scene that hold something the view would draw that was added, removed or
    * changed, with how many of each.

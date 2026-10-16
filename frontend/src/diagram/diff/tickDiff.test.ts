@@ -3,8 +3,9 @@
 /**
  * The timeline diff of a drawn day (tickDiff.ts) on demo organisation S's history, worked out as the data
  * worker does: the diff is `diffSnapshots` of the two days, by name and order-independent; what the view drew the
- * day before and no longer draws comes back as ghosts in its old container, with the reason; chips count what
- * changed inside them; nothing changes when the days are alike, and nothing is ghosted when the drill-in root moved.
+ * day before and no longer draws comes back as ghosts in its old container, with the reason, and the zones the
+ * ghosts depend on are listed as that day drew them; chips count what changed inside them; nothing changes when the
+ * days are alike, and nothing is ghosted when the drill-in root moved.
  */
 import { catalog } from '@gcportrait/catalog';
 import { buildGraph, buildSceneWithReport, diffSnapshots } from '@gcportrait/graph';
@@ -14,7 +15,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { DEMO_S } from '../testing/demoData';
 import { demoDayGraph, sceneEnv as env } from '../testing/demoScenes';
-import { parentsOf as parents } from '../testing/scenes';
+import { parentsOf as parents, sceneZones } from '../testing/scenes';
 import { openView, tickDiff, type TickDiffInput } from './tickDiff';
 
 beforeAll(async () => {
@@ -89,7 +90,14 @@ describe('the diff of a drawn day', () => {
   it('is empty and leaves the Scene alone when the two days are alike', async () => {
     const input = await inputOf('2026-09-08', '2026-09-08');
     const result = tickDiff(input);
-    expect(result.diff).toMatchObject({ added: [], removed: [], changed: [], ghosts: {}, inside: {} });
+    expect(result.diff).toMatchObject({
+      added: [],
+      removed: [],
+      changed: [],
+      ghosts: {},
+      earlier: {},
+      inside: {},
+    });
     expect(result.scene).toBe(input.scene);
   });
 });
@@ -136,6 +144,38 @@ describe('ghosts', () => {
       expect(at, id).toBe(REPORTS_PROJECT);
     }
     expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + 5);
+  });
+
+  it('lists the zones the ghosts depend on as the earlier day drew them: each ghost zone, and the zones around a ghost up to the canvas', async () => {
+    const input = await inputOf('2026-09-16', '2026-09-17');
+    const { scene, diff } = tickDiff(input);
+    const earlier = buildSceneWithReport(input.before.graph, input.spec, catalog, input.envBefore);
+    const up = parents(earlier.scene);
+    const around: string[] = [];
+    for (let at = up.get(REPORTS_PROJECT) ?? null; at !== null; at = up.get(at) ?? null) around.push(at);
+    expect(around.length).toBeGreaterThan(0);
+    const ghostZones = sceneZones(scene).filter((zone) => Object.hasOwn(diff.ghosts, zone.id));
+    expect(ghostZones.map((zone) => zone.id)).toContain(REPORTS_PROJECT);
+    expect(Object.keys(diff.earlier).sort()).toEqual(
+      [...around, ...ghostZones.map((zone) => zone.id)].sort(),
+    );
+    for (const id of around) {
+      expect(diff.earlier[id], id).toMatchObject({ collapsed: false, empty: false, overlay: false });
+    }
+    for (const zone of ghostZones) {
+      expect(diff.earlier[zone.id], zone.id).toEqual({
+        kind: zone.kind,
+        parent: up.get(zone.id),
+        overlay: false,
+        collapsed: zone.collapsed !== undefined,
+        empty: zone.collapsed === undefined && zone.children.length === 0,
+      });
+    }
+    // A ghost card depends only on the zones around it.
+    const card = tickDiff(await inputOf('2026-09-07', '2026-09-08')).diff;
+    expect(card.ghosts).toEqual({ [SCRATCH_BUCKET]: 'removed' });
+    expect(Object.keys(card.earlier)).toContain(DATA_PROJECT);
+    expect(Object.hasOwn(card.earlier, SCRATCH_BUCKET)).toBe(false);
   });
 
   it('works backwards too: stepping back, what the later day had is the ghost', async () => {

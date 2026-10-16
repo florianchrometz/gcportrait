@@ -25,6 +25,7 @@ export {
   zonesByFlip,
   type AutoLevelShift,
   type ShownScene,
+  type ZoneFacts,
   type ZoneState,
 } from './flips';
 export { FLIP_GLIDE_MS, flipTransform, isFlipDrawn, type PendingFlip } from './flipCamera';

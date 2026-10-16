@@ -622,7 +622,8 @@ Arrows into a chip end at the chip, merged with a count.
 what is already open; **Collapse all** closes the zones you opened and goes back to `auto` when the level in
 use is deeper, keeping the zones you closed. Neither touches the zones of another drill-in or focus, and a
 zone the current lens or filters leave empty keeps what you chose for it, for when it holds something again.
-Each is offered only when it would change the diagram on screen, a timeline day's ghosts included.
+A timeline day's ghosts follow the same rules as the zones they stand for: Expand all closes none of them and
+Collapse all opens none. Each is offered only when it would change the diagram on screen, the ghosts included.
 **"N of M shown"** in the corner of the canvas counts the rectangles drawn against the rectangles the view
 holds when fully open.
 

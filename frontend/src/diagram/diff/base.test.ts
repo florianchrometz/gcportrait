@@ -11,7 +11,9 @@ import type { TickDiff } from './types';
 
 function onScreen(tick: string | undefined, since?: TickDiff['since'], ref = 'demo:S'): OnScreen {
   const diff: TickDiff | undefined =
-    since === undefined ? undefined : { since, added: [], removed: [], changed: [], ghosts: {}, inside: {} };
+    since === undefined
+      ? undefined
+      : { since, added: [], removed: [], changed: [], ghosts: {}, earlier: {}, inside: {} };
   return {
     answer: {
       source: {

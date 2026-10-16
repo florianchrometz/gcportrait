@@ -37,6 +37,7 @@ function fixture() {
     removed: ['run/old', 'x/one', 'x/two'],
     changed: ['projects/web', 'run/jobs'],
     ghosts: { 'run/old': 'removed' },
+    earlier: {},
     inside: {
       'projects/data': { added: 0, removed: 2, changed: 1 },
       'projects/web': { added: 1, removed: 0, changed: 0 },

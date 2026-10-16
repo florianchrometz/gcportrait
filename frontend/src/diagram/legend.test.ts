@@ -199,6 +199,7 @@ describe('the timeline markers’ rows (skill §6, §7)', () => {
       removed: ['run/gone'],
       changed: ['run/web'],
       ghosts: {},
+      earlier: {},
       inside: {},
     });
     const rows = composeLegend(model, 0);
@@ -216,7 +217,7 @@ describe('the timeline markers’ rows (skill §6, §7)', () => {
       plain.some((row) => row.type === 'added' || row.type === 'removed' || row.type === 'changed'),
     ).toBe(false);
     const quiet = composeLegend(
-      withDiff({ since, added: [], removed: ['x/y'], changed: [], ghosts: {}, inside: {} }),
+      withDiff({ since, added: [], removed: ['x/y'], changed: [], ghosts: {}, earlier: {}, inside: {} }),
     );
     expect(
       quiet.some((row) => row.type === 'added' || row.type === 'removed' || row.type === 'changed'),
