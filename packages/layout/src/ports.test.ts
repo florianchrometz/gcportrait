@@ -4,7 +4,8 @@ import type { SceneEdge } from '@gcportrait/model';
 import { DEFAULT_ROUTING } from './constants.js';
 import { mergeEdges } from './edges.js';
 import { buildGutters } from './gutters.js';
-import { placedTree } from './layout.js';
+import { checkLayout } from './invariants.js';
+import { layoutScene, placedTree } from './layout.js';
 import type { LayoutNode } from './normalise.js';
 import {
   assignPorts,
@@ -12,6 +13,7 @@ import {
   crossingsOf,
   facingSide,
   innerSide,
+  PORT_STEP,
   sideIntervals,
   slotPositions,
 } from './ports.js';
@@ -111,6 +113,40 @@ describe('sideIntervals', () => {
     }
     // Without the gutters, the whole stretch below the header and clear of the corners.
     expect(sideIntervals(p, 'left', DEFAULT_ROUTING)).toEqual([[p.y + 40 + 12, p.y + p.height - 12]]);
+  });
+
+  it('keeps an open zone’s ports off its header’s lower edge with no padding and no corner clearance', () => {
+    const routing = { ...DEFAULT_ROUTING, portClearance: 0, zonePortClearance: 18, portSpacing: 26 };
+    const flush = layoutNode({ id: 'z', role: 'zone', y: 24, width: 148, height: 84, headerHeight: 40 });
+    // The header ends at y 64; the side keeps the port step below it, and 18 px above the lower corner.
+    for (const side of ['left', 'right'] as const) {
+      const intervals = sideIntervals(flush, side, routing);
+      expect(intervals).toEqual([[64 + PORT_STEP, 90]]);
+      for (const slot of candidateSlots(intervals, routing.portSpacing, side === 'left'))
+        expect(slot).toBeGreaterThan(64);
+    }
+  });
+
+  it('lays a port on a zone without padding below its header, as the invariants require', () => {
+    // Two folders side by side, the second without padding and the routing without corner clearance: on its
+    // left side, 26 px (one port spacing) lie between the header and the lower corner's clearance, and the
+    // shifted grid's two slots for that stretch fall on its ends, the upper one on the header's lower edge.
+    const options: LayoutOptions = {
+      rootAspect: 4,
+      sizing: { zonePadding: 0 },
+      routing: { portSpacing: 26, portClearance: 0, zonePortClearance: 18 },
+    };
+    const flush = scene(
+      [zone('a', 'folder', []), zone('b', 'folder', [card('c')])],
+      [{ from: 'a', to: 'b', kind: 'uses' }],
+    );
+    const layout = layoutScene(flush, options);
+    const b = layout.rects['b'];
+    const edge = layout.edges['a -uses-> b'];
+    expect(b?.padding).toBe(0);
+    expect(edge?.target.side).toBe('left');
+    expect(edge?.target.y).toBeGreaterThan((b?.y ?? 0) + (b?.headerHeight ?? 0));
+    expect(checkLayout(flush, layout, options)).toEqual([]);
   });
 });
 

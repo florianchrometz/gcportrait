@@ -278,16 +278,18 @@ it byte for byte. The packer's choice of arrangement does not look at `gaps` (th
      group of its two ends). `Layout.edges[…].bundle` names the bundle; `checkEdges` checks that its members
      share the port. One bundle per kind: a Shared VPC host with `shares` and `attaches` edges has two trunks.
    - *Ports.* An end leaves its rect on the side facing the other end (the axis on which the rects are further
-     apart); never on an open zone's top (its header): left or right instead, below the header. When an open
-     zone contains the other end, its port is on the inside of its border, on the side nearest that end, and the
-     inner end leaves on the same side. Ports on a side are `portSpacing` (12 px) apart (a bundle's port counts
-     once), nearest the middle, ordered by where their other ends lie, clear of the corners; on a top or left side
-     the slot grid is shifted by half a spacing, so two rects facing each other across a gutter never put ports
-     at the same coordinate. On an open zone, ports keep out of the band of every gutter that passes through
-     that side of its border (its own and its descendants'), so a stub never runs along a gutter's lanes. Ports
-     that do not fit a side move to the neighbouring sides, then to the opposite side; only when every side is
-     full do they share a side more closely. From the port a stub runs straight out to the gutter on that side
-     (or, facing inwards, to the zone's own ring). An edge with both ends at one rect (inside one chip) is not
+     apart); never on an open zone's top (its header): left or right instead, below the header by the greatest
+     of half the zone's padding, half `portClearance` and the half pixel ports are rounded to (`PORT_STEP`),
+     so that none sits on the header's lower edge whatever the constants. When an open zone contains the other
+     end, its port is on the inside of its border, on the side nearest that end, and the inner end leaves on
+     the same side. Ports on a side are `portSpacing` (12 px) apart (a bundle's port counts once), nearest the
+     middle, ordered by where their other ends lie, clear of the corners; on a top or left side the slot grid
+     is shifted by half a spacing, so two rects facing each other across a gutter never put ports at the same
+     coordinate. On an open zone, ports keep out of the band of every gutter that passes through that side of
+     its border (its own and its descendants'), so a stub never runs along a gutter's lanes. Ports that do not
+     fit a side move to the neighbouring sides, then to the opposite side; only when every side is full do
+     they share a side more closely. From the port a stub runs straight out to the gutter on that side (or,
+     facing inwards, to the zone's own ring). An edge with both ends at one rect (inside one chip) is not
      drawn and counts in `dropped`; the Scene never holds an edge from a node to itself.
    - *Port lines*. Where a port faces a side nothing stands beside (the rect is the last or first
      of its row, or in the last row for a bottom port), the stub's gutter is its container's padding ring, and
@@ -830,9 +832,10 @@ catalog and a stale one would silently change them.
   references, extensions, merging), the routing graph (intersections, attach points, pressure per gutter,
   owners, strips and piece keys per segment), the occupancy index (clearances, stubs, holders, long segments,
   removal), ports (sides, slots, the shifted grid, bundles by size and by crowding, the majority side,
-  spilling to the neighbouring and the opposite sides, zone bands, inward ports, keeping the previous pass's
-  plan), port lines (`src/portlines.test.ts`: out through every zone a chip is the last of, one piece per
-  container, none where a neighbour stands beside, a straight exit), stack gaps and hugging stretches in the
+  spilling to the neighbouring and the opposite sides, zone bands, below the header with no padding and no
+  corner clearance, inward ports, keeping the previous pass's plan), port lines (`src/portlines.test.ts`: out
+  through every zone a chip is the last of, one piece per container, none where a neighbour stands beside, a
+  straight exit), stack gaps and hugging stretches in the
   gutters and the network (with each hugging segment's side length), the length factors (`hugFactors`: a ring
   side capped per side, the margin), the router (straight edges, heads and tips, zone ends, lanes 8 px apart,
   widening, hub bundles sharing one trunk and head, one bundle per kind, the re-route laying routes onto

@@ -203,10 +203,19 @@ export function crossingsOf(lines: readonly GutterLine[]): Crossings {
 const NO_CROSSINGS: Crossings = { bands: () => [] };
 
 /**
+ * The grid ports lie on (half a pixel): every slot is rounded to it, so with whole-pixel sizes a port lies on a
+ * whole or a half pixel.
+ */
+export const PORT_STEP = 0.5;
+
+/**
  * Where on a side ports may sit, as intervals along it. A card, chip or empty zone: the side, clear of the
  * corners. An open zone: below its header (a left or right side) and clear of its lower corners, within its
  * ring (for ports facing inwards), and outside the bands of the gutter lines that pass through that side of its
- * border (`crossings`), so that a port's stub never runs along a gutter's lanes.
+ * border (`crossings`), so that a port's stub never runs along a gutter's lanes. Below the header means by the
+ * greatest of half the padding, half the corner clearance and one port step: a slot may sit at an end of its
+ * interval, and one on the header's lower edge (a zone without padding, a routing without corner clearance)
+ * would point its stub and head at the header.
  */
 export function sideIntervals(
   node: LayoutNode,
@@ -223,7 +232,7 @@ export function sideIntervals(
   } else {
     const half = (which: Side): number => (node.padding + node.extra[which]) / 2;
     if (vertical) {
-      lo = node.y + node.headerHeight + Math.max(half('top'), routing.portClearance / 2);
+      lo = node.y + node.headerHeight + Math.max(half('top'), routing.portClearance / 2, PORT_STEP);
       hi = node.y + node.height - Math.max(half('bottom'), routing.zonePortClearance);
     } else {
       lo = node.x + Math.max(half('left'), routing.zonePortClearance);
@@ -570,7 +579,7 @@ export function assignPorts(
         isShifted(side),
       );
       list.forEach((request, i) => {
-        const position = Math.round((slots[i] as number) * 2) / 2;
+        const position = Math.round((slots[i] as number) / PORT_STEP) * PORT_STEP;
         for (const end of request.ends) {
           positions[end.edge * 2 + end.end] = position;
           sides[end.edge * 2 + end.end] = side;
