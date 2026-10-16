@@ -34,7 +34,7 @@
     {
       "id": "trace",
       "title": "The selection trace of a load balancer",
-      "alt": "A global forwarding rule selected in the Load balancing lens: its chain through the target HTTPS proxy, the URL map and the backend services to the instance groups and the serverless network endpoint group is highlighted, with its path to the root of the organisation and its details drawer open."
+      "alt": "A global forwarding rule selected in the Load balancing lens: its chain through the target HTTPS proxy, the URL map, the backend services and the backend bucket to the instance group and the serverless network endpoint group is highlighted, with its path to the root of the organisation and its details drawer open."
     },
     {
       "id": "drawer",
@@ -49,7 +49,7 @@
     {
       "id": "export",
       "title": "The Export menu",
-      "alt": "The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, and downloads of SVG, PNG and draw.io files or copying the PNG."
+      "alt": "The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, Embed fonts for the SVG file, and downloads of SVG, PNG and draw.io files or copying the PNG."
     },
     {
       "id": "snapshots",
@@ -158,7 +158,7 @@
     {
       "id": "docs-configuration",
       "heading": "Configuration reference",
-      "still": "snapshots"
+      "still": "hero"
     },
     {
       "id": "docs-api",

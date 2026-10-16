@@ -175,7 +175,7 @@ balancer included. The details drawer lists its facts and relations; "Open in Cl
 only when you choose it.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/trace-dark.png">
-  <img src="docs/media/stills/trace-light.png" width="400" alt="A global forwarding rule selected in the Load balancing lens: its chain through the target HTTPS proxy, the URL map and the backend services to the instance groups and the serverless network endpoint group is highlighted, with its details drawer open.">
+  <img src="docs/media/stills/trace-light.png" width="400" alt="A global forwarding rule selected in the Load balancing lens: its chain through the target HTTPS proxy, the URL map, the backend services and the backend bucket to the instance group and the serverless network endpoint group is highlighted, with its path to the root of the organisation and its details drawer open.">
 </picture>
 </td>
 <td width="50%" valign="top">
@@ -220,7 +220,7 @@ Every view is also a link, and a self-hosted instance draws the same files for s
 <a href="docs/export.md">Guide</a> · <a href="docs/api.md">API</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/export-dark.png">
-  <img src="docs/media/stills/export-light.png" width="400" alt="The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, and downloads of SVG, PNG and draw.io files or copying the PNG.">
+  <img src="docs/media/stills/export-light.png" width="400" alt="The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, Embed fonts for the SVG file, and downloads of SVG, PNG and draw.io files or copying the PNG.">
 </picture>
 </td>
 <td width="50%" valign="top">
@@ -234,7 +234,7 @@ backend is stateless: it streams what Cloud Asset Inventory returns and keeps no
 stays in the tab's memory.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/snapshots-dark.png">
-  <img src="docs/media/stills/snapshots-light.png" width="400" alt="The Snapshots page in demo mode: the demo organisations S and M stored in this browser, each with its 35-day history, under the note that snapshots are kept in this browser and never uploaded, with import, export and delete actions.">
+  <img src="docs/media/stills/snapshots-light.png" width="400" alt="The Snapshots page listing the demo organisations S and M stored in this browser, each with Load, Export and a red Delete button, then each scope's timeline and the import area; nothing is uploaded anywhere.">
 </picture>
 </td>
 </tr>

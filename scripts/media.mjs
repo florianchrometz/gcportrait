@@ -345,19 +345,27 @@ async function zoomAt(page, at, notches) {
 }
 
 /**
- * Zooms in on a node and drags the canvas so the node's centre lands on `target` (a drag pans the diagram; d3-zoom
- * does not count it as a click).
+ * Drags the canvas by (dx, dy) from a spot near its left edge: a drag pans the diagram, and d3-zoom does not count it
+ * as a click, so the selection stays.
+ * @param {Page} page @param {number} dx @param {number} dy
+ */
+async function panBy(page, dx, dy) {
+  const start = { x: 40, y: 160 };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + dx, start.y + dy, { steps: 12 });
+  await page.mouse.up();
+  await sleep(500);
+}
+
+/**
+ * Zooms in on a node and pans the canvas so the node's centre lands on `target`.
  * @param {Page} page @param {string} selector @param {number} notches @param {{ x: number, y: number }} target
  */
 async function frameNode(page, selector, notches, target) {
   await zoomAt(page, centre(await boxOf(page, selector)), notches);
   const at = centre(await boxOf(page, selector));
-  const start = { x: 40, y: 160 };
-  await page.mouse.move(start.x, start.y);
-  await page.mouse.down();
-  await page.mouse.move(start.x + (target.x - at.x), start.y + (target.y - at.y), { steps: 12 });
-  await page.mouse.up();
-  await sleep(500);
+  await panBy(page, target.x - at.x, target.y - at.y);
 }
 
 /** @param {string} id */
@@ -394,12 +402,45 @@ const STILLS = {
     await page.mouse.move(RESTING.x, RESTING.y);
     await sleep(400);
   },
-  // The selection trace on a load balancer: the global HTTPS forwarding rule of the web project.
+  // The selection trace on a load balancer: the global HTTPS forwarding rule of the web project, selected, then the
+  // camera fitted to its trace beside the details drawer: as many wheel notches as leave 48 px of canvas around it
+  // (the room the app keeps around a node it glides to), and a pan that centres it.
   trace: async (page, url) => {
     await openView(page, url, '/diagram#snapshot=demo:M&lens=load-balancing&detail=all');
     await frameNode(page, nodeSelector(DEMO.httpsRule), 6, { x: 420, y: 360 });
     await page.locator(nodeSelector(DEMO.httpsRule)).click();
     await page.getByRole('complementary', { name: 'Details' }).waitFor({ state: 'visible' });
+    await page.mouse.move(RESTING.x, RESTING.y);
+    await sleep(800);
+    // The screen box of the selected rule, the resources its trace reaches and its traced lines. The pointer rests off
+    // the canvas, so no hover preview stands in for the selection's trace.
+    const traced = async () =>
+      /** @type {Box} */ (
+        await page.evaluate(`(() => {
+          const rects = [...document.querySelectorAll('svg.dg-canvas :is(.is-selected, .is-reached, .dg-edges-top > *)')]
+            .map((element) => element.getBoundingClientRect())
+            .filter((rect) => rect.width > 0 || rect.height > 0);
+          const x = Math.min(...rects.map((rect) => rect.left));
+          const y = Math.min(...rects.map((rect) => rect.top));
+          return {
+            x,
+            y,
+            width: Math.max(...rects.map((rect) => rect.right)) - x,
+            height: Math.max(...rects.map((rect) => rect.bottom)) - y,
+          };
+        })()`)
+      );
+    const canvas = await boxOf(page, 'svg.dg-canvas');
+    const room = 48;
+    const trace = await traced();
+    const fits = Math.min((canvas.width - 2 * room) / trace.width, (canvas.height - 2 * room) / trace.height);
+    // A wheel notch scales by 2^0.2 (d3-zoom's default for a delta of 100 pixels).
+    await zoomAt(page, centre(trace), Math.floor(Math.log2(fits) / 0.2));
+    await page.mouse.move(RESTING.x, RESTING.y);
+    await sleep(400);
+    const at = centre(await traced());
+    const middle = centre(canvas);
+    await panBy(page, middle.x - at.x, middle.y - at.y);
     await page.mouse.move(RESTING.x, RESTING.y);
     await sleep(800);
   },
@@ -429,8 +470,11 @@ const STILLS = {
     await page.getByRole('menu', { name: 'Export' }).waitFor({ state: 'visible' });
     await sleep(300);
   },
-  // The Snapshots page with demo S and M stored in this browser ("Try the demo" stores them; a link does not). The
-  // page's clock is pinned, so the "Stored" column shows the same time in every run.
+  // The Snapshots page with demo S and M stored in this browser ("Try the demo" stores them; a link does not),
+  // scrolled (only the page's own box, <main>, scrolls) until the import area's drop zone ends 8 px above the
+  // footer: the stored snapshots with their actions, each scope's timeline and the whole import area in one frame,
+  // the page's heading and lead scrolled away. The page's clock is pinned, so the "Stored" column shows the same time
+  // in every run.
   snapshots: async (page, url) => {
     await page.clock.setFixedTime(STORED_AT);
     await page.goto(`${url}/`);
@@ -448,6 +492,12 @@ const STILLS = {
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Snapshots' }).click();
     await page.getByRole('heading', { level: 1, name: 'Snapshots' }).waitFor({ state: 'visible' });
     await sleep(600);
+    await page.evaluate(`(() => {
+      const zone = document.querySelector('[data-testid="snapshot-drop-zone"]').getBoundingClientRect();
+      const footer = document.querySelector('footer').getBoundingClientRect();
+      document.querySelector('main').scrollTop += zone.bottom + 8 - footer.top;
+    })()`);
+    await sleep(300);
   },
 };
 

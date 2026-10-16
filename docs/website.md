@@ -358,9 +358,10 @@ the dark theme. A scene is played in real time with a drawn pointer and captured
 (about 30 a second), then resampled to 12 frames a second; the GIF is assembled with gifenc (one palette,
 unchanged pixels transparent, repeated frames merged), the WebM with the browser's WebCodecs encoder and
 Mediabunny's muxer. The Snapshots still pins the page's clock to 2026-10-08 09:30 UTC, so its "Stored" column
-reads the same in every run. The list of stills, scenes and cards, with their alt texts, is
-`website/src/data/media.json`; what each one does is in `scripts/media.mjs`. Only the synthetic demo
-organisations are ever captured.
+reads the same in every run, and scrolls the page until its import area shows whole under the stored snapshots
+and the timelines. The trace still selects a forwarding rule and then fits the camera to its trace beside the
+details drawer. The list of stills, scenes and cards, with their alt texts, is `website/src/data/media.json`;
+what each one does is in `scripts/media.mjs`. Only the synthetic demo organisations are ever captured.
 
 The hero shows the whole of demo S, where every zone, the Shared VPC, the title block and the legend are
 visible: fitted to 1440×900, demo M's overview shows only its folders and collapsed projects (38 of 369 items,
