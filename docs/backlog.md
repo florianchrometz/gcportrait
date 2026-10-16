@@ -133,18 +133,15 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Command variables:** a stale `aria-invalid` after a fact changes; trim typed values on blur; clear the
   Copy status on a change; the Copy button's accessible name from typed values.
 - `ThemeProvider.test.tsx` may be flaky (no cause found); fix it if it fails again.
-- **Phones and tablets:** a node's menu has no touch gesture on the canvas (a long press), and drill-in none of
-  its own: a double tap drills in only where the browser reports a double-click (Chromium), and Chrome's tap
-  adjustment can aim it at a neighbouring node (the details drawer carries both actions, and one finger pans,
-  two pinch, a tap selects); the phone and tablet check runs in Chromium's emulation only, not in WebKit or on a
-  real device; the View and More sheets cover most of a phone's canvas while open (they hang from the top bar,
-  so the search field stays above an on-screen keyboard); on a small phone turned sideways (568 × 320) the
-  canvas is about 90 px tall, so the half-height sheet shows little more than the node's name (drag it up to read
-  the details) and Expand all and Collapse all hide while it is open; a disclosure notice shown while the sheet is
-  at half height can still be cut by the canvas's top on a short canvas; a sheet stays open when the app moves
-  focus out of it by itself (the Connect page's heading once a sign-in started before the sheet was opened
-  completes); crossing the phone's breakpoint (turning a phone) mounts the view controls again, so a search text
-  not yet sent is lost.
+- **Phones and tablets:** a node's menu has no touch gesture on the canvas and drill-in none of its own (the
+  details drawer carries both actions; a long press shows what hover shows, a double tap zooms, and on a chip
+  leaves the tap's flip); the phone and tablet check runs in Chromium's emulation only, not in WebKit or on a
+  real device; on a small phone turned sideways (568 × 320) the canvas is about 90 px tall, so the half-height
+  sheet shows little more than the node's name (drag it up to read the details) and Expand all and Collapse all
+  hide while it is open; a disclosure notice shown while the sheet is at half height can still be cut by the
+  canvas's top on a short canvas; a sheet stays open when the app moves focus out of it by itself (the Connect
+  page's heading once a sign-in started before the sheet was opened completes); crossing the phone's breakpoint
+  (turning a phone) mounts the view controls again, so a search text not yet sent is lost.
 
 ## 6. Performance
 
