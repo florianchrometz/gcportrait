@@ -222,7 +222,14 @@ The frontend's tsconfig references `packages/layout`.
    These are skill §4's rules; `pnpm --filter @gcportrait/layout measure --packing` measures each of them on
    15 demo views.
 
-All sizes are whole px with the default sizing, so every coordinate in a Layout is an integer.
+All sizes are whole px with the default sizing, so every rect's position and size and every gutter line and
+lane are integers. Ports lie on the half-pixel grid (`PORT_STEP`) by design: a side's slots are centred on it,
+and on the top or bottom of a rect of odd width (a card's or a chip's width follows its text, a zone's its
+children or its header, each rounded up to whole px) the middle lies on a half pixel, which keeps the port
+exactly central instead of half a pixel to one side; positions spread over a crowded side are rounded to the
+same grid. The points on the straight run of a route through a port (its end or the arrowhead's tip, and the
+point where it turns) share the port's coordinate and so its half pixel; every other point of a route lies on
+a lane, a whole px.
 
 **The gutter hook.** Routing widens gutters and re-packs through `LayoutOptions.gutters` instead of
 re-implementing packing: per container, `horizontal` and `vertical` add lane space to every column and row gap
@@ -280,11 +287,13 @@ it byte for byte. The packer's choice of arrangement does not look at `gaps` (th
    - *Ports.* An end leaves its rect on the side facing the other end (the axis on which the rects are further
      apart); never on an open zone's top (its header): left or right instead, below the header by the greatest
      of half the zone's padding, half `portClearance` and the half pixel ports are rounded to (`PORT_STEP`),
-     so that none sits on the header's lower edge whatever the constants. When an open zone contains the other
-     end, its port is on the inside of its border, on the side nearest that end, and the inner end leaves on
-     the same side. Ports on a side are `portSpacing` (12 px) apart (a bundle's port counts once), nearest the
-     middle, ordered by where their other ends lie, clear of the corners; on a top or left side the slot grid
-     is shifted by half a spacing, so two rects facing each other across a gutter never put ports at the same
+     so that none sits on the header's lower edge whatever the constants. A side too short for its corner
+     clearance (`portClearance`, `zonePortClearance`) keeps one slot, its middle: on an open zone's left or
+     right side, the middle of the stretch below the header. When an open zone contains the other end, its
+     port is on the inside of its border, on the side nearest that end, and the inner end leaves on the same
+     side. Ports on a side are `portSpacing` (12 px) apart (a bundle's port counts once), nearest the middle,
+     ordered by where their other ends lie, clear of the corners; on a top or left side the slot grid is
+     shifted by half a spacing, so two rects facing each other across a gutter never put ports at the same
      coordinate. On an open zone, ports keep out of the band of every gutter that passes through that side of
      its border (its own and its descendants'), so a stub never runs along a gutter's lanes. Ports that do not
      fit a side move to the neighbouring sides, then to the opposite side; only when every side is full do

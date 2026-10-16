@@ -194,7 +194,9 @@ const ROUTING: fc.Arbitrary<LayoutOptions> = fc.record(
         laneCost: fc.integer({ min: 0, max: 1000 }),
         portSpacing: fc.integer({ min: 1, max: 30 }),
         portClearance: fc.integer({ min: 0, max: 20 }),
-        zonePortClearance: fc.integer({ min: 0, max: 20 }),
+        // As often above 20 as up to it: up to 300, longer than most zones' left and right sides below their
+        // headers (44 px and up) and than half their bottoms, which then keep their middle.
+        zonePortClearance: fc.oneof(fc.integer({ min: 0, max: 20 }), fc.integer({ min: 21, max: 300 })),
         arrowInset: fc.integer({ min: 0, max: 6 }),
         wideningRounds: fc.integer({ min: 0, max: 3 }),
         bundleMin: fc.integer({ min: 2, max: 12 }),

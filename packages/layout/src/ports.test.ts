@@ -148,6 +148,41 @@ describe('sideIntervals', () => {
     expect(edge?.target.y).toBeGreaterThan((b?.y ?? 0) + (b?.headerHeight ?? 0));
     expect(checkLayout(flush, layout, options)).toEqual([]);
   });
+
+  it('keeps the middle of a zone side too short for its corner clearance below the header', () => {
+    // Two folders side by side without padding, the lower corners' clearance (100 px) longer than the 44 px
+    // below the second folder's header: its left side keeps the middle of that stretch, where the middle of
+    // the clearances would lie beside the header.
+    const options: LayoutOptions = {
+      rootAspect: 4,
+      sizing: { zonePadding: 0 },
+      routing: { zonePortClearance: 100 },
+    };
+    const flush = scene(
+      [zone('a', 'folder', []), zone('b', 'folder', [card('c')])],
+      [{ from: 'a', to: 'b', kind: 'uses' }],
+    );
+    const layout = layoutScene(flush, options);
+    const b = layout.rects['b'];
+    const edge = layout.edges['a -uses-> b'];
+    if (b === undefined || edge === undefined) throw new Error('b or its edge is missing');
+    expect(b.padding).toBe(0);
+    expect(edge.target.side).toBe('left');
+    const header = b.y + b.headerHeight;
+    expect(edge.target.y).toBe(header + (b.y + b.height - header) / 2);
+    expect(edge.target.y).toBeGreaterThan(header);
+    expect(edge.target.y).toBeLessThan(b.y + b.height);
+    expect(checkLayout(flush, layout, options)).toEqual([]);
+    // The same middle for any clearance the side is too short for, on both sides.
+    const routing = { ...DEFAULT_ROUTING, zonePortClearance: 100 };
+    const lone = layoutNode({ id: 'z', role: 'zone', y: 24, width: 148, height: 84, headerHeight: 40 });
+    for (const side of ['left', 'right'] as const) {
+      expect(sideIntervals(lone, side, routing)).toEqual([[86, 86]]);
+      expect(sideIntervals(lone, side, { ...routing, zonePortClearance: 1000, portClearance: 1000 })).toEqual(
+        [[86, 86]],
+      );
+    }
+  });
 });
 
 describe('assignPorts', () => {

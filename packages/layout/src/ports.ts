@@ -11,7 +11,7 @@
  * - Bundles. A rect that many edges of one kind meet at the same end (a hub: a Shared VPC host project that a
  *   hundred service projects share from, a load balancer that thirty backends use) cannot give each its own
  *   port 12 px apart, and its gutters cannot give each its own lane. Such edges are bundled: those of one kind
- *   that meet one rect at the same end (all as targets, or all as sources) from `bundleMin` (4) on, and on a
+ *   that meet one rect at the same end (all as targets, or all as sources) from `bundleMin` (3) on, and on a
  *   side that more ports face than it holds, those of one kind facing it from two on. The members of a bundle
  *   that face one side share one port there, and the router lets them share lanes, so they join into one
  *   trunk towards the hub instead of running side by side (`Layout.edges[…].bundle`). An edge belongs to at
@@ -215,7 +215,9 @@ export const PORT_STEP = 0.5;
  * border (`crossings`), so that a port's stub never runs along a gutter's lanes. Below the header means by the
  * greatest of half the padding, half the corner clearance and one port step: a slot may sit at an end of its
  * interval, and one on the header's lower edge (a zone without padding, a routing without corner clearance)
- * would point its stub and head at the header.
+ * would point its stub and head at the header. A side too short for its clearance keeps one slot, its middle:
+ * on an open zone's left or right side the middle of the stretch below its header, never beside the header
+ * (where the middle of the clearances falls when the lower corner's clearance is longer than that stretch).
  */
 export function sideIntervals(
   node: LayoutNode,
@@ -239,9 +241,13 @@ export function sideIntervals(
       hi = node.x + node.width - Math.max(half('right'), routing.zonePortClearance);
     }
   }
-  // A side too short for its clearance keeps its middle.
+  // A side too short for its clearance keeps its middle (on an open zone's left or right, below the header).
+  if (lo >= hi) {
+    const at =
+      node.role === 'zone' && vertical ? node.y + (node.headerHeight + node.height) / 2 : (lo + hi) / 2;
+    return [[at, at]];
+  }
   const mid = (lo + hi) / 2;
-  if (lo >= hi) return [[mid, mid]];
   if (node.role !== 'zone') return [[lo, hi]];
   const border = side === 'left' ? node.x : side === 'right' ? node.x + node.width : node.y + node.height;
   const bands = crossings.bands(vertical, border, lo, hi).sort((p, q) => p[0] - q[0]);
