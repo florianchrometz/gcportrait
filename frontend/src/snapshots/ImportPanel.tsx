@@ -7,7 +7,8 @@
  * announced. Nothing is uploaded. Without browser storage the import is unavailable, and says why; a file dropped
  * on the zone then is refused, not opened by the browser. An export that came without its operation.json may be
  * given its read time by hand (import/ReadTimeField.tsx); the snapshot then sits at that time on its scope's
- * timeline.
+ * timeline. While the files are read, Cancel stops the import and stores nothing, and so does leaving the page
+ * (useImportSignal.ts).
  */
 import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement } from 'react';
 
@@ -15,11 +16,12 @@ import { cx } from '../classNames';
 import { ReadTimeField, useTypedReadTime } from '../import/ReadTimeField';
 import controls from '../ui/controls.module.css';
 import { inertProps } from '../ui/dom';
-import { JobStatus, type JobState } from './JobStatus';
+import { CANCELLED_MESSAGE, JobStatus, type JobState } from './JobStatus';
 import { formatCount, snapshotLabel } from './labels';
 import { useSnapshotLibrary } from './SnapshotLibraryProvider';
 import styles from './Snapshots.module.css';
-import { SnapshotJobError } from './worker/client';
+import { useImportSignal } from './useImportSignal';
+import { SnapshotJobCancelled, SnapshotJobError } from './worker/client';
 
 export function ImportPanel({ available }: { readonly available: boolean }): ReactElement {
   const library = useSnapshotLibrary();
@@ -29,7 +31,10 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
   const [subject, setSubject] = useState('the files');
   const typedTime = useTypedReadTime();
   const input = useRef<HTMLInputElement>(null);
+  const chooseButton = useRef<HTMLButtonElement>(null);
   const mounted = useRef(true);
+  // The import's own signal: aborted by its Cancel and when the page is left.
+  const importSignal = useImportSignal();
   const hintId = useId();
   const busy = state.kind === 'busy';
   const usable = available && library.canWork;
@@ -61,13 +66,14 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
       return;
     }
     setState({ kind: 'busy', progress: null });
+    const signal = importSignal.begin();
     library
       .importFiles(
         files,
         (progress) => {
-          if (mounted.current) setState({ kind: 'busy', progress });
+          if (mounted.current && !signal.aborted) setState({ kind: 'busy', progress });
         },
-        typedTime.readTime === undefined ? {} : { readTime: typedTime.readTime },
+        typedTime.readTime === undefined ? { signal } : { readTime: typedTime.readTime, signal },
       )
       .then(
         ({ records, warnings: notes }) => {
@@ -80,6 +86,10 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
         },
         (error: unknown) => {
           if (!mounted.current) return;
+          if (error instanceof SnapshotJobCancelled) {
+            setState({ kind: 'idle', message: CANCELLED_MESSAGE });
+            return;
+          }
           setState({
             kind: 'failed',
             title: `Nothing was imported from ${names}.`,
@@ -88,6 +98,12 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
           });
         },
       );
+  };
+
+  /** Cancel while the files are read: nothing is stored, and focus goes back to "Choose files…". */
+  const cancel = (): void => {
+    importSignal.cancel();
+    chooseButton.current?.focus();
   };
 
   // Files dragged over the zone are always taken from the browser, which would otherwise open a dropped file in the
@@ -121,6 +137,7 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
       >
         <p className={styles.dropTitle}>Drop snapshot files here</p>
         <button
+          ref={chooseButton}
           type="button"
           className={controls.control}
           aria-describedby={hintId}
@@ -152,7 +169,7 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
         </p>
       </div>
       {usable ? <ReadTimeField state={typedTime} /> : null}
-      <JobStatus state={state} subject={subject} label="Importing" />
+      <JobStatus state={state} subject={subject} label="Importing" onCancel={cancel} />
       {warnings.length === 0 ? null : (
         <div className={styles.notice}>
           <p>Imported with notes:</p>

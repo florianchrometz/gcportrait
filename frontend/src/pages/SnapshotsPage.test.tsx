@@ -264,6 +264,37 @@ describe('the Snapshots page', () => {
     });
   });
 
+  it('cancels an import while the files are read: nothing is stored, it says so, and focus is back on the files', async () => {
+    const { table, snapshots, container } = await openPage();
+    fireEvent.change(fileInput(container), { target: { files: [new File(['{}'], 'org-export.json')] } });
+    act(() => {
+      snapshots.pending()?.onProgress?.({ stage: 'read', done: 2_000_000, total: 8_000_000, assets: 1200 });
+    });
+    const cancel = screen.getByRole('button', { name: 'Cancel importing' });
+    await expectNoAxeViolations();
+    await userEvent.click(cancel);
+    expect(await screen.findByText('Cancelled. Nothing was stored.')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Cancel importing' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Choose files…' }));
+    // The import is no longer waited for, so nothing it prepared is stored or listed.
+    expect(snapshots.pending()).toBeNull();
+    expect(snapshots.records.size).toBe(2);
+    expect(rows(table)).toHaveLength(2);
+    expect(screen.queryByText(/^Imported /)).toBeNull();
+  });
+
+  it('cancels an import when the person leaves the page while the files are read', async () => {
+    const { snapshots, container } = await openPage();
+    fireEvent.change(fileInput(container), { target: { files: [new File(['{}'], 'org-export.json')] } });
+    expect(snapshots.pending()).not.toBeNull();
+    await userEvent.click(screen.getByRole('link', { name: 'Connect' }));
+    expect(currentLocation(container)).toBe('/');
+    expect(snapshots.pending()).toBeNull();
+    const record = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0C', { source: 'export' });
+    await act(() => snapshots.answer({ ok: { refs: [record.id], records: [record], warnings: [] } }));
+    expect([...snapshots.records.keys()].sort()).toEqual([IMPORTED, 'demo:M'].sort());
+  });
+
   it('shows why an import failed, with the problems found', async () => {
     const { snapshots, container } = await openPage();
     const input = fileInput(container);

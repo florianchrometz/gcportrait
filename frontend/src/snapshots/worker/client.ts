@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: MIT
 /**
  * The page side of the snapshot protocol (protocol.ts): one promise per job, with its progress reported as it
- * comes. The transport is a function (a Web Worker's `postMessage`, browser.ts, or the in-process handler of
- * tests, inProcess.ts); answers come back through `receive`.
+ * comes. An import's signal cancels it: the promise rejects at once with {@link SnapshotJobCancelled}, the worker
+ * is told to stop (`cancel`), and whatever it still answers for the job is dropped. The transport is a function
+ * (a Web Worker's `postMessage`, browser.ts, or the in-process handler of tests, inProcess.ts); answers come back
+ * through `receive`.
  */
-import type { JobProgress, PreparedSnapshot, SnapshotRequest, SnapshotResponse } from './protocol';
+import {
+  CANCELLED_JOB,
+  type JobProgress,
+  type PreparedSnapshot,
+  type SnapshotRequest,
+  type SnapshotResponse,
+} from './protocol';
 
 export interface JobResult {
   readonly snapshots: readonly PreparedSnapshot[];
@@ -22,18 +30,28 @@ export class SnapshotJobError extends Error {
   }
 }
 
+/** A job the person cancelled (or left the page during): nothing of it is stored. */
+export class SnapshotJobCancelled extends Error {
+  override readonly name = 'SnapshotJobCancelled';
+  constructor() {
+    super(CANCELLED_JOB);
+  }
+}
+
 export type OnProgress = (progress: JobProgress) => void;
 
 export interface SnapshotClient {
   /**
    * Imports `files`, each snapshot under a new id that is not in `taken` (the ids already stored); an export's read
-   * time is `readTime` (typed by the person) unless its operation.json names one.
+   * time is `readTime` (typed by the person) unless its operation.json names one. An aborted `signal` rejects
+   * with {@link SnapshotJobCancelled} and stops the worker's job.
    */
   importFiles(
     files: readonly File[],
     onProgress?: OnProgress,
     taken?: readonly string[],
     readTime?: string,
+    signal?: AbortSignal,
   ): Promise<JobResult>;
   /** Reads a stored record's plain documents in full; fails (with the reason) when they are damaged. */
   check(snapshot: Blob, history?: Blob, onProgress?: OnProgress): Promise<void>;
@@ -71,15 +89,43 @@ export function createSnapshotClient(post: (request: SnapshotRequest) => void): 
     pending.clear();
   };
 
-  const start = (request: (job: number) => SnapshotRequest, onProgress?: OnProgress): Promise<JobResult> =>
+  const start = (
+    request: (job: number) => SnapshotRequest,
+    onProgress?: OnProgress,
+    signal?: AbortSignal,
+  ): Promise<JobResult> =>
     new Promise<JobResult>((resolve, reject) => {
+      if (signal?.aborted === true) {
+        reject(new SnapshotJobCancelled());
+        return;
+      }
       jobs += 1;
-      pending.set(jobs, { resolve, reject, onProgress });
-      post(request(jobs));
+      const job = jobs;
+      const cancel = (): void => {
+        if (!pending.delete(job)) return;
+        post({ type: 'cancel', job });
+        reject(new SnapshotJobCancelled());
+      };
+      const settled = (): void => {
+        signal?.removeEventListener('abort', cancel);
+      };
+      pending.set(job, {
+        resolve: (result) => {
+          settled();
+          resolve(result);
+        },
+        reject: (error) => {
+          settled();
+          reject(error);
+        },
+        onProgress,
+      });
+      signal?.addEventListener('abort', cancel, { once: true });
+      post(request(job));
     });
 
   return {
-    importFiles: (files, onProgress, taken = [], readTime) =>
+    importFiles: (files, onProgress, taken = [], readTime, signal) =>
       start(
         (job) => ({
           type: 'import',
@@ -90,6 +136,7 @@ export function createSnapshotClient(post: (request: SnapshotRequest) => void): 
           ...(readTime === undefined ? {} : { readTime }),
         }),
         onProgress,
+        signal,
       ),
     check: async (snapshot, history, onProgress) => {
       await start(

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 import { generateOrganization, historyFor } from '@gcportrait/demo-data';
 import { migrateSnapshot, type Snapshot } from '@gcportrait/model';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { loadDemoSnapshot } from '../../diagram/pipeline/dataHandler';
 import { preparedDemo } from '../../diagram/testing/demoData';
@@ -10,10 +10,16 @@ import { demoExportNdjson } from '../../import/fixtures';
 import { bundleParts } from '../bundle';
 import { decodeJson, plainBlob } from '../codec';
 import { formatUtc } from '../labels';
-import type { JobResult } from './client';
+import { createSnapshotClient, SnapshotJobCancelled, type JobResult } from './client';
 import { createSnapshotHandler, LISTED_PROBLEMS } from './handler';
 import { createInProcessSnapshotWorker } from './inProcess';
-import { DAMAGED_RECORD, type JobProgress, type SnapshotResponse } from './protocol';
+import {
+  CANCELLED_JOB,
+  DAMAGED_RECORD,
+  type JobProgress,
+  type SnapshotRequest,
+  type SnapshotResponse,
+} from './protocol';
 
 const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
@@ -29,6 +35,41 @@ async function snapshotOf(blob: Blob): Promise<Snapshot> {
 }
 
 const S_EXPORT = demoExportNdjson('S');
+
+/** The chunks a {@link meteredFile} hands out. */
+const CHUNK_BYTES = 64 * 1024;
+
+/**
+ * An export of at least `bytes` (demo S's lines over and over: the same assets listed again), as a file that hands its
+ * bytes out in 64 KiB chunks and counts how many of them were read.
+ */
+function meteredFile(bytes: number, name = 'export.json') {
+  const lines = `${S_EXPORT.trimEnd()}\n`;
+  const content = new TextEncoder().encode(lines.repeat(Math.ceil(bytes / lines.length)));
+  const counts = { read: 0, total: Math.ceil(content.length / CHUNK_BYTES) };
+  class MeteredFile extends File {
+    override stream(): ReadableStream<Uint8Array<ArrayBuffer>> {
+      let at = 0;
+      return new ReadableStream({
+        pull(controller) {
+          if (at >= content.length) {
+            controller.close();
+            return;
+          }
+          counts.read += 1;
+          controller.enqueue(content.slice(at, at + CHUNK_BYTES));
+          at += CHUNK_BYTES;
+        },
+      });
+    }
+  }
+  return { file: new MeteredFile([content], name), counts };
+}
+
+/** The answers that end a job: its `done` or its `error`. */
+function endsOf(answers: readonly SnapshotResponse[], job: number): SnapshotResponse[] {
+  return answers.filter((answer) => answer.job === job && answer.type !== 'progress');
+}
 
 describe('the import job', () => {
   it('reads a Cloud Asset Inventory export, infers its scope and says the read time is estimated', async () => {
@@ -196,6 +237,95 @@ describe('the import job', () => {
     await expect(
       client.importFiles([new File(['{"format":"gcportrait.snapshot","version":9}'], 'new.gcportrait.json')]),
     ).rejects.toThrow(/^new\.gcportrait\.json: The snapshot file uses version 9/);
+  });
+});
+
+describe('cancelling an import', () => {
+  it('rejects at once, tells the worker, and drops what the worker still answers for the job', async () => {
+    const posted: SnapshotRequest[] = [];
+    const client = createSnapshotClient((request) => posted.push(request));
+    const controller = new AbortController();
+    const file = new File([S_EXPORT], 'export.json');
+    const job = client.importFiles([file], undefined, [], undefined, controller.signal);
+    controller.abort();
+    await expect(job).rejects.toBeInstanceOf(SnapshotJobCancelled);
+    await expect(job).rejects.toThrow(CANCELLED_JOB);
+    expect(posted.map((request) => [request.type, request.job])).toEqual([
+      ['import', 1],
+      ['cancel', 1],
+    ]);
+    // The worker's answers for the job come too late and are dropped; the next job is answered as usual.
+    client.receive({ type: 'done', job: 1, snapshots: [], warnings: [] });
+    const next = client.importFiles([file]);
+    client.receive({ type: 'done', job: 2, snapshots: [], warnings: ['read'] });
+    expect(await next).toEqual({ snapshots: [], warnings: ['read'] });
+    // A signal aborted before the import starts asks the worker for nothing.
+    await expect(
+      client.importFiles([file], undefined, [], undefined, controller.signal),
+    ).rejects.toBeInstanceOf(SnapshotJobCancelled);
+    expect(posted).toHaveLength(3);
+  });
+
+  it('stops the worker reading the export, which then goes on with the next job', async () => {
+    const { client } = createInProcessSnapshotWorker();
+    const { file, counts } = meteredFile(8 << 20);
+    const controller = new AbortController();
+    const stages: JobProgress[] = [];
+    const cancelled = client.importFiles(
+      [file],
+      (progress) => {
+        stages.push(progress);
+        // Once the first MiB is read.
+        if (progress.stage === 'read' && (progress.done ?? 0) > 0) controller.abort();
+      },
+      [],
+      undefined,
+      controller.signal,
+    );
+    await expect(cancelled).rejects.toBeInstanceOf(SnapshotJobCancelled);
+    // Jobs run in order: once the next one is answered, the cancelled one has ended.
+    const next = only(await client.importFiles([new File([S_EXPORT], 'export.json')]));
+    expect(next.meta.source).toBe('export');
+    expect(counts.read).toBeGreaterThan(0);
+    expect(counts.read).toBeLessThan(counts.total / 2);
+    // Nothing past the read was reported: no check, no encoding.
+    expect(new Set(stages.map((progress) => progress.stage))).toEqual(new Set(['read']));
+  });
+
+  it('answers a cancelled job with CANCELLED_JOB, a queued one before it starts, and ignores other cancels', async () => {
+    const answers: SnapshotResponse[] = [];
+    const big = meteredFile(8 << 20);
+    const handle = createSnapshotHandler((response) => {
+      answers.push(response);
+      // Job 1 is cancelled once its first MiB is read.
+      if (response.type === 'progress' && response.job === 1 && (response.progress.done ?? 0) > 0)
+        handle({ type: 'cancel', job: 1 });
+    });
+    const queued = meteredFile(1);
+    handle({ type: 'import', job: 1, files: [big.file], now: 0, taken: [] });
+    handle({ type: 'import', job: 2, files: [queued.file], now: 0, taken: [] });
+    handle({ type: 'import', job: 3, files: [new File([S_EXPORT], 'export.json')], now: 0, taken: [] });
+    handle({ type: 'cancel', job: 2 });
+    // A job that is not there, and a cancel without a job.
+    handle({ type: 'cancel', job: 99 });
+    handle({ type: 'cancel' });
+    await vi.waitFor(() => {
+      expect(endsOf(answers, 3)).toHaveLength(1);
+    });
+    const cancelled = { type: 'error', message: CANCELLED_JOB, problems: [] };
+    expect(endsOf(answers, 1)).toEqual([{ ...cancelled, job: 1 }]);
+    expect(big.counts.read).toBeLessThan(big.counts.total / 2);
+    // The queued job read nothing and said nothing but that it was cancelled.
+    expect(answers.filter((answer) => answer.job === 2)).toEqual([{ ...cancelled, job: 2 }]);
+    expect(queued.counts.read).toBe(0);
+    expect(endsOf(answers, 3)).toMatchObject([{ type: 'done', snapshots: [{ meta: { source: 'export' } }] }]);
+    expect(answers.filter((answer) => answer.job === 99)).toEqual([]);
+    expect(answers).toContainEqual({
+      type: 'error',
+      job: -1,
+      message: 'a cancel names no job',
+      problems: [],
+    });
   });
 });
 

@@ -21,18 +21,23 @@
  * last, the diagram page asks about the one opened instead). A Cloud Storage read asks the moment its count passes
  * 10 000 while it streams (import/run.ts), and Cancel stops the read. Leaving the page before the person has
  * answered takes the question back, and nothing is stored.
+ *
+ * While the dropped files are read, the card's Cancel stops the snapshot worker's job and stores nothing
+ * ("Cancelled. Nothing was stored."), as a pull's Cancel does, and puts focus back on "Choose files…"; leaving the
+ * page cancels the import the same way (snapshots/useImportSignal.ts), so none is stored after the person has gone.
  */
 import type { SnapshotRef } from '@gcportrait/model';
 import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement } from 'react';
 
 import { cx } from '../classNames';
 import { CommandBlock } from '../preflight/CommandBlock';
-import { JobStatus, type JobState } from '../snapshots/JobStatus';
+import { CANCELLED_MESSAGE, JobStatus, type JobState } from '../snapshots/JobStatus';
 import { formatUtc } from '../snapshots/labels';
 import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
 import type { ImportCandidate } from '../snapshots/library';
 import { useSnapshotLibrary } from '../snapshots/SnapshotLibraryProvider';
-import { SnapshotJobError } from '../snapshots/worker/client';
+import { useImportSignal } from '../snapshots/useImportSignal';
+import { SnapshotJobCancelled, SnapshotJobError } from '../snapshots/worker/client';
 import { useAppState, useDiagramActions } from '../state';
 import { inertProps } from '../ui/dom';
 import { copyCommand, DESCRIBE_COMMAND, exportCommand } from './commands';
@@ -73,10 +78,12 @@ export function LoadExport(): ReactElement {
   const [dropping, setDropping] = useState(false);
   const typedTime = useTypedReadTime();
   const fileInput = useRef<HTMLInputElement>(null);
+  const chooseButton = useRef<HTMLButtonElement>(null);
   const sidecarInput = useRef<HTMLInputElement>(null);
   const mounted = useRef(true);
-  // Aborted when the card leaves the page: a large-snapshot question still open is taken back.
-  const leaving = useRef<AbortSignal | undefined>(undefined);
+  // The dropped files' import: aborted by its Cancel and when the card leaves the page, which also takes back a
+  // large-snapshot question still open.
+  const importSignal = useImportSignal();
   const ids = { drop: useId(), uri: useId(), uriHint: useId(), sidecar: useId() };
   const reading = files.kind === 'busy';
   const busy = reading || job.running;
@@ -85,23 +92,28 @@ export function LoadExport(): ReactElement {
 
   useEffect(() => {
     mounted.current = true;
-    const left = new AbortController();
-    leaving.current = left.signal;
     return () => {
       mounted.current = false;
-      left.abort();
     };
   }, []);
 
   /**
    * The question before the files' snapshots are stored: about the one the import opens, the last; true (a small
    * one, one already chosen, the session setting, or "Draw it anyway", which the guard remembers for its ref, so the
-   * diagram page does not ask again) stores them.
+   * diagram page does not ask again) stores them. An aborted `signal` (the card left the page) takes it back.
    */
-  const confirm = (candidates: readonly ImportCandidate[]): Promise<boolean> => {
-    const opened = candidates.at(-1);
-    if (opened === undefined) return Promise.resolve(true);
-    return guard.confirm({ assets: opened.assets, ref: opened.ref }, leaving.current);
+  const confirmOf =
+    (signal: AbortSignal) =>
+    (candidates: readonly ImportCandidate[]): Promise<boolean> => {
+      const opened = candidates.at(-1);
+      if (opened === undefined) return Promise.resolve(true);
+      return guard.confirm({ assets: opened.assets, ref: opened.ref }, signal);
+    };
+
+  /** Cancel while the files are read: nothing is stored, and focus goes back to "Choose files…". */
+  const cancelFiles = (): void => {
+    importSignal.cancel();
+    chooseButton.current?.focus();
   };
 
   const importFiles = (chosen: readonly File[]): void => {
@@ -113,19 +125,21 @@ export function LoadExport(): ReactElement {
       return;
     }
     setFiles({ kind: 'busy', progress: null });
+    const signal = importSignal.begin();
+    const confirm = confirmOf(signal);
     library
       .importFiles(
         chosen,
         (progress) => {
-          if (mounted.current) setFiles({ kind: 'busy', progress });
+          if (mounted.current && !signal.aborted) setFiles({ kind: 'busy', progress });
         },
-        typedReadTime === undefined ? { confirm } : { readTime: typedReadTime, confirm },
+        typedReadTime === undefined ? { confirm, signal } : { readTime: typedReadTime, confirm, signal },
       )
       .then(
         ({ refs, warnings, declined }) => {
           if (!mounted.current) return;
           if (declined === true) {
-            setFiles({ kind: 'idle', message: 'Cancelled. Nothing was stored.' });
+            setFiles({ kind: 'idle', message: CANCELLED_MESSAGE });
             return;
           }
           const ref = refs.at(-1);
@@ -136,6 +150,10 @@ export function LoadExport(): ReactElement {
         },
         (error: unknown) => {
           if (!mounted.current) return;
+          if (error instanceof SnapshotJobCancelled) {
+            setFiles({ kind: 'idle', message: CANCELLED_MESSAGE });
+            return;
+          }
           setFiles({
             kind: 'failed',
             title: 'Nothing was imported.',
@@ -214,6 +232,7 @@ export function LoadExport(): ReactElement {
           >
             <p className={styles.dropTitle}>Drop the export’s files here</p>
             <button
+              ref={chooseButton}
               type="button"
               className={styles.secondary}
               aria-describedby={ids.drop}
@@ -242,7 +261,7 @@ export function LoadExport(): ReactElement {
               Read in this browser; nothing is uploaded.
             </p>
           </div>
-          <JobStatus state={files} subject={subject} label="Importing the export" />
+          <JobStatus state={files} subject={subject} label="Importing the export" onCancel={cancelFiles} />
           {fileNotes === null ? null : (
             <div className={styles.notice}>
               <p>Imported with notes:</p>

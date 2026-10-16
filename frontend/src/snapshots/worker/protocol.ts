@@ -3,7 +3,8 @@
  * The snapshot worker's protocol (ingest off the UI thread). The page hands over files to import; the
  * worker reads, checks and encodes them and answers with records ready to store (`PreparedSnapshot`: Blobs and
  * listing metadata, never parsed assets), which the page writes to IndexedDB (../repository.ts); before an export
- * it reads a stored record in full (`check`). Each job reports its stages as it goes. A demo organisation is
+ * it reads a stored record in full (`check`). Each job reports its stages as it goes; the page may `cancel` an
+ * import, which then stops reading and prepares nothing (the page has stopped waiting for it). A demo organisation is
  * prepared the same way, as a `PreparedSnapshot` with the same progress, but by a demo worker started for the job,
  * as the demo generator runs in the diagram's workers only (diagram/pipeline/demoRole.ts; AGENTS.md, Architecture
  * and code).
@@ -38,7 +39,19 @@ export type SnapshotRequest =
       readonly job: number;
       readonly snapshot: Blob;
       readonly history?: Blob;
+    }
+  | {
+      /**
+       * Stops job `job` (an import the person cancelled, or left the page during): it reads no further and is
+       * answered with an error (`CANCELLED_JOB`), which the page no longer waits for. A job that has ended is not
+       * affected.
+       */
+      readonly type: 'cancel';
+      readonly job: number;
     };
+
+/** What a cancelled job answers. */
+export const CANCELLED_JOB = 'The import was cancelled.';
 
 /**
  * Where a job is: `generate` (a demo's history), `read` (files or the demo's assets; `done`/`total` in bytes when

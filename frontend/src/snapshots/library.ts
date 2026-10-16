@@ -5,10 +5,11 @@
  * generating a demo organisation runs in a worker started for the job (`demo`: main.tsx passes
  * `createBrowserDemoJob`, diagram/pipeline/workers.ts; the demo generator runs in workers only). What either
  * prepares is saved through the repository (IndexedDB; a demo organisation in memory until a reload when IndexedDB
- * refuses it, an import never), an import's only once its `confirm`, when it has one, has said yes; exporting writes
- * the `.gcportrait.json` bundle (bundle.ts) from a stored record's documents as they are, once the snapshot worker
- * has read them in full (`check`), so a damaged record is never written to a file. Every change is announced to
- * `subscribe`rs (the provider re-lists).
+ * refuses it, an import never), an import's only once its `confirm`, when it has one, has said yes, and never once
+ * its `signal` is aborted (the person cancelled, or left the page); exporting writes the `.gcportrait.json` bundle
+ * (bundle.ts) from a stored record's documents as they are, once the snapshot worker has read them in full
+ * (`check`), so a damaged record is never written to a file. Every change is announced to `subscribe`rs (the
+ * provider re-lists).
  */
 import { isSnapshotRef, type DemoSize, type SnapshotRef } from '@gcportrait/model';
 
@@ -19,6 +20,7 @@ import { plainBlob } from './codec';
 import { scopeName, snapshotLabel } from './labels';
 import { createSnapshotRepository, type ListedSnapshot } from './repository';
 import {
+  SnapshotJobCancelled,
   SnapshotJobError,
   type OnProgress,
   type SnapshotWorker,
@@ -56,6 +58,11 @@ export interface ImportOptions {
    * false stores none (`declined`). Absent: they are stored at once.
    */
   readonly confirm?: (candidates: readonly ImportCandidate[]) => Promise<boolean>;
+  /**
+   * Aborted when the person cancels the import or leaves the page: the import rejects with `SnapshotJobCancelled`,
+   * the snapshot worker stops reading, and nothing is stored (what was stored before the abort is deleted again).
+   */
+  readonly signal?: AbortSignal;
 }
 
 export interface SnapshotLibrary {
@@ -77,7 +84,8 @@ export interface SnapshotLibrary {
    * says when a file's snapshot is stored already). A snapshot IndexedDB refuses (the quota) is not stored, and a
    * warning says so; when none could be stored, it fails. An export's read time is `options.readTime` (typed by
    * the person) unless its operation.json names one. With `options.confirm`, nothing is stored until it has said
-   * yes, and nothing at all when it says no.
+   * yes, and nothing at all when it says no. An aborted `options.signal` stores nothing and rejects with
+   * `SnapshotJobCancelled`.
    */
   importFiles(files: readonly File[], onProgress?: OnProgress, options?: ImportOptions): Promise<Imported>;
   /**
@@ -174,28 +182,39 @@ export function createSnapshotLibrary(options: SnapshotLibraryOptions): Snapshot
       return { ref: prepared.id, persisted };
     },
     async importFiles(files, onProgress, options) {
+      const signal = options?.signal;
+      // Between every step: an import the person cancelled (or left) goes no further.
+      const stopIfCancelled = (): void => {
+        if (signal?.aborted === true) throw new SnapshotJobCancelled();
+      };
+      stopIfCancelled();
       if (!(await repository.persistent()))
         throw new SnapshotJobError(
           'Importing needs browser storage, which this browser does not allow here.',
         );
       const taken = await repository.ids();
+      stopIfCancelled();
       const { snapshots, warnings } = await started().client.importFiles(
         files,
         onProgress,
         taken,
         options?.readTime,
+        signal,
       );
+      stopIfCancelled();
       // The person's say before anything is stored: what each snapshot would be stored under, and its size.
       const candidates = snapshots.flatMap((prepared) =>
         isRef(prepared.id) ? [{ ref: prepared.id, assets: prepared.meta.assetCount }] : [],
       );
-      if (options?.confirm !== undefined && !(await options.confirm(candidates)))
-        return { refs: [], records: [], warnings: [], declined: true };
+      const yes = options?.confirm === undefined || (await options.confirm(candidates));
+      stopIfCancelled();
+      if (!yes) return { refs: [], records: [], warnings: [], declined: true };
       onProgress?.({ stage: 'store' });
       const records: StoredSnapshot[] = [];
       const refs: SnapshotRef[] = [];
       const refused: string[] = [];
       for (const prepared of snapshots) {
+        if (signal?.aborted === true) break;
         if (!isRef(prepared.id)) continue;
         const { record, persisted } = await save(prepared, false);
         if (!persisted) {
@@ -204,6 +223,11 @@ export function createSnapshotLibrary(options: SnapshotLibraryOptions): Snapshot
         }
         records.push(record);
         refs.push(prepared.id);
+      }
+      if (signal?.aborted === true) {
+        // Cancelled while storing: what this import stored is taken back, so nothing of it stays.
+        for (const record of records) await repository.delete(record.id);
+        throw new SnapshotJobCancelled();
       }
       if (records.length > 0) changed();
       if (records.length === 0 && refused.length > 0)

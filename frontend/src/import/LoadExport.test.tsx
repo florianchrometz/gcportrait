@@ -330,6 +330,59 @@ describe('Load export', () => {
     expect(library.records.size).toBe(0);
   });
 
+  it('cancels dropped files while they are read: nothing is stored, it says so, and focus is back on the files', async () => {
+    const library = fakeLibrary();
+    const { container } = renderImport(<LoadExport />, { connect: SIGNED_IN, library });
+    await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
+    act(() => {
+      library.pending()?.onProgress?.({ stage: 'read', done: 2_000_000, total: 8_000_000, assets: 1200 });
+    });
+    const cancel = screen.getByRole('button', { name: 'Cancel importing the export' });
+    expect(cancel.textContent).toBe('Cancel');
+    await expectNoAxeViolations();
+    await userEvent.click(cancel);
+    expect(await screen.findByText('Cancelled. Nothing was stored.')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Cancel importing the export' })).toBeNull();
+    expect(screen.queryByRole('progressbar', { name: 'Importing the export' })).toBeNull();
+    const choose = screen.getByRole('button', { name: 'Choose files…' });
+    expect(document.activeElement).toBe(choose);
+    expect(choose.getAttribute('aria-disabled')).toBeNull();
+    // The import is no longer waited for: what it would have prepared is never stored.
+    expect(library.pending()).toBeNull();
+    expect(library.records.size).toBe(0);
+    expect(currentLocation(container)).toBe('/');
+    // By keyboard too: the next files, then Enter on Cancel.
+    await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
+    screen.getByRole('button', { name: 'Cancel importing the export' }).focus();
+    await userEvent.keyboard('{Enter}');
+    expect(await screen.findByText('Cancelled. Nothing was stored.')).toBeDefined();
+    expect(library.records.size).toBe(0);
+    expect(library.calls).toEqual(['importFiles export.json', 'importFiles export.json']);
+  });
+
+  it('cancels dropped files when the card leaves the page while they are read, and stores nothing', async () => {
+    const library = fakeLibrary();
+    const leave: { current: () => void } = { current: () => undefined };
+    function Leaving(): ReactElement | null {
+      const [shown, setShown] = useState(true);
+      leave.current = () => {
+        setShown(false);
+      };
+      return shown ? <LoadExport /> : null;
+    }
+    renderImport(<Leaving />, { connect: SIGNED_IN, library });
+    await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
+    expect(library.pending()).not.toBeNull();
+    act(() => {
+      leave.current();
+    });
+    // The import is cancelled: the worker's answer, should it still come, finds nothing waiting for it.
+    expect(library.pending()).toBeNull();
+    const record = storedRecord('01J9Z3K5Q8XW2V4N6P7R8S9T0K', { source: 'export' });
+    await act(() => library.answer({ ok: { refs: [record.id], records: [record], warnings: [] } }));
+    expect(library.records.size).toBe(0);
+  });
+
   it('asks while a Cloud Storage read passes 10 000 assets; Cancel stops reading it', async () => {
     const big = line({ t: 'progress', pages: 0, assets: 10_500 });
     stubBackend({ routes: { '/api/export/read': () => new Response(big + LINES) } });

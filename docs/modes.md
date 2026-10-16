@@ -120,7 +120,8 @@ gcloud storage cp gs://YOUR_BUCKET/export.json .
 
 - **drop the file** (several files of one export at once, and `operation.json` with them) onto the card, or
   onto the Snapshots page's import, which every instance and build has (in a browser that keeps IndexedDB). It
-  is read in your browser; nothing is uploaded and no sign-in is needed; or
+  is read in your browser; nothing is uploaded and no sign-in is needed. Cancel, under the progress bar while
+  the files are read, stops the import and keeps nothing, and so does leaving the page before it ends; or
 - **read it from Cloud Storage**: sign in, type the `gs://` address and press "Read from Cloud Storage"; the
   backend reads the object with your token (you need `storage.objects.get` on it) and streams it to your
   browser.

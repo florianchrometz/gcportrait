@@ -29,6 +29,7 @@ import {
 } from './load';
 import { createSnapshotRepository } from './repository';
 import { storedRecord } from './testing';
+import { SnapshotJobCancelled } from './worker/client';
 import { createInProcessSnapshotWorker } from './worker/inProcess';
 import { DAMAGED_RECORD, type JobProgress } from './worker/protocol';
 
@@ -236,6 +237,71 @@ describe('the library', () => {
     expect(asked[0]?.map(({ assets }) => assets)).toEqual([record.meta.assetCount]);
     expect(imported.refs).toEqual([record.id]);
     expect((await snapshots.list()).map((listed) => listed.record.id)).toEqual([record.id]);
+    expect(changes).toHaveBeenCalledTimes(1);
+  });
+
+  it('stores nothing of an import cancelled while it is read, asked about or stored', async () => {
+    const db = await database();
+    const snapshots = library(Promise.resolve(db));
+    const changes = vi.fn();
+    snapshots.subscribe(changes);
+    const file = (): File => new File([demoExportNdjson('S')], 'export.json');
+    const cancelled = async (
+      abortAt: (controller: AbortController) => Parameters<SnapshotLibrary['importFiles']>[2],
+      onProgress?: (progress: JobProgress, controller: AbortController) => void,
+    ): Promise<void> => {
+      const controller = new AbortController();
+      const options = abortAt(controller);
+      await expect(
+        snapshots.importFiles([file()], (progress) => onProgress?.(progress, controller), {
+          ...options,
+          signal: controller.signal,
+        }),
+      ).rejects.toBeInstanceOf(SnapshotJobCancelled);
+    };
+    // While the worker reads the files.
+    await cancelled(
+      () => ({}),
+      (progress, controller) => {
+        if (progress.stage === 'read') controller.abort();
+      },
+    );
+    // While the person is asked: their answer comes too late to store anything.
+    await cancelled((controller) => ({
+      confirm: () => {
+        controller.abort();
+        return Promise.resolve(true);
+      },
+    }));
+    // While the snapshot is written: the record written is deleted again.
+    const put = db.put.bind(db);
+    const written: string[] = [];
+    let abortOnPut: AbortController | null = null;
+    vi.spyOn(db, 'put').mockImplementation(async (...args: Parameters<typeof db.put>) => {
+      const key = await put(...args);
+      written.push(key);
+      abortOnPut?.abort();
+      return key;
+    });
+    await cancelled((controller) => {
+      abortOnPut = controller;
+      return {};
+    });
+    expect(written).toHaveLength(1);
+    // A signal aborted before the import starts reads nothing.
+    const before = new AbortController();
+    before.abort();
+    await expect(
+      snapshots.importFiles([file()], undefined, { signal: before.signal }),
+    ).rejects.toBeInstanceOf(SnapshotJobCancelled);
+    expect(await snapshots.list()).toEqual([]);
+    expect(changes).not.toHaveBeenCalled();
+    // The same file without a cancel is stored.
+    abortOnPut = null;
+    const { refs } = await snapshots.importFiles([file()], undefined, {
+      signal: new AbortController().signal,
+    });
+    expect((await snapshots.list()).map((listed) => listed.record.id)).toEqual(refs);
     expect(changes).toHaveBeenCalledTimes(1);
   });
 

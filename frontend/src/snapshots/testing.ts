@@ -2,15 +2,16 @@
 /**
  * A snapshot library for the page tests: records in memory, every call logged, and the jobs answered by the
  * test (`answer`) so it can look at the page while one runs; an import's answer is stored once its `confirm`, if
- * it has one, says yes. Nothing is generated, compressed or parsed (jsdom's Blob cannot stream); the worker, the
- * codec and IndexedDB are tested on their own (library.test.ts).
+ * it has one, says yes, and never once its `signal` is aborted (the import then rejects at once with
+ * `SnapshotJobCancelled`, as the library's does). Nothing is generated, compressed or parsed (jsdom's Blob cannot
+ * stream); the worker, the codec and IndexedDB are tested on their own (library.test.ts).
  */
 import type { DemoSize, SnapshotRef } from '@gcportrait/model';
 
 import type { SnapshotMeta, StoredSnapshot } from '../storage/db';
 import type { Imported, SnapshotLibrary, StorageUse } from './library';
 import type { ListedSnapshot } from './repository';
-import type { OnProgress } from './worker/client';
+import { SnapshotJobCancelled, type OnProgress } from './worker/client';
 
 export function storedRecord(id: string, meta: Partial<SnapshotMeta> = {}): StoredSnapshot {
   return {
@@ -63,9 +64,24 @@ export function fakeLibrary(
   const changed = (): void => {
     for (const listener of [...listeners]) listener();
   };
-  const wait = <T>(onProgress: OnProgress | undefined): Promise<T> =>
+  const wait = <T>(onProgress: OnProgress | undefined, signal?: AbortSignal): Promise<T> =>
     new Promise<T>((resolve, reject) => {
-      pending = { onProgress, resolve: resolve as (value: unknown) => void, reject };
+      if (signal?.aborted === true) {
+        reject(new SnapshotJobCancelled());
+        return;
+      }
+      const job: Job<unknown> = { onProgress, resolve: resolve as (value: unknown) => void, reject };
+      pending = job;
+      // A cancelled job rejects at once and is no longer the test's to answer.
+      signal?.addEventListener(
+        'abort',
+        () => {
+          if (pending !== job) return;
+          pending = null;
+          reject(new SnapshotJobCancelled());
+        },
+        { once: true },
+      );
     });
 
   return {
@@ -102,14 +118,16 @@ export function fakeLibrary(
       // A read time typed for an export is logged after the names.
       const at = importOptions?.readTime === undefined ? '' : ` at ${importOptions.readTime}`;
       calls.push(`importFiles ${files.map((file) => file.name).join(',')}${at}`);
-      const result = await wait<Imported>(onProgress);
+      const signal = importOptions?.signal;
+      const result = await wait<Imported>(onProgress, signal);
       // The test's answer is what the worker prepared: asked about before any of it is stored, as the library does.
       const candidates = result.refs.map((ref) => ({
         ref,
         assets: result.records.find((record) => record.id === ref)?.meta.assetCount ?? 0,
       }));
-      if (importOptions?.confirm !== undefined && !(await importOptions.confirm(candidates)))
-        return { refs: [], records: [], warnings: [], declined: true };
+      const yes = importOptions?.confirm === undefined || (await importOptions.confirm(candidates));
+      if (signal?.aborted === true) throw new SnapshotJobCancelled();
+      if (!yes) return { refs: [], records: [], warnings: [], declined: true };
       for (const record of result.records) records.set(record.id, { record, persisted: true });
       changed();
       return result;

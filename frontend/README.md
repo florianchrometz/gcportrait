@@ -819,8 +819,9 @@ time) with "Open the diagram".
 ```
 src/import/
   PullNow.tsx           "Pull now": inert with the reason until target.ts has a target; progress, Cancel, errors
-  LoadExport.tsx        the export card: dropped files (the Snapshots page's import, `library.importFiles`), a gs:// URI read by
-                        the backend with an optional operation.json, the gcloud commands (commands.ts)
+  LoadExport.tsx        the export card: dropped files (the Snapshots page's import, `library.importFiles`,
+                        with Cancel while they are read), a gs:// URI read by the backend with an optional
+                        operation.json, the gcloud commands (commands.ts)
   ImportStatus.tsx      stage (live region), counters, progress bar, Cancel; the failure alert; the notes
   useImportJob.ts       one import at a time: the progress reducer, a one-second tick, Cancel, then the diagram
   run.ts                a pull or an export read from request to stored snapshot (`runLivePull`, `runExportRead`)
@@ -900,8 +901,10 @@ snapshot in under 10 s, printing its time; a typed read time, and the sidecar's 
 the Snapshots page's import; a typed read time, the sidecar's over it, bundles keeping their own, the future
 note), `PullNow.test.tsx` and `LoadExport.test.tsx` (the controls in a harness, the read time field, the
 large-snapshot question for dropped files before anything is stored (Cancel, Escape and leaving the page store
-nothing, "Draw it anyway" stores once, several files ask about the one they open, the session setting), a pull
-and a Cloud Storage read, axe included), and `e2e/tests/live-pull.spec.ts` in Chromium.
+nothing, "Draw it anyway" stores once, several files ask about the one they open, the session setting), Cancel
+while dropped files are read (by pointer and by keyboard, focus back on "Choose files…") and leaving the page
+then, neither storing anything, a pull and a Cloud Storage read, axe included), and
+`e2e/tests/live-pull.spec.ts` in Chromium.
 
 ## Snapshots (`src/snapshots/`)
 
@@ -931,10 +934,13 @@ src/snapshots/
                         diagram page's `useLargeSnapshotGate`
   DemoEntry.tsx         the Connect page's demo card: size S–XL (ui/SegmentedControl), Try the demo, progress
   SnapshotTable.tsx, ImportPanel.tsx, StorageUsage.tsx, JobStatus.tsx   the Snapshots page's parts
+                        (JobStatus with Cancel for an import, also on the Connect page's export card)
+  useImportSignal.ts    a file import's abort signal: one per import, aborted by its Cancel and by leaving
+                        the page
   RowTable.tsx          the rows of the page's two tables from one list of columns (a card per row on a phone)
   ScopeTimelines.tsx    "Timelines by scope": what is kept of each scope's timeline, with deleting
   scopeEntries.ts       its pure part: the stored snapshots and the cached days grouped by scope, in time order
-  worker/               the snapshot worker: protocol, handler (import and check jobs), prepare.ts (a record ready to
+  worker/               the snapshot worker: protocol, handler (import, check, cancel), prepare.ts (a record ready to
                         store, shared with the data worker's demo job), scope.ts (an export's scope from the
                         assets' ancestors), parse.ts (bundles and histories, checked), role.ts (its role in the
                         app's worker script), client.ts, browser.ts, inProcess.ts (tests)
@@ -1035,6 +1041,16 @@ five listed; a file without any asset, a broken or newer bundle, or an invalid h
 alert naming the file and its problems. A snapshot IndexedDB refuses (the quota) is not stored, not even in
 memory (the data worker could not open it): the import says so, and fails when nothing could be stored.
 
+**Cancel.** While the files are read, Cancel under the progress bar ("Cancel importing", "Cancel importing
+the export" on the Connect page's card; `JobStatus.tsx`) stops the import, and leaving the page does the same
+(`useImportSignal.ts`): nothing is stored, the card says "Cancelled. Nothing was stored.", as a pull's
+Cancel does, and focus goes back to "Choose files…". The import's signal (`importFiles`' `signal` option)
+rejects it at once (`SnapshotJobCancelled`) and sends the snapshot worker one `cancel` message: the job
+stops at its next step (before each file, between the chunks of an export, pausing every MiB so the message
+can arrive, before encoding, before answering), and a job still queued never starts. Whatever the worker
+still answers for it is dropped. The library checks the signal after each step too; aborted while it
+stores, it deletes what this import had stored.
+
 **Load, export, delete, storage.** Load puts the ref into the hash on `/diagram` (`actions.setSnapshot`); the data
 worker reads a ULID from IndexedDB (`load.ts`, stage "Reading the assets"); a missing one, or a damaged one
 (it does not decompress or parse, or the model cannot read it), is an error on the canvas in a sentence for
@@ -1089,22 +1105,25 @@ generator), `worker/scope.test.ts`, `worker/parse.test.ts` (the bundle round tri
 that does not end with its snapshot included), `diagram/pipeline/demo.test.ts` (the demo job against the data
 worker's own snapshot, through the data protocol and client), `worker/handler.test.ts` (imports of one and
 several export files, malformed lines, several roots, bundles under new ids and the copy notes, the check job
-and every damage it refuses), `library.test.ts` (IndexedDB through fake-indexeddb: the repository, the
-library, the export → import round trip, imports as copies, an import asked about before it is stored (no
-stores nothing, yes stores it once), a refused import, damaged records refused at export, the data worker's
-loader, the memory fallback, and the data worker over stored snapshots: a deleted snapshot is not drawn from
-its kept Graph, and S imported after M was deleted draws S), `pages/SnapshotsPage.test.tsx` and
-`pages/ConnectPage.test.tsx` (the pages with a fake library, axe included; the read time typed at an import; a
-card per stored snapshot on a phone), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx` (the timelines by
-scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a scope's days, focus
-and status, over fake-indexeddb; axe), `LargeSnapshotGuard.test.tsx` (the guard's rules, and every way in with
-the fake library: "Try the demo" XL, Load, a link, the Snapshot menu; Cancel, Escape, "Draw it anyway", the
-session setting, no second question; axe), `e2e/tests/large-snapshot.spec.ts` in Chromium (demo mode: "Try the
-demo" XL asked about, cancelled, drawn, silenced for the tab; axe in both themes), and
-`e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S, import both as
-copies, load each, delete M's copy, go back to its view and see it is gone, import S again and see S drawn,
-and the same after a reload; a refused import; no IndexedDB, and a reload forgetting; axe on both pages in
-both themes).
+and every damage it refuses, a cancelled import: the client rejects at once and drops the worker's late
+answer, the worker stops reading an 8 MiB export after its first MiB, a queued job never starts),
+`library.test.ts` (IndexedDB through fake-indexeddb: the repository, the library, the export → import round
+trip, imports as copies, an import asked about before it is stored (no stores nothing, yes stores it once),
+an import cancelled while it is read, asked about or stored (nothing stays), a refused import, damaged
+records refused at export, the data worker's loader, the memory fallback, and the data worker over stored
+snapshots: a deleted snapshot is not drawn from its kept Graph, and S imported after M was deleted draws S),
+`pages/SnapshotsPage.test.tsx` and `pages/ConnectPage.test.tsx` (the pages with a fake library, axe included;
+the read time typed at an import; Cancel while an import's files are read and leaving the page then, neither
+storing anything; a card per stored snapshot on a phone), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx`
+(the timelines by scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a
+scope's days, focus and status, over fake-indexeddb; axe), `LargeSnapshotGuard.test.tsx` (the guard's rules,
+and every way in with the fake library: "Try the demo" XL, Load, a link, the Snapshot menu; Cancel, Escape,
+"Draw it anyway", the session setting, no second question; axe), `e2e/tests/large-snapshot.spec.ts` in
+Chromium (demo mode: "Try the demo" XL asked about, cancelled, drawn, silenced for the tab; axe in both
+themes), and `e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S,
+import both as copies, load each, delete M's copy, go back to its view and see it is gone, import S again and
+see S drawn, and the same after a reload; a refused import; no IndexedDB, and a reload forgetting; axe on both
+pages in both themes).
 
 ## Diagram renderer (`src/diagram/`)
 
