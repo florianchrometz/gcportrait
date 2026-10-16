@@ -4,7 +4,7 @@
  * The pipeline controller with the real data and layout handlers in-process: a view's Scene and Layout land in
  * the pipeline slice and its snapshot in the snapshot slice; a newer request supersedes the older; a timeline day
  * is drawn as a view is, without taking the snapshot back to loading; the canvas size is the measured one; a resize
- * asks again only when `auto` would pick another level (with hysteresis).
+ * asks again only when `auto` would pick another level (with hysteresis); a reset forgets the measured canvas.
  */
 import { decodeViewSpec } from '@gcportrait/model';
 import { describe, expect, it, vi } from 'vitest';
@@ -183,6 +183,30 @@ describe('the pipeline controller', () => {
     expect(store.getState().pipeline).toMatchObject({ key: '', result: null, pending: null, error: null });
     controller.run(sceneKey(decodeViewSpec('lens=data')));
     expect(store.getState().pipeline.result).toBeNull();
+  }, 30_000);
+
+  it('forgets the measured canvas on reset, and asks at the size measured when the page comes back', async () => {
+    const { store, viewports, workers } = setup('#snapshot=demo:S');
+    const controller = createPipelineController(store, workers);
+    controller.measure({ width: 1280, height: 624 });
+    controller.run(keyOf(store));
+    await settled(store);
+    // The diagram page went away: no size is left in the slice for a reader on another page.
+    controller.reset();
+    expect(store.getState().pipeline).toMatchObject({ canvas: null, viewport: null });
+    // The page comes back and measures its canvas before it asks for the view (state/hooks.ts).
+    controller.measure({ width: 390, height: 500 });
+    expect(store.getState().pipeline.canvas).toEqual({ width: 390, height: 500 });
+    controller.run(keyOf(store));
+    await settled(store);
+    expect(viewports).toEqual([
+      { width: 1280, height: 624 },
+      { width: 390, height: 500 },
+    ]);
+    // Measured the same as before the page went away, the canvas is written again all the same.
+    controller.reset();
+    controller.measure({ width: 390, height: 500 });
+    expect(store.getState().pipeline.canvas).toEqual({ width: 390, height: 500 });
   }, 30_000);
 
   it('leaves selection and highlight out of the scene key', () => {

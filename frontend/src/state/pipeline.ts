@@ -8,8 +8,9 @@
  * Selection and highlight are not part of the Scene's view (`sceneKey`), so selecting a node never asks either
  * worker for anything.
  *
- * The canvas is measured by the page (`measure`, from a ResizeObserver); each request is made at the latest
- * measured size (a 1280 × 800 window's, until there is one). A resize asks for the view
+ * The canvas is measured by the diagram page (`measure`, from a ResizeObserver) and forgotten with the rest of
+ * the slice when the page goes away (`reset`), so a size in the slice is the canvas on screen; each request is
+ * made at the latest measured size (a 1280 × 800 window's, until there is one). A resize asks for the view
  * again only when detail `auto` would pick another level, with hysteresis (diagram/autoDetail.ts).
  */
 import { isLayoutCancelled, LayoutWorkerError } from '@gcportrait/layout';
@@ -45,7 +46,10 @@ export interface PipelineController {
   measure(canvas: Viewport | null): void;
   /** Aborts the request being prepared, if any. */
   cancel(): void;
-  /** Aborts and empties the pipeline slice (the diagram page went away). */
+  /**
+   * Aborts and empties the pipeline slice, the measured canvas included (the diagram page went away; it measures
+   * its canvas again when it comes back).
+   */
   reset(): void;
 }
 
@@ -173,7 +177,7 @@ export function createPipelineController(
     reset() {
       running?.abort();
       running = null;
-      update({ key: '', result: null, pending: null, error: null, viewport: null });
+      update({ key: '', result: null, pending: null, error: null, canvas: null, viewport: null });
     },
   };
 }

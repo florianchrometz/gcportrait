@@ -82,7 +82,10 @@ export interface PipelineSlice {
   /** What is being prepared, when something is. */
   readonly pending: { readonly ref: SnapshotRef; readonly stage: DataStage | 'layout' } | null;
   readonly error: PipelineError | null;
-  /** The canvas as measured (ResizeObserver; null until measured or when it has no size). */
+  /**
+   * The diagram page's canvas as measured (ResizeObserver); null until measured, while it has no size, and off
+   * the diagram page.
+   */
   readonly canvas: Viewport | null;
   /** The canvas size the current result (or the pending request) was asked for at. */
   readonly viewport: Viewport | null;

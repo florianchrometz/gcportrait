@@ -122,9 +122,10 @@ export function selectDrawnDay(state: AppState): string | null | undefined {
 /**
  * Runs the diagram pipeline for the diagram page: measures the canvas element (synchronously before the first
  * request, then with a ResizeObserver), asks for the view's Scene and Layout whenever its scene key changes and,
- * for detail `auto`, when a resize would pick another level (state/pipeline.ts), and empties the pipeline slice
- * when the page goes away. While `held` (the large-snapshot guard is asking whether to draw the view's
- * snapshot, snapshots/LargeSnapshotGuard.tsx) it asks for nothing, so no worker starts on the snapshot.
+ * for detail `auto`, when a resize would pick another level (state/pipeline.ts), and empties the pipeline slice,
+ * the measured canvas included, when the page goes away. While `held` (the large-snapshot guard is asking
+ * whether to draw the view's snapshot, snapshots/LargeSnapshotGuard.tsx) it asks for nothing, so no worker
+ * starts on the snapshot.
  */
 export function useDiagramPipeline(canvasRef: { readonly current: HTMLElement | null }, held = false): void {
   const store = useAppStore();

@@ -184,6 +184,10 @@ describe('the top bar narrower than a desktop', () => {
     await userEvent.click(within(banner).getByRole('link', { name: 'Settings' }));
     // No canvas under the sheets on another page.
     expect(banner.style.getPropertyValue('--canvas-height')).toBe('');
+    // Back on the diagram page, the height is the canvas's as it is measured again.
+    await userEvent.click(within(banner).getByRole('button', { name: 'More' }));
+    await userEvent.click(within(banner).getByRole('link', { name: 'Diagram' }));
+    expect(banner.style.getPropertyValue('--canvas-height')).toBe('380px');
   });
 
   it('carries no canvas height on a desktop, where the sheets are in place', () => {
