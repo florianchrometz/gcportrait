@@ -1,25 +1,60 @@
 // SPDX-License-Identifier: MIT
 /**
  * Helpers for the draw.io fidelity spec (drawio.spec.ts): reading a `.drawio` file as draw.io opens it, the cell id the
- * translator gives a zone or a node, the fonts both renderings use, mxGraph's script from node_modules, and the
+ * translator gives a zone or a node, the fonts both renderings use, maxGraph as one script for the test page, and the
  * measurements taken in Chromium: the SVG export laid out by the browser (its zones, nodes, lines with their heads'
- * tips, text lines) and the draw.io file drawn by mxGraph (its cells, their boxes, each line's path and heads, each
+ * tips, text lines) and the draw.io file drawn by maxGraph (its cells, their boxes, each line's path and heads, each
  * label's lines). Nothing here imports the app: the file is checked as diagrams.net would read it.
  *
- * mxGraph (the `mxgraph` package, Apache-2.0, a development dependency; THIRD_PARTY.md) is the JavaScript library
- * diagrams.net is built on; its 4.2.2 build draws a file's cells as diagrams.net does, minus diagrams.net's own
- * additions (it ignores `fontSource`, so the faces come from the page here). It is served to the test page from
- * node_modules by a route of the spec: nothing is fetched from elsewhere.
+ * maxGraph (the `@maxgraph/core` package, Apache-2.0, a development dependency; THIRD_PARTY.md) is the maintained
+ * successor of mxGraph, the JavaScript library diagrams.net is built on: it reads the same `mxGraphModel` XML (its
+ * codec turns each cell's style string into the style object it draws with) and draws a file's cells as diagrams.net
+ * does, minus diagrams.net's own additions (it ignores `fontSource`, so the faces come from the page here). Its ES
+ * modules are bundled by esbuild, in memory, into one classic script, which a route of the spec serves to the test
+ * page: nothing is written to disk and nothing is fetched from elsewhere.
  */
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { inflateRawSync } from 'node:zlib';
 
+import { build } from 'esbuild';
+
 import { REPO_ROOT } from './exportSupport.js';
 
-/** mxGraph's client, minified, from the e2e package's node_modules. */
-export const MX_CLIENT = createRequire(import.meta.url).resolve('mxgraph/javascript/mxClient.min.js');
+/**
+ * The global the bundled script defines, holding the two classes of maxGraph the test page draws a file with
+ * (drawAndMeasure, which runs in the page, reads it by this name: `MaxGraphGlobals`).
+ */
+const MAXGRAPH_GLOBAL = 'gcportraitMaxGraph';
+
+let maxGraphBundle: Promise<string> | undefined;
+
+/**
+ * maxGraph from the e2e package's node_modules as one classic script, an IIFE that defines `MAXGRAPH_GLOBAL`;
+ * bundled by esbuild once per worker, in memory.
+ */
+export function maxGraphScript(): Promise<string> {
+  maxGraphBundle ??= build({
+    stdin: {
+      contents: "export { Graph, ModelXmlSerializer } from '@maxgraph/core';",
+      resolveDir: import.meta.dirname,
+      loader: 'js',
+    },
+    bundle: true,
+    format: 'iife',
+    globalName: MAXGRAPH_GLOBAL,
+    platform: 'browser',
+    target: 'es2022',
+    write: false,
+    logLevel: 'silent',
+  }).then((result) => {
+    const script = result.outputFiles[0]?.text;
+    if (script === undefined) throw new Error('esbuild wrote no maxGraph bundle');
+    return script;
+  });
+  return maxGraphBundle;
+}
 
 /** A `.drawio` file read back: its `mxfile` and `diagram` attributes and its model's XML, inflated if compressed. */
 export interface ReadDrawio {
@@ -283,10 +318,11 @@ export function measureSvg(): SvgMeasure {
   return { zones: groups('zone'), nodes: groups('node'), lines, texts };
 }
 
-/** A cell of the file as mxGraph drew it. */
+/** A cell of the file (an `mxCell`) as maxGraph drew it. */
 export interface MxCell {
   readonly id: string;
   readonly parent: string;
+  /** Its style as the file writes it. */
   readonly style: string;
   readonly vertex: boolean;
   readonly edge: boolean;
@@ -294,7 +330,7 @@ export interface MxCell {
   readonly target?: string;
   /** Its box as drawn (screen coordinates). */
   readonly box: Box;
-  /** An edge: its ends and bends as mxGraph placed them. */
+  /** An edge: its ends and bends as maxGraph placed them. */
   readonly points?: readonly Point[];
   /** An edge: where its drawn line stops at each end. */
   readonly lineFrom?: Point;
@@ -309,36 +345,42 @@ export interface MxCell {
 export interface MxMeasure {
   readonly cells: readonly MxCell[];
   readonly background: string;
-  /** Problems mxGraph reported or the model's structure has (parents after children, unknown terminals). */
+  /** Problems the model's structure has (parents after children, unknown terminals). */
   readonly problems: readonly string[];
 }
 
-interface MxGlobals {
-  readonly mxGraph: new (container: HTMLElement) => {
-    setHtmlLabels(value: boolean): void;
-    foldingEnabled: boolean;
-    setEnabled(value: boolean): void;
-    getModel(): { cells: Record<string, MxGraphCell> };
-    view: {
-      setTranslate(x: number, y: number): void;
-      getState(cell: MxGraphCell): MxState | null;
+/** What the page's bundled script defines (`maxGraphScript`), as far as drawAndMeasure uses it. */
+interface MaxGraphGlobals {
+  readonly gcportraitMaxGraph: {
+    readonly Graph: new (
+      container: HTMLElement,
+      model?: undefined,
+      plugins?: readonly never[],
+    ) => {
+      setHtmlLabels(value: boolean): void;
+      options: { foldingEnabled: boolean };
+      setEnabled(value: boolean): void;
+      getDataModel(): { cells: Record<string, MaxGraphCell> | null };
+      view: {
+        setTranslate(x: number, y: number): void;
+        getState(cell: MaxGraphCell): MaxGraphState | null;
+      };
     };
+    readonly ModelXmlSerializer: new (model: unknown) => { import(input: Element): void };
   };
-  readonly mxCodec: new (document: Document) => { decode(node: Element, into: unknown): void };
 }
 
-interface MxGraphCell {
-  readonly id: string;
-  readonly parent?: MxGraphCell | null;
-  readonly source?: MxGraphCell | null;
-  readonly target?: MxGraphCell | null;
+interface MaxGraphCell {
+  readonly id: string | null;
+  readonly parent?: MaxGraphCell | null;
+  readonly source?: MaxGraphCell | null;
+  readonly target?: MaxGraphCell | null;
   readonly value: unknown;
-  readonly style?: string | null;
   isVertex(): boolean;
   isEdge(): boolean;
 }
 
-interface MxState {
+interface MaxGraphState {
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -349,12 +391,12 @@ interface MxState {
 }
 
 /**
- * Draws the model (`mxGraphModel` XML) with mxGraph in the page's `#graph` element, translated so that drawing
+ * Draws the model (`mxGraphModel` XML) with maxGraph in the page's `#graph` element, translated so that drawing
  * coordinates land where the SVG page puts them (`origin`: the screen position of drawing coordinate 0,0), and
  * measures every cell: its box, an edge's points, line ends and heads, a label's lines.
  */
 export function drawAndMeasure({ model, origin }: { model: string; origin: Point }): MxMeasure {
-  const globals = window as unknown as MxGlobals;
+  const { Graph, ModelXmlSerializer } = (window as unknown as MaxGraphGlobals).gcportraitMaxGraph;
   const container = document.getElementById('graph');
   if (container === null) throw new Error('no #graph element');
   const xml = new DOMParser().parseFromString(model, 'text/xml');
@@ -364,6 +406,10 @@ export function drawAndMeasure({ model, origin }: { model: string; origin: Point
   const seen = new Set<string>();
   const cellsXml = [...root.getElementsByTagName('mxCell')];
   const ids = new Set(cellsXml.map((cell) => cell.getAttribute('id') ?? ''));
+  // maxGraph keeps a cell's style as an object; the checks read the file's own style string.
+  const styles = new Map(
+    cellsXml.map((cell) => [cell.getAttribute('id') ?? '', cell.getAttribute('style') ?? '']),
+  );
   for (const cell of cellsXml) {
     const id = cell.getAttribute('id') ?? '';
     const parent = cell.getAttribute('parent');
@@ -377,11 +423,12 @@ export function drawAndMeasure({ model, origin }: { model: string; origin: Point
   const background = root.getAttribute('background') ?? '';
   document.body.style.background = background;
   container.style.background = background;
-  const graph = new globals.mxGraph(container);
+  // No plugins: nothing on the page is selected, panned or edited.
+  const graph = new Graph(container, undefined, []);
   graph.setHtmlLabels(true);
-  graph.foldingEnabled = false;
+  graph.options.foldingEnabled = false;
   graph.setEnabled(false);
-  new globals.mxCodec(xml).decode(root, graph.getModel());
+  new ModelXmlSerializer(graph.getDataModel()).import(root);
   graph.view.setTranslate(origin.x, origin.y);
   const screen = (element: SVGGraphicsElement): Box => {
     const box = element.getBBox();
@@ -396,22 +443,24 @@ export function drawAndMeasure({ model, origin }: { model: string; origin: Point
     };
   };
   const cells: MxCell[] = [];
-  for (const cell of Object.values(graph.getModel().cells)) {
+  for (const cell of Object.values(graph.getDataModel().cells ?? {})) {
     const state = graph.view.getState(cell);
-    if (state === null) continue;
+    if (state === null || cell.id === null) continue;
+    const source = cell.source?.id ?? null;
+    const target = cell.target?.id ?? null;
     const base = {
       id: cell.id,
       parent: cell.parent?.id ?? '',
-      style: cell.style ?? '',
+      style: styles.get(cell.id) ?? '',
       vertex: cell.isVertex(),
       edge: cell.isEdge(),
-      ...(cell.source?.id === undefined ? {} : { source: cell.source.id }),
-      ...(cell.target?.id === undefined ? {} : { target: cell.target.id }),
+      ...(source === null ? {} : { source }),
+      ...(target === null ? {} : { target }),
       box: { x: state.x, y: state.y, width: state.width, height: state.height },
     };
     let extra: Partial<MxCell> = {};
     if (cell.isEdge()) {
-      // mxConnector paints the line first, then the heads (the start's first); a hidden copy is the hit area.
+      // ConnectorShape paints the line first, then the heads (the start's first); a hidden copy is the hit area.
       const paths = [...(state.shape?.node?.querySelectorAll('path') ?? [])].filter(
         (path) =>
           path.getAttribute('visibility') !== 'hidden' && path.getAttribute('stroke') !== 'transparent',

@@ -14,11 +14,12 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@maxgraph/core": "0.25.0",
     "@playwright/test": "^1.64.0",
     "@resvg/resvg-js": "2.6.2",
     "@types/node": "^22.20.5",
     "@types/pngjs": "^6.0.5",
-    "mxgraph": "4.2.2",
+    "esbuild": "^0.28.2",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0"
   }

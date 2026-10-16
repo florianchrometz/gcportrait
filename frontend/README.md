@@ -2233,5 +2233,5 @@ state is `aria-checked`.
 
 Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the flow,
 the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium, and
-`e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with mxGraph and holds it to the SVG export
-(within the fidelity limits of AGENTS.md, Exports and the render API).
+`e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with maxGraph and holds it to the SVG
+export (within the fidelity limits of AGENTS.md, Exports and the render API).

@@ -9,8 +9,8 @@ import {
   drawAndMeasure,
   fontCss,
   framedSvg,
+  maxGraphScript,
   measureSvg,
-  MX_CLIENT,
   readDrawio,
   type Box,
   type MxCell,
@@ -23,19 +23,19 @@ import { openDiagram, TAGLINE } from './support.js';
 
 /**
  * The draw.io export's fidelity (AGENTS.md, Exports and the render API): the `.drawio` file the Export menu
- * downloads, drawn by mxGraph (the library diagrams.net is built on) in Chromium, against the SVG export of
- * the same view: demo S, M and L in both themes.
+ * downloads, drawn by maxGraph (the maintained successor of mxGraph, the library diagrams.net is built on) in
+ * Chromium, against the SVG export of the same view: demo S, M and L in both themes.
  *
  * - Structure, from the file: as many zone containers, node groups, connected lines and text lines as the SVG has zone
  *   groups, node groups, lines and text lines; every zone and node under its id in its zone; every line between the
  *   cells of its two nodes; every parent before its children; the page's background the theme's canvas; the title
  *   block's tagline and no affiliation line.
- * - Geometry, as mxGraph draws the file next to Chromium's layout of the SVG: every zone and node box, every line's
+ * - Geometry, as maxGraph draws the file next to Chromium's layout of the SVG: every zone and node box, every line's
  *   ends at its heads' tips, every text line's place and font.
- * - Pixels: mxGraph's picture against resvg's PNG of the SVG export (the rasteriser of `pnpm render` and the render
+ * - Pixels: maxGraph's picture against resvg's PNG of the SVG export (the rasteriser of `pnpm render` and the render
  *   API), both at 1× with a 24 px margin on the canvas colour, compared with pixelmatch at threshold 0.1.
  *
- * The limits sit a little above what mxGraph 4.2.2 draws, and the spec fails on more: 2 to 3.3 % of the
+ * The limits sit a little above what maxGraph 0.25.0 draws, and the spec fails on more: 2 to 3.3 % of the
  * pixels differ (text anti-aliasing, draw.io's half-pixel snap of odd line widths, its own arrowheads); every
  * text line lies within 1 px; before an open head draw.io stops the line 2.236 × its width short of the tip
  * (2.68 px at the 1.2 px memberOf line), where the SVG runs it to the tip; a block head is up to 1.26 px
@@ -49,10 +49,10 @@ const FILE_NAME = /^gcportrait_example\.com_overview_20261008T000000Z\.drawio$/;
 const MARGIN = 24;
 const CANVAS = { light: '#ffffff', dark: '#1f1f1f' } as const;
 const GOLDEN = path.join(REPO_ROOT, 'e2e/baselines/render/S-overview-auto-light.drawio');
-/** Where the test page loads mxGraph from: a route of this spec answers it with the file in node_modules. */
-const MX_URL = 'http://localhost:5174/__fidelity/mxClient.js';
+/** Where the test page loads maxGraph from: a route of this spec answers it with the bundle built from node_modules. */
+const MAXGRAPH_URL = 'http://localhost:5174/__fidelity/maxgraph.js';
 
-/** The limits (see above: what mxGraph draws, and a little room). */
+/** The limits (see above: what maxGraph draws, and a little room). */
 const LIMITS = {
   /**
    * Share of pixels pixelmatch counts (threshold 0.1, anti-aliasing not counted): 2 to 3.3 % on macOS and
@@ -62,12 +62,12 @@ const LIMITS = {
   /** A text line's place, its left edge and its middle: within 1 px. */
   text: 1.25,
   /**
-   * How far before an open head's tip draw.io stops the line: 2.236 × the line's width (mxGraph's open arrow), so
+   * How far before an open head's tip draw.io stops the line: 2.236 × the line's width (maxGraph's open arrow), so
    * 2.68 px at the 1.2 px memberOf line (about 2.2 px at a 1 px line).
    */
   openHeadShort: 3,
   /**
-   * How much wider (or narrower) a block head is across the line, its outline and its stroke: mxGraph draws it
+   * How much wider (or narrower) a block head is across the line, its outline and its stroke: maxGraph draws it
    * `size + 2 × width` across: up to 1.26 px wider (the 7 × 5 head at a 1.2 px line).
    */
   blockHeadWidth: 1.5,
@@ -100,12 +100,13 @@ const FACES = ['400', '500', '700'].flatMap((weight) =>
   ['Roboto', 'Google Sans', 'Google Sans Text'].map((family) => `${weight} 16px "${family}"`),
 );
 
-/** A page in a fresh context of the drawing's size, at 1×, that loads nothing but mxGraph from this spec's route. */
+/** A page in a fresh context of the drawing's size, at 1×, that loads nothing but maxGraph from this spec's route. */
 async function fidelityPage(browser: Browser, width: number, height: number): Promise<Page> {
+  const script = await maxGraphScript();
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
   await context.route('**/*', (route) =>
-    route.request().url() === MX_URL
-      ? route.fulfill({ path: MX_CLIENT, contentType: 'text/javascript' })
+    route.request().url() === MAXGRAPH_URL
+      ? route.fulfill({ body: script, contentType: 'text/javascript' })
       : route.abort(),
   );
   return context.newPage();
@@ -259,7 +260,7 @@ function compare(svg: SvgMeasure, mx: MxMeasure): { worst: Omit<Report, 'pixels'
         continue;
       }
       if (!head.closed) {
-        // mxGraph draws a line of odd width half a pixel off to keep it crisp: that offset, read where the line
+        // maxGraph draws a line of odd width half a pixel off to keep it crisp: that offset, read where the line
         // starts without a head, is taken off before the line's end is compared with the tip.
         const first = match.points?.[0];
         const snap =
@@ -376,31 +377,30 @@ for (const size of ['S', 'M', 'L'] as const) {
         await svgPage.context().close();
       }
 
-      // The file as mxGraph draws it, offline: its script from node_modules, its faces from the app's files.
-      const mxPage = await fidelityPage(browser, framed.width, framed.height);
+      // The file as maxGraph draws it, offline: its script bundled from node_modules, its faces from the app's files.
+      const graphPage = await fidelityPage(browser, framed.width, framed.height);
       let drawn: MxMeasure;
       let picture: Buffer;
       try {
-        await mxPage.setContent(
+        await graphPage.setContent(
           `<!doctype html><meta charset="utf-8"><style>${css} html,body{margin:0;padding:0}</style>` +
-            `<script>window.mxBasePath='.';window.mxLoadResources=false;window.mxLoadStylesheets=false;window.mxForceIncludes=false;</script>` +
-            `<script src="${MX_URL}"></script>` +
+            `<script src="${MAXGRAPH_URL}"></script>` +
             `<div id="graph" style="position:absolute;left:0;top:0;width:${String(framed.width)}px;height:${String(framed.height)}px;overflow:hidden"></div>`,
         );
-        await loadFonts(mxPage);
-        drawn = await mxPage.evaluate(drawAndMeasure, { model: file.model, origin });
-        picture = await settledScreenshot(mxPage, framed.width, framed.height);
+        await loadFonts(graphPage);
+        drawn = await graphPage.evaluate(drawAndMeasure, { model: file.model, origin });
+        picture = await settledScreenshot(graphPage, framed.width, framed.height);
       } finally {
-        await mxPage.context().close();
+        await graphPage.context().close();
       }
       expect(drawn.background).toBe(CANVAS[theme]);
-      writeFileSync(path.join(OUT_DIR, `drawio-${size}-${theme}-mxgraph.png`), picture);
+      writeFileSync(path.join(OUT_DIR, `drawio-${size}-${theme}-maxgraph.png`), picture);
 
       // Structure and geometry.
       expect(labelLines(file.model), 'text lines in the file').toBe(measured.texts.length);
       const { worst, problems } = compare(measured, drawn);
 
-      // Pixels: mxGraph's picture against resvg's PNG of the SVG export, both at 1× with the margin.
+      // Pixels: maxGraph's picture against resvg's PNG of the SVG export, both at 1× with the margin.
       const reference = renderWithResvg(framed.svg, 1, CANVAS[theme]);
       writeFileSync(path.join(OUT_DIR, `drawio-${size}-${theme}-resvg.png`), reference.png);
       const pixels = mismatch(decodePng(picture), reference, `drawio-${size}-${theme}-diff.png`);

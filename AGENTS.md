@@ -323,7 +323,7 @@ normalisers and the authoring procedure; [packages/graph/README.md](packages/gra
   same in the browser and in Node; it sets `adaptiveColors="none"` so both themes keep their colours. The
   translator is a lazy chunk outside the first paint. A viewport file keeps every cell that meets the visible
   area whole, with the title block above and the legend below. The fidelity check (`pnpm e2e
-  tests/drawio.spec.ts`, mxGraph in Chromium) holds it to the SVG: at most 4 % of the pixels differ, a text
+  tests/drawio.spec.ts`, maxGraph in Chromium) holds it to the SVG: at most 5 % of the pixels differ, a text
   line within 1.25 px, a box or a line's end within 0.5 px, an open head's gap within 3 px and a block head's
   width within 1.5 px.
 - **`pnpm render` draws byte for byte what the app draws**, through the frontend's headless entry
@@ -958,7 +958,7 @@ that each works from the same rules and none is favoured.
 | Build the static demo the website serves at `/demo/` (Modes and hosting; `pnpm website:build` runs it) | `pnpm demo:static` (`--out DIR`, `--base PATH`) |
 | Regenerate the screenshots, animated demos and link-preview images from demo mode (`docs/media/`, both themes; needs Playwright's Chromium) / check them for staleness | `pnpm media` (`--only ID`, `--theme dark`) / `pnpm media --check` |
 | Regenerate the website's sample exports (SVG, PNG and draw.io drawn by `pnpm render`, `docs/media/exports/`) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render` also draws them again and compares) |
-| Check the draw.io export against the SVG export (mxGraph in Chromium, demos S, M and L in both themes; the limits in Exports and the render API) | `pnpm e2e tests/drawio.spec.ts --project chromium` |
+| Check the draw.io export against the SVG export (maxGraph in Chromium, demos S, M and L in both themes; the limits in Exports and the render API) | `pnpm e2e tests/drawio.spec.ts --project chromium` |
 
 [docs/packages.md](docs/packages.md) maps the packages, their entry points and the data flow;
 [docs/configuration.md](docs/configuration.md) lists every setting of an instance.

@@ -84,12 +84,13 @@ and stay under their own terms (categories 2 and 3).
    `/demo/` (`pnpm website:check` refuses the demo naming it), so neither a self-hosted instance nor the demo sends
    anything to TelemetryDeck.
 
-   **mxGraph, a development tool.** `mxgraph` 4.2.2 (Apache-2.0, JGraph Ltd), the JavaScript library diagrams.net
-   is built on, is a development dependency of the end-to-end tests only: the draw.io fidelity check
-   (`e2e/tests/drawio.spec.ts`) serves its `javascript/mxClient.min.js` from `node_modules` to a test page
-   in Chromium to draw the exported `.drawio` files and compare them with the SVG export. It is in no bundle, no
-   image and no published file, so nothing of it is conveyed. npm marks the package deprecated (4.2.2 of 2020 is
-   mxGraph's last release); the check pins that version, against which its limits are set.
+   **maxGraph, a development tool.** `@maxgraph/core` 0.25.0 (Apache-2.0, the maxGraph project contributors
+   and JGraph Ltd), the maintained successor of mxGraph, the JavaScript library diagrams.net is built on, is a
+   development dependency of the end-to-end tests only: the draw.io fidelity check
+   (`e2e/tests/drawio.spec.ts`) bundles it with esbuild, in memory, into one script that it serves to a test
+   page in Chromium to draw the exported `.drawio` files and compare them with the SVG export. It is in no
+   bundle the project ships, no image and no published file, so nothing of it is conveyed. The check pins that
+   version, against which its limits are set.
 2. **Google Cloud product icons**: Google Cloud's icons, as Google Cloud provides them at
    <https://cloud.google.com/icons> (which also still offers the older symbols for the products not updated
    yet), vendored unmodified and used as provided under the terms stated there (Google's icon usage terms, not
@@ -157,6 +158,7 @@ here but are checked against the same allowlist and deny list on every run.
 | `@fastify/static` | MIT | backend | runtime |
 | `@fontsource/roboto` | OFL-1.1 | frontend, packages/render, website | runtime |
 | `@fontsource/roboto-mono` | OFL-1.1 | frontend, packages/render, website | runtime |
+| `@maxgraph/core` | Apache-2.0 | e2e | dev |
 | `@playwright/test` | Apache-2.0 | e2e | dev |
 | `@resvg/resvg-js` | MPL-2.0 | e2e, packages/layout, packages/render | dev |
 | `@resvg/resvg-wasm` | MPL-2.0 | packages/render | runtime |
@@ -178,7 +180,7 @@ here but are checked against the same allowlist and deny list on every run.
 | `axe-core` | MPL-2.0 | frontend | dev |
 | `d3-selection` | ISC | frontend | runtime |
 | `d3-zoom` | ISC | frontend | runtime |
-| `esbuild` | MIT | backend | dev |
+| `esbuild` | MIT | backend, e2e | dev |
 | `eslint` | MIT | (root) | dev |
 | `eslint-import-resolver-typescript` | ISC | (root) | dev |
 | `eslint-plugin-import-x` | MIT | (root) | dev |
@@ -192,7 +194,6 @@ here but are checked against the same allowlist and deny list on every run.
 | `idb` | ISC | frontend | runtime |
 | `jsdom` | MIT | frontend | dev |
 | `mediabunny` | MPL-2.0 | website | dev |
-| `mxgraph` | Apache-2.0 | e2e | dev |
 | `opentype.js` | MIT | packages/layout | dev |
 | `pino` | MIT | backend | runtime |
 | `pino-pretty` | MIT | backend | dev |
