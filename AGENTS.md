@@ -103,9 +103,11 @@ now, and what changed in the last five weeks?
     scrolls sideways and rests at its end, so the current level always shows and a swipe or a focused crumb
     brings the levels above it into view;
   - every sheet and menu is the app's own Menu, Popover or Dialog: Escape closes it and gives focus back to
-    its opener, a modal one traps focus, an action that takes its own control away (Sign out) closes the sheet
-    too, and a popup inside a sheet opens in the sheet, as wide as the sheet, its long lines (a snapshot's
-    description, an account's address) wrapping, so a sheet never scrolls sideways;
+    its opener, a modal one traps focus, an action that takes its own control away (Sign out) and a pick that
+    changes the view (a snapshot, a saved view, a theme) close the sheet too, while Copy link and a control's
+    own popup (Export's menu) keep it open, and a popup inside a sheet opens in the sheet, as wide as the
+    sheet, its long lines (a snapshot's description, an account's address) wrapping, so a sheet never scrolls
+    sideways;
   - the chrome never covers the whole canvas while someone works on it: on a tablet the drawer is a panel over
     at most half the canvas's right side, on a phone a sheet over its lower half that its handle takes to the
     whole height (then the canvas's content is hidden until it comes down) and back, and a camera jump keeps

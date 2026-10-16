@@ -4,17 +4,22 @@
  * working popups (Snapshot, Lens) share the store's one-open-popup state; axe finds nothing with either open. The
  * brand mark beside the wordmark is brand/icon.svg as the build writes it, under the build's base path (its size:
  * TopBar.css.test.ts). Narrower than a desktop, the rows fold into the View and More sheets (shell/parity.test.tsx
- * holds every control to every width).
+ * holds every control to every width); a pick in More that changes the view or the theme closes it onto its button,
+ * and Copy link and Export's own menu keep it open.
  */
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { createInProcessWorkers } from '../../diagram/pipeline/inProcess';
 import { fakeLibrary } from '../../snapshots/testing';
 import { expectNoAxeViolations } from '../../test/axe';
 import { staticDemoConfig, stubBackend } from '../../test/backend';
+import { stubClipboard } from '../../test/clipboard';
+import { drawn } from '../../test/diagram';
 import { renderApp } from '../../test/renderApp';
 import { installViewport, type ViewportControl } from '../../test/viewport';
+import { createSavedViewStore } from '../../views/savedViewStore';
 
 /** The banner's tab stops, by role and name (none inside a closed sheet). */
 function tabStops(banner: HTMLElement): string[] {
@@ -167,5 +172,115 @@ describe('the top bar narrower than a desktop', () => {
     await userEvent.click(within(banner).getByRole('link', { name: 'Settings' }));
     expect(within(banner).getByRole('button', { name: 'More' }).getAttribute('aria-expanded')).toBe('false');
     expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeDefined();
+  });
+});
+
+describe('the More sheet on a phone', () => {
+  let viewport: ViewportControl | undefined;
+
+  afterEach(() => {
+    viewport?.uninstall();
+    viewport = undefined;
+  });
+
+  /** The More button, and its sheet once it has opened. */
+  async function openMore(): Promise<{ readonly button: HTMLElement; readonly sheet: HTMLElement }> {
+    const banner = screen.getByRole('banner');
+    const button = within(banner).getByRole('button', { name: 'More' });
+    await userEvent.click(button);
+    return { button, sheet: within(banner).getByRole('dialog', { name: 'More' }) };
+  }
+
+  /** The sheet closed, with focus back on its button, where Escape leaves it. */
+  function expectClosedOnto(button: HTMLElement, sheet: HTMLElement): void {
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(sheet.hidden).toBe(true);
+    expect(document.activeElement).toBe(button);
+  }
+
+  /** The sheet still open, focus on `control` in it. */
+  function expectOpenOn(button: HTMLElement, sheet: HTMLElement, control: HTMLElement): void {
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(sheet.hidden).toBe(false);
+    expect(document.activeElement).toBe(control);
+  }
+
+  it('closes after a snapshot is picked, focus back on More', async () => {
+    viewport = installViewport(375);
+    const app = renderApp('/diagram#snapshot=demo:S');
+    const { button, sheet } = await openMore();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Snapshot' }));
+    await userEvent.click(within(sheet).getByRole('menuitemradio', { name: 'Demo organisation M (medium)' }));
+    expect(app.hash()).toMatch(/^snapshot=demo:M\b/);
+    expect(screen.queryByRole('menu')).toBeNull();
+    expectClosedOnto(button, sheet);
+  });
+
+  it('closes after a theme is picked, on any page, focus back on More', async () => {
+    viewport = installViewport(375);
+    renderApp('/settings');
+    const { button, sheet } = await openMore();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Theme' }));
+    await userEvent.click(within(sheet).getByRole('menuitemradio', { name: 'Dark' }));
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+    expect(screen.queryByRole('menu')).toBeNull();
+    expectClosedOnto(button, sheet);
+  });
+
+  it('closes after a saved view is applied, once its dialog has closed, focus back on More', async () => {
+    viewport = installViewport(375);
+    const savedViews = createSavedViewStore(Promise.resolve(null));
+    await savedViews.save('Networks', 'snapshot=demo:S&lens=networking');
+    const app = renderApp('/diagram#snapshot=demo:S', { savedViews });
+    const { button, sheet } = await openMore();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Saved views' }));
+    const dialog = screen.getByRole('dialog', { name: 'Saved views' });
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Apply Networks' }));
+    expect(app.hash()).toBe('snapshot=demo:S&lens=networking');
+    expect(screen.queryByRole('dialog', { name: 'Saved views' })).toBeNull();
+    expectClosedOnto(button, sheet);
+  });
+
+  it('leaves a snapshot picked away from the diagram to the diagram page it opens: a new page, focus at its start', async () => {
+    viewport = installViewport(375);
+    const app = renderApp('/settings');
+    const { button, sheet } = await openMore();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Snapshot' }));
+    await userEvent.click(within(sheet).getByRole('menuitemradio', { name: 'Demo organisation S (small)' }));
+    expect(app.location()).toMatch(/^\/diagram#snapshot=demo:S\b/);
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(sheet.hidden).toBe(true);
+    expect(document.activeElement).toBe(document.getElementById('main'));
+  });
+
+  it('stays open for Copy link, focus on it', async () => {
+    viewport = installViewport(375);
+    const writeText = stubClipboard();
+    renderApp('/diagram#snapshot=demo:S');
+    const { button, sheet } = await openMore();
+    const copy = within(sheet).getByRole('button', { name: 'Copy link' });
+    await userEvent.click(copy);
+    expect(writeText).toHaveBeenCalledOnce();
+    await within(sheet).findByText('Link copied to the clipboard.');
+    expectOpenOn(button, sheet, copy);
+  });
+
+  it('stays open for Export, whose own menu opens inside the sheet and closes with Escape onto it', async () => {
+    viewport = installViewport(375);
+    const { container } = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: createInProcessWorkers });
+    await drawn(container);
+    const { button, sheet } = await openMore();
+    const exportButton = within(sheet).getByRole('button', { name: 'Export' });
+    await waitFor(() => {
+      expect(exportButton.getAttribute('aria-disabled')).toBeNull();
+    });
+    await userEvent.click(exportButton);
+    expect(within(sheet).getByRole('menu', { name: 'Export' })).toBeDefined();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    await userEvent.keyboard('{Escape}');
+    expect(within(sheet).queryByRole('menu', { name: 'Export' })).toBeNull();
+    expectOpenOn(button, sheet, exportButton);
   });
 });

@@ -11,8 +11,10 @@
  * A sheet (`sheet`) is a fold of other controls (the top bar's View and More on a phone or a tablet; ui/screen.ts):
  * its content stays mounted while it is closed (hidden), so the controls keep their state and what one of them opened
  * (a modal dialog) stays open; an Escape a control in it has handled already (closing its own list) leaves the sheet
- * open, and so does a press while a modal dialog over it makes it inert. With `inline` the fold has room: no button,
- * and the same content laid out in place as if there were no popover (the desktop), the same elements either way.
+ * open, and so does a press while a modal dialog over it makes it inert. A sheet closed while focus is inside it (a
+ * pick that closes it, a new layout) gives focus back to its button, as Escape does, rather than letting it drop to
+ * the page's body with the hidden panel. With `inline` the fold has room: no button, and the same content laid out
+ * in place as if there were no popover (the desktop), the same elements either way.
  */
 import {
   useEffect,
@@ -79,6 +81,19 @@ export function Popover({
   useLayoutEffect(() => {
     if (shown && panelRef.current !== null) focusFirstIn(panelRef.current);
   }, [shown]);
+
+  // A sheet that closes with focus still inside it, or already dropped to the body (the control that had it went
+  // away with the pick), gives it back to its button. Escape has put it there already; Sign out puts it elsewhere.
+  const wasShown = useRef(false);
+  useLayoutEffect(() => {
+    const closed = wasShown.current && !shown;
+    wasShown.current = shown;
+    const panel = panelRef.current;
+    const button = buttonRef.current;
+    if (!sheet || !closed || panel === null || button === null) return;
+    const active = panel.ownerDocument.activeElement;
+    if (active === null || active === panel.ownerDocument.body || panel.contains(active)) button.focus();
+  }, [sheet, shown]);
 
   useOutsidePress([anchorRef], shown, () => {
     // A modal dialog opened from the sheet (Saved views) makes it inert: a press in the dialog is not "outside".

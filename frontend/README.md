@@ -298,7 +298,12 @@ Snapshot menu's "Open: …" line) wraps, as does a control's label in the sheet 
 account panel is as wide as the sheet, so a sheet never scrolls sideways. Escape closes that popup first (a popup
 that handled the key leaves the sheet open), then the sheet, with focus back on View or More; a new page or another
 layout closes the sheet, and so does Sign out in the account panel (focus then starts at the page); `/` opens View
-onto the search box. No control has a second copy: a fold moves the one there is.
+onto the search box. A pick in More that changes the view or the theme (a snapshot in the Snapshot menu, a
+saved view applied, a theme in the Theme menu) closes it too, focus back on More (`ui/Popover` puts focus back
+on a sheet's button when the sheet closes with focus inside it or dropped to the body). A snapshot or a saved
+view picked away from the diagram opens the diagram page, a new page, which closes the sheet by itself and
+starts focus at the page. Copy link and Export's own menu keep the sheet open. No control has a second copy: a
+fold moves the one there is.
 
 **Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
 `--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons, jump
@@ -340,8 +345,8 @@ on phones turned sideways (568 × 320 to 844 × 390), with every menu and panel 
 instance signed in and on the Snapshots page with a snapshot stored: sideways scrolling, a page laid out wider than
 the window or scrolling up and down by itself, text squeezed into a column a few characters wide, the top bar's
 items, the timeline bar's parts (none over another), the drawer within the canvas, 44-pixel targets, every control
-one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe; and Sign out from
-More, a long trail, the sheet's heights and the canvas's touch input by finger.
+one reaches with Tab in sight when focused and tappable at its centre, the canvas's room, axe; and a theme picked
+in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input by finger.
 
 ## UI primitives (`src/ui/`)
 
@@ -359,7 +364,7 @@ an inert `disabled` (`aria-disabled`, a hint as the title, focusable, doing noth
 | `Select` | select-only combobox (`role="combobox"` button + `Listbox`), focus stays on the button, `aria-activedescendant`; options may carry a `description` (the lenses'), `listClassName` sizes the list | closed: ↑ ↓ Enter Space open on the current option, Home End, a typed character; open: ↑ ↓ (no wrap), Home End, type-ahead, Enter Space choose, Tab chooses and moves on, Escape closes |
 | `Combobox` | editable combobox with a results `Listbox` (`aria-autocomplete="list"`), a polite result count (`status` replaces it); options may carry a `group` and a decorative `icon`; `inputRef`, `keyShortcuts` (`aria-keyshortcuts`), `align`, `listClassName`; `busy` (results that arrive later; the listed options are an earlier text's, greyed and never active or chosen) and `enterChoosesFirst` | ↓ opens or moves, ↑ moves (both wrap), Alt+↓ opens, Enter chooses (with `enterChoosesFirst` the first when none is active), Escape closes then clears; a click chooses without taking focus; a press on the focused input reopens the list; while `busy`, ↓ ↑ Enter are kept and apply to the options that arrive |
 | `Listbox` | the listbox popup of the two comboboxes (presentational); consecutive options with one `group` name form a `role="group"` named by a heading row (APG "grouped options"); an option with a second line is named by its label and described by the line (`aria-labelledby`, `aria-describedby`), which a sized list cuts with an ellipsis (its title has it all); `busy`: `aria-busy`, options in the secondary text colour | pointer move activates, click chooses; the active option scrolls into view |
-| `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary); `sheet`: a fold of other controls, its content kept mounted (hidden) while closed, and `inline`: the same content in place without a button (section "Layouts") | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close`; a sheet leaves an Escape its content handled alone and ignores presses while a modal dialog makes it inert |
+| `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary); `sheet`: a fold of other controls, its content kept mounted (hidden) while closed, and `inline`: the same content in place without a button (section "Layouts") | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close`; a sheet leaves an Escape its content handled alone, ignores presses while a modal dialog makes it inert, and closed with focus inside it (a pick) gives focus back to its button |
 | `Dialog` | modal dialog (`aria-modal`, labelled by its title, described by `description`) at the end of `<body>`, the rest made `inert`; `alert`: an alert dialog (`role="alertdialog"`, a decision its own actions make: no Close button) with `initialFocus` on its least destructive action | focus moves in, Tab trapped, Escape, Close and the backdrop close (an alert dialog: Escape only), focus returns to the opener |
 | `SegmentedControl` | radio group (`role="radiogroup"`, `role="radio"`), the checked option the one tab stop and check-marked | ← → ↑ ↓ move and choose (wrapping), Home End, click |
 | `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track |

@@ -12,8 +12,9 @@ import { MenuButton } from '../../ui/MenuButton';
  * System, Light and Dark, the chosen one checked. It sets the same preference as the Settings page (`useTheme`:
  * stored in IndexedDB, mirrored for the first paint), so the two always agree; "System" follows the operating
  * system's light or dark setting. One popup at a time, like the other top-bar menus (the store's `ui.popover`).
+ * `onPick` follows a pick (the top bar closes its More sheet).
  */
-export function ThemeToggle(): ReactElement {
+export function ThemeToggle({ onPick }: { readonly onPick?: () => void }): ReactElement {
   const { preference, setPreference } = useTheme();
   const [open, setOpen] = usePopover('theme');
   const items: MenuItem[] = THEME_PREFERENCES.map((option) => ({
@@ -23,6 +24,7 @@ export function ThemeToggle(): ReactElement {
     checked: option === preference,
     onSelect: () => {
       setPreference(option);
+      onPick?.();
     },
   }));
   return <MenuButton label="Theme" align="end" open={open} onOpenChange={setOpen} items={items} />;

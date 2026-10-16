@@ -33,8 +33,9 @@ function useViewWords(): ViewWords {
  * and lists the saved views, newest first, each to apply (`actions.setView`, a history entry, back to the
  * diagram page), rename or delete. A status line says what happened, and when the browser keeps them for the
  * session only. The views stay in this browser (views/savedViewStore.ts, over the page's IndexedDB connection).
+ * `onApplied` follows an applied view, once the dialog has closed (the top bar closes its More sheet).
  */
-export function SavedViewsButton(): ReactElement {
+export function SavedViewsButton({ onApplied }: { readonly onApplied?: () => void }): ReactElement {
   const [open, setOpen] = usePopover('saved-views');
   return (
     <>
@@ -60,6 +61,7 @@ export function SavedViewsButton(): ReactElement {
         <SavedViewsPanel
           onApplied={() => {
             setOpen(false);
+            onApplied?.();
           }}
         />
       </Dialog>

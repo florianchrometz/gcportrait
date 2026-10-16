@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { fireEvent, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { expectNoAxeViolations } from '../test/axe';
@@ -98,6 +99,52 @@ function Sheet({ inline = false }: { readonly inline?: boolean }) {
   );
 }
 
+/**
+ * A sheet its owner closes from inside, as the top bar's More does after a pick: a pick, a pick whose control goes
+ * away with it, and one that puts focus elsewhere first (Sign out).
+ */
+function PickSheet() {
+  const [open, setOpen] = useState(false);
+  const [picked, setPicked] = useState(false);
+  return (
+    <>
+      <Popover label="More" sheet open={open} onOpenChange={setOpen}>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+          }}
+        >
+          Dark
+        </button>
+        {picked ? null : (
+          <button
+            type="button"
+            onClick={() => {
+              setPicked(true);
+              setOpen(false);
+            }}
+          >
+            Once
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            document.getElementById('elsewhere')?.focus();
+          }}
+        >
+          Sign out
+        </button>
+      </Popover>
+      <button type="button" id="elsewhere">
+        Elsewhere
+      </button>
+    </>
+  );
+}
+
 describe('Popover as a sheet', () => {
   it('in place: no button, the content where the popover stands, no dialog', () => {
     renderInPage(<Sheet inline />);
@@ -144,5 +191,25 @@ describe('Popover as a sheet', () => {
     fireEvent.pointerDown(outside);
     expect(screen.queryByRole('dialog')).toBeNull();
     outside.remove();
+  });
+
+  it('closed from inside gives focus back to its button, unless the control put it elsewhere', async () => {
+    renderInPage(<PickSheet />);
+    const button = screen.getByRole('button', { name: 'More' });
+    // A pick: focus was on the control the panel hides.
+    await userEvent.click(button);
+    await userEvent.click(screen.getByRole('button', { name: 'Dark' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(button);
+    // A pick whose control went away with it: focus had dropped to the body.
+    await userEvent.click(button);
+    await userEvent.click(screen.getByRole('button', { name: 'Once' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(button);
+    // A control that put focus elsewhere keeps it there.
+    await userEvent.click(button);
+    await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Elsewhere' }));
   });
 });

@@ -45,13 +45,14 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
  *   nor (a canvas under 10.5 rem) hidden until the sheet closes;
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
- * Then, on a phone: a sheet closes with Escape and gives focus back to its button; Sign out in the Account panel
- * closes More and starts focus again at the page; `/` opens the View sheet onto the search; a long drill-in trail
- * rests at its current level, and a swipe brings its first crumb into view, which a tap drills out to; a tap on a node
- * opens the drawer as a sheet over the lower half of the canvas, the disclosure bar above it, which its handle takes to
- * the canvas's full height (hiding the canvas's content) and back, by key and by a finger, and which follows a finger
- * down below half, fades once letting go would close it, and closes when let go there; one finger dragged across the
- * canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in place.
+ * Then, on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
+ * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
+ * onto the search; a long drill-in trail rests at its current level, and a swipe brings its first crumb into view,
+ * which a tap drills out to; a tap on a node opens the drawer as a sheet over the lower half of the canvas, the
+ * disclosure bar above it, which its handle takes to the canvas's full height (hiding the canvas's content) and back,
+ * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
+ * when let go there; one finger dragged across the canvas pans the drawing, two pinched apart zoom it in, and a tap on
+ * a project chip opens it in place.
  */
 
 const SIZES = [
@@ -872,7 +873,7 @@ for (const theme of ['light', 'dark'] as const) {
 test.describe('on a phone, 375 × 667', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
-  test('the sheets close with Escape onto their buttons, and `/` opens View onto the search', async ({
+  test('the sheets close with Escape onto their buttons, More after a theme is picked in it too, and `/` opens View onto the search', async ({
     page,
   }) => {
     await openDiagram(page, DIAGRAMS[0]);
@@ -896,6 +897,13 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(page.getByRole('menu', { name: 'Theme' })).toBeHidden();
     await expect(more).toBeVisible();
     await closeSheet(page, 'More');
+    // A pick that changes the view or the theme closes More, focus back on its button.
+    await openSheet(page, 'More');
+    await more.getByRole('button', { name: 'Theme', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(more).toBeHidden();
+    await expect(fold(page, 'More').button).toBeFocused();
     await page.locator('body').press('/');
     await expect(page.getByRole('combobox', { name: 'Search assets' })).toBeFocused();
     await expect(fold(page, 'View').sheet).toBeVisible();

@@ -58,7 +58,8 @@ function brandMarkSource(): string {
  * two rows stay (the wordmark, the badge and More; the breadcrumb and View); on a phone it is one row: the mark, the
  * breadcrumb (on the diagram page: the snapshot's scope down to the level drawn, resting at its end), View and More,
  * with the demo badge at the top of More. On a desktop the sheets are inline: no buttons, the rows as they are.
- * A sheet closes on a new page.
+ * A sheet closes on a new page, and More after a pick that changes the view or the theme (a snapshot, a saved view,
+ * a theme), focus back on its button (ui/Popover); Copy link, Export's menu and the account panel keep it open.
  */
 export function TopBar(): ReactElement {
   const { demo } = useAppMode();
@@ -91,6 +92,17 @@ export function TopBar(): ReactElement {
   useEffect(() => {
     store.updateUi((ui) => (ui.sheet === null ? ui : { ...ui, sheet: null, popover: null }));
   }, [store, pathname, screen]);
+
+  // A pick that changes the view or the theme closes More (ui/Popover puts focus back on its button). A snapshot or
+  // a saved view picked away from the diagram opens the diagram page: a new page, which closes the sheet by itself
+  // (above) and starts focus at the page, so the pick leaves the sheet to it rather than moving focus twice.
+  // `onDiagram` is this render's: the page the pick was made on, whatever the pick has written to the store since.
+  const themePicked = (): void => {
+    setMoreOpen(false);
+  };
+  const viewPicked = (): void => {
+    if (onDiagram) setMoreOpen(false);
+  };
 
   const badge =
     demo || demoOnly ? (
@@ -153,10 +165,10 @@ export function TopBar(): ReactElement {
             </ul>
           </nav>
           <div key="actions" className={styles.actions}>
-            <SnapshotMenu />
-            <SavedViewsButton />
+            <SnapshotMenu onPick={viewPicked} />
+            <SavedViewsButton onApplied={viewPicked} />
             <CopyLinkButton />
-            <ThemeToggle />
+            <ThemeToggle onPick={themePicked} />
             <AccountMenu />
             <ExportMenu version={version} />
           </div>

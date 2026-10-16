@@ -51,9 +51,10 @@ export function currentSnapshotLine(
  * item says which (scope, read time, source; announced as unavailable, it does nothing); then the snapshots on offer as
  * radio items (`snapshot.available`: the demo organisations and the stored snapshots), the open
  * one checked, which open another snapshot through `actions.setSnapshot` (lens and detail level kept); last, the
- * Snapshots page (the router's navigation, not a view change).
+ * Snapshots page (the router's navigation, not a view change). `onPick` follows a snapshot's pick (the top bar
+ * closes its More sheet).
  */
-export function SnapshotMenu(): ReactElement {
+export function SnapshotMenu({ onPick }: { readonly onPick?: () => void }): ReactElement {
   const available = useAppState((state) => state.snapshot.available);
   const current = useAppState((state) => state.view.spec.snapshot);
   const source = useAppState((state) => state.snapshot.source);
@@ -72,6 +73,7 @@ export function SnapshotMenu(): ReactElement {
       checked: choice.ref === current,
       onSelect: () => {
         setSnapshot(choice.ref);
+        onPick?.();
       },
     })),
     {
