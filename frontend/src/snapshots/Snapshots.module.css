@@ -40,12 +40,6 @@
   cursor: progress;
 }
 
-/* A destructive action: the error colour as text and outline (on the surface: light 4.77 : 1, dark 6.90 : 1). */
-.danger {
-  border-color: var(--color-error);
-  color: var(--color-error);
-}
-
 .status {
   display: grid;
   gap: var(--space-2);

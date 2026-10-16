@@ -4,8 +4,10 @@
  * Both themes through tokens: every stylesheet of the app chrome (each `*.module.css` under src/ outside the
  * diagram, which has its own token table and theme tests) uses no raw colour, and every colour token it uses is
  * defined for the light and the dark theme in styles/tokens.css (skill gcp-diagram-style §9). The primitives, the
- * view controls and every other chrome sheet alike, one row each. And the filled primary buttons (the top bar's
- * Export button among them) keep their text at 4.5 : 1 on the fill in both themes.
+ * view controls and every other chrome sheet alike, one row each. The filled primary buttons (the top bar's
+ * Export button among them) keep their text at 4.5 : 1 on the fill in both themes, and the destructive control (the
+ * Delete buttons) its error-coloured text at 4.5 : 1 on the control's fills, through a rule that outranks the
+ * control's own whatever order the stylesheets load in (e2e/tests/snapshots.spec.ts reads the colour in a browser).
  */
 import { describe, expect, it } from 'vitest';
 
@@ -89,4 +91,49 @@ describe('the filled primary buttons', () => {
     expect(inert).toContain('background: var(--color-surface);');
     expect(inert).toContain('color: var(--color-on-surface-variant);');
   });
+});
+
+describe('the destructive control', () => {
+  const CONTROLS = withoutComments(readSource('ui/controls.module.css'));
+  const COMPONENTS = sourceFiles('', (path) => path.endsWith('.tsx') && !path.endsWith('.test.tsx'));
+
+  it('is a compound selector on the control in the primitive’s sheet, and an inert one keeps the inert look', () => {
+    // `.control.danger` outranks `.control` (and any page's single class), so the variant never depends on the
+    // order the bundler emits the sheets in; `:not([aria-disabled='true'])` leaves the control's inert look alone.
+    const danger = block(CONTROLS, ".control.danger:not([aria-disabled='true']) {");
+    expect(danger).toContain('border-color: var(--color-error);');
+    expect(danger).toContain('color: var(--color-error);');
+  });
+
+  it.each(SHEETS.filter((path) => path !== 'ui/controls.module.css'))(
+    '%s defines no danger class of its own, which would compete with the control’s rule by emit order',
+    (path) => {
+      expect(withoutComments(readSource(path))).not.toMatch(/\.danger\b/);
+    },
+  );
+
+  it('is named through the primitive’s sheet wherever a component asks for it', () => {
+    // A page sheet's `styles.danger` would be undefined (no sheet but the primitive's has the class) and drop silently.
+    const uses = COMPONENTS.flatMap((path) =>
+      [...readSource(path).matchAll(/\b(\w+)\.danger\b/g)].map((match) => `${path}: ${match[1] ?? ''}`),
+    );
+    expect(uses.length).toBeGreaterThan(0);
+    for (const use of uses) expect(use).toMatch(/: controls$/);
+  });
+
+  it.each([
+    ['light', LIGHT],
+    ['dark', DARK],
+  ] as const)(
+    '%s: the error colour reaches 4.5 : 1 on the control’s fill and on its hover fill',
+    (theme, declarations) => {
+      const error = token(declarations, '--color-error');
+      for (const fill of ['--color-surface', '--color-surface-container']) {
+        expect(
+          contrastRatio(error, token(declarations, fill)),
+          `${theme}: on ${fill}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    },
+  );
 });

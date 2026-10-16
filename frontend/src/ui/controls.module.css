@@ -1,8 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The primitives' trigger controls (skill gcp-diagram-style §9: 32 px tall, 8 px radius, 13 px text), their
-   visible labels and carets, and the inert look of a control that is not available yet (aria-disabled: dashed
-   border, secondary text), as the top bar's placeholders have it. Tokens only, so both themes follow. */
+   visible labels and carets, the inert look of a control that is not available yet (aria-disabled: dashed
+   border, secondary text), as the top bar's placeholders have it, and the destructive variant. Tokens only,
+   so both themes follow. */
 .anchor {
   position: relative;
 }
@@ -34,6 +35,16 @@
 
 .control[aria-disabled='true']:hover {
   background: var(--color-surface);
+}
+
+/* A destructive action (every Delete button): `cx(controls.control, controls.danger)`, the error colour as
+   text and outline. On the control's fills it reaches, light, 4.77 : 1 on the surface and 4.53 on the
+   hover's surface container; dark, 6.90 and 5.44. The compound selector outranks `.control` and any page's
+   single class, so the variant holds whatever order the bundler emits the stylesheets in; an inert one
+   keeps the inert look. */
+.control.danger:not([aria-disabled='true']) {
+  border-color: var(--color-error);
+  color: var(--color-error);
 }
 
 input.control {

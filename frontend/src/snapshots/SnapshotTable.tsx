@@ -232,7 +232,7 @@ export function SnapshotTable({
                 </button>
                 <button
                   type="button"
-                  className={cx(controls.control, styles.danger)}
+                  className={cx(controls.control, controls.danger)}
                   aria-haspopup="dialog"
                   aria-label={`Delete ${label}`}
                   onClick={() => {
@@ -271,7 +271,7 @@ export function SnapshotTable({
               </button>
               <button
                 type="button"
-                className={cx(controls.control, styles.danger)}
+                className={cx(controls.control, controls.danger)}
                 onClick={() => {
                   remove(confirm);
                 }}

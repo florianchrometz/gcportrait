@@ -13,7 +13,9 @@ import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './s
  * data worker from IndexedDB) as separate copies, each under a new id (the demo organisations' files share
  * their snapshot id), and can be deleted: a deleted snapshot's ref then draws nothing, even while the data
  * worker still holds its Graph, and never another snapshot. Without IndexedDB the demo still works, in memory
- * until a reload. Screenshots of the pages in both themes go to e2e/.scratch/ (git-ignored).
+ * until a reload. In both themes the Delete buttons are in the error colour, read from the computed styles, and
+ * the controls beside them in the control's. Screenshots of the pages in both themes go to e2e/.scratch/
+ * (git-ignored).
  */
 const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 const READ = 'example.com, read 2026-10-08 00:00 UTC';
@@ -65,6 +67,24 @@ async function exportRow(page: Page, table: Locator, label: string, file: string
   expect(download.suggestedFilename()).toBe(BUNDLE_NAME);
   await download.saveAs(file);
   return file;
+}
+
+/** What a chrome token resolves to in the page's theme, in the form computed styles give colours (`rgb(…)`). */
+async function tokenColour(page: Page, name: string): Promise<string> {
+  return page.evaluate((property) => {
+    const probe = document.createElement('span');
+    probe.style.color = `var(${property})`;
+    document.body.append(probe);
+    const colour = getComputedStyle(probe).color;
+    probe.remove();
+    return colour;
+  }, name);
+}
+
+/** A control's computed text and outline colours. */
+async function expectColours(control: Locator, text: string, outline: string): Promise<void> {
+  await expect(control).toHaveCSS('color', text);
+  await expect(control).toHaveCSS('border-top-color', outline);
 }
 
 test('try demo S, switch to M, reload: M is still loaded; export both, import them as copies, load, delete', async ({
@@ -300,6 +320,49 @@ for (const scheme of ['light', 'dark'] as const) {
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(row(table, 'demo:M').getByRole('button', { name: `Delete ${M_LABEL}` })).toBeFocused();
+    });
+
+    test('every Delete button is in the error colour, the controls beside it in the control’s, an inert one inert', async ({
+      page,
+    }) => {
+      // The destructive control's rule outranks the control's own (ui/controls.module.css), so the colours hold
+      // whatever order the stylesheets were emitted in, in the dev server as in the production build.
+      await page.goto('/');
+      await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
+      await tryDemo(page, 'S');
+      const table = await snapshotsPage(page);
+      const error = await tokenColour(page, '--color-error');
+      const text = await tokenColour(page, '--color-on-surface');
+      const outline = await tokenColour(page, '--color-outline');
+      expect(error).not.toBe(text);
+
+      const label = `${READ}, demo:S`;
+      const remove = row(table, 'demo:S').getByRole('button', { name: `Delete ${label}` });
+      await expectColours(remove, error, error);
+      await remove.hover();
+      await expectColours(remove, error, error);
+      await expectColours(
+        row(table, 'demo:S').getByRole('button', { name: `Export ${label}` }),
+        text,
+        outline,
+      );
+      const removeAll = page.getByRole('button', { name: 'Delete all snapshots…' });
+      await expectColours(removeAll, error, error);
+
+      await remove.click();
+      const dialog = page.getByRole('dialog', { name: 'Delete this snapshot?' });
+      await expectColours(dialog.getByRole('button', { name: 'Delete', exact: true }), error, error);
+      await expectColours(dialog.getByRole('button', { name: 'Cancel' }), text, outline);
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+
+      await removeAll.click();
+      const all = page.getByRole('dialog', { name: 'Delete all snapshots?' });
+      await expectColours(all.getByRole('button', { name: 'Delete all', exact: true }), error, error);
+      await all.getByRole('button', { name: 'Delete all', exact: true }).click();
+      await expect(table).toHaveCount(0);
+      // Nothing left to delete: the button is inert and looks it (secondary text, the outline), not destructive.
+      await expect(removeAll).toHaveAttribute('aria-disabled', 'true');
+      await expectColours(removeAll, await tokenColour(page, '--color-on-surface-variant'), outline);
     });
   });
 }

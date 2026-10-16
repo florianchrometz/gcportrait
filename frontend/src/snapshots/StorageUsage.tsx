@@ -128,7 +128,7 @@ export function StorageUsage({
       <div className={styles.row}>
         <button
           type="button"
-          className={cx(controls.control, styles.danger)}
+          className={cx(controls.control, controls.danger)}
           aria-haspopup="dialog"
           {...inertProps(count === 0 ? 'There are no snapshots to delete' : undefined)}
           onClick={() => {
@@ -162,7 +162,7 @@ export function StorageUsage({
               >
                 Cancel
               </button>
-              <button type="button" className={cx(controls.control, styles.danger)} onClick={clear}>
+              <button type="button" className={cx(controls.control, controls.danger)} onClick={clear}>
                 Delete all
               </button>
             </>

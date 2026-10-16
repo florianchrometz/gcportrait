@@ -321,7 +321,7 @@ export function ScopeTimelines({
                     return (
                       <button
                         type="button"
-                        className={cx(controls.control, styles.danger)}
+                        className={cx(controls.control, controls.danger)}
                         aria-label={`Delete the cached day ${tick.day} of ${named}`}
                         onClick={() => {
                           deleteDay(scope, tick);
@@ -336,7 +336,7 @@ export function ScopeTimelines({
                   return (
                     <button
                       type="button"
-                      className={cx(controls.control, styles.danger)}
+                      className={cx(controls.control, controls.danger)}
                       aria-haspopup="dialog"
                       aria-label={`Delete the extra tick ${labelOf(record)}`}
                       onClick={() => {
@@ -352,7 +352,7 @@ export function ScopeTimelines({
                 <div className={styles.row}>
                   <button
                     type="button"
-                    className={cx(controls.control, styles.danger, styles.wraps)}
+                    className={cx(controls.control, controls.danger, styles.wraps)}
                     aria-haspopup="dialog"
                     onClick={() => {
                       setConfirm({ kind: 'scope', scope });
@@ -395,7 +395,7 @@ export function ScopeTimelines({
               </button>
               <button
                 type="button"
-                className={cx(controls.control, styles.danger)}
+                className={cx(controls.control, controls.danger)}
                 onClick={() => {
                   if (confirm.kind === 'extra') deleteExtra(confirm.scope, confirm.record);
                   else deleteScope(confirm.scope);
