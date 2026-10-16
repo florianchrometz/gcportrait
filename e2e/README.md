@@ -31,7 +31,7 @@ tests
 it). A person reviews a render against the style skill's fact-check list (gcp-diagram-style §11) and the
 layout skill's checks (gcp-diagram-layout §8).
 
-`playwright.config.ts` starts two Vite dev servers as its `webServer`s and runs two projects:
+`playwright.config.ts` starts two Vite dev servers as its `webServer`s and runs three projects:
 
 | Project | Server | Specs |
 |---|---|---|

@@ -51,7 +51,7 @@
  * labelled pill replaces it where the painter found it fits inside the node (data-expand). Keyboard focus fills
  * the pill in the focus colour (its own indicator, so the browser's outline around the link's box is not needed),
  * on a 2 px canvas-coloured rim: on a selected open project in the light theme the focus colour (#185ABC) reaches
- * 3.78 : 1 on the tint and 6.51 on the rim (the chrome's primary, used before, only 2.62 on the tint).
+ * 3.78 : 1 on the tint and 6.51 on the rim (the chrome's primary reaches only 2.62 on the tint).
  */
 .dg-console-action {
   cursor: pointer;
