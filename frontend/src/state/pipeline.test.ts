@@ -14,7 +14,7 @@ import { createInProcessWorkers } from '../diagram/pipeline/inProcess';
 import type { Viewport } from '../diagram/pipeline/protocol';
 import type { DiagramWorkers } from '../diagram/pipeline/workers';
 import { selectSceneKey } from './hooks';
-import { createPipelineController, FALLBACK_VIEWPORT, sceneKey } from './pipeline';
+import { createPipelineController, FALLBACK_VIEWPORT, locateViewport, sceneKey } from './pipeline';
 import { createAppStore, type AppStore } from './store';
 
 function setup(hash: string): {
@@ -55,6 +55,14 @@ const canvasFor = (budget: number): Viewport => ({
 });
 
 describe('the pipeline controller', () => {
+  it('locates with the drawn viewport, then the measured canvas, then the fallback', () => {
+    const viewport = { width: 1000, height: 700 };
+    const canvas = { width: 800, height: 600 };
+    expect(locateViewport({ viewport, canvas })).toBe(viewport);
+    expect(locateViewport({ viewport: null, canvas })).toBe(canvas);
+    expect(locateViewport({ viewport: null, canvas: null })).toBe(FALLBACK_VIEWPORT);
+  });
+
   it('draws the view into the pipeline slice and the snapshot into the snapshot slice', async () => {
     const { store, viewports, workers } = setup('#snapshot=demo:S&selection=x');
     const stages: string[] = [];

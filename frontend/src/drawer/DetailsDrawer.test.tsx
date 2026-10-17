@@ -9,11 +9,17 @@
  * details in the one box that scrolls; a container offers "Drill in"; selecting never asks for a new Scene or layout;
  * axe finds nothing.
  */
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { flipIdOf } from '@gcportrait/graph';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { createInProcessWorkers } from '../diagram/pipeline/inProcess';
+import { DataCancelledError } from '../diagram/pipeline/dataClient';
 import type { DiagramWorkers } from '../diagram/pipeline/workers';
+import { DiagramSessionProvider } from '../diagram/session';
+import type { LocateAnswer, LocateQuery } from '../search/protocol';
+import { createAppStore } from '../state';
+import { AppStoreContext } from '../state/context';
 import { createMemoryPreferenceStore } from '../storage/preferences';
 import { expectNoAxeViolations } from '../test/axe';
 import { stubClipboard } from '../test/clipboard';
@@ -21,6 +27,192 @@ import { drawn } from '../test/diagram';
 import { currentLocation, renderApp } from '../test/renderApp';
 import { requestLog } from '../test/requests';
 import { installViewport } from '../test/viewport';
+import { ThemeContext } from '../theme/useTheme';
+import { DetailsDrawer } from './DetailsDrawer';
+
+interface DelayedLocate {
+  readonly query: LocateQuery;
+  readonly signal: AbortSignal | undefined;
+  readonly resolve: (answer: LocateAnswer) => void;
+  readonly reject: (error: Error) => void;
+}
+
+async function delayedJumps() {
+  const vm = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
+  const store = createAppStore({
+    location: {
+      pathname: '/diagram',
+      hash: `#snapshot=demo:S&lens=compute&detail=folders&selection=${vm}`,
+    },
+  });
+  const requests: DelayedLocate[] = [];
+  const factory = (): DiagramWorkers => {
+    const workers = createInProcessWorkers();
+    workers.data.locate = (query, options) =>
+      new Promise<LocateAnswer>((resolve, reject) => {
+        requests.push({ query, signal: options?.signal, resolve, reject });
+      });
+    return workers;
+  };
+  const rendered = render(
+    <AppStoreContext value={store}>
+      <ThemeContext value={{ preference: 'light', resolved: 'light', setPreference: () => undefined }}>
+        <DiagramSessionProvider factory={factory}>
+          <DetailsDrawer model={null} />
+        </DiagramSessionProvider>
+      </ThemeContext>
+    </AppStoreContext>,
+  );
+  const targets = await waitFor(() => {
+    const buttons = [...drawer().querySelectorAll<HTMLButtonElement>('[data-kind] button[title]')];
+    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    return buttons;
+  });
+  const target = (index: number): HTMLButtonElement => {
+    const button = targets[index];
+    if (button === undefined) throw new Error('no jump link');
+    return button;
+  };
+  const request = (index: number): DelayedLocate => {
+    const pending = requests[index];
+    if (pending === undefined) throw new Error('no locate request');
+    return pending;
+  };
+  const answer = (index: number, flips: string[]): LocateAnswer => ({
+    kind: 'expand',
+    view: { ...request(index).query.spec, flips },
+    opened: ['Project'],
+    context: { label: 'Target', typeName: 'Resource', lensTitle: 'Compute', everythingTitle: 'Everything' },
+  });
+  return { ...rendered, store, requests, target, request, answer, vm };
+}
+
+describe('pending drawer jumps', () => {
+  it('retries a stale scene with current flips and viewport, then selects the target', async () => {
+    const { store, target, request, requests, answer } = await delayedJumps();
+    const canvas = { width: 900, height: 700 };
+    act(() => {
+      store.updatePipeline((pipeline) => ({ ...pipeline, canvas }));
+    });
+    fireEvent.click(target(0));
+    expect(request(0).query.viewport).toEqual(canvas);
+    const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
+    const projectFlip = flipIdOf(project);
+    const viewport = { width: 1000, height: 800 };
+    await act(async () => {
+      store.actions.flip(project);
+      store.updatePipeline((pipeline) => ({ ...pipeline, viewport }));
+      request(0).resolve(answer(0, ['stale-zone']));
+      await Promise.resolve();
+    });
+    expect(requests).toHaveLength(2);
+    expect(request(1).query.spec.flips).toEqual([projectFlip]);
+    expect(request(1).query.viewport).toEqual(viewport);
+    expect(request(1).query.offers).toBe(false);
+    await act(async () => {
+      request(1).resolve(answer(1, [projectFlip, 'target-zone']));
+      await Promise.resolve();
+    });
+    expect(store.getState().selection.selected).toBe(request(1).query.node);
+    expect(store.getState().view.spec.flips).toEqual([projectFlip, 'target-zone']);
+  });
+
+  it.each(['answer', 'error'] as const)(
+    'keeps the latest of two quick jumps when the older request returns an %s',
+    async (completion) => {
+      const { store, target, request, requests, answer } = await delayedJumps();
+      fireEvent.click(target(0));
+      fireEvent.click(target(1));
+      expect(request(0).signal?.aborted).toBe(true);
+      expect(request(1).signal?.aborted).toBe(false);
+      await act(async () => {
+        request(1).resolve(answer(1, ['latest-zone']));
+        await Promise.resolve();
+      });
+      await act(async () => {
+        if (completion === 'answer') request(0).resolve(answer(0, ['stale-zone']));
+        else request(0).reject(new Error('worker failed'));
+        await Promise.resolve();
+      });
+      expect(requests).toHaveLength(2);
+      expect(store.getState().selection.selected).toBe(request(1).query.node);
+      expect(store.getState().view.spec.flips).toEqual(['latest-zone']);
+    },
+  );
+
+  it.each(['close', 'selection', 'lens', 'snapshot', 'tick', 'unmount'] as const)(
+    'discards a pending jump after %s, even when the old context returns',
+    async (change) => {
+      const { store, target, request, requests, answer, unmount, vm } = await delayedJumps();
+      fireEvent.click(target(0));
+      act(() => {
+        switch (change) {
+          case 'close':
+            fireEvent.click(within(drawer()).getByRole('button', { name: 'Close' }));
+            store.actions.select(vm);
+            break;
+          case 'selection':
+            store.actions.select('another-node');
+            store.actions.select(vm);
+            break;
+          case 'lens':
+            store.actions.setLens('networking');
+            store.actions.setLens('compute');
+            break;
+          case 'snapshot':
+            store.actions.setSnapshot('demo:M');
+            store.actions.setSnapshot('demo:S');
+            store.actions.select(vm);
+            break;
+          case 'tick':
+            store.actions.setView((view) => ({ ...view, tick: '2026-09-08' }));
+            store.actions.setView((view) => {
+              const next = { ...view };
+              delete next.tick;
+              return next;
+            });
+            break;
+          case 'unmount':
+            unmount();
+        }
+      });
+      const expected = store.getState().view.spec;
+      expect(request(0).signal?.aborted).toBe(true);
+      await act(async () => {
+        request(0).resolve(answer(0, ['stale-zone']));
+        await Promise.resolve();
+      });
+      expect(store.getState().view.spec).toEqual(expected);
+      expect(requests).toHaveLength(1);
+    },
+  );
+
+  it('selects the target after three stale answers without applying their flips', async () => {
+    const { store, target, request, requests, answer } = await delayedJumps();
+    fireEvent.click(target(0));
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await act(async () => {
+        store.actions.flip(`zone-${String(attempt)}`);
+        request(attempt).resolve(answer(attempt, ['stale-zone']));
+        await Promise.resolve();
+      });
+    }
+    expect(requests).toHaveLength(3);
+    expect(store.getState().selection.selected).toBe(request(0).query.node);
+    expect(store.getState().view.spec.flips).toEqual(['zone-0', 'zone-1', 'zone-2'].map(flipIdOf));
+  });
+
+  it.each(['cancelled', 'failed'] as const)('handles a %s worker request', async (failure) => {
+    const { store, target, request, vm } = await delayedJumps();
+    fireEvent.click(target(0));
+    await act(async () => {
+      request(0).reject(failure === 'cancelled' ? new DataCancelledError(1) : new Error('worker failed'));
+      await Promise.resolve();
+    });
+    expect(store.getState().selection.selected).toBe(failure === 'cancelled' ? vm : request(0).query.node);
+    expect(store.getState().view.spec.flips).toEqual([]);
+  });
+});
 
 /**
  * In-process workers that count the Scene, layout and details requests the app keeps (not one it calls off, as

@@ -27,6 +27,10 @@ import type { AppStore } from './store';
 /** The canvas size used until the canvas has been measured: a 1280 × 800 window's. */
 export const FALLBACK_VIEWPORT: Viewport = { width: 1280, height: 800 };
 
+export function locateViewport(pipeline: Pick<PipelineSlice, 'viewport' | 'canvas'>): Viewport {
+  return pipeline.viewport ?? pipeline.canvas ?? FALLBACK_VIEWPORT;
+}
+
 export { sceneKey } from './sceneKey';
 
 function errorOf(error: unknown): PipelineError {

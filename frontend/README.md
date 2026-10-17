@@ -230,7 +230,8 @@ value that changes when a panel over the canvas opens or closes. A jump,
 the pan that follows keyboard focus and a zoom key's step keep the node in the part of the canvas that the
 panels lying over it leave in view (`clearRoom`: the elements marked `data-canvas-overlay` that lie open over
 the canvas, the details drawer of a phone or a tablet along its right or lower edge with the disclosure bar's
-row in the part it leaves, or the top bar's View or More sheet hanging from its top edge; one panel leaves the
+row in the part it leaves, or the top bar's View or More sheet hanging from its top edge with the disclosure
+bar on a tablet; one panel leaves the
 largest part of the canvas it keeps free to its left or right, above or below it, and the drawer and the row
 the largest part clear of both, whichever comes first, `largestFree`; a closed panel or one out of sight,
 `visibility: hidden`, counts for nothing; and `inRoom` in `diagram/camera.ts` works the camera out for that
@@ -247,10 +248,12 @@ its height or width (its own state, which `panels` does not carry). So a lens pi
 its whole view below the sheet and the drawing fills the canvas again once the sheet closes, a node tapped at
 the fit leaves the whole drawing above or beside the drawer (its reveal has nothing more to do) and the canvas
 filled again once the drawer closes, and a camera the person moved stays where they put it. The canvas learns
-of a panel through this prop rather than by observing the `data-canvas-overlay` elements: the prop changes in
+of a panel opening or closing through this prop: the prop changes in
 the same commit as the panel's `hidden`, so the refit, a layout effect, measures the panel as it now is,
 before the browser paints and before the drawer's reveal asks for its pan, both of which a mutation or resize
-observer would answer after.
+observer would answer after. A ResizeObserver watches the marked overlays' sizes, so a disclosure notice
+appearing or being dismissed fits the drawing to the new room under the same resting-camera guard. A camera
+the person moved stays where they put it. The bar at rest is unmarked and does not change the fit.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
@@ -1705,7 +1708,8 @@ src/diagram/disclosure/
   DisclosureBar.tsx    the bar at the canvas's bottom right (on a tablet the bottom left; on a phone a compact row
                        across the canvas's foot, above the details sheet while it is open): "N of M shown",
                        Expand all, Collapse all, the notice; marked `data-canvas-overlay` while the drawer lies
-                       over the canvas, so the camera keeps the drawing clear of it
+                       over the canvas or a tablet's View or More sheet is open, so the camera keeps the drawing
+                       clear of it
   CollapseButton.tsx   an open zone's collapse button (interactive canvas only), disclosure.css its states
   flipCamera.ts        the camera after a flip: keep the viewBox, glide 200 ms to frame the zone
   openAround.ts        in the data worker: the flips that open the chips around a node until it is drawn as
@@ -1885,8 +1889,13 @@ search never cancel each other, in the page or in the worker.
 (`actions.select`, history replaced); one hidden in a collapsed zone is located and the view is written with
 the new flips and the selection in one step (`actions.setView`, a history entry, as a flip is); a target the
 lens, a filter, the focus or the drill-in leaves out is selected anyway (its details show) and the status line
-says it is not drawn in this view. An answer for a view that changed meanwhile changes nothing. The reveal pan
-then brings the target into view once it is drawn.
+says it is not drawn in this view. A newer jump cancels the pending jump. If flips or the viewport change
+while locating, the target is located again, with at most three attempts; if the view keeps changing, the
+target is selected without applying stale flips. Closing the drawer, selecting another node, leaving the
+page or changing the snapshot, day, lens, filters, focus, root or detail cancels the pending jump. The reveal
+pan then brings the target into view once it is drawn. Drawer and search locates use the same viewport
+selector (`state/pipeline.ts`, `locateViewport`): the drawn viewport, then the measured canvas, then the
+fallback size.
 
 **Keyboard and width.** Escape anywhere in the drawer and Close clear the selection and put focus back on the
 node on the canvas (its card becomes the drawing's tab stop; the canvas itself when it is not drawn). The

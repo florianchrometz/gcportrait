@@ -19,7 +19,7 @@ import { useCallback, useState } from 'react';
 
 import { isDataCancelled } from '../diagram/pipeline/dataClient';
 import { useDiagramSession } from '../diagram/session';
-import { FALLBACK_VIEWPORT, sceneKey, selectDrawnDay, useAppStore, useDiagramActions } from '../state';
+import { locateViewport, sceneKey, selectDrawnDay, useAppStore, useDiagramActions } from '../state';
 import type { LocateAnswer, RevealOffer, SearchHit } from './protocol';
 
 /** A reveal waiting for the person: the offers to choose from, or why the node cannot be shown. */
@@ -88,7 +88,7 @@ export function useReveal(): Reveal {
       for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {
         const state = store.getState();
         const spec = state.view.spec;
-        const viewport = state.pipeline.viewport ?? state.pipeline.canvas ?? FALLBACK_VIEWPORT;
+        const viewport = locateViewport(state.pipeline);
         // The day on screen: the view's `tick` may name a live day that is not drawn yet.
         const day = { tick: selectDrawnDay(state) ?? null };
         let answer: LocateAnswer;

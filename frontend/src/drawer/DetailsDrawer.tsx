@@ -50,12 +50,13 @@ import { relationLabel } from '../diagram/legend';
 import type { DiagramModel } from '../diagram/model';
 import { cardTypeName } from '../diagram/names';
 import { nodeElement } from '../diagram/painter';
+import { isDataCancelled } from '../diagram/pipeline/dataClient';
 import { ICON_PLATE } from '../diagram/theme/tokens';
 import { ZONE_KIND_NAMES } from '../diagram/theme/styles';
 import { useDiagramSession } from '../diagram/session';
 import { viewerOffsetMinutes } from '../diagram/titleBlock';
 import {
-  FALLBACK_VIEWPORT,
+  locateViewport,
   sceneKey,
   selectDrawnDay,
   useAppState,
@@ -65,6 +66,7 @@ import {
 import { DIAGRAM_CANVAS_ID } from '../keyboard/SkipToCanvas';
 import { DRAWER_WIDTH, usePreference } from '../storage/preferences';
 import { useTheme } from '../theme/useTheme';
+import type { LocateAnswer } from '../search/protocol';
 import { useScreen } from '../ui/screen';
 import { withExtraLabel } from '../timeline/extraTicks';
 import { CopyButton } from './CopyButton';
@@ -419,6 +421,7 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
   const [rawOpen, setRawOpen] = useState(false);
   const [status, setStatus] = useState<{ readonly id: string; readonly text: string } | null>(null);
   const asideRef = useRef<HTMLElement>(null);
+  const pendingJump = useRef<AbortController | null>(null);
   const drawerId = useId();
   const titleId = useId();
   // The day drawn and, when it was compared with the day on screen before it, that diff.
@@ -446,6 +449,8 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
   const offset = drawnReadTime === undefined ? 0 : viewerOffsetMinutes(drawnReadTime);
   const width = dragWidth ?? storedWidth;
   const sheetHeight = dragHeight ?? height;
+
+  useEffect(() => () => pendingJump.current?.abort(), []);
 
   // The sheet opens at half height each time.
   useEffect(() => {
@@ -476,6 +481,7 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
 
   const jump = useCallback(
     (target: NodeRef): void => {
+      pendingJump.current?.abort();
       const before = store.getState();
       if (model?.nodes.has(target.id) === true) {
         actions.select(target.id);
@@ -486,32 +492,69 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
         actions.select(target.id);
         return;
       }
-      const key = sceneKey(before.view.spec);
-      // The day on screen: the flips are worked out on the Graph of the day drawn. Without offers: no view but
-      // this one is tried, and no search's locate cancels this one, nor this one a search's.
+      const controller = new AbortController();
+      pendingJump.current = controller;
+      const context = sceneKey({ ...before.view.spec, flips: [] });
       const day = { tick: selectDrawnDay(before) ?? null };
-      const viewport = before.pipeline.viewport ?? FALLBACK_VIEWPORT;
-      client.locate({ spec: before.view.spec, day, viewport, node: target.id, offers: false }).then(
-        (answer) => {
-          // The view changed meanwhile: the flips were worked out for another one.
-          if (sceneKey(store.getState().view.spec) !== key) return;
-          if (answer.kind === 'expand') {
-            actions.setView((current) => ({
-              ...current,
-              flips: [...answer.view.flips],
-              selection: target.id,
-            }));
-          } else {
-            actions.select(target.id);
+      const unsubscribe = store.subscribe(() => {
+        const current = store.getState();
+        if (
+          !current.view.onDiagram ||
+          !current.ui.drawerOpen ||
+          current.selection.selected !== before.selection.selected ||
+          (selectDrawnDay(current) ?? null) !== day.tick ||
+          sceneKey({ ...current.view.spec, flips: [] }) !== context
+        ) {
+          controller.abort();
+        }
+      });
+      const locate = async (): Promise<void> => {
+        try {
+          for (let attempt = 0; attempt < 3; attempt += 1) {
+            const current = store.getState();
+            const spec = current.view.spec;
+            const viewport = locateViewport(current.pipeline);
+            let answer: LocateAnswer;
+            try {
+              answer = await client.locate(
+                { spec, day, viewport, node: target.id, offers: false },
+                { signal: controller.signal },
+              );
+            } catch (error) {
+              if (!controller.signal.aborted && !isDataCancelled(error)) actions.select(target.id);
+              return;
+            }
+            if (controller.signal.aborted) return;
+            const latest = store.getState();
+            const latestViewport = locateViewport(latest.pipeline);
+            if (
+              sceneKey(latest.view.spec) !== sceneKey(spec) ||
+              latestViewport.width !== viewport.width ||
+              latestViewport.height !== viewport.height
+            ) {
+              continue;
+            }
+            if (answer.kind === 'expand') {
+              actions.setView((view) => ({
+                ...view,
+                flips: [...answer.view.flips],
+                selection: target.id,
+              }));
+            } else {
+              actions.select(target.id);
+            }
+            if (answer.kind !== 'shown' && answer.kind !== 'expand') {
+              setStatus({ id: target.id, text: notDrawnText(target.label) });
+            }
+            return;
           }
-          if (answer.kind !== 'shown' && answer.kind !== 'expand') {
-            setStatus({ id: target.id, text: notDrawnText(target.label) });
-          }
-        },
-        () => {
           actions.select(target.id);
-        },
-      );
+        } finally {
+          unsubscribe();
+          if (pendingJump.current === controller) pendingJump.current = null;
+        }
+      };
+      void locate();
     },
     [store, actions, model, workers],
   );

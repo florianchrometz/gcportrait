@@ -17,7 +17,7 @@ export {
   useUi,
   useView,
 } from './hooks';
-export { FALLBACK_VIEWPORT, sceneKey } from './pipeline';
+export { FALLBACK_VIEWPORT, locateViewport, sceneKey } from './pipeline';
 export type * from './slices';
 export {
   createAppStore,
