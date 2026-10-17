@@ -85,11 +85,10 @@ It is still drawn: never dropped. A type the asset catalog does not describe bec
 its project by its `parent` and `ancestors`, labelled with its `displayName` or `name` or the last part of its
 resource name, with its product's icon (or a generic cloud icon), and without arrows. The Everything lens
 shows it, and so does any lens once you add the type under Filters › Include types (the picker lists the
-snapshot's unknown types too); the other lenses list the types they take. The catalog describes 632 of the 641
-types Cloud Asset Inventory supports (list of 2026-10-09); the other 9 are 7 Identity-Aware Proxy types that
-exist only as IAM policy content and 2 BeyondCorp types Google shut down in 2023. New types appear every
-month: a weekly job compares the catalog with Google's list, and [contributing.md](contributing.md) explains
-how to add one.
+snapshot's unknown types too); the other lenses list the types they take. The generated
+[coverage report](https://gcportrait.app/coverage/) lists the mapped types and the reasons for leaving others
+unmapped. New types appear every month: a weekly job compares the catalog with Google's list, and
+[contributing.md](contributing.md) explains how to add one.
 
 ### Why do I see ids instead of names?
 

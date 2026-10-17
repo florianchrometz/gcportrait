@@ -193,8 +193,9 @@ where the landing page's features become two columns, 52rem for the docs layout,
   abort a download already running, so a fast scroll past several demos can still have a few files in flight
   at once. Where WebM (VP9) cannot play, because `canPlayType('video/webm; codecs="vp9"')` says no, the video
   reports an error, or it stalls before any data arrives, the GIF of the same scene and theme takes its place,
-  fetched only then (0.3 to 0.5 MB each; the ten GIFs, 4.0 MB, are published with the site but fetched only in
-  that case). The pause button pauses either: a video stops on its frame, a GIF gives way to the poster (WCAG
+  fetched only then. The GIFs are published with the site but fetched only in that case; their current sizes
+  are in `docs/media/manifest.json`. The pause button pauses either: a video stops on its frame, a GIF gives
+  way to the poster (WCAG
   2.2.2). With reduced motion nothing plays by itself: the poster shows with a Play button. A browser that
   refuses to play by itself (iOS in Low Power Mode) gets the same: the poster and a Play button.
 

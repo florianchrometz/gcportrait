@@ -75,16 +75,9 @@ Exit codes: 0 done, 1 a check failed (`--compare`, `--strict`), 2 a usage error.
 The report names the fixture, lens, the detail level `auto` chose and its budget, the layout's rect and edge
 counts, whether its invariants hold, any refused root or focus, and each file written:
 
-```text
-gcportrait render
-demo M (952 assets) · lens networking · detail auto → folders (budget 73) · light
-layout: 42 rects, 36 edges routed (0 fallbacks, 0 failed); invariants hold
-svg: 1861×1446 → /…/out/render/M-networking-auto-light.svg (45 091 bytes)
-png: 3818×2988 px at 2× with a 24 px margin → /…/out/render/M-networking-auto-light.png (600 202 bytes)
-```
-
-A draw.io file's line names what it holds and how it is stored
-(`drawio: 15 zones, 40 nodes, 45 edges, 271 cells, compressed → …`).
+Run `pnpm render --fixture M --lens networking --svg --png` for the current report. The demo asset counts
+are in [docs/modes.md](../../docs/modes.md#4-the-demo). A draw.io file's line names its zone, node, edge and
+cell counts and how it is stored.
 
 **The draw.io file.** `--drawio` writes the view as a `.drawio` file that diagrams.net opens as an editable
 diagram looking like the PNG: the SVG's drawing translated into draw.io's cells by the translator the app's

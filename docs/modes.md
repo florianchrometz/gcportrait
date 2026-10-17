@@ -80,6 +80,9 @@ side.
 | L | 6 382 | 219 | ten business units, three environments |
 | XL | 51 242 | 219 | thirty business units; for trying the limits |
 
+These default-seed figures are checked against `packages/demo-data/fixtures/stats.json` by
+`node scripts/user-docs.mjs`.
+
 Each is a synthetic organisation `example.com` (names and numbers chosen not to be anyone's: projects
 `demo-web-1`, `demo-net-1`, …, numbers below 100000000000, documentation IP ranges) with a 35-day history of
 additions, removals and changes, from 4 September to 8 October 2026. It is generated in your browser (in a

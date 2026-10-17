@@ -451,6 +451,33 @@ export function sectionTableRows(text, heading) {
 }
 
 /**
+ * @param {string} text
+ * @param {Record<string, { count: number, byType: Record<string, number> }>} sizes
+ * @returns {string[]}
+ */
+export function demoSizeProblems(text, sizes) {
+  const rows = sectionTableRows(text, '4. The demo')?.slice(1) ?? [];
+  const problems = [];
+  for (const [size, stats] of Object.entries(sizes)) {
+    const matches = rows.filter((cells) => cells[0] === size);
+    const cells = matches[0];
+    if (
+      matches.length !== 1 ||
+      Number(cells?.[1]?.replaceAll(' ', '')) !== stats.count ||
+      Number(cells?.[2]?.replaceAll(' ', '')) !== Object.keys(stats.byType).length
+    )
+      problems.push(
+        `docs/modes.md: ${size} must occur once with the asset and type counts in demo-data/fixtures/stats.json`,
+      );
+  }
+  for (const cells of rows) {
+    if (cells[0] === undefined || !Object.hasOwn(sizes, cells[0]))
+      problems.push(`docs/modes.md: unknown demo size ${cells[0] ?? ''}`);
+  }
+  return problems;
+}
+
+/**
  * The code spans of a cell: `` `--image TAG\|IMAGE` `` → `--image TAG\|IMAGE`.
  * @param {string} cell
  * @returns {string[]}
@@ -1068,6 +1095,11 @@ export function markdownWidthProblems(root) {
 export function checkUserDocs(root) {
   /** @type {string[]} */
   const problems = [];
+  /** @type {unknown} */
+  const stats = JSON.parse(readFileSync(path.join(root, 'packages/demo-data/fixtures/stats.json'), 'utf8'));
+  const demoStats =
+    /** @type {{ sizes: Record<string, { count: number, byType: Record<string, number> }> }} */ (stats);
+  problems.push(...demoSizeProblems(readFileSync(path.join(root, 'docs/modes.md'), 'utf8'), demoStats.sizes));
   const lensDoc = readFileSync(path.join(root, LENS_DOC), 'utf8');
   const generated = generateLensDoc(lensDoc, readLenses(root));
   problems.push(...generated.problems);

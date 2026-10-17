@@ -253,9 +253,10 @@ stays in the tab's memory.</p>
 </picture>
 </td>
 <td width="50%" valign="top">
-<h3>632 of 641 asset types</h3>
-<p>The asset catalog maps 632 of the 641 types Cloud Asset Inventory lists, each rule proven by a fixture;
-the other 9 are listed with a reason. A type the catalog does not know still renders.
+<h3>Broad asset coverage</h3>
+<p>The asset catalog maps Cloud Asset Inventory types, each rule proven by a fixture;
+unmapped types are listed with a reason. A type the catalog does not know still renders.
+<a href="https://gcportrait.app/coverage/">Current coverage</a> ·
 <a href="packages/catalog/README.md">Catalog</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/exports/M-shared-vpc-dark-960.webp">

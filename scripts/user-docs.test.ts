@@ -17,6 +17,7 @@ import {
   commandProblem,
   commandsIn,
   dependencyVersions,
+  demoSizeProblems,
   generateLensDoc,
   helpFlags,
   largeSnapshotAssets,
@@ -42,6 +43,32 @@ import {
 import { SCRIPTS_DIR, createTempTree, type TempTree } from './testing/temp-tree.js';
 
 const REPO = path.resolve(SCRIPTS_DIR, '..');
+
+describe('demo size figures', () => {
+  const sizes = { S: { count: 1000, byType: { 'example.googleapis.com/Asset': 1000 } } };
+  const table =
+    '## 4. The demo\n\n| Size | Assets | Asset types | What it is like |\n|---|---|---|---|\n| S | 1 000 | 1 | Small |\n';
+
+  it('accepts the canonical table with grouped asset counts', () => {
+    expect(demoSizeProblems(table, sizes)).toEqual([]);
+  });
+
+  it('refuses an extra unknown size even when all expected sizes are current', () => {
+    expect(demoSizeProblems(`${table}| M | 2 000 | 1 | Unknown |\n`, sizes)).toEqual([
+      'docs/modes.md: unknown demo size M',
+    ]);
+  });
+
+  it.each([
+    ['asset count', table.replace('1 000', '999')],
+    ['type count', table.replace('| 1 | Small', '| 2 | Small')],
+    ['missing size', table.replace('| S |', '| M |')],
+    ['duplicate size', `${table}| S | 1 000 | 1 | Again |\n`],
+    ['missing section', 'No table'],
+  ])('refuses a stale or missing %s', (_kind, text) => {
+    expect(demoSizeProblems(text, sizes).length).toBeGreaterThan(0);
+  });
+});
 
 const LENSES = {
   networking: {

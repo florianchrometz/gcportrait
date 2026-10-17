@@ -8,9 +8,9 @@ could not give, or a change outside the catalog's data files (the compiler and n
 `packages/catalog/src/`, the schemas in `packages/model`, the graph builder, the demo generator). Take an item
 off this list in the pull request that settles it.
 
-The catalog maps 632 of the 641 official types (69 containers, 258 core, 71 leaf, 234 hidden); 9 are unmapped
-with a reason (7 IAP policy-only types, 2 BeyondCorp client-connector types shut down in 2023); its 1 387
-rules each have a fixture, every `hiddenWhen` is proven both ways, and `pnpm catalog:check` is clean.
+`pnpm catalog:coverage` reports the current mapped types and each group's unmapped reasons;
+[the coverage page](https://gcportrait.app/coverage/) publishes the report for the site. `pnpm catalog:check`
+checks each rule's fixture and both sides of every `hiddenWhen` predicate.
 
 How to read an item: **what** is open, **where** it bites (types and fields), and **how to settle** it. "Real
 export" means one read-only `gcloud asset search-all-resources` or `gcloud asset export` of the type in a real
@@ -113,7 +113,8 @@ platform (Memorystore, Filestore, AlloyDB, Spanner, Bigtable, Composer, Dataproc
 Vertex AI and Discovery Engine, Cloud Build, Cloud Deploy, Infra Manager, Binary Authorization, CA Service,
 workload identity federation and Cloud IDS. Still open:
 
-- **Size of M.** 952 assets against the ≈600 the demo was designed for (cai-ingestion skill §7). Bringing it
+- **Size of M.** Above the ≈600 assets the demo was designed for (cai-ingestion skill §7; current counts in
+  [modes.md](modes.md#4-the-demo)). Bringing it
   back (under 800, say) means trimming M's base, which changes many pinned graph goldens and the layout
   goldens on M, or moving cases such as the VM or ML project to L only.
 - **S has no generator cases**, so its container images, function builds and Cloud Build images name Artifact

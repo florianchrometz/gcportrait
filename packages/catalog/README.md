@@ -398,36 +398,11 @@ it, and every new type must be mapped, or owned and listed by a group file (`own
 
 ### Coverage
 
-Against the official list of 2026-10-09 (641 types): **632 mapped (98.6 %)**, of which 69 containers, 258
-core, 71 leaf and 234 hidden by default; **9 unmapped**, each listed with its reason in the group file that
-owns it: the 7 IAP types of `policy-and-runtime` (IAM policy content only, no RESOURCE data, outside v1
-ingestion) and the 2 BeyondCorp client-connector types of `security-identity` (`ClientConnectorService`,
-`ClientGateway`: shut down on 2023-12-31, the API reference documents no fields any more). 156 products in 159
-product files; 1 387 rules (relation, address, domain, containment and alias paths), every one proven by a
-fixture; 632 fixture files, one per mapped type; 11 lenses; 134 icon keys, none pending; 0 violations.
+`pnpm catalog:coverage` reports the current totals and per-group figures; `pnpm catalog:check` validates
+rules, fixtures and ownership. The generated [coverage page](https://gcportrait.app/coverage/) publishes
+coverage for the site. Unmapped types and their reasons live in each owner's `known-unmapped/<group>.yaml`.
 Coverage stays at or above 95 % of the official list, with no rule without a fixture (skill gcp-asset-catalog
-§8).
-
-| Group | Official | Mapped | Container | Core | Leaf | Hidden | Unmapped | Product files |
-|---|---|---|---|---|---|---|---|---|
-| `hierarchy` | 7 | 7 | 3 | 0 | 0 | 4 | 0 | 1 |
-| `networking-fabric` | 31 | 31 | 2 | 18 | 1 | 10 | 0 | 5 |
-| `hybrid-connectivity` | 18 | 18 | 2 | 13 | 0 | 3 | 0 | 4 |
-| `load-balancing-edge` | 54 | 54 | 5 | 36 | 11 | 2 | 0 | 8 |
-| `dns-domains` | 5 | 5 | 2 | 1 | 0 | 2 | 0 | 1 |
-| `compute` | 45 | 45 | 7 | 19 | 5 | 14 | 0 | 8 |
-| `containers-serverless` | 85 | 85 | 11 | 38 | 7 | 29 | 0 | 23 |
-| `data-stores` | 58 | 58 | 9 | 23 | 7 | 19 | 0 | 19 |
-| `data-processing-messaging` | 58 | 58 | 5 | 25 | 12 | 16 | 0 | 17 |
-| `ai` | 53 | 53 | 4 | 17 | 3 | 29 | 0 | 10 |
-| `security-identity` | 84 | 82 | 5 | 30 | 9 | 38 | 2 | 27 |
-| `developer-tooling-delivery` | 43 | 43 | 4 | 9 | 4 | 26 | 0 | 9 |
-| `operations-platform` | 93 | 93 | 10 | 29 | 12 | 42 | 0 | 27 |
-| `policy-and-runtime` | 7 | 0 | 0 | 0 | 0 | 0 | 7 | 0 |
-| **Total** | **641** | **632** | **69** | **258** | **71** | **234** | **9** | **159** |
-
-`pnpm catalog:coverage` (per group) and `pnpm catalog:check` (overall) print these numbers for the tree as it
-is; update the table when they change.
+§8). No hand-maintained table needs updating when a group's coverage changes.
 
 ## Shared product files
 

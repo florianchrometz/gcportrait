@@ -2012,11 +2012,9 @@ name ("bastoin") that matches nothing better still finds its node. Fuzzy matchin
 score × 0.6 (`CONTAINER_BOOST`), so "web" lists the instance groups and the projects named "… web (…)" before
 the VMs and addresses that start with it, and "compute instance" the instance groups before the instances.
 Ties go to nodes drawn by default, then to the types the default lens (overview) draws, so a VM comes before
-its disk of the same name, then `core` before `leaf`, then label and id. In Node, with ten typical queries (a
-name, an IP, a project id, two words, a domain), demo M builds its index in 12 ms and answers in 1–3 ms; demo
-L (6 382 assets) in 60 ms and 4–21 ms; demo XL (51 242 assets) in 480 ms and 37–154 ms, off the UI thread.
-Each query still holds the data worker's queue (Scene requests wait behind it) for that long; the 120 ms
-debounce keeps typing from queueing several.
+its disk of the same name, then `core` before `leaf`, then label and id. Indexing and queries run off the UI
+thread; each query holds the data worker's queue (Scene requests wait behind it). The 120 ms debounce keeps
+typing from queueing several. [docs/modes.md](../docs/modes.md#4-the-demo) lists the demo sizes.
 
 **The box** (`SearchBox.tsx`, on `ui/Combobox`). `/` focuses it from anywhere but a text field (and not while
 a modal dialog has made it inert); `aria-keyshortcuts="/"`. Typing lists at most 20 results, grouped by kind

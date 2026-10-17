@@ -172,8 +172,8 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
 ## 7. Synthetic demo data rules (`packages/demo-data`)
 
 - Deterministic from a seed; sizes S(≈80) M(≈600) L(≈6 000) XL(≈50 000) assets as targets (with the default
-  seed today: S 96, M 952, L 6 382, XL 51 242; M carries the catalog groups' generator cases, see the
-  demo-data README); 35 days of history as per-day mutation lists applied on top of the base.
+  seed counts in docs/modes.md §4, checked against fixtures/stats.json; M carries the catalog groups'
+  generator cases, see the demo-data README); 35 days of history as per-day mutation lists on top of the base.
 - Realistic topology: 2–3 folder levels; a shared-VPC host with 3+ service projects; two peered VPCs; one HA
   VPN + one Interconnect attachment; an external HTTPS LB chain (forwarding rule → proxy → URL map → backend
   services → NEGs/instance groups → MIG instances with `created-by`); an internal LB; GKE cluster with

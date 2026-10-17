@@ -140,8 +140,8 @@ oracle. Reference: [packages/model/README.md](../packages/model/README.md).
 
 ### `@gcportrait/demo-data` — synthetic organisations
 
-**Responsibility.** Deterministic synthetic Google Cloud organisations in four sizes (S 96, M 952, L 6 382,
-XL 51 242 assets with the default seed) with a 35-day history, emitted as CAI records or as model Snapshots;
+**Responsibility.** Deterministic synthetic Google Cloud organisations in four sizes (S, M, L, XL;
+[current counts](modes.md#4-the-demo)) with a 35-day history, emitted as CAI records or as model Snapshots;
 checked by the "synthetic only" guard of `@gcportrait/model/testing`. Pure core: a seed and a `today` date
 determine the output byte for byte. M and larger also carry a generator case per catalog group
 (`features` in `src/topology/profiles.ts`), so the demo draws the prominent Tier-1 types of every group with
@@ -207,11 +207,10 @@ is browser- and worker-safe; the Node tooling lives in `tooling/`.
 | `assetProject`, `resolveProject` | project lookups through the snapshot's project index (`buildProjectIndex` of `@gcportrait/model`) |
 | `normalise`, `NORMALISERS`, `evaluateJsonPath`, `evaluatePredicate`, `renderTemplate`, … | the engine's parts |
 
-**State.** Against the newest official list (641 types), 632 are mapped (69 container, 258 core, 71 leaf, 234
-hidden) in 159 product files, with 1 387 rules (relation, address, domain, containment and alias paths), each
-proven by one of the 632 fixture files, and 11 curated lenses; 9 types are unmapped with a reason, each listed
-in its group's `known-unmapped/<group>.yaml` (7 IAP policy-only types, 2 shut-down BeyondCorp client-connector
-types). `catalog:check` also reports the types still without a console template, and `tooling/plurals.test.ts`
+**Coverage.** `pnpm catalog:coverage` and the generated [coverage page](https://gcportrait.app/coverage/)
+report current totals by group and role. Unmapped types and their reasons live in each group's
+`known-unmapped/<group>.yaml`. `catalog:check` validates rule fixtures and also reports types still without a
+console template; `tooling/plurals.test.ts`
 keeps bare counts out of counting subtitles (the `plural(…)` filter). The open questions are in
 [catalog-followups.md](catalog-followups.md). **Commands.** `pnpm catalog:check` (`--group`, `--file`,
 `--verbose`), `pnpm catalog:coverage`, `pnpm catalog:build`, `pnpm catalog:fetch-official` (section 4).
@@ -349,7 +348,7 @@ render` (section 4). Reference: [packages/render-cli/README.md](../packages/rend
 |---|---|---|
 | `frontend/` (`@gcportrait/frontend`) | the React 19 single-page app: shell, themes, routes, IndexedDB wrapper, demo mode; the diagram (`src/diagram/`: a data worker and a layout worker, the SVG renderer, the painter for hover, selection, the selection trace (`trace.ts`) and focus, the console action and node menu (`actions.ts`, `ui/Menu`), the legend and title block, the diagram tokens with their contrast tests and the SVG baselines) and the export flow (`src/export/`); the application features (section "The app's modules" below); `src/headless.ts` is its one entry point for another workspace (the headless renderer) | `model`, `catalog`, `graph`, `layout`, `icons`, `ingest`, `demo-data` |
 | `backend/` (`@gcportrait/backend`) | the stateless Fastify service for Cloud Run: `/healthz`, `/api/config` (with the OAuth client id and the `hostedBy` line), static serving, security headers (the CSP and COOP open for Google sign-in); the live pull `/api/assets/stream` and the export read `/api/export/read` (NDJSON streams through the allowlisted upstream client, with retries and caps; backend/README.md); the scope search, the preflight and service-account mode; demo-only mode; the render API `POST /api/render` with its render worker ([api.md](api.md)) | `model`, `render` (in the render worker only), and `ingest` in its tests |
-| `e2e/` (`@gcportrait/e2e`) | Playwright functional, export and axe tests against demo mode; holds the renderer's 28 SVG baselines (`baselines/diagram/`: 24 views and 4 selected states, written by the frontend's tests) and the render golden PNG (`baselines/render/`, written by `render-cli`) | none imported (`model` and `demo-data` are allowed); the export spec runs `pnpm render` as a separate process |
+| `e2e/` (`@gcportrait/e2e`) | Playwright functional, export and axe tests against demo mode; holds the renderer's SVG baselines (`baselines/diagram/`, written by the frontend's tests) and the render golden PNG (`baselines/render/`, written by `render-cli`) | none imported (`model` and `demo-data` are allowed); the export spec runs `pnpm render` as a separate process |
 
 `infra/` is not a workspace package: it holds the production image (`infra/Dockerfile`: the SPA build plus the
 backend bundled into one ESM file by `backend/bundle.ts`, on a distroless Node base), `infra/deploy.sh` and
@@ -419,7 +418,7 @@ ended with it, to prepare one. [frontend/README.md](../frontend/README.md) is th
 | `pnpm --filter @gcportrait/graph test:budget` | graph | the M build budget (150 ms), alone, printing its figures |
 | `pnpm render --fixture M --lens networking --png out.png` | render-cli | draws a demo view as the app's renderer draws it, as PNG, SVG and/or draw.io (`--theme`, `--detail`, `--focus`, `--root`, `--filter`, `--flip`, `--hash`, `--viewport`, `--scale`/`--width`, `--svg`, `--drawio`, `--strict`, `--compare`, `--all`, `--list-fixtures`, `--help`); without `--png`/`--svg`/`--drawio` it writes `out/render/<fixture>-<lens>-<detail>-<theme>.png` |
 | `pnpm --filter @gcportrait/render-cli test:golden:update` | render-cli | rewrites the render golden `e2e/baselines/render/S-overview-auto-light.png`; look at it and say why in the pull request |
-| `pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u` | frontend | rewrites the 28 SVG baselines under `e2e/baselines/diagram/` (the file before `-u`) |
+| `pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u` | frontend | rewrites the SVG baselines under `e2e/baselines/diagram/` (the file before `-u`) |
 | `pnpm --filter @gcportrait/layout test:budget` | layout | the strict layout budgets through a worker (S 10 ms, M 60 ms, L 400 ms, XL at `folders` 2 s), the memo hit, cancellation and memory, alone, printing their figures |
 | `pnpm --filter @gcportrait/layout bench` | layout | the whole benchmark table (medians of 10 runs per view, memo, cancellation, memory); exit 1 on a missed budget |
 | `pnpm --filter @gcportrait/layout debug-svg --fixture M --lens overview` | layout | writes an SVG and a PNG of a demo layout's rects, labels and routed edges to `out/layout/` to look at the packing and the routing (`--detail`, `--theme light\|dark\|both`, `--aspects`, `--no-png`, `--out`); not the renderer: no icons, legend or dim mode |
