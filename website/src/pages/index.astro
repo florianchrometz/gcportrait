@@ -5,9 +5,9 @@
  * start without a terminal of one's own beside it ("Open in Cloud Shell" and "Run on Google Cloud", in a new tab:
  * src/components/StartLink.astro) and "Use the API"; then the three ways, each with its proof (the deploy command, a
  * still of the app and the demo, a render request with the sample export it returns) and its guide; the features, each
- * marked with the way it serves (the last one: the light and the dark theme side by side), the sample exports, how it
- * works, self-hosting in 10 minutes (with the same two buttons below the installer), the service-account grant,
- * questions, the author.
+ * marked with the way it serves (the draw.io export with a sample to open in diagrams.net, the last one the light and
+ * the dark theme side by side), the sample exports, how it works, self-hosting in 10 minutes (with the same two buttons
+ * below the installer), the service-account grant, questions, the author.
  *
  * Its commands are fillable as the docs pages' are (docs/website.md, "Fillable commands"): rendered by the same
  * functions of src/lib/markdown.ts, with the Variables panel and its script after the grant command, and the values
@@ -27,9 +27,9 @@ import { coverageReport, percent, totals } from '../lib/coverage.js';
 import { renderedDocs } from '../lib/docs.js';
 import { sampleExports } from '../lib/exports.js';
 import { renderCommandBlock, renderInlineCode } from '../lib/markdown.js';
-import { scene, socialImage, still } from '../lib/media.js';
+import { scene, socialImage, still, type ThemedImage } from '../lib/media.js';
 import { personLd, softwareApplicationLd, sourceCodeLd } from '../lib/seo.js';
-import { IMAGE, INSTALL_COMMAND } from '../site.js';
+import { IMAGE, INSTALL_COMMAND, NEW_TAB_NOTE } from '../site.js';
 
 const author = authorSection();
 const report = coverageReport();
@@ -73,6 +73,23 @@ const exportTeaser = samples.filter((sample) => sample.lens === 'overview' && sa
 // What the API pillar's request returns: demo S's overview in the light theme, the sample export of the same name
 // (`pnpm render` draws both, and the route answers with the same bytes; docs/api.md).
 const apiSample = samples.find((sample) => sample.id === 'S-overview')?.themes.find((item) => item.theme === 'light');
+// The draw.io feature's sample: demo M's production Shared VPC, which no other part of this page shows, pictured in the
+// visitor's theme beside "Open in diagrams.net" and "Download draw.io" for the file of that theme (the other theme's
+// two links are hidden with its picture).
+const drawioSample = samples.find((sample) => sample.id === 'M-shared-vpc');
+const drawioLight = drawioSample?.themes.find((item) => item.theme === 'light');
+const drawioDark = drawioSample?.themes.find((item) => item.theme === 'dark');
+const drawioPicture: ThemedImage | undefined =
+  drawioSample === undefined || drawioLight === undefined || drawioDark === undefined
+    ? undefined
+    : {
+        alt: `${drawioSample.title}. ${drawioSample.summary}`,
+        title: drawioSample.title,
+        width: drawioLight.preview.width,
+        height: drawioLight.preview.height,
+        light: drawioLight.preview,
+        dark: drawioDark.preview,
+      };
 
 // The three ways in plain words, as the README's lead and the structured data (src/lib/seo.ts) say them.
 const description =
@@ -341,14 +358,68 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
           <p class="feature-tag">Web app · API</p>
           <h3>Export SVG, PNG and draw.io</h3>
           <p>
-            Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file that diagrams.net and draw.io open as an
-            editable diagram looking like the picture: the whole diagram or the visible part, in either theme, with a
-            title block, a legend and the date it shows. Every view is also a link, and your instance’s API renders the
-            same files for scripts.{' '}
+            Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file: the whole diagram or the visible part,
+            in either theme, with a title block, a legend and the date it shows. Every view is also a link, and your
+            instance’s API renders the same files for scripts.{' '}
             <a href="/docs/export/">Export</a> · <a href="/docs/api/">API</a>
           </p>
         </div>
         {media.export !== undefined && <figure class="shot"><ThemedPicture image={media.export} sizes={FEATURE_SIZES} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
+          <p class="feature-tag">Web app · API</p>
+          <h3>Export to draw.io, edit in diagrams.net</h3>
+          <p>
+            The draw.io file is the drawing as a diagram you can edit, not a picture of it. Open it in diagrams.net or
+            draw.io and every zone is a container that moves with what it holds, every resource a group of its box,
+            Google’s icon and its label, and every arrow a connector between its two resources, with its bends, heads
+            and dashes; the title block and the legend sit on a layer of their own. It is the SVG drawing translated,
+            not drawn a second time: every shape is where the picture has it, in the colours of the theme you exported,
+            and the test suite checks it against the SVG, box by box and line by line.
+          </p>
+          <p>
+            Move, restyle and annotate it there for a review, a wiki page or a slide. gcportrait itself stays a viewer
+            of what Cloud Asset Inventory holds, so draw.io is an export and never an import.{' '}
+            <a href="/docs/export/#4-what-the-files-contain">The draw.io file</a> ·
+            <a href="/docs/faq/#why-can-i-not-import-a-drawio-file">Why export only</a>
+          </p>
+          {
+            drawioSample !== undefined &&
+              drawioSample.themes.map((item) => (
+                <div class:list={['button-row', 'drawio-actions', `drawio-${item.theme}`]}>
+                  <a
+                    class="button button-primary"
+                    href={item.drawio.open}
+                    target="_blank"
+                    rel="noopener"
+                    data-export="drawio-open"
+                  >
+                    Open in diagrams.net
+                    <span class="visually-hidden">{`, ${drawioSample.title}, ${item.theme} theme${NEW_TAB_NOTE}`}</span>
+                  </a>
+                  <a class="button" href={item.drawio.url} download={item.drawio.downloadName} data-export="drawio">
+                    Download draw.io <span class="drawio-size">({item.drawio.size})</span>
+                    <span class="visually-hidden">{`, ${drawioSample.title}, ${item.theme} theme`}</span>
+                  </a>
+                </div>
+              ))
+          }
+        </div>
+        {
+          drawioPicture !== undefined && (
+            <figure class="drawio-figure">
+              <div class="shot">
+                <ThemedPicture image={drawioPicture} sizes={FEATURE_SIZES} />
+              </div>
+              <figcaption>
+                Demo M’s production Shared VPC, a sample export: the buttons open its draw.io file.{' '}
+                <a href="/exports/">All sample exports</a>
+              </figcaption>
+            </figure>
+          )
+        }
       </article>
 
       <article class="feature">
@@ -760,6 +831,33 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
   }
   .feature figure {
     min-width: 0;
+  }
+  /*
+   * The draw.io feature: the buttons for the file of the theme its picture shows (ThemedPicture follows the system
+   * setting, as the site does), the other theme's hidden with its picture.
+   */
+  .drawio-actions {
+    margin-bottom: 0;
+  }
+  .drawio-dark {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    .drawio-light {
+      display: none;
+    }
+    .drawio-dark {
+      display: flex;
+    }
+  }
+  .drawio-size {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+  .drawio-figure figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
   }
   /* "Light and dark": the text above, the two themes of the same picture side by side (stacked on a phone). */
   .feature-wide {

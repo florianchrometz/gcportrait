@@ -212,17 +212,32 @@ the zones around it and shows its details; if the lens hides it, a dialog offers
 <tr>
 <td width="50%" valign="top">
 <h3>Export SVG, PNG and draw.io</h3>
-<p>Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file that diagrams.net and draw.io open as
-an editable diagram looking like the picture (zones as containers, resources with their icons, connected
-lines), the whole diagram or the visible part, in either theme, with a title block, a legend and the date it
-shows. Every view is also a link, and a self-hosted instance draws the same files for scripts through its API
-(<code>POST /api/render</code>).
+<p>Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file, the whole diagram or the visible
+part, in either theme, with a title block, a legend and the date it shows. Every view is also a link, and a
+self-hosted instance draws the same files for scripts through its API (<code>POST /api/render</code>).
 <a href="docs/export.md">Guide</a> · <a href="docs/api.md">API</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/export-dark.png">
   <img src="docs/media/stills/export-light.png" width="400" alt="The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, Embed fonts for the SVG file, and downloads of SVG, PNG and draw.io files or copying the PNG.">
 </picture>
 </td>
+<td width="50%" valign="top">
+<h3>Export to draw.io, edit in diagrams.net</h3>
+<p>The draw.io file is the drawing as a diagram you can edit, not a picture of it: in diagrams.net or
+draw.io every zone is a container that moves with what it holds, every resource a group of its box, Google's
+icon and its label, every arrow a connector between its two resources, and the title block and the legend sit
+on a layer of their own, in the colours of the theme you exported. It is the SVG drawing translated, not drawn
+a second time, and the test suite checks it against the SVG. Open the
+<a href="https://gcportrait.app/exports/">sample exports</a> in diagrams.net to try it. gcportrait itself
+stays a viewer: draw.io is an export, never an import
+(<a href="docs/faq.md#why-can-i-not-import-a-drawio-file">why</a>).</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/exports/S-overview-dark-960.webp">
+  <img src="docs/media/exports/S-overview-light-960.webp" width="400" alt="Demo S, Overview lens. The whole small demo organisation as the app opens it: folders, projects, the Shared VPC with its networks and every resource, with arrows for the references.">
+</picture>
+</td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 <h3>A demo mode, no account needed</h3>
 <p>Four synthetic organisations, from about 100 to about 50&nbsp;000 assets, each with a 35-day history,
@@ -237,8 +252,6 @@ stays in the tab's memory.</p>
   <img src="docs/media/stills/snapshots-light.png" width="400" alt="The Snapshots page listing the demo organisations S and M stored in this browser, each with Load, Export and a red Delete button, then each scope's timeline and the import area; nothing is uploaded anywhere.">
 </picture>
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 <h3>632 of 641 asset types</h3>
 <p>The asset catalog maps 632 of the 641 types Cloud Asset Inventory lists, each rule proven by a fixture;
@@ -249,7 +262,9 @@ the other 9 are listed with a reason. A type the catalog does not know still ren
   <img src="docs/media/exports/M-shared-vpc-light-960.webp" width="400" alt="Demo M, Networking lens, focused on the production Shared VPC. The production Shared VPC of demo M and the projects attached to it: load balancers, addresses, Cloud Interconnect and VPN, with the host project’s network.">
 </picture>
 </td>
-<td width="50%" valign="top">
+</tr>
+<tr>
+<td colspan="2" valign="top">
 <h3>Light and dark</h3>
 <p>Every view in a light and a dark theme, Google's product icons unchanged. The app follows your system or
 your choice, and an export, from the app or the API, is drawn in the theme you pick. Shown here in the theme

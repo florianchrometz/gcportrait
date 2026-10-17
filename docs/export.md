@@ -122,7 +122,9 @@ from, Device (or drag it onto the page); in draw.io's desktop app, File, Open; o
 and open `https://app.diagrams.net/?url=` followed by that address, URL-encoded. Rendered by maxGraph, the
 maintained successor of mxGraph, the library diagrams.net is built on, the file matches the SVG within a pixel
 for every shape and every line of text; draw.io draws a little differently in detail (its own arrowheads, odd
-line widths snapped to whole pixels).
+line widths snapped to whole pixels). What you change there stays in the file: gcportrait does not import a
+draw.io file, so that its diagrams show only what Cloud Asset Inventory returned
+([faq.md](faq.md#why-can-i-not-import-a-drawio-file)).
 
 **Current viewport.** The canvas's visible part of the diagram, clipped; content keeps its position, the title
 block goes into a band above it and the legend into a band below it, 24 units away. A draw.io file holds no

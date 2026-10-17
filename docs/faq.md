@@ -14,6 +14,7 @@ Short answers, each with a link to where the long one is.
 - [Why do I see ids instead of names?](#why-do-i-see-ids-instead-of-names)
 - [Why is most of my organisation collapsed?](#why-is-most-of-my-organisation-collapsed)
 - [Can I move or edit boxes?](#can-i-move-or-edit-boxes)
+- [Why can I not import a draw.io file?](#why-can-i-not-import-a-drawio-file)
 
 **Data and time**
 
@@ -112,7 +113,20 @@ folder or project, or focus on part of the organisation
 
 No. gcportrait is a viewer, not a drawing tool: every box is a real asset and every arrow a real reference,
 laid out by the same rules every time, so two people looking at the same snapshot and view see the same
-picture. Export an SVG to edit it in a vector editor ([export.md](export.md)).
+picture. To edit the picture, export it: a draw.io file opens in diagrams.net or draw.io as a diagram whose
+zones, cards and lines you can move, restyle and annotate, and an SVG opens in a vector editor
+([export.md](export.md#4-what-the-files-contain)).
+
+### Why can I not import a draw.io file?
+
+Because a gcportrait diagram shows what Cloud Asset Inventory returned, and nothing else: every box is an
+asset the inventory listed and every arrow a reference in that asset's own data, so what you see is what is
+there. A drawing that someone edited could hold a box that is no asset, leave out one that is, or show a
+connection that does not exist, and nothing could check it against the inventory any more. That holds for a
+draw.io file gcportrait exported too, once it has been changed. So gcportrait reads only inventory data, a
+pull from Cloud Asset Inventory, its export files or a snapshot file saved from them
+([modes.md](modes.md)), and writes draw.io as an export only: change the exported file in diagrams.net as
+you like, and pull again in gcportrait to see what your environment looks like now.
 
 ## Data and time
 

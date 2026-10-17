@@ -501,14 +501,18 @@ the Export menu writes an SVG unless its "Embed fonts" option is ticked, so wher
 viewer draws the labels in another font and they may reflow (the PNGs are always drawn with Roboto), and
 `/exports/` gives the measured reason demo L and XL are left out. Neither says the files carry the
 non-affiliation line; `/exports/` says it is in the footer, not in the drawings, and asks that a picture not
-be presented as Google's. `pnpm website:check` checks every export link ([Building and
-checking](#building-and-checking)).
+be presented as Google's. Above the section, the landing page's feature "Export to draw.io, edit in
+diagrams.net" presents the draw.io file as a feature of its own, beside the one of the Export menu: what the
+file holds in diagrams.net, why draw.io is an export only (a link to the FAQ's answer), and the `M-shared-vpc`
+sample, which no other part of the page shows, as its preview in the visitor's theme with "Open in
+diagrams.net" and "Download draw.io" for the file of that theme (the other theme's two links are hidden with
+its picture). `pnpm website:check` checks every export link ([Building and checking](#building-and-checking)).
 
-**In the README.** The catalog feature shows the `M-shared-vpc` preview at 960 pixels, in the dark theme for
-a dark colour scheme. Its alt text is the sample's title and summary from `SAMPLES` ("Title. Summary"), the
-words the export card shows above its previews and ends their alt texts with; it names no theme, since the
-picture follows the reader's. `scripts/readme.test.ts` fails when a README picture of a sample export says
-anything else.
+**In the README.** The draw.io feature shows the `S-overview` preview and the catalog feature the
+`M-shared-vpc` preview, each at 960 pixels and in the dark theme for a dark colour scheme. Their alt text is
+the sample's title and summary from `SAMPLES` ("Title. Summary"), the words the export card shows above its
+previews and ends their alt texts with; it names no theme, since the picture follows the reader's.
+`scripts/readme.test.ts` fails when a README picture of a sample export says anything else.
 
 ## GitHub repository widget
 
