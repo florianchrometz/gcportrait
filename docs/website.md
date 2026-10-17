@@ -354,9 +354,14 @@ a profile folder of its own, it does not start without one).
 
 How: a production build of the app in demo mode (`out/media/app`, git-ignored) is served by `vite preview` and
 driven by Playwright's Chromium at 1440×900, in UTC with British English dates, once in the light and once in
-the dark theme. A scene is played in real time with a drawn pointer and captured as fast as screenshots come
-(about 30 a second), then resampled to 12 frames a second; the GIF is assembled with gifenc (one palette,
-unchanged pixels transparent, repeated frames merged), the WebM with the browser's WebCodecs encoder and
+the dark theme. Each still is taken after a repaint of the whole page (its root's background turned to another
+colour for two frames and back): on the way to a still the browser repaints the page in parts, and an
+anti-aliased edge that the rectangle of such a part cuts through comes out a few levels different from the
+same edge drawn whole, so without it a still's bytes would follow the timing of the frames (on the timeline
+still, the lower edge of the slider thumb's focus ring runs through the day markers). A scene is played in
+real time with a drawn pointer and captured as fast as screenshots come (about 30 a second), then resampled
+to 12 frames a second; the GIF is assembled with gifenc (one palette, unchanged pixels transparent, repeated
+frames merged), the WebM with the browser's WebCodecs encoder and
 Mediabunny's muxer. The Snapshots still pins the page's clock to 2026-10-08 09:30 UTC, so its "Stored" column
 reads the same in every run, and scrolls the page until its import area shows whole under the stored snapshots
 and the timelines. The trace still selects a forwarding rule and then fits the camera to its trace beside the

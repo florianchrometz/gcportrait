@@ -22,7 +22,8 @@
  * below (STILLS, SCENES).
  *
  * - Stills: PNG at 1440×900 (stills/<id>-<theme>.png, for the README and GitHub) and WebP at 1440 and 720 pixels wide
- *   (web/<id>-<theme>-<width>.webp, for the website).
+ *   (web/<id>-<theme>-<width>.webp, for the website), each taken after a repaint of the whole page (repaintWhole), so
+ *   the same page gives the same bytes in every run.
  * - Animated demos: a scripted scene is played in real time while the page is captured as fast as it goes (about 30
  *   screenshots a second at 1200×750: the page keeps its 1440×900 layout at a device scale factor of 1200/1440), then
  *   resampled to 12 frames a second. A drawn pointer shows where the mouse is (headless screenshots have none).
@@ -318,6 +319,30 @@ async function diagramReady(page) {
   await page
     .locator('svg.dg-canvas[data-diagram-ready="true"]')
     .waitFor({ state: 'visible', timeout: 60_000 });
+}
+
+/**
+ * Has the browser paint the whole page again before a still is taken: the root's background turns to another colour
+ * for two frames and back. On the way to a still the browser repaints the page in parts (a camera move redraws the
+ * canvas, a focus ring comes and goes), and an anti-aliased edge that the rectangle of such a part cuts through comes
+ * out a few levels different from the same edge drawn whole; which rectangles cut where depends on the timing of the
+ * frames (on the timeline still, the lower edge of the slider thumb's focus ring runs through the day markers). A
+ * whole repaint draws every part in one piece, so the same page gives the same bytes.
+ * @param {Page} page
+ */
+async function repaintWhole(page) {
+  await page.evaluate(`(() => {
+    const root = document.documentElement;
+    const before = root.style.getPropertyValue('background-color');
+    const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    root.style.setProperty('background-color', 'rgb(255, 0, 255)');
+    return frames().then(() => {
+      if (before === '') root.style.removeProperty('background-color');
+      else root.style.setProperty('background-color', before);
+      return frames();
+    });
+  })()`);
+  await sleep(200);
 }
 
 /** The time the snapshots still stores the demo snapshots at: the morning of the demo's snapshot day. */
@@ -1168,6 +1193,7 @@ async function main(argv) {
         if (shoot === undefined)
           throw new Error(`media: no capture for still ${still.id} in scripts/media.mjs`);
         await shoot(page, preview.url);
+        await repaintWhole(page);
         const shot = await page.screenshot({ type: 'png' });
         await context.close();
         if (theme === config.social.theme) stillsForCards.set(still.id, shot);
