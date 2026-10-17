@@ -415,7 +415,11 @@ the real catalog M finds 16 pairs: those twelve and `demo-mgmt-1`, `demo-data-1`
 → `demo-net-1`, whose catalog generator cases attach to the prod host's subnets; both host projects are marked
 Shared VPC hosts by their Compute settings.
 
-Every graph test runs on the real compiled catalog; there are no test-only stand-in rules.
+Every graph test runs on the real compiled catalog; there are no test-only stand-in rules. A test that needs
+types the catalog lacks adds product entries with `catalogWith` (`src/testing/fixtures.ts`), which validates
+only those and takes the compiled catalog as it is, without parsing it again: its types and lenses are one
+frozen copy shared by every catalog built on it, so that no test can change the next one's catalog
+(`src/testing/fixtures.test.ts` holds the result to `CatalogSchema`).
 
 ## Performance
 

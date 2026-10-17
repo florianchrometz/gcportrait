@@ -7,7 +7,7 @@
 import { catalog as realCatalog } from '@gcportrait/catalog';
 import {
   CatalogEntrySchema,
-  CatalogSchema,
+  CatalogTypeSchema,
   type Asset,
   type Catalog,
   type CatalogType,
@@ -179,18 +179,48 @@ export function subnetwork(
 /** A product entry as written in YAML (defaults not applied yet). */
 export type CatalogEntryInput = z.input<typeof CatalogEntrySchema>;
 
+/** A deep copy of JSON-shaped data in which every object and array is frozen. */
+function frozenCopy(value: unknown): unknown {
+  if (Array.isArray(value)) return Object.freeze(value.map(frozenCopy));
+  if (typeof value !== 'object' || value === null) return value;
+  return Object.freeze(
+    Object.fromEntries(Object.entries(value).map(([key, child]) => [key, frozenCopy(child)])),
+  );
+}
+
+/**
+ * Each base's frozen copy, made once per base object (once per test file, as Vitest loads every file's modules
+ * afresh) and shared by every catalog built on it.
+ */
+const frozenBases = new WeakMap<Catalog, Catalog>();
+
+function frozenBase(base: Catalog): Catalog {
+  let frozen = frozenBases.get(base);
+  if (frozen === undefined) {
+    frozen = frozenCopy(base) as Catalog;
+    frozenBases.set(base, frozen);
+  }
+  return frozen;
+}
+
 /**
  * A catalog: the real compiled catalog with the given product entries added. In `override` mode an entry's
  * types replace the real ones; in `fill` mode only types the real catalog lacks are added (the real rules
- * win). Validated with `CatalogSchema`, so a test catalog is as consistent as the compiled one.
+ * win). Only what a test adds is validated, each entry with `CatalogEntrySchema` and each of its types with
+ * `CatalogTypeSchema`; the base is taken as valid, as the compiled catalog is (it passed `CatalogSchema` when
+ * it was compiled), and is never parsed again (`fixtures.test.ts` holds the result to `CatalogSchema`). The
+ * catalog object, its products and its records are new on every call; the types and lenses in them are
+ * frozen, the base's shared by every catalog built on it, so a test that changes one throws instead of
+ * changing the next test's catalog.
  */
 export function catalogWith(
   entries: readonly CatalogEntryInput[],
   mode: 'override' | 'fill' = 'override',
   base: Catalog = realCatalog,
 ): Catalog {
-  const products = base.products.map((product) => ({ ...product, types: [...product.types] }));
-  const types: Record<string, CatalogType> = { ...base.types };
+  const shared = frozenBase(base);
+  const products = shared.products.map((product) => ({ ...product, types: [...product.types] }));
+  const types: Record<string, CatalogType> = { ...shared.types };
   for (const input of entries) {
     const entry = CatalogEntrySchema.parse(input);
     let product = products.find((candidate) => candidate.service === entry.service);
@@ -206,16 +236,17 @@ export function catalogWith(
         if (owner !== undefined) owner.types = owner.types.filter((t) => t !== assetType);
       }
       product.types.push(assetType);
-      types[assetType] = {
+      const compiled = CatalogTypeSchema.parse({
         ...type,
         assetType,
         product: product.product,
         service: product.service,
         icon: type.icon ?? product.icon,
-      };
+      });
+      types[assetType] = frozenCopy(compiled) as CatalogType;
     }
   }
-  return CatalogSchema.parse({ ...base, products, types });
+  return { ...shared, products, types, lenses: { ...shared.lenses } };
 }
 
 /** The real compiled catalog. */
