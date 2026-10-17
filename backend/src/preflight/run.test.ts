@@ -424,7 +424,8 @@ describe('user mode, row "quota project: Cloud Asset API enabled + serviceusage.
       message: 'Request is prohibited by organization policy.',
     });
     const html = checklist((await run({ list: always(() => answers.html(404)) })).result);
-    expect(itemOf(html, 'quota-project').upstream).toEqual({ status: 404 });
+    // No envelope, so no message; the code is the one the HTTP status implies, as in a stream's error frame.
+    expect(itemOf(html, 'quota-project').upstream).toEqual({ status: 404, code: 'NOT_FOUND' });
   });
 
   it('403 ACCESS_TOKEN_SCOPE_INSUFFICIENT on the probe: sign in again', async () => {

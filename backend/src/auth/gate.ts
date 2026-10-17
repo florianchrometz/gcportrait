@@ -36,7 +36,6 @@ import { tokenKeyOf } from '../stream/caller.js';
 import {
   callGoogle,
   getScope,
-  isRecord,
   isScopeInsufficient,
   isTransientOutcome,
   isUnauthenticated,
@@ -49,6 +48,7 @@ import {
   type TokenFacts,
   type UpstreamSummary,
 } from '../upstream/google.js';
+import { isRecord } from '../upstream/json.js';
 import { SCOPE_COLLECTIONS, scopePath, type ParsedScope } from '../upstream/scope.js';
 import type { ServiceAccountIdentity } from './identity.js';
 

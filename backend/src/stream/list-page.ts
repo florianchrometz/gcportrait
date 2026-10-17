@@ -19,6 +19,8 @@
  */
 import { Buffer, isUtf8 } from 'node:buffer';
 
+import { readJson } from '../upstream/json.js';
+
 const QUOTE = 0x22;
 const BACKSLASH = 0x5c;
 const OPEN_BRACE = 0x7b;
@@ -75,12 +77,8 @@ export interface ScannedListPage {
 /** A short JSON string value, decoded; undefined when the bytes are not one string. */
 function shortString(bytes: Uint8Array): string | undefined {
   if (bytes.byteLength > MAX_FIELD_BYTES || bytes[0] !== QUOTE) return undefined;
-  try {
-    const value: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
-    return typeof value === 'string' ? value : undefined;
-  } catch {
-    return undefined;
-  }
+  const value = readJson(bytes);
+  return typeof value === 'string' ? value : undefined;
 }
 
 /**

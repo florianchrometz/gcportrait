@@ -269,9 +269,11 @@ fix:
 **Answers any item can get.** "Sign in again and allow gcportrait to read Cloud Asset Inventory." (your token
 lacks a scope); "Google did not answer in time, even after a few tries. Try again in a moment."; "This
 gcportrait instance has no service-account credentials to check with." (tell the operator); and for anything
-the check does not understand, Google's own answer as "Google refused the request (STATUS REASON): MESSAGE",
-for example a refusal by VPC Service Controls (`SECURITY_POLICY_VIOLATED`). The check fails closed: what it
-cannot read is never OK.
+the check does not understand, Google's own answer as "Google refused the request (STATUS CODE REASON):
+MESSAGE", for example a refusal by VPC Service Controls (`403 PERMISSION_DENIED SECURITY_POLICY_VIOLATED`).
+CODE is Google's canonical status, or the one its HTTP status implies when the answer names none (an HTML
+error page reads "404 NOT_FOUND", without a message), as a pull's error names it. The check fails closed:
+what it cannot read is never OK.
 
 Every command is filled in with the scope's command group (`gcloud organizations`,
 `gcloud resource-manager folders` or `gcloud projects`), the scope's id, the quota project, and your email or

@@ -7,10 +7,13 @@
  * on verbatim (skill cai-ingestion §4: 400/403/404 are actionable). A body that is not that JSON (an HTML
  * error page, for a request Google could not route) is never forwarded.
  *
- * {@link errorDetailOf} is the one parser of the envelope. The preflight, the scope search and the
- * service-account gate read its {@link GoogleErrorDetail} (through upstream/google.ts); the streams read the
- * same parse as a {@link GoogleError} ({@link googleErrorOf}), so both classify an answer alike.
+ * {@link errorDetailOf} is the one parser of the envelope: the preflight, the scope search and the
+ * service-account gate classify its {@link GoogleErrorDetail} (through upstream/google.ts). What every route
+ * reports of an answer is the one reading of that parse, {@link googleErrorOfDetail}: a stream's error frame
+ * ({@link googleErrorOf}) and the `upstream` summary of a preflight item, a gate refusal or a search problem
+ * (upstream/google.ts, `summaryOf`) carry the same status, canonical code and reason for the same answer.
  */
+import { isRecord, readJson } from './json.js';
 
 /** One `google.rpc.ErrorInfo` of an error answer's `details`. */
 export interface ErrorInfo {
@@ -31,7 +34,7 @@ export interface GoogleErrorDetail {
   readonly infos: readonly ErrorInfo[];
 }
 
-/** An upstream error as the streams report it (an `error` frame). */
+/** An error answer as every route reports it: a stream's `error` frame, the summary of upstream/google.ts. */
 export interface GoogleError {
   /** The HTTP status Google answered with. */
   readonly httpStatus: number;
@@ -81,10 +84,6 @@ function codeForHttpStatus(status: number): string {
   }
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function stringRecord(value: unknown): Record<string, string> {
   const result: Record<string, string> = {};
   if (!isRecord(value)) return result;
@@ -98,12 +97,7 @@ function cut(text: string): string {
 
 /** Reads an error body. Never throws; a body that is not Google's JSON envelope gives `json: false`. */
 export function errorDetailOf(body: Uint8Array): GoogleErrorDetail {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(body));
-  } catch {
-    return { json: false, infos: [] };
-  }
+  const parsed = readJson(body);
   const error = isRecord(parsed) ? parsed.error : undefined;
   if (!isRecord(error)) return { json: false, infos: [] };
   const infos: ErrorInfo[] = [];
@@ -130,7 +124,15 @@ export function errorDetailOf(body: Uint8Array): GoogleErrorDetail {
 
 /** Reads an error answer's body as the streams report it. Never throws; anything unexpected becomes a generic message. */
 export function googleErrorOf(httpStatus: number, body: Uint8Array): GoogleError {
-  const detail = errorDetailOf(body);
+  return googleErrorOfDetail(httpStatus, errorDetailOf(body));
+}
+
+/**
+ * An error answer already parsed ({@link errorDetailOf}) as every route reports it: `error.status` when it is
+ * shaped like a canonical code, else the one the HTTP status implies; the one ErrorInfo reason when it is
+ * shaped like one; Google's message, or a generic sentence when it sent none.
+ */
+export function googleErrorOfDetail(httpStatus: number, detail: GoogleErrorDetail): GoogleError {
   const [info, ...more] = detail.infos;
   const reason =
     info !== undefined && more.length === 0 && CODE_PATTERN.test(info.reason) ? info.reason : undefined;

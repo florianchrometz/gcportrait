@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
  * The Google calls of the scope picker, the preflight and the service-account gate (docs/permissions.md;
- * AGENTS.md, Security and privacy, Quota project and the permission check; skill cai-ingestion §1), made
- * through the allowlisted client of request.ts (`requestJson`: the four hosts only, no redirect, 60 s,
- * retries) with:
+ * AGENTS.md, Security and privacy, Quota project and the permission check; skill cai-ingestion §1), and the
+ * one `assets.list` request ({@link assetsListRequest}) that the preflight's probe and the live pull both
+ * send, made through the allowlisted client of request.ts (`requestJson`: the four hosts only, no redirect,
+ * 60 s, retries) with:
  *
  * - the bearer token forwarded verbatim in `Authorization` (or, for tokeninfo, in the form body, never a URL);
  * - the incoming request's id sent as `x-request-id` and on every log line (`log` is Fastify's request logger);
@@ -16,23 +17,26 @@ import type { FastifyBaseLogger } from 'fastify';
 import type * as z from 'zod';
 
 import type { UpstreamSummarySchema } from '../schemas.js';
-import { errorDetailOf, isRecord, type GoogleErrorDetail } from './google-error.js';
+import { errorDetailOf, googleErrorOfDetail, type GoogleErrorDetail } from './google-error.js';
+import { isRecord, readJson } from './json.js';
 import {
   requestJson,
   UpstreamExchangeError,
   type ExchangeFailureKind,
   type UpstreamClient,
+  type UpstreamRequest,
 } from './request.js';
+import { isRetryableStatus } from './retry.js';
 import { scopePath, type ParsedScope } from './scope.js';
-
-// The one parser of Google's error envelope lives in google-error.ts; these are re-exported for the routes.
-export { errorDetailOf, isRecord, type ErrorInfo, type GoogleErrorDetail } from './google-error.js';
 
 export const RESOURCE_MANAGER_URL = 'https://cloudresourcemanager.googleapis.com/v3';
 export const CLOUD_ASSET_URL = 'https://cloudasset.googleapis.com/v1';
 export const TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
 
-/** 25 MiB per answer (skill cai-ingestion §4). */
+/**
+ * The largest answer read from Google, a page of the live pull included: 25 MiB (skill cai-ingestion §4;
+ * docs/security.md §5).
+ */
 export const UPSTREAM_MAX_BYTES = 25 * 1024 * 1024;
 
 /** The incoming request a Google call is made for. */
@@ -77,24 +81,29 @@ export function soleReason(outcome: GoogleOutcome): string | undefined {
   return info !== undefined && more.length === 0 ? info.reason : undefined;
 }
 
-/** The outcome as the browser sees it. */
+/**
+ * The outcome as the browser sees it. An error answer reads as a stream's error frame reads it
+ * (google-error.ts, `googleErrorOfDetail`): the same canonical code and reason, and Google's own message
+ * only, never the generic sentence a frame falls back on.
+ */
 export function summaryOf(outcome: GoogleOutcome): UpstreamSummary {
   if (outcome.kind === 'failure')
     return { status: 0, code: outcome.failure.toUpperCase().replace('-', '_'), message: outcome.message };
-  const reason = soleReason(outcome);
-  const error = outcome.error;
+  const { httpStatus, error } = outcome;
+  if (error === undefined) return { status: httpStatus };
+  const { code, reason } = googleErrorOfDetail(httpStatus, error);
   return {
-    status: outcome.httpStatus,
-    ...(error?.status === undefined ? {} : { code: error.status }),
-    ...(reason === undefined || reason === '' ? {} : { reason }),
-    ...(error?.message === undefined ? {} : { message: error.message }),
+    status: httpStatus,
+    code,
+    ...(reason === undefined ? {} : { reason }),
+    ...(error.message === undefined ? {} : { message: error.message }),
   };
 }
 
-/** Whether the outcome is transient after the retries: 429, 5xx, no answer in time, or no answer at all. */
+/** Whether the outcome is transient after the retries: a status retry.ts retries, or no answer (in time). */
 export function isTransientOutcome(outcome: GoogleOutcome): boolean {
   if (outcome.kind === 'failure') return outcome.failure !== 'too-large';
-  return outcome.httpStatus === 429 || outcome.httpStatus >= 500;
+  return isRetryableStatus(outcome.httpStatus);
 }
 
 /** Google refused the token itself (expired, revoked, not a Google access token): the person signs in again. */
@@ -116,7 +125,10 @@ interface GoogleCall {
   readonly operation: string;
   readonly method: 'GET' | 'POST';
   readonly url: string;
-  /** Sent as `Authorization: Bearer …`; null for tokeninfo, which takes the token in its form body. */
+  /**
+   * Sent as `Authorization: Bearer …`; null when the call carries the token itself: tokeninfo in its form body,
+   * `assets.list` in the headers of {@link assetsListRequest}.
+   */
   readonly token: string | null;
   readonly headers?: Readonly<Record<string, string>>;
   readonly body?: string;
@@ -170,13 +182,7 @@ export async function callGoogle(context: GoogleCallContext, call: GoogleCall): 
         body: undefined,
         error: errorDetailOf(answer.body),
       };
-    let body: unknown;
-    try {
-      body = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(answer.body));
-    } catch {
-      body = undefined;
-    }
-    return { kind: 'answer', httpStatus: answer.status, body };
+    return { kind: 'answer', httpStatus: answer.status, body: readJson(answer.body) };
   } catch (error) {
     if (!(error instanceof UpstreamExchangeError)) throw error;
     context.log.warn(
@@ -209,27 +215,70 @@ export function getScope(
   });
 }
 
+/** Who a Cloud Asset Inventory call is made as. */
+export interface CaiCredentials {
+  /** The caller's own token (user mode), or the instance's account's (service-account mode). */
+  readonly token: string;
+  /**
+   * User mode's quota project, sent as `x-goog-user-project`. Absent in service-account mode, which never sends
+   * the header: the account's own project pays (AGENTS.md, Security and privacy, Quota project and the
+   * permission check).
+   */
+  readonly quotaProject?: string;
+}
+
+/** What an `assets.list` request asks for, besides `contentType: RESOURCE` (skill cai-ingestion §1). */
+export interface AssetsListBody {
+  readonly pageSize: number;
+  readonly readTime?: string | undefined;
+  readonly assetTypes?: readonly string[] | undefined;
+  readonly pageToken?: string | undefined;
+}
+
 /**
- * CAI `assets.list` with `pageSize: 1` (preflight probe): POST with the method override and a JSON body (skill
- * §1), the quota project in `x-goog-user-project` when one is given (user mode; never in SA mode).
+ * The one CAI `assets.list` request, of the preflight's probe and of every page of the live pull: `POST
+ * {scope}/assets` with `X-HTTP-Method-Override: GET` and a JSON body (a POST without the override is Google's
+ * HTML 404, skill cai-ingestion §9), the token as `Authorization: Bearer`, and the quota project in
+ * `x-goog-user-project` exactly when the credentials name one. `path` is a validated scope as {@link scopePath}
+ * writes it.
  */
+export function assetsListRequest(
+  path: string,
+  credentials: CaiCredentials,
+  body: AssetsListBody,
+): UpstreamRequest {
+  return {
+    url: `${CLOUD_ASSET_URL}/${path}/assets`,
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${credentials.token}`,
+      'content-type': 'application/json',
+      accept: 'application/json',
+      'x-http-method-override': 'GET',
+      ...(credentials.quotaProject === undefined ? {} : { 'x-goog-user-project': credentials.quotaProject }),
+    },
+    body: JSON.stringify({
+      contentType: 'RESOURCE',
+      pageSize: body.pageSize,
+      ...(body.readTime === undefined ? {} : { readTime: body.readTime }),
+      ...(body.assetTypes === undefined ? {} : { assetTypes: body.assetTypes }),
+      ...(body.pageToken === undefined ? {} : { pageToken: body.pageToken }),
+    }),
+  };
+}
+
+/** The preflight's probe: CAI `assets.list` with `pageSize: 1`, a quota project in user mode only. */
 export function probeAssets(
   context: GoogleCallContext,
   scope: ParsedScope,
   token: string,
   quotaProject: string | null,
 ): Promise<GoogleOutcome> {
+  const credentials: CaiCredentials = quotaProject === null ? { token } : { token, quotaProject };
   return callGoogle(context, {
     operation: 'cloudasset.assets.list',
-    method: 'POST',
-    url: `${CLOUD_ASSET_URL}/${scopePath(scope)}/assets`,
-    token,
-    headers: {
-      'content-type': 'application/json',
-      'x-http-method-override': 'GET',
-      ...(quotaProject === null ? {} : { 'x-goog-user-project': quotaProject }),
-    },
-    body: JSON.stringify({ contentType: 'RESOURCE', pageSize: 1 }),
+    ...assetsListRequest(scopePath(scope), credentials, { pageSize: 1 }),
+    token: null,
   });
 }
 

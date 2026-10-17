@@ -28,7 +28,6 @@ import { sendError } from '../errors.js';
 import { toFastifySchema, UpstreamSummarySchema } from '../schemas.js';
 import {
   callGoogle,
-  isRecord,
   isScopeInsufficient,
   isUnauthenticated,
   RESOURCE_MANAGER_URL,
@@ -36,6 +35,7 @@ import {
   type GoogleCallContext,
   type GoogleOutcome,
 } from '../upstream/google.js';
+import { isRecord } from '../upstream/json.js';
 import type { UpstreamClient } from '../upstream/request.js';
 import {
   authenticate,

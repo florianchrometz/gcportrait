@@ -3,19 +3,20 @@
  * The live pull (skill cai-ingestion §1 and §4): Cloud Asset Inventory `assets.list` page by page, as NDJSON
  * frames (frames.ts).
  *
- * - `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with `X-HTTP-Method-Override: GET` and a JSON
- *   body (a POST without the override is an HTML 404; skill cai-ingestion §9): `contentType: RESOURCE`,
- *   `pageSize: 500` (the API allows 1000; 500 keeps a page well under the 25 MiB cap), `readTime` and
- *   `assetTypes` when asked, and the `pageToken` of the previous page's `nextPageToken`, until a page has
- *   none.
+ * - The one `assets.list` request (upstream/google.ts, `assetsListRequest`, which the preflight's probe sends
+ *   too): `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with `X-HTTP-Method-Override: GET` and a
+ *   JSON body: `contentType: RESOURCE`, `pageSize: 500` (the API allows 1000; 500 keeps a page well under the
+ *   25 MiB cap), `readTime` and `assetTypes` when asked, and the `pageToken` of the previous page's
+ *   `nextPageToken`, until a page has none.
  * - Each page: a `page` frame with its assets as Google sent them (scanned into the frame, not parsed:
  *   list-page.ts), then a `progress` frame with the totals. A page without an `assets` key is an empty page
  *   (skill cai-ingestion §9). At the end a `done` frame with the total and the `readTime` Google reported
  *   (every 200 carries one).
  * - Retries: 429, 5xx, timeouts and transport failures, by the upstream client's policy (500 ms, ×2, ≤ 8 s, 5
- *   attempts). Every other answer ends the stream with an `error` frame carrying Google's message verbatim, its
- *   status, canonical code and `ErrorInfo` reason: 400 (`assetTypes`, `readTime`), 401, 403, 404 (a `readTime`
- *   before the scope existed: `status: 404, code: "NOT_FOUND"`, which the timeline shows as "did not exist yet").
+ *   attempts; upstream/retry.ts). Every other answer ends the stream with an `error` frame carrying Google's
+ *   message verbatim, its status, canonical code and `ErrorInfo` reason: 400 (`assetTypes`, `readTime`), 401,
+ *   403, 404 (a `readTime` before the scope existed: `status: 404, code: "NOT_FOUND"`, which the timeline
+ *   shows as "did not exist yet").
  * - Caps: 60 s per page attempt, 25 MiB per page, and the process-wide page budget (page-budget.ts): each
  *   page's bytes are claimed as they arrive and given back once the response has written its frame out to the
  *   connection (ndjson.ts asks for the next line only then), or at once when the page ends the stream with an
@@ -26,6 +27,7 @@
  * project; in service-account mode the service-account gate runs before every CAI call and may refuse.
  */
 import { googleErrorOf } from '../upstream/google-error.js';
+import { assetsListRequest, UPSTREAM_MAX_BYTES, type CaiCredentials } from '../upstream/google.js';
 import {
   UpstreamExchangeError,
   requestJson,
@@ -33,17 +35,13 @@ import {
   type RetryEvent,
   type UpstreamClient,
 } from '../upstream/request.js';
+import { isRetryableStatus } from '../upstream/retry.js';
 import { frameLine, googleErrorFrame, type ErrorFrame } from './frames.js';
 import { scanListPage } from './list-page.js';
 import type { PageBudget } from './page-budget.js';
 
-export const CAI_BASE_URL = 'https://cloudasset.googleapis.com/v1';
-
 /** Results per page (the API allows up to 1000; 500 keeps a page well under the cap). */
 export const CAI_PAGE_SIZE = 500;
-
-/** The largest page read (skill cai-ingestion §4; docs/security.md §5). */
-export const MAX_PAGE_BYTES = 25 * 1024 * 1024;
 
 export interface AssetListQuery {
   /** The validated scope as a URL path: `organizations/<number>`, `folders/<number>`, `projects/<id or number>`. */
@@ -54,8 +52,7 @@ export interface AssetListQuery {
 
 /** The credentials for one page, or why there are none (the service-account gate refused). */
 export type PageCredentials =
-  | { readonly ok: true; readonly token: string; readonly quotaProject?: string }
-  | { readonly ok: false; readonly frame: ErrorFrame };
+  ({ readonly ok: true } & CaiCredentials) | { readonly ok: false; readonly frame: ErrorFrame };
 
 /** What a stream did, for its log line (counts only: no scope, no asset, no token). */
 export interface AssetListStats {
@@ -71,7 +68,6 @@ export interface AssetListOptions {
   readonly credentials: (signal: AbortSignal) => Promise<PageCredentials>;
   readonly stats: AssetListStats;
   readonly pageSize?: number;
-  readonly maxPageBytes?: number;
   readonly onRetry?: (event: RetryEvent) => void;
   /** The process-wide page budget (page-budget.ts); without it pages are not counted (tests of other things). */
   readonly budget?: PageBudget;
@@ -119,16 +115,6 @@ export function exchangeErrorFrame(error: UpstreamExchangeError, what: string, a
   }
 }
 
-function requestBody(query: AssetListQuery, pageSize: number, pageToken: string | undefined): string {
-  return JSON.stringify({
-    contentType: 'RESOURCE',
-    pageSize,
-    ...(query.readTime === undefined ? {} : { readTime: query.readTime }),
-    ...(query.assetTypes === undefined ? {} : { assetTypes: query.assetTypes }),
-    ...(pageToken === undefined ? {} : { pageToken }),
-  });
-}
-
 /** One page read: its frame line and what the stream needs of it, or the error frame that ends the stream. */
 type PageRead =
   | {
@@ -150,7 +136,6 @@ type PageRead =
  * page's claim goes to the caller with the frame; every other way out of here gives it back.
  */
 async function readPage(
-  url: string,
   query: AssetListQuery,
   credentials: Extract<PageCredentials, { ok: true }>,
   pageToken: string | undefined,
@@ -162,23 +147,15 @@ async function readPage(
   try {
     answer = await requestJson(
       options.client,
-      {
-        url,
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${credentials.token}`,
-          'x-http-method-override': 'GET',
-          'content-type': 'application/json',
-          accept: 'application/json',
-          ...(credentials.quotaProject === undefined
-            ? {}
-            : { 'x-goog-user-project': credentials.quotaProject }),
-        },
-        body: requestBody(query, options.pageSize ?? CAI_PAGE_SIZE, pageToken),
-      },
+      assetsListRequest(query.scopePath, credentials, {
+        pageSize: options.pageSize ?? CAI_PAGE_SIZE,
+        readTime: query.readTime,
+        assetTypes: query.assetTypes,
+        pageToken,
+      }),
       {
         signal,
-        maxBytes: options.maxPageBytes ?? MAX_PAGE_BYTES,
+        maxBytes: UPSTREAM_MAX_BYTES,
         onRetry: (event) => {
           stats.retries += 1;
           options.onRetry?.(event);
@@ -205,8 +182,8 @@ async function readPage(
   let handedOn = false;
   try {
     if (answer.status !== 200) {
-      const retryable = answer.status === 429 || answer.status >= 500;
-      return { ok: false, frame: googleErrorFrame(googleErrorOf(answer.status, answer.body), retryable) };
+      const error = googleErrorOf(answer.status, answer.body);
+      return { ok: false, frame: googleErrorFrame(error, isRetryableStatus(answer.status)) };
     }
     const page = scanListPage(answer.body);
     if (page === null)
@@ -242,7 +219,6 @@ export async function* assetListFrames(
   signal: AbortSignal,
 ): AsyncGenerator<string | Uint8Array, void, undefined> {
   const { stats } = options;
-  const url = `${CAI_BASE_URL}/${query.scopePath}/assets`;
   const fail = (frame: ErrorFrame): string => {
     stats.end = frame.code ?? 'error';
     return frameLine(frame);
@@ -261,7 +237,7 @@ export async function* assetListFrames(
         yield fail(credentials.frame);
         return;
       }
-      const read = await readPage(url, query, credentials, pageToken, options, signal);
+      const read = await readPage(query, credentials, pageToken, options, signal);
       if (read.ok === 'aborted') return;
       if (!read.ok) {
         yield fail(read.frame);

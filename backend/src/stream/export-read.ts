@@ -15,6 +15,7 @@
  * 10 000 objects listed under a prefix (folder placeholders included).
  */
 import { googleErrorOf } from '../upstream/google-error.js';
+import { isRecord, readJson } from '../upstream/json.js';
 import {
   UpstreamExchangeError,
   openStream,
@@ -22,6 +23,7 @@ import {
   type ExchangeOptions,
   type UpstreamClient,
 } from '../upstream/request.js';
+import { isRetryableStatus } from '../upstream/retry.js';
 import { exchangeErrorFrame } from './asset-list.js';
 import { frameLine, googleErrorFrame, type ErrorFrame } from './frames.js';
 
@@ -102,18 +104,6 @@ export interface ExportReadOptions {
   readonly maxBytes?: number;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function parseJson(body: Uint8Array): unknown {
-  try {
-    return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(body));
-  } catch {
-    return undefined;
-  }
-}
-
 /** An object resource's `name` and `size` (a decimal string in the JSON API), or null. */
 function objectOf(value: unknown): ExportObject | null {
   if (!isRecord(value)) return null;
@@ -182,7 +172,7 @@ async function listPrefix(
     }
     if (answer.status !== 200)
       return { ok: false, frame: googleErrorFrame(googleErrorOf(answer.status, answer.body)) };
-    const page = parseJson(answer.body);
+    const page = readJson(answer.body);
     if (!isRecord(page)) return { ok: false, frame: badAnswer('a listing of objects') };
     const items = page['items'] ?? [];
     const next = page['nextPageToken'];
@@ -273,7 +263,7 @@ async function planObjects(
   if (answer.status === 404) return listPrefix(location, `${location.object}/`, options, signal);
   if (answer.status !== 200)
     return { ok: false, frame: googleErrorFrame(googleErrorOf(answer.status, answer.body)) };
-  const object = objectOf(parseJson(answer.body));
+  const object = objectOf(readJson(answer.body));
   if (object === null) return { ok: false, frame: badAnswer('an object') };
   return { ok: true, objects: [object], bytes: object.size };
 }
@@ -320,10 +310,7 @@ export async function* exportLines(
     if (!opened.ok) {
       const { answer } = opened;
       yield fail(
-        googleErrorFrame(
-          googleErrorOf(answer.status, answer.body),
-          answer.status === 429 || answer.status >= 500,
-        ),
+        googleErrorFrame(googleErrorOf(answer.status, answer.body), isRetryableStatus(answer.status)),
       );
       return;
     }

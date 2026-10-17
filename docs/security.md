@@ -120,12 +120,12 @@ in its path segment.
 
 ## 5. Response caps and memory
 
-- **Caps.** 25 MiB per Google answer (`MAX_PAGE_BYTES`, `UPSTREAM_MAX_BYTES`; declared or streamed, never
-  retried), 4 MiB for an export's metadata and listings, 1 GiB and 10 000 objects per export read (every
-  listed object counts, folder placeholders included), 64 KiB for the identity's answers. Tests:
-  `routes/assets.test.ts` ("refuses a page over 25 MiB, declared or streamed, without a retry"),
-  `upstream/request.test.ts` ("the byte cap"), `routes/export.test.ts` ("the export read caps", "counts folder
-  placeholders too").
+- **Caps.** 25 MiB per Google answer, a page of the live pull included (`UPSTREAM_MAX_BYTES` in
+  `upstream/google.ts`; declared or streamed, never retried), 4 MiB for an export's metadata and listings,
+  1 GiB and 10 000 objects per export read (every listed object counts, folder placeholders included), 64 KiB
+  for the identity's answers. Tests: `routes/assets.test.ts` ("refuses a page over 25 MiB, declared or
+  streamed, without a retry"), `upstream/request.test.ts` ("the byte cap"), `routes/export.test.ts` ("the
+  export read caps", "counts folder placeholders too").
 - **A page is scanned, never parsed.** V8 sizes the heap to about a quarter of a process's memory by default,
   and decoding, parsing and serialising a page would hold about three copies of it there.
   `backend/src/stream/list-page.ts` scans the page's bytes once and writes the `page` frame into one buffer

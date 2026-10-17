@@ -36,6 +36,8 @@ import path from 'node:path';
 
 import * as z from 'zod';
 
+import { parseJson } from '../upstream/json.js';
+
 /** Where the identity came from (logged once at start-up; never the credentials themselves). */
 export type IdentitySource = 'metadata-server' | 'impersonation' | 'key-file';
 
@@ -218,14 +220,6 @@ async function send(
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', onAbort);
-  }
-}
-
-function parseJson(text: string): unknown {
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    return undefined;
   }
 }
 

@@ -33,7 +33,6 @@ import {
 } from '../auth/gate.js';
 import {
   getScope,
-  isRecord,
   isScopeInsufficient,
   isTransientOutcome,
   isUnauthenticated,
@@ -44,6 +43,7 @@ import {
   type GoogleCallContext,
   type GoogleOutcome,
 } from '../upstream/google.js';
+import { isRecord } from '../upstream/json.js';
 import { QuotaProjectSchema, type ParsedScope } from '../upstream/scope.js';
 import {
   BROWSER,

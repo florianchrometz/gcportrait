@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { MAX_MESSAGE_LENGTH, errorDetailOf, googleErrorOf } from './google-error.js';
-import { errorDetailOf as errorDetailOfGoogle, soleReason, summaryOf } from './google.js';
+import { summaryOf } from './google.js';
 
 const bytes = (value: unknown): Uint8Array =>
   new TextEncoder().encode(typeof value === 'string' ? value : JSON.stringify(value));
@@ -82,7 +82,8 @@ describe('googleErrorOf (Google’s error bodies)', () => {
   });
 });
 
-describe('one parser for every route', () => {
+describe('one reading for every route', () => {
+  const info = (reason: string) => ({ '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason });
   const answers: readonly (readonly [number, unknown])[] = [
     [
       403,
@@ -90,7 +91,7 @@ describe('one parser for every route', () => {
         error: {
           status: 'PERMISSION_DENIED',
           message: 'm'.repeat(MAX_MESSAGE_LENGTH + 10),
-          details: [{ '@type': 'type.googleapis.com/google.rpc.ErrorInfo', reason: 'SERVICE_DISABLED' }],
+          details: [info('SERVICE_DISABLED')],
         },
       },
     ],
@@ -98,22 +99,31 @@ describe('one parser for every route', () => {
       403,
       { error: { status: 'PERMISSION_DENIED', message: 'You cannot list assets in projects/demo-app-1.' } },
     ],
+    [403, { error: { status: 'PERMISSION_DENIED', message: 'x', details: [info('A'), info('B')] } }],
+    [400, { error: { status: 'not a code!', message: 'odd', details: [info('lower_case')] } }],
     [404, '<!DOCTYPE html><html>Error 404 (Not Found)</html>'],
+    [404, { error: { code: 404, message: 'No such object: bucket/export.json' } }],
     [429, { error: { message: 'slow down' } }],
+    [500, ''],
   ];
 
-  it('the preflight’s view (google.ts) and the streams’ view (googleErrorOf) read an answer alike', () => {
-    // google.ts re-exports the same function, not a copy.
-    expect(errorDetailOfGoogle).toBe(errorDetailOf);
+  it('the `upstream` of a preflight item, a gate refusal or a search problem says what a frame says', () => {
     for (const [status, body] of answers) {
-      const detail = errorDetailOf(bytes(body));
-      const summary = summaryOf({ kind: 'answer', httpStatus: status, body: undefined, error: detail });
+      const summary = summaryOf({
+        kind: 'answer',
+        httpStatus: status,
+        body: undefined,
+        error: errorDetailOf(bytes(body)),
+      });
       const frame = googleErrorOf(status, bytes(body));
-      expect(frame.reason, JSON.stringify(body)).toBe(
-        soleReason({ kind: 'answer', httpStatus: status, body: undefined, error: detail }),
-      );
-      if (detail.message !== undefined) expect(frame.message).toBe(summary.message);
-      if (detail.status !== undefined) expect(frame.code).toBe(summary.code);
+      const label = JSON.stringify(body);
+      expect(summary.status, label).toBe(frame.httpStatus);
+      expect(summary.code, label).toBe(frame.code);
+      expect(summary.reason, label).toBe(frame.reason);
+      // Google's own message, the same in both; only a frame, which must carry one, falls back on a sentence.
+      if (summary.message === undefined)
+        expect(frame.message, label).toMatch(/without a readable error message/);
+      else expect(summary.message, label).toBe(frame.message);
     }
     // Both cut a long message at the same length.
     expect(errorDetailOf(bytes(answers[0]?.[1])).message).toHaveLength(MAX_MESSAGE_LENGTH);

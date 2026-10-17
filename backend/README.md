@@ -175,14 +175,21 @@ its source can point `SOURCE_URL` there.
 Both routes call Google with the caller's own token, through the allowlisted client
 (`src/upstream/request.ts`: the four hosts of `src/upstream/allowlist.ts` only, matched exactly on the parsed
 URL, https on the default port, no redirect followed (`redirect: "manual"`: a 3xx is an answer like any other
-status, never retried), 60 s, 25 MiB, retries of 429 and 5xx by skill cai-ingestion §4).
+status, never retried), 60 s, 25 MiB (`UPSTREAM_MAX_BYTES`, the live pull's pages included), retries of 429
+and 5xx by skill cai-ingestion §4: `isRetryableStatus` in `src/upstream/retry.ts`, which also decides what the
+checks count as transient and when the error frame of a page or an export object is `retryable`).
 `src/upstream/google.ts` makes the calls: it forwards the bearer token verbatim, sends the incoming request id
 upstream as `x-request-id`, and logs one line per call with a fixed operation name, the host, the status, the
-attempts and the time (never a URL path, which carries the scope, a header value or a body). Answers are
-classified by HTTP status and the `ErrorInfo` reason, never by message text; Google's message is passed on
+attempts and the time (never a URL path, which carries the scope, a header value or a body). Its
+`assetsListRequest` is the one `assets.list` request, of the preflight's probe and of every page of the live
+pull, and the one place that sends `x-goog-user-project`: in user mode only. Every JSON answer is read by
+`src/upstream/json.ts` (a body that is not UTF-8 or not JSON reads as nothing, never as an exception). Answers
+are classified by HTTP status and the `ErrorInfo` reason, never by message text; Google's message is passed on
 only from a JSON error body, never from an HTML page, cut at 2 000 characters. One parser reads Google's error
-envelope for every route (`src/upstream/google-error.ts`), so the preflight and the streams classify an answer
-alike. Each route has its own rate limit per token hash (`src/upstream/token-limit.ts`, in memory, keyed by
+envelope for every route (`src/upstream/google-error.ts`), and one reading of it is what every route reports:
+a preflight item's, a gate refusal's or a search problem's `upstream` and a stream's error frame carry the
+same status, canonical code (the one the HTTP status implies when Google names none) and reason for the same
+answer. Each route has its own rate limit per token hash (`src/upstream/token-limit.ts`, in memory, keyed by
 the token's SHA-256), in addition to the server-wide limit per client address; a request without a token
 (above, "The caller's token") is refused with 401 before anything is sent upstream.
 
@@ -296,14 +303,14 @@ attempt, the status and the delay. When the client goes away, the stream's signa
 in flight and any backoff wait, and the stream slot is given back.
 
 Tests (`src/routes/assets.test.ts`, `src/routes/export.test.ts`, `src/stream/stream.test.ts`,
-`src/upstream/request.test.ts`, `src/upstream/retry.test.ts`, `src/upstream/google-error.test.ts`) run against
-a pretend Google (`src/stream/google.testing.ts`, synthetic data, checked by the synthetic-data guard):
-pagination, the request Google receives, every error answer as a frame (read back with `@gcportrait/ingest`, a
-dev dependency for this), retries and their delays (recorded, and on fake timers), timeouts, the 25 MiB cap
-declared and streamed, the stream cap and the rate limit, the gate before every page, logs without secrets,
-cancellation when a real client disconnects, and a 5 000-asset organisation streamed over a real connection
-into `@gcportrait/ingest` (ten pages answered after 50 ms each, within a budget of 10 s; the test prints its
-time).
+`src/upstream/request.test.ts`, `src/upstream/retry.test.ts`, `src/upstream/google-error.test.ts`,
+`src/upstream/google.test.ts`, `src/upstream/json.test.ts`) run against a pretend Google
+(`src/stream/google.testing.ts`, synthetic data, checked by the synthetic-data guard): pagination, the request
+Google receives, every error answer as a frame (read back with `@gcportrait/ingest`, a dev dependency for
+this), retries and their delays (recorded, and on fake timers), timeouts, the 25 MiB cap declared and
+streamed, the stream cap and the rate limit, the gate before every page, logs without secrets, cancellation
+when a real client disconnects, and a 5 000-asset organisation streamed over a real connection into
+`@gcportrait/ingest` (ten pages answered after 50 ms each, within a budget of 10 s; the test prints its time).
 
 ## Service-account mode
 
