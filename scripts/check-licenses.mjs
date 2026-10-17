@@ -8,6 +8,7 @@
  *   node scripts/check-licenses.mjs --write       regenerate the dependency section of THIRD_PARTY.md
  *   node scripts/check-licenses.mjs --list-rules  print the allowlist, the exceptions and the deny list
  *   node scripts/check-licenses.mjs --root <dir>  check another tree (used by the tests)
+ *   node scripts/check-licenses.mjs --licenses-report F --projects-report G  read saved pnpm output (tests)
  *
  * gcportrait's own code is MIT (the "license" field of the root package.json), and whoever receives it may rely on
  * the MIT License alone. A dependency may therefore only carry a licence that does not force gcportrait to publish
@@ -27,6 +28,8 @@
  *
  * The installed tree comes from `pnpm licenses list --json` and the workspace projects from
  * `pnpm ls -r --depth -1 --json`; both read the local install, no network. Run `pnpm install` first.
+ * Each saved-report option replaces only its corresponding command; both are needed without an install.
+ * Malformed report groups or records stop the check before THIRD_PARTY.md can be written.
  * Invoke it as `pnpm run licenses` (plain `pnpm licenses` is pnpm's own built-in command).
  */
 import { execFileSync } from 'node:child_process';
@@ -258,6 +261,18 @@ class PnpmOutputError extends Error {
 }
 
 /**
+ * @param {string} file
+ * @returns {string}
+ */
+function readReport(file) {
+  try {
+    return readFileSync(file, 'utf8');
+  } catch (error) {
+    throw new PnpmOutputError(`${file}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * The JSON report of `pnpm licenses list --json`: an empty report when pnpm says there is nothing to list.
  * @param {string} output
  * @returns {unknown}
@@ -278,17 +293,39 @@ export function parseLicensesReport(output) {
  * Every installed package version with its declared licence. A package pnpm reports without a version (a
  * dependency installed from a local directory has `versions: [null]`) is still checked, once.
  * @param {string} root
+ * @param {string | undefined} reportFile
  * @returns {InstalledPackage[]}
  */
-function readInstalledPackages(root) {
-  const report = parseLicensesReport(runPnpm(root, ['licenses', 'list', '--json']));
+function readInstalledPackages(root, reportFile) {
+  const report = parseLicensesReport(
+    reportFile === undefined ? runPnpm(root, ['licenses', 'list', '--json']) : readReport(reportFile),
+  );
   if (!isRecord(report)) throw new PnpmOutputError('unexpected output from `pnpm licenses list --json`');
   /** @type {InstalledPackage[]} */
   const packages = [];
   for (const [groupLicense, entries] of Object.entries(report)) {
-    if (!Array.isArray(entries)) continue;
-    for (const entry of /** @type {unknown[]} */ (entries)) {
-      if (!isRecord(entry) || typeof entry.name !== 'string') continue;
+    const group = `unexpected output from \`pnpm licenses list --json\`: group ${JSON.stringify(groupLicense)}`;
+    if (!Array.isArray(entries)) throw new PnpmOutputError(`${group} must be an array`);
+    for (const [index, entry] of /** @type {unknown[]} */ (entries).entries()) {
+      const where = `${group}[${String(index)}]`;
+      if (!isRecord(entry) || typeof entry.name !== 'string' || entry.name.trim() === '')
+        throw new PnpmOutputError(`${where} must be an object with a nonempty package name`);
+      if (entry.license !== undefined && entry.license !== null && typeof entry.license !== 'string')
+        throw new PnpmOutputError(`${where}: license must be a string when present`);
+      if (
+        entry.paths !== undefined &&
+        (!Array.isArray(entry.paths) ||
+          !entry.paths.every((entryPath) => typeof entryPath === 'string' && path.isAbsolute(entryPath)))
+      )
+        throw new PnpmOutputError(`${where}: paths must be an array of absolute paths`);
+      if (
+        entry.versions !== undefined &&
+        (!Array.isArray(entry.versions) ||
+          !entry.versions.every(
+            (version) => version === null || (typeof version === 'string' && version.trim() !== ''),
+          ))
+      )
+        throw new PnpmOutputError(`${where}: versions must be an array of nonempty strings or null`);
       const license = typeof entry.license === 'string' ? entry.license : groupLicense;
       const paths = (Array.isArray(entry.paths) ? entry.paths : []).filter(
         /** @returns {entryPath is string} */ (entryPath) => typeof entryPath === 'string',
@@ -306,23 +343,33 @@ function readInstalledPackages(root) {
 
 /**
  * @param {string} root
+ * @param {string | undefined} reportFile
  * @returns {WorkspaceProject[]}
  */
-function readWorkspaceProjects(root) {
+function readWorkspaceProjects(root, reportFile) {
+  const output = reportFile === undefined ? undefined : readReport(reportFile);
   /** @type {unknown} */
   let projects;
   try {
-    projects = JSON.parse(runPnpm(root, ['ls', '-r', '--depth', '-1', '--json']));
+    projects = JSON.parse(output ?? runPnpm(root, ['ls', '-r', '--depth', '-1', '--json']));
   } catch {
     projects = undefined;
   }
   if (!Array.isArray(projects)) throw new PnpmOutputError('unexpected output from `pnpm ls -r --json`');
   /** @type {WorkspaceProject[]} */
   const result = [];
-  for (const project of /** @type {unknown[]} */ (projects)) {
-    if (isRecord(project) && typeof project.name === 'string' && typeof project.path === 'string') {
-      result.push({ name: project.name, dir: project.path });
-    }
+  for (const [index, project] of /** @type {unknown[]} */ (projects).entries()) {
+    if (
+      !isRecord(project) ||
+      typeof project.name !== 'string' ||
+      project.name.trim() === '' ||
+      typeof project.path !== 'string' ||
+      !path.isAbsolute(project.path)
+    )
+      throw new PnpmOutputError(
+        `unexpected output from \`pnpm ls -r --json\`: project[${String(index)}] must have a nonempty name and an absolute path`,
+      );
+    result.push({ name: project.name, dir: project.path });
   }
   return result;
 }
@@ -539,7 +586,7 @@ function packageLabel(pkg) {
  * @returns {number} exit code
  */
 function main(argv) {
-  /** @type {{ write: boolean, listRules: boolean, root: string }} */
+  /** @type {{ write: boolean, listRules: boolean, root: string, licensesReport: string | undefined, projectsReport: string | undefined }} */
   let options;
   try {
     const { values } = parseArgs({
@@ -548,12 +595,16 @@ function main(argv) {
         write: { type: 'boolean' },
         'list-rules': { type: 'boolean' },
         root: { type: 'string' },
+        'licenses-report': { type: 'string' },
+        'projects-report': { type: 'string' },
       },
       strict: true,
     });
     options = {
       write: values.write === true,
       listRules: values['list-rules'] === true,
+      licensesReport: values['licenses-report'],
+      projectsReport: values['projects-report'],
       // pnpm reports real paths, so the root must be one too (a temporary directory may sit behind a link).
       root: realpathSync(path.resolve(values.root ?? DEFAULT_ROOT)),
     };
@@ -568,7 +619,10 @@ function main(argv) {
   }
   const { root } = options;
   const thirdPartyPath = path.join(root, 'THIRD_PARTY.md');
-  if (!existsSync(path.join(root, 'node_modules'))) {
+  if (
+    (options.licensesReport === undefined || options.projectsReport === undefined) &&
+    !existsSync(path.join(root, 'node_modules'))
+  ) {
     console.error('licenses: node_modules is missing; run `pnpm install` first.');
     return 1;
   }
@@ -581,10 +635,12 @@ function main(argv) {
   /** @type {InstalledPackage[]} */
   let installed;
   try {
-    projects = readWorkspaceProjects(root);
+    projects = readWorkspaceProjects(root, options.projectsReport);
     const projectDirs = new Set(projects.map((project) => path.resolve(project.dir)));
     // The workspace's own packages are gcportrait's code, under the project licence, not dependencies.
-    installed = readInstalledPackages(root).filter((pkg) => !isWorkspaceProject(pkg, projectDirs));
+    installed = readInstalledPackages(root, options.licensesReport).filter(
+      (pkg) => !isWorkspaceProject(pkg, projectDirs),
+    );
   } catch (error) {
     if (!(error instanceof PnpmOutputError)) throw error;
     console.error(`licenses: ${error.message}`);
