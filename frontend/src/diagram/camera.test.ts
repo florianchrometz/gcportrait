@@ -16,12 +16,16 @@ import {
   pinchTransform,
   REVEAL_MARGIN,
   revealTransform,
+  SAME_CAMERA_PX,
+  SAME_CAMERA_SCALE,
+  sameCamera,
+  showsWhole,
   ZOOM_STEP,
   zoomAbout,
   zoomStepTransform,
 } from './camera';
 import { SUBTITLE_MIN_SCALE } from './lod';
-import { SCALE_EXTENT, type CameraTransform } from './viewport';
+import { fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
 
 const CANVAS = { width: 1280, height: 624 };
 
@@ -81,6 +85,43 @@ describe('a part of the canvas (inRoom)', () => {
     expect(
       inRoom(below, to, (width, height, camera) => revealTransform(node, node, width, height, camera)),
     ).toBeNull();
+  });
+});
+
+describe('the fit the camera rests on (sameCamera, showsWhole)', () => {
+  const fit = { x: 40, y: 120, k: 0.4 };
+
+  it('takes a camera off by no more than rounding for the same one', () => {
+    expect(sameCamera(fit, fit)).toBe(true);
+    expect(
+      sameCamera({ ...fit, x: fit.x + SAME_CAMERA_PX * 0.9, y: fit.y - SAME_CAMERA_PX * 0.9 }, fit),
+    ).toBe(true);
+    expect(sameCamera({ ...fit, k: fit.k * (1 + SAME_CAMERA_SCALE / 2) }, fit)).toBe(true);
+  });
+
+  it('and one a pan, a pinch or a zoom step moved for another', () => {
+    expect(sameCamera({ ...fit, x: fit.x + 1 }, fit)).toBe(false);
+    expect(sameCamera({ ...fit, y: fit.y - 1 }, fit)).toBe(false);
+    expect(sameCamera({ ...fit, k: fit.k * 1.01 }, fit)).toBe(false);
+    expect(sameCamera({ ...fit, k: fit.k * ZOOM_STEP }, fit)).toBe(false);
+  });
+
+  it('sees a drawing fitted to a room whole in it, and one fitted to the whole canvas not in the part below a sheet', () => {
+    const frame = { x: -24, y: -80, width: 2400, height: 900 };
+    const below = { x: 0, y: 400, width: CANVAS.width, height: CANVAS.height - 400 };
+    const whole = { x: 0, y: 0, ...CANVAS };
+    const fitted = inRoom(below, fit, (width, height) => fitTransform(frame, width, height));
+    expect(showsWhole(frame, below, fitted)).toBe(true);
+    const filling = fitTransform(frame, CANVAS.width, CANVAS.height);
+    expect(showsWhole(frame, whole, filling)).toBe(true);
+    expect(showsWhole(frame, below, filling)).toBe(false);
+  });
+
+  it('and one too large to fit at the smallest scale not whole anywhere on the canvas', () => {
+    const huge = { x: 0, y: 0, width: 100_000, height: 40_000 };
+    const fitted = fitTransform(huge, CANVAS.width, CANVAS.height);
+    expect(fitted.k).toBe(SCALE_EXTENT[0]);
+    expect(showsWhole(huge, { x: 0, y: 0, ...CANVAS }, fitted)).toBe(false);
   });
 });
 

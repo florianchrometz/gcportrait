@@ -216,25 +216,36 @@ edge across a threshold does not flap. `autoLevel` restates the scene builder's 
 budget; never collapse 100 rects or fewer); `autoDetail.test.ts` checks it agrees with `buildSceneWithReport`
 on demo S, M and L. The render CLI keeps its own documented default viewport (1280 × 800, `--viewport`).
 
-**The renderer's side.** `DiagramCanvas` takes two store-facing props: `jump` (a pending `jumpTo`), which it
+**The renderer's side.** `DiagramCanvas` takes three store-facing props: `jump` (a pending `jumpTo`), which it
 makes as a glide (`diagram/camera.ts`: the node centred at 100 % or closer, or fitted when larger; 200 ms
 eased, the search hit's glide, skill gcp-diagram-style §6; centre in a line and scale geometric; at once with
 reduced motion; a pan or zoom by the person stops it; a centring jump to the node already selected pulses its
 selection ring again; a `reveal` never replaces a centring jump to the same node still waiting to be drawn;
 with `mode: 'reveal'` only the short pan of `revealTransform`, section "Details drawer") as soon as the node
-is drawn, then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump,
+is drawn, then reports with `onJumpDone`; `onHover`, which reports the node under the pointer; and `panels`,
+which the diagram page derives from `ui.sheet` and the drawer's open state (`drawerOpen` with a selection), a
+value that changes when a panel over the canvas opens or closes. A jump,
 the pan that follows keyboard focus and a zoom key's step keep the node in the part of the canvas that a panel
 lying over it leaves in view (`clearRoom`: each open element marked `data-canvas-overlay` that lies over the
 canvas, the details drawer of a phone or a tablet along its right or lower edge or the top bar's View or More
 sheet hanging from its top edge, leaves the largest part of the canvas it keeps free to its left or right,
 above or below it, and `inRoom` in `diagram/camera.ts` works the camera out for that part as if it were the
-whole canvas); on a desktop nothing lies over the canvas and the room is the canvas. `0` fits the drawing to
-that part too (`fitRoom`), or to the whole canvas where the panels leave nothing to fit into (a phone's drawer
-at full height, which hides the drawing). The fit a new view opens with (a new frame drawn: a drill-in, a lens
-or a filter picked in the View sheet, a resize that picks another level) fills the whole canvas, whatever lies
-over it: a panel open at that moment (the View sheet, which stays open while its controls change the view, or
-the drawer while the timeline moves a day) closes before the person looks at the drawing, and a drawing fitted
-into the part it leaves would stay that small after it closes.
+whole canvas); on a desktop nothing lies over the canvas and the room is the canvas. A fit shows the whole
+drawing in that part too (`fitRoom`; the whole canvas where the panels leave nothing to fit into, a phone's
+drawer at full height, which hides the drawing): the fit a new view opens with (a new frame drawn: a drill-in,
+a lens or a filter picked in the View sheet, a day whose drawing is another size, a resize that picks another
+level) and `0`'s. While the camera still rests on the last fit (the person has not panned, pinched, zoomed or
+jumped since; `sameCamera` in `diagram/camera.ts`, a glide on its way to the fit counting as resting on it), a
+change of `panels` fits the drawing again to the part the panels leave now, in the zoom keys' short glide (at
+once with reduced motion) and without a new layout, and so does the drawer's reveal after the drawer changed
+its height or width (its own state, which `panels` does not carry). So a lens picked in the View sheet draws
+its whole view below the sheet and the drawing fills the canvas again once the sheet closes, a node tapped at
+the fit leaves the whole drawing above or beside the drawer (its reveal has nothing more to do) and the canvas
+filled again once the drawer closes, and a camera the person moved stays where they put it. The canvas learns
+of a panel through this prop rather than by observing the `data-canvas-overlay` elements: the prop changes in
+the same commit as the panel's `hidden`, so the refit, a layout effect, measures the panel as it now is,
+before the browser paints and before the drawer's reveal asks for its pan, both of which a mutation or resize
+observer would answer after.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
@@ -329,9 +340,10 @@ or a key on the selected node opens it again, and so does another node selected 
 link, Back). A search result picked in View closes the sheet onto its button and opens the drawer on the
 result, in the part of the canvas the drawer leaves in view. The open sheet is marked `data-canvas-overlay`,
 as the drawer is, so a camera jump made while it is open keeps the node in the part of the canvas below or
-beside it, and `0` fits the drawing to that part, while a view drawn while it is open (a lens or a filter
-picked in it) is fitted to the whole canvas, for when the sheet has closed (section "App state", `clearRoom`
-and `fitRoom`). On a desktop no sheet opens, and the drawer stays as it is.
+beside it, and a fit shows the whole drawing there: `0`, a view drawn while it is open (a lens or a filter
+picked in it), and the sheet's opening itself while the camera still rests on the drawing's fit, which the
+sheet's closing then makes again for the whole canvas (section "App state", `clearRoom`, `fitRoom` and
+`panels`). On a desktop no sheet opens, and the drawer stays as it is.
 
 **Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
 `--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons,
@@ -386,7 +398,9 @@ within the canvas, 44-pixel targets, every control one reaches with Tab in sight
 its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view, and View
 opened over the drawer closing it), axe; and a theme picked in More, Sign out from More, a long trail, the
 sheet's heights, `+` and `0` from an external keyboard with the drawer open (the focused card stays above it,
-and the drawing is fitted above it) and the canvas's touch input by finger. The same project runs
+and the drawing is fitted above it), View opened, a lens picked in it and View closed by taps (the drawing
+fitted whole below the sheet, the lens's view too, then the whole canvas again) and the canvas's touch input
+by finger. The same project runs
 `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a
 long press) and a mouse's drag and double-click on the same page.
 
@@ -1301,7 +1315,9 @@ them on the canvas only; the standalone SVG always has them.
 **Interaction.** d3-zoom pans and zooms the drawing's group with a mouse's or a pen's drag and the wheel
 (`scaleExtent [0.05, 200]`; double-click does not zoom, it is kept for drill-in), and the canvas moves the
 same camera for a finger (paragraph "Touch" below). A new view is fitted to the canvas (never enlarged past
-100 %); a theme change or a selection keeps the camera. Level of detail by the effective scale sets classes on
+100 %), or on a phone or a tablet to the part of it an open sheet or drawer leaves, which a panel opening or
+closing fits it to again while the camera still rests on that fit (section "App state"); a theme change keeps
+the camera, and so does a selection on a desktop. Level of detail by the effective scale sets classes on
 the `<svg>` (`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×.
 Hover previews the node's selection trace (below): its path to the root in `accent.path` 3 px (path rings the
 painter places on each border, on a 1 px `pathCasing` band on each side; one ring per level of the deepest
@@ -1498,7 +1514,9 @@ item's menu. The camera pans just enough to show the item, and first zooms in to
 which stays in the part of the canvas an open drawer or sheet leaves in view (about that part's centre from
 the canvas itself; section "App state", `clearRoom`), and `0` fits the whole drawing to that part, with 16 px
 around it (`FIT_PADDING`) and none of it under the drawer or the sheet (`fitRoom`; the whole canvas when a
-phone's drawer at full height leaves nothing to fit into, and when nothing is open, as a new view opens). `/`
+phone's drawer at full height leaves nothing to fit into, and when nothing is open), a fit the camera then
+rests on as on a new view's, so the drawer or the sheet closing afterwards fits the drawing to the whole
+canvas again (section "App state", `panels`). `/`
 focuses search; `[` and `]` call `stepTick` (one day back and forward). A
 single-key shortcut is matched by the character typed (`keyboard/shortcuts.ts`, `isShortcutKey`): Shift,
 Option and AltGr may have been needed for it (`[` is Option+5 on a German Mac, AltGr+8 on a German PC), Cmd or
@@ -1748,18 +1766,21 @@ nothing when they already are, and nothing while a centring jump (search) is on 
 again when the selection changes and when the width changes.
 
 On a phone or a tablet the drawer lies over the canvas instead (section "Layouts"), marked
-`data-canvas-overlay`, so the reveal keeps the node in the part of the canvas it leaves in view: on a tablet a
-panel along the canvas's right edge, at most half the canvas wide, its handle a 44-pixel strip on that edge;
-on a phone a sheet over the canvas's lower half (`SHEET_HEIGHT`: half or the whole of the canvas's height,
-less the strip the handle stands in), whose handle along its top edge (`ResizeHandle` with `axis="height"`,
-the same name) moves freely while dragged and, let go, settles at the nearer of the two heights, or closes the
-sheet when let go well below half; ↑ and End take it to full height, ↓ and Home to half; it opens at half
-height each time. The sheet's `data-sheet` (`half`, `full`) lets the page's stylesheets keep the disclosure
-bar above it at half height and hide the canvas's content while it covers the canvas at full height (no focus
-lands out of sight). Either way the header and the details scroll together in one box (`.content`,
-`display: contents` on a desktop), so nothing in the drawer reaches past its edge whatever its height. Close
-and Escape close it as on a desktop, and so does the top bar's View or More sheet as it opens, the selection
-kept (section "Layouts", paragraph "Folds"); a node selected opens it again, at half height on a phone.
+`data-canvas-overlay`, so the reveal keeps the node in the part of the canvas it leaves in view, and a drawing
+that still rests on its fit as the drawer opens (or changes its height or width) is fitted whole into that
+part instead, and to the whole canvas again once the drawer closes (section "App state", `panels`): on a
+tablet a panel along the canvas's right edge, at most half the canvas wide, its handle a 44-pixel strip on
+that edge; on a phone a sheet over the canvas's lower half (`SHEET_HEIGHT`: half or the whole of the canvas's
+height, less the strip the handle stands in), whose handle along its top edge (`ResizeHandle` with
+`axis="height"`, the same name) moves freely while dragged and, let go, settles at the nearer of the two
+heights, or closes the sheet when let go well below half; ↑ and End take it to full height, ↓ and Home to
+half; it opens at half height each time. The sheet's `data-sheet` (`half`, `full`) lets the page's stylesheets
+keep the disclosure bar above it at half height and hide the canvas's content while it covers the canvas at
+full height (no focus lands out of sight). Either way the header and the details scroll together in one box
+(`.content`, `display: contents` on a desktop), so nothing in the drawer reaches past its edge whatever its
+height. Close and Escape close it as on a desktop, and so does the top bar's View or More sheet as it opens,
+the selection kept (section "Layouts", paragraph "Folds"); a node selected opens it again, at half height on a
+phone.
 
 ```
 src/drawer/

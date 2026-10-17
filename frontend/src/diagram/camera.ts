@@ -9,8 +9,10 @@
  * and out, so a long jump does not lurch.
  *
  * A jump, the keyboard's pan and a zoom key's step keep the node in the part of the canvas a panel lying over it
- * leaves in view (DiagramCanvas, `clearRoom`), and `0` fits the drawing to that part (viewport.ts, `fitTransform`):
- * `inRoom` works a camera out for that part as if it were the whole canvas.
+ * leaves in view (DiagramCanvas, `clearRoom`), and a fit (a new view's, `0`'s, a panel's refit) shows the drawing in
+ * that part (viewport.ts, `fitTransform`): `inRoom` works a camera out for that part as if it were the whole canvas.
+ * Whether the camera still rests on the last fit, which a panel opening or closing then makes again, is `sameCamera`'s
+ * to say, and whether the drawing lies whole in that part `showsWhole`'s.
  *
  * The keyboard's camera is here too: a move to an item pans just enough to show it, and first zooms in to
  * the scale at which labels are drawn when the camera is further out (`keyboardTransform`); the zoom keys scale by
@@ -52,7 +54,7 @@ export function focusTransform(
 
 /**
  * A part of the canvas, in CSS px from its top-left corner: the room a jump, a keyboard move or a zoom key's step keeps
- * the node in and `0` fits the drawing to, the canvas less a panel lying over it (DiagramCanvas, `clearRoom`).
+ * the node in and a fit shows the drawing in, the canvas less a panel lying over it (DiagramCanvas, `clearRoom`).
  */
 export interface CanvasRoom {
   readonly x: number;
@@ -69,7 +71,7 @@ type Placement<T> = (width: number, height: number, current: CameraTransform) =>
  * size and the camera `current` as the room's top-left corner sees it, and the camera it answers is moved back onto
  * the canvas (null, nothing to move, stays null). So `focusTransform` centres a node in the room, `revealTransform`,
  * `keyboardTransform` and `zoomStepTransform` keep it inside the room's margins, a zoom step with nothing focused
- * zooms about the room's centre, and `fitTransform` (viewport.ts, for `0`) shows the whole drawing inside the room's
+ * zooms about the room's centre, and `fitTransform` (viewport.ts, for a fit) shows the whole drawing inside the room's
  * margins.
  */
 export function inRoom(
@@ -89,6 +91,39 @@ export function inRoom(
 ): CameraTransform | null {
   const to = place(room.width, room.height, { k: current.k, x: current.x - room.x, y: current.y - room.y });
   return to === null ? null : { k: to.k, x: to.x + room.x, y: to.y + room.y };
+}
+
+/** How far apart (CSS px) two cameras may place the drawing and still be one: rounding, never a person's pan. */
+export const SAME_CAMERA_PX = 0.5;
+/** How far apart two cameras' scales may be (a fraction of the scale) and still be one. */
+export const SAME_CAMERA_SCALE = 1e-3;
+
+/**
+ * Whether `camera` is `other`, give or take rounding (`SAME_CAMERA_PX` on the canvas, `SAME_CAMERA_SCALE` of the
+ * scale): how the canvas tells that the camera still rests on the last fit (DiagramCanvas), which no pan, pinch, zoom
+ * step or jump leaves it on.
+ */
+export function sameCamera(camera: CameraTransform, other: CameraTransform): boolean {
+  return (
+    Math.abs(camera.k - other.k) <= SAME_CAMERA_SCALE * other.k &&
+    Math.abs(camera.x - other.x) <= SAME_CAMERA_PX &&
+    Math.abs(camera.y - other.y) <= SAME_CAMERA_PX
+  );
+}
+
+/**
+ * Whether `camera` shows the whole of `frame` (drawing units: the drawing's frame) inside `room`, give or take
+ * `SAME_CAMERA_PX`: a fit does, unless the drawing is too large to fit at the smallest scale.
+ */
+export function showsWhole(frame: Rect, room: CanvasRoom, camera: CameraTransform): boolean {
+  const left = frame.x * camera.k + camera.x;
+  const top = frame.y * camera.k + camera.y;
+  return (
+    left >= room.x - SAME_CAMERA_PX &&
+    top >= room.y - SAME_CAMERA_PX &&
+    left + frame.width * camera.k <= room.x + room.width + SAME_CAMERA_PX &&
+    top + frame.height * camera.k <= room.y + room.height + SAME_CAMERA_PX
+  );
 }
 
 /** Ease in and out (cubic), for t in [0, 1]. */

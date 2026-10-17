@@ -20,14 +20,23 @@
  * follows keyboard focus and a zoom key's step keep the node in the part of the canvas a panel lying over it leaves in
  * view (`clearRoom`): the drawer of a phone or a tablet, or the top bar's View or More sheet.
  *
- * `0` fits the whole drawing to that part too (`fitRoom`), so none of it lies under the panel; where the panels leave
- * no room to fit into (the phone's drawer at full height, which hides the drawing) it takes the whole canvas, ready
- * for when the drawer comes down. The fit a new view opens with (whatever draws a new frame: a drill-in, a lens or a
- * filter picked in the View sheet, a day whose drawing is another size, a resize that picks another level of detail)
- * fills the whole canvas instead: a panel open at that moment (the View sheet, which stays open while its controls
- * change the view, or the drawer while the timeline moves a day) closes before the person looks at the drawing, and
- * a drawing fitted into the part it leaves would stay that small after it closes. On a desktop nothing lies over the
- * canvas, and both fits are the same.
+ * A fit shows the whole drawing in that part too (`fitRoom`), so none of it lies under a panel: the fit a new view
+ * opens with (whatever draws a new frame: a drill-in, a lens or a filter picked in the View sheet, a day whose drawing
+ * is another size, a resize that picks another level of detail) and `0`'s. Where the panels leave no room to fit into
+ * (the phone's drawer at full height, which hides the drawing) it takes the whole canvas, ready for when the drawer
+ * comes down. A panel opening or closing over the canvas (`panels`) fits the drawing again to the part the panels
+ * leave now, and so does the drawer's reveal after the drawer changed its height or width (its own state, which
+ * `panels` does not carry), so long as the camera still rests on the last fit: the person has not panned, pinched,
+ * zoomed or jumped since (`sameCamera`; a glide on its way to the fit counts as resting on it). So a lens picked in
+ * the View sheet shows its whole drawing below the sheet, and the drawing fills the canvas again once the sheet
+ * closes, while a camera the person moved stays where they put it. The refit is the zoom keys' short glide (at once
+ * with reduced motion), never a new layout; while the camera rests on a fit to the part the drawer leaves, the
+ * drawer's reveal has nothing more to do, as the whole drawing is in view there. The canvas learns of a panel through
+ * `panels`, a value the diagram page derives from the store (the open sheet, the drawer's open state), rather than by
+ * observing the `data-canvas-overlay` elements: the prop changes in the same commit as the panel's `hidden`, so the
+ * refit (a layout effect) measures the panel as it now is, before the browser paints and before the drawer's reveal
+ * asks for its pan, where a mutation or resize observer would answer after both; and the canvas still knows nothing
+ * of the store. On a desktop nothing lies over the canvas: every fit fills it, and a panel changes nothing.
  *
  * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
  * it, and an open zone's collapse button (over its header icon; disclosure/CollapseButton.tsx) collapses it,
@@ -77,6 +86,8 @@ import {
   keyboardTransform,
   REVEAL_MS,
   revealTransform,
+  sameCamera,
+  showsWhole,
   zoomStepTransform,
   type CanvasRoom,
   type JumpMode,
@@ -128,6 +139,12 @@ export interface DiagramCanvasProps {
    * selected like any node and open zones have no collapse button.
    */
   readonly onFlip?: (zoneId: string, options?: HistoryOption) => void;
+  /**
+   * Which panels lie open over the canvas (a phone's or a tablet's View or More sheet, or details drawer): any value
+   * that changes when one opens or closes. Each change fits the drawing again to the part of the canvas the panels
+   * leave, while the camera still rests on the last fit (the header).
+   */
+  readonly panels?: string;
 }
 
 /** How a change enters the browser history (the store's `WriteOptions`): a new entry, or in place. */
@@ -213,6 +230,47 @@ function fitRoom(svg: SVGSVGElement): CanvasRoom {
   return room.width > 2 * FIT_PADDING && room.height > 2 * FIT_PADDING
     ? room
     : { x: 0, y: 0, ...canvasSize(svg) };
+}
+
+/** How far a room lies inside each edge of the canvas (CSS px): what the panels over the canvas take of it. */
+interface Insets {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+const NO_INSETS: Insets = { left: 0, top: 0, right: 0, bottom: 0 };
+
+/** How far `room` lies inside each edge of the canvas: the same whatever the canvas's size while no panel moves. */
+function insetsOf(svg: SVGSVGElement, room: CanvasRoom): Insets {
+  const size = canvasSize(svg);
+  return {
+    left: room.x,
+    top: room.y,
+    right: size.width - room.x - room.width,
+    bottom: size.height - room.y - room.height,
+  };
+}
+
+/** Whether two rooms lie as far inside each edge of the canvas, give or take half a pixel. */
+function sameInsets(a: Insets, b: Insets): boolean {
+  return (
+    Math.abs(a.left - b.left) < 0.5 &&
+    Math.abs(a.top - b.top) < 0.5 &&
+    Math.abs(a.right - b.right) < 0.5 &&
+    Math.abs(a.bottom - b.bottom) < 0.5
+  );
+}
+
+/**
+ * A fit of the drawing (a new view's, `0`'s, a panel's refit): the camera it set, and how far the room it was made
+ * for (`fitRoom`) lay inside the canvas's edges (`NO_INSETS` when it filled the canvas). The camera rests on it until
+ * the person moves it.
+ */
+interface Fit {
+  readonly camera: CameraTransform;
+  readonly insets: Insets;
 }
 
 /** Whether an element shows its focus ring (`:focus-visible`; a browser without the selector shows it always). */
@@ -385,6 +443,7 @@ export function DiagramCanvas({
   jump,
   onJumpDone,
   onFlip,
+  panels,
 }: DiagramCanvasProps): ReactElement {
   const svgRef = useRef<SVGSVGElement>(null);
   const viewportRef = useRef<SVGGElement>(null);
@@ -410,6 +469,8 @@ export function DiagramCanvas({
   const drillChosenRef = useRef(false);
   const drawnModelRef = useRef<DiagramModel | null>(null);
   const frameRef = useRef<Rect | null>(null);
+  // The last fit (a new view's, `0`'s, a panel's refit), which the camera rests on until the person moves it.
+  const fitRef = useRef<Fit | null>(null);
   // What a finger's gestures do on the drawing now (the painter effect's), the gestures themselves (a click, a
   // double-click or a right-click while they say a finger is touching is the finger's, which they read already), and
   // what a long press shows by the finger.
@@ -487,6 +548,31 @@ export function DiagramCanvas({
   useLayoutEffect(() => {
     frameRef.current = frame;
   });
+
+  // The fit the camera rests on, made again for the part of the canvas the panels lying over it leave now (`fitRoom`)
+  // when the last fit was made for another (a panel opened or closed, or the drawer changed its size since): a glide
+  // there, at once with reduced motion. Null when the camera rests on no fit: the person moved it since (a pan, a pinch,
+  // a zoom key, a jump, a keyboard move), and a panel never moves it back. A glide on its way counts as resting on its
+  // end, so a panel closed while the refit for its opening still glides fits the drawing back to the canvas.
+  const refit = (): Fit | null => {
+    const svg = svgRef.current;
+    const behaviour = zoomRef.current;
+    const fit = fitRef.current;
+    const drawn = frameRef.current;
+    if (svg === null || behaviour === null || fit === null || drawn === null) return null;
+    const running = glideRef.current;
+    const camera = running !== null && running.running() ? running.to : zoomTransform(svg);
+    if (!sameCamera(camera, fit.camera)) return null;
+    const room = fitRoom(svg);
+    const insets = insetsOf(svg, room);
+    if (sameInsets(insets, fit.insets)) return fit;
+    const to = inRoom(room, camera, (width, height) => fitTransform(drawn, width, height));
+    running?.stop();
+    glideRef.current = { id: '', mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
+    const next = { camera: to, insets };
+    fitRef.current = next;
+    return next;
+  };
 
   // Pan and zoom, set up once per <svg>: the transform goes straight onto the viewport group. A layout effect,
   // like the fit below (which needs the behaviour), so the first frame the browser paints is already fitted. A mouse's
@@ -614,26 +700,33 @@ export function DiagramCanvas({
     glideRef.current = { id: pending.id, mode: 'centre', ...glideTo(svg, behaviour, to, FLIP_GLIDE_MS) };
   }, [model]);
 
-  // Fit the whole drawing to the whole canvas whenever its frame changes (a new view), whatever panel lies over it
-  // now (it closes before the person looks; the header); a theme or selection change keeps the camera, and so does
-  // the drawing of a flip made here (above). d3-zoom applies the transform synchronously, so the viewport carries it
-  // before the first paint. A glide still on its way (a keyboard move's pan, made just before a drill-in) was heading
-  // for a place in the previous drawing: it stops, so it cannot carry the camera off the new one; a jump waiting for
-  // this drawing glides afterwards.
+  // Fit the whole drawing whenever its frame changes (a new view), to the part of the canvas the panels lying over it
+  // leave (`fitRoom`; the whole canvas when none does), and remember the fit, which the camera rests on until the
+  // person moves it; a theme or selection change keeps the camera, and so does the drawing of a flip made here
+  // (above). d3-zoom applies the transform synchronously, so the viewport carries it before the first paint. A glide
+  // still on its way (a keyboard move's pan, made just before a drill-in) was heading for a place in the previous
+  // drawing: it stops, so it cannot carry the camera off the new one; a jump waiting for this drawing glides
+  // afterwards.
   useLayoutEffect(() => {
     const svg = svgRef.current;
     const behaviour = zoomRef.current;
     if (svg === null || behaviour === null || keepCameraRef.current === modelRef.current) return;
     glideRef.current?.stop();
     glideRef.current = null;
-    const size = canvasSize(svg);
-    const fit = fitTransform(
-      { x: frame.x, y: frame.y, width: frame.width, height: frame.height },
-      size.width,
-      size.height,
+    const room = fitRoom(svg);
+    const fit = inRoom(room, zoomTransform(svg), (width, height) =>
+      fitTransform({ x: frame.x, y: frame.y, width: frame.width, height: frame.height }, width, height),
     );
     behaviour.transform(select(svg), zoomIdentity.translate(fit.x, fit.y).scale(fit.k));
+    fitRef.current = { camera: fit, insets: insetsOf(svg, room) };
   }, [frame.x, frame.y, frame.width, frame.height]);
+
+  // A panel opened or closed over the canvas (`panels`, in the same commit as the panel's `hidden`): the drawing is
+  // fitted again to the part the panels leave now, while the camera still rests on the last fit (`refit`). After the
+  // fit above, which a new view drawn in the same commit has made for the panels as they are already.
+  useLayoutEffect(() => {
+    refit();
+  }, [panels]);
 
   // The painter and the pointer and keyboard listeners, once per drawing. A theme or settings change re-renders
   // the same elements, so the old painter takes its marks off first (cleanup) and the new one paints the
@@ -725,7 +818,8 @@ export function DiagramCanvas({
     };
     // The zoom keys: one step in or out about the focused item (from the canvas itself, about the centre of the
     // part of the canvas a panel lying over it leaves in view), keeping the item in that part, as a jump and the
-    // keyboard's pan do (`clearRoom`); `0` fits the whole drawing to that part (`fitRoom`).
+    // keyboard's pan do (`clearRoom`); `0` fits the whole drawing to that part (`fitRoom`), a fit the camera then rests
+    // on as on a new view's, so a panel closed afterwards fits the drawing to the canvas again.
     const zoomBy = (key: ZoomKey, focusedId: string | null): void => {
       const behaviour = zoomRef.current;
       const drawn = frameRef.current;
@@ -737,7 +831,9 @@ export function DiagramCanvas({
       let to: CameraTransform | null;
       if (key === 'fit') {
         if (drawn === null) return;
-        to = inRoom(fitRoom(svg), current, (width, height) => fitTransform(drawn, width, height));
+        const room = fitRoom(svg);
+        to = inRoom(room, current, (width, height) => fitTransform(drawn, width, height));
+        fitRef.current = { camera: to, insets: insetsOf(svg, room) };
       } else {
         const rect = focusedId === null ? undefined : model.input.layout.rects[focusedId];
         const box = rect === undefined ? null : revealBox(rect);
@@ -986,7 +1082,11 @@ export function DiagramCanvas({
   // A pending jump: glide as soon as its node is drawn (this drawing, or a later one). A newer jump or the
   // canvas going away stops a glide still running; the store no longer keeping the jump does not. A `reveal`
   // (the details drawer) pans only as far as the node and its trace need, and not at all when they are in
-  // view or a centring glide is already on its way to the node.
+  // view or a centring glide is already on its way to the node. Over a camera that still rests on the last fit, a
+  // reveal first fits the drawing again when the drawer changed its size since (`refit`), and works out from where
+  // that fit ends; while the fit is to the part of the canvas the drawer leaves and shows the whole drawing there, the
+  // node and its trace are in view already and the camera stays on the fit, which the drawer's closing then makes
+  // again for the whole canvas.
   useEffect(() => {
     if (jump === null || jump === undefined) return;
     const svg = svgRef.current;
@@ -995,7 +1095,17 @@ export function DiagramCanvas({
     if (svg === null || behaviour === null || rect === undefined) return;
     const mode = jump.mode ?? 'centre';
     const room = clearRoom(svg);
-    const current = zoomTransform(svg);
+    const fit = mode === 'reveal' ? refit() : null;
+    if (
+      fit !== null &&
+      !sameInsets(fit.insets, NO_INSETS) &&
+      frameRef.current !== null &&
+      showsWhole(frameRef.current, fitRoom(svg), fit.camera)
+    ) {
+      onJumpDoneRef.current?.(jump.seq);
+      return;
+    }
+    const current = fit?.camera ?? zoomTransform(svg);
     const running = glideRef.current;
     const centring = running?.mode === 'centre' && running.id === jump.id && running.running();
     const to =

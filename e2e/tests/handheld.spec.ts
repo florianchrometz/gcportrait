@@ -5,6 +5,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import {
   boxOf,
+  cameraSettled,
   DEMO_M_DIAGRAM,
   drawnCanvas,
   expectNoAxeViolations,
@@ -157,8 +158,12 @@ async function uncovered(page: Page): Promise<Box> {
     : { x: canvas.x, y: canvas.y, width: drawer.x - canvas.x, height: canvas.height };
 }
 
-/** Taps a folder of the drawing and waits for its details. Answers the folder. */
+/**
+ * Taps a folder of the drawing and waits for its details. Answers the folder. The camera stands still first: a sheet
+ * closed just before fits the drawing to the canvas again in a short glide.
+ */
 async function tapAFolder(page: Page, svg: Locator): Promise<Spot> {
+  await cameraSettled(svg);
   const folder = await folderSpot(svg);
   await page.touchscreen.tap(folder.x, folder.y);
   await expect.poll(() => viewParam(page, 'selection')).toBe(folder.id);

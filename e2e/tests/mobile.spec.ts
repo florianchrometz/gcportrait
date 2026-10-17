@@ -14,6 +14,7 @@ import {
   drawnCanvas,
   expectNoAxeViolations,
   openDiagram,
+  type Box,
 } from './support.js';
 
 /**
@@ -66,9 +67,10 @@ import {
  * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
  * when let go there; with the drawer open from an external keyboard (Enter on the drawing's tab stop), the zoom key `+`
  * keeps the focused card in the part of the canvas above the drawer, inside it while the card fits and centred in it
- * once the card is taller, and `0` fits the whole drawing to that part, none of it under the drawer; one finger
- * dragged across the canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in
- * place.
+ * once the card is taller, and `0` fits the whole drawing to that part, none of it under the drawer; the View sheet
+ * opened by a tap fits the drawing whole into the part of the canvas below it, a lens picked in it by a tap draws its
+ * view whole there, and View closed by a tap fits the drawing to the whole canvas again; one finger dragged across
+ * the canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in place.
  * The pages and diagrams at each size in the light theme come first, the tests that set their own sizes next, and the
  * same pages and diagrams in the dark theme last, so that each shard of a CI leg gets half of the slow diagram tests
  * (pagesAndDiagrams).
@@ -1348,6 +1350,52 @@ test.describe('on a phone, 375 × 667', () => {
     // And fills it, as a fit fills the canvas: as wide as the canvas or as tall as the room, less 16 px on each side.
     const fill = Math.max(drawing.width / (canvas.width - 32), drawing.height / (bottom - top - 32));
     expect(fill, where).toBeCloseTo(1, 2);
+  });
+
+  test('the View sheet fits the drawing below it, a lens picked in it draws its view whole there, and closing View fits the drawing to the canvas again', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DIAGRAMS[0]);
+    const canvas = await boxOf(svg);
+    // The drawing's frame (its background) lies whole in `room` and fills it, as a fit fills the canvas: as wide as
+    // the room or as tall, less 16 px on each side.
+    const expectFittedTo = async (room: Box, where: string): Promise<void> => {
+      await cameraSettled(svg);
+      const drawing = await boxOf(svg.locator('.dg-background'));
+      const at = `${where}: the drawing from (${drawing.x.toFixed(1)}, ${drawing.y.toFixed(1)}) to (${(drawing.x + drawing.width).toFixed(1)}, ${(drawing.y + drawing.height).toFixed(1)}), the room from (${room.x.toFixed(1)}, ${room.y.toFixed(1)}) to (${(room.x + room.width).toFixed(1)}, ${(room.y + room.height).toFixed(1)})`;
+      expect(drawing.x, at).toBeGreaterThanOrEqual(room.x - 0.5);
+      expect(drawing.y, at).toBeGreaterThanOrEqual(room.y - 0.5);
+      expect(drawing.x + drawing.width, at).toBeLessThanOrEqual(room.x + room.width + 0.5);
+      expect(drawing.y + drawing.height, at).toBeLessThanOrEqual(room.y + room.height + 0.5);
+      const fill = Math.max(drawing.width / (room.width - 32), drawing.height / (room.height - 32));
+      expect(fill, at).toBeCloseTo(1, 2);
+    };
+    await expectFittedTo(canvas, 'at rest');
+    const { button, sheet } = fold(page, 'View');
+    // The part of the canvas below the open sheet, the canvas's width.
+    const belowTheSheet = async (): Promise<Box> => {
+      const box = await boxOf(sheet);
+      const top = box.y + box.height;
+      expect(top).toBeLessThan(canvas.y + canvas.height);
+      return { x: canvas.x, y: top, width: canvas.width, height: canvas.y + canvas.height - top };
+    };
+    await button.tap();
+    await expect(sheet).toBeVisible();
+    await expectFittedTo(await belowTheSheet(), 'View opened');
+    await sheet.getByRole('combobox', { name: 'Lens' }).tap();
+    await page
+      .getByRole('listbox', { name: 'Lens' })
+      .getByRole('option', { name: 'Networking', exact: true })
+      .tap();
+    await expect(page.locator('svg.dg-canvas > title')).toHaveText(
+      'gcportrait diagram of example.com, Networking lens',
+      { timeout: 30_000 },
+    );
+    await expect(sheet).toBeVisible();
+    await expectFittedTo(await belowTheSheet(), 'the Networking lens picked in View');
+    await button.tap();
+    await expect(sheet).toBeHidden();
+    await expectFittedTo(canvas, 'View closed');
   });
 
   test('one finger dragged across the canvas pans the drawing', async ({ page }) => {

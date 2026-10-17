@@ -58,6 +58,13 @@ export function DiagramPage() {
   const error = useAppState((state) => state.pipeline.error);
   const selection = useAppState((state) => state.selection.selected);
   const jump = useAppState((state) => state.ui.jump);
+  // The panels open over the canvas on a phone or a tablet (the top bar's View or More sheet, the details drawer;
+  // never both, state/store.ts `apart`), for the canvas's refit when one opens or closes (DiagramCanvas, `panels`). On
+  // a desktop the drawer stands beside the canvas, and the canvas finds that nothing lies over it.
+  const panels = useAppState(
+    (state) =>
+      `${state.ui.sheet ?? ''}|${state.ui.drawerOpen && state.selection.selected !== null ? 'drawer' : ''}`,
+  );
   const { resolved: theme } = useTheme();
   const [overlays] = usePreference('diagramOverlays', true);
   const { setExportSource } = useDiagramSession();
@@ -156,6 +163,7 @@ export function DiagramPage() {
             jump={jump}
             onJumpDone={store.jumpDone}
             onFlip={actions.flip}
+            panels={panels}
           />
         )}
         <DisclosureBar />
