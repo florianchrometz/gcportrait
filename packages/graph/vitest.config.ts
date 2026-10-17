@@ -13,7 +13,7 @@ export default defineConfig({
     name: 'graph',
     environment: 'node',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts', 'scripts/**/*.test.ts'],
-    // FC_SEED=<n> pins the property tests' seed, for coverage runs that must reach the same branches twice.
+    // The property tests' seed (test/fast-check-seed.ts): FC_SEED when set, a fixed one on CI, else fresh.
     setupFiles: ['test/fast-check-seed.ts'],
     testTimeout: 60_000,
     coverage: {

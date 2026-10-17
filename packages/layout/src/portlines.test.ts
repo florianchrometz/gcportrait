@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_ROUTING } from './constants.js';
 import { mergeEdges } from './edges.js';
 import { buildGutters } from './gutters.js';
-import { assertLayout } from './invariants.js';
+import { assertLayout, checkLayout } from './invariants.js';
 import { layoutScene, placedTree } from './layout.js';
 import { assignPorts } from './ports.js';
 import { isPortPiece, portLines } from './portlines.js';
@@ -86,6 +86,42 @@ describe('portLines', () => {
     expect(ports[0]?.source.side).toBe('right');
     expect(exits.lineOf[0]).toBe(-1);
   });
+
+  it('gives no line to a port whose way out has no length: no padding, and no gap beside its zone', () => {
+    // Card `b` is the last of its row in f: its right port's stub meets f's ring, which without padding lies
+    // on f's border, as the gap between f and g does without a gap.
+    const flush = scene(
+      [zone('f', 'folder', [card('a'), card('b')]), zone('g', 'folder', [])],
+      [{ from: 'b', to: 'g', kind: 'uses' }],
+    );
+    const exitOf = (sizing: LayoutOptions['sizing']) => {
+      const options: LayoutOptions = {
+        ...(sizing === undefined ? {} : { sizing }),
+        arrangements: {
+          canvas: { cardColumns: 0, zoneRows: [2] },
+          zones: { f: { cardColumns: 2, zoneRows: [] } },
+        },
+      };
+      const tree = placedTree(flush, options);
+      const gutters = buildGutters(tree);
+      const { edges } = mergeEdges(flush, new Map(tree.order.map((node) => [node.id, node] as const)));
+      const ports = assignPorts(edges, gutters, DEFAULT_ROUTING);
+      const exits = portLines(edges, ports, gutters, DEFAULT_ROUTING, gutters.lines.length);
+      expect(ports[0]?.source.side).toBe('right');
+      // Port lines are numbered after the gutter lines.
+      return exits.lines[(exits.lineOf[0] ?? -1) - gutters.lines.length];
+    };
+    expect(exitOf({ zonePadding: 0, gapHorizontal: 0 })).toBeUndefined();
+    // Padding or a gap gives the way out a length.
+    for (const sizing of [
+      { zonePadding: 2, gapHorizontal: 0 },
+      { zonePadding: 0, gapHorizontal: 2 },
+      undefined,
+    ]) {
+      const line = exitOf(sizing);
+      expect((line?.b ?? 0) - (line?.a ?? 0)).toBeGreaterThan(0);
+    }
+  });
 });
 
 describe('routing along port lines', () => {
@@ -101,5 +137,48 @@ describe('routing along port lines', () => {
     const f = layout.rects.f;
     expect(second.x).toBeGreaterThan((f?.x ?? 0) + (f?.width ?? 0));
     expect(points.length - 2).toBeLessThanOrEqual(2);
+  });
+
+  it('keeps a route out of a header where a port’s way out has no length (no padding, no gaps, no pressure)', () => {
+    // Folder f, flush against the empty folder g, holds cards a and b above c and d, and a chip and a
+    // sub-folder below them; f's edge to its own card b leaves f's right side on the inside. A line of no
+    // length for b's right port (from f's ring to the gap beside f, both on f's border) would give the route's
+    // run along it no segment, so nothing would hold the run on lane 0, the port's own coordinate: it took a
+    // lane 24 px up, and the route's elbow ran through f's header.
+    const flush = scene(
+      [
+        zone('f', 'folder', [
+          zone('sub', 'folder', [
+            card('w'),
+            card('wide', 'wide card, its label long enough for the widest card'),
+          ]),
+          card('c'),
+          zone('chip', 'folder', [], { collapsed: { resources: 7 } }),
+          card('d'),
+          card('a'),
+          card('b'),
+        ]),
+        zone('g', 'folder', []),
+      ],
+      [
+        { from: 'c', to: 'b', kind: 'uses' },
+        { from: 'chip', to: 'a', kind: 'uses' },
+        { from: 'd', to: 'a', kind: 'uses' },
+        { from: 'f', to: 'b', kind: 'uses' },
+      ],
+    );
+    const options: LayoutOptions = {
+      sizing: { gapHorizontal: 0, gapVertical: 0, zonePadding: 0 },
+      routing: { lanePitch: 12, laneCost: 0, wideningRounds: 0 },
+    };
+    const layout = layoutScene(flush, options);
+    expect(checkLayout(flush, layout, options)).toEqual([]);
+    const f = layout.rects.f;
+    const edge = layout.edges['f -uses-> b'];
+    if (f === undefined || edge === undefined) throw new Error('f or its edge is missing');
+    expect(edge.source).toMatchObject({ side: 'right', x: f.x + f.width });
+    for (const point of edge.points) expect(point.y).toBeGreaterThanOrEqual(f.y + f.headerHeight);
+    // The route reaches b along f's border and its stub runs straight in from there, at the port's height.
+    expect(edge.points.slice(-2).map((point) => point.y)).toEqual([edge.target.y, edge.target.y]);
   });
 });

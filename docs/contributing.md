@@ -148,7 +148,7 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 | `lint` | `pnpm format:check`, then `pnpm lint` |
 | `typecheck` | `pnpm typecheck` |
 | `unit (layout)`, `unit (frontend)`, `unit (all other projects)` | `pnpm test --project layout`; `pnpm test --project frontend`; `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included |
-| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary. **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets |
+| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
 | `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm e2e --project chromium-live --project chromium --shard=N/3`, Chromium: the desktop specs, in demo and normal mode |

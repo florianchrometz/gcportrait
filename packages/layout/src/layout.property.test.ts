@@ -10,8 +10,13 @@
  * hub bundle's members count as one) run alongside each other closer than the lane pitch. The packing (routing
  * off) fills its rows: the router's widening keeps the arrangement, so a widened row may have room left for
  * its next child.
+ *
+ * Every run draws a fresh seed except on CI, where the seed is fixed, and under `FC_SEED`, which replays a
+ * failure (test/fast-check-seed.ts); `pnpm --filter @gcportrait/layout explore` runs every property here
+ * 1 000 times (`FC_RUNS`).
  */
 import { SceneSchema, type Scene, type SceneEdge, type SceneNode } from '@gcportrait/model';
+import { propertyRuns } from '@gcportrait/model/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ROUTING } from './constants.js';
@@ -94,7 +99,7 @@ describe('layoutScene over random Scenes', () => {
       fc.property(arbitraryScene(), (scene) => {
         expect(() => SceneSchema.parse(scene)).not.toThrow();
       }),
-      { numRuns: 60 },
+      { numRuns: propertyRuns(60) },
     );
   });
 
@@ -103,7 +108,7 @@ describe('layoutScene over random Scenes', () => {
       fc.property(arbitraryScene(), (scene) => {
         expect(checkLayout(scene, layoutScene(scene))).toEqual([]);
       }),
-      { numRuns: RUNS },
+      { numRuns: propertyRuns(RUNS) },
     );
   });
 
@@ -112,7 +117,7 @@ describe('layoutScene over random Scenes', () => {
       fc.property(arbitraryScene(), (scene) => {
         expect(fullRowViolations(scene, layoutScene(scene, { route: false }))).toEqual([]);
       }),
-      { numRuns: RUNS },
+      { numRuns: propertyRuns(RUNS) },
     );
   });
 
@@ -136,7 +141,7 @@ describe('layoutScene over random Scenes', () => {
           expect(checkLayout(scene, repacked, options)).toEqual([]);
         },
       ),
-      { numRuns: 60 },
+      { numRuns: propertyRuns(60) },
     );
   });
 
@@ -161,7 +166,7 @@ describe('layoutScene over random Scenes', () => {
           expect(fullRowViolations(scene, packed, withGutters)).toEqual([]);
         },
       ),
-      { numRuns: 60 },
+      { numRuns: propertyRuns(60) },
     );
   });
 
@@ -179,7 +184,7 @@ describe('layoutScene over random Scenes', () => {
         const shuffled: Scene = { ...scene, children: shuffle(scene.children, seed), edges };
         expect(JSON.stringify(layoutScene(shuffled))).toBe(JSON.stringify(layoutScene(scene)));
       }),
-      { numRuns: 60 },
+      { numRuns: propertyRuns(60) },
     );
   });
 });
@@ -203,11 +208,13 @@ const ROUTING: fc.Arbitrary<LayoutOptions> = fc.record(
       },
       { requiredKeys: [] },
     ),
+    // Without padding a zone's ring lies on its border, and without gaps so do the gutters beside it: half of
+    // the draws are 0, a corner a uniform draw from 0 to 40 seldom reaches for all three at once.
     sizing: fc.record(
       {
-        gapHorizontal: fc.integer({ min: 0, max: 40 }),
-        gapVertical: fc.integer({ min: 0, max: 40 }),
-        zonePadding: fc.integer({ min: 0, max: 30 }),
+        gapHorizontal: fc.oneof(fc.constant(0), fc.integer({ min: 0, max: 40 })),
+        gapVertical: fc.oneof(fc.constant(0), fc.integer({ min: 0, max: 40 })),
+        zonePadding: fc.oneof(fc.constant(0), fc.integer({ min: 0, max: 30 })),
       },
       { requiredKeys: [] },
     ),
@@ -223,7 +230,7 @@ describe('routing over random Scenes', () => {
         expect(checkLayout(scene, layout)).toEqual([]);
         expect(layout.report.routing.fallbacks).toBe(0);
       }),
-      { numRuns: 80 },
+      { numRuns: propertyRuns(80) },
     );
   });
 
@@ -241,7 +248,7 @@ describe('routing over random Scenes', () => {
         expect(spacing.closest).toBeGreaterThanOrEqual(DEFAULT_ROUTING.lanePitch);
         expect(spacing.closestStubs).toBeGreaterThanOrEqual(DEFAULT_ROUTING.portSpacing / 2);
       }),
-      { numRuns: 80 },
+      { numRuns: propertyRuns(80) },
     );
     expect(checked).toBeGreaterThan(40);
   });
@@ -257,7 +264,7 @@ describe('routing over random Scenes', () => {
           expect(layout.report.routing.fallbacks).toBe(0);
         },
       ),
-      { numRuns: 80 },
+      { numRuns: propertyRuns(80) },
     );
   });
 
@@ -270,7 +277,7 @@ describe('routing over random Scenes', () => {
         if (layout.report.routing.edges > 0) expect(layout.report.routing.mode).toBe('single-pass');
         expect(layout.report.routing.wideningRounds).toBe(0);
       }),
-      { numRuns: 40 },
+      { numRuns: propertyRuns(40) },
     );
   });
 
@@ -284,7 +291,7 @@ describe('routing over random Scenes', () => {
         expect(layout.report.routing.failed).toBe(0);
         expect(checkLayout(scene, layout)).toEqual([]);
       }),
-      { numRuns: 25 },
+      { numRuns: propertyRuns(25) },
     );
   });
 });

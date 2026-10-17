@@ -133,7 +133,9 @@ property tests enforce full rows.
 - Port lines: where a rect's port faces a side nothing stands beside (last or first of its row, or in the last
   row for a bottom port), a line runs from the stub's gutter straight out through every zone it is the last
   of, to the first gap beside one. Only the port's edge (or, at a hub's shared port, the bundle) runs along
-  it, on the port's own coordinate, so a route leaves a nested rect in one straight run.
+  it, on the port's own coordinate, so a route leaves a nested rect in one straight run. Where that line
+  would have no length (no padding and no gap: the ring, the border and the gap beside it coincide) there is
+  none, and the stub's own gutter is the way out.
 - Routing graph: gutter centre-lines (segments) and their intersections (nodes). Each edge is routed as a
   shortest path with cost = length + 40 per bend + 50 per lane already assigned in a gutter (pressure, spread
   over the gutter's length); a stretch along a zone's border inside its padding band (a ring side between the

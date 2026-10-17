@@ -310,9 +310,12 @@ packer's choice of arrangement does not look at `gaps` (they are positional).
      bundle's members) may run along it, on lane 0, the port's own coordinate, so a route leaves a nested chip
      in one straight run instead of turning along its zones' rings; other routes may cross it. A route may
      start along its source's port line (no turn onto the ring, so starting along the ring costs a bend there)
-     and end along its target's. None on a top side, none for an inward port, and none where a gutter line
+     and end along its target's. None on a top side, none for an inward port, none where a gutter line
      runs alongside it (within its lanes' reach and a pitch), another port's stub runs on it, or another port
-     line meets it at nearly the same coordinate.
+     line meets it at nearly the same coordinate, and none of no length: without padding a zone's ring lies on
+     its border, and without a gap beside the zone so does the gutter the line would end at, so the stub's own
+     gutter is the way out (a run along a single point would hold no lane, and nothing would keep it on the
+     port's coordinate).
    - *Graph.* Gutter lines are the segments, their intersections and the stubs' attach points the nodes
      (typed arrays). A segment's lane cost is `laneCost` spread over the gutter it belongs to, in proportion
      to length, so running the length of one gutter costs 50 per lane already in it, however many other
@@ -828,6 +831,7 @@ pnpm --filter @gcportrait/layout bench                   # the harness: medians,
 pnpm --filter @gcportrait/layout test:golden:update      # rewrite test/golden/ (see "Golden layouts")
 pnpm --filter @gcportrait/layout metrics                 # regenerate metrics/roboto.json
 pnpm --filter @gcportrait/layout measure                 # route quality per view (--packing: packing rules)
+pnpm --filter @gcportrait/layout explore                 # the random properties 1 000 times each (FC_SEED)
 ```
 
 `lint`, `typecheck`, `test`, `test:budget`, `test:golden:update`, `debug-svg`, `bench` and `measure` compile
@@ -848,20 +852,20 @@ catalog and a stale one would silently change them.
   removal), ports (sides, slots, the shifted grid, bundles by size and by crowding, the majority side,
   spilling to the neighbouring and the opposite sides, zone bands, below the header with no padding and no
   corner clearance, inward ports, keeping the previous pass's plan), port lines (`src/portlines.test.ts`: out
-  through every zone a chip is the last of, one piece per container, none where a neighbour stands beside, a
-  straight exit), stack gaps and hugging stretches in the
-  gutters and the network (with each hugging segment's side length), the length factors (`hugFactors`: a ring
-  side capped per side, the margin), the router (straight edges, heads and tips, zone ends, lanes 8 px apart,
-  widening, hub bundles sharing one trunk and head, one bundle per kind, the re-route laying routes onto
-  widened gutters, scope (order independence: the property test), no U-turn through the margin beside a tall
-  folder nor down to a far row gap below a row of tall sub-folders, single-pass mode by the first pass's
-  search work and the one-round band on a synthetic 2 000-edge Scene (the work counted the same on every run
-  and in any edge order, the weighted rest after the budget, the budget reached but not passed) and its
-  warning), the bundle invariant, the fallback (around obstacles, giving up, in a layout), the heap and the
-  geometry helpers, and the route-quality helper (`src/testing/quality.test.ts`: length, bends, hugging,
-  crossings, detours, the canvas margin and overshoots). `src/constants.test.ts` pins the tuning constants the
-  layout skill and this README state as numbers (near ties, the routing work budgets, the memo's size, the
-  title cap).
+  through every zone a chip is the last of, one piece per container, none where a neighbour stands beside,
+  none of no length, a straight exit, and with no padding and no gaps a route that keeps out of its zone's
+  header), stack gaps and hugging stretches in the gutters and the network (with each hugging segment's side
+  length), the length factors (`hugFactors`: a ring side capped per side, the margin), the router (straight
+  edges, heads and tips, zone ends, lanes 8 px apart, widening, hub bundles sharing one trunk and head, one
+  bundle per kind, the re-route laying routes onto widened gutters, scope (order independence: the property
+  test), no U-turn through the margin beside a tall folder nor down to a far row gap below a row of tall
+  sub-folders, single-pass mode by the first pass's search work and the one-round band on a synthetic
+  2 000-edge Scene (the work counted the same on every run and in any edge order, the weighted rest after the
+  budget, the budget reached but not passed) and its warning), the bundle invariant, the fallback (around
+  obstacles, giving up, in a layout), the heap and the geometry helpers, and the route-quality helper
+  (`src/testing/quality.test.ts`: length, bends, hugging, crossings, detours, the canvas margin and
+  overshoots). `src/constants.test.ts` pins the tuning constants the layout skill and this README state as
+  numbers (near ties, the routing work budgets, the memo's size, the title cap).
 - `src/layout.property.test.ts`: fast-check over random Scene trees (depth up to 8, up to 300 nodes, random
   kinds, chips, empty zones, badges, odd labels and ids such as `__proto__`, up to 200 random edges of every
   head style between any two nodes, a zone and its own descendant included, sometimes inside an organisation
@@ -871,8 +875,15 @@ catalog and a stale one would silently change them.
   pitch (nor two stubs closer than half the port spacing), every row of the packing is full, the layout is
   deterministic and independent of the order of children and edges, pinned arrangements survive widened
   gutters, single-pass mode and the fallback router keep the invariants, and the generated Scenes pass
-  `SceneSchema`.
+  `SceneSchema`. The routing constants' sizing draws 0 for half of its gaps and paddings, the corner where a
+  zone's ring, its border and the gap beside it coincide.
   `src/gutters.test.ts` checks over random Scenes that every gutter line runs through free space.
+  Seeds (`test/fast-check-seed.ts`, by the rule of `@gcportrait/model/testing`): each run draws a fresh one,
+  but on CI (`CI` set) every property runs under the fixed `CI_PROPERTY_SEED`, so the blocking `unit (layout)`
+  leg draws the same inputs on every push, and `FC_SEED=<n>` replays the seed fast-check prints with a
+  failure. `explore` runs every property of these two files 1 000 times (`FC_RUNS`); CI's non-blocking
+  `layout-budget` job runs it under a seed from the run id and names the seed, and a failure's path and
+  counterexample, in its summary.
 - The worker: `src/steps.test.ts` (drained steps equal `layoutScene` over random Scenes; the
   steps after each stage, every `ROUTE_STEP` edges and each pass; errors from the first step; two layouts
   interleaved, one dropped mid-way), `src/hash.test.ts` (pinned keys; independent of key order in every object

@@ -29,7 +29,8 @@
     "prebench": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
     "bench": "tsx scripts/bench.ts",
     "premeasure": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
-    "measure": "tsx scripts/measure.ts"
+    "measure": "tsx scripts/measure.ts",
+    "explore": "FC_RUNS=1000 vitest run src/layout.property.test.ts src/gutters.test.ts"
   },
   "dependencies": {
     "@gcportrait/model": "workspace:*"

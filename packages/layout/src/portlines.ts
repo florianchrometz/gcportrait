@@ -16,9 +16,13 @@
  * side (above a rect is its container's header) and never for a port on the inside of a containing zone.
  * Skipped where a gutter line runs alongside it (its lanes could come within a lane pitch of the port's
  * coordinate), where another port's stub runs on it, or where another port line meets it at nearly the same
- * coordinate (two rects facing each other across a gap at one height).
+ * coordinate (two rects facing each other across a gap at one height); and where it would have no length: with
+ * no padding a zone's ring lies on its border, and with no gap beside the zone so does the gutter it would end
+ * at. Such a line would be a single point, a run along it would hold no segment, and nothing would keep that
+ * run on lane 0: the stub's own gutter line is the way out there.
  */
 import type { Routing } from './constants.js';
+import { EPSILON } from './geometry.js';
 import { BELOW, LEFT, RIGHT, type GutterLine, type GutterPiece, type Gutters } from './gutters.js';
 import type { LayoutNode } from './normalise.js';
 import type { EdgePorts, Port } from './ports.js';
@@ -174,6 +178,8 @@ export function portLines(
       if (pieces.length === 0) return;
       const a = Math.min(...pieces.map((piece) => piece.a));
       const b = Math.max(...pieces.map((piece) => piece.b));
+      // No length: the stub's gutter line lies on the first gap already (no padding, and no gap beside).
+      if (b - a <= EPSILON) return;
       // A gutter line alongside it (its lanes could run within a pitch of the port's), or one ending on the
       // same gutter from the far side at nearly its coordinate (its elbow reaches across), would crowd it.
       const ends = 4 * pitch;

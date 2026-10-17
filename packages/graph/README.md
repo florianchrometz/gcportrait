@@ -370,6 +370,10 @@ pnpm --filter @gcportrait/graph test:budget          # the strict 150 ms budget 
 pnpm --filter @gcportrait/graph test test/views      # the scene composition table and properties
 ```
 
+The property tests draw a fresh seed on every run except on CI, where they run under the fixed
+`CI_PROPERTY_SEED` of `@gcportrait/model/testing`, and under `FC_SEED=<n>`, which replays the seed
+fast-check prints with a failure (`test/fast-check-seed.ts`).
+
 - `src/*.test.ts` — example tests on a small synthetic organisation (`src/testing/scenario.ts`: a Shared VPC
   host and service project, a local VPC, VMs with one subnet, only a network, two subnets, a host subnet, a
   service account, a connector, Cloud Run, an unmapped type) and on test containers whose rules disagree;

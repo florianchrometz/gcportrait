@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { propertyRuns } from '@gcportrait/model/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { ObstacleIndex, type Obstacle } from './geometry.js';
@@ -191,7 +192,7 @@ describe('buildGutters', () => {
           expect(index.hits(p, q).map((o) => o.id)).toEqual([]);
         }
       }),
-      { numRuns: 80 },
+      { numRuns: propertyRuns(80) },
     );
   });
 });

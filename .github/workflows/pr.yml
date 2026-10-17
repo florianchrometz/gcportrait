@@ -13,7 +13,7 @@
 #   lint            pnpm format:check, pnpm lint
 #   typecheck       pnpm typecheck
 #   unit            pnpm test in three legs: layout, frontend, every other Vitest project (below)
-#   layout-budget   the layout's strict budgets and bench table; non-blocking (below)
+#   layout-budget   the layout's strict budgets and bench table, and its properties explored; non-blocking (below)
 #   catalog-check   pnpm catalog:build, pnpm catalog:check
 #   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
 #   e2e             Playwright on Chromium in five legs: the desktop specs in three, the phone and tablet ones in two
@@ -131,6 +131,12 @@ jobs:
   # one is missed; the strict run is part of the layout's local checks (packages/layout/README.md,
   # "Performance"). To make it blocking (e.g. on a larger or self-hosted runner, once its margin is known),
   # remove continue-on-error and add it to `required`.
+  #
+  # The job then explores the layout's properties over random Scenes, 1 000 runs each
+  # (`pnpm --filter @gcportrait/layout explore`), under a seed taken from the run id: a re-run draws the same
+  # inputs, a new push others. The blocking `unit (layout)` leg runs them under one fixed seed (CI_PROPERTY_SEED
+  # of @gcportrait/model/testing), so a counterexample the change under test did not bring in is reported here,
+  # with its seed and path, instead of failing an unrelated pull request.
   layout-budget:
     name: layout-budget
     runs-on: ubuntu-latest
@@ -142,11 +148,13 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Layout budgets, strict, for a quiet M1-class machine (S 10 ms, M 60 ms, L 400 ms, XL collapsed 2 s in a worker)
+        id: budget
         run: pnpm --filter @gcportrait/layout test:budget
       # The summary names the runner's CPU: the figures are this runner's, not those of the machine the budgets
       # describe. lscpu names the CPU on every hosted runner (/proc/cpuinfo has no model name on Arm); newer
       # versions indent the line under its vendor.
       - name: Bench figures in the job summary
+        id: bench
         if: always()
         shell: bash
         run: |
@@ -170,8 +178,42 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
       - name: Warn when a budget is missed
-        if: failure()
+        if: failure() && (steps.budget.outcome == 'failure' || steps.bench.outcome == 'failure')
         run: echo "::warning title=Layout budget::A strict layout budget was missed on this shared runner. The budgets (gcp-diagram-layout skill §7) describe a quiet M1-class machine, so the runner's figures in the job summary are expected to exceed them by a margin; the blocking unit (layout) leg asserts twice the budgets."
+      # fast-check prints a failing property's seed, path and shrunk counterexample; the summary keeps those
+      # lines, and the full output is in the step's log.
+      - name: Explore the layout's properties (1 000 runs each, a seed from the run id)
+        id: explore
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          FC_SEED=$((RUN_ID % 2147483647))
+          export FC_SEED
+          status=0
+          pnpm --silent --filter @gcportrait/layout explore > layout-explore.txt 2>&1 || status=$?
+          cat layout-explore.txt
+          {
+            echo '### Layout properties explored: 1 000 runs each'
+            echo
+            echo "Seed ${FC_SEED}, from the run id. Replay: \`FC_SEED=${FC_SEED} pnpm --filter @gcportrait/layout explore\`."
+            echo
+            if [ "$status" -eq 0 ]; then
+              echo 'Every property held.'
+            else
+              echo 'A property failed. fast-check names its seed, path and counterexample (the full output is in the log):'
+              echo
+              echo '```text'
+              grep -E 'FAIL|Property failed|seed:|Counterexample|Tests ' layout-explore.txt | cut -c1-4000 | head -n 40 || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Warn when an explored property fails
+        if: failure() && steps.explore.outcome == 'failure'
+        run: echo "::warning title=Layout property::A layout property failed in the exploration (1 000 runs each, a seed from the run id). The job summary names the seed, the path and the counterexample; the blocking unit (layout) leg runs the properties under a fixed seed."
 
   catalog-check:
     name: catalog-check

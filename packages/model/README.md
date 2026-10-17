@@ -396,3 +396,10 @@ finds the machine's one-minute load average above 1.5 per core (`OVERLOAD_PER_CO
 (`onCi`: `CI` set and not `false` or `0`) and never in a strict budget run. This package has no Node types,
 so the helpers reach the process, its clock and its timers through `globalThis` and `node:os` through
 `process.getBuiltinModule`; loaded anywhere else, they find no load and never skip.
+
+And the property tests' seed and number of runs, which the layout's and the graph's test setups give
+fast-check: `propertySeed()` is `FC_SEED` when set (an integer); else, on CI (`onCi`), the fixed
+`CI_PROPERTY_SEED` (42), so that a blocking run draws the same inputs on every push; else undefined, so that
+fast-check draws a fresh seed for every property. `propertyRuns(runs)` is `FC_RUNS` when set (a positive
+integer), else `runs`, for an exploration such as `pnpm --filter @gcportrait/layout explore` (1 000 runs
+each).

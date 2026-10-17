@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * Pins fast-check's seed when `FC_SEED` is set, so that two coverage runs draw the same random inputs and reach
- * the same branches: `FC_SEED=42 pnpm --filter @gcportrait/graph exec vitest run --coverage`. Without it every
- * run draws a fresh seed, as the properties are meant to.
+ * Gives fast-check the property tests' seed by the rule of `@gcportrait/model/testing` (`propertySeed`):
+ * `FC_SEED` when set, so that a failure replays and two coverage runs draw the same random inputs and reach the
+ * same branches (`FC_SEED=42 pnpm --filter @gcportrait/graph exec vitest run --coverage`); on CI a fixed seed,
+ * so the blocking run draws the same inputs on every push; anywhere else none, and every run draws a fresh
+ * seed, as the properties are meant to.
  */
+import { propertySeed } from '@gcportrait/model/testing';
 import fc from 'fast-check';
 
-const seed = process.env['FC_SEED'];
-if (seed !== undefined && seed !== '') {
-  const value = Number(seed);
-  if (!Number.isSafeInteger(value)) throw new Error(`FC_SEED must be an integer, not "${seed}"`);
-  fc.configureGlobal({ seed: value });
-}
+const seed = propertySeed();
+if (seed !== undefined) fc.configureGlobal({ ...fc.readConfigureGlobal(), seed });
