@@ -136,7 +136,8 @@ you came from**:
 
 The markers last while the tick stays on screen (another lens or filter on the same tick keeps them) and the
 next tick replaces them. The tick you came from is not part of the link, so a link or a reload shows its tick
-without markers. The markers are part of the drawing: an SVG or PNG export of a compared tick carries them.
+without markers. The markers are part of the drawing: an SVG, PNG or draw.io export of a compared tick
+carries them.
 
 ## 6. Playback
 

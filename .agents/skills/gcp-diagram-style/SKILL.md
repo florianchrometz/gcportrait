@@ -201,11 +201,11 @@ is selected (§6), timeline markers when a tick is active. Title block top-left:
 `ink`), lens and `readTime` in ISO-8601 with the viewer's timezone offset (11 px, `muted`), then the tagline
 "gcportrait.app - Visualize your Google Cloud Infrastructure" (10.5 px/400, `muted`; `TAGLINE` in
 `frontend/src/branding.ts`). The title block stops there, on the interactive canvas and in every export alike
-(SVG, PNG, `pnpm render`, the render API, the layout's debug renders): no drawing carries the non-affiliation
-statement, neither in the title block nor in the SVG's `<desc>`, which holds neutral metadata only (scope,
-lens, read time, "Drawn with gcportrait."). The statement lives in the app footer and the website footer and
-in the long form (AGENTS.md, "Non-affiliation, brand and legal"). Legend and title block are hidden from the
-interactive canvas when the user disables them in settings, but always included in exports.
+(SVG, PNG, draw.io, `pnpm render`, the render API, the layout's debug renders): no drawing carries the
+non-affiliation statement, neither in the title block nor in the SVG's `<desc>`, which holds neutral metadata
+only (scope, lens, read time, "Drawn with gcportrait."). The statement lives in the app footer and the website
+footer and in the long form (AGENTS.md, "Non-affiliation, brand and legal"). Legend and title block are hidden
+from the interactive canvas when the user disables them in settings, but always included in exports.
 
 ## 8. Export rules
 

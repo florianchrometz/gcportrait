@@ -173,8 +173,8 @@ No, apart from being fetched. Snapshots, the timeline's days and your saved view
 IndexedDB, in this browser profile only, and the Snapshots page deletes them. The backend has no database and
 no bucket: it forwards your Google token to Cloud Asset Inventory, Resource Manager or Cloud Storage, streams
 the answer to your browser, and forgets it. The token stays in the tab's memory: it is never stored, logged or
-put in a URL, and signing out revokes it. Diagrams are laid out and drawn in your browser; SVG, PNG and
-snapshot files are downloads you start, and nothing is uploaded anywhere. The app has no telemetry and no
+put in a URL, and signing out revokes it. Diagrams are laid out and drawn in your browser; SVG, PNG, draw.io
+and snapshot files are downloads you start, and nothing is uploaded anywhere. The app has no telemetry and no
 analytics. The backend's log lines name request paths, never tokens, bodies or query strings; Cloud Run's own
 request log is the operator's ([self-host-options.md](self-host-options.md#logs)). A demo-only instance, like
 `gcportrait.app/demo/`, has no sign-in, calls no Google API and stores nothing on its server; the demo

@@ -2,7 +2,7 @@
   "name": "@gcportrait/render",
   "version": "1.0.0",
   "private": true,
-  "description": "gcportrait render library: a snapshot and a view drawn as the app draws them (the frontend's SVG components rendered without a browser) and rasterised with resvg-wasm; the one code path behind `pnpm render` and the backend's POST /api/render.",
+  "description": "gcportrait render library: a snapshot and a view drawn as the app's renderer draws them (the frontend's SVG components rendered without a browser), as a standalone SVG, a PNG rasterised with resvg-wasm and a draw.io file; the one code path behind `pnpm render` and the backend's POST /api/render.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,

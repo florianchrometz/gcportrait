@@ -37,7 +37,7 @@ maintainer's reads anyone's Google Cloud.
 3. **Inventory data**: the asset metadata of a scope (names, networks, addresses, configuration). Sensitive
    to its owner; it flows Google → backend → browser and is kept in the browser's IndexedDB as snapshots.
 4. **Identity**: a person's email (tokeninfo, Resource Manager answers), the scopes they look at.
-5. **Exports**: PNG, SVG and snapshot JSON files the person downloads; they carry the inventory.
+5. **Exports**: PNG, SVG, draw.io and snapshot JSON files the person downloads; they carry the inventory.
 6. **Availability** of an instance and of the demo.
 7. **The supply chain**: the source, the npm dependencies, the base images, the CI workflows and the image on
    ghcr.io; and the licence obligations that travel with what is conveyed.
@@ -140,9 +140,9 @@ OAuth client (the maintainer's open question, security.md section 12, O1).
   COEP `require-corp`); the backend has no account and no OAuth client (start-up refuses them with
   `DEMO_ONLY=true`). Its threats are availability (rate limit per address, Cloud Run's instance cap) and the
   integrity of what it serves (the image and the legal texts the operator sets).
-- **Exports**: PNG, SVG and snapshot JSON are made in the browser and downloaded only when the person asks;
-  nothing is uploaded anywhere (principle 5). They carry the inventory, so whoever receives one learns what it
-  shows; the export menu and the title block say what is drawn. An exported SVG holds no script.
+- **Exports**: PNG, SVG, draw.io and snapshot JSON are made in the browser and downloaded only when the person
+  asks; nothing is uploaded anywhere (principle 5). They carry the inventory, so whoever receives one learns
+  what it shows; the export menu and the title block say what is drawn. An exported SVG holds no script.
 
 ## 8. Threats and controls
 

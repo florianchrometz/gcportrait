@@ -134,7 +134,10 @@ describe.each(['light', 'dark'] as const)('the markers of a diff day, %s theme',
   });
 });
 
-/** Demo M's day after its perimeter was removed, its perimeter focus at the folder level, as the app draws it. */
+/**
+ * Demo M's day after its perimeter was removed, its perimeter focus at the folder level, as the app's renderer
+ * draws it.
+ */
 async function perimeterModel(): Promise<DiagramModel> {
   const [before, after] = await perimeterRemoved();
   const spec = normalizeViewSpec({

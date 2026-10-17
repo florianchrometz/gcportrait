@@ -8,12 +8,12 @@ trademarks of Google and are used under Google's icon usage terms.
 
 The website at <https://gcportrait.app> presents gcportrait as Google Cloud architecture diagrams you use
 three ways: self-hosted in your own Google Cloud project, as a web app, and through an API that returns any
-view as SVG or PNG without the app. Its landing page gives each way its proof (the installer line that deploys
-it, a still of the app and the demo, a render request with the sample export it returns), shows the features
-with screenshots and animated demos of the demo organisations, and presents the author, with the Person
-structured data; the site also renders the user guides of this folder and publishes the asset catalog's
-coverage ([AGENTS.md](../AGENTS.md), "Modes and hosting"). It serves the sign-in-free demo itself, at the
-address <https://gcportrait.app/demo/>: a static build of the app in demo-only mode ([The demo](#the-demo)), and
+view as SVG, PNG or draw.io without the app. Its landing page gives each way its proof (the installer line
+that deploys it, a still of the app and the demo, a render request with the sample export it returns), shows
+the features with screenshots and animated demos of the demo organisations, and presents the author, with
+the Person structured data; the site also renders the user guides of this folder and publishes the asset
+catalog's coverage ([AGENTS.md](../AGENTS.md), "Modes and hosting"). It serves the sign-in-free demo itself,
+at the address <https://gcportrait.app/demo/>: a static build of the app in demo-only mode ([The demo](#the-demo)), and
 links to the self-hosting guide. Everything is hosted on GitHub: one GitHub Pages site for the website and the
 demo, the images on ghcr.io, releases and CI on GitHub Actions. The site is the `website/` package, a static
 Astro build for GitHub Pages; [website/README.md](../website/README.md) describes its code. This guide is for
@@ -452,13 +452,13 @@ on macOS, regenerate on Linux (or in CI) instead.
 ## Sample exports
 
 The site offers real exports to download: SVG, PNG and draw.io files of the synthetic demo organisations,
-the drawings the Export menu saves, each with its title block (the scope, the lens with the read time, the
-gcportrait.app tagline) and the legend. Like every drawing, no file carries the non-affiliation line, neither
-in the title block nor in the SVG's `<desc>`, which holds the scope, the lens, the read time and "Drawn with
-gcportrait." only: the site states it in the footer notice of every page and in the long form in the landing
-page's author section. `node scripts/exports.mjs` makes them with `pnpm render` (each view as the app's
-renderer draws it, rasterised with resvg at 2×, the export's default) and writes them to
-`docs/media/exports/`:
+the app's renderer's drawing of the views the Export menu offers, each with its title block (the scope, the
+lens with the read time, the gcportrait.app tagline) and the legend. Like every drawing, no file carries the
+non-affiliation line, neither in the title block nor in the SVG's `<desc>`, which holds the scope, the lens,
+the read time and "Drawn with gcportrait." only: the site states it in the footer notice of every page and in
+the long form in the landing page's author section. `node scripts/exports.mjs` makes them with `pnpm render`
+(each view as the app's renderer draws it, rasterised with resvg at 2×, the export's default) and writes them
+to `docs/media/exports/`:
 
 | Sample | View | PNG (light) | Files per theme |
 |---|---|---|---|
