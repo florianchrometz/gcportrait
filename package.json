@@ -21,7 +21,7 @@
     "prelint": "pnpm run catalog:build --quiet",
     "lint": "eslint . --max-warnings=0",
     "pretypecheck": "pnpm run catalog:build --quiet",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && pnpm --silent --filter @gcportrait/website run typecheck:astro",
     "pretest": "pnpm run catalog:build --quiet",
     "test": "vitest run",
     "test:watch": "vitest",

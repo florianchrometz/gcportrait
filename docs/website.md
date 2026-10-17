@@ -54,6 +54,7 @@ pnpm --filter @gcportrait/website mobile   # every page on phones in a browser, 
 pnpm --filter @gcportrait/website fillable # the fillable commands in Chromium, Firefox, WebKit and on phones (Fillable commands)
 pnpm --filter @gcportrait/website stars    # the header's repository widget, live, in a browser (GitHub repository widget)
 pnpm --filter @gcportrait/website analytics  # the page views in a browser, on a build with WEBSITE_ANALYTICS=1 (Analytics)
+pnpm --filter @gcportrait/website typecheck  # the site's TypeScript: tsc -b over the .ts files, then astro check over the .astro files
 ```
 
 The build reads everything from the repository at build time: the guides listed in `website/src/data/docs.ts`
@@ -70,6 +71,15 @@ or copies the bundle that `WEBSITE_DEMO_DIST` names (a directory relative to the
 for `/demo/`), which is what the workflows do after building the demo as a step of its own. Order, either way:
 the demo is built (or found) after Astro has written the site's pages, so `pnpm website:build` alone gives the
 whole site.
+
+The site's TypeScript is checked without a build: `pnpm --filter @gcportrait/website typecheck` runs `tsc -b`
+over the `.ts` files (`website/tsconfig.json`), then `typecheck:astro`, which checks the `.astro` files'
+frontmatter, expressions and scripts with `@astrojs/check`, the checker of `astro check`
+(`website/scripts/astro-check.ts`, over `website/tsconfig.astro.json`). The root `pnpm typecheck`, which `pnpm
+check` and CI's `typecheck` job run, runs `typecheck:astro` after its own `tsc -b`. ESLint does not read
+`.astro` files, so every diagnostic fails the check, hints included: a declaration never read, a deprecated
+API, an `await` without effect. [website/README.md](../website/README.md) says why the script calls the
+checker itself and what to do when it cannot load the checker.
 
 `pnpm website:check` fails a page that lacks a unique title (at most 60 characters) or description (50 to 160
 characters), as search results show them whole, the canonical URL on `https://gcportrait.app` (the 404 page

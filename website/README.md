@@ -37,6 +37,7 @@ From the repository root:
 | Regenerate the screenshots, animated demos and link-preview images (`docs/media/`) | `pnpm media` (`--only scene:ID`, `--theme light`; `pnpm media --check` for staleness) |
 | Regenerate the sample exports (`docs/media/exports/`, SVG, PNG and draw.io files of demo S and M in both themes, from `pnpm render`, with WebP previews; like every export, without an affiliation line) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render`: draw again and compare byte for byte) |
 | Unit tests, lint, types | `pnpm --filter @gcportrait/website test` (also `lint`, `typecheck`) |
+| Type-check the `.astro` files alone: `@astrojs/check` over `tsconfig.astro.json`, failing on any diagnostic, hints such as an unused import included (`typecheck` runs it after `tsc -b`, and so does the root `pnpm typecheck`) | `pnpm --filter @gcportrait/website typecheck:astro` |
 
 **Values to fill in.** In a guide's code a value the reader fills in is written `YOUR_` and capitals as one
 word (`YOUR_PROJECT`, `YOUR_ORG_ID`), a variable of `COMMAND_VARIABLES` in `@gcportrait/model`; capitals
@@ -261,9 +262,19 @@ Pages does.
   refers to it by its id) and never an Organization, and no metadata carries the non-affiliation statement
   (AGENTS.md, Non-affiliation, brand and legal). `sitemap.xml` and `robots.txt` are generated. The 404 page,
   served at every unknown address, is `noindex` and names no canonical URL.
-- The `.astro` files are compiled by the build but not type-checked (`@astrojs/check` does not install cleanly
-  with pnpm in this workspace); their logic lives in typed modules under `src/lib/`, which `tsc -b` and ESLint
-  check.
+- The `.astro` files are type-checked by `@astrojs/check`, the checker of `astro check`
+  (`scripts/astro-check.ts`, the `typecheck:astro` script, which `typecheck` and the root `pnpm typecheck` run
+  after `tsc -b`): their frontmatter, expressions and scripts, under `tsconfig.astro.json`, which holds the
+  `.astro` files and `src/env.d.ts`; the `.ts` files stay with `tsconfig.json` and `tsc -b`. ESLint does not
+  read `.astro` files, so every diagnostic fails the check, the hints that stand in for its rules included (a
+  declaration never read, a deprecated API, an `await` without effect, a promise chain an async function
+  would replace). Their logic lives in typed modules under `src/lib/`, which `tsc -b` and ESLint check, and
+  an exception to a rule belongs there, with its disable comment's reason. The script calls the checker
+  itself, not through `astro check`, which offers to install a checker it cannot load and otherwise exits 0
+  with nothing checked; here a checker that cannot be loaded fails the check, naming the missing module.
+  Should that module be one an earlier install of the tree left out as an optional package for another
+  platform, a later `pnpm install` keeps it out: remove `node_modules` at the repository root and run `pnpm
+  install` again.
 
 ## Layout
 
@@ -275,10 +286,10 @@ public/                CNAME (the favicon and the installer are copied by the bu
 scripts/               check-site.ts (pnpm website:check), lighthouse.ts (pnpm website:lighthouse), mobile.ts (the
                        phone check), fillable.ts (the fillable-commands check in three engines and on two phones),
                        stars.ts (the repository widget's live check), demo.ts (the demo's check in a browser),
-                       analytics.ts (the page views' check in a browser),
-                       browser.ts (axe-core, GitHub's mocked answers and other helpers the browser checks share), serve.ts
-                       (the built site served as GitHub Pages serves it: byte ranges, `x.html` for `x`, the
-                       trailing-slash redirect)
+                       analytics.ts (the page views' check in a browser), astro-check.ts (the .astro files'
+                       type check, over tsconfig.astro.json), browser.ts (axe-core, GitHub's mocked answers and
+                       other helpers the browser checks share), serve.ts (the built site served as GitHub Pages
+                       serves it: byte ranges, `x.html` for `x`, the trailing-slash redirect)
 src/site.ts            the fixed facts: hosts, the demo, repository, image, the footer notice and the long form (equal
                        to the app's)
 src/data/              docs.ts (the docs menu, with /exports/ after the Export guide), media.json (the generated

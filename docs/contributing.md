@@ -91,7 +91,7 @@ Run it before every push. It runs these steps in order and stops at the first fa
 |---|---|---|
 | `format:check` | `prettier --check .` | a TypeScript, JavaScript, JSON, YAML, CSS or HTML file is not formatted. Markdown is excluded: it is hand-wrapped prose at 110 columns. |
 | `lint` | `pnpm catalog:build`, then `eslint . --max-warnings=0` | any lint rule fails: typescript-eslint's strict type-checked rules, `any`, an import across a package boundary. |
-| `typecheck` | `pnpm catalog:build`, then `tsc -b` | any project listed in the root `tsconfig.json` has a type error. |
+| `typecheck` | `pnpm catalog:build`, then `tsc -b`, then the website's `typecheck:astro` (`@astrojs/check` over its `.astro` files) | any project listed in the root `tsconfig.json` has a type error, or a website `.astro` file has any diagnostic, a hint such as an unused import included ([website.md](website.md), "Building and checking"). |
 | `test` | `pnpm catalog:build`, then `vitest run` | a unit test fails in any package or in the repository tooling (`scripts/**/*.test.ts`). |
 | `catalog:check` | the catalog package's `check` script (`packages/catalog/tooling/check.ts`) | the asset catalog is invalid: a schema error in a YAML file, a type described twice, a type missing from the newest official list, an official type neither mapped nor listed in the `known-unmapped/<group>.yaml` that owns it, a rule without a proving fixture, a fixture with real-looking data, or a committed `src/generated/` file. It also prints the coverage report, per group. |
 | `provenance` | `node scripts/check-provenance.mjs` | a provenance rule is broken (section 5). |

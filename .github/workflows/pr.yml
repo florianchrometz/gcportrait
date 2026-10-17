@@ -11,7 +11,7 @@
 # The jobs and what they run (the same commands as locally; docs/contributing.md has the table of the jobs):
 #
 #   lint            pnpm format:check, pnpm lint
-#   typecheck       pnpm typecheck
+#   typecheck       pnpm typecheck (tsc -b, then astro check over the website's .astro files)
 #   unit            pnpm test in three legs: layout, frontend, every other Vitest project (below)
 #   layout-budget   the layout's strict budgets and bench table, and its properties explored; non-blocking (below)
 #   catalog-check   pnpm catalog:build, pnpm catalog:check
@@ -72,7 +72,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: TypeScript (tsc -b over every project)
+      - name: TypeScript (tsc -b over every project, then astro check over the website's .astro files)
         run: pnpm run typecheck
 
   # `pnpm test` (every Vitest project of vitest.config.ts) in three legs. The layout runs alone because its

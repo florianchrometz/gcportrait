@@ -1,7 +1,8 @@
 {
   // The website's TypeScript: the build-time library under src/lib and src/data, the site checker under
-  // scripts/, and the config files. .astro files are checked by `astro check` (the package's typecheck script,
-  // `pnpm website:typecheck`); they import from src/lib with .js extensions like every NodeNext workspace.
+  // scripts/, and the config files. The .astro files are tsconfig.astro.json's, which `astro check` reads
+  // (scripts/astro-check.ts, the package's typecheck:astro script, after `tsc -b` in its typecheck and the root
+  // `pnpm typecheck`); they import from src/lib with .js extensions like every NodeNext workspace.
   "extends": "../tsconfig.node.json",
   "compilerOptions": {
     // The video component's script and the site checker's parsed pages use DOM types next to Node's.
