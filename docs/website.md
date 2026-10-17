@@ -872,7 +872,9 @@ one theme). Each step waits for the state it needs, never for a time: for the vi
 (`data-diagram-ready`) with the drawing before it while the next view is prepared, so after the drill-in and
 the day back the check waits for the next drawing, a ready canvas whose number (`data-drawing`) differs from
 the one read before the click or the key, and it opens the project it drills into on a page loaded afresh,
-whose first drawing is that view's; the axe run and the screenshots see the view they name.
+whose first drawing is that view's; the axe run and the screenshots see the view they name. A step that fails
+says why: a wait that runs out (Playwright's `TimeoutError`) names what it waited for, and any other error (a
+closed page, a crashed browser, a failed navigation) is reported with its own message.
 
 **When it changes.** The demo is the app of the commit the site is built from: `main` on every deploy of the
 site, the tag on a release. In `pnpm website:dev`, `/demo/` serves the last `pnpm demo:static` bundle

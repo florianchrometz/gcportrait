@@ -53,6 +53,7 @@ import {
   axeSource,
   isRepositoryRequest,
   settle,
+  timeoutGives,
   type MockedFacts,
 } from './browser.js';
 import { serve } from './serve.js';
@@ -175,7 +176,7 @@ async function liveFacts(page: Page, facts: MockedFacts | undefined): Promise<vo
       formatCount(facts.stars),
       { timeout: 3000 },
     )
-    .catch(() => undefined);
+    .catch(timeoutGives(undefined));
   await settle(page);
 }
 

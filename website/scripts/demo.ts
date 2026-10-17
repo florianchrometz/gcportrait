@@ -18,6 +18,9 @@
  *   app there; /demo without its slash is redirected; an unknown address below /demo/ is the site's 404 page;
  * - throughout: no request leaves the site's origin, no Content Security Policy violation, no uncaught error.
  *
+ * A step that fails says why: a wait that ran out names what it waited for, and any other error (a closed page, a
+ * crashed browser, a failed navigation) is reported with its own message.
+ *
  *   pnpm --filter @gcportrait/website demo [--theme light|dark]... [--shots DIR] [--dist DIR]
  *
  * `--shots DIR` saves screenshots of the Connect page and of diagrams there. Chromium from
@@ -30,7 +33,7 @@ import { parseArgs } from 'node:util';
 import { chromium, type Browser, type BrowserContext, type Locator, type Page } from 'playwright';
 
 import { DEMO_URL, IMPRESSUM_URL, MAINTAINER_URL, PRIVACY_URL, REPOSITORY_URL } from '../src/site.js';
-import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, axeSource } from './browser.js';
+import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, axeSource, isTimeout } from './browser.js';
 import { serve } from './serve.js';
 
 const VIEWPORT = { width: 1440, height: 900 };
@@ -98,11 +101,16 @@ async function violations(page: Page): Promise<string[]> {
   }
 }
 
+/**
+ * Waits until `locator` shows. A wait that runs out names `what`; any other error (a closed page, a crashed browser)
+ * comes through as it is.
+ */
 async function visible(locator: Locator, what: string, timeout = STEP_TIMEOUT): Promise<void> {
   try {
     await locator.first().waitFor({ state: 'visible', timeout });
-  } catch {
-    throw new Error(`${what} did not appear within ${String(timeout / 1000)} s`);
+  } catch (error) {
+    if (!isTimeout(error)) throw error;
+    throw new Error(`${what} did not appear within ${String(timeout / 1000)} s`, { cause: error });
   }
 }
 
@@ -143,13 +151,15 @@ function hashOf(address: string | URL): string {
 
 /**
  * Waits until the page's address holds `part` in its hash. The app writes the view there through the history API, a
- * navigation within the page (no new document), which Playwright follows.
+ * navigation within the page (no new document), which Playwright follows. A wait that runs out says what the address
+ * is; any other error comes through as it is.
  */
 async function waitForHash(page: Page, part: string): Promise<void> {
   try {
     await page.waitForURL((url) => hashOf(url).includes(part), { timeout: STEP_TIMEOUT });
-  } catch {
-    throw new Error(`the address never got ${part} (it is ${page.url()})`);
+  } catch (error) {
+    if (!isTimeout(error)) throw error;
+    throw new Error(`the address never got ${part} (it is ${page.url()})`, { cause: error });
   }
 }
 

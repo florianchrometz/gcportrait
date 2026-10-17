@@ -69,6 +69,7 @@ import {
   isReleaseRequest,
   isRepositoryRequest,
   settle,
+  timeoutGives,
   type MockedFacts,
 } from './browser.js';
 import { serve } from './serve.js';
@@ -564,7 +565,7 @@ async function withFacts(
         { timeout: 4000 },
       )
       .then(() => true)
-      .catch(() => false);
+      .catch(timeoutGives(false));
     await page.waitForTimeout(200);
     await settle(page);
     const after = await headerBoxes(page);
@@ -631,7 +632,7 @@ async function withFacts(
         now.texts.stars,
         { timeout: 4000 },
       )
-      .catch(() => undefined);
+      .catch(timeoutGives(undefined));
     await page.waitForTimeout(500);
     const again = await headerState(page);
     if (hold.requests.length !== asked)

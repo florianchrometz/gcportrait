@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 /**
- * What the website's browser checks share (scripts/mobile.ts, scripts/fillable.ts, scripts/stars.ts): the stand-in for
- * tsx's name helper, axe-core read from the e2e package, a wait for the layout to settle, and GitHub's answers to the
- * header's repository widget given by the check itself.
+ * What the website's browser checks share (scripts/mobile.ts, scripts/fillable.ts, scripts/stars.ts, scripts/demo.ts):
+ * the stand-in for tsx's name helper, axe-core read from the e2e package, a wait for the layout to settle, how to tell
+ * a wait that ran out from any other failure, and GitHub's answers to the header's repository widget given by the check
+ * itself.
  */
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { BrowserContext, Page } from 'playwright';
+import { errors, type BrowserContext, type Page } from 'playwright';
 
 export const WEBSITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -46,6 +47,25 @@ export async function axeProblems(page: Page, source: string): Promise<string[]>
         .map((node) => JSON.stringify(node.target))
         .join(', ')})`,
   );
+}
+
+/**
+ * Whether `error` is Playwright's timeout: a wait or an action that ran out. A closed page, a crashed browser or a
+ * failed navigation is another error, which a check reports as it is, never as a wait that ran out.
+ */
+export function isTimeout(error: unknown): error is errors.TimeoutError {
+  return error instanceof errors.TimeoutError;
+}
+
+/**
+ * A `.catch` handler for a wait whose running out the check expects: `value` for Playwright's timeout, every other
+ * error thrown on (`page.waitForFunction(…).catch(timeoutGives(undefined))`).
+ */
+export function timeoutGives<T>(value: T): (error: unknown) => T {
+  return (error) => {
+    if (isTimeout(error)) return value;
+    throw error;
+  };
 }
 
 /** Two animation frames: the layout after a resize or a click has settled. */

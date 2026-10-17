@@ -78,6 +78,7 @@ import {
   axeProblems,
   axeSource,
   settle,
+  timeoutGives,
 } from './browser.js';
 import { serve } from './serve.js';
 
@@ -650,7 +651,7 @@ async function interact(
         timeout: 5000,
       },
     )
-    .catch(() => undefined);
+    .catch(timeoutGives(undefined));
   const copied = await copiedText(page, run);
   const expected = filled(block.text, values);
   if (copied !== expected)
