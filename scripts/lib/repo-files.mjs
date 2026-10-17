@@ -384,31 +384,57 @@ function isSkippedFileName(name) {
  */
 
 /**
- * The files git tracks in the work tree whose top is `root` (it holds `.git`), as root-relative POSIX paths;
- * none when `root` is not the top of a work tree or git cannot be run.
+ * Tracked files and untracked files permitted by repository .gitignore files, as root-relative POSIX paths.
+ * Local assistant and environment files are excluded unless tracked. Personal excludes cannot hide files.
+ * Undefined without a work tree or git executable; other git failures stop the check.
  * @param {string} root
- * @returns {string[]}
+ * @returns {string[] | undefined}
  */
-function listTrackedFiles(root) {
-  if (!existsSync(path.join(root, '.git'))) return [];
+function listGitFiles(root) {
+  if (!existsSync(path.join(root, '.git'))) return undefined;
   try {
-    return execFileSync('git', ['ls-files', '-z'], {
-      cwd: root,
-      encoding: 'utf8',
-      maxBuffer: 256 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    })
+    return execFileSync(
+      'git',
+      ['ls-files', '-z', '-t', '--cached', '--others', '--exclude-per-directory=.gitignore'],
+      {
+        cwd: root,
+        encoding: 'utf8',
+        maxBuffer: 256 * 1024 * 1024,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      },
+    )
       .split('\0')
-      .filter((relPath) => relPath !== '');
-  } catch {
-    return [];
+      .filter((entry) => {
+        if (entry === '') return false;
+        if (!entry.startsWith('? ')) return true;
+        const relPath = entry.slice(2);
+        const privatePart = relPath
+          .split('/')
+          .some(
+            (name) =>
+              ASSISTANT_DIR_NAMES.includes(name) ||
+              ASSISTANT_FILE_NAMES.includes(name) ||
+              ((name === '.env' || name.startsWith('.env.')) && name !== '.env.example'),
+          );
+        return (
+          !privatePart &&
+          relPath !== '.github/copilot-instructions.md' &&
+          !relPath.startsWith('.github/instructions/')
+        );
+      })
+      .map((entry) => entry.slice(2));
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return undefined;
+    throw error;
   }
 }
 
 /**
- * Every file under `root` that the tooling looks at: the walk below, in a stable (sorted) order, then every
- * file git tracks that the walk skipped (one added under an ignored path with `git add --force`, say), so
- * that nothing committed escapes the checks. Symbolic links are never followed: they are returned with
+ * Every file under `root` that the tooling looks at, in a stable (sorted) order: git's tracked and untracked
+ * paths, or the default filesystem walk without git. Git lists embedded repositories as directories; the
+ * parent controls entry into them, then their own ignore and tracked rules govern their contents.
+ * Force-added ignored files remain checked, so that
+ * nothing committed escapes the checks. Symbolic links are never followed: they are returned with
  * `isSymlink: true` so that the provenance check can report them (a link could otherwise reach outside the
  * repository unnoticed) and the licence rewriter can skip them. Links inside skipped directories are not
  * listed, like everything else there, unless git tracks them.
@@ -418,8 +444,53 @@ function listTrackedFiles(root) {
 export function listRepoFiles(root) {
   /** @type {RepoFile[]} */
   const files = [];
+  const gitFiles = listGitFiles(root);
+  if (gitFiles !== undefined) {
+    /** @type {Map<string, import('node:fs').Stats | undefined>} */
+    const checked = new Map();
+    /** @type {Map<string, RepoFile>} */
+    const found = new Map();
+    for (const listed of gitFiles) {
+      const candidate = listed.replace(/\/$/, '');
+      let relPath = '';
+      for (const part of candidate.split('/')) {
+        relPath = relPath === '' ? part : `${relPath}/${part}`;
+        const absPath = path.join(root, relPath);
+        if (!checked.has(relPath)) {
+          try {
+            checked.set(relPath, lstatSync(absPath));
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              'code' in error &&
+              (error.code === 'ENOENT' || error.code === 'ENOTDIR')
+            )
+              checked.set(relPath, undefined);
+            else throw error;
+          }
+        }
+        const stats = checked.get(relPath);
+        if (stats === undefined) break;
+        if (stats.isDirectory()) {
+          if (relPath === candidate) {
+            for (const file of listRepoFiles(absPath)) {
+              const nestedPath = `${relPath}/${file.relPath}`;
+              found.set(nestedPath, { ...file, relPath: nestedPath });
+            }
+          }
+          continue;
+        }
+        if (stats.isSymbolicLink() || stats.isFile())
+          found.set(relPath, { absPath, relPath, isSymlink: stats.isSymbolicLink() });
+        break;
+      }
+    }
+    return [...found.values()].sort((left, right) =>
+      left.relPath < right.relPath ? -1 : left.relPath > right.relPath ? 1 : 0,
+    );
+  }
   /** @param {string} relDir */
-  const visit = (relDir) => {
+  function visit(relDir) {
     const absDir = path.join(root, relDir);
     const entries = readdirSync(absDir, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
@@ -439,22 +510,8 @@ export function listRepoFiles(root) {
         files.push({ absPath: path.join(root, relPath), relPath, isSymlink: false });
       }
     }
-  };
-  visit('');
-  const walked = new Set(files.map((file) => file.relPath));
-  for (const relPath of listTrackedFiles(root).sort()) {
-    if (walked.has(relPath)) continue;
-    const absPath = path.join(root, relPath);
-    /** @type {import('node:fs').Stats} */
-    let stats;
-    try {
-      stats = lstatSync(absPath);
-    } catch {
-      continue; // deleted in the work tree, not yet in a commit
-    }
-    if (stats.isSymbolicLink()) files.push({ absPath, relPath, isSymlink: true });
-    else if (stats.isFile()) files.push({ absPath, relPath, isSymlink: false });
   }
+  visit('');
   return files;
 }
 
@@ -467,7 +524,9 @@ export function listRepoFiles(root) {
  */
 export function readProjectLicenseId(root) {
   const manifestPath = path.join(root, 'package.json');
-  if (!existsSync(manifestPath)) return FALLBACK_LICENSE_ID;
+  const stats = lstatSync(manifestPath, { throwIfNoEntry: false });
+  if (stats === undefined) return FALLBACK_LICENSE_ID;
+  if (!stats.isFile()) throw new Error('package.json must be a regular file; symbolic links are not allowed');
   /** @type {unknown} */
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   if (typeof manifest === 'object' && manifest !== null && 'license' in manifest) {

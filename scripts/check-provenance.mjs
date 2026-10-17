@@ -1237,7 +1237,11 @@ function describeRules() {
   return [
     'Provenance rules (scripts/check-provenance.mjs)',
     '',
-    'Walked: every file git tracks, and every other file under the repository root, except',
+    'Walked: every file git tracks, plus untracked files permitted by repository .gitignore files.',
+    '  Personal global excludes and .git/info/exclude cannot hide files.',
+    '  Untracked local assistant and environment files are always excluded.',
+    'Embedded repositories use their own tracked files and ignore rules; parent rules control entry into them.',
+    'Without git, the conservative filesystem walk excludes these defaults:',
     `  directories named: ${SKIPPED_DIR_NAMES.join(', ')}`,
     `  build output named ${SKIPPED_BUILD_DIR_NAMES.join(' or ')}: at the root, directly under a top-level directory or`,
     '    directly under a package in packages/ (as .gitignore ignores them; deeper ones are walked)',

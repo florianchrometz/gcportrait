@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { spawnSync } from 'node:child_process';
-import { readFileSync, symlinkSync } from 'node:fs';
+import { readFileSync, rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 
@@ -126,7 +126,7 @@ function writeCleanTree(tree: TempTree): void {
   tree.write('styles.css', `${CSS_HEADER}\nbody { margin: 0; }\n`);
   tree.write('pnpm-lock.yaml', "lockfileVersion: '9.0'\n");
   // Files without an extension are matched by name; .nvmrc stays a bare version number.
-  tree.write('.gitignore', `${HASH_HEADER}\nnode_modules/\n`);
+  tree.write('.gitignore', `${HASH_HEADER}\nnode_modules/\n/frontend/dist/\n`);
   tree.write('infra/Dockerfile', `# syntax=docker/dockerfile:1\n${HASH_HEADER}\nFROM scratch\n`);
   tree.write('.nvmrc', '22\n');
   // Skipped directories are not looked at at all, whatever they hold.
@@ -802,11 +802,20 @@ describe('check-provenance', () => {
   it('skips a .git file at the root, as a linked work tree or a submodule has one', () => {
     // A linked work tree's `.git` is a file naming the git directory, not a directory: VCS data either way,
     // never a source file that needs a header.
-    tree.write('.git', `gitdir: ${path.join(tree.root, '..', 'repo', '.git', 'worktrees', 'topic')}\n`);
-    const result = check();
-    expect(result.stderr).toBe('');
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain('provenance: OK. 14 files scanned');
+    const gitData = createTempTree('git-data');
+    try {
+      const initialized = spawnSync('git', ['init', '--quiet', '--separate-git-dir', gitData.root], {
+        cwd: tree.root,
+        encoding: 'utf8',
+      });
+      expect(initialized.status, initialized.stderr).toBe(0);
+      const result = check();
+      expect(result.stderr).toBe('');
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('provenance: OK. 14 files scanned');
+    } finally {
+      gitData.remove();
+    }
   });
 
   it('reports symbolic links instead of following them', () => {
@@ -836,6 +845,31 @@ describe('check-provenance', () => {
     expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
   });
 
+  it.each(['present', 'missing'] as const)('refuses a root manifest link to a %s outside file', (target) => {
+    const outside = createTempTree('outside-root-manifest');
+    const privateLicense = 'LicenseRef-outside-private';
+    try {
+      if (target === 'present') outside.write('package.json', manifest(privateLicense));
+      rmSync(path.join(tree.root, 'package.json'));
+      symlinkSync(path.join(outside.root, 'package.json'), path.join(tree.root, 'package.json'));
+      const result = check();
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('package.json must be a regular file');
+      expect(result.stderr).not.toContain(privateLicense);
+      expect(result.stdout).not.toContain(privateLicense);
+      if (target === 'present') expect(outside.read('package.json')).toBe(manifest(privateLicense));
+    } finally {
+      outside.remove();
+    }
+  });
+
+  it('uses the fallback identifier when the root manifest is missing', () => {
+    rmSync(path.join(tree.root, 'package.json'));
+    const result = check();
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain(`(${FIXTURE_LICENSE}) verified`);
+  });
+
   it('requires the hash header on .env.example, which is walked although other .env files are not', () => {
     tree.write('backend/.env', 'SECRET=never-read\n');
     tree.write('backend/.env.local', 'SECRET=never-read\n');
@@ -848,6 +882,26 @@ describe('check-provenance', () => {
     expect(failing.stderr).toContain('FAILED with 1 problem(s) in 1 file(s)');
     tree.write('backend/.env.example', `${HASH_HEADER}\nOAUTH_CLIENT_ID=\n`);
     expect(check().status).toBe(0);
+  });
+
+  it('reports a tracked directory replaced by a link without reading the outside files', () => {
+    const outside = createTempTree('outside-provenance');
+    try {
+      outside.write('file.ts', `${TS_HEADER}\nexport const name = '${NAME_A}';\n`);
+      tree.write('tracked/file.ts', `${TS_HEADER}\nexport {};\n`);
+      expect(spawnSync('git', ['init', '--quiet'], { cwd: tree.root }).status).toBe(0);
+      expect(spawnSync('git', ['add', 'tracked/file.ts'], { cwd: tree.root }).status).toBe(0);
+      rmSync(path.join(tree.root, 'tracked'), { recursive: true });
+      symlinkSync(outside.root, path.join(tree.root, 'tracked'));
+      const result = check();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('tracked  [symlink]');
+      expect(result.stderr).not.toContain(NAME_A);
+      expect(result.stderr).not.toContain('tracked/file.ts');
+      expect(result.stderr).toContain('FAILED with 1 problem(s) in 1 file(s)');
+    } finally {
+      outside.remove();
+    }
   });
 
   it('skips build output only where .gitignore ignores it, and walks a deeper dist or build directory', () => {

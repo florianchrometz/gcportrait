@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -112,6 +113,66 @@ describe('set-license', () => {
     expect(tree.read('infra/Dockerfile')).toBe(
       `# syntax=docker/dockerfile:1\n${hash('Apache-2.0')}\nFROM scratch\n`,
     );
+  });
+
+  it('does not rewrite outside files through a tracked directory replaced by a link', () => {
+    const outside = createTempTree('outside-license');
+    try {
+      const original = `${ts(FIXTURE_LICENSE)}\nexport {};\n`;
+      outside.write('file.ts', original);
+      outside.write('package.json', manifest(FIXTURE_LICENSE));
+      tree.write('tracked/file.ts', original);
+      tree.write('tracked/package.json', manifest(FIXTURE_LICENSE));
+      expect(spawnSync('git', ['init', '--quiet'], { cwd: tree.root }).status).toBe(0);
+      expect(spawnSync('git', ['add', 'tracked'], { cwd: tree.root }).status).toBe(0);
+      rmSync(path.join(tree.root, 'tracked'), { recursive: true });
+      symlinkSync(outside.root, path.join(tree.root, 'tracked'));
+      const result = run('Apache-2.0');
+      expect(result.status, result.stderr).toBe(0);
+      expect(outside.read('file.ts')).toBe(original);
+      expect(outside.read('package.json')).toBe(manifest(FIXTURE_LICENSE));
+      expect(tree.read('src/index.ts').startsWith(ts('Apache-2.0'))).toBe(true);
+    } finally {
+      outside.remove();
+    }
+  });
+
+  it.each(
+    ['package.json', 'LICENSE'].flatMap((file) =>
+      [false, true].flatMap((missing) => [false, true].map((dryRun) => ({ file, missing, dryRun }))),
+    ),
+  )(
+    'refuses a root $file link (missing: $missing, dry run: $dryRun) before any writes',
+    ({ file, missing, dryRun }) => {
+      const outside = createTempTree('outside-root-license');
+      const original =
+        file === 'package.json' ? manifest(FIXTURE_LICENSE) : 'Outside licence stays intact.\n';
+      try {
+        if (!missing) outside.write(file, original);
+        rmSync(path.join(tree.root, file));
+        symlinkSync(path.join(outside.root, file), path.join(tree.root, file));
+        const result = run('Apache-2.0', ...(dryRun ? ['--dry-run'] : []));
+        expect(result.status, result.stderr).toBe(2);
+        expect(result.stderr).toContain(`${file} must be a regular file`);
+        if (missing) expect(existsSync(path.join(outside.root, file))).toBe(false);
+        else expect(outside.read(file)).toBe(original);
+        expect(tree.read('src/index.ts')).toBe(FIXTURE_FILES[0]?.[1](FIXTURE_LICENSE));
+        expect(tree.read('packages/a/package.json')).toBe(manifest(FIXTURE_LICENSE));
+      } finally {
+        outside.remove();
+      }
+    },
+  );
+
+  it('uses the fallback without a root manifest and creates a missing LICENSE', () => {
+    rmSync(path.join(tree.root, 'package.json'));
+    rmSync(path.join(tree.root, 'LICENSE'));
+    const result = run('Apache-2.0');
+    expect(result.status, result.stderr).toBe(0);
+    expect(tree.read('LICENSE')).toBe(
+      readFileSync(path.join(SCRIPTS_DIR, 'licenses', 'Apache-2.0.txt'), 'utf8'),
+    );
+    expect(tree.read('src/index.ts').startsWith(ts('Apache-2.0'))).toBe(true);
   });
 
   it('leaves a tree that passes the provenance check with the new identifier', () => {

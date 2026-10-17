@@ -24,7 +24,7 @@
  *
  * Exit code 0 on success, 2 on a usage error. Plain ESM, Node built-ins only.
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -169,16 +169,20 @@ function main(argv) {
   let options;
   /** @type {string} */
   let text;
+  /** @type {string} */
+  let fromId;
   try {
     options = parseOptions(argv);
+    fromId = readProjectLicenseId(options.root);
+    const license = lstatSync(path.join(options.root, 'LICENSE'), { throwIfNoEntry: false });
+    if (license !== undefined && !license.isFile())
+      throw new UsageError('LICENSE must be a regular file; symbolic links are not allowed');
     text = licenseText(options);
   } catch (error) {
-    if (!(error instanceof UsageError)) throw error;
-    console.error(`set-license: ${error.message}`);
+    console.error(`set-license: ${error instanceof Error ? error.message : String(error)}`);
     return 2;
   }
 
-  const fromId = readProjectLicenseId(options.root);
   /** @type {Array<{ absPath: string, text: string }>} */
   const writes = [];
   let headers = 0;
