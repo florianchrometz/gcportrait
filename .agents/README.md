@@ -44,6 +44,10 @@ follows.
 | Cursor | `AGENTS.md` at the root and in folders, `.cursor/rules/*.mdc` and the skills under `.agents/skills/` | `.cursor/rules/agents.mdc`, applied in every chat | nothing |
 | GitHub Copilot | `AGENTS.md` (the nearest one first), `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` and the skills under `.agents/skills/` | `.github/copilot-instructions.md` | `.github/instructions/NAME.instructions.md` with `applyTo: "FOLDER/**"`, as VS Code reads a folder's `AGENTS.md` only with an experimental setting |
 
+Each root pointer says in one paragraph "Read AGENTS.md, the AGENTS.md of every folder you change and the
+skills under .agents/skills/ first; this file only points there." A pointer beside a folder file names
+`../AGENTS.md` and that folder's own file instead, with the tool's import line where it has one.
+
 - Each pointer file is one paragraph that points to the rules files and the skills, with the tool's import
   line where it has one. `pnpm agents:setup` never overwrites a file that exists (`--force` does, but never a
   folder, and it never writes through a link), changes nothing that is in place, links a skill added since
@@ -54,6 +58,10 @@ follows.
   there. Started in a folder, it reads the root's and that folder's within one limit of 32 KiB, which cuts the
   folder file after what the root leaves of it; raise `project_doc_max_bytes` in `~/.codex/config.toml` to
   start it there.
+
+On a case-insensitive file system (macOS, Windows), git does not notice a case-only rename. Use `git mv -f`
+so the filename is `AGENTS.md` in git as on disk; `scripts/rules-files.test.ts` rejects another spelling or
+a rules file deeper than one folder below root.
 
 Keep skills factual and short. When a rule changes, change the `AGENTS.md` that holds it and the skill in the
 same PR as the code.

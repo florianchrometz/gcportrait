@@ -2,83 +2,40 @@
 
 # AGENTS.md: the rules of gcportrait
 
-This file holds the rules of gcportrait that bind the whole repository, for the people and the AI assistants
-(Claude Code, Gemini CLI, Codex, Cursor, Copilot or whatever comes next) who change it; a top-level folder
-with rules of its own holds them in an `AGENTS.md` of its own, which the table below names. Each rule is
-stated as it stands, with the reason for it in one sentence. Humans new to the repository start with
-[docs/contributing.md](docs/contributing.md); assistants load the skills the work needs ([Skills](#skills)).
+Humans start with docs/contributing.md; assistants load [Skills](#skills).
 
 | Folder | What it holds | Its rules |
 |---|---|---|
-| `packages/` | the nine workspace packages | `packages/AGENTS.md` |
-| `backend/` | the stateless service, upstream calls and render API | `backend/AGENTS.md` |
-| `frontend/` | the app, its chrome, diagram and browser exports | `frontend/AGENTS.md` |
-| `website/` | the Astro site and its static demo | `website/AGENTS.md` |
-| `infra/` | the image and the deploy scripts | `infra/AGENTS.md` |
-| `.github/` | CI, release, Pages and drift workflows, templates | `.github/AGENTS.md` |
-| `e2e/` | end-to-end and accessibility tests, visual baselines | `e2e/AGENTS.md` |
-| `docs/` | user guides, contributor references and generated media | `docs/AGENTS.md` |
-| `scripts/`, `brand/`, `.agents/`, `.changeset/` | repository tooling, the mark, the skills, changesets | this file |
-
-The sections of this file:
-
-| Section | What it settles |
-|---|---|
-| [How this file works](#how-this-file-works) | The root's rules and the folders', reading them, the skills as handbooks, how to cite a rule, how a rule changes |
-| [What gcportrait is and is not](#what-gcportrait-is-and-is-not) | The question it answers, its users, what version 1 does, the non-goals |
-| [Product rules](#product-rules) | Phones, tablets and desktops, both themes, the demo, the timeline, "as of", views as links, composition, the source link |
-| [Data and graph semantics](#data-and-graph-semantics) | Data over code, the Snapshot, synthetic data, the catalog and the graph builder |
-| [Exports and the render API](#exports-and-the-render-api) | SVG, PNG and draw.io, `pnpm render`, `POST /api/render` |
-| [Style and accessibility](#style-and-accessibility) | Themes, WCAG 2.2 AA, touch targets and breakpoints, Google's colour semantics, icons, fonts |
-| [Security and privacy](#security-and-privacy) | The seven principles, tokens, the backend, the quota project, the service-account gate, OAuth scopes |
-| [Modes and hosting](#modes-and-hosting) | The ways in, demo-only mode, the static demo, hosted surfaces, the website, telemetry, legal pages, self-hosting |
-| [Non-affiliation, brand and legal](#non-affiliation-brand-and-legal) | The statement's three texts and where each goes, the maintainer's name, the reserved name and icon |
-| [Licence and dependencies](#licence-and-dependencies) | MIT, the SPDX header, the dependency licences, original work |
-| [Architecture and code](#architecture-and-code) | TypeScript, the repository map, the dependency direction, backend and frontend |
-| [Quality gates, testing and CI](#quality-gates-testing-and-ci) | `pnpm check`, budgets, tests, goldens, generated artefacts, CI, Dependabot |
-| [Releases](#releases) | Changesets, tags, the release workflow, the image |
-| [Documentation](#documentation) | Where things are written down, and how; the README's order |
-| [How to work a task](#how-to-work-a-task) | From an issue to a reviewed pull request; git |
-| [Skills](#skills) | Which handbook to load for which work |
-| [Assistants](#assistants) | The local pointer files `pnpm agents:setup` writes, and where the table of tools is |
-| [Commands](#commands) | Every command, with what it does |
-| [Names that never appear](#names-that-never-appear) | Strings the provenance check refuses |
+| `packages/` | shared packages | `packages/AGENTS.md` |
+| `backend/` | service/API | `backend/AGENTS.md` |
+| `frontend/` | app/exports | `frontend/AGENTS.md` |
+| `website/` | site/demo | `website/AGENTS.md` |
+| `infra/` | image/deployment | `infra/AGENTS.md` |
+| `.github/` | workflows/templates | `.github/AGENTS.md` |
+| `e2e/` | browser tests/baselines | `e2e/AGENTS.md` |
+| `docs/` | guides/media | `docs/AGENTS.md` |
+| `scripts/`, `brand/`, `.agents/`, `.changeset/` | tooling/brand/skills/releases | this file |
 
 ## How this file works
 
-- **The rules are in AGENTS.md files**, under the name the assistants look for: Claude Code, Codex, Cursor and
-  GitHub Copilot read `AGENTS.md` by that name, in capitals, which a case-sensitive file system tells apart
-  from any other spelling. This file, at the root, holds every rule that binds two or more top-level folders
-  or that every change needs; a top-level folder with rules of its own has an `AGENTS.md` that holds the
-  rules binding changes in that folder alone, and the folder table above names it. A rule's home follows from
-  what it binds: one folder, that folder's file; two or more, or every change, the root. No `AGENTS.md` lies
-  deeper than one folder below the root. A folder file opens with "These rules add to the root AGENTS.md,
-  which applies here too." and repeats nothing of the root, so that a tool that reads only the nearest
-  `AGENTS.md` still learns of the root, and no rule has two copies to drift apart. Every rule is kept current
-  where it is. No instruction file of a particular tool is committed (`CLAUDE.md`, `GEMINI.md`,
-  `.cursor/rules/`, `.github/copilot-instructions.md`, `AGENTS.override.md` and the like are git-ignored at
-  any depth, as are per-user settings such as `.claude/`, and the provenance check skips them all): copies of
-  the same rules for different tools drift apart and favour some tools over others. Who wants such a file
-  locally writes one that points to the rules files with `pnpm agents:setup` ([Assistants](#assistants)).
-- **Read the AGENTS.md of every folder you change before changing its files**, because its rules bind those
-  files as this file's rules do.
-- **The skills are handbooks.** Each skill in `.agents/skills/` is a plain Markdown procedure for one domain
-  (`SKILL.md` with a `name` and a `description` in its frontmatter, optional `references/`): it says how the
-  work is done and which constants it uses, and points to the AGENTS.md that holds each rule it applies. A
-  skill never restates why or when a rule came about. [.agents/README.md](.agents/README.md) explains how to
-  load one with any tool.
-- **A rule is stated as it is.** Present tense, its reason in one sentence, no history: not who decided it,
-  not when, not what it replaced.
-- **Cite a rule by its file and its heading**: "AGENTS.md, Security and privacy", or for a numbered principle
-  "AGENTS.md, Security and privacy, principle 2"; a rule of a folder file by the file's path from the root,
-  as in `<folder>/AGENTS.md, <heading>`. The headings are anchors: renaming one updates every citation in the
-  same change, and `scripts/rules-files.test.ts` fails on a citation whose file, heading, principle or anchor
-  does not exist. A comment or a guide that needs a rule's reason points to the rule instead of retelling it.
-- **A rule changes in the same pull request as the code it governs**, in the AGENTS.md that holds it and in
-  the skill that applies it. A change to the product's scope, a hosted surface, a security and privacy
-  principle, the licence or the non-affiliation wording is the maintainer's call.
-- **Open work is not a rule.** It lives in [docs/backlog.md](docs/backlog.md) (the asset catalog's in
-  [docs/catalog-followups.md](docs/catalog-followups.md)), questions only the maintainer can settle included.
+- **AGENTS.md is capitalised on disk and in git.** Rules binding multiple folders or every change live at
+  root; others in one top-level folder, never deeper. Keep rules current and unduplicated to avoid drift.
+  Folder files open "These rules add to the root AGENTS.md, which applies here too." for nearest-file
+  readers. Read the AGENTS.md of every folder you change before editing its files.
+  `scripts/rules-files.test.ts` caps root at 32 768 bytes and folder files at 16 384; these are file caps,
+  not combined read limits (.agents/README.md).
+- **Skills are procedural handbooks** with constants and rule citations, never rule history; their format is
+  in .agents/README.md.
+- **State present rules with one-sentence reasons**, no decision-makers, dates or replaced behavior.
+- **Cite a rule's file and heading**, not retold reasons: "AGENTS.md, Security and privacy, principle 2" or
+  "backend/AGENTS.md, Hardening". Heading anchors and citations change together; rules tests validate
+  citations.
+- **Docs, rules and skills change in the code's PR**; changes to scope, hosting, security and privacy
+  principles, licence or non-affiliation are the maintainer's call. Open work and questions belong in
+  docs/backlog.md or docs/catalog-followups.md, never rules.
+- **No committed tool instructions or user settings**: ignored at every depth, skipped by provenance; copies
+  drift and favour tools (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules/`, `.github/copilot-instructions.md`,
+  `AGENTS.override.md`, `.claude/`, etc.). Local pointers: [Assistants](#assistants).
 
 ## What gcportrait is and is not
 
@@ -111,122 +68,76 @@ now, and what changed in the last five weeks?
 
 ## Product rules
 
-- **Phones, tablets and desktops, every control at each.** The app has three layouts, chosen by the window's
-  width in rem (`frontend/src/ui/screen.ts`): the phone up to 47.99rem, in portrait and in landscape; the
-  tablet from 48rem to 79.99rem; the desktop from 80rem. Every control, menu item, page, dialog and keyboard
-  action of the desktop exists at every width, reachable by touch and by keyboard under the same accessible
-  name, and nothing is desktop-only, because people open a view where they are (a link in a chat, a check
-  during an incident) and a control missing on one screen makes what it does impossible there.
-  [frontend/AGENTS.md](frontend/AGENTS.md), "Phones, tablets and desktops", holds the folding, touch and
-  visibility rules; [e2e/AGENTS.md](e2e/AGENTS.md), "Widths, gestures and axe", holds the suite's coverage.
-  The website serves phones too (`pnpm website:mobile` checks it).
-- **Both themes, every time.** A visual change is done when it looks right in light and dark and passes the
-  contrast tests, because users and their documents come in both ([Style and
-  accessibility](#style-and-accessibility)).
-- **Demo mode is first-class.** Four deterministic synthetic organisations, S, M, L and XL, each with 35 days
-  of history, generated from a seed by `packages/demo-data` in CAI's NDJSON shape, are what the tests, the
-  screenshots, the website, the agents' self-checks and the app's "Try the demo" draw: realistic organisations
-  are needed everywhere, and real inventories may not be used. `pnpm dev:demo` runs the app without a backend,
-  without `/api` calls and without a Google account. The suite's servers follow
-  [e2e/AGENTS.md](e2e/AGENTS.md), "What the suite runs against".
-- **The timeline** has one tick per day for the last 35 days: today and the 34 days before at 00:00 UTC, the
-  latest tick reading "now" so that no read time lies in the future. A tick is one set of `assets.list` calls
-  with its read time, read only when the view rests on it, because each day is a full read of the scope:
-  - read days are cached in IndexedDB per scope and read time (the `tickCache` store), never shared between
-    scopes;
-  - once the view rests, its two neighbours are read at idle, at most two reads run at once, and a read of a
-    day the view moved away from is cancelled;
-  - nothing is read while the page stays on the snapshot's own day;
-  - the diff between two days (added, removed, changed by `updateTime`) is a pure function in
-    `packages/graph`, with no API calls;
-  - snapshots from export files and manual pulls of the same scope are extra, labelled ticks at their read
-    time.
-
-  [docs/timeline.md](docs/timeline.md) and the cai-ingestion skill (§5) have the details.
-- **"As of", never "live".** Every surface says when its data was read and calls it the inventory "as of"
-  that time, never "live": Cloud Asset Inventory updates several products only every few hours and IAM data
-  up to seven days late, so "live" would promise more than the data holds.
-- **Every view is a link.** The URL hash holds everything that defines a view (the ViewSpec, through
-  `@gcportrait/model`'s view codec), so a reload keeps it and a link shares it; the recipient needs the same
-  snapshot (their own pull or a snapshot file).
-- **The render API and `pnpm render` never ask for confirmation** before drawing a large snapshot; the
-  app's confirmation guard follows [frontend/AGENTS.md](frontend/AGENTS.md), "Snapshots".
-- **Filters, focus views and drill-in compose.** A filter applies in every focus view and under every
-  drill-in, never only in the overview, because a filter that silently stops applying misleads the reader. A
-  new lens, focus view or filter gets a table-driven case in `packages/graph` against the others.
-- **Unknown asset types still render**: a generic card, the product or category icon, containment from
-  `parent` (gcp-diagram-layout skill §2, rule 6). The catalog adds precision; its absence never drops an
-  asset, because Google adds types every month and a diagram that silently loses assets is wrong.
-- **The app's source URL** is `sourceUrl` from `/api/config` (the backend's `SOURCE_URL`) or, in a demo
-  build, the build-time `VITE_SOURCE_URL`; both default to the project's repository, and a fork or a modified
-  instance points them at its own source. The footer link follows
-  [frontend/AGENTS.md](frontend/AGENTS.md), "The source link".
+- **Every control, menu item, page, dialog and keyboard action at every width**, by touch and keyboard under
+  the same accessible name, never desktop-only: people open views anywhere, and missing controls make
+  actions impossible. `frontend/src/ui/screen.ts`: phone ≤47.99rem in portrait and landscape, tablet
+  48–79.99rem, desktop ≥80rem. Folding and touch follow frontend/AGENTS.md, "Phones, tablets and desktops";
+  coverage follows e2e/AGENTS.md, "Widths, gestures and axe". Website works on phones (`pnpm
+  website:mobile`).
+- **Both themes pass visual and contrast checks**, because users and documents come in both.
+- **First-class demo**: seeded, deterministic, realistic synthetic S, M, L and XL organisations, 35 days of
+  CAI NDJSON from demo-data, for tests, screenshots, website, agent checks and Try the demo; no real
+  inventories. `pnpm dev:demo` needs no backend, `/api` or account. Servers follow e2e/AGENTS.md, "What the
+  suite runs against".
+- **35 daily ticks**, today plus 34 days at 00:00 UTC, latest "now", never future. Read when settled via
+  `assets.list` at readTime, because each day reads the whole scope; caching, prefetch, cancellation, graph
+  diff and extra ticks follow the cai-ingestion skill §5 and docs/timeline.md.
+- **Every surface says "as of", never "live"**, naming read time: CAI delays products by hours, IAM by up to
+  seven days, so "live" overpromises.
+- **The URL hash holds the full ViewSpec through the model codec**, preserving reloads and sharing;
+  recipients need the same snapshot.
+- **The render API and `pnpm render` never confirm large snapshots**; the app guard follows
+  frontend/AGENTS.md, "Snapshots".
+- **Filters compose in every focus view and drill-in**, not just overview, lest silently stopping mislead; a
+  new lens, focus or filter gets graph table-driven composition tests.
+- **Unknown types render** generic cards, product or category icons and `parent` containment
+  (gcp-diagram-layout skill §2 rule 6): Google adds types; precision may be absent, assets never are.
+- **Source URL**: `/api/config.sourceUrl` (`SOURCE_URL`) or build-time demo `VITE_SOURCE_URL`, default this
+  repo; forks and modified instances use their source. The footer follows frontend/AGENTS.md, "The source
+  link".
 
 ## Data and graph semantics
 
-- **Data over code.** Asset types, relation rules, lenses, icon mappings, product names, console URL templates
-  and relation styles are declarative files in `packages/catalog` and `packages/icons`; code reads them, and
-  no second map lives in code. A second hard-coded map next to the data drifts from it.
-- **One source of truth per concept.** Lens type lists, product names, icon mappings and domain and address
-  extraction come from the catalog.
-- **Types that cross a package boundary are zod schemas in `@gcportrait/model`**, declared once, every type
-  inferred through `z.infer`; nothing is declared twice.
-- **Two import paths, one Snapshot.** A live pull through the backend (`assets.list`, paginated and streamed:
-  `POST /api/assets/stream`) and CAI export files (dropped into the browser, or read from a `gs://` URI with
-  the person's token: `POST /api/export/read`) are normalised by `packages/ingest`'s one streaming NDJSON
-  parser into the same Snapshot. Everything after ingestion knows the source only through the Snapshot's
-  `source` (`api`, `export` or `demo`). The list API is synchronous and reads any of the last 35 days, while
-  very large inventories can hit its quota; exports are the path for those.
-- **The UI says where an export's read time came from**, because an export file carries no read time of its
-  own; [packages/AGENTS.md](packages/AGENTS.md), "Catalog and graph semantics", defines the sources.
-- **Synthetic data only.** Fixtures, examples and demo data use `example.com` and `example.org` names, project
-  numbers below 100000000000, and documentation (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`) or
-  private IP ranges, and the test suite fails on anything that looks real. A pull request never names a real
-  scope, even when the change was tested against one. Real inventories belong to someone and would leak names,
-  addresses and structure into a public repository.
+- **Catalog and icons data, not code maps**, define types, relations, lenses, icons, products, console
+  templates, styles and domain and address extraction: a second source drifts.
+- **Package-boundary types:** one zod schema in `@gcportrait/model`, inferred by `z.infer`, never
+  duplicated.
+- **One ingest streaming NDJSON parser and Snapshot** for paginated streamed `assets.list` (`POST
+  /api/assets/stream`) and exports (drop or token-read `gs://`, `POST /api/export/read`). Downstream
+  distinguishes origin only through Snapshot `source` (`api`/`export`/`demo`). Synchronous list reads any of
+  35 days; exports serve quota-heavy sizes.
+- **The UI names the export read-time source**, since files carry none (packages/AGENTS.md, "Catalog and
+  graph semantics").
+- **Synthetic fixtures, examples and demos**: `example.com` or `example.org`, project numbers <100000000000,
+  documentation IPs `192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24` or private ranges. Tests reject
+  real-looking data; PRs never name real scopes, tested or not: inventories leak others' names, addresses
+  and structure.
 
-The catalog and graph semantics, layout rules and performance budgets are in
-[packages/AGENTS.md](packages/AGENTS.md).
+`packages/AGENTS.md` governs catalog/graph semantics, layout and budgets.
 
 ## Exports and the render API
 
-- **Three files, one drawing.** SVG, PNG (2×, or 3× on request, on the theme's background) and draw.io are
-  version 1 must-haves, because the main reason to draw an environment is to put the picture somewhere else.
-  [frontend/AGENTS.md](frontend/AGENTS.md), "Exports", holds the menu and translator rules.
-- **Everything an export needs is in the SVG**: the legend and the title block are drawn inside it, never as
-  an HTML overlay. An SVG export resolves every CSS variable to an attribute and keeps the icons inline.
-- **The title block** has three lines on the canvas and in every export: the scope, the lens with the read
-  time, and the tagline `gcportrait.app - Visualize your Google Cloud Infrastructure`. The SVG's `<desc>`
-  holds neutral metadata only (the scope, the lens, the read time, a timeline day's changes and "Drawn with
-  gcportrait."). No drawing carries the non-affiliation statement ([Non-affiliation, brand and
-  legal](#non-affiliation-brand-and-legal)).
-- The shared render library and rasteriser follow [packages/AGENTS.md](packages/AGENTS.md), "The render
-  library".
-- **The render API**, `POST /api/render`, draws SVG, PNG and draw.io on the server with the code `pnpm render`
-  runs, so an instance's users can script exports; [backend/AGENTS.md](backend/AGENTS.md), "The render API",
-  holds its rules. [docs/api.md](docs/api.md) is the reference; [docs/export.md](docs/export.md) the user
-  guide; the gcp-diagram-style skill (§7, §8) the export rules.
+- **One drawing: SVG, PNG, draw.io**, version 1 essentials because pictures are used elsewhere. PNG:
+  2×/requested 3×, theme background. The gcp-diagram-style skill §7–8 governs the SVG-contained legend and
+  title, resolved CSS, inline icons and the three title lines on canvas and every export. `<desc>`: neutral
+  scope, lens, read time, timeline-day changes and "Drawn with gcportrait." only.
+- **API `POST /api/render` uses `pnpm render`'s code**, all three formats, for scriptable exports.
+  frontend/AGENTS.md, "Exports", governs menu and translator; packages/AGENTS.md, "The render library", the
+  shared renderer and rasteriser; backend/AGENTS.md, "The render API", the route; docs/api.md is reference,
+  docs/export.md guide.
 
 ## Style and accessibility
 
-- **WCAG 2.2 AA** on every page, the diagram included, in both themes and at every width. The one documented
-  exception is the decorative subnet and VPC zone strokes; the title text and card strokes inside them pass
-  instead. The suite's checks follow [e2e/AGENTS.md](e2e/AGENTS.md), "Widths, gestures and axe".
-- **44-pixel targets and the safe area on phones and tablets.** Below the desktop's breakpoint every target is
-  at least 44 × 44 CSS pixels (WCAG 2.5.5), a link inside a sentence and a field inside a line of code
-  excepted, and the bars that stay on screen pad themselves with `env(safe-area-inset-*)`, because a finger
-  is less precise than a pointer and a phone's notch, rounded corners and home indicator hide what lies under
-  them.
-- **Colour never carries meaning alone**: edge kinds differ by dash or arrowhead, zone kinds by title position
-  or badge.
-- **Google's icons are never recoloured, stretched or redrawn**; they are used unmodified under Google's icon
-  usage terms.
-- **Roboto and Roboto Mono are self-hosted**, never loaded from a CDN, because the backend's Content Security
-  Policy and the offline demo rule a CDN out and the layout computes text widths from Roboto's metrics.
-
-[frontend/AGENTS.md](frontend/AGENTS.md), "Diagram and themes", holds the theme, token and contrast-test
-rules; the gcp-diagram-style skill holds both palettes, the tokens, the contrast pairs and the fact-check
-list.
+- **WCAG 2.2 AA** in every page, diagram, theme and width; only decorative subnet and VPC strokes are
+  excepted, their title text and card strokes pass. Checks follow e2e/AGENTS.md, "Widths, gestures and axe".
+- **44×44 CSS-pixel targets below desktop** (WCAG 2.5.5), except sentence links and code-line fields;
+  persistent bars pad `env(safe-area-inset-*)`: imprecise fingers, notches, rounded corners and home
+  indicators need clearance.
+- **Colour never stands alone**: edge dash or head, zone title position or badge identify them too.
+- Google's icon rules: [Non-affiliation, brand and legal](#non-affiliation-brand-and-legal).
+- **Self-host Roboto and Roboto Mono**, never a CDN: CSP and offline demo forbid it; layout uses their
+  metrics. Themes follow frontend/AGENTS.md, "Diagram and themes"; palettes and checks follow the
+  gcp-diagram-style skill.
 
 ## Security and privacy
 
@@ -288,29 +199,20 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
 
 ## Modes and hosting
 
-- **The ways in**: the person's own account (user mode, the default), the instance's service account
-  (service-account mode, enabled per instance by its operator), export files, and the demo. User mode lets an
-  individual start without any grant to a third party; service-account mode gives a team one shared grant.
-  Both modes share one code path from the backend's CAI call onwards, so they draw the same diagram of the
-  same inventory and differ only in whose identity reads it ([backend/AGENTS.md](backend/AGENTS.md),
-  "The service-account gate").
-- **One Cloud Run service per installation**, one image serving the API and the single-page app.
-- **Demo-only mode** (`DEMO_ONLY`) is a sign-in-free instance: `/api/config` reports `demoOnly: true` and no
-  OAuth client, no service-account mode and no render API. The backend's settings, routes and Content Security
-  Policy follow [backend/AGENTS.md](backend/AGENTS.md), "Demo-only mode and legal pages".
-  Its deployment settings follow [infra/AGENTS.md](infra/AGENTS.md), "Self-hosting".
-- **The static demo** at `gcportrait.app/demo/` is a static build of the app in demo-only mode (`pnpm
-  demo:static`, `VITE_STATIC_DEMO=1`, base `/demo/`), deployed with the website: its configuration is built in
-  (exactly what a demo-only instance's `/api/config` answers), a byte-for-byte copy of `index.html` serves
-  each route, the backend's demo-only policy travels as a `<meta>` Content Security Policy (without
-  `frame-ancestors`, which a `<meta>` cannot carry) next to `<meta name="referrer" content="no-referrer">`,
-  and the bundle holds no sign-in code. A demo needs no server, so it costs nothing and holds nothing.
+- **Ways in**: own account (default, no third-party grant), operator-enabled SA (team's shared grant),
+  exports, demo. One code path from CAI onward draws identical diagrams; only reader identity differs
+  (backend/AGENTS.md, "The service-account gate").
+- **One Cloud Run service and image per installation**, serving API and SPA.
+- **Demo-only** (`DEMO_ONLY`) needs no sign-in; `/api/config` has `demoOnly: true`, no OAuth client, SA or
+  render API. See backend/AGENTS.md, "Demo-only mode and legal pages", and infra/AGENTS.md, "Self-hosting".
+- **Static demo**, `gcportrait.app/demo/`, app demo-only build (`pnpm demo:static`, `VITE_STATIC_DEMO=1`,
+  `/demo/` base), with website; built-in config equals demo-only `/api/config`, route copies of `index.html`
+  byte-identical. Backend demo CSP in `<meta>` excludes unsupported `frame-ancestors`, beside `<meta
+  name="referrer" content="no-referrer">`; no sign-in code. No server means no cost or storage.
 - **Hosted surfaces.** The maintainer hosts only the website `gcportrait.app` (Astro on GitHub Pages) and its
   static demo: no sign-in instance, no accounts, no service and so no terms of use. The project has no
   revenue, so the maintainer runs nothing that holds accounts, tokens or anyone's data. Self-hosters who
   enable sign-in run their own instance with their own OAuth client.
-- The website's presentation, demo links and page metadata follow [website/AGENTS.md](website/AGENTS.md),
-  "The site" and "The static demo".
 - **No telemetry, except the website's page views.** The app, the static demo and every self-hosted instance
   send no usage data, error reports or page views anywhere: an instance runs in someone else's project and
   must never phone home. The website's analytics follow
@@ -322,12 +224,10 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
 - `infra/deploy.sh` creates the account with no project roles; customers grant it `roles/cloudasset.viewer`
   only, on folders or projects rather than the organisation where they can, since every member of a domain
   can usually `get` its organisation.
-- **Self-hosting.** [docs/self-host.md](docs/self-host.md) and
-  [docs/self-host-options.md](docs/self-host-options.md) are the guides; deployment follows
-  [infra/AGENTS.md](infra/AGENTS.md), "Self-hosting". The "Open in Cloud Shell" tutorial
-  ([docs/cloudshell-tutorial.md](docs/cloudshell-tutorial.md)) and the "Run on Google Cloud" button
-  (`app.json` with `infra/cloud-run-button.sh`) sit next to the manual steps in the README and the
-  self-hosting guide; their landing-page placement follows [website/AGENTS.md](website/AGENTS.md), "The site".
+- **Self-hosting** follows infra/AGENTS.md, "Self-hosting", docs/self-host.md and docs/self-host-options.md.
+  The Cloud Shell tutorial (docs/cloudshell-tutorial.md) and Run on Google Cloud (`app.json`,
+  `infra/cloud-run-button.sh`) sit beside README and guide manual steps. Website placement, presentation,
+  metadata and demo links follow website/AGENTS.md, "The site".
 
 ## Non-affiliation, brand and legal
 
@@ -391,24 +291,11 @@ Rules that go with it:
   "Copyright (c) 2026 Florian Chrometz" ([LICENSE](LICENSE)), so that anyone can use, study, change, embed and
   run it, hosted or not, commercially or not. The name and the icon are reserved
   ([Non-affiliation, brand and legal](#non-affiliation-brand-and-legal)).
-- **Every new text source file starts with the SPDX line for `MIT`** within its first 10 lines, in the comment
-  form of its type, so the licence of every file is machine-readable:
-  - `// SPDX-License-Identifier: MIT` for ts, tsx, mts, cts, js, jsx, mjs, cjs;
-  - `# SPDX-License-Identifier: MIT` for yaml, yml, sh and, by name, `.editorconfig`, `.gitignore`,
-    `.gitattributes`, `.npmrc`, `.prettierignore`, `.dockerignore`, `.env.example`, `Dockerfile`, `CODEOWNERS`
-    (a shebang or a Dockerfile `# syntax=` line may come first);
-  - `/* SPDX-License-Identifier: MIT */` for css;
-  - `<!-- SPDX-License-Identifier: MIT -->` for md, html, astro (in Markdown with YAML frontmatter, on the
-    first line after the closing `---`).
-
-  `pnpm provenance` checks every header against the `license` field of the root `package.json`, and every
-  workspace package's `package.json` declares `"license": "MIT"`. JSON (also `.jsonl`, `.ndjson`,
-  `.prettierrc`), plain text, SVG, draw.io files, `LICENSE`, `.nvmrc` (a bare version number, since not every
-  Node version manager accepts comments), `.gitkeep`, `CNAME`, lockfiles, images, fonts and other binary files
-  are exempt, and so are changeset entries and generated `CHANGELOG.md` files. A text file of any other type
-  fails until `scripts/lib/repo-files.mjs` gives its type a header form or lists it as header-free, in the
-  same change. `scripts/set-license.mjs` rewrites every header, `license` field and `LICENSE` should the
-  project licence ever change.
+- **Every new text source file starts with the SPDX line for `MIT`** within its first 10 lines, in the
+  comment form of its type, so the licence of every file is machine-readable: use the forms, placement and
+  exemptions in docs/contributing.md, "The SPDX header". `.nvmrc` is exempt because not every Node version
+  manager accepts comments. Should the project licence change, scripts/set-license.mjs rewrites every
+  header, `license` field and `LICENSE`.
 - **Third-party material keeps its own terms**: the npm dependencies, the self-hosted Roboto fonts (SIL Open
   Font License 1.1), Google's product icons (Google's icon usage terms) and the verbatim licence texts in
   `scripts/licenses/`. [THIRD_PARTY.md](THIRD_PARTY.md) lists every category; its dependency table is
@@ -439,203 +326,107 @@ Rules that go with it:
 
 ## Architecture and code
 
-- **TypeScript only**, on Node `^22.22.2` (`.nvmrc` holds `22`, `.npmrc` sets `engine-strict`) in a pnpm
-  workspace, pnpm pinned through `packageManager` and Corepack, so one language and one set of types cover the
-  browser, the backend and the tooling. Shell scripts are allowed only under `infra/` and `scripts/`.
-- **Strict**: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax` and
-  `erasableSyntaxOnly` (no enums, namespaces or constructor parameter properties); ESLint's typescript-eslint
-  `strictTypeChecked` set, and no `any`. TypeScript stays on 6.0.x for as long as typescript-eslint supports
-  nothing newer.
-- **NodeNext everywhere but the frontend**: the backend, e2e, the tooling and every shared package extend
-  `tsconfig.node.json`, so relative imports end in `.js`; the frontend uses bundler resolution. `pnpm
-  typecheck` runs `tsc -b` over the projects the root `tsconfig.json` references, so a new package is added
-  there.
-- **Text is UTF-8**, without a byte-order mark or NUL bytes, as `.editorconfig` tells editors, so that every
-  tool, the provenance check included, reads what an editor shows. A file with a binary extension holds that
-  binary format; a new binary format is listed in `BINARY_EXTENSIONS` (`scripts/lib/repo-files.mjs`). The
-  provenance check reports a file that breaks either rule.
-
-```
-frontend/      React 19 + Vite SPA (shell, themes, routes, IndexedDB wrapper; the app store in src/state/,
-               the top bar in src/shell/topbar/, the diagram renderer in src/diagram/, the export flow in
-               src/export/; frontend/README.md maps every module)
-backend/       Fastify service for Cloud Run (/healthz, /api/config, the live pull, the render API
-               POST /api/render with its render worker, static serving, security headers; docs/api.md)
-packages/      the nine workspace packages (packages/AGENTS.md, "The packages")
-e2e/           Playwright: functional, export and axe tests, mostly in demo mode; the renderer's SVG
-               baselines (baselines/diagram/) and the render goldens, PNG and draw.io (baselines/render/)
-docs/          contributing.md, packages.md (with the terms), backlog.md, catalog-followups.md, security.md,
-               threat-model.md, website.md, legal facts (docs/legal/), generated media (docs/media/), and the
-               user guides (getting-started, modes, permissions, lenses-and-filters, timeline, export, faq,
-               self-host, self-host-options, configuration, api, the Cloud Shell tutorial), which
-               `node scripts/user-docs.mjs` checks against the tree and docs/README.md lists
-scripts/       repo tooling: provenance, licence, audit and bundle-size checks, the official asset-type list
-               fetcher (catalog-fetch-official.mjs), media, sample exports, the static demo, release notes and
-               assets, set-license, the probe of Google's API answers (probe-google-apis.sh)
-website/       the Astro site at gcportrait.app (docs/website.md)
-brand/         icon.svg, the one source of gcportrait's mark (the favicons, the website's logo; brand/README.md)
-infra/         Dockerfile, install.sh, deploy.sh, uninstall.sh, compose.yaml, cloud-run-button.sh (app.json's
-               hook for the "Run on Google Cloud" button), cloudbuild.yaml
-.agents/       the skills                     .github/     CI, release, Pages and drift workflows, templates
-.changeset/    pending release notes
-```
-
-- **The dependency direction points down**: `model ← catalog ← graph ← frontend`. Packages under `packages/`
-  import only `@gcportrait/model`, except that `graph` also imports `catalog`; the graph's tests may use
-  `demo-data`, and its `render-scene` command `demo-data` and `ingest`; the layout's tests and `debug-svg`
-  script build demo Scenes through `graph`, `catalog` and `demo-data`; ingest's tests may use `demo-data`,
-  whose XL organisation, written as an export, is the ingest budget's input. These development edges stay
-  outside the libraries. A cycle-free, downward graph keeps every package testable on its own.
-- **One upward exception**: `packages/render`, the render library, is Node code on top of the app and imports
-  the frontend's headless entry (`frontend/src/headless.ts`), so a view is drawn by the app's own components
-  and data readers; the frontend never imports it. `packages/render-cli` and the backend (only in its render
-  job, `backend/src/render/job.ts` and `worker.ts`, bundled into `dist/render-worker.mjs`, never into
-  `dist/server.mjs`) draw through it; nothing imports `render-cli`.
-- **Imports go by package name** (`@gcportrait/<pkg>`) through each package's `src/index.ts` or its `testing`
-  export, never through a deep or relative path into another package. `eslint.config.js` enforces the whole
-  direction.
-- **Ingest, the graph build and the layout run in workers**, and the UI thread only renders; the demo
-  generator runs in workers only (the data worker, and a demo worker per "Try the demo" job), and zod never
-  loads on the UI thread (its codec and vocabularies come from zod-free modules). The frontend's code follows
-  [frontend/AGENTS.md](frontend/AGENTS.md), "Code".
-
-[docs/packages.md](docs/packages.md) explains the packages, the data flow and the terms (Snapshot, Graph,
-Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is its reference.
+- **TypeScript only**, Node `^22.22.2` (`.nvmrc`: `22`, `.npmrc`: `engine-strict`), pnpm workspace pinned by
+  `packageManager` and Corepack: one language and types across browser, backend and tooling. Shell only in
+  infra or scripts.
+- **Strict**: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`,
+  `erasableSyntaxOnly` (no enums, namespaces or constructor parameter properties), typescript-eslint
+  `strictTypeChecked`, no `any`. TypeScript stays 6.0.x until typescript-eslint supports newer.
+- **NodeNext** (`tsconfig.node.json`, `.js` relative imports) except frontend bundler resolution; `pnpm
+  typecheck` is `tsc -b`, new packages join root `tsconfig.json` references.
+- **UTF-8, no BOM or NUL**, per `.editorconfig`, so tools read what editors show. Binary extensions hold
+  their format; register new ones in `BINARY_EXTENSIONS` (scripts/lib/repo-files.mjs). Provenance enforces
+  both.
+- **Downward graph**: `model ← catalog ← graph ← frontend`; packages import only model, graph also catalog.
+  Development-only: graph tests use demo-data; render-scene uses demo-data and ingest; layout tests and
+  debug-svg use graph, catalog and demo-data; ingest tests use demo-data, XL exports for the budget. Outside
+  libraries, these stay cycle-free and independently testable.
+- **Upward exception**: Node render imports `frontend/src/headless.ts` for app components/readers, never
+  vice versa. Render-cli and backend jobs use render; nothing imports render-cli. Backend job and worker
+  bundle into `dist/render-worker.mjs`, never `dist/server.mjs`.
+- **Package-name imports**, `@gcportrait/<pkg>` via `src/index.ts`/`testing`, never deep/relative
+  cross-package; eslint.config.js enforces direction.
+- **Workers** run ingest, graph, layout and demo (data worker; demo worker per Try-the-demo job); UI only
+  renders, never loads zod (zod-free codec/vocabularies).
 
 ## Quality gates, testing and CI
 
-- **`pnpm check` before every push**: `format:check`, `lint`, `typecheck`, `test` (the unit tests of every
-  package and the repository tooling, the user-docs check included), `catalog:check`, `provenance` and
-  `licenses`. App work also runs `pnpm build`, `pnpm size` and `pnpm e2e`; visual work also draws the M
-  fixture with `pnpm render` in both themes and looks at it.
-- The SPA's bundle budgets follow [frontend/AGENTS.md](frontend/AGENTS.md), "Bundle budgets".
-- **Tests first** for pure packages; fixtures first for catalog work; golden layouts and visual baselines for
-  renderer work. The contributor-workflow skill (§4) says what each test layer covers.
-- **Baselines and goldens change only on purpose**, through their update commands, with the diff explained in
-  the pull request. The render goldens are compared without tolerance: if a platform rasterises an edge
-  differently, the remedy is one golden per platform, never a tolerance.
-- **Generated artefacts are built by their command, never edited by hand, and checked for staleness**: the
-  compiled catalog (`pnpm catalog:build`), the layout's metrics table, the icon module, `docs/media/`
-  (`pnpm media`, `node scripts/exports.mjs`), the guides' lens tables (`node scripts/user-docs.mjs --write`),
-  `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
-- The suite's leg contract follows [e2e/AGENTS.md](e2e/AGENTS.md), "CI legs".
-- **The audit gate fails on high and critical advisories** unless `scripts/audit-allowlist.json`
-  accepts one with an expiry.
-- The workflow's jobs, required check and docs/media classifier follow
-  [.github/AGENTS.md](.github/AGENTS.md), "CI" and "A change of only docs and media".
-- **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
-  or applied in a commit that passes the checks) or declined with its reason in
-  [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.
+- **Before every push run `pnpm check`**, whose checks the Commands table lists. App work also runs build,
+  size and e2e; visual work renders M in both themes and inspects it. SPA budgets follow frontend/AGENTS.md,
+  "Bundle budgets".
+- **Pure packages: tests first; catalog: fixtures first; renderers: goldens and baselines**
+  (contributor-workflow skill §4).
+- **Intentional baselines/goldens only**, update command and PR diff explanation; render goldens exact,
+  platform differences need platform goldens, never tolerance.
+- **Generate, never hand-edit; check staleness**: catalog, metrics, icons, media, exports, lens tables,
+  THIRD_PARTY dependency table, goldens and baselines, by their commands.
+- **Audit fails high/critical advisories** unless `scripts/audit-allowlist.json` accepts one with an expiry.
+- **Dependabot never closed unread**: adopt main (merge/checked commit), or decline with reason in
+  docs/backlog.md; findings belong in the tree from the start.
+
+CI follows .github/AGENTS.md, "CI" and "A change of only docs and media"; legs follow e2e/AGENTS.md, "CI
+legs".
 
 ## Releases
 
-- **Semantic versioning through changesets**, one fixed version for every workspace package
-  (`.changeset/config.json`, `fixed`); every package is private and never published to npm. A pull request
-  that changes behaviour adds a changeset with a summary written for users.
-- **Per release**: `pnpm release:version` (consumes the changesets, writes the `CHANGELOG.md` files and the
-  versions), commit, then tag `vX.Y.Z` on `main`. [CHANGELOG.md](CHANGELOG.md) says what each release holds.
-- **A tagged release** passes `pnpm run check`, the build and the size budgets on the tag; one image for
-  linux/amd64 and linux/arm64, smoke-tested, pushed to `ghcr.io/florianchrometz/gcportrait` as `X.Y.Z`, `X.Y`
-  and `latest` (`latest` only for the newest release, never a pre-release); an SPDX SBOM per platform;
-  the GitHub release with notes from the `CHANGELOG.md` sections (the long form first, the installer line,
-  the image's tags and digest), the deploy scripts the installer downloads and `checksums.txt`. A release
-  workflow run by hand publishes `dev` only.
-- **A pre-release tag is a trial run of its release**: a tag such as `vX.Y.Z-rc.1` publishes the image under
-  its own version tag only, never `latest` or `X.Y`, creates a GitHub pre-release not marked latest, and takes
-  the notes of `X.Y.Z` when no `CHANGELOG.md` has a section of its own, so the pipeline can be checked before
-  the release it precedes.
-- **The ghcr.io package is public**, because self-hosters' Artifact Registry pulls it without credentials.
-- **The first release, 1.0.0, is already versioned**: its tag needs no versioning step. Every later release
-  starts from the changesets merged since.
+- **Fixed semver through changesets**, all workspace packages private, never npm (`.changeset/config.json`).
+  Behavioral PRs add user-facing changesets; version and tag per contributor-workflow skill §7. CHANGELOG.md
+  records releases.
+- **Tagged releases pass check, build and size**, smoke-test one image for linux/amd64 and linux/arm64,
+  publish `ghcr.io/florianchrometz/gcportrait` tags `X.Y.Z`, `X.Y`, `latest` (newest only, never
+  prerelease). Package is public so self-hosters' Artifact Registry pulls anonymously. Manual runs publish
+  `dev` only.
+- **Release artifacts**: per-platform SPDX SBOM, CHANGELOG section notes (long form first, installer line,
+  image tags/digest), installer deploy scripts and checksums.txt.
+- **Prereleases trial their release**: `vX.Y.Z-rc.1` gets its version tag only, no `latest`/`X.Y`; GitHub
+  prerelease, not latest; use `X.Y.Z` notes absent its own section, so the pipeline can be checked
+  beforehand.
 
-The workflow's execution and website deployment follow [.github/AGENTS.md](.github/AGENTS.md), "Releases".
-[docs/contributing.md](docs/contributing.md) (section 9) has the one-time setup, the trial run and the steps.
+Workflow execution and website deployment follow .github/AGENTS.md, "Releases"; setup and steps:
+docs/contributing.md §9.
 
 ## Documentation
 
-- **Where things are written down**: the rules here and in the folders' AGENTS.md files; the procedures in
-  the skills; what a user does in the user guides under `docs/` (listed in [docs/README.md](docs/README.md));
-  each package's reference in its README; open work in [docs/backlog.md](docs/backlog.md) and
-  [docs/catalog-followups.md](docs/catalog-followups.md).
-- **A document describes what is, never how it came to be**: no record of runs, machines, timings of a
-  particular run, reviews, the dates of decisions or of changes, and no story of what something replaced. A
-  measured figure appears only as the current value. `node scripts/user-docs.mjs` and the provenance check
-  enforce it, because the repository is all a reader sees.
-- **Cite rules by their file and heading**; a guide says what to do and links the guide or section that
-  explains more.
-- **Markdown is hand-wrapped at 110 columns**, table rows, lines that hold a URL, fenced code, the YAML
-  frontmatter and a line of one word or one HTML tag excepted, which `node scripts/user-docs.mjs` checks, and
-  not formatted by Prettier; it carries the SPDX header.
-- **A value the reader fills in** is written `YOUR_` and capitals as one word (`YOUR_PROJECT`), a variable of
-  `COMMAND_VARIABLES` in `@gcportrait/model`, which the website turns into a field and the user-docs check
-  holds the guides to; capitals without `YOUR_` stay text.
-- **Each user guide opens with the long form**; guide registration follows
-  [docs/AGENTS.md](docs/AGENTS.md), "User guides".
-- **The root README is the project's front page on GitHub**, and its sections keep this order: what
-  gcportrait is and does, with the wordmark, the badges and the hero animation; "Quick start", with the
-  installer under "Self-host in 10 minutes", the "Open in Cloud Shell" and "Run on Google Cloud" buttons, and
-  "Try the demo"; "Features", each feature shown with a still or an animated demo from `docs/media/` in both
-  themes; "How it works", "Tech stack" and "Roadmap"; "Contributing"; "Learn more"; "Author"; and at the
-  bottom "Not affiliated with Google" (the long form) and "Licence". A visitor decides on the first screen
-  whether gcportrait fits and how to start, so what it does and how to run it come first and the statements
-  last. `scripts/readme.test.ts` holds the order.
-- **Docs, skills and the AGENTS.md files change in the same pull request as the code** they describe.
+- **User guides are indexed in docs/README.md; each package's README is its reference.**
+- **What is, never history**: no run, machine, timing, review or verification records, decision or change
+  dates or replaced behavior. Figures are current values; user-docs/provenance enforce this: the repo is all
+  readers see.
+- Guides say what to do and link explanations.
+- **Markdown: 110 columns**, hand-wrapped, not Prettier, with SPDX; except tables, URL lines, fences,
+  frontmatter, one-word or one-HTML-tag lines. user-docs checks it.
+- **Placeholders: `YOUR_` capitals**, one word (`YOUR_PROJECT`), model `COMMAND_VARIABLES`; website fields,
+  user-docs checks. Other capitals stay text.
+- **Each user guide opens with the long form**; registration follows docs/AGENTS.md, "User guides".
+- **README front page** follows order/content in scripts/readme.test.ts: purpose/quick starts first,
+  statements last, since visitors decide fit/how to start on the first screen. Keep badges; illustrate every
+  feature with a still or animated demo from docs/media/, in both themes.
 
 ## How to work a task
 
-1. Start from an issue or an item of [docs/backlog.md](docs/backlog.md). A change to a rule changes the
-   AGENTS.md that holds it in the same pull request.
-2. Load the skills the work needs ([Skills](#skills)). Read the AGENTS.md of every folder you change and the
-   README of every package you change.
-3. Work in a branch or worktree named after the topic (`gutter-lanes`, or `412-gutter-lanes` with the issue
-   number).
-4. Tests first for pure packages; fixtures first for catalog work; golden or visual baseline for renderer
-   work.
-5. Run `pnpm check`; for app work also `pnpm build`, `pnpm size` and `pnpm e2e`; for visual work `pnpm render`
-   on the M fixture, looked at in both themes.
-6. Write the pull request with the template: what, why, how verified (commands and their results),
-   screenshots, changeset, provenance statement. Update the docs, the skills and the AGENTS.md files in the
-   same pull request, and take the item off the backlog. **A pull request is one change: small, about one
-   feature or one function, with its changeset**, because a focused change is quick to review and to merge; a
-   rewrite of a whole part is proposed in an issue first and then made in small steps.
-7. Finish with a short, honest report: what was built, what was verified (commands and their real results,
-   failures included), what was left out. A reviewer, human or agent, checks the acceptance criteria of the
-   issue or backlog item, the skills' rules and the AGENTS.md files before merging.
+1. Start from an issue or backlog item; read needed skills, affected folder rules and package READMEs.
+2. Use a topic-named branch or worktree; follow [Quality gates, testing and
+   CI](#quality-gates-testing-and-ci).
+3. Use the PR template: what, why, commands and results, screenshots, changeset, provenance; remove the
+   completed backlog item. One small feature or function per PR for quick review and merge; propose rewrites
+   in an issue, then split them.
+4. Report changes, checks, failures and exclusions honestly; a human or agent reviews acceptance, skills and
+   rules before merge.
 
-**Git.** `main` is the project's history: it is never force-pushed and its history is never rewritten, so
-every clone and fork stays valid. Whether and where history is ever cut is the maintainer's decision alone.
+**Never force-push or rewrite main**: clones and forks must stay valid; only the maintainer decides history
+cuts.
 
 ## Skills
 
-| Skill | Load when you ... |
-|---|---|
-| [.agents/skills/gcp-diagram-style/SKILL.md](.agents/skills/gcp-diagram-style/SKILL.md) | touch colours, zone tints, typography, icons, edges, legend, themes, export or accessibility, or need to fact-check a render |
-| [.agents/skills/gcp-diagram-layout/SKILL.md](.agents/skills/gcp-diagram-layout/SKILL.md) | work on nesting, packing, routing, progressive disclosure or performance, or judge whether a diagram "looks right" |
-| [.agents/skills/gcp-asset-catalog/SKILL.md](.agents/skills/gcp-asset-catalog/SKILL.md) | add or change an asset type, relation rule, lens, icon mapping, console URL, or run the coverage tool |
-| [.agents/skills/cai-ingestion/SKILL.md](.agents/skills/cai-ingestion/SKILL.md) | call Cloud Asset Inventory, parse exports, handle permissions, quota projects, timeline readTime, or write demo data |
-| [.agents/skills/contributor-workflow/SKILL.md](.agents/skills/contributor-workflow/SKILL.md) | start any task, prepare a PR, self-host for testing, release, or review someone else's change |
+Load `.agents/skills/NAME/SKILL.md`: **contributor-workflow** for every task, review or release;
+**gcp-diagram-style** for visuals, exports, accessibility or render review; **gcp-diagram-layout** for
+containment, layout, routing, disclosure, performance or layout review; **gcp-asset-catalog** for types,
+relations, lenses, icons, console links or coverage; **cai-ingestion** for CAI, parsing, permissions, quota,
+timeline or demos.
 
 ## Assistants
 
-The AGENTS.md files and the skills under `.agents/skills/` are the one source of instructions for every
-assistant, so that each works from the same rules and none is favoured. What each tool reads by itself, and
-what `pnpm agents:setup` writes for it at the root and for each folder file, is in
-[.agents/README.md](.agents/README.md).
-
-- **A pointer file holds no rule.** Each says in one paragraph "Read AGENTS.md, the AGENTS.md of every folder
-  you change and the skills under .agents/skills/ first; this file only points there." (one beside a folder
-  file names `../AGENTS.md` and the folder's own), with the tool's import line where it has one; it is
-  git-ignored and the provenance check skips it. A rule goes in an AGENTS.md, so that no copy can drift.
-- **`pnpm agents:setup` is safe to run at any time**: it never overwrites a file that exists (`--force` does,
-  but never a folder, and it never writes through a link), changes nothing that is in place, links a skill
-  added since and writes the pointers of a folder file added since, and removes only what it made for a
-  skill or a folder file that is gone, a pointer only while it holds exactly what the script writes;
-  `--tool claude` (gemini, codex, cursor, copilot) limits it to one tool. `scripts/agents-setup.mjs` names the
-  documentation each tool's files follow.
-- **Every rules file is `AGENTS.md` in git as on disk.** On a case-insensitive file system (macOS, Windows)
-  git does not notice a rename that changes only the case, so such a rename is made with `git mv -f`;
-  `scripts/rules-files.test.ts` fails while git tracks another spelling, or an `AGENTS.md` deeper than one
-  folder below the root.
+- **Pointers contain no rules**, just ignored tool imports and references, to avoid drift. Discovery,
+  pointer text and safe setup procedures: .agents/README.md; tool sources: scripts/agents-setup.mjs.
 
 ## Commands
 
@@ -657,24 +448,14 @@ what `pnpm agents:setup` writes for it at the root and for each folder file, is 
 | Write the local, git-ignored pointer files that lead an assistant to the AGENTS.md files and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Draw a demo view as the app's renderer draws it (PNG, SVG and draw.io, byte-stable; the drawing carries no non-affiliation line) | `pnpm render --fixture M --lens networking --png out.png` (`--theme dark`, `--detail`, `--svg`, `--drawio`, `--strict`, `--compare`, `--all`, `--help`; without `--png`/`--svg`/`--drawio` it writes `out/render/`) |
 
-[packages/AGENTS.md](packages/AGENTS.md), "Commands", lists catalog, graph, layout, render-golden and icon
-commands; [backend/AGENTS.md](backend/AGENTS.md), "Commands", lists the render smoke test, API probe and
-production start; [frontend/AGENTS.md](frontend/AGENTS.md), "Commands", lists the phone and tablet check
-and the SVG-baseline update; [website/AGENTS.md](website/AGENTS.md), "Commands", lists the site and
-static-demo commands; [infra/AGENTS.md](infra/AGENTS.md), "Commands", lists deployment, image and shell
-checks; [e2e/AGENTS.md](e2e/AGENTS.md), "Commands", lists the CI legs and draw.io fidelity check;
-[docs/AGENTS.md](docs/AGENTS.md), "Commands", lists guide checks, media and sample-export generation.
-[docs/packages.md](docs/packages.md) maps the packages, their entry points and data flow;
-[docs/configuration.md](docs/configuration.md) lists every setting of an instance.
+
+Other commands are in each folder's AGENTS.md, "Commands". References: docs/packages.md and
+docs/configuration.md.
 
 ## Names that never appear
 
-The strings `scripts/check-provenance.mjs` refuses never appear in any file's contents or in any file or
-directory name: Google's name with its company suffix, a few project names, decision-record numbers and links,
-numbered rules of an AGENTS.md, phrases that record how something was built rather than what it is, and
-work-item ids. The check assembles them at run time or knows them only by their SHA-256 digest, so no file
-spells them out. It reads every file git tracks and every other file of the tree outside the git-ignored
-directories: text in any encoding, and the metadata of images and other binary files. `node
-scripts/check-provenance.mjs --list-exempt` lists its rules, with the refused names and phrases as labels
-only; `--digest-of <phrase>` prints the entry that adds a phrase to the refused ones. Say what a thing is or
-does, and cite the rule by its file and heading.
+Provenance refuses the names and phrases in docs/contributing.md, "Provenance", in all file contents and
+paths. All tracked and nonignored files are read, any encoding and binary metadata included. Refused strings
+are assembled or known by SHA-256, never spelled out. `node scripts/check-provenance.mjs --list-exempt`
+labels the rules; `--digest-of <phrase>` prints a deny entry. State what a thing is or does; cite the rule's
+file and heading.

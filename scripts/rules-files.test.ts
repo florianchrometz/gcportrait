@@ -7,7 +7,7 @@
  * time, so that this file's fixed strings are not read as citations of the tree.
  */
 import { spawnSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -405,6 +405,17 @@ describe('the rules files of a checkout', () => {
 });
 
 describe('the repository’s rules files', () => {
+  it('fit within 32 KiB at the root and 16 KiB in each folder, measured in bytes', () => {
+    for (const file of rulesFiles(REPO)) {
+      const bytes = readFileSync(path.join(REPO, file)).length;
+      const limit = file === RULES_FILE ? 32_768 : 16_384;
+      expect(
+        bytes,
+        `${file}: ${String(bytes)} bytes exceeds the ${String(limit)}-byte cap`,
+      ).toBeLessThanOrEqual(limit);
+    }
+  });
+
   it('are each named AGENTS.md, the name the tools read, in that case on disk and in git, one folder deep at most', () => {
     const onDisk = (relDir: string) =>
       readdirSync(path.join(REPO, relDir)).filter((name) => name.toLowerCase() === RULES_FILE.toLowerCase());
