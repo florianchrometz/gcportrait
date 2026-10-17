@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
-import { FORK_SOURCE_URL as CONFIGURED_SOURCE_URL, stubConfig } from '../fixtures/live.js';
+import { FORK_SOURCE_URL as CONFIGURED_SOURCE_URL, stubConfig, test } from '../fixtures/live.js';
 import {
   DEFAULT_SOURCE_URL,
   expectFooterLinkStyle,

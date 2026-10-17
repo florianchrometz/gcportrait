@@ -1,8 +1,15 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
-import { checkSection, choose, expectTokenNowhere, requireToken, stubConfig } from '../fixtures/live.js';
+import {
+  checkSection,
+  choose,
+  expectTokenNowhere,
+  requireToken,
+  stubConfig,
+  test,
+} from '../fixtures/live.js';
 import { expectNoAxeViolations, scratchShot } from './support.js';
 
 /**

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import {
   ALL_SCOPES,
@@ -10,7 +10,7 @@ import {
   type GisStubOptions,
   type GoogleStubs,
 } from '../fixtures/gis.js';
-import { expectTokenNowhere, stubConfig } from '../fixtures/live.js';
+import { expectTokenNowhere, stubConfig, test } from '../fixtures/live.js';
 import { expectNoAxeViolations } from './support.js';
 
 /**

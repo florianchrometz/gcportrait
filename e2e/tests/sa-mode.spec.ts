@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 import path from 'node:path';
 
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 import { ALL_SCOPES, stubGoogle } from '../fixtures/gis.js';
 import { routeApiTo, startHarness as startBackend } from '../fixtures/harness.js';
-import { checkSection, choose, environment, expectTokenNowhere } from '../fixtures/live.js';
+import { checkSection, choose, environment, expectTokenNowhere, test } from '../fixtures/live.js';
 import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
 
 /**

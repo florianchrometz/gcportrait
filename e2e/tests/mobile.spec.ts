@@ -3,10 +3,11 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
+import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 
 import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TOKENINFO_URL } from '../fixtures/gis.js';
-import { stubConfig } from '../fixtures/live.js';
+import { stubConfig, test } from '../fixtures/live.js';
+import { LIVE_URL } from '../fixtures/servers.js';
 import {
   boxOf,
   cameraSettled,
@@ -26,8 +27,9 @@ import { coveredByThumbRing, focusRingShown, timelineBar } from './timelineSuppo
  * Permissions, Snapshots and Settings pages; the Snapshots page again with a snapshot stored (an export of demo
  * organisation S imported, so both of its tables have a row) and a day of its scope cached: a card per row on a phone,
  * where no box scrolls sideways, not even a table's, and tables that fit the page on a tablet; a live instance's
- * Connect page signed out and signed in (Google's sign-in stood in for, fixtures/gis.ts, with a long work address), its
- * Permissions page and the Account panel inside More (also at 1024 × 768), and its Impressum and Privacy pages; and on
+ * Connect page signed out and signed in (Google's sign-in stood in for, fixtures/gis.ts, with a long work address, and
+ * the backend's configuration and scope search answered in the browser, fixtures/live.ts), its Permissions page and the
+ * Account panel inside More (also at 1024 × 768), and its Impressum and Privacy pages; and on
  * the diagram of demo S and of demo M at rest, with the View sheet open (and in it the Lens list, the Focus and Filters
  * panels and the search's results), with the More sheet open (and from it the Snapshot, Theme and Export menus and the
  * Saved views dialog) and with the details drawer open, it fails when
@@ -101,8 +103,6 @@ const PAGES = [
 const DIAGRAMS = ['/diagram#snapshot=demo:S', '/diagram#snapshot=demo:M'] as const;
 /** Demo M drilled in to a project five levels down: a trail longer than a phone's top bar. */
 const DEEP_TRAIL = `/diagram#snapshot=demo:M&root=${encodeURIComponent('//cloudresourcemanager.googleapis.com/projects/10000000025')}`;
-/** The normal-mode server of playwright.config.ts: an instance that serves its own legal pages. */
-const LIVE_URL = 'http://localhost:5173';
 /** A legal text with what a phone has to wrap: a long address, a long word, inline code, a list. */
 const LEGAL_TEXT = [
   '# Impressum',
@@ -126,6 +126,28 @@ const LIVE_CONFIG = {
 const LONG_EMAIL = 'firstname.middlename.lastname@platform-engineering.example-company.example.com';
 /** The stand-in for Google's sign-in hands out this fake token. */
 const FAKE_TOKEN = 'e2e-fake-access-token-mobile-4d2e';
+/**
+ * What the scope search answers, of the kinds asked for. Signed in, a scope picker searches as soon as it has focus,
+ * which the walk of every control's focus gives it (the scope's picker asks for every kind, the quota project's for
+ * projects).
+ */
+const SCOPES = [
+  { kind: 'organization', scope: 'organizations/30000000001', id: '30000000001', displayName: 'example.com' },
+  {
+    kind: 'folder',
+    scope: 'folders/20000000001',
+    id: '20000000001',
+    displayName: 'Web shop',
+    parent: 'organizations/30000000001',
+  },
+  {
+    kind: 'project',
+    scope: 'projects/demo-web-1',
+    id: 'demo-web-1',
+    displayName: 'Web front end',
+    parent: 'folders/20000000001',
+  },
+] as const;
 /** The smallest touch target, in CSS pixels (WCAG 2.5.5's 44 × 44; a little rounding allowed). */
 const TARGET = 43.5;
 /** Where the tablet's layout starts (48rem at a 16-pixel rem, frontend/src/ui/screen.ts): narrower is a phone. */
@@ -1055,6 +1077,11 @@ for (const theme of ['light', 'dark'] as const) {
       await page.setViewportSize(size);
       await page.emulateMedia({ colorScheme: theme });
       await stubConfig(page, LIVE_CONFIG);
+      await page.route('**/api/scopes/search', (route) => {
+        const { kinds } = route.request().postDataJSON() as { readonly kinds?: readonly string[] };
+        const scopes = SCOPES.filter((scope) => kinds === undefined || kinds.includes(scope.kind));
+        return route.fulfill({ json: { scopes, problems: [] } });
+      });
       await stubGoogle(page, { tokens: [FAKE_TOKEN], expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant' });
       // A long work address: the account's button and its panel wrap it.
       await page.route(TOKENINFO_URL, (route) =>

@@ -3,9 +3,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import { routeApiTo, startHarness as startBackend } from '../fixtures/harness.js';
+import { test } from '../fixtures/live.js';
 import {
   DEFAULT_SOURCE_URL,
   drawingOf,

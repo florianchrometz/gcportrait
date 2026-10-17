@@ -1,14 +1,61 @@
 // SPDX-License-Identifier: MIT
-import { expect, type Locator, type Page, type Request } from '@playwright/test';
+import { expect, test as base, type Locator, type Page, type Request } from '@playwright/test';
 
 import { storedEverywhere, type GoogleStubs } from './gis.js';
+import { LIVE_URL } from './servers.js';
 
 /**
- * What the live specs (run by the `chromium-live` project against `pnpm dev`'s Vite server) share: the
- * backend's GET /api/config answered inside the browser, the Permissions page's check section, and the checks
- * that the access token travels only in gcportrait's own header and is kept nowhere (AGENTS.md, Security and
- * privacy, Tokens). Everything is synthetic.
+ * What the live specs (run by the `chromium-live` project against `pnpm dev`'s Vite server) share: their `test`, which
+ * lets no request reach the server's proxy, the backend's GET /api/config answered inside the browser, the Permissions
+ * page's check section, and the checks that the access token travels only in gcportrait's own header and is kept
+ * nowhere (AGENTS.md, Security and privacy, Tokens). Everything is synthetic.
  */
+
+const LIVE_ORIGIN = new URL(LIVE_URL).origin;
+
+/**
+ * Whether the normal-mode server would proxy a request for `url`: one to that server whose path starts with `/api`
+ * (frontend/vite.config.ts names the proxy's path, and Vite matches it as a prefix).
+ */
+function proxied(url: URL): boolean {
+  return url.origin === LIVE_ORIGIN && url.pathname.startsWith('/api');
+}
+
+/**
+ * The `test` of every spec that opens the normal-mode server (the live specs, and mobile.spec.ts for a live instance's
+ * pages). That server's proxy sends `/api` to a backend on port 8080 that the suite never starts, so each request must
+ * be answered by the test: its own routes (`stubConfig`, `page.route`, `routeApiTo`), or the request fails in the proxy,
+ * which prints an error into the run's output. A request none of them answers is answered here instead, with a 503 that
+ * names it, and the test fails at its end, listing every such request. The route is the context's, so it covers every
+ * page of the test and comes after every route of a page.
+ */
+export const test = base.extend<{ unansweredApi: readonly string[] }>({
+  unansweredApi: [
+    async ({ context }, use) => {
+      const unanswered: string[] = [];
+      await context.route(proxied, (route) => {
+        const request = route.request();
+        const what = `${request.method()} ${new URL(request.url()).pathname}`;
+        unanswered.push(what);
+        return route.fulfill({
+          status: 503,
+          json: {
+            statusCode: 503,
+            error: 'Service Unavailable',
+            code: 'E2E_NOT_STUBBED',
+            message: `No route of this test answers ${what}, and the e2e suite runs no backend (e2e/fixtures/live.ts).`,
+          },
+        });
+      });
+      await use(unanswered);
+      expect(
+        unanswered,
+        'the /api requests to the normal-mode server that no route of the test answered',
+      ).toEqual([]);
+    },
+    { auto: true },
+  ],
+});
 
 /** The operator's SOURCE_URL most specs configure: a fork elsewhere, so the footer must not link the default. */
 export const FORK_SOURCE_URL = 'https://git.example.org/team/gcportrait-fork';

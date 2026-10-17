@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
 
+import { DEMO_URL, LIVE_URL } from './fixtures/servers.js';
+
 /**
  * End-to-end tests run against the SPA's Vite dev server; no backend and no Google Cloud access needed.
  *
@@ -11,11 +13,14 @@ import { defineConfig, devices, type ReporterDescription } from '@playwright/tes
  *   answered inside the browser by the specs (fixtures/live.ts, fixtures/gis.ts);
  *   sa-mode.spec.ts instead sends the backend calls to the real backend, started by the spec with a pretend Google
  *   (backend/src/auth/sa-harness.testing.ts); demo-only.spec.ts to the real backend in demo-only mode
- *   (backend/src/demo-only-harness.testing.ts); both through fixtures/harness.ts.
+ *   (backend/src/demo-only-harness.testing.ts); both through fixtures/harness.ts. No backend listens behind the
+ *   server's `/api` proxy (port 8080): every spec that opens the server takes its `test` from fixtures/live.ts, which
+ *   answers an `/api` request no route of the test answers with a 503 and fails the test, so the proxy is never
+ *   reached and prints no error into the run's output.
  *
- * - `mobile` runs mobile.spec.ts and touch.spec.ts against demo mode: the phone and tablet layouts (AGENTS.md, Product
- *   rules) and the canvas's touch gestures, in Chromium emulating a touch device at the sizes the specs set (`pnpm
- *   --filter @gcportrait/frontend mobile` runs it alone).
+ * - `mobile` runs mobile.spec.ts and touch.spec.ts against demo mode, and a live instance's pages against normal mode:
+ *   the phone and tablet layouts (AGENTS.md, Product rules) and the canvas's touch gestures, in Chromium emulating a
+ *   touch device at the sizes the specs set (`pnpm --filter @gcportrait/frontend mobile` runs it alone).
  * - `chromium-phone` and `chromium-tablet` run the tests tagged `@phone` and `@tablet` against demo mode, in Chromium
  *   emulating a touch device at 390 × 844 (an iPhone 13's window, the phone's layout) and 820 × 1180 (an iPad Air's,
  *   the tablet's): handheld.spec.ts, the app's flows by finger. `chromium` leaves the tagged tests out.
@@ -23,8 +28,6 @@ import { defineConfig, devices, type ReporterDescription } from '@playwright/tes
  * Locally a server that is already running on either port is reused; CI always starts fresh ones. Chromium
  * only for now; the desktop's functional specs at a window of 1440 × 900.
  */
-const DEMO_URL = 'http://localhost:5174';
-const LIVE_URL = 'http://localhost:5173';
 const LIVE_SPECS = /(?:live|signin|preflight|live-pull|sa-mode|demo-only|permissions-variables)\.spec\.ts$/;
 const MOBILE_SPECS = /(?:mobile|touch)\.spec\.ts$/;
 /** The tags of the tests a phone and a tablet run; the desktop's project runs neither. */
