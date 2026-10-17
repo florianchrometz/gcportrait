@@ -224,9 +224,11 @@ selection ring again; a `reveal` never replaces a centring jump to the same node
 with `mode: 'reveal'` only the short pan of `revealTransform`, section "Details drawer") as soon as the node
 is drawn, then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump, and
 the pan that follows keyboard focus, keep the node in the part of the canvas that a panel lying over it leaves
-in view (`clearRoom`: an element marked `data-canvas-overlay` along the canvas's whole right or lower edge,
-the details drawer of a phone or a tablet); on a desktop nothing lies over the canvas and the room is the
-canvas.
+in view (`clearRoom`: each open element marked `data-canvas-overlay` that lies over the canvas, the details
+drawer of a phone or a tablet along its right or lower edge or the top bar's View or More sheet hanging from
+its top edge, leaves the largest part of the canvas it keeps free to its left or right, above or below it, and
+`inRoom` in `diagram/camera.ts` works the camera out for that part as if it were the whole canvas); on a
+desktop nothing lies over the canvas and the room is the canvas.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
@@ -319,8 +321,9 @@ canvas and leaves at least a third of it in view. The selection stays, its ring 
 drawer stays closed whatever a pick in the sheet changes of the view (a lens, a filter, a saved view); a tap
 or a key on the selected node opens it again, and so does another node selected once the sheet is closed (a
 link, Back). A search result picked in View closes the sheet onto its button and opens the drawer on the
-result, in the part of the canvas the drawer leaves in view. On a desktop no sheet opens, and the drawer stays
-as it is.
+result, in the part of the canvas the drawer leaves in view. The open sheet is marked `data-canvas-overlay`,
+as the drawer is, so a camera jump made while it is open keeps the node in the part of the canvas below or
+beside it (section "App state", `clearRoom`). On a desktop no sheet opens, and the drawer stays as it is.
 
 **Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
 `--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons,
@@ -396,7 +399,7 @@ focusable, doing nothing).
 | `Select` | select-only combobox (`role="combobox"` button + `Listbox`), focus stays on the button, `aria-activedescendant`; options may carry a `description` (the lenses'), `listClassName` sizes the list | closed: ↑ ↓ Enter Space open on the current option, Home End, a typed character; open: ↑ ↓ (no wrap), Home End, type-ahead, Enter Space choose, Tab chooses and moves on, Escape closes |
 | `Combobox` | editable combobox with a results `Listbox` (`aria-autocomplete="list"`), a polite result count (`status` replaces it); options may carry a `group` and a decorative `icon`; `inputRef`, `keyShortcuts` (`aria-keyshortcuts`), `align`, `listClassName`; `busy` (results that arrive later; the listed options are an earlier text's, greyed and never active or chosen) and `enterChoosesFirst` | ↓ opens or moves, ↑ moves (both wrap), Alt+↓ opens, Enter chooses (with `enterChoosesFirst` the first when none is active), Escape closes then clears; a click chooses without taking focus; a press on the focused input reopens the list; while `busy`, ↓ ↑ Enter are kept and apply to the options that arrive |
 | `Listbox` | the listbox popup of the two comboboxes (presentational); consecutive options with one `group` name form a `role="group"` named by a heading row (APG "grouped options"); an option with a second line is named by its label and described by the line (`aria-labelledby`, `aria-describedby`), which a sized list cuts with an ellipsis (its title has it all); `busy`: `aria-busy`, options in the secondary text colour | pointer move activates, click chooses; the active option scrolls into view |
-| `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary); `sheet`: a fold of other controls, its content kept mounted (hidden) while closed, and `inline`: the same content in place without a button (section "Layouts") | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close`; a sheet leaves an Escape its content handled alone, ignores presses while a modal dialog makes it inert, and closed with focus inside it (a pick) gives focus back to its button |
+| `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary); `sheet`: a fold of other controls, its content kept mounted (hidden) while closed, its panel marked `data-canvas-overlay` (a camera jump keeps a node clear of it, `DiagramCanvas`'s `clearRoom`), and `inline`: the same content in place without a button (section "Layouts") | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close`; a sheet leaves an Escape its content handled alone, ignores presses while a modal dialog makes it inert, and closed with focus inside it (a pick) gives focus back to its button |
 | `Dialog` | modal dialog (`aria-modal`, labelled by its title, described by `description`) at the end of `<body>`, the rest made `inert`; `alert`: an alert dialog (`role="alertdialog"`, a decision its own actions make: no Close button) with `initialFocus` on its least destructive action | focus moves in, Tab trapped, Escape, Close and the backdrop close (an alert dialog: Escape only), focus returns to the opener |
 | `SegmentedControl` | radio group (`role="radiogroup"`, `role="radio"`), the checked option the one tab stop and check-marked | ← → ↑ ↓ move and choose (wrapping), Home End, click |
 | `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track |

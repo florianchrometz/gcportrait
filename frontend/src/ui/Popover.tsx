@@ -13,8 +13,10 @@
  * (a modal dialog) stays open; an Escape a control in it has handled already (closing its own list) leaves the sheet
  * open, and so does a press while a modal dialog over it makes it inert. A sheet closed while focus is inside it (a
  * pick that closes it, a new layout) gives focus back to its button, as Escape does, rather than letting it drop to
- * the page's body with the hidden panel. With `inline` the fold has room: no button, and the same content laid out
- * in place as if there were no popover (the desktop), the same elements either way.
+ * the page's body with the hidden panel. An open sheet lies over the page, the diagram's canvas included, and says so
+ * (`data-canvas-overlay`): a camera jump keeps its node in the part of the canvas the sheet leaves in view
+ * (diagram/DiagramCanvas, `clearRoom`). With `inline` the fold has room: no button, and the same content laid out in
+ * place as if there were no popover (the desktop), the same elements either way.
  */
 import {
   useEffect,
@@ -152,6 +154,8 @@ export function Popover({
           aria-label={title ?? label}
           tabIndex={-1}
           hidden={!shown}
+          // A sheet over the diagram's canvas: the canvas's camera keeps a node clear of it (diagram/DiagramCanvas).
+          data-canvas-overlay={sheet ? '' : undefined}
           className={cx(
             styles.popup,
             styles.anchored,

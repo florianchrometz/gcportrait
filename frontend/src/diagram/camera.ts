@@ -8,6 +8,9 @@
  * case the scale that fits it. In between, the centre moves and the scale changes geometrically, both eased in
  * and out, so a long jump does not lurch.
  *
+ * A jump keeps the node in the part of the canvas a panel lying over it leaves in view (DiagramCanvas, `clearRoom`):
+ * `inRoom` works a camera out for that part as if it were the whole canvas.
+ *
  * The keyboard's camera is here too: a move to an item pans just enough to show it, and first zooms in to
  * the scale at which labels are drawn when the camera is further out (`keyboardTransform`); the zoom keys scale by
  * `ZOOM_STEP` about the focused item (`zoomStepTransform`).
@@ -44,6 +47,45 @@ export function focusTransform(
   const cx = rect.x + rect.width / 2;
   const cy = rect.y + rect.height / 2;
   return { k, x: width / 2 - cx * k, y: height / 2 - cy * k };
+}
+
+/**
+ * A part of the canvas, in CSS px from its top-left corner: the room a jump or a keyboard move keeps the node in, the
+ * canvas less a panel lying over it (DiagramCanvas, `clearRoom`).
+ */
+export interface CanvasRoom {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** A camera worked out for a `width` × `height` canvas from the camera `current` on it. */
+type Placement<T> = (width: number, height: number, current: CameraTransform) => T;
+
+/**
+ * A camera worked out for a part of the canvas, `room`, as if the room were the whole canvas: `place` gets the room's
+ * size and the camera `current` as the room's top-left corner sees it, and the camera it answers is moved back onto
+ * the canvas (null, nothing to move, stays null). So `focusTransform` centres a node in the room, and
+ * `revealTransform` and `keyboardTransform` keep it inside the room's margins.
+ */
+export function inRoom(
+  room: CanvasRoom,
+  current: CameraTransform,
+  place: Placement<CameraTransform>,
+): CameraTransform;
+export function inRoom(
+  room: CanvasRoom,
+  current: CameraTransform,
+  place: Placement<CameraTransform | null>,
+): CameraTransform | null;
+export function inRoom(
+  room: CanvasRoom,
+  current: CameraTransform,
+  place: Placement<CameraTransform | null>,
+): CameraTransform | null {
+  const to = place(room.width, room.height, { k: current.k, x: current.x - room.x, y: current.y - room.y });
+  return to === null ? null : { k: to.k, x: to.x + room.x, y: to.y + room.y };
 }
 
 /** Ease in and out (cubic), for t in [0, 1]. */
@@ -112,7 +154,8 @@ function revealShift(n0: number, n1: number, e0: number, e1: number, lo: number,
  * The camera that shows `node` inside a `width` × `height` canvas with `margin` around it, and as much of
  * `extent` (the node and the nodes its trace reaches, in drawing units) as fits, moving the `current` camera as
  * little as possible and never changing its scale; null when nothing needs to move (both shifts under half a
- * pixel). The drawer sits beside the canvas, so the canvas's own size is what stays in view.
+ * pixel). On a desktop the drawer sits beside the canvas, so the canvas's own size is what stays in view; where a panel
+ * lies over the canvas, `inRoom` gives it the part the panel leaves.
  */
 export function revealTransform(
   node: Rect,

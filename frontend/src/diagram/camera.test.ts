@@ -10,10 +10,12 @@ import {
   focusTransform,
   GLIDE_PADDING,
   glideAt,
+  inRoom,
   keyboardTransform,
   panTransform,
   pinchTransform,
   REVEAL_MARGIN,
+  revealTransform,
   ZOOM_STEP,
   zoomAbout,
   zoomStepTransform,
@@ -40,6 +42,45 @@ describe('focusTransform', () => {
     expect(focusTransform({ x: 0, y: 0, width: 200, height: 44 }, 1280, 624, close).k).toBe(2.5);
     const big = focusTransform({ x: 0, y: 0, width: 4000, height: 3000 }, 1280, 624, close);
     expect(big.k).toBeCloseTo((624 - 2 * GLIDE_PADDING) / 3000);
+  });
+});
+
+describe('a part of the canvas (inRoom)', () => {
+  const node = { x: 400, y: 300, width: 200, height: 44 };
+  // The canvas below a sheet 400 px tall hanging from its top edge.
+  const below = { x: 0, y: 400, width: CANVAS.width, height: CANVAS.height - 400 };
+
+  it('is the camera itself when the room is the whole canvas', () => {
+    const current = { x: 30, y: -20, k: 0.4 };
+    const whole = { x: 0, y: 0, ...CANVAS };
+    expect(
+      inRoom(whole, current, (width, height, camera) => focusTransform(node, width, height, camera)),
+    ).toEqual(focusTransform(node, CANVAS.width, CANVAS.height, current));
+  });
+
+  it('centres a node in the room, not in the canvas', () => {
+    const to = inRoom(below, { x: 0, y: 0, k: 0.3 }, (width, height, camera) =>
+      focusTransform(node, width, height, camera),
+    );
+    expect(to.k).toBe(1);
+    expect(to.x + 500 * to.k).toBeCloseTo(640);
+    expect(to.y + 322 * to.k).toBeCloseTo(400 + 224 / 2);
+  });
+
+  it('pans a node into the room, inside its margins, and leaves one there in place', () => {
+    // At 1, under the sheet: 300 to 344 on screen.
+    const under = { x: 0, y: 0, k: 1 };
+    const to = inRoom(below, under, (width, height, camera) =>
+      revealTransform(node, node, width, height, camera),
+    );
+    if (to === null) throw new Error('no pan');
+    expect(to.k).toBe(1);
+    expect(to.x).toBe(0);
+    expect(node.y * to.k + to.y).toBeCloseTo(400 + REVEAL_MARGIN);
+    // In the room already: nothing to move.
+    expect(
+      inRoom(below, to, (width, height, camera) => revealTransform(node, node, width, height, camera)),
+    ).toBeNull();
   });
 });
 

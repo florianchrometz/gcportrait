@@ -62,11 +62,12 @@ function brandMarkSource(): string {
  * a theme), focus back on its button (ui/Popover); Copy link, Export's menu and the account panel keep it open. On the
  * diagram page a sheet hangs over the canvas, at most two thirds of the canvas's height (the bar carries that height
  * as `--canvas-height`), its content scrolling inside it, so a third of the drawing stays in view while the controls
- * in it change the view. Opening a sheet (its button, or `/` for View) closes the details drawer, which lies over the
- * canvas too, so the sheet is alone over it (state/store.ts, `apart`): the selection stays, its ring and its trace
- * with it, and no pick in the sheet that changes the view opens the drawer again. A node selected does: a tap or a key
- * on it once the sheet is closed, another node selected by a link or Back, or a search result picked in View, which
- * closes the sheet onto its button first. On a desktop, where the sheets are in place, the drawer stays as it is.
+ * in it change the view, and a camera jump made meanwhile keeps its node there (the open sheet is marked
+ * `data-canvas-overlay`, ui/Popover). Opening a sheet (its button, or `/` for View) closes the details drawer, which
+ * lies over the canvas too, so the sheet is alone over it (state/store.ts, `apart`): the selection stays, its ring and
+ * its trace with it, and no pick in the sheet that changes the view opens the drawer again. A node selected does: a tap
+ * or a key on it once the sheet is closed, another node selected by a link or Back, or a search result picked in View,
+ * which closes the sheet onto its button first. On a desktop, where the sheets are in place, the drawer stays as it is.
  */
 export function TopBar(): ReactElement {
   const { demo } = useAppMode();

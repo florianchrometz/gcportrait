@@ -166,6 +166,27 @@ describe('Popover as a sheet', () => {
     await expectNoAxeViolations();
   });
 
+  it('marks its panel as lying over the canvas, a closed one hidden; a popover and an inline sheet are not marked', async () => {
+    const { unmount } = renderInPage(<Sheet />);
+    await userEvent.click(screen.getByRole('button', { name: 'View' }));
+    const panel = screen.getByRole('dialog', { name: 'View' });
+    expect(panel.hasAttribute('data-canvas-overlay')).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    // Closed, the same panel: still marked, and hidden, which the canvas counts for nothing.
+    expect(panel.isConnected).toBe(true);
+    expect(panel.hidden).toBe(true);
+    expect(panel.hasAttribute('data-canvas-overlay')).toBe(true);
+    unmount();
+    const filters = renderInPage(<Filters />);
+    await userEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    expect(screen.getByRole('dialog', { name: 'View filters' }).hasAttribute('data-canvas-overlay')).toBe(
+      false,
+    );
+    filters.unmount();
+    renderInPage(<Sheet inline />);
+    expect(document.querySelector('[data-canvas-overlay]')).toBeNull();
+  });
+
   it('leaves an Escape its content handled alone, closes on the next onto its button', async () => {
     renderInPage(<Sheet />);
     const button = screen.getByRole('button', { name: 'View' });

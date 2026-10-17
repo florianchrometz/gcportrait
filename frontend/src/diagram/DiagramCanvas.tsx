@@ -16,7 +16,9 @@
  * The app store reaches the camera through two props only: `jump`, a pending `jumpTo(id)`, which the
  * canvas makes as a glide (camera.ts; at once with reduced motion) as soon as the node is drawn and then reports
  * with `onJumpDone` (a centring glide, or for the details drawer, a short pan that keeps the node and its
- * trace in view); and `onHover`, which tells the store which node is under the pointer.
+ * trace in view); and `onHover`, which tells the store which node is under the pointer. A jump, and the pan that
+ * follows keyboard focus, keep the node in the part of the canvas a panel lying over it leaves in view (`clearRoom`):
+ * the drawer of a phone or a tablet, or the top bar's View or More sheet.
  *
  * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
  * it, and an open zone's collapse button (over its header icon; disclosure/CollapseButton.tsx) collapses it,
@@ -61,10 +63,12 @@ import {
   focusTransform,
   GLIDE_MS,
   glideAt,
+  inRoom,
   keyboardTransform,
   REVEAL_MS,
   revealTransform,
   zoomStepTransform,
+  type CanvasRoom,
   type JumpMode,
   type ScreenPoint,
 } from './camera';
@@ -137,27 +141,54 @@ function canvasSize(svg: SVGSVGElement): { width: number; height: number } {
   return width > 0 && height > 0 ? { width, height } : FALLBACK_SIZE;
 }
 
+/** A box's edges, in CSS px from the canvas's top-left corner. */
+interface Edges {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+const areaOf = (box: Edges): number => (box.right - box.left) * (box.bottom - box.top);
+
 /**
- * The part of the canvas a camera jump keeps a node in: the canvas, less a panel over it (`data-canvas-overlay`: the
- * details drawer of a phone or a tablet, AGENTS.md "Product rules") along its whole right edge or its whole lower
- * edge. On a desktop the drawer stands beside the canvas, covers none of it, and the room is the canvas.
+ * The part of the canvas a camera jump keeps a node in (camera.ts, `inRoom`): the canvas, less each panel lying over it
+ * (`data-canvas-overlay`, AGENTS.md "Product rules": on a phone or a tablet the details drawer along the canvas's right
+ * or lower edge, and the top bar's View or More sheet hanging over it from its top edge). Each such panel leaves the
+ * room the largest part of it that the panel keeps free: to its left or right, above or below it. A closed panel
+ * (`hidden`) covers nothing, and nor does one beside the canvas: on a desktop the drawer stands beside it and no sheet
+ * opens, and the room is the canvas.
  */
-function clearRoom(svg: SVGSVGElement): { width: number; height: number } {
+function clearRoom(svg: SVGSVGElement): CanvasRoom {
   const size = canvasSize(svg);
   const box = svg.getBoundingClientRect();
-  if (box.width <= 0 || box.height <= 0) return size;
-  let { width, height } = size;
+  if (box.width <= 0 || box.height <= 0) return { x: 0, y: 0, ...size };
+  let room: Edges = { left: 0, top: 0, right: size.width, bottom: size.height };
   for (const overlay of svg.ownerDocument.querySelectorAll('[data-canvas-overlay]')) {
     if (overlay.closest('[hidden]') !== null) continue;
     const over = overlay.getBoundingClientRect();
-    const across = Math.min(box.right, over.right) - Math.max(box.left, over.left);
-    const down = Math.min(box.bottom, over.bottom) - Math.max(box.top, over.top);
+    const left = over.left - box.left;
+    const top = over.top - box.top;
+    const right = over.right - box.left;
+    const bottom = over.bottom - box.top;
+    const across = Math.min(room.right, right) - Math.max(room.left, left);
+    const down = Math.min(room.bottom, bottom) - Math.max(room.top, top);
     if (across <= 0 || down <= 0) continue;
-    if (down >= box.height - 1 && over.right >= box.right - 1) width = Math.min(width, over.left - box.left);
-    else if (across >= box.width - 1 && over.bottom >= box.bottom - 1)
-      height = Math.min(height, over.top - box.top);
+    // The parts of the room to the panel's left and right, above and below it.
+    const parts: readonly Edges[] = [
+      { ...room, right: Math.max(room.left, left) },
+      { ...room, left: Math.min(room.right, right) },
+      { ...room, bottom: Math.max(room.top, top) },
+      { ...room, top: Math.min(room.bottom, bottom) },
+    ];
+    room = parts.reduce((largest, part) => (areaOf(part) > areaOf(largest) ? part : largest));
   }
-  return { width: Math.max(1, width), height: Math.max(1, height) };
+  return {
+    x: room.left,
+    y: room.top,
+    width: Math.max(1, room.right - room.left),
+    height: Math.max(1, room.bottom - room.top),
+  };
 }
 
 /** Whether an element shows its focus ring (`:focus-visible`; a browser without the selector shows it always). */
@@ -661,8 +692,9 @@ export function DiagramCanvas({
       // The person moved on: a glide still on its way (a search hit's) stops where it is, and the camera pans
       // from there.
       glideRef.current?.stop();
-      const size = clearRoom(svg);
-      const to = keyboardTransform(revealBox(rect), size.width, size.height, zoomTransform(svg));
+      const to = inRoom(clearRoom(svg), zoomTransform(svg), (width, height, camera) =>
+        keyboardTransform(revealBox(rect), width, height, camera),
+      );
       if (to === null) return;
       glideRef.current = { id, mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
     };
@@ -939,16 +971,18 @@ export function DiagramCanvas({
     const rect = model.input.layout.rects[jump.id];
     if (svg === null || behaviour === null || rect === undefined) return;
     const mode = jump.mode ?? 'centre';
-    const size = clearRoom(svg);
+    const room = clearRoom(svg);
     const current = zoomTransform(svg);
     const running = glideRef.current;
     const centring = running?.mode === 'centre' && running.id === jump.id && running.running();
     const to =
       mode === 'centre'
-        ? focusTransform(rect, size.width, size.height, current)
+        ? inRoom(room, current, (width, height, camera) => focusTransform(rect, width, height, camera))
         : centring
           ? null
-          : revealTransform(rect, traceExtent(model, jump.id, rect), size.width, size.height, current);
+          : inRoom(room, current, (width, height, camera) =>
+              revealTransform(rect, traceExtent(model, jump.id, rect), width, height, camera),
+            );
     if (to !== null) {
       running?.stop();
       const glide = glideTo(svg, behaviour, to, mode === 'centre' ? GLIDE_MS : REVEAL_MS);
