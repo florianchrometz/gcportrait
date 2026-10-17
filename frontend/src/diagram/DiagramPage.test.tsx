@@ -12,27 +12,31 @@ import { describe, expect, it } from 'vitest';
 import { createMemoryPreferenceStore } from '../storage/preferences';
 import { drawn } from '../test/diagram';
 import { currentLocation, renderApp } from '../test/renderApp';
+import { requestLog } from '../test/requests';
 import { createInProcessWorkers } from './pipeline/inProcess';
 import type { DiagramWorkers } from './pipeline/workers';
 
-/** In-process workers that count the Scene and layout requests. */
-function countingWorkers(): { counts: { scene: number; layout: number }; factory: () => DiagramWorkers } {
-  const counts = { scene: 0, layout: 0 };
+/**
+ * In-process workers that count the Scene and layout requests the app keeps (not one it calls off, as StrictMode's
+ * first mount does: src/test/requests.ts).
+ */
+function countingWorkers(): {
+  counts: () => { scene: number; layout: number };
+  factory: () => DiagramWorkers;
+} {
+  const scenes = requestLog<null>();
+  const layouts = requestLog<null>();
   const factory = (): DiagramWorkers => {
     const workers = createInProcessWorkers();
     const layout = workers.layout.layout.bind(workers.layout);
-    workers.layout.layout = (...args) => {
-      counts.layout += 1;
-      return layout(...args);
-    };
+    workers.layout.layout = (scene, options, request) =>
+      layouts.record(null, request?.signal, layout(scene, options, request));
     const scene = workers.data.scene.bind(workers.data);
-    workers.data.scene = (...args) => {
-      counts.scene += 1;
-      return scene(...args);
-    };
+    workers.data.scene = (spec, viewport, options) =>
+      scenes.record(null, options?.signal, scene(spec, viewport, options));
     return workers;
   };
-  return { counts, factory };
+  return { counts: () => ({ scene: scenes.kept().length, layout: layouts.kept().length }), factory };
 }
 
 // `drawn`: the canvas once it is drawn, fitted and interactive (`data-diagram-ready`). State the page sets in its
@@ -47,7 +51,7 @@ describe('the diagram page', () => {
     const { counts, factory } = countingWorkers();
     const { container } = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: factory });
     const svg = await drawn(container);
-    expect(counts).toEqual({ scene: 1, layout: 1 });
+    expect(counts()).toEqual({ scene: 1, layout: 1 });
     expect(svg.getAttribute('role')).toBe('graphics-document');
     expect(svg.querySelector('title')?.textContent).toBe('gcportrait diagram of example.com, Overview lens');
     expect(svg.querySelector('desc')?.textContent).toMatch(
@@ -97,7 +101,7 @@ describe('the diagram page', () => {
     expect(focusedLines).toBeGreaterThan(0);
     fireEvent.pointerLeave(svg);
     expect(svg.querySelectorAll('.is-path, .dg-edge-top')).toHaveLength(0);
-    expect(counts).toEqual({ scene: 1, layout: 1 });
+    expect(counts()).toEqual({ scene: 1, layout: 1 });
 
     const target = cards[2];
     const id = target?.getAttribute('data-id') ?? '';
@@ -110,13 +114,13 @@ describe('the diagram page', () => {
     expect(decodeURIComponent(currentLocation(container))).toContain(`selection=${id}`);
     expect(target?.getAttribute('aria-pressed')).toBe('true');
     expect(svg.querySelector('.dg-select-ring')?.getAttribute('display')).toBeNull();
-    expect(counts).toEqual({ scene: 1, layout: 1 });
+    expect(counts()).toEqual({ scene: 1, layout: 1 });
 
     fireEvent.keyDown(svg, { key: 'Escape' });
     await waitFor(() => {
       expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
     });
-    expect(counts).toEqual({ scene: 1, layout: 1 });
+    expect(counts()).toEqual({ scene: 1, layout: 1 });
   }, 30_000);
 
   it('keeps the selection trace through a hover preview, never asking for a new Scene or layout', async () => {
@@ -153,7 +157,7 @@ describe('the diagram page', () => {
     const action = svg.querySelector('.dg-console-action');
     expect(action?.getAttribute('href')).toMatch(/^https:\/\/console\.cloud\.google\.com\//);
     expect(action?.getAttribute('tabindex')).toBe('0');
-    expect(counts).toEqual({ scene: 1, layout: 1 });
+    expect(counts()).toEqual({ scene: 1, layout: 1 });
   }, 30_000);
 
   it('opens the node menu with Enter on the selected card: console link, copy, never a new layout', async () => {
@@ -183,7 +187,7 @@ describe('the diagram page', () => {
     // Shift+F10 opens it too.
     fireEvent.keyDown(stop, { key: 'F10', shiftKey: true });
     expect(await screen.findByRole('menu')).toBeDefined();
-    expect(counts).toEqual({ scene: 1, layout: 1 });
+    expect(counts()).toEqual({ scene: 1, layout: 1 });
   }, 30_000);
 
   it('opens a node with Enter, and asks for a new Scene and layout when the lens changes', async () => {
@@ -207,7 +211,7 @@ describe('the diagram page', () => {
     expect(currentLocation(container)).toContain('lens=load-balancing');
     await waitFor(
       () => {
-        expect(counts).toEqual({ scene: 2, layout: 2 });
+        expect(counts()).toEqual({ scene: 2, layout: 2 });
         expect(container.querySelector('svg.dg-canvas title')?.textContent).toContain('Load balancing lens');
       },
       { timeout: 20_000 },

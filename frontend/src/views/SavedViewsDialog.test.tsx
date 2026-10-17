@@ -21,6 +21,13 @@ useFreshIndexedDb();
 /** IndexedDB answers asynchronously; under a loaded test run that can take more than the default second. */
 const SLOW = { timeout: 10_000 } as const;
 
+/**
+ * The app's database, given as long to open as the queries wait: the app gives up after OPEN_TIMEOUT_MS and keeps
+ * the views in memory, and the whole app rendered under StrictMode on a loaded machine can hold the opening back
+ * that long.
+ */
+const database = (): ReturnType<typeof openDatabase> => openDatabase(SLOW.timeout);
+
 async function openDialog(): Promise<HTMLElement> {
   await userEvent.click(inTopBar().getByRole('button', { name: 'Saved views' }));
   return screen.getByRole('dialog', { name: 'Saved views' });
@@ -28,7 +35,7 @@ async function openDialog(): Promise<HTMLElement> {
 
 describe('saved views', () => {
   it('saves the view, applies, renames and deletes it, and keeps it for the next visit', async () => {
-    const savedViews = createSavedViewStore(openDatabase());
+    const savedViews = createSavedViewStore(database());
     const app = renderControls('/diagram#snapshot=demo:S&lens=networking&detail=all', {
       savedViews,
       workers: false,
@@ -70,7 +77,7 @@ describe('saved views', () => {
 
     // A new app over the same database (a reload) lists it; Delete removes it.
     const later = renderControls('/settings', {
-      savedViews: createSavedViewStore(openDatabase()),
+      savedViews: createSavedViewStore(database()),
       workers: false,
     });
     dialog = await openDialog();

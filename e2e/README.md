@@ -50,7 +50,8 @@ server's port and `/api` proxy from `frontend/vite.config.ts`, until Playwright 
 removed. Every test opens a fresh browser context, so every page load is cold; the build answers one with a
 few chunks where the dev server serves every module on its own, and the suite tests the bundle that ships.
 The build leaves out only what React's development build adds: StrictMode runs every effect twice under the
-dev server, which a local run exercises and CI's does not (the app reads no `import.meta.env.DEV`). CI always
+dev server, which a local run exercises and CI's does not (the app reads no `import.meta.env.DEV`); the
+frontend's unit tests mount under StrictMode on every run (`frontend/README.md`, "Scripts"). CI always
 starts fresh servers, and a port already taken fails the run, so a dev server left running is never tested in
 the build's place. `CI=true pnpm e2e` runs the suite as CI does (the built servers, two retries, the HTML
 report), once nothing listens on ports 5173 and 5174.

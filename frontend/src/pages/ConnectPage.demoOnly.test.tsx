@@ -133,7 +133,7 @@ describe('the Connect page of a demo-only instance', () => {
         within(screen.getByRole('region', { name: 'About' })).getByText(NON_AFFILIATION_LONG),
       ).toBeDefined();
       expect(screen.getByTestId('demo-badge').textContent).toBe('Demo mode');
-      expect(backend.urls()).toEqual(source.requests);
+      expect(backend.keptUrls()).toEqual(source.requests);
       await expectNoAxeViolations();
     },
   );
@@ -156,7 +156,7 @@ describe('the Connect page of a demo-only instance', () => {
       expect(await screen.findByText(note)).toBeDefined();
       expect(screen.queryByRole('region', { name: 'Check a scope' })).toBeNull();
       expect(screen.queryByRole('button', { name: 'Sign in with Google' })).toBeNull();
-      expect(backend.urls()).toEqual(source.requests);
+      expect(backend.keptUrls()).toEqual(source.requests);
       await expectNoAxeViolations();
     },
   );

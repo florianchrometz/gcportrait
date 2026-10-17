@@ -18,34 +18,41 @@ import { expectNoAxeViolations } from '../test/axe';
 import { stubClipboard } from '../test/clipboard';
 import { drawn } from '../test/diagram';
 import { currentLocation, renderApp } from '../test/renderApp';
+import { requestLog } from '../test/requests';
 import { installViewport } from '../test/viewport';
 
-/** In-process workers that count the Scene, layout and details requests. */
+/**
+ * In-process workers that count the Scene, layout and details requests the app keeps (not one it calls off, as
+ * StrictMode's first mount does: src/test/requests.ts).
+ */
 function countingWorkers(): {
-  counts: { scene: number; layout: number; details: number };
+  counts: () => { scene: number; layout: number; details: number };
   factory: () => DiagramWorkers;
 } {
-  const counts = { scene: 0, layout: 0, details: 0 };
+  const scenes = requestLog<null>();
+  const layouts = requestLog<null>();
+  const asked = requestLog<null>();
   const factory = (): DiagramWorkers => {
     const workers = createInProcessWorkers();
     const layout = workers.layout.layout.bind(workers.layout);
-    workers.layout.layout = (...args) => {
-      counts.layout += 1;
-      return layout(...args);
-    };
+    workers.layout.layout = (scene, options, request) =>
+      layouts.record(null, request?.signal, layout(scene, options, request));
     const scene = workers.data.scene.bind(workers.data);
-    workers.data.scene = (...args) => {
-      counts.scene += 1;
-      return scene(...args);
-    };
+    workers.data.scene = (spec, viewport, options) =>
+      scenes.record(null, options?.signal, scene(spec, viewport, options));
     const details = workers.data.details.bind(workers.data);
-    workers.data.details = (...args) => {
-      counts.details += 1;
-      return details(...args);
-    };
+    workers.data.details = (snapshot, node, day, options) =>
+      asked.record(null, options?.signal, details(snapshot, node, day, options));
     return workers;
   };
-  return { counts, factory };
+  return {
+    counts: () => ({
+      scene: scenes.kept().length,
+      layout: layouts.kept().length,
+      details: asked.kept().length,
+    }),
+    factory,
+  };
 }
 
 function drawer(): HTMLElement {
@@ -103,9 +110,9 @@ describe('the details drawer', () => {
     const code = aside.querySelector('pre code');
     expect(code?.textContent).toContain('"kind": "compute#instance"');
     expect(within(aside).getByRole('button', { name: 'Copy JSON' })).toBeDefined();
-    expect(counts.scene).toBe(1);
-    expect(counts.layout).toBe(1);
-    expect(counts.details).toBe(1);
+    expect(counts().scene).toBe(1);
+    expect(counts().layout).toBe(1);
+    expect(counts().details).toBe(1);
     await expectNoAxeViolations(aside);
   }, 30_000);
 

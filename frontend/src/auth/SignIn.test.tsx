@@ -106,8 +106,9 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
     ).toEqual(['Your account', 'Service account']);
     // The scope and "Pull now" follow in the same section; their own tests cover them.
     await expectNoAxeViolations();
-    // One configuration request per page: the footer's source link reads the same answer from the store.
-    expect(backend.urls().filter((url) => url === '/api/config')).toHaveLength(1);
+    // One configuration request per page (StrictMode's first mount calls its own off, src/test/requests.ts): the
+    // footer's source link reads the same answer from the store.
+    expect(backend.keptUrls().filter((url) => url === '/api/config')).toHaveLength(1);
   });
 
   it('explains the service-account gate when that mode is chosen', async () => {

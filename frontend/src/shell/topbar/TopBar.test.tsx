@@ -20,7 +20,7 @@ import { expectNoAxeViolations } from '../../test/axe';
 import { staticDemoConfig, stubBackend } from '../../test/backend';
 import { stubClipboard } from '../../test/clipboard';
 import { drawn } from '../../test/diagram';
-import { renderApp, type AppRender } from '../../test/renderApp';
+import { renderApp, WHOLE_APP_TIMEOUT, type AppRender } from '../../test/renderApp';
 import { installViewport, type ViewportControl } from '../../test/viewport';
 import { createSavedViewStore } from '../../views/savedViewStore';
 
@@ -42,7 +42,7 @@ function tabStops(banner: HTMLElement): string[] {
     });
 }
 
-describe('TopBar', () => {
+describe('TopBar', WHOLE_APP_TIMEOUT, () => {
   it('composes the control groups in their tab order', () => {
     renderApp('/diagram#snapshot=demo:S');
     expect(tabStops(screen.getByRole('banner'))).toEqual([
@@ -100,7 +100,7 @@ describe('TopBar', () => {
   });
 });
 
-describe('the brand mark', () => {
+describe('the brand mark', WHOLE_APP_TIMEOUT, () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
@@ -129,7 +129,7 @@ describe('the brand mark', () => {
   });
 });
 
-describe('the top bar narrower than a desktop', () => {
+describe('the top bar narrower than a desktop', WHOLE_APP_TIMEOUT, () => {
   let viewport: ViewportControl | undefined;
 
   afterEach(() => {
@@ -215,7 +215,7 @@ describe('the top bar narrower than a desktop', () => {
   });
 });
 
-describe('the More sheet on a phone', () => {
+describe('the More sheet on a phone', WHOLE_APP_TIMEOUT, () => {
   let viewport: ViewportControl | undefined;
 
   afterEach(() => {
@@ -325,7 +325,7 @@ describe('the More sheet on a phone', () => {
   });
 });
 
-describe('the sheets and the details drawer', () => {
+describe('the sheets and the details drawer', WHOLE_APP_TIMEOUT, () => {
   let viewport: ViewportControl | undefined;
 
   afterEach(() => {

@@ -19,6 +19,7 @@ import { createInProcessWorkers } from '../diagram/pipeline/inProcess';
 import type { DiagramWorkersFactory } from '../diagram/pipeline/workers';
 import { expectNoAxeViolations } from '../test/axe';
 import { renderApp } from '../test/renderApp';
+import { requestLog } from '../test/requests';
 import {
   askingSilenced,
   DRAW_LARGE_KEY,
@@ -49,23 +50,28 @@ function library(): ReturnType<typeof fakeLibrary> {
   });
 }
 
-/** Diagram workers that record the snapshots the pipeline asks a Scene of, and never answer. */
-function recordingWorkers(): { readonly factory: DiagramWorkersFactory; readonly asked: string[] } {
-  const asked: string[] = [];
+/**
+ * Diagram workers that record the snapshots the pipeline asks a Scene of, and never answer: `asked` the requests it
+ * kept, `everAsked` every one, a request it called off included (src/test/requests.ts).
+ */
+function recordingWorkers(): {
+  readonly factory: DiagramWorkersFactory;
+  readonly asked: () => string[];
+  readonly everAsked: () => string[];
+} {
+  const scenes = requestLog<string>();
   const factory: DiagramWorkersFactory = () => {
     const workers = createInProcessWorkers();
     return {
       ...workers,
       data: {
         ...workers.data,
-        scene: (spec) => {
-          asked.push(spec.snapshot);
-          return new Promise(() => undefined);
-        },
+        scene: (spec, _viewport, options) =>
+          scenes.record(spec.snapshot, options?.signal, new Promise<never>(() => undefined)),
       },
     };
   };
-  return { factory, asked };
+  return { factory, asked: scenes.kept, everAsked: scenes.all };
 }
 
 function question(): HTMLElement {
@@ -197,7 +203,7 @@ describe('Try the demo on the Connect page', () => {
     });
     // The diagram page does not ask again: the pipeline asks the workers for it at once.
     await waitFor(() => {
-      expect(workers.asked).toEqual(['demo:XL']);
+      expect(workers.asked()).toEqual(['demo:XL']);
     });
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
@@ -244,7 +250,7 @@ describe('Load on the Snapshots page', () => {
       expect(app.location()).toBe(`/diagram#snapshot=${LARGE}`);
     });
     await waitFor(() => {
-      expect(workers.asked).toEqual([LARGE]);
+      expect(workers.asked()).toEqual([LARGE]);
     });
     expect(screen.queryByRole('alertdialog')).toBeNull();
     // Not asked again in this tab: a view change, and a second Load from the page.
@@ -274,23 +280,23 @@ describe('the diagram page, for every other way in', () => {
       diagramWorkers: workers.factory,
     });
     expect(await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' })).toBeDefined();
-    expect(workers.asked).toEqual([]);
+    expect(workers.everAsked()).toEqual([]);
     await expectNoAxeViolations();
     await userEvent.click(within(question()).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => {
       expect(app.location()).toBe('/snapshots');
     });
-    expect(workers.asked).toEqual([]);
+    expect(workers.everAsked()).toEqual([]);
   });
 
   it('a link to demo XL asks too; "Draw it anyway" lets the pipeline start', async () => {
     const workers = recordingWorkers();
     renderApp('/diagram#snapshot=demo:XL', { snapshots: fakeLibrary(), diagramWorkers: workers.factory });
     const dialog = await screen.findByRole('alertdialog', { name: 'Draw a large snapshot?' });
-    expect(workers.asked).toEqual([]);
+    expect(workers.everAsked()).toEqual([]);
     await userEvent.click(within(dialog).getByRole('button', { name: 'Draw it anyway' }));
     await waitFor(() => {
-      expect(workers.asked).toEqual(['demo:XL']);
+      expect(workers.asked()).toEqual(['demo:XL']);
     });
   });
 
@@ -301,7 +307,7 @@ describe('the diagram page, for every other way in', () => {
       diagramWorkers: workers.factory,
     });
     await waitFor(() => {
-      expect(workers.asked).toEqual(['demo:M']);
+      expect(workers.asked()).toEqual(['demo:M']);
     });
     await userEvent.click(screen.getByRole('button', { name: 'Snapshot' }));
     await userEvent.click(
@@ -314,6 +320,6 @@ describe('the diagram page, for every other way in', () => {
     await waitFor(() => {
       expect(app.hash()).toBe('snapshot=demo:M');
     });
-    expect(workers.asked.filter((ref) => ref === LARGE)).toEqual([]);
+    expect(workers.everAsked().filter((ref) => ref === LARGE)).toEqual([]);
   });
 });

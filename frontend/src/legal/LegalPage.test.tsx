@@ -119,7 +119,7 @@ describe('the footer', () => {
       expect(nav.textContent).toBe('Impressum·Privacy');
       expect(footer().textContent).toMatch(/Florian ChrometzSource \(MIT\)Impressum·Privacy$/);
       // The texts themselves are fetched only on the pages.
-      expect(fetch.urls()).toEqual(['/api/config']);
+      expect(fetch.keptUrls()).toEqual(['/api/config']);
       await expectNoAxeViolations();
     },
   );
@@ -170,9 +170,10 @@ describe('/impressum and /privacy', () => {
     const fetch = backend(config({ impressum: true, privacy: true }, true));
     const { container } = renderApp('/impressum', { demo: false, snapshots: fakeLibrary() });
     const main = screen.getByRole('main');
-    expect(await within(main).findByRole('heading', { level: 1, name: 'Impressum' })).toBeDefined();
+    // The page is titled "Impressum" while its text is on its way: the text's own heading shows it has arrived.
+    expect(await within(main).findByRole('heading', { level: 2, name: 'Kontakt' })).toBeDefined();
+    expect(within(main).getByRole('heading', { level: 1, name: 'Impressum' })).toBeDefined();
     expect(document.title).toBe('Impressum · gcportrait');
-    expect(within(main).getByRole('heading', { level: 2, name: 'Kontakt' })).toBeDefined();
     // Hard line breaks of an address.
     expect(main.querySelectorAll('p br')).toHaveLength(2);
     expect(within(main).getByRole('link', { name: 'mail@example.com' }).getAttribute('href')).toBe(
@@ -186,7 +187,7 @@ describe('/impressum and /privacy', () => {
     expect(main.querySelector('script, b')).toBeNull();
     expect(within(main).queryByRole('link', { name: 'bad' })).toBeNull();
     expect((window as { injected?: unknown }).injected).toBeUndefined();
-    expect(fetch.urls()).toEqual(['/api/config', '/api/legal']);
+    expect(fetch.keptUrls()).toEqual(['/api/config', '/api/legal']);
     await expectNoAxeViolations();
 
     // A text without a heading of its own gets the page's name; its headings move one level down. Its link to
@@ -207,7 +208,7 @@ describe('/impressum and /privacy', () => {
     renderApp('/privacy', { demo: false, snapshots: fakeLibrary() });
     expect(await screen.findByText(/This instance publishes no privacy notice\./)).toBeDefined();
     expect(screen.getByRole('heading', { level: 1, name: 'Privacy notice' })).toBeDefined();
-    expect(fetch.urls()).toEqual(['/api/config']);
+    expect(fetch.keptUrls()).toEqual(['/api/config']);
     await expectNoAxeViolations();
   });
 
@@ -224,6 +225,6 @@ describe('/impressum and /privacy', () => {
     backend(config({ impressum: true, privacy: false }));
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByRole('heading', { level: 2, name: 'Kontakt' })).toBeDefined();
-    expect(fetch.urls()).toEqual(['/api/config', '/api/legal']);
+    expect(fetch.keptUrls()).toEqual(['/api/config', '/api/legal']);
   });
 });

@@ -9,6 +9,7 @@ import { vi, type Mock } from 'vitest';
 
 import type { PublicConfig } from '../api/config';
 import { readStaticConfig } from '../api/staticConfig';
+import { watchRequest } from './requests';
 
 /** What a live instance without sign-in or service-account mode answers on GET /api/config. */
 export function publicConfig(overrides: Partial<PublicConfig> = {}): PublicConfig {
@@ -68,6 +69,11 @@ export interface BackendCall {
   /** The parsed JSON body (another text body as it is), null without one. */
   readonly body: unknown;
   readonly headers: Headers;
+  /**
+   * Whether the app called the request off: its signal aborted before the answer (src/test/requests.ts; under
+   * StrictMode the first mount's clean-up calls off what its effect asked for).
+   */
+  readonly calledOff: () => boolean;
 }
 
 type Answer = (call: BackendCall) => Response | Promise<Response>;
@@ -89,6 +95,8 @@ export interface StubbedBackend {
   readonly calls: BackendCall[];
   /** The addresses asked for, in order. */
   readonly urls: () => string[];
+  /** The addresses of the requests the app kept (none called off), in order: what a build asks for. */
+  readonly keptUrls: () => string[];
   /** The JSON bodies sent to `url`, in order. */
   readonly bodies: (url: string) => unknown[];
   /** Lets held answers through. */
@@ -111,20 +119,32 @@ export function stubBackend(options: BackendOptions = {}): StubbedBackend {
   const routes: Record<string, Answer> = { ...options.routes };
   if (options.config !== undefined && routes['/api/config'] === undefined)
     routes['/api/config'] = () => Response.json(options.config);
-  const fetch = vi.fn<typeof globalThis.fetch>((input, init) => {
-    const url = requestUrl(input);
-    const call: BackendCall = { url, init, body: recordedBody(init), headers: new Headers(init?.headers) };
-    calls.push(call);
-    if (init?.signal?.aborted === true) return Promise.reject(new DOMException('aborted', 'AbortError'));
-    const answer = routes[url] ?? options.otherwise;
-    if (answer === undefined) return Promise.reject(new TypeError(`unexpected request to ${url}`));
+  const answerOf = (call: BackendCall): Promise<Response> => {
+    if (call.init?.signal?.aborted === true) return Promise.reject(new DOMException('aborted', 'AbortError'));
+    const answer = routes[call.url] ?? options.otherwise;
+    if (answer === undefined) return Promise.reject(new TypeError(`unexpected request to ${call.url}`));
     return released.then(() => answer(call));
+  };
+  const fetch = vi.fn<typeof globalThis.fetch>((input, init) => {
+    let calledOff = (): boolean => false;
+    const call: BackendCall = {
+      url: requestUrl(input),
+      init,
+      body: recordedBody(init),
+      headers: new Headers(init?.headers),
+      calledOff: () => calledOff(),
+    };
+    calls.push(call);
+    const answered = answerOf(call);
+    calledOff = watchRequest(init?.signal, answered);
+    return answered;
   });
   vi.stubGlobal('fetch', fetch);
   return {
     fetch,
     calls,
     urls: () => calls.map((call) => call.url),
+    keptUrls: () => calls.filter((call) => !call.calledOff()).map((call) => call.url),
     bodies: (url) => calls.filter((call) => call.url === url).map((call) => call.body),
     release: () => {
       release();

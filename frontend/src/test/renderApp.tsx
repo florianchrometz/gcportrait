@@ -34,11 +34,11 @@ export type RenderAppOptions = {
 
 /**
  * The per-test timeout of the suites whose tests render the whole app (`renderApp`) and work through it: such a
- * test is CPU work in jsdom (every render of the shell and the page, Testing Library's role queries over the
- * document, an axe audit of it), a few hundred milliseconds of it on a quiet machine and about a second for a
- * file's first test, which runs the modules and axe for the first time. A machine whose every core runs
- * another test process stretches that work several times over, past Vitest's 5 s default; the assertions are
- * the same whatever the timeout.
+ * test is CPU work in jsdom (every render of the shell and the page, twice under StrictMode (setup.ts), Testing
+ * Library's role queries over the document, an axe audit of it), a few hundred milliseconds of it on a quiet
+ * machine and about a second for a file's first test, which runs the modules and axe for the first time. A
+ * machine whose every core runs another test process stretches that work several times over, past Vitest's 5 s
+ * default; the assertions are the same whatever the timeout.
  */
 export const WHOLE_APP_TIMEOUT = { timeout: 20_000 } as const;
 
@@ -49,7 +49,10 @@ export interface AppRender extends RenderResult {
   readonly hash: () => string;
 }
 
-/** The whole app at `path`, in a memory router, as main.tsx would mount it in a browser. */
+/**
+ * The whole app at `path`, in a memory router, as main.tsx would mount it in a browser: under StrictMode, as every
+ * render of the unit tests is (setup.ts).
+ */
 export function renderApp(path: string, options: RenderAppOptions = {}): AppRender {
   const app: ReactElement = (
     <MemoryRouter initialEntries={[path]}>
