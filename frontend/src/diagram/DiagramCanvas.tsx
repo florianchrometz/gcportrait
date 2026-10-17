@@ -77,6 +77,7 @@ import './diagram.css';
 import './disclosure/disclosure.css';
 import type { Rect } from '@gcportrait/layout';
 
+import { focusVisible } from '../ui/dom';
 import { Menu, type MenuCloseReason, type MenuItem } from '../ui/Menu';
 import { canDrillIn, nodeMenuItems } from './actions';
 import {
@@ -274,15 +275,6 @@ function sameInsets(a: Insets, b: Insets): boolean {
 interface Fit {
   readonly camera: CameraTransform;
   readonly insets: Insets;
-}
-
-/** Whether an element shows its focus ring (`:focus-visible`; a browser without the selector shows it always). */
-function focusVisible(element: Element): boolean {
-  try {
-    return element.matches(':focus-visible');
-  } catch {
-    return true;
-  }
 }
 
 /** Whether the viewer asked for reduced motion (no matchMedia, as in jsdom: no). */

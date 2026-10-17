@@ -306,7 +306,7 @@ is CSS.
 | Part | Desktop | Tablet | Phone |
 |---|---|---|---|
 | Top bar | the app row, and on `/diagram` the view row | the same two rows; the navigation and the app row's actions fold into More, the view row's controls but the breadcrumb into View | one row: the mark (the wordmark for assistive technology only), the breadcrumb on `/diagram`, View and More; the demo badge at the top of More |
-| Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe or a focused crumb brings the others into view, and the edge where they are cut fades out | as on a tablet |
+| Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe brings the others into view, a crumb that takes focus from the keyboard scrolls the trail until it shows whole, clear of the faded edge where they are cut (a tap or a click scrolls nothing, so it lands on the crumb it was aimed at) | as on a tablet |
 | Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
 | Timeline bar | one row; the slider and its dates sit above the bar's middle, so the day markers under the track fit in below the reach of the thumb's focus ring | the readout below the slider's line, which is as on a phone | the slider across the width on a line of its 44-pixel thumb and, below the reach of the thumb's focus ring, the day markers under its track (the bar no taller for them); the readout below, then the buttons and the playback options; on a workspace under 18.5rem tall (a phone turned sideways), while the drawer is open, one line, the slider and the step and play buttons after it, the readout and the playback options hidden until the drawer closes, so the canvas holds the half-height drawer's header |
 | Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways); hidden while View or More is open |
@@ -404,8 +404,8 @@ per row on a phone, where no box scrolls sideways, not even a table's; the table
 scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a
 column a few characters wide, the top bar's items, the timeline bar's parts (none over another), the drawer
 within the canvas, 44-pixel targets, every control one reaches with Tab wholly in sight when focused (its
-whole box inside the window, and inside the canvas when it lies over it) and tappable at its centre (and, over
-the canvas, just inside each edge), the canvas's room (the share of it an open drawer, View or More sheet
+whole box inside the window, and inside the canvas when it lies over it) and tappable at its centre and just
+inside each edge, the canvas's room (the share of it an open drawer, View or More sheet
 leaves in view, and View opened over the drawer closing it), the drawer's Close button whole inside the canvas
 as the drawer opens on a phone turned sideways, with the timeline bar on one line meanwhile, axe; and a theme
 picked in More, Sign out from More, a long trail, the
@@ -440,9 +440,9 @@ focusable, doing nothing).
 | `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour; on a phone or a tablet the thumb is a 44-pixel touch box round the 16-pixel dot, which carries the focus ring; the focus ring is keyboard focus's, as on a native range input: a press (a mouse, a pen, a finger) that focuses the thumb marks it `data-pointer-focus`, which hides the ring until a key is pressed on it (any key but a shortcut with Ctrl, Alt or Meta) or focus leaves it | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track with the primary button (a mouse's left, a pen's tip, a finger), focusing the thumb without the ring, the drag following that pointer alone and ending when its primary button comes up, also while another is still held; a press of another button (right, middle, a pen's barrel or eraser) moves nothing, as on a native range input, and leaves focus where it is, as a press on an inert slider does |
 | `Tooltip` | `role="tooltip"`, always in the DOM, named by the trigger's `aria-describedby` | shows on focus at once and after a resting pointer, stays while the pointer is on it, Escape and blur hide it (WCAG 1.4.13) |
 
-`dom.ts` holds the shared pieces (focusable elements, the Tab trap, the outside-press hook, the inert props,
-controlled open state) and `typeahead.ts` the type-ahead (next label starting with the typed text; a repeated
-character cycles; forgotten after 500 ms).
+`dom.ts` holds the shared pieces (focusable elements, the Tab trap, the outside-press hook, whether focus
+shows its ring, the inert props, controlled open state) and `typeahead.ts` the type-ahead (next label starting
+with the typed text; a repeated character cycles; forgotten after 500 ms).
 
 `controls.module.css` is the controls' own look: `control` (the trigger and button metrics), its inert state,
 and `danger`, the destructive variant every Delete button takes (`cx(controls.control, controls.danger)`: the

@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, type ReactElement, type RefObject } from 'react';
 
 import { selectScope, useAppState, useDiagramActions, useScene } from '../../state';
+import { focusVisible } from '../../ui/dom';
 import { useScreen } from '../../ui/screen';
 import { trailOf } from '../../views/trail';
 import { useViewChoices } from '../../views/useViewChoices';
@@ -11,7 +12,12 @@ import styles from './Breadcrumb.module.css';
  * Narrower than a desktop the trail scrolls sideways in its box instead of shrinking its crumbs: it rests scrolled to
  * its end, where the current level is, whenever the trail changes or a crumb or the box changes size (a font that
  * loaded, a phone turned), and `data-cut` marks a box scrolled away from its start, so the stylesheet fades the edge
- * where crumbs are out of view. A swipe or a focused crumb scrolls the others into view.
+ * where crumbs are out of view. A swipe scrolls the others into view, and so does focus: a crumb to drill out to that
+ * takes focus from the keyboard (its focus ring shows) scrolls the trail the least that shows it whole, clear of the
+ * fade (the box's scroll padding), where the browser's own scrolling on focus moves only a crumb wholly out of view;
+ * while it keeps that focus, a change of size keeps it in view rather than the end. Focus from a pointer scrolls
+ * nothing, so that a tap or a click lands on the crumb it was aimed at. The trail jumps, as it does to rest at its
+ * end: no glide for reduced motion to stop.
  */
 function useTrailAtItsEnd(navRef: RefObject<HTMLElement | null>, active: boolean, trail: string): void {
   useLayoutEffect(() => {
@@ -24,15 +30,34 @@ function useTrailAtItsEnd(navRef: RefObject<HTMLElement | null>, active: boolean
       nav.scrollLeft = nav.scrollWidth - nav.clientWidth;
       mark();
     };
+    // A crumb to drill out to (the current one is no button) with its focus ring.
+    const ringed = (target: EventTarget | null): HTMLElement | null =>
+      target instanceof HTMLButtonElement && nav.contains(target) && focusVisible(target) ? target : null;
+    const show = (crumb: HTMLElement): void => {
+      if (typeof crumb.scrollIntoView === 'function')
+        crumb.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      mark();
+    };
+    const onFocusIn = (event: FocusEvent): void => {
+      const crumb = ringed(event.target);
+      if (crumb !== null) show(crumb);
+    };
+    const settle = (): void => {
+      const crumb = ringed(nav.ownerDocument.activeElement);
+      if (crumb === null) toEnd();
+      else show(crumb);
+    };
     toEnd();
     nav.addEventListener('scroll', mark, { passive: true });
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(toEnd) : null;
+    nav.addEventListener('focusin', onFocusIn);
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(settle) : null;
     if (observer !== null) {
       observer.observe(nav);
       for (const crumb of nav.querySelectorAll('li')) observer.observe(crumb);
     }
     return () => {
       nav.removeEventListener('scroll', mark);
+      nav.removeEventListener('focusin', onFocusIn);
       observer?.disconnect();
       nav.removeAttribute('data-cut');
     };

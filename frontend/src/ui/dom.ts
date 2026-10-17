@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
- * What the primitives share: closing on a press outside, keeping Tab inside a popup, moving focus in, and
- * telling an inert control's hint from a working one.
+ * What the primitives share: closing on a press outside, keeping Tab inside a popup, moving focus in, telling
+ * focus from the keyboard from a pointer's, and telling an inert control's hint from a working one.
  */
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
@@ -14,6 +14,18 @@ export function focusableIn(container: Element): HTMLElement[] {
   return [...container.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
     (element) => element.tabIndex >= 0 && element.closest('[hidden], [inert]') === null,
   );
+}
+
+/**
+ * Whether an element shows its focus ring (`:focus-visible`: focus from the keyboard, or moved by script after a key,
+ * rather than a tap's or a click's); a browser without the selector shows it always.
+ */
+export function focusVisible(element: Element): boolean {
+  try {
+    return element.matches(':focus-visible');
+  } catch {
+    return true;
+  }
 }
 
 /** Focuses the first focusable element inside `container`, or `fallback`, or the container itself. */

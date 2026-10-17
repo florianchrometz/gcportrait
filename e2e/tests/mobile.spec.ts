@@ -60,9 +60,9 @@ import {
  * - a control one reaches with Tab (in the open sheet or dialog when there is one, as their focus stays inside; not in
  *   the folded part of a closed <details>) is out of sight when it has focus or cannot be tapped: focused, which
  *   scrolls the box it is in to it, its box reaches past the window's edge or, over the canvas (in it, the drawer, a
- *   View or More sheet), past the canvas's, by more than a screen pixel, or the point at its centre (over the canvas
- *   also each point just inside the middle of an edge) is not the control but something over it (WCAG 2.2's 2.4.11
- *   and target size);
+ *   View or More sheet), past the canvas's, by more than a screen pixel, or the point at its centre or one just inside
+ *   the middle of an edge is not the control but something over it or past the edge of a box that clips it (WCAG
+ *   2.2's 2.4.11 and target size);
  * - the canvas is shorter than a quarter of the window, or the drawer, open at its first height, leaves less than a
  *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
  *   nor (a canvas under 10.5 rem) hidden until the sheet closes, the drawer's Close button, as the drawer opens, is not
@@ -621,10 +621,11 @@ function sidewaysBoxes(page: Page): Promise<string[]> {
  * its whole target, not only its middle, must be in sight: each of its boxes (a link in a sentence may wrap onto two
  * lines) lies wholly inside the viewport and, for a control over the diagram's canvas (in the canvas, or in a panel
  * over it: the details drawer, the View or More sheet), wholly inside the canvas, so a 44-pixel target that the
- * timeline bar or the top bar cuts by a pixel fails. The point at its centre must be the control (or its label) rather
- * than something lying over it; over the canvas, where panels lie over one another (the drawer over the drawing, its
- * handle over the top of its own content, the disclosure bar above the sheet), so must the points just inside the
- * middle of each of its edges. Focus and every box's scroll position are put back afterwards.
+ * timeline bar or the top bar cuts by a pixel fails. The point at its centre and the points just inside the middle of
+ * each of its edges must be the control (or its label) rather than something lying over it (the drawer over the
+ * drawing, its handle over the top of its own content, the disclosure bar above the sheet, the View button beside the
+ * breadcrumb) or the box it scrolls in, clipped (a crumb half out of the trail's box). Focus and every box's scroll
+ * position are put back afterwards.
  */
 async function hiddenControls(page: Page): Promise<string[]> {
   // A key pressed first: focus moved from script then shows as keyboard focus does (`:focus-visible`), skip links
@@ -714,21 +715,16 @@ async function hiddenControls(page: Page): Promise<string[]> {
           problems.push(`${at} reaches ${outside.join(' and ')} when focused`);
           break;
         }
-        // Its middle and, over the canvas, just inside the middle of each edge: a point there is the control, not what
-        // covers or clips it.
+        // Its middle and just inside the middle of each edge: a point there is the control, not what covers or clips it.
         const inset = (size: number): number => Math.min(2, size / 4);
         const x = part.left + part.width / 2;
         const y = part.top + part.height / 2;
         const points = [
           ['middle', x, y],
-          ...(over
-            ? ([
-                ['top', x, part.top + inset(part.height)],
-                ['bottom', x, part.bottom - inset(part.height)],
-                ['left', part.left + inset(part.width), y],
-                ['right', part.right - inset(part.width), y],
-              ] as const)
-            : []),
+          ['top', x, part.top + inset(part.height)],
+          ['bottom', x, part.bottom - inset(part.height)],
+          ['left', part.left + inset(part.width), y],
+          ['right', part.right - inset(part.width), y],
         ] as const;
         const covered = points
           .map(([where, left, top]) => ({ where, hit: document.elementFromPoint(left, top) }))
