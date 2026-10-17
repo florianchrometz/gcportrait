@@ -11,7 +11,7 @@ These rules add to the root AGENTS.md, which applies here too.
   size budgets, e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and
   the `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants
   a banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell.
-  The e2e leg contract follows [AGENTS.md](../AGENTS.md), "Quality gates, testing and CI".
+  The e2e leg contract follows [e2e/AGENTS.md](../e2e/AGENTS.md), "CI legs".
 - Its **`required` job is the one check branch protection targets**, green only when every other job but
   `layout-budget` succeeded or was skipped for a change of only docs and media (below), so the ruleset never
   changes when a job does.

@@ -87,9 +87,10 @@ at phone and tablet sizes, `touch.spec.ts` at a phone's and `handheld.spec.ts` a
 projects' sizes; light colour scheme unless a test asks for dark.
 `pnpm e2e --project chromium-phone --project chromium-tablet` runs the two handheld projects alone.
 
-CI runs the whole suite in five legs (`.github/workflows/pr.yml`), each a round-robin share of its projects'
-tests: `chromium-live` and `chromium` in three, and every other project (`chromium-phone`, `chromium-tablet`
-and `mobile`, a new one included) in two. `scripts/leg.ts` (`pnpm --filter @gcportrait/e2e leg`) lists the
+CI runs the whole suite in five legs (`.github/workflows/pr.yml`; [e2e/AGENTS.md](AGENTS.md), "CI legs"),
+each a round-robin share of its projects' tests: `chromium-live` and `chromium` in three, and every other
+project (`chromium-phone`, `chromium-tablet` and `mobile`, a new one included) in two. `scripts/leg.ts`
+(`pnpm --filter @gcportrait/e2e leg`) lists the
 projects' tests (`playwright test --list --reporter=json`), gives leg N of K every K-th of them from the N-th,
 in the listing's order (file after file), and runs that share with `playwright test --test-list`, so that the
 tests of a slow file spread over the legs. It fails the leg when the listing names two tests alike (one

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * `pnpm --filter @gcportrait/e2e leg`: one of CI's e2e legs (.github/workflows/pr.yml), a round-robin share of
- * its projects' tests, so that the slow files spread over the legs instead of landing in one.
+ * its projects' tests (e2e/AGENTS.md, CI legs).
  *
  *   pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3
  *   pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg 1 --of 2 --list-only

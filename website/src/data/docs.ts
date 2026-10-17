@@ -123,6 +123,7 @@ export const DOC_PAGES: readonly DocPage[] = [
 
 /** Top-level docs/*.md files that are not pages of the site, each with the reason. */
 export const NOT_ON_SITE: Readonly<Record<string, string>> = {
+  'docs/AGENTS.md': 'the rules for changes under docs/, for contributors and assistants',
   'docs/README.md': 'the repository’s index of docs/; the site’s /docs/ page is its counterpart',
   'docs/contributing.md': 'the contributor guide is read next to the code; /contributing/ links to it',
   'docs/packages.md': 'contributor reference (packages and data flow); /contributing/ links to it',

@@ -16,6 +16,8 @@ stated as it stands, with the reason for it in one sentence. Humans new to the r
 | `website/` | the Astro site and its static demo | `website/AGENTS.md` |
 | `infra/` | the image and the deploy scripts | `infra/AGENTS.md` |
 | `.github/` | CI, release, Pages and drift workflows, templates | `.github/AGENTS.md` |
+| `e2e/` | end-to-end and accessibility tests, visual baselines | `e2e/AGENTS.md` |
+| `docs/` | user guides, contributor references and generated media | `docs/AGENTS.md` |
 | `scripts/`, `brand/`, `.agents/`, `.changeset/` | repository tooling, the mark, the skills, changesets | this file |
 
 The sections of this file:
@@ -116,10 +118,8 @@ now, and what changed in the last five weeks?
   name, and nothing is desktop-only, because people open a view where they are (a link in a chat, a check
   during an incident) and a control missing on one screen makes what it does impossible there.
   [frontend/AGENTS.md](frontend/AGENTS.md), "Phones, tablets and desktops", holds the folding, touch and
-  visibility rules. The e2e suite's functional specs run at 1440 × 900, `e2e/tests/touch.spec.ts` uses the
-  canvas by finger at a phone's size and `e2e/tests/handheld.spec.ts` the app's flows by finger at a phone's
-  and a tablet's (the `chromium-phone` and `chromium-tablet` projects). The website serves phones too
-  (`pnpm website:mobile` checks it).
+  visibility rules; [e2e/AGENTS.md](e2e/AGENTS.md), "Widths, gestures and axe", holds the suite's coverage.
+  The website serves phones too (`pnpm website:mobile` checks it).
 - **Both themes, every time.** A visual change is done when it looks right in light and dark and passes the
   contrast tests, because users and their documents come in both ([Style and
   accessibility](#style-and-accessibility)).
@@ -127,8 +127,8 @@ now, and what changed in the last five weeks?
   of history, generated from a seed by `packages/demo-data` in CAI's NDJSON shape, are what the tests, the
   screenshots, the website, the agents' self-checks and the app's "Try the demo" draw: realistic organisations
   are needed everywhere, and real inventories may not be used. `pnpm dev:demo` runs the app without a backend,
-  without `/api` calls and without a Google account, and the e2e suite runs against it locally and against a
-  build of the same demo mode on CI.
+  without `/api` calls and without a Google account. The suite's servers follow
+  [e2e/AGENTS.md](e2e/AGENTS.md), "What the suite runs against".
 - **The timeline** has one tick per day for the last 35 days: today and the 34 days before at 00:00 UTC, the
   latest tick reading "now" so that no read time lies in the future. A tick is one set of `assets.list` calls
   with its read time, read only when the view rests on it, because each day is a full read of the scope:
@@ -209,10 +209,9 @@ The catalog and graph semantics, layout rules and performance budgets are in
 
 ## Style and accessibility
 
-- **WCAG 2.2 AA** on every page, the diagram included, in both themes and at every width: the e2e suite
-  runs axe in both themes, at the desktop's size and at the phone's and the tablet's
-  (`pnpm --filter @gcportrait/frontend mobile`). The one documented exception is the decorative subnet and
-  VPC zone strokes; the title text and card strokes inside them pass instead.
+- **WCAG 2.2 AA** on every page, the diagram included, in both themes and at every width. The one documented
+  exception is the decorative subnet and VPC zone strokes; the title text and card strokes inside them pass
+  instead. The suite's checks follow [e2e/AGENTS.md](e2e/AGENTS.md), "Widths, gestures and axe".
 - **44-pixel targets and the safe area on phones and tablets.** Below the desktop's breakpoint every target is
   at least 44 × 44 CSS pixels (WCAG 2.5.5), a link inside a sentence and a field inside a line of code
   excepted, and the bars that stay on screen pad themselves with `env(safe-area-inset-*)`, because a finger
@@ -519,9 +518,7 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   compiled catalog (`pnpm catalog:build`), the layout's metrics table, the icon module, `docs/media/`
   (`pnpm media`, `node scripts/exports.mjs`), the guides' lens tables (`node scripts/user-docs.mjs --write`),
   `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
-- **Each e2e leg is a round-robin share** of its projects' tests, every k-th of their listing, run by
-  `--test-list` (`pnpm --filter @gcportrait/e2e leg`), so that the slow files spread over the legs instead of
-  landing in one; it fails when its run misses a test of its share.
+- The suite's leg contract follows [e2e/AGENTS.md](e2e/AGENTS.md), "CI legs".
 - **The audit gate fails on high and critical advisories** unless `scripts/audit-allowlist.json`
   accepts one with an expiry.
 - The workflow's jobs, required check and docs/media classifier follow
@@ -572,8 +569,8 @@ The workflow's execution and website deployment follow [.github/AGENTS.md](.gith
 - **A value the reader fills in** is written `YOUR_` and capitals as one word (`YOUR_PROJECT`), a variable of
   `COMMAND_VARIABLES` in `@gcportrait/model`, which the website turns into a field and the user-docs check
   holds the guides to; capitals without `YOUR_` stay text.
-- **Each user guide opens with the long form**, and a new guide is registered in `scripts/user-docs.mjs`,
-  [docs/README.md](docs/README.md) and the website's docs menu (`website/src/data/docs.ts`).
+- **Each user guide opens with the long form**; guide registration follows
+  [docs/AGENTS.md](docs/AGENTS.md), "User guides".
 - **The root README is the project's front page on GitHub**, and its sections keep this order: what
   gcportrait is and does, with the wordmark, the badges and the hero animation; "Quick start", with the
   installer under "Self-host in 10 minutes", the "Open in Cloud Shell" and "Run on Google Cloud" buttons, and
@@ -652,25 +649,21 @@ what `pnpm agents:setup` writes for it at the root and for each folder file, is 
 | Fix formatting | `pnpm format` |
 | One package / one test project | `pnpm --filter @gcportrait/<pkg> test` (also `lint`, `typecheck`) / `pnpm test --project <name>` |
 | Provenance rules and exemptions | `pnpm provenance` / `node scripts/check-provenance.mjs --list-exempt` |
-| Check the user guides under docs/ against the tree (commands, flags, settings; no records of runs) and every Markdown file's width (110 columns, with the exemptions of Documentation) / regenerate their lens tables after a lens change (also part of `pnpm test`) | `node scripts/user-docs.mjs` / `node scripts/user-docs.mjs --write` |
 | Dependency licences (`run` is required): allowlist, deny list, the project licence's compatibility | `pnpm run licenses` (`--write` regenerates THIRD_PARTY.md, `node scripts/check-licenses.mjs --list-rules` prints the rules with reasons) |
 | Dependency audit: high and critical advisories fail unless `scripts/audit-allowlist.json` accepts them with an expiry (needs the network; CI's `audit` job; docs/security.md) | `node scripts/check-audit.mjs` |
 | Build, then the SPA's size budgets (frontend/AGENTS.md, Bundle budgets) | `pnpm build`, then `pnpm size` |
 | End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`; `--project chromium-phone --project chromium-tablet` for the app's flows by finger on a phone and a tablet alone) |
-| One of CI's e2e legs: every K-th test of the projects' listing from the I-th, run by `--test-list`, failing when the run misses one, with the share's count and summed test time (Quality gates, testing and CI) / the share alone, as a test list | `CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3` (`--projects '!chromium-live !chromium'` for every other project, `-- ARGS` for Playwright) / `... --list-only` |
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to the AGENTS.md files and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Draw a demo view as the app's renderer draws it (PNG, SVG and draw.io, byte-stable; the drawing carries no non-affiliation line) | `pnpm render --fixture M --lens networking --png out.png` (`--theme dark`, `--detail`, `--svg`, `--drawio`, `--strict`, `--compare`, `--all`, `--help`; without `--png`/`--svg`/`--drawio` it writes `out/render/`) |
-| Regenerate the screenshots, animated demos and link-preview images from demo mode (`docs/media/`, both themes; needs Playwright's Chromium) / check them for staleness | `pnpm media` (`--only ID`, `--theme dark`) / `pnpm media --check` |
-| Regenerate the website's sample exports (SVG, PNG and draw.io drawn by `pnpm render`, `docs/media/exports/`) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render` also draws them again and compares) |
-| Check the draw.io export against the SVG export (maxGraph in Chromium, demos S, M and L in both themes; the limits in the gcp-diagram-style skill §8) | `pnpm e2e tests/drawio.spec.ts --project chromium` |
 
 [packages/AGENTS.md](packages/AGENTS.md), "Commands", lists catalog, graph, layout, render-golden and icon
 commands; [backend/AGENTS.md](backend/AGENTS.md), "Commands", lists the render smoke test, API probe and
 production start; [frontend/AGENTS.md](frontend/AGENTS.md), "Commands", lists the phone and tablet check
 and the SVG-baseline update; [website/AGENTS.md](website/AGENTS.md), "Commands", lists the site and
 static-demo commands; [infra/AGENTS.md](infra/AGENTS.md), "Commands", lists deployment, image and shell
-checks.
+checks; [e2e/AGENTS.md](e2e/AGENTS.md), "Commands", lists the CI legs and draw.io fidelity check;
+[docs/AGENTS.md](docs/AGENTS.md), "Commands", lists guide checks, media and sample-export generation.
 [docs/packages.md](docs/packages.md) maps the packages, their entry points and data flow;
 [docs/configuration.md](docs/configuration.md) lists every setting of an instance.
 

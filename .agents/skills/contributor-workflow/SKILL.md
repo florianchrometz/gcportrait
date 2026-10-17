@@ -8,8 +8,10 @@ description: The way work gets done on gcportrait — provenance rules, local lo
 
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("How to work a task", "Licence and
 dependencies", "Quality gates, testing and CI", "Releases", "Documentation" and "Names that never appear")
-and [.github/AGENTS.md](../../../.github/AGENTS.md) ("CI", "A change of only docs and media" and "Releases");
-this file is the procedure and the checklists.
+and [.github/AGENTS.md](../../../.github/AGENTS.md) ("CI", "A change of only docs and media" and "Releases"),
+[e2e/AGENTS.md](../../../e2e/AGENTS.md) ("What the suite runs against", "Widths, gestures and axe" and
+"CI legs") and [docs/AGENTS.md](../../../docs/AGENTS.md) ("User guides" and "Media"); this file is the
+procedure and the checklists.
 
 ## 1. Before you start
 

@@ -9,7 +9,8 @@ description: Visual rules for gcportrait diagrams and app chrome — zone tints,
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Style and accessibility", "Exports
 and the render API" and "Non-affiliation, brand and legal") and
 [frontend/AGENTS.md](../../../frontend/AGENTS.md) ("Diagram and themes", "Exports" and "Phones, tablets and
-desktops"); this file holds the palettes, the sizes and the checklists that carry them out.
+desktops"), with the test coverage in [e2e/AGENTS.md](../../../e2e/AGENTS.md), "Widths, gestures and axe";
+this file holds the palettes, the sizes and the checklists that carry them out.
 
 Load this before changing anything a user can see in a diagram or exporting one, and when reviewing a render.
 Rules here win over personal taste. Where Google's architecture-diagram conventions and WCAG conflict, keep
@@ -324,8 +325,9 @@ tablet's and the desktop's (AGENTS.md, "Style and accessibility").
   what hover shows (frontend/AGENTS.md, "Phones, tablets and desktops"); a node's menu and drill-in are in
   the details drawer.
 - **Motion** follows the reduced-motion setting (no selection pulse).
-- **Checked by** the e2e suite (`e2e/tests/a11y.spec.ts`): axe reports zero violations on every page in both
-  themes, and on the diagram also with the keyboard inside a zone and with a node's menu and the drawer open;
+- **Checked by** the e2e suite (`e2e/tests/a11y.spec.ts`; e2e/AGENTS.md, "Widths, gestures and axe"):
+  axe reports zero violations on every page in both themes, and on the diagram also with the keyboard inside
+  a zone and with a node's menu and the drawer open;
   `e2e/tests/mobile.spec.ts` at phone and tablet widths, with the top bar's sheets and the drawer open,
   together with 44-pixel targets; `e2e/tests/touch.spec.ts` the canvas's gestures by finger on a phone. The
   frontend README describes the keyboard model per module.
