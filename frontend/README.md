@@ -149,7 +149,7 @@ seven slices (`slices.ts`):
 | `snapshot` | `ref` (the view's `snapshot`), `status` (`none`, `loading`, `ready`, `error`), the loading `stage` (`generate`, `ingest`, `graph`), `source` (scope, read time, asset count), `error`, `available` (what the Snapshot menu offers: the demo organisations S, M, L, then every stored snapshot, written by `snapshots/SnapshotLibraryProvider.tsx`; any `demo:` size, XL included, opens from the hash) | the data worker's answers | the pipeline controller |
 | `pipeline` | `key` (the view's scene key), `result` (`{ key, answer: SceneAnswer, layout }`), `pending` (`{ ref, stage }`), `error` (message and the node ids a refused layout named), `canvas` (the diagram page's measured size, null off the page), `viewport` (the size the result was asked at), `requests` | the two workers | the pipeline controller |
 | `selection` | `selected` and `highlighted` (the view's `selection` and `highlight`), `hovered` (the node under the pointer) | the hash; the canvas for `hovered` | derived with the view; `setHovered` |
-| `ui` | `drawerOpen`, `searchOpen`, `popover` (the one open top-bar popup: `'lens'`, `'snapshot'`, …), `jump` (a pending camera glide `{ id, seq, mode? }`) | the page only; **never in the hash** | `updateUi`, `usePopover`, `actions.jumpTo` |
+| `ui` | `drawerOpen`, `searchOpen`, `popover` (the one open top-bar popup: `'lens'`, `'snapshot'`, …), `sheet` (the top bar's open fold on a phone or a tablet, `'view'` or `'more'`; never open with the drawer: opening one sets `drawerOpen` false, `apart`), `jump` (a pending camera glide `{ id, seq, mode? }`) | the page only; **never in the hash** | `updateUi`, `usePopover`, `useSheet`, `actions.jumpTo` |
 | `connect` | `backend` (GET /api/config: `demo`, `loading`, `ready` with the config, `unavailable`), `session` (the sign-in: status, account email, expiry, renewal, problem; **never the token**), `mode` (`user` or `sa`); `scope`, `quotaProject` and `preflight` (the last check's request and answer) | `auth/AuthProvider.tsx`, the token session, the mode selector; the scope picker and the permission check | `updateConnect` |
 | `timeline` | `ref` (the view's snapshot), `info` (its timeline from the data worker: a stored `history`, or a `live` scope), `today` and `now` (the timeline's last day; a live scope's from the app's clock), a live scope's day `status` (`loading`, `cached`, `error`) and `failures`, the read's `progress`, `blocked` (why days cannot be read), `playback`, `interval`; `extras` (the extra ticks: the scope's stored exports and pulls, null until known) and `playExtras`; the view's `tick` itself stays in the hash | the data worker's Scene answer; the tick cache; the reads; the snapshot library's listing (`extras`) | the timeline controller (`timeline/controller.ts`) and playback, through `updateTimeline`; `extras` by the snapshot library's binding (`bindExtraTicks`); reset when the snapshot changes (the interval and `playExtras` kept) |
 
@@ -179,7 +179,7 @@ to override (a filter slider being dragged: `replace`):
 | `collapseAll()` | push | "Collapse all": closes every zone opened by hand, and goes back to `auto` when the level in use is deeper; never opens anything; waits as `expandAll` does |
 | `setSnapshot(ref)` | push | opens a snapshot on `/diagram`, keeping lens and detail (`snapshotView`) |
 | `setView(fn)` | push | any other change (the timeline's tick, a saved view) |
-| `select(id \| null)` | replace | the selection; selecting opens the drawer (`ui.drawerOpen`) |
+| `select(id \| null)` | replace | the selection; selecting opens the drawer (`ui.drawerOpen`) and closes an open sheet (a search result picked in View) |
 | `highlight(id \| null)` | replace | a node id or search text |
 | `jumpTo(id, { mode? })` | none | asks the renderer for a camera glide to the node (`ui.jump`): centred (default), or with `mode: 'reveal'` (the details drawer) only panned into view |
 | `stepTick(-1 \| 1)` | push | one day back or forward: the timeline keys `[` and `]` (`keyboard/TimelineKeys.tsx`) and the bar's step buttons; writes `tick` (the snapshot's own day as no tick) and answers whether it moved; when it cannot (no snapshot, the timeline not known yet, either end) the keys' status message says why (`stepTarget` of `timeline/model.ts`) |
@@ -187,7 +187,8 @@ to override (a filter slider being dragged: `replace`):
 **Hooks.** `useAppState(selector)` (a selector returns something already in the state or a primitive, never a
 new object), `useView()`, `useScene()` (the `SceneAnswer` on screen: Scene, report, source, lens title, icons,
 console links), `useLayout()`, `useSelection()`, `useUi()`, `usePopover(id)` (`[open, setOpen]` over
-`ui.popover`, so one top-bar popup is open at a time), `selectScope` (the breadcrumb's scope),
+`ui.popover`, so one top-bar popup is open at a time), `useSheet(id)` (the same over `ui.sheet`, one sheet at
+a time; opening one closes the drawer), `selectScope` (the breadcrumb's scope),
 `useDiagramPipeline(canvasRef)` (the diagram page only).
 
 **The pipeline** (`pipeline.ts`, run by `useDiagramPipeline` on the diagram page). Whenever the view's scene
@@ -312,7 +313,14 @@ applied, a theme in the Theme menu) closes it too, focus back on More (`ui/Popov
 sheet's button when the sheet closes with focus inside it or dropped to the body). A snapshot or a saved view
 picked away from the diagram opens the diagram page, a new page, which closes the sheet by itself and starts
 focus at the page. Copy link and Export's own menu keep the sheet open. No control has a second copy: a fold
-moves the one there is.
+moves the one there is. A sheet and the details drawer are never open together (`apart` in `state/store.ts`):
+opening View or More, by its button or by `/`, closes the drawer, so on `/diagram` the sheet is alone over the
+canvas and leaves at least a third of it in view. The selection stays, its ring and its trace with it, and the
+drawer stays closed whatever a pick in the sheet changes of the view (a lens, a filter, a saved view); a tap
+or a key on the selected node opens it again, and so does another node selected once the sheet is closed (a
+link, Back). A search result picked in View closes the sheet onto its button and opens the drawer on the
+result, in the part of the canvas the drawer leaves in view. On a desktop no sheet opens, and the drawer stays
+as it is.
 
 **Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
 `--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons,
@@ -364,10 +372,11 @@ per row on a phone, where no box scrolls sideways, not even a table's; the table
 scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a
 column a few characters wide, the top bar's items, the timeline bar's parts (none over another), the drawer
 within the canvas, 44-pixel targets, every control one reaches with Tab in sight when focused and tappable at
-its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view), axe; and a
-theme picked in More, Sign out from More, a long trail, the sheet's heights and the canvas's touch input by
-finger. The same project runs `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a pan,
-a pinch, taps, double taps, a long press) and a mouse's drag and double-click on the same page.
+its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view, and View
+opened over the drawer closing it), axe; and a theme picked in More, Sign out from More, a long trail, the
+sheet's heights and the canvas's touch input by finger. The same project runs `e2e/tests/touch.spec.ts` at
+390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a long press) and a mouse's
+drag and double-click on the same page.
 
 ## UI primitives (`src/ui/`)
 
@@ -1733,7 +1742,8 @@ height each time. The sheet's `data-sheet` (`half`, `full`) lets the page's styl
 bar above it at half height and hide the canvas's content while it covers the canvas at full height (no focus
 lands out of sight). Either way the header and the details scroll together in one box (`.content`,
 `display: contents` on a desktop), so nothing in the drawer reaches past its edge whatever its height. Close
-and Escape close it as on a desktop.
+and Escape close it as on a desktop, and so does the top bar's View or More sheet as it opens, the selection
+kept (section "Layouts", paragraph "Folds"); a node selected opens it again, at half height on a phone.
 
 ```
 src/drawer/

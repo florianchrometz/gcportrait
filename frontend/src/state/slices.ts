@@ -103,14 +103,17 @@ export interface SelectionSlice {
 }
 
 export interface UiSlice {
-  /** The details drawer shows while something is selected and this is true. */
+  /**
+   * The details drawer shows while something is selected and this is true; never true while a sheet is open (store.ts,
+   * `apart`): a sheet that opens closes the drawer, and selecting a node opens it again.
+   */
   readonly drawerOpen: boolean;
   readonly searchOpen: boolean;
   /** The one open top-bar popup ('lens', 'snapshot', 'filters', …), if any. */
   readonly popover: string | null;
   /**
    * The open fold of the top bar on a phone or a tablet ('view', 'more'), if any: a sheet that holds popups of its
-   * own, so it is kept apart from `popover`.
+   * own, so it is kept apart from `popover`. It is never open with the details drawer (`drawerOpen`).
    */
   readonly sheet: string | null;
   /**

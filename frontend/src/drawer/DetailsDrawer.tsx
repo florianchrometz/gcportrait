@@ -28,6 +28,9 @@
  * drawer leaves in view (`data-canvas-overlay`); the sheet's `data-sheet` (`half`, `full`) tells the page's
  * stylesheets where it is: what floats over the canvas moves above the sheet at half height, and the canvas's content
  * is hidden while the sheet covers it at full height (pages/DiagramPage.module.css), so no focus lands out of sight.
+ * The top bar's View or More sheet, which hangs over the canvas from above, closes the drawer as it opens, so the two
+ * never cover the canvas together (state/store.ts, `apart`): the selection stays, and the drawer opens again, at half
+ * height, when a node is selected (a tap or a key on it, a search result, which closes the sheet first).
  */
 import {
   useCallback,

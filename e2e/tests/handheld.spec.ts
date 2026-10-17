@@ -37,8 +37,8 @@ import {
  * - the details: a tap on a folder opens them over the canvas (a sheet over its lower half on a phone, a panel over at
  *   most half its width at its right on a tablet) with the folder's name and resource name, and their Details button
  *   drills in, as a double-click does with a mouse;
- * - search from the View sheet: a result tapped is selected, in the details and in the part of the canvas they leave
- *   in view;
+ * - search from the View sheet: a result tapped is selected, View closes onto its button, and the node is in the
+ *   details and in the part of the canvas they leave in view;
  * - the disclosure bar's Expand all and Collapse all;
  * - the timeline: Previous day and Next day, and playback to the last day (on Playwright's clock);
  * - Export through More: the Export menu and an SVG download;
@@ -340,6 +340,9 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     await expect(node).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
     await expect(details(page)).toBeVisible();
     await expect(details(page).getByRole('heading', { level: 2 })).toHaveText('Retail web (prod)');
+    // The details and a sheet are never open together: the pick closed View, focus back on its button.
+    await expect(view).toBeHidden();
+    await expect(fold(page, 'View').button).toBeFocused();
     // The camera brings the node into the part of the canvas the details leave in view.
     await expect
       .poll(async () => {

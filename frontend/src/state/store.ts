@@ -95,7 +95,10 @@ export interface ViewActions {
    * deeper; never opens anything. Waits for the view's own drawing as "Expand all" does.
    */
   readonly collapseAll: (options?: WriteOptions) => void;
-  /** Selects a node, or clears the selection (replace); selecting opens the drawer. */
+  /**
+   * Selects a node, or clears the selection (replace); selecting opens the drawer, and closes an open sheet of the top
+   * bar (a search result picked in View), which the drawer is never open with (`apart`).
+   */
   readonly select: (id: string | null, options?: WriteOptions) => void;
   /** Highlights a node id or a search text, or nothing (replace). */
   readonly highlight: (id: string | null, options?: WriteOptions) => void;
@@ -132,7 +135,7 @@ export interface AppStore {
   readonly updateSnapshot: (update: (current: SnapshotSlice) => Omit<SnapshotSlice, 'ref'>) => void;
   /** The node under the pointer on the canvas (or null). */
   readonly setHovered: (id: string | null) => void;
-  /** Changes the ui slice. */
+  /** Changes the ui slice; a sheet it opens closes the details drawer (`apart`). */
   readonly updateUi: (update: (current: UiSlice) => UiSlice) => void;
   /** Changes the connect slice (auth/AuthProvider.tsx, the mode selector). */
   readonly updateConnect: (update: (current: ConnectSlice) => ConnectSlice) => void;
@@ -184,6 +187,21 @@ const IDLE_PIPELINE: PipelineSlice = {
 
 const INITIAL_UI: UiSlice = { drawerOpen: true, searchOpen: false, popover: null, sheet: null, jump: null };
 
+/**
+ * The ui slice with a sheet of the top bar and the details drawer kept apart (AGENTS.md, Product rules): on a phone or
+ * a tablet both lie over the canvas, a sheet over up to its upper two thirds and the drawer over its lower half or its
+ * right side, and together they would leave next to nothing of it in view. A sheet that opens (View or More, by its
+ * button or by `/`) closes the drawer, so the sheet is alone over the canvas; the selection stays, its ring and its
+ * trace with it, and the drawer stays closed whatever a pick in the sheet changes of the view (a lens, a filter, a
+ * saved view). A node selected opens it again: the same node by a tap or a key on it (`select`), a search result
+ * picked in View, which closes the sheet first, or, once the sheet is closed, another node however it is selected (a
+ * link, Back; `withView`). On a desktop no sheet ever opens (its folds are in place), so the drawer is never closed
+ * this way there.
+ */
+function apart(ui: UiSlice): UiSlice {
+  return ui.sheet !== null && ui.drawerOpen ? { ...ui, drawerOpen: false } : ui;
+}
+
 /** Until auth/AuthProvider.tsx has asked the backend: no sign-in, the person's own account. */
 const INITIAL_CONNECT: ConnectSlice = {
   backend: { status: 'loading' },
@@ -217,6 +235,9 @@ function withView(state: AppState, view: ViewSlice): AppState {
       };
   const previous = state.selection;
   const selection = selectionOf(view.spec, sameSnapshot ? previous.hovered : null);
+  const kept = sameSnapshot || state.ui.jump === null ? state.ui : { ...state.ui, jump: null };
+  // Another node selected opens the drawer that a sheet closed, once no sheet is open (`apart`).
+  const reopen = selection.selected !== previous.selected && !kept.drawerOpen && kept.sheet === null;
   return {
     ...state,
     view,
@@ -227,7 +248,7 @@ function withView(state: AppState, view: ViewSlice): AppState {
       selection.hovered === previous.hovered
         ? previous
         : selection,
-    ui: sameSnapshot || state.ui.jump === null ? state.ui : { ...state.ui, jump: null },
+    ui: reopen ? { ...kept, drawerOpen: true } : kept,
     timeline:
       state.timeline.ref === ref
         ? state.timeline
@@ -387,7 +408,12 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
         'replace',
         options,
       );
-      if (id !== null && !state.ui.drawerOpen) set({ ...state, ui: { ...state.ui, drawerOpen: true } });
+      // Selecting opens the drawer. A node picked in a sheet (a search result in View) closes the sheet first, so the
+      // two are never open together and the node lands in the part of the canvas the drawer leaves in view.
+      if (id === null) return;
+      const ui = state.ui;
+      if (ui.sheet !== null) set({ ...state, ui: { ...ui, drawerOpen: true, sheet: null, popover: null } });
+      else if (!ui.drawerOpen) set({ ...state, ui: { ...ui, drawerOpen: true } });
     },
     highlight: (id, options) => {
       write(
@@ -457,7 +483,7 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
       set({ ...state, selection: { ...state.selection, hovered: id } });
     },
     updateUi(update) {
-      const ui = update(state.ui);
+      const ui = apart(update(state.ui));
       if (ui !== state.ui) set({ ...state, ui });
     },
     updateConnect(update) {

@@ -48,7 +48,8 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
  *   nor (a canvas under 10.5 rem) hidden until the sheet closes;
  * - an open View or More sheet, with the disclosure bar's row while it shows, leaves less than a third of the canvas in
- *   view, or the sheet reaches below three quarters of the canvas's height (at every size, the sideways ones too);
+ *   view, or the sheet reaches below three quarters of the canvas's height, or View opened while the drawer is open
+ *   leaves the drawer open, or it opens again once View is closed (at every size, the sideways ones too);
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
  * And on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
  * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
@@ -930,22 +931,41 @@ function sheetRoom(sheet: Locator): Promise<{ readonly uncovered: number; readon
 }
 
 for (const size of [...SIZES, ...SIDEWAYS]) {
-  test(`${String(size.width)} × ${String(size.height)}: an open View or More sheet leaves at least a third of the canvas in view, in both themes`, async ({
+  test(`${String(size.width)} × ${String(size.height)}: an open View or More sheet leaves at least a third of the canvas in view, in both themes, and View closes the open drawer`, async ({
     page,
   }) => {
     await page.setViewportSize(size);
     for (const address of DIAGRAMS) {
-      await openDiagram(page, address);
+      const hash = address.slice(address.indexOf('#'));
+      const svg = await openDiagram(page, address);
       for (const theme of ['light', 'dark'] as const) {
         await page.emulateMedia({ colorScheme: theme });
         for (const name of ['View', 'More']) {
-          const where = `${address.slice(address.indexOf('#'))}, ${theme} theme, ${name} open`;
+          const where = `${hash}, ${theme} theme, ${name} open`;
           const room = await sheetRoom(await openSheet(page, name));
           expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
           expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
           await expectClean(page, where, { axe: false, focus: true });
           await closeSheet(page, name);
         }
+        // The drawer open (on a phone at half height), then View opened: the drawer closes, so the sheet is alone over
+        // the canvas, and stays closed when the sheet does; the selection stays.
+        const where = `${hash}, ${theme} theme, View opened over the drawer`;
+        await selectACard(page, svg);
+        const details = page.getByRole('complementary', { name: 'Details' });
+        if (size.width < TABLET_FROM) await expect(details).toHaveAttribute('data-sheet', 'half');
+        const room = await sheetRoom(await openSheet(page, 'View'));
+        await expect(details, `${where}: the drawer`).toBeHidden();
+        expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
+        expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
+        await closeSheet(page, 'View');
+        await expect(details, `${where}: the drawer once View is closed`).toBeHidden();
+        expect(await page.evaluate(() => window.location.hash)).toContain('selection=');
+        // Back to the view without a selection, for the next theme's.
+        await page.evaluate((view) => {
+          window.location.hash = view;
+        }, hash);
+        await expect(svg.locator('[aria-pressed="true"]')).toHaveCount(0);
       }
     }
   });

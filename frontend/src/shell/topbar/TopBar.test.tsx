@@ -5,9 +5,12 @@
  * brand mark beside the wordmark is brand/icon.svg as the build writes it, under the build's base path (its size:
  * TopBar.css.test.ts). Narrower than a desktop, the rows fold into the View and More sheets (shell/parity.test.tsx
  * holds every control to every width); a pick in More that changes the view or the theme closes it onto its button,
- * and Copy link and Export's own menu keep it open.
+ * and Copy link and Export's own menu keep it open. On a phone and a tablet opening View or More, by its button or by
+ * `/`, closes the details drawer and keeps the selection, a click on the selected node opens the drawer again, and a
+ * search result picked in View closes the sheet onto its button and opens the drawer on the result; on a desktop `/`
+ * leaves the drawer open.
  */
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,9 +20,12 @@ import { expectNoAxeViolations } from '../../test/axe';
 import { staticDemoConfig, stubBackend } from '../../test/backend';
 import { stubClipboard } from '../../test/clipboard';
 import { drawn } from '../../test/diagram';
-import { renderApp } from '../../test/renderApp';
+import { renderApp, type AppRender } from '../../test/renderApp';
 import { installViewport, type ViewportControl } from '../../test/viewport';
 import { createSavedViewStore } from '../../views/savedViewStore';
+
+/** A Cloud Run service of demo S, which the search finds as "orders-api". */
+const ORDERS_API = '//run.googleapis.com/projects/demo-svc-1/locations/europe-west3/services/orders-api';
 
 /** The banner's tab stops, by role and name (none inside a closed sheet). */
 function tabStops(banner: HTMLElement): string[] {
@@ -317,4 +323,117 @@ describe('the More sheet on a phone', () => {
     expect(within(sheet).queryByRole('menu', { name: 'Export' })).toBeNull();
     expectOpenOn(button, sheet, exportButton);
   });
+});
+
+describe('the sheets and the details drawer', () => {
+  let viewport: ViewportControl | undefined;
+
+  afterEach(() => {
+    viewport?.uninstall();
+    viewport = undefined;
+  });
+
+  /** The details drawer while it shows, else null. */
+  function details(): HTMLElement | null {
+    return screen.queryByRole('complementary', { name: 'Details' });
+  }
+
+  /** A click on the node `id` drawn on the canvas (the canvas reads it as a selection, DiagramCanvas.tsx). */
+  async function clickNode(container: HTMLElement, id: string): Promise<void> {
+    const node = container.querySelector(`svg.dg-canvas [data-id="${id}"]`);
+    if (node === null) throw new Error(`${id} is not drawn`);
+    await act(async () => {
+      fireEvent.click(node.querySelector('text') ?? node);
+      await Promise.resolve();
+    });
+  }
+
+  /** Demo S drawn and its first card selected by a click, the drawer open: the app and the card's id. */
+  async function selectACard(): Promise<{ readonly app: AppRender; readonly id: string }> {
+    const app = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: createInProcessWorkers });
+    const svg = await drawn(app.container);
+    const id = svg.querySelector('.dg-card[data-id]')?.getAttribute('data-id') ?? '';
+    expect(id).not.toBe('');
+    await clickNode(app.container, id);
+    expect(details()).not.toBeNull();
+    return { app, id };
+  }
+
+  it.each([
+    ['a phone', 375],
+    ['a tablet', 820],
+  ])(
+    'on %s, View or More opened closes the drawer and keeps the selection, and a click on the node opens it again',
+    async (_, width) => {
+      viewport = installViewport(width);
+      const { app, id } = await selectACard();
+      const banner = screen.getByRole('banner');
+      const viewButton = within(banner).getByRole('button', { name: 'View' });
+      await userEvent.click(viewButton);
+      const view = within(banner).getByRole('dialog', { name: 'View' });
+      expect(details()).toBeNull();
+      expect(app.hash()).toContain(`selection=${id}`);
+      expect(app.container.querySelector(`[data-id="${id}"]`)?.getAttribute('aria-pressed')).toBe('true');
+      // Focus on the sheet's first control, as whenever it opens.
+      expect(document.activeElement).toBe(within(view).getByRole('combobox', { name: 'Lens' }));
+      // Closed, the sheet opens nothing again; nor does More, which closes it as well.
+      await userEvent.keyboard('{Escape}');
+      expect(document.activeElement).toBe(viewButton);
+      expect(details()).toBeNull();
+      await userEvent.click(within(banner).getByRole('button', { name: 'More' }));
+      expect(within(banner).getByRole('dialog', { name: 'More' }).hidden).toBe(false);
+      await userEvent.keyboard('{Escape}');
+      expect(details()).toBeNull();
+      // A click on the selected node opens the drawer again.
+      await clickNode(app.container, id);
+      expect(details()).not.toBeNull();
+      // `/` opens View onto the search box, and closes the drawer too.
+      await userEvent.keyboard('/');
+      expect(view.hidden).toBe(false);
+      await waitFor(() => {
+        expect(document.activeElement).toBe(within(view).getByRole('combobox', { name: 'Search assets' }));
+      });
+      expect(details()).toBeNull();
+      expect(app.hash()).toContain(`selection=${id}`);
+    },
+    30_000,
+  );
+
+  it('on a phone, a search result picked in View closes the sheet onto its button and opens the drawer on it', async () => {
+    viewport = installViewport(375);
+    const app = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: createInProcessWorkers });
+    await drawn(app.container);
+    const banner = screen.getByRole('banner');
+    const viewButton = within(banner).getByRole('button', { name: 'View' });
+    await userEvent.click(viewButton);
+    const view = within(banner).getByRole('dialog', { name: 'View' });
+    const input = within(view).getByRole('combobox', { name: 'Search assets' });
+    await userEvent.click(input);
+    await userEvent.type(input, 'orders');
+    const option = await waitFor(() => screen.getByRole('option', { name: 'orders-api' }), {
+      timeout: 10_000,
+    });
+    await userEvent.click(option);
+    // The data worker first locates the node (search/useReveal.ts), in-process here and slow on a busy machine.
+    await waitFor(
+      () => {
+        expect(app.hash()).toContain(`selection=${ORDERS_API}`);
+      },
+      { timeout: 10_000 },
+    );
+    expect(view.hidden).toBe(true);
+    expect(document.activeElement).toBe(viewButton);
+    const drawer = screen.getByRole('complementary', { name: 'Details' });
+    expect(within(drawer).getByText(ORDERS_API)).toBeDefined();
+  }, 30_000);
+
+  it('on a desktop, where the folds are in place, `/` focuses the search box and leaves the drawer open', async () => {
+    const { app, id } = await selectACard();
+    await userEvent.keyboard('/');
+    expect(document.activeElement).toBe(
+      within(screen.getByRole('banner')).getByRole('combobox', { name: 'Search assets' }),
+    );
+    expect(details()).not.toBeNull();
+    expect(app.hash()).toContain(`selection=${id}`);
+  }, 30_000);
 });

@@ -85,7 +85,8 @@ export function usePopover(id: string): readonly [boolean, (open: boolean) => vo
 
 /**
  * Whether the top bar's fold `id` ('view', 'more') is open as a sheet, and a setter: one sheet at a time. A popup
- * inside the sheet (`usePopover`) leaves it open; opening or closing a sheet closes any popup.
+ * inside the sheet (`usePopover`) leaves it open; opening or closing a sheet closes any popup, and opening one closes
+ * the details drawer, the selection kept (store.ts, `apart`).
  */
 export function useSheet(id: string): readonly [boolean, (open: boolean) => void] {
   const store = useAppStore();

@@ -397,6 +397,67 @@ describe('the other slices never touch the hash', () => {
   });
 });
 
+describe('the top bar’s sheets and the details drawer', () => {
+  it('a sheet that opens closes the drawer and keeps the selection; a pick that changes the view opens nothing again', () => {
+    const { store, written } = storeAt(`#${BASE}&selection=a`);
+    expect(store.getState().ui.drawerOpen).toBe(true);
+    store.updateUi((ui) => ({ ...ui, sheet: 'view', popover: null }));
+    expect(store.getState().ui).toMatchObject({ sheet: 'view', drawerOpen: false });
+    expect(store.getState().selection.selected).toBe('a');
+    expect(written).toEqual([]);
+    // Nothing opens the drawer while the sheet is open, but a node selected.
+    store.updateUi((ui) => ({ ...ui, drawerOpen: true }));
+    expect(store.getState().ui.drawerOpen).toBe(false);
+    store.actions.setLens('data');
+    store.actions.highlight('web');
+    store.updateUi((ui) => ({ ...ui, sheet: null }));
+    expect(store.getState().ui).toMatchObject({ sheet: null, drawerOpen: false });
+    expect(store.getState().selection).toMatchObject({ selected: 'a', highlighted: 'web' });
+    // The other sheet does the same.
+    store.actions.select('a');
+    expect(store.getState().ui.drawerOpen).toBe(true);
+    store.updateUi((ui) => ({ ...ui, sheet: 'more', popover: null }));
+    expect(store.getState().ui).toMatchObject({ sheet: 'more', drawerOpen: false });
+  });
+
+  it('a node selected while a sheet is open (a search result in View) closes the sheet and its popup, and opens the drawer', () => {
+    const { store } = storeAt(`#${BASE}&selection=a`);
+    store.updateUi((ui) => ({ ...ui, sheet: 'view', popover: 'filters' }));
+    store.actions.select('b');
+    expect(store.getState().ui).toMatchObject({ sheet: null, popover: null, drawerOpen: true });
+    expect(store.getState().selection.selected).toBe('b');
+    // Clearing the selection leaves an open sheet as it is.
+    store.updateUi((ui) => ({ ...ui, sheet: 'view', popover: 'lens' }));
+    store.actions.select(null);
+    expect(store.getState().ui).toMatchObject({ sheet: 'view', popover: 'lens', drawerOpen: false });
+  });
+
+  it('another node selected through the hash (a link, Back) opens the drawer a sheet closed, once no sheet is open', () => {
+    const { store } = storeAt(`#${BASE}&selection=a`);
+    store.updateUi((ui) => ({ ...ui, sheet: 'more', popover: null }));
+    // A saved view applied from More, with a selection of its own: the sheet is still open.
+    store.actions.setView(() => ({ ...decodeViewSpec(BASE), selection: 'b' }));
+    expect(store.getState().ui.drawerOpen).toBe(false);
+    store.updateUi((ui) => ({ ...ui, sheet: null }));
+    expect(store.getState().ui.drawerOpen).toBe(false);
+    // The same node through the hash leaves it closed; another one opens it.
+    store.syncLocation({ pathname: '/diagram', hash: '#snapshot=demo:M&lens=data&selection=b' });
+    expect(store.getState().ui.drawerOpen).toBe(false);
+    store.syncLocation({ pathname: '/diagram', hash: `#${BASE}&selection=c` });
+    expect(store.getState().ui.drawerOpen).toBe(true);
+    expect(store.getState().selection.selected).toBe('c');
+  });
+
+  it('without a sheet (a desktop, whose folds are in place) a popup leaves the drawer open, and selecting keeps the popup', () => {
+    const { store } = storeAt(`#${BASE}&selection=a`);
+    const before = store.getState().ui;
+    store.updateUi((ui) => ({ ...ui, popover: 'filters', searchOpen: true }));
+    expect(store.getState().ui).toEqual({ ...before, popover: 'filters', searchOpen: true });
+    store.actions.select('b');
+    expect(store.getState().ui).toMatchObject({ popover: 'filters', drawerOpen: true, sheet: null });
+  });
+});
+
 describe('the timeline keys’ action', () => {
   it('changes nothing while the snapshot’s timeline is not known', () => {
     const { store, written } = storeAt(`#${BASE}&tick=2026-10-01`);
