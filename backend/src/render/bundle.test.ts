@@ -3,9 +3,9 @@
  * The production bundles (bundle.ts): written into a temporary directory, the render worker draws a demo view
  * to the committed goldens' bytes (the PNG and the `.drawio` file) from its own asset directory, with no
  * node_modules involved, and `server.mjs` holds none of the render library: no React, no resvg, no frontend
- * component, no native addon. The licence file names the files each package ships in and carries the MPL-2.0
- * text, and the notices script's table of the asset directory's packages (scripts/third-party-notices.mjs)
- * matches the directory the bundle writes.
+ * component, no native addon. The licence file names the files each package ships in, lists each exactly
+ * pinned package at the version installed and carries the MPL-2.0 text, and the notices script's table of the
+ * asset directory's packages (scripts/third-party-notices.mjs) matches the directory the bundle writes.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -39,6 +39,26 @@ beforeAll(() => {
 afterAll(() => {
   rmSync(out, { recursive: true, force: true });
 });
+
+/**
+ * The version of `name` installed for the workspace package that declares it (the lockfile's), read from the
+ * package's own package.json, after checking that the declaration pins exactly that version.
+ */
+function exactPin(workspace: string, name: string): string {
+  const manifest = path.join(REPO_ROOT, workspace, 'package.json');
+  const { dependencies } = JSON.parse(readFileSync(manifest, 'utf8')) as {
+    dependencies?: Record<string, string>;
+  };
+  // Node's lookup of the package's directory: a package's `exports` may leave its package.json out.
+  const dir = createRequire(manifest)
+    .resolve.paths(name)
+    ?.map((modules) => path.join(modules, name))
+    .find((candidate) => existsSync(path.join(candidate, 'package.json')));
+  if (dir === undefined) throw new Error(`${name} is not installed for ${workspace}`);
+  const { version } = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8')) as { version: string };
+  expect(dependencies?.[name], `${workspace}/package.json pins ${name} exactly`).toBe(version);
+  return version;
+}
 
 describe('the bundles', () => {
   it('draw demo S overview in the bundled worker to the golden’s bytes, from the bundled assets', async () => {
@@ -105,18 +125,21 @@ describe('the bundles', () => {
 
   it('name the files each package ships in, and carry the MPL-2.0 text for resvg-wasm', () => {
     const licences = readFileSync(path.join(out, 'licenses/server-dependencies.txt'), 'utf8');
+    const resvg = exactPin('packages/render', '@resvg/resvg-wasm');
     expect(licences).toContain(
-      '- @resvg/resvg-wasm@2.6.2 (MPL-2.0): render-worker.mjs, render-assets/resvg.wasm\n',
+      `- @resvg/resvg-wasm@${resvg} (MPL-2.0): render-worker.mjs, render-assets/resvg.wasm\n`,
     );
     expect(licences).toMatch(/\n- @fontsource\/roboto@[\d.]+ \(OFL-1\.1\): render-assets\/fonts\/\n/);
     expect(licences).toMatch(/\n- react-dom@[\d.]+ \(MIT\): render-worker\.mjs\n/);
-    expect(licences).toContain('- fflate@0.8.3 (MIT): render-worker.mjs\n');
-    expect(licences).toContain('- @fastify/multipart@10.1.2 (MIT): server.mjs\n');
+    expect(licences).toContain(`- fflate@${exactPin('frontend', 'fflate')} (MIT): render-worker.mjs\n`);
+    expect(licences).toContain(
+      `- @fastify/multipart@${exactPin('backend', '@fastify/multipart')} (MIT): server.mjs\n`,
+    );
     expect(licences).toMatch(/\n- zod@[\d.]+ \(MIT\): server\.mjs, render-worker\.mjs\n/);
     expect(licences).not.toMatch(/ render\/|resvg-wasm@[\d.]+ \(MPL-2\.0\): server\.mjs/);
     // MPL-2.0 sections 3.2 and 3.3 in its section, and the canonical text (scripts/licenses/) once, at the end.
     expect(licences).toContain(
-      'Code Form is available at https://registry.npmjs.org/@resvg/resvg-wasm/-/resvg-wasm-2.6.2.tgz.',
+      `Code Form is available at https://registry.npmjs.org/@resvg/resvg-wasm/-/resvg-wasm-${resvg}.tgz.`,
     );
     const mpl = readFileSync(path.join(REPO_ROOT, 'scripts/licenses/MPL-2.0.txt'), 'utf8').trimEnd();
     expect(licences.split(mpl)).toHaveLength(2);

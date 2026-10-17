@@ -35,8 +35,8 @@ const EXEMPTIONS: Readonly<Record<string, Exemption>> = {
     allowed: [/^github\.com$/],
   },
   'backend/src/render/bundle.test.ts': {
-    reason: 'reads the bundle’s notices: packages as name@version and the npm registry their source is at',
-    allowed: [/^[a-z-]+@\d+\.\d+\.\d+$/, /^registry\.npmjs\.org$/],
+    reason: 'reads the bundle’s notices: the npm registry the MPL-2.0 package’s source is at',
+    allowed: [/^registry\.npmjs\.org$/],
   },
   'backend/src/routes/render.test.ts': {
     reason: 'the render options’ message names a diagram editor’s file format, whose name is a host name too',
