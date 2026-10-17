@@ -129,7 +129,7 @@ export async function pullCredentials(
   signal: AbortSignal,
 ): Promise<PullCredentials> {
   const { serviceAccount } = authority;
-  if (fields.mode !== 'sa' || serviceAccount === null) {
+  if (fields.mode !== 'sa') {
     const user: PageCredentials = {
       ok: true,
       token: callerToken,
@@ -137,6 +137,7 @@ export async function pullCredentials(
     };
     return { ok: true, credentials: () => Promise.resolve(user) };
   }
+  if (serviceAccount === null) throw new Error('Service-account mode requires an instance identity.');
   // The gate runs before every CAI call; the first run decides whether the stream starts at all.
   const check = (pageSignal: AbortSignal): Promise<GateDecision> =>
     serviceAccount.check({
