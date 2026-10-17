@@ -42,6 +42,12 @@ type Theme = (typeof THEMES)[number];
 /** Generating and drawing demo L takes a while on a slow machine. */
 const DRAW_TIMEOUT = 180_000;
 const STEP_TIMEOUT = 30_000;
+/**
+ * The wait for an export's download starts with the click on its menu item and also covers the export, so it runs
+ * longer than the click: a menu item that cannot be clicked runs out first, and the step names it, not a download that
+ * never came.
+ */
+const DOWNLOAD_TIMEOUT = 2 * STEP_TIMEOUT;
 /** A project of demo organisation M ("Retail batch VMs (prod)"), to drill into. */
 const PROJECT = '//cloudresourcemanager.googleapis.com/projects/10000000013';
 /** The app's routes besides the start page, each with a word its page shows. */
@@ -282,9 +288,12 @@ async function checkDiagram(
     await page.getByRole('banner').getByRole('button', { name: 'Export' }).click();
     const menu = page.getByRole('menu', { name: 'Export' });
     await visible(menu, 'the Export menu');
-    const pending = page.waitForEvent('download', { timeout: STEP_TIMEOUT });
-    await menu.getByRole('menuitem', { name: action }).click();
-    const download = await pending;
+    // The download is awaited with the click that starts it, so a click that fails fails this step; a wait left
+    // running unawaited would end the whole check, summary and all, when it ran out.
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT }),
+      menu.getByRole('menuitem', { name: action }).click({ timeout: STEP_TIMEOUT }),
+    ]);
     const file = await download.path();
     const name = download.suggestedFilename();
     const expected = action === 'Download PNG' ? '.png' : '.svg';

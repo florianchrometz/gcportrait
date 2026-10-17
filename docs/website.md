@@ -874,7 +874,10 @@ the day back the check waits for the next drawing, a ready canvas whose number (
 the one read before the click or the key, and it opens the project it drills into on a page loaded afresh,
 whose first drawing is that view's; the axe run and the screenshots see the view they name. A step that fails
 says why: a wait that runs out (Playwright's `TimeoutError`) names what it waited for, and any other error (a
-closed page, a crashed browser, a failed navigation) is reported with its own message.
+closed page, a crashed browser, a failed navigation) is reported with its own message. An export awaits its
+download together with the click on its menu item, the download's wait the longer, as it also covers the
+export, so a menu item that cannot be clicked fails its step under its own name and the check still lists
+every problem.
 
 **When it changes.** The demo is the app of the commit the site is built from: `main` on every deploy of the
 site, the tag on a release. In `pnpm website:dev`, `/demo/` serves the last `pnpm demo:static` bundle
