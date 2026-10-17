@@ -7,12 +7,14 @@
  * the first asset that pulls from it. Production repositories are CMEK-encrypted; `gcf-artifacts` carries the
  * clean-up policy Cloud Run functions sets up.
  */
+import { isRegion } from '@gcportrait/model';
+
 import { HOUR_MS, MINUTE_MS } from '../core/time.js';
 import type { OrgContext } from './context.js';
 import { fullName, projectInput, standardLabels, type ProjectCtx } from './kit.js';
 
 /** `<location>-docker.pkg.dev/<project>/<repository>`, as image paths spell a Docker repository. */
-const IMAGE = /([a-z]+-[a-z]+[0-9]+)-docker\.pkg\.dev\/([a-z][a-z0-9-]+)\/([a-z0-9][a-z0-9.-]*)/g;
+const IMAGE = /([^/"\\\s]+)-docker\.pkg\.dev\/([a-z][a-z0-9-]+)\/([a-z0-9][a-z0-9.-]*)/g;
 
 const DESCRIPTIONS: Readonly<Record<string, string>> = {
   apps: 'Application images',
@@ -38,6 +40,7 @@ export function addRegistries(ctx: OrgContext): void {
       if (asset.assetType.startsWith('artifactregistry.googleapis.com/')) continue;
       for (const match of JSON.stringify(asset.data).matchAll(IMAGE)) {
         const [, location = '', projectId = '', repository = ''] = match;
+        if (!isRegion(location)) continue;
         const project = b.projects.get(projectId);
         if (project === undefined) continue;
         const key = `${projectId}/${location}/${repository}`;
