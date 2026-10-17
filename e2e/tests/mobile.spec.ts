@@ -742,7 +742,9 @@ async function selectACard(page: Page, svg: Locator): Promise<void> {
  * Impressum and Privacy pages, and the diagrams of demo S and M, this spec's slow tests. The light theme's come first
  * in the file and the dark theme's last, with the tests that set their own sizes in between, because `--shard` splits
  * a leg's tests by count in file order (playwright.config.ts): the split of CI's phones and tablets legs then falls
- * among the quick tests in the middle, and each half gets one theme's diagram tests.
+ * among the quick tests in the middle, and each half gets one theme's diagram tests. The first half also runs
+ * handheld.spec.ts's tests, so the slowest of those in the middle, the Snapshots page's with a snapshot stored, comes
+ * after the quick ones the split falls among.
  */
 function pagesAndDiagrams(theme: 'light' | 'dark'): void {
   test.describe(`${theme} theme`, () => {
@@ -864,69 +866,6 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
 
 pagesAndDiagrams('light');
 
-test('the Snapshots page with a snapshot stored and a day cached: a card per row on a phone, its tables whole on a tablet, nothing scrolling sideways, at every size and in both themes', async ({
-  page,
-}, testInfo) => {
-  test.setTimeout(240_000);
-  await page.setViewportSize(SIZES[1]);
-  await page.goto('/snapshots');
-  await expect(page.getByRole('heading', { level: 1, name: 'Snapshots' })).toBeVisible();
-  await page
-    .getByTestId('snapshot-drop-zone')
-    .locator('input[type="file"]')
-    .setInputFiles([...demoExport(testInfo)]);
-  await expect(page.getByText(/^Imported example\.com, read /)).toBeVisible({ timeout: 60_000 });
-  await cacheADay(page);
-  const stored = 'Snapshots stored in this browser';
-  const timeline = /^Timeline of /;
-  for (const theme of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme: theme });
-    for (const size of [...SIZES, ...SIDEWAYS]) {
-      const where = `/snapshots with a snapshot stored, ${theme}, ${String(size.width)} × ${String(size.height)}`;
-      await page.setViewportSize(size);
-      await page.reload();
-      await expect(
-        page.getByRole('button', {
-          name: 'Delete the cached days of example.com (Organisation 30000000001)…',
-        }),
-        where,
-      ).toBeVisible();
-      if (size.width < TABLET_FROM) {
-        // One card per row: the stored export; on its scope's timeline the cached day and the export's extra tick. No
-        // table.
-        const card = page.getByRole('list', { name: stored }).getByRole('listitem');
-        await expect(card, where).toHaveCount(1);
-        await expect(page.getByRole('list', { name: timeline }).getByRole('listitem'), where).toHaveCount(2);
-        await expect(page.getByRole('table'), where).toHaveCount(0);
-        await expect(card.getByRole('term'), where).toHaveText([
-          'Scope',
-          'Read',
-          'Source',
-          'Assets',
-          'Size',
-          'Stored',
-        ]);
-        for (const action of ['Load', 'Export', 'Delete'])
-          await expect(
-            card.getByRole('button', { name: new RegExp(`^${action} example\\.com, read `) }),
-            where,
-          ).toBeVisible();
-      } else {
-        await expect(page.getByRole('table', { name: stored }), where).toBeVisible();
-        await expect(page.getByRole('table', { name: timeline }), where).toBeVisible();
-        await expect(page.getByRole('list', { name: stored }), where).toHaveCount(0);
-      }
-      await page.evaluate(async () => {
-        await document.fonts.ready;
-      });
-      // Not even a box of its own: a row reads without scrolling sideways, and a tablet's page holds its tables whole.
-      expect(await sidewaysBoxes(page), where).toEqual([]);
-      await expectClean(page, where, { axe: size.width === 375 || size.width === 820, focus: true });
-      await expect(page.getByRole('contentinfo'), where).toBeInViewport();
-    }
-  }
-});
-
 for (const size of SIDEWAYS) {
   test(`a phone turned sideways, ${String(size.width)} × ${String(size.height)}: the diagram keeps room for the canvas`, async ({
     page,
@@ -1011,6 +950,69 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
     }
   });
 }
+
+test('the Snapshots page with a snapshot stored and a day cached: a card per row on a phone, its tables whole on a tablet, nothing scrolling sideways, at every size and in both themes', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize(SIZES[1]);
+  await page.goto('/snapshots');
+  await expect(page.getByRole('heading', { level: 1, name: 'Snapshots' })).toBeVisible();
+  await page
+    .getByTestId('snapshot-drop-zone')
+    .locator('input[type="file"]')
+    .setInputFiles([...demoExport(testInfo)]);
+  await expect(page.getByText(/^Imported example\.com, read /)).toBeVisible({ timeout: 60_000 });
+  await cacheADay(page);
+  const stored = 'Snapshots stored in this browser';
+  const timeline = /^Timeline of /;
+  for (const theme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: theme });
+    for (const size of [...SIZES, ...SIDEWAYS]) {
+      const where = `/snapshots with a snapshot stored, ${theme}, ${String(size.width)} × ${String(size.height)}`;
+      await page.setViewportSize(size);
+      await page.reload();
+      await expect(
+        page.getByRole('button', {
+          name: 'Delete the cached days of example.com (Organisation 30000000001)…',
+        }),
+        where,
+      ).toBeVisible();
+      if (size.width < TABLET_FROM) {
+        // One card per row: the stored export; on its scope's timeline the cached day and the export's extra tick. No
+        // table.
+        const card = page.getByRole('list', { name: stored }).getByRole('listitem');
+        await expect(card, where).toHaveCount(1);
+        await expect(page.getByRole('list', { name: timeline }).getByRole('listitem'), where).toHaveCount(2);
+        await expect(page.getByRole('table'), where).toHaveCount(0);
+        await expect(card.getByRole('term'), where).toHaveText([
+          'Scope',
+          'Read',
+          'Source',
+          'Assets',
+          'Size',
+          'Stored',
+        ]);
+        for (const action of ['Load', 'Export', 'Delete'])
+          await expect(
+            card.getByRole('button', { name: new RegExp(`^${action} example\\.com, read `) }),
+            where,
+          ).toBeVisible();
+      } else {
+        await expect(page.getByRole('table', { name: stored }), where).toBeVisible();
+        await expect(page.getByRole('table', { name: timeline }), where).toBeVisible();
+        await expect(page.getByRole('list', { name: stored }), where).toHaveCount(0);
+      }
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+      // Not even a box of its own: a row reads without scrolling sideways, and a tablet's page holds its tables whole.
+      expect(await sidewaysBoxes(page), where).toEqual([]);
+      await expectClean(page, where, { axe: size.width === 375 || size.width === 820, focus: true });
+      await expect(page.getByRole('contentinfo'), where).toBeInViewport();
+    }
+  }
+});
 
 for (const theme of ['light', 'dark'] as const) {
   for (const size of [...SIZES, { width: 1024, height: 768 }]) {

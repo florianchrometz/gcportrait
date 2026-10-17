@@ -54,8 +54,9 @@ dark. `pnpm e2e --project chromium-phone --project chromium-tablet` runs the two
 runs the whole suite in five legs (`.github/workflows/pr.yml`): `pnpm e2e --project chromium-live --project
 chromium --shard=N/3` for N 1 to 3, and every other project (`chromium-phone`, `chromium-tablet` and
 `mobile`, a new one included) with `--shard=N/2` for N 1 and 2. `--shard` splits the tests by count, in the
-order of the projects in `playwright.config.ts`: `chromium-live` comes before `chromium` and the handheld
-projects before `mobile`, so that each shard gets a share of the slow tests.
+order of the projects in `playwright.config.ts` (`chromium-live` before `chromium`, the handheld projects
+before `mobile`) and of the files and tests in each; `tests/mobile.spec.ts` orders its tests so that each
+phones and tablets leg gets one theme's slow ones.
 
 ## Specs
 

@@ -214,11 +214,11 @@ jobs:
   # Five legs, each starting its own two dev servers: the desktop window's projects (chromium-live and chromium) in
   # three shards, and every other project (chromium-phone, chromium-tablet and mobile, named by negation so that a
   # new project is never left out) in two. `--shard` splits a leg's tests by count, in the order of the config's
-  # projects, which puts the quick ones first so that each shard gets a share of the slow ones (the `mobile`
-  # project's take longest). There are no screenshot baselines: the committed visual baselines are SVG text
-  # (e2e/baselines/diagram/, compared by the frontend's unit tests) and the render golden PNG (drawn by resvg's
-  # WebAssembly build, compared by the unit tests), so nothing here depends on the operating system that wrote a
-  # baseline.
+  # projects (the quick ones first) and of their files and tests; mobile.spec.ts orders its tests so that each
+  # phones and tablets leg gets one theme's slow ones. There are no screenshot baselines: the committed visual
+  # baselines are SVG text (e2e/baselines/diagram/, compared by the frontend's unit tests) and the render golden
+  # PNG (drawn by resvg's WebAssembly build, compared by the unit tests), so nothing here depends on the operating
+  # system that wrote a baseline.
   e2e:
     name: e2e (${{ matrix.leg }})
     runs-on: ubuntu-latest

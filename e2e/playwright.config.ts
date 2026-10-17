@@ -72,9 +72,10 @@ export default defineConfig({
     colorScheme: 'light',
     trace: 'retain-on-failure',
   },
-  // `--shard` splits the projects it runs by test count in this order, which CI's e2e legs rely on
-  // (.github/workflows/pr.yml): the quick live tests before the desktop's, the handheld ones before mobile's
-  // heavy ones, so each shard of a leg gets a share of the slow tests.
+  // `--shard` splits the projects it runs by test count, in this order and then in that of their files and
+  // tests, which CI's e2e legs rely on (.github/workflows/pr.yml): the quick live tests before the desktop's,
+  // the handheld ones before mobile's, whose spec orders its tests so that each phones and tablets leg gets one
+  // theme's slow ones.
   projects: [
     {
       name: 'chromium-live',

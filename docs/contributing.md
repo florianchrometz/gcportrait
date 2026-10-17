@@ -164,9 +164,9 @@ GitHub's standard runners have 4 vCPUs for a public repository and 2 for a priva
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
 install from the cache, and the e2e legs and `website` about another minute on Chromium's system libraries.
 The five e2e legs are the longest jobs, which is why the suite is split in five. `--shard` splits a leg's
-tests by count, in the order of the projects in `e2e/playwright.config.ts`, which puts each leg's lighter
-projects first so that each of its shards gets a share of the slow tests; the run's page shows each job's
-time.
+tests by count, in the order of the projects in `e2e/playwright.config.ts` (each leg's lighter projects
+first) and of their files and tests, and `e2e/tests/mobile.spec.ts` orders its tests so that each phones and
+tablets leg gets one theme's slow ones; the run's page shows each job's time.
 
 Some of these gates are not part of `pnpm check`; run these three locally when you touch the app:
 
