@@ -51,7 +51,7 @@ report.focus; // { status: 'applied', … } or { status: 'error', error: { code,
 | `projectNodeId(number)` | `//cloudresourcemanager.googleapis.com/projects/<number>`, the node of a project |
 | `buildScene(graph, viewSpec, catalog, env)` | `Scene` (`SceneSchema` in the model): what `packages/layout` lays out |
 | `buildSceneWithReport(graph, viewSpec, catalog, env)` | `SceneBuild` (`{ scene, report }`, `SceneBuildSchema` in the model): the scene and the report below |
-| `prepareView(graph, viewSpec, catalog, env)`, `buildPreparedScene(prepared, viewSpec, env)`, `preparedViewKey(viewSpec, env)`, `PreparedView` | the same build in two parts: steps (a)–(d), the scene tree and its badges once, then step (e) and the report for any view with the same `preparedViewKey` (see "Performance" under "Views") |
+| `prepareView(graph, viewSpec, catalog, env)`, `buildPreparedScene(prepared, viewSpec, env)`, `preparedViewKey(viewSpec, env)`, `PreparedView` | the same build in two parts: steps (a)–(d), the scene tree and its badges once, then step (e) and the report for any view with the same `preparedViewKey` (see "Performance") |
 | `flipIdOf(zoneId)` | the URL-hash token of a zone for `ViewSpec.flips` (64-bit FNV-1a, base 36, ≤ 13 characters) |
 | `viewSpecOf(renderView, snapshot)` | the `ViewSpec` of a render's view (`RenderView` in the model, the view of `POST /api/render`, `pnpm render` and `pnpm render-scene`): a `hash` decoded by `decodeViewSpec` with its `snapshot` replaced, or the explicit fields normalised (lens `overview` and detail `auto` by default) with each flip's zone id turned into its `flipIdOf` token. The render library re-exports it |
 | `viewportBudget(width, height)`, `DEFAULT_VIEWPORT_BUDGET` | the `auto` rect budget: `width × height / 14000`, clamped to 24–250; 73 for 1280×800 |
@@ -206,8 +206,7 @@ instants (`compareTimestamps`), so a different spelling of the same instant is n
 depend on the order of either snapshot's assets; a name repeated inside one snapshot counts once, with its
 latest `updateTime`. Tested against every tick of the S and M demo histories: each tick's diff is exactly what
 that tick's mutations did. Only times that differ as text are parsed and compared as instants (the same
-text is the same instant), and only the three result lists are sorted, so a step of demo L's timeline compares
-its 6 400 names in 1.3–4.5 ms instead of 5.8–11.6 ms (Node, two runs of four steps).
+text is the same instant), and only the three result lists are sorted.
 
 ## Views: Graph + ViewSpec → Scene
 
@@ -354,28 +353,6 @@ the view is resolved by `viewSpecOf`: a focus parameter's name starts with a let
 Selection and highlight must be non-empty, well-formed text, checked by `ViewSpecSchema`.
 Invalid input exits with code 2 and the usage.
 
-### Performance
-
-`buildSceneWithReport` medians with the real catalog: S (96 assets) 0.5–1.5 ms; M (952) 3.2 ms for a Shared
-VPC focus with hide filters, 5.3 ms for the overview at `auto`, 6.9 ms for everything at `all` (951 rects); L
-(6 382) 14 ms, 25 ms and 39 ms (6 394 rects).
-
-Most of a build does not depend on the view's detail level: `prepareView` does steps (a)–(d), the scene tree,
-the held-back counts and the zone badges, and `buildPreparedScene` finishes a view from that preparation (step
-(e), the emitted nodes and edges, the report). Two views share a preparation when their `preparedViewKey` is
-the same: they differ only in detail level, flips, `depth` filter, selection, highlight, snapshot ref,
-timeline tick, read time or `auto` budget. `buildSceneWithReport` is the two parts in a row, and a property
-test (`test/views/scene.property.test.ts`) checks that a view finished from another view's preparation is the
-view built from scratch. The app's data worker keeps the last preparation
-(`frontend/src/diagram/pipeline/sceneMemo.ts`), so a timeline step's open view and a chip expanded cost only
-the finish. The overview at `auto` on each demo organisation's own day, medians of nine in Node 22:
-
-| Organisation | From scratch | Prepare | Finish at `auto` | Finish with every zone open |
-|---|---|---|---|---|
-| M | 3.3 ms | 2.7 ms | 0.7 ms | 0.9 ms |
-| L | 17.4 ms | 14.1 ms | 3.3 ms | 5.1 ms |
-| XL | 171.8 ms | 141.6 ms | 15.5 ms | 25.5 ms |
-
 ## Tests
 
 ```sh
@@ -445,13 +422,7 @@ budget does there (packages/AGENTS.md, "Performance budgets"); `pnpm --filter @g
 (`GCPORTRAIT_GRAPH_BUDGET=strict`) runs this file alone and asserts the 150 ms budget itself. Both use
 `measureBatches`, `measureRuns` and `skipIfOverloaded` from `@gcportrait/model/testing`
 ([Testing export](../model/README.md#testing-export-gcportraitmodeltesting)). L (generated in the test) is
-measured for information, under `test:budget` only. Typical figures with the real catalog
-(`pnpm --filter @gcportrait/graph test:budget`):
-
-| Organisation | Assets | Median build | Notes |
-|---|---|---|---|
-| M | 952 | 21.6 ms (min 19.6, max 25.6) | budget 150 ms; 1 235 edges, 49 dangling, 16 Shared VPC pairs |
-| L | 6 382 | 138 ms (min 134, max 144) | 9 489 edges, 472 dangling, 103 Shared VPC pairs |
+measured for information, under `test:budget` only; that command prints the current figures.
 
 Containment is resolved with memoised placement (each node is placed once; chains are walked only to check
 cycles and innermost attachment targets), so the build grows roughly linearly with the number of assets.
@@ -465,7 +436,18 @@ afresh); the rest of the build (resolution, containment, edges, records, indexes
 worker builds every Graph with one memo, and the days of a history share their unchanged asset objects
 (`frontend/src/diagram/pipeline/historyRead.ts`), so a timeline step evaluates the rules only for the assets
 the day changed. `test/performance.test.ts` builds a day of the L history after the next day as that step
-does: about 53 ms with the memo against about 119 ms without (median of five). A property test
+does, comparing builds with and without the memo. A property test
 (`src/build.property.test.ts`) checks that a build with a memo that saw other days of the organisation (assets
 kept, changed, removed, projects given another id) is deep-equal to a build without one; `src/memo.test.ts`
 checks that only an unchanged asset object's work is reused.
+
+**Prepared views.** Most of a build does not depend on the view's detail level: `prepareView` does
+steps (a)–(d), the scene tree, the held-back counts and the zone badges. `buildPreparedScene` finishes a view
+from that preparation (step (e), the emitted nodes and edges, the report). Two views share a preparation when
+their `preparedViewKey` is
+the same: they differ only in detail level, flips, `depth` filter, selection, highlight, snapshot ref,
+timeline tick, read time or `auto` budget. `buildSceneWithReport` is the two parts in a row, and a property
+test (`test/views/scene.property.test.ts`) checks that a view finished from another view's preparation is the
+view built from scratch. The app's data worker keeps the last preparation
+(`frontend/src/diagram/pipeline/sceneMemo.ts`), so a timeline step's open view and a chip expanded cost only
+the finish.

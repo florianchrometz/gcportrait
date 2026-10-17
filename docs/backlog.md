@@ -101,12 +101,28 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Renderer and layout:** zone badges and the title block's scope line have no width cap; a selection inside
   a chip after a lens or detail change shows nothing (`selection.shownAs` is unused); `ZONE_MARKS` belongs in
   the icons data ([packages.md](packages.md), section 5); identical GKE marks on every Kubernetes object, and
-  the kubernetes lens draws disks, MIGs and forwarding rules; blank areas under Platform and right of Retail
-  (packing; layout skill §4); underline routes along long ring tops and long ways round in root row gaps;
-  margin routes in L networking; the `secures` line from a lone card in the root's card row runs to the canvas
-  edge; the trace is weak at the fitted scale; the drawer covers the right quarter of the canvas without
+  the kubernetes lens draws disks, MIGs and forwarding rules; the trace is weak at the fitted scale; the
+  drawer covers the right quarter of the canvas without
   moving the camera; the check mark in `ViewControls.module.css` has no fallback for browsers without CSS alt
   text; exported SVG not verified in Inkscape or Illustrator.
+- **Layout packing gaps** (`packages/layout/src/pack.ts`, layout skill §4): blank areas under Platform and
+  right of Retail; filling the space beside a tall sibling that comes later would require placing a later
+  sibling under an earlier one, against the current sibling order.
+- **Routing detours and long borders** (`packages/layout/src/route.ts`;
+  [layout README, Pipeline](../packages/layout/README.md#pipeline)): zone headers, a hub's shared port side
+  and ports in a chip's last row can force detours. Long ring tops and distant row gaps can send routes far
+  past their ends; quiet ring sides can attract routes away from busy gaps, including margin routes in L
+  networking. Evaluate these without weakening the no-header-crossing and lane-spacing invariants.
+- **A lone card's `secures` route** (`packages/layout/src/route.ts`): the root card block has no gutter
+  beside its last column, so the right stub goes to the canvas ring and back along the gap below the row.
+  A gutter beside that column would change the goldens. The overlay hides the line, but it still holds lanes.
+- **Routing crossings** (`packages/layout/src/route.ts`): a chip's port stubs cross corridors, and
+  lowest-free lane assignment does not avoid crossings at corridor ends. Consider crossing-aware ordering.
+- **Dense-view routing** (`packages/layout/src/route.ts`): single-pass mode leaves no widening round, and
+  fully open views can put many lanes in one gutter; dense arbitrary Scenes can also have runs without a
+  clear lane or more ports of different kinds than a rect's sides hold. Investigate the reported overlaps,
+  squeezed lanes and crowded ports, and assess the work thresholds on shapes unlike the demo views, within
+  the layout budgets. Inspect current reports with `pnpm --filter @gcportrait/layout measure`.
 - **Engineering:** worker-side budgets for search and locate (XL search about 150 ms, locate 0.9–1.7 s); the
   data worker's per-request store read; the floating "N of M shown" bar; breadcrumb truncation; XL's
   Snapshot-menu radio; the dark scrim; `shares` bands on L and XL.

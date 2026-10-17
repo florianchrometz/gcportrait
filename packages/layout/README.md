@@ -86,8 +86,8 @@ bug).
 **Cancellation.** Every `layout` request supersedes the request before it: the worker answers the older one
 `cancelled` at once and drops its layout at the next step. The layout runs as a generator (`layoutSteps`) that
 stops after normalisation, sizing and packing, after every `ROUTE_STEP` (128) edges of a routing pass and
-after each widening re-pack (L overview at `all`: 28 steps, the longest about 30 ms, the last and longest
-edges of its single routing pass; M overview at `all`: 15 steps of at most 7 ms); before each step the handler
+after each widening re-pack. Cancellation waits for the current step; `ROUTE_STEP` trades that latency
+against the cost of a yield and a progress message per step. Before each step the handler
 yields to the host's task queue (`src/host.ts`: `setImmediate` in Node, a private `MessageChannel` in a
 browser, which unlike `setTimeout(0)` is not clamped to 4 ms, else `setTimeout(0)`), so a message posted
 meanwhile is handled first. A superseded or cancelled request never gets a result, nor any progress after its
@@ -108,10 +108,9 @@ collision among 3 000 random distinct JSON values is a test, and so are pinned v
 plain-data tree (a function, a cycle, more than `MAX_KEY_DEPTH` levels, more than `MAX_KEY_UNITS` units) has
 no key and is laid out without the memo; the layout then refuses a Scene that is not a tree with its typed
 error. The memo keeps the last `MEMO_CAPACITY` (8) Layouts, least recently used out first; a hit is answered
-synchronously with the stored Layout, byte-identical to the first answer. Hashing the demo XL Scene at
-`folders` (217 000 characters of JSON) takes about 0.7 ms. The worker's Layouts are structured clones on the
-page; in-process (a test, or a host without workers) the handler hands out the stored object itself, which the
-caller must not mutate.
+synchronously with the stored Layout, byte-identical to the first answer. The worker's Layouts are structured
+clones on the page; in-process (a test, or a host without workers) the handler hands out the stored object
+itself, which the caller must not mutate.
 
 **Mounting it in the frontend.** The worker module is a few lines; Vite bundles it, with
 `@gcportrait/layout` and the metrics table, through its `?worker` import:
@@ -289,7 +288,8 @@ packer's choice of arrangement does not look at `gaps` (they are positional).
      face than it holds, the edges of one kind facing it are bundled from two on. An edge belongs to at most
      one bundle (the larger group of its two ends). `Layout.edges[…].bundle` names the bundle; `checkEdges`
      checks that its members share the port. One bundle per kind: a Shared VPC host with `shares` and
-     `attaches` edges has two trunks.
+     `attaches` edges has two trunks. Their styles differ (`shares` dashed, `attaches` solid), so sharing
+     one trunk would hide the dashed line; a mixed trunk would need a style decision.
    - *Ports.* An end leaves its rect on the side facing the other end (the axis on which the rects are further
      apart); never on an open zone's top (its header): left or right instead, below the header by the greatest
      of half the zone's padding, half `portClearance` and the half pixel ports are rounded to (`PORT_STEP`),
@@ -372,12 +372,8 @@ packer's choice of arrangement does not look at `gaps` (they are positional).
      `SINGLE_PASS_WEIGHT`, 1.5: each route costs at most 1.5 × the cheapest) and its route is final (no
      widening; lanes that do not fit are squeezed closer, `report.routing.squeezed`, with a warning). Above
      `oneRoundWork` (340 000) and below that, one widening round at most (the band: a view whose work grows
-     loses a round before it loses the widening, and stays within its budget). L overview at `projects` (2 658
-     edges, 1 234 lane holders, 290 252 states) routes in three passes with two rounds, 17 % below the band
-     and 45 % below single-pass; L overview at `networks` and `all` and L load-balancing at `all` (exact first
-     passes of 548 033, 827 309 and 520 348 states) stay single-pass. A count of lane holders would not
-     measure cost: L load-balancing at `networks` (1 239 holders) costs about as much as L at `projects`
-     (1 234), and at `all` (1 281) almost twice.
+     loses a round before it loses the widening, and stays within its budget). A count of lane holders does
+     not measure the search cost.
    - *Geometry.* Points: source port (or the head's tip, for `both`), stub end on the first run's lane, one
      elbow per change of run, stub start on the last run's lane, target port or the head's tip `arrowInset`
      (2 px) inside the border (at most the zone's padding deep in an open zone; at the border for a port on
@@ -538,30 +534,17 @@ area, and the canvas stays wider than tall. The L organisation is compared by su
 fallback count 0, the canvas and the packed canvas, growth, spacing) for networking at `auto` and `all` and
 for overview and load-balancing at `auto`, with the same checks, because its layout JSON would be several
 megabytes; L overview and load-balancing at `all` (single-pass: their first passes reach `singlePassWork`) by
-the invariants; L overview at `projects` (skill §8's check view: 2 658 edges, 1 234 lane holders, 290 252
-states of search work) must route in three passes with two rounds, with no stretch lacking a clear lane, at
-most five squeezed lines (three today), no route in the canvas margin and none more than 1 000 px past both
-of its ends; its work must stay 15 % below `oneRoundWork` and 40 % below `singlePassWork`,
-and it must stay in three passes with a tenth of its edges dropped or a tenth more added (every tenth edge
-again the other way round: 380 776 states, one round, in the band). M networking at `all`
-checks the third widening round, which keeps its last lane inside its gutter. The figures (`--silent=false`
-prints the table):
+the invariants; L overview at `projects` (skill §8's check view) must route in three passes with two rounds,
+with no stretch lacking a clear lane, at most five squeezed lines, no route in the canvas margin and none
+more than 1 000 px past both of its ends; its work must stay 15 % below `oneRoundWork` and 40 % below
+`singlePassWork`, and it must stay in three passes with a tenth of its edges dropped or a tenth more added
+(every tenth edge again the other way round). M networking at `all` checks the third widening round, which
+keeps its last lane inside its gutter.
 
-| Case | Overlaps | Closest lanes | Ports < 12 px | Squeezed lines | Bundles | Passes | Growth (routed / packed area) |
-|---|---|---|---|---|---|---|---|
-| S overview / networking / load-balancing | 0 | 8 px | 0 | 0 | 7 / 4 / 2 | 2 | 1.20 / 1.05 / 1.12 |
-| M overview / networking / load-balancing | 0 | 8 px | 0 | 0 | 5 / 3 / 3 | 2 | 1.29 / 1.21 / 1.08 |
-| M overview / networking / load-balancing, `all` | 0 | 8 px | 0 | 0 | 47 / 7 / 19 | 3 / 4 / 3 | 1.47 / 1.28 / 1.32 |
-| L overview / networking / load-balancing | 0 | 8 px | 0 | 0 | 9 / 7 / 4 | 4 / 3 / 3 | 1.30 / 1.33 / 1.12 |
-| L networking, `all` | 0 | 8 px | 0 | 0 | 30 | 2 | 1.41 |
-
-How the routes read (`pnpm --filter @gcportrait/layout measure`, `src/testing/quality.ts`): M overview at
-`auto` 22 325 px of edges with 223 bends, 7 661 px along a single border, 153 crossings, nothing in the canvas
-margin and no route more than 270 px past both of its ends; M networking 21 869 / 187 / 6 840 / 122, one edge
-with 96 px in the margin, at most 254 px past its ends; M load-balancing 12 432 / 114 / 5 074 / 34, one edge
-with 56 px in the margin, the Cloud Armor `secures` line 1 048 px past its ends (see Known limits); L overview
-at `projects` 1 392 568 / 13 417 / 638 637 / 8 075, nothing in the margin and no route more than 1 000 px past
-both of its ends, the farthest 994 px (`test/golden.test.ts` checks both).
+Print the current golden routing and packing figures with
+`pnpm --filter @gcportrait/layout test test/golden.test.ts --silent=false`. For route quality (length,
+bends, border hugging, crossings, canvas margin and overshoots; `src/testing/quality.ts`), run
+`pnpm --filter @gcportrait/layout measure`.
 
 **Updating the goldens is a deliberate act.** A change to sizing, ordering, packing, the metrics table, the
 catalog, the graph's Scene builder or the demo data changes them. Look at the change first (`pnpm --filter
@@ -581,35 +564,14 @@ the packing criterion (packages/AGENTS.md, Layout and drawing rules):
   oracle enumerates plain rows only, and stacks only ever take less).
 
 The packing figures are the packing's alone (`route: false`); routing pins the arrangement and only widens
-gaps. The figures (`--silent=false` prints the table and every container outside 20 %, with the best fill any
-arrangement within 20 % would have, full rows or not):
+gaps. The golden test's `--silent=false` output includes every container outside 20 %, with the best fill
+any arrangement within 20 % would have, full rows or not. To compare the packing rules, run
+`pnpm --filter @gcportrait/layout measure --packing`.
 
-| Case | Rects | ≥ 4 children | Within 20 % | Unreachable | Costlier | Mean deviation | Worst | Lowest fill | Mean fill |
-|---|---|---|---|---|---|---|---|---|---|
-| S overview | 55 | 6 | 3 | 3 | 0 | 16.3 % | 33.9 % | 61.9 % | 70.2 % |
-| S networking | 40 | 5 | 2 | 3 | 0 | 44.4 % | 143.1 % | 59.3 % | 71.5 % |
-| S load-balancing | 46 | 4 | 2 | 2 | 0 | 32.3 % | 68.6 % | 48.5 % | 64.8 % |
-| M overview | 38 | 3 | 0 | 3 | 0 | 115.9 % | 143.1 % | 72.8 % | 75.4 % |
-| M networking | 42 | 4 | 1 | 3 | 0 | 94.9 % | 154.6 % | 72.8 % | 75.1 % |
-| M load-balancing | 39 | 4 | 1 | 3 | 0 | 89.6 % | 143.1 % | 71.6 % | 74.5 % |
-| M overview, all | 369 | 25 | 12 | 13 | 0 | 22.6 % | 101.4 % | 47.7 % | 63.3 % |
-| M networking, all | 174 | 13 | 6 | 7 | 0 | 36.3 % | 68.6 % | 48.5 % | 65.6 % |
-| M load-balancing, all | 290 | 23 | 11 | 12 | 0 | 29.6 % | 111.2 % | 53.9 % | 63.5 % |
-| **All** |  | **87** | **38** | **49** | **0** |  |  |  |  |
-
-Of the 49 unreachable containers, 37 have no arrangement within 20 % at all, full rows or not; the other 12
-reach it only with a row left short (four chips as 2 + 1 + 1, for example). The containers outside 20 % are
-small sets of wide boxes: a card or chip is 3.4 to 5 times as wide as it is tall, so four chips form a column
-under 1 or a 2 × 2 grid of aspect 3 to 4 and nothing in between; chips take their width from their label and
-count line (up to 220 px), so the M folders' 2 × 2 chip grids reach 3.8 to 4.1 (2.96 with 148 px chips). The
-packer takes the 2 × 2 grid (wider than tall, skill §1). None is *costlier*.
-
-The 40 % fill floor is a check on the demo organisations, not a guarantee. Over 1 500 random Scenes
-(`arbitraryScene`, fast-check seed 987654; 21 921 containers with four or more children) the median fill is
-64.8 %, the 1st percentile 44.5 % and the lowest 36.6 %; 6 containers fill less than 40 % (the zone title cap
-holds an 80-character header to 660 px, which could otherwise widen a zone to about 1 300 px), each with one
-child far wider than the rest, which sets the box's width whatever the arrangement. 67.9 % of those containers
-are within 20 % of their target.
+The 40 % fill floor is a check on the demo organisations, not a guarantee for arbitrary Scenes: a child far
+wider than its siblings sets the box's width whatever the arrangement. Small sets of wide cards or chips
+can have no full-row arrangement within the target's 20 % band; the oracle distinguishes that from a
+costlier arrangement in the band.
 
 ## Debug renders
 
@@ -634,80 +596,9 @@ strokes follow skill gcp-diagram-style §4 (1 px for folders, regions, product c
 for projects, VPC networks and subnets). A relative `--out` is taken from the directory the command was
 started in (`INIT_CWD`, which pnpm sets), not from the package directory pnpm runs the script in.
 
-## Known limits
-
-- **Single-pass mode.** Where the first pass's search work reaches `singlePassWork` (L overview at `networks`
-  and `all`, L load-balancing at `all`: exact first passes of 520 348 to 827 309 states) the rest of it is
-  searched weighted and its route is final: no widening, so a gutter with more lanes than its base width holds
-  squeezes them (`report.routing.squeezed`, 487 to 928 lines in those views; the report warns), and some runs
-  find no clear lane (`overlaps`, 7 to 74). Ports stay 12 px apart and hubs are bundled. Three passes there
-  would cost about 320–500 ms in-process, past the budget through the worker. L overview at `projects` routes
-  in three passes but stops after two widening rounds (above `lateRoundsUpTo`): three lines stay squeezed. Its
-  work is 17 % below the one-round band and 45 % below single-pass; a tenth more edges like its own put it
-  into the band (one round, 18 squeezed lines), about a fifth more into single-pass mode. The thresholds are
-  calibrated on the demo L views; a view of a very different shape (say, many short edges with long widening
-  rounds) can need other values.
-- **Detours.** A route cannot enter a zone from above (its header), and a bundle's port is on the side most of
-  its members face, so a member coming from another side goes round its hub; a port line out of a chip in its
-  zone's last row can take a route down and under the folder before it turns (M networking at `auto`: Retail
-  web (prod) to the Shared VPC host runs about 550 px under Workloads). 19 of the 743 routes of S, M and L at
-  `auto` are longer than twice the distance between their ports, the worst 5.6 times. L overview at `projects`
-  has 94 such routes of 2 658, short routes inside projects round a card or two.
-- **Long borders and far gaps.** Across a wide zone the only gutters in a route's scope are its ring top under
-  its header and the gaps between its rows of children. With `hugCap` a route runs along a long ring side when
-  that is the shortest way (L at `projects`: about 7 lanes along Workloads' ring top under its header, the
-  farthest 994 px past its ends), and a quiet long ring side can draw routes away from a busy gap (L
-  networking at `auto`: three lines between project chips come down the blank area under Platform and round
-  the bottom-left corner of Workloads onto its ring bottom). Where the gaps themselves lie far away, a route
-  runs past its ends to reach them: 189 routes of the 16 views `measure` was run on go more than 1 000 px past
-  both of their ends, 165 of them in the two single-pass L views at `all` (102 and 63; they search their
-  shortest edges exactly up to the single-pass budget, and those routes take longer ways where the weighted
-  search took shorter, squeezed ones); 18 of the 19 in L networking at `all` already do (by 800–1 228 px) on a
-  length-only route over the packed gutters, before the widening stretches them; one in M networking at `all`
-  is a `shares` route the re-route searches again with its gutters full and sends 1 119 px past its source
-  (132 px in the first pass).
-- **The canvas margin.** A route needs it mostly to reach the side of an outermost rect that faces the canvas
-  edge. It costs twice its length, so no route runs round the diagram through it; but rounding an outermost
-  rect's corner through it can cost less than a busy gap, since the per-side cap on border hugging (`hugCap`)
-  makes a quiet long ring side cheap. 13 routes of the 16 views `measure` covers use it (2 048 px together):
-  the firewall endpoint's `uses` and the firewall policy's `secures` lines from the card row above the folders
-  in the networking views (96–368 px), the Cloud Armor `secures` line in each load-balancing view (56 px), a
-  `shares` bundle member in M networking at `all` (88 px), and the three lines in L networking at `auto` that
-  round the corner of Workloads (224–312 px).
-- **`secures` from a lone card in the root's card row.** The card block has no gutter beside its last column,
-  so the card's right stub runs to the canvas ring and the route comes back along the gap below the card row:
-  the Cloud Armor line runs 1 048 px past its ends in M load-balancing at `auto` and 14 039 px in L
-  load-balancing at `all`. The renderer draws `secures` as overlays, so the line is not seen, but it holds
-  lanes. A gutter beside a card block's last column would fix it; it moves every golden, so it waits.
-- **Crossings.** A route leaves a chip straight along its port line and crosses the corridors it would
-  otherwise run along: the M overviews at `auto` have 34–153 crossings. Lanes are assigned lowest-free in
-  routing order, not in an order that avoids crossings at a corridor's ends.
-- **Two trunks per Shared VPC host.** A host's `shares` and `attaches` edges are two bundles (one per kind),
-  so the collapsed overviews draw two parallel trunks into it. Deliberately: the kinds are drawn differently
-  (`shares` dashed 8 4, `attaches` solid; style §4), and a member's dashes are drawn from the bundle's end so
-  that they coincide along its trunk; a trunk shared by two kinds would lay a solid and a dashed line on top
-  of each other and lose the dashed one. One trunk per host would need the renderer to draw a mixed trunk (two
-  lanes, or one style), a style-skill decision.
-- **Empty space beside a tall sibling that comes later.** Stacks keep sibling order, so the blank area under a
-  short folder beside a much taller one (M at `auto`: under Platform, beside Workloads) stays; filling it
-  needs a later sibling stacked under an earlier one (an open item of
-  [docs/backlog.md](../../docs/backlog.md)).
-- **Busy fully open views.** L networking at `all` (684 rects, 346 edges) still carries 48 lanes in its
-  busiest gutter, and its routing grows the packed canvas 1.33-fold.
-- **Stubs from facing ports.** Ports on two rects facing each other across a gutter sit on slot grids half a
-  port spacing apart, so their stubs can run 6 px apart where they overlap; lanes keep 8 px.
-- **Cancellation waits for the current step.** A superseded layout stops at its next step, so a newer request
-  waits for the step in progress: at most about 30 ms on the demo organisations (L overview at `all`; stages
-  1–3 of the largest view take about 7 ms together, unbroken). `ROUTE_STEP` trades that against the cost of a
-  yield and a progress message per step (in Node the worker adds about 0.5 ms to S overview, 6 steps,
-  posting and the key included; a browser's `MessageChannel` yield has not been measured here).
-- **One client per worker.** The worker supersedes by arrival, so two clients sharing one worker would cancel
-  each other's requests.
-- **Rare runs without a clear lane, crowded rects.** In random Scenes with dense edges (fast-check seed 42,
-  290 layouts with edges) 5 have a run that no lane keeps clear of another edge (counted in
-  `report.routing.overlaps`, with a warning), 1 a squeezed lane, and 4 a rect met by more edges of different
-  kinds than its sides hold, whose ports then share a side more closely. The demo organisations have none of
-  these outside single-pass mode.
+Layout follow-ups, including routing detours, crowded views and packing gaps, are in
+[docs/backlog.md, App](../../docs/backlog.md#5-app). The routing report exposes squeezed lanes and runs
+without a clear lane; single-pass mode does not widen gutters (see "Pipeline").
 
 ## Performance
 
@@ -734,14 +625,9 @@ default) < 2 s in a worker. The harness is `scripts/lib/bench.ts`; it measures:
   miss, its first top-level label given another suffix of digits of one width, as scrubbing through timeline
   days whose Scenes differ produces, with the memo of 8 full both times): it must not grow by 16 MiB or more.
 
-**The machine.** The budgets, and the typical figures below, describe a quiet M1-class machine: a laptop or
-desktop whose cores are as fast as an M1's, one core per layout and no other load. On it L overview at `all`
-takes about two thirds of its 400 ms through the worker. The budgets do not scale with the machine that
-measures them, since a budget that moved with it would no longer say what the app promises. A shared
-GitHub-hosted runner (2 to 4 vCPUs, other jobs on the same host) is slower single-threaded and varies from run
-to run, so its strict figures are expected above the budgets by a margin. `bench` prints the machine it runs
-on as its second line (Node, platform, CPU model, cores, load average), so a figure quoted anywhere carries
-its machine.
+**The machine.** The budgets describe a quiet M1-class machine: a laptop or desktop whose cores are as fast
+as an M1's, one core per layout and no other load. They do not scale with the machine that measures them.
+`bench` prints Node, platform, CPU model, cores and load average alongside its figures.
 
 **Two limits, as in `@gcportrait/ingest` and `@gcportrait/graph`.** A wall-clock budget means something only
 on a machine that is not busy with other work. `pnpm test` (and the blocking CI `unit` job) runs the budget
@@ -751,9 +637,8 @@ layouts for the memory check); `pnpm --filter @gcportrait/layout test:budget`
 budgets themselves (100 XL layouts). Both use `measureBatches`, `measureRuns` and `skipIfOverloaded` from
 `@gcportrait/model/testing` ([Testing export](../model/README.md#testing-export-gcportraitmodeltesting));
 every batch's median is printed. The worker test builds every demo Scene before it measures anything, so its
-small cases do not start while the other test files are at their busiest (a small layout's round trip reads
-up to four times its quiet figure then). The
-memo-hit limit (1 ms for S, M and L at `auto`) and the memory limit are the same in both. Under coverage
+small cases do not start while the other test files are at their busiest. The memo-hit limit (1 ms for S, M
+and L at `auto`) and the memory limit are the same in both. Under coverage
 instrumentation (`LAYOUT_COVERAGE`) each case is laid out once and the time limits are not checked
 (`budgetPlan`). `pnpm --filter @gcportrait/layout bench` prints the whole table (`--fixtures`, `--runs`,
 `--warm-up`, `--memory`; exit 1 when a budget is missed or the heap grew).
@@ -767,55 +652,16 @@ any runner. Run `test:budget` locally for every layout change and quote its figu
 the machine `bench` names. Removing `continue-on-error` and adding the job to `required` makes it blocking,
 e.g. on a larger or self-hosted runner.
 
-Typical figures of `test:budget` (strict) on a quiet M1-class machine (`bench` prints the same table for the
-machine it runs on):
+The routing report's timings separate normalisation, sizing, packing and routing; the bench reports
+in-process and worker timings, memo hits, cancellation and memory. Choosing a container's arrangement looks
+at n card column counts × at most 2m + n zone splits, for n cards and m zones; building the splits costs
+O(m²) budgets × O(m) each, and above `RUN_BUDGET_LIMIT` (120) zones, where the Scene builder bundles
+siblings anyway, only the runs starting at the first zone give budgets.
 
-| Case | Rects | Edges | Mode (passes) | In-process | Worker round trip | In the worker | Budget |
-|---|---|---|---|---|---|---|---|
-| S overview `auto` / `all` | 55 | 45 | three-pass (2) | 4.7 / 4.3 ms | 6.4 / 5.4 ms | 5.6 / 4.8 ms | 10 ms |
-| S networking `auto` / `all` | 40 | 17 | three-pass (2) | 2.2 / 1.7 ms | 3.0 / 2.6 ms | 2.5 / 2.3 ms | 10 ms |
-| S load-balancing `auto` / `all` | 46 | 30 | three-pass (2) | 2.5 / 2.4 ms | 3.4 / 3.5 ms | 3.0 / 2.9 ms | 10 ms |
-| M overview `auto` / `all` | 38 / 369 | 42 / 341 | three-pass (2 / 3) | 4.9 / 32.2 ms | 4.6 / 37.6 ms | 3.9 / 34.1 ms | 60 ms |
-| M networking `auto` / `all` | 42 / 174 | 36 / 81 | three-pass (2 / 4) | 2.4 / 13.9 ms | 3.5 / 16.3 ms | 3.1 / 15.0 ms | 60 ms |
-| M load-balancing `auto` / `all` | 39 / 290 | 21 / 212 | three-pass (2 / 3) | 1.6 / 22.3 ms | 2.6 / 25.2 ms | 2.2 / 22.7 ms | 60 ms |
-| L overview `auto` / `all` | 164 / 2 497 | 245 / 2 971 | three-pass (4) / single-pass | 39.2 / 204.9 ms | 42.0 / 254.4 ms | 39.5 / 221.8 ms | 400 ms |
-| L overview `projects` | 2 047 | 2 658 | three-pass (3) | 242.8 ms | 305.5 ms | 277.7 ms | 400 ms |
-| L networking `auto` / `all` | 168 / 684 | 172 / 346 | three-pass (3 / 2) | 23.4 / 44.9 ms | 26.4 / 50.9 ms | 24.5 / 46.2 ms | 400 ms |
-| L load-balancing `auto` / `all` | 165 / 2 207 | 135 / 2 168 | three-pass (3) / single-pass | 15.0 / 142.6 ms | 16.7 / 179.7 ms | 15.1 / 154.1 ms | 400 ms |
-| XL overview `folders` | 494 | 678 | three-pass (3) |  | 105.0 ms | 98.0 ms | 2 s |
-| XL networking `folders` | 498 | 473 | three-pass (3) |  | 71.8 ms | 66.4 ms | 2 s |
-| XL load-balancing `folders` | 495 | 366 | three-pass (2) |  | 42.5 ms | 37.8 ms | 2 s |
-
-A memo hit takes 0.11 ms (S), 0.09 ms (M), 0.22 ms (L) and 0.62 ms (XL) in-process, and 0.55 ms round trip
-through the worker for M; a superseded L overview `all` layout (about 240 ms uncancelled) stops after 4 steps
-and the S request behind it is answered in about 6 ms; the worker heap grows by about 0.3 MiB over 100 XL
-layouts (21.2 to 21.5 MiB). The worker adds about 0.5 ms to a small layout (posting, the key, the yields
-between steps and the progress messages) and about 10 %–30 % to the largest (mostly the structured clone of a
-2 000-rect Layout back to the page). L overview at `projects` is the closest to its budget: its three passes
-take about 120, 75 and 50 ms, with about 20 ms for each widening re-pack between them (the first searches
-every edge; the other two lay the routes onto the widened gutters and search again only those whose gutters no
-longer line up), so it stops after two widening rounds (`lateRoundsUpTo`). The single-pass views search their
-shortest edges exactly until the first pass has settled `singlePassWork` states, then the rest weighted: L
-overview at `all` takes about 205 ms in-process and L load-balancing at `all` about 143 ms, both well inside
-the budget through the worker.
-
-Stages 1–3 take at most 7 ms (L at `all`); the rest is routing, mostly the A* searches of the first pass:
-the re-route lays the routes onto the widened gutters and searches only the few whose gutters no longer line
-up (11 of 341 in M overview at `all`). Choosing a container's arrangement looks at n card column counts × at
-most 2m + n zone splits, for n cards and m zones; building the splits costs O(m²) budgets × O(m) each, and
-above `RUN_BUDGET_LIMIT` (120) zones, where the Scene builder bundles siblings anyway, only the runs starting
-at the first zone give budgets. A container of 2000 cards and 2000 empty zones takes about 90 ms to pack and
-fills 60 % of its box. Beyond the budgets, XL at `projects` (7 838 rects, 10 652 edges, single-pass) lays out
-in about 0.8 s in-process.
-
-**In the app.** On a production demo build in Chromium at 1280 × 800 (the method and the app-level targets:
-skill §7): the layout of a timeline step on L at `auto` takes about 45–55 ms of the step from key press to
-diagram, and a memo hit makes it vanish: across 100 switches on demo M the memo answered 52 of 100 layouts
-(100 % when alternating two days; a day with changes cannot hit, since its Scene carries its ghosts and
-markers), and stepping back and forth on L answers the kept days from it. The app's mount of the worker
-(`frontend/src/diagram/pipeline/`) posts a Layout of more than 1 000 rects as transferred JSON bytes instead
-of a structured clone (L at `all`, 3.5 MB; XL at `projects`, 11.4 MB: 41.9 ms to read on the UI thread as a
-clone, 28.3 ms decoded), and the layout client receives the decoded message.
+**In the app.** The app-level targets and measurement procedure are in skill §7. The worker memo can reuse a
+kept day's Layout; a Scene with different ghosts or markers has a different key. The app's mount of the
+worker (`frontend/src/diagram/pipeline/`) posts a Layout of more than 1 000 rects as transferred JSON bytes
+instead of a structured clone, and the layout client receives the decoded message.
 
 ## Tests
 

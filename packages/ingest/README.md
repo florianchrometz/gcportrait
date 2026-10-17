@@ -211,22 +211,14 @@ seen), `projects` and `unresolvedProjects`. The whole `IngestResult` is plain da
 
 `test/worker-budget.test.ts` measures the ingest budget (packages/AGENTS.md, "Performance budgets": XL ingest
 1.5 s) on the input it names: the demo organisation XL of `@gcportrait/demo-data` (the default seed, the
-demo's day), written as an `exportAssets` file (`toCaiNdjson(assets, 'export')`, snake_case envelope keys):
-51 242 assets in 370 projects, 77.6 MiB, 1 588 bytes per line on average. The file is posted as a `Blob` to a
-`worker_threads` worker (`test/ingest-worker.ts`) that reads it with `ingest()`, as the app's snapshot worker
-reads a dropped export; the clock runs from posting the Blob to the result arriving on the main thread, so it
+demo's day), written as an `exportAssets` file (`toCaiNdjson(assets, 'export')`, snake_case envelope keys).
+The file is posted as a `Blob` to a `worker_threads` worker (`test/ingest-worker.ts`) that reads it with
+`ingest()`, as the app's snapshot worker reads a dropped export. The clock runs from posting the Blob to the
+result arriving on the main thread, so it
 includes reading, parsing, normalisation, the project index and the structured clone of the result back. The
 worker runs a warm-up job first (the file's first 100 lines), with one run per batch. Measurement and
 overload handling use `measureBatches`, `measureRuns` and `skipIfOverloaded` from
 `@gcportrait/model/testing` ([Testing export](../model/README.md#testing-export-gcportraitmodeltesting)).
-The budget describes a machine with little else running: with the machine's cores busy about twice over a run
-takes 2.5 to 5 s, which is why the strict check runs alone (below).
-
-In process, parsing the lines' JSON takes a third to a half of the ingest, and normalisation through
-`AssetSchema` and the project index each under a tenth; posting the result back to the page (structured clone)
-takes about four fifths as long as the ingest itself. Reading the snake_case export style costs nothing extra:
-the normaliser takes the same time for export keys and `assets.list` keys.
-
 A wall-clock budget only means something on a machine that is not busy with other work, so the strict
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
