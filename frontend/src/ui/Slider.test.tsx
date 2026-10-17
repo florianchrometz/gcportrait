@@ -117,6 +117,47 @@ describe('Slider', () => {
     },
   );
 
+  it.each([
+    { pointerType: 'mouse', button: 2, by: "a mouse's right button" },
+    { pointerType: 'mouse', button: 1, by: "a mouse's middle button" },
+    { pointerType: 'pen', button: 2, by: "a pen's barrel button" },
+    { pointerType: 'pen', button: 5, by: "a pen's eraser" },
+  ])('moves nothing on a press of $by, as a native range input does', ({ pointerType, button }) => {
+    renderInPage(<Timeline />);
+    const slider = screen.getByRole('slider', { name: 'Timeline' });
+    const track = laidOutTrack(slider);
+    const captured: number[] = [];
+    track.setPointerCapture = (pointerId) => {
+      captured.push(pointerId);
+    };
+    const outside = screen.getByRole('button', { name: 'outside' });
+    outside.focus();
+    // Neither the value, nor focus, nor the mark; no drag and no capture. Its default is prevented, so the browser
+    // does not move focus off the track either (a right press's context menu is not a default of the press).
+    expect(fireEvent.pointerDown(track, { button, clientX: 100, pointerId: 1, pointerType })).toBe(false);
+    fireEvent.pointerMove(track, { clientX: 270, pointerId: 1, pointerType });
+    fireEvent.pointerUp(track, { button, clientX: 270, pointerId: 1, pointerType });
+    expect(slider.getAttribute('aria-valuenow')).toBe('34');
+    expect(document.activeElement).toBe(outside);
+    expect(pointerMark(slider)).toBeNull();
+    expect(captured).toEqual([]);
+    // The primary button (a mouse's left, a pen's tip) presses and drags as ever.
+    expect(fireEvent.pointerDown(track, { button: 0, clientX: 100, pointerId: 2, pointerType })).toBe(false);
+    expect(slider.getAttribute('aria-valuenow')).toBe('0');
+    expect(document.activeElement).toBe(slider);
+    expect(pointerMark(slider)).toBe('true');
+    expect(captured).toEqual([2]);
+    fireEvent.pointerMove(track, { clientX: 270, pointerId: 2, pointerType });
+    fireEvent.pointerUp(track, { button: 0, clientX: 270, pointerId: 2, pointerType });
+    expect(slider.getAttribute('aria-valuenow')).toBe('17');
+    // Nor does a press of the other button move the thumb that has focus now, which keeps it and its mark.
+    fireEvent.pointerDown(track, { button, clientX: 440, pointerId: 3, pointerType });
+    fireEvent.pointerUp(track, { button, clientX: 440, pointerId: 3, pointerType });
+    expect(slider.getAttribute('aria-valuenow')).toBe('17');
+    expect(document.activeElement).toBe(slider);
+    expect(pointerMark(slider)).toBe('true');
+  });
+
   it('takes the mark off when focus leaves the thumb, and Tab back to it shows the ring', async () => {
     renderInPage(<Timeline />);
     const slider = screen.getByRole('slider', { name: 'Timeline' });

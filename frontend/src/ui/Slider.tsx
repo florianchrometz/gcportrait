@@ -1,11 +1,17 @@
 // SPDX-License-Identifier: MIT
 /**
- * A thin slider (WAI-ARIA slider pattern), for the timeline later: a thumb with `role="slider"`,
+ * A thin slider (WAI-ARIA slider pattern), the timeline's day and the Filters' depth: a thumb with `role="slider"`,
  * `aria-valuemin/max/now` and `aria-valuetext` (`valueText`, e.g. a date), named by its visible label. ← ↓ and
  * → ↑ step down and up, Page Down / Page Up by `bigStep`, Home and End to the ends; a press or a drag on the
  * track moves it there (and focuses the thumb). `onChange` fires for each new value. Inert (`disabled`):
  * announced unavailable, focusable, fixed. `marks` are drawn inside the track, under the thumb, where a press is a
  * press on the track (the timeline's tick markers; the caller hides them from assistive technology).
+ *
+ * Only the primary button presses, as on a native range input: a mouse's left button, a pen's tip and a finger
+ * (`button` 0). A press of another (a mouse's right or middle button, a pen's barrel button or eraser) moves
+ * nothing and starts no drag, and it leaves focus where it is (a native range input takes it): its default is
+ * prevented as a primary press's is, so the browser does not move focus off the track either, and a right press
+ * still opens the context menu.
  *
  * The focus ring is keyboard focus's, as on a native range input: a press of a mouse, a pen or a finger that focuses
  * the thumb marks it (`data-pointer-focus`), and the mark hides the ring (Slider.module.css) until a key is pressed
@@ -124,6 +130,7 @@ export function Slider({
         onPointerDown={(event) => {
           if (inert) return;
           event.preventDefault();
+          if (event.button !== 0) return;
           const thumb = thumbRef.current;
           if (thumb !== null && thumb.ownerDocument.activeElement !== thumb) {
             thumb.focus();
