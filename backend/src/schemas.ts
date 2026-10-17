@@ -61,11 +61,29 @@ export const LegalResponseSchema = z.object({
 });
 export type LegalResponse = z.infer<typeof LegalResponseSchema>;
 
+/** What Google answered, when its answer led to this one: a preflight item, a search problem, an error answer. */
+export const UpstreamSummarySchema = z.object({
+  /** Google's HTTP status; 0 when no answer arrived (timeout, transport failure). */
+  status: z.number().int(),
+  code: z.string().optional(),
+  reason: z.string().optional(),
+  message: z.string().optional(),
+});
+
+/**
+ * Every error answer of the server, whatever the route (docs/api.md, Errors), built in one place (./errors.ts):
+ * `code` is for scripts, `retryable: true` comes with `Retry-After`, `reason` is Google's `ErrorInfo` reason and
+ * `upstream` Google's own answer, when one led to this one.
+ */
 export const ErrorResponseSchema = z.object({
   statusCode: z.number().int(),
   error: z.string(),
   message: z.string(),
   requestId: z.string(),
+  code: z.string(),
+  retryable: z.literal(true).optional(),
+  reason: z.string().optional(),
+  upstream: UpstreamSummarySchema.optional(),
 });
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 

@@ -122,6 +122,17 @@ export function checkRenderOptions(
         context.addIssue({ code: 'custom', path: [field], message: 'applies to a draw.io file only' });
 }
 
+/**
+ * The message of a render refused for data of more than `limit` assets, the instance's `RENDER_MAX_ASSETS`: the
+ * same whether the backend stops a pull or the render library counts what it read.
+ */
+export function renderTooManyAssetsMessage(limit: number): string {
+  return (
+    `The data holds more than ${limit.toLocaleString('en')} assets, this instance's limit for a render. ` +
+    'Narrow it (a smaller scope, or assetTypes for a pull).'
+  );
+}
+
 export const RenderOptionsSchema = RenderOptionsObjectSchema.superRefine(checkRenderOptions);
 /** The options as parsed (defaults filled in). */
 export type RenderOptions = z.infer<typeof RenderOptionsSchema>;

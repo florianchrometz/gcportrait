@@ -31,8 +31,8 @@ only in its render worker (`src/render/`), never in `dist/server.mjs` (AGENTS.md
   `index.html` is read once at start-up and served from memory, so the CSP hash of its inline theme script
   always matches what is sent.
 - **API paths are never shadowed.** Routes under `/api` are matched first. Static files are refused for `/api`
-  paths even if the build contains an `api/` folder. An unknown `/api/*` path always gets a 404 JSON body
-  `{ statusCode, error, message, requestId }`.
+  paths even if the build contains an `api/` folder. An unknown `/api/*` path always gets the 404 of the error
+  shape (below, "Errors") with the `code` `ROUTE_NOT_FOUND`.
 
 ## Routes
 
@@ -160,8 +160,15 @@ its source can point `SOURCE_URL` there.
   in memory only. As a second line of defence pino redacts those credential headers, `x-gcportrait-token` (the
   caller's token) included, in any object logged by hand with a `headers` field. `LOG_LEVEL` sets the level;
   `LOG_FORMAT=pretty` (used by `pnpm dev`) routes through pino-pretty.
-- **Errors**: 5xx responses never carry internal messages, only `Internal error.` plus the request id; the
-  details go to the log.
+- **Errors**: every error answer of every route, of the error handler, of unknown paths and of the rate
+  limiter is built by `src/errors.ts` in one shape, `{ statusCode, error, message, requestId, code,
+  retryable?, reason?, upstream? }` (`ErrorResponseSchema` in `src/schemas.ts`; [docs/api.md](../docs/api.md),
+  "Errors", lists the codes): `code` is the one the caller names, else its status's (`DEFAULT_CODES`: 400
+  `INVALID_REQUEST`, 401 `UNAUTHENTICATED`, 404 `NOT_FOUND`, 408 `REQUEST_TIMEOUT`, 413 `BODY_TOO_LARGE`, 415
+  `UNSUPPORTED_MEDIA_TYPE`, 429 `RATE_LIMITED`, 500 `INTERNAL`; `ERROR` for any other), every 401 carries
+  `WWW-Authenticate: Bearer`, and an answer with a delay or `retryable: true` carries `Retry-After`. 5xx
+  responses never carry internal messages, only `Internal error.` plus the request id; the details go to the
+  log.
 
 ## Scope search and preflight
 
@@ -226,11 +233,13 @@ async generator). Nothing is kept: the backend forwards the caller's token and f
 Request problems answer before the stream starts, with the JSON error shape: 400 (the body, schema-validated
 with zod, unknown fields refused; a scope or quota project must name a project, folder or organisation the way
 Google does, `src/upstream/scope.ts`, so `projects/evil.com` never reaches Google), 401 (no token), 403
-(service-account mode off, or refused by its gate), 429 (the rate limit per token hash,
-`src/upstream/token-limit.ts`, 30 a minute per route; or four streams already running for the token,
-`src/stream/slots.ts`, across both routes), 501 (service-account mode not in this build). Everything Google
-answers after that arrives in the stream as an `error` frame (`src/stream/frames.ts`), whose fields
-`@gcportrait/ingest` reads in the browser: `message` (Google's, verbatim; an HTML error page is never
+(`SA_MODE_OFF`, or refused by its gate), 429 (`RATE_LIMITED`, the rate limit per token hash,
+`src/upstream/token-limit.ts`, 30 a minute per route; or `STREAMS_BUSY`, four streams already running for the
+token, `src/stream/slots.ts`, across both routes and the render route's pulls: `takeStreamSlot` in
+`src/upstream/route-support.ts`), 501 (`SA_MODE_UNAVAILABLE`, service-account mode not in this build; both
+service-account checks are `refuseUnavailableMode` in `src/stream/pull.ts`, which the preflight asks too).
+Everything Google answers after that arrives in the stream as an `error` frame (`src/stream/frames.ts`), whose
+fields `@gcportrait/ingest` reads in the browser: `message` (Google's, verbatim; an HTML error page is never
 forwarded), `status` (the HTTP status Google answered), `code` (Google's canonical status, from the HTTP
 status when Cloud Storage leaves it out), `reason` (the one `ErrorInfo` reason, if any) and `retryable`.
 
@@ -350,8 +359,9 @@ or exposure step forgets a pass for that token and scope at once), at most 10 00
 always checks afresh. Refusals (`src/auth/refusal.ts`) are 403 (`SA_GATE_CALLER_DENIED`, `SA_GATE_EXPOSED`,
 `SA_GATE_UNEXPECTED`, `SA_GATE_EXPOSURE_UNEXPECTED`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT`), 401
 (`UNAUTHENTICATED`) or 503 (`SA_GATE_UNAVAILABLE`, `SA_CREDENTIALS_UNAVAILABLE`, `retryable`), in the server's
-error shape plus `code`; in the middle of a stream, an `error` frame. The quota project in this mode is the
-account's own project: no `x-goog-user-project` is sent, and the body may not name one (400).
+error shape (`src/errors.ts`) with that `code`; in the middle of a stream, an `error` frame. The quota project
+in this mode is the account's own project: no `x-goog-user-project` is sent, and the body may not name one
+(400).
 
 **The audit line.** Each decision of the gate logs one line, `service-account gate`, with the request id and
 `audit: { event: "sa-gate", route, scope, callerEmailHash, decision: "allowed" | "denied", step?, finding,
@@ -394,8 +404,9 @@ the same way or with an explicit `schema.parse`.
 it is built.
 
 - **Registration** (`src/server.ts`): with the routes that call Google, so never in demo-only mode, and only
-  while `RENDER_API` is not `false`. Its own Fastify context registers `@fastify/multipart` (so no other route
-  accepts multipart) and adds a `code` to every error answer that lacks one (`src/render/errors.ts`).
+  while `RENDER_API` is not `false`. Its own Fastify context registers `@fastify/multipart`, so no other route
+  accepts multipart. Its errors are the server's (section "Security and logging", "Errors"), each with the
+  code the route names for it (its own failures in `src/render/errors.ts`).
 - **Order of checks** (`src/routes/render.ts`): the token and its limit (10 renders a minute per token hash) →
   the schema (`RenderOptionsSchema` of `@gcportrait/model` plus `source`) → the source's authority: a pull's
   mode and gate exactly as on the stream (`src/stream/pull.ts`, shared with `src/routes/assets.ts`),

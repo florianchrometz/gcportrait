@@ -12,6 +12,7 @@
 import { ScopeKindSchema } from '@gcportrait/model';
 import * as z from 'zod';
 
+import { UpstreamSummarySchema } from '../schemas.js';
 import { QuotaProjectSchema, ScopeNameSchema } from '../upstream/scope.js';
 
 export const PREFLIGHT_MODES = ['user', 'sa'] as const;
@@ -83,14 +84,6 @@ export const FINDINGS = [
   'unexpected',
 ] as const;
 export type Finding = (typeof FINDINGS)[number];
-
-export const UpstreamSummarySchema = z.object({
-  /** Google's HTTP status; 0 when no answer arrived (timeout, transport failure). */
-  status: z.number().int(),
-  code: z.string().optional(),
-  reason: z.string().optional(),
-  message: z.string().optional(),
-});
 
 export const PreflightItemSchema = z.object({
   id: z.enum(PREFLIGHT_ITEM_IDS),

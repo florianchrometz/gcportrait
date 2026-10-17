@@ -21,8 +21,8 @@ import * as z from 'zod';
 
 import type { GateDecision, GatedRoute, ServiceAccountGate } from '../auth/gate.js';
 import { refusalFrame, sendRefusal } from '../auth/refusal.js';
+import { sendError } from '../errors.js';
 import type { UpstreamClient } from '../upstream/request.js';
-import { sendError } from '../upstream/route-support.js';
 import { QuotaProjectSchema, ScopeNameSchema, scopePath } from '../upstream/scope.js';
 import type { AssetListQuery, PageCredentials } from './asset-list.js';
 
@@ -83,25 +83,29 @@ export interface PullAuthority {
 }
 
 /**
- * Answers a service-account pull this instance cannot run (403 with the mode off, 501 without an identity) and
- * returns the reply; null when the pull may go on.
+ * Answers a service-account request this instance cannot serve (403 `SA_MODE_OFF` with the mode off, 501
+ * `SA_MODE_UNAVAILABLE` without an identity) and returns the reply; null when it may go on. The pulls and the
+ * permission preflight ask it alike.
  */
 export function refuseUnavailableMode(
   request: FastifyRequest,
   reply: FastifyReply,
   mode: PullFields['mode'],
-  authority: PullAuthority,
+  authority: Pick<PullAuthority, 'saModeEnabled' | 'serviceAccount'>,
 ): FastifyReply | null {
   if (mode !== 'sa') return null;
   if (!authority.saModeEnabled)
-    return sendError(request, reply, 403, 'Service-account mode is off on this gcportrait instance.');
+    return sendError(request, reply, {
+      status: 403,
+      code: 'SA_MODE_OFF',
+      message: 'Service-account mode is off on this gcportrait instance.',
+    });
   if (authority.serviceAccount === null)
-    return sendError(
-      request,
-      reply,
-      501,
-      'Service-account mode is not available in this build of gcportrait.',
-    );
+    return sendError(request, reply, {
+      status: 501,
+      code: 'SA_MODE_UNAVAILABLE',
+      message: 'Service-account mode is not available in this build of gcportrait.',
+    });
   return null;
 }
 

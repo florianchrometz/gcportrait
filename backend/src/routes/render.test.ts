@@ -658,6 +658,23 @@ describe('POST /api/render: refusals', () => {
     expect(Number(limited.headers['retry-after'])).toBeGreaterThan(0);
   });
 
+  it('keeps a code on the answers the server gives before the route runs: a body that is not JSON, the address limit', async () => {
+    const { server: app } = await start({ server: { rateLimitPerMinute: 2 } });
+    const broken = await app.inject({
+      method: 'POST',
+      url: '/api/render',
+      headers: { ...OWN, 'content-type': 'application/json' },
+      payload: '{"source":',
+    });
+    expect(broken.statusCode).toBe(400);
+    expect(errorOf(broken.body)).toMatchObject({ statusCode: 400, code: 'INVALID_REQUEST' });
+    expect((await post(app, {})).statusCode).toBe(400);
+    const limited = await post(app, {});
+    expect(limited.statusCode).toBe(429);
+    expect(errorOf(limited.body)).toMatchObject({ statusCode: 429, code: 'RATE_LIMITED' });
+    expect(limited.headers['retry-after']).toBeDefined();
+  });
+
   it.each([
     [{ source: { kind: 'demo', size: 'XXL' } }, 'source'],
     [{ source: { kind: 'demo', size: 'S' }, scale: 4 }, 'scale'],
@@ -909,6 +926,7 @@ describe('POST /api/render: where it exists', () => {
       const response = await post(app, { source: { kind: 'demo', size: 'S' } });
       expect(response.statusCode).toBe(404);
       expect(response.headers['content-type']).toMatch(/^application\/json/);
+      expect(errorOf(response.body).code).toBe('ROUTE_NOT_FOUND');
       expect(calls()).toEqual([]);
     }
   });

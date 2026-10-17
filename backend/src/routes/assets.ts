@@ -29,8 +29,8 @@ import * as z from 'zod';
 
 import type { ServiceAccountGate } from '../auth/gate.js';
 import type { ServerConfig } from '../config.js';
+import { sendError } from '../errors.js';
 import { assetListFrames, type AssetListStats } from '../stream/asset-list.js';
-import { tokenKeyOf } from '../stream/caller.js';
 import { sendNdjson, watchResponse } from '../stream/ndjson.js';
 import type { PageBudget } from '../stream/page-budget.js';
 import {
@@ -40,9 +40,9 @@ import {
   PullFieldsSchema,
   refuseUnavailableMode,
 } from '../stream/pull.js';
-import { STREAMS_BUSY_RETRY_SECONDS, type StreamSlots } from '../stream/slots.js';
+import type { StreamSlots } from '../stream/slots.js';
 import type { UpstreamClient } from '../upstream/request.js';
-import { authenticate, firstIssue, sendError } from '../upstream/route-support.js';
+import { authenticate, invalidRequest, takeStreamSlot } from '../upstream/route-support.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
 
 /** The pull's fields (../stream/pull.ts, shared with the render route) and the content type, always RESOURCE. */
@@ -79,22 +79,13 @@ export function registerAssetStreamRoute(app: FastifyInstance, options: AssetStr
     const callerToken = authenticate(request, reply, limiter);
     if (callerToken === null) return reply;
     const parsed = AssetsStreamRequestSchema.safeParse(request.body);
-    if (!parsed.success)
-      return sendError(request, reply, 400, `Invalid request: ${firstIssue(parsed.error)}.`);
+    if (!parsed.success) return sendError(request, reply, invalidRequest(parsed.error));
     const body = parsed.data;
     const refused = refuseUnavailableMode(request, reply, body.mode, authority);
     if (refused !== null) return refused;
 
-    const release = options.slots.acquire(tokenKeyOf(callerToken));
-    if (release === null) {
-      reply.header('retry-after', String(STREAMS_BUSY_RETRY_SECONDS));
-      return sendError(
-        request,
-        reply,
-        429,
-        'Four asset streams are already running for this sign-in. Wait for one to finish, then try again.',
-      );
-    }
+    const release = takeStreamSlot(request, reply, options.slots, callerToken);
+    if (release === null) return reply;
     const started = Date.now();
     const stats: AssetListStats = { pages: 0, assets: 0, retries: 0 };
     const life = watchResponse(reply, (outcome) => {

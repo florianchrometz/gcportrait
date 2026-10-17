@@ -26,6 +26,7 @@ import {
 } from '@gcportrait/frontend';
 import {
   migrateSnapshot,
+  renderTooManyAssetsMessage,
   SnapshotFormatError,
   type DemoSize,
   type Snapshot,
@@ -49,13 +50,9 @@ export class SnapshotInputError extends Error {
   }
 }
 
-/** The message for more than `limit` assets. */
+/** The refusal of more than `limit` assets, in the words the backend uses when it stops a pull. */
 export function tooManyAssets(limit: number): SnapshotInputError {
-  return new SnapshotInputError(
-    'TOO_MANY_ASSETS',
-    `The data holds more than ${limit.toLocaleString('en')} assets, this instance's limit for a render. ` +
-      'Narrow it (a smaller scope, or assetTypes for a pull).',
-  );
+  return new SnapshotInputError('TOO_MANY_ASSETS', renderTooManyAssetsMessage(limit));
 }
 
 /** Refuses a snapshot with more than `maxAssets` assets or none. */

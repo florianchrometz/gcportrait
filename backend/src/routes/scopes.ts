@@ -24,8 +24,8 @@ import { NumericIdSchema, ProjectRefSchema, ScopeKindSchema, type ScopeKind } fr
 import type { FastifyInstance } from 'fastify';
 import * as z from 'zod';
 
-import { UpstreamSummarySchema } from '../preflight/schemas.js';
-import { toFastifySchema } from '../schemas.js';
+import { sendError } from '../errors.js';
+import { toFastifySchema, UpstreamSummarySchema } from '../schemas.js';
 import {
   callGoogle,
   isRecord,
@@ -39,10 +39,8 @@ import {
 import type { UpstreamClient } from '../upstream/request.js';
 import {
   authenticate,
-  firstIssue,
   googleContextFor,
-  sendError,
-  sendUnauthenticated,
+  invalidRequest,
   SIGN_IN_AGAIN_MESSAGE,
 } from '../upstream/route-support.js';
 import { SCOPE_COLLECTIONS } from '../upstream/scope.js';
@@ -277,15 +275,17 @@ export function registerScopeSearchRoute(app: FastifyInstance, options: ScopeSea
       const token = authenticate(request, reply, limiter);
       if (token === null) return reply;
       const parsed = ScopeSearchRequestSchema.safeParse(request.body ?? {});
-      if (!parsed.success)
-        return sendError(request, reply, 400, `Invalid request: ${firstIssue(parsed.error)}.`);
+      if (!parsed.success) return sendError(request, reply, invalidRequest(parsed.error));
       const body = parsed.data;
       const requested = SCOPE_KINDS.filter((kind) => body.kinds === undefined || body.kinds.includes(kind));
       let pageTokens: PageTokens = {};
       if (body.pageToken !== undefined) {
         const decoded = decodePageToken(body.pageToken);
         if (decoded === null)
-          return sendError(request, reply, 400, 'Invalid request: pageToken is not valid.');
+          return sendError(request, reply, {
+            status: 400,
+            message: 'Invalid request: pageToken is not valid.',
+          });
         pageTokens = decoded;
       }
       const kinds =
@@ -298,22 +298,26 @@ export function registerScopeSearchRoute(app: FastifyInstance, options: ScopeSea
         kinds.map((kind) => searchKind(context, token, kind, terms, pageSize, pageTokens[kind])),
       );
       if (pages.some((page) => isUnauthenticated(page.outcome))) {
-        return sendUnauthenticated(request, reply, SIGN_IN_AGAIN_MESSAGE);
+        return sendError(request, reply, { status: 401, message: SIGN_IN_AGAIN_MESSAGE });
       }
       const failures = pages.filter(failed);
       if (pages.length > 0 && failures.length === pages.length) {
         const [first] = failures;
-        const upstream = first === undefined ? undefined : summaryOf(first.outcome);
+        const upstream = first === undefined ? {} : { upstream: summaryOf(first.outcome) };
         if (first !== undefined && isScopeInsufficient(first.outcome)) {
-          return sendError(
-            request,
-            reply,
-            403,
-            'Sign in again and allow gcportrait to see your Google Cloud resources.',
-            upstream,
-          );
+          return sendError(request, reply, {
+            status: 403,
+            code: 'ACCESS_TOKEN_SCOPE_INSUFFICIENT',
+            message: 'Sign in again and allow gcportrait to see your Google Cloud resources.',
+            ...upstream,
+          });
         }
-        return sendError(request, reply, 502, 'Google did not answer the search; try again.', upstream);
+        return sendError(request, reply, {
+          status: 502,
+          code: 'UPSTREAM_ERROR',
+          message: 'Google did not answer the search; try again.',
+          ...upstream,
+        });
       }
 
       const scopes = pages.flatMap((page) =>

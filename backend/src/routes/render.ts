@@ -21,8 +21,9 @@
  *
  * A 200 answer carries the image in pieces with the streams' stall rule, `content-disposition` with the app's export
  * file name, the view drawn (`x-gcportrait-view`, a hash `pnpm render --hash` takes), and the detail level and scale
- * used. Errors are JSON with a `code` (../render/errors.ts), sent before any image byte; a retryable one carries
- * `Retry-After`. One log line per render, of counts only: never the token, the scope or the view.
+ * used. Errors are the server's one error answer with a `code` (../errors.ts; the route's own in
+ * ../render/errors.ts), sent before any image byte; a retryable one carries `Retry-After`. One log line per
+ * render, of counts only: never the token, the scope or the view.
  */
 import { Readable } from 'node:stream';
 
@@ -32,18 +33,17 @@ import {
   RenderOptionsObjectSchema,
   TimestampSchema,
   checkRenderOptions,
+  renderTooManyAssetsMessage,
 } from '@gcportrait/model';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import * as z from 'zod';
 
 import type { RenderLimits } from '../config.js';
+import { sendError } from '../errors.js';
 import {
-  DEFAULT_CODES,
   RENDER_BUSY_RETRY_SECONDS,
   frameFailure,
   jobFailure,
-  sendFailure,
-  tooManyAssetsMessage,
   UPLOAD_SHAPE,
   uploadFailure,
   type RenderFailure,
@@ -52,7 +52,6 @@ import type { RenderLock } from '../render/lock.js';
 import type { JobResult, JobSource, JobSpec } from '../render/protocol.js';
 import { RenderJobError, type RenderRun, type RenderRunner } from '../render/runner.js';
 import { assetListFrames, type AssetListStats } from '../stream/asset-list.js';
-import { tokenKeyOf } from '../stream/caller.js';
 import type { ErrorFrame } from '../stream/frames.js';
 import { sendPieces, watchResponse, type StreamOutcome } from '../stream/ndjson.js';
 import type { PageBudget } from '../stream/page-budget.js';
@@ -64,14 +63,14 @@ import {
   refuseUnavailableMode,
   type PullAuthority,
 } from '../stream/pull.js';
-import { STREAMS_BUSY_RETRY_SECONDS, type StreamSlots } from '../stream/slots.js';
+import type { StreamSlots } from '../stream/slots.js';
 import { tokenFacts } from '../upstream/google.js';
 import {
   authenticate,
-  firstIssue,
   googleContextFor,
+  invalidRequest,
   SIGN_IN_AGAIN_MESSAGE,
-  sendUnauthenticated,
+  takeStreamSlot,
 } from '../upstream/route-support.js';
 import { ScopeNameSchema } from '../upstream/scope.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
@@ -167,10 +166,6 @@ function unlessAborted<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> 
       },
     );
   });
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** The multipart parts of an upload: the `request` field's text and the `file` part's stream. */
@@ -298,26 +293,16 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
   const { limits, authority } = options;
   const limiter = new TokenRateLimiter({ max: options.ratePerMinute ?? RENDER_RATE_LIMIT_PER_MINUTE });
 
-  // Its own context: only this route takes multipart bodies, and only its errors are given a code on the way out.
+  // Its own context: only this route takes multipart bodies.
   await app.register(async (scope) => {
     await scope.register(multipart, { throwFileSizeLimit: true });
-    scope.addHook('onSend', async (_request, reply, payload) => {
-      if (reply.statusCode < 400 || typeof payload !== 'string') return payload;
-      try {
-        const body: unknown = JSON.parse(payload);
-        if (!isRecord(body) || body['code'] !== undefined) return payload;
-        return JSON.stringify({ ...body, code: DEFAULT_CODES[reply.statusCode] ?? 'ERROR' });
-      } catch {
-        return payload;
-      }
-    });
 
     scope.post('/api/render', async (request, reply) => {
       const multipartBody = request.isMultipart();
       // A refused upload stops reading its body: the connection is closed rather than drained.
       const refuse = (failure: RenderFailure): FastifyReply => {
         if (multipartBody) reply.header('connection', 'close');
-        return sendFailure(request, reply, failure);
+        return sendError(request, reply, failure);
       };
 
       const callerToken = authenticate(request, reply, limiter);
@@ -341,12 +326,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         nextFile = upload.next;
       }
       const parsed = RenderRequestSchema.safeParse(document);
-      if (!parsed.success)
-        return refuse({
-          status: 400,
-          code: 'INVALID_REQUEST',
-          message: `Invalid request: ${firstIssue(parsed.error)}.`,
-        });
+      if (!parsed.success) return refuse(invalidRequest(parsed.error));
       const body = parsed.data;
       const { source } = body;
       const upload = source.kind === 'ndjson' || source.kind === 'bundle';
@@ -380,7 +360,8 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         if (refused !== null) return refused;
       } else {
         const facts = await tokenFacts(googleContextFor(request, reply, authority.upstream), callerToken);
-        if (facts.kind === 'invalid') return sendUnauthenticated(request, reply, SIGN_IN_AGAIN_MESSAGE);
+        if (facts.kind === 'invalid')
+          return sendError(request, reply, { status: 401, message: SIGN_IN_AGAIN_MESSAGE });
         if (facts.kind === 'unknown')
           return refuse({
             status: 503,
@@ -402,17 +383,10 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         });
       let releaseSlot = (): void => undefined;
       if (source.kind === 'scope') {
-        const slot = options.slots.acquire(tokenKeyOf(callerToken));
+        const slot = takeStreamSlot(request, reply, options.slots, callerToken);
         if (slot === null) {
           unlock();
-          return refuse({
-            status: 429,
-            code: 'STREAMS_BUSY',
-            message:
-              'Four asset streams are already running for this sign-in. Wait for one to finish, then try again.',
-            retryable: true,
-            retryAfter: STREAMS_BUSY_RETRY_SECONDS,
-          });
+          return reply;
         }
         releaseSlot = slot;
       }
@@ -520,7 +494,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
             if (typeof line === 'string' && line.startsWith('{"t":"error"'))
               throw new PullFailure(JSON.parse(line) as ErrorFrame);
             if (stats.assets > limits.maxAssets)
-              throw new RenderJobError('TOO_MANY_ASSETS', tooManyAssetsMessage(limits.maxAssets));
+              throw new RenderJobError('TOO_MANY_ASSETS', renderTooManyAssetsMessage(limits.maxAssets));
             await unlessAborted(job.push(typeof line === 'string' ? encoder.encode(line) : line), signal);
           }
         } else if (file !== null) {
@@ -555,9 +529,10 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
           });
         if (error instanceof PullFailure) {
           const failure = frameFailure(error.frame);
+          // Google no longer accepts the caller's token: the sign-in answer every route gives.
           if (failure.status === 401) {
             outcome = failure.code;
-            return sendUnauthenticated(request, reply, failure.message);
+            return sendError(request, reply, { status: 401, message: failure.message });
           }
           return fail(failure);
         }

@@ -13,7 +13,7 @@
 import type { FastifyInstance } from 'fastify';
 import * as z from 'zod';
 
-import { tokenKeyOf } from '../stream/caller.js';
+import { sendError } from '../errors.js';
 import {
   exportLines,
   parseGcsUri,
@@ -23,9 +23,9 @@ import {
 } from '../stream/export-read.js';
 import { frameLine } from '../stream/frames.js';
 import { sendNdjson, watchResponse } from '../stream/ndjson.js';
-import { STREAMS_BUSY_RETRY_SECONDS, type StreamSlots } from '../stream/slots.js';
+import type { StreamSlots } from '../stream/slots.js';
 import type { UpstreamClient } from '../upstream/request.js';
-import { authenticate, firstIssue, sendError } from '../upstream/route-support.js';
+import { authenticate, invalidRequest, takeStreamSlot } from '../upstream/route-support.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
 
 export const ExportReadRequestSchema = z.strictObject({
@@ -55,22 +55,16 @@ export function registerExportReadRoute(app: FastifyInstance, options: ExportRea
     const token = authenticate(request, reply, limiter);
     if (token === null) return reply;
     const parsed = ExportReadRequestSchema.safeParse(request.body);
-    if (!parsed.success)
-      return sendError(request, reply, 400, `Invalid request: ${firstIssue(parsed.error)}.`);
+    if (!parsed.success) return sendError(request, reply, invalidRequest(parsed.error));
     const location = parseGcsUri(parsed.data.gcsUri);
     if (location === null)
-      return sendError(request, reply, 400, 'Invalid request: gcsUri: must be gs://BUCKET/OBJECT.');
+      return sendError(request, reply, {
+        status: 400,
+        message: 'Invalid request: gcsUri: must be gs://BUCKET/OBJECT.',
+      });
 
-    const release = options.slots.acquire(tokenKeyOf(token));
-    if (release === null) {
-      reply.header('retry-after', String(STREAMS_BUSY_RETRY_SECONDS));
-      return sendError(
-        request,
-        reply,
-        429,
-        'Four streams are already running for this sign-in. Wait for one to finish, then try again.',
-      );
-    }
+    const release = takeStreamSlot(request, reply, options.slots, token);
+    if (release === null) return reply;
     const started = Date.now();
     const stats: ExportReadStats = { objects: 0, bytes: 0, retries: 0 };
     const life = watchResponse(reply, (outcome) => {

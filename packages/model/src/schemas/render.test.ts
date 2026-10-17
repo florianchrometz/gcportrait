@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { issueLines } from '../testing/issues.js';
-import { RenderOptionsSchema } from './render.js';
+import { RenderOptionsSchema, renderTooManyAssetsMessage } from './render.js';
 
 const issues = (input: unknown): string[] => issueLines(RenderOptionsSchema, input);
 
@@ -70,5 +70,14 @@ describe('RenderOptionsSchema', () => {
     expect(issues({ fontSource: true })).toEqual(['fontSource: applies to a draw.io file only']);
     expect(issues({ format: 'drawio', compressed: 'no' })[0]).toMatch(/^compressed: /);
     expect(issues({ format: 'vsdx' })[0]).toMatch(/^format: /);
+  });
+});
+
+describe('renderTooManyAssetsMessage', () => {
+  it('names the limit with thousands separators and how to narrow the data', () => {
+    expect(renderTooManyAssetsMessage(60_000)).toBe(
+      "The data holds more than 60,000 assets, this instance's limit for a render. " +
+        'Narrow it (a smaller scope, or assetTypes for a pull).',
+    );
   });
 });

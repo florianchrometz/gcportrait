@@ -139,9 +139,10 @@ public bucket's object, a raw file in a public repository).
 
 ## Errors
 
-Every error is JSON, sent before any byte of an image: `{ statusCode, error, message, requestId, code,
-retryable?, reason?, upstream? }`. `message` is for people and names a field, never the value sent; `code` is
-for scripts; `reason` is Google's `ErrorInfo` reason when Google refused (such as `SERVICE_DISABLED`). Every
+Every error of every route is JSON in one shape, sent before any byte of an image or a stream: `{ statusCode,
+error, message, requestId, code, retryable?, reason?, upstream? }`. `message` is for people and names a field,
+never the value sent; `code` is for scripts; `reason` is Google's `ErrorInfo` reason when Google refused (such
+as `SERVICE_DISABLED`), and `upstream` Google's own status and code when its answer led to the error. Every
 429 and every error with `retryable: true` carries `Retry-After`, in seconds: wait that long, then send the
 same request again.
 
@@ -149,20 +150,21 @@ same request again.
 |---|---|---|
 | 400 | `INVALID_REQUEST` | The body does not fit the route's schema (unknown fields are refused), or a render's upload is not readable multipart (no boundary, cut short). |
 | 401 | `UNAUTHENTICATED` | No token, a malformed one, or one Google does not accept; with `WWW-Authenticate: Bearer`. |
-| 403 | `SA_MODE_OFF`, a gate code (`SA_GATE_CALLER_DENIED`, …), or Google's (`PERMISSION_DENIED`) | Service-account mode off or refused, or Google refused the read. |
-| 404 | `NOT_FOUND` | Google found no such scope, or none at that `readTime`. A route the instance does not have (`RENDER_API=false`; every token route on a demo-only instance) answers the JSON 404 of any unknown path, without a `code`. |
+| 403 | `SA_MODE_OFF`, a gate code (`SA_GATE_CALLER_DENIED`, …), `ACCESS_TOKEN_SCOPE_INSUFFICIENT`, or Google's (`PERMISSION_DENIED`) | Service-account mode off or refused, the sign-in did not allow reading Google Cloud resources (sign in again and allow it), or Google refused the read. |
+| 404 | `NOT_FOUND`, `ROUTE_NOT_FOUND` | Google found no such scope, or none at that `readTime`; or the instance has no such route (`ROUTE_NOT_FOUND`: `POST /api/render` with `RENDER_API=false`, every token route on a demo-only instance, any unknown path). |
 | 408 | `REQUEST_TIMEOUT` | The body, a render's upload included, was still arriving after 30 s; the connection is closed. |
 | 413 | `BODY_TOO_LARGE` | A JSON body over 64 KiB, or an upload over `RENDER_MAX_BODY_BYTES`. |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | A render source sent in the wrong body, or an upload without its `file` part. |
 | 422 | `INVALID_FILE`, `EMPTY_SNAPSHOT`, `TOO_MANY_ASSETS`, `VIEW_REFUSED` | A file the app could not read either (its message), no assets, more than `RENDER_MAX_ASSETS`, a `root` or `focus` the snapshot does not have. |
 | 429 | `RATE_LIMITED`, `STREAMS_BUSY`, `RENDER_BUSY` | Too many requests for the token or address (`Retry-After`: until the minute's window ends), four streams already running for the token (30 s), another render running on the instance (10 s). |
 | 501 | `SA_MODE_UNAVAILABLE` | Service-account mode asked of a build without the instance's identity. |
-| 502, 503, 504 | `UPSTREAM_UNREACHABLE`, `INSTANCE_BUSY`, `UPSTREAM_TIMEOUT`, `BAD_UPSTREAM_ANSWER`, Google's code | Google could not be reached or answered with an error after the retries; `retryable` ones with `Retry-After` (10 s, 30 s for `INSTANCE_BUSY`). |
+| 502, 503, 504 | `UPSTREAM_UNREACHABLE`, `INSTANCE_BUSY`, `UPSTREAM_TIMEOUT`, `BAD_UPSTREAM_ANSWER`, `UPSTREAM_ERROR`, Google's code | Google could not be reached or answered with an error after the retries (`UPSTREAM_ERROR`: no kind of a scope search answered); `retryable` ones with `Retry-After` (10 s, 30 s for `INSTANCE_BUSY`). |
 | 503 | `SA_GATE_UNAVAILABLE`, `SA_CREDENTIALS_UNAVAILABLE`, `TOKEN_CHECK_UNAVAILABLE` | Google did not answer the service-account gate's check, the instance could not get its account's token, or Google's token check did not answer: `retryable`, `Retry-After` 10 s. |
 | 503 | `RENDER_TIMEOUT`, `RENDER_TOO_LARGE` | The render passed `RENDER_TIMEOUT_MS` or the render worker's memory; not retryable as it is: narrow the data or the view. |
 | 500 | `INTERNAL` | A bug: `Internal error.` and the request id; the details are in the instance's log. |
 
-The streaming routes answer the 400 to 501 rows before they start; the `code` field is the render route's.
+The streaming routes answer the 400 to 501 rows before they start; what Google says after that is an `error`
+frame ([Routes](#routes)). An error of a status the table does not list carries the `code` `ERROR`.
 
 ## Limits
 

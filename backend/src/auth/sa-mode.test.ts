@@ -137,6 +137,8 @@ describe.each(GATED_ROUTES)('$url with mode "sa": the gate cannot be bypassed', 
     const response = await post(app, url, body);
     expect(response.statusCode).toBe(401);
     expect(response.headers['www-authenticate']).toBe('Bearer');
+    expect(response.json()).toMatchObject({ code: 'UNAUTHENTICATED' });
+    expect(response.json()).not.toHaveProperty('preflight');
     expectNothingAsTheAccount(google);
   });
 
@@ -154,6 +156,7 @@ describe.each(GATED_ROUTES)('$url with mode "sa": the gate cannot be bypassed', 
     const response = await post(app, url, body);
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({
+      code: 'SA_MODE_OFF',
       message: 'Service-account mode is off on this gcportrait instance.',
     });
     expect(google.calls).toEqual([]);
@@ -162,7 +165,12 @@ describe.each(GATED_ROUTES)('$url with mode "sa": the gate cannot be bypassed', 
 
   it('501 in a build without the instance’s identity, without calling Google', async () => {
     const { app, google } = await start({}, {}, null);
-    expect((await post(app, url, body)).statusCode).toBe(501);
+    const response = await post(app, url, body);
+    expect(response.statusCode).toBe(501);
+    expect(response.json()).toMatchObject({
+      code: 'SA_MODE_UNAVAILABLE',
+      message: 'Service-account mode is not available in this build of gcportrait.',
+    });
     expect(google.calls).toEqual([]);
   });
 

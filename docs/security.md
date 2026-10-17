@@ -240,9 +240,11 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
 
 ## 8. Errors, request ids, shutdown, static files
 
-- **Error messages.** A 5xx answer is always the error shape with the message `Internal error.`, its status
-  and the request id; the detail goes to the log only (`server.test.ts`, "error answers": a handler throwing a
-  message with a path answers exactly that body). A stream that fails inside the server ends with
+- **Error messages.** Every error answer of every route is built in one place, `backend/src/errors.ts`, in
+  one shape with a `code` ([api.md](api.md#errors); `errors.test.ts`). A 5xx answer is always that shape with
+  the message `Internal error.`, the code `INTERNAL`, its status and the request id; the detail goes to the
+  log only (`server.test.ts`, "error answers": a handler throwing a message with a path answers exactly that
+  body). A stream that fails inside the server ends with
   `{"t":"error","message":"Internal error."}`. A 4xx says what was wrong with the request without echoing it
   (section 2). Google's own message is passed on as the actionable part of a 400, 401, 403 or 404 (the
   cai-ingestion skill, §4), only from Google's JSON error envelope (an HTML page is never forwarded), cut at

@@ -160,6 +160,7 @@ describe('unknown API paths', () => {
     const body = ErrorResponseSchema.parse(response.json());
     expect(body.statusCode).toBe(404);
     expect(body.error).toBe('Not Found');
+    expect(body.code).toBe('ROUTE_NOT_FOUND');
     expect(body.requestId).toBe(response.headers['x-request-id']);
   });
 
@@ -298,6 +299,7 @@ describe('error answers', () => {
       error: 'Internal Server Error',
       message: 'Internal error.',
       requestId: 'probe-500',
+      code: 'INTERNAL',
     });
     expect(response.body).not.toContain('secret');
     expect(logs.text()).toContain('internal detail');
@@ -318,7 +320,10 @@ describe('request limits', () => {
       payload: JSON.stringify({ scope: 'x'.repeat(DOCUMENTED_BODY_LIMIT) }),
     });
     expect(response.statusCode).toBe(413);
-    expect(ErrorResponseSchema.parse(response.json()).message).toBe('Request body is too large');
+    expect(ErrorResponseSchema.parse(response.json())).toMatchObject({
+      message: 'Request body is too large',
+      code: 'BODY_TOO_LARGE',
+    });
   });
 
   it('takes the largest legitimate body, a pull with 100 asset-type patterns of 256 characters', async () => {
@@ -429,6 +434,7 @@ describe('rate limiting', () => {
     expect(limited.statusCode).toBe(429);
     const body = ErrorResponseSchema.parse(limited.json());
     expect(body.error).toBe('Too Many Requests');
+    expect(body.code).toBe('RATE_LIMITED');
     expect(limited.headers['retry-after']).toBeDefined();
   });
 

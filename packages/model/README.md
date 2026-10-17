@@ -209,6 +209,16 @@ value takes its default and an invalid optional field is dropped; the filter lis
 is dropped; `flips` keeps each id once at its newest position and only the newest 48; a focus keeps its valid
 parameters, sorted by name. It is idempotent.
 
+## Render options
+
+What `@gcportrait/render`'s `renderView` and the backend's `POST /api/render` take besides the data
+(`schemas/render.ts`): `RenderOptionsSchema` (`view` as an app link's hash or explicit fields, `theme`,
+`format`, `scale` or `width`, `compressed`, `fontSource`, `viewport`; `RenderOptionsObjectSchema` and
+`checkRenderOptions` for a schema that adds fields), the limits `RENDER_MAX_SCALE`, `RENDER_MAX_SIDE` and
+`RENDER_MAX_HASH_LENGTH`, the defaults `RENDER_DEFAULT_SCALE` and `RENDER_DEFAULT_VIEWPORT`, and
+`renderTooManyAssetsMessage(limit)`, the one sentence of a render refused for more assets than the instance
+allows, whether the backend stops a pull or the render library counts what it read.
+
 ## Scene
 
 What `packages/graph` hands to `packages/layout`. It lives here because layout must not depend on graph. The

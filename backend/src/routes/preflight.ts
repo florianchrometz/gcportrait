@@ -14,26 +14,24 @@
  * client can mistake it for a passed check.
  */
 import type { FastifyInstance } from 'fastify';
-import * as z from 'zod';
 
 import type { ServiceAccountGate } from '../auth/gate.js';
 import { sendRefusal } from '../auth/refusal.js';
 import type { ServerConfig } from '../config.js';
+import { sendError } from '../errors.js';
 import { runPreflight } from '../preflight/run.js';
 import {
   PreflightRequestSchema,
   PreflightResponseSchema,
-  UpstreamSummarySchema,
   type PreflightResponse,
 } from '../preflight/schemas.js';
 import { ErrorResponseSchema, toFastifySchema } from '../schemas.js';
+import { refuseUnavailableMode } from '../stream/pull.js';
 import type { UpstreamClient } from '../upstream/request.js';
 import {
   authenticate,
-  firstIssue,
   googleContextFor,
-  sendError,
-  sendUnauthenticated,
+  invalidRequest,
   SIGN_IN_AGAIN_MESSAGE,
 } from '../upstream/route-support.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
@@ -42,13 +40,10 @@ import { TokenRateLimiter } from '../upstream/token-limit.js';
 export const PREFLIGHT_PER_MINUTE = 30;
 
 /**
- * The body of a 403 or 503: the server's error shape, plus, for a refusal of the service-account gate, its code,
- * Google's answer and the checklist (`preflight`).
+ * The body of a 403 or 503: the server's error shape (../errors.ts), plus, for a refusal of the service-account
+ * gate, the checklist (`preflight`).
  */
 export const PreflightRefusalSchema = ErrorResponseSchema.extend({
-  code: z.string().optional(),
-  retryable: z.literal(true).optional(),
-  upstream: UpstreamSummarySchema.optional(),
   preflight: PreflightResponseSchema.optional(),
 });
 
@@ -62,6 +57,8 @@ export interface PreflightRouteOptions {
 
 export function registerPreflightRoute(app: FastifyInstance, options: PreflightRouteOptions): void {
   const limiter = new TokenRateLimiter({ max: options.perMinute ?? PREFLIGHT_PER_MINUTE });
+  // Service-account mode is checked as a pull checks it (../stream/pull.ts), before anything is asked of Google.
+  const authority = { saModeEnabled: options.config.saModeEnabled, serviceAccount: options.gate };
 
   app.post<{ Reply: PreflightResponse }>(
     '/api/preflight',
@@ -78,20 +75,10 @@ export function registerPreflightRoute(app: FastifyInstance, options: PreflightR
       const token = authenticate(request, reply, limiter);
       if (token === null) return reply;
       const parsed = PreflightRequestSchema.safeParse(request.body);
-      if (!parsed.success)
-        return sendError(request, reply, 400, `Invalid request: ${firstIssue(parsed.error)}.`);
+      if (!parsed.success) return sendError(request, reply, invalidRequest(parsed.error));
       const body = parsed.data;
-      if (body.mode === 'sa' && !options.config.saModeEnabled) {
-        return sendError(request, reply, 403, 'Service-account mode is off on this gcportrait instance.');
-      }
-      if (body.mode === 'sa' && options.gate === null) {
-        return sendError(
-          request,
-          reply,
-          501,
-          'Service-account mode is not available in this build of gcportrait.',
-        );
-      }
+      const refused = refuseUnavailableMode(request, reply, body.mode, authority);
+      if (refused !== null) return refused;
 
       const result = await runPreflight(
         {
@@ -107,7 +94,7 @@ export function registerPreflightRoute(app: FastifyInstance, options: PreflightR
         },
       );
       if (result.kind === 'unauthenticated')
-        return sendUnauthenticated(request, reply, SIGN_IN_AGAIN_MESSAGE);
+        return sendError(request, reply, { status: 401, message: SIGN_IN_AGAIN_MESSAGE });
       // The gate did not pass: never a 200, whatever the checklist says.
       if (result.refusal !== undefined)
         return sendRefusal(request, reply, result.refusal, { preflight: result.response });

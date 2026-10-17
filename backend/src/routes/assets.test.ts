@@ -492,6 +492,7 @@ describe('POST /api/assets/stream: operational guards', () => {
     expect(fifth.statusCode).toBe(429);
     expect(fifth.json<{ statusCode: number; message: string }>().statusCode).toBe(429);
     expect(fifth.json<{ statusCode: number; message: string }>().message).toMatch(/^Four asset streams/);
+    expect(fifth.json()).toMatchObject({ code: 'STREAMS_BUSY', retryable: true });
     expect(fifth.headers['retry-after']).toBe('30');
     expect(cai.calls).toHaveLength(4);
 
@@ -518,7 +519,11 @@ describe('POST /api/assets/stream: operational guards', () => {
     expect((await post(app, BODY)).statusCode).toBe(200);
     const limited = await post(app, BODY);
     expect(limited.statusCode).toBe(429);
-    expect(limited.json()).toMatchObject({ statusCode: 429, error: 'Too Many Requests' });
+    expect(limited.json()).toMatchObject({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      code: 'RATE_LIMITED',
+    });
     expect(limited.headers['retry-after']).toMatch(/^\d+$/);
     expect((await post(app, BODY, OTHER_TOKEN)).statusCode).toBe(200);
   });

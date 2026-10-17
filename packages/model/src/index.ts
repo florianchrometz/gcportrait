@@ -111,6 +111,7 @@ export {
   RenderViewSchema,
   RenderViewportSchema,
   checkRenderOptions,
+  renderTooManyAssetsMessage,
   type RenderFormat,
   type RenderOptions,
   type RenderOptionsInput,

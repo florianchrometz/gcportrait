@@ -331,17 +331,21 @@ describe('POST /api/scopes/search', () => {
     const response = await search(app, { query: '' });
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({
+      code: 'ACCESS_TOKEN_SCOPE_INSUFFICIENT',
       upstream: { status: 403, reason: 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' },
     });
   });
 
   it('answers 502 when no kind answered, and 401 when Google refused the token', async () => {
     const { app: down } = await start(() => answers.internal());
-    expect((await search(down, { query: '' })).statusCode).toBe(502);
+    const failed = await search(down, { query: '' });
+    expect(failed.statusCode).toBe(502);
+    expect(failed.json()).toMatchObject({ code: 'UPSTREAM_ERROR', upstream: { status: 500 } });
     const { app: refused } = await start(() => answers.unauthenticated());
     const response = await search(refused, { query: '' });
     expect(response.statusCode).toBe(401);
     expect(response.headers['www-authenticate']).toBe('Bearer');
+    expect(response.json()).toMatchObject({ code: 'UNAUTHENTICATED' });
   });
 
   it('takes the token from X-Gcportrait-Token (the app, IAP or not) or Authorization: Bearer, and forwards it as a bearer token', async () => {

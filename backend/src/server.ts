@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 import { randomUUID } from 'node:crypto';
-import { STATUS_CODES } from 'node:http';
 
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -16,6 +15,7 @@ import type { DestinationStream } from 'pino';
 import type { ServiceAccountIdentity } from './auth/identity.js';
 import { serviceAccountGateFor, withServiceAccount } from './auth/mode.js';
 import type { ServerConfig } from './config.js';
+import { errorBody, isErrorResponse, sendError } from './errors.js';
 import { loggerOptions } from './logging.js';
 import { registerAssetStreamRoute } from './routes/assets.js';
 import { registerConfigRoute } from './routes/config.js';
@@ -26,7 +26,7 @@ import { registerRenderRoute } from './routes/render.js';
 import { registerScopeSearchRoute } from './routes/scopes.js';
 import { RenderLock } from './render/lock.js';
 import { workerRunner, type RenderRunner } from './render/runner.js';
-import { HealthResponseSchema, toFastifySchema, type ErrorResponse, type HealthResponse } from './schemas.js';
+import { HealthResponseSchema, toFastifySchema, type HealthResponse } from './schemas.js';
 import { crossOriginPolicies, cspDirectives, PERMISSIONS_POLICY } from './security.js';
 import {
   CACHE_HASHED_ASSET,
@@ -126,10 +126,6 @@ function requestIdFor(header: string | string[] | undefined): string {
   return typeof header === 'string' && REQUEST_ID_PATTERN.test(header) ? header : randomUUID();
 }
 
-function errorBody(request: FastifyRequest, statusCode: number, message: string): ErrorResponse {
-  return { statusCode, error: STATUS_CODES[statusCode] ?? 'Error', message, requestId: request.id };
-}
-
 function pathnameOf(request: FastifyRequest): string {
   const queryStart = request.url.indexOf('?');
   return queryStart < 0 ? request.url : request.url.slice(0, queryStart);
@@ -158,17 +154,6 @@ function statusCodeOf(error: unknown): number {
     if (typeof statusCode === 'number' && statusCode >= 400 && statusCode <= 599) return statusCode;
   }
   return 500;
-}
-
-function isErrorResponse(value: unknown): value is ErrorResponse {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'statusCode' in value &&
-    'error' in value &&
-    'message' in value &&
-    'requestId' in value
-  );
 }
 
 /** Builds the Fastify app for a parsed config. Does not listen: main.ts does, tests use `inject`. */
@@ -247,19 +232,23 @@ export async function buildServer(
     global: true,
     max: options.rateLimitPerMinute ?? DEFAULT_RATE_LIMIT_PER_MINUTE,
     timeWindow: '1 minute',
+    // The limiter throws this body (its own headers, Retry-After among them, already set); the error handler sends it.
     errorResponseBuilder: (request, context) =>
-      errorBody(request, context.statusCode, `Rate limit exceeded; retry in ${context.after}.`),
+      errorBody(request, {
+        status: context.statusCode,
+        message: `Rate limit exceeded; retry in ${context.after}.`,
+      }),
   });
 
   app.setErrorHandler(async (error: unknown, request, reply) => {
-    const statusCode = statusCodeOf(error);
-    if (statusCode >= 500) {
+    const status = statusCodeOf(error);
+    if (status >= 500) {
       request.log.error({ err: error }, 'request failed');
-      return reply.code(statusCode).send(errorBody(request, statusCode, 'Internal error.'));
+      return sendError(request, reply, { status, code: 'INTERNAL', message: 'Internal error.' });
     }
-    if (isErrorResponse(error)) return reply.code(statusCode).send(error);
+    if (isErrorResponse(error)) return reply.code(status).send(error);
     const message = error instanceof Error ? error.message : 'Request rejected.';
-    return reply.code(statusCode).send(errorBody(request, statusCode, message));
+    return sendError(request, reply, { status, message });
   });
 
   const health = (): Promise<HealthResponse> =>
@@ -315,9 +304,11 @@ export async function buildServer(
         : config.demoOnly && isApiPath(pathname)
           ? ' This instance runs in demo-only mode: it offers no sign-in and reads nothing from Google Cloud.'
           : '';
-    return reply
-      .code(404)
-      .send(errorBody(request, 404, `No route for ${request.method} ${pathname}.${hint}`));
+    return sendError(request, reply, {
+      status: 404,
+      code: 'ROUTE_NOT_FOUND',
+      message: `No route for ${request.method} ${pathname}.${hint}`,
+    });
   });
 
   return app;

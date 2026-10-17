@@ -83,6 +83,7 @@ describe('public surface', () => {
         'RenderViewSchema',
         'RenderViewportSchema',
         'checkRenderOptions',
+        'renderTooManyAssetsMessage',
         // scene
         'ChipCountKindSchema',
         'ChipCountsSchema',

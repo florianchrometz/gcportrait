@@ -1,42 +1,15 @@
 // SPDX-License-Identifier: MIT
 /**
  * How a refusal of the service-account gate (./gate.ts) reaches the caller, the same on every route that takes
- * `mode: "sa"`: before anything is streamed, as an HTTP error in the server's shape `{ statusCode, error,
- * message, requestId }` plus the gate's `code`, `retryable` and Google's answer when one led to it (401 with the
- * RFC 6750 challenge, 403 refused, 503 try again, with `Retry-After`); in the middle of a stream, as an `error`
- * frame.
+ * `mode: "sa"`: before anything is streamed, as an HTTP error in the server's one shape (../errors.ts) with the
+ * gate's `code`, `retryable` and Google's answer when one led to it (401 with the RFC 6750 challenge, 403 refused,
+ * 503 try again, with `Retry-After`); in the middle of a stream, as an `error` frame.
  */
-import { STATUS_CODES } from 'node:http';
-
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
+import { sendError } from '../errors.js';
 import type { ErrorFrame } from '../stream/frames.js';
-import type { UpstreamSummary } from '../upstream/google.js';
-import { sendUnauthenticated } from '../upstream/route-support.js';
 import type { GateRefusal } from './gate.js';
-
-export interface GateRefusalBody {
-  readonly statusCode: number;
-  readonly error: string;
-  readonly message: string;
-  readonly requestId: string;
-  readonly code: string;
-  readonly retryable?: true;
-  readonly upstream?: UpstreamSummary;
-}
-
-/** The refusal's HTTP body. */
-export function refusalBody(request: FastifyRequest, refusal: GateRefusal): GateRefusalBody {
-  return {
-    statusCode: refusal.status,
-    error: STATUS_CODES[refusal.status] ?? 'Error',
-    message: refusal.message,
-    requestId: request.id,
-    code: refusal.code,
-    ...(refusal.retryable ? { retryable: true as const } : {}),
-    ...(refusal.upstream === undefined ? {} : { upstream: refusal.upstream }),
-  };
-}
 
 /**
  * `Retry-After` of a retryable refusal, in seconds: Google did not answer the gate's check in time
@@ -45,16 +18,26 @@ export function refusalBody(request: FastifyRequest, refusal: GateRefusal): Gate
  */
 export const GATE_RETRY_AFTER_SECONDS = 10;
 
-/** Answers a refusal before anything was streamed; `extra` joins the body (the preflight's checklist). */
+/**
+ * Answers a refusal before anything was streamed; `extra` joins the body (the preflight's checklist). A 401 is the
+ * sign-in answer every route gives, with nothing else of the refusal.
+ */
 export function sendRefusal(
   request: FastifyRequest,
   reply: FastifyReply,
   refusal: GateRefusal,
   extra: Readonly<Record<string, unknown>> = {},
 ): FastifyReply {
-  if (refusal.status === 401) return sendUnauthenticated(request, reply, refusal.message);
-  if (refusal.retryable) reply.header('retry-after', String(GATE_RETRY_AFTER_SECONDS));
-  return reply.code(refusal.status).send({ ...refusalBody(request, refusal), ...extra });
+  if (refusal.status === 401)
+    return sendError(request, reply, { status: 401, code: refusal.code, message: refusal.message });
+  return sendError(request, reply, {
+    status: refusal.status,
+    code: refusal.code,
+    message: refusal.message,
+    ...(refusal.retryable ? { retryable: true, retryAfter: GATE_RETRY_AFTER_SECONDS } : {}),
+    ...(refusal.upstream === undefined ? {} : { upstream: refusal.upstream }),
+    extra,
+  });
 }
 
 /** A refusal in the middle of a stream (the memo ran out and the gate closed). */
