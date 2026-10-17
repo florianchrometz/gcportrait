@@ -266,7 +266,8 @@ for (const theme of ['light', 'dark'] as const) {
     const svg = await exportVia(page, 'Download SVG', [label], `faithful-${theme}`);
     const png = await exportVia(page, 'Download PNG', [label, '2×'], `faithful-${theme}`);
 
-    // The exported SVG in resvg against the renderer's own SVG of this view (the baseline the CLI writes).
+    // The exported SVG in resvg against the renderer's own SVG of this view: the baseline the frontend's
+    // Vitest suite writes (frontend/src/diagram/baselines.test.tsx), whose bytes the CLI draws too.
     const reference = readFileSync(path.join(BASELINE_DIR, `S-overview-auto-${theme}.svg`), 'utf8');
     const ours = renderWithResvg(svg.bytes.toString('utf8'));
     const theirs = renderWithResvg(reference);

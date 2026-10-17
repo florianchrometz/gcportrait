@@ -2,7 +2,7 @@
   "name": "@gcportrait/render-cli",
   "version": "1.0.0",
   "private": true,
-  "description": "gcportrait headless renderer command line: `pnpm render` draws a demo view as the app draws it through @gcportrait/render (the frontend’s SVG components rendered without a browser, rasterised with resvg-wasm); byte-stable PNG and SVG for screenshots, visual goldens and agents’ self-checks.",
+  "description": "gcportrait headless renderer command line: `pnpm render` draws a demo view as the app’s renderer draws it through @gcportrait/render (the frontend’s SVG components rendered without a browser, rasterised with resvg-wasm); byte-stable PNG, SVG and draw.io for screenshots, visual goldens and agents’ self-checks.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,

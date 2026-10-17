@@ -77,8 +77,8 @@ changed since the day before ([timeline.md](timeline.md)). `pnpm dev` reads `bac
 The pipeline also runs without the app. `pnpm render-scene --fixture M --lens networking` ingests the
 synthetic organisation M, builds its graph and the scene for a view, and prints a summary; `--help` lists the
 view options (focus, drill-in root, filters, detail level, JSON output). `pnpm render --fixture M --lens
-networking --png out.png` lays the same view out and draws it exactly as the app does (`--theme dark` for the
-dark theme, `--help` for the rest); it is how contributors and agents look at a visual change.
+networking --png out.png` lays the same view out and draws it exactly as the app's renderer draws it (`--theme
+dark` for the dark theme, `--help` for the rest); it is how contributors and agents look at a visual change.
 [packages.md](packages.md) explains each step.
 
 ## 4. The checks

@@ -295,8 +295,8 @@ Sources become a Snapshot in the browser, the asset catalog (YAML, about one fil
 assets' references into typed relations, and the view in the URL selects a Scene. Its own layout engine
 packs the nested zones into grids and routes every arrow orthogonally through the gutters between them, in a
 web worker, deterministically; React draws the result as SVG. The same pipeline runs without a browser:
-`pnpm render --fixture M --lens networking --png out.png` draws a demo view exactly as the app does.
-[docs/packages.md](docs/packages.md) maps every package and function on the way.
+`pnpm render --fixture M --lens networking --png out.png` draws a demo view exactly as the app's renderer
+draws it. [docs/packages.md](docs/packages.md) maps every package and function on the way.
 
 ## Tech stack
 

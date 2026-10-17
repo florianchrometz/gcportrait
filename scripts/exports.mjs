@@ -2,13 +2,14 @@
 // @ts-check
 /**
  * `node scripts/exports.mjs`: the sample exports the website offers for download (docs/website.md, "Sample
- * exports"): real SVG, PNG and draw.io files of the synthetic demo organisations, drawn by `pnpm render`
- * exactly as the app's Export menu draws them (the title block's three lines, scope, lens with read time and
- * tagline, the legend, 2× PNG with a 24 px margin, the draw.io file compressed as diagrams.net saves it; its
- * `agent` without the command's version, `gcportrait` alone as the render golden has it, so a release leaves
- * the samples as they are), in the light and the dark theme, with a WebP preview of each PNG at 480 and 960
- * pixels wide. Everything goes to docs/media/exports/ with a manifest (each file's sample, demo size, lens,
- * theme, size in pixels, bytes, hash and the command that made it), which the website reads.
+ * exports"): real SVG, PNG and draw.io files of the synthetic demo organisations, drawn by `pnpm render`: the
+ * app's renderer's drawing of the views the Export menu offers (the title block's three lines, scope, lens
+ * with read time and tagline, the legend, 2× PNG with a 24 px margin, the draw.io file compressed as
+ * diagrams.net saves it; its `agent` without the command's version, `gcportrait` alone as the render golden
+ * has it, so a release leaves the samples as they are), in the light and the dark theme, with a WebP preview
+ * of each PNG at 480 and 960 pixels wide. Everything goes to docs/media/exports/ with a manifest (each file's
+ * sample, demo size, lens, theme, size in pixels, bytes, hash and the command that made it), which the
+ * website reads.
  *
  * No file carries the non-affiliation line (AGENTS.md, Non-affiliation, brand and legal): the statement is in
  * the footers of the app and the website and in the long form, never in a drawing, so neither an SVG's title

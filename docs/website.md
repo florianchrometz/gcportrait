@@ -456,8 +456,9 @@ the drawings the Export menu saves, each with its title block (the scope, the le
 gcportrait.app tagline) and the legend. Like every drawing, no file carries the non-affiliation line, neither
 in the title block nor in the SVG's `<desc>`, which holds the scope, the lens, the read time and "Drawn with
 gcportrait." only: the site states it in the footer notice of every page and in the long form in the landing
-page's author section. `node scripts/exports.mjs` makes them with `pnpm render` (the app's own drawing,
-rasterised with resvg at 2×, the export's default) and writes them to `docs/media/exports/`:
+page's author section. `node scripts/exports.mjs` makes them with `pnpm render` (each view as the app's
+renderer draws it, rasterised with resvg at 2×, the export's default) and writes them to
+`docs/media/exports/`:
 
 | Sample | View | PNG (light) | Files per theme |
 |---|---|---|---|
