@@ -9,8 +9,8 @@
  * and out, so a long jump does not lurch.
  *
  * A jump, the keyboard's pan and a zoom key's step keep the node in the part of the canvas a panel lying over it
- * leaves in view (DiagramCanvas, `clearRoom`): `inRoom` works a camera out for that part as if it were the whole
- * canvas.
+ * leaves in view (DiagramCanvas, `clearRoom`), and `0` fits the drawing to that part (viewport.ts, `fitTransform`):
+ * `inRoom` works a camera out for that part as if it were the whole canvas.
  *
  * The keyboard's camera is here too: a move to an item pans just enough to show it, and first zooms in to
  * the scale at which labels are drawn when the camera is further out (`keyboardTransform`); the zoom keys scale by
@@ -52,7 +52,7 @@ export function focusTransform(
 
 /**
  * A part of the canvas, in CSS px from its top-left corner: the room a jump, a keyboard move or a zoom key's step keeps
- * the node in, the canvas less a panel lying over it (DiagramCanvas, `clearRoom`).
+ * the node in and `0` fits the drawing to, the canvas less a panel lying over it (DiagramCanvas, `clearRoom`).
  */
 export interface CanvasRoom {
   readonly x: number;
@@ -68,8 +68,9 @@ type Placement<T> = (width: number, height: number, current: CameraTransform) =>
  * A camera worked out for a part of the canvas, `room`, as if the room were the whole canvas: `place` gets the room's
  * size and the camera `current` as the room's top-left corner sees it, and the camera it answers is moved back onto
  * the canvas (null, nothing to move, stays null). So `focusTransform` centres a node in the room, `revealTransform`,
- * `keyboardTransform` and `zoomStepTransform` keep it inside the room's margins, and a zoom step with nothing focused
- * zooms about the room's centre.
+ * `keyboardTransform` and `zoomStepTransform` keep it inside the room's margins, a zoom step with nothing focused
+ * zooms about the room's centre, and `fitTransform` (viewport.ts, for `0`) shows the whole drawing inside the room's
+ * margins.
  */
 export function inRoom(
   room: CanvasRoom,

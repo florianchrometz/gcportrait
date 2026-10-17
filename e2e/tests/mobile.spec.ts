@@ -66,8 +66,9 @@ import {
  * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
  * when let go there; with the drawer open from an external keyboard (Enter on the drawing's tab stop), the zoom key `+`
  * keeps the focused card in the part of the canvas above the drawer, inside it while the card fits and centred in it
- * once the card is taller; one finger dragged across the canvas pans the drawing, two pinched apart zoom it in, and a
- * tap on a project chip opens it in place.
+ * once the card is taller, and `0` fits the whole drawing to that part, none of it under the drawer; one finger
+ * dragged across the canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in
+ * place.
  * The pages and diagrams at each size in the light theme come first, the tests that set their own sizes next, and the
  * same pages and diagrams in the dark theme last, so that each shard of a CI leg gets half of the slow diagram tests
  * (pagesAndDiagrams).
@@ -1312,6 +1313,41 @@ test.describe('on a phone, 375 × 667', () => {
     }
     // The steps went on until the card was taller than the whole canvas.
     expect(steps).toBeLessThan(16);
+  });
+
+  test('with the drawer open, `0` on an external keyboard fits the drawing to the part of the canvas above it', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DIAGRAMS[0]);
+    // As above: the skip link, Enter onto the drawing's tab stop, Enter to select it, the drawer over the lower half.
+    await page.getByRole('link', { name: 'Skip to the diagram' }).focus();
+    await page.keyboard.press('Enter');
+    const focused = svg.locator('.dg-node:focus');
+    await expect(focused).toHaveCount(1);
+    await page.keyboard.press('Enter');
+    const drawer = page.getByRole('complementary', { name: 'Details' });
+    await expect(drawer).toBeVisible();
+    await expect(focused).toHaveCount(1);
+    // Closer in first, so that the fit has a camera to undo.
+    await page.keyboard.press('+');
+    await page.keyboard.press('+');
+    await cameraSettled(svg);
+    await page.keyboard.press('0');
+    await cameraSettled(svg);
+    await expect(focused).toHaveCount(1);
+    const canvas = await boxOf(svg);
+    const top = canvas.y;
+    const bottom = (await boxOf(drawer)).y;
+    // The drawing's frame (its background) lies whole in the part of the canvas above the drawer.
+    const drawing = await boxOf(svg.locator('.dg-background'));
+    const where = `the drawing from ${drawing.y.toFixed(1)} to ${(drawing.y + drawing.height).toFixed(1)}, the room from ${top.toFixed(1)} to ${bottom.toFixed(1)}`;
+    expect(drawing.y, where).toBeGreaterThanOrEqual(top - 0.5);
+    expect(drawing.y + drawing.height, where).toBeLessThanOrEqual(bottom + 0.5);
+    expect(drawing.x).toBeGreaterThanOrEqual(canvas.x - 0.5);
+    expect(drawing.x + drawing.width).toBeLessThanOrEqual(canvas.x + canvas.width + 0.5);
+    // And fills it, as a fit fills the canvas: as wide as the canvas or as tall as the room, less 16 px on each side.
+    const fill = Math.max(drawing.width / (canvas.width - 32), drawing.height / (bottom - top - 32));
+    expect(fill, where).toBeCloseTo(1, 2);
   });
 
   test('one finger dragged across the canvas pans the drawing', async ({ page }) => {

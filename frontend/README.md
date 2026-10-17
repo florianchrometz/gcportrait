@@ -228,7 +228,13 @@ lying over it leaves in view (`clearRoom`: each open element marked `data-canvas
 canvas, the details drawer of a phone or a tablet along its right or lower edge or the top bar's View or More
 sheet hanging from its top edge, leaves the largest part of the canvas it keeps free to its left or right,
 above or below it, and `inRoom` in `diagram/camera.ts` works the camera out for that part as if it were the
-whole canvas); on a desktop nothing lies over the canvas and the room is the canvas.
+whole canvas); on a desktop nothing lies over the canvas and the room is the canvas. `0` fits the drawing to
+that part too (`fitRoom`), or to the whole canvas where the panels leave nothing to fit into (a phone's drawer
+at full height, which hides the drawing). The fit a new view opens with (a new frame drawn: a drill-in, a lens
+or a filter picked in the View sheet, a resize that picks another level) fills the whole canvas, whatever lies
+over it: a panel open at that moment (the View sheet, which stays open while its controls change the view, or
+the drawer while the timeline moves a day) closes before the person looks at the drawing, and a drawing fitted
+into the part it leaves would stay that small after it closes.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
@@ -323,7 +329,9 @@ or a key on the selected node opens it again, and so does another node selected 
 link, Back). A search result picked in View closes the sheet onto its button and opens the drawer on the
 result, in the part of the canvas the drawer leaves in view. The open sheet is marked `data-canvas-overlay`,
 as the drawer is, so a camera jump made while it is open keeps the node in the part of the canvas below or
-beside it (section "App state", `clearRoom`). On a desktop no sheet opens, and the drawer stays as it is.
+beside it, and `0` fits the drawing to that part, while a view drawn while it is open (a lens or a filter
+picked in it) is fitted to the whole canvas, for when the sheet has closed (section "App state", `clearRoom`
+and `fitRoom`). On a desktop no sheet opens, and the drawer stays as it is.
 
 **Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
 `--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons,
@@ -377,10 +385,10 @@ column a few characters wide, the top bar's items, the timeline bar's parts (non
 within the canvas, 44-pixel targets, every control one reaches with Tab in sight when focused and tappable at
 its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view, and View
 opened over the drawer closing it), axe; and a theme picked in More, Sign out from More, a long trail, the
-sheet's heights, `+` from an external keyboard with the drawer open (the focused card stays above it) and the
-canvas's touch input by finger. The same project runs `e2e/tests/touch.spec.ts` at
-390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a long press) and a mouse's
-drag and double-click on the same page.
+sheet's heights, `+` and `0` from an external keyboard with the drawer open (the focused card stays above it,
+and the drawing is fitted above it) and the canvas's touch input by finger. The same project runs
+`e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a
+long press) and a mouse's drag and double-click on the same page.
 
 ## UI primitives (`src/ui/`)
 
@@ -1488,8 +1496,10 @@ item's menu. The camera pans just enough to show the item, and first zooms in to
 `lod.ts`; not the label scale, 0.35, where a card's text is about 4.5 px) when it is further out (`camera.ts`,
 `keyboardTransform`; at once with reduced motion). `+` and `-` zoom one step (× 1.5) about the focused item,
 which stays in the part of the canvas an open drawer or sheet leaves in view (about that part's centre from
-the canvas itself; section "App state", `clearRoom`), and `0` fits the drawing. `/` focuses search; `[` and
-`]` call `stepTick` (one day back and forward). A
+the canvas itself; section "App state", `clearRoom`), and `0` fits the whole drawing to that part, with 16 px
+around it (`FIT_PADDING`) and none of it under the drawer or the sheet (`fitRoom`; the whole canvas when a
+phone's drawer at full height leaves nothing to fit into, and when nothing is open, as a new view opens). `/`
+focuses search; `[` and `]` call `stepTick` (one day back and forward). A
 single-key shortcut is matched by the character typed (`keyboard/shortcuts.ts`, `isShortcutKey`): Shift,
 Option and AltGr may have been needed for it (`[` is Option+5 on a German Mac, AltGr+8 on a German PC), Cmd or
 Ctrl alone make it the browser's. The focus ring goes around a focused card or open zone in the diagram token

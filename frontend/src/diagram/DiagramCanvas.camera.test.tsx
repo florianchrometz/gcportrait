@@ -2,8 +2,9 @@
 /**
  * What the app store asks of the canvas: a pending `jumpTo` becomes a camera glide to the node as soon as
  * it is drawn (at once with reduced motion), into the part of the canvas a panel lying over it leaves in view (a
- * phone's or a tablet's View or More sheet, or details drawer), where a zoom key's step keeps the focused item too,
- * and the node under the pointer is reported for the store's hover.
+ * phone's or a tablet's View or More sheet, or details drawer), where a zoom key's step keeps the focused item too and
+ * which `0` fits the drawing to (a new view fills the whole canvas), and the node under the pointer is reported for the
+ * store's hover.
  */
 import { fireEvent, render } from '@testing-library/react';
 import { select } from 'd3-selection';
@@ -14,6 +15,7 @@ import { focusTransform, REVEAL_MARGIN, ZOOM_STEP } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
 import { canvasOf as canvas, canvasProps, manualFrames, nodeOf, reduceMotion } from './testing/canvas';
 import { card, modelOf, scene, smallScene, zone } from './testing/scenes';
+import { FIT_PADDING, fitTransform } from './viewport';
 
 const model = modelOf(smallScene([['run/web', 'run/api', 'uses']]));
 
@@ -110,6 +112,36 @@ const onScreen = (svg: SVGSVGElement, id: string) => {
   const top = rect.y * k + y;
   const bottom = (rect.y + rect.height) * k + y;
   return { top, bottom, x: (rect.x + rect.width / 2) * k + x, y: (top + bottom) / 2 };
+};
+
+/** The drawing's frame (its background, the box a fit shows whole), in drawing units. */
+const frameOf = (svg: SVGSVGElement): Box => {
+  const background = svg.querySelector('.dg-background');
+  if (background === null) throw new Error('no background');
+  const at = (name: string): number => Number(background.getAttribute(name));
+  return { x: at('x'), y: at('y'), width: at('width'), height: at('height') };
+};
+
+/** Where the drawing's frame is on screen under the canvas's camera. */
+const drawingOnScreen = (svg: SVGSVGElement): Box => {
+  const frame = frameOf(svg);
+  const { k, x, y } = zoomTransform(svg);
+  return { x: frame.x * k + x, y: frame.y * k + y, width: frame.width * k, height: frame.height * k };
+};
+
+/**
+ * Expects the drawing fitted to `room` (a box on the canvas, CSS px) as a fit fills a canvas of that size: at the scale
+ * that shows its frame whole there, centred in it, inside its margins (`FIT_PADDING`), none of it outside.
+ */
+const expectFittedTo = (svg: SVGSVGElement, room: Box): void => {
+  const box = drawingOnScreen(svg);
+  expect(zoomTransform(svg).k).toBeCloseTo(fitTransform(frameOf(svg), room.width, room.height).k);
+  expect(box.x + box.width / 2).toBeCloseTo(room.x + room.width / 2);
+  expect(box.y + box.height / 2).toBeCloseTo(room.y + room.height / 2);
+  expect(box.x).toBeGreaterThanOrEqual(room.x + FIT_PADDING - 1e-6);
+  expect(box.y).toBeGreaterThanOrEqual(room.y + FIT_PADDING - 1e-6);
+  expect(box.x + box.width).toBeLessThanOrEqual(room.x + room.width - FIT_PADDING + 1e-6);
+  expect(box.y + box.height).toBeLessThanOrEqual(room.y + room.height - FIT_PADDING + 1e-6);
 };
 
 describe('the room a jump keeps the node in', () => {
@@ -221,6 +253,53 @@ describe('the room a zoom key keeps the focused item in', () => {
     expect(after.k).toBeCloseTo(before.k * ZOOM_STEP);
     expect(held.x * after.k + after.x).toBeCloseTo(640);
     expect(held.y * after.k + after.y).toBeCloseTo(200);
+  });
+
+  it('fits the drawing with `0` to the room above a drawer over the canvas’s lower half (a phone’s)', () => {
+    const svg = aboveTheDrawer();
+    const api = nodeOf(svg, 'run/api');
+    api.focus();
+    fireEvent.keyDown(api, { key: '0' });
+    expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 400 });
+    expect(document.activeElement).toBe(api);
+  });
+
+  it('fits with `0` to the whole canvas where the panels leave no room: the phone’s drawer at full height', () => {
+    // The sheet covers the canvas but for the 22 px strip its handle stands in, and hides the drawing. Reduced
+    // motion, so `0` lands at once.
+    reduceMotion();
+    panel({ x: 0, y: 22, width: 1280, height: 778 }, false);
+    const { container } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    zoom<SVGSVGElement, unknown>()
+      .extent([
+        [0, 0],
+        [1280, 800],
+      ])
+      .transform(select(svg), zoomIdentity.translate(-300, -200).scale(2));
+    svg.focus();
+    fireEvent.keyDown(svg, { key: '0' });
+    expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 800 });
+  });
+});
+
+describe('the fit a new view opens with', () => {
+  /** Another view, a project with two cards: its frame is not the small scene's, so drawing it fits the camera anew. */
+  const another = modelOf(
+    scene([
+      zone('projects/demo-app', 'project', 'demo-app', [card('run/new', 'new'), card('run/old', 'old')]),
+    ]),
+  );
+
+  it('fills the whole canvas, under a drawer over its lower half (a phone’s) too: it closes before one looks', () => {
+    panel({ x: 0, y: 400, width: 1280, height: 400 }, false);
+    const { container, rerender } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    // A view drawn while the drawer is open (a lens picked, a day moved): fitted anew, to the whole canvas.
+    rerender(<DiagramCanvas {...props({ model: another })} />);
+    expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 800 });
   });
 });
 

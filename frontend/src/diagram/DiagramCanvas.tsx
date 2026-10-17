@@ -20,6 +20,15 @@
  * follows keyboard focus and a zoom key's step keep the node in the part of the canvas a panel lying over it leaves in
  * view (`clearRoom`): the drawer of a phone or a tablet, or the top bar's View or More sheet.
  *
+ * `0` fits the whole drawing to that part too (`fitRoom`), so none of it lies under the panel; where the panels leave
+ * no room to fit into (the phone's drawer at full height, which hides the drawing) it takes the whole canvas, ready
+ * for when the drawer comes down. The fit a new view opens with (whatever draws a new frame: a drill-in, a lens or a
+ * filter picked in the View sheet, a day whose drawing is another size, a resize that picks another level of detail)
+ * fills the whole canvas instead: a panel open at that moment (the View sheet, which stays open while its controls
+ * change the view, or the drawer while the timeline moves a day) closes before the person looks at the drawing, and
+ * a drawing fitted into the part it leaves would stay that small after it closes. On a desktop nothing lies over the
+ * canvas, and both fits are the same.
+ *
  * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
  * it, and an open zone's collapse button (over its header icon; disclosure/CollapseButton.tsx) collapses it,
  * both by the zone's flip. The drawing with the flip keeps the camera where it was (no fit) and glides 200 ms to
@@ -42,10 +51,10 @@
  * go to the zone's first and last item; the camera pans just enough to show the item, zooming in first to the
  * scale at which labels are drawn when it is further out (camera.ts, `keyboardTransform`; at once with reduced
  * motion). `+` and `-` zoom about the focused item, which stays in the part of the canvas left in view (about that
- * part's centre from the canvas itself), and `0` fits the drawing (keyboard/zoom.ts). Enter or Space selects (the
- * details drawer opens), Escape clears the selection and, with nothing selected, returns to the zone around the
- * item. The focus ring keeps its screen size at any scale (the painter's `setScale`). After "Drill in" focus waits on
- * the `<svg>` and goes to the new drawing's tab stop (canvasFocus.ts).
+ * part's centre from the canvas itself), and `0` fits the drawing to that part (keyboard/zoom.ts). Enter or Space
+ * selects (the details drawer opens), Escape clears the selection and, with nothing selected, returns to the zone
+ * around the item. The focus ring keeps its screen size at any scale (the painter's `setScale`). After "Drill in"
+ * focus waits on the `<svg>` and goes to the new drawing's tab stop (canvasFocus.ts).
  */
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity, zoomTransform, type D3ZoomEvent, type ZoomBehavior } from 'd3-zoom';
@@ -87,7 +96,7 @@ import type { DiagramTheme } from './theme/tokens';
 import { createTouchGestures, type TouchGestures, type TouchHandlers } from './touch';
 import styles from './touchHint.module.css';
 import { computeTrace } from './trace';
-import { fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
+import { FIT_PADDING, fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
 
 export interface DiagramCanvasProps {
   readonly model: DiagramModel;
@@ -153,12 +162,13 @@ interface Edges {
 const areaOf = (box: Edges): number => (box.right - box.left) * (box.bottom - box.top);
 
 /**
- * The part of the canvas a camera jump, the keyboard's pan and a zoom key's step keep a node in (camera.ts, `inRoom`):
- * the canvas, less each panel lying over it (`data-canvas-overlay`, AGENTS.md "Product rules": on a phone or a tablet
- * the details drawer along the canvas's right or lower edge, and the top bar's View or More sheet hanging over it from
- * its top edge). Each such panel leaves the room the largest part of it that the panel keeps free: to its left or
- * right, above or below it. A closed panel (`hidden`) covers nothing, and nor does one beside the canvas: on a desktop
- * the drawer stands beside it and no sheet opens, and the room is the canvas.
+ * The part of the canvas a camera jump, the keyboard's pan and a zoom key's step keep a node in, and `0` fits the
+ * drawing to (`fitRoom`; camera.ts, `inRoom`): the canvas, less each panel lying over it (`data-canvas-overlay`,
+ * AGENTS.md "Product rules": on a phone or a tablet the details drawer along the canvas's right or lower edge, and the
+ * top bar's View or More sheet hanging over it from its top edge). Each such panel leaves the room the largest part of
+ * it that the panel keeps free: to its left or right, above or below it. A closed panel (`hidden`) covers nothing, and
+ * nor does one beside the canvas: on a desktop the drawer stands beside it and no sheet opens, and the room is the
+ * canvas.
  */
 function clearRoom(svg: SVGSVGElement): CanvasRoom {
   const size = canvasSize(svg);
@@ -190,6 +200,19 @@ function clearRoom(svg: SVGSVGElement): CanvasRoom {
     width: Math.max(1, room.right - room.left),
     height: Math.max(1, room.bottom - room.top),
   };
+}
+
+/**
+ * The part of the canvas `0` fits the drawing to: the room the panels lying over the canvas leave (`clearRoom`), so
+ * that none of the drawing lies under them; or the whole canvas when that room has nothing inside the fit's margins
+ * (`FIT_PADDING` on each side), as when the phone's drawer at full height leaves only the strip its handle stands in
+ * and hides the drawing until it comes down.
+ */
+function fitRoom(svg: SVGSVGElement): CanvasRoom {
+  const room = clearRoom(svg);
+  return room.width > 2 * FIT_PADDING && room.height > 2 * FIT_PADDING
+    ? room
+    : { x: 0, y: 0, ...canvasSize(svg) };
 }
 
 /** Whether an element shows its focus ring (`:focus-visible`; a browser without the selector shows it always). */
@@ -591,11 +614,12 @@ export function DiagramCanvas({
     glideRef.current = { id: pending.id, mode: 'centre', ...glideTo(svg, behaviour, to, FLIP_GLIDE_MS) };
   }, [model]);
 
-  // Fit the whole drawing whenever its frame changes (a new view); a theme or selection change keeps the camera,
-  // and so does the drawing of a flip made here (above). d3-zoom applies the transform synchronously, so the
-  // viewport carries it before the first paint. A glide still on its way (a keyboard move's pan, made just
-  // before a drill-in) was heading for a place in the previous drawing: it stops, so it cannot carry the camera
-  // off the new one; a jump waiting for this drawing glides afterwards.
+  // Fit the whole drawing to the whole canvas whenever its frame changes (a new view), whatever panel lies over it
+  // now (it closes before the person looks; the header); a theme or selection change keeps the camera, and so does
+  // the drawing of a flip made here (above). d3-zoom applies the transform synchronously, so the viewport carries it
+  // before the first paint. A glide still on its way (a keyboard move's pan, made just before a drill-in) was heading
+  // for a place in the previous drawing: it stops, so it cannot carry the camera off the new one; a jump waiting for
+  // this drawing glides afterwards.
   useLayoutEffect(() => {
     const svg = svgRef.current;
     const behaviour = zoomRef.current;
@@ -701,7 +725,7 @@ export function DiagramCanvas({
     };
     // The zoom keys: one step in or out about the focused item (from the canvas itself, about the centre of the
     // part of the canvas a panel lying over it leaves in view), keeping the item in that part, as a jump and the
-    // keyboard's pan do (`clearRoom`); `0` fits the whole drawing, as a new view opens.
+    // keyboard's pan do (`clearRoom`); `0` fits the whole drawing to that part (`fitRoom`).
     const zoomBy = (key: ZoomKey, focusedId: string | null): void => {
       const behaviour = zoomRef.current;
       const drawn = frameRef.current;
@@ -713,8 +737,7 @@ export function DiagramCanvas({
       let to: CameraTransform | null;
       if (key === 'fit') {
         if (drawn === null) return;
-        const size = canvasSize(svg);
-        to = fitTransform(drawn, size.width, size.height);
+        to = inRoom(fitRoom(svg), current, (width, height) => fitTransform(drawn, width, height));
       } else {
         const rect = focusedId === null ? undefined : model.input.layout.rects[focusedId];
         const box = rect === undefined ? null : revealBox(rect);
