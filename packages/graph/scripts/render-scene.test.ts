@@ -117,8 +117,13 @@ describe('parseCommand', () => {
     [['--filter', 'showRegions=1'], /^--filter showRegions takes true or false, not "1"$/],
     [['--filter', 'showIdentities=0'], /^--filter showIdentities takes true or false, not "0"$/],
     [['--filter', 'depth=0'], /^--filter depth: Too small: expected number to be >=1$/],
+    [['--filter', 'regions'], /^--filter regions needs a value: regions=VALUE$/],
     [['--filter', 'includeTypes=not a type'], /^--filter includeTypes: must be an asset type/],
     [['--root', ''], /^--root: must be non-empty, well-formed text$/],
+    [['--selection', ''], /^--selection: must be non-empty, well-formed text$/],
+    [['--highlight', ''], /^--highlight: must be non-empty, well-formed text$/],
+    [['--selection', '\ud800'], /^--selection: must be non-empty, well-formed text$/],
+    [['--highlight', '\udfff'], /^--highlight: must be non-empty, well-formed text$/],
     [['--budget', '0'], /--budget takes a positive integer/],
     [['--budget', 'many'], /--budget takes a positive integer/],
     [['--viewport', 'big'], /^--viewport takes WIDTHxHEIGHT, not "big"$/],
@@ -130,6 +135,14 @@ describe('parseCommand', () => {
 });
 
 describe('run', () => {
+  it.each(['--selection', '--highlight'])('reports invalid %s as a usage error', async (flag) => {
+    const result = await capture([flag, '']);
+    expect(result.code).toBe(2);
+    expect(result.out).toBe('');
+    expect(result.err).toContain(`${flag}: must be non-empty, well-formed text`);
+    expect(result.err).toContain(USAGE);
+  });
+
   it('prints a summary of the scene: zones by kind, cards, edges by kind, chips, dangling, warnings', async () => {
     const { code, out, err } = await capture(['--fixture', 'S', '--lens', 'networking', '--detail', 'all']);
     expect(code).toBe(0);

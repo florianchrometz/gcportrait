@@ -68,7 +68,7 @@ root (git-ignored). A path of `-` writes to standard output; the report then goe
 ([docs/api.md](../../docs/api.md#post-apirender)): what the API refuses, this command refuses, with a message
 in the flags' words (`render: --viewport width: Too big: expected number to be <=16384`). The view is then
 resolved by `viewSpecOf`, as the API resolves it. The outputs, `--compare`, `--strict` and `--all` are this
-command's own.
+command's own. List and number filters require `=VALUE`; only boolean filters accept a key alone.
 
 Exit codes: 0 done, 1 a check failed (`--compare`, `--strict`), 2 a usage error.
 

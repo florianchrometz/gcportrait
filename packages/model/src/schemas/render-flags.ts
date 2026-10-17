@@ -3,7 +3,7 @@
  * The render flags of the command lines (`pnpm render`, `pnpm render-scene`) read into the render options: one
  * reader for both, checked by `RenderOptionsSchema`, so a command line takes exactly what `POST /api/render`
  * takes (AGENTS.md, Exports and the render API). The reader knows each flag's grammar only:
- * `--focus kind=KIND[,NAME=VALUE…]`, `--filter KEY=VALUE` (a key alone is `KEY=true`; a boolean filter takes
+ * `--focus kind=KIND[,NAME=VALUE…]`, `--filter KEY=VALUE` (a boolean key alone is `KEY=true`; a boolean filter takes
  * `true` or `false`, a list filter comma-separated items, `depth` a number), `--viewport WIDTHxHEIGHT`, and a
  * number for `--scale` and `--width`. Every value is then judged by the schema, and each of its issues is told
  * in the flag's words (`--filter depth: Too small: …`), quoting what was typed where that helps; the API's own
@@ -100,13 +100,18 @@ function filterValue(kind: FilterFlagKind | undefined, text: string): unknown {
   return text;
 }
 
-/** `KEY=VALUE` entries (a key alone is `KEY=true`) as filters; the last entry of a key wins. */
-function filtersOf(entries: readonly string[]): Record<string, unknown> {
+/** `KEY=VALUE` entries (a boolean key alone is `KEY=true`) as filters; the last entry of a key wins. */
+function filtersOf(entries: readonly string[], problems: string[]): Record<string, unknown> {
   const filters = new Map<string, unknown>();
   for (const entry of entries) {
     const at = entry.indexOf('=');
     const key = at < 0 ? entry : entry.slice(0, at);
-    filters.set(key, filterValue(FILTER_KINDS.get(key), at < 0 ? 'true' : entry.slice(at + 1)));
+    const kind = FILTER_KINDS.get(key);
+    if (at < 0 && kind !== undefined && kind !== 'boolean') {
+      problems.push(`--filter ${key} needs a value: ${key}=VALUE`);
+      continue;
+    }
+    filters.set(key, filterValue(kind, at < 0 ? 'true' : entry.slice(at + 1)));
   }
   return Object.fromEntries(filters);
 }
@@ -171,7 +176,8 @@ export function readRenderFlags(flags: RenderFlags, format: RenderFormat = 'png'
     detail: flags.detail,
     focus: flags.focus === undefined ? undefined : focusOf(flags.focus, problems),
     root: flags.root,
-    filters: flags.filter === undefined || flags.filter.length === 0 ? undefined : filtersOf(flags.filter),
+    filters:
+      flags.filter === undefined || flags.filter.length === 0 ? undefined : filtersOf(flags.filter, problems),
     flips: flags.flip === undefined || flags.flip.length === 0 ? undefined : [...flags.flip],
   });
   const input = given({

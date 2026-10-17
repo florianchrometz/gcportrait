@@ -147,6 +147,7 @@ describe('parseCommand: one view', () => {
     [['--filter', 'showRegions=1'], /^--filter showRegions takes true or false, not "1"$/],
     [['--filter', 'colour=blue'], /^--filter takes hideEmptyProjects, .*, not "colour"$/],
     [['--filter', 'depth=0'], /^--filter depth: Too small: expected number to be >=1$/],
+    [['--filter', 'regions'], /^--filter regions needs a value: regions=VALUE$/],
     [['--filter', 'regions=Not A Region'], /^--filter regions: must be a location such as europe-west3$/],
     [['--focus', 'project=demo-web-1'], /^--focus needs kind=project\|shared-vpc\|/],
     [['--focus', 'kind'], /^--focus takes NAME=VALUE pairs, not "kind"$/],

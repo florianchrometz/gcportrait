@@ -350,7 +350,9 @@ zone-id` (repeatable), `--budget N` or `--viewport WxH` (`--budget` wins when bo
 model's `readRenderFlags` and checked by `RenderOptionsSchema` as `POST /api/render` checks its fields, and
 the view is resolved by `viewSpecOf`: a focus parameter's name starts with a letter, a boolean filter takes
 `true` or `false` (the key alone is `true`), a list filter comma-separated items, `depth` a whole number from
-1 to 64, and the viewport is at most 16 384 px a side. Invalid input exits with code 2 and the usage.
+1 to 64, and the viewport is at most 16 384 px a side. List and number filters require `=VALUE`.
+Selection and highlight must be non-empty, well-formed text, checked by `ViewSpecSchema`.
+Invalid input exits with code 2 and the usage.
 
 ### Performance
 

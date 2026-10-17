@@ -8,7 +8,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { generateOrganization } from '@gcportrait/demo-data';
-import { normalizeViewSpec } from '@gcportrait/model';
 import {
   createDemoViews,
   drawDrawio,
@@ -16,6 +15,7 @@ import {
   drawSvg,
   FIXTURES,
   svgFrame,
+  viewSpecOf,
   WORDMARK,
   type DemoView,
   type DrawioDrawOptions,
@@ -212,7 +212,7 @@ async function renderAll(command: AllCommand, io: Io): Promise<number> {
   let broken = 0;
   for (const fixture of command.fixtures) {
     for (const lens of command.lenses) {
-      const spec = normalizeViewSpec({ snapshot: `demo:${fixture}`, lens, detail: command.detail });
+      const spec = viewSpecOf({ lens, detail: command.detail }, `demo:${fixture}`);
       const view = await views.prepare(fixture, spec, command.viewport);
       if (view.violations.length > 0) broken += 1;
       for (const theme of command.themes) {

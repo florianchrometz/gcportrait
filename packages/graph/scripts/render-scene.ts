@@ -33,8 +33,8 @@ import {
   RENDER_MAX_SIDE,
   RelationKindSchema,
   VIEW_SPEC_MAX_DEPTH,
+  ViewSpecSchema,
   ZoneKindSchema,
-  normalizeViewSpec,
   readRenderFlags,
   type Catalog,
   type SceneBuild,
@@ -129,15 +129,19 @@ export function parseCommand(argv: readonly string[]): Command | 'help' {
   });
   if (!read.success) throw new UsageError(read.error);
   const { view, viewport } = read.options;
-  const spec = normalizeViewSpec({
+  const checkedSpec = ViewSpecSchema.safeParse({
     ...viewSpecOf(view, `demo:${fixture}`),
     ...(values.selection === undefined ? {} : { selection: values.selection }),
     ...(values.highlight === undefined ? {} : { highlight: values.highlight }),
   });
+  if (!checkedSpec.success)
+    throw new UsageError(
+      checkedSpec.error.issues.map((issue) => `--${issue.path.join(' ')}: ${issue.message}`).join('; '),
+    );
   let budget: number | undefined;
   if (values.budget !== undefined) budget = parseBudget(values.budget);
   else if (values.viewport !== undefined) budget = viewportBudget(viewport.width, viewport.height);
-  return { fixture, spec, budget, json: values.json };
+  return { fixture, spec: checkedSpec.data, budget, json: values.json };
 }
 
 /** The demo organisation as CAI NDJSON: the committed fixture for S and M, generated for L. */

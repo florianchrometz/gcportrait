@@ -110,6 +110,18 @@ describe('readRenderFlags: what it takes', () => {
 });
 
 describe('readRenderFlags: what it refuses, in the flags’ words', () => {
+  it.each([...FILTER_FLAG_KEYS.list, ...FILTER_FLAG_KEYS.number])(
+    'requires an explicit value for %s',
+    (key) => {
+      expect(read({ filter: [key] })).toBe(`--filter ${key} needs a value: ${key}=VALUE`);
+      expect(read({ filter: [key, `${key}=true`] })).toBe(`--filter ${key} needs a value: ${key}=VALUE`);
+    },
+  );
+
+  it.each(FILTER_FLAG_KEYS.boolean)('keeps the shorthand for boolean filter %s', (key) => {
+    expect(read({ filter: [key] })).toEqual(read({ filter: [`${key}=true`] }));
+  });
+
   it.each<[string, RenderFlags, string]>([
     ['an unknown lens', { lens: 'nope' }, `--lens takes ${LENSES}, not "nope"`],
     [
@@ -139,6 +151,7 @@ describe('readRenderFlags: what it refuses, in the flags’ words', () => {
       '--flip: Too big: expected array to have <=48 items',
     ],
     ['an unknown filter', { filter: ['colour=blue'] }, `--filter takes ${FILTERS}, not "colour"`],
+    ['an unknown filter without a value', { filter: ['colour'] }, `--filter takes ${FILTERS}, not "colour"`],
     [
       'a boolean filter as 1 (as the API refuses it)',
       { filter: ['showRegions=1'] },
@@ -157,11 +170,6 @@ describe('readRenderFlags: what it refuses, in the flags’ words', () => {
       'a list item that is no location',
       { filter: ['regions=Not A Region'] },
       '--filter regions: must be a location such as europe-west3',
-    ],
-    [
-      'a list filter alone (true is no type)',
-      { filter: ['includeTypes'] },
-      '--filter includeTypes: must be an asset type, a <service>/* glob or *',
     ],
     [
       'a view flag with a hash',

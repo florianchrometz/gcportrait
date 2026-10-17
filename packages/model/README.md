@@ -228,8 +228,9 @@ allows, whether the backend stops a pull or the render library counts what it re
 
 `readRenderFlags` is the one reader of both command lines, so each takes exactly what the render API takes.
 It knows each flag's grammar only: `--focus kind=KIND[,NAME=VALUE…]` (a value may hold `=`), `--filter
-KEY=VALUE` (a key alone is `KEY=true`, the last entry of a key wins; a boolean filter's `true` and `false`
-become booleans, a list filter's value is split at commas with empty items dropped, `depth` becomes a number),
+KEY=VALUE` (a boolean key alone is `KEY=true`; list and number filters require `=VALUE`; the last entry of a
+key wins; a boolean filter's `true` and `false` become booleans, a list filter's value is split at commas with
+empty items dropped, `depth` becomes a number),
 `--viewport WIDTHxHEIGHT`, and a number for `--scale` and `--width`; a text that is no number is passed on as
 it is, so the schema refuses it. Everything else is the schema's rule: a boolean filter is `true` or `false`,
 never `1` or `0`; a focus parameter's name starts with a letter; the viewport is at most 16 384 px a side;
