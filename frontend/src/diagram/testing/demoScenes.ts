@@ -4,10 +4,11 @@
  * CAI NDJSON → ingest), the graph and Scene builders with the compiled catalog at the default 1280×800 rect
  * budget, and the layout. Synchronous parts are cached per organisation; nothing here touches a DOM. A day of an
  * organisation's history is read as the data worker reads it (timeline/worker/replay.ts), and a day compared with
- * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts), also for a two-day pair
- * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`). For the tests that
- * only need the scene builder: the builder's environment for a snapshot (`sceneEnv`), and a demo Graph built
- * synchronously straight from the generator (`demoGraphSync`). Demo data without a Scene is in demoData.ts.
+ * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts), also for the two-day pairs
+ * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`, or a project moved
+ * into another folder, `projectMoved`). For the tests that only need the scene builder: the builder's environment
+ * for a snapshot (`sceneEnv`), and a demo Graph built synchronously straight from the generator (`demoGraphSync`).
+ * Demo data without a Scene is in demoData.ts.
  */
 import { catalog } from '@gcportrait/catalog';
 import { generateOrganization, toSnapshot } from '@gcportrait/demo-data';
@@ -165,7 +166,7 @@ export function diffDiagramOf(before: DiffDay, after: DiffDay, spec: ViewSpec): 
       lensTitle: catalog.lenses[spec.lens].title,
       overlayZones: built.report.overlays.map((overlay) => overlay.zone),
       icons: diagramIcons(scene),
-      zoneTypes: zoneTypeNames(scene, after.graph),
+      zoneTypes: zoneTypeNames(scene, after.graph, before.graph),
       consoleLinks: consoleLinks(scene, after.console),
       diff,
     },
@@ -242,4 +243,45 @@ export function perimeterRemoved(): Promise<readonly [DemoDay, DemoDay]> {
         asset.name !== DEMO_M_PERIMETER.perimeter && !asset.ancestors.includes('projects/10000000011'),
     ),
   );
+}
+
+/** Demo M's partner exchange project, and the folders `projectMoved` moves it from and into. */
+export const DEMO_M_MOVE = {
+  /** Partner exchange, in Platform / Networking on 2026-09-16. */
+  project: '//cloudresourcemanager.googleapis.com/projects/10000000003',
+  /** Platform / Networking. */
+  from: '//cloudresourcemanager.googleapis.com/folders/20000000002',
+  /** Workloads / Logistics / Production, which holds it the next day. */
+  to: '//cloudresourcemanager.googleapis.com/folders/20000000013',
+} as const;
+
+/** When `projectMoved` moves the project: between the two days. */
+const MOVED_AT = '2026-09-16T12:00:00Z';
+
+/**
+ * Demo M's partner exchange moved from Platform / Networking into Logistics / Production between two days
+ * (`demoMNextDay`): the project's `parent` and its `updateTime` change, and the `ancestors` of the project and of
+ * everything in it; nothing else changes.
+ */
+export function projectMoved(): Promise<readonly [DemoDay, DemoDay]> {
+  const project = DEMO_M_MOVE.project.slice(DEMO_M_MOVE.project.indexOf('projects/'));
+  const folder = DEMO_M_MOVE.to.slice(DEMO_M_MOVE.to.indexOf('folders/'));
+  return demoMNextDay((_graph, assets) => {
+    const into = assets.find((asset) => asset.name === DEMO_M_MOVE.to);
+    if (into === undefined) throw new Error(`demo M has no folder ${folder}`);
+    return assets.map((asset) => {
+      const at = asset.ancestors.indexOf(project);
+      if (at < 0) return asset;
+      const ancestors = [...asset.ancestors.slice(0, at + 1), ...into.ancestors];
+      if (asset.name !== DEMO_M_MOVE.project) return { ...asset, ancestors };
+      const data = typeof asset.data === 'object' && asset.data !== null ? asset.data : {};
+      return {
+        ...asset,
+        parent: DEMO_M_MOVE.to,
+        ancestors,
+        updateTime: MOVED_AT,
+        data: { ...data, parent: { type: 'folder', id: folder.slice('folders/'.length) } },
+      };
+    });
+  });
 }

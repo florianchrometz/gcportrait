@@ -1169,8 +1169,9 @@ src/diagram/
                            follows a Scene names the day on screen (`DayRef`)
   pipeline/dataHandler.ts  worker side: demo-data → CAI NDJSON → ingest → buildGraph (kept per snapshot)
                            → buildSceneWithReport with the compiled catalog and the viewport's rect budget;
-                           the answer carries the Scene's icons, its product containers' type names and each
-                           asset-backed node's console link (the catalog's consoleLinkFor)
+                           the answer carries the Scene's icons, its product containers' type names (a removed
+                           one's ghost named from the Graph of the day compared with) and each asset-backed
+                           node's console link (the catalog's consoleLinkFor)
   pipeline/sceneMemo.ts    the Scenes a Scene request and its diff build, kept per Graph
   pipeline/historyRead.ts  a history's day through ingest, each history asset read once: a day read from its
                            difference to the day before shares the assets the days before read
@@ -2131,26 +2132,33 @@ at its last position. It could be overlaid at the rect the previous Layout gave 
 its container without it, so that rect may hold something else now, and the UI thread would need the previous
 Layout and a rule for containers that moved. Instead the data worker builds the view on the earlier day too
 (at the detail level the drawn Scene uses, with the same flips), takes every node drawn there that the drawn
-Scene does not draw and that was removed or changed (a project marked for deletion has changed and the view
-hides it: "not drawn now"), with what it held that is gone now, and puts it back into its old container in
-the drawn Scene. The layout's deterministic sibling order (zones before cards, then by label:
-`@gcportrait/layout` `order.ts`) places it where it stood among its siblings, nothing overlaps it, and lines
-route around it; for that day the diagram makes room for it. A ghost needs its container: one whose container
-is not drawn open now (gone, or collapsed into a chip) gets none, and the chip counts it instead; a drill-in
-whose root moved draws none. Inside a ghost only what the diff found removed comes back, with the zones that
-are no asset around it (a region, a bundle), which take the ghost's reason; an asset still there on the drawn
-day never does, wherever that day draws it or whichever chip holds it (a removed perimeter takes none of the
-projects it secured that are still there). Ghost ids are the removed assets' names, in no Graph of the drawn
-day.
+Scene does not draw and that was removed, or that changed and the drawn day's view leaves out where it stood
+(a project marked for deletion has changed and the view hides it: "not drawn now"), with what it held that is
+gone now, and puts it back into its old container in the drawn Scene. A changed asset the drawn day's Graph
+holds in another container (it moved: drawn there, in a chip there, or out of the view now) or inside a chip
+of the drawn Scene is no ghost: it is drawn once, where the drawn day has it, and the chip that holds it
+counts it (demo M's partner exchange moved into a folder drawn as a chip: the chip's dot only). The layout's
+deterministic sibling order (zones before cards, then by label: `@gcportrait/layout` `order.ts`) places a
+ghost where it stood among its siblings, nothing overlaps it, and lines route around it; for that day the
+diagram makes room for it. A ghost needs its container: one whose container is not drawn open now (gone, or
+collapsed into a chip) gets none, and the chip counts it instead; a drill-in whose root moved draws none.
+Inside a ghost only what the diff found removed comes back, with the zones that are no asset around it (a
+region, a bundle), which take the ghost's reason; an asset still there on the drawn day never does, wherever
+that day draws it or whichever chip holds it (a removed perimeter takes none of the projects it secured that
+are still there). Ghost ids are the assets' names: a removed one is in no Graph of the drawn day, a changed
+one in no node of its Scene.
 
 **A ghost is no node.** The model keeps the ghosts apart (`DiagramModel.ghosts`), so nothing walks, focuses or
 selects them: no `data-id`, no tab stop, no trace, no drill-in, no flip (`zonesByFlip`), not counted in "N of
 M shown" (`rectsShown`). The pointer on a ghost is on the open zone it lies in (`data-in`, `nodeIdOf` in
 painter.ts). Each is a named `graphics-symbol` with a `<title>` ("Removed since 2026-09-07: Cloud Storage
-bucket: demo-data-1-scratch-1"): its body (fill and icon) at 50 %, its label and a "removed" ("not drawn now")
-line in the readable grey of that body, an open zone's title placed as a zone's (a folder's top-left, others
-centred) with its halo, and a dashed `accent.removed` outline (1.5 px, `5 3`) at full strength on a `canvas`
-band 1 px wider on each side: at 50 % the red would reach only 2.22 : 1 (light) and 2.73 (dark) on the canvas.
+bucket: demo-data-1-scratch-1"; a product container's names its asset type, which the data worker takes from
+the earlier day's Graph for a zone the drawn day's no longer holds: "Access Policy (Access Context Manager)
+service perimeter: data_perimeter"): its body (fill and icon) at 50 %, its label and a "removed" ("not drawn
+now") line in the readable grey of that body, an open zone's title placed as a zone's (a folder's top-left,
+others centred) with its halo, and a dashed `accent.removed` outline (1.5 px, `5 3`) at full strength on a
+`canvas` band 1 px wider on each side: at 50 % the red would reach only 2.22 : 1 (light) and 2.73 (dark) on
+the canvas.
 The ghost of a zone the earlier day drew as the view's overlay (a perimeter around its projects; the diff's
 `earlier`) is drawn as an overlay: untinted, with its header mark and the overlay's dashed outline 4 px inside
 the red one, and the legend's `secures` row names it.
@@ -2201,7 +2209,9 @@ fresh page (197–205 ms after the page has rested two minutes), 0.71–0.75 s o
 
 Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the diff, order independence, ghosts
 in their old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend
-on, backwards, drill-in, chips' counts; on demo M's perimeter removed, a ghost holds only what is gone),
+on, backwards, drill-in, chips' counts; on demo M's perimeter removed, a ghost holds only what is gone; on
+demo M's partner exchange moved into another folder, it is no ghost, moved into a chip, drawn there or out of
+the view), `pipeline/dataHandler.test.ts` (the removed perimeter's ghost named by its asset type),
 `diff/marks.test.ts` (the marker painter: which rects, where, the words), `diff/drawing.test.tsx` (the markers
 in the drawing in both themes, paint order, legend rows, description, names, a ghost is no node, an overlay's
 ghost), `diff/handler.test.ts` (the data worker's `scene` with `diffFrom` and `changes`), `legend.test.ts`,

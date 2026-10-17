@@ -32,9 +32,10 @@ export interface DiffCounts {
 
 /**
  * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden`: it changed so
- * that the view no longer draws it, like a project marked for deletion. Inside a ghost only what was removed comes
- * back, and the zones that are no asset around it (a region of a removed project) take the reason of the ghost
- * around them; an asset still there on the drawn day is never a ghost inside another.
+ * that the view no longer draws it where it stood, like a project marked for deletion (one the drawn day holds in
+ * another container, or inside a chip, is no ghost: it is drawn there, or the chip counts it). Inside a ghost only
+ * what was removed comes back, and the zones that are no asset around it (a region of a removed project) take the
+ * reason of the ghost around them; an asset still there on the drawn day is never a ghost inside another.
  */
 export type GhostReason = 'removed' | 'hidden';
 
@@ -72,7 +73,8 @@ export interface TickDiff {
   readonly changed: readonly string[];
   /**
    * The ghosts the data worker put into the Scene, by node id: the nodes the view drew on the earlier day and no
-   * longer draws, each in its old container, so the layout places it where it was (a ghost card for one tick).
+   * longer draws, removed or left out where they stood (`GhostReason`), each in its old container, so the layout
+   * places it where it was (a ghost card for one tick).
    */
   readonly ghosts: Readonly<Record<string, GhostReason>>;
   /**

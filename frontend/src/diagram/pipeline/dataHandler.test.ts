@@ -15,7 +15,15 @@ import { buildSceneWithReport } from '@gcportrait/graph';
 
 import { DEMO_S } from '../testing/demoData';
 import { dataHarness, TEST_VIEWPORT } from '../testing/dataHarness';
-import { consoleLinks, consoleSource, DataError, lensList, loadDemoSnapshot } from './dataHandler';
+import { DEMO_M_PERIMETER, diffDiagramOf, perimeterRemoved } from '../testing/demoScenes';
+import {
+  consoleLinks,
+  consoleSource,
+  DataError,
+  lensList,
+  loadDemoSnapshot,
+  zoneTypeNames,
+} from './dataHandler';
 import { createSceneMemo } from './sceneMemo';
 
 // The handler loads the demo generator on first use; loaded once here, before any test times its steps.
@@ -196,6 +204,29 @@ describe('console links', () => {
       },
     });
     expect(consoleLinks(scene, source)[VM]?.kind).toBe('resource');
+  });
+});
+
+describe('zone type names', () => {
+  const { perimeter: PERIMETER } = DEMO_M_PERIMETER;
+
+  it('names the ghost of a removed zone by its asset type, from the Graph of the day compared with', async () => {
+    // Demo M's perimeter removed between two days, its focus at the folder level: the perimeter comes back as a ghost.
+    const [before, after] = await perimeterRemoved();
+    const spec = normalizeViewSpec({
+      snapshot: 'demo:M',
+      detail: 'folders',
+      focus: { kind: 'perimeter', params: { perimeter: 'data_perimeter' } },
+    });
+    const { input, diff } = diffDiagramOf(before, after, spec);
+    expect(diff.ghosts[PERIMETER]).toBe('removed');
+    // The drawn day's Graph does not hold it; the earlier day's names it by its product, as a drawn perimeter is.
+    expect(Object.hasOwn(after.graph.nodes, PERIMETER)).toBe(false);
+    const names = zoneTypeNames(input.scene, after.graph, before.graph);
+    expect(names[PERIMETER]).toBe('Access Policy (Access Context Manager) service perimeter');
+    expect(input.zoneTypes).toEqual(names);
+    // From the drawn day's Graph alone it has no type name, and would be named by its kind ("Container").
+    expect(Object.hasOwn(zoneTypeNames(input.scene, after.graph), PERIMETER)).toBe(false);
   });
 });
 

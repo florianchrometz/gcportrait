@@ -8,13 +8,17 @@
  *   displayed tick") and the drawn day: by asset name, independent of either snapshot's order.
  * - **Ghosts** (removed, "drawn as a ghost card at its last position for one tick"): the view is built on the
  *   earlier day too, at the detail level the drawn Scene uses and with the same flips, and every node it drew there
- *   that the drawn Scene does not draw, and that was removed or changed (a project marked for deletion is changed,
- *   and the view no longer draws it or anything in it), goes back into the drawn Scene in its old container, with
- *   what it held then that is gone now. The layout then places it among its siblings by the same order it placed it
- *   the day before (zones before cards, then by label), so it lands where it was and nothing overlaps it. A ghost
- *   needs its container: one whose container is not drawn as an open zone now (gone, or collapsed into a chip) gets
- *   none; a chip counts it instead (below). The ghosts keep their ids: a removed asset is in no Graph of the drawn
- *   day, so no id is drawn twice.
+ *   that the drawn Scene does not draw goes back into the drawn Scene in its old container, with what it held then
+ *   that is gone now, when it was removed (absent from the drawn day's snapshot), or when it changed and the drawn
+ *   day's view leaves it out where it stood (a project marked for deletion is changed, and the view no longer draws
+ *   it or anything in it: "not drawn now"). A changed asset the drawn day's Graph holds in another container (it
+ *   moved: drawn there, inside a chip there, or outside the view now) or inside a chip of the drawn Scene is no
+ *   ghost: it is drawn once, where the drawn day has it, and the chip that holds it counts it (below). The layout
+ *   then places a ghost among its siblings by the same order it placed it the day before (zones before cards, then
+ *   by label), so it lands where it was and nothing overlaps it. A ghost needs its container: one whose container is
+ *   not drawn as an open zone now (gone, or collapsed into a chip) gets none; a chip counts it instead (below). The
+ *   ghosts keep their ids: a removed asset is in no Graph of the drawn day, and a changed one is not drawn there,
+ *   so no id is drawn twice.
  * - **What a ghost holds** is only what is gone: the assets the diff found removed (absent from the drawn day's
  *   snapshot), and the zones that are no asset (a region or zone, a bundle) around them (a closed one unless the
  *   drawn day's Graph still holds it). An asset still there on the drawn day never comes back inside a ghost,
@@ -229,6 +233,11 @@ function ghostsOf(
   const then = indexScene(earlier.scene);
   const overlays = new Set(earlier.report.overlays.map((overlay) => overlay.zone));
   const gone = (id: string): boolean => !now.nodes.has(id);
+  // Whether the drawn day's view leaves out a changed asset where it stood: the drawn day's Graph holds it in the
+  // container it lay in the day before (it did not move), and no chip of the drawn Scene holds it.
+  const leftOut = (id: string): boolean =>
+    input.after.graph.containment.parent[id] === input.before.graph.containment.parent[id] &&
+    holdingChip(input.after.graph, now, id) === null;
   // A zone of the earlier Scene, with what the scene builder decided its state from there.
   const keep = (node: SceneNode): void => {
     if (node.type !== 'zone') return;
@@ -265,7 +274,7 @@ function ghostsOf(
     return [{ ...child, children }];
   };
   for (const [id, node] of then.nodes) {
-    if (!gone(id) || !(removed.has(id) || changed.has(id))) continue;
+    if (!gone(id) || !(removed.has(id) || (changed.has(id) && leftOut(id)))) continue;
     const up = then.parent.get(id) ?? null;
     // Its container must be drawn open today (or be the canvas); inside a vanished one it is part of that ghost.
     if (up !== null && !isOpenZone(now.nodes.get(up))) continue;

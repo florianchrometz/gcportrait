@@ -115,7 +115,9 @@ you came from**:
   inside" with a link;
 - **changed** (same name, a different `updateTime`): a small amber dot on the node's top-right corner. A
   collapsed zone holding anything added, removed or changed gets the dot too, and its name says how many of
-  each;
+  each. A node that moved (a project into another folder) is marked only where it is now, never at its old
+  place; one the view no longer draws where it stood (a project marked for deletion) comes back as a ghost
+  there, with "not drawn now" under its name;
 - the legend adds a row for each marker drawn ("added since 2026-09-23"; "compared with 2026-09-24" when you
   stepped back), and the details drawer of a changed node gets a **What changed** section: its update time on
   both ticks, the fields of its data that differ ("targetSize 2 → 4"), and for a container what inside it was

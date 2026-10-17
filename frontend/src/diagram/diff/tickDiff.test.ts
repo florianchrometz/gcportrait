@@ -5,8 +5,10 @@
  * worker does: the diff is `diffSnapshots` of the two days, by name and order-independent; what the view drew the
  * day before and no longer draws comes back as ghosts in its old container, with the reason, holding only what is
  * gone (on demo M's two days with its perimeter removed, a project it secured that is still there, inside a chip,
- * comes back with nothing), and the zones the ghosts depend on are listed as that day drew them; chips count what
- * changed inside them; nothing changes when the days are alike, and nothing is ghosted when the drill-in root moved.
+ * comes back with nothing), and the zones the ghosts depend on are listed as that day drew them; a changed asset the
+ * drawn day still holds is a ghost only where the view leaves it out (on demo M's two days with a project moved into
+ * another folder, it is none, and the chip that holds it counts it); chips count what changed inside them; nothing
+ * changes when the days are alike, and nothing is ghosted when the drill-in root moved.
  */
 import { catalog } from '@gcportrait/catalog';
 import { buildGraph, buildSceneWithReport, diffSnapshots } from '@gcportrait/graph';
@@ -17,8 +19,10 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { DEMO_S } from '../testing/demoData';
 import {
   demoDayGraph,
+  DEMO_M_MOVE,
   DEMO_M_PERIMETER,
   perimeterRemoved,
+  projectMoved,
   sceneEnv as env,
   type DemoDay,
 } from '../testing/demoScenes';
@@ -50,6 +54,22 @@ async function inputOf(
   return {
     before: { snapshot: before.snapshot, graph: before.graph, tick: since },
     after: { snapshot: after.snapshot, graph: after.graph, tick: day },
+    spec,
+    scene,
+    report,
+    catalog,
+    envBefore: env(before.snapshot),
+    envAfter: env(after.snapshot),
+  };
+}
+
+/** The input of a diff between two days for a view, the drawn Scene built as the worker does. */
+function pairInput(before: DemoDay, after: DemoDay, view: ViewSpecInput): TickDiffInput {
+  const spec = normalizeViewSpec(view);
+  const { scene, report } = buildSceneWithReport(after.graph, spec, catalog, env(after.snapshot));
+  return {
+    before,
+    after,
     spec,
     scene,
     report,
@@ -217,22 +237,6 @@ describe('ghosts', () => {
 describe('what a ghost holds', () => {
   const { perimeter: PERIMETER, secured: SECURED, stillThere: STILL_THERE } = DEMO_M_PERIMETER;
 
-  /** The input of a diff between two days for a view, the drawn Scene built as the worker does. */
-  function pairInput(before: DemoDay, after: DemoDay, view: ViewSpecInput): TickDiffInput {
-    const spec = normalizeViewSpec(view);
-    const { scene, report } = buildSceneWithReport(after.graph, spec, catalog, env(after.snapshot));
-    return {
-      before,
-      after,
-      spec,
-      scene,
-      report,
-      catalog,
-      envBefore: env(before.snapshot),
-      envAfter: env(after.snapshot),
-    };
-  }
-
   it('is only what is gone: a project the removed perimeter secured that is still there, inside a chip, comes back with nothing', async () => {
     const [before, after] = await perimeterRemoved();
     // Every zone open but those deeper than one asset zone. The earlier day drew the perimeter around its two
@@ -283,6 +287,55 @@ describe('what a ghost holds', () => {
         expect(diff.ghosts[child.id], child.id).toBe(zone ? 'hidden' : 'removed');
       }
     }
+  });
+});
+
+describe('a changed asset the drawn day still holds', () => {
+  const { project: PARTNER, from: NETWORKING, to: LOGISTICS_PRODUCTION } = DEMO_M_MOVE;
+  const view = { snapshot: 'demo:M', lens: 'overview', detail: 'folders' } as const;
+
+  it('is no ghost when it moved into a chip: the chip that holds it counts it, and nothing is drawn twice', async () => {
+    const [before, after] = await projectMoved();
+    // Two levels of folders open: the day before, Platform / Networking drew the project as a chip; the drawn day,
+    // Logistics / Production, a level deeper, is a chip itself, and holds it.
+    const input = pairInput(before, after, { ...view, filters: { depth: 2 } });
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    expect(parents(earlier.scene).get(PARTNER)).toBe(NETWORKING);
+    expect(zoneOf(input.scene, NETWORKING)?.collapsed).toBeUndefined();
+    expect(parents(input.scene).has(PARTNER)).toBe(false);
+    expect(after.graph.containment.parent[PARTNER]).toBe(LOGISTICS_PRODUCTION);
+    expect(zoneOf(input.scene, LOGISTICS_PRODUCTION)?.collapsed).toBeDefined();
+
+    const { scene, diff } = tickDiff(input);
+    expect([diff.added, diff.removed, diff.changed]).toEqual([[], [], [PARTNER]]);
+    // Not a ghost at its old place: the chip's marker is the one place it is drawn.
+    expect(diff.ghosts).toEqual({});
+    expect(diff.earlier).toEqual({});
+    expect(scene).toBe(input.scene);
+    expect(diff.inside).toEqual({ [LOGISTICS_PRODUCTION]: { added: 0, removed: 0, changed: 1 } });
+  });
+
+  it('is no ghost when it moved where the view draws it, or out of the view', async () => {
+    const [before, after] = await projectMoved();
+    // Every folder open: the drawn day draws it in its new folder (with the changed dot).
+    const drawn = pairInput(before, after, view);
+    expect(parents(drawn.scene).get(PARTNER)).toBe(LOGISTICS_PRODUCTION);
+    const moved = tickDiff(drawn);
+    expect(moved.diff.changed).toEqual([PARTNER]);
+    expect(moved.diff.ghosts).toEqual({});
+    expect(moved.diff.inside).toEqual({});
+    expect(moved.scene).toBe(drawn.scene);
+    // Drilled into its old folder: the drawn day's view holds it nowhere, since it lies outside the root now.
+    const left = pairInput(before, after, { ...view, root: NETWORKING });
+    expect(left.report.root.used).toBe(NETWORKING);
+    const earlier = buildSceneWithReport(before.graph, left.spec, catalog, left.envBefore);
+    expect(parents(earlier.scene).get(PARTNER)).toBeNull();
+    expect(parents(left.scene).has(PARTNER)).toBe(false);
+    const gone = tickDiff(left);
+    expect(gone.diff.changed).toEqual([PARTNER]);
+    expect(gone.diff.ghosts).toEqual({});
+    expect(gone.diff.earlier).toEqual({});
+    expect(gone.scene).toBe(left.scene);
   });
 });
 

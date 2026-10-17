@@ -187,8 +187,9 @@ describe.each(['light', 'dark'] as const)('the ghost of an overlay zone, %s them
     expect(Number(line.getAttribute('x'))).toBeCloseTo(rect.x, 1);
     const order = Array.from(ghost.children).map((child) => child.getAttribute('class'));
     expect(order.indexOf('dg-ghost-overlay')).toBeLessThan(order.indexOf('dg-ghost-line'));
-    expect(ghost.getElementsByTagName('title')[0]?.textContent).toMatch(
-      /^Removed since 2026-09-16: .*: data_perimeter\b/,
+    // Named by its asset type, from the earlier day's Graph.
+    expect(ghost.getElementsByTagName('title')[0]?.textContent).toBe(
+      'Removed since 2026-09-16: Access Policy (Access Context Manager) service perimeter: data_perimeter (perimeter_type_regular)',
     );
   });
 

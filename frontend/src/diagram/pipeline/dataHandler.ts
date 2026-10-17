@@ -105,14 +105,17 @@ export function lensList(): LensInfo[] {
 
 /**
  * The type names of a Scene's product-container zones, from the Graph (a Scene zone carries only its kind):
- * "Compute Engine instance group manager" names a managed instance group's zone better than "Container".
+ * "Compute Engine instance group manager" names a managed instance group's zone better than "Container". A Scene
+ * drawn compared with an earlier day names a zone the drawn day's Graph does not hold (the ghost of a removed one,
+ * diff/tickDiff.ts) from the Graph of that day, `earlier`.
  */
-export function zoneTypeNames(scene: Scene, graph: Graph): Record<string, string> {
+export function zoneTypeNames(scene: Scene, graph: Graph, earlier?: Graph): Record<string, string> {
   const names: Record<string, string> = {};
   const walk = (nodes: readonly SceneNode[]): void => {
     for (const node of nodes) {
       if (node.type !== 'zone') continue;
-      const asset = node.kind === 'product-container' ? graph.nodes[node.id] : undefined;
+      const asset =
+        node.kind === 'product-container' ? (graph.nodes[node.id] ?? earlier?.nodes[node.id]) : undefined;
       if (asset !== undefined) names[node.id] = cardTypeName(asset.product, asset.assetType);
       walk(node.children);
     }
@@ -496,6 +499,8 @@ export function createDataHandler(
     const { report } = built;
     let { scene } = built;
     let diff: TickDiff | undefined;
+    // The Graph of the day compared with, which names the zones of its ghosts.
+    let ghostGraph: Graph | undefined;
     if (earlier !== null && earlier.tick !== tick) {
       const compared = tickDiff({
         before: {
@@ -514,6 +519,7 @@ export function createDataHandler(
       });
       scene = compared.scene;
       diff = compared.diff;
+      ghostGraph = earlier.loaded.graph;
     }
     post({
       type: 'scene',
@@ -531,7 +537,7 @@ export function createDataHandler(
         },
         lensTitle: catalog.lenses[spec.lens].title,
         icons: diagramIcons(scene),
-        zoneTypes: zoneTypeNames(scene, graph),
+        zoneTypes: zoneTypeNames(scene, graph, ghostGraph),
         consoleLinks: consoleLinks(scene, links, environment.consoleTypes),
         ...(diff === undefined ? {} : { diff }),
       },
