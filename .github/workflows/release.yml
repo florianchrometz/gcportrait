@@ -29,8 +29,10 @@
 # with the tag in a VERSION file), which infra/install.sh (https://gcportrait.app/install.sh) downloads, and
 # checksums.txt, the SHA-256 of every other asset, against which the installer checks the archive before it unpacks
 # or runs anything; scripts/release-assets.sh writes both. A pre-release tag (with a `-`) becomes a pre-release, and
-# a release that is not the newest is not marked "latest" (the installer's default is GitHub's "latest"). It needs
-# the CHANGELOG.md sections: tag only after `pnpm release:version`.
+# a release that is not the newest is not marked "latest" (the installer's default is GitHub's "latest"). A
+# pre-release without CHANGELOG.md sections of its own takes its version's notes (v1.0.0-rc.1 those of 1.0.0), so
+# it is a trial run of that release (docs/contributing.md, "9. Releases"). It needs the CHANGELOG.md sections: tag
+# only after `pnpm release:version`.
 #
 # Not in the pipeline (docs/backlog.md): signing the image (cosign keyless signing with the workflow's OIDC
 # identity, which needs `id-token: write`, and `cosign verify` documented for self-hosters) and build

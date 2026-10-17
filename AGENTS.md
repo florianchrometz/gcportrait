@@ -841,13 +841,17 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   platform; the GitHub release with notes from the `CHANGELOG.md` sections (the long form first, the installer
   line, the image's tags and digest), the deploy scripts the installer downloads and `checksums.txt`. Run by
   hand, it publishes `dev` only.
+- **A pre-release tag is a trial run of its release**: a tag such as `vX.Y.Z-rc.1` publishes the image under
+  its own version tag only, never `latest` or `X.Y`, creates a GitHub pre-release not marked latest, and takes
+  the notes of `X.Y.Z` when no `CHANGELOG.md` has a section of its own, so the pipeline can be checked before
+  the release it precedes.
 - **The ghcr.io package is public**, because self-hosters' Artifact Registry pulls it without credentials.
 - **The website** deploys only while the repository variable `PAGES_DEPLOY` is `true`; a tag's website job
   refuses stale `docs/media/` ([docs/website.md](docs/website.md)).
 - **The first release, 1.0.0, is already versioned**: its tag needs no versioning step. Every later release
   starts from the changesets merged since.
 
-[docs/contributing.md](docs/contributing.md) (section 9) has the one-time setup and the steps.
+[docs/contributing.md](docs/contributing.md) (section 9) has the one-time setup, the trial run and the steps.
 
 ## Documentation
 

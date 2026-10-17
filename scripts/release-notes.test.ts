@@ -52,6 +52,9 @@ const FRONTEND = `# @gcportrait/frontend
 
 const WORKSPACE = "packages:\n  - frontend\n  - backend\n  - 'packages/*'\n  - website\n";
 
+/** The notes' "Changes" section, between its heading and the next one. */
+const changesOf = (text: string) => /\n## Changes\n\n([\s\S]*?)\n+## Deploy\n/.exec(text)?.[1];
+
 describe('release-notes.mjs', () => {
   let tree: TempTree;
 
@@ -148,6 +151,48 @@ describe('release-notes.mjs', () => {
     expect(older.stdout).not.toContain('Shared change');
   });
 
+  it('takes the notes of the release a pre-release precedes when it has no section of its own', () => {
+    const release = notes('--tag', 'v1.2.0');
+    const pre = notes('--tag', 'v1.2.0-rc.1', '--image', 'ghcr.io/example/gcportrait', '--latest', 'false');
+    expect(pre.status, pre.stderr).toBe(0);
+    expect(
+      pre.stdout.startsWith(
+        `${NON_AFFILIATION_LONG}\n\n` +
+          "A pre-release of 1.2.0, published for checking; its notes are 1.2.0's.\n\n" +
+          '## Changes\n\n### Major changes\n\n- The export menu moved.\n',
+      ),
+    ).toBe(true);
+    expect(changesOf(release.stdout)).toContain('- A fix in the backend.');
+    expect(changesOf(pre.stdout)).toBe(changesOf(release.stdout));
+    expect(pre.stdout).toContain('bash -s -- --version v1.2.0-rc.1 --project YOUR_PROJECT');
+    expect(pre.stdout).toContain('tagged `1.2.0-rc.1`.');
+    expect(pre.stdout).toContain('ghcr.io/example/gcportrait:1.2.0-rc.1');
+    expect(release.stdout).not.toContain('A pre-release of');
+  });
+
+  it('takes a pre-release’s own sections when a changelog has them, not those of its release', () => {
+    tree.write(
+      'backend/CHANGELOG.md',
+      BACKEND.replace(
+        '## 1.1.0',
+        '## 1.2.0-rc.1\n\n### Minor Changes\n\n- 2b3c4d5: Only in the pre-release.\n\n## 1.1.0',
+      ),
+    );
+    const pre = notes('--tag', 'v1.2.0-rc.1');
+    expect(pre.status, pre.stderr).toBe(0);
+    expect(changesOf(pre.stdout)).toBe('### Minor changes\n\n- Only in the pre-release.');
+    expect(pre.stdout).not.toContain('A pre-release of');
+    expect(pre.stdout).not.toContain('The export menu moved.');
+  });
+
+  it('finds no notes for a pre-release of a version no changelog has', () => {
+    expect(releaseNotes({ root: tree.root, tag: 'v9.9.9-rc.1' })).toBeNull();
+    const missing = notes('--tag', 'v9.9.9-rc.1');
+    expect(missing.status).toBe(1);
+    expect(missing.stdout).toBe('');
+    expect(missing.stderr).toContain('no CHANGELOG.md has a section "## 9.9.9-rc.1" or "## 9.9.9".');
+  });
+
   it('keeps the long form once when an entry repeats it, wrapped as the hand-written notes wrap it', () => {
     const wrapped = NON_AFFILIATION_LONG.replace('project and is ', 'project and is\n  ').replace(
       'Google Cloud product icons are ',
@@ -187,6 +232,11 @@ describe('release-notes.mjs', () => {
       expect(text).toContain(`  ### ${heading}\n`);
     expect(text).not.toContain('Patch changes');
     expect(text).not.toContain('Updated dependencies');
+    // A pre-release of it, v1.0.0-rc.1, has no section of its own and carries the same changes.
+    const pre = releaseNotes({ root: REPO, tag: 'v1.0.0-rc.1' }) ?? '';
+    expect(pre).toContain("A pre-release of 1.0.0, published for checking; its notes are 1.0.0's.");
+    expect(changesOf(text)).toContain('- The first release of gcportrait.');
+    expect(changesOf(pre)).toBe(changesOf(text));
   });
 
   it('refuses a version that no changelog has, and bad arguments', () => {

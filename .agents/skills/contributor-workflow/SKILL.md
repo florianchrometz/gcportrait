@@ -172,7 +172,9 @@ first, then made in small steps (AGENTS.md, "How to work a task").
   linux/arm64, smoke-tests both, pushes it to GitHub Container Registry (`ghcr.io/OWNER/gcportrait`: `X.Y.Z`,
   `X.Y`, `latest`) with the workflow's own `GITHUB_TOKEN`, attaches one SBOM per platform and creates the
   GitHub release from the `CHANGELOG.md` sections with the non-affiliation long form
-  (`scripts/release-notes.mjs`). Run by hand it publishes `dev` only. One-time setup: make the package public
+  (`scripts/release-notes.mjs`). Run by hand it publishes `dev` only. A pre-release tag (`vX.Y.Z-rc.1`) is
+  a trial run of its release: its own version tag only, a GitHub pre-release not marked latest, and the notes
+  of `X.Y.Z` when it has no `CHANGELOG.md` section of its own. One-time setup: make the package public
   (`docs/contributing.md`, "9. Releases"). Its website jobs run on a tag only while the repository variable
   `PAGES_DEPLOY` is `true`: they build the site strictly, refuse stale `docs/media/` and deploy to GitHub
   Pages (`docs/website.md`); `pages.yml` deploys `main` under the same switch.

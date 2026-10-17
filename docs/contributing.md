@@ -461,6 +461,34 @@ One-time setup, on GitHub:
    `--image ghcr.io/OWNER/gcportrait:TAG`; `PUBLISHED_IMAGE` and `SOURCE_REPOSITORY` in `infra/common.sh` name
    the defaults, and `REPOSITORY` in `infra/install.sh` the repository whose releases the installer downloads.
 
+**A trial run of a release.** A pre-release tag runs the whole pipeline without changing what self-hosters
+deploy by default. After the one-time setup (`gh workflow run release.yml --ref main` once, which publishes
+`dev`, then the package made public):
+
+```sh
+git tag v1.0.0-rc.1
+git push origin v1.0.0-rc.1
+```
+
+It publishes the image as `1.0.0-rc.1` and creates the GitHub release `v1.0.0-rc.1`, marked as a pre-release,
+with 1.0.0's notes (a pre-release without `CHANGELOG.md` sections of its own takes those of its version, and
+its notes say so in one sentence), the deploy archive and `checksums.txt`. It moves neither `latest` nor
+`1.0`, and the release is not marked latest, so the installer's default (GitHub's latest release) and
+`infra/deploy.sh`'s default image (`latest`) stay as they are. While `PAGES_DEPLOY` is `true` the tag also
+deploys the website and the static demo, whose version then reads `1.0.0-rc.1`; the next push to `main`, or
+the daily run of `pages.yml`, deploys `main` again. To check it, the installer line downloads and checks the
+pre-release's deploy scripts and `infra/deploy.sh` finds its image on ghcr.io; both print what they would
+deploy:
+
+```sh
+curl -fsSL https://gcportrait.app/install.sh | bash -s -- --version v1.0.0-rc.1 --project YOUR_PROJECT --dry-run
+infra/deploy.sh --project YOUR_PROJECT --image 1.0.0-rc.1 --dry-run
+```
+
+To take it down afterwards, if wanted: `gh release delete v1.0.0-rc.1 --yes --cleanup-tag` deletes the release
+and its tag on GitHub (`git tag -d v1.0.0-rc.1` the local one), and the image version `1.0.0-rc.1` is deleted
+on the package's page on GitHub, from its list of versions.
+
 Then, per release: `pnpm release:version` (consumes the changesets, writes the `CHANGELOG.md` files and the
 versions), commit, and tag `vX.Y.Z` on `main`. The release job needs the version's `CHANGELOG.md` sections: a
 tag without them fails at the release notes, after the image is published. Once the release is out, `curl

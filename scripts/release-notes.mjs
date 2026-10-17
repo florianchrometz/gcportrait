@@ -8,6 +8,11 @@
  * release's deploy scripts and checksums.txt that scripts/release-assets.sh attaches), and the container image with
  * its tags, digest and the command that runs it locally.
  *
+ * A pre-release tag (vX.Y.Z-SUFFIX, such as v1.0.0-rc.1) takes its own `## X.Y.Z-SUFFIX` sections when any
+ * CHANGELOG.md has one (changesets' pre mode writes them), and otherwise the `## X.Y.Z` sections of the release
+ * it precedes, with one sentence after the statement saying so. Its image is tagged with its own version only:
+ * no `X.Y`, and `latest` only when --latest says so (release.yml never does for a pre-release).
+ *
  * All `@gcportrait/*` packages form one fixed changesets group, so every package that changed carries the same
  * version; a change listed by several packages appears once. "Updated dependencies" entries (the changesets
  * bookkeeping between the workspace's own packages) and the short commit hash changesets puts in front of each
@@ -15,11 +20,12 @@
  * already (the 1.0.0 entry is the whole of CHANGELOG.md's 1.0.0 section, the long form included).
  *
  * Usage:
- *   node scripts/release-notes.mjs --tag vX.Y.Z [--image ghcr.io/OWNER/gcportrait] [--digest sha256:...]
- *                                  [--latest true|false] [--root DIR]
+ *   node scripts/release-notes.mjs --tag vX.Y.Z[-SUFFIX] [--image ghcr.io/OWNER/gcportrait]
+ *                                  [--digest sha256:...] [--latest true|false] [--root DIR]
  *
- * Exit code 0 with the notes on standard output; 1 when no CHANGELOG.md has a section for the version (tag only
- * after `pnpm release:version`); 2 on a usage error. Plain ESM, Node built-ins only.
+ * Exit code 0 with the notes on standard output; 1 when no CHANGELOG.md has a section for the version, nor for a
+ * pre-release one for X.Y.Z (tag only after `pnpm release:version`); 2 on a usage error. Plain ESM, Node
+ * built-ins only.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -136,13 +142,25 @@ export function withoutLongForm(entry) {
 }
 
 /**
- * The notes of the release `tag`, or null when no CHANGELOG.md has a section for its version.
- * @param {{ root: string, tag: string, image?: string | undefined, digest?: string | undefined, latest?: boolean }} options
- * @returns {string | null}
+ * The versions whose CHANGELOG.md sections the notes of `version` are read from, in order of preference: the
+ * version itself and, for a pre-release (X.Y.Z-SUFFIX), then X.Y.Z, whose notes a pre-release without sections of
+ * its own takes.
+ * @param {string} version
+ * @returns {string[]}
  */
-export function releaseNotes({ root, tag, image, digest, latest = false }) {
-  const version = TAG.exec(tag)?.[1];
-  if (version === undefined) throw new UsageError(`--tag must be a release tag such as v1.2.3, not "${tag}"`);
+export function sectionVersions(version) {
+  const release = /^\d+\.\d+\.\d+/.exec(version)?.[0];
+  return release === undefined || release === version ? [version] : [version, release];
+}
+
+/**
+ * The changes of one version across the workspace packages' CHANGELOG.md files, by kind, each entry once and
+ * without the paragraphs that repeat the long form; null when no CHANGELOG.md has a `## version` section.
+ * @param {string} root
+ * @param {string} version
+ * @returns {Map<string, string[]> | null}
+ */
+function changes(root, version) {
   /** @type {Map<string, string[]>} */
   const byKind = new Map();
   const seen = new Set();
@@ -162,9 +180,33 @@ export function releaseNotes({ root, tag, image, digest, latest = false }) {
       }
     }
   }
-  if (sections === 0) return null;
+  return sections === 0 ? null : byKind;
+}
 
-  const out = [NON_AFFILIATION_LONG, '', '## Changes', ''];
+/**
+ * The notes of the release `tag`, or null when no CHANGELOG.md has a section for its version, nor for a
+ * pre-release one for the release it precedes (sectionVersions).
+ * @param {{ root: string, tag: string, image?: string | undefined, digest?: string | undefined, latest?: boolean }} options
+ * @returns {string | null}
+ */
+export function releaseNotes({ root, tag, image, digest, latest = false }) {
+  const version = TAG.exec(tag)?.[1];
+  if (version === undefined) throw new UsageError(`--tag must be a release tag such as v1.2.3, not "${tag}"`);
+  /** @type {Map<string, string[]> | null} */
+  let byKind = null;
+  let notesOf = version;
+  for (const candidate of sectionVersions(version)) {
+    byKind = changes(root, candidate);
+    notesOf = candidate;
+    if (byKind !== null) break;
+  }
+  if (byKind === null) return null;
+
+  const out = [NON_AFFILIATION_LONG, ''];
+  if (notesOf !== version) {
+    out.push(`A pre-release of ${notesOf}, published for checking; its notes are ${notesOf}'s.`, '');
+  }
+  out.push('## Changes', '');
   const kinds = [...KINDS, ...[...byKind.keys()].filter((kind) => !KINDS.includes(kind))];
   let listed = 0;
   for (const kind of kinds) {
@@ -242,8 +284,11 @@ function main() {
     latest: values.latest === 'true',
   });
   if (notes === null) {
+    const sections = sectionVersions(values.tag.slice(1))
+      .map((version) => `"## ${version}"`)
+      .join(' or ');
     process.stderr.write(
-      `release-notes: no CHANGELOG.md has a section "## ${values.tag.slice(1)}". Run \`pnpm release:version\` ` +
+      `release-notes: no CHANGELOG.md has a section ${sections}. Run \`pnpm release:version\` ` +
         'and commit its changes before tagging the release.\n',
     );
     process.exitCode = 1;
