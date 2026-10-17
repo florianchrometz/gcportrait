@@ -100,7 +100,7 @@ const SEVERITY_BY_LEVEL: Readonly<Record<string, string>> = {
 
 /**
  * The request as logged. The client address is left out on purpose: it identifies a person as much as an
- * email does, so logs never carry it (AGENTS.md, Security and privacy, The backend). Rate limiting still keys
+ * email does, so logs never carry it (backend/AGENTS.md, Hardening). Rate limiting still keys
  * on it in memory; it just never reaches a log line. `x-forwarded-for` is not on LOGGED_HEADERS for the same
  * reason.
  */

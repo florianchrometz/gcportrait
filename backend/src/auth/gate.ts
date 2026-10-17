@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The service-account gate (AGENTS.md, Security and privacy, The service-account gate; principle 4).
+ * The service-account gate (backend/AGENTS.md, The service-account gate; AGENTS.md, Security and privacy, principle 4).
  * Before the backend reads a scope with its own identity, it proves, with the same parsed scope in every call, that
  * the *caller* may see that scope:
  *

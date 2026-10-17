@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The render API's own error answers (AGENTS.md, Exports and the render API), always sent before any byte of an
+ * The render API's own error answers (backend/AGENTS.md, The render API), always sent before any byte of an
  * image, in the server's one shape (../errors.ts, `sendError`) with the code the route names for each: a pull's
  * `error` frame, an upload that cannot be read, a failed job. `reason` is Google's `ErrorInfo` reason when a pull's
  * error frame carried one; `upstream` is Google's own status and code when Google's answer led to it.

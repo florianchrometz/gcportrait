@@ -28,7 +28,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
   budget, a higher minimum rate, or a configurable `STREAM_STALL_MS` (O11).
 - **Service-account mode at organisation scope** is open to every member of the customer's domain who can sign
   in, since Google grants `resourcemanager.organizations.get` domain-wide by default; a stricter rule for
-  organisations ([AGENTS.md](../AGENTS.md), "Security and privacy", "The service-account gate";
+  organisations ([backend/AGENTS.md](../backend/AGENTS.md), "The service-account gate";
   [permissions.md](permissions.md)).
 - **The demo-only Connect page's privacy sentence** ("This demo processes no personal data … stores nothing on
   its server") against the request logs and the in-memory rate limiter of a self-hosted demo-only instance on

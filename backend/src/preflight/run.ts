@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The permission preflight (docs/permissions.md; AGENTS.md, Security and privacy, Quota project and the
+ * The permission preflight (docs/permissions.md; backend/AGENTS.md, Quota project and the
  * permission check; skill cai-ingestion §3): which of the grants a pull of one scope needs are in place,
  * checked against Google with the caller's token, answered as a checklist with copy-ready commands.
  *
@@ -13,7 +13,7 @@
  *    Each answer is matched on HTTP status and `ErrorInfo` reason together ({@link classifyProbe}); an answer the
  *    table does not know stops the preflight and fails closed.
  *
- * **Service-account mode** (AGENTS.md, Security and privacy, The service-account gate): the gate of
+ * **Service-account mode** (backend/AGENTS.md, The service-account gate): the gate of
  * ../auth/gate.ts, checked afresh (the caller's `testIamPermissions` for the scope's `get`; with
  * `SA_MODE_STRICT_EXPOSURE`, the account's `get` must be exactly Resource Manager's IAM denial), and only
  * after a pass the account's own probe, without a quota header. The gate is never skipped and never

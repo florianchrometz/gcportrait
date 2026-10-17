@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The backend's own identity for service-account mode (AGENTS.md, Security and privacy, The service-account
+ * The backend's own identity for service-account mode (backend/AGENTS.md, The service-account
  * gate): Application Default Credentials (ADC), resolved once at start-up by main.ts when
  * `SA_MODE_ENABLED=true`.
  *

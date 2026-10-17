@@ -2,7 +2,7 @@
 /**
  * The render flags of the command lines (`pnpm render`, `pnpm render-scene`) read into the render options: one
  * reader for both, checked by `RenderOptionsSchema`, so a command line takes exactly what `POST /api/render`
- * takes (AGENTS.md, Exports and the render API). The reader knows each flag's grammar only:
+ * takes (backend/AGENTS.md, The render API). The reader knows each flag's grammar only:
  * `--focus kind=KIND[,NAME=VALUE…]`, `--filter KEY=VALUE` (a boolean key alone is `KEY=true`; a boolean filter takes
  * `true` or `false`, a list filter comma-separated items, `depth` a number), `--viewport WIDTHxHEIGHT`, and a
  * number for `--scale` and `--width`. Every value is then judged by the schema, and each of its issues is told

@@ -118,7 +118,7 @@ risk of section 8.
 
 The risk is a confused deputy: an instance's account that a customer granted `roles/cloudasset.viewer` on
 `organizations/X` must not read X for every person who can sign in to that instance. The gate
-([AGENTS.md](../AGENTS.md), "Security and privacy", "The service-account gate"; `backend/src/auth/gate.ts`)
+([backend/AGENTS.md](../backend/AGENTS.md), "The service-account gate"; `backend/src/auth/gate.ts`)
 asks Resource Manager's `testIamPermissions` with the **caller's** token for the scope's `get` permission
 before every call as the account, every page of a stream included; a pass is remembered for at most five
 minutes per token hash and scope, never past the token's expiry, never a refusal. Nothing is asked as the

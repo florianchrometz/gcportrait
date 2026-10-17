@@ -592,7 +592,7 @@ else
 fi
 # deploy.sh grants this account nothing. Report what it holds on the project, if anything, because a role that
 # includes resourcemanager.projects.get makes the service-account gate refuse this project as a scope
-# (AGENTS.md, Security and privacy, The service-account gate).
+# (backend/AGENTS.md, The service-account gate).
 HELD_ROLES="$(gcloud projects get-iam-policy "$PROJECT" --flatten='bindings[].members' \
   --filter="bindings.members:serviceAccount:${BACKEND_SA_EMAIL}" --format='value(bindings.role)' 2>/dev/null || true)"
 if [ -n "$HELD_ROLES" ]; then

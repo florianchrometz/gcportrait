@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/render` (AGENTS.md, Exports and the render API): a view of a scope, an uploaded export or
+ * `POST /api/render` (backend/AGENTS.md, The render API): a view of a scope, an uploaded export or
  * bundle, or a demo organisation, drawn on the server as SVG, PNG or a draw.io file (`"format": "drawio"`,
  * compressed unless `"compressed": false`; the pixel limits are a PNG's only) with the code `pnpm render`
  * runs (`@gcportrait/render`, in a fresh worker per render: ../render/runner.ts), so an instance's users can
@@ -78,7 +78,7 @@ import { TokenRateLimiter } from '../upstream/token-limit.js';
 export const RENDER_RATE_LIMIT_PER_MINUTE = 10;
 
 /**
- * One render at a time per instance (AGENTS.md, Exports and the render API): a render keeps the instance's only
+ * One render at a time per instance (backend/AGENTS.md, The render API): a render keeps the instance's only
  * CPU busy and holds hundreds of MiB, so a second one waits for another instance (Cloud Run adds them) rather
  * than sharing this one. The lock is a table of stream slots ({@link createRenderLock}) with one slot, taken under
  * this one key: in memory only, given back exactly once however the render ends.

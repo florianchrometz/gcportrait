@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Demo-only mode (DEMO_ONLY=true; AGENTS.md, Modes and hosting): the route matrix against the normal mode,
+ * Demo-only mode (DEMO_ONLY=true; backend/AGENTS.md, Demo-only mode and legal pages): the route matrix against the normal mode,
  * the configuration it reports and refuses, the legal pages, the CSP, the rate limit and the SPA. Fastify
  * inject, no network: a request that reached Google would fail on the fetch below.
  */

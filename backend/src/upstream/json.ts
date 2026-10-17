@@ -2,8 +2,7 @@
 /**
  * The one reader of the JSON that Google answers with (and of the identity's answers and credential files,
  * ../auth/identity.ts): a body that is not well-formed UTF-8 or not JSON reads as `undefined`, never as an
- * exception, so every caller treats it as an answer it does not understand and fails closed (AGENTS.md,
- * Security and privacy, Quota project and the permission check). Nothing here logs, keeps or echoes a body.
+ * exception, so every caller treats it as an answer it does not understand and fails closed (backend/AGENTS.md, Quota project and the permission check). Nothing here logs, keeps or echoes a body.
  */
 
 /** A JSON object: not null and not an array. */

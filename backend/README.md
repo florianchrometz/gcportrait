@@ -49,9 +49,10 @@ only in its render worker (`src/render/`), never in `dist/server.mjs` (AGENTS.md
 | `POST /api/render` | An SVG, PNG or draw.io file of a view of a scope (a live pull), an uploaded export or bundle, or a demo organisation (`src/routes/render.ts`, section "Render API"). Needs the caller's token; absent with `RENDER_API=false`. |
 | `GET /*` | SPA files and the SPA fallback (production image only), as above. |
 
-**Demo-only mode** (`DEMO_ONLY=true`; AGENTS.md, Modes and hosting): the routes that need the caller's token,
-the render API among them, are not registered, so they answer the JSON 404 of an unknown route (with a
-sentence saying why); everything else above stays, rate limits included, and the CSP allows no Google host.
+**Demo-only mode** (`DEMO_ONLY=true`; backend/AGENTS.md, Demo-only mode and legal pages): the routes that need
+the caller's token, the render API among them, are not registered, so they answer the JSON 404 of an unknown
+route (with a sentence saying why); everything else above stays, rate limits included, and the CSP allows
+no Google host.
 `src/demo-only.test.ts` holds the route matrix; `src/demo-only-harness.testing.ts` runs this mode for
 `e2e/tests/demo-only.spec.ts`.
 
@@ -147,8 +148,8 @@ its source can point `SOURCE_URL` there.
 - **Request ids**: a well-formed incoming `x-request-id` is kept, otherwise a UUID is minted. It is echoed in
   the response and logged as `requestId`.
 - **Logs** (pino, JSON on stdout): `message` and `severity` fields so Cloud Logging classifies lines without a
-  router rule. No credential, session or user identity ever reaches a log line (AGENTS.md, Security and
-  privacy, The backend). The request serializer logs method, path, host and the request headers, but only an
+  router rule. No credential, session or user identity ever reaches a log line (backend/AGENTS.md, Hardening).
+  The request serializer logs method, path, host and the request headers, but only an
   **allowlist** of harmless headers keeps its value (`LOGGED_HEADERS` in `src/logging.ts`: `accept*`,
   `content-length`, `content-type`, `host`, `origin`, `traceparent`, `user-agent`, `x-cloud-trace-context`,
   `x-forwarded-proto`). Every other header is logged by name with the value `[redacted]`. An allowlist,
@@ -202,8 +203,8 @@ syntax). Organisations accept only `domain:` and `directoryCustomerId:` queries,
 matched here, as is text the terms do not cover. `nextPageToken` carries the three kinds' own page tokens; one
 kind failing is listed in `problems`, every kind failing is a 403 (the token lacks the OAuth scope) or 502.
 
-**`POST /api/preflight`.** The permission check of user mode and the service-account gate (AGENTS.md, Security
-and privacy, Quota project and the permission check, and The service-account gate), in `src/preflight/run.ts`:
+**`POST /api/preflight`.** The permission check of user mode and the service-account gate (backend/AGENTS.md,
+Quota project and the permission check, and The service-account gate), in `src/preflight/run.ts`:
 
 | Mode | Item | Checked by | `missing` gives |
 |---|---|---|---|
@@ -320,7 +321,7 @@ when a real client disconnects, and a 5 000-asset organisation streamed over a r
 ## Service-account mode
 
 The backend may read a scope with its own identity, after proving that the caller may see that scope
-(AGENTS.md, Security and privacy, principle 4 and The service-account gate; the user guide is
+(AGENTS.md, Security and privacy, principle 4; backend/AGENTS.md, The service-account gate; the user guide is
 [docs/permissions.md](../docs/permissions.md)). `SA_MODE_ENABLED=true` turns it on.
 
 **The identity** (`src/auth/identity.ts`). At start-up `src/main.ts` resolves Application Default Credentials

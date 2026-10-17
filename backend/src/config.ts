@@ -35,8 +35,7 @@ export type ServerConfig = {
   /** Whether the operator enabled service-account mode (AGENTS.md, Modes and hosting). */
   readonly saModeEnabled: boolean;
   /**
-   * Whether the service-account gate also runs its optional exposure check (AGENTS.md, Security and privacy,
-   * The service-account gate): the account's own `get` of a scope must be refused, so a scope whose details
+   * Whether the service-account gate also runs its optional exposure check (backend/AGENTS.md, The service-account gate): the account's own `get` of a scope must be refused, so a scope whose details
    * are public, or on which the account holds more than `roles/cloudasset.viewer`, is refused. On with
    * `SA_MODE_STRICT_EXPOSURE=true`, off when it is `false` or unset; any other value stops start-up
    * ({@link parseConfig}).
@@ -65,7 +64,7 @@ export type ServerConfig = {
    */
   readonly sourceUrl: string;
   /**
-   * Demo-only mode (`DEMO_ONLY=true`; AGENTS.md, Modes and hosting): the instance serves the app and its demo
+   * Demo-only mode (`DEMO_ONLY=true`; backend/AGENTS.md, Demo-only mode and legal pages): the instance serves the app and its demo
    * organisations only. No sign-in (an OAuth client id is refused), no service-account mode, and none of the
    * routes that call Google (scope search, preflight, live pull, export read) is registered; /api/config says
    * so with `demoOnly`, and the SPA's Connect page then offers only the demo.
@@ -90,7 +89,7 @@ export type ServerConfig = {
 export type LegalUrls = { readonly impressum: string | null; readonly privacy: string | null };
 
 /**
- * The limits of `POST /api/render` (AGENTS.md, Exports and the render API); each is an environment
+ * The limits of `POST /api/render` (backend/AGENTS.md, The render API); each is an environment
  * variable.
  */
 export type RenderLimits = {

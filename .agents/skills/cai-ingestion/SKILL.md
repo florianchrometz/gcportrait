@@ -7,8 +7,9 @@ description: Facts and rules for getting data into gcportrait from Google Cloud 
 # Cloud Asset Inventory ingestion
 
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Security and privacy", "Data and
-graph semantics" and "Product rules"); this file holds the facts about Google's APIs and the procedures built
-on them.
+graph semantics" and "Product rules") and [backend/AGENTS.md](../../../backend/AGENTS.md) ("Hardening",
+"Quota project and the permission check" and "The service-account gate"); this file holds the facts about
+Google's APIs and the procedures built on them.
 
 Load this for any work in `backend/` routes that call Google APIs, in `packages/ingest`, in
 `packages/demo-data`, on the permissions preflight, or on the timeline. The links to Google's documentation
@@ -102,11 +103,11 @@ Scope formats: `organizations/123`, `folders/456`, `projects/my-id` or `projects
 Quota project: user-credential calls to CAI need a project where the caller holds `serviceusage.services.use`
 and where `cloudasset.googleapis.com` is enabled. We send `x-goog-user-project: <quota project>`. Preflight
 order: the scanned project (project scope) → the user's chosen project → error with the three conditions
-listed. Service-account mode sends no quota header: the account's own project pays (AGENTS.md, "Security and
-privacy"), which deploy.sh makes the instance's project.
+listed. Service-account mode sends no quota header: the account's own project pays (backend/AGENTS.md,
+"Quota project and the permission check"), which deploy.sh makes the instance's project.
 
 Service-account mode gate: the backend checks the caller before every CAI call it makes as the account. Its
-steps, its memo and its audit line are the rules of AGENTS.md, "Security and privacy", "The service-account
+steps, its memo and its audit line are the rules of backend/AGENTS.md, "The service-account
 gate"; §9 has the answers of Google's APIs they rest on.
 
 `gcloud` snippets shown by the permissions page (fill from preflight results):
@@ -121,11 +122,8 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
 
 ## 4. Backend behaviour
 
-- Forward the caller's bearer token verbatim; never store it; never log it. The request logger keeps the
-  values of an allowlist of harmless headers only and redacts every other header (`LOGGED_HEADERS` in
-  `backend/src/logging.ts`); query strings, bodies and client addresses are never logged.
-- Upstream host allowlist: `cloudasset.googleapis.com`, `cloudresourcemanager.googleapis.com`,
-  `storage.googleapis.com`, `oauth2.googleapis.com`.
+- Tokens follow AGENTS.md, "Security and privacy", "Tokens"; the host allowlist and logs follow
+  backend/AGENTS.md, "Hardening" (`LOGGED_HEADERS` in `backend/src/logging.ts`).
 - Retries: 429 and 5xx → exponential backoff with jitter (base 500 ms, ×2, max 8 s, 5 attempts). 400/403/404
   are surfaced to the UI with the upstream message (they are actionable).
 - Streaming: emit NDJSON frames `{"t":"page","assets":[...]}`, `{"t":"progress","pages":n,"assets":m}`,
@@ -214,7 +212,7 @@ Google's documentation (check a page again before relying on a limit it states):
 ## 9. What Google's APIs answer
 
 Observed with a user token and with a service account that holds only `roles/cloudasset.viewer`; the backend's
-classification (AGENTS.md, "Security and privacy", "Quota project and the permission check") and its tests'
+classification (backend/AGENTS.md, "Quota project and the permission check") and its tests'
 recorded answers (`backend/src/upstream/google.testing.ts`, `backend/src/preflight/google.testing.ts`) rest on
 these. Check them again with real calls before changing what the backend relies on: `gcloud auth
 print-access-token | scripts/probe-google-apis.sh --project YOUR_PROJECT` runs the call matrix with the tokens

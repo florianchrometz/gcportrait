@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The Google calls of the scope picker, the preflight and the service-account gate (docs/permissions.md;
- * AGENTS.md, Security and privacy, Quota project and the permission check; skill cai-ingestion §1), and the
+ * backend/AGENTS.md, Quota project and the permission check; skill cai-ingestion §1), and the
  * one `assets.list` request ({@link assetsListRequest}) that the preflight's probe and the live pull both
  * send, made through the allowlisted client of request.ts (`requestJson`: the four hosts only, no redirect,
  * 60 s, retries) with:
@@ -221,7 +221,7 @@ export interface CaiCredentials {
   readonly token: string;
   /**
    * User mode's quota project, sent as `x-goog-user-project`. Absent in service-account mode, which never sends
-   * the header: the account's own project pays (AGENTS.md, Security and privacy, Quota project and the
+   * the header: the account's own project pays (backend/AGENTS.md, Quota project and the
    * permission check).
    */
   readonly quotaProject?: string;
