@@ -2166,10 +2166,12 @@ held that is gone now, it puts it back into its old container in the drawn Scene
 region, a bundle) not drawn now comes back the same way when it held something that comes back, as `removed`
 when something removed does, else not drawn now (everything demo M's Payments web (prod) held in us-central1
 removed: the region zone's ghost in the open project, around their ghosts; the one Batch job a region held
-succeeded: the region zone not drawn now, around the job's). One the earlier day drew as a chip comes back as
-that chip, counting only what comes back of what the earlier day's view with every zone open draws in it (a
-bundle of demo L whose members are bundled anew counts its one removed member, not those the new bundles
-draw). A node still there that the drawn day's Graph holds in another container (it moved: drawn there, in a
+succeeded: the region zone not drawn now, around the job's). Any zone the earlier day drew as a chip, an asset
+or not, comes back as that chip, counting only what comes back of what the earlier day's view with every zone
+open draws in it, and nothing when nothing does (a bundle of demo L whose members are bundled anew counts its
+one removed member, not those the new bundles draw; demo M's Payments web (prod), marked for deletion and a
+chip at the folder level, counts the Batch job that succeeded in it, not what its folder draws now). A node
+still there that the drawn day's Graph holds in another container (it moved: drawn there, in a
 chip there, or out of the view now) or inside a chip of the drawn Scene is no ghost: it is drawn once, where
 the drawn day has it, and the chip that holds it counts what changed of it (demo M's partner exchange moved
 into a folder drawn as a chip: the chip's dot only). The layout's deterministic sibling order (zones before
@@ -2269,15 +2271,17 @@ empty folders hidden the folder too; on demo L's VM removed from a subnet of a b
 bundled anew, its ghost in the subnet; on demo M's partner exchange moved out of its folders with its network
 removed, the network's ghost in the project, a chip at a depth of one and open by hand; on demo S's reporting
 project, a chip the day before and empty now, no ghost; on demo M's Payments web (prod) marked for deletion,
-the Batch job that succeeded not drawn now in the project's ghost (with region zones, in its region zone's);
-on demo M's perimeter removed with all the data project held, the project not drawn now in the perimeter's
-ghost with empty projects hidden; on demo M's partner exchange moved into another folder, it is no ghost,
-moved into a chip, drawn there or out of the view), `pipeline/dataHandler.test.ts` (the removed
-perimeter's ghost named by its asset type), `diff/marks.test.ts` (the marker painter: which rects, where, the
-words), `diff/drawing.test.tsx` (the markers in the drawing in both themes, paint order, legend rows,
-description, names, a ghost is no node, an overlay's ghost), `diff/handler.test.ts` (the data worker's `scene`
-with `diffFrom` and `changes`), `legend.test.ts`, `theme/theme.test.ts`, the baselines (section "Visual
-baselines"), the drawer's tests (section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M
+the Batch job that succeeded not drawn now in the project's ghost (with region zones, in its region zone's),
+and where the day before drew the project as a chip, its ghost chip counting only the job, or nothing with
+the project marked for deletion alone; on demo M's perimeter removed with all the data project held, the
+project not drawn now in the perimeter's ghost with empty projects hidden; on demo M's partner exchange moved
+into another folder, it is no ghost, moved into a chip, drawn there or out of the view),
+`pipeline/dataHandler.test.ts` (the removed perimeter's ghost named by its asset type), `diff/marks.test.ts`
+(the marker painter: which rects, where, the words), `diff/drawing.test.tsx` (the markers in the drawing in
+both themes, paint order, legend rows, description, names, a ghost is no node, a ghost chip's name, an
+overlay's ghost), `diff/handler.test.ts` (the data worker's `scene` with `diffFrom` and `changes`),
+`legend.test.ts`, `theme/theme.test.ts`, the baselines (section "Visual baselines"), the drawer's tests
+(section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M
 (scrubbing from 23 to 24 September in the compute lens at `all`: the new VM outlined, the deleted test VM's
 ghost, the group manager's dot and the legend rows; its drawer's update times and `targetSize`; `[` back,
 "compared with"; another lens keeps the markers; axe in both themes; screenshots in `e2e/.scratch/diff/`).

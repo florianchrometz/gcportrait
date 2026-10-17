@@ -285,8 +285,11 @@ export function accessibleName(
   if (node.type === 'card') return `${cardTypeName(node.product, node.assetType)}: ${node.label}`;
   const kind = typeName ?? ZONE_KIND_NAMES[node.kind];
   const sub = node.subtitle === undefined ? '' : ` (${node.subtitle})`;
-  if (rect.role === 'chip' && node.collapsed !== undefined)
-    return `${kind}: ${node.label}${sub}, collapsed, ${chipCountLine(node.collapsed)}`;
+  if (rect.role === 'chip' && node.collapsed !== undefined) {
+    // A ghost chip counts only what of it is gone, which can be nothing (diff/tickDiff.ts).
+    const counts = chipCountLine(node.collapsed);
+    return `${kind}: ${node.label}${sub}, collapsed${counts === '' ? '' : `, ${counts}`}`;
+  }
   if (rect.role === 'empty') return `${kind}: ${node.label}${sub}, empty`;
   return `${kind}: ${node.label}${sub}`;
 }

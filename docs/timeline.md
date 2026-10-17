@@ -127,8 +127,8 @@ you came from**:
   each. A node that moved (a project into another folder) is marked only where it is now, never at its old
   place; one the view no longer draws where it stood (a project marked for deletion) comes back as a ghost
   there, with "not drawn now" under its name, holding what in it was removed or changed and is not drawn now
-  either (a job that finished). What a project marked for deletion still holds is drawn in its folder, and is
-  no ghost;
+  either (a job that finished); one that was collapsed comes back collapsed, counting only that, or nothing.
+  What a project marked for deletion still holds is drawn in its folder, and is no ghost;
 - the legend adds a row for each marker drawn ("added since 2026-09-23"; "compared with 2026-09-24" when you
   stepped back), and the details drawer of a changed node gets a **What changed** section: its update time on
   both ticks, the fields of its data that differ ("targetSize 2 → 4"), and for a container what inside it was

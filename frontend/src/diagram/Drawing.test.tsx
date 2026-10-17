@@ -585,5 +585,8 @@ describe('accessible names (style skill §13)', () => {
     const rect = model.input.layout.rects['projects/data'];
     if (rect === undefined) throw new Error('missing rect');
     expect(accessibleName(undefined, rect, 'x')).toBe('x');
+    // A chip that counts nothing (a ghost chip of which nothing is gone) says only that it is collapsed.
+    const empty = zone('projects/data', 'project', 'Analytics', [], { collapsed: {} });
+    expect(accessibleName(empty, rect, 'projects/data')).toBe('Project: Analytics, collapsed');
   });
 });

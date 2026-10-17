@@ -18,7 +18,9 @@
  * the drawn day's view draws a zone there), not in a zone the earlier day drew as a chip and the drawn day draws only
  * because it holds nothing now; inside the ghost of an asset an asset comes back as in a container drawn open (demo
  * M's job that succeeded in a project marked for deletion, not drawn now; a project the removed perimeter secured,
- * emptied, with empty projects hidden); a changed asset the drawn day still holds is a ghost only where the view
+ * emptied, with empty projects hidden); the ghost of an asset the earlier day drew as a chip counts only what of it
+ * comes back (that project marked for deletion: the job, not what its folder draws now, or nothing when the project
+ * alone changed); a changed asset the drawn day still holds is a ghost only where the view
  * leaves it out (on demo M's two days with a project moved into another folder, it is none, and the chip that holds
  * it counts it); chips count what changed inside them, also those that are no Graph container (a region zone flipped
  * closed, and on demo L's history a bundle), and what they count is no ghost; nothing changes when the days are alike,
@@ -29,12 +31,20 @@ import {
   BUNDLE_ID_PREFIX,
   buildGraph,
   buildSceneWithReport,
+  CHIP_COUNT_OF_KIND,
   diffSnapshots,
   flipIdOf,
   isVirtualNode,
 } from '@gcportrait/graph';
 import { layoutScene, type Layout } from '@gcportrait/layout';
-import { normalizeViewSpec, SceneSchema, type Snapshot, type ViewSpecInput } from '@gcportrait/model';
+import {
+  normalizeViewSpec,
+  SceneSchema,
+  type ChipCounts,
+  type SceneNode,
+  type Snapshot,
+  type ViewSpecInput,
+} from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { DEMO_S } from '../testing/demoData';
@@ -52,6 +62,7 @@ import {
   DEMO_M_REGION,
   jobsSucceeded,
   partnerNetworkRemoved,
+  paymentsWebMarked,
   paymentsWebRetired,
   perimeterEmptied,
   perimeterRemoved,
@@ -875,6 +886,115 @@ describe('a changed asset inside the ghost of a changed asset', () => {
     expect(regions.diff.ghosts).toEqual({ [PROJECT]: 'hidden', [JOB_REGION]: 'hidden', [JOB]: 'hidden' });
     expect(parents(regions.scene).get(JOB_REGION)).toBe(PROJECT);
     expect(parents(regions.scene).get(JOB)).toBe(JOB_REGION);
+  });
+});
+
+describe('the ghost of an asset the earlier day drew as a chip', () => {
+  const { project: PROJECT } = DEMO_M_REGION;
+  const { alone: JOB } = DEMO_M_JOBS;
+  const overview = { snapshot: 'demo:M', lens: 'overview' } as const;
+  // The views in which the earlier day drew the project as a chip: `auto` (the folder level, at the default budget),
+  // the folder level (with region zones too), closed by hand at the project level and at `all`, and past the depth
+  // filter.
+  const chipViews: readonly Partial<ViewSpecInput>[] = [
+    { detail: 'auto' },
+    { detail: 'folders' },
+    { detail: 'folders', filters: { showRegions: true } },
+    { detail: 'projects', flips: [flipIdOf(PROJECT)] },
+    { detail: 'all', flips: [flipIdOf(PROJECT)] },
+    { detail: 'all', filters: { depth: 3 } },
+  ];
+
+  /** What a chip counts of the nodes `nodes` and all they hold, as the scene builder counts what a chip holds. */
+  function counted(nodes: readonly SceneNode[]): ChipCounts {
+    const counts: ChipCounts = {};
+    const visit = (list: readonly SceneNode[]): void => {
+      for (const node of list) {
+        const kind = node.type === 'card' ? 'resources' : CHIP_COUNT_OF_KIND[node.kind];
+        if (kind !== undefined) counts[kind] = (counts[kind] ?? 0) + 1;
+        if (node.type === 'zone') visit(node.children);
+      }
+    };
+    visit(nodes);
+    return counts;
+  }
+
+  /** The project's chip on the earlier day, at the level the drawn Scene uses, and the zone it lay in. */
+  function earlierChip(input: TickDiffInput): { chip: SceneNode | undefined; folder: string } {
+    const spec = normalizeViewSpec({ ...input.spec, detail: input.report.detail.used });
+    const { scene } = buildSceneWithReport(input.before.graph, spec, catalog, input.envBefore);
+    return { chip: zoneOf(scene, PROJECT), folder: parents(scene).get(PROJECT) ?? '' };
+  }
+
+  it('counts only what of it comes back, not what is drawn elsewhere now: a project marked for deletion counts the Batch job that succeeded in it', async () => {
+    const [before, after] = await paymentsWebRetired();
+    // Every zone open (the earlier day's view with every zone open), the project's ghost holds what of it comes back:
+    // the job's, not drawn now.
+    const open = tickDiff(pairInput(before, after, { ...overview, detail: 'all' }));
+    const ghost = zoneOf(open.scene, PROJECT);
+    expect(ghost?.children.map((child) => child.id)).toEqual([JOB]);
+    const expected = counted(ghost?.children ?? []);
+    expect(expected).toEqual({ resources: 1 });
+    // What else the earlier day held in it is drawn in its folder at the folder level.
+    const atAuto = pairInput(before, after, { ...overview, detail: 'auto' });
+    expect(atAuto.report.detail.used).toBe('folders');
+    const opened = buildSceneWithReport(before.graph, openView(atAuto.spec), catalog, atAuto.envBefore);
+    const others = (zoneOf(opened.scene, PROJECT)?.children ?? []).filter((child) => child.id !== JOB);
+    expect(others.length).toBeGreaterThan(10);
+    const { folder } = earlierChip(atAuto);
+    for (const child of others) expect(parents(atAuto.scene).get(child.id), child.id).toBe(folder);
+
+    for (const view of chipViews) {
+      const what = JSON.stringify(view);
+      const input = pairInput(before, after, { ...overview, ...view });
+      const { chip } = earlierChip(input);
+      // The scene builder counted all it held, the job and what the folder draws now.
+      expect(chip, what).toMatchObject({ collapsed: { containers: 2, resources: 21 }, children: [] });
+
+      const { scene, diff } = tickDiff(input);
+      expect(diff.ghosts, what).toEqual({ [PROJECT]: 'hidden' });
+      expect(SceneSchema.safeParse(scene).success, what).toBe(true);
+      // The chip as the earlier day drew it, counting only what comes back of what it held.
+      expect(parents(scene).get(PROJECT), what).toBe(folder);
+      expect(zoneOf(scene, PROJECT), what).toEqual({ ...chip, collapsed: expected });
+      expect(diff.inside, what).toEqual({});
+      expect(diff.earlier[PROJECT], what).toEqual({
+        kind: 'project',
+        parent: folder,
+        overlay: false,
+        collapsed: true,
+        empty: false,
+      });
+      expect(scene.metadata.rectCount, what).toBe(input.scene.metadata.rectCount + 1);
+      expectPlacedAmongSiblings(layoutScene(scene), PROJECT, folder);
+    }
+  });
+
+  it('counts nothing when nothing of it comes back: the project marked for deletion alone is still not drawn now', async () => {
+    const [before, after] = await paymentsWebMarked();
+    // Every zone open, the project is not drawn now where it stood, holding nothing: what it held is drawn in its
+    // folder, and nothing in it changed.
+    const open = tickDiff(pairInput(before, after, { ...overview, detail: 'all' }));
+    expect([open.diff.added, open.diff.removed, open.diff.changed]).toEqual([[], [], [PROJECT]]);
+    expect(open.diff.ghosts).toEqual({ [PROJECT]: 'hidden' });
+    expect(zoneOf(open.scene, PROJECT)?.children).toEqual([]);
+
+    for (const view of chipViews) {
+      const what = JSON.stringify(view);
+      const input = pairInput(before, after, { ...overview, ...view });
+      const { chip, folder } = earlierChip(input);
+      expect(chip, what).toMatchObject({ collapsed: { containers: 2, resources: 20 }, children: [] });
+
+      const { scene, diff } = tickDiff(input);
+      // Still a ghost, as the chip it was, counting nothing.
+      expect(diff.ghosts, what).toEqual({ [PROJECT]: 'hidden' });
+      expect(SceneSchema.safeParse(scene).success, what).toBe(true);
+      expect(parents(scene).get(PROJECT), what).toBe(folder);
+      expect(zoneOf(scene, PROJECT), what).toEqual({ ...chip, collapsed: {} });
+      expect(diff.inside, what).toEqual({});
+      expect(diff.earlier[PROJECT], what).toMatchObject({ parent: folder, collapsed: true });
+      expectPlacedAmongSiblings(layoutScene(scene), PROJECT, folder);
+    }
   });
 });
 

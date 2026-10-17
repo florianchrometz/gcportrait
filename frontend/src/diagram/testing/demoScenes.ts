@@ -9,8 +9,9 @@
  * project it secures holds, `perimeterEmptied`, a project moved into another folder, `projectMoved`, or out of its
  * folders with its network removed, `partnerNetworkRemoved`, everything a project holds in one region removed,
  * `regionRemoved`, or in one zone, `zoneRemoved`, two Batch jobs that succeeded, one where the rest of its region was
- * removed, `jobsSucceeded`, one as its project is marked for deletion, `paymentsWebRetired`, or a project's only VM
- * removed, `ciRunnerRemoved`; demo L's VM in a subnet of a bundle that is bundled anew removed, `bundledVmRemoved`).
+ * removed, `jobsSucceeded`, one as its project is marked for deletion, `paymentsWebRetired`, that project marked for
+ * deletion alone, `paymentsWebMarked`, or a project's only VM removed, `ciRunnerRemoved`; demo L's VM in a subnet of
+ * a bundle that is bundled anew removed, `bundledVmRemoved`).
  * For the tests that only need the scene builder: the builder's environment for a snapshot (`sceneEnv`), and a demo
  * Graph built synchronously straight from the generator (`demoGraphSync`). Demo data without a Scene is in
  * demoData.ts.
@@ -403,8 +404,14 @@ export function jobsSucceeded(): Promise<readonly [DemoDay, DemoDay]> {
   );
 }
 
-/** When `paymentsWebRetired` marks the project for deletion: between the two days. */
+/** When `paymentsWebRetired` and `paymentsWebMarked` mark the project for deletion: between the two days. */
 const RETIRED_AT = '2026-09-16T15:00:00Z';
+
+/** Payments web (prod)'s asset marked for deletion: its `lifecycleState` `DELETE_REQUESTED` since `RETIRED_AT`. */
+function markedForDeletion(project: Asset): Asset {
+  const data = typeof project.data === 'object' && project.data !== null ? project.data : {};
+  return { ...project, updateTime: RETIRED_AT, data: { ...data, lifecycleState: 'DELETE_REQUESTED' } };
+}
 
 /**
  * Demo M's Payments web (prod) marked for deletion between two days (`demoMChangedDays`): on 2026-09-16 it runs a
@@ -428,10 +435,19 @@ export function paymentsWebRetired(): Promise<readonly [DemoDay, DemoDay]> {
         if (asset.name === DEMO_M_JOBS.alone) {
           return paymentsWebJob(project(assets), asset.name, 'SUCCEEDED', '2026-09-16T04:30:00Z');
         }
-        if (asset.name !== DEMO_M_REGION.project) return asset;
-        const data = typeof asset.data === 'object' && asset.data !== null ? asset.data : {};
-        return { ...asset, updateTime: RETIRED_AT, data: { ...data, lifecycleState: 'DELETE_REQUESTED' } };
+        return asset.name === DEMO_M_REGION.project ? markedForDeletion(asset) : asset;
       }),
+  );
+}
+
+/**
+ * Demo M's Payments web (prod) marked for deletion between two days (`demoMNextDay`), as in `paymentsWebRetired` but
+ * with no Batch job: nothing it holds changes, and what the view draws of it is drawn in its folder the next day.
+ * Nothing else changes.
+ */
+export function paymentsWebMarked(): Promise<readonly [DemoDay, DemoDay]> {
+  return demoMNextDay((_graph, assets) =>
+    assets.map((asset) => (asset.name === DEMO_M_REGION.project ? markedForDeletion(asset) : asset)),
   );
 }
 

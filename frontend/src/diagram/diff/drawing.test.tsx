@@ -5,9 +5,10 @@
  * changed dot in `accent.path` on its `pathCasing` disc, the ghost (its body at 50 %, a dashed `accent.removed`
  * outline at full strength on a canvas band) where the layout placed it, the legend's rows only for what is drawn,
  * the description, the accessible names; a ghost is never a node (no id, no tab stop, no drill-in, no flip, not
- * counted), and pointing at it is pointing at the zone it lies in. On demo M's two days with its perimeter removed,
- * the ghost of the perimeter focus's overlay zone is drawn as an overlay: untinted, its header mark, the overlay's
- * dashes inside the red outline, and the legend's `secures` row.
+ * counted), and pointing at it is pointing at the zone it lies in; a ghost chip's name counts what of it comes back
+ * (demo M's project marked for deletion at the folder level). On demo M's two days with its perimeter removed, the
+ * ghost of the perimeter focus's overlay zone is drawn as an overlay: untinted, its header mark, the overlay's dashes
+ * inside the red outline, and the legend's `secures` row.
  */
 import { normalizeViewSpec } from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -23,8 +24,12 @@ import {
   demoDiagram,
   demoDiffDiagram,
   DEMO_M_PERIMETER,
+  DEMO_M_REGION,
   diffDiagramOf,
+  paymentsWebMarked,
+  paymentsWebRetired,
   perimeterRemoved,
+  type DemoDay,
 } from '../testing/demoScenes';
 import { one, parseSvg as parse, renderDrawing as render } from '../testing/drawing';
 import {
@@ -302,5 +307,21 @@ describe('a ghost is no node', () => {
     const shown = { scene: input.scene, report, diff };
     expect([...zonesByFlip(shown).values()].some((zone) => zone.id === project)).toBe(false);
     expect(rectsShown(shown).shown).toBe(input.scene.metadata.rectCount - Object.keys(diff.ghosts).length);
+  });
+
+  it('names a ghost chip with what of it comes back: demo M’s project marked for deletion at the folder level', async () => {
+    const spec = normalizeViewSpec({ snapshot: 'demo:M', lens: 'overview', detail: 'auto' });
+    const nameOf = async (days: Promise<readonly [DemoDay, DemoDay]>): Promise<string | null> => {
+      const [before, after] = await days;
+      const model = buildDiagramModel(diffDiagramOf(before, after, spec).input);
+      const doc = render(model, { interactive: true });
+      return one(doc, `.dg-ghost[data-ghost="${DEMO_M_REGION.project}"]`).getAttribute('aria-label');
+    };
+    const project = 'Project: Payments web (prod) (demo-web-2), collapsed';
+    // The Batch job that succeeded in it, not drawn now; with the project marked for deletion alone, nothing.
+    expect(await nameOf(paymentsWebRetired())).toBe(
+      `No longer in this view since 2026-09-16: ${project}, 1 resource`,
+    );
+    expect(await nameOf(paymentsWebMarked())).toBe(`No longer in this view since 2026-09-16: ${project}`);
   });
 });

@@ -85,7 +85,7 @@ export interface TickDiff {
    * The ghosts the data worker put into the Scene, by node id: the nodes the view drew on the earlier day and no
    * longer draws, removed or left out where they stood (`GhostReason`; a zone gone for what it held when something
    * in it comes back), each in its old container, so the layout places it where it was (a ghost card for one tick;
-   * a chip as the chip it was).
+   * a chip as the chip it was, counting only what of it comes back).
    */
   readonly ghosts: Readonly<Record<string, GhostReason>>;
   /**
