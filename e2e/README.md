@@ -50,13 +50,30 @@ either. Helpers the specs share are in `tests/support.ts`, `tests/timelineSuppor
 `tests/consoleSupport.ts` and `tests/permissionsSupport.ts`. Chromium only for now; the functional specs at a
 desktop window of 1440×900, `mobile.spec.ts` at phone and tablet sizes, `touch.spec.ts` at a phone's and
 `handheld.spec.ts` at the phone's and the tablet's projects' sizes; light colour scheme unless a test asks for
-dark. `pnpm e2e --project chromium-phone --project chromium-tablet` runs the two handheld projects alone. CI
-runs the whole suite in five legs (`.github/workflows/pr.yml`): `pnpm e2e --project chromium-live --project
-chromium --shard=N/3` for N 1 to 3, and every other project (`chromium-phone`, `chromium-tablet` and
-`mobile`, a new one included) with `--shard=N/2` for N 1 and 2. `--shard` splits the tests by count, in the
-order of the projects in `playwright.config.ts` (`chromium-live` before `chromium`, the handheld projects
-before `mobile`) and of the files and tests in each; `tests/mobile.spec.ts` orders its tests so that each
-phones and tablets leg gets one theme's slow ones.
+dark. `pnpm e2e --project chromium-phone --project chromium-tablet` runs the two handheld projects alone.
+
+CI runs the whole suite in five legs (`.github/workflows/pr.yml`), each a round-robin share of its projects'
+tests: `chromium-live` and `chromium` in three, and every other project (`chromium-phone`, `chromium-tablet`
+and `mobile`, a new one included) in two. `scripts/leg.ts` (`pnpm --filter @gcportrait/e2e leg`) lists the
+projects' tests (`playwright test --list --reporter=json`), gives leg N of K every K-th of them from the N-th,
+in the listing's order (file after file), and runs that share with `playwright test --test-list`, so that the
+tests of a slow file spread over the legs. It fails the leg when the K shares would not partition the
+listing, when Playwright reads the test list as other tests than the share, or when the run's JSON report
+(`PLAYWRIGHT_JSON_OUTPUT_FILE`, which `playwright.config.ts` turns into a JSON reporter beside the others)
+lacks a test of the share or holds one besides. After the run it prints the share's count and summed test
+time, on CI also to the job's summary. One leg locally, as the runner runs it, or only its share as a test
+list:
+
+```sh
+CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3   # e2e (desktop 2/3)
+CI=true pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg 1 --of 2   # e2e (phones and tablets 1/2)
+pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3 --list-only > /tmp/leg.txt
+pnpm --filter @gcportrait/e2e exec playwright test --test-list /tmp/leg.txt   # the same share, by hand
+pnpm --filter @gcportrait/e2e leg --projects "chromium-phone chromium-tablet" --leg 1 --of 2 -- --headed
+```
+
+`--list-only` prints the share in the list reporter's format, `[project] › file:line:column › describe ›
+title`, which is what `--test-list` reads; the arguments after `--` go to the run.
 
 The diagram's helpers in `tests/support.ts` wait for the state a step needs, never for a time. `openDiagram`
 opens a view and waits for its drawing, and `drawnCanvas` for a drawing on the canvas (`data-diagram-ready`),

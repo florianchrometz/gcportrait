@@ -151,8 +151,8 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 | `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
-| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm e2e --project chromium-live --project chromium --shard=N/3`, Chromium: the desktop specs, in demo and normal mode |
-| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm e2e --project chromium-phone --project chromium-tablet --project mobile --shard=N/2`, Chromium: every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) |
+| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode |
+| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) |
 | `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` |
 | `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard |
 | `licenses` | `pnpm run licenses` |
@@ -163,10 +163,13 @@ switched deployment on ([website.md](website.md)). The CI jobs:
 GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
 install from the cache, and the e2e legs and `website` about another minute on Chromium's system libraries.
-The five e2e legs are the longest jobs, which is why the suite is split in five. `--shard` splits a leg's
-tests by count, in the order of the projects in `e2e/playwright.config.ts` (each leg's lighter projects
-first) and of their files and tests, and `e2e/tests/mobile.spec.ts` orders its tests so that each phones and
-tablets leg gets one theme's slow ones; the run's page shows each job's time.
+The five e2e legs are the longest jobs, which is why the suite is split in five. Each leg deals its
+projects' tests out round-robin: leg N of K runs every K-th test of their listing from the N-th, in the
+order of `playwright test --list --reporter=json` (file after file), through `--test-list`, so that the
+tests of a slow file spread over the legs. The script (`e2e/scripts/leg.ts`) fails the leg when the K
+shares would not partition the listing, when Playwright reads its test list as other tests, or when the
+run did not address every test of its share, and writes the share's count and its summed test time to the
+job's summary, which compares the legs apart from their set-up; the run's page shows each job's time.
 
 Some of these gates are not part of `pnpm check`; run these three locally when you touch the app:
 
@@ -193,7 +196,7 @@ does not happen on your machine:
 
 ```sh
 TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner
-CI=true pnpm e2e --project chromium-live --project chromium --shard=2/3   # the e2e leg desktop 2/3
+CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3   # e2e (desktop 2/3)
 actionlint && shellcheck -x infra/*.sh                            # workflows-and-shell (Homebrew has both)
 ```
 

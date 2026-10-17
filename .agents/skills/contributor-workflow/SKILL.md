@@ -109,7 +109,8 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
 - `pnpm check` and `pnpm e2e` green locally; CI green. CI (`.github/workflows/pr.yml`) runs every job at once,
   each installing from the pnpm store cache: lint, typecheck, `unit` in three legs (layout, frontend, every
   other project), catalog-check, build with the size budgets, `e2e` in five Chromium legs (the desktop specs
-  in three shards, the phone and tablet check with `chromium-phone` and `chromium-tablet` in two), website
+  in three, the phone and tablet check with `chromium-phone` and `chromium-tablet` in two, each leg every k-th
+  test of its projects, `pnpm --filter @gcportrait/e2e leg`), website
   (built and checked, then at phone widths), provenance, licenses, audit and workflows-and-shell (actionlint,
   shellcheck). Its `required` job is the one check branch protection targets:
   green only when all of them are; `layout-budget` only reports. A failure you cannot reproduce: run the

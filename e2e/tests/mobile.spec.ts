@@ -74,8 +74,7 @@ import { focusRingShown, timelineBar } from './timelineSupport.js';
  * view whole there, and View closed by a tap fits the drawing to the whole canvas again; one finger dragged across
  * the canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in place.
  * The pages and diagrams at each size in the light theme come first, the tests that set their own sizes next, and the
- * same pages and diagrams in the dark theme last, so that each shard of a CI leg gets half of the slow diagram tests
- * (pagesAndDiagrams).
+ * same pages and diagrams in the dark theme last (pagesAndDiagrams).
  */
 
 const SIZES = [
@@ -755,11 +754,9 @@ async function selectACard(page: Page, svg: Locator): Promise<void> {
 /**
  * At each of the five sizes in one theme: the Connect, Permissions, Snapshots and Settings pages, a live instance's
  * Impressum and Privacy pages, and the diagrams of demo S and M, this spec's slow tests. The light theme's come first
- * in the file and the dark theme's last, with the tests that set their own sizes in between, because `--shard` splits
- * a leg's tests by count in file order (playwright.config.ts): the split of CI's phones and tablets legs then falls
- * among the quick tests in the middle, and each half gets one theme's diagram tests. The first half also runs
- * handheld.spec.ts's tests, so the slowest of those in the middle, the Snapshots page's with a snapshot stored, comes
- * after the quick ones the split falls among.
+ * in the file and the dark theme's last, with the tests that set their own sizes in between. CI's phones and tablets
+ * legs each take every other test of the listing (scripts/leg.ts), so each runs one of the two diagrams at every size
+ * in both themes.
  */
 function pagesAndDiagrams(theme: 'light' | 'dark'): void {
   test.describe(`${theme} theme`, () => {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
 
 /**
  * End-to-end tests run against the SPA's Vite dev server; no backend and no Google Cloud access needed.
@@ -48,6 +48,15 @@ const TABLET = {
   hasTouch: true,
 } as const;
 const isCI = process.env.CI !== undefined && process.env.CI !== '';
+/**
+ * The list on the terminal, the HTML report on CI, and Playwright's JSON report when PLAYWRIGHT_JSON_OUTPUT_FILE names
+ * its file, as scripts/leg.ts does to read which tests a run addressed and how long they took.
+ */
+const REPORTERS: ReporterDescription[] = [
+  ['list'],
+  ...(isCI ? [['html', { open: 'never', outputFolder: 'playwright-report' }] as const] : []),
+  ...(process.env.PLAYWRIGHT_JSON_OUTPUT_FILE ? [['json'] as const] : []),
+];
 
 function devServer(script: 'dev' | 'dev:demo', url: string) {
   return {
@@ -66,16 +75,15 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
-  reporter: isCI ? [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]] : 'list',
+  reporter: REPORTERS,
   use: {
     viewport: VIEWPORT,
     colorScheme: 'light',
     trace: 'retain-on-failure',
   },
-  // `--shard` splits the projects it runs by test count, in this order and then in that of their files and
-  // tests, which CI's e2e legs rely on (.github/workflows/pr.yml): the quick live tests before the desktop's,
-  // the handheld ones before mobile's, whose spec orders its tests so that each phones and tablets leg gets one
-  // theme's slow ones.
+  // CI's e2e legs (.github/workflows/pr.yml) each run every k-th test of their projects' JSON listing
+  // (scripts/leg.ts), file after file in the order these projects reach them, so that no leg gets a slow file
+  // whole.
   projects: [
     {
       name: 'chromium-live',

@@ -818,11 +818,13 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the size
   budgets, e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and the
   `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants a
-  banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Its
-  `required` job is the one check branch protection targets, green only when every other job but
-  `layout-budget` is, so the ruleset never changes when a job does. Every action is pinned by commit. The
-  audit gate fails on high and critical advisories unless `scripts/audit-allowlist.json` accepts one with an
-  expiry.
+  banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Each
+  e2e leg is a round-robin share of its projects' tests, every k-th of their listing, run by `--test-list`
+  (`pnpm --filter @gcportrait/e2e leg`), so that the slow files spread over the legs instead of landing in
+  one; it fails when its run misses a test of its share. Its `required` job is the one check branch
+  protection targets, green only when every other job but `layout-budget` is, so the ruleset never changes
+  when a job does. Every action is pinned by commit. The audit gate fails on high and critical advisories
+  unless `scripts/audit-allowlist.json` accepts one with an expiry.
 - **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
   or applied in a commit that passes the checks) or declined with its reason in
   [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.
@@ -957,6 +959,7 @@ that each works from the same rules and none is favoured.
 | Dependency audit: high and critical advisories fail unless `scripts/audit-allowlist.json` accepts them with an expiry (needs the network; CI's `audit` job; docs/security.md) | `node scripts/check-audit.mjs` |
 | Build, then the SPA's size budgets (UI thread 350 kB, workers 400 kB gzipped; Quality gates, testing and CI) | `pnpm build`, then `pnpm size` |
 | End-to-end + accessibility | `pnpm e2e` (once per machine: `pnpm --filter @gcportrait/e2e install-browsers`; `--project chromium-phone --project chromium-tablet` for the app's flows by finger on a phone and a tablet alone) |
+| One of CI's e2e legs: every K-th test of the projects' listing from the I-th, run by `--test-list`, failing when the run misses one, with the share's count and summed test time (Quality gates, testing and CI) / the share alone, as a test list | `CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3` (`--projects '!chromium-live !chromium'` for every other project, `-- ARGS` for Playwright) / `... --list-only` |
 | The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways; and the canvas's gestures by finger at 390 × 844 (`e2e/tests/touch.spec.ts`; Product rules, the touch model; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to AGENTS.md and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |

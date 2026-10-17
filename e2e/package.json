@@ -10,6 +10,7 @@
     "typecheck": "tsc -b",
     "test": "playwright test",
     "mobile": "playwright test --project=mobile",
+    "leg": "node scripts/leg.ts",
     "install-browsers": "playwright install chromium"
   },
   "devDependencies": {
