@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * scripts/user-docs.mjs: the user guides' generated lens blocks and the staleness checks that keep
- * docs/configuration.md and every command in the guides true to the tree, and the width of every Markdown file.
+ * docs/configuration.md and every command in the guides true to the tree, the rasteriser's version named once
+ * and as installed, and the width of every Markdown file.
  * The last test is the check itself, on the repository: it fails when a guide is stale or a Markdown line too
  * wide (run `node scripts/user-docs.mjs` for the list, `--write` for the generated blocks).
  */
@@ -15,6 +16,7 @@ import {
   codeIn,
   commandProblem,
   commandsIn,
+  dependencyVersions,
   generateLensDoc,
   helpFlags,
   largeSnapshotAssets,
@@ -24,8 +26,12 @@ import {
   markdownWidthProblems,
   overlongLines,
   quickStartVariables,
+  RASTERISER,
+  RASTERISER_DOC,
+  rasteriserVersionProblems,
   readVariableRegistry,
   replaceBlock,
+  resvgVersionsIn,
   sectionTableRows,
   typesByService,
   unregisteredTokens,
@@ -433,6 +439,86 @@ describe('the large-snapshot threshold in the modes guide', () => {
   });
 });
 
+describe('the rasteriser’s version, named once', () => {
+  let tree: TempTree;
+
+  beforeEach(() => {
+    tree = createTempTree('user-docs-rasteriser');
+  });
+
+  afterEach(() => {
+    tree.remove();
+  });
+
+  it('reads the versions of resvg a document names, in code or not, across a line break', () => {
+    expect(
+      resvgVersionsIn(
+        'resvg’s build, `@resvg/resvg-wasm`\n2.6.2, as the native `@resvg/resvg-js` 2.6.2, @resvg/resvg-js 2.7 and resvg v0.45.1 do',
+      ),
+    ).toEqual([
+      { name: '@resvg/resvg-wasm', version: '2.6.2' },
+      { name: '@resvg/resvg-js', version: '2.6.2' },
+      { name: '@resvg/resvg-js', version: '2.7' },
+      { name: 'resvg', version: '0.45.1' },
+    ]);
+    // The package alone, a command's argument, a scale and a word that only ends in resvg name no version.
+    expect(
+      resvgVersionsIn(
+        '`@resvg/resvg-wasm` (pinned exactly), `pnpm add @resvg/resvg-wasm@2.6.2`, resvg 2×, xresvg 1.2',
+      ),
+    ).toEqual([]);
+  });
+
+  it('reads a workspace package’s declared and installed version of a dependency', () => {
+    tree.write(
+      'packages/render/package.json',
+      JSON.stringify({ dependencies: { '@resvg/resvg-wasm': '2.6.2' } }),
+    );
+    tree.write(
+      'packages/render/node_modules/@resvg/resvg-wasm/package.json',
+      JSON.stringify({ name: '@resvg/resvg-wasm', version: '2.6.2' }),
+    );
+    expect(dependencyVersions(tree.root, 'packages/render', '@resvg/resvg-wasm')).toEqual({
+      declared: '2.6.2',
+      installed: '2.6.2',
+    });
+    tree.write('packages/other/package.json', JSON.stringify({ devDependencies: { x: '1.0.0' } }));
+    expect(dependencyVersions(tree.root, 'packages/other', '@resvg/resvg-wasm')).toEqual({
+      declared: null,
+      installed: null,
+    });
+  });
+
+  it('holds the goldens’ README to the version installed, and refuses a version anywhere else', () => {
+    expect(RASTERISER).toEqual({ name: '@resvg/resvg-wasm', workspace: 'packages/render' });
+    const docs = (golden: string, other = '`@resvg/resvg-wasm` (pinned exactly)') =>
+      new Map([
+        [RASTERISER_DOC, golden],
+        ['docs/packages.md', other],
+      ]);
+    const pinned = { declared: '2.6.2', installed: '2.6.2' };
+    const golden = 'rasterised by `@resvg/resvg-wasm`\n2.6.2, which draws as the native `@resvg/resvg-js`';
+    expect(rasteriserVersionProblems(pinned, docs(golden))).toEqual([]);
+    // A bump installs another version: the README's number fails, as does a declaration that is not exact.
+    expect(rasteriserVersionProblems({ declared: '^2.7.0', installed: '2.7.0' }, docs(golden))).toEqual([
+      'packages/render/package.json declares @resvg/resvg-wasm ^2.7.0, not exactly the version installed, 2.7.0',
+      'e2e/baselines/render/README.md: it names @resvg/resvg-wasm 2.6.2, the version installed is 2.7.0',
+    ]);
+    expect(rasteriserVersionProblems(pinned, docs('rasterised by `@resvg/resvg-wasm`'))).toEqual([
+      'e2e/baselines/render/README.md: it does not name @resvg/resvg-wasm 2.6.2, the version installed',
+    ]);
+    expect(
+      rasteriserVersionProblems(pinned, docs(`${golden} 2.6.2`, 'resvg 2.6.2 and `pixelmatch` 7.2.0')),
+    ).toEqual([
+      'e2e/baselines/render/README.md: it names @resvg/resvg-js 2.6.2; it names the version of @resvg/resvg-wasm alone',
+      "docs/packages.md: it names resvg 2.6.2; only e2e/baselines/render/README.md names resvg's version (name the package alone, pinned in packages/render/package.json)",
+    ]);
+    expect(rasteriserVersionProblems({ declared: '2.6.2', installed: null }, docs(golden))).toEqual([
+      '@resvg/resvg-wasm is not installed for packages/render; run `pnpm install`',
+    ]);
+  });
+});
+
 /** Prose of exactly `columns` columns, in words of four letters. */
 const prose = (columns: number): string => {
   const text = 'word '.repeat(Math.ceil(columns / 5)).slice(0, columns);
@@ -565,7 +651,7 @@ describe('the width of the Markdown files of a tree', () => {
 });
 
 describe('the user guides of this repository', () => {
-  it('are current with the tree: no verification logs, configuration.md, the lens blocks, every command', () => {
+  it('are current with the tree: no verification logs, configuration.md, the lens blocks, every command, the rasteriser’s version', () => {
     expect(checkUserDocs(REPO)).toEqual([]);
   });
 });

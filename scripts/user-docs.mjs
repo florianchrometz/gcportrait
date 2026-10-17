@@ -31,6 +31,10 @@
  *   packages/model/src/schemas/command-variables.ts, which Node loads by type stripping);
  * - docs/modes.md names the size above which the app asks before it draws a snapshot ("more than 10,000 assets")
  *   with the model's own `LARGE_SNAPSHOT_ASSETS` (packages/model/src/schemas/vocabulary.ts), and no other;
+ * - the render goldens' README (e2e/baselines/render/README.md) names the rasteriser, `@resvg/resvg-wasm`,
+ *   with the version installed for packages/render, which pins it exactly, and no other Markdown file names a
+ *   version of resvg: the golden PNG is that version's bytes, and a number written anywhere else would drift
+ *   on every bump;
  * - every Markdown file of the tree (as scripts/lib/repo-files.mjs walks it, the generated CHANGELOGs and the
  *   changesets aside) is wrapped at WIDTH columns, counted in code points, but where a line break cannot
  *   shorten a line or must not go: the YAML frontmatter, fenced code, table rows, a line that holds a URL, and
@@ -157,6 +161,14 @@ export const LENS_DOC = 'docs/lenses-and-filters.md';
 export const LARGE_SNAPSHOT_DOC = 'docs/modes.md';
 export const VOCABULARY_MODULE = 'packages/model/src/schemas/vocabulary.ts';
 export const CATALOG_JSON = 'packages/catalog/dist/catalog.json';
+/**
+ * The one document that names the rasteriser's version: the render golden PNG is the bytes of that version,
+ * which the render library pins exactly (AGENTS.md, Exports and the render API). Every other document names
+ * resvg without a number, so a bump changes this one line, which the check holds to the version installed.
+ */
+export const RASTERISER_DOC = 'e2e/baselines/render/README.md';
+/** The rasteriser's package, and the workspace package that pins it. */
+export const RASTERISER = Object.freeze({ name: '@resvg/resvg-wasm', workspace: 'packages/render' });
 
 /** pnpm's own commands that may appear in a guide (`pnpm install`, `pnpm --filter X exec ...`). */
 const PNPM_COMMANDS = new Set([
@@ -896,6 +908,108 @@ export function largeSnapshotProblems(guide, source) {
 }
 
 /**
+ * A version of resvg named in prose: one of its packages, in code or not, or resvg itself, followed by a
+ * version number (`@resvg/resvg-wasm` 2.6.2, resvg v0.45.1); the name in group 2, the number in group 3. A
+ * package's name with `@` and its version (`@resvg/resvg-wasm@2.6.2`) is a command's argument, not prose.
+ */
+const RESVG_VERSION =
+  /(?<![\w@/.-])(`?)(@resvg\/resvg-(?:wasm|js)|resvg(?:-wasm|-js)?)\1\s+v?(\d+(?:\.\d+){1,2})\b/gi;
+
+/**
+ * The versions of resvg a document names (RESVG_VERSION), in order, a line break read as a space.
+ * @param {string} markdown
+ * @returns {Array<{ name: string, version: string }>}
+ */
+export function resvgVersionsIn(markdown) {
+  return [...markdown.replaceAll(/\s+/g, ' ').matchAll(RESVG_VERSION)].map((match) => ({
+    name: match[2] ?? '',
+    version: match[3] ?? '',
+  }));
+}
+
+/**
+ * A JSON file's top-level object, or an empty one when it holds something else.
+ * @param {string} file
+ * @returns {Record<string, unknown>}
+ */
+function readJsonObject(file) {
+  /** @type {unknown} */
+  const value = JSON.parse(readFileSync(file, 'utf8'));
+  return typeof value === 'object' && value !== null ? /** @type {Record<string, unknown>} */ (value) : {};
+}
+
+/**
+ * A dependency as a workspace package declares it (its package.json's `dependencies`) and as it is installed
+ * for that package (the version in the installed package's own package.json, its directory found as Node
+ * looks a package up, since a package's `exports` may leave its package.json out, but only in the
+ * `node_modules` directories of the tree: the NODE_PATH that pnpm's scripts set installs nothing for a
+ * package); null where there is none.
+ * @param {string} root
+ * @param {string} workspace
+ * @param {string} name
+ * @returns {{ declared: string | null, installed: string | null }}
+ */
+export function dependencyVersions(root, workspace, name) {
+  const manifest = path.join(root, workspace, 'package.json');
+  const { dependencies } = readJsonObject(manifest);
+  const declared =
+    typeof dependencies === 'object' && dependencies !== null
+      ? /** @type {Record<string, unknown>} */ (dependencies)[name]
+      : undefined;
+  const dir = createRequire(manifest)
+    .resolve.paths(name)
+    ?.filter((modules) => !path.relative(root, modules).startsWith('..'))
+    .map((modules) => path.join(modules, name))
+    .find((candidate) => existsSync(path.join(candidate, 'package.json')));
+  const installed = dir === undefined ? undefined : readJsonObject(path.join(dir, 'package.json')).version;
+  return {
+    declared: typeof declared === 'string' ? declared : null,
+    installed: typeof installed === 'string' ? installed : null,
+  };
+}
+
+/**
+ * What is wrong with the versions of resvg the documents name: the rasteriser is pinned exactly at the
+ * version installed, RASTERISER_DOC names it with that version and names no other version of resvg, and no
+ * other document names a version of resvg at all.
+ * @param {{ declared: string | null, installed: string | null }} pin the rasteriser's (dependencyVersions)
+ * @param {ReadonlyMap<string, string>} docs the Markdown documents' texts by their paths
+ * @returns {string[]}
+ */
+export function rasteriserVersionProblems(pin, docs) {
+  const { name, workspace } = RASTERISER;
+  const { declared, installed } = pin;
+  if (installed === null) return [`${name} is not installed for ${workspace}; run \`pnpm install\``];
+  /** @type {string[]} */
+  const problems = [];
+  if (declared !== installed)
+    problems.push(
+      `${workspace}/package.json declares ${name} ${declared ?? 'not at all'}, not exactly the version installed, ${installed}`,
+    );
+  const stated = resvgVersionsIn(docs.get(RASTERISER_DOC) ?? '');
+  if (stated.length === 0)
+    problems.push(`${RASTERISER_DOC}: it does not name ${name} ${installed}, the version installed`);
+  for (const named of stated) {
+    if (named.name !== name)
+      problems.push(
+        `${RASTERISER_DOC}: it names ${named.name} ${named.version}; it names the version of ${name} alone`,
+      );
+    else if (named.version !== installed)
+      problems.push(
+        `${RASTERISER_DOC}: it names ${name} ${named.version}, the version installed is ${installed}`,
+      );
+  }
+  for (const [doc, text] of docs) {
+    if (doc === RASTERISER_DOC) continue;
+    for (const named of resvgVersionsIn(text))
+      problems.push(
+        `${doc}: it names ${named.name} ${named.version}; only ${RASTERISER_DOC} names resvg's version (name the package alone, pinned in ${workspace}/package.json)`,
+      );
+  }
+  return problems;
+}
+
+/**
  * Whether a line is one word: once its opening (LINE_OPENING) is set aside, it has no space a line break could
  * take, an HTML tag or comment counting as one word.
  * @param {string} line
@@ -1031,6 +1145,17 @@ export function checkUserDocs(root) {
       readFileSync(path.join(root, VOCABULARY_MODULE), 'utf8'),
     ),
   );
+  problems.push(
+    ...rasteriserVersionProblems(
+      dependencyVersions(root, RASTERISER.workspace, RASTERISER.name),
+      new Map(
+        wrappedMarkdownFiles(root).map((relPath) => [
+          relPath,
+          readFileSync(path.join(root, relPath), 'utf8'),
+        ]),
+      ),
+    ),
+  );
 
   const registry = readVariableRegistry(root);
   const quickStart = quickStartVariables(readFileSync(path.join(root, QUICK_START_DOC), 'utf8'), registry);
@@ -1089,8 +1214,9 @@ function main() {
     process.exitCode = 1;
     return;
   }
+  const rasteriser = dependencyVersions(root, RASTERISER.workspace, RASTERISER.name).installed ?? '';
   process.stdout.write(
-    `user-docs: OK. ${String(GUIDES.length)} guides current with the tree; ${String(GUIDES.length + COMMAND_DOCS.length + LOG_FREE_DOCS.length)} user documents without a verification log; ${QUICK_START_DOC} asks only for ${QUICK_START_VARIABLES.join(', ')}; ${String(wrappedMarkdownFiles(root).length)} Markdown files wrapped at ${String(WIDTH)} columns.\n`,
+    `user-docs: OK. ${String(GUIDES.length)} guides current with the tree; ${String(GUIDES.length + COMMAND_DOCS.length + LOG_FREE_DOCS.length)} user documents without a verification log; ${QUICK_START_DOC} asks only for ${QUICK_START_VARIABLES.join(', ')}; ${RASTERISER_DOC} alone names ${RASTERISER.name}'s version, ${rasteriser} as installed; ${String(wrappedMarkdownFiles(root).length)} Markdown files wrapped at ${String(WIDTH)} columns.\n`,
   );
 }
 

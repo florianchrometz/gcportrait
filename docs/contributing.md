@@ -373,8 +373,10 @@ dependency must pass `pnpm run licenses`.
    with no record of when or where it was checked), and `AGENTS.md` and the skill that applies it if a rule
    changed. `node scripts/user-docs.mjs` (part of `pnpm test`) fails while a guide names a `pnpm` script, an
    `infra/` flag or a setting the tree does not have, logs a verification, while the generated lens tables
-   differ from the catalog (`--write` regenerates them), or while a Markdown line is wider than 110 columns
-   outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation".
+   differ from the catalog (`--write` regenerates them), while a Markdown line is wider than 110 columns
+   outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation", or while the render goldens' README
+   names another version of `@resvg/resvg-wasm` than the one installed or another document names a version of
+   resvg.
 5. **Add a changeset** (below) if users will notice the change.
 6. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
 7. **Open the pull request** (section 7).
@@ -551,4 +553,4 @@ pulls through a remote repository in the self-hoster's own project.
 | Every CI job fails at "Install dependencies" with `ERR_PNPM_OUTDATED_LOCKFILE` | `pnpm-lock.yaml` does not match a `package.json`: run `pnpm install` and commit the lockfile. |
 | A test fails on CI but not on your machine | Run it as the runner does: `TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project <name>` (section 4, "Continuous integration"). |
 | `pnpm size` passes but says `frontend/dist does not exist yet` | It measured nothing: run `pnpm build` first. |
-| `user-docs: FAILED` (or `scripts/user-docs.test.ts` fails) | A user guide is stale: the message names the guide and the command, flag, variable or lens block. Fix the guide, or run `node scripts/user-docs.mjs --write` for the lens blocks after a catalog lens change. A line `path:line: N columns, the limit is 110` is a Markdown line to rewrap by hand (only the line breaks move). |
+| `user-docs: FAILED` (or `scripts/user-docs.test.ts` fails) | A user guide is stale: the message names the guide and the command, flag, variable or lens block. Fix the guide, or run `node scripts/user-docs.mjs --write` for the lens blocks after a catalog lens change. A line `path:line: N columns, the limit is 110` is a Markdown line to rewrap by hand (only the line breaks move). After a bump of `@resvg/resvg-wasm`, `e2e/baselines/render/README.md` names the new version (and the render golden PNG is drawn again if its bytes changed); every other document names resvg without a number. |

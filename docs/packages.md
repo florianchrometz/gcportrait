@@ -308,7 +308,7 @@ size, a `.gcportrait.json` bundle, or NDJSON chunks of an export, a saved stream
 app's path to a view (`buildGraph` → `buildSceneWithReport` at the viewport's rect budget → `layoutScene` →
 the page's diagram input), the frontend's own SVG components rendered with `react-dom/server` through
 `@gcportrait/frontend` (`frontend/src/headless.ts`, which the app itself never imports), and a PNG rasterised
-by resvg's WebAssembly build, `@resvg/resvg-wasm` 2.6.2 (MPL-2.0, used unmodified, pinned exactly: the pixels
+by resvg's WebAssembly build, `@resvg/resvg-wasm` (MPL-2.0, used unmodified, pinned exactly: the pixels
 depend on its version), with only the self-hosted Roboto and Roboto Mono faces: 2× by default (3× at most), on
 the theme's canvas colour, with a 24 px margin and an optional pixel cap, or a draw.io file translated from
 the SVG by the frontend's translator. The same pixels (and draw.io bytes) on every platform, and no native
@@ -319,7 +319,7 @@ addon, so the backend's image can carry it: its render worker reads the wasm mod
 **Entry point.** `packages/render/src/index.ts`: `renderView`, `snapshotFromDemo`, `snapshotFromBundle`,
 `createSnapshotReader`, `prepareView`, `createDemoViews`, `drawSvg`, `drawPng`, `drawDrawio`, `rasterise`,
 `pngGeometry`, `initRasteriser`, `packageAssets`, `writeAssetDir`, `readAssetDir`, `woffToSfnt`. **Tests.**
-`test/parity.test.ts` draws views with it and with the native `@resvg/resvg-js` 2.6.2 (a dev dependency, used
+`test/parity.test.ts` draws views with it and with the native `@resvg/resvg-js` (a dev dependency, used
 only there) to the same bytes. Reference: [packages/render/README.md](../packages/render/README.md).
 
 ### `@gcportrait/render-cli` — the headless renderer's command line

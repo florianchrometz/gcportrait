@@ -1290,7 +1290,7 @@ the light plate on dark canvases. A zone without a header icon in the Scene gets
 model's `RELATION_KINDS` gives each kind (`EDGE_STYLES`), so there is no second per-kind map. Two `<marker>`s
 per kind with a head and per theme, both `orient="auto"` and `userSpaceOnUse`: the end marker
 (`dg-<theme>-head-<kind>`) points along the path, the start marker (`…-<kind>-start`) is drawn pointing back
-(SVG 2's `auto-start-reverse` would need one, but resvg 2.6.2 and other SVG tools do not support it). Filled
+(SVG 2's `auto-start-reverse` would need one, but resvg and other SVG tools do not support it). Filled
 and hollow heads end the line at the head's base and put the tip where the layout ended the edge (2 px inside
 the border); open heads keep the line to the tip; every head sits on a straight stretch with a 1 px lead, and
 elbows are quarter circles of the layout's `elbowRadius`, at most half of a segment between two elbows. A hub
@@ -1417,12 +1417,12 @@ which keep the classes and attributes the painter set: the old painter takes its
 replaced, the new one paints the selection and the keyboard focus again, and a hover waits for the pointer's
 next move.
 
-**Known limits.** Edges are not hoverable (no count tooltip). `@resvg/resvg-js` 2.6.2 (the layout's debug
-rasteriser, and the render CLI's) panics when an icon's nested `<svg>` lies outside a *cropped* viewBox; the
-whole drawing rasterises fine, so a viewport export should crop the bitmap rather than the viewBox. Where the
-layout ends an edge with a final segment shorter than its head (6 px against a 7 px head, at L detail
-`projects`), the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the layout's routing
-owns that segment.
+**Known limits.** Edges are not hoverable (no count tooltip). resvg (`@resvg/resvg-js`, the layout's debug
+rasteriser, and `@resvg/resvg-wasm`, the render library's) panics when an icon's nested `<svg>` lies outside a
+*cropped* viewBox; the whole drawing rasterises fine, so a viewport export should crop the bitmap rather than
+the viewBox. Where the layout ends an edge with a final segment shorter than its head (6 px against a 7 px
+head, at L detail `projects`), the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the
+layout's routing owns that segment.
 
 **Bundle.** `pnpm size` budgets the build by thread (AGENTS.md, Quality gates, testing and CI; gzipped, fonts
 and the JSON data tables excluded): the UI thread's initial chunks (the entry, its static imports and the CSS)

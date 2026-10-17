@@ -157,10 +157,10 @@ A failing golden test leaves the actual file (and for the PNG a picture of the d
 
 ## Dependencies
 
-`@gcportrait/render` (which brings `@resvg/resvg-wasm` 2.6.2, MPL-2.0, pinned exactly, the `@fontsource`
-Roboto packages, OFL-1.1, the font exception of AGENTS.md, Licence and dependencies, and through the
-frontend's draw.io translator fflate 0.8.3, MIT, pinned exactly), `pixelmatch` 7.2.0 (ISC) and `pngjs` 7.0.0
-(MIT) for the comparisons, and the workspace packages above.
+`@gcportrait/render` (which brings `@resvg/resvg-wasm`, MPL-2.0, pinned exactly, the `@fontsource` Roboto
+packages, OFL-1.1, the font exception of AGENTS.md, Licence and dependencies, and through the frontend's
+draw.io translator fflate, MIT, pinned exactly), `pixelmatch` (ISC) and `pngjs` (MIT) for the comparisons,
+both pinned exactly in `package.json`, and the workspace packages above.
 
 ## Known limits
 
