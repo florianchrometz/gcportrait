@@ -62,7 +62,8 @@ pnpm format              # fix formatting (Markdown is hand-wrapped at 110 colum
 pnpm run licenses --write   # after a dependency change: regenerate THIRD_PARTY.md (`run` is required)
 ```
 
-Tests first for `packages/*` (vitest; property tests with fast-check for graph and layout). Fixtures first for
+Tests first for `packages/*` (vitest; property tests with fast-check where a package has them, under the fixed
+seed on CI). Fixtures first for
 catalog work. Golden layout JSON and visual baselines for renderer work.
 
 Visual baselines live in `e2e/baselines/`: the renderer's SVG baselines (`diagram/`, written by the

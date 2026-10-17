@@ -997,11 +997,6 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
 }
 
 /**
- * The segments a run holds its lane on: those it covers; a run of no length (a route that turns onto its second
- * line right where its stub meets the first, or onto its target's line at the end) holds the segments on either
- * side of its node, as its elbow reaches into one of them.
- */
-/**
  * What each segment of the network costs per px of its length (skill §5): 1 through a gap or free
  * space; along a ring side (`HUG_RING`) `hugFactor`, except that the surcharge over the whole side is at most
  * `hugCap` (a side longer than `hugCap / (hugFactor − 1)` pays proportionally less per px), so going round to
