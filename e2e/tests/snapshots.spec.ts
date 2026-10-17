@@ -14,8 +14,7 @@ import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './s
  * their snapshot id), and can be deleted: a deleted snapshot's ref then draws nothing, even while the data
  * worker still holds its Graph, and never another snapshot. Without IndexedDB the demo still works, in memory
  * until a reload. In both themes the Delete buttons are in the error colour, read from the computed styles, and
- * the controls beside them in the control's. Screenshots of the pages in both themes go to e2e/.scratch/
- * (git-ignored).
+ * the controls beside them in the control's.
  */
 const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 const READ = 'example.com, read 2026-10-08 00:00 UTC';

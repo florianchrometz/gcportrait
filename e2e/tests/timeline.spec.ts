@@ -42,8 +42,6 @@ import {
  * - playback runs through the days to the last one and stops there, and stops on a key press (on Playwright's clock,
  *   so no step waits for a real interval);
  * - axe on the diagram page with the bar, in light and dark.
- *
- * Screenshots of the bar go to e2e/.scratch/timeline/ (git-ignored).
  */
 const DEMO_M = '/diagram#snapshot=demo:M';
 /** demo-reports-1, deleted on 17 September (packages/demo-data README "History": tick 13). */

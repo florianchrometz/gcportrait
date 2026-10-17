@@ -26,7 +26,7 @@ import {
  * double-click on a project chip drills in without leaving a flip; a level carried in from the organisation opens
  * on, with nothing for "Collapse all" to close; and a press that comes while the organisation is still on screen
  * waits for the project's drawing. The counts are read from the page and compared, never pinned: they follow the
- * demo generator and the catalog. Screenshots go to e2e/.scratch/ (git-ignored).
+ * demo generator and the catalog.
  */
 const DEMO_L = '/diagram#snapshot=demo:L';
 const DEMO_M = '/diagram#snapshot=demo:M';

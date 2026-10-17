@@ -36,7 +36,6 @@ import {
  *   light and dark.
  *
  * The export is generated once per worker (it is the same in every test); each test writes its own operation.json.
- * Screenshots go to e2e/.scratch/extra-ticks/ (git-ignored).
  */
 const REPO = path.resolve(import.meta.dirname, '..', '..');
 const DEMO_M = '/diagram#snapshot=demo:M';

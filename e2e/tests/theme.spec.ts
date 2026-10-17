@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 import { expect, test } from '@playwright/test';
 
-import { readStoredTheme } from './support.js';
+import { readStoredTheme, scratchShot } from './support.js';
+
+/** The shell's surface and on-surface colours in each theme (gcp-diagram-style §9). */
+const SHELL_COLOURS = {
+  light: { surface: 'rgb(255, 255, 255)', onSurface: 'rgb(32, 33, 36)' },
+  dark: { surface: 'rgb(31, 31, 31)', onSurface: 'rgb(232, 234, 237)' },
+} as const;
 
 test.use({ colorScheme: 'light' });
 
@@ -75,3 +81,22 @@ test('an explicit choice ignores the operating system scheme', async ({ page }) 
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 });
+
+for (const scheme of ['light', 'dark'] as const) {
+  test.describe(`the ${scheme} colour scheme`, () => {
+    test.use({ colorScheme: scheme });
+
+    test(`the shell takes the ${scheme} theme's surface colours on /diagram, / and /settings`, async ({
+      page,
+    }) => {
+      for (const route of ['/diagram', '/', '/settings']) {
+        await page.goto(route);
+        await expect(page.locator('html'), route).toHaveAttribute('data-theme', scheme);
+        const body = page.locator('body');
+        await expect(body, route).toHaveCSS('background-color', SHELL_COLOURS[scheme].surface);
+        await expect(body, route).toHaveCSS('color', SHELL_COLOURS[scheme].onSurface);
+        await scratchShot(page, '.', `shell-${route === '/' ? 'connect' : route.slice(1)}-${scheme}`);
+      }
+    });
+  });
+}

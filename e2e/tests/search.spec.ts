@@ -11,7 +11,6 @@ import { DEMO_M_DIAGRAM, expectNoAxeViolations, hashOf, openDiagram, scratchShot
  * lands on the new text's best result (by keyboard), and a click on a result lands too. These run once, in the light
  * theme: the theme changes none of it. A node the lens leaves out opens the reveal dialog, whose offer switches to the
  * Everything lens and lands on it; axe finds nothing with the results or the dialog open: both in both themes.
- * Screenshots go to e2e/.scratch/search/ (git-ignored).
  */
 
 const BASTION = '//compute.googleapis.com/projects/demo-vm-1/zones/europe-west3-a/instances/bastion';

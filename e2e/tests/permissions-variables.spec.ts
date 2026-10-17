@@ -4,7 +4,7 @@ import { expect, type Page } from '@playwright/test';
 import { ALL_SCOPES, storedEverywhere, stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
 import { stubConfig, test } from '../fixtures/live.js';
 import { copied, grantClipboard, panel, reference, row, values } from './permissionsSupport.js';
-import { expectNoAxeViolations, scratchShot } from './support.js';
+import { expectNoAxeViolations, scratchShot, SHOTS_WANTED } from './support.js';
 
 /**
  * Fillable commands on the Permissions page (preflight/CommandBlock.tsx, commands/): every variable of a
@@ -13,7 +13,7 @@ import { expectNoAxeViolations, scratchShot } from './support.js';
  * and editable; Copy copies the command with the values (an unfilled one as its token) and says so; the
  * values outlive a reload in the tab's sessionStorage. Run by the `chromium-live` project on the normal-mode
  * server (every backend and Google call answered in the page): signed out, signed in, demo-only and
- * service-account cases; axe and screenshots in both themes. The demo mode case:
+ * service-account cases; axe in both themes. The demo mode case:
  * permissions-variables-demo.spec.ts. Synthetic values only (AGENTS.md, Security and privacy, principle 6).
  */
 const ACCOUNT = 'gcportrait-backend@demo-host.iam.gserviceaccount.com';
@@ -176,12 +176,14 @@ for (const scheme of ['light', 'dark'] as const) {
     await panel(page).getByRole('textbox', { name: 'Organisation number' }).fill('30000000001');
     await panel(page).getByRole('textbox', { name: 'Bucket' }).fill('demo-exports-1');
     await expectNoAxeViolations(page);
-    // For a person to look at (git-ignored): the whole page with filled variables (its main area scrolls inside the
-    // shell, so a viewport tall enough for all of it), and the table's first rows up close.
-    await page.setViewportSize({ width: 1440, height: 2400 });
-    await scratchShot(page, 'permissions-variables', `permissions-filled-${scheme}`);
-    await scratchShot(reference(page), 'permissions-variables', `reference-filled-${scheme}`);
-    await page.setViewportSize({ width: 1440, height: 900 });
+    if (SHOTS_WANTED) {
+      // For a person to look at (git-ignored): the whole page with filled variables (its main area scrolls inside
+      // the shell, so a viewport tall enough for all of it), and the table's first rows up close.
+      await page.setViewportSize({ width: 1440, height: 2400 });
+      await scratchShot(page, 'permissions-variables', `permissions-filled-${scheme}`);
+      await scratchShot(reference(page), 'permissions-variables', `reference-filled-${scheme}`);
+      await page.setViewportSize({ width: 1440, height: 900 });
+    }
 
     const email = row(page, /^Your account.*single permission/).getByRole('textbox', { name: 'Your e-mail' });
     await email.fill('ada');

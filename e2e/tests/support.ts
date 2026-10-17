@@ -312,19 +312,32 @@ export function wcagContrast(a: string, b: string): number {
   return contrastRatio(relativeLuminance(...channelsOf(a)), relativeLuminance(...channelsOf(b)));
 }
 
+/**
+ * Whether a person asked for the screenshots scratchShot takes: `E2E_SHOTS=1`. CI never sets it, as nothing compares
+ * those screenshots and no job uploads them.
+ */
+export const SHOTS_WANTED = process.env.E2E_SHOTS === '1';
+
 /** Where screenshots for a person to look at go: e2e/.scratch/ (git-ignored). */
 const SCRATCH = path.resolve(import.meta.dirname, '..', '.scratch');
 
 /**
- * Saves a screenshot of the page or of one element as e2e/.scratch/<dir>/<name>.png, for a person to look at (the
- * specs assert nothing on it).
+ * With `E2E_SHOTS=1` (SHOTS_WANTED), saves a screenshot of the page or of one element as
+ * e2e/.scratch/<dir>/<name>.png once the web fonts have loaded, for a person to look at (the specs assert nothing on
+ * it). Without it, returns at once and leaves the page alone.
  */
-export function scratchShot(
+export async function scratchShot(
   target: Page | Locator,
   dir: string,
   name: string,
   options: { readonly clip?: Box; readonly fullPage?: boolean } = {},
-): Promise<Buffer> {
+): Promise<void> {
+  if (!SHOTS_WANTED) return;
+  const page = 'goto' in target ? target : target.page();
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
   const file = path.join(SCRATCH, dir, `${name}.png`);
-  return 'goto' in target ? target.screenshot({ path: file, ...options }) : target.screenshot({ path: file });
+  if ('goto' in target) await target.screenshot({ path: file, ...options });
+  else await target.screenshot({ path: file });
 }

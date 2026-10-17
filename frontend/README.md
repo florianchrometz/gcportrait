@@ -896,8 +896,7 @@ session keeps, and that every command the app shows names only registered variab
 and its announcement, the note, the format hint, a reload, Clear values, no secret kept, blocked storage,
 axe), and `e2e/tests/permissions-variables.spec.ts` in Chromium (signed out, signed in, demo-only and demo
 mode: fill in one command and the others follow, the clipboard reads the filled command, a reload keeps it and
-another tab does not; axe and screenshots with filled, unfilled and invalid fields in both themes, to
-`e2e/.scratch/permissions-variables/`).
+another tab does not; axe with filled, unfilled and invalid fields in both themes).
 
 ## Live pull and export load (`src/import/`)
 
@@ -2398,7 +2397,7 @@ overlay's ghost), `diff/handler.test.ts` (the data worker's `scene` with `diffFr
 (section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M
 (scrubbing from 23 to 24 September in the compute lens at `all`: the new VM outlined, the deleted test VM's
 ghost, the group manager's dot and the legend rows; its drawer's update times and `targetSize`; `[` back,
-"compared with"; another lens keeps the markers; axe in both themes; screenshots in `e2e/.scratch/diff/`).
+"compared with"; another lens keeps the markers; axe in both themes).
 
 ## Performance
 

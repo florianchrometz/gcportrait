@@ -10,6 +10,7 @@ import {
   openDiagram,
   relativeLuminance,
   scratchShot,
+  SHOTS_WANTED,
   wcagContrast,
 } from './support.js';
 
@@ -36,8 +37,7 @@ import {
  *   breadcrumb (the crumb that is now current, its ring unclipped);
  * - reduced motion: no pulse and no glide (and without it, both).
  *
- * axe with the keyboard inside a zone: a11y.spec.ts. Screenshots of the walkthrough go to e2e/.scratch/keyboard/
- * (git-ignored).
+ * axe with the keyboard inside a zone: a11y.spec.ts.
  */
 const DEMO_S = '/diagram#snapshot=demo:S';
 
@@ -147,12 +147,20 @@ function tabStop(page: Page): Locator {
   return canvas(page).locator('.dg-zones [tabindex="0"], .dg-nodes [tabindex="0"]');
 }
 
-function shot(page: Page, name: string): Promise<Buffer> {
-  return scratchShot(page, 'keyboard', name);
+/** The page once the camera stands still, for a person to look at (scratchShot: only with E2E_SHOTS=1). */
+async function shot(page: Page, name: string): Promise<void> {
+  if (!SHOTS_WANTED) return;
+  // The camera glides 200 ms to show what the keyboard moved to.
+  await cameraSettled(canvas(page));
+  await scratchShot(page, 'keyboard', name);
 }
 
-/** A close-up of what has focus and its surroundings, at the device's pixels (for a person to look at). */
+/**
+ * A close-up of what has focus and its surroundings, at the device's pixels, for a person to look at (scratchShot:
+ * only with E2E_SHOTS=1).
+ */
 async function closeUp(page: Page, name: string): Promise<void> {
+  if (!SHOTS_WANTED) return;
   // The camera pans 200 ms to show what the keyboard moved to.
   await expect(page.locator(':focus')).toBeInViewport();
   await cameraSettled(canvas(page));
@@ -215,8 +223,6 @@ test('a keyboard-only walkthrough: demo, arrows, chip, lens, search, drawer, dri
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/flips=/);
   await expect.poll(async () => (await focused(page)).name, { timeout: 30_000 }).toBe(`Collapse ${chipName}`);
-  // The camera glides 200 ms to frame the zone.
-  await cameraSettled(canvas(page));
   await shot(page, 'walkthrough-2-chip-expanded');
 
   // Change the lens: back to the Lens picker, open it, type-ahead to Compute, choose it.

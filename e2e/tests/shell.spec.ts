@@ -76,9 +76,6 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.goto('/diagram');
     await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
     await expectShellFooter(page, DEFAULT_SOURCE_URL);
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-    });
     const footer = page.getByRole('contentinfo');
     for (const name of [MAINTAINER_LINK_NAME, SOURCE_LINK_TEXT]) {
       await expectFooterLinkStyle(page, footer.getByRole('link', { name, exact: true }), name);

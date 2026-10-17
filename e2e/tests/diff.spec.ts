@@ -15,8 +15,6 @@ import { expectDrawn, scrubTo, timelineBar } from './timelineSupport.js';
  * - the changed manager's drawer says what changed: both update times and the fields that differ (`targetSize`);
  * - `[` back to the 23rd compares it with the 24th ("compared with"); a lens change keeps the day's markers;
  * - axe in light and dark with the markers and the drawer.
- *
- * Screenshots go to e2e/.scratch/diff/ (git-ignored).
  */
 const DAY_BEFORE = '/diagram#snapshot=demo:M&tick=2026-09-23&lens=compute&detail=all';
 /** One of the two VMs the web group's scale-out added on the 24th. */

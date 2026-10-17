@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MIT
-import { mkdirSync } from 'node:fs';
-import path from 'node:path';
-
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import { COMPUTE_ALL, selectVm, stubConsole, VM, VM_PAGE } from './consoleSupport.js';
-import { boxOf, inside, openDiagram, type Box } from './support.js';
+import { boxOf, inside, openDiagram, scratchShot, type Box } from './support.js';
 
 /**
  * The console affordance (the gcp-diagram-style skill §6) in a real browser, on demo organisation M: the selected
@@ -19,8 +16,6 @@ import { boxOf, inside, openDiagram, type Box } from './support.js';
  */
 
 const PROJECT_HOME = 'https://console.cloud.google.com/home/dashboard?project=demo-vm-1';
-/** Where the pill screenshots go (git-ignored), for a person to look at. */
-const SHOTS = path.resolve(import.meta.dirname, '..', '..', 'out', 'e2e', 'console-pill');
 /**
  * The compiled asset catalog as the data worker fetches it: the module under the dev server, the JSON table
  * `assets/catalog-data-<hash>.json` in a build.
@@ -151,8 +146,7 @@ for (const theme of ['light', 'dark'] as const) {
         await gw1.getAttribute('data-id'),
       );
       for (const other of others) if (other !== null) expect(overlaps(pill, other)).toBe(false);
-      // A picture of both cards for a person to look at (out/e2e/console-pill/, git-ignored).
-      mkdirSync(SHOTS, { recursive: true });
+      // A picture of both cards for a person to look at (scratchShot: only with E2E_SHOTS=1).
       const top = Math.min(card.y, below.y) - 60;
       const left = Math.min(card.x, below.x) - 80;
       const clip = {
@@ -161,7 +155,7 @@ for (const theme of ['light', 'dark'] as const) {
         width: Math.max(card.x + card.width, below.x + below.width) + 80 - Math.max(0, left),
         height: Math.max(card.y + card.height, below.y + below.height) + 60 - Math.max(0, top),
       };
-      await page.screenshot({ path: path.join(SHOTS, `pill-partner-gw-1-M-compute-all-${theme}.png`), clip });
+      await scratchShot(page, 'console-pill', `pill-partner-gw-1-M-compute-all-${theme}`, { clip });
       // Hovered, it shows its label, still inside the card and clear of the card below.
       await expect(action).toHaveAttribute('data-expand', 'true');
       await action.hover();
@@ -169,10 +163,7 @@ for (const theme of ['light', 'dark'] as const) {
       const labelled = await boxOf(action.locator('.dg-console-resource .dg-console-full .dg-console-pill'));
       expect(inside(labelled, card), JSON.stringify({ labelled, card })).toBe(true);
       expect(overlaps(labelled, below)).toBe(false);
-      await page.screenshot({
-        path: path.join(SHOTS, `pill-partner-gw-1-M-compute-all-${theme}-hover.png`),
-        clip,
-      });
+      await scratchShot(page, 'console-pill', `pill-partner-gw-1-M-compute-all-${theme}-hover`, { clip });
     });
   });
 }

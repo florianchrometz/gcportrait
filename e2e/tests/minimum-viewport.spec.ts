@@ -15,8 +15,7 @@ import {
  * layouts: mobile.spec.ts), in both themes: the Networking lens on demo M opens readable (its default detail is the
  * ceiling of `auto`, so the fitted drawing keeps its labels); the top bar's Theme menu sets the same preference as
  * Settings; "Try the demo" lands focus on the page and announces it; the view row is shown on the diagram page only;
- * a link naming no snapshot and a refused focus say so. Screenshots of the Networking lens and of the Theme menu go
- * to e2e/.scratch/minimum-viewport/ (git-ignored).
+ * a link naming no snapshot and a refused focus say so.
  */
 test.use({ viewport: { width: 1280, height: 800 } });
 
@@ -56,9 +55,6 @@ for (const scheme of ['light', 'dark'] as const) {
       expect(await canvasClasses(page)).not.toContain('dg-lod-nolabel');
       const shown = await page.getByText(/^\d+ of \d+ shown$/).textContent();
       expect(Number(shown?.split(' ')[0])).toBeLessThan(120);
-      await page.evaluate(async () => {
-        await document.fonts.ready;
-      });
       await shot(page, `networking-M-1280x800-${scheme}`);
       await expectNoAxeViolations(page);
     });
