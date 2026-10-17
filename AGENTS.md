@@ -119,7 +119,9 @@ now, and what changed in the last five weeks?
     while View or More is open too), and the drawer's content scrolls inside it, never past its edge; the
     timeline bar and the disclosure bar wrap onto more lines instead, a phone's timeline with the slider
     across the width on a line as tall as its touch target and the row of day markers under its track, the
-    readout below it and the buttons below the readout;
+    readout below it and the buttons below the readout, and on a phone turned sideways, whose diagram area
+    (the canvas and the bar) is under 18.5rem tall, one line while the details sheet is open, the slider with
+    the step and play buttons, its readout and playback options hidden until the sheet closes;
   - no control is ever out of sight when it has focus or under something when tapped: a control the chrome
     covers is moved clear of it or hidden with what covers it;
   - a page flows in the width it has and only its own box scrolls, never the document, because a document
@@ -399,8 +401,9 @@ normalisers and the authoring procedure; [packages/graph/README.md](packages/gra
   written in rem as `MEDIA` in `frontend/src/ui/screen.ts` has them (media queries cannot read custom
   properties; `--breakpoint-tablet` and `--breakpoint-desktop` in `tokens.css` name the widths), and for a
   part's own room only with `CONTAINER`'s container queries, in rem too (a phone's canvas too short for the
-  disclosure bar above the half-height sheet); `frontend/src/ui/screen.test.ts` refuses any other, so the
-  layouts follow the reader's text size and every part folds at the same widths.
+  disclosure bar above the half-height sheet, a phone's diagram area too short for the timeline bar and the
+  sheet together); `frontend/src/ui/screen.test.ts` refuses any other, so the layouts follow the reader's
+  text size and every part folds at the same widths.
 - **Google's colour semantics win; the values are adjusted.** Where Google's architecture-diagram conventions
   and WCAG conflict, what a tint means stays and its value changes until contrast passes, so the diagrams read
   as Google Cloud-style and stay readable.
