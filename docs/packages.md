@@ -322,8 +322,8 @@ addon, so the backend's image can carry it: its render worker reads the wasm mod
 **Entry point.** `packages/render/src/index.ts`: `renderView`, `snapshotFromDemo`, `snapshotFromBundle`,
 `createSnapshotReader`, `prepareView`, `createDemoViews`, `drawSvg`, `drawPng`, `drawDrawio`, `rasterise`,
 `pngGeometry`, `initRasteriser`, `packageAssets`, `writeAssetDir`, `readAssetDir`, `woffToSfnt`. **Tests.**
-`test/parity.test.ts` draws views with it and with the native `@resvg/resvg-js` (a dev dependency, used
-only there) to the same bytes. Reference: [packages/render/README.md](../packages/render/README.md).
+`test/render.test.ts` holds `renderView` to the renderer's SVG baselines and the render golden PNG, byte for
+byte. Reference: [packages/render/README.md](../packages/render/README.md).
 
 ### `@gcportrait/render-cli` — the headless renderer's command line
 

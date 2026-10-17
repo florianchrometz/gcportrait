@@ -46,12 +46,15 @@ const result = renderView(await snapshotFromDemo('M'), RenderOptionsSchema.parse
 depend on its version, and the render golden PNG is that version's bytes
 ([e2e/baselines/render/README.md](../../e2e/baselines/render/README.md) names it). A WebAssembly build
 computes the same pixels on every platform, and it can be bundled into the backend's image, which has no
-`node_modules`. `test/parity.test.ts` draws six views and a capped one with it and with the native
-`@resvg/resvg-js` (a dev dependency, used only there, pinned exactly at the same version, which the test
-checks first) and finds the same bytes; the committed golden
-(`e2e/baselines/render/S-overview-auto-light.png`) comes out byte for byte. It is 1.2 to 1.9 times slower than
-the native binding, and its memory grows to about 10 bytes per pixel of the largest PNG drawn and is never
-given back while its thread lives: the backend draws each render in a fresh worker.
+`node_modules`. The committed golden (`e2e/baselines/render/S-overview-auto-light.png`) holds the bytes that
+ship, compared without tolerance on every machine the unit tests run on, CI's Linux runner included: through
+this package (`test/render.test.ts`), the command line (`packages/render-cli/test/golden.test.ts`) and the
+backend's route and bundled worker (`backend/src/routes/render.test.ts`, `backend/src/render/bundle.test.ts`),
+so a version of resvg or a platform that draws one pixel differently fails there. Nothing that ships draws
+with resvg's native binding, `@resvg/resvg-js`: the e2e export checks (`e2e/tests/exportSupport.ts`) and the
+layout's debug renders use it, with tolerances of their own. The WebAssembly build is 1.2 to 1.9 times slower
+than the native binding, and its memory grows to about 10 bytes per pixel of the largest PNG drawn and is
+never given back while its thread lives: the backend draws each render in a fresh worker.
 
 ## Boundaries and dependencies
 
@@ -62,12 +65,12 @@ WebAssembly); the draw.io translator it reaches through the frontend is plain Ty
 its compressor, the same code the browser runs. Dependencies: the workspace packages above,
 `@resvg/resvg-wasm` (MPL-2.0) and `@fontsource/roboto` and `@fontsource/roboto-mono` (OFL-1.1, the font
 exception of AGENTS.md, Licence and dependencies; the backend's image copies the faces with their licences).
-Dev only: `@resvg/resvg-js` (the parity test), `pngjs`. The backend's image ships resvg-wasm's glue code in
-`backend/dist/render-worker.mjs` and its module as `backend/dist/render-assets/resvg.wasm`; the package has no
-licence file of its own, so `THIRD_PARTY_NOTICES.txt` and `server-dependencies.txt` name those files, where
-its source is, and carry the MPL-2.0 text (`scripts/licenses/MPL-2.0.txt`).
+Dev only: `pngjs`. The backend's image ships resvg-wasm's glue code in `backend/dist/render-worker.mjs` and
+its module as `backend/dist/render-assets/resvg.wasm`; the package has no licence file of its own, so
+`THIRD_PARTY_NOTICES.txt` and `server-dependencies.txt` name those files, where its source is, and carry the
+MPL-2.0 text (`scripts/licenses/MPL-2.0.txt`).
 
 | Command | |
 |---|---|
-| `pnpm --filter @gcportrait/render test` | WOFF, fonts and the asset directory, the rasteriser and its parity with the native binding, the snapshot readers against the app's import, `renderView` against the SVG baselines and the golden PNG, and its draw.io file (compressed, plain, without `fontSource`). |
+| `pnpm --filter @gcportrait/render test` | WOFF, fonts and the asset directory, the rasteriser, the snapshot readers against the app's import, `renderView` against the SVG baselines and the golden PNG, and its draw.io file (compressed, plain, without `fontSource`). |
 | `pnpm --filter @gcportrait/render lint` / `typecheck` | ESLint and `tsc -b` for this package. |

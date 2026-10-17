@@ -7,12 +7,12 @@ lens, detail `auto`, light theme, exactly as `pnpm render --fixture S --lens ove
 self-hosted Roboto faces only). The render library (`@gcportrait/render`) rasterises with resvg's WebAssembly
 build, `@resvg/resvg-wasm` 2.6.2, the version `packages/render/package.json` pins exactly: the golden is that
 version's bytes. This is the one document that names the version, and `node scripts/user-docs.mjs` fails while
-it names another than the one installed. The WebAssembly build draws the same bytes as the native
-`@resvg/resvg-js` (`packages/render/test/parity.test.ts`). `packages/render-cli/test/golden.test.ts` compares
-it tolerance-free (same size, same RGBA bytes); a mismatch leaves the actual image and a picture of the
-differences under `out/render/golden-failures/`. The backend's `POST /api/render` must answer demo S with
-these bytes too: `backend/src/routes/render.test.ts` through the route and `backend/src/render/bundle.test.ts`
-in the bundled render worker.
+it names another than the one installed. `packages/render-cli/test/golden.test.ts` compares it tolerance-free
+(same size, same RGBA bytes); a mismatch leaves the actual image and a picture of the differences under
+`out/render/golden-failures/`. The render library's `renderView` draws the same bytes
+(`packages/render/test/render.test.ts`), and the backend's `POST /api/render` must answer demo S with them
+too: `backend/src/routes/render.test.ts` through the route and `backend/src/render/bundle.test.ts` in the
+bundled render worker.
 
 `S-overview-auto-light.drawio` is the same view as a draw.io file, as the render library's `drawDrawio` writes
 it: the SVG's drawing translated into draw.io's cells (`frontend/src/export/drawio/`), compressed as

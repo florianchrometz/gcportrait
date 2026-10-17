@@ -392,9 +392,6 @@ importers:
         specifier: 2.6.2
         version: 2.6.2
     devDependencies:
-      '@resvg/resvg-js':
-        specifier: 2.6.2
-        version: 2.6.2
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5

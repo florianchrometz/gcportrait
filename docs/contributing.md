@@ -246,12 +246,11 @@ ruleset only after it has run once, so add it after the first push to `main`.
   runs on the plain `ubuntu-latest` runner, not in Playwright's container. The renderer's baselines
   (`e2e/baselines/diagram/`) are SVG text, compared as text by the frontend's unit tests. The render golden
   (`e2e/baselines/render/`) is drawn by resvg's WebAssembly build with the bundled fonts, which computes the
-  same bytes on every platform, and is compared byte for byte by the unit tests (render-cli, render, backend);
-  `packages/render/test/parity.test.ts` compares resvg's native Linux binding with the WebAssembly build the
-  same way, and is the comparison most likely to differ. Should one of these golden comparisons fail on the
-  runner: download the artifact, look at the difference picture, and if it is anti-aliasing only, add a second
-  golden for Linux rather than a tolerance. The export checks in `e2e/tests/export.spec.ts` compare pictures
-  drawn on the runner and print each figure in the log: the exported SVG and the renderer's committed
+  same bytes on every platform, and is compared byte for byte by the unit tests (render-cli, render, backend),
+  on the runner as on your machine. Should one of these golden comparisons fail on the runner: download the
+  artifact, look at the difference picture, and if it is anti-aliasing only, add a second golden for Linux
+  rather than a tolerance. The export checks in `e2e/tests/export.spec.ts` compare pictures drawn on the
+  runner and print each figure in the log: the exported SVG and the renderer's committed
   baseline of the same view (`e2e/baselines/diagram/S-overview-auto-{light,dark}.svg`), both drawn by resvg,
   with at most 0.05 % of pixels different; the PNG that Chromium draws and the PNG `pnpm render` draws of
   that view, with at most 1 %; and Chromium's PNG inside its margin and resvg's drawing of the exported SVG

@@ -2,9 +2,9 @@
 import { defineConfig } from 'vitest/config';
 
 /**
- * The `render` test project: the WOFF unwrapper, the fonts and the asset directory, the rasteriser (wasm against the
- * native binding, byte for byte), the snapshot readers against the app's import, and `renderView` against the
- * renderer's SVG baselines and the golden PNG. Rendering and rasterising demo views takes seconds, hence the timeout.
+ * The `render` test project: the WOFF unwrapper, the fonts and the asset directory, the rasteriser, the snapshot
+ * readers against the app's import, and `renderView` against the renderer's SVG baselines and the golden PNG, byte for
+ * byte. Rendering and rasterising demo views takes seconds, hence the timeout.
  */
 export default defineConfig({
   test: {
