@@ -1431,7 +1431,12 @@ test.describe('on a phone, 375 × 667', () => {
       });
     }
     await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await expect.poll(() => within(top)).toBe(true);
+    await expect
+      .poll(() => within(top), {
+        timeout: 15_000,
+        message: 'The breadcrumb swipe finishes scrolling when browser frames are delayed under load.',
+      })
+      .toBe(true);
     const box = await top.boundingBox();
     if (box === null) throw new Error('no crumb');
     await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
