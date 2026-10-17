@@ -92,12 +92,11 @@ tests: `chromium-live` and `chromium` in three, and every other project (`chromi
 and `mobile`, a new one included) in two. `scripts/leg.ts` (`pnpm --filter @gcportrait/e2e leg`) lists the
 projects' tests (`playwright test --list --reporter=json`), gives leg N of K every K-th of them from the N-th,
 in the listing's order (file after file), and runs that share with `playwright test --test-list`, so that the
-tests of a slow file spread over the legs. It fails the leg when the K shares would not partition the
-listing, when Playwright reads the test list as other tests than the share, or when the run's JSON report
-(`PLAYWRIGHT_JSON_OUTPUT_FILE`, which `playwright.config.ts` turns into a JSON reporter beside the others)
-lacks a test of the share or holds one besides. After the run it prints the share's count and summed test
-time, on CI also to the job's summary. One leg locally, as the runner runs it, or only its share as a test
-list:
+tests of a slow file spread over the legs. It fails the leg when the listing names two tests alike (one
+project, file and title path), or when the run's JSON report (`PLAYWRIGHT_JSON_OUTPUT_FILE`, which
+`playwright.config.ts` turns into a JSON reporter beside the others) lacks a test of the share or holds one
+besides. After the run it prints the share's count and summed test time, on CI also to the job's summary. One
+leg locally, as the runner runs it, or only its share as a test list:
 
 ```sh
 CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3   # e2e (desktop 2/3)
@@ -108,7 +107,8 @@ pnpm --filter @gcportrait/e2e leg --projects "chromium-phone chromium-tablet" --
 ```
 
 `--list-only` prints the share in the list reporter's format, `[project] › file:line:column › describe ›
-title`, which is what `--test-list` reads; the arguments after `--` go to the run.
+title`, which is what `--test-list` reads, and fails unless Playwright reads that list as exactly the share,
+as no run follows to check it; the arguments after `--` go to the run.
 
 The diagram's helpers in `tests/support.ts` wait for the state a step needs, never for a time. `openDiagram`
 opens a view and waits for its drawing, and `drawnCanvas` for a drawing on the canvas (`data-diagram-ready`),

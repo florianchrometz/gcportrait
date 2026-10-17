@@ -9,22 +9,23 @@
  *
  * 1. Lists the config's tests (`playwright test --list --reporter=json`) and keeps the leg's projects: the ones
  *    named, or with every name negated every project of playwright.config.ts but those. A name the config does
- *    not have fails the leg.
+ *    not have fails the leg, and so do two tests of one project, file and title path, which neither a test list
+ *    nor a report tells apart.
  * 2. Deals the tests out in the listing's order (file after file, and in a file as the report nests them, a
  *    block's own tests before those of the blocks inside it): leg i of k takes the tests at positions i − 1,
- *    i − 1 + k, i − 1 + 2k, …. It computes all k shares and fails unless they partition the listing, every test
- *    in exactly one.
+ *    i − 1 + k, i − 1 + 2k, …, so the k legs' shares hold every test once.
  * 3. Writes leg i's share as a test list in the list reporter's format, `[project] › file:line:column ›
- *    describe › title`, which `--test-list` reads (a title path names every test it is a prefix of), and has
- *    Playwright read it (`--list --test-list`): the leg fails unless that names exactly its share.
+ *    describe › title`, which `--test-list` reads (a title path names every test it is a prefix of).
  * 4. Runs `playwright test --test-list FILE --project …` with the arguments after `--`, the config's reporters
  *    and Playwright's JSON report (PLAYWRIGHT_JSON_OUTPUT_FILE, which the config reads), and fails unless the
- *    report holds exactly the share's tests, so a test the list cannot name is never dropped in silence.
+ *    report holds exactly the share's tests, so a test the list cannot name, or names besides, is never dropped
+ *    or run in silence.
  * 5. Prints the share's test count and its summed test time (every run of every test, retries included), and
  *    writes them to $GITHUB_STEP_SUMMARY when it is set, so the legs compare by their tests' own time, apart
  *    from each job's set-up.
  *
- * `--list-only` stops after step 3 and prints the share on standard output, one line per test (a file for
+ * `--list-only` runs nothing after step 3: it has Playwright read the test list (`--list --test-list`), fails
+ * unless that names exactly the share, and prints the share on standard output, one line per test (a file for
  * `--test-list`), and the counts on standard error. Node runs this file as it is (it strips the types): it
  * imports only Node's modules and Playwright's types.
  */
@@ -48,9 +49,9 @@ const USAGE = `Usage:
 
 Runs every K-th test of the projects' listing, starting at the I-th, through playwright test --test-list, and fails
 unless the run addressed every test of that share. --projects names the projects, or negates every name ('!a !b')
-for every project of playwright.config.ts but those. --list-only prints the share without running it. The
-arguments after -- go to the run only; one that filters tests (a file, --grep) makes the run miss tests of the
-share, which fails the leg.`;
+for every project of playwright.config.ts but those. --list-only prints the share without running it, once
+Playwright reads the list as exactly that share. The arguments after -- go to the run only; one that filters
+tests (a file, --grep) makes the run miss tests of the share, which fails the leg.`;
 
 /** One test of one project, as a listing or a report holds it. */
 interface Test {
@@ -124,31 +125,22 @@ function resolveProjects(spec: string, configured: readonly string[]): string[] 
   return projects;
 }
 
-/** The k shares of `tests`: share i (from 0) holds the tests at positions i, i + k, i + 2k, …. */
-function deal<T>(tests: readonly T[], of: number): T[][] {
-  const shares = Array.from({ length: of }, (): T[] => []);
-  tests.forEach((test, index) => shares[index % of]?.push(test));
-  return shares;
+/**
+ * Throws when two tests have one key: one line of a test list would name both, and the report's check could count
+ * one for the other.
+ */
+function checkUnique(tests: readonly Test[]): void {
+  const seen = new Set<string>();
+  for (const test of tests) {
+    const key = keyOf(test);
+    if (seen.has(key)) throw new LegError(`The listing names a test twice: ${lineOf(test)}`);
+    seen.add(key);
+  }
 }
 
-/** Throws unless the shares partition `tests`: their sizes add up to its count and no test is in two of them. */
-function checkPartition(tests: readonly Test[], shares: readonly (readonly Test[])[]): string {
-  const keys = new Set(tests.map(keyOf));
-  if (keys.size !== tests.length) throw new LegError('The listing names a test twice.');
-  const sizes = shares.map((share) => share.length);
-  const total = sizes.reduce((sum, size) => sum + size, 0);
-  const seen = new Set<string>();
-  for (const share of shares) {
-    for (const test of share) {
-      const key = keyOf(test);
-      if (seen.has(key) || !keys.has(key))
-        throw new LegError(`The shares do not partition the listing: ${lineOf(test)}`);
-      seen.add(key);
-    }
-  }
-  if (total !== tests.length || seen.size !== keys.size)
-    throw new LegError(`The shares hold ${String(total)} tests, the listing ${String(tests.length)}.`);
-  return `${sizes.join(' + ')} = ${String(total)}`;
+/** Leg `leg` of `of`'s share of `tests` (both from 1): the tests at positions leg − 1, leg − 1 + of, …. */
+function shareOf<T>(tests: readonly T[], leg: number, of: number): T[] {
+  return tests.filter((_, index) => index % of === leg - 1);
 }
 
 /** The tests of `expected` that `actual` lacks, and those it holds besides, as lines of a test list. */
@@ -238,34 +230,32 @@ function main(argv: readonly string[], dir: string): number {
     all.config.projects.map((project) => project.name),
   );
   const tests = testsOf(all).filter((test) => projects.includes(test.project));
-  const shares = deal(tests, of);
-  const partition = checkPartition(tests, shares);
-  const share = shares[leg - 1] ?? [];
+  checkUnique(tests);
+  const share = shareOf(tests, leg, of);
   const title = `e2e leg ${String(leg)}/${String(of)} (${projects.join(', ')})`;
   const counts =
     `${String(share.length)} of the projects' ${String(tests.length)} tests,` +
     ` every ${ordinal(of)} from the ${ordinal(leg)}`;
-  if (share.length === 0) throw new LegError(`${title}: no test to run (the shares: ${partition}).`);
+  if (share.length === 0) throw new LegError(`${title}: no test to run (${counts}).`);
 
   const list = path.join(dir, `leg-${String(leg)}-of-${String(of)}.txt`);
   writeFileSync(list, `${share.map(lineOf).join('\n')}\n`);
   const projectArgs = projects.flatMap((project) => ['--project', project]);
-  const read = difference(share, testsOf(listing(dir, 'read', ['--test-list', list, ...projectArgs])));
-  if (read.missing.length > 0 || read.extra.length > 0)
-    throw new LegError(
-      `${title}: Playwright reads the test list as other tests than the share's.` +
-        (read.missing.length > 0 ? `\nNot named by the list:${named(read.missing)}` : '') +
-        (read.extra.length > 0 ? `\nNamed besides:${named(read.extra)}` : ''),
-    );
-  console.error(
-    `${title}: ${counts}; the ${String(of)} shares partition the listing (${partition}), and Playwright reads` +
-      ` the test list as exactly this share.`,
-  );
 
   if (values['list-only']) {
+    // No run follows to check what the list names, so Playwright reads it here.
+    const read = difference(share, testsOf(listing(dir, 'read', ['--test-list', list, ...projectArgs])));
+    if (read.missing.length > 0 || read.extra.length > 0)
+      throw new LegError(
+        `${title}: Playwright reads the test list as other tests than the share's.` +
+          (read.missing.length > 0 ? `\nNot named by the list:${named(read.missing)}` : '') +
+          (read.extra.length > 0 ? `\nNamed besides:${named(read.extra)}` : ''),
+      );
+    console.error(`${title}: ${counts}; Playwright reads the test list as exactly this share.`);
     console.log(share.map(lineOf).join('\n'));
     return 0;
   }
+  console.error(`${title}: ${counts}.`);
 
   const reportFile = path.join(dir, 'report.json');
   const run = spawnSync(
