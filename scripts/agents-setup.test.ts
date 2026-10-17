@@ -172,17 +172,7 @@ describe('agents-setup', () => {
 });
 
 describe('the repository’s instructions for assistants', () => {
-  it('keeps the rules file as AGENTS.md, the name the tools read, in that case on disk and in git', () => {
-    expect(readdirSync(REPO).filter((name) => name.toLowerCase() === 'agents.md')).toEqual(['AGENTS.md']);
-    const tracked = spawnSync('git', ['ls-files', '-z'], { cwd: REPO, encoding: 'utf8' });
-    if (tracked.status !== 0) return; // not a git checkout (an unpacked archive): the name on disk is all there is
-    const rules = tracked.stdout.split('\0').filter((file) => file.toLowerCase() === 'agents.md');
-    expect(
-      rules,
-      'git tracks the rules file under another case; on a case-insensitive file system rename it with `git mv -f agents.md AGENTS.md`',
-    ).toEqual(['AGENTS.md']);
-  });
-
+  // The names and places of the rules files themselves: scripts/rules-files.test.ts.
   it('commits no instruction file of a particular tool', () => {
     const tracked = spawnSync('git', ['ls-files', '-z'], { cwd: REPO, encoding: 'utf8' });
     if (tracked.status !== 0) return;
