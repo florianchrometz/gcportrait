@@ -410,8 +410,9 @@ it is built.
 - **Order of checks** (`src/routes/render.ts`): the token and its limit (10 renders a minute per token hash) →
   the schema (`RenderOptionsSchema` of `@gcportrait/model` plus `source`) → the source's authority: a pull's
   mode and gate exactly as on the stream (`src/stream/pull.ts`, shared with `src/routes/assets.ts`),
-  tokeninfo's `valid` for a demo or an upload → one render per instance (`src/render/lock.ts`,
-  `429 RENDER_BUSY`) → a stream slot for a pull → the job. `RENDER_TIMEOUT_MS` runs from the lock; the lock,
+  tokeninfo's `valid` for a demo or an upload → one render per instance (`createRenderLock`, the stream slots
+  of `src/stream/slots.ts` with one slot under one key; `429 RENDER_BUSY`) → a stream slot for a pull → the
+  job. `RENDER_TIMEOUT_MS` runs from the lock; the lock,
   the slot and the job are given back however the answer ends.
 - **A pull** iterates `assetListFrames` with the stream's client, credentials, page budget and slots, hands
   each frame to the job and asks for the next only once the job has read it, which gives the page's budget

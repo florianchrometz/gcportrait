@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
  * The concurrent stream cap (skill cai-ingestion §4; docs/security.md §3): at most four streams at once
- * per token hash, across both streaming routes. In memory only; a slot is given back exactly once, however the
- * stream ends (finished, failed, or the client went away).
+ * per token hash, across both streaming routes and the render route's pulls. In memory only; a slot is given back
+ * exactly once, however the stream ends (finished, failed, or the client went away). With one slot under one key
+ * it is the render lock too (`createRenderLock`, ../routes/render.ts).
  */
 
 /** Streams one token may run at once. */

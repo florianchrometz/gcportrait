@@ -48,7 +48,6 @@ import {
   uploadFailure,
   type RenderFailure,
 } from '../render/errors.js';
-import type { RenderLock } from '../render/lock.js';
 import type { JobResult, JobSource, JobSpec } from '../render/protocol.js';
 import { RenderJobError, type RenderRun, type RenderRunner } from '../render/runner.js';
 import { assetListFrames, type AssetListStats } from '../stream/asset-list.js';
@@ -63,7 +62,7 @@ import {
   refuseUnavailableMode,
   type PullAuthority,
 } from '../stream/pull.js';
-import type { StreamSlots } from '../stream/slots.js';
+import { StreamSlots } from '../stream/slots.js';
 import { tokenFacts } from '../upstream/google.js';
 import {
   authenticate,
@@ -77,6 +76,19 @@ import { TokenRateLimiter } from '../upstream/token-limit.js';
 
 /** Renders per token hash and minute. */
 export const RENDER_RATE_LIMIT_PER_MINUTE = 10;
+
+/**
+ * One render at a time per instance (AGENTS.md, Exports and the render API): a render keeps the instance's only
+ * CPU busy and holds hundreds of MiB, so a second one waits for another instance (Cloud Run adds them) rather
+ * than sharing this one. The lock is a table of stream slots ({@link createRenderLock}) with one slot, taken under
+ * this one key: in memory only, given back exactly once however the render ends.
+ */
+export const RENDER_LOCK_KEY = 'render';
+
+/** One server's render lock: one slot, under {@link RENDER_LOCK_KEY}. */
+export function createRenderLock(): StreamSlots {
+  return new StreamSlots(1);
+}
 
 /** Where the data of a render comes from. */
 export const RenderSourceSchema = z.discriminatedUnion('kind', [
@@ -106,7 +118,8 @@ export interface RenderRouteOptions {
   readonly slots: StreamSlots;
   readonly budget: PageBudget;
   readonly runner: RenderRunner;
-  readonly lock: RenderLock;
+  /** One render per instance ({@link createRenderLock}). */
+  readonly lock: StreamSlots;
   /** The largest `request` field of an upload: the server's JSON body limit. */
   readonly fieldBytes: number;
   /** The server's deadline for a request body (server.ts), named in the 408 of an upload that missed it. */
@@ -372,7 +385,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
           });
       }
 
-      const unlock = options.lock.acquire();
+      const unlock = options.lock.acquire(RENDER_LOCK_KEY);
       if (unlock === null)
         return refuse({
           status: 429,

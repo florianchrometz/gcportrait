@@ -29,7 +29,6 @@ import type { ServiceAccountIdentity } from '../auth/identity.js';
 import type { ServerConfig } from '../config.js';
 import { answers, fakeGoogle, type FakeGoogleOptions, type Handler } from '../preflight/google.testing.js';
 import { inProcessRunner } from '../render/in-process.js';
-import { RenderLock } from '../render/lock.js';
 import { createRun, RenderJobError, type RenderRunner } from '../render/runner.js';
 import type { BuildServerOptions } from '../server.js';
 import { listenOnLoopback, startTestServer } from '../server.testing.js';
@@ -45,6 +44,7 @@ import {
   fakeAccount,
   type RecordedCall,
 } from '../upstream/google.testing.js';
+import { createRenderLock, RENDER_LOCK_KEY } from './render.js';
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -81,7 +81,7 @@ interface Started {
   readonly logs: () => string[];
   readonly calls: () => RecordedCall[];
   readonly budget: PageBudget;
-  readonly lock: RenderLock;
+  readonly lock: StreamSlots;
 }
 
 async function start(
@@ -89,7 +89,7 @@ async function start(
     readonly env?: Record<string, string>;
     readonly google?: FakeGoogleOptions;
     readonly runner?: RenderRunner;
-    readonly lock?: RenderLock;
+    readonly lock?: StreamSlots;
     readonly serviceAccount?: ServiceAccountIdentity;
     readonly limits?: Partial<NonNullable<ServerConfig['render']>>;
     readonly server?: Omit<BuildServerOptions, 'upstream'>;
@@ -98,7 +98,7 @@ async function start(
   const google = fakeGoogle(options.google);
   const { limits } = options;
   const budget = new PageBudget(8 * 1024 * 1024);
-  const lock = options.lock ?? new RenderLock();
+  const lock = options.lock ?? createRenderLock();
   const { app, logs } = await startTestServer({
     env: options.env ?? {},
     logLevel: 'info',
@@ -281,7 +281,7 @@ describe('POST /api/render: the bytes `pnpm render` writes', () => {
     expect(response.headers['x-gcportrait-notice']).toBeUndefined();
     expect([...response.rawPayload.subarray(0, 8)]).toEqual(PNG_MAGIC);
     expect(response.rawPayload.equals(readFileSync(GOLDEN))).toBe(true);
-    expect(lock.held).toBe(false);
+    expect(lock.size).toBe(0);
     const line = logs().find((entry) => entry.includes('"message":"render ended"')) ?? '';
     expect(JSON.parse(line)).toMatchObject({
       render: { source: 'demo', format: 'png', theme: 'light', assets: 96, outcome: 'finished' },
@@ -410,7 +410,7 @@ describe('POST /api/render: a live pull', () => {
     // Neither tokeninfo nor anything else: the pull proves the token itself.
     expect(calls().filter((call) => call.url.host !== 'cloudasset.googleapis.com')).toEqual([]);
     expect(budget.used).toBe(0);
-    expect(lock.held).toBe(false);
+    expect(lock.size).toBe(0);
     expect(response.body).toContain('<svg');
     expect(response.headers['content-disposition']).toMatch(/^attachment; filename="gcportrait_.+\.svg"$/);
     // The same frames read the same snapshot whichever way they arrive (pull or saved stream).
@@ -441,7 +441,7 @@ describe('POST /api/render: a live pull', () => {
       reason: 'SERVICE_DISABLED',
       requestId: refused.headers['x-request-id'],
     });
-    expect(denied.lock.held).toBe(false);
+    expect(denied.lock.size).toBe(0);
     const broken = await start({ google: { list: () => answers.internal() } });
     const failed = await post(broken.server, { source: PULL });
     expect(failed.statusCode).toBe(502);
@@ -514,7 +514,7 @@ describe('POST /api/render: a live pull', () => {
     });
     expect(gate.statusCode).toBe(403);
     expect(errorOf(gate.body).code).toBe('SA_GATE_CALLER_DENIED');
-    expect(refused.lock.held).toBe(false);
+    expect(refused.lock.size).toBe(0);
     const off = await start();
     const offAnswer = await post(off.server, {
       source: { kind: 'scope', scope: 'folders/20000000001', mode: 'sa' },
@@ -560,7 +560,7 @@ describe('POST /api/render: a live pull', () => {
       expect(calls().filter((call) => call.url.host === 'cloudasset.googleapis.com')).toHaveLength(
         fromRun - 1,
       );
-      expect(lock.held).toBe(false);
+      expect(lock.size).toBe(0);
       expect(budget.used).toBe(0);
     }
   });
@@ -601,13 +601,13 @@ describe('POST /api/render: a live pull', () => {
       await pageAsked;
       client.destroy();
       await expect.poll(() => outcomesOf(logs())).toEqual(['client-gone']);
-      expect(lock.held).toBe(false);
+      expect(lock.size).toBe(0);
       leave();
       await expect.poll(() => answered).toBe(true);
       // Time for the page to be read, framed and handed to the route.
       await new Promise((resolve) => setTimeout(resolve, 200));
       expect(unhandled).toEqual([]);
-      expect(lock.held).toBe(false);
+      expect(lock.size).toBe(0);
       expect(budget.used).toBe(0);
       // The instance still answers.
       expect((await post(app, { source: { kind: 'demo', size: 'S' }, format: 'svg' })).statusCode).toBe(200);
@@ -641,7 +641,7 @@ describe('POST /api/render: refusals', () => {
     const refused = await post(invalid.server, { source: { kind: 'demo', size: 'S' } });
     expect(refused.statusCode).toBe(401);
     expect(errorOf(refused.body).code).toBe('UNAUTHENTICATED');
-    expect(invalid.lock.held).toBe(false);
+    expect(invalid.lock.size).toBe(0);
     const silent = await start({ google: { tokeninfo: () => answers.unavailable() } });
     const unknown = await post(silent.server, { source: { kind: 'demo', size: 'S' } });
     expect(unknown.statusCode).toBe(503);
@@ -750,7 +750,7 @@ describe('POST /api/render: refusals', () => {
     const tooLarge = await upload(small.server, { source: { kind: 'ndjson' } }, syntheticNdjson(1200));
     expect(tooLarge.statusCode).toBe(413);
     expect(errorOf(tooLarge.body).code).toBe('BODY_TOO_LARGE');
-    expect(small.lock.held).toBe(false);
+    expect(small.lock.size).toBe(0);
   });
 
   it('422 for an unreadable file, no assets, too many assets, and a refused view', async () => {
@@ -781,14 +781,15 @@ describe('POST /api/render: refusals', () => {
   });
 
   it('429 RENDER_BUSY while another render runs, and STREAMS_BUSY with four streams for the token, each with Retry-After', async () => {
-    const lock = new RenderLock();
+    const lock = createRenderLock();
     const slots = new StreamSlots();
     const { server: app, calls } = await start({
       lock,
       server: { streamSlots: slots },
       google: { list: caiPages([Array.from({ length: 3 }, (_, index) => syntheticAsset(index))]) },
     });
-    const release = lock.acquire();
+    const release = lock.acquire(RENDER_LOCK_KEY);
+    expect(lock.acquire(RENDER_LOCK_KEY)).toBeNull();
     const busy = await post(app, { source: { kind: 'demo', size: 'S' } });
     expect(busy.statusCode).toBe(429);
     expect(errorOf(busy.body)).toMatchObject({ code: 'RENDER_BUSY', retryable: true });
@@ -807,7 +808,7 @@ describe('POST /api/render: refusals', () => {
     expect(errorOf(streams.body)).toMatchObject({ code: 'STREAMS_BUSY', retryable: true });
     expect(streams.headers['retry-after']).toBe(String(STREAMS_BUSY_RETRY_SECONDS));
     expect(calls().filter((call) => call.url.host === 'cloudasset.googleapis.com')).toEqual([]);
-    expect(lock.held).toBe(false);
+    expect(lock.size).toBe(0);
     expect(slots.inUse(tokenKeyOf(CALLER_TOKEN))).toBe(MAX_STREAMS_PER_TOKEN);
     // A source that pulls nothing takes no slot; once a slot is free the pull runs and gives it back.
     expect((await post(app, { source: { kind: 'demo', size: 'S' }, format: 'svg' })).statusCode).toBe(200);
@@ -824,7 +825,7 @@ describe('POST /api/render: refusals', () => {
     const response = await post(app, { source: { kind: 'demo', size: 'S' } });
     expect(response.statusCode).toBe(503);
     expect(errorOf(response.body)).toMatchObject({ code: 'RENDER_TIMEOUT' });
-    expect(lock.held).toBe(false);
+    expect(lock.size).toBe(0);
   });
 
   it('503 RENDER_TOO_LARGE when the worker runs out of heap; 500 INTERNAL for a bug, without its text', async () => {
@@ -883,7 +884,7 @@ describe('POST /api/render: uploads that time out or cannot be read', () => {
       expect(cut.statusCode, cut.body).toBe(400);
       expect(errorOf(cut.body)).toMatchObject({ code: 'INVALID_REQUEST' });
       expect(cut.headers.connection).toBe('close');
-      expect(lock.held).toBe(false);
+      expect(lock.size).toBe(0);
     }
     // Only the cut file had started a render: its log line says how it ended.
     expect(outcomesOf(logs())).toEqual(['INVALID_REQUEST']);
@@ -905,7 +906,7 @@ describe('POST /api/render: uploads that time out or cannot be read', () => {
     expect(errorOf(answer.body)).toMatchObject({ statusCode: 408, code: 'REQUEST_TIMEOUT' });
     expect(errorOf(answer.body).message).toContain('did not arrive');
     expect(Date.now() - started).toBeLessThan(5_000);
-    expect(lock.held).toBe(false);
+    expect(lock.size).toBe(0);
     await expect.poll(() => outcomesOf(logs())).toEqual(['REQUEST_TIMEOUT']);
     // Stalled inside the request field, before any render started: the same answer, and no render log line.
     const early = await rawExchange(
@@ -915,7 +916,7 @@ describe('POST /api/render: uploads that time out or cannot be read', () => {
     expect(early.status).toBe('HTTP/1.1 408 Request Timeout');
     expect(errorOf(early.body).code).toBe('REQUEST_TIMEOUT');
     expect(outcomesOf(logs())).toEqual(['REQUEST_TIMEOUT']);
-    expect(lock.held).toBe(false);
+    expect(lock.size).toBe(0);
   });
 });
 

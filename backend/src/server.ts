@@ -22,9 +22,8 @@ import { registerConfigRoute } from './routes/config.js';
 import { registerExportReadRoute } from './routes/export.js';
 import { registerLegalRoute } from './routes/legal.js';
 import { registerPreflightRoute } from './routes/preflight.js';
-import { registerRenderRoute } from './routes/render.js';
+import { createRenderLock, registerRenderRoute } from './routes/render.js';
 import { registerScopeSearchRoute } from './routes/scopes.js';
-import { RenderLock } from './render/lock.js';
 import { workerRunner, type RenderRunner } from './render/runner.js';
 import { HealthResponseSchema, toFastifySchema, type HealthResponse } from './schemas.js';
 import { crossOriginPolicies, cspDirectives, PERMISSIONS_POLICY } from './security.js';
@@ -82,8 +81,8 @@ export type BuildServerOptions = {
    * the same job in process (render/in-process.ts).
    */
   readonly renderRunner?: RenderRunner;
-  /** One render per instance (render/lock.ts); tests pass one to hold it. */
-  readonly renderLock?: RenderLock;
+  /** One render per instance (`createRenderLock`, routes/render.ts); tests pass one to hold it. */
+  readonly renderLock?: StreamSlots;
   /** Renders per token hash and minute (routes/render.ts); tests raise it. */
   readonly renderRateLimitPerMinute?: number;
 };
@@ -358,7 +357,7 @@ async function registerGoogleRoutes(
       slots,
       budget,
       runner: options.renderRunner ?? workerRunner(),
-      lock: options.renderLock ?? new RenderLock(),
+      lock: options.renderLock ?? createRenderLock(),
       fieldBytes: BODY_LIMIT_BYTES,
       bodyTimeoutMs: options.requestTimeoutMs ?? REQUEST_TIMEOUT_MS,
       version: config.version,
