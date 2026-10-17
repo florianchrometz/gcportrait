@@ -6,8 +6,8 @@
  * has already dropped it). The last snapshot's Graph is kept, so switching lenses or filters only builds a
  * Scene. A view's timeline `tick` draws that day of the snapshot (timeline/worker/source.ts): its
  * Graph is built once and kept with the last few days'. The requests that follow a Scene (choices, details,
- * search, locate, reveal) name the day they read, the day on screen (`day`, protocol.ts `DayRef`), so
- * an answer is that day's whatever Scene the worker built last. A Scene request may name a day to compare the
+ * search, locate) name the day they read, the day on screen (`day`, protocol.ts `DayRef`), so an answer is that
+ * day's whatever Scene the worker built last. A Scene request may name a day to compare the
  * drawn day with: its answer then carries the diff of the two days (diff/tickDiff.ts) and its Scene
  * the ghosts of what the view no longer draws; `changes` answers what changed about one node between two days
  * it names (drawer/changes.ts). The Scenes a Scene request and its diff build are kept per Graph
@@ -40,7 +40,6 @@ import {
 
 import { nodeChanges, type ChangesDay } from '../../drawer/changes';
 import { nodeDetails } from '../../drawer/details';
-import { revealFlips } from '../../drawer/reveal';
 import { answerLocate, answerSearch, parseLocateQuery, parseSearchQuery } from '../../search/service';
 import { viewChoices } from '../../views/choices';
 import { createTickSource, type TickSource } from '../../timeline/worker/source';
@@ -204,7 +203,7 @@ function parseRequest(message: unknown): DataRequest | { readonly id: number; re
     if (day === null) return { id, error: 'the day is malformed' };
     return { type: 'choices', id, snapshot: ref, day };
   }
-  if (message['type'] === 'details' || message['type'] === 'reveal' || message['type'] === 'changes') {
+  if (message['type'] === 'details' || message['type'] === 'changes') {
     const node = message['node'];
     if (typeof node !== 'string' || node === '') return { id, error: 'the request names no node' };
     if (message['type'] === 'changes') {
@@ -218,14 +217,9 @@ function parseRequest(message: unknown): DataRequest | { readonly id: number; re
     }
     const day = parseFollowUpDay(message['day']);
     if (day === null) return { id, error: 'the day is malformed' };
-    if (message['type'] === 'details') {
-      const ref = message['snapshot'];
-      if (!isSnapshotRef(ref) || ref === '') return { id, error: 'the request names no snapshot' };
-      return { type: 'details', id, snapshot: ref, node, day };
-    }
-    const spec = ViewSpecSchema.safeParse(message['spec']);
-    if (!spec.success || spec.data.snapshot === '') return { id, error: 'the view is not a valid ViewSpec' };
-    return { type: 'reveal', id, spec: spec.data, viewport: viewportOf(message['viewport']), node, day };
+    const ref = message['snapshot'];
+    if (!isSnapshotRef(ref) || ref === '') return { id, error: 'the request names no snapshot' };
+    return { type: 'details', id, snapshot: ref, node, day };
   }
   if (message['type'] === 'search') {
     const query = parseSearchQuery(message['query']);
@@ -245,13 +239,19 @@ function parseRequest(message: unknown): DataRequest | { readonly id: number; re
   return { id, error: `unknown request type ${JSON.stringify(message['type'])}` };
 }
 
-/** What the scene builder reads besides the Graph and the view: the same for a Scene and a reveal. */
+/** What the scene builder reads besides the Graph and the view: the same for a Scene and a locate. */
 function sceneEnv(snapshot: Snapshot, viewport: Viewport): SceneEnv {
   return {
     readTime: snapshot.readTime,
     rootLabel: snapshot.scope.displayName ?? snapshot.scope.id,
     viewportBudget: viewportBudget(viewport.width, viewport.height),
   };
+}
+
+/** The family a newer request of the page supersedes `request` in: searches, and search hits' locates. */
+function searchFamily(request: DataRequest): 'search' | 'locate' | null {
+  if (request.type === 'search') return 'search';
+  return request.type === 'locate' && request.query.offers ? 'locate' : null;
 }
 
 export interface DataHandlerEnvironment {
@@ -302,7 +302,8 @@ export function createDataHandler(
   let loadedRef: SnapshotRef | null = null;
   let loadedVersion: string | null = null;
   let latestScene = -1;
-  // The newest search and locate request: an older one still queued is skipped, as the page dropped it.
+  // The newest search and search hit's locate (with offers): an older one still queued is skipped, as the page
+  // dropped it. A jump link's locate (without offers) is never skipped: the page waits for every one.
   const latestSearch = { search: -1, locate: -1 };
   let queue: Promise<void> = Promise.resolve();
   // The open view to build at idle (`WARM_AFTER_MS`): the job, its timer, and the requests received so far.
@@ -447,22 +448,14 @@ export function createDataHandler(
       });
       return;
     }
-    if (request.type === 'reveal') {
-      const { snapshot, graph } = await graphOn(request.spec.snapshot, request.day, request.id);
-      const env = sceneEnv(snapshot, request.viewport);
-      post({
-        type: 'reveal',
-        id: request.id,
-        reveal: revealFlips(graph, request.spec, catalog, env, request.node),
-      });
-      return;
-    }
     if (request.type === 'search' || request.type === 'locate') {
-      if (request.id < latestSearch[request.type]) return;
+      const family = searchFamily(request);
+      const replaced = (): boolean => family !== null && request.id < latestSearch[family];
+      if (replaced()) return;
       const ref = request.type === 'search' ? request.query.snapshot : request.query.spec.snapshot;
       if (ref === '') throw new DataError('no-snapshot', 'The search names no snapshot.');
       const found = await graphOn(ref, request.query.day, request.id);
-      if (request.id < latestSearch[request.type]) return;
+      if (replaced()) return;
       post(
         request.type === 'search'
           ? { type: 'search', id: request.id, answer: answerSearch(request.query, found) }
@@ -565,9 +558,8 @@ export function createDataHandler(
       // A new view: the open view of the one drawn before is not wanted any more.
       warming = null;
     }
-    if (request.type === 'search' || request.type === 'locate') {
-      latestSearch[request.type] = Math.max(latestSearch[request.type], request.id);
-    }
+    const family = searchFamily(request);
+    if (family !== null) latestSearch[family] = Math.max(latestSearch[family], request.id);
     armWarming();
     queue = queue.then(
       () =>

@@ -21,7 +21,7 @@ import type {
   ViewSpec,
 } from '@gcportrait/model';
 
-import type { NodeChanges, NodeDetails, RevealAnswer } from '../../drawer/types';
+import type { NodeChanges, NodeDetails } from '../../drawer/types';
 import type { LocateAnswer, LocateQuery, SearchAnswer, SearchQuery } from '../../search/protocol';
 import type { ViewChoices } from '../../views/choices';
 import type { JobProgress, PreparedSnapshot } from '../../snapshots/worker/protocol';
@@ -81,18 +81,12 @@ export type DataRequest =
       /** The day drawn (the diagram's `source.tick`; null: the snapshot's own day). */
       readonly day: DiffFrom;
     }
-  /** The flips that draw a node hidden in a collapsed zone of a view on a day (drawer/reveal.ts). */
-  | {
-      readonly type: 'reveal';
-      readonly id: number;
-      readonly spec: ViewSpec;
-      readonly viewport: Viewport;
-      readonly node: string;
-      readonly day: DayRef;
-    }
   /** The nodes of a snapshot on a day that match a text (search/service.ts; empty text builds the index). */
   | { readonly type: 'search'; readonly id: number; readonly query: SearchQuery }
-  /** Where a search hit is in a view on a day and what would show it (search/locate.ts). */
+  /**
+   * Where a node is in a view on a day and what would show it (search/locate.ts): a search hit's, with the offers,
+   * or a jump link's of the details drawer, without them (only the zones around it opened).
+   */
   | { readonly type: 'locate'; readonly id: number; readonly query: LocateQuery }
   /** A demo organisation with its history, ready to store as `demo:<size>` (demo.ts, in demoRole.ts's worker). */
   | { readonly type: 'demo'; readonly id: number; readonly size: DemoSize };
@@ -147,7 +141,6 @@ export type DataResponse =
   | { readonly type: 'choices'; readonly id: number; readonly choices: ViewChoices }
   | { readonly type: 'details'; readonly id: number; readonly details: NodeDetails | null }
   | { readonly type: 'changes'; readonly id: number; readonly changes: NodeChanges | null }
-  | { readonly type: 'reveal'; readonly id: number; readonly reveal: RevealAnswer }
   | { readonly type: 'search'; readonly id: number; readonly answer: SearchAnswer }
   | { readonly type: 'locate'; readonly id: number; readonly answer: LocateAnswer }
   /** How far a `demo` request is (the snapshot library shows it as it shows an import's). */

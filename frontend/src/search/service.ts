@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
  * The search in the data worker (diagram/pipeline/dataHandler.ts routes the `search` and `locate` requests
- * here). The index is built from the Graph the worker keeps for the view's snapshot on the day the query names (the
- * day on screen), once per Graph (a `WeakMap`, so a new snapshot's or day's Graph gets a new index and the old
- * one goes with its Graph); a `search` with
- * empty text only builds it, which the search box asks for when it gets focus. Answers carry the icons their
- * results name, resolved here like the Scene's, so the icon table never loads on the UI thread. Never import
- * this module on the UI thread.
+ * here; the details drawer's jump links ask `locate` too). The index is built from the Graph the worker keeps for
+ * the view's snapshot on the day the query names (the day on screen), once per Graph (a `WeakMap`, so a new
+ * snapshot's or day's Graph gets a new index and the old one goes with its Graph); a `search` with empty text only
+ * builds it, which the search box asks for when it gets focus. Answers carry the icons their results name,
+ * resolved here like the Scene's, so the icon table never loads on the UI thread. Never import this module on
+ * the UI thread.
  */
 import { catalog as compiledCatalog } from '@gcportrait/catalog';
 import { GENERIC_ICON } from '@gcportrait/graph';
@@ -73,7 +73,7 @@ export function answerSearch(query: SearchQuery, loaded: LoadedSnapshot): Search
 }
 
 export function answerLocate(query: LocateQuery, loaded: LoadedSnapshot, env: SceneEnv): LocateAnswer {
-  return locateNode({ graph: loaded.graph, catalog: compiledCatalog, env }, query.spec, query.node);
+  return locateNode({ graph: loaded.graph, catalog: compiledCatalog, env }, query.spec, query.node, query);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -99,10 +99,11 @@ export function parseLocateQuery(value: unknown): LocateQuery | null {
   const node = value['node'];
   const viewport = value['viewport'];
   const day = parseFollowUpDay(value['day']);
+  const offers = value['offers'];
   if (!spec.success || typeof node !== 'string' || node === '' || !isRecord(viewport)) return null;
-  if (day === null) return null;
+  if (day === null || typeof offers !== 'boolean') return null;
   const width = viewport['width'];
   const height = viewport['height'];
   if (typeof width !== 'number' || typeof height !== 'number' || !(width > 0) || !(height > 0)) return null;
-  return { spec: spec.data, day, node, viewport: { width, height } };
+  return { spec: spec.data, day, node, viewport: { width, height }, offers };
 }

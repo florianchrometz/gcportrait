@@ -8,8 +8,9 @@
  * The scene builder reports the scene node that shows a selection (`report.selection.shownAs`: the node itself,
  * or the outermost collapsed zone around it). While that is a chip, its zone's flip is toggled (exactly what a
  * click on the chip does) and the view built again, one level deeper each time, until the node shows as itself:
- * those flips are the "auto-expand ancestors" of a search hit. The loop is diagram/disclosure/openAround.ts's,
- * which the details drawer's jump links share (drawer/reveal.ts).
+ * those flips are the "auto-expand ancestors" of a search hit, and what a jump link of the details drawer opens
+ * (the loop is diagram/disclosure/openAround.ts's). The drawer asks without offers: a node the view does not reach
+ * is then `unavailable`, and no offer's view is built.
  */
 import { matchesTypePattern } from '@gcportrait/catalog';
 import { ORGANIZATION_TYPE, PROJECT_TYPE } from '@gcportrait/graph';
@@ -28,7 +29,7 @@ import {
 import { openAround, type SceneContext } from '../diagram/disclosure/openAround';
 import { cardTypeName } from '../diagram/names';
 import { viewWithLens, type LensDefaults } from '../views/lensDetail';
-import type { LocateAnswer, RevealContext, RevealOffer } from './protocol';
+import type { LocateAnswer, LocateQuery, RevealContext, RevealOffer } from './protocol';
 import { decideReveal, type RevealFacts, type RevealStep } from './reveal';
 
 export type LocateContext = SceneContext;
@@ -247,8 +248,16 @@ function revealContext(
   };
 }
 
-/** Where `id` is in `spec`'s view and what shows it (protocol.ts's `LocateAnswer`). */
-export function locateNode(context: LocateContext, spec: ViewSpec, id: string): LocateAnswer {
+/**
+ * Where `id` is in `spec`'s view and what shows it (protocol.ts's `LocateAnswer`); without `offers` (a jump link's
+ * locate), a node the view does not reach is `unavailable` and no offer is tried.
+ */
+export function locateNode(
+  context: LocateContext,
+  spec: ViewSpec,
+  id: string,
+  options: Pick<LocateQuery, 'offers'> = { offers: true },
+): LocateAnswer {
   const node = context.graph.nodes[id];
   if (node === undefined || node.assetType === ORGANIZATION_TYPE) return { kind: 'missing' };
   const view = sceneView(spec);
@@ -279,6 +288,7 @@ export function locateNode(context: LocateContext, spec: ViewSpec, id: string): 
     case 'unavailable':
       return { kind: 'unavailable', context: reveal, facts };
     case 'offer': {
+      if (!options.offers) return { kind: 'unavailable', context: reveal, facts };
       const offers: RevealOffer[] = [];
       const working = new Set<string>();
       for (const steps of decision.candidates) {

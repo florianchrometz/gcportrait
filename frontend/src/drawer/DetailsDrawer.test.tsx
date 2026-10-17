@@ -2,7 +2,8 @@
 /**
  * The details drawer in the app, in jsdom with the real data and layout handlers in-process, on demo
  * organisation S: selecting a VM opens it with the VM's facts, relations grouped by kind, the console link and
- * the raw JSON; a jump link selects its target; the copy buttons report; Escape closes it and gives focus back
+ * the raw JSON; a jump link selects its target, first opening the chips around one hidden in them (a locate
+ * without offers); the copy buttons report; Escape closes it and gives focus back
  * to the card; the resize handle works with the keyboard and keeps the width in the preferences; on a phone the
  * drawer is a sheet at half height that its handle takes to full height and back (`data-sheet`), its header and
  * details in the one box that scrolls; a container offers "Drill in"; selecting never asks for a new Scene or layout;
@@ -158,6 +159,48 @@ describe('the details drawer', () => {
     });
     expect(document.activeElement).toBe(disk);
     expect(decodeURIComponent(currentLocation(container))).not.toContain('selection=');
+  }, 30_000);
+
+  it('opens the collapsed zones around a jump link’s target: one locate without offers, then the flips', async () => {
+    const vm = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
+    const offers: boolean[] = [];
+    const factory = (): DiagramWorkers => {
+      const workers = createInProcessWorkers();
+      const locate = workers.data.locate.bind(workers.data);
+      workers.data.locate = (query, options) => {
+        offers.push(query.offers);
+        return locate(query, options);
+      };
+      return workers;
+    };
+    // At the folder level the VM's project is a chip; the drawer shows the VM's details all the same.
+    const { container } = renderApp(`/diagram#snapshot=demo:S&lens=compute&detail=folders&selection=${vm}`, {
+      diagramWorkers: factory,
+    });
+    await drawn(container);
+    expect(container.querySelector(`svg [data-id="${vm}"]`)).toBeNull();
+    const uses = await waitFor(() => {
+      const group = drawer().querySelector('[data-kind="uses"]');
+      if (group === null) throw new Error('no uses group yet');
+      return group;
+    });
+    const target = within(uses as HTMLElement).getAllByRole('button')[0];
+    if (target === undefined) throw new Error('no jump link');
+    const targetId = target.getAttribute('title') ?? '';
+    await act(async () => {
+      fireEvent.click(target);
+      await Promise.resolve();
+    });
+    // The flips that open the chips around the disk and its selection, written in one step.
+    await waitFor(() => {
+      const hash = decodeURIComponent(currentLocation(container));
+      expect(hash).toContain(`selection=${targetId}`);
+      expect(hash).toMatch(/flips=/);
+    });
+    expect(offers).toEqual([false]);
+    await waitFor(() => {
+      expect(container.querySelector(`svg [data-id="${targetId}"]`)).not.toBeNull();
+    });
   }, 30_000);
 
   it('resizes with the keyboard between 360 and 420 px and keeps the width', async () => {

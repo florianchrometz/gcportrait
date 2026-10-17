@@ -141,21 +141,29 @@ describe('request parsers', () => {
 
   it('reads a locate query and refuses malformed ones', () => {
     const spec = { ...DEFAULT_VIEW_SPEC, snapshot: 'demo:M' };
-    expect(parseLocateQuery({ spec, viewport: { width: 1280, height: 624 }, node: 'x' })).toEqual({
+    const small = { width: 1, height: 1 };
+    expect(
+      parseLocateQuery({ spec, viewport: { width: 1280, height: 624 }, node: 'x', offers: true }),
+    ).toEqual({
       spec,
       day: { tick: null },
       viewport: { width: 1280, height: 624 },
       node: 'x',
+      offers: true,
     });
     expect(
-      parseLocateQuery({ spec, day: { tick: '2026-09-17' }, viewport: { width: 1, height: 1 }, node: 'x' })
-        ?.day,
-    ).toEqual({ tick: '2026-09-17' });
+      parseLocateQuery({ spec, day: { tick: '2026-09-17' }, viewport: small, node: 'x', offers: false }),
+    ).toMatchObject({ day: { tick: '2026-09-17' }, offers: false });
+    expect(parseLocateQuery({ spec, day: { tick: 7 }, viewport: small, node: 'x', offers: true })).toBeNull();
     expect(
-      parseLocateQuery({ spec, day: { tick: 7 }, viewport: { width: 1, height: 1 }, node: 'x' }),
+      parseLocateQuery({ spec, viewport: { width: 0, height: 624 }, node: 'x', offers: true }),
     ).toBeNull();
-    expect(parseLocateQuery({ spec, viewport: { width: 0, height: 624 }, node: 'x' })).toBeNull();
-    expect(parseLocateQuery({ spec, viewport: { width: 1280, height: 624 }, node: '' })).toBeNull();
-    expect(parseLocateQuery({ spec: { lens: 3 }, viewport: { width: 1, height: 1 }, node: 'x' })).toBeNull();
+    expect(
+      parseLocateQuery({ spec, viewport: { width: 1280, height: 624 }, node: '', offers: true }),
+    ).toBeNull();
+    expect(parseLocateQuery({ spec: { lens: 3 }, viewport: small, node: 'x', offers: true })).toBeNull();
+    // Whether to try the offers is said, as a boolean.
+    expect(parseLocateQuery({ spec, viewport: small, node: 'x' })).toBeNull();
+    expect(parseLocateQuery({ spec, viewport: small, node: 'x', offers: 'yes' })).toBeNull();
   });
 });

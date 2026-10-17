@@ -10,13 +10,12 @@
  * (WhatChanged.tsx) says what changed about the node between the two days.
  *
  * The details come from the data worker (useNodeDetails, per day drawn; useNodeChanges); the selection itself
- * stays in the URL hash, and every
- * change goes through the store's actions: a jump link selects its target, first opening the collapsed zones
- * around it (a `reveal` request, drawer/reveal.ts) when it is hidden in a chip. Opening the drawer or changing the
- * selection asks the canvas for a short pan (`jumpTo(id, { mode: 'reveal' })`) that keeps the node and its trace
- * clear of the drawer; it never lays the diagram out again. Escape and Close clear the selection and give focus
- * back to the node on the canvas. The width (360–420 px) follows the handle on the left edge and is kept in the
- * preferences.
+ * stays in the URL hash, and every change goes through the store's actions: a jump link selects its target,
+ * first opening the collapsed zones around it (a `locate` request without offers, search/locate.ts) when it is
+ * hidden in a chip. Opening the drawer or changing the selection asks the canvas for a short pan
+ * (`jumpTo(id, { mode: 'reveal' })`) that keeps the node and its trace clear of the drawer; it never lays the
+ * diagram out again. Escape and Close clear the selection and give focus back to the node on the canvas. The
+ * width (360–420 px) follows the handle on the left edge and is kept in the preferences.
  *
  * Narrower than a desktop (ui/screen.ts) the drawer lies over the canvas instead of beside it: on a tablet a panel
  * along its right edge, on a phone a sheet over its lower half, which its handle (the top edge) takes up to the whole
@@ -488,22 +487,26 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
         return;
       }
       const key = sceneKey(before.view.spec);
-      // The day on screen: the flips are worked out on the Graph of the day drawn.
+      // The day on screen: the flips are worked out on the Graph of the day drawn. Without offers: no view but
+      // this one is tried, and no search's locate cancels this one, nor this one a search's.
       const day = { tick: selectDrawnDay(before) ?? null };
-      client.reveal(before.view.spec, before.pipeline.viewport ?? FALLBACK_VIEWPORT, target.id, day).then(
+      const viewport = before.pipeline.viewport ?? FALLBACK_VIEWPORT;
+      client.locate({ spec: before.view.spec, day, viewport, node: target.id, offers: false }).then(
         (answer) => {
-          const now = store.getState();
           // The view changed meanwhile: the flips were worked out for another one.
-          if (sceneKey(now.view.spec) !== key) return;
-          const same =
-            answer.flips.length === now.view.spec.flips.length &&
-            answer.flips.every((flip, index) => now.view.spec.flips[index] === flip);
-          if (answer.shown && !same) {
-            actions.setView((current) => ({ ...current, flips: [...answer.flips], selection: target.id }));
+          if (sceneKey(store.getState().view.spec) !== key) return;
+          if (answer.kind === 'expand') {
+            actions.setView((current) => ({
+              ...current,
+              flips: [...answer.view.flips],
+              selection: target.id,
+            }));
           } else {
             actions.select(target.id);
           }
-          if (!answer.shown) setStatus({ id: target.id, text: notDrawnText(target.label) });
+          if (answer.kind !== 'shown' && answer.kind !== 'expand') {
+            setStatus({ id: target.id, text: notDrawnText(target.label) });
+          }
         },
         () => {
           actions.select(target.id);

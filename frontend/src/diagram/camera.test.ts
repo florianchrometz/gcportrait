@@ -92,6 +92,45 @@ describe('a part of the canvas (inRoom)', () => {
   });
 });
 
+describe('revealTransform (the details drawer’s pan)', () => {
+  const camera = { x: 0, y: 0, k: 1 };
+  const node = (x: number, y: number) => ({ x, y, width: 200, height: 44 });
+
+  it('does not move when the node and its trace are in view', () => {
+    expect(revealTransform(node(100, 100), node(100, 100), 800, 600, camera)).toBeNull();
+  });
+
+  it('pans as little as it can to bring a node behind the drawer back into view, at the same scale', () => {
+    // The drawer took the right 400 px: the canvas is now 800 px wide and the node sits at x 900.
+    const to = revealTransform(node(900, 100), node(900, 100), 800, 600, camera);
+    expect(to).toEqual({ k: 1, x: 800 - REVEAL_MARGIN - 1100, y: 0 });
+  });
+
+  it('keeps the whole trace in view when it fits', () => {
+    const extent = { x: 300, y: 100, width: 800, height: 300 };
+    const to = revealTransform(node(900, 100), extent, 800, 600, { x: 0, y: 0, k: 0.8 });
+    if (to === null) throw new Error('expected a pan');
+    expect(to.k).toBe(0.8);
+    expect(300 * 0.8 + to.x).toBeGreaterThanOrEqual(REVEAL_MARGIN - 1e-9);
+    expect((300 + 800) * 0.8 + to.x).toBeLessThanOrEqual(800 - REVEAL_MARGIN + 1e-9);
+  });
+
+  it('fills the view with a trace larger than it, keeping the node in view', () => {
+    const extent = { x: -2000, y: 0, width: 4000, height: 200 };
+    const to = revealTransform(node(1500, 0), extent, 800, 600, camera);
+    if (to === null) throw new Error('expected a pan');
+    const left = 1500 + to.x;
+    expect(left).toBeGreaterThanOrEqual(REVEAL_MARGIN);
+    expect(left + 200).toBeLessThanOrEqual(800 - REVEAL_MARGIN);
+  });
+
+  it('centres a node larger than the canvas', () => {
+    const big = { x: 0, y: 0, width: 2000, height: 100 };
+    const to = revealTransform(big, big, 800, 600, { x: 500, y: 0, k: 1 });
+    expect(to?.x).toBeCloseTo(400 - 1000);
+  });
+});
+
 describe('the fit the camera rests on (sameCamera, showsWhole)', () => {
   const fit = { x: 40, y: 120, k: 0.4 };
 

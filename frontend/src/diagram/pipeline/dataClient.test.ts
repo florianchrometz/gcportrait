@@ -42,6 +42,36 @@ describe('the data client', () => {
     client.receive({ type: 'scene', id: 4, answer: {} });
   });
 
+  it('keeps a jump link’s locates apart from a search’s: a newer locate supersedes only one of its own family', async () => {
+    const sent: DataRequest[] = [];
+    const client = createDataClient((request) => sent.push(request));
+    const query = { spec, day: { tick: null }, viewport, node: 'x' };
+    // A search hit's locate, a jump link's typed at the same moment, the next search hit's, the next jump link's.
+    const search = client.locate({ ...query, offers: true });
+    const jump = client.locate({ ...query, offers: false });
+    const nextSearch = client.locate({ ...query, offers: true });
+    const nextJump = client.locate({ ...query, offers: false });
+    // Only the older search hit's is cancelled; neither jump link's is, nor does one cancel a search's.
+    await expect(search).rejects.toSatisfy(isDataCancelled);
+    client.receive({ type: 'locate', id: 2, answer: { kind: 'missing' } });
+    client.receive({ type: 'locate', id: 3, answer: { kind: 'shown' } });
+    client.receive({ type: 'locate', id: 4, answer: { kind: 'missing' } });
+    await expect(jump).resolves.toEqual({ kind: 'missing' });
+    await expect(nextSearch).resolves.toEqual({ kind: 'shown' });
+    await expect(nextJump).resolves.toEqual({ kind: 'missing' });
+    expect(sent.map((request) => (request.type === 'locate' ? request.query.offers : null))).toEqual([
+      true,
+      false,
+      true,
+      false,
+    ]);
+    // An aborted signal still cancels a jump link's.
+    const controller = new AbortController();
+    const aborted = client.locate({ ...query, offers: false }, { signal: controller.signal });
+    controller.abort();
+    await expect(aborted).rejects.toSatisfy(isDataCancelled);
+  });
+
   it('rejects everything when the worker fails or the client is disposed', async () => {
     const client = createDataClient(() => undefined);
     const pending = client.scene(spec, viewport);

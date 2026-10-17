@@ -93,7 +93,7 @@ export function useReveal(): Reveal {
         const day = { tick: selectDrawnDay(state) ?? null };
         let answer: LocateAnswer;
         try {
-          answer = await data.locate({ spec, day, viewport, node: hit.id });
+          answer = await data.locate({ spec, day, viewport, node: hit.id, offers: true });
         } catch (error) {
           if (!isDataCancelled(error)) setMessage(`${hit.label} could not be located.`);
           return;

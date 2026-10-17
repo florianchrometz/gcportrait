@@ -374,7 +374,7 @@ never touches disk.
 | `ui/` | headless accessible primitives: Menu, MenuButton, Select, Combobox, Listbox, Popover, Dialog, SegmentedControl, Slider, Tooltip |
 | `views/` | the view controls' support: the snapshot's choices (projects, hosts, perimeters, applications, folders, regions, types; computed in the data worker), the filter and focus forms, the lens/detail rule, the breadcrumb trail, saved views, Copy link |
 | `search/` | the Fuse.js index and the locator (data worker), ranking, the reveal decision table and dialog |
-| `drawer/` | the details drawer: a node's facts, relations by kind, dangling references, console link, raw JSON; the `reveal` request for jump targets inside collapsed zones; on a timeline day compared with the day before it, "What changed" (both update times, the fields of `resource.data` that differ, what changed inside a container) |
+| `drawer/` | the details drawer: a node's facts, relations by kind, dangling references, console link, raw JSON; jump links that open the collapsed zones around their targets (a `locate` request without offers); on a timeline day compared with the day before it, "What changed" (both update times, the fields of `resource.data` that differ, what changed inside a container) |
 | `snapshots/` | the snapshot library: "Try the demo", the IndexedDB records, the `.gcportrait.json` bundle, imports of bundles and CAI exports, export, delete, storage usage, and the snapshot worker; "Timelines by scope" (each scope's snapshots, extra ticks and cached days, their sizes, deleting them) |
 | `diagram/` | the renderer, its data and layout worker roles (`pipeline/`), the camera (`camera.ts`), progressive disclosure (`disclosure/`: flips, the collapse button, "N of M shown"), the keyboard model inside the drawing (`keyboard/`) and the timeline's diff overlay (`diff/`: added outlines, ghosts of what is gone, changed dots, their legend rows) |
 | `keyboard/` | the app-wide keys: "Skip to the diagram", `[` and `]` for the timeline, shortcut matching across keyboard layouts |
@@ -384,18 +384,18 @@ never touches disk.
 | `import/` | the live pull and the export load: "Pull now" (scope, mode and quota project from the permission check), the Connect page's export card (dropped files through the Snapshots page's import, with the export's `operation.json`; a `gs://` URI read by the backend), the import worker (a fourth role of the worker script: the backend's stream read by `@gcportrait/ingest` as it arrives), the progress reducer and the error advice; a read time typed for an export without its `operation.json` |
 | `storage/`, `theme/`, `pages/` | the IndexedDB wrapper, the page's one connection (`connection.ts`), preferences and the tick cache (`tickCache.ts`); the theme; the routes' pages |
 
-The data worker answers `lenses`, `scene` (with its progress stages), `choices`, `search` and `locate`,
-`details` and `reveal` (`diagram/pipeline/protocol.ts`); a demo worker started for one "Try the demo" job
-answers `demo`. A view's timeline `tick` draws that day of the snapshot, or the stored export or pull an extra
-tick names, and each Scene carries the snapshot's timeline; a Scene request may name the day on screen before
-it (`diffFrom`): the answer then carries the diff of the two days and its Scene the ghosts of what is gone and
-of what the view no longer draws where it stood (a moved node is marked where it is now), and `changes`
-answers what changed about one node between two days; before it reuses the Graph it keeps for a stored
-snapshot it asks IndexedDB whether the record is unchanged. One worker script serves
-five roles (data, layout, snapshots, imports and demo), so the model, zod and ingest are bundled once for the
-workers; the demo generator runs in workers only (AGENTS.md, "Architecture and code"): the data role loads it
-on first use to draw a demo organisation, and the demo role, started for one "Try the demo" job and ended with
-it, to prepare one. [frontend/README.md](../frontend/README.md) is the reference for each module.
+The data worker answers `lenses`, `scene` (with its progress stages), `choices`, `search` and `locate` (the
+drawer's jump links ask it too, without offers), and `details` (`diagram/pipeline/protocol.ts`); a demo worker
+started for one "Try the demo" job answers `demo`. A view's timeline `tick` draws that day of the snapshot, or
+the stored export or pull an extra tick names, and each Scene carries the snapshot's timeline; a Scene request
+may name the day on screen before it (`diffFrom`): the answer then carries the diff of the two days and its
+Scene the ghosts of what is gone and of what the view no longer draws where it stood (a moved node is marked
+where it is now), and `changes` answers what changed about one node between two days; before it reuses the
+Graph it keeps for a stored snapshot it asks IndexedDB whether the record is unchanged. One worker script
+serves five roles (data, layout, snapshots, imports and demo), so the model, zod and ingest are bundled once
+for the workers; the demo generator runs in workers only (AGENTS.md, "Architecture and code"): the data role
+loads it on first use to draw a demo organisation, and the demo role, started for one "Try the demo" job and
+ended with it, to prepare one. [frontend/README.md](../frontend/README.md) is the reference for each module.
 
 ### The website
 
@@ -487,7 +487,7 @@ and waiting for an item of [backlog.md](backlog.md) or a maintainer decision:
   `frontend/src/diagram/disclosure/flips.ts` read them. Still restated: `frontend/src/snapshots/labels.ts`
   restates demo-data's size profiles, and `frontend/src/drawer/details.ts` reads labels and tags from fixed
   data paths rather than catalog JSONPaths; each has a test against the package it restates.
-- **One chip-opening loop.** Search's `locate` and the drawer's `reveal` both use
+- **One chip-opening loop.** Search's `locate`, which the drawer's jump links ask too (without offers), uses
   `frontend/src/diagram/disclosure/openAround.ts`: toggle the flip of the chip that shows a node and rebuild
   the Scene, one level deeper each time, in the data worker.
 - **The bundle budgets** (AGENTS.md, "Quality gates, testing and CI"). `pnpm size` budgets the UI thread

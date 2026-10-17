@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * Opening the collapsed zones around a node until it is drawn as itself (flips, layout skill §6): the one loop behind
- * a search hit's "auto-expand ancestors" (search/locate.ts) and the details drawer's jump links that "flip collapsed
- * targets open" (drawer/reveal.ts). Worked out with the scene builder itself, so the rule of what collapses where is
+ * a search hit's "auto-expand ancestors" and the details drawer's jump links that "flip collapsed targets open", both
+ * through search/locate.ts. Worked out with the scene builder itself, so the rule of what collapses where is
  * never restated: build the view with the node as its selection, read which Scene node shows it
  * (`report.selection.shownAs`: the node, or the outermost chip it is collapsed into), toggle that chip's flip
  * (exactly what a click on the chip does), and build again, one level deeper each time. Toggling the flip of a zone

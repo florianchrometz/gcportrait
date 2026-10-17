@@ -112,7 +112,7 @@ export function selectScope(state: AppState): string | null {
 /**
  * The timeline day the diagram on screen draws: its tick, `null` for the snapshot's own day, `undefined` while
  * nothing of the view's snapshot is drawn. Every follow-up request to the data worker (details, choices, search,
- * locate, reveal) names it, and the page keys what it keeps of their answers by it.
+ * locate) names it, and the page keys what it keeps of their answers by it.
  */
 export function selectDrawnDay(state: AppState): string | null | undefined {
   const source = state.pipeline.result?.answer.source;

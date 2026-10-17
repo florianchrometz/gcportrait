@@ -110,14 +110,6 @@ export interface NodeDetails {
   readonly resource: { readonly data: unknown } | null;
 }
 
-/** How to show a node that is hidden in a collapsed zone: the view's flips with the zones around it opened. */
-export interface RevealAnswer {
-  /** Whether the node is drawn once `flips` apply; false when the lens, a filter, the focus or the root leaves it out. */
-  readonly shown: boolean;
-  /** The flips to draw it (the view's own when nothing needs to open, or when it cannot be shown). */
-  readonly flips: readonly string[];
-}
-
 /** One field of `resource.data` that differs between two days (drawer/fieldDiff.ts). */
 export interface FieldChange {
   /** Where, as a dotted path with array indexes (`rules[2].action`); `(data)` for `resource.data` itself. */

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
  * What the search asks the data worker and what it answers (the worker's `search` and `locate` requests,
- * diagram/pipeline/protocol.ts). Plain data only: everything here crosses `postMessage`. The index and the
- * locator run in the data worker, where the Graph is (service.ts); the page only shows the answers.
+ * diagram/pipeline/protocol.ts); the details drawer's jump links ask `locate` too, without offers. Plain data
+ * only: everything here crosses `postMessage`. The index and the locator run in the data worker, where the Graph
+ * is (service.ts); the page only shows the answers.
  */
 import type { Icon } from '@gcportrait/icons';
 import type { SnapshotRef, ViewSpec } from '@gcportrait/model';
@@ -68,6 +69,13 @@ export interface LocateQuery {
   readonly viewport: { readonly width: number; readonly height: number };
   /** The node to reveal. */
   readonly node: string;
+  /**
+   * Whether a node the view does not reach gets its offers, each tried by building its view: true for a chosen
+   * search result (the reveal dialog), false for a jump link of the details drawer, which only opens the zones
+   * around its target. A locate with offers supersedes the one with offers before it, in the page and in the
+   * worker; one without is never superseded, so a jump link and a search never cancel each other.
+   */
+  readonly offers: boolean;
 }
 
 /** A view change that shows the node, checked in the worker by building its Scene. */
@@ -111,5 +119,5 @@ export type LocateAnswer =
       readonly facts: RevealFacts;
       readonly offers: readonly RevealOffer[];
     }
-  /** Not in this view, and no offer would show it. */
+  /** Not in this view, and no offer would show it (or none was asked for: `offers` false). */
   | { readonly kind: 'unavailable'; readonly context: RevealContext; readonly facts: RevealFacts };

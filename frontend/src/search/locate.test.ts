@@ -4,7 +4,9 @@
  * Locating a search hit in a view (locate.ts) on the demo organisations with the real catalog and scene
  * builder: drawn as itself, inside chips (the flips open them, and the view with them draws the node), outside
  * the drill-in root or the focus (drill in), not in the lens, hidden by role or by its type's rule, excluded,
- * filtered out, and unknown. Every offer is checked the way the page will draw it.
+ * filtered out, and unknown. Every offer is checked the way the page will draw it. A jump link of the details
+ * drawer locates its target without offers: the chips around it opened, and no offer tried for one the view
+ * leaves out.
  */
 import { catalog } from '@gcportrait/catalog';
 import { generateOrganization, toSnapshot } from '@gcportrait/demo-data';
@@ -187,6 +189,56 @@ describe('locateNode', () => {
       node.assetType.endsWith('/Organization'),
     );
     expect(locateNode(S, view('S'), organisation?.id ?? '').kind).toBe('missing');
+  });
+});
+
+describe('locateNode for a jump link of the details drawer (no offers)', () => {
+  const JUMP = { offers: false };
+  const SUBNET =
+    '//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/demo-vm-1-europe-west3';
+  const DISK = '//compute.googleapis.com/projects/demo-vm-1/zones/europe-west3-a/disks/bastion';
+
+  it('opens the chips around a VM hidden at the folder level, and only those', () => {
+    const spec = view('M');
+    expect(shownIn(M, spec, BASTION)).not.toBe(BASTION);
+    const answer = locateNode(M, spec, BASTION, JUMP);
+    if (answer.kind !== 'expand') throw new Error(`expected expand, got ${answer.kind}`);
+    expect(answer.view.flips.length).toBeGreaterThan(0);
+    expect(shownIn(M, answer.view, BASTION)).toBe(BASTION);
+    // Each flip is needed: without any one of them the VM is in a chip again.
+    for (const flip of answer.view.flips) {
+      const without = normalizeViewSpec({
+        ...answer.view,
+        flips: answer.view.flips.filter((f) => f !== flip),
+      });
+      expect(shownIn(M, without, BASTION)).not.toBe(BASTION);
+    }
+    // The flips a search hit gets.
+    expect(answer).toEqual(locateNode(M, spec, BASTION));
+  });
+
+  it('opens a subnet in another project (the Shared VPC host) the same way', () => {
+    const spec = view('M', { lens: 'networking' });
+    const answer = locateNode(M, spec, SUBNET, JUMP);
+    if (answer.kind !== 'expand') throw new Error(`expected expand, got ${answer.kind}`);
+    expect(shownIn(M, answer.view, SUBNET)).toBe(SUBNET);
+  });
+
+  it('changes nothing for a node already drawn, whatever flips the view has', () => {
+    const spec = view('M', { lens: 'compute', detail: 'all', flips: ['abc123'] });
+    expect(locateNode(M, spec, BASTION, JUMP)).toMatchObject({ kind: 'shown' });
+  });
+
+  it('finds a node the lens leaves out not drawn, and tries no offer for it', () => {
+    // The networking lens draws no disks.
+    const spec = view('M', { lens: 'networking', flips: ['abc123'] });
+    const searched = locateNode(M, spec, DISK);
+    if (searched.kind !== 'offer') throw new Error(`expected offer, got ${searched.kind}`);
+    expect(locateNode(M, spec, DISK, JUMP)).toEqual({
+      kind: 'unavailable',
+      context: searched.context,
+      facts: searched.facts,
+    });
   });
 });
 

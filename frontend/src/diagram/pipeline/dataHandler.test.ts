@@ -31,6 +31,8 @@ beforeAll(async () => {
   await import('./demo');
 });
 
+const WEB_VM = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
+
 /** A harness whose snapshot loader counts its loads. */
 function countingLoads(loadSnapshot = loadDemoSnapshot) {
   let loads = 0;
@@ -103,6 +105,21 @@ describe('the data worker handler', () => {
     expect(responses.filter((response) => response.type === 'scene').map((response) => response.id)).toEqual([
       newer,
     ]);
+  });
+
+  it('skips a search hit’s locate a newer one replaced, never a jump link’s', async () => {
+    const { responses, send, answerTo } = dataHarness();
+    const spec = normalizeViewSpec({ snapshot: 'demo:S' });
+    const query = { spec, day: { tick: null }, viewport: TEST_VIEWPORT, node: WEB_VM };
+    // Sent before the snapshot is ready: a search hit's, a jump link's, the next search hit's.
+    send({ type: 'locate', query: { ...query, offers: true } });
+    const jump = send({ type: 'locate', query: { ...query, offers: false } });
+    const newer = send({ type: 'locate', query: { ...query, offers: true } });
+    expect(await answerTo(jump)).toMatchObject({ type: 'locate', answer: { kind: 'shown' } });
+    await answerTo(newer);
+    expect(responses.filter((response) => response.type === 'locate').map((response) => response.id)).toEqual(
+      [jump, newer],
+    );
   });
 
   it('reports an unknown snapshot, a view without one, a failed load and a malformed request', async () => {

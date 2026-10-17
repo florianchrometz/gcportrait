@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 /**
  * The page side of the data worker (protocol.ts): one promise per request. A Scene request supersedes the one
- * before it (the older promise rejects at once with a `DataCancelledError`), and so does a search or a locate
- * request the one of its kind before it; an aborted signal rejects it too. Lens requests are independent.
+ * before it (the older promise rejects at once with a `DataCancelledError`), a search the search before it, and a
+ * search hit's locate (with offers) the one before it; an aborted signal rejects any request too. The others are
+ * independent, a jump link's locate (without offers) among them, so a jump link and a search never cancel each
+ * other.
  */
 import type { DemoSize, SnapshotRef, ViewSpec } from '@gcportrait/model';
 
-import type { NodeChanges, NodeDetails, RevealAnswer } from '../../drawer/types';
+import type { NodeChanges, NodeDetails } from '../../drawer/types';
 import type { LocateAnswer, LocateQuery, SearchAnswer, SearchQuery } from '../../search/protocol';
 import type { JobProgress, PreparedSnapshot } from '../../snapshots/worker/protocol';
 import type { ViewChoices } from '../../views/choices';
@@ -42,9 +44,12 @@ export class DataWorkerError extends Error {
   }
 }
 
+/** The requests a newer one of the same family supersedes: Scenes, searches, and search hits' locates. */
+type Family = 'scene' | 'search' | 'locate';
+
 interface Pending {
-  readonly kind:
-    'lenses' | 'scene' | 'choices' | 'details' | 'changes' | 'reveal' | 'search' | 'locate' | 'demo';
+  /** The family a newer request supersedes it in; null for an independent request. */
+  readonly family: Family | null;
   /** Resolves with the answer's payload (typed by the request that created it). */
   readonly resolve: (value: unknown) => void;
   readonly reject: (error: Error) => void;
@@ -85,17 +90,12 @@ export interface DataClient {
     days: { readonly since: DiffFrom; readonly day: DiffFrom },
     options?: { readonly signal?: AbortSignal },
   ): Promise<NodeChanges | null>;
-  /** The flips that draw a node of the view on a day hidden in a collapsed zone. */
-  reveal(
-    spec: ViewSpec,
-    viewport: Viewport,
-    node: string,
-    day: DayRef,
-    options?: { readonly signal?: AbortSignal },
-  ): Promise<RevealAnswer>;
   /** The nodes that match a text; a newer search supersedes the one before it. */
   search(query: SearchQuery, options?: { readonly signal?: AbortSignal }): Promise<SearchAnswer>;
-  /** Where a node is in a view and what would show it; a newer one supersedes the one before it. */
+  /**
+   * Where a node is in a view and what would show it; a newer one with offers supersedes the one with offers
+   * before it, and one without (a jump link's) is independent.
+   */
   locate(query: LocateQuery, options?: { readonly signal?: AbortSignal }): Promise<LocateAnswer>;
   /** Demo organisation `size` with its history, ready to store ("Try the demo"; the generator is the worker's). */
   demo(size: DemoSize, onProgress?: (progress: JobProgress) => void): Promise<PreparedSnapshot>;
@@ -125,15 +125,15 @@ export function createDataClient(post: (request: DataRequest) => void): DataClie
 
   const request = <T>(
     build: (id: number) => DataRequest,
-    kind: Pending['kind'],
+    family: Family | null,
     options: SceneRequestOptions & { readonly onJobProgress?: (progress: JobProgress) => void } = {},
   ): Promise<T> => {
     const id = nextId;
     nextId += 1;
     if (disposed || options.signal?.aborted === true) return Promise.reject(new DataCancelledError(id));
-    if (kind === 'scene' || kind === 'search' || kind === 'locate') {
+    if (family !== null) {
       for (const [older, entry] of [...pending]) {
-        if (entry.kind === kind) settle(older)?.reject(new DataCancelledError(older));
+        if (entry.family === family) settle(older)?.reject(new DataCancelledError(older));
       }
     }
     return new Promise<T>((resolve, reject) => {
@@ -142,7 +142,7 @@ export function createDataClient(post: (request: DataRequest) => void): DataClie
       };
       options.signal?.addEventListener('abort', onAbort, { once: true });
       pending.set(id, {
-        kind,
+        family,
         resolve: (value) => {
           resolve(value as T);
         },
@@ -160,7 +160,7 @@ export function createDataClient(post: (request: DataRequest) => void): DataClie
   };
 
   return {
-    lenses: () => request<readonly LensInfo[]>((id) => ({ type: 'lenses', id }), 'lenses'),
+    lenses: () => request<readonly LensInfo[]>((id) => ({ type: 'lenses', id }), null),
     scene: (spec, viewport, options) =>
       request<SceneAnswer>(
         (id) => ({
@@ -173,26 +173,23 @@ export function createDataClient(post: (request: DataRequest) => void): DataClie
         'scene',
         options,
       ),
-    choices: (snapshot, day) =>
-      request<ViewChoices>((id) => ({ type: 'choices', id, snapshot, day }), 'choices'),
+    choices: (snapshot, day) => request<ViewChoices>((id) => ({ type: 'choices', id, snapshot, day }), null),
     details: (snapshot, node, day, options) =>
-      request<NodeDetails | null>((id) => ({ type: 'details', id, snapshot, node, day }), 'details', options),
+      request<NodeDetails | null>((id) => ({ type: 'details', id, snapshot, node, day }), null, options),
     changes: (snapshot, node, days, options) =>
       request<NodeChanges | null>(
         (id) => ({ type: 'changes', id, snapshot, node, since: days.since, day: days.day }),
-        'changes',
+        null,
         options,
       ),
-    reveal: (spec, viewport, node, day, options) =>
-      request<RevealAnswer>((id) => ({ type: 'reveal', id, spec, viewport, node, day }), 'reveal', options),
     search: (query, options) =>
       request<SearchAnswer>((id) => ({ type: 'search', id, query }), 'search', options),
     locate: (query, options) =>
-      request<LocateAnswer>((id) => ({ type: 'locate', id, query }), 'locate', options),
+      request<LocateAnswer>((id) => ({ type: 'locate', id, query }), query.offers ? 'locate' : null, options),
     demo: (size, onProgress) =>
       request<PreparedSnapshot>(
         (id) => ({ type: 'demo', id, size }),
-        'demo',
+        null,
         onProgress === undefined ? {} : { onJobProgress: onProgress },
       ),
     receive(message) {
@@ -230,10 +227,6 @@ export function createDataClient(post: (request: DataRequest) => void): DataClie
         case 'changes':
           settle(id);
           entry.resolve(message['changes']);
-          return;
-        case 'reveal':
-          settle(id);
-          entry.resolve(message['reveal']);
           return;
         case 'search':
         case 'locate':

@@ -1249,7 +1249,9 @@ src/diagram/
                            difference to the day before shares the assets the days before read
   pipeline/days.ts         how a request names a day (`{ tick }`, null for the snapshot's own day)
   pipeline/transfer.ts     a Scene answer or Layout of more than 1 000 rects crosses as transferred JSON bytes
-  pipeline/dataClient.ts   page side: one promise per request; a newer Scene request supersedes the older
+  pipeline/dataClient.ts   page side: one promise per request; a newer Scene request supersedes the older, a
+                           search the search before it, a search hit's locate the one before it (a jump link's
+                           locate, without offers, is never superseded)
   pipeline/diagram.worker.ts  the one worker script, started per role (data, layout, snapshots, imports,
                            demo), named by role (roles.ts); each instance imports only its role (dataRole.ts,
                            layoutRole.ts, demoRole.ts: "Try the demo" in a worker of its own)
@@ -1835,10 +1837,8 @@ phone.
 
 ```
 src/drawer/
-  types.ts             NodeDetails, RelationGroup, DanglingEntry, RevealAnswer: what the data worker answers
+  types.ts             NodeDetails, RelationGroup, DanglingEntry: what the data worker answers
   details.ts           worker side: nodeDetails(Graph, assets, project index, catalog) and groupRelations
-  reveal.ts            worker side: revealFlips, the flips that draw a node hidden in a collapsed zone (the loop
-                       of diagram/disclosure/openAround.ts, which search's locate shares)
   changes.ts           worker side: nodeChanges, what changed about a node between two days
   fieldDiff.ts         worker side: the small deep diff of `resource.data` behind "What changed"
   useWorkerAnswer.ts   page side: one data worker answer per key, a newer key aborting the older, the last 24 kept
@@ -1871,18 +1871,22 @@ the header's status line.
 
 **Where it comes from.** The data worker answers two requests of its protocol (`pipeline/protocol.ts`):
 `details` (a snapshot and a node id → `NodeDetails | null`, a lookup in the Graph it keeps; null for a bundle
-the scene draws, which is no asset) and `reveal` (a view, its viewport and a node id → `{ shown, flips }`).
-Selecting asks for the details only, never for a Scene or a layout. `revealFlips` asks the scene builder
-itself which Scene node shows the node (`report.selection.shownAs`, the chip it is collapsed into), toggles
-that chip's flip and builds again until the node shows as itself (about 18 ms per step on demo M), so the rule
-of what collapses where is never restated; toggling a collapsed zone's flip always opens it.
+the scene draws, which is no asset) and, for a jump link, search's `locate` without offers (a view, the day
+drawn, its viewport and a node id → drawn as itself, `expand` with the view's flips that draw it, or not
+drawn; section "Search"). Selecting asks for the details only, never for a Scene or a layout. The locate asks
+the scene builder itself which Scene node shows the node (`report.selection.shownAs`, the chip it is collapsed
+into), toggles that chip's flip and builds again until the node shows as itself
+(`diagram/disclosure/openAround.ts`, about 18 ms per step on demo M), so the rule of what collapses where is
+never restated; toggling a collapsed zone's flip always opens it. Without offers, no view but the one on
+screen is built for a target it leaves out, and the request is independent of a search's: a jump link and a
+search never cancel each other, in the page or in the worker.
 
 **Jump links.** Every target, the parent and the project are jump links: a target already drawn is selected
-(`actions.select`, history replaced); one hidden in a collapsed zone gets its `reveal` answer and the view is
-written with the new flips and the selection in one step (`actions.setView`, a history entry, as a flip is); a
-target the lens, a filter, the focus or the drill-in leaves out is selected anyway (its details show) and the
-status line says it is not drawn in this view. The reveal pan then brings the target into view once it is
-drawn.
+(`actions.select`, history replaced); one hidden in a collapsed zone is located and the view is written with
+the new flips and the selection in one step (`actions.setView`, a history entry, as a flip is); a target the
+lens, a filter, the focus or the drill-in leaves out is selected anyway (its details show) and the status line
+says it is not drawn in this view. An answer for a view that changed meanwhile changes nothing. The reveal pan
+then brings the target into view once it is drawn.
 
 **Keyboard and width.** Escape anywhere in the drawer and Close clear the selection and put focus back on the
 node on the canvas (its card becomes the drawing's tab stop; the canvas itself when it is not drawn). The
@@ -1916,15 +1920,16 @@ cap, either direction), `drawer/WhatChanged.test.tsx` (in the app with in-proces
 axe), `drawer/console.test.ts` (console URLs for thirteen catalog types from synthetic assets, missing
 variables, types without a template, assets outside any project), `drawer/details.test.ts` (grouping order,
 directions, the children cap, the subnet's network, dangling reasons, labels and tags, and demo M's bastion VM
-and its project), `drawer/reveal.test.ts` (flips on demo M, a node the lens leaves out, and
-`revealTransform`), `drawer/ResizeHandle.test.tsx` (the phone sheet's handle: its value, settling, closing,
+and its project), `drawer/ResizeHandle.test.tsx` (the phone sheet's handle: its value, settling, closing,
 the keys; a drag of either handle ending when the primary button comes up while another is held, and following
 its own pointer past a second finger and a hovering mouse), `drawer/DetailsDrawer.test.tsx` (the drawer in the
-app with in-process workers: facts, relations, console link, raw JSON, copy, a jump, Escape and focus, the
-handle and the preference, Drill in, axe in jsdom), and `e2e/tests/drawer.spec.ts` in Chromium on demo M (the
-bastion VM's subnet, network and disk relations and console page, the reveal pan, a jump to the subnet and one
-that flips chips open, raw JSON, Escape, resizing and its persistence across a reload, drilling into the
-project, axe in both themes).
+app with in-process workers: facts, relations, console link, raw JSON, copy, a jump, a jump into a collapsed
+zone with one locate without offers, Escape and focus, the handle and the preference, Drill in, axe in jsdom),
+`diagram/camera.test.ts` (the reveal pan, `revealTransform`), `diagram/pipeline/dataClient.test.ts` and
+`dataHandler.test.ts` (a jump link's locate and a search's, sent together, neither cancelling nor skipping the
+other), and `e2e/tests/drawer.spec.ts` in Chromium on demo M (the bastion VM's subnet, network and disk
+relations and console page, the reveal pan, a jump to the subnet and one that flips chips open, raw JSON,
+Escape, resizing and its persistence across a reload, drilling into the project, axe in both themes).
 
 ## Search (`src/search/`)
 
@@ -1949,14 +1954,16 @@ src/shell/topbar/SearchBox.tsx   the box (ui/Combobox); `/` focuses it
 ```
 
 **The index lives in the data worker**, next to the Graph it keeps for the view's snapshot (`search` and
-`locate` requests, `diagram/pipeline/protocol.ts`; each supersedes the one of its kind before it, in the page
-and in the worker). It is built once per Graph (a `WeakMap`: a new snapshot's Graph gets a new index), on the
-first request; the box sends an empty `search` when it gets focus so the first query does not wait for it. One
-document per node, except the organisation, which is the canvas: label, display name (the asset's
-`displayName`), last name segment, full name, IPs, domains, project id, type name ("Compute Engine instance"),
-asset type, product and the names of the project and folders above it, plus its kind (folder, project,
-network, container, resource), role, hidden flag, whether the default lens draws its type, and its icon key.
-Answers carry the icons of their results, resolved in the worker like a Scene's.
+`locate` requests, `diagram/pipeline/protocol.ts`; a search supersedes the search before it and a chosen
+result's locate (with offers) the one before it, in the page and in the worker, while the details drawer's
+jump links ask `locate` without offers and are never superseded). It is built once per Graph (a `WeakMap`: a
+new snapshot's Graph gets a new index), on the first request; the box sends an empty `search` when it gets
+focus so the first query does not wait for it. One document per node, except the organisation, which is the
+canvas: label, display name (the asset's `displayName`), last name segment, full name, IPs, domains, project
+id, type name ("Compute Engine instance"), asset type, product and the names of the project and folders above
+it, plus its kind (folder, project, network, container, resource), role, hidden flag, whether the default lens
+draws its type, and its icon key. Answers carry the icons of their results, resolved in the worker like a
+Scene's.
 
 **Ranking** (`rank.ts`). A node matches in the best of four tiers, and tiers never mix, so an exact id, IP,
 domain or project id always beats a fuzzy label:
@@ -2023,8 +2030,8 @@ view row is the diagram page's).
 **Choosing a result** (`useReveal.ts`). The data worker locates the node in the view in the hash
 (`locate.ts`): it builds the view with the node as its selection and reads `report.selection.shownAs`; while
 that is a chip, it toggles the chip's flip (what a click on it does) and builds again, one level deeper each
-time (`diagram/disclosure/openAround.ts`, the loop the drawer's jump links share). Then the decision table
-(`reveal.ts`):
+time (`diagram/disclosure/openAround.ts`; the drawer's jump links ask the same locate without offers). Then
+the decision table (`reveal.ts`):
 
 | The node in the current view | What happens |
 |---|---|
@@ -2055,7 +2062,9 @@ exact fields first, the default lens's types first; typos in labels, fewer in co
 queries; IPv4 exact, prefix and in a range; word starts; queries of several words; one typo next to a better
 match; limit and total), `reveal.test.ts` (the decision table row by row, and no empty or repeated offer for
 any combination of facts), `locate.test.ts` (demo S and M with the real catalog: shown, expanded and drawn,
-drill-in out of a root and a focus, the lens, hidden by role and by rule, excluded, filtered, unknown nodes),
+drill-in out of a root and a focus, the lens, hidden by role and by rule, excluded, filtered, unknown nodes;
+a jump link's locate without offers on demo M: the chips around a VM and a Shared VPC subnet opened, a node
+already drawn, one the lens leaves out with no offer tried),
 `service.test.ts` (documents, the e2e suite's four searches on demo M, icons, one index per Graph, parsers),
 `text.test.ts`, `shell/topbar/SearchBox.test.tsx` (the box in the app with in-process workers: `/`, grouped
 results with icons and the count, choosing, flips, the dialog and its offer, a text pasted over earlier
@@ -2125,7 +2134,7 @@ src/timeline/
 **What is drawn.** A day goes through the normal pipeline: the data worker builds its Graph (kept with the
 last three days' for the loaded snapshot) and Scene, and the layout worker lays it out, whose memo leaves the
 Scene's metadata out (`@gcportrait/layout`'s `layoutKey`), so two days whose Scenes differ only in their
-read time share one Layout. The requests that follow a Scene (choices, details, search, locate, reveal) name
+read time share one Layout. The requests that follow a Scene (choices, details, search, locate) name
 the day on screen, its `source.tick` (`selectDrawnDay` of `state/hooks.ts`), and the worker reads that day's
 Graph, so a request made while the next day is being prepared still
 answers for the day drawn; the page keeps their answers by day (the drawer's details, the pickers' choices,
