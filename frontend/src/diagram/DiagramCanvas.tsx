@@ -24,7 +24,7 @@
  * trace in view); and `onHover`, which tells the store which node is under the pointer. A jump, the pan that
  * follows keyboard focus and a zoom key's step keep the node in the part of the canvas the panels lying over it leave
  * in view (`clearRoom`): the drawer of a phone or a tablet with the disclosure bar's row in the part it leaves, or the
- * top bar's View or More sheet.
+ * top bar's View or More sheet with the disclosure bar on a tablet.
  *
  * A fit shows the whole drawing in that part too (`fitRoom`), so none of it lies under a panel: the fit a new view
  * opens with (whatever draws a new frame: a drill-in, a lens or a filter picked in the View sheet, a day whose drawing
@@ -38,11 +38,13 @@
  * closes, while a camera the person moved stays where they put it. The refit is the zoom keys' short glide (at once
  * with reduced motion), never a new layout; while the camera rests on a fit to the part the drawer leaves, the
  * drawer's reveal has nothing more to do, as the whole drawing is in view there. The canvas learns of a panel through
- * `panels`, a value the diagram page derives from the store (the open sheet, the drawer's open state), rather than by
- * observing the `data-canvas-overlay` elements: the prop changes in the same commit as the panel's `hidden` (and as
+ * `panels`, a value the diagram page derives from the store (the open sheet, the drawer's open state):
+ * the prop changes in the same commit as the panel's `hidden` (and as
  * the disclosure bar's marker, which the bar takes from the same state), so the refit (a layout effect) measures the
  * panel as it now is, before the browser paints and before the drawer's reveal asks for its pan, where a mutation or
- * resize observer would answer after both; and the canvas still knows nothing of the store. On a desktop nothing lies
+ * resize observer would answer after both. A ResizeObserver on the marked overlays catches later size changes, such
+ * as a disclosure notice appearing or being dismissed, and refits under the same resting-camera guard. The canvas
+ * still knows nothing of the store. On a desktop nothing lies
  * over the canvas: every fit fills it, and a panel changes nothing.
  *
  * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
@@ -859,6 +861,17 @@ export function DiagramCanvas({
   // fit above, which a new view drawn in the same commit has made for the panels as they are already.
   useLayoutEffect(() => {
     refit();
+    const svg = svgRef.current;
+    if (svg === null || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(() => {
+      refit();
+    });
+    for (const overlay of svg.ownerDocument.querySelectorAll('[data-canvas-overlay], [data-canvas-resize]')) {
+      observer.observe(overlay, { box: 'border-box' });
+    }
+    return () => {
+      observer.disconnect();
+    };
   }, [panels]);
 
   // The painter and the pointer and keyboard listeners, once per drawing. A theme or settings change re-renders

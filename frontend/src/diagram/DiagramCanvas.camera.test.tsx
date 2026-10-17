@@ -110,6 +110,38 @@ const panel = (box: Box, closed: boolean): HTMLElement => {
   return element;
 };
 
+function panelResizes() {
+  const observers: { readonly notify: () => void; readonly targets: Set<Element> }[] = [];
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      private readonly entry: (typeof observers)[number];
+      constructor(notify: () => void) {
+        this.entry = { notify, targets: new Set() };
+        observers.push(this.entry);
+      }
+      observe(target: Element): void {
+        this.entry.targets.add(target);
+      }
+      disconnect(): void {
+        this.entry.targets.clear();
+      }
+    },
+  );
+  onTestFinished(() => {
+    vi.unstubAllGlobals();
+  });
+  return {
+    notify(target: Element): void {
+      for (const observer of observers) {
+        if (observer.targets.has(target)) observer.notify();
+      }
+    },
+    watching: (target: Element): number =>
+      observers.filter((observer) => observer.targets.has(target)).length,
+  };
+}
+
 /** Puts the canvas at the window's top-left corner, 1280 × 800 (jsdom lays nothing out). */
 const atTopLeft = (svg: SVGSVGElement): void => {
   svg.getBoundingClientRect = () => DOMRect.fromRect({ x: 0, y: 0, width: 1280, height: 800 });
@@ -193,6 +225,17 @@ describe('the room a jump keeps the node in', () => {
     const node = onScreen(svg, 'run/web');
     expect(node.x).toBeCloseTo(888 / 2);
     expect(node.y).toBeCloseTo(400);
+  });
+
+  it('keeps a jump above the disclosure bar beside a tablet’s open View or More sheet', () => {
+    const svg = jumpTo('run/web', [
+      { x: 888, y: 0, width: 384, height: 520 },
+      { x: 12, y: 734, width: 400, height: 54 },
+    ]);
+    const node = onScreen(svg, 'run/web');
+    expect(node.x).toBeCloseTo(888 / 2);
+    expect(node.y).toBeCloseTo(734 / 2);
+    expect(node.bottom).toBeLessThan(734);
   });
 
   it('keeps the node clear of a drawer along the canvas’s right edge (a tablet’s)', () => {
@@ -400,6 +443,89 @@ describe('the refit when a panel over the canvas opens or closes', () => {
     const { k, x, y } = cameraOf(svg);
     return { k, x, y };
   };
+
+  it('refits when the disclosure notice grows or is dismissed, without a new panels value or drawing', () => {
+    reduceMotion();
+    const resizes = panelResizes();
+    const drawer = panel(DRAWER, true);
+    let box = { x: 8, y: 316, width: 1264, height: 54 };
+    const disclosure = panel(box, true);
+    disclosure.getBoundingClientRect = () => DOMRect.fromRect(box);
+    const { container, rerender, unmount } = render(<DiagramCanvas {...props({ panels: '' })} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    drawer.hidden = false;
+    disclosure.hidden = false;
+    rerender(<DiagramCanvas {...props({ panels: 'drawer' })} />);
+    expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 316 });
+    const drawing = svg.getAttribute('data-drawing');
+    box = { ...box, y: 250, height: 120 };
+    resizes.notify(disclosure);
+    expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 250 });
+    box = { ...box, y: 316, height: 54 };
+    resizes.notify(disclosure);
+    expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 316 });
+    expect(svg.getAttribute('data-drawing')).toBe(drawing);
+    expect(resizes.watching(disclosure)).toBe(1);
+    unmount();
+    expect(resizes.watching(disclosure)).toBe(0);
+    expect(resizes.watching(drawer)).toBe(0);
+  });
+
+  it('leaves a manually moved camera alone when an overlay resizes', () => {
+    reduceMotion();
+    const resizes = panelResizes();
+    const sheet = panel(SHEET, false);
+    const { container } = render(<DiagramCanvas {...props({ panels: 'view' })} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    svg.focus();
+    fireEvent.keyDown(svg, { key: '0' });
+    pan(svg, 40);
+    const moved = camera(svg);
+    sheet.getBoundingClientRect = () => DOMRect.fromRect({ ...SHEET, height: 600 });
+    resizes.notify(sheet);
+    expect(camera(svg)).toEqual(moved);
+  });
+
+  it('observes disclosure notices after a desktop drawer becomes a tablet overlay without changing panels', () => {
+    reduceMotion();
+    const resizes = panelResizes();
+    const drawer = panel({ x: 1280, y: 0, width: 400, height: 800 }, false);
+    let box = { x: 8, y: 734, width: 1264, height: 54 };
+    const disclosure = panel(box, false);
+    disclosure.removeAttribute('data-canvas-overlay');
+    disclosure.setAttribute('data-canvas-resize', '');
+    disclosure.getBoundingClientRect = () => DOMRect.fromRect(box);
+    const { container } = render(<DiagramCanvas {...props({ panels: 'drawer' })} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    sized(svg, 820, 800);
+    drawer.getBoundingClientRect = () => DOMRect.fromRect({ x: 410, y: 0, width: 410, height: 800 });
+    box = { x: 12, y: 734, width: 386, height: 54 };
+    disclosure.setAttribute('data-canvas-overlay', '');
+    resizes.notify(drawer);
+    expectFittedTo(svg, { x: 0, y: 0, width: 410, height: 734 });
+    box = { ...box, y: 650, height: 138 };
+    resizes.notify(disclosure);
+    expectFittedTo(svg, { x: 0, y: 0, width: 410, height: 650 });
+  });
+
+  it('does not refit for a resized disclosure bar at rest, where it is not a marked overlay', () => {
+    reduceMotion();
+    const resizes = panelResizes();
+    const disclosure = panel({ x: 8, y: 734, width: 1264, height: 54 }, false);
+    disclosure.removeAttribute('data-canvas-overlay');
+    disclosure.setAttribute('data-canvas-resize', '');
+    const { container } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    const fitted = camera(svg);
+    disclosure.getBoundingClientRect = () => DOMRect.fromRect({ x: 8, y: 600, width: 1264, height: 188 });
+    resizes.notify(disclosure);
+    expect(camera(svg)).toEqual(fitted);
+    expect(resizes.watching(disclosure)).toBe(1);
+  });
 
   it('fits a drawing resting on its fit to the part a sheet that opens leaves, and to the canvas once it closes', () => {
     reduceMotion();

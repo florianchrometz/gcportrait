@@ -3,8 +3,8 @@
  * The diagram's progressive-disclosure bar (skill gcp-diagram-layout §6), floating at the
  * bottom right of the canvas (on a tablet the bottom left, on a phone a row above the details sheet, hidden while the
  * top bar's View or More sheet is open; clear of the drawer either way, DisclosureBar.module.css). While the details
- * drawer lies over the canvas (a phone's sheet, a tablet's panel) the bar is in the part of the canvas the drawer
- * leaves, and marked as a panel over the canvas (`data-canvas-overlay`), so a camera jump and a fit keep the drawing
+ * drawer lies over the canvas (a phone's sheet, a tablet's panel), or a tablet's View or More sheet is open, the bar
+ * is marked as a panel over the canvas (`data-canvas-overlay`), so a camera jump and a fit keep the drawing
  * clear of it too (diagram/DiagramCanvas, `clearRoom`). It holds "N of M shown" (the
  * rects drawn, of those the view holds at detail `all`), "Expand all" (opens the shallowest collapsed tier and reopens
  * zones closed by hand) and "Collapse all" (closes every zone opened by hand, keeps those closed by hand, and returns
@@ -53,6 +53,7 @@ export function DisclosureBar(): ReactElement | null {
   const drawerOpen = useAppState((state) => state.ui.drawerOpen && state.selection.selected !== null);
   const screen = useScreen();
   const overDrawer = drawerOpen && screen !== 'desktop';
+  const overlay = overDrawer || (underSheet && screen === 'tablet');
 
   const expandHint = canExpand
     ? nextLevel === null
@@ -67,7 +68,7 @@ export function DisclosureBar(): ReactElement | null {
   // otherwise.
   return (
     <div className={styles.frame} data-top-sheet={underSheet ? '' : undefined}>
-      <div className={styles.bar} data-canvas-overlay={overDrawer ? '' : undefined}>
+      <div className={styles.bar} data-canvas-overlay={overlay ? '' : undefined} data-canvas-resize="">
         {/* A live region kept in the DOM while empty, so a new notice is announced. */}
         <div role="status" className={styles.live}>
           {notice === null ? null : (

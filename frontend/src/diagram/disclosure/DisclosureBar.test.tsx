@@ -137,4 +137,27 @@ describe('the disclosure bar', () => {
   it('writes the count with thousands separators', () => {
     expect(shownText(164, 2497)).toBe('164 of 2,497 shown');
   });
+
+  it.each(['View', 'More'] as const)(
+    'counts the bar in the camera room while a tablet’s %s sheet is open',
+    async (name) => {
+      const viewport = installViewport(820);
+      try {
+        const { container } = renderApp('/diagram#snapshot=demo:S', {
+          diagramWorkers: createInProcessWorkers,
+        });
+        await drawn(container);
+        await shows(' shown');
+        expect(bar().closest('[data-canvas-overlay]')).toBeNull();
+        const button = within(screen.getByRole('banner')).getByRole('button', { name });
+        fireEvent.click(button);
+        expect(bar().closest('[data-canvas-overlay]')).not.toBeNull();
+        fireEvent.click(button);
+        expect(bar().closest('[data-canvas-overlay]')).toBeNull();
+      } finally {
+        viewport.uninstall();
+      }
+    },
+    60_000,
+  );
 });

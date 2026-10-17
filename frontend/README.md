@@ -251,9 +251,11 @@ filled again once the drawer closes, and a camera the person moved stays where t
 of a panel opening or closing through this prop: the prop changes in
 the same commit as the panel's `hidden`, so the refit, a layout effect, measures the panel as it now is,
 before the browser paints and before the drawer's reveal asks for its pan, both of which a mutation or resize
-observer would answer after. A ResizeObserver watches the marked overlays' sizes, so a disclosure notice
-appearing or being dismissed fits the drawing to the new room under the same resting-camera guard. A camera
-the person moved stays where they put it. The bar at rest is unmarked and does not change the fit.
+observer would answer after. A ResizeObserver watches the marked overlays' sizes and the disclosure bar
+through its stable `data-canvas-resize` marker, including across breakpoint changes that keep the same open
+panel. A disclosure notice appearing or being dismissed fits the drawing to the new room under the same
+resting-camera guard. A camera the person moved stays where they put it. Only `data-canvas-overlay` marks
+occupied room; the bar at rest has no such marker and does not change the fit.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH

@@ -1179,6 +1179,81 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
   });
 }
 
+for (const theme of ['light', 'dark'] as const) {
+  test(`on a tablet, the disclosure bar and its changing notice stay clear of the fitted drawing (${theme})`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    let svg = await openDiagram(page, DIAGRAMS[0]);
+    const row = page.getByRole('group', { name: 'Expand and collapse' });
+    const bar = row.locator('..');
+    const transform = svg.locator('.dg-viewport');
+    const atRest = await transform.getAttribute('transform');
+    if (atRest === null) throw new Error('no camera');
+    await expect(bar).not.toHaveAttribute('data-canvas-overlay');
+    for (const name of ['View', 'More'] as const) {
+      const sheet = await openSheet(page, name, 'click');
+      await expect(bar).toHaveAttribute('data-canvas-overlay', '');
+      await cameraSettled(svg);
+      const drawing = await boxOf(svg.locator('.dg-background'));
+      for (const overlay of [sheet, bar]) {
+        const box = await boxOf(overlay);
+        const overlapWidth =
+          Math.min(drawing.x + drawing.width, box.x + box.width) - Math.max(drawing.x, box.x);
+        const overlapHeight =
+          Math.min(drawing.y + drawing.height, box.y + box.height) - Math.max(drawing.y, box.y);
+        expect(
+          Math.min(overlapWidth, overlapHeight),
+          `${name}: drawing clear of overlay`,
+        ).toBeLessThanOrEqual(0.5);
+      }
+      await expect(transform).not.toHaveAttribute('transform', atRest);
+      await closeSheet(page, name);
+      await expect(bar).not.toHaveAttribute('data-canvas-overlay');
+      await expect(transform).toHaveAttribute('transform', atRest);
+    }
+
+    const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
+    const flips = Array.from({ length: 48 }, (_, index) => `t${String(index)}`);
+    svg = await openDiagram(
+      page,
+      `/diagram#snapshot=demo:S&detail=folders&selection=${project}&flips=${flips.join(',')}`,
+    );
+    const details = page.getByRole('complementary', { name: 'Details' });
+    await expect(details).toBeVisible();
+    const fittedAboveBar = async (): Promise<void> => {
+      await cameraSettled(svg);
+      const canvas = await boxOf(svg);
+      const drawer = await boxOf(details);
+      const disclosure = await boxOf(bar);
+      const drawing = await boxOf(svg.locator('.dg-background'));
+      const width = drawer.x - canvas.x;
+      const height = disclosure.y - canvas.y;
+      expect(drawing.x + drawing.width / 2).toBeCloseTo(canvas.x + width / 2, 0);
+      expect(drawing.y + drawing.height / 2).toBeCloseTo(canvas.y + height / 2, 0);
+      expect(drawing.y + drawing.height).toBeLessThanOrEqual(disclosure.y + 0.5);
+      expect(Math.max(drawing.width / (width - 32), drawing.height / (height - 32))).toBeCloseTo(1, 2);
+    };
+    await fittedAboveBar();
+    const beforeNotice = await svg.locator('.dg-viewport').getAttribute('transform');
+    await page.evaluate(
+      (nextFlips) => {
+        window.location.hash = window.location.hash.replace(/flips=[^&]*/, `flips=${nextFlips.join(',')}`);
+      },
+      [...flips.slice(1), 't48'],
+    );
+    await expect(page.getByText(/At most 48 zones/)).toBeVisible();
+    await fittedAboveBar();
+    if (beforeNotice === null) throw new Error('no camera');
+    await expect(svg.locator('.dg-viewport')).not.toHaveAttribute('transform', beforeNotice);
+    await page.getByRole('button', { name: 'Dismiss', exact: true }).click();
+    await expect(page.getByText(/At most 48 zones/)).toBeHidden();
+    await fittedAboveBar();
+    await expect(svg.locator('.dg-viewport')).toHaveAttribute('transform', beforeNotice);
+  });
+}
+
 test('the Snapshots page with a snapshot stored and a day cached: a card per row on a phone, its tables whole on a tablet, nothing scrolling sideways, at every size and in both themes', async ({
   page,
 }, testInfo) => {
