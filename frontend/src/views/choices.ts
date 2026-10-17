@@ -14,14 +14,15 @@
  * hierarchy's types come from the graph package, zone kinds and products from the catalog.
  */
 import { FOLDER_TYPE, ORGANIZATION_TYPE, PROJECT_TYPE, isVirtualNode } from '@gcportrait/graph';
-import type {
-  Catalog,
-  Graph,
-  GraphNode,
-  ScopeKind,
-  Snapshot,
-  SnapshotRef,
-  SnapshotSourceKind,
+import {
+  regionOfZone,
+  type Catalog,
+  type Graph,
+  type GraphNode,
+  type ScopeKind,
+  type Snapshot,
+  type SnapshotRef,
+  type SnapshotSourceKind,
 } from '@gcportrait/model';
 
 import { cardTypeName } from '../diagram/names';
@@ -112,8 +113,6 @@ export interface ViewChoices {
 export type ChoicesCatalog = Pick<Catalog, 'types' | 'products'>;
 
 const HIERARCHY = new Set([ORGANIZATION_TYPE, FOLDER_TYPE, PROJECT_TYPE]);
-/** A zone's location: `europe-west3-a` is in `europe-west3` (the regions filter's own rule). */
-const ZONE = /^([a-z]+-[a-z]+[0-9]+)-[a-z0-9]+$/;
 
 function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -130,10 +129,13 @@ function typeNameOf(node: GraphNode): string {
   return cardTypeName(node.product, node.assetType);
 }
 
-/** The region a location belongs to (lower-case), or the location itself. */
+/**
+ * The region a location belongs to (lower-case), or the location itself: `europe-west3-a` and
+ * `us-central1-ai1a` are in `europe-west3` and `us-central1`, by the rule the regions filter and the region
+ * zones follow (`regionOfZone` of `@gcportrait/model`).
+ */
 export function regionOf(location: string): string {
-  const lower = location.toLowerCase();
-  return ZONE.exec(lower)?.[1] ?? lower;
+  return regionOfZone(location.toLowerCase());
 }
 
 export function viewChoices(

@@ -10,13 +10,15 @@
  */
 import {
   aliasKey,
+  isRegion,
+  isZone,
+  regionOfZone,
   type Asset,
   type NormaliserName,
   type ProjectIndex,
   type RelationTarget,
 } from '@gcportrait/model';
 import { assetProject, projectSegment, resolveProject } from './project.js';
-import { regionOfZone } from './template.js';
 
 export interface NormaliserContext {
   /** The asset the value was read from. */
@@ -49,7 +51,6 @@ const EMAIL = /^[^@\s/:]+@[^@\s/:]+\.[^@\s/:]+$/;
 const BUCKET = /^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$/;
 const DATASET = /^[A-Za-z0-9_]+$/;
 const TABLE = /^[^/\s.]+$/;
-const REGION = /^[a-z]+-[a-z]+[0-9]+$/;
 const SQL_INSTANCE = /^[a-z][a-z0-9-]*$/;
 
 function named(name: string): RelationTarget | undefined {
@@ -300,7 +301,7 @@ function cloudSqlConnectionName(value: unknown): RelationTarget | undefined {
   const [project = '', ...rest] = parts;
   const instance = rest.at(-1) ?? '';
   const region = rest.length === 2 ? (rest[0] ?? '') : undefined;
-  if (rest.length < 1 || rest.length > 2 || (region !== undefined && !REGION.test(region))) return undefined;
+  if (rest.length < 1 || rest.length > 2 || (region !== undefined && !isRegion(region))) return undefined;
   return PROJECT_REF.test(project) && SQL_INSTANCE.test(instance)
     ? named(`${CLOUD_SQL_INSTANCE_PREFIX}${project}/instances/${instance}`)
     : undefined;
@@ -378,7 +379,6 @@ function projectNumberOrId(value: unknown, ctx: NormaliserContext): RelationTarg
 // ---------------------------------------------------------------------------------------------------------
 // Sibling names
 
-const ZONE_NAME = /^[a-z]+-[a-z]+[0-9]+-[a-z]$/;
 const PATH_SEGMENT = /^[A-Za-z0-9_.~:@+-]+$/;
 const LOCATION_COLLECTIONS = ['locations', 'regions', 'zones'] as const;
 
@@ -505,9 +505,7 @@ function placeholder(name: string, ref: SiblingReference, ctx: NormaliserContext
       const value =
         ref.keys.get('zone') ??
         (ref.path === undefined ? undefined : segmentAfter(ref.path, ['zones'])) ??
-        (ctx.asset.location !== undefined && ZONE_NAME.test(ctx.asset.location)
-          ? ctx.asset.location
-          : undefined) ??
+        (ctx.asset.location !== undefined && isZone(ctx.asset.location) ? ctx.asset.location : undefined) ??
         segmentAfter(own, ['zones']);
       return value;
     }

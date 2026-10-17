@@ -14,7 +14,8 @@
  * - lens and type filters: every drawn node's type is in the lens or `includeTypes`, not in `excludeTypes`;
  *   hidden-by-default nodes only with `showHidden` or `includeTypes`, and a hidden type's `hiddenWhen`
  *   matches only with `showHidden`; identities as `showIdentities` says;
- * - location, project and folder filters on every drawn node;
+ * - location, project and folder filters on every drawn node (a zone counts as its region by `zoneRegion`,
+ *   the one zone rule of @gcportrait/model);
  * - edges: only kinds the view draws; every scene edge stands for at least one graph relation between nodes
  *   the scene shows (or chips that hold them; edges from inside a bundle or a region-zone chip are not traced,
  *   as neither is a graph ancestor); an `attaches` edge never points at its node's own container;
@@ -29,6 +30,7 @@
 import { matchesTypePattern } from '@gcportrait/catalog';
 import {
   SceneBuildSchema,
+  zoneRegion,
   type Catalog,
   type Graph,
   type GraphNode,
@@ -212,8 +214,7 @@ export function violations(graph: Graph, spec: ViewSpec, catalog: Catalog, build
     if (regions !== undefined && !hierarchy) {
       const location = gnode.location?.toLowerCase();
       const structural = location === undefined || (location === 'global' && gnode.role === 'container');
-      const region =
-        location === undefined ? undefined : /^([a-z]+-[a-z]+[0-9]+)-[a-z0-9]+$/.exec(location)?.[1];
+      const region = location === undefined ? undefined : zoneRegion(location);
       if (!structural && !regions.includes(location) && (region === undefined || !regions.includes(region))) {
         fail(`${id}: location ${location} not in ${regions.join(',')}`);
       }

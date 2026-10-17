@@ -137,6 +137,11 @@ describe('public surface', () => {
         'isLensId',
         'isRelationKind',
         'isSnapshotRef',
+        // locations: the zone and region rule
+        'isRegion',
+        'isZone',
+        'regionOfZone',
+        'zoneRegion',
         // command variables: the registry (zod-free) and its row schema
         'COMMAND_VARIABLES',
         'VARIABLE_NAME_PATTERN',

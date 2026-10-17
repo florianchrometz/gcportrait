@@ -11,6 +11,8 @@
  *   (products/apphub.googleapis.com.yaml). The test application `shop` lives in demo-svc-1 and registers that
  *   project's `orders-api` Cloud Run service and `orders-db` Cloud SQL instance, and demo-web-1's `web-mig`
  *   group.
+ * - An AI zone: the composition table's zone rows add a Compute Engine disk to demo-web-1 in
+ *   `us-central1-ai1a`, a zone whose suffix is longer than one letter (the demo's zones all end in one).
  *
  * The catalog maps every type these tests need, so there are no test-only stand-ins: the views are checked
  * against the real rules.
@@ -32,14 +34,50 @@ export const ORDERS_DB = `//cloudsql.googleapis.com/projects/${SVC_PROJECT}/inst
 export const WEB_MIG =
   '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instanceGroups/web-mig';
 
-/** The App Hub application `shop` in demo-svc-1, placed like the demo places assets of that project. */
-export function applicationAssets(snapshot: Snapshot): Asset[] {
+const WEB_PROJECT = 'demo-web-1';
+/** An AI zone of us-central1 (Compute Engine's AI zones: the region, `ai`, a group number and a letter). */
+export const AI_ZONE = 'us-central1-ai1a';
+export const AI_ZONE_DISK = `//compute.googleapis.com/projects/${WEB_PROJECT}/zones/${AI_ZONE}/disks/train-scratch`;
+
+/** The demo's Resource Manager project asset of a project id. */
+function projectAsset(snapshot: Snapshot, projectId: string): Asset {
   const project = snapshot.assets.find(
     (asset) =>
       asset.assetType === 'cloudresourcemanager.googleapis.com/Project' &&
-      (asset.data as { projectId?: unknown }).projectId === SVC_PROJECT,
+      (asset.data as { projectId?: unknown }).projectId === projectId,
   );
-  if (project === undefined) throw new Error(`the demo has no ${SVC_PROJECT}`);
+  if (project === undefined) throw new Error(`the demo has no ${projectId}`);
+  return project;
+}
+
+/** A zonal disk of demo-web-1 in the AI zone, shaped like the demo's own disks. */
+export function aiZoneAssets(snapshot: Snapshot): Asset[] {
+  const project = projectAsset(snapshot, WEB_PROJECT);
+  const zone = `https://www.googleapis.com/compute/v1/projects/${WEB_PROJECT}/zones/${AI_ZONE}`;
+  return [
+    {
+      name: AI_ZONE_DISK,
+      assetType: 'compute.googleapis.com/Disk',
+      parent: project.name,
+      ancestors: project.ancestors,
+      location: AI_ZONE,
+      updateTime: '2026-09-01T09:00:00Z',
+      data: {
+        kind: 'compute#disk',
+        name: 'train-scratch',
+        selfLink: `${zone}/disks/train-scratch`,
+        zone,
+        sizeGb: '2048',
+        status: 'READY',
+        type: `${zone}/diskTypes/hyperdisk-ml`,
+      },
+    },
+  ];
+}
+
+/** The App Hub application `shop` in demo-svc-1, placed like the demo places assets of that project. */
+export function applicationAssets(snapshot: Snapshot): Asset[] {
+  const project = projectAsset(snapshot, SVC_PROJECT);
   const ancestors = project.ancestors;
   const asset = (name: string, assetType: string, parent: string, data: Record<string, unknown>): Asset => ({
     name,
@@ -105,17 +143,22 @@ const builds = new Map<string, GraphBuild>();
 
 /**
  * The demo organisation's validated graph build with the real catalog, built once per size and choice: with the
- * App Hub application `shop` (the scene tests), or with `application: false` the demo data alone.
+ * App Hub application `shop` (the scene tests), or with `application: false` the demo data alone; with
+ * `aiZone: true` also the disk in the AI zone.
  */
 export function demoGraphBuild(
   size: DemoSize,
-  { application = true }: { readonly application?: boolean } = {},
+  { application = true, aiZone = false }: { readonly application?: boolean; readonly aiZone?: boolean } = {},
 ): GraphBuild {
-  const key = `${size}${application ? ' with the application' : ''}`;
+  const key = `${size}${application ? ' with the application' : ''}${aiZone ? ' with the AI zone' : ''}`;
   let build = builds.get(key);
   if (build === undefined) {
     const snapshot = demoSnapshot(size);
-    const assets = application ? [...snapshot.assets, ...applicationAssets(snapshot)] : snapshot.assets;
+    const assets = [
+      ...snapshot.assets,
+      ...(application ? applicationAssets(snapshot) : []),
+      ...(aiZone ? aiZoneAssets(snapshot) : []),
+    ];
     build = GraphBuildSchema.parse(buildGraphWithReport({ assets }, REAL_CATALOG));
     builds.set(key, build);
   }

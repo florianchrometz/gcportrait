@@ -3,14 +3,7 @@ import { TemplateSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { expectSyntaxError } from '../testing/syntax.js';
 import { CatalogSyntaxError } from './syntax.js';
-import {
-  lastSegment,
-  parseTemplate,
-  regionOfZone,
-  renderDisplay,
-  renderTemplate,
-  type TemplateScope,
-} from './template.js';
+import { lastSegment, parseTemplate, renderDisplay, renderTemplate, type TemplateScope } from './template.js';
 
 const scope: TemplateScope = {
   name: '//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instances/Web-1',
@@ -257,13 +250,23 @@ describe('helpers', () => {
   ])('lastSegment(%j) = %j', (value, expected) => {
     expect(lastSegment(value)).toBe(expected);
   });
+});
 
+describe('regionFromName', () => {
+  // A zone becomes its region by the one rule of @gcportrait/model (`regionOfZone`), AI zones included.
   it.each([
-    ['europe-west3-a', 'europe-west3'],
+    ['//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instances/web-1', 'europe-west3'],
+    ['//compute.googleapis.com/projects/demo-app-1/zones/us-central1-ai1a/instances/train-1', 'us-central1'],
+    ['projects/demo-app-1/regions/europe-west3', 'europe-west3'],
+    ['us-central1-ai1a', 'us-central1'],
     ['us-central1-f', 'us-central1'],
     ['europe-west3', 'europe-west3'],
+    ['nam4', 'nam4'],
     ['EU', 'EU'],
-  ])('regionOfZone(%j) = %j', (value, expected) => {
-    expect(regionOfZone(value)).toBe(expected);
+    ['projects/demo-app-1', ''],
+  ])('%j → %j', (value, expected) => {
+    expect(renderTemplate('{{data.value | regionFromName}}', { ...scope, data: { value } }).text).toBe(
+      expected,
+    );
   });
 });

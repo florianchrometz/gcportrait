@@ -52,6 +52,22 @@ location.hash = encodeViewSpec({ ...spec, lens: 'networking' });
 | `DateSchema` | a real calendar date `YYYY-MM-DD` (`2026-02-29` is rejected) |
 | `CountSchema` | a non-negative integer |
 
+## Locations
+
+The one rule of what a region and a zone are, and which region holds a zone (AGENTS.md, Data and graph
+semantics: one source of truth per concept). The catalog's `regionFromName` filter and `siblingName`
+placeholders, the graph's virtual region zones and its regions filter, and the app's filter choices read a
+location only through these, so a resource lies in the same region for the filter as in the drawing. They
+live in `schemas/locations.ts`, which imports no zod, so the app's UI thread may use them too. A name matches
+as Cloud Asset Inventory writes it, in lower case.
+
+| Export | What |
+|---|---|
+| `isRegion(location)` | a region, `<geography>-<area><n>`: `europe-west3`, `northamerica-northeast1` |
+| `isZone(location)` | a zone: its region, a hyphen and a suffix of lower-case letters and digits, `europe-west3-b` or an AI zone such as `us-central1-ai1a` |
+| `zoneRegion(location)` | the region a zone lies in (`us-central1-ai1a` → `us-central1`); undefined for any other location |
+| `regionOfZone(location)` | a zone's region; any other location unchanged (`global`, multi-regions such as `us` and `eu`, configurations such as `nam4`) |
+
 ## Asset and Snapshot
 
 | Export | What |

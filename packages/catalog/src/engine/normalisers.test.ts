@@ -43,6 +43,13 @@ const VM = asset(
   {},
   { location: 'europe-west3-a' },
 );
+/** A TPU node in an AI zone: its name holds the zone under `locations/`, not `zones/`. */
+const TPU = asset(
+  '//tpu.googleapis.com/projects/demo-app-1/locations/us-central1-ai1a/nodes/train',
+  'tpu.googleapis.com/Node',
+  {},
+  { location: 'us-central1-ai1a' },
+);
 const PSA = asset(
   '//servicenetworking.googleapis.com/projects/10000000001/global/networks/core/connections/servicenetworking-googleapis-com',
   'servicenetworking.googleapis.com/Connection',
@@ -588,6 +595,23 @@ const CASES: Case[] = [
       service: 'compute.googleapis.com',
       pattern: 'projects/{project}/zones/{zone}/nodeGroups/{id}',
     },
+  ],
+  // An AI zone is a zone of its region (`isZone`, `regionOfZone` of @gcportrait/model).
+  [
+    'siblingName',
+    'tenant-group',
+    '//compute.googleapis.com/projects/demo-app-1/zones/us-central1-ai1a/nodeGroups/tenant-group',
+    {
+      asset: TPU,
+      service: 'compute.googleapis.com',
+      pattern: 'projects/{project}/zones/{zone}/nodeGroups/{id}',
+    },
+  ],
+  [
+    'siblingName',
+    'trainer',
+    '//run.googleapis.com/projects/demo-app-1/locations/us-central1/services/trainer',
+    { asset: TPU, pattern: 'projects/{project}/locations/{region}/services/{id}' },
   ],
   [
     'siblingName',

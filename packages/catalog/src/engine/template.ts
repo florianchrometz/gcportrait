@@ -12,7 +12,8 @@
  * - `lastSegment`: the text after the last `/`, ignoring trailing slashes (`a/b/c/` → `c`).
  * - `projectFromName`: the segment after `projects/` (`//x.googleapis.com/projects/p/…` → `p`).
  * - `regionFromName`: the segment after `regions/` or `locations/`, or the region of a zone after `zones/`;
- *   a bare zone (`europe-west3-a`) becomes its region, any other bare value is kept.
+ *   a bare zone (`europe-west3-a`, `us-central1-ai1a`) becomes its region (`regionOfZone` of
+ *   `@gcportrait/model`), any other bare value is kept.
  * - `short(n)`: at most n characters (graphemes); longer text keeps n − 1 and ends with `…`.
  * - `lower`: lower case.
  * - `parentSegment(collection)`: the segment after the first `<collection>/` in the value, so a name can
@@ -28,6 +29,7 @@
  * template, and a part whose expressions are all missing is dropped with its literal text, so a missing count
  * never leaves its unit word behind (`{{data.sizeGb}} GB · {{location}}` → `europe-west3`).
  */
+import { regionOfZone } from '@gcportrait/model';
 import { CatalogSyntaxError } from './syntax.js';
 
 /** A variable an expression reads: `name`, …, or `data` with its steps. */
@@ -145,8 +147,6 @@ export function parseTemplate(source: string): Template {
   return { source, parts };
 }
 
-const ZONE = /^([a-z]+-[a-z]+[0-9]+)-[a-z]$/;
-
 /** Splits text into user-perceived characters, so `short(n)` never cuts an emoji or accent in half. */
 const GRAPHEMES = new Intl.Segmenter('en', { granularity: 'grapheme' });
 
@@ -160,11 +160,6 @@ function segmentAfter(value: string, collections: readonly string[]): string | u
     }
   }
   return undefined;
-}
-
-/** `europe-west3-a` → `europe-west3`; anything else unchanged. */
-export function regionOfZone(value: string): string {
-  return ZONE.exec(value)?.[1] ?? value;
 }
 
 /** The last path segment, ignoring trailing slashes. */

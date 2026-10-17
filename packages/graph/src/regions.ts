@@ -4,13 +4,12 @@
  * Only built when the view asks for them (`showRegions`). They group a project's direct children by
  * `location` — a zonal resource in Project › region › zone, a regional or multi-regional one in Project ›
  * region — and never touch what sits deeper: a VPC is global and stays under the project, its subnets and
- * everything nested in them stay where they are.
+ * everything nested in them stay where they are. What is a zone and which region holds it is the one rule
+ * of `@gcportrait/model` (`isZone`, `regionOfZone`, `isRegion`), which the regions filter follows too.
  */
-import type { GraphNode } from '@gcportrait/model';
+import { isRegion, isZone, regionOfZone, type GraphNode } from '@gcportrait/model';
 import { PROJECT_TYPE, REGION_TYPE, VIRTUAL_SERVICE, ZONE_TYPE } from './structure.js';
 
-const ZONE = /^([a-z]+-[a-z]+[0-9]+)-[a-z]$/;
-const REGION = /^[a-z]+-[a-z]+[0-9]+$/;
 const LOCATION = /^[a-z0-9][a-z0-9-]*$/;
 
 function virtualNode(
@@ -60,16 +59,16 @@ export function addRegionContainers(
     const location = nodes.get(id)?.location?.toLowerCase();
     if (projectId === undefined || project?.assetType !== PROJECT_TYPE || location === undefined) continue;
     if (location === 'global' || !LOCATION.test(location)) continue;
-    const zone = ZONE.exec(location);
-    const region = zone?.[1] ?? location;
+    const zonal = isZone(location);
+    const region = regionOfZone(location);
     const projectKey =
       project.projectId ?? project.projectNumber ?? projectId.slice(projectId.lastIndexOf('/') + 1);
     const regionId = `//${VIRTUAL_SERVICE}/projects/${projectKey}/locations/${region}`;
     ensure(
-      virtualNode(regionId, REGION_TYPE, region, REGION.test(region) ? 'region' : 'multi-region', project),
+      virtualNode(regionId, REGION_TYPE, region, isRegion(region) ? 'region' : 'multi-region', project),
       projectId,
     );
-    if (zone === null) {
+    if (!zonal) {
       parent.set(id, regionId);
       continue;
     }

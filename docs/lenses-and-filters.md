@@ -558,13 +558,13 @@ active ones ("Filters (3 active)"), and **Reset** clears them. Each change is a 
 | hide empty projects | Hide › Empty projects | `hide=empty-projects` | removes projects with nothing visible inside, in this view |
 | hide empty folders | Hide › Empty folders | `hide=empty-folders` | removes folders with nothing visible inside, in this view |
 | hide disconnected | Hide › Disconnected resources | `hide=disconnected` | removes cards without a drawn arrow, then containers left with neither a visible child nor an arrow |
-| regions | Regions | `regions=europe-west3,us-central1` | keeps resources whose location is listed (a zone counts as its region; case does not matter). Folders, projects, resources without a location and global containers such as VPC networks stay as structure |
+| regions | Regions | `regions=europe-west3,us-central1` | keeps resources whose location is listed (a zone counts as its region, an AI zone such as `us-central1-ai1a` too; case does not matter). Folders, projects, resources without a location and global containers such as VPC networks stay as structure |
 | projects | Projects | `projects=demo-web-1` | keeps the listed projects (id or number); the folders above them stay as structure |
 | folders | Folders | `folders=20000000005` | keeps what lies in the listed folders (by number); the folders above them stay as structure |
 | include types | Include types | `include=run.googleapis.com/*` | draws these types too, whatever the lens: an asset type or `service/*`. It also shows hidden types it names |
 | exclude types | Exclude types | `exclude=compute.googleapis.com/Disk` | never draws these types; exclude wins over include and over the lens |
 | depth | Depth (a slider, shallow to deep, "No limit" at the right end) | `depth=2` | zones more than this many levels below the root start collapsed (chips) |
-| region zones | Region zones: Default, Show, Hide | `show-regions=1` | groups each project's resources into virtual region (and zone) zones by their location; VPC networks and subnets are not regrouped. Default: off |
+| region zones | Region zones: Default, Show, Hide | `show-regions=1` | groups each project's resources into virtual region (and zone) zones by their location, a zone inside the region the regions filter counts it in; VPC networks and subnets are not regrouped. Default: off |
 | identities | Identities: Lens, Show, Hide | `show-identities=1` | Show draws service-account cards and `runsAs` arrows in any lens, Hide removes them from every lens, Lens leaves it to the lens (Identity and Everything draw them) |
 
 The rules behind the table:

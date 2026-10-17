@@ -17,7 +17,7 @@
  *    recursively; region zones always go when empty. Repeated until nothing changes, so "empty" and
  *    "disconnected" mean empty and disconnected in this view, and applying the filters again changes nothing.
  */
-import type { GraphNode, RelationEdge } from '@gcportrait/model';
+import { zoneRegion, type GraphNode, type RelationEdge } from '@gcportrait/model';
 import { FOLDER_TYPE, ORGANIZATION_TYPE, PROJECT_TYPE, isVirtualNode } from '../structure.js';
 import type { FocusSelection } from './focus.js';
 import type { LensRules } from './lens.js';
@@ -55,7 +55,6 @@ export interface Visible {
 }
 
 const HIERARCHY = new Set([ORGANIZATION_TYPE, FOLDER_TYPE, PROJECT_TYPE]);
-const ZONE = /^([a-z]+-[a-z]+[0-9]+)-[a-z0-9]+$/;
 
 function locationPasses(node: GraphNode, regions: ReadonlySet<string>): boolean {
   if (HIERARCHY.has(node.assetType)) return true;
@@ -63,7 +62,8 @@ function locationPasses(node: GraphNode, regions: ReadonlySet<string>): boolean 
   // No location: nothing to filter on. A global container (a VPC) is structure, not a regional resource.
   if (location === undefined || (location === 'global' && node.role === 'container')) return true;
   if (regions.has(location)) return true;
-  const region = ZONE.exec(location)?.[1];
+  // A zone counts as its region, by the rule the region containers follow (`zoneRegion`).
+  const region = zoneRegion(location);
   return region !== undefined && regions.has(region);
 }
 

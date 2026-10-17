@@ -231,11 +231,11 @@ with numeric strings by value.
 `{{variable | filter | …}}` in literal text. Variables: `name`, `assetType`, `location`, `projectId`,
 `projectNumber` (from the asset's project and the project index), `data.*` with `.key` and `[n]` steps.
 Filters: `lastSegment` (trailing slashes ignored), `projectFromName`, `regionFromName` (also turns a zone into
-its region), `short(n)` (counts user-perceived characters, ends with `…`), `lower`,
-`parentSegment(<collection>)`, the segment after the first `<collection>/` in the value, so a nested resource
-can name its parents (`{{name | parentSegment(clusters)}}` is a Kubernetes namespace's cluster), and
-`first(<variable>, …)`: when the value is missing, the first of the listed variables that has one
-(`{{data.gke.cluster | first(data.anthosCluster.membership, data.run.location) | lastSegment}}`), filters
+its region, by `regionOfZone` of `@gcportrait/model`), `short(n)` (counts user-perceived characters, ends with
+`…`), `lower`, `parentSegment(<collection>)`, the segment after the first `<collection>/` in the value, so a
+nested resource can name its parents (`{{name | parentSegment(clusters)}}` is a Kubernetes namespace's
+cluster), and `first(<variable>, …)`: when the value is missing, the first of the listed variables that has
+one (`{{data.gke.cluster | first(data.anthosCluster.membership, data.run.location) | lastSegment}}`), filters
 after it applying to the chosen value, and `plural(<word>)` or `plural(<word>, <words>)`: the count with its
 noun, `{{data.size | plural(instance)}}` → `1 instance`, `4 instances` (a value of exactly 1 takes the
 singular; the plural is `<word>s` unless given; a missing count stays missing, so its segment is dropped). A
@@ -297,7 +297,8 @@ a Cloud Deploy pipeline is a target beside it); `{project}` is an object's `proj
 path's `projects/<p>`, else the asset name's project segment, else its project's id (or number);
 `{projectId}` and `{projectNumber}` translate that through the project index; `{location}` is an object's
 `location`, `region` or `zone`, else the path's `locations|regions|zones/<l>`, else the asset's location;
-`{region}` is that location with a zone turned into its region, `{zone}` a zone only; `{.key}` is the object's
+`{region}` is that location with a zone turned into its region, `{zone}` a zone only (`regionOfZone` and
+`isZone` of `@gcportrait/model`, so `us-central1-ai1a` is a zone of `us-central1`); `{.key}` is the object's
 string property. A placeholder without a value yields no name, and the value dangles as read. Which spelling
 of the project a pattern writes does not matter: the graph matches either (packages/graph/README.md).
 

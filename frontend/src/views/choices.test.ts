@@ -100,7 +100,9 @@ describe('the view choices', () => {
     );
     expect(choices.regions).toEqual(['eu', 'europe-west3', 'global', 'us-central1']);
     expect(regionOf('europe-west3-a')).toBe('europe-west3');
+    expect(regionOf('US-Central1-AI1A')).toBe('us-central1');
     expect(regionOf('EU')).toBe('eu');
+    expect(regionOf('nam4')).toBe('nam4');
     // Each region keeps something of the view (the everything lens: some regions hold only records).
     for (const region of choices.regions) {
       const filters = { regions: [region] };

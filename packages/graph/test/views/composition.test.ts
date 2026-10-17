@@ -10,6 +10,8 @@
  *    view holds something the filter removes, and the filtered view satisfies the filter. The matrix of which
  *    filter bites where is pinned per size.
  * 4. Named rows with specific expectations: ids present or absent, counts, chips, edge kinds.
+ * 5. A zone whose suffix is longer than one letter (an AI zone) in every drill-in and focus context that holds
+ *    its project × the regions filter and the region zones: the filter and the drawing put it in one region.
  */
 import type {
   DetailLevel,
@@ -26,11 +28,13 @@ import type {
 import { LensIdSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { REAL_CATALOG } from '../../src/testing/fixtures.js';
-import { childIds, placed, shows, zone, zones } from '../../src/testing/scene.js';
+import { childIds, parentOf, placed, shows, zone, zones } from '../../src/testing/scene.js';
 import { view } from '../../src/testing/views.js';
 import { flipIdOf } from '../../src/views/flip.js';
 import { buildSceneWithReport } from '../../src/views/scene.js';
 import {
+  AI_ZONE,
+  AI_ZONE_DISK,
   APPLICATION,
   APP_SERVICE_API,
   ORDERS_API,
@@ -855,5 +859,70 @@ describe('4. named rows', () => {
     expect(LENSES.filter((lens) => !lenses.has(lens))).toEqual([]);
     expect(focuses.size).toBe(5);
     expect(roots).toEqual(expect.arrayContaining(['#Workloads', '@demo-gke-1', HOST_VPC]));
+  });
+});
+
+describe('5. an AI zone lies in its region for the regions filter and the region zones alike', () => {
+  const REGION = '//gcportrait.virtual/projects/demo-web-1/locations/us-central1';
+  const ZONE = `${REGION}/zones/${AI_ZONE}`;
+  const aiGraph = (size: DemoSize): Graph => demoGraphBuild(size, { aiZone: true }).graph;
+
+  /** The drill-in and focus contexts whose view holds demo-web-1, the disk's project. */
+  const CONTEXTS: Readonly<Record<string, (size: DemoSize) => ViewSpecInput>> = {
+    'no root or focus': () => ({}),
+    'root: folder Workloads': (size) => ({ root: folderNamed(size, 'Workloads') }),
+    'root: project demo-web-1': (size) => ({ root: projectNamed(size, 'demo-web-1') }),
+    'focus: project': () => ({ focus: { kind: 'project', params: { project: 'demo-web-1' } } }),
+    'focus: shared-vpc': () => ({ focus: { kind: 'shared-vpc', params: { host: 'demo-net-1' } } }),
+  };
+  interface ZoneRow {
+    readonly filters: Partial<ViewFilters>;
+    /** Whether the filters keep the disk. */
+    readonly shown: boolean;
+    /** Whether it is drawn in its zone's zone, inside its region's. */
+    readonly nested: boolean;
+  }
+  const ZONE_FILTERS: Readonly<Record<string, ZoneRow>> = {
+    'regions us-central1': { filters: { regions: ['us-central1'] }, shown: true, nested: false },
+    [`regions ${AI_ZONE}`]: { filters: { regions: [AI_ZONE] }, shown: true, nested: false },
+    'regions europe-west3': { filters: { regions: ['europe-west3'] }, shown: false, nested: false },
+    'region zones': { filters: { showRegions: true }, shown: true, nested: true },
+    'region zones, regions us-central1': {
+      filters: { showRegions: true, regions: ['us-central1'] },
+      shown: true,
+      nested: true,
+    },
+    'region zones, regions europe-west3': {
+      filters: { showRegions: true, regions: ['europe-west3'] },
+      shown: false,
+      nested: false,
+    },
+  };
+  const rows = SIZES.flatMap((size) =>
+    Object.keys(CONTEXTS).flatMap((context) =>
+      Object.keys(ZONE_FILTERS).map((filters) => ({ size, context, filters })),
+    ),
+  );
+
+  it.each(rows)('$size · $context · $filters', ({ size, context, filters }) => {
+    const row = ZONE_FILTERS[filters];
+    const input = CONTEXTS[context];
+    if (row === undefined || input === undefined) throw new Error(`${context} · ${filters}`);
+    const graph = aiGraph(size);
+    const spec = view({ ...input(size), lens: 'compute', detail: 'all', filters: row.filters });
+    const result = buildSceneWithReport(graph, spec, CATALOG, { readTime: READ_TIME });
+    expect(violations(graph, spec, CATALOG, result)).toEqual([]);
+    expect(result.report.focus?.status ?? 'none').not.toBe('error');
+    expect(shows(result.scene, AI_ZONE_DISK)).toBe(row.shown);
+    if (row.nested) {
+      // Project › us-central1 (a region) › us-central1-ai1a (a zone) › the disk.
+      expect(parentOf(result.scene, AI_ZONE_DISK)).toBe(ZONE);
+      expect(parentOf(result.scene, ZONE)).toBe(REGION);
+      expect(zone(result.scene, REGION).subtitle).toBe('region');
+      expect(shows(result.scene, `//gcportrait.virtual/projects/demo-web-1/locations/${AI_ZONE}`)).toBe(
+        false,
+      );
+    }
+    if (row.filters.showRegions === true && !row.shown) expect(shows(result.scene, ZONE)).toBe(false);
   });
 });

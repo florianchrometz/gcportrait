@@ -126,6 +126,7 @@ inferred types, plus the URL-hash codec for views. Imports no other workspace pa
 | Graph builder report | `GraphBuildSchema`/`GraphBuild`, `GraphReport`, `SharedVpcPair`, `ContainmentCycle` |
 | Views | `ViewSpecSchema`/`ViewSpec`, `normalizeViewSpec`, `encodeViewSpec`, `decodeViewSpec`, `DEFAULT_VIEW_SPEC` (the codec and its normaliser import no zod, so the UI thread loads none) |
 | Vocabularies without zod | `LENS_IDS`, `DETAIL_LEVEL_IDS`, `RELATION_KIND_IDS`, `FOCUS_KIND_IDS`, `DEMO_SIZES` and the guards `isLensId`, `isDetailLevel`, `isRelationKind`, `isFocusKind`, `isDemoSize`, `isSnapshotRef`: what the app's UI thread lists and tests values with |
+| Locations without zod | `isRegion`, `isZone`, `zoneRegion`, `regionOfZone`: the one rule of what a region and a zone are and which region holds a zone (`europe-west3-b`, AI zones such as `us-central1-ai1a`), read by the catalog's templates and `siblingName`, the graph's region zones and regions filter, and the app's filter choices |
 | Scene | `SceneSchema`/`Scene`, `SceneZone`, `SceneCard`, `SceneEdge`; `SceneEnvSchema`/`SceneEnv`, `SceneBuildSchema`/`SceneBuild`, `SceneReport` |
 | Catalog | `CatalogSchema`/`Catalog`, `CatalogEntrySchema`, `CatalogZoneKindSchema`, `LensSchema`, `RelationRuleSchema`; `ProjectIndexSchema`/`ProjectIndex`, `buildProjectIndex`, `projectIndexBuilder` (the one number↔id pairing rule), `aliasKey`, `EvaluatedRelation`, `RelationTarget` |
 | Testing (`@gcportrait/model/testing`) | `findNonSyntheticData`, `assertSyntheticOnly`: the one "synthetic only" guard for fixtures and generated data; `measureBatches`, `measureRuns`, `skipIfOverloaded`: the one rule for the tests' wall-clock limits (measured again while over, each batch stopped at the deadline, skipped on an overloaded machine but never on CI) |
@@ -451,7 +452,8 @@ and waiting for an item of [backlog.md](backlog.md) or a maintainer decision:
   (`frontend/src/views/lensDetail.ts`). `render-scene`, `pnpm render` and the scene builder still take the
   view's detail as given (`auto` unless asked).
 - **One rule, one place.** The project number↔id pairing is one function in `@gcportrait/model`
-  (`buildProjectIndex`, `projectIndexBuilder`) that ingest, the catalog and the graph share; the three
+  (`buildProjectIndex`, `projectIndexBuilder`) that ingest, the catalog and the graph share, and so is the
+  zone→region rule (`zoneRegion`, `regionOfZone`) that the catalog, the graph and the app share; the three
   synthetic-data guards are one, `@gcportrait/model/testing`; the read-time source travels with the Snapshot
   (`readTimeSource`) and a refused focus or root with the Scene (`metadata.focusError`, `metadata.rootError`);
   `cloudSqlConnectionName` writes the `//cloudsql.googleapis.com/…` names CAI uses; the graph takes zone kinds

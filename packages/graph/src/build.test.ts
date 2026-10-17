@@ -393,6 +393,22 @@ describe('rule 3: virtual region and zone containers', () => {
     expect(parentOf(built, bucket.name)).toBe(region(WEB_ID, 'eu'));
     expect(built.nodes[region(WEB_ID, 'eu')]?.subtitle).toBe('multi-region');
   });
+
+  it('puts a zone with a longer suffix (an AI zone) in its region, as the regions filter counts it', () => {
+    const disk = resource(
+      computeName(WEB_ID, 'zones/us-central1-ai1a/disks/train-scratch'),
+      'compute.googleapis.com/Disk',
+      WEB_NUMBER,
+      { name: 'train-scratch' },
+      { location: 'us-central1-ai1a' },
+    );
+    const built = checkedBuild([...scenarioAssets(), disk], CATALOG, { showRegions: true }).graph;
+    expect(parentOf(built, disk.name)).toBe(zone(WEB_ID, 'us-central1-ai1a'));
+    expect(parentOf(built, zone(WEB_ID, 'us-central1-ai1a'))).toBe(region(WEB_ID, 'us-central1'));
+    expect(built.nodes[region(WEB_ID, 'us-central1')]?.subtitle).toBe('region');
+    expect(built.nodes[zone(WEB_ID, 'us-central1-ai1a')]?.subtitle).toBe('zone');
+    expect(built.nodes[region(WEB_ID, 'us-central1-ai1a')]).toBeUndefined();
+  });
 });
 
 /** Test containers whose rules can be made to disagree. */
