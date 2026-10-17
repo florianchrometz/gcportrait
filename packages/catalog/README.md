@@ -30,8 +30,8 @@ known-unmapped/<group>.yaml       one per authoring group: the official types it
 icon-keys.json                    the icon keys the catalog declares (packages/icons resolves every key)
 src/                              the runtime library (browser-, worker- and Node-safe; no Node types)
   index.ts                        the only public surface
-  catalog.ts                      `catalog`: the compiled catalog, validated with CatalogSchema on import
-  generated/compiled-catalog.ts   the compiled catalog as data: a build artefact, git-ignored (below)
+  catalog.ts                      `catalog`: the compiled catalog as it is, not parsed again on import (below)
+  generated/compiled-catalog.ts   the compiled catalog, typed `Catalog`: a build artefact, git-ignored (below)
   engine/                         the rule engine: JSONPath subset, predicates, templates, normalisers
   compiler/                       the compiler, groups, scoped reports, rule traces (pure; tooling feeds it files)
 tooling/                          Node command-line tools and the tests that read the data files
@@ -86,6 +86,12 @@ and view tests run on the compiled catalog alone). `pnpm catalog:check` is the c
 The build fails only when no catalog can be assembled at all (a lens file missing or invalid). A file under
 `src/generated/` that git tracks is a `generated-committed` violation. When you run Vitest directly (an
 editor, `vitest watch`), run `pnpm catalog:build` after editing YAML; a unit test says "stale" otherwise.
+
+The module holds the catalog as one constant typed `Catalog`, written only once the whole compiled catalog
+has passed `CatalogSchema`, so `catalog` is that constant as it is: nothing parses it again on import, where
+the app's data worker, every render job and every test file that loads the catalog would pay for a parse of
+the whole catalog that returns a deep-equal copy. tsc holds the constant to the type, and
+`tooling/catalog.test.ts` holds the module to a fresh compile and the exported `catalog` to the schema.
 
 ## Authoring a group
 

@@ -194,7 +194,7 @@ is browser- and worker-safe; the Node tooling lives in `tooling/`.
 
 | Export | What |
 |---|---|
-| `catalog` | the compiled catalog (`Catalog`), validated with `CatalogSchema` on import |
+| `catalog` | the compiled catalog (`Catalog`): the generated module's constant as it is, which passed `CatalogSchema` when `pnpm catalog:build` wrote it (not parsed again on import; the catalog's staleness test holds it to the schema) |
 | `evaluateRelations`, `evaluateContains`, `nestsByParent`, `evaluateAliases` | a type's relation, containment and alias rules on one asset (`EvaluatedRelation[]`) |
 | `renderLabel`, `renderSubtitle`, `renderConsoleUrl`, `extractIps`, `extractDomains`, `isHiddenByDefault` | the per-asset presentation rules |
 | `consoleUrlFor`, `consoleLinkFor`, `projectConsoleUrl`, `typesWithoutConsole`, `ConsoleLink` | the one place a Cloud Console URL is built: a type's `console` template for an asset, or the project's console home as the fallback the app offers; the types still without a template |
