@@ -2456,8 +2456,8 @@ line, so the canvas's live drawing exports as it is). Two encodings keep older e
 0.92) drawing what browsers draw, without changing the picture: `xlink:href` beside `href` on every `<use>`,
 and each haloed zone title written as a stroke-only halo copy under a fill-only label instead of relying on
 `paint-order`. Icons stay inline and unaltered. Apart from these encodings the file is the renderer's own
-drawing of the view: resvg draws it and the renderer's baseline of the same view pixel for pixel alike
-(`e2e/tests/export.spec.ts`).
+drawing of the view: resvg draws it and the renderer's baseline of the same view alike but for at most
+0.05 % of the pixels (pixelmatch, `e2e/tests/export.spec.ts`).
 
 **Current viewport.** The visible area of the canvas, intersected with the layout's bounds (nothing in view is
 an error with a hint). The content keeps its coordinates and is clipped to the area (`clip-path`); the title

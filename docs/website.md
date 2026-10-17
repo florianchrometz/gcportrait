@@ -439,7 +439,7 @@ on macOS, regenerate on Linux (or in CI) instead.
 ## Sample exports
 
 The site offers real exports to download: SVG, PNG and draw.io files of the synthetic demo organisations,
-exactly as the Export menu writes them, each with its title block (the scope, the lens with the read time, the
+the drawings the Export menu saves, each with its title block (the scope, the lens with the read time, the
 gcportrait.app tagline) and the legend. Like every drawing, no file carries the non-affiliation line, neither
 in the title block nor in the SVG's `<desc>`, which holds the scope, the lens, the read time and "Drawn with
 gcportrait." only: the site states it in the footer notice of every page and in the long form in the landing

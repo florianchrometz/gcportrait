@@ -1,8 +1,8 @@
 ---
 /**
  * /exports/: the sample exports (docs/website.md, "Sample exports"). Real SVG, PNG and draw.io files of the synthetic
- * demo organisations in both themes, as the app's Export menu writes them, made by `node scripts/exports.mjs` with
- * `pnpm render` and published from docs/media/exports/ by the build (src/lib/exports.ts).
+ * demo organisations in both themes, the drawings the app's Export menu saves, made by `node scripts/exports.mjs`
+ * with `pnpm render` and published from docs/media/exports/ by the build (src/lib/exports.ts).
  */
 import Base from '../layouts/Base.astro';
 import DemoLink from '../components/DemoLink.astro';
@@ -16,7 +16,7 @@ const samples = sampleExports();
 const meta = {
   title: 'Sample exports',
   description:
-    'Download real SVG, PNG and draw.io exports of the gcportrait demo organisations in light and dark, as the Export menu writes them.',
+    'Download real SVG, PNG and draw.io exports of the gcportrait demo organisations in light and dark, the drawings the Export menu saves.',
   path: '/exports/',
   socialImage: socialImage('exports', 'Sample exports: SVG, PNG and draw.io of the gcportrait demo organisations'),
   jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Sample exports', path: '/exports/' }])],
@@ -34,8 +34,8 @@ const meta = {
     </nav>
     <h1>Sample exports</h1>
     <p class="lead">
-      Real SVG, PNG and draw.io files, exactly as the Export menu writes them, of the synthetic demo organisations: no
-      real environment is drawn. Each file’s title block names the scope, the lens and the read time, then the gcportrait.app
+      Real SVG, PNG and draw.io files of the synthetic demo organisations, the drawings the Export menu saves: no real
+      environment is drawn. Each file’s title block names the scope, the lens and the read time, then the gcportrait.app
       tagline; the legend lists what the drawing uses. The non-affiliation statement is in the footer below, not in the
       drawings.
     </p>

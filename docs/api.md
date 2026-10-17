@@ -4,8 +4,9 @@
 
 Every route an instance serves under `/api`, for scripts: health and settings, the scope search and permission
 check, the live pull and export read the app streams from, and `POST /api/render`, which draws a view as SVG,
-PNG or a draw.io file on the server, byte for byte what `pnpm render` and the app's export draw. A demo-only
-instance has none of the routes that need a token.
+PNG or a draw.io file on the server, byte for byte what `pnpm render` draws; the app's export saves the same
+drawing ([export.md](export.md#4-what-the-files-contain)). A demo-only instance has none of the routes that
+need a token.
 
 ## Authentication
 
@@ -56,8 +57,8 @@ The two streams answer 200 once they start; what Google says after that arrives 
 ## POST /api/render
 
 Draws one view of one snapshot, with the code `pnpm render` runs: the same view gives the same bytes, a PNG is
-the app's export (2× by default, a 24 px margin, the theme's canvas colour), and a draw.io file is the same
-drawing as cells diagrams.net can edit ([below](#drawio-files)). The request is one JSON document:
+framed like the app's export (2× by default, a 24 px margin, the theme's canvas colour), and a draw.io file is
+the same drawing as cells diagrams.net can edit ([below](#drawio-files)). The request is one JSON document:
 
 | Field | Default | |
 |---|---|---|
