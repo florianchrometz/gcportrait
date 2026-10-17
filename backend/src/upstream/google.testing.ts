@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * What every pretend Google of the backend's tests shares (never built into dist/: tsconfig.build.json leaves
- * `*.testing.ts` out): the synthetic credentials, the recorded call, Google's answer shapes (JSON, the error
- * envelope of skill cai-ingestion §9, the HTML error page), streamed bodies, an upstream client that never
- * sleeps, Cloud Asset Inventory's pager and the instance's identity. The fakes of single APIs build on it:
+ * What every pretend Google of the backend's tests shares (never imported by the app, so neither bundle
+ * carries it): the synthetic credentials, the recorded call, Google's answer shapes (JSON, the error envelope
+ * of skill cai-ingestion §9, the HTML error page), streamed bodies, an upstream client that never sleeps,
+ * Cloud Asset Inventory's pager and the instance's identity. The fakes of single APIs build on it:
  * ../preflight/google.testing.ts (Resource Manager, tokeninfo and the gate's answers) and
  * ../stream/google.testing.ts (synthetic assets, Cloud Asset Inventory and Cloud Storage). Everything is
  * synthetic (AGENTS.md, Security and privacy, principle 6): `demo-` project ids, numbers below 100000000000,

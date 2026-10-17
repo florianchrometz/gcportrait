@@ -14,7 +14,7 @@ only in its render worker (`src/render/`), never in `dist/server.mjs` (AGENTS.md
 |---|---|
 | `pnpm dev` (root) | This service with `tsx watch` on <http://localhost:8080> (pretty logs), plus the Vite dev server. tsx runs with the frontend's tsconfig, so the render worker (which inherits tsx's loader) compiles the frontend's components with their JSX settings. |
 | `pnpm --filter @gcportrait/backend dev` | This service alone. Loads `backend/.env` if it exists. |
-| `pnpm --filter @gcportrait/backend build` | Compiles `src/` to `dist/` with `tsc -p tsconfig.build.json` (a compile check), then runs `bundle`. |
+| `pnpm --filter @gcportrait/backend build` | The same as `bundle`, for `pnpm build`. The type check is `pnpm typecheck`'s: `tsc -b` covers every file under `src/`, the tests and the render job included. |
 | `pnpm --filter @gcportrait/backend bundle` | Bundles the service into `dist/server.mjs` and the render worker into `dist/render-worker.mjs` with esbuild, and writes the worker's assets to `dist/render-assets/` (`bundle.ts`, below); what the image runs. |
 | `pnpm --filter @gcportrait/backend start` | Runs `dist/server.mjs` with source maps (after `bundle`), serving `../frontend/dist` if it is built. |
 | `pnpm --filter @gcportrait/backend test` | Unit and HTTP tests (Vitest with `fastify.inject`, no network). |
@@ -371,7 +371,7 @@ run, every refused kind, the endpoints, the token cache, no credential in a mess
 no mode refuse one; `/api/config`), the service-account sections of `src/preflight/run.test.ts` and
 `src/routes/assets.test.ts`, and `e2e/tests/sa-mode.spec.ts`, which runs this backend through
 `src/auth/sa-harness.testing.ts` (the real routes, gate and ADC code, with a pretend Google and metadata
-server; never built into `dist/`).
+server; in neither bundle).
 
 ## Why response schemas are zod converted to JSON Schema
 
@@ -439,13 +439,12 @@ since a bundle drops the licence files `node_modules` would carry. The image the
 pnpm and no compiler (`infra/Dockerfile`,
 [docs/self-host-options.md](../docs/self-host-options.md#run-the-image-locally)). The bundle keeps the package
 layout: `src/config.ts` finds `package.json` and `../frontend/dist` relative to `dist/`, so the image copies
-`backend/package.json` next to it. `tsc -p tsconfig.build.json` (part of `build`) still emits the unbundled
-`dist/*.js` as a compile check; they import the workspace packages' TypeScript and do not run on their own.
-The render job's files are left out of that check (they reach the frontend's components through the render
-library; `tsc -b` checks them through the project references). zod is imported as a namespace everywhere the
-bundles reach (`import * as z from 'zod'`; `eslint.config.js` refuses a named or default `z`), so esbuild
-keeps only the parts of zod the code uses and, of its locales, only the English one its messages come from; a
-named `z` would bring in every locale.
+`backend/package.json` next to it. `build` is the bundle step alone and writes no other JavaScript; the type
+check is `pnpm typecheck`'s `tsc -b`, which covers every file under `src/`, the tests and the render job
+included (the render job reaches the frontend's components through the render library's project reference).
+zod is imported as a namespace everywhere the bundles reach (`import * as z from 'zod'`; `eslint.config.js`
+refuses a named or default `z`), so esbuild keeps only the parts of zod the code uses and, of its locales,
+only the English one its messages come from; a named `z` would bring in every locale.
 
 The render API adds a second bundle, `dist/render-worker.mjs` (the render library, the frontend's headless
 closure with the draw.io translator and its compressor, fflate, `react-dom/server` and resvg-wasm's glue code,
@@ -454,4 +453,5 @@ defines at build time. `dist/render-assets/`, written by the library's `writeAss
 reads at run time without `node_modules`: resvg's WebAssembly module, unmodified, and the Roboto faces in
 their loading order with their licences. The bundle step fails on any native addon (`.node`), and the licence
 report covers both bundles and the copied packages (`src/render/bundle.test.ts` builds into a temporary
-directory, draws the golden PNG with the bundled worker and finds no zod locale but English in either bundle).
+directory, draws the golden PNG with the bundled worker and finds in neither bundle a file of the tests or a
+zod locale but English).

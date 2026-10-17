@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The backend's server as the route tests start it (never built into dist/: tsconfig.build.json leaves
- * `*.testing.ts` out): the real `buildServer` with a test configuration (no SPA build, version 9.9.9-test), a
- * pretend Google behind the real allowlisted client that never sleeps and has no jitter, its log lines captured,
- * and the server closed when the test ends; and the message of a configuration it refuses to start with.
+ * The backend's server as the route tests start it (never imported by the app, so neither bundle carries it):
+ * the real `buildServer` with a test configuration (no SPA build, version 9.9.9-test), a pretend Google
+ * behind the real allowlisted client that never sleeps and has no jitter, its log lines captured, and the
+ * server closed when the test ends; and the message of a configuration it refuses to start with.
  */
 import path from 'node:path';
 import { Writable } from 'node:stream';

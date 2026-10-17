@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The backend in service-account mode against a pretend Google, for e2e/tests/sa-mode.spec.ts (never built into
- * dist/: tsconfig.build.json leaves `*.testing.ts` out; never imported by the app). The spec starts it as a process
- * and sends the browser's `/api` requests to it, so the real routes, the real gate (./gate.ts) and the real
- * Application Default Credentials code (./identity.ts, its metadata-server path) run end to end; only Google is
- * pretend:
+ * The backend in service-account mode against a pretend Google, for e2e/tests/sa-mode.spec.ts (never imported
+ * by the app, so neither bundle carries it). The spec starts it as a process and sends the browser's `/api`
+ * requests to it, so the real routes, the real gate (./gate.ts) and the real Application Default Credentials
+ * code (./identity.ts, its metadata-server path) run end to end; only Google is pretend:
  *
  * - the metadata server: the account `gcportrait-backend@demo-host.iam.gserviceaccount.com` and its token;
  * - OAuth2 tokeninfo: the caller's token (`--caller-token`) belongs to `ada@example.com`;

@@ -7,7 +7,7 @@
   // Every project is `composite` so the root tsconfig.json can reference it and `tsc -b` checks the whole
   // workspace in dependency order. Only declaration files are emitted, into the project's own
   // node_modules/.tmp/tsc (ignored by git, the linters and the provenance check); bundling and runtime
-  // builds are the job of Vite (frontend) and of the backend's own build (backend/tsconfig.build.json, bundle.ts).
+  // builds are the job of Vite (frontend) and of the backend's bundle step (backend/bundle.ts, esbuild).
   //
   // TypeScript is held at 6.0.x because typescript-eslint 8 supports TypeScript < 6.1 only.
   "$schema": "https://json.schemastore.org/tsconfig",

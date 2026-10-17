@@ -3,9 +3,9 @@
  * The production bundles (bundle.ts): written into a temporary directory, the render worker draws a demo view
  * to the committed goldens' bytes (the PNG and the `.drawio` file) from its own asset directory, with no
  * node_modules involved, and `server.mjs` holds none of the render library: no React, no resvg, no frontend
- * component, no native addon. Neither carries a zod locale but the English one. The licence file names the
- * files each package ships in, lists each exactly pinned package at the version installed and carries the
- * MPL-2.0 text, and the notices script's table of the asset directory's packages
+ * component, no native addon. Neither carries a file of the tests, nor a zod locale but the English one. The
+ * licence file names the files each package ships in, lists each exactly pinned package at the version
+ * installed and carries the MPL-2.0 text, and the notices script's table of the asset directory's packages
  * (scripts/third-party-notices.mjs) matches the directory the bundle writes.
  */
 import { spawnSync } from 'node:child_process';
@@ -122,6 +122,24 @@ describe('the bundles', () => {
       licenses: string[];
     };
     expect(manifest.fonts.every((font) => existsSync(path.join(out, 'render-assets', font)))).toBe(true);
+  });
+
+  it('carry no file of the tests: no test, no `*.testing.ts` helper, no package’s `testing` export', () => {
+    // Nothing the entry points reach imports them, which is all that keeps them out.
+    for (const bundle of ['server.mjs', 'render-worker.mjs']) {
+      const { sources } = JSON.parse(readFileSync(path.join(out, `${bundle}.map`), 'utf8')) as {
+        sources: string[];
+      };
+      const entry = bundle === 'server.mjs' ? 'backend/src/main.ts' : 'backend/src/render/worker.ts';
+      expect(
+        sources.some((source) => source.endsWith(entry)),
+        bundle,
+      ).toBe(true);
+      expect(
+        sources.filter((source) => /\.test\.tsx?$|\.testing\.tsx?$|\/src\/testing\//.test(source)),
+        bundle,
+      ).toEqual([]);
+    }
   });
 
   it('keep zod’s locales out of both, but the English one its messages use', () => {

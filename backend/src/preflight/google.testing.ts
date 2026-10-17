@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * A pretend Google for the preflight, scope-search and service-account gate tests (never built into dist/:
- * tsconfig.build.json leaves `*.testing.ts` out): Resource Manager v3 `get`, `search` and
- * `testIamPermissions`, Cloud Asset Inventory's `assets.list` probe and OAuth2 `tokeninfo`, as an
- * `UpstreamFetch` that records every call, on top of what every pretend Google shares
- * (../upstream/google.testing.ts). Error bodies are shaped like the ones Google gives (skill cai-ingestion
- * §9; scripts/probe-google-apis.sh asks for them), and the gate's answers are declared once, for the gate,
- * the preflight and the routes alike. The data is synthetic (AGENTS.md, Security and privacy, principle 6:
- * `demo-` project ids, numbers below 100000000000, organisation 30000000001, example.com).
+ * A pretend Google for the preflight, scope-search and service-account gate tests (never imported by the app,
+ * so neither bundle carries it): Resource Manager v3 `get`, `search` and `testIamPermissions`, Cloud Asset
+ * Inventory's `assets.list` probe and OAuth2 `tokeninfo`, as an `UpstreamFetch` that records every call, on
+ * top of what every pretend Google shares (../upstream/google.testing.ts). Error bodies are shaped like the
+ * ones Google gives (skill cai-ingestion §9; scripts/probe-google-apis.sh asks for them), and the gate's
+ * answers are declared once, for the gate, the preflight and the routes alike. The data is synthetic
+ * (AGENTS.md, Security and privacy, principle 6: `demo-` project ids, numbers below 100000000000,
+ * organisation 30000000001, example.com).
  */
 import type { GateFinding } from '../auth/gate.js';
 import {

@@ -13,7 +13,7 @@ import { LegalTextError, NO_LEGAL_TEXTS, parseLegalBundle, readLegalDir, type Le
  * the service-account email are public by design, and the backend never holds a credential of its own on disk.
  */
 
-/** The backend package root: the parent of src/ (tsx in development) and of dist/ (compiled build). */
+/** The backend package root: the parent of src/ (tsx in development) and of dist/ (the bundles). */
 const PACKAGE_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 export const LOG_LEVELS = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'] as const;

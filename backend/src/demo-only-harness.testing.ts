@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
- * The real backend in demo-only mode (DEMO_ONLY=true), for e2e/tests/demo-only.spec.ts (never built into
- * dist/: tsconfig.build.json leaves `*.testing.ts` out; never imported by the app). The spec starts it as a process
- * and sends the browser's `/api` requests to it, so /api/config, /api/legal, the 404s of the routes demo-only mode
- * leaves out and the rate limit run as they do on Cloud Run; Vite serves the SPA.
+ * The real backend in demo-only mode (DEMO_ONLY=true), for e2e/tests/demo-only.spec.ts (never imported by the
+ * app, so neither bundle carries it). The spec starts it as a process and sends the browser's `/api` requests
+ * to it, so /api/config, /api/legal, the 404s of the routes demo-only mode leaves out and the rate limit run
+ * as they do on Cloud Run; Vite serves the SPA.
  *
  * Arguments: `--legal-dir PATH` (optional) becomes LEGAL_DIR. It prints `{"ready":{"port":N}}` once listening and
  * `{"google":"URL"}` should anything try to reach Google (nothing may). Everything is synthetic

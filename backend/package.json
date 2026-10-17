@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "HOST=localhost LOG_FORMAT=pretty tsx watch --tsconfig ../frontend/tsconfig.json --env-file-if-exists=.env src/main.ts",
-    "build": "tsc -p tsconfig.build.json && tsx bundle.ts",
+    "build": "tsx bundle.ts",
     "bundle": "tsx bundle.ts",
     "start": "node --enable-source-maps dist/server.mjs",
     "lint": "eslint . --max-warnings=0",
