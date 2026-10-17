@@ -110,7 +110,7 @@ describe('the bundles', () => {
     );
     expect(licences).toMatch(/\n- @fontsource\/roboto@[\d.]+ \(OFL-1\.1\): render-assets\/fonts\/\n/);
     expect(licences).toMatch(/\n- react-dom@[\d.]+ \(MIT\): render-worker\.mjs\n/);
-    expect(licences).toContain('- fflate@0.8.2 (MIT): render-worker.mjs\n');
+    expect(licences).toContain('- fflate@0.8.3 (MIT): render-worker.mjs\n');
     expect(licences).toContain('- @fastify/multipart@10.1.2 (MIT): server.mjs\n');
     expect(licences).toMatch(/\n- zod@[\d.]+ \(MIT\): server\.mjs, render-worker\.mjs\n/);
     expect(licences).not.toMatch(/ render\/|resvg-wasm@[\d.]+ \(MPL-2\.0\): server\.mjs/);
