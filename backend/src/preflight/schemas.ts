@@ -10,7 +10,7 @@
  * scope, the quota project, the caller's or the account's email).
  */
 import { ScopeKindSchema } from '@gcportrait/model';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { QuotaProjectSchema, ScopeNameSchema } from '../upstream/scope.js';
 

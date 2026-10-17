@@ -6,7 +6,7 @@
  * while others are mid-edit, and the coverage report count per group. Pure.
  */
 import { AssetTypePatternSchema, AssetTypeSchema, NonEmptyStringSchema } from '@gcportrait/model';
-import { z } from 'zod';
+import * as z from 'zod';
 import { serviceOf } from '../engine/rules.js';
 import type { SourceFile } from './types.js';
 

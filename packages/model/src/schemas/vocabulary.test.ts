@@ -6,7 +6,7 @@
  */
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import type { z } from 'zod';
+import type * as z from 'zod';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';
 import { RelationKindSchema } from './relation.js';
 import { DemoSizeSchema, FocusKindSchema, SnapshotRefSchema } from './view-spec.js';

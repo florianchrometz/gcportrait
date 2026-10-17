@@ -7,7 +7,7 @@
  * drawer and the cycle error of skill gcp-diagram-layout §2 rule 5. Plain records only, so it crosses worker
  * boundaries and JSON unchanged.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { GraphSchema, NodeIdSchema, type Graph } from './graph.js';
 import { AssetTypeSchema, CountSchema } from './primitives.js';
 

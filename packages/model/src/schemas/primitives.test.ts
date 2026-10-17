@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
-import type { z } from 'zod';
+import type * as z from 'zod';
 import {
   AssetTypePatternSchema,
   AssetTypeSchema,

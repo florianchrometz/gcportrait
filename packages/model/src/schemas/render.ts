@@ -12,7 +12,7 @@
  * renderer turns them into the hash's flip tokens). A hash that names a timeline day (`tick`) is refused: a render
  * draws a snapshot's own day. Every message names the field, never the value sent.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { decodeViewSpec } from '../codec/view-hash.js';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';

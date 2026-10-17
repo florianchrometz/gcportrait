@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 /** The dotted paths of the issues a schema reports for a value; empty when the value is valid. */
 export function issuePaths(schema: z.ZodType, value: unknown): string[] {

@@ -33,7 +33,7 @@ import {
   type LensId,
 } from '@gcportrait/model';
 import { findNonSyntheticData } from '@gcportrait/model/testing';
-import { z } from 'zod';
+import * as z from 'zod';
 import { parseJsonPath } from '../engine/jsonpath.js';
 import { parsePredicate } from '../engine/predicate.js';
 import {

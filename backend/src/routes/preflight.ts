@@ -14,7 +14,7 @@
  * client can mistake it for a passed check.
  */
 import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { ServiceAccountGate } from '../auth/gate.js';
 import { sendRefusal } from '../auth/refusal.js';

@@ -25,7 +25,7 @@
  * stopped, or reads slower than about 17 KiB/s) has its connection closed (../stream/ndjson.ts).
  */
 import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { ServiceAccountGate } from '../auth/gate.js';
 import type { ServerConfig } from '../config.js';

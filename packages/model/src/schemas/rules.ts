@@ -4,7 +4,7 @@
  * project index it reads next to an asset, and the relations it hands to the graph builder. Plain records
  * only, so both cross worker boundaries unchanged.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import type { Asset } from './asset.js';
 import { CatalogRelationKindSchema } from './catalog.js';
 import {

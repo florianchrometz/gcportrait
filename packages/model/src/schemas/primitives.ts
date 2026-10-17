@@ -4,7 +4,7 @@
  * (no zod) and are re-exported here for the package's own modules and tests (the tests build their fast-check
  * arbitraries from them); the public API re-exports only the schemas.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import {
   ANCESTOR_PATTERN,
   ASSET_TYPE_PATTERN,

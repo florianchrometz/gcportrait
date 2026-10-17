@@ -4,7 +4,7 @@
  * entry per product, one YAML file per lens, and the compiled `catalog.json` the app loads. Entries and
  * lenses are strict, so a misspelt key in a YAML file fails validation instead of being ignored.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { NodeRoleSchema } from './graph.js';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';
 import {

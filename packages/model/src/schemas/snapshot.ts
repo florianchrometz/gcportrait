@@ -3,7 +3,7 @@
  * Snapshot: every asset of one scope at one read time, plus the versioned entry point that turns stored or
  * imported JSON into the current Snapshot shape (the README's "Migration policy").
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { AssetSchema } from './asset.js';
 import {
   AssetTypeSchema,

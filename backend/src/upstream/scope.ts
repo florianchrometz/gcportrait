@@ -6,7 +6,7 @@
  * request (the gate uses the same string in all three of its calls).
  */
 import { NumericIdSchema, type ScopeKind } from '@gcportrait/model';
-import { z } from 'zod';
+import * as z from 'zod';
 
 /** The collection name of each scope kind, as Resource Manager and CAI spell it in paths. */
 export const SCOPE_COLLECTIONS = {

@@ -5,7 +5,7 @@
  * (codec/normalize.ts) must give the same result for any input; this is the oracle the property test compares
  * it with.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { DetailLevelSchema, LensIdSchema } from '../schemas/lens.js';
 import {
   AssetTypePatternSchema,

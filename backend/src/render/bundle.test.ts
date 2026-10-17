@@ -3,9 +3,10 @@
  * The production bundles (bundle.ts): written into a temporary directory, the render worker draws a demo view
  * to the committed goldens' bytes (the PNG and the `.drawio` file) from its own asset directory, with no
  * node_modules involved, and `server.mjs` holds none of the render library: no React, no resvg, no frontend
- * component, no native addon. The licence file names the files each package ships in, lists each exactly
- * pinned package at the version installed and carries the MPL-2.0 text, and the notices script's table of the
- * asset directory's packages (scripts/third-party-notices.mjs) matches the directory the bundle writes.
+ * component, no native addon. Neither carries a zod locale but the English one. The licence file names the
+ * files each package ships in, lists each exactly pinned package at the version installed and carries the
+ * MPL-2.0 text, and the notices script's table of the asset directory's packages
+ * (scripts/third-party-notices.mjs) matches the directory the bundle writes.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -121,6 +122,21 @@ describe('the bundles', () => {
       licenses: string[];
     };
     expect(manifest.fonts.every((font) => existsSync(path.join(out, 'render-assets', font)))).toBe(true);
+  });
+
+  it('keep zod’s locales out of both, but the English one its messages use', () => {
+    // zod imported as a namespace (eslint.config.js); a named or default `z` anywhere keeps every locale.
+    for (const bundle of ['server.mjs', 'render-worker.mjs']) {
+      const map = readFileSync(path.join(out, `${bundle}.map`), 'utf8');
+      const locales = new Set(
+        [...map.matchAll(/node_modules\/zod\/v4\/locales\/([\w-]+)\.js/g)].map((match) => match[1]),
+      );
+      expect(locales.has('en'), bundle).toBe(true);
+      expect(
+        [...locales].filter((locale) => locale !== 'en' && locale !== 'index'),
+        bundle,
+      ).toEqual([]);
+    }
   });
 
   it('name the files each package ships in, and carry the MPL-2.0 text for resvg-wasm', () => {

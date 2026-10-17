@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { z } from 'zod';
+import * as z from 'zod';
 
 /**
  * Response contracts. Each is written once as a zod schema (the type comes from z.infer) and handed to

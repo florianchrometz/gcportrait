@@ -3,7 +3,7 @@
  * Synthetic sample documents for the tests: example.com domains, documentation IP ranges, project numbers
  * below 100000000000. Each builder returns a fresh object, so a test can mutate it.
  */
-import type { z } from 'zod';
+import type * as z from 'zod';
 import type { Asset } from '../schemas/asset.js';
 import { CatalogSchema, type Catalog, type CatalogEntrySchema } from '../schemas/catalog.js';
 import type { Graph } from '../schemas/graph.js';

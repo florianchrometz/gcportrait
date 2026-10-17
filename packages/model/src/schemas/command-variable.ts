@@ -6,7 +6,7 @@
  * repository's tooling read it without the schema library; this module declares its row schema and re-exports
  * it, and command-variables.test.ts checks every row against the schema.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { VARIABLE_NAME_PATTERN } from './command-variables.js';
 

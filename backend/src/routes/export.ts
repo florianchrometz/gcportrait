@@ -11,7 +11,7 @@
  * `x-gcportrait-export-bytes`. Cloud Storage's own errors arrive as `error` frames.
  */
 import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { tokenKeyOf } from '../stream/caller.js';
 import {

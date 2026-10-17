@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /** A normalised Cloud Asset Inventory asset (skill cai-ingestion §2). */
-import { z } from 'zod';
+import * as z from 'zod';
 import {
   ANCESTOR_PATTERN,
   AssetTypeSchema,

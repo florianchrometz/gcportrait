@@ -2,7 +2,7 @@
 /**
  * Timeline types shared by `packages/graph` (diff) and the UI (skill cai-ingestion §5, docs/timeline.md).
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { DateSchema, ResourceNameSchema } from './primitives.js';
 
 /**

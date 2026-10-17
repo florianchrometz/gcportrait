@@ -6,7 +6,7 @@
  * forest, edges and dangling references are where they belong), so builder tests can use the schema as their
  * oracle.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import {
   AssetTypeSchema,
   DomainSchema,

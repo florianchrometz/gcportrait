@@ -442,7 +442,10 @@ layout: `src/config.ts` finds `package.json` and `../frontend/dist` relative to 
 `backend/package.json` next to it. `tsc -p tsconfig.build.json` (part of `build`) still emits the unbundled
 `dist/*.js` as a compile check; they import the workspace packages' TypeScript and do not run on their own.
 The render job's files are left out of that check (they reach the frontend's components through the render
-library; `tsc -b` checks them through the project references).
+library; `tsc -b` checks them through the project references). zod is imported as a namespace everywhere the
+bundles reach (`import * as z from 'zod'`; `eslint.config.js` refuses a named or default `z`), so esbuild
+keeps only the parts of zod the code uses and, of its locales, only the English one its messages come from; a
+named `z` would bring in every locale.
 
 The render API adds a second bundle, `dist/render-worker.mjs` (the render library, the frontend's headless
 closure with the draw.io translator and its compressor, fflate, `react-dom/server` and resvg-wasm's glue code,
@@ -451,4 +454,4 @@ defines at build time. `dist/render-assets/`, written by the library's `writeAss
 reads at run time without `node_modules`: resvg's WebAssembly module, unmodified, and the Roboto faces in
 their loading order with their licences. The bundle step fails on any native addon (`.node`), and the licence
 report covers both bundles and the copied packages (`src/render/bundle.test.ts` builds into a temporary
-directory and draws the golden PNG with the bundled worker).
+directory, draws the golden PNG with the bundled worker and finds no zod locale but English in either bundle).

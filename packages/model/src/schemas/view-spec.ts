@@ -3,7 +3,7 @@
  * ViewSpec: everything that defines a view. It serialises into the URL hash
  * (`codec/view-hash.ts`); `snapshot` and `tick` make timeline positions shareable.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';
 import {
   AssetTypePatternSchema,

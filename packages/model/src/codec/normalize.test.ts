@@ -6,7 +6,7 @@
  */
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import type { z } from 'zod';
+import type * as z from 'zod';
 import {
   ASSET_TYPE_PATTERN_OR_GLOB,
   AssetTypePatternSchema,

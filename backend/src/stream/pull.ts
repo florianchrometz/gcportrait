@@ -17,7 +17,7 @@
  */
 import { TimestampSchema } from '@gcportrait/model';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { GateDecision, GatedRoute, ServiceAccountGate } from '../auth/gate.js';
 import { refusalFrame, sendRefusal } from '../auth/refusal.js';

@@ -7,7 +7,7 @@
 import { STATUS_CODES } from 'node:http';
 
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 import { callerTokenOf, tokenKeyOf } from '../stream/caller.js';
 import type { GoogleCallContext, UpstreamSummary } from './google.js';

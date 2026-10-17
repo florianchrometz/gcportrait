@@ -351,6 +351,10 @@ dependency must pass `pnpm run licenses`.
   full table.
 - A type that crosses a package boundary is a zod schema in `@gcportrait/model`, with the type inferred
   through `z.infer`. Do not declare it a second time.
+- zod is imported as a namespace, `import * as z from 'zod'` (`import type * as z from 'zod'` where only its
+  types are used). With `z` as a named or default import esbuild keeps all of zod, every one of its locales
+  included, in the backend's bundles; `eslint.config.js` refuses that form, and `src/render/bundle.test.ts`
+  in the backend fails on a locale other than English in either bundle.
 - A new workspace package must be added to the `references` of the root `tsconfig.json`, or `pnpm typecheck`
   skips it.
 - Data over code: asset types, relation rules, lenses, icon mappings, product names and console URLs live in

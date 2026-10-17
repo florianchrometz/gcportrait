@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { LegalTextError, NO_LEGAL_TEXTS, parseLegalBundle, readLegalDir, type LegalTexts } from './legal.js';
 

@@ -5,7 +5,7 @@
  * must not depend on graph. The organisation itself is not a zone: the canvas is the organisation, so the
  * tree starts at its children (or at the drill-in root's children).
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { LensIdSchema } from './lens.js';
 import {
   AssetTypeSchema,

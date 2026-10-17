@@ -34,7 +34,7 @@ import {
   checkRenderOptions,
 } from '@gcportrait/model';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import type { RenderLimits } from '../config.js';
 import {

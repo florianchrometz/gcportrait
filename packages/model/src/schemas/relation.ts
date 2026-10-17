@@ -3,7 +3,7 @@
  * Relation kinds and their metadata (skill gcp-asset-catalog §4). The renderer and the legend read styles and
  * default visibility from {@link RELATION_KINDS}; nothing else keeps a second copy of this table.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { LensIdSchema } from './lens.js';
 import { NonEmptyStringSchema } from './primitives.js';
 import { RELATION_KIND_IDS } from './vocabulary.js';

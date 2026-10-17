@@ -8,7 +8,7 @@
  * are shown, unknown flips, warnings and counters. Plain records only, so it crosses worker boundaries and JSON
  * unchanged.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { NodeIdSchema } from './graph.js';
 import { DetailLevelSchema } from './lens.js';
 import { CountSchema, NonEmptyStringSchema, TextSchema, TimestampSchema } from './primitives.js';

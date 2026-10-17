@@ -14,6 +14,9 @@
  *    the dependency direction of docs/packages.md §2 (frontend/backend → packages → model; AGENTS.md,
  *    Architecture and code) and force imports through the package entry point (`@gcportrait/<pkg>`, never a
  *    deep path).
+ *
+ * One more rule keeps zod imported as a namespace, so the backend's bundles leave out what they do not use
+ * (ZOD_NAMESPACE_SELECTORS below).
  */
 import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
@@ -80,6 +83,23 @@ const BASE_RESTRICTED_PATTERNS = [
     message:
       'Import a package through its entry point (@gcportrait/<pkg>, or its @gcportrait/<pkg>/testing export), not a path inside it.',
   },
+];
+
+/** zod and its subpaths (`zod/v4`, `zod/mini`), as an esquery regular expression. */
+const ZOD_SOURCE = '/^zod(\\/|$)/';
+const ZOD_NAMESPACE_MESSAGE =
+  "Import zod as a namespace, `import * as z from 'zod'` (`import type * as z` for types only): with a named or default `z`, esbuild keeps all of zod in the backend's bundles, every locale included.";
+
+/**
+ * zod's `z` as a named or default import (or re-export) keeps the whole namespace object, and with it every
+ * locale zod ships, in the backend's esbuild bundles; the namespace import lets esbuild keep only what the
+ * code uses. `no-restricted-imports` cannot say this: with `importNames: ['z']` it refuses the namespace
+ * import as well, since that imports every name.
+ */
+const ZOD_NAMESPACE_SELECTORS = [
+  `ImportDeclaration[source.value=${ZOD_SOURCE}] > ImportSpecifier[imported.name=/^(z|default)$/]`,
+  `ImportDeclaration[source.value=${ZOD_SOURCE}] > ImportDefaultSpecifier`,
+  `ExportNamedDeclaration[source.value=${ZOD_SOURCE}] > ExportSpecifier[local.name=/^(z|default)$/]`,
 ];
 
 /**
@@ -177,6 +197,17 @@ export default defineConfig(
   // Per-workspace dependency direction. Each block repeats the base patterns because a later config object
   // replaces (does not merge) the options of the same rule.
   ...WORKSPACE_DEPENDENCIES.map(dependencyDirection),
+
+  {
+    name: 'gcportrait/zod-namespace',
+    files: SOURCE_FILES,
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...ZOD_NAMESPACE_SELECTORS.map((selector) => ({ selector, message: ZOD_NAMESPACE_MESSAGE })),
+      ],
+    },
+  },
 
   {
     name: 'gcportrait/node-globals',

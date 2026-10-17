@@ -22,7 +22,7 @@
  */
 import { NumericIdSchema, ProjectRefSchema, ScopeKindSchema, type ScopeKind } from '@gcportrait/model';
 import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
+import * as z from 'zod';
 
 import { UpstreamSummarySchema } from '../preflight/schemas.js';
 import { toFastifySchema } from '../schemas.js';

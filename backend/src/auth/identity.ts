@@ -34,7 +34,7 @@ import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import { z } from 'zod';
+import * as z from 'zod';
 
 /** Where the identity came from (logged once at start-up; never the credentials themselves). */
 export type IdentitySource = 'metadata-server' | 'impersonation' | 'key-file';

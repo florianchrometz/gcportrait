@@ -13,7 +13,7 @@ import {
   type CatalogType,
   type GraphNode,
 } from '@gcportrait/model';
-import type { z } from 'zod';
+import type * as z from 'zod';
 
 export const ORG_NUMBER = '30000000001';
 export const ORG = `//cloudresourcemanager.googleapis.com/organizations/${ORG_NUMBER}`;
