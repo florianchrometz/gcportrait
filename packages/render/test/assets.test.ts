@@ -2,6 +2,7 @@
 /**
  * The asset directory the backend's bundle ships: written and read back by the same module, it holds the
  * packages' own bytes in the loading order of the fonts, so the bundle draws with what `pnpm render` draws with.
+ * Its manifest lists resvg-wasm at the version installed, which package.json pins exactly (pins.ts).
  */
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -16,6 +17,7 @@ import {
   readAssetDir,
   writeAssetDir,
 } from '../src/index.js';
+import { exactPin } from './pins.js';
 
 const dir = mkdtempSync(path.join(tmpdir(), 'gcportrait-render-assets-'));
 afterAll(() => {
@@ -28,7 +30,10 @@ describe('the asset directory', () => {
     expect(manifest.wasm).toBe('resvg.wasm');
     expect(manifest.fonts).toHaveLength(fontFiles().length);
     expect(manifest.fonts[0]).toMatch(/^fonts\/0+-roboto-latin-400-normal\.woff$/);
-    expect(manifest.packages).toEqual({ '@resvg/resvg-wasm': '2.6.2', ...fontPackageVersions() });
+    expect(manifest.packages).toEqual({
+      '@resvg/resvg-wasm': exactPin('@resvg/resvg-wasm'),
+      ...fontPackageVersions(),
+    });
     // The OFL-1.1 fonts travel with their licence; resvg-wasm ships none of its own.
     expect(manifest.licenses.some((name) => name.includes('fontsource__roboto-'))).toBe(true);
     for (const name of manifest.licenses) expect(existsSync(path.join(dir, name))).toBe(true);

@@ -2,8 +2,10 @@
 /**
  * The WebAssembly rasteriser against the native binding: `@resvg/resvg-wasm` and `@resvg/resvg-js` (a dev
  * dependency, used here only) at the same version, with the same fonts, must give the same PNG bytes for six
- * demo views and for a capped geometry. The native side is set up step for step like the WebAssembly one: the
- * faces unwrapped to font files, system fonts off.
+ * demo views and for a capped geometry. Both are builds of one resvg release, so the first test holds them to
+ * one version, each pinned exactly in package.json (pins.ts), and a bump of one without the other fails it
+ * with that as the reason. The native side is set up step for step like the WebAssembly one: the faces
+ * unwrapped to font files, system fonts off.
  */
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -24,6 +26,7 @@ import {
   svgFrame,
   type DiagramTheme,
 } from '../src/index.js';
+import { exactPin } from './pins.js';
 
 const fontDir = mkdtempSync(path.join(tmpdir(), 'gcportrait-render-parity-'));
 afterAll(() => {
@@ -60,6 +63,12 @@ const views = createDemoViews();
 const spec = (fixture: DemoSize, lens: LensId) => normalizeViewSpec({ snapshot: `demo:${fixture}`, lens });
 
 describe('resvg-wasm against the native binding', () => {
+  it('compares the two builds at one version, each pinned exactly', () => {
+    expect(exactPin('@resvg/resvg-js'), '@resvg/resvg-js at the version of @resvg/resvg-wasm').toBe(
+      exactPin('@resvg/resvg-wasm'),
+    );
+  });
+
   it.each([
     ['S', 'overview', 'light', 2],
     ['S', 'overview', 'dark', 2],

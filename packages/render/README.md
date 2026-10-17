@@ -47,7 +47,8 @@ depend on its version, and the render golden PNG is that version's bytes
 ([e2e/baselines/render/README.md](../../e2e/baselines/render/README.md) names it). A WebAssembly build
 computes the same pixels on every platform, and it can be bundled into the backend's image, which has no
 `node_modules`. `test/parity.test.ts` draws six views and a capped one with it and with the native
-`@resvg/resvg-js` (a dev dependency, used only there) and finds the same bytes; the committed golden
+`@resvg/resvg-js` (a dev dependency, used only there, pinned exactly at the same version, which the test
+checks first) and finds the same bytes; the committed golden
 (`e2e/baselines/render/S-overview-auto-light.png`) comes out byte for byte. It is 1.2 to 1.9 times slower than
 the native binding, and its memory grows to about 10 bytes per pixel of the largest PNG drawn and is never
 given back while its thread lives: the backend draws each render in a fresh worker.

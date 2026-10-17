@@ -207,7 +207,7 @@ mobile` (`website/scripts/mobile.ts`) checks the rendered pages in Playwright an
   page scrolls sideways or an element reaches past the viewport outside a scrolling box, when two header items
   overlap or one leaves the screen, when the header is not at the top of the window once the page is scrolled
   to its end or an anchor jump to the page's last level-2 heading leaves it under the header, when a link or
-  button that is not inline text is under 44 × 44 pixels, when axe-core 4.13 (all non-experimental rules, as
+  button that is not inline text is under 44 × 44 pixels, when axe-core (all non-experimental rules, as
   `e2e/` runs it) finds a violation (panels closed at every width, open at 375), or when the name Chromium
   gives a link or a button (its accessibility tree, what a screen reader reads, which axe-core does not check;
   panels open, at the first width) has a space before a punctuation mark, as in "Open SVG , Demo S".
