@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, type Page } from '@playwright/test';
 
-import { ALL_SCOPES, storedEverywhere, stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
+import { storedEverywhere, stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
 import { stubConfig, test } from '../fixtures/live.js';
 import { copied, grantClipboard, panel, reference, row, values } from './permissionsSupport.js';
 import { expectNoAxeViolations, scratchShot, SHOTS_WANTED } from './support.js';
@@ -114,7 +114,7 @@ test('signed in: the scope picked, the account and the service account are prefi
 }) => {
   await grantClipboard(context);
   await stubBackend(page);
-  await stubGoogle(page, { tokens: [TOKEN], expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant' });
+  await stubGoogle(page, { tokens: [TOKEN] });
   await page.goto('/permissions');
   const check = page.getByRole('region', { name: 'Check a scope' });
   await check.getByRole('button', { name: 'Sign in with Google' }).click();

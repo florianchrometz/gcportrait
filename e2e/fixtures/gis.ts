@@ -22,11 +22,15 @@ export const ALL_SCOPES = [
 export interface GisStubOptions {
   /** The tokens handed out, one per request (the last one repeats). Fake values, easy to search for. */
   readonly tokens: readonly string[];
-  /** `expires_in` of every token, in seconds. */
-  readonly expiresIn: number;
-  readonly scope: string;
-  /** A silent request (`prompt: 'none'`): granted, or refused as a browser blocks a window nobody clicked for. */
-  readonly silent: 'grant' | 'blocked';
+  /** `expires_in` of every token, in seconds; by default 3599, the hour Google grants. */
+  readonly expiresIn?: number;
+  /** The scopes granted; by default ALL_SCOPES. */
+  readonly scope?: string;
+  /**
+   * A silent request (`prompt: 'none'`): granted (the default), or refused as a browser blocks a window nobody
+   * clicked for.
+   */
+  readonly silent?: 'grant' | 'blocked';
 }
 
 /** What the stub saw, in `window.__gisStub`. */
@@ -41,7 +45,7 @@ export interface GisStubLog {
  * The stub script's body. It runs in the browser, so it is self-contained: Playwright serialises it with
  * `toString()`, as it does for `page.addInitScript`.
  */
-function gisClientStub(options: GisStubOptions): void {
+function gisClientStub(options: Required<GisStubOptions>): void {
   interface TokenClientConfig {
     readonly client_id: string;
     readonly scope: string;
@@ -109,7 +113,8 @@ export interface GoogleStubs {
 }
 
 /** Answers Google's script and tokeninfo inside the browser, and records what the page asked. */
-export async function stubGoogle(page: Page, options: GisStubOptions): Promise<GoogleStubs> {
+export async function stubGoogle(page: Page, given: GisStubOptions): Promise<GoogleStubs> {
+  const options: Required<GisStubOptions> = { expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant', ...given };
   let scriptLoads = 0;
   const tokenInfoBodies: string[] = [];
   const urls: string[] = [];

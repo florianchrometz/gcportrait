@@ -75,11 +75,17 @@ either. The normal-mode server proxies `/api` to a backend on port 8080 that the
 every spec that opens it (the live specs, and `mobile.spec.ts` for a live instance's pages) takes its `test`
 from `fixtures/live.ts`: an `/api` request to that server that none of the test's own routes answers gets a
 503 in the browser that names it, and fails the test at its end. The proxy is never reached, and the run's
-output carries no proxy error. Helpers the specs share are in `tests/support.ts`, `tests/timelineSupport.ts`,
-`tests/consoleSupport.ts` and `tests/permissionsSupport.ts`. Chromium only for now; the functional specs at a
-desktop window of 1440×900, `mobile.spec.ts` at phone and tablet sizes, `touch.spec.ts` at a phone's and
-`handheld.spec.ts` at the phone's and the tablet's projects' sizes; light colour scheme unless a test asks for
-dark. `pnpm e2e --project chromium-phone --project chromium-tablet` runs the two handheld projects alone.
+output carries no proxy error. Helpers the specs share are in `tests/support.ts` (among them the drawn
+canvas's selector `DRAWN_CANVAS`, `viewParam` for a value of the view in the address, `demoCaiExport` for a
+demo organisation as a Cloud Asset Inventory export, generated once per worker, and `exportOperation` for an
+export's `operation.json`), `tests/handheldSupport.ts` (for `mobile.spec.ts` and `handheld.spec.ts`: the
+44-pixel target, where the tablet's layout starts, and the top bar's View and More folds),
+`tests/timelineSupport.ts`, `tests/consoleSupport.ts` and `tests/permissionsSupport.ts`; `stubGoogle`
+(`fixtures/gis.ts`) hands out a test's tokens for an hour with every scope sign-in asks for unless the test
+says otherwise. Chromium only for now; the functional specs at a desktop window of 1440×900, `mobile.spec.ts`
+at phone and tablet sizes, `touch.spec.ts` at a phone's and `handheld.spec.ts` at the phone's and the tablet's
+projects' sizes; light colour scheme unless a test asks for dark.
+`pnpm e2e --project chromium-phone --project chromium-tablet` runs the two handheld projects alone.
 
 CI runs the whole suite in five legs (`.github/workflows/pr.yml`), each a round-robin share of its projects'
 tests: `chromium-live` and `chromium` in three, and every other project (`chromium-phone`, `chromium-tablet`

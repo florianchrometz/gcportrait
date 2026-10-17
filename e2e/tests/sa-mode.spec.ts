@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { ALL_SCOPES, stubGoogle } from '../fixtures/gis.js';
+import { stubGoogle } from '../fixtures/gis.js';
 import { routeApiTo, startHarness as startBackend } from '../fixtures/harness.js';
 import { checkSection, choose, environment, expectTokenNowhere, test } from '../fixtures/live.js';
 import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
@@ -93,12 +93,7 @@ function explainer(page: Page): Locator {
 /** Signs in on the Permissions page and switches to service-account mode. */
 async function openInServiceAccountMode(page: Page, harness: Harness) {
   await routeApiTo(page, harness);
-  const google = await stubGoogle(page, {
-    tokens: [TOKEN],
-    expiresIn: 3599,
-    scope: ALL_SCOPES,
-    silent: 'grant',
-  });
+  const google = await stubGoogle(page, { tokens: [TOKEN] });
   await page.goto('/permissions');
   await checkSection(page).getByRole('button', { name: 'Sign in with Google' }).click();
   await expect(checkSection(page).getByRole('combobox', { name: 'Scope' })).toBeVisible();

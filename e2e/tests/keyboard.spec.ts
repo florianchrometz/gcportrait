@@ -5,6 +5,7 @@ import { PNG } from 'pngjs';
 import {
   cameraSettled,
   contrastRatio,
+  DRAWN_CANVAS,
   expectNoAxeViolations,
   hashOf,
   openDiagram,
@@ -139,7 +140,7 @@ async function pointerEventsSeen(page: Page): Promise<string[]> {
 }
 
 function canvas(page: Page): Locator {
-  return page.locator('svg.dg-canvas[data-diagram-ready="true"]');
+  return page.locator(DRAWN_CANVAS);
 }
 
 /** The canvas's one tab stop among its items (a node, or an open zone's collapse button). */

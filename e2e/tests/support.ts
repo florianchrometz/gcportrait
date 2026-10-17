@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
+import { execFileSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 
 import { AxeBuilder } from '@axe-core/playwright';
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 
 /**
  * Shared helpers for the specs. The app is driven only through the browser; nothing here imports it.
@@ -173,11 +175,73 @@ export async function expectNoAxeViolations(page: Page): Promise<void> {
   expect(violations).toEqual([]);
 }
 
+/** The repository's root, where the demo generator runs. */
+const REPO = path.resolve(import.meta.dirname, '..', '..');
+
+/** The demo exports this worker has generated, by their path. */
+const generatedExports = new Set<string>();
+
+/**
+ * Demo organisation `size` on `day` (`YYYY-MM-DD`) as a Cloud Asset Inventory export of its organisation (the demo
+ * generator's `cai-export` format: one asset per line, the protobuf spelling), written once per worker as
+ * `export.json` under the project's test output; answers its path.
+ */
+export function demoCaiExport(testInfo: TestInfo, size: 'S' | 'M', day: string): string {
+  const dir = path.join(
+    testInfo.project.outputDir,
+    `cai-export-${size}-${day}`,
+    `worker-${String(testInfo.workerIndex)}`,
+  );
+  const lines = path.join(dir, 'export.json');
+  if (generatedExports.has(lines)) return lines;
+  mkdirSync(dir, { recursive: true });
+  execFileSync(
+    'pnpm',
+    [
+      '--silent',
+      '--filter',
+      '@gcportrait/demo-data',
+      'generate',
+      '--size',
+      size,
+      '--format',
+      'cai-export',
+      '--tick',
+      day,
+      '--out',
+      lines,
+    ],
+    { cwd: REPO, stdio: 'ignore' },
+  );
+  generatedExports.add(lines);
+  return lines;
+}
+
+/**
+ * The `operation.json` of a finished export of `parent` (`organizations/…`) that was read at `readTime`, as
+ * `gcloud asset operations describe` writes it: the sidecar an import takes the export's read time and scope from.
+ */
+export function exportOperation(parent: string, readTime: string): string {
+  return JSON.stringify({
+    name: `${parent}/operations/ExportAssets/RESOURCE/7`,
+    metadata: {
+      '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsRequest',
+      contentType: 'RESOURCE',
+      parent,
+    },
+    done: true,
+    response: {
+      '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsResponse',
+      readTime,
+    },
+  });
+}
+
 /** The diagram of demo organisation M (the e2e suite's diagram fixture). */
 export const DEMO_M_DIAGRAM = '/diagram#snapshot=demo:M';
 
 /** The canvas `<svg>` once a drawing is on it, fitted and interactive (frontend/src/diagram/DiagramCanvas.tsx). */
-const DRAWN_CANVAS = 'svg.dg-canvas[data-diagram-ready="true"]';
+export const DRAWN_CANVAS = 'svg.dg-canvas[data-diagram-ready="true"]';
 
 /**
  * Waits until both workers have answered and a diagram is drawn on the page; returns the canvas `<svg>`. The canvas
@@ -230,6 +294,11 @@ export async function openDiagram(page: Page, address: string = DEMO_M_DIAGRAM):
 /** The view in the address: its hash, `#` included, percent-decoded for reading. */
 export function hashOf(page: Page): string {
   return decodeURIComponent(new URL(page.url()).hash);
+}
+
+/** A value of the view in the address (`selection`, `root`, `lens`, `flips`), or null. */
+export function viewParam(page: Page, name: string): string | null {
+  return new URLSearchParams(new URL(page.url()).hash.slice(1)).get(name);
 }
 
 /**

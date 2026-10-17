@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
@@ -8,13 +7,17 @@ import { expect, type Locator, type Page, type TestInfo } from '@playwright/test
 import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TOKENINFO_URL } from '../fixtures/gis.js';
 import { stubConfig, test } from '../fixtures/live.js';
 import { LIVE_URL } from '../fixtures/servers.js';
+import { fold, openSheet, TABLET_FROM, TARGET, type Fold } from './handheldSupport.js';
 import {
   boxOf,
   cameraSettled,
   DEFAULT_SOURCE_URL,
+  demoCaiExport,
   drawnCanvas,
   expectNoAxeViolations,
+  exportOperation,
   openDiagram,
+  viewParam,
   type Box,
 } from './support.js';
 import {
@@ -164,74 +167,29 @@ const SCOPES = [
     parent: 'folders/20000000001',
   },
 ] as const;
-/** The smallest touch target, in CSS pixels (WCAG 2.5.5's 44 × 44; a little rounding allowed). */
-const TARGET = 43.5;
-/** Where the tablet's layout starts (48rem at a 16-pixel rem, frontend/src/ui/screen.ts): narrower is a phone. */
-const TABLET_FROM = 768;
 /**
  * A phone's canvas shorter than this hides the disclosure bar's row while the details sheet is open at half height
  * (20.25rem at a 16-pixel rem, `CONTAINER.shortCanvas` of frontend/src/ui/screen.ts).
  */
 const SHORT_CANVAS = 20.25 * 16;
-const REPO = path.resolve(import.meta.dirname, '..', '..');
 /** When the export of demo organisation S was taken, as its operation.json says. */
 const EXPORT_READ_TIME = '2026-10-05T14:30:00Z';
 
 test.use({ isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
 
-/** This worker's export of demo organisation S, once generated. */
+/** This worker's export of demo organisation S and its operation.json, once written. */
 let exported: readonly string[] | undefined;
 
 /**
- * Demo organisation S on 5 October as an export of `organizations/30000000001` (the demo generator's `cai-export`
- * format, as extra-ticks.spec.ts writes demo M's) and its operation.json, written once per worker under the test
- * output: imported, it is a stored snapshot and an extra tick on its scope's timeline, a row in each of the Snapshots
- * page's tables.
+ * Demo organisation S on 5 October as an export of `organizations/30000000001` (`demoCaiExport`, as extra-ticks.spec.ts
+ * takes demo M's) and its operation.json, written once per worker under the test output: imported, it is a stored
+ * snapshot and an extra tick on its scope's timeline, a row in each of the Snapshots page's tables.
  */
 function demoExport(testInfo: TestInfo): readonly string[] {
   if (exported !== undefined) return exported;
-  const dir = path.join(
-    testInfo.project.outputDir,
-    'mobile-export',
-    `worker-${String(testInfo.workerIndex)}`,
-  );
-  mkdirSync(dir, { recursive: true });
-  const lines = path.join(dir, 'export.json');
-  execFileSync(
-    'pnpm',
-    [
-      '--silent',
-      '--filter',
-      '@gcportrait/demo-data',
-      'generate',
-      '--size',
-      'S',
-      '--format',
-      'cai-export',
-      '--tick',
-      '2026-10-05',
-      '--out',
-      lines,
-    ],
-    { cwd: REPO, stdio: 'ignore' },
-  );
-  const operation = path.join(dir, 'operation.json');
-  writeFileSync(
-    operation,
-    JSON.stringify({
-      name: 'organizations/30000000001/operations/ExportAssets/RESOURCE/7',
-      metadata: {
-        '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsRequest',
-        contentType: 'RESOURCE',
-        parent: 'organizations/30000000001',
-      },
-      done: true,
-      response: {
-        '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsResponse',
-        readTime: EXPORT_READ_TIME,
-      },
-    }),
-  );
+  const lines = demoCaiExport(testInfo, 'S', '2026-10-05');
+  const operation = path.join(path.dirname(lines), 'operation.json');
+  writeFileSync(operation, exportOperation('organizations/30000000001', EXPORT_READ_TIME));
   exported = [lines, operation];
   return exported;
 }
@@ -791,23 +749,7 @@ async function expectClean(
   if (axe) await expectNoAxeViolations(page);
 }
 
-/** The fold `name` of the top bar ("View", "More"): its button and its sheet. */
-function fold(page: Page, name: string): { readonly button: Locator; readonly sheet: Locator } {
-  const banner = page.getByRole('banner');
-  return {
-    button: banner.getByRole('button', { name, exact: true }),
-    sheet: banner.getByRole('dialog', { name, exact: true }),
-  };
-}
-
-async function openSheet(page: Page, name: string): Promise<Locator> {
-  const { button, sheet } = fold(page, name);
-  await button.click();
-  await expect(sheet).toBeVisible();
-  return sheet;
-}
-
-async function closeSheet(page: Page, name: string): Promise<void> {
+async function closeSheet(page: Page, name: Fold): Promise<void> {
   const { button, sheet } = fold(page, name);
   await page.keyboard.press('Escape');
   await expect(sheet).toBeHidden();
@@ -863,7 +805,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
               await document.fonts.ready;
             });
             await expectClean(page, `${path} at rest`, { focus: true });
-            await openSheet(page, 'More');
+            await openSheet(page, 'More', 'click');
             await expectClean(page, `${path} with More open`, {
               axe: size.width === 375 || size.width === 820,
               focus: true,
@@ -909,7 +851,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
             const room = await canvasRoom(page);
             expect(room.ofWindow, 'the canvas’s share of the window').toBeGreaterThanOrEqual(0.25);
             await expectClean(page, 'at rest', { focus: true });
-            const view = await openSheet(page, 'View');
+            const view = await openSheet(page, 'View', 'click');
             await expectClean(page, 'with View open', { focus: true });
             // The sheet's own popups open inside it: the Lens list, the Filters panel.
             await view.getByRole('combobox', { name: 'Lens' }).click();
@@ -933,7 +875,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
             await search.fill('');
             await expect(view.getByRole('listbox')).toBeHidden();
             await closeSheet(page, 'View');
-            const more = await openSheet(page, 'More');
+            const more = await openSheet(page, 'More', 'click');
             await expectClean(page, 'with More open', { focus: true });
             // Each menu of More opens inside the sheet, its longest item (the Snapshot menu's "Open: …" line) wrapping.
             for (const menu of ['Snapshot', 'Theme', 'Export']) {
@@ -1194,9 +1136,9 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
       const svg = await openDiagram(page, address);
       for (const theme of ['light', 'dark'] as const) {
         await page.emulateMedia({ colorScheme: theme });
-        for (const name of ['View', 'More']) {
+        for (const name of ['View', 'More'] as const) {
           const where = `${hash}, ${theme} theme, ${name} open`;
-          const room = await sheetRoom(await openSheet(page, name));
+          const room = await sheetRoom(await openSheet(page, name, 'click'));
           expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
           expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
           await expectClean(page, where, { axe: false, focus: true });
@@ -1208,7 +1150,7 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
         await selectACard(page, svg);
         const details = page.getByRole('complementary', { name: 'Details' });
         if (size.width < TABLET_FROM) await expect(details).toHaveAttribute('data-sheet', 'half');
-        const room = await sheetRoom(await openSheet(page, 'View'));
+        const room = await sheetRoom(await openSheet(page, 'View', 'click'));
         await expect(details, `${where}: the drawer`).toBeHidden();
         expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
         expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
@@ -1301,7 +1243,7 @@ for (const theme of ['light', 'dark'] as const) {
         const scopes = SCOPES.filter((scope) => kinds === undefined || kinds.includes(scope.kind));
         return route.fulfill({ json: { scopes, problems: [] } });
       });
-      await stubGoogle(page, { tokens: [FAKE_TOKEN], expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant' });
+      await stubGoogle(page, { tokens: [FAKE_TOKEN] });
       // A long work address: the account's button and its panel wrap it.
       await page.route(TOKENINFO_URL, (route) =>
         route.fulfill({
@@ -1326,12 +1268,12 @@ for (const theme of ['light', 'dark'] as const) {
         .click();
       // Signed in: focus moves on to the next step's heading.
       await expect(page.getByRole('heading', { name: 'Read your environment' })).toBeFocused();
-      const more = await openSheet(page, 'More');
+      const more = await openSheet(page, 'More', 'click');
       const account = more.getByRole('button', { name: LONG_EMAIL, exact: true });
       await expect(account).toBeVisible();
       await closeSheet(page, 'More');
       await expectClean(page, 'the Connect page, signed in', { focus: true });
-      await openSheet(page, 'More');
+      await openSheet(page, 'More', 'click');
       await expectClean(page, 'signed in, with More open', { axe: false, focus: true });
       await account.click();
       const panel = more.getByRole('dialog', { name: 'Account' });
@@ -1346,7 +1288,7 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
       await expect(fold(page, 'More').sheet).toBeHidden();
       await expectClean(page, 'the Permissions page, signed in', { focus: true });
-      await openSheet(page, 'More');
+      await openSheet(page, 'More', 'click');
       await account.click();
       await panel.getByRole('button', { name: 'Sign out', exact: true }).click();
       await expect(fold(page, 'More').sheet).toBeHidden();
@@ -1406,7 +1348,7 @@ test.describe('on a phone, 375 × 667', () => {
     page,
   }) => {
     await openDiagram(page, DIAGRAMS[0]);
-    const view = await openSheet(page, 'View');
+    const view = await openSheet(page, 'View', 'click');
     // The sheet holds the view row's controls, the same ones the desktop shows in the row.
     await expect(view.getByRole('combobox', { name: 'Lens' })).toBeVisible();
     await expect(view.getByRole('button', { name: /^Focus/ })).toBeVisible();
@@ -1414,7 +1356,7 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(view.getByRole('radiogroup', { name: 'Detail' })).toBeVisible();
     await expect(view.getByRole('combobox', { name: 'Search assets' })).toBeVisible();
     await closeSheet(page, 'View');
-    const more = await openSheet(page, 'More');
+    const more = await openSheet(page, 'More', 'click');
     for (const link of ['Connect', 'Diagram', 'Snapshots', 'Permissions', 'Settings'])
       await expect(more.getByRole('link', { name: link, exact: true })).toBeVisible();
     for (const button of ['Snapshot', 'Saved views', 'Copy link', 'Theme', 'Export'])
@@ -1427,7 +1369,7 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(more).toBeVisible();
     await closeSheet(page, 'More');
     // A pick that changes the view or the theme closes More, focus back on its button.
-    await openSheet(page, 'More');
+    await openSheet(page, 'More', 'click');
     await more.getByRole('button', { name: 'Theme', exact: true }).click();
     await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -1493,7 +1435,7 @@ test.describe('on a phone, 375 × 667', () => {
     const box = await top.boundingBox();
     if (box === null) throw new Error('no crumb');
     await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-    await expect.poll(() => new URLSearchParams(new URL(page.url()).hash.slice(1)).get('root')).toBeNull();
+    await expect.poll(() => viewParam(page, 'root')).toBeNull();
     await expect(crumbs).toHaveCount(1);
   });
 
@@ -1770,9 +1712,7 @@ test.describe('on a phone, 375 × 667', () => {
     });
     expect(chip).not.toBeNull();
     await page.touchscreen.tap(chip?.x ?? 0, chip?.y ?? 0);
-    await expect
-      .poll(() => new URLSearchParams(new URL(page.url()).hash.slice(1)).get('flips'))
-      .not.toBeNull();
+    await expect.poll(() => viewParam(page, 'flips')).not.toBeNull();
   });
 });
 

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+import { fold, openSheet, TABLET_FROM, TARGET } from './handheldSupport.js';
 import {
   boxOf,
   cameraSettled,
@@ -13,6 +14,7 @@ import {
   hashOf,
   openDiagram,
   redrawnCanvas,
+  viewParam,
   type Box,
 } from './support.js';
 import {
@@ -53,29 +55,8 @@ import {
  * project. Nothing here saves or compares a screenshot.
  */
 
-/** The smallest touch target, in CSS pixels (WCAG 2.5.5's 44 × 44; a little rounding allowed). */
-const TARGET = 43.5;
-/** Where the tablet's layout starts (48rem at a 16-pixel rem, frontend/src/ui/screen.ts): narrower is a phone. */
-const TABLET_FROM = 768;
 /** Demo M's Retail web (prod) project, as search.spec.ts finds it by its id `demo-web-1`. */
 const WEB_PROJECT = '//cloudresourcemanager.googleapis.com/projects/10000000009';
-
-/** A fold of the top bar, View or More: its button and its sheet. */
-function fold(page: Page, name: 'View' | 'More'): { readonly button: Locator; readonly sheet: Locator } {
-  const banner = page.getByRole('banner');
-  return {
-    button: banner.getByRole('button', { name, exact: true }),
-    sheet: banner.getByRole('dialog', { name, exact: true }),
-  };
-}
-
-/** Opens a fold with a tap on its button; answers its sheet. */
-async function openSheet(page: Page, name: 'View' | 'More'): Promise<Locator> {
-  const { button, sheet } = fold(page, name);
-  await button.tap();
-  await expect(sheet).toBeVisible();
-  return sheet;
-}
 
 /** Fails unless `control` is at least 44 × 44 CSS pixels; `what` names it in the failure. */
 async function expectTarget(control: Locator, what: string): Promise<void> {
@@ -87,11 +68,6 @@ async function expectTarget(control: Locator, what: string): Promise<void> {
 /** Whether the page has the phone's layout. */
 function onPhone(page: Page): boolean {
   return (page.viewportSize()?.width ?? 0) < TABLET_FROM;
-}
-
-/** A value of the view in the address (`selection`, `root`, `lens`), or null. */
-function viewParam(page: Page, name: string): string | null {
-  return new URLSearchParams(new URL(page.url()).hash.slice(1)).get(name);
 }
 
 /** The details drawer. */

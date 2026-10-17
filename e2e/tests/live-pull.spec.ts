@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, type Locator, type Page, type Route } from '@playwright/test';
 
-import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
+import { stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
 import {
   checkSection,
   choose,
@@ -11,7 +11,7 @@ import {
   stubConfig,
   test,
 } from '../fixtures/live.js';
-import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
+import { drawnCanvas, expectNoAxeViolations, exportOperation, primaryNav, scratchShot } from './support.js';
 
 /**
  * The live pull and the export load in normal mode, run by the `chromium-live` project against the normal-mode
@@ -198,23 +198,8 @@ function largeExportLines(buckets: number): string {
   return lines.join('\n');
 }
 
-const OPERATION = JSON.stringify(
-  {
-    name: 'organizations/30000000001/operations/ExportAssets/RESOURCE/42',
-    metadata: {
-      '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsRequest',
-      contentType: 'RESOURCE',
-      parent: 'organizations/30000000001',
-    },
-    done: true,
-    response: {
-      '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsResponse',
-      readTime: SIDECAR_READ_TIME,
-    },
-  },
-  null,
-  2,
-);
+/** The export's operation.json, which names its read time. */
+const OPERATION = exportOperation(ORG.scope, SIDECAR_READ_TIME);
 
 interface BackendLog {
   readonly streams: unknown[];
@@ -270,7 +255,7 @@ async function stubBackend(page: Page, answers: Answers = {}): Promise<BackendLo
 }
 
 async function stubSignIn(page: Page): Promise<Awaited<ReturnType<typeof stubGoogle>>> {
-  return stubGoogle(page, { tokens: [TOKEN], expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant' });
+  return stubGoogle(page, { tokens: [TOKEN] });
 }
 
 /** Signs in on the Permissions page, picks the organisation and the quota project, and runs the check. */

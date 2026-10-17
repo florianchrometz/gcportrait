@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type CDPSession, type Locator, type Page } from '@playwright/test';
 
-import { cameraSettled, drawingOf, openDiagram, redrawnCanvas } from './support.js';
+import { cameraSettled, drawingOf, openDiagram, redrawnCanvas, viewParam } from './support.js';
 
 /**
  * The canvas by finger (AGENTS.md, Product rules, the touch model; frontend/src/diagram/touch.ts), run by the `mobile`
@@ -164,11 +164,6 @@ async function originOf(page: Page): Promise<Point> {
 /** The drawing's point (drawing units) that `camera` shows at the screen point `at`. */
 function drawingPoint(camera: Camera, origin: Point, at: Point): Point {
   return { x: (at.x - origin.x - camera.x) / camera.k, y: (at.y - origin.y - camera.y) / camera.k };
-}
-
-/** A value of the view in the address (`selection`, `root`, `flips`), or null. */
-function viewParam(page: Page, name: string): string | null {
-  return new URLSearchParams(new URL(page.url()).hash.slice(1)).get(name);
 }
 
 /** What a long press shows by the finger. */

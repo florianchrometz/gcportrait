@@ -41,13 +41,7 @@ async function stubBackend(page: Page, config: Record<string, unknown> = CONFIG)
 
 async function open(page: Page, options: Partial<GisStubOptions> = {}): Promise<GoogleStubs> {
   await stubBackend(page);
-  const google = await stubGoogle(page, {
-    tokens: [FIRST, SECOND],
-    expiresIn: 3599,
-    scope: ALL_SCOPES,
-    silent: 'grant',
-    ...options,
-  });
+  const google = await stubGoogle(page, { tokens: [FIRST, SECOND], ...options });
   await page.goto('/');
   return google;
 }
@@ -189,12 +183,7 @@ test('expires clearly when the renewal cannot run, and signs in again', async ({
 
 test('without an OAuth client, sign-in stays inert and Google’s script is never loaded', async ({ page }) => {
   await stubBackend(page, { ...CONFIG, oauthClientId: null });
-  const google = await stubGoogle(page, {
-    tokens: [FIRST],
-    expiresIn: 3599,
-    scope: ALL_SCOPES,
-    silent: 'grant',
-  });
+  const google = await stubGoogle(page, { tokens: [FIRST] });
   await page.goto('/');
   const button = signInCard(page).getByRole('button', { name: 'Sign in with Google' });
   await expect(

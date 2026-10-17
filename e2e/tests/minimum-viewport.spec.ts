@@ -2,6 +2,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 import {
+  DRAWN_CANVAS,
   expectNoAxeViolations,
   openDiagram,
   primaryNav,
@@ -20,9 +21,7 @@ import {
 test.use({ viewport: { width: 1280, height: 800 } });
 
 function canvasClasses(page: Page): Promise<string> {
-  return page
-    .locator('svg.dg-canvas[data-diagram-ready="true"]')
-    .evaluate((svg) => svg.getAttribute('class') ?? '');
+  return page.locator(DRAWN_CANVAS).evaluate((svg) => svg.getAttribute('class') ?? '');
 }
 
 async function shot(page: Page, name: string): Promise<void> {
@@ -48,9 +47,7 @@ for (const scheme of ['light', 'dark'] as const) {
       await expect(auto).toHaveAttribute('aria-checked', 'true');
       await expect(auto).toHaveText(/^Auto · (folders|projects|networks)$/);
       // Fitted to the canvas, the drawing keeps its labels: its scale stays at or above the label scale.
-      const scale = Number(
-        await page.locator('svg.dg-canvas[data-diagram-ready="true"]').getAttribute('data-scale'),
-      );
+      const scale = Number(await page.locator(DRAWN_CANVAS).getAttribute('data-scale'));
       expect(scale).toBeGreaterThanOrEqual(0.35);
       expect(await canvasClasses(page)).not.toContain('dg-lod-nolabel');
       const shown = await page.getByText(/^\d+ of \d+ shown$/).textContent();

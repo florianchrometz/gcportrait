@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: MIT
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 
-import { drawingOf, expectNoAxeViolations, hashOf, openDiagram, primaryNav, scratchShot } from './support.js';
+import {
+  demoCaiExport,
+  drawingOf,
+  DRAWN_CANVAS,
+  expectNoAxeViolations,
+  exportOperation,
+  hashOf,
+  openDiagram,
+  primaryNav,
+  scratchShot,
+} from './support.js';
 import {
   expectDrawn,
   playbackStopped,
@@ -37,7 +46,6 @@ import {
  *
  * The export is generated once per worker (it is the same in every test); each test writes its own operation.json.
  */
-const REPO = path.resolve(import.meta.dirname, '..', '..');
 const DEMO_M = '/diagram#snapshot=demo:M';
 const EXTRA = '2026-10-05T14:30:00Z';
 const LABEL = 'example.com, read 2026-10-05 14:30 UTC, export.json';
@@ -52,40 +60,16 @@ interface ExportFiles {
   readonly latestChange: string;
 }
 
-/** Demo M's export of 5 October and its latest asset change, generated once by this worker. */
+/** Demo M's export of 5 October and its latest asset change, read once by this worker. */
 let generated: { readonly lines: string; readonly latestChange: string } | undefined;
 
 /**
- * Demo organisation M on 5 October as an export of `organizations/30000000002` (the demo generator's `cai-export`
- * format: one asset per line, the protobuf spelling), written once per worker under the test output.
+ * Demo organisation M on 5 October as an export of `organizations/30000000002` (`demoCaiExport`, generated once per
+ * worker) and its latest asset change.
  */
 function caiExport(testInfo: TestInfo): { readonly lines: string; readonly latestChange: string } {
   if (generated !== undefined) return generated;
-  const dir = path.join(
-    testInfo.project.outputDir,
-    'extra-ticks-export',
-    `worker-${String(testInfo.workerIndex)}`,
-  );
-  mkdirSync(dir, { recursive: true });
-  const lines = path.join(dir, 'export.json');
-  execFileSync(
-    'pnpm',
-    [
-      '--silent',
-      '--filter',
-      '@gcportrait/demo-data',
-      'generate',
-      '--size',
-      'M',
-      '--format',
-      'cai-export',
-      '--tick',
-      '2026-10-05',
-      '--out',
-      lines,
-    ],
-    { cwd: REPO, stdio: 'ignore' },
-  );
+  const lines = demoCaiExport(testInfo, 'M', '2026-10-05');
   const latestChange = readFileSync(lines, 'utf8')
     .split('\n')
     .filter((line) => line.trim() !== '')
@@ -101,22 +85,7 @@ function exportFiles(testInfo: TestInfo, readTime: string = EXTRA): ExportFiles 
   const dir = testInfo.outputPath('export');
   mkdirSync(dir, { recursive: true });
   const operation = path.join(dir, 'operation.json');
-  writeFileSync(
-    operation,
-    JSON.stringify({
-      name: 'organizations/30000000002/operations/ExportAssets/RESOURCE/7',
-      metadata: {
-        '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsRequest',
-        contentType: 'RESOURCE',
-        parent: 'organizations/30000000002',
-      },
-      done: true,
-      response: {
-        '@type': 'type.googleapis.com/google.cloud.asset.v1.ExportAssetsResponse',
-        readTime,
-      },
-    }),
-  );
+  writeFileSync(operation, exportOperation('organizations/30000000002', readTime));
   return { lines, operation, latestChange };
 }
 
@@ -204,7 +173,7 @@ test('an imported export of the demo organisation is an extra tick: selected, dr
   await marker.click();
   await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&tick=${EXTRA}`);
   await expectDrawn(bar, EXTRA, ownDay);
-  const svg = page.locator('svg.dg-canvas[data-diagram-ready="true"]');
+  const svg = page.locator(DRAWN_CANVAS);
   await expect(svg.locator('.dg-title-block')).toContainText('read 2026-10-05T14:30:00+00:00');
   await expect(bar.getByTestId('timeline-readout')).toHaveText('export 2026-10-05 14:30 · extra tick');
   await expect(bar.getByTestId('timeline-readout')).toHaveAttribute(

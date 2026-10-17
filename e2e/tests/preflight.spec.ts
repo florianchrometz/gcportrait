@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, type Page } from '@playwright/test';
 
-import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
+import { stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';
 import {
   checkSection,
   choose,
@@ -208,12 +208,7 @@ async function openSignedIn(
   page: Page,
 ): Promise<{ log: BackendLog; google: Awaited<ReturnType<typeof stubGoogle>> }> {
   const log = await stubBackend(page);
-  const google = await stubGoogle(page, {
-    tokens: [TOKEN],
-    expiresIn: 3599,
-    scope: ALL_SCOPES,
-    silent: 'grant',
-  });
+  const google = await stubGoogle(page, { tokens: [TOKEN] });
   await page.goto('/permissions');
   await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
   await signIn(page);
@@ -314,7 +309,7 @@ for (const scheme of ['light', 'dark'] as const) {
       page,
     }) => {
       await stubBackend(page);
-      await stubGoogle(page, { tokens: [TOKEN], expiresIn: 3599, scope: ALL_SCOPES, silent: 'grant' });
+      await stubGoogle(page, { tokens: [TOKEN] });
       await page.goto('/permissions');
       await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
       await expect(checkSection(page).getByRole('button', { name: 'Sign in with Google' })).toBeEnabled();
