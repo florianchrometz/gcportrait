@@ -141,6 +141,9 @@ function dependencyDirection({ files, allowed }) {
 export default defineConfig(
   // The assistants' own, git-ignored folders (AGENTS.md, Assistants) are no source of the project; Claude Code also
   // keeps whole worktrees of the repository under its, which linted as part of `.` cost a copy's memory each.
+  // The compiled catalog is a git-ignored module of plain data, written by `pnpm catalog:build` and held to
+  // its type by tsc (packages/catalog/tooling/generate.ts): linting it costs every run its size and finds
+  // nothing.
   globalIgnores(
     [
       '**/dist/',
@@ -148,6 +151,7 @@ export default defineConfig(
       '**/coverage/',
       '**/.astro/',
       '**/.vite/',
+      'packages/catalog/src/generated/',
       'out/',
       'e2e/test-results/',
       'e2e/playwright-report/',

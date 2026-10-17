@@ -56,9 +56,7 @@ const modulePath = path.join(CATALOG_ROOT, GENERATED_MODULE);
 const jsonPath = path.join(CATALOG_ROOT, DIST_CATALOG);
 const changed = [
   write(jsonPath, renderCatalogJson(catalog)) ? DIST_CATALOG : undefined,
-  write(modulePath, await renderCatalogModule(catalog, repositoryLicense(), modulePath))
-    ? GENERATED_MODULE
-    : undefined,
+  write(modulePath, renderCatalogModule(catalog, repositoryLicense())) ? GENERATED_MODULE : undefined,
 ].filter((file): file is string => file !== undefined);
 if (!values.quiet) {
   console.log(

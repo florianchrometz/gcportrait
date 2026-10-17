@@ -227,7 +227,7 @@ test('a type without a console template offers its project’s console home and 
   await stubConsole(context);
   // Serve a catalog whose VM type has no console template. The demo's data worker reads the compiled catalog: the
   // module itself from the dev server, the build's JSON table of it from a build (frontend/vite.config.ts,
-  // `dataTablesAsJson`), where the key is quoted too.
+  // `dataTablesAsJson`), both quoting the key as JSON writes it (packages/catalog/tooling/generate.ts).
   let stripped = false;
   await context.route(CATALOG_TABLE, async (route) => {
     const response = await route.fetch();

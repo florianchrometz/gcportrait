@@ -204,7 +204,7 @@ here but are checked against the same allowlist and deny list on every run.
 | `playwright` | Apache-2.0 | website | dev |
 | `playwright-core` | Apache-2.0 | packages/icons | dev |
 | `pngjs` | MIT | e2e, packages/render, packages/render-cli, website | dev, runtime |
-| `prettier` | MIT | (root), packages/catalog, packages/icons, packages/layout | dev |
+| `prettier` | MIT | (root), packages/icons, packages/layout | dev |
 | `react` | MIT | frontend | runtime |
 | `react-dom` | MIT | frontend | runtime |
 | `react-router` | MIT | frontend | runtime |

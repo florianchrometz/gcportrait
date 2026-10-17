@@ -91,7 +91,11 @@ The module holds the catalog as one constant typed `Catalog`, written only once 
 has passed `CatalogSchema`, so `catalog` is that constant as it is: nothing parses it again on import, where
 the app's data worker, every render job and every test file that loads the catalog would pay for a parse of
 the whole catalog that returns a deep-equal copy. tsc holds the constant to the type, and
-`tooling/catalog.test.ts` holds the module to a fresh compile and the exported `catalog` to the schema.
+`tooling/catalog.test.ts` holds the module to a fresh compile and the exported `catalog` to the schema. The
+build writes the constant plain, as `JSON.stringify` indents it by two spaces, so the text is the same on
+every run without a formatter. Nothing formats or lints the module: Prettier skips it as a git-ignored file
+and `eslint.config.js` ignores `src/generated/`, because neither would find anything in data that nobody
+edits, and both would cost every build and lint the time of its size.
 
 ## Authoring a group
 

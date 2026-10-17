@@ -99,15 +99,10 @@ describe('the catalog data', () => {
 
   // The runtime catalog is the generated module's constant as it is, never parsed on import (src/catalog.ts),
   // so this is the guard that holds it to the schema: the module is a fresh compile that passes CatalogSchema,
-  // and the catalog the package exports passes it unchanged. About 1.4 s on its own, but rendering the whole
-  // module took over 5 s under coverage at a high machine load, so this guard gets its own timeout.
-  it('is what the generated module (and so the runtime catalog) holds', { timeout: 30_000 }, async () => {
+  // and the catalog the package exports passes it unchanged.
+  it('is what the generated module (and so the runtime catalog) holds', () => {
     const modulePath = path.join(CATALOG_ROOT, GENERATED_MODULE);
-    const expected = await renderCatalogModule(
-      CatalogSchema.parse(compiled),
-      repositoryLicense(),
-      modulePath,
-    );
+    const expected = renderCatalogModule(CatalogSchema.parse(compiled), repositoryLicense());
     expect(readFileSync(modulePath, 'utf8'), 'stale: run pnpm catalog:build').toBe(expected);
     expect(catalog).toEqual(compiled);
     expect(CatalogSchema.parse(catalog), 'the runtime catalog passes CatalogSchema as it is').toEqual(
