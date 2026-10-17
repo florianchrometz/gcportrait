@@ -80,7 +80,9 @@ src/styles/             tokens.css (design tokens), global.css (element defaults
 src/theme/              theme.ts (pure state + reducer), browser.ts (matchMedia, mirror, <html>),
                         ThemeProvider.tsx, useTheme.ts
 src/storage/            db.ts (schema, migrations, guarded open), connection.ts (the page's one connection, opened
-                        again when another tab's upgrade closes it), preferences.ts (typed preference store)
+                        again when another tab's upgrade closes it), preferences.ts (typed preference store),
+                        tickCache.ts (the timeline's live days), tickCacheChanges.ts (the tick cache's change
+                        signal between the tabs)
 src/shell/              AppShell (skip links, top bar, main, the route announcer, the footer with the non-affiliation notice
                         and SourceLink, "Source (MIT)"), viewHash (the Diagram link's memory of the last
                         view), parity.test.tsx (every control at every width; section "Layouts")
@@ -484,6 +486,16 @@ through its `database()` getter for every operation. A connection that blocks a 
 closes itself (or the browser terminates it), and the next read opens it again for all three at once, so none
 is left on a closed connection (with an older schema than another tab's, the reopening fails and they fall
 back to memory). The data worker opens its own (`snapshots/load.ts`).
+
+**Changes between tabs** (`storage/tickCacheChanges.ts`). Every change of the `tickCache` store, a day
+stored (once its write stands; a write taken back tells nothing) or deleted (on the Snapshots page, or as
+past the window when a newer day is stored), is posted on the `BroadcastChannel` named after the database,
+`gcportrait.tickCache`, as `{ change: 'put' | 'delete', key, scope, readTime, contentType }`: the entry's
+cache key and nothing else, never its assets, counts or sizes. The page has one signal (`tickCacheChanges()`):
+the tick cache posts through it and the timeline controller listens through it, so a tab never hears its
+own changes; its channel is open only while something listens, and a change posted meanwhile goes out on a
+channel opened for that message alone. A message is checked field by field (no zod on the UI thread); a
+browser without `BroadcastChannel` posts and hears nothing, and nothing else changes.
 
 ## Demo mode
 
@@ -2022,7 +2034,14 @@ nothing is read while the view stays where the page opened it on the snapshot's 
 whole read of the scope). Days are read only with a signed-in session whose permission check is ready for the
 snapshot's scope; otherwise the readout says what is missing (demo mode reads nothing; cached days are still
 drawn). A read asks the tick cache for its day first: a day another tab of the browser stored after the page
-listed the cached days counts as read from there (`cached`), without a read from Google Cloud.
+listed the cached days counts as read from there (`cached`), without a read from Google Cloud. While a live
+timeline is adopted, the controller also listens to the tick cache's changes in the other tabs (section
+"Storage schema", "Changes between tabs"), from before it lists the cached days: a day of its scope another
+tab stored turns `cached` once the cache holds it under the day's own key and it counts (the listing's rule:
+a "now" copy only while its day is the latest), and one another tab deleted turns not read, so the bar's
+markers and playback, which plays cached days only, follow at once. A day this tab is reading is left to its
+read; another scope's, read time's or type filter's entry is ignored; the latest change of a day wins over an
+earlier one and over the listing; a dropped timeline (another snapshot, the page left) stops listening.
 
 **The bar.** One marker per day under the slider (`ui/Slider`'s `marks`), its state shown by shape: a hollow
 ring (not read yet), a filled dot (ready), a turning dashed ring (loading; it stands still with reduced
@@ -2076,10 +2095,15 @@ Tests: `ticks.test.ts` (fixed `today`: 35 ticks, the latest at "now", month, yea
 local labels), `cacheKey.test.ts`, `scheduler.test.ts` (order, the in-flight limit, cancellation),
 `playback.test.ts` (the state machine), `model.test.ts`, `controller.test.ts` (on a real store with a fake
 cache and reader: the debounced read, the idle prefetch in order, two in flight, cancellation, failures,
-cached and stale days, the reasons days cannot be read), `fetchTick.test.ts` (the in-process import worker and
-a pretend backend; a cancel as the day's write begins or while it is written keeps nothing and ends the read
-as cancelled), `storage/tickCache.test.ts` (fake-indexeddb, the version-2 migration; listing and deleting; a
-write cancelled before or while it is made keeps nothing and puts back what it replaced),
+cached and stale days, the reasons days cannot be read; with a stand-in channel, a day another tab stored or
+deleted marked read or not read at once and played, another scope's day ignored, a day being read left to its
+read, the latest change winning, listening only while a live timeline is adopted),
+`storage/tickCacheChanges.test.ts` (the message's key fields only, foreign messages ignored, the channel open
+only while something listens, no channel or a failing one, two pages on Node's `BroadcastChannel`),
+`fetchTick.test.ts` (the in-process import worker and a pretend backend; a cancel as the day's write begins
+or while it is written keeps nothing and ends the read as cancelled), `storage/tickCache.test.ts`
+(fake-indexeddb, the version-2 migration; listing and deleting; a write cancelled before or while it is made
+keeps nothing, puts back what it replaced and tells nothing of it; every change told by its key alone),
 `worker/source.test.ts`, `worker/handler.test.ts` (a day through the data handler), `state/pipeline.test.ts`
 (a timeline day drawn without the snapshot going back to loading), `TimelineBar.test.tsx` (the app on demo S:
 markers, keys, buttons, a link's day, playback, axe), and `e2e/tests/timeline.spec.ts` in Chromium on demo M

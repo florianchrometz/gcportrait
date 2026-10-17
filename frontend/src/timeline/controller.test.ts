@@ -6,8 +6,10 @@
  * scope's, under their keys; a "now" copy only while it is the latest day) are listed first; the view's day is read
  * once it rests (debounced), its neighbours at idle in the direction of travel; at most two reads in flight; moving
  * away cancels; a failure is kept and not retried by prefetch; a day read becomes drawable (the scene key names it);
- * a day another tab stored after the listing is taken from the cache, not read again; and it says why days cannot be
- * read (demo mode, no sign-in, another scope).
+ * a day another tab stored after the listing is taken from the cache, not read again; what another tab tells of the
+ * tick cache (through a stand-in channel) marks the day read or not read at once, for this scope's own keys only,
+ * and only while a live timeline is adopted; and it says why days cannot be read (demo mode, no sign-in, another
+ * scope).
  */
 import type { Layout } from '@gcportrait/layout';
 import { describe, expect, it } from 'vitest';
@@ -19,8 +21,11 @@ import { IDLE_PROGRESS } from '../import/progress';
 import { readyConnect } from '../preflight/testing';
 import { createAppStore, selectSceneKey, type AppStore, type ConnectSlice } from '../state';
 import type { StoredTick, TickCacheStore } from '../storage/tickCache';
+import { tickCacheChange, type TickCacheChange, type TickCacheChanges } from '../storage/tickCacheChanges';
 import { createTimelineController, liveAccess, liveTickKey } from './controller';
 import { TickReadFailed, type TickJob } from './fetchTick';
+import { timelineModel } from './model';
+import { playbackStart } from './playback';
 import { APP_NOW as NOW, historyInfo, LIVE_INFO as LIVE, settled, storedTick } from './testing/fixtures';
 
 const REF = '01J0000000000000000000000A';
@@ -66,6 +71,21 @@ function setup(
   const delays: (() => void)[] = [];
   const idles: (() => void)[] = [];
   const kept = new Map((options.cached ?? []).map((entry) => [entry.key, entry]));
+  // A stand-in for the page's change signal: what another tab tells reaches the listeners; this tab's own posts
+  // reach nobody here, as a channel is not handed what it posts itself.
+  const listeners = new Set<(change: TickCacheChange) => void>();
+  const changes: TickCacheChanges = {
+    post: () => undefined,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+  const tell = (change: TickCacheChange): void => {
+    for (const listener of [...listeners]) listener(change);
+  };
   const cache: TickCacheStore = {
     get: (key) => Promise.resolve(kept.get(key)),
     put: () => Promise.resolve(),
@@ -76,9 +96,20 @@ function setup(
   const storedElsewhere = (entry: StoredTick): void => {
     kept.set(entry.key, entry);
   };
+  /** Another tab stores a day and tells the others. */
+  const putElsewhere = (entry: StoredTick): void => {
+    kept.set(entry.key, entry);
+    tell(tickCacheChange('put', entry));
+  };
+  /** Another tab deletes a day (on the Snapshots page, or a day past its window) and tells the others. */
+  const deletedElsewhere = (entry: StoredTick): void => {
+    kept.delete(entry.key);
+    tell(tickCacheChange('delete', entry));
+  };
   const controller = createTimelineController({
     store,
     cache,
+    changes,
     demo: options.demo ?? false,
     clock: () => NOW,
     fetchTick: (job, signal, progress) =>
@@ -117,7 +148,21 @@ function setup(
       return next;
     });
   };
-  return { store, controller, reads, flush, rest, idle, days, moveTo, delays, storedElsewhere };
+  return {
+    store,
+    controller,
+    reads,
+    flush,
+    rest,
+    idle,
+    days,
+    moveTo,
+    delays,
+    storedElsewhere,
+    putElsewhere,
+    deletedElsewhere,
+    listening: () => listeners.size,
+  };
 }
 
 describe('learning the timeline', () => {
@@ -385,6 +430,161 @@ describe('a day another tab of the browser stored after the cached days were lis
     expect(reads).toEqual([]);
     expect(store.getState().timeline.status).toEqual({});
     controller.stop();
+  });
+});
+
+describe('what another tab of the browser tells of the tick cache', () => {
+  async function started(cached: readonly StoredTick[] = []) {
+    const harness = setup({ cached });
+    harness.store.updateConnect(() => connect());
+    harness.controller.start();
+    onScreen(harness.store, { ref: REF, timeline: LIVE });
+    await harness.flush();
+    return harness;
+  }
+
+  /** Whether playback can start, and whether it goes through `day`, on the bar's model of the view. */
+  function playable(store: AppStore, day: string): { readonly start: boolean; readonly day: boolean } {
+    const { view, timeline } = store.getState();
+    const model = timelineModel({ spec: view.spec, timeline, onScreen: { ref: REF }, pending: false });
+    if (model === null) throw new Error('no timeline model');
+    const index = model.ticks.findIndex((tick) => tick.day === day);
+    return {
+      start: playbackStart(model.available, model.position) !== null,
+      day: model.available[index] === true,
+    };
+  }
+
+  it('marks a day another tab stored read at once, without a fetch; it is drawn, and playback goes through it', async () => {
+    const { store, flush, rest, idle, days, moveTo, putElsewhere, controller } = await started();
+    expect(store.getState().timeline.status).toEqual({});
+    // Only the snapshot's own day is ready: nothing to play.
+    expect(playable(store, '2026-10-02')).toEqual({ start: false, day: false });
+    putElsewhere(record('2026-10-02'));
+    await flush();
+    expect(store.getState().timeline.status).toEqual({ '2026-10-02': 'cached' });
+    expect(playable(store, '2026-10-02')).toEqual({ start: true, day: true });
+    // The view moved onto it draws it at once, and nothing reads it.
+    moveTo('2026-10-02');
+    expect(selectSceneKey(store.getState())).toContain('tick=2026-10-02');
+    rest();
+    await flush();
+    expect(days()).toEqual([]);
+    // Its neighbours, which no tab stored, are read at idle as before.
+    idle();
+    await flush();
+    expect(days()).toEqual(['2026-10-01', '2026-10-03']);
+    controller.stop();
+  });
+
+  it('turns a failed day read when another tab stored it, its failure gone', async () => {
+    const { store, reads, flush, rest, moveTo, putElsewhere, controller } = await started();
+    moveTo('2026-10-02');
+    rest();
+    await flush();
+    reads[0]?.reject(new TickReadFailed({ title: 'Google Cloud did not answer.', message: 'Unavailable.' }));
+    await settled();
+    expect(store.getState().timeline.status['2026-10-02']).toBe('error');
+    putElsewhere(record('2026-10-02'));
+    await flush();
+    expect(store.getState().timeline.status['2026-10-02']).toBe('cached');
+    expect(store.getState().timeline.failures).toEqual({});
+    controller.stop();
+  });
+
+  it('ignores another scope’s day, another key’s, and a "now" copy of a day that is no longer the latest', async () => {
+    const other = { ...LIVE, scopePath: 'folders/20000000001' };
+    const { store, flush, putElsewhere, controller } = await started();
+    putElsewhere(record('2026-10-04', {}, other));
+    putElsewhere(record('2026-10-05', { key: 'another key' }));
+    putElsewhere(record('2026-10-06', { contentType: 'IAM_POLICY' }));
+    putElsewhere(record('2026-10-03', { now: true }));
+    await flush();
+    expect(store.getState().timeline.status).toEqual({});
+    // The latest day's "now" copy counts.
+    putElsewhere(record('2026-10-10', { now: true }));
+    await flush();
+    expect(store.getState().timeline.status).toEqual({ '2026-10-10': 'cached' });
+    controller.stop();
+  });
+
+  it('marks a day another tab deleted not read; the diagram stays, and the day is read when the view comes back', async () => {
+    const day = record('2026-10-05');
+    const { store, flush, rest, days, moveTo, deletedElsewhere, controller } = await started([day]);
+    moveTo('2026-10-05');
+    rest();
+    await flush();
+    expect(days()).toEqual([]);
+    expect(selectSceneKey(store.getState())).toContain('tick=2026-10-05');
+    deletedElsewhere(day);
+    await flush();
+    expect(store.getState().timeline.status).toEqual({});
+    expect(playable(store, '2026-10-05').day).toBe(false);
+    expect(days()).toEqual([]);
+    moveTo('2026-10-04');
+    moveTo('2026-10-05');
+    rest();
+    await flush();
+    expect(days()).toEqual(['2026-10-05']);
+    controller.stop();
+  });
+
+  it('leaves a day this tab is reading to its read', async () => {
+    const { store, reads, flush, rest, moveTo, putElsewhere, deletedElsewhere, controller } = await started();
+    moveTo('2026-10-02');
+    rest();
+    await flush();
+    expect(store.getState().timeline.status['2026-10-02']).toBe('loading');
+    putElsewhere(record('2026-10-02'));
+    await flush();
+    deletedElsewhere(record('2026-10-02'));
+    await flush();
+    expect(store.getState().timeline.status['2026-10-02']).toBe('loading');
+    expect(reads[0]?.signal.aborted).toBe(false);
+    reads[0]?.resolve();
+    await settled();
+    expect(store.getState().timeline.status['2026-10-02']).toBe('cached');
+    controller.stop();
+  });
+
+  it('gives the last word to a day’s latest change, and to a change over the listing of the cached days', async () => {
+    const listed = record('2026-10-05');
+    const { store, flush, putElsewhere, deletedElsewhere, controller } = setup({ cached: [listed] });
+    controller.start();
+    onScreen(store, { ref: REF, timeline: LIVE });
+    // Deleted in another tab while this one lists its cached days: the listing read it, the change is newer.
+    deletedElsewhere(listed);
+    await flush();
+    expect(store.getState().timeline.status).toEqual({});
+    // Stored and then deleted in another tab before this one found the stored entry: the delete stands.
+    putElsewhere(record('2026-10-02'));
+    deletedElsewhere(record('2026-10-02'));
+    await flush();
+    expect(store.getState().timeline.status).toEqual({});
+    controller.stop();
+  });
+
+  it('listens only while a live timeline is adopted: not for a history, and no longer once it is dropped', async () => {
+    const history = setup({ hash: '#snapshot=demo:M' });
+    history.controller.start();
+    onScreen(history.store, { ref: 'demo:M', timeline: HISTORY });
+    await history.flush();
+    expect(history.listening()).toBe(0);
+    history.controller.stop();
+
+    const { store, flush, putElsewhere, listening, controller } = await started();
+    expect(listening()).toBe(1);
+    store.actions.setSnapshot(OTHER_REF);
+    expect(listening()).toBe(0);
+    putElsewhere(record('2026-10-02'));
+    await flush();
+    expect(store.getState().timeline).toMatchObject({ ref: OTHER_REF, status: {} });
+    // The other snapshot's live timeline listens again, for itself; a stopped controller listens no more.
+    onScreen(store, { ref: OTHER_REF, timeline: LIVE });
+    await flush();
+    expect(listening()).toBe(1);
+    controller.stop();
+    expect(listening()).toBe(0);
   });
 });
 

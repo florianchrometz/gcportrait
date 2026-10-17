@@ -12,10 +12,15 @@
  * the data worker could not read it, and a live snapshot cannot exist without IndexedDB anyway (imports and pulls
  * are refused then). The Snapshots page lists every cached tick by scope and deletes one, or a whole scope's, to
  * free storage (`list`, `remove`, `removeScope`).
+ *
+ * Every change is told to the other tabs of this browser (storage/tickCacheChanges.ts), by the entry's key alone:
+ * a tick once its write stands (a write taken back tells nothing), and each entry deleted, the days dropped as past
+ * the window included, so their timelines mark the day read or not read at once.
  */
 import { addDays, TIMELINE_DAYS } from '../timeline/ticks';
 import { databaseOf, type DatabaseSource } from './connection';
 import type { StoredTick } from './db';
+import { tickCacheChange, tickCacheChanges, type TickCacheChanges } from './tickCacheChanges';
 
 export type { StoredTick } from './db';
 
@@ -39,8 +44,8 @@ export interface TickCacheStore {
   get(key: string): Promise<StoredTick | undefined>;
   /**
    * Stores a tick, replacing one under the same key, and drops the scope's ticks that lie before the 35-day window
-   * ending `today` (the app's day). An aborted `options.signal` keeps nothing of the tick and rejects with
-   * {@link TickWriteCancelled}.
+   * ending `today` (the app's day); tells the other tabs of both. An aborted `options.signal` keeps nothing of the
+   * tick, tells nothing of it and rejects with {@link TickWriteCancelled}.
    */
   put(tick: StoredTick, today: string, options?: TickWriteOptions): Promise<void>;
   /** The cached ticks of a scope (every key it has; a Blob is a handle, read only when asked). */
@@ -53,7 +58,7 @@ export interface TickCacheStore {
 export interface TickCacheManager {
   /** Every cached tick, of every scope. */
   list(): Promise<readonly StoredTick[]>;
-  /** Deletes the tick under `key`. */
+  /** Deletes the tick under `key` (and tells the other tabs, when there was one). */
   remove(key: string): Promise<void>;
   /** Deletes every cached tick of a scope (`organizations/123`); resolves to how many there were. */
   removeScope(scope: string): Promise<number>;
@@ -73,8 +78,20 @@ export function staleTicks<T extends Pick<StoredTick, 'key' | 'day'>>(
   return entries.filter((entry) => entry.day < oldest);
 }
 
-export function createTickCacheStore(source: DatabaseSource): TickCacheStore & TickCacheManager {
+export interface TickCacheStoreOptions {
+  /** Where the store tells the other tabs what it changed (default: the page's, `tickCacheChanges()`). */
+  readonly changes?: TickCacheChanges;
+}
+
+export function createTickCacheStore(
+  source: DatabaseSource,
+  options: TickCacheStoreOptions = {},
+): TickCacheStore & TickCacheManager {
   const database = databaseOf(source);
+  const changes = options.changes ?? tickCacheChanges();
+  const deleted = (entries: readonly StoredTick[]): void => {
+    for (const entry of entries) changes.post(tickCacheChange('delete', entry));
+  };
   return {
     async get(key) {
       const db = await database();
@@ -94,9 +111,12 @@ export function createTickCacheStore(source: DatabaseSource): TickCacheStore & T
       const transaction = db.transaction('tickCache', 'readwrite');
       const store = transaction.store;
       const kept = await store.index('byScope').getAll(tick.scope);
-      for (const stale of staleTicks(kept, today)) await store.delete(stale.key);
+      const stale = staleTicks(kept, today);
+      for (const entry of stale) await store.delete(entry.key);
       await store.put(tick);
       await transaction.done;
+      // The days dropped as past the window stay dropped, whatever becomes of the tick.
+      deleted(stale);
       if (signal?.aborted === true) {
         // Cancelled while it was written: the tick is taken back, and what it replaced put back (the days dropped
         // as past the window stay dropped: they cannot be shown).
@@ -105,6 +125,7 @@ export function createTickCacheStore(source: DatabaseSource): TickCacheStore & T
         else await db.put('tickCache', replaced);
         throw new TickWriteCancelled();
       }
+      changes.post(tickCacheChange('put', tick));
     },
     async listScope(scope) {
       const db = await database();
@@ -129,16 +150,22 @@ export function createTickCacheStore(source: DatabaseSource): TickCacheStore & T
     },
     async remove(key) {
       const db = await database();
-      if (db !== null) await db.delete('tickCache', key);
+      if (db === null) return;
+      const transaction = db.transaction('tickCache', 'readwrite');
+      const entry = await transaction.store.get(key);
+      if (entry !== undefined) await transaction.store.delete(key);
+      await transaction.done;
+      if (entry !== undefined) deleted([entry]);
     },
     async removeScope(scope) {
       const db = await database();
       if (db === null) return 0;
       const transaction = db.transaction('tickCache', 'readwrite');
-      const keys = await transaction.store.index('byScope').getAllKeys(scope);
-      for (const key of keys) await transaction.store.delete(key);
+      const entries = await transaction.store.index('byScope').getAll(scope);
+      for (const entry of entries) await transaction.store.delete(entry.key);
       await transaction.done;
-      return keys.length;
+      deleted(entries);
+      return entries.length;
     },
   };
 }

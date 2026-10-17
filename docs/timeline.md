@@ -73,9 +73,11 @@ demand, as a "Pull now" reads the scope, but at that day's 00:00 UTC (`readTime`
 Reads are lazy, because each day is a full read of the scope:
 
 - a day is read once the view has rested on it for 300 ms, never all 35;
-- a day kept in this browser is not read again, even one another tab read after this page opened: it is
-  taken from what is kept once the view rests on it or next to it (until then its marker may show it not
-  read yet);
+- a day kept in this browser is not read again, even one another tab read after this page opened. A tab
+  that stores or deletes a day tells the other tabs of this browser, and a tab open on the same scope marks
+  the day ready, or not read, at once, so it can be drawn and played straight away. What a tab tells is which
+  day of which scope changed, never its assets. A browser that cannot tell its tabs takes such a day from what
+  is kept once the view rests on it or next to it (until then its marker may show it not read yet);
 - once the view rests, its two neighbours are read when the browser is idle, the one in the direction you were
   moving first;
 - at most two reads run at once, and a read of a day you moved away from (no longer the day on screen or a
@@ -98,7 +100,8 @@ example, is Google's "not found").
 
 The access token is never stored; only the assets that came back are. The Snapshots page's **Timelines by
 scope** section lists, for each scope, its snapshots, extra ticks and cached days with their asset counts and
-sizes: "Delete" on a cached day removes it at once (the timeline reads it again when you come back to it),
+sizes: "Delete" on a cached day removes it at once (the timeline of every tab marks it not read and reads it
+again when you come back to it),
 "Delete the cached days of …" removes a scope's whole cache after a confirmation, and an extra tick is deleted
 after a confirmation. Deleting cached days never deletes a snapshot or an extra tick.
 

@@ -8,6 +8,11 @@
  *   (`clock`, the one place the app's "now" enters the timeline) and whose cached days it lists from the tick
  *   cache. A read asks the cache for its day first: a day another tab of this browser stored since the listing
  *   counts as read from there, without a read from Google Cloud.
+ * - While a live timeline is adopted it listens to the tick cache's changes in the other tabs of this browser
+ *   (storage/tickCacheChanges.ts): a day of its scope another tab stored is marked read (`cached`) once the cache
+ *   holds it under the day's key and it counts (the same rule as the listing), and one another tab deleted is marked
+ *   not read, so the bar and playback know of it at once. A day this tab is reading is left to its read. Another
+ *   scope's, read time's or type filter's entry is never this timeline's.
  * - For a live scope it reads days on demand (skill cai-ingestion §5): when the view rests on a day that is
  *   not cached for `debounceMs`, that day; at idle, its two neighbours (the one in the direction of travel first);
  *   at most two reads in flight; a read the view moved away from (no longer the day or a neighbour) is cancelled.
@@ -23,12 +28,13 @@ import { pullTargetOf } from '../import/target';
 import { scopeName } from '../snapshots/labels';
 import type { AppState, AppStore } from '../state';
 import type { StoredTick, TickCacheStore } from '../storage/tickCache';
+import type { TickCacheChange, TickCacheChanges } from '../storage/tickCacheChanges';
 import { TICK_CONTENT_TYPE, tickCacheKey } from './cacheKey';
 import { TickReadFailed, type TickFetcher, type TickJob } from './fetchTick';
 import { ownDayOf, ticksOf } from './model';
 import { createFetchScheduler, fetchOrder, type FetchScheduler } from './scheduler';
 import type { TickStatus, TimelineSlice } from './state';
-import { dayReadTime, indexOfDay, utcDayOf, type TimelineTick } from './ticks';
+import { dayOfReadTime, dayReadTime, indexOfDay, utcDayOf, type TimelineTick } from './ticks';
 import type { TimelineInfo } from './types';
 
 type LiveInfo = Extract<TimelineInfo, { kind: 'live' }>;
@@ -39,6 +45,8 @@ export const READ_DEBOUNCE_MS = 300;
 export interface TimelineControllerOptions {
   readonly store: AppStore;
   readonly cache: TickCacheStore;
+  /** The tick cache's changes in the other tabs of this browser (the page's: `tickCacheChanges()`). */
+  readonly changes: TickCacheChanges;
   readonly fetchTick: TickFetcher;
   /** Demo mode reads nothing from Google Cloud. */
   readonly demo: boolean;
@@ -62,6 +70,24 @@ export interface TimelineController {
 /** A record without `key`. */
 function without<T>(record: Readonly<Record<string, T>>, key: string): Record<string, T> {
   return Object.fromEntries(Object.entries(record).filter(([name]) => name !== key));
+}
+
+/** The slice with `day`'s status set (null: unknown), its failure only when given, its progress over once it ends. */
+function withStatus(
+  current: TimelineSlice,
+  day: string,
+  status: TickStatus | null,
+  failure?: ImportFailure,
+): TimelineSlice {
+  const statuses = without(current.status, day);
+  const failures = without(current.failures, day);
+  const progress = current.progress?.day === day && status !== 'loading' ? null : current.progress;
+  return {
+    ...current,
+    status: status === null ? statuses : { ...statuses, [day]: status },
+    failures: failure === undefined ? failures : { ...failures, [day]: failure },
+    progress,
+  };
 }
 
 function defaultDelay(callback: () => void, ms: number): () => void {
@@ -130,7 +156,7 @@ function countsAsRead(record: StoredTick, key: string, today: string): boolean {
 }
 
 export function createTimelineController(options: TimelineControllerOptions): TimelineController {
-  const { store, cache, fetchTick, demo } = options;
+  const { store, cache, changes, fetchTick, demo } = options;
   const clock = options.clock ?? (() => Date.now());
   const debounceMs = options.debounceMs ?? READ_DEBOUNCE_MS;
   const idle = options.idle ?? defaultIdle;
@@ -146,6 +172,11 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
   let cancelDebounce: (() => void) | null = null;
   let cancelIdle: (() => void) | null = null;
   let unsubscribe: (() => void) | null = null;
+  /** Stops listening to the other tabs' changes of the tick cache (while a live timeline is adopted). */
+  let unlisten: (() => void) | null = null;
+  /** The cache keys another tab changed since the timeline was adopted, each with the number of its latest change. */
+  const heard = new Map<string, number>();
+  let changesHeard = 0;
   let syncing = false;
   let again = false;
 
@@ -154,18 +185,7 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
   };
 
   const setStatus = (day: string, status: TickStatus | null, failure?: ImportFailure): void => {
-    const forRef = ref;
-    update(forRef, (current) => {
-      const statuses = without(current.status, day);
-      const failures = without(current.failures, day);
-      const progress = current.progress?.day === day && status !== 'loading' ? null : current.progress;
-      return {
-        ...current,
-        status: status === null ? statuses : { ...statuses, [day]: status },
-        failures: failure === undefined ? failures : { ...failures, [day]: failure },
-        progress,
-      };
-    });
+    update(ref, (current) => withStatus(current, day, status, failure));
   };
 
   const scheduler: FetchScheduler<TickJob> = createFetchScheduler<TickJob>({
@@ -212,8 +232,15 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
     cancelIdle = null;
   };
 
+  const stopListening = (): void => {
+    unlisten?.();
+    unlisten = null;
+    heard.clear();
+  };
+
   const reset = (next: SnapshotRef): void => {
     clearTimers();
+    stopListening();
     scheduler.want([]);
     ref = next;
     position = null;
@@ -297,11 +324,53 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
     }, debounceMs);
   };
 
+  /**
+   * What another tab told of `day` (`read`: the cache holds it, and it counts): a day read here turns not read, a day
+   * not read (or failed) here turns read; a day this tab is reading is its read's to settle.
+   */
+  const learned = (forRef: SnapshotRef, day: string, read: boolean): void => {
+    update(forRef, (current) => {
+      const status = current.status[day];
+      if (status === 'loading' || (read ? status === 'cached' : status !== 'cached')) return current;
+      return withStatus(current, day, read ? 'cached' : null);
+    });
+  };
+
+  /** A change another tab made to the tick cache: this timeline's day when its key is the day's own key. */
+  const hear = (forRef: SnapshotRef, info: LiveInfo, today: string, change: TickCacheChange): void => {
+    if (ref !== forRef || change.scope !== info.scopePath || change.contentType !== TICK_CONTENT_TYPE) return;
+    const day = dayOfReadTime(change.readTime);
+    if (day === null || liveTickKey(info, day) !== change.key) return;
+    changesHeard += 1;
+    const number = changesHeard;
+    heard.set(change.key, number);
+    if (change.change === 'delete') {
+      learned(forRef, day, false);
+      return;
+    }
+    // Stored: whether it counts is the cache's record's to say (a "now" copy only while its day is the latest).
+    void cache
+      .get(change.key)
+      .catch(() => undefined)
+      .then((record) => {
+        // A later change of the same key (or another timeline) has the last word.
+        if (ref !== forRef || heard.get(change.key) !== number) return;
+        learned(forRef, day, record !== undefined && countsAsRead(record, change.key, today));
+      });
+  };
+
   const listCached = (forRef: SnapshotRef, info: LiveInfo, today: string): void => {
+    // Listening first, so nothing another tab changes while the days are listed is missed.
+    stopListening();
+    unlisten = changes.subscribe((change) => {
+      hear(forRef, info, today, change);
+    });
     void cache.listScope(info.scopePath).then((records) => {
       if (ref !== forRef) return;
       const cached: Record<string, TickStatus> = {};
       for (const record of records) {
+        // A change another tab told of since the listing began is newer than what the listing read.
+        if (heard.has(record.key)) continue;
         if (countsAsRead(record, liveTickKey(info, record.day), today)) cached[record.day] = 'cached';
       }
       listed = true;
@@ -380,6 +449,7 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
       unsubscribe?.();
       unsubscribe = null;
       clearTimers();
+      stopListening();
       scheduler.dispose();
     },
     retry(day) {

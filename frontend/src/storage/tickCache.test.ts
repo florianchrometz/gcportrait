@@ -4,8 +4,9 @@
  * The tick cache in IndexedDB (fake-indexeddb): one entry per cache key, never shared across scopes; days before
  * the 35-day window dropped when a tick of the scope is stored; every scope's ticks listed and deleted one by one or
  * by scope (the Snapshots page); nothing kept of a tick whose read is cancelled before or while it is written;
- * nothing kept without IndexedDB; and the version-1 store, keyed by `[scope, readTime]`, which holds no data,
- * replaced by version 2's.
+ * nothing kept without IndexedDB; every change told to the other tabs by the entry's key alone (a stand-in for the
+ * page's change signal), a write taken back told nothing; and the version-1 store, keyed by `[scope, readTime]`,
+ * which holds no data, replaced by version 2's.
  */
 import 'fake-indexeddb/auto';
 
@@ -16,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TICK_CONTENT_TYPE, tickCacheKey } from '../timeline/cacheKey';
 import { DB_NAME, DB_VERSION, openDatabase, type GcportraitDB, type StoredTick } from './db';
 import { createTickCacheStore, staleTicks, TickWriteCancelled } from './tickCache';
+import type { TickCacheChange, TickCacheChanges } from './tickCacheChanges';
 
 const realFactory = globalThis.indexedDB;
 const open: GcportraitDB[] = [];
@@ -56,6 +58,31 @@ function tick(scope: string, day: string, extra: Partial<StoredTick> = {}): Stor
 
 const ORG = 'organizations/30000000001';
 const FOLDER = 'folders/20000000001';
+
+/** A stand-in for the page's change signal that keeps what the store tells the other tabs. */
+function told(): { readonly changes: TickCacheChanges; readonly posted: TickCacheChange[] } {
+  const posted: TickCacheChange[] = [];
+  return {
+    posted,
+    changes: {
+      post: (change) => {
+        posted.push(change);
+      },
+      subscribe: () => () => undefined,
+    },
+  };
+}
+
+/** The change `change` of `entry` as the other tabs are told of it: the entry's key fields and nothing else. */
+function change(kind: TickCacheChange['change'], entry: StoredTick): TickCacheChange {
+  return {
+    change: kind,
+    key: entry.key,
+    scope: entry.scope,
+    readTime: entry.readTime,
+    contentType: entry.contentType,
+  };
+}
 
 describe('the tick cache', () => {
   it('stores a tick under its cache key and lists a scope’s ticks only', async () => {
@@ -163,8 +190,79 @@ describe('the tick cache', () => {
     expect(await listed()).toEqual(['2026-10-01 2026-10-01T00:00:00Z', '2026-10-09 2026-10-09T00:00:00Z']);
   });
 
+  it('tells the other tabs of every tick it stores and every one it deletes, by the entry’s key alone', async () => {
+    const { changes, posted } = told();
+    const cache = createTickCacheStore(database(), { changes });
+    const first = tick(ORG, '2026-10-01', { assetCount: 7 });
+    await cache.put(first, '2026-10-10');
+    expect(posted).toStrictEqual([change('put', first)]);
+    for (const message of posted)
+      expect(Object.keys(message).sort()).toEqual(['change', 'contentType', 'key', 'readTime', 'scope']);
+    // A day dropped as past the window is told as deleted, before the tick that dropped it.
+    const old = tick(ORG, '2026-09-05');
+    await cache.put(old, '2026-10-08');
+    const latest = tick(ORG, '2026-10-09', { now: true });
+    posted.length = 0;
+    await cache.put(latest, '2026-10-10');
+    expect(posted).toStrictEqual([change('delete', old), change('put', latest)]);
+    // The Snapshots page's deletes: one day (nothing told of a key that holds none), then a whole scope.
+    posted.length = 0;
+    await cache.remove(first.key);
+    await cache.remove(first.key);
+    expect(posted).toStrictEqual([change('delete', first)]);
+    const folder = tick(FOLDER, '2026-10-02');
+    await cache.put(folder, '2026-10-10');
+    const second = tick(ORG, '2026-10-02');
+    await cache.put(second, '2026-10-10');
+    posted.length = 0;
+    expect(await cache.removeScope(ORG)).toBe(2);
+    expect(posted.map((message) => message.key).sort()).toEqual([latest.key, second.key].sort());
+    expect(posted.every((message) => message.change === 'delete' && message.scope === ORG)).toBe(true);
+  });
+
+  it('tells nothing of a tick whose write is cancelled before or while it is made', async () => {
+    const db = await database();
+    const { changes, posted } = told();
+    const cache = createTickCacheStore(Promise.resolve(db), { changes });
+    const transaction = db.transaction.bind(db);
+    let abortOnWrite: AbortController | null = null;
+    vi.spyOn(db, 'transaction').mockImplementation((...args: Parameters<typeof db.transaction>) => {
+      const opened = transaction(...args);
+      abortOnWrite?.abort();
+      return opened;
+    });
+    const latest = tick(ORG, '2026-10-09', { now: true, actualReadTime: '2026-10-09T18:00:00Z' });
+    await cache.put(latest, '2026-10-09');
+    posted.length = 0;
+    const before = new AbortController();
+    before.abort();
+    await expect(
+      cache.put(tick(ORG, '2026-10-01'), '2026-10-10', { signal: before.signal }),
+    ).rejects.toBeInstanceOf(TickWriteCancelled);
+    // Taken back: a new day, and a day that replaced its "now" read, which is put back as it was.
+    for (const day of ['2026-10-01', '2026-10-09']) {
+      abortOnWrite = new AbortController();
+      await expect(
+        cache.put(tick(ORG, day), '2026-10-10', { signal: abortOnWrite.signal }),
+      ).rejects.toBeInstanceOf(TickWriteCancelled);
+    }
+    expect(posted).toStrictEqual([]);
+    // A day the cancelled write dropped as past the window stays dropped, and that is told.
+    abortOnWrite = null;
+    const old = tick(ORG, '2026-09-05');
+    await cache.put(old, '2026-10-08');
+    posted.length = 0;
+    abortOnWrite = new AbortController();
+    await expect(
+      cache.put(tick(ORG, '2026-10-01'), '2026-10-10', { signal: abortOnWrite.signal }),
+    ).rejects.toBeInstanceOf(TickWriteCancelled);
+    expect(posted).toStrictEqual([change('delete', old)]);
+    expect(await cache.get(old.key)).toBeUndefined();
+  });
+
   it('keeps nothing without IndexedDB', async () => {
-    const cache = createTickCacheStore(Promise.resolve(null));
+    const { changes, posted } = told();
+    const cache = createTickCacheStore(Promise.resolve(null), { changes });
     await expect(cache.put(tick(ORG, '2026-10-01'), '2026-10-10')).rejects.toThrow(/does not let gcportrait/);
     expect(await cache.listScope(ORG)).toEqual([]);
     expect(await cache.get('x')).toBeUndefined();
@@ -172,6 +270,7 @@ describe('the tick cache', () => {
     expect(await cache.list()).toEqual([]);
     await cache.remove('x');
     expect(await cache.removeScope(ORG)).toBe(0);
+    expect(posted).toStrictEqual([]);
   });
 
   it('replaces the version-1 store keyed by [scope, readTime], which holds no data, on upgrade', async () => {
