@@ -817,17 +817,27 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   compiled catalog (`pnpm catalog:build`), the layout's metrics table, the icon module, `docs/media/`
   (`pnpm media`, `node scripts/exports.mjs`), the guides' lens tables (`node scripts/user-docs.mjs --write`),
   `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
-- **CI** (`.github/workflows/pr.yml`) runs every job at once on each pull request and push to `main`: lint,
-  typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the size
-  budgets, e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and the
-  `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants a
-  banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Each
+- **CI** (`.github/workflows/pr.yml`) runs its jobs side by side on each pull request and push to `main`:
+  lint, typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the
+  size budgets, e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and
+  the `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants
+  a banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Each
   e2e leg is a round-robin share of its projects' tests, every k-th of their listing, run by `--test-list`
   (`pnpm --filter @gcportrait/e2e leg`), so that the slow files spread over the legs instead of landing in
   one; it fails when its run misses a test of its share. Its `required` job is the one check branch
-  protection targets, green only when every other job but `layout-budget` is, so the ruleset never changes
-  when a job does. Every action is pinned by commit. The audit gate fails on high and critical advisories
-  unless `scripts/audit-allowlist.json` accepts one with an expiry.
+  protection targets, green only when every other job but `layout-budget` succeeded or was skipped for a
+  change of only docs and media (below), so the ruleset never changes when a job does. Every action is pinned
+  by commit. The audit gate fails on high and critical advisories unless `scripts/audit-allowlist.json`
+  accepts one with an expiry.
+- **A change of only docs and media runs only the jobs that read them.** A first job, `changes`, compares a
+  push with the commit before it and a pull request with the branch it merges into, and sorts every changed
+  file as docs (`docs/**/*.md`, `.changeset/*.md`, the root's Markdown files and each top-level folder's and
+  package's `README.md` and `CHANGELOG.md`), media (`docs/media/**`) or code (everything else, the skills
+  included). With no code among them, the unit tests of every project but the layout and the frontend, the
+  website and provenance run, licences too for docs (`THIRD_PARTY.md`) and Prettier for media (its manifests
+  are JSON); typecheck, the layout and frontend unit legs, `layout-budget`, catalog-check, build, e2e, the
+  audit, workflows-and-shell and ESLint are skipped, because none of them reads those files, so each could
+  only repeat the result of the tree the change starts from. A comparison that cannot be made runs every job.
 - **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
   or applied in a commit that passes the checks) or declined with its reason in
   [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.

@@ -137,28 +137,48 @@ licenses: OK. 565 installed packages are under allowed licences; the workspace p
 
 ### Continuous integration
 
-Every pull request and every push to `main` runs two workflows. **CI** (`.github/workflows/pr.yml`) starts all
-its jobs at once; each one installs the dependencies itself from the pnpm store cache, which `pnpm-lock.yaml`
+Every pull request and every push to `main` runs two workflows. **CI** (`.github/workflows/pr.yml`) runs its
+jobs side by side; each one installs the dependencies itself from the pnpm store cache, which `pnpm-lock.yaml`
 keys, so a run takes as long as its slowest job. **Website** (`.github/workflows/pages.yml`) builds and checks
 the site again (and its generated media, as a warning) and deploys it from `main` once the maintainer has
-switched deployment on ([website.md](website.md)). The CI jobs:
+switched deployment on ([website.md](website.md)). The CI jobs, and what each does on a change of only docs
+and media (below):
 
-| Job | Runs |
-|---|---|
-| `lint` | `pnpm format:check`, then `pnpm lint` |
-| `typecheck` | `pnpm typecheck` |
-| `unit (layout)`, `unit (frontend)`, `unit (all other projects)` | `pnpm test --project layout`; `pnpm test --project frontend`; `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included |
-| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking |
-| `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` |
-| `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` |
-| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode |
-| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) |
-| `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` |
-| `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard |
-| `licenses` | `pnpm run licenses` |
-| `audit` | `node scripts/check-audit.mjs` (asks the npm registry) |
-| `workflows-and-shell` | `actionlint`; `shellcheck -x infra/*.sh`; every other shell script with `shellcheck -x --severity=warning` |
-| `required` | nothing of its own: green only when every job above but `layout-budget` succeeded |
+| Job | Runs | Only docs and media changed |
+|---|---|---|
+| `changes` | sorts the changed files into docs, media and code (below); no install | runs |
+| `lint` | `pnpm format:check`, then `pnpm lint` | Prettier only, when media changed (its two manifests are JSON); skipped for docs alone |
+| `typecheck` | `pnpm typecheck` | skipped |
+| `unit (layout)`, `unit (frontend)` | `pnpm test --project layout`; `pnpm test --project frontend` | skipped |
+| `unit (all other projects)` | `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included | runs: the user guides' check, the README's and the media's tests and the backend's and the website's tests read docs and media |
+| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking | skipped |
+| `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` | skipped |
+| `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
+| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode | skipped |
+| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) | skipped |
+| `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` | runs |
+| `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard | runs |
+| `licenses` | `pnpm run licenses` | runs when docs changed (`THIRD_PARTY.md` is one); skipped for media alone |
+| `audit` | `node scripts/check-audit.mjs` (asks the npm registry) | skipped |
+| `workflows-and-shell` | `actionlint`; `shellcheck -x infra/*.sh`; every other shell script with `shellcheck -x --severity=warning` | skipped |
+| `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded | runs: a job skipped for such a change counts as passed |
+
+**A change of only docs and media** runs only the jobs that read such files ([AGENTS.md](../AGENTS.md),
+"Quality gates, testing and CI"). `changes` compares a push with the commit before it and a pull request (its
+merge commit) with the branch it merges into, and sorts every changed file:
+
+- **docs**: `docs/**/*.md`, `.changeset/*.md`, the Markdown files at the root (`AGENTS.md`, `README.md`,
+  `THIRD_PARTY.md`, `CHANGELOG.md`) and the `README.md` and `CHANGELOG.md` of each top-level folder and each
+  package. The skills (`.agents/skills/`) are code: the frontend's theme test reads the style skill's palette.
+  So is any other Markdown file, a `README.md` in the catalog's fixture folders for one, which
+  `catalog:check` refuses.
+- **media**: `docs/media/**`, what `pnpm media` and `node scripts/exports.mjs` write.
+- **code**: every other file.
+
+With code among the changed files every job runs, and so it does when the comparison cannot be made (a new
+branch, a push whose commit before is not in the history) or finds no file. A skipped job's result is that of
+the tree the change starts from, which the run of that commit shows. The job summary of `changes` says what it
+compared and what it found.
 
 GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
@@ -200,19 +220,22 @@ CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --
 actionlint && shellcheck -x infra/*.sh                            # workflows-and-shell (Homebrew has both)
 ```
 
-A failed `e2e` leg uploads `playwright-report-` and its id (`desktop-1`, `desktop-2`, `phones-and-tablets-1`,
-`phones-and-tablets-2`): the HTML report, the traces of the failed tests (`pnpm --filter @gcportrait/e2e exec
-playwright show-trace FILE` opens one) and, under `out/export/e2e/`, the export comparisons' images and their
-difference pictures. A failed `unit` leg uploads `render-golden-failures-N` when the render golden did not
-match: the image the runner drew and a picture of the differences.
+A failed `e2e` leg uploads `playwright-report-` and its id (`desktop-1` to `desktop-3`,
+`phones-and-tablets-1`, `phones-and-tablets-2`): the HTML report, the traces of the failed tests
+(`pnpm --filter @gcportrait/e2e exec playwright show-trace FILE` opens one) and, under `out/export/e2e/`,
+the export comparisons' images and their difference pictures. A failed `unit (all other projects)`, the leg
+that runs the render golden's tests, uploads `render-golden-failures` when the render golden did not match:
+the image the runner drew and a picture of the differences.
 
 **Required checks.** Branch protection needs exactly one check: `required`. In Settings > Rules > Rulesets, a
 branch ruleset for the default branch with "Require status checks to pass" and the check `required` (source:
 GitHub Actions); add "Require a pull request before merging" as you see fit. Do not list the other jobs or the
 matrix legs one by one: `required` already waits for them, and the ruleset then needs no change when a job is
-added, renamed or split. `layout-budget` is left out on purpose. The Website workflow's `website-build` may be
-required too; CI's `website` job already builds and checks the same site. GitHub offers a check in the ruleset
-only after it has run once, so add it after the first push to `main`.
+added, renamed or split. The jobs a change of only docs and media leaves out are skipped inside the workflow,
+not by a path filter on it, so `required` reports on every pull request and push and decides itself when a
+skipped job counts as passed. `layout-budget` is left out on purpose. The Website workflow's `website-build`
+may be required too; CI's `website` job already builds and checks the same site. GitHub offers a check in the
+ruleset only after it has run once, so add it after the first push to `main`.
 
 **Runs on GitHub.** What to expect, and what to do:
 

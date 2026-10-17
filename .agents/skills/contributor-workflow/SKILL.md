@@ -106,16 +106,20 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
 
 - The acceptance criteria of the issue or backlog item, and the rules in the skills, met and demonstrated
   (commands + output in the PR).
-- `pnpm check` and `pnpm e2e` green locally; CI green. CI (`.github/workflows/pr.yml`) runs every job at once,
-  each installing from the pnpm store cache: lint, typecheck, `unit` in three legs (layout, frontend, every
-  other project), catalog-check, build with the size budgets, `e2e` in five Chromium legs (the desktop specs
-  in three, the phone and tablet check with `chromium-phone` and `chromium-tablet` in two, each leg every k-th
-  test of its projects, `pnpm --filter @gcportrait/e2e leg`), website
+- `pnpm check` and `pnpm e2e` green locally; CI green. CI (`.github/workflows/pr.yml`) runs its jobs side by
+  side, each installing from the pnpm store cache: lint, typecheck, `unit` in three legs (layout, frontend,
+  every other project), catalog-check, build with the size budgets, `e2e` in five Chromium legs (the desktop
+  specs in three, the phone and tablet check with `chromium-phone` and `chromium-tablet` in two, each leg
+  every k-th test of its projects, `pnpm --filter @gcportrait/e2e leg`), website
   (built and checked, then at phone widths), provenance, licenses, audit and workflows-and-shell (actionlint,
   shellcheck). Its `required` job is the one check branch protection targets:
-  green only when all of them are; `layout-budget` only reports. A failure you cannot reproduce: run the
-  command as the runner does, `TZ=UTC LC_ALL=C.UTF-8 CI=true` (`docs/contributing.md` §4, "Continuous
-  integration", has each job's command, its time and the artifacts a failed job uploads).
+  green only when all of them are; `layout-budget` only reports. A change of only docs and media (the
+  `changes` job sorts its files; AGENTS.md, "Quality gates, testing and CI") runs only the jobs that read
+  them: `unit (all other projects)`, website, provenance, licenses for docs and Prettier for media; the
+  others show as skipped and `required` counts them as passed. A push is sorted as a whole: one file of code
+  among its changes runs every job. A failure you cannot reproduce: run the command as the runner does,
+  `TZ=UTC LC_ALL=C.UTF-8 CI=true` (`docs/contributing.md` §4, "Continuous integration", has each job's
+  command, its time and the artifacts a failed job uploads).
 - Both themes verified for visual work; contrast tests green.
 - Docs updated: package README, user docs under `docs/` or `website/` if behaviour changed, `AGENTS.md` and
   the skill if a rule changed.

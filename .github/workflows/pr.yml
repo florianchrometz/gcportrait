@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 #
-# Pull-request and main-branch checks (docs/contributing.md §4, "Continuous integration"). Every job starts at once,
-# so the run takes as long as its slowest job, not the sum of its jobs. Each job that needs the dependencies
+# Pull-request and main-branch checks (docs/contributing.md §4, "Continuous integration"). The jobs run side by side,
+# those a change of only docs and media skips after a first small job, `changes`, has sorted the changed files
+# (below), so the run takes as long as its slowest job, not the sum of its jobs. Each job that needs the dependencies
 # installs them itself from the pnpm store cache (.github/actions/setup), which pnpm-lock.yaml keys: a lockfile that
 # is out of date fails every such job at its install step, with pnpm's ERR_PNPM_OUTDATED_LOCKFILE. The install's
 # `prepare` script compiles the asset catalog (packages/catalog/src/generated/, a git-ignored build artefact);
@@ -10,9 +11,11 @@
 #
 # The jobs and what they run (the same commands as locally; docs/contributing.md has the table of the jobs):
 #
+#   changes         which kinds of files the change touches: docs, media or anything else (below); no install
 #   lint            pnpm format:check, pnpm lint
 #   typecheck       pnpm typecheck (tsc -b, then astro check over the website's .astro files)
-#   unit            pnpm test in three legs: layout, frontend, every other Vitest project (below)
+#   unit            pnpm test in three legs: layout and frontend (the `unit` matrix), every other Vitest project
+#                   (`unit-other`, below)
 #   layout-budget   the layout's strict budgets and bench table, and its properties explored; non-blocking (below)
 #   catalog-check   pnpm catalog:build, pnpm catalog:check
 #   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
@@ -23,7 +26,27 @@
 #   licenses        pnpm run licenses
 #   audit           node scripts/check-audit.mjs (needs the npm registry)
 #   workflows-and-shell   actionlint over the workflows, shellcheck over every shell script
-#   required        the one check branch protection targets: green only when every job above but layout-budget is
+#   required        the one check branch protection targets: green only when every job above but layout-budget
+#                   succeeded, or was skipped for a change of only docs and media (below)
+#
+# A change of only docs and media runs only the jobs that read such files (AGENTS.md, Quality gates, testing and
+# CI). `changes` sorts every changed file into one of three kinds:
+#
+#   docs    Markdown that people read and, of the jobs, only unit (all other projects), website, provenance and
+#           licenses: docs/**/*.md, .changeset/*.md, the root's *.md files, and each top-level folder's and each
+#           package's README.md and CHANGELOG.md. Not the skills' files (.agents/skills/: the frontend's theme test
+#           reads the style skill's palette) and no other Markdown (catalog-check, for one, refuses a file in the
+#           catalog's data folders that is not YAML or JSON).
+#   media   docs/media/**, what `pnpm media` and `node scripts/exports.mjs` write.
+#   code    every other file.
+#
+# With no code among the changed files, the run keeps unit (all other projects) (the user guides' check, the
+# README's and the media's tests, the backend's and the website's tests read these files), website, provenance
+# and required, with docs licenses too (THIRD_PARTY.md) and with media lint's Prettier step (the media's two
+# manifests are JSON). It skips typecheck, unit (layout), unit (frontend), layout-budget, catalog-check, build,
+# e2e, audit, workflows-and-shell and lint's ESLint step: none of them reads a changed file, so each would give
+# the result it gave the tree before the change, which that commit's own run reports. Every job runs when the
+# comparison cannot be made (a new branch, a push whose commit before is not in the history) or finds no file.
 #
 # Pinning: every action is pinned to a commit, with its release as a comment, and the two linters downloaded here
 # are pinned by version and SHA-256. Dependabot (github-actions) proposes new releases of the actions; the linters
@@ -45,8 +68,98 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # The kinds of files the change touches (the header): `code`, `docs` and `media`, each `true` or `false`. A push
+  # is compared with the commit before it (github.event.before), a pull request's merge commit with its first
+  # parent, the tip of the branch it merges into, so either way the files are those the change brings to the tree
+  # it starts from. The checkout fetches every commit and tree but file contents only for the checked-out tree (a
+  # blobless partial clone): `git diff --name-only --no-renames` compares trees only, and without rename detection
+  # it never asks for a file's contents; GIT_NO_LAZY_FETCH keeps git from fetching an object that is missing (the
+  # checkout keeps no credentials), so a missing commit ends the comparison instead. Every doubt in the step ends
+  # in `code=true`, and the jobs skip only on `code == 'false'`, so a doubt runs them all; should this job fail,
+  # the jobs that need it are skipped and `required` fails.
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.classify.outputs.code }}
+      docs: ${{ steps.classify.outputs.docs }}
+      media: ${{ steps.classify.outputs.media }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          filter: blob:none
+      - name: Sort the changed files into docs, media and code
+        id: classify
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          GIT_NO_LAZY_FETCH: '1'
+          GIT_TERMINAL_PROMPT: '0'
+          MEDIA: '^docs/media/'
+          DOCS: '^(docs/.+|\.changeset/[^/]+|[^/]+|([^/]+|packages/[^/]+)/(README|CHANGELOG))\.md$'
+        run: |
+          base=''
+          if [ "$EVENT" = pull_request ]; then
+            # GitHub's merge commit of the pull request has two parents, the branch it merges into first.
+            if [ "$(git rev-list --no-walk --parents HEAD | wc -w)" -eq 3 ]; then
+              base=$(git rev-parse 'HEAD^1')
+            fi
+          elif [ "$EVENT" = push ] && [[ "$BEFORE" =~ ^[0-9a-f]+$ ]] && [[ ! "$BEFORE" =~ ^0+$ ]]; then
+            base=$BEFORE
+          fi
+          reason=''
+          files=''
+          if [ -z "$base" ]; then
+            reason='no commit to compare with'
+          elif ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            reason="the commit before, ${base}, is not in the history"
+          elif ! files=$(git diff --name-only --no-renames "$base" HEAD); then
+            reason='git diff failed'
+          elif [ -z "$files" ]; then
+            reason='no file changed'
+          fi
+          code=true
+          docs=false
+          media=false
+          if [ -z "$reason" ]; then
+            code=false
+            while IFS= read -r file; do
+              if [[ $file =~ $MEDIA ]]; then
+                media=true
+              elif [[ $file =~ $DOCS ]]; then
+                docs=true
+              else
+                code=true
+              fi
+            done <<< "$files"
+          fi
+          {
+            echo "code=$code"
+            echo "docs=$docs"
+            echo "media=$media"
+          } >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then
+            summary="Every job runs: ${reason}."
+          else
+            summary="Compared with ${base::12}, files changed: $(grep -c '' <<< "$files")"
+            summary+="; code ${code}, docs ${docs}, media ${media}."
+            if [ "$code" = false ]; then
+              summary+=' Only docs and media changed: the jobs that read neither are skipped (the header).'
+            fi
+            head -n 100 <<< "$files"
+          fi
+          echo "$summary"
+          printf '### Changes\n\n%s\n' "$summary" >> "$GITHUB_STEP_SUMMARY"
+
+  # Prettier checks the media's two JSON manifests too; neither tool reads Markdown (.prettierignore,
+  # eslint.config.js), and ESLint lints source files only.
   lint:
     name: lint
+    needs: changes
+    if: needs.changes.outputs.code != 'false' || needs.changes.outputs.media == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -57,6 +170,7 @@ jobs:
       - name: Formatting (Prettier)
         run: pnpm run format:check
       - name: ESLint (strict type-checked rules, import boundaries)
+        if: needs.changes.outputs.code != 'false'
         # The type-checked rules hold every workspace's type information at once, more than Node's default
         # heap (about 2 GiB on the runner) holds.
         env:
@@ -65,6 +179,8 @@ jobs:
 
   typecheck:
     name: typecheck
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -77,11 +193,14 @@ jobs:
 
   # `pnpm test` (every Vitest project of vitest.config.ts) in three legs. The layout runs alone because its
   # performance tests assert 2 x the budgets on CI (packages/layout/README.md, "Performance"), which other suites
-  # on the same runner would eat into; the frontend is the largest project. The third leg runs every project but
-  # those two, by negation, so a new project is never left out, and a misspelt name in the first two legs fails
+  # on the same runner would eat into; the frontend is the largest project. These two are the `unit` matrix, which
+  # a change of only docs and media skips; the third leg, `unit-other`, runs every project but those two, by
+  # negation, on every change, so a new project is never left out, and a misspelt name in the first two legs fails
   # the leg ("No projects matched the filter") instead of skipping a project.
   unit:
     name: unit (${{ matrix.leg }})
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -92,8 +211,6 @@ jobs:
             projects: layout
           - leg: frontend
             projects: frontend
-          - leg: all other projects
-            projects: '!layout !frontend'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -106,13 +223,25 @@ jobs:
           args=()
           for project in $PROJECTS; do args+=(--project "$project"); done
           pnpm run test "${args[@]}"
-      # The render golden's comparison (packages/render-cli/test/golden.test.ts) leaves the image it drew and a
-      # picture of the differences here when the bytes differ.
+
+  unit-other:
+    name: unit (all other projects)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Vitest (!layout !frontend)
+        run: pnpm run test --project '!layout' --project '!frontend'
+      # The render golden's comparison (packages/render-cli/test/golden.test.ts, in this leg) leaves the image it
+      # drew and a picture of the differences here when the bytes differ.
       - name: Upload the render golden's failure images
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: render-golden-failures-${{ strategy.job-index }}
+          name: render-golden-failures
           path: out/render/golden-failures/
           if-no-files-found: ignore
           retention-days: 14
@@ -140,6 +269,8 @@ jobs:
   # with its seed and path, instead of failing an unrelated pull request.
   layout-budget:
     name: layout-budget
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     continue-on-error: true
@@ -218,6 +349,8 @@ jobs:
 
   catalog-check:
     name: catalog-check
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -237,6 +370,8 @@ jobs:
   # Vite dev servers, so nothing waits for this build.
   build:
     name: build
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -265,6 +400,8 @@ jobs:
   # here depends on the operating system that wrote a baseline.
   e2e:
     name: e2e (${{ matrix.leg }})
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -384,8 +521,11 @@ jobs:
           rm -r provenance-canary
           echo "Self-test passed: the planted banned file was rejected."
 
+  # THIRD_PARTY.md, which the check compares with what it would write, is one of the docs.
   licenses:
     name: licenses
+    needs: changes
+    if: needs.changes.outputs.code != 'false' || needs.changes.outputs.docs == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -405,6 +545,8 @@ jobs:
   # setting, docs/security.md).
   audit:
     name: audit
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -427,6 +569,8 @@ jobs:
   # projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
   workflows-and-shell:
     name: workflows-and-shell
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
@@ -462,16 +606,24 @@ jobs:
             | xargs -0 --no-run-if-empty shellcheck -x --severity=warning
 
   # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required
-  # checks"): it succeeds only when every blocking job succeeded, and fails when one failed, was cancelled or was
-  # skipped. Requiring this job alone keeps the protection rule unchanged when jobs are added, renamed or split
-  # into matrix legs here. layout-budget is left out on purpose (non-blocking, see the job).
+  # checks"), on pull requests and on main alike: it succeeds only when `changes` and every blocking job succeeded,
+  # and fails when one failed, was cancelled or was skipped. The one exception is a change of only docs and media,
+  # which `changes` reports as `code=false`: then a skipped job counts as passed, because its `if` skipped it for
+  # files it does not read. On any other change a skipped job fails this check, so a condition that skips a job
+  # wrongly shows here. The jobs are skipped by `if` inside this one workflow, not by leaving the workflow out with
+  # `paths-ignore`, because a workflow that does not run reports no `required` at all, and a pull request waits
+  # for a required check that never reports. Requiring this job alone keeps the protection rule unchanged when
+  # jobs are added, renamed or split into matrix legs here. layout-budget is left out on purpose (non-blocking,
+  # see the job).
   required:
     name: required
     if: always()
     needs:
+      - changes
       - lint
       - typecheck
       - unit
+      - unit-other
       - catalog-check
       - build
       - e2e
@@ -484,14 +636,22 @@ jobs:
     timeout-minutes: 5
     permissions: {}
     steps:
-      - name: Every blocking job succeeded
+      - name: Every blocking job succeeded (or was skipped on a change of only docs and media)
         env:
           NEEDS: ${{ toJSON(needs) }}
+          CODE: ${{ needs.changes.outputs.code }}
         run: |
           jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
-          failed=$(jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")' <<< "$NEEDS")
+          failed=$(jq -r --arg code "$CODE" '[to_entries[]
+            | select(.value.result != "success")
+            | select(.key == "changes" or $code != "false" or .value.result != "skipped")
+            | .key] | join(", ")' <<< "$NEEDS")
           if [ -n "$failed" ]; then
             echo "::error title=Required checks::Not successful: ${failed}."
             exit 1
           fi
-          echo "Every blocking job succeeded."
+          if [ "$CODE" = false ]; then
+            echo "Only docs and media changed: the blocking jobs that read them succeeded, the others were skipped."
+          else
+            echo "Every blocking job succeeded."
+          fi
