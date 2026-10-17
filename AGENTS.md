@@ -10,6 +10,7 @@ stated as it stands, with the reason for it in one sentence. Humans new to the r
 
 | Folder | What it holds | Its rules |
 |---|---|---|
+| `packages/` | the nine workspace packages | `packages/AGENTS.md` |
 | `scripts/`, `brand/`, `.agents/`, `.changeset/` | repository tooling, the mark, the skills, changesets | this file |
 
 The sections of this file:
@@ -20,7 +21,6 @@ The sections of this file:
 | [What gcportrait is and is not](#what-gcportrait-is-and-is-not) | The question it answers, its users, what version 1 does, the non-goals |
 | [Product rules](#product-rules) | Phones, tablets and desktops, both themes, the demo, the timeline, "as of", views as links, composition, the source link |
 | [Data and graph semantics](#data-and-graph-semantics) | Data over code, the Snapshot, synthetic data, the catalog and the graph builder |
-| [Layout and drawing rules](#layout-and-drawing-rules) | The layout engine, pure cores, packing, routing, progressive disclosure |
 | [Exports and the render API](#exports-and-the-render-api) | SVG, PNG and draw.io, `pnpm render`, `POST /api/render` |
 | [Style and accessibility](#style-and-accessibility) | Themes, WCAG 2.2 AA, touch targets and breakpoints, Google's colour semantics, icons, fonts |
 | [Security and privacy](#security-and-privacy) | The seven principles, tokens, the backend, the quota project, the service-account gate, OAuth scopes |
@@ -219,7 +219,8 @@ now, and what changed in the last five weeks?
   asset, because Google adds types every month and a diagram that silently loses assets is wrong.
 - **The selection trace**: a click on a resource keeps its path to the root and its connections traced, in a
   bolder colour, until the selection changes; "Open in Cloud Console" is offered in the details drawer and
-  opens the console only when the person chooses it.
+  opens the console only when the person chooses it. A highlight change only changes attributes and never
+  lays out again.
 - **The running app links its source.** The shell footer's "Source (MIT)" link stays on every route, next to
   the non-affiliation notice, so the people who use an instance can see where its source is and under which
   licence; the MIT License does not ask for it. It points at `sourceUrl` from `/api/config` (the backend's
@@ -241,101 +242,16 @@ now, and what changed in the last five weeks?
   parser into the same Snapshot. Everything after ingestion knows the source only through the Snapshot's
   `source` (`api`, `export` or `demo`). The list API is synchronous and reads any of the last 35 days, while
   very large inventories can hit its quota; exports are the path for those.
-- **An export's read time** comes from an `operation.json` next to it, from the person, or from the newest
-  `updateTime`, and the UI says which, because an export file carries no read time of its own.
+- **The UI says where an export's read time came from**, because an export file carries no read time of its
+  own; [packages/AGENTS.md](packages/AGENTS.md), "Catalog and graph semantics", defines the sources.
 - **Synthetic data only.** Fixtures, examples and demo data use `example.com` and `example.org` names, project
   numbers below 100000000000, and documentation (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`) or
   private IP ranges, and the test suite fails on anything that looks real. A pull request never names a real
   scope, even when the change was tested against one. Real inventories belong to someone and would leak names,
   addresses and structure into a public repository.
-- **Snapshot files carry a `schemaVersion`**, and a format change adds a migration (`migrateSnapshot` in
-  `@gcportrait/model`) in the same change, so every file a user saved stays readable.
-- **The catalog is authored by groups.** Each group's `packages/catalog/known-unmapped/<group>.yaml` lists the
-  official types it owns (`owns`: exact types or `<service>/*`, the most specific pattern wins) and those it
-  has not mapped yet (`types`, each with a reason); every official type has exactly one owner, and the checker
-  enforces it. Product files are `products/<service>[.<suffix>].yaml`, merged by service, each holding one
-  group's types; a service several groups own has no plain `<service>.yaml` but one
-  `products/<service>.<group>[-<more>].yaml` per group. Groups then work in disjoint files, and a check scoped
-  to one group or file (`--group`, `--file`) fails only on what that selection has to fix.
-- **The compiled catalog is a build artefact**: `packages/catalog/src/generated/compiled-catalog.ts` is
-  git-ignored and written by `pnpm catalog:build`, which install, lint, typecheck and test run first. It
-  leaves out every type whose own description has a violation, so a half-finished entry never reaches the
-  graph builder; `pnpm catalog:check` fails (`generated-committed`) if a file under `src/generated/` is ever
-  tracked.
-- **Coverage is checked against the official asset-type list** in CI, and the weekly drift workflow opens or
-  updates one issue when Google's list changes. The catalog carries its own `version` and `officialListDate`.
-- **`@gcportrait/catalog` owns rule semantics.** Its rule engine (relations, containment, labels, subtitles,
-  console links, IP and domain extraction, `hiddenWhen`, the normalisers) is the single implementation, used
-  by the compiler's fixture proofs and the graph builder alike, so the two cannot disagree. It stays pure and
-  browser-safe (no Node APIs, no I/O, deterministic), because the graph builder runs in a web worker; the
-  catalog's Node tooling lives in `packages/catalog/tooling/`.
-- **Reverse rules and child-side containment.** `reverse: true` on a relation rule draws the edge from the
-  referenced asset to the one that holds the reference (a replica names its primary; the edge runs primary to
-  replica). `nestsIn` on a type entry names the container the asset nests in; its `kind` is drawn instead
-  whenever it cannot nest there, and never to the container it does nest in. Copies of one edge merge: one
-  (from, kind, to) is one edge, strong when any copy is.
-- **Sibling and Kubernetes references.** `siblingName` builds a target's name from a pattern and the
-  referencing asset's own project and location; `k8sRef` resolves a Kubernetes name or object reference in the
-  asset's cluster. A template drops every ` · ` segment whose expressions are all missing; `first(…)` stands
-  in the first present variable; a console link drops entirely when a variable is missing.
-- **Every `hiddenWhen` is proven** by a fixture it matches and one it does not (`hidden-unproven`), so an
-  always-true predicate cannot hide a type.
-- **Canonical project matching.** Asset names are never rewritten. A reference that matches no node is tried
-  once more with its first `projects/<ref>` segment swapped through the snapshot's project index (number to id
-  or id to number); an exact match wins, and a reference that matches neither way stays dangling as read.
-- **Shared VPC only on evidence.** A cross-project `attaches` edge is a Shared VPC attachment when it goes
-  into a subnetwork of another project in the snapshot, or into a network of a project whose Compute settings
-  say `xpnProjectStatus: HOST`; other cross-project attachments are drawn but are no Shared VPC.
-- **Reciprocal `connects` edges fold into one**, like `peers`, so either side's rule may draw the link.
-- **`includeTypes` reveals a hidden type's nodes but not its `hiddenWhen` matches**, which only a lens with
-  `showHidden` draws.
 
-The gcp-asset-catalog skill and [packages/catalog/README.md](packages/catalog/README.md) hold the schema, the
-normalisers and the authoring procedure; [packages/graph/README.md](packages/graph/README.md) the builder.
-
-## Layout and drawing rules
-
-- **gcportrait's own layout engine.** `packages/layout` is a pure TypeScript engine of nested-zone grid
-  packing and orthogonal gutter routing, not built on ELK, Graphviz or Cytoscape: none of them routes the
-  edges that cross zone boundaries the way these diagrams need. The gcp-diagram-layout skill is its
-  specification and holds every constant.
-- **Typed end to end.** Graph, layout and render never pass through a lossy text format (such as DOT) that is
-  parsed back.
-- **Pure cores.** `packages/ingest`, `packages/graph` and `packages/layout` have no side effects, no DOM and
-  no randomness (text widths come from a generated Roboto metrics table), so they run anywhere, in a worker
-  included, and test exactly. Everything in them is unit-tested; graph and layout also have property tests
-  (fast-check).
-- **Deterministic.** The same Scene gives a byte-identical Layout, report included (warnings sorted in
-  code-point order), whatever order its children or edges came in. The invariants (no card overlap, children
-  inside their parent's padding, no edge through a card or a zone header) are asserted in development and in
-  tests, with golden layouts per demo fixture and lens.
-- **Packing.** A container's children keep their sibling order and form a card grid above rows of zones. Among
-  every column count and every split of the zones into rows: rows are full (no row but the last has room for
-  the next child), the box is wider than tall, and the smallest frame wins (a box within 20 % of its target
-  aspect is its own frame; any other is framed by the smallest rectangle of the target aspect around it). Near
-  ties within 2 % prefer rows that do not grow downwards, then fewer rows. Short zones may stack beside a
-  single taller one in their row, only when that makes the box no wider, no taller and its frame smaller.
-  Sibling chips and empty zones share the widest of their widths. Tidy grids read as a picture, and sibling
-  order keeps a folder's projects in the order a reader expects.
-- **The packing criterion** for the golden layouts (S and M): every container with four or more children is
-  within 20 % of its target aspect, unless no full-row arrangement reaches that band or every one that does
-  needs more area than the chosen one framed to the target (the golden test's brute-force oracle shows which),
-  and none fills less than 40 % of its children box on the demo fixtures.
-- **Routing.** Routes run through the gutters between boxes, never across a card or a zone header, and leave a
-  port in a straight run; border hugging and the canvas margin cost more than free gutters, and lane pressure
-  makes a busy corridor dearer than a quiet one but cheaper than a detour; hub edges of one kind bundle into
-  one trunk; `secures` edges are routed like every other kind; an edge from a node to itself is dropped and
-  counted. The single-pass mode for very large views is decided by the first pass's search work, with a
-  one-round band below it, so that a view loses a widening round before it loses the widening. The layout
-  skill (§5) has the cost model and every threshold.
-- **Progressive disclosure.** The `auto` detail level fits a budget of rects and never opens beyond the lens's
-  ceiling, and a view of at most 100 rects opens whole; an explicit level is not capped (layout skill §6).
-- **The layout runs in a worker per request**, memoised by Scene hash, superseded requests cancelled, never
-  behind a global lock and never on the UI thread. A highlight change only changes attributes and never lays
-  out again.
-- **Budgets**: through a worker, layout S 10 ms, M 60 ms, L 400 ms, XL 2 s; XL ingest 1.5 s; the M graph build
-  150 ms ([Quality gates, testing and CI](#quality-gates-testing-and-ci); the app's targets are in the layout
-  skill §7).
+The catalog and graph semantics, layout rules and performance budgets are in
+[packages/AGENTS.md](packages/AGENTS.md).
 
 ## Exports and the render API
 
@@ -365,14 +281,10 @@ normalisers and the authoring procedure; [packages/graph/README.md](packages/gra
   tests/drawio.spec.ts`, maxGraph in Chromium) holds it to the SVG: at most 5 % of the pixels differ, a text
   line within 1.25 px, a box or a line's end within 0.5 px, an open head's gap within 3 px and a block head's
   width within 1.5 px.
-- **`pnpm render` draws byte for byte what the app's renderer draws**, through the frontend's headless
-  entry (`frontend/src/headless.ts`), for tests, screenshots and agents' self-checks.
+- The shared render library and rasteriser follow [packages/AGENTS.md](packages/AGENTS.md), "The render
+  library".
 - **The render API**, `POST /api/render`, draws SVG, PNG and draw.io on the server with the code `pnpm render`
   runs, so an instance's users can script exports:
-  - **one render library**, `@gcportrait/render`, between a snapshot and the bytes, used by the CLI and the
-    backend alike, so a view renders the same from either;
-  - **one rasteriser**, `@resvg/resvg-wasm`, pinned to an exact version, which computes the same pixels on
-    every platform, so the API, the CLI and the render golden agree by construction;
   - **POST only**: no GET form, because scope ids, quota projects and view values would land in URLs that
     request logs record in full;
   - **four sources**: a live `scope` (the pull's own fields, credentials and rules), an uploaded `ndjson`
@@ -750,13 +662,7 @@ frontend/      React 19 + Vite SPA (shell, themes, routes, IndexedDB wrapper; th
                src/export/; frontend/README.md maps every module)
 backend/       Fastify service for Cloud Run (/healthz, /api/config, the live pull, the render API
                POST /api/render with its render worker, static serving, security headers; docs/api.md)
-packages/      model (zod schemas, URL-hash codec, synthetic-data guard), demo-data (synthetic orgs S/M/L/XL
-               with history), ingest (CAI NDJSON → Snapshot), catalog (asset types as YAML, rule engine,
-               compiler, coverage check), graph (Snapshot → Graph → Scene), layout (Scene → Layout:
-               packing, gutter routing, invariants, worker), icons (Google's product icons, vendored
-               unmodified, and a few own drawings), render (the render library: a snapshot and a view as SVG,
-               PNG and draw.io, resvg-wasm; behind `pnpm render` and POST /api/render), render-cli
-               (`pnpm render`)
+packages/      the nine workspace packages (packages/AGENTS.md, "The packages")
 e2e/           Playwright: functional, export and axe tests, mostly in demo mode; the renderer's SVG
                baselines (baselines/diagram/) and the render goldens, PNG and draw.io (baselines/render/)
 docs/          contributing.md, packages.md (with the terms), backlog.md, catalog-followups.md, security.md,
@@ -825,10 +731,6 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   classification only makes the check stricter. zod on the UI thread fails the check whatever the sizes. The
   UI thread is kept at or under 320 kB to leave room. Two budgets keep work that runs in workers, after the
   page is up, from competing with the first paint, while the workers still have a ceiling.
-- **The performance budgets** run in the unit tests at twice their value on any machine and strictly in
-  `pnpm --filter @gcportrait/<pkg> test:budget`, and a local unit run skips a missed one with the load as its
-  reason while the machine is overloaded, which CI never does ([Layout and drawing
-  rules](#layout-and-drawing-rules); the app's targets in the layout skill §7).
 - **Tests first** for pure packages; fixtures first for catalog work; golden layouts and visual baselines for
   renderer work. The contributor-workflow skill (§4) says what each test layer covers.
 - **Baselines and goldens change only on purpose**, through their update commands, with the diff explained in
@@ -997,22 +899,9 @@ what `pnpm agents:setup` writes for it at the root and for each folder file, is 
 | The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways; and the canvas's gestures by finger at 390 × 844 (`e2e/tests/touch.spec.ts`; Product rules, the touch model; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to the AGENTS.md files and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
-| Validate the asset catalog and report coverage (exit 1 on any violation) | `pnpm catalog:check` (`--group <group>` / `--file <path>` for one group's or file's problems, `--verbose` for rule traces, `pnpm -s catalog:check --json` for JSON) |
-| Per-group catalog coverage (owned official types, mapped by role, unmapped, missing) | `pnpm catalog:coverage` (`--group <group>`, `--json`) |
-| Compile the catalog into its git-ignored module (also run by install, lint, typecheck and test) | `pnpm catalog:build` |
-| Fetch the official asset-type list into a new dated snapshot and print the drift | `pnpm catalog:fetch-official` |
-| Print the Scene summary of a demo organisation for a view (ingest → graph → scene) | `pnpm render-scene --fixture M --lens networking` (`--help` for focus, root, filters, detail, `--json`) |
-| Generate a demo organisation / regenerate the committed demo fixtures | `pnpm --filter @gcportrait/demo-data generate --size L --out /tmp/l.ndjson` / `... fixtures` |
 | Draw a demo view as the app's renderer draws it (PNG, SVG and draw.io, byte-stable; the drawing carries no non-affiliation line) | `pnpm render --fixture M --lens networking --png out.png` (`--theme dark`, `--detail`, `--svg`, `--drawio`, `--strict`, `--compare`, `--all`, `--help`; without `--png`/`--svg`/`--drawio` it writes `out/render/`) |
 | Smoke-test the render API on a local build (`POST /api/render`, docs/api.md; your own token, which Google's tokeninfo must accept) | `pnpm build`, then `node backend/dist/server.mjs` and `curl -s -OJ -H "X-Gcportrait-Token: $(gcloud auth print-access-token)" --json '{"source":{"kind":"demo","size":"S"}}' http://localhost:8080/api/render` (draws the render golden's bytes) |
-| Performance budgets on their own (XL ingest 1.5 s, M graph build 150 ms, layout S 10 ms / M 60 ms / L 400 ms / XL 2 s through a worker; the app's targets are in the layout skill §7) | `pnpm --filter @gcportrait/ingest test:budget` / `pnpm --filter @gcportrait/graph test:budget` / `pnpm --filter @gcportrait/layout test:budget` |
-| The layout's benchmark table (medians, memo, cancellation, memory; exit 1 on a missed budget) | `pnpm --filter @gcportrait/layout bench` |
-| How a layout's routes read per view (length, bends, border hugging, crossings, detours, canvas margin, overshoots; lane holders, the first pass's search work and the mode), or with `--packing` the packing rules side by side | `pnpm --filter @gcportrait/layout measure` (`--view L:overview:projects`, `--packing`, `--json`; default: M at `auto` × three lenses and L overview at `projects`) |
-| Look at a layout's packing and routing (debug SVG + PNG of rects, labels and routed edges, not the renderer) | `pnpm --filter @gcportrait/layout debug-svg --fixture M --lens overview --theme both --aspects` (writes `out/layout/`) |
-| Regenerate the layout's golden JSON / its Roboto metrics table (deliberately; review the diff) | `pnpm --filter @gcportrait/layout test:golden:update` / `pnpm --filter @gcportrait/layout metrics` |
-| Regenerate the renderer's SVG baselines / the render goldens, PNG and draw.io (deliberately; look at the changed files) | `pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u` (the file before `-u`) / `pnpm --filter @gcportrait/render-cli test:golden:update` |
-| Re-vendor Google's icons / rebuild the icon module / the contact sheet (both themes, 16 px legibility) | `pnpm --filter @gcportrait/icons vendor --verify-render` / `... build` / `... contact-sheet` (writes `out/`) |
-| Compare the vendored icons with what Google Cloud provides now (new, changed, renamed and removed icons; needs the network; the weekly `icon-drift.yml` runs it) | `pnpm --filter @gcportrait/icons drift` (`--markdown FILE`, `--json FILE`, `--offline --zips DIR`) |
+| Regenerate the renderer's SVG baselines (deliberately; look at the changed files) | `pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u` (the file before `-u`) |
 | Deploy your checkout to Cloud Run in a project of yours / remove it again (docs/self-host-options.md; `--dry-run` prints the changes; never against a project you do not own) | `infra/deploy.sh --project YOUR_PROJECT --region europe-west3 --build` / `infra/uninstall.sh --project YOUR_PROJECT --region europe-west3` (`--yes` without a terminal) |
 | Re-check what Google's APIs answer, which the backend's error classification rests on (your own tokens on standard input; cai-ingestion skill §9) | `gcloud auth print-access-token \| scripts/probe-google-apis.sh --project YOUR_PROJECT` (`--sa`, `--only`, `--json`, `--help`) |
 | Check a deployed instance from outside (Cloud Run's front end answers `/healthz` itself) | `curl -s https://YOUR_INSTANCE/api/healthz` (and `/api/config` for its settings) |
@@ -1026,7 +915,8 @@ what `pnpm agents:setup` writes for it at the root and for each folder file, is 
 | Regenerate the website's sample exports (SVG, PNG and draw.io drawn by `pnpm render`, `docs/media/exports/`) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render` also draws them again and compares) |
 | Check the draw.io export against the SVG export (maxGraph in Chromium, demos S, M and L in both themes; the limits in Exports and the render API) | `pnpm e2e tests/drawio.spec.ts --project chromium` |
 
-[docs/packages.md](docs/packages.md) maps the packages, their entry points and the data flow;
+[packages/AGENTS.md](packages/AGENTS.md), "Commands", lists catalog, graph, layout, render-golden and icon
+commands; [docs/packages.md](docs/packages.md) maps the packages, their entry points and the data flow;
 [docs/configuration.md](docs/configuration.md) lists every setting of an instance.
 
 ## Names that never appear

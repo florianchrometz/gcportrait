@@ -441,7 +441,7 @@ frozen copy shared by every catalog built on it, so that no test can change the 
 `test/performance.test.ts` builds the M organisation ten times after two warm-up builds and checks the median.
 **Two limits, as in `@gcportrait/ingest` and `@gcportrait/layout`**: `pnpm test` (and the blocking CI `unit`
 job) runs it in parallel with every other test file and asserts a regression ceiling of 2 × 150 ms, as every
-budget does there (AGENTS.md, "Quality gates, testing and CI"); `pnpm --filter @gcportrait/graph test:budget`
+budget does there (packages/AGENTS.md, "Performance budgets"); `pnpm --filter @gcportrait/graph test:budget`
 (`GCPORTRAIT_GRAPH_BUDGET=strict`) runs this file alone and asserts the 150 ms budget itself. Both measure by
 the rule of `@gcportrait/model/testing` that every package timing its work applies: a batch whose median is
 over the limit is measured again after a 250 ms pause, at most five batches and only while another fits in

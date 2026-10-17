@@ -73,7 +73,7 @@ anything else.
 |---|---|
 | `packages/model/**` | no other `@gcportrait` package |
 | `packages/*/**` (demo-data, ingest, catalog, layout, icons) | `model` (`icons` imports none) |
-| `packages/graph/**` | `model`, `catalog` (the catalog owns rule semantics; AGENTS.md, "Data and graph semantics") |
+| `packages/graph/**` | `model`, `catalog` (the catalog owns rule semantics; packages/AGENTS.md, "Catalog and graph semantics") |
 | `packages/graph/test/**` | `model`, `catalog`, `demo-data` (a dev dependency: the demo and view tests build the demo organisations) |
 | `packages/graph/scripts/**` | `model`, `catalog`, `demo-data`, `ingest` (the `render-scene` command) |
 | `packages/layout/test/**`, `packages/layout/scripts/**` | `model`, `graph`, `catalog`, `demo-data` (dev dependencies: the golden, performance and debug-render Scenes are built from the demo organisations) |
@@ -227,9 +227,10 @@ gcp-diagram-layout skill §2 (and a type's own `nestsIn` claims), relation edges
 and number swapped), aliases (service-account e-mails, project ids and numbers), dangling references, indexes
 (type, project, IP, domain), weak-edge precedence, merged peerings and reciprocal `connects`, the derived
 Shared VPC `shares` edges (attachments into another project's subnet or a Shared VPC host's network,
-AGENTS.md, "Data and graph semantics"), optional virtual region containers, and the timeline diff. The *views*
-turn a Graph and a `ViewSpec` into the `Scene` the layout consumes: drill-in root, focus view, lens, filters
-(applied under every drill-in and focus), detail level with chips, bundles and flips, and selection pointers.
+packages/AGENTS.md, "Catalog and graph semantics"), optional virtual region containers, and the timeline diff.
+The *views* turn a Graph and a `ViewSpec` into the `Scene` the layout consumes: drill-in root, focus view,
+lens, filters (applied under every drill-in and focus), detail level with chips, bundles and flips, and
+selection pointers.
 
 **Entry point.** `packages/graph/src/index.ts`:
 

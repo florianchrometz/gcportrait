@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * @gcportrait/catalog — the asset catalog as data, and the one rule engine that reads it (AGENTS.md, Data and
+ * @gcportrait/catalog — the asset catalog as data, and the one rule engine that reads it (packages/AGENTS.md, Catalog and
  * graph semantics; skill gcp-asset-catalog). The graph builder (`@gcportrait/graph`) evaluates relations,
  * labels, addresses and visibility through these functions, so rule semantics live in this package only. This
  * file is the package's only public surface; everything here runs in the browser, in workers and in Node.

@@ -11,10 +11,10 @@ never across a card or a header (stages 4–5), and the invariants that check bo
 protocol runs it off the UI thread, cancels superseded requests between stages and memoises the last eight
 Layouts by a structural hash of the Scene ("Worker" below).
 
-The package is a pure core (AGENTS.md, Layout and drawing rules): no DOM, no randomness, no clock (unless the
-caller passes one for timings), no I/O; `src/` compiles without DOM or Node types. Text is never measured from
-the DOM: widths come from a font metrics table generated at build time from the Roboto files the app
-self-hosts. It imports `@gcportrait/model` only.
+The package is a pure core (packages/AGENTS.md, Layout and drawing rules): no DOM, no randomness, no clock
+(unless the caller passes one for timings), no I/O; `src/` compiles without DOM or Node types. Text is never
+measured from the DOM: widths come from a font metrics table generated at build time from the Roboto files
+the app self-hosts. It imports `@gcportrait/model` only.
 
 ```ts
 import { assertLayout, layoutScene } from '@gcportrait/layout';
@@ -65,11 +65,11 @@ assertLayout(scene, layout); // throws LayoutInvariantError in development build
 
 ## Worker
 
-The app lays out in a dedicated worker (AGENTS.md, Layout and drawing rules; skill §7: "memoise by Scene hash;
-cancel superseded requests; never block the UI thread"). `src/worker.ts` is the protocol, `src/client.ts` the
-page side; both are plain functions of `postMessage`, so the same code runs in a Web Worker, a Node
-`worker_threads` worker (`scripts/lib/layout-worker.ts`, used by the bench and the tests) or in-process in a
-test.
+The app lays out in a dedicated worker (packages/AGENTS.md, Layout and drawing rules; skill §7: "memoise by
+Scene hash; cancel superseded requests; never block the UI thread"). `src/worker.ts` is the protocol,
+`src/client.ts` the page side; both are plain functions of `postMessage`, so the same code runs in a Web
+Worker, a Node `worker_threads` worker (`scripts/lib/layout-worker.ts`, used by the bench and the tests) or
+in-process in a test.
 
 **Protocol.** The page posts `{ type: 'layout', id, scene, options? }` (`options` are `LayoutOptions` without
 `clock`: a function cannot cross `postMessage`) and `{ type: 'cancel', id }`. The worker answers each request
@@ -566,7 +566,7 @@ catalog, the graph's Scene builder or the demo data changes them. Look at the ch
 When a graph or catalog change and a layout change land separately, whichever lands second regenerates them.
 
 **Packing aspect and fill.** The golden test checks every container with at least four children against
-the packing criterion (AGENTS.md, Layout and drawing rules):
+the packing criterion (packages/AGENTS.md, Layout and drawing rules):
 
 - its children box must leave at most 60 % empty (fill ≥ 40 %; skill §9);
 - it must be within 20 % of its target, unless an independent oracle (`src/testing/oracle.ts`, brute force

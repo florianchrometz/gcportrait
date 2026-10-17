@@ -13,7 +13,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: [
-      'packages/*',
+      'packages/*/vitest.config.ts',
       '{frontend,backend,website}/vitest.config.ts',
       {
         test: {

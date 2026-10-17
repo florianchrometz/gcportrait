@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Canonical name matching (AGENTS.md, Data and graph semantics). Cloud Asset Inventory names some services'
+ * Canonical name matching (packages/AGENTS.md, Catalog and graph semantics). Cloud Asset Inventory names some services'
  * assets with the project id and others with the project number, and references are written in whichever
  * form the user typed or the API returned. The builder never rewrites an asset name; instead a reference
  * that matches no node is tried once more with its project segment swapped through the snapshot's project

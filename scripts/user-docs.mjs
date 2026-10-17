@@ -181,7 +181,7 @@ export const VOCABULARY_MODULE = 'packages/model/src/schemas/vocabulary.ts';
 export const CATALOG_JSON = 'packages/catalog/dist/catalog.json';
 /**
  * The one document that names the rasteriser's version: the render golden PNG is the bytes of that version,
- * which the render library pins exactly (AGENTS.md, Exports and the render API). Every other document names
+ * which the render library pins exactly (packages/AGENTS.md, The render library). Every other document names
  * resvg without a number, so a bump changes this one line, which the check holds to the version installed.
  */
 export const RASTERISER_DOC = 'e2e/baselines/render/README.md';

@@ -19,7 +19,8 @@ organisation, looking at the asset `name`, `resource.parent` and the field in qu
 ## 1. Engine and schema work (cross-cutting)
 
 The engine's rules are in the catalog README and the gcp-asset-catalog skill, and the graph builder's in
-`packages/graph/README.md` ([AGENTS.md](../AGENTS.md), "Data and graph semantics"). What is still open:
+`packages/graph/README.md` ([packages/AGENTS.md](../packages/AGENTS.md), "Catalog and graph semantics").
+What is still open:
 
 ### 1.1 Project id versus project number in resource names
 

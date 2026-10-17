@@ -42,7 +42,7 @@ const WORKSPACE_DEPENDENCIES = [
   // dev dependency; tests only: nothing under packages/ingest/src/ imports it).
   { files: 'packages/ingest/test/**', allowed: ['model', 'demo-data'] },
   // The graph builder evaluates catalog rules through @gcportrait/catalog's rule engine: the catalog owns
-  // rule semantics (AGENTS.md, Data and graph semantics).
+  // rule semantics (packages/AGENTS.md, Catalog and graph semantics).
   { files: 'packages/graph/**', allowed: ['model', 'catalog'] },
   // Its tests build the demo organisations with @gcportrait/demo-data (a dev dependency; tests only).
   { files: 'packages/graph/test/**', allowed: ['model', 'catalog', 'demo-data'] },

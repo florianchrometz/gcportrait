@@ -11,7 +11,7 @@
 # semantics).
 /packages/catalog/  @florianchrometz
 
-# Layout engine: invariants, determinism, golden layouts (AGENTS.md, Layout and drawing rules).
+# Layout engine: invariants, determinism, golden layouts (packages/AGENTS.md, Layout and drawing rules).
 /packages/layout/   @florianchrometz
 
 # Deployment: Dockerfile, deploy.sh, uninstall.sh, the Cloud Run Button hook.

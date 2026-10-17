@@ -209,7 +209,7 @@ seen), `projects` and `unresolvedProjects`. The whole `IngestResult` is plain da
 
 ## Performance
 
-`test/worker-budget.test.ts` measures the ingest budget (AGENTS.md, "Layout and drawing rules": XL ingest
+`test/worker-budget.test.ts` measures the ingest budget (packages/AGENTS.md, "Performance budgets": XL ingest
 1.5 s) on the input it names: the demo organisation XL of `@gcportrait/demo-data` (the default seed, the
 demo's day), written as an `exportAssets` file (`toCaiNdjson(assets, 'export')`, snake_case envelope keys):
 51 242 assets in 370 projects, 77.6 MiB, 1 588 bytes per line on average. The file is posted as a `Blob` to a
@@ -233,7 +233,7 @@ A wall-clock budget only means something on a machine that is not busy with othe
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
 unit job) the same measurement asserts a regression ceiling of 2 × 1.5 s instead, as every budget does there
-(AGENTS.md, "Quality gates, testing and CI"). Under a local `pnpm test` a best run still over the ceiling
+(packages/AGENTS.md, "Performance budgets"). Under a local `pnpm test` a best run still over the ceiling
 while the machine's one-minute load average is above 1.5 per core is skipped, with the load and the figures as
 the reason and a `skipped:` line on standard error (`skipIfOverloaded`): four times oversubscribed, the figure
 measures the machine. On CI (`CI` set) the ceiling is the check that blocks, so it never skips, and neither

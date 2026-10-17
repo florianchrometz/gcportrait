@@ -6,8 +6,9 @@ description: Layout rules for gcportrait diagrams — nesting order, containment
 
 # gcportrait diagram layout
 
-The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Layout and drawing rules" and
-"Quality gates, testing and CI"); this file is the layout engine's specification, with every constant.
+The rules this handbook applies are in [packages/AGENTS.md](../../../packages/AGENTS.md) ("Layout and drawing
+rules" and "Performance budgets") and [AGENTS.md](../../../AGENTS.md) ("Quality gates, testing and CI");
+this file is the layout engine's specification, with every constant.
 
 Load this for any work in `packages/layout`, `packages/graph` (Scene building) or the renderer, and when
 judging whether a diagram "looks right". The engine is gcportrait's own. `packages/graph` builds the
@@ -226,7 +227,8 @@ timeline's data path measures these again, before and after, on the same machine
 2. `pnpm render --fixture M --lens networking --png out.png` and `--theme dark`; open the PNG and walk the
    checklist below. Do the same for `--lens load-balancing` (dense edges) and `--fixture L --detail projects`.
 3. Compare against the renderer's SVG baselines in `e2e/baselines/diagram/` and the render golden PNG in
-   `e2e/baselines/render/`; a diff needs a reason in the PR (the update commands are in `AGENTS.md`).
+   `e2e/baselines/render/`; a diff needs a reason in the PR (the update commands are in packages/AGENTS.md,
+   "Commands", for the render goldens, and AGENTS.md, "Commands", for the renderer's SVG baselines).
 4. For a routing or packing change, `pnpm --filter @gcportrait/layout measure` prints each view's total edge
    length, bends, border-hugging length, detours, crossings, the routes in the canvas margin and the routes
    that run more than 1 000 px past both of their ends (overshoots; `src/testing/quality.ts`; `--view

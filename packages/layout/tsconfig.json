@@ -1,5 +1,5 @@
 {
-  // The layout engine itself: pure code compiled without DOM or Node types (AGENTS.md, Layout and drawing
+  // The layout engine itself: pure code compiled without DOM or Node types (packages/AGENTS.md, Layout and drawing
   // rules), so a stray `document`, `performance`, `fs` or `process` fails to compile. Unit and property tests
   // that need no host API live next to the code. The generated metrics table is part of the library.
   "extends": "../../tsconfig.node.json",

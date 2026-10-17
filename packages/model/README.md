@@ -309,7 +309,7 @@ in its description, and stored under its own `assetType`.
 ## Catalog rule engine contract
 
 What `@gcportrait/catalog`'s rule engine reads next to an asset, and what it hands to the graph builder (the
-catalog owns rule semantics: AGENTS.md, Data and graph semantics).
+catalog owns rule semantics: packages/AGENTS.md, Catalog and graph semantics).
 
 | Export | What |
 |---|---|

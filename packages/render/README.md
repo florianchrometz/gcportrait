@@ -2,7 +2,7 @@
 
 # @gcportrait/render
 
-The render library (AGENTS.md, Exports and the render API): a snapshot and a view drawn as the app's renderer
+The render library (packages/AGENTS.md, The render library): a snapshot and a view drawn as the app's renderer
 draws them, as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on every platform.
 `pnpm render` ([`@gcportrait/render-cli`](../render-cli/README.md)) and the backend's `POST /api/render`
 ([docs/api.md](../../docs/api.md)) both draw through it, so a demo view comes out byte for byte the same from
@@ -18,6 +18,9 @@ command line's output, not the API's answer; the statement is in the app's foote
 only.
 
 ## What it does
+
+`src/index.ts` exposes the functions and types used by the CLI and backend. Internal font, raster geometry,
+snapshot and view helpers stay in their own modules; this package's tests import those helpers directly.
 
 | Module | |
 |---|---|

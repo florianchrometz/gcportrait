@@ -7,7 +7,8 @@ description: How gcportrait's asset catalog works and how to extend it — entry
 # gcportrait asset catalog
 
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Data and graph semantics" and
-"Quality gates, testing and CI"); this file is the procedure for extending the catalog.
+"Quality gates, testing and CI") and [packages/AGENTS.md](../../../packages/AGENTS.md) ("Catalog and graph
+semantics"); this file is the procedure for extending the catalog.
 
 Load this before adding or changing an asset type, a relation rule, a lens, an icon mapping or a console URL,
 and before running or fixing `pnpm catalog:check`. The catalog is *data*; code reads it.
@@ -149,7 +150,7 @@ that is not about identities or security.
 | `secures` | a policy or perimeter applies to its targets (a service perimeter to projects, a firewall policy to a network or folder, a Cloud Armor policy to backends) | policy → target | as an overlay on the target, in the lenses that list it |
 | `triggers` | eventing (Eventarc, Pub/Sub push → service, function or workflow) | source → target | general lenses |
 | `replicates` | replicas and cross-region copies (a Cloud SQL replica, an AlloyDB secondary) | primary → replica | general lenses |
-| `shares` | Shared VPC: a service project uses a host project's network (derived from cross-project `attaches` on evidence, AGENTS.md, "Data and graph semantics") | service project → host project | general lenses; derived by the graph builder, never written in YAML |
+| `shares` | Shared VPC: a service project uses a host project's network (derived from cross-project `attaches` on evidence, packages/AGENTS.md, "Catalog and graph semantics") | service project → host project | general lenses; derived by the graph builder, never written in YAML |
 
 Choose the most specific kind; `uses` is the fallback. A rule whose data sits on the other side writes
 `reverse: true`. `weak: true` makes an edge yield to a stronger one from the same asset (NIC network
