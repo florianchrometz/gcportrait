@@ -75,6 +75,8 @@
 .slider {
   flex: 1;
   min-width: 0;
+  /* The room the thumb's focus ring needs beside the track (below), past the bar's 12 px gap. */
+  margin-inline: calc(8px + var(--focus-ring-gap) + var(--focus-ring-width) + 2px - var(--space-3));
 }
 
 /* The slider's own label ("Timeline", ui/Slider) still names it, out of sight: the bar's title says it already, and
@@ -98,8 +100,14 @@
 }
 
 /* The thumb's focus ring (global.css) crosses the track's line: a 2 px band of the bar's own colour outside it keeps
-   the ring away from the line, so it reaches 3 : 1 against everything beside it (keyboard.spec.ts measures it). */
-.slider [role='slider']:focus-visible {
+   the ring away from the line, so it reaches 3 : 1 against everything beside it (keyboard.spec.ts measures it). The
+   ring goes round the thumb on a desktop and round its 16-pixel dot (`::after`) on a phone or a tablet, where the
+   thumb is a 44-pixel touch box (ui/Slider; the end of this sheet): either way it reaches the dot's 8 px radius, the
+   ring and the band past the thumb's centre, which lies on the track's end at the first and the last day. The slider
+   keeps that much room, the gap before the dates included, between its track and the dates beside it (above), so the
+   ring never covers one. */
+.slider [role='slider']:focus-visible,
+.slider [role='slider']:focus-visible::after {
   box-shadow:
     0 0 0 var(--focus-ring-gap) var(--color-surface),
     0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary),
@@ -294,6 +302,16 @@
     gap: var(--space-2);
     min-width: 0;
     min-height: var(--touch-target);
+  }
+
+  /* The ring's room beside the track (above), past the track's 8 px gap. */
+  .slider {
+    margin-inline: calc(8px + var(--focus-ring-gap) + var(--focus-ring-width) + 2px - var(--space-2));
+  }
+
+  /* The ring goes round the thumb's dot (above), not round its touch box. */
+  .slider [role='slider']:focus-visible {
+    box-shadow: none;
   }
 
   .readoutRow,

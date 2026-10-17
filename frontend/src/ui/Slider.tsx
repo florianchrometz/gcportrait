@@ -18,7 +18,9 @@
  * on it or focus leaves it. Any key but a shortcut with Ctrl, Alt or Meta takes the mark off, as such a key turns
  * a native range input's ring on, and the ring then shows as `:focus-visible` says; the mark stays while the
  * window loses focus and gets it back. A press on a thumb that has focus already leaves its ring as it is. Not
- * `focus({ focusVisible: false })`, which in Chromium keeps the ring off for the keys that follow as well.
+ * `focus({ focusVisible: false })`, which in Chromium keeps the ring off for the keys that follow as well. On a phone
+ * or a tablet the thumb is a 44-pixel touch box round its 16-pixel dot, and the ring goes round the dot
+ * (Slider.module.css), so it reaches no further past the track's ends than on a desktop.
  */
 import {
   useId,

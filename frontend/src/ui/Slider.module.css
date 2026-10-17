@@ -59,8 +59,8 @@
   background: var(--color-surface);
 }
 
-/* A phone or a tablet: the thumb is a 44-pixel touch target (a transparent box) around the same 16-pixel dot, and
-   the track takes a press within that height too. */
+/* A phone or a tablet: the thumb is a 44-pixel touch target (a transparent box) around the same 16-pixel dot, which
+   carries the focus ring, and the track takes a press within that height too. */
 @media (max-width: 79.99rem) {
   .track::before {
     position: absolute;
@@ -96,5 +96,27 @@
   .inert .thumb::after {
     border-color: var(--color-on-surface-variant);
     background: var(--color-surface);
+  }
+
+  /* The focus ring goes round the dot, as on a desktop, not round the transparent touch box: it reaches no further
+     past the thumb's centre than the dot's radius and the ring, so what lies beside the track stays clear of it at
+     either end (the timeline's dates), and it stays inside the touch box's height. The touch box draws none, and a
+     pointer's mark hides the dot's (above). */
+  .thumb:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .thumb:focus-visible::after {
+    outline: var(--focus-ring-width) solid transparent;
+    outline-offset: var(--focus-ring-gap);
+    box-shadow:
+      0 0 0 var(--focus-ring-gap) var(--color-surface),
+      0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary);
+  }
+
+  .track .thumb[data-pointer-focus='true']:focus-visible::after {
+    outline: none;
+    box-shadow: none;
   }
 }

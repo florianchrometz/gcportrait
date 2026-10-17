@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { drawnCanvas, redrawnCanvas } from './support.js';
+import { boxOf, drawnCanvas, redrawnCanvas, type Box } from './support.js';
 
 /**
  * Helpers for the timeline's specs (timeline, diff, extra-ticks, and the timeline's tests in handheld and mobile):
- * the bar, the day on screen, scrubbing and a press on the slider's thumb, its focus ring, the hashes the timeline
- * writes in place, and playback on Playwright's clock.
+ * the bar, the day on screen, scrubbing and a press on the slider's thumb, its focus ring and what the ring covers,
+ * the hashes the timeline writes in place, and playback on Playwright's clock.
  */
 
 /** The timeline bar, once the snapshot's timeline is known (within `timeout` ms, Playwright's default otherwise). */
@@ -51,12 +51,95 @@ export async function pressThumb(page: Page, bar: Locator): Promise<void> {
   await page.mouse.up();
 }
 
-/** Whether `control` shows a focus ring: the chrome ring's box shadows or its outline (global.css draws both). */
+/**
+ * Whether `control` shows a focus ring: the chrome ring's box shadows or its outline (global.css draws both), round the
+ * control, or round its dot for a slider's thumb on a phone or a tablet (`::after`, ui/Slider).
+ */
 export function focusRingShown(control: Locator): Promise<boolean> {
   return control.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return style.boxShadow !== 'none' || style.outlineStyle !== 'none';
+    const dot = getComputedStyle(element, '::after');
+    return [getComputedStyle(element), ...(dot.content === 'none' ? [] : [dot])].some(
+      (style) => style.boxShadow !== 'none' || style.outlineStyle !== 'none',
+    );
   });
+}
+
+/**
+ * The box that the focus ring of `control` covers, or null when it shows none: its outer box shadows and its outline
+ * (transparent or not, as forced-colours mode draws it) round the control, or round a slider thumb's dot on a phone or
+ * a tablet (`::after`, which ui/Slider centres in the thumb's touch box).
+ */
+export function focusRingBox(control: Locator): Promise<Box | null> {
+  return control.evaluate((element) => {
+    const own = element.getBoundingClientRect();
+    const dot = getComputedStyle(element, '::after');
+    const dotWidth = Number.parseFloat(dot.width);
+    const dotHeight = Number.parseFloat(dot.height);
+    const drawers: { readonly style: CSSStyleDeclaration; readonly box: readonly number[] }[] = [
+      { style: getComputedStyle(element), box: [own.left, own.top, own.right, own.bottom] },
+    ];
+    if (dot.content !== 'none' && dotWidth > 0 && dotHeight > 0) {
+      const x = own.left + own.width / 2;
+      const y = own.top + own.height / 2;
+      drawers.push({
+        style: dot,
+        box: [x - dotWidth / 2, y - dotHeight / 2, x + dotWidth / 2, y + dotHeight / 2],
+      });
+    }
+    // Each shadow's and the outline's box, as left, top, right, bottom.
+    const covers: (readonly [number, number, number, number])[] = [];
+    for (const { style, box } of drawers) {
+      const [left = 0, top = 0, right = 0, bottom = 0] = box;
+      if (style.boxShadow !== 'none')
+        for (const shadow of style.boxShadow.split(/,(?![^(]*\))/)) {
+          if (shadow.includes('inset')) continue;
+          const [x = 0, y = 0, blur = 0, spread = 0] = shadow
+            .replace(/rgba?\([^)]*\)/, '')
+            .trim()
+            .split(/\s+/)
+            .map((length) => Number.parseFloat(length));
+          const reach = spread + blur;
+          covers.push([left + x - reach, top + y - reach, right + x + reach, bottom + y + reach]);
+        }
+      if (style.outlineStyle !== 'none') {
+        const reach = Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset);
+        covers.push([left - reach, top - reach, right + reach, bottom + reach]);
+      }
+    }
+    if (covers.length === 0) return null;
+    const left = Math.min(...covers.map((cover) => cover[0]));
+    const top = Math.min(...covers.map((cover) => cover[1]));
+    const right = Math.max(...covers.map((cover) => cover[2]));
+    const bottom = Math.max(...covers.map((cover) => cover[3]));
+    return { x: left, y: top, width: right - left, height: bottom - top };
+  });
+}
+
+/**
+ * What the slider thumb's focus ring covers of the dates at the track's ends and of the readout, each as its words and
+ * the size of the part covered ("the date "Oct 8": 20.0 × 13.0 px"; half a pixel of rounding allowed): none, as the
+ * bar keeps the ring's reach between the track and the dates (TimelineBar.module.css). Fails when the ring is not shown.
+ */
+export async function coveredByThumbRing(bar: Locator): Promise<string[]> {
+  const ring = await focusRingBox(bar.getByRole('slider', { name: 'Timeline' }));
+  if (ring === null) throw new Error('the thumb shows no focus ring');
+  // The text shown for the eye only that holds a digit: the two dates.
+  const dates = bar.locator('[aria-hidden="true"]').filter({ hasText: /\d/ });
+  await expect(dates).toHaveCount(2);
+  const readout = bar.getByTestId('timeline-readout');
+  const covered: string[] = [];
+  for (const [label, part] of [
+    ['the date', dates.first()],
+    ['the date', dates.last()],
+    ['the readout', readout],
+  ] as const) {
+    const box = await boxOf(part);
+    const width = Math.min(ring.x + ring.width, box.x + box.width) - Math.max(ring.x, box.x);
+    const height = Math.min(ring.y + ring.height, box.y + box.height) - Math.max(ring.y, box.y);
+    if (width > 0.5 && height > 0.5)
+      covered.push(`${label} "${await part.innerText()}": ${width.toFixed(1)} × ${height.toFixed(1)} px`);
+  }
+  return covered;
 }
 
 /**

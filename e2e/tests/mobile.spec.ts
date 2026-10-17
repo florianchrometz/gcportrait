@@ -16,7 +16,7 @@ import {
   openDiagram,
   type Box,
 } from './support.js';
-import { focusRingShown, timelineBar } from './timelineSupport.js';
+import { coveredByThumbRing, focusRingShown, timelineBar } from './timelineSupport.js';
 
 /**
  * The app's phone and tablet check (the `mobile` project of playwright.config.ts; `pnpm --filter
@@ -60,6 +60,8 @@ import { focusRingShown, timelineBar } from './timelineSupport.js';
  *   view, or the sheet reaches below three quarters of the canvas's height, or View opened while the drawer is open
  *   leaves the drawer open, or it opens again once View is closed (at every size, the sideways ones too);
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
+ * At each of the five sizes, the timeline thumb's focus ring that a key shows, at the last day and at the first,
+ * covers neither date at the track's ends nor the readout, the thumb still a 44-pixel target.
  * And on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
  * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
  * onto the search; a tap on the timeline's thumb focuses it without the focus ring, which a key on an external
@@ -1106,6 +1108,30 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(fold(page, 'More').button).toBeVisible();
     });
   }
+}
+
+for (const size of SIZES) {
+  test(`${String(size.width)} × ${String(size.height)}: the timeline thumb's focus ring from the keyboard, at the last day and at the first, covers neither date at the track's ends nor the readout`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    await openDiagram(page, DIAGRAMS[0]);
+    const bar = await timelineBar(page);
+    const thumb = bar.getByRole('slider', { name: 'Timeline' });
+    await thumb.focus();
+    for (const [key, day] of [
+      ['End', '34'],
+      ['Home', '0'],
+    ] as const) {
+      await page.keyboard.press(key);
+      await expect(thumb).toHaveAttribute('aria-valuenow', day);
+      await expect.poll(() => focusRingShown(thumb)).toBe(true);
+      // The ring goes round the thumb's dot; the touch target stays 44 × 44.
+      const target = await boxOf(thumb);
+      expect(Math.min(target.width, target.height)).toBeGreaterThanOrEqual(TARGET);
+      expect(await coveredByThumbRing(bar), `${key}: what the ring covers`).toEqual([]);
+    }
+  });
 }
 
 test.describe('on a phone, 375 × 667', () => {

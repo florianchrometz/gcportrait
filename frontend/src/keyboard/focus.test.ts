@@ -46,8 +46,14 @@ const OUTLINE_OFF: Readonly<Record<string, readonly string[]>> = {
   'diagram/diagram.css': ['.dg-console-action', '.dg-node:focus'],
   'diagram/disclosure/disclosure.css': ['.dg-collapse'],
   // A slider's thumb that a pointer's press focused: no ring until a key is pressed on it, as on a native range
-  // input (the thumb lies under the pointer that pressed it); the key brings the chrome ring back.
-  'ui/Slider.module.css': [".track .thumb[data-pointer-focus='true']:focus-visible"],
+  // input (the thumb lies under the pointer that pressed it); the key brings the chrome ring back. On a phone or a
+  // tablet the thumb is a transparent touch box whose dot (`::after`) carries the chrome ring instead, and the
+  // press's mark hides the dot's ring alike.
+  'ui/Slider.module.css': [
+    ".track .thumb[data-pointer-focus='true']:focus-visible",
+    '.thumb:focus-visible',
+    ".track .thumb[data-pointer-focus='true']:focus-visible::after",
+  ],
 };
 
 /** The selectors of the rules in a stylesheet that set `outline: none` (or `0`). */
@@ -85,6 +91,14 @@ describe('focus indicators', () => {
     expect(rule).toContain('calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary)');
     expect(TOKENS).toMatch(/--focus-ring-width:\s*2px/);
     expect(TOKENS).toMatch(/--focus-ring-gap:\s*2px/);
+  });
+
+  it('draws the same ring round a slider thumb’s dot on a phone or a tablet, with the outline for forced colours', () => {
+    const slider = withoutComments(read('ui/Slider.module.css'));
+    const rule = /\.thumb:focus-visible::after\s*\{([^}]*)\}/.exec(slider)?.[1] ?? '';
+    expect(rule).toContain('0 0 0 var(--focus-ring-gap) var(--color-surface)');
+    expect(rule).toContain('calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary)');
+    expect(rule).toContain('outline: var(--focus-ring-width) solid transparent');
   });
 
   it('keeps the diagram’s focused pill and plate on a canvas rim', () => {
