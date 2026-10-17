@@ -3,7 +3,9 @@
 /**
  * Both themes through tokens: every stylesheet of the app chrome (each `*.module.css` under src/ outside the
  * diagram, which has its own token table and theme tests) uses no raw colour, and every colour token it uses is
- * defined for the light and the dark theme in styles/tokens.css (skill gcp-diagram-style §9). The primitives, the
+ * defined for the light and the dark theme in styles/tokens.css (skill gcp-diagram-style §9); any other custom
+ * property it reads is a token there too, or one the sheet declares itself from them (the timeline bar's
+ * `--ring-reach`), whose value this check reads as well. The primitives, the
  * view controls and every other chrome sheet alike, one row each. The filled primary buttons (the top bar's
  * Export button among them) keep their text at 4.5 : 1 on the fill in both themes, and the destructive control (the
  * Delete buttons) its error-coloured text at 4.5 : 1 on the control's fills, through a rule that outranks the
@@ -55,7 +57,8 @@ describe('the app chrome uses the chrome tokens only', () => {
   it.each(SHEETS)('%s has no raw colour, and only tokens both themes define', (path) => {
     const css = withoutComments(readSource(path));
     expect(css).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i);
-    const allowed = [...(DIAGRAM_TOKENS[path] ?? []), ...(MEASURED[path] ?? [])];
+    const own = [...css.matchAll(/(?:^|[{;])\s*(--[a-z0-9-]+)\s*:/gm)].map((match) => match[1] ?? '');
+    const allowed = [...(DIAGRAM_TOKENS[path] ?? []), ...(MEASURED[path] ?? []), ...own];
     for (const match of css.matchAll(/var\((--[a-z0-9-]+)/g)) {
       const name = match[1] ?? '';
       if (allowed.includes(name)) continue;

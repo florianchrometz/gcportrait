@@ -17,7 +17,13 @@ import {
   openDiagram,
   type Box,
 } from './support.js';
-import { coveredByThumbRing, focusRingShown, timelineBar } from './timelineSupport.js';
+import {
+  coveredByThumbRing,
+  focusRingShown,
+  keyToDrawnDay,
+  markersCoveredByThumbRing,
+  timelineBar,
+} from './timelineSupport.js';
 
 /**
  * The app's phone and tablet check (the `mobile` project of playwright.config.ts; `pnpm --filter
@@ -63,7 +69,8 @@ import { coveredByThumbRing, focusRingShown, timelineBar } from './timelineSuppo
  *   leaves the drawer open, or it opens again once View is closed (at every size, the sideways ones too);
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
  * At each of the five sizes, the timeline thumb's focus ring that a key shows, at the last day and at the first,
- * covers neither date at the track's ends nor the readout, the thumb still a 44-pixel target.
+ * covers neither date at the track's ends nor the readout, the thumb still a 44-pixel target; and on those days and one
+ * between them it covers no day marker, the current day's under the thumb included.
  * And on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
  * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
  * onto the search; a tap on the timeline's thumb focuses it without the focus ring, which a key on an external
@@ -1157,6 +1164,25 @@ for (const size of SIZES) {
       const target = await boxOf(thumb);
       expect(Math.min(target.width, target.height)).toBeGreaterThanOrEqual(TARGET);
       expect(await coveredByThumbRing(bar), `${key}: what the ring covers`).toEqual([]);
+    }
+  });
+}
+
+for (const size of SIZES) {
+  test(`${String(size.width)} × ${String(size.height)}: the timeline thumb's focus ring from the keyboard covers no day marker, the current day's under the thumb included`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    await openDiagram(page, DIAGRAMS[0]);
+    const bar = await timelineBar(page);
+    const thumb = bar.getByRole('slider', { name: 'Timeline' });
+    await thumb.focus();
+    for (const key of ['End', 'ArrowLeft', 'Home']) {
+      const day = await keyToDrawnDay(bar, key);
+      await expect.poll(() => focusRingShown(thumb)).toBe(true);
+      expect(await markersCoveredByThumbRing(bar), `${key} (${day}): the markers the ring covers`).toEqual(
+        [],
+      );
     }
   });
 }

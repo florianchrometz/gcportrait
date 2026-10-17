@@ -304,7 +304,7 @@ bar's parts), the component reads `useScreen()`; everything else is CSS.
 | Top bar | the app row, and on `/diagram` the view row | the same two rows; the navigation and the app row's actions fold into More, the view row's controls but the breadcrumb into View | one row: the mark (the wordmark for assistive technology only), the breadcrumb on `/diagram`, View and More; the demo badge at the top of More |
 | Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe or a focused crumb brings the others into view, and the edge where they are cut fades out | as on a tablet |
 | Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
-| Timeline bar | one row | the readout below the slider | the slider across the width on a line as tall as its 44-pixel thumb, the day markers under the track inside it, the readout below, then the buttons and the playback options |
+| Timeline bar | one row; the slider and its dates sit above the bar's middle, so the day markers under the track fit in below the reach of the thumb's focus ring | the readout below the slider's line, which is as on a phone | the slider across the width on a line of its 44-pixel thumb and, below the reach of the thumb's focus ring, the day markers under its track (the bar no taller for them); the readout below, then the buttons and the playback options |
 | Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways); hidden while View or More is open |
 | Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
@@ -479,7 +479,8 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
   from the first key pressed on it, as a native range input does, and on a phone or a tablet the ring goes
   round the thumb's 16-pixel dot, not round its 44-pixel touch box (`ui/Slider`, section "UI primitives"). The
   timeline bar keeps the ring's reach between the track's ends and the dates beside them, so the ring covers
-  neither date at the first or the last day.
+  neither date at the first or the last day, and starts the row of day markers under the track where the ring
+  ends, so it covers no marker, the current day's under the thumb included.
 - Placeholder controls (the top-bar slots, the Connect page actions, the timeline slider without a snapshot)
   are marked `aria-disabled="true"`, not `disabled`: they stay in the tab order with the focus ring, are
   announced as unavailable, and do nothing when activated (the `ui/` primitives have the same inert state
@@ -2106,7 +2107,11 @@ earlier one and over the listing; a dropped timeline (another snapshot, the page
 
 **The bar.** One marker per day under the slider (`ui/Slider`'s `marks`), its state shown by shape: a hollow
 ring (not read yet), a filled dot (ready), a turning dashed ring (loading; it stands still with reduced
-motion), a cross (failed), a larger ringed dot in the primary colour (on screen). The previous and next
+motion), a cross (failed), a larger ringed dot in the primary colour (on screen). The markers sit in a row
+below the reach of the thumb's focus ring, which none of them meets; the slider's line keeps room for the row
+under its track: on a phone or a tablet below the 44-pixel touch band, where a press on the row is a press on
+the track too (a phone's bar takes that room from its top padding and the gap under the line, so it is no
+taller for it), and on a desktop the slider and its dates sit above the bar's middle. The previous and next
 buttons and `[`/`]` step one day (history entries); the slider moves the view in place (no history entry per
 day). The readout (a polite status, quiet during playback, two lines at most with the rest in its tooltip)
 says the day in the viewer's local date, "Reading 30 Sept: 2 pages · 900 assets · 1.2 MB · 0:03" while a

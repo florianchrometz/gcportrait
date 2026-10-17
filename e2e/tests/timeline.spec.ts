@@ -13,6 +13,8 @@ import {
   coveredByThumbRing,
   expectDrawn,
   focusRingShown,
+  keyToDrawnDay,
+  markersCoveredByThumbRing,
   playbackStopped,
   playUntil,
   pressThumb,
@@ -33,7 +35,8 @@ import {
  *   each day is in the hash (`tick`), the slider moving in place (no history entry per day);
  * - a mouse press on the slider's thumb focuses it without the focus ring, on the page's first press and after a
  *   click elsewhere, and a key pressed then shows the ring, as on a native range input; Tab to the thumb shows it;
- * - the ring a key shows, at the last day and at the first, covers neither date at the track's ends;
+ * - the ring a key shows, at the last day and at the first, covers neither date at the track's ends, and on those
+ *   days and one between them no day marker, the current day's under the thumb included;
  * - `[` and `]` move one day back and forward, the last day as no tick, and say why they cannot move past it;
  * - a link with a tick opens on that day, and a reload keeps it;
  * - playback runs through the days to the last one and stops there, and stops on a key press (on Playwright's clock,
@@ -137,6 +140,20 @@ test('the thumb’s focus ring from the keyboard, at the last day and at the fir
     await expect(thumb).toHaveAttribute('aria-valuenow', day);
     await expect.poll(() => focusRingShown(thumb)).toBe(true);
     expect(await coveredByThumbRing(bar), `${key}: what the ring covers`).toEqual([]);
+  }
+});
+
+test('the thumb’s focus ring from the keyboard covers no day marker, the current day’s under the thumb included', async ({
+  page,
+}) => {
+  await openDiagram(page, DEMO_M);
+  const bar = await timelineBar(page);
+  const thumb = bar.getByRole('slider', { name: 'Timeline' });
+  await thumb.focus();
+  for (const key of ['End', 'ArrowLeft', 'Home']) {
+    const day = await keyToDrawnDay(bar, key);
+    await expect.poll(() => focusRingShown(thumb)).toBe(true);
+    expect(await markersCoveredByThumbRing(bar), `${key} (${day}): the markers the ring covers`).toEqual([]);
   }
 });
 

@@ -466,7 +466,10 @@ async function indicatorOf(page: Page): Promise<Indicator> {
         beside: [style('.dg-focus-ring .dg-ring-gap')?.stroke ?? null],
       };
     }
-    const css = getComputedStyle(element);
+    // A slider's thumb on a phone or a tablet draws no ring round itself but round its dot, its `::after` (ui/Slider).
+    const own = getComputedStyle(element);
+    const dot = getComputedStyle(element, '::after');
+    const css = own.boxShadow === 'none' && own.outlineStyle === 'none' && dot.content !== 'none' ? dot : own;
     const shadows =
       css.boxShadow === 'none' ? [] : css.boxShadow.split(/,(?![^(]*\))/).map((part) => part.trim());
     const inset = shadows.filter((shadow) => shadow.includes('inset') && !shadow.includes('0px -2px'));

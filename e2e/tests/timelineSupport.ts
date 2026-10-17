@@ -143,6 +143,64 @@ export async function coveredByThumbRing(bar: Locator): Promise<string[]> {
 }
 
 /**
+ * What the slider thumb's focus ring covers of the day markers under the track, each as its day and state and the size
+ * of the part covered ("the marker of 2026-10-07 (current): 9.0 × 8.5 px"; half a pixel of rounding allowed): none, as
+ * the bar lays the marker row out past the ring's reach (TimelineBar.module.css), the current day's under the thumb
+ * included. A marker's box takes in its own ring (its outer box shadows). Fails when the ring is not shown.
+ */
+export async function markersCoveredByThumbRing(bar: Locator): Promise<string[]> {
+  const ring = await focusRingBox(bar.getByRole('slider', { name: 'Timeline' }));
+  if (ring === null) throw new Error('the thumb shows no focus ring');
+  const markers = await bar.locator('[data-day]').evaluateAll((elements) =>
+    elements.map((element) => {
+      const own = element.getBoundingClientRect();
+      let [left, top, right, bottom] = [own.left, own.top, own.right, own.bottom];
+      const shadows = getComputedStyle(element).boxShadow;
+      if (shadows !== 'none')
+        for (const shadow of shadows.split(/,(?![^(]*\))/)) {
+          if (shadow.includes('inset')) continue;
+          const [x = 0, y = 0, blur = 0, spread = 0] = shadow
+            .replace(/rgba?\([^)]*\)/, '')
+            .trim()
+            .split(/\s+/)
+            .map((length) => Number.parseFloat(length));
+          const reach = spread + blur;
+          left = Math.min(left, own.left + x - reach);
+          top = Math.min(top, own.top + y - reach);
+          right = Math.max(right, own.right + x + reach);
+          bottom = Math.max(bottom, own.bottom + y + reach);
+        }
+      return {
+        label: `the marker of ${element.getAttribute('data-day') ?? '?'} (${element.getAttribute('data-state') ?? '?'})`,
+        box: { x: left, y: top, width: right - left, height: bottom - top },
+      };
+    }),
+  );
+  expect(markers.length).toBeGreaterThan(0);
+  const covered: string[] = [];
+  for (const { label, box } of markers) {
+    const width = Math.min(ring.x + ring.width, box.x + box.width) - Math.max(ring.x, box.x);
+    const height = Math.min(ring.y + ring.height, box.y + box.height) - Math.max(ring.y, box.y);
+    if (width > 0.5 && height > 0.5) covered.push(`${label}: ${width.toFixed(1)} × ${height.toFixed(1)} px`);
+  }
+  return covered;
+}
+
+/**
+ * Moves the slider's thumb, which has focus, with `key` and waits until the day under it is on screen, its marker
+ * current (the largest of the markers); answers that day.
+ */
+export async function keyToDrawnDay(bar: Locator, key: string): Promise<string> {
+  const thumb = bar.getByRole('slider', { name: 'Timeline' });
+  await bar.page().keyboard.press(key);
+  const index = Number(await thumb.getAttribute('aria-valuenow'));
+  const day = await bar.locator('[data-day]').nth(index).getAttribute('data-day');
+  if (day === null) throw new Error(`no marker for the slider's value ${String(index)}`);
+  await expect(bar.locator('[data-state="current"]')).toHaveAttribute('data-day', day, { timeout: 60_000 });
+  return day;
+}
+
+/**
  * Records every hash the page writes from now on (the timeline writes them in place: no navigation event), `#`
  * included and percent-decoded; answers a reader of what was recorded.
  */
