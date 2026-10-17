@@ -180,7 +180,7 @@ describe('the details drawer', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('360');
     // A drag moves the left edge: leftwards widens.
     fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 900 });
-    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 870 });
+    fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientX: 870 });
     expect(handle.getAttribute('aria-valuenow')).toBe('390');
     fireEvent.pointerUp(handle, { pointerId: 1, clientX: 880 });
     expect(handle.getAttribute('aria-valuenow')).toBe('380');
@@ -215,10 +215,10 @@ describe('the details drawer', () => {
       // Dragged down, the sheet follows below half; far enough that letting go closes it, it fades; let go there,
       // it closes.
       fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientY: 300 });
-      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 310 });
+      fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientY: 310 });
       expect(aside.style.height).toBe('40%');
       expect(aside.hasAttribute('data-dismissing')).toBe(false);
-      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 900 });
+      fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientY: 900 });
       expect(aside.style.height).toBe('0%');
       expect(aside.hasAttribute('data-dismissing')).toBe(true);
       expect(handle.getAttribute('aria-valuenow')).toBe('50');

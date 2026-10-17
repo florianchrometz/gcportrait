@@ -1846,8 +1846,12 @@ drawn.
 **Keyboard and width.** Escape anywhere in the drawer and Close clear the selection and put focus back on the
 node on the canvas (its card becomes the drawing's tab stop; the canvas itself when it is not drawn). The
 handle on the left edge is a focusable window splitter (`role="separator"` with `aria-valuenow`): ← widens and
-→ narrows by 10 px, Home and End go to 360 and 420 px, and a drag moves the edge; the width is kept in the
-preferences (`drawerWidth`, clamped to 360–420 on read).
+→ narrows by 10 px, Home and End go to 360 and 420 px, and a drag with the primary button (a mouse's left, a
+pen's tip, a finger) moves the edge; the width is kept in the preferences (`drawerWidth`, clamped to 360–420
+on read). A drag of either handle, this one or the phone's sheet's, follows the pointer that pressed alone (a
+second finger's press on the handle starts nothing) and ends when that pointer lets go or its primary button
+comes up, also while another is still held (a mouse's right button, which holds back the `pointerup`), as
+letting go where its last move left the edge would end it: the width kept, the sheet settled or closed.
 
 **What changed.** While the diagram is a timeline day compared with the day on screen before it (section
 "Timeline diff overlay"), the drawer has a "What changed" section after the facts, from the data worker's
@@ -1872,11 +1876,14 @@ axe), `drawer/console.test.ts` (console URLs for thirteen catalog types from syn
 variables, types without a template, assets outside any project), `drawer/details.test.ts` (grouping order,
 directions, the children cap, the subnet's network, dangling reasons, labels and tags, and demo M's bastion VM
 and its project), `drawer/reveal.test.ts` (flips on demo M, a node the lens leaves out, and
-`revealTransform`), `drawer/DetailsDrawer.test.tsx` (the drawer in the app with in-process workers: facts,
-relations, console link, raw JSON, copy, a jump, Escape and focus, the handle and the preference, Drill in,
-axe in jsdom), and `e2e/tests/drawer.spec.ts` in Chromium on demo M (the bastion VM's subnet, network and disk
-relations and console page, the reveal pan, a jump to the subnet and one that flips chips open, raw JSON,
-Escape, resizing and its persistence across a reload, drilling into the project, axe in both themes).
+`revealTransform`), `drawer/ResizeHandle.test.tsx` (the phone sheet's handle: its value, settling, closing,
+the keys; a drag of either handle ending when the primary button comes up while another is held, and following
+its own pointer past a second finger and a hovering mouse), `drawer/DetailsDrawer.test.tsx` (the drawer in the
+app with in-process workers: facts, relations, console link, raw JSON, copy, a jump, Escape and focus, the
+handle and the preference, Drill in, axe in jsdom), and `e2e/tests/drawer.spec.ts` in Chromium on demo M (the
+bastion VM's subnet, network and disk relations and console page, the reveal pan, a jump to the subnet and one
+that flips chips open, raw JSON, Escape, resizing and its persistence across a reload, drilling into the
+project, axe in both themes).
 
 ## Search (`src/search/`)
 

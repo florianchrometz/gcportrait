@@ -11,6 +11,15 @@
  * below half ({@link DISMISS_BELOW}); ↑ and End take it to full, ↓ and Home to half. `onChange` reports values while
  * dragging; `onCommit` the value to keep when a drag ends or a key moved it. Its value for assistive technology stays
  * between half and full. Its name is the same in either role.
+ *
+ * Only the primary button drags: a mouse's left button, a pen's tip and a finger (`button` 0). A drag follows the
+ * pointer that pressed (its `pointerId`: another pointer's moves, a hovering mouse's beside a finger, are not the
+ * drag's, and another press while the handle still holds the drag's pointer, a second finger's, starts nothing) and
+ * ends at that pointer's `pointerup` or `pointercancel`, or at its first move that no longer holds the primary button
+ * (`buttons` without bit 1): a mouse's left button released while its right one is still held sends no `pointerup`
+ * until the last button is up, so the drag ends at that move: it lets the pointer's capture go and ends where the
+ * last move left the edge, as letting go there would (the width kept; the sheet settled, or closed). A finger and a
+ * pen's tip report the bit (`buttons` 1) for as long as they touch, so their drags end at the lift as ever.
  */
 import { useRef, type KeyboardEvent, type PointerEvent, type ReactElement } from 'react';
 
@@ -26,6 +35,18 @@ export const SHEET_HEIGHT = { min: 50, max: 100 } as const;
 
 /** A drag of the sheet's edge let go this far below half (percent of the canvas's height) closes the sheet. */
 export const DISMISS_BELOW = 20;
+
+/** Lets a drag's pointer go before its `pointerup` (where the browser supports pointer capture; jsdom does not). */
+function releasePointer(element: Element, pointerId: number): void {
+  const capturable: Partial<Pick<Element, 'hasPointerCapture' | 'releasePointerCapture'>> = element;
+  if (capturable.hasPointerCapture?.(pointerId) === true) element.releasePointerCapture(pointerId);
+}
+
+/** Whether `element` still holds `pointerId`'s capture (assumed where the browser has no pointer capture: jsdom). */
+function holdsPointer(element: Element, pointerId: number): boolean {
+  const capturable: Partial<Pick<Element, 'hasPointerCapture'>> = element;
+  return capturable.hasPointerCapture?.(pointerId) ?? true;
+}
 
 export function clampWidth(width: number): number {
   return Math.round(Math.min(DRAWER_WIDTH.max, Math.max(DRAWER_WIDTH.min, width)));
@@ -87,13 +108,16 @@ export function ResizeHandle({
     readonly at: number;
     readonly value: number;
     readonly unit: number;
+    /** The value the drag's last move made (its start value before the first). */
+    last: number;
   } | null>(null);
   const tall = axis === 'height';
   const clamp = tall ? clampHeight : clampWidth;
   const follow = tall ? followHeight : clampWidth;
   const range = tall ? SHEET_HEIGHT : DRAWER_WIDTH;
 
-  // The value a pointer at `event` makes, before clamping: the edge follows it (leftwards widens, upwards heightens).
+  // The value a pointer at `event` makes, before clamping: the edge follows it (leftwards widens, upwards heightens);
+  // null for another pointer than the drag's.
   const dragged = (event: PointerEvent<HTMLDivElement>): number | null => {
     const start = drag.current;
     if (start?.pointer !== event.pointerId) return null;
@@ -101,30 +125,48 @@ export function ResizeHandle({
     return start.value + moved / start.unit;
   };
 
+  // The drag let go at `next`: the sheet closes when well below half or settles at half or full; the edge stays.
+  const finish = (next: number): void => {
+    drag.current = null;
+    if (tall && onDismiss !== undefined && dismissing(next)) onDismiss();
+    else onCommit(tall ? settleHeight(next) : clamp(next));
+  };
+
   const onPointerDown = (event: PointerEvent<HTMLDivElement>): void => {
     if (event.button !== 0) return;
     event.preventDefault();
+    const target = event.currentTarget;
+    // Another pointer drags already, a second finger's press: the drag stays with the first (see above).
+    const current = drag.current;
+    if (current !== null && current.pointer !== event.pointerId && holdsPointer(target, current.pointer))
+      return;
     const unit = tall ? (pixelsPerUnit?.() ?? 0) : 1;
     drag.current = {
       pointer: event.pointerId,
       at: tall ? event.clientY : event.clientX,
       value,
       unit: unit > 0 ? unit : 1,
+      last: value,
     };
-    const target = event.currentTarget;
     if (typeof target.setPointerCapture === 'function') target.setPointerCapture(event.pointerId);
     target.focus();
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>): void => {
+    const start = drag.current;
     const next = dragged(event);
-    if (next !== null) onChange(follow(next));
+    if (start === null || next === null) return;
+    if ((event.buttons & 1) === 0) {
+      // The primary button is up while another is still held, which sends no pointerup (see above).
+      releasePointer(event.currentTarget, event.pointerId);
+      finish(start.last);
+      return;
+    }
+    start.last = follow(next);
+    onChange(start.last);
   };
   const end = (event: PointerEvent<HTMLDivElement>): void => {
     const next = dragged(event);
-    if (next === null) return;
-    drag.current = null;
-    if (tall && onDismiss !== undefined && dismissing(next)) onDismiss();
-    else onCommit(tall ? settleHeight(next) : clamp(next));
+    if (next !== null) finish(next);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     const next = tall
