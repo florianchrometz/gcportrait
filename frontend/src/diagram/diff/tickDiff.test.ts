@@ -20,11 +20,12 @@
  * M's job that succeeded in a project marked for deletion, not drawn now; a project the removed perimeter secured,
  * emptied, with empty projects hidden); the ghost of an asset the earlier day drew as a chip counts only what of it
  * comes back (that project marked for deletion: the job, not what its folder draws now, or nothing when the project
- * alone changed); a changed asset the drawn day still holds is a ghost only where the view
- * leaves it out (on demo M's two days with a project moved into another folder, it is none, and the chip that holds
- * it counts it); chips count what changed inside them, also those that are no Graph container (a region zone flipped
- * closed, and on demo L's history a bundle), and what they count is no ghost; nothing changes when the days are alike,
- * and nothing is ghosted when the drill-in root moved.
+ * alone changed), and so does a zone that is no asset drawn as a chip inside an asset's ghost (that project's region
+ * zone closed by hand, all it held removed but a service still there that the view no longer draws); a changed asset
+ * the drawn day still holds is a ghost only where the view leaves it out (on demo M's two days with a project moved
+ * into another folder, it is none, and the chip that holds it counts it); chips count what changed inside them, also
+ * those that are no Graph container (a region zone flipped closed, and on demo L's history a bundle), and what they
+ * count is no ghost; nothing changes when the days are alike, and nothing is ghosted when the drill-in root moved.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
@@ -64,6 +65,7 @@ import {
   partnerNetworkRemoved,
   paymentsWebMarked,
   paymentsWebRetired,
+  paymentsWebWoundDown,
   perimeterEmptied,
   perimeterRemoved,
   projectMoved,
@@ -150,6 +152,20 @@ const RESPLIT_FIREWALL = '//compute.googleapis.com/projects/demo-net-1/global/fi
 
 function reversed(snapshot: Snapshot): Snapshot {
   return { ...snapshot, assets: [...snapshot.assets].reverse() };
+}
+
+/** What a chip counts of the nodes `nodes` and all they hold, as the scene builder counts what a chip holds. */
+function counted(nodes: readonly SceneNode[]): ChipCounts {
+  const counts: ChipCounts = {};
+  const visit = (list: readonly SceneNode[]): void => {
+    for (const node of list) {
+      const kind = node.type === 'card' ? 'resources' : CHIP_COUNT_OF_KIND[node.kind];
+      if (kind !== undefined) counts[kind] = (counts[kind] ?? 0) + 1;
+      if (node.type === 'zone') visit(node.children);
+    }
+  };
+  visit(nodes);
+  return counts;
 }
 
 /** Expects the rect of `id` in a layout to lie in zone `parent`, overlapping none of its siblings there. */
@@ -905,20 +921,6 @@ describe('the ghost of an asset the earlier day drew as a chip', () => {
     { detail: 'all', filters: { depth: 3 } },
   ];
 
-  /** What a chip counts of the nodes `nodes` and all they hold, as the scene builder counts what a chip holds. */
-  function counted(nodes: readonly SceneNode[]): ChipCounts {
-    const counts: ChipCounts = {};
-    const visit = (list: readonly SceneNode[]): void => {
-      for (const node of list) {
-        const kind = node.type === 'card' ? 'resources' : CHIP_COUNT_OF_KIND[node.kind];
-        if (kind !== undefined) counts[kind] = (counts[kind] ?? 0) + 1;
-        if (node.type === 'zone') visit(node.children);
-      }
-    };
-    visit(nodes);
-    return counts;
-  }
-
   /** The project's chip on the earlier day, at the level the drawn Scene uses, and the zone it lay in. */
   function earlierChip(input: TickDiffInput): { chip: SceneNode | undefined; folder: string } {
     const spec = normalizeViewSpec({ ...input.spec, detail: input.report.detail.used });
@@ -995,6 +997,78 @@ describe('the ghost of an asset the earlier day drew as a chip', () => {
       expect(diff.earlier[PROJECT], what).toMatchObject({ parent: folder, collapsed: true });
       expectPlacedAmongSiblings(layoutScene(scene), PROJECT, folder);
     }
+  });
+});
+
+describe('a zone that is no asset, drawn as a chip, inside the ghost of an asset', () => {
+  const { project: PROJECT, region: REGION, zone: ZONE, service: SERVICE } = DEMO_M_REGION;
+  // The overview with region zones shown and every zone open, cards without a drawn line hidden.
+  const view = {
+    snapshot: 'demo:M',
+    lens: 'overview',
+    detail: 'all',
+    filters: { showRegions: true, hideDisconnected: true },
+  } as const;
+
+  it('counts only what of it comes back, not what is still there: a region zone closed by hand in a project marked for deletion', async () => {
+    const [before, after] = await paymentsWebWoundDown();
+    // The region zone us-central1 closed by hand: the earlier day drew it as a chip in the open project, the scene
+    // builder counting all it held, the Cloud Run service included. The drawn day draws neither: a project being
+    // deleted is hidden, what it held in the region is removed, and the service, still there, has no line any more.
+    const input = pairInput(before, after, { ...view, flips: [flipIdOf(REGION)] });
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    const chip = zoneOf(earlier.scene, REGION);
+    expect(chip).toMatchObject({ collapsed: { containers: 2, resources: 11 }, children: [] });
+    expect(parents(earlier.scene).get(REGION)).toBe(PROJECT);
+    const folder = parents(earlier.scene).get(PROJECT) ?? '';
+    expect(zoneOf(input.scene, folder)?.collapsed).toBeUndefined();
+    for (const id of [PROJECT, REGION, SERVICE]) expect(parents(input.scene).has(id), id).toBe(false);
+    expect(after.graph.containment.parent[SERVICE]).toBe(PROJECT);
+
+    // Every zone open, the region's ghost in the project's holds what was removed in it, and the service is none.
+    const open = tickDiff(pairInput(before, after, view));
+    expect(parents(open.scene).get(REGION)).toBe(PROJECT);
+    expect(open.diff.ghosts[REGION]).toBe('hidden');
+    expect(Object.hasOwn(open.diff.ghosts, SERVICE)).toBe(false);
+    const expected = counted(zoneOf(open.scene, REGION)?.children ?? []);
+    expect(expected).toEqual({ containers: 2, resources: 10 });
+
+    const { scene, diff } = tickDiff(input);
+    expect(diff.changed).toEqual([PROJECT]);
+    expect(diff.removed).not.toContain(SERVICE);
+    // The project's ghost holds the region's chip as the earlier day drew it, counting what that ghost holds open.
+    expect(diff.ghosts).toEqual({ [PROJECT]: 'hidden', [REGION]: 'hidden' });
+    expect(SceneSchema.safeParse(scene).success).toBe(true);
+    expect(parents(scene).get(PROJECT)).toBe(folder);
+    expect(zoneOf(scene, PROJECT)?.children.map((child) => child.id)).toEqual([REGION]);
+    expect(zoneOf(scene, REGION)).toEqual({ ...chip, collapsed: expected });
+    expect(diff.inside).toEqual({});
+    expect(diff.earlier[REGION]).toEqual({
+      kind: 'region',
+      parent: PROJECT,
+      overlay: false,
+      collapsed: true,
+      empty: false,
+    });
+    expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + 2);
+    expectPlacedAmongSiblings(layoutScene(scene), REGION, PROJECT);
+
+    // Closed a level deeper, the zone us-central1-a's chip in the region's ghost counts what was removed in it.
+    const deeper = tickDiff(pairInput(before, after, { ...view, flips: [flipIdOf(ZONE)] }));
+    expect(parents(deeper.scene).get(ZONE)).toBe(REGION);
+    expect(zoneOf(deeper.scene, ZONE)?.collapsed).toEqual(counted(zoneOf(open.scene, ZONE)?.children ?? []));
+    // With every card drawn, the drawn day draws the region's chip in the folder, holding the service: no ghost,
+    // and the chip counts what was removed in it.
+    const lines = pairInput(before, after, {
+      ...view,
+      filters: { showRegions: true },
+      flips: [flipIdOf(REGION)],
+    });
+    expect(parents(lines.scene).get(REGION)).toBe(folder);
+    const drawn = tickDiff(lines).diff;
+    expect(drawn.ghosts).toEqual({ [PROJECT]: 'hidden' });
+    const removed = Object.values(open.diff.ghosts).filter((reason) => reason === 'removed');
+    expect(drawn.inside).toEqual({ [REGION]: { added: 0, removed: removed.length, changed: 0 } });
   });
 });
 

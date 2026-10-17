@@ -10,8 +10,9 @@
  * folders with its network removed, `partnerNetworkRemoved`, everything a project holds in one region removed,
  * `regionRemoved`, or in one zone, `zoneRemoved`, two Batch jobs that succeeded, one where the rest of its region was
  * removed, `jobsSucceeded`, one as its project is marked for deletion, `paymentsWebRetired`, that project marked for
- * deletion alone, `paymentsWebMarked`, or a project's only VM removed, `ciRunnerRemoved`; demo L's VM in a subnet of
- * a bundle that is bundled anew removed, `bundledVmRemoved`).
+ * deletion alone, `paymentsWebMarked`, or with all it holds in us-central1 removed but a service,
+ * `paymentsWebWoundDown`, or a project's only VM removed, `ciRunnerRemoved`; demo L's VM in a subnet of a bundle that
+ * is bundled anew removed, `bundledVmRemoved`).
  * For the tests that only need the scene builder: the builder's environment for a snapshot (`sceneEnv`), and a demo
  * Graph built synchronously straight from the generator (`demoGraphSync`). Demo data without a Scene is in
  * demoData.ts.
@@ -302,6 +303,11 @@ export const DEMO_M_REGION = {
   region: '//gcportrait.virtual/projects/demo-web-2/locations/us-central1',
   /** Its zone us-central1-a, inside the region zone, which holds its instance groups and VMs. */
   zone: '//gcportrait.virtual/projects/demo-web-2/locations/us-central1/zones/us-central1-a',
+  /**
+   * Its Cloud Run service storefront-api, in the region zone, whose one drawn line (the overview lens's) comes from
+   * the network endpoint group web-run-neg there, which routes to it.
+   */
+  service: '//run.googleapis.com/projects/demo-web-2/locations/us-central1/services/storefront-api',
 } as const;
 
 /** The region whose assets `regionRemoved` removes, and the zone in it whose assets `zoneRemoved` removes. */
@@ -448,6 +454,22 @@ export function paymentsWebRetired(): Promise<readonly [DemoDay, DemoDay]> {
 export function paymentsWebMarked(): Promise<readonly [DemoDay, DemoDay]> {
   return demoMNextDay((_graph, assets) =>
     assets.map((asset) => (asset.name === DEMO_M_REGION.project ? markedForDeletion(asset) : asset)),
+  );
+}
+
+/**
+ * Demo M's Payments web (prod) marked for deletion between two days (`demoMNextDay`), as in `paymentsWebMarked`, with
+ * everything it holds in us-central1 removed, as in `regionRemoved`, but its Cloud Run service
+ * (`DEMO_M_REGION.service`): the service is still there, unchanged, and the network endpoint group that routed to it
+ * is removed with the rest. Nothing else changes.
+ */
+export function paymentsWebWoundDown(): Promise<readonly [DemoDay, DemoDay]> {
+  return demoMNextDay((graph, assets) =>
+    assets.flatMap((asset) => {
+      if (asset.name === DEMO_M_REGION.project) return [markedForDeletion(asset)];
+      if (asset.name === DEMO_M_REGION.service) return [asset];
+      return inPaymentsWeb(graph, asset, inRemovedRegion) ? [] : [asset];
+    }),
   );
 }
 
