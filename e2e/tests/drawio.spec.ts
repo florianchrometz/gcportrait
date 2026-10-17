@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { expect, test, type Browser, type Page } from '@playwright/test';
 
+import { DEMO_URL } from '../fixtures/servers.js';
 import {
   cellIdOf,
   drawAndMeasure,
@@ -50,7 +51,7 @@ const MARGIN = 24;
 const CANVAS = { light: '#ffffff', dark: '#1f1f1f' } as const;
 const GOLDEN = path.join(REPO_ROOT, 'e2e/baselines/render/S-overview-auto-light.drawio');
 /** Where the test page loads maxGraph from: a route of this spec answers it with the bundle built from node_modules. */
-const MAXGRAPH_URL = 'http://localhost:5174/__fidelity/maxgraph.js';
+const MAXGRAPH_URL = `${DEMO_URL}/__fidelity/maxgraph.js`;
 
 /** The limits (see above: what maxGraph draws, and a little room). */
 const LIMITS = {

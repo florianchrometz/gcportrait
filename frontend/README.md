@@ -37,11 +37,12 @@ rings, colour never alone, axe on every page) are the gcp-diagram-style skill's 
 | `pnpm demo:static` (root) | The static demo (section "Static demo" below): this package's build with `VITE_STATIC_DEMO=1`, for `/demo/`, into the repository's `dist/demo/`. |
 | `pnpm --filter @gcportrait/frontend test` | Unit tests (Vitest, jsdom, Testing Library, fake-indexeddb). Every render mounts under React's StrictMode, as `main.tsx` mounts the app in development (`src/test/setup.ts`): each component renders twice, and on mount each effect runs, cleans up and runs again, so an effect without its clean-up fails here; a test that counts requests counts the ones the app kept, not the one a clean-up calls off (`src/test/requests.ts`). The e2e suite on CI runs a build, where StrictMode does nothing, so these tests are where the double mount is checked. The fast-check properties run under the seed rule of `@gcportrait/model/testing` (`src/test/fast-check-seed.ts`): a fresh seed on every local run, the fixed `CI_PROPERTY_SEED` on CI, and `FC_SEED=<n>` replays the seed fast-check prints with a failure. |
 | `pnpm --filter @gcportrait/frontend lint` / `typecheck` | ESLint and `tsc -b` for this package. |
-| `pnpm --filter @gcportrait/frontend mobile` | The phone and tablet check in Chromium: the e2e suite's `mobile` project (`e2e/tests/mobile.spec.ts`; section "Layouts"), against the e2e suite's servers (the Vite dev servers, started or reused when they run; with `CI` set, a build of each mode; `e2e/README.md`). |
+| `pnpm --filter @gcportrait/frontend mobile` | The phone and tablet check in Chromium: the e2e suite's `mobile` project (`e2e/tests/mobile.spec.ts`; section "Layouts"), against the e2e suite's servers (the Vite dev servers, started by the run on ports of its own; with `CI` set, a build of each mode; `e2e/README.md`). |
 
 Demo and normal mode use different ports and separate Vite dependency caches (`node_modules/.vite` and
-`node_modules/.vite-demo`), so both can run at once; the e2e suite runs both and reuses servers already
-running locally (on CI it serves a build of each mode on the same ports instead, `e2e/README.md`).
+`node_modules/.vite-demo`), so both can run at once; the e2e suite runs both, each on a free port of its run
+(`--port`; on CI a build of each mode instead, `e2e/README.md`), so a server left on 5173 or 5174 is never
+the one it tests.
 
 ## Structure
 

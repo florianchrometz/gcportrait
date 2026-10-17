@@ -36,25 +36,36 @@ and the layout skill's checks (gcp-diagram-layout §8).
 
 | Project | Server | Specs |
 |---|---|---|
-| `chromium` | demo mode, <http://localhost:5174> | everything except the live specs, `mobile.spec.ts`, `touch.spec.ts` and the tests tagged `@phone` or `@tablet` |
-| `chromium-live` | normal mode, <http://localhost:5173> | `live.spec.ts`, `signin.spec.ts`, `preflight.spec.ts`, `live-pull.spec.ts`, `permissions-variables.spec.ts`, `sa-mode.spec.ts`, `demo-only.spec.ts` |
+| `chromium` | demo mode | everything except the live specs, `mobile.spec.ts`, `touch.spec.ts` and the tests tagged `@phone` or `@tablet` |
+| `chromium-live` | normal mode | `live.spec.ts`, `signin.spec.ts`, `preflight.spec.ts`, `live-pull.spec.ts`, `permissions-variables.spec.ts`, `sa-mode.spec.ts`, `demo-only.spec.ts` |
 | `mobile` | demo mode, as `chromium`; a live instance's pages on the normal-mode server, as `chromium-live` | `mobile.spec.ts` and `touch.spec.ts`: the phone and tablet layouts and the canvas's touch gestures, in Chromium emulating a touch device at the sizes the specs set (`pnpm --filter @gcportrait/frontend mobile` runs this project alone) |
 | `chromium-phone` | demo mode, as `chromium` | the tests tagged `@phone` (`handheld.spec.ts`), in Chromium emulating a touch device at 390 × 844, 3× (an iPhone 13's window, the phone's layout) |
 | `chromium-tablet` | demo mode, as `chromium` | the tests tagged `@tablet` (`handheld.spec.ts`), in Chromium emulating a touch device at 820 × 1180, 2× (an iPad Air's window, the tablet's layout) |
 
-Locally the two servers are the Vite dev servers, `pnpm dev:demo` and the Vite server of `pnpm dev`, with hot
-reload for a person iterating on a spec, and a server already running on either port is reused. On CI (`CI`
-set) they are the app as it ships: `scripts/built-app.ts` builds the frontend in its mode (`VITE_DEMO=1` for
-demo mode) into a new temporary directory and serves the build with `vite preview`, which takes the dev
-server's port and `/api` proxy from `frontend/vite.config.ts`, until Playwright stops it and the directory is
-removed. Every test opens a fresh browser context, so every page load is cold; the build answers one with a
-few chunks where the dev server serves every module on its own, and the suite tests the bundle that ships.
-The build leaves out only what React's development build adds: StrictMode runs every effect twice under the
-dev server, which a local run exercises and CI's does not (the app reads no `import.meta.env.DEV`); the
-frontend's unit tests mount under StrictMode on every run (`frontend/README.md`, "Scripts"). CI always
-starts fresh servers, and a port already taken fails the run, so a dev server left running is never tested in
-the build's place. `CI=true pnpm e2e` runs the suite as CI does (the built servers, two retries, the HTML
-report), once nothing listens on ports 5173 and 5174.
+Locally the two servers are the Vite dev servers, `pnpm dev:demo` and the Vite server of `pnpm dev`. On CI
+(`CI` set) they are the app as it ships: `scripts/built-app.ts` builds the frontend in its mode (`VITE_DEMO=1`
+for demo mode) into a new temporary directory and serves the build with `vite preview`, which takes the dev
+server's `/api` proxy from `frontend/vite.config.ts`, until Playwright stops it and the directory is removed.
+Every test opens a fresh browser context, so every page load is cold; the build answers one with a few chunks
+where the dev server serves every module on its own, and the suite tests the bundle that ships. The build
+leaves out only what React's development build adds: StrictMode runs every effect twice under the dev server,
+which a local run exercises and CI's does not (the app reads no `import.meta.env.DEV`); the frontend's unit
+tests mount under StrictMode on every run (`frontend/README.md`, "Scripts"). `CI=true pnpm e2e` runs the suite
+as CI does (the built servers, two retries, the HTML report).
+
+Every run starts its own two servers, on ports of its own: when Playwright's runner loads the config,
+`fixtures/servers.ts` has the system pick two free ports and names the servers' URLs in `E2E_DEMO_URL` and
+`E2E_LIVE_URL`, which the run's workers and the servers' commands inherit (Vite's `--port`, with the
+`strictPort` of `frontend/vite.config.ts`, so a port taken meanwhile fails the start). Two runs, of one
+checkout or of two, therefore never meet, and a dev server another checkout left on 5173 or 5174 (where
+`pnpm dev` and `pnpm dev:demo` serve the app for people) is never tested in this checkout's place; something
+that answers on a port the run picked fails the run ("is already used"). To run specs against a dev server of
+your own, with its hot reload, name its URL: a local run then reuses the server that answers there, whichever
+checkout started it, and starts the mode's server on that port when nothing does. CI never reuses a server.
+
+```sh
+E2E_DEMO_URL=http://localhost:5174 pnpm e2e tests/keyboard.spec.ts --project chromium   # your pnpm dev:demo
+```
 
 The live project needs no running backend: its specs answer `GET /api/config` inside the browser
 (`fixtures/live.ts`), and the signed-in ones also answer Google's sign-in script and tokeninfo

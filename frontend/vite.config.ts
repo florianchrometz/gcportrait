@@ -11,7 +11,8 @@ import { defineConfig, loadEnv, type Plugin, type ProxyOptions, type Rollup, typ
 /**
  * Vite config for the SPA. `pnpm dev` serves it on :5173 and proxies /api to the backend on :8080.
  * `pnpm dev:demo` (VITE_DEMO=1) serves it on :5174 with no proxy at all: demo mode never calls the
- * backend. Different ports let both run side by side, and let the e2e suite reuse a running demo server.
+ * backend. Different ports let both run side by side. The e2e suite serves each mode on a free port of its
+ * run instead (`--port`, e2e/fixtures/servers.ts); `strictPort` makes a port that is taken fail the start.
  *
  * VITE_STATIC_DEMO=1 builds the static demo (`pnpm demo:static`, scripts/static-demo.mjs, sets it with the
  * rest of the static demo's settings): the app in demo-only mode with its configuration built in
