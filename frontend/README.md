@@ -2158,19 +2158,23 @@ Layout and a rule for containers that moved. Instead the data worker builds the 
 (at the detail level the drawn Scene uses, with the same flips), takes every node drawn there that the drawn
 Scene does not draw and that was removed, or that changed and the drawn day's view leaves out where it stood
 (a project marked for deletion has changed and the view hides it: "not drawn now"), with what it held that is
-gone now, and puts it back into its old container in the drawn Scene. A changed asset the drawn day's Graph
+gone now, and puts it back into its old container in the drawn Scene. A zone that is no asset (a region, a
+bundle) drawn open there and not drawn now comes back the same way when it held something removed, holding
+what was removed in it, as `removed` (everything demo M's Payments web (prod) held in us-central1 removed: the
+region zone's ghost in the open project, around their ghosts). A changed asset the drawn day's Graph
 holds in another container (it moved: drawn there, in a chip there, or out of the view now) or inside a chip
 of the drawn Scene is no ghost: it is drawn once, where the drawn day has it, and the chip that holds it
 counts it (demo M's partner exchange moved into a folder drawn as a chip: the chip's dot only). The layout's
 deterministic sibling order (zones before cards, then by label: `@gcportrait/layout` `order.ts`) places a
 ghost where it stood among its siblings, nothing overlaps it, and lines route around it; for that day the
 diagram makes room for it. A ghost needs its container: one whose container is not drawn open now (gone, or
-collapsed into a chip) gets none, and the chip counts it instead; a drill-in whose root moved draws none.
+collapsed into a chip) gets none of its own, and comes back inside its container's ghost or the chip counts it
+instead; a drill-in whose root moved draws none.
 Inside a ghost only what the diff found removed comes back, with the zones that are no asset around it (a
 region, a bundle), which take the ghost's reason; an asset still there on the drawn day never does, wherever
 that day draws it or whichever chip holds it (a removed perimeter takes none of the projects it secured that
-are still there). Ghost ids are the assets' names: a removed one is in no Graph of the drawn day, a changed
-one in no node of its Scene.
+are still there). Ghost ids are the nodes' ids: a removed asset is in no Graph of the drawn day, a changed one
+or a zone that is no asset in no node of its Scene.
 
 **A ghost is no node.** The model keeps the ghosts apart (`DiagramModel.ghosts`), so nothing walks, focuses or
 selects them: no `data-id`, no tab stop, no trace, no drill-in, no flip (`zonesByFlip`), not counted in "N of
@@ -2234,16 +2238,17 @@ fresh page (197–205 ms after the page has rested two minutes), 0.71–0.75 s o
 Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the diff, order independence, ghosts
 in their old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend
 on, backwards, drill-in, chips' counts; on demo M's perimeter removed, a ghost holds only what is gone; on
-demo M's partner exchange moved into another folder, it is no ghost, moved into a chip, drawn there or out of
-the view), `pipeline/dataHandler.test.ts` (the removed perimeter's ghost named by its asset type),
-`diff/marks.test.ts` (the marker painter: which rects, where, the words), `diff/drawing.test.tsx` (the markers
-in the drawing in both themes, paint order, legend rows, description, names, a ghost is no node, an overlay's
-ghost), `diff/handler.test.ts` (the data worker's `scene` with `diffFrom` and `changes`), `legend.test.ts`,
-`theme/theme.test.ts`, the baselines (section "Visual baselines"), the drawer's tests (section "Details
-drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M (scrubbing from 23 to 24 September in the compute
-lens at `all`: the new VM outlined, the deleted test VM's ghost, the group manager's dot and the legend rows;
-its drawer's update times and `targetSize`; `[` back, "compared with"; another lens keeps the markers; axe in
-both themes; screenshots in `e2e/.scratch/diff/`).
+demo M's Payments web (prod) with what it held in us-central1 removed, the region zone's ghost in the open
+project, or the project's chip counting them; on demo M's partner exchange moved into another folder, it is no
+ghost, moved into a chip, drawn there or out of the view), `pipeline/dataHandler.test.ts` (the removed
+perimeter's ghost named by its asset type), `diff/marks.test.ts` (the marker painter: which rects, where, the
+words), `diff/drawing.test.tsx` (the markers in the drawing in both themes, paint order, legend rows,
+description, names, a ghost is no node, an overlay's ghost), `diff/handler.test.ts` (the data worker's `scene`
+with `diffFrom` and `changes`), `legend.test.ts`, `theme/theme.test.ts`, the baselines (section "Visual
+baselines"), the drawer's tests (section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M
+(scrubbing from 23 to 24 September in the compute lens at `all`: the new VM outlined, the deleted test VM's
+ghost, the group manager's dot and the legend rows; its drawer's update times and `targetSize`; `[` back,
+"compared with"; another lens keeps the markers; axe in both themes; screenshots in `e2e/.scratch/diff/`).
 
 ## Performance
 

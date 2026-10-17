@@ -11,14 +11,17 @@
  *   that the drawn Scene does not draw goes back into the drawn Scene in its old container, with what it held then
  *   that is gone now, when it was removed (absent from the drawn day's snapshot), or when it changed and the drawn
  *   day's view leaves it out where it stood (a project marked for deletion is changed, and the view no longer draws
- *   it or anything in it: "not drawn now"). A changed asset the drawn day's Graph holds in another container (it
+ *   it or anything in it: "not drawn now"). A zone that is no asset (a region or zone, a bundle), drawn open there,
+ *   goes back the same way when it held something removed, holding what was removed in it, with the reason
+ *   `removed`: when everything a project held in one region is removed, the region zone is gone too, and comes back
+ *   in the project around their ghosts. A changed asset the drawn day's Graph holds in another container (it
  *   moved: drawn there, inside a chip there, or outside the view now) or inside a chip of the drawn Scene is no
  *   ghost: it is drawn once, where the drawn day has it, and the chip that holds it counts it (below). The layout
  *   then places a ghost among its siblings by the same order it placed it the day before (zones before cards, then
  *   by label), so it lands where it was and nothing overlaps it. A ghost needs its container: one whose container is
- *   not drawn as an open zone now (gone, or collapsed into a chip) gets none; a chip counts it instead (below). The
- *   ghosts keep their ids: a removed asset is in no Graph of the drawn day, and a changed one is not drawn there,
- *   so no id is drawn twice.
+ *   not drawn as an open zone now (gone, or collapsed into a chip) gets none of its own; it comes back inside its
+ *   container's ghost, or a chip counts it instead (below). The ghosts keep their ids: a removed asset is in no Graph
+ *   of the drawn day, and a changed one or a zone that is no asset is not drawn there, so no id is drawn twice.
  * - **What a ghost holds** is only what is gone: the assets the diff found removed (absent from the drawn day's
  *   snapshot), and the zones that are no asset (a region or zone, a bundle) around them (a closed one unless the
  *   drawn day's Graph still holds it). An asset still there on the drawn day never comes back inside a ghost,
@@ -315,6 +318,16 @@ function ghostsOf(
     keep(node);
     return { ...node, children: node.children.flatMap((child) => inside(child, reason)) };
   };
+  // An open zone that is no asset, with the reason `reason`, holding what comes back of its children (null when
+  // nothing does).
+  const reopened = (zone: SceneNode, reason: GhostReason): SceneNode | null => {
+    if (zone.type !== 'zone') return null;
+    const children = zone.children.flatMap((child) => inside(child, reason));
+    if (children.length === 0) return null;
+    reasons.set(zone.id, reason);
+    keep(zone);
+    return { ...zone, children };
+  };
   // What a child of a ghost on the earlier day comes back as inside it (nothing, or itself): a removed asset as a
   // removed ghost; an asset still there on the drawn day never, wherever that day draws it, or whether it does; a
   // zone that is no asset with the reason of the ghost around it, when it holds something that comes back (an open
@@ -326,18 +339,26 @@ function ghostsOf(
     if (child.collapsed !== undefined) {
       return Object.hasOwn(input.after.graph.nodes, child.id) ? [] : [ghost(child, around)];
     }
-    const children = child.children.flatMap((grandchild) => inside(grandchild, around));
-    if (children.length === 0) return [];
-    reasons.set(child.id, around);
-    keep(child);
-    return [{ ...child, children }];
+    const zone = reopened(child, around);
+    return zone === null ? [] : [zone];
+  };
+  // What a node of the earlier day that the drawn Scene does not draw comes back as on its own (null: nothing): a
+  // removed asset; a changed one the drawn day's view leaves out where it stood; an open zone that is no asset (a
+  // region or zone, a bundle) holding something removed, which takes the reason of what it holds (`removed`: only
+  // what was removed comes back inside a ghost). A chip that is no asset does not, whatever it held.
+  const rootOf = (id: string, node: SceneNode): SceneNode | null => {
+    if (removed.has(id)) return ghost(node, 'removed');
+    if (changed.has(id)) return leftOut(id) ? ghost(node, 'hidden') : null;
+    if (isAsset(id) || node.type !== 'zone' || node.collapsed !== undefined) return null;
+    return reopened(node, 'removed');
   };
   for (const [id, node] of then.nodes) {
-    if (!gone(id) || !(removed.has(id) || (changed.has(id) && leftOut(id)))) continue;
+    if (!gone(id)) continue;
     const up = then.parent.get(id) ?? null;
     // Its container must be drawn open today (or be the canvas); inside a vanished one it is part of that ghost.
     if (up !== null && !isOpenZone(now.nodes.get(up))) continue;
-    const root = ghost(node, removed.has(id) ? 'removed' : 'hidden');
+    const root = rootOf(id, node);
+    if (root === null) continue;
     const list = roots.get(up);
     if (list === undefined) roots.set(up, [root]);
     else list.push(root);

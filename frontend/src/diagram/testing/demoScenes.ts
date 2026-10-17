@@ -5,8 +5,9 @@
  * budget, and the layout. Synchronous parts are cached per organisation; nothing here touches a DOM. A day of an
  * organisation's history is read as the data worker reads it (timeline/worker/replay.ts), and a day compared with
  * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts), also for the two-day pairs
- * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`, or a project moved
- * into another folder, `projectMoved`). For the tests that only need the scene builder: the builder's environment
+ * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`, a project moved into
+ * another folder, `projectMoved`, or everything a project holds in one region removed, `regionRemoved`). For the
+ * tests that only need the scene builder: the builder's environment
  * for a snapshot (`sceneEnv`), and a demo Graph built synchronously straight from the generator (`demoGraphSync`).
  * Demo data without a Scene is in demoData.ts.
  */
@@ -242,6 +243,33 @@ export function perimeterRemoved(): Promise<readonly [DemoDay, DemoDay]> {
       (asset) =>
         asset.name !== DEMO_M_PERIMETER.perimeter && !asset.ancestors.includes('projects/10000000011'),
     ),
+  );
+}
+
+/** Demo M's Payments web (prod) project, and the region zone `regionRemoved` empties (region zones shown). */
+export const DEMO_M_REGION = {
+  /** Payments web (prod), `demo-web-2`, which holds global assets too: they are still there the next day. */
+  project: '//cloudresourcemanager.googleapis.com/projects/10000000016',
+  /** Its us-central1 region zone, which holds its zone us-central1-a and the regional assets. */
+  region: '//gcportrait.virtual/projects/demo-web-2/locations/us-central1',
+} as const;
+
+/** The region whose assets `regionRemoved` removes. */
+const REMOVED_REGION = 'us-central1';
+
+/**
+ * Everything demo M's Payments web (prod) holds in us-central1 (in the region, or in one of its zones) removed
+ * between two days (`demoMNextDay`), at any depth inside the project; what it holds globally is still there, and
+ * nothing else changes.
+ */
+export function regionRemoved(): Promise<readonly [DemoDay, DemoDay]> {
+  const project = DEMO_M_REGION.project.slice(DEMO_M_REGION.project.indexOf('projects/'));
+  return demoMNextDay((graph, assets) =>
+    assets.filter((asset) => {
+      if (asset.name === DEMO_M_REGION.project || !asset.ancestors.includes(project)) return true;
+      const location = graph.nodes[asset.name]?.location?.toLowerCase() ?? '';
+      return location !== REMOVED_REGION && !location.startsWith(`${REMOVED_REGION}-`);
+    }),
   );
 }
 

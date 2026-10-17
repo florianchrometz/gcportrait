@@ -5,11 +5,14 @@
  * worker does: the diff is `diffSnapshots` of the two days, by name and order-independent; what the view drew the
  * day before and no longer draws comes back as ghosts in its old container, with the reason, holding only what is
  * gone (on demo M's two days with its perimeter removed, a project it secured that is still there, inside a chip,
- * comes back with nothing), and the zones the ghosts depend on are listed as that day drew them; a changed asset the
- * drawn day still holds is a ghost only where the view leaves it out (on demo M's two days with a project moved into
- * another folder, it is none, and the chip that holds it counts it); chips count what changed inside them, also
- * those that are no Graph container (a region zone flipped closed, and on demo L's history a bundle), and what they
- * count is no ghost; nothing changes when the days are alike, and nothing is ghosted when the drill-in root moved.
+ * comes back with nothing), and the zones the ghosts depend on are listed as that day drew them; a region zone the
+ * drawn day no longer draws since everything in it was removed (demo M's two days with a project's us-central1
+ * emptied) is a ghost itself in its open project, holding theirs, or the project's chip counts them; a changed
+ * asset the drawn day still holds is a ghost only where the view leaves it out (on demo M's two days with a project
+ * moved into another folder, it is none, and the chip that holds it counts it); chips count what changed inside
+ * them, also those that are no Graph container (a region zone flipped closed, and on demo L's history a bundle), and
+ * what they count is no ghost; nothing changes when the days are alike, and nothing is ghosted when the drill-in root
+ * moved.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
@@ -18,8 +21,9 @@ import {
   buildSceneWithReport,
   diffSnapshots,
   flipIdOf,
+  isVirtualNode,
 } from '@gcportrait/graph';
-import { layoutScene } from '@gcportrait/layout';
+import { layoutScene, type Layout } from '@gcportrait/layout';
 import { normalizeViewSpec, SceneSchema, type Snapshot, type ViewSpecInput } from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -28,8 +32,10 @@ import {
   demoDayGraph,
   DEMO_M_MOVE,
   DEMO_M_PERIMETER,
+  DEMO_M_REGION,
   perimeterRemoved,
   projectMoved,
+  regionRemoved,
   sceneEnv as env,
   type DemoDay,
 } from '../testing/demoScenes';
@@ -114,6 +120,22 @@ function reversed(snapshot: Snapshot): Snapshot {
   return { ...snapshot, assets: [...snapshot.assets].reverse() };
 }
 
+/** Expects the rect of `id` in a layout to lie in zone `parent`, overlapping none of its siblings there. */
+function expectPlacedAmongSiblings(layout: Layout, id: string, parent: string): void {
+  const rect = layout.rects[id];
+  expect(rect?.parent, id).toBe(parent);
+  if (rect === undefined) return;
+  for (const [other, box] of Object.entries(layout.rects)) {
+    if (other === id || box.parent !== parent) continue;
+    const apart =
+      box.x >= rect.x + rect.width ||
+      rect.x >= box.x + box.width ||
+      box.y >= rect.y + rect.height ||
+      rect.y >= box.y + box.height;
+    expect(apart, other).toBe(true);
+  }
+}
+
 describe('the diff of a drawn day', () => {
   it('is diffSnapshots of the day on screen before and the drawn day, with the day compared with', async () => {
     const input = await inputOf('2026-09-07', '2026-09-08');
@@ -170,18 +192,7 @@ describe('ghosts', () => {
     expect(parents(input.scene).has(SCRATCH_BUCKET)).toBe(false);
     expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + 1);
     // The layout places it among its siblings, as the day before, overlapping nothing (its invariants hold).
-    const layout = layoutScene(scene);
-    const rect = layout.rects[SCRATCH_BUCKET];
-    expect(rect?.parent).toBe(DATA_PROJECT);
-    for (const [id, other] of Object.entries(layout.rects)) {
-      if (id === SCRATCH_BUCKET || other.parent !== DATA_PROJECT || rect === undefined) continue;
-      const apart =
-        other.x >= rect.x + rect.width ||
-        rect.x >= other.x + other.width ||
-        other.y >= rect.y + rect.height ||
-        rect.y >= other.y + other.height;
-      expect(apart, id).toBe(true);
-    }
+    expectPlacedAmongSiblings(layoutScene(scene), SCRATCH_BUCKET, DATA_PROJECT);
   });
 
   it('ghosts a project marked for deletion as hidden, with what it held as removed, in its old folder', async () => {
@@ -318,6 +329,84 @@ describe('what a ghost holds', () => {
         expect(diff.ghosts[child.id], child.id).toBe(zone ? 'hidden' : 'removed');
       }
     }
+  });
+});
+
+describe('a region zone whose contents were removed', () => {
+  const { project: PROJECT, region: REGION } = DEMO_M_REGION;
+  // The overview with region zones shown, every zone open.
+  const view = {
+    snapshot: 'demo:M',
+    lens: 'overview',
+    detail: 'all',
+    filters: { showRegions: true },
+  } as const;
+
+  /** What the earlier day's view drew inside the region zone, at any depth, with the zone each lay in. */
+  function heldByRegion(input: TickDiffInput): Map<string, string | null> {
+    const earlier = buildSceneWithReport(input.before.graph, input.spec, catalog, input.envBefore);
+    const region = zoneOf(earlier.scene, REGION);
+    if (region === undefined) throw new Error(`no region zone ${REGION}`);
+    const held = parents({ ...earlier.scene, children: region.children });
+    for (const [id, up] of held) if (up === null) held.set(id, REGION);
+    return held;
+  }
+
+  it('is a ghost in its project, open, holding the ghosts of what it held, and counted by no chip', async () => {
+    const [before, after] = await regionRemoved();
+    const input = pairInput(before, after, view);
+    // The earlier day drew the region zone open in the project; the drawn day draws the project open without it.
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    expect(parents(earlier.scene).get(REGION)).toBe(PROJECT);
+    expect(zoneOf(earlier.scene, REGION)?.collapsed).toBeUndefined();
+    expect(zoneOf(input.scene, PROJECT)?.collapsed).toBeUndefined();
+    expect(parents(input.scene).has(REGION)).toBe(false);
+    const held = heldByRegion(input);
+    const assets = [...held.keys()].filter((id) => !isVirtualNode(id));
+    expect(assets.length).toBeGreaterThanOrEqual(10);
+
+    const { scene, diff } = tickDiff(input);
+    const removed = new Set(diff.removed);
+    for (const id of assets) expect(removed.has(id), id).toBe(true);
+    // No asset, so not in the diff: the ghost takes the reason of what it holds, as does the zone inside it.
+    expect(removed.has(REGION)).toBe(false);
+    expect(diff.ghosts[REGION]).toBe('removed');
+    expect(SceneSchema.safeParse(scene).success).toBe(true);
+    const up = parents(scene);
+    expect(up.get(REGION)).toBe(PROJECT);
+    for (const [id, zone] of held) {
+      expect(diff.ghosts[id], id).toBe('removed');
+      expect(up.get(id), id).toBe(zone);
+    }
+    // Nothing else is a ghost, and no chip counts what the ghost holds.
+    expect(Object.keys(diff.ghosts).sort()).toEqual([REGION, ...held.keys()].sort());
+    expect(diff.inside).toEqual({});
+    expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + held.size + 1);
+    // It depends on its own state there and on the zones around it, up to the canvas.
+    expect(diff.earlier[REGION]).toEqual({
+      kind: 'region',
+      parent: PROJECT,
+      overlay: false,
+      collapsed: false,
+      empty: false,
+    });
+    expect(diff.earlier[PROJECT]).toMatchObject({ collapsed: false });
+    // The layout places it in its project among the zones and cards still there.
+    expectPlacedAmongSiblings(layoutScene(scene), REGION, PROJECT);
+  });
+
+  it('is no ghost when its project is a chip: the chip counts what was removed in it', async () => {
+    const [before, after] = await regionRemoved();
+    const input = pairInput(before, after, { ...view, flips: [flipIdOf(PROJECT)] });
+    expect(zoneOf(input.scene, PROJECT)?.collapsed).toBeDefined();
+    const assets = [...heldByRegion(pairInput(before, after, view)).keys()].filter(
+      (id) => !isVirtualNode(id),
+    );
+
+    const { scene, diff } = tickDiff(input);
+    expect(diff.ghosts).toEqual({});
+    expect(scene).toBe(input.scene);
+    expect(diff.inside).toEqual({ [PROJECT]: { added: 0, removed: assets.length, changed: 0 } });
   });
 });
 
