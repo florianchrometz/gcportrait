@@ -29,8 +29,8 @@
 #   required        the one check branch protection targets: green only when every job above but layout-budget
 #                   succeeded, or was skipped for a change of only docs and media (below)
 #
-# A change of only docs and media runs only the jobs that read such files (AGENTS.md, Quality gates, testing and
-# CI). `changes` sorts every changed file into one of three kinds:
+# A change of only docs and media runs only the jobs that read such files (.github/AGENTS.md, A change of only
+# docs and media). `changes` sorts every changed file into one of three kinds:
 #
 #   docs    Markdown that people read and, of the jobs, only unit (all other projects), website, provenance and
 #           licenses: docs/**/*.md, .changeset/*.md, the root's *.md files, each top-level folder's and each

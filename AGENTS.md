@@ -15,6 +15,7 @@ stated as it stands, with the reason for it in one sentence. Humans new to the r
 | `frontend/` | the app, its chrome, diagram and browser exports | `frontend/AGENTS.md` |
 | `website/` | the Astro site and its static demo | `website/AGENTS.md` |
 | `infra/` | the image and the deploy scripts | `infra/AGENTS.md` |
+| `.github/` | CI, release, Pages and drift workflows, templates | `.github/AGENTS.md` |
 | `scripts/`, `brand/`, `.agents/`, `.changeset/` | repository tooling, the mark, the skills, changesets | this file |
 
 The sections of this file:
@@ -518,28 +519,13 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   compiled catalog (`pnpm catalog:build`), the layout's metrics table, the icon module, `docs/media/`
   (`pnpm media`, `node scripts/exports.mjs`), the guides' lens tables (`node scripts/user-docs.mjs --write`),
   `THIRD_PARTY.md`'s dependency table (`pnpm run licenses --write`), the golden files and baselines.
-- **CI** (`.github/workflows/pr.yml`) runs its jobs side by side on each pull request and push to `main`:
-  lint, typecheck, the unit tests in three legs, `layout-budget` (reports only), catalog-check, build with the
-  size budgets, e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and
-  the `chromium-phone` and `chromium-tablet` projects), the website, provenance (with a self-test that plants
-  a banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell. Each
-  e2e leg is a round-robin share of its projects' tests, every k-th of their listing, run by `--test-list`
-  (`pnpm --filter @gcportrait/e2e leg`), so that the slow files spread over the legs instead of landing in
-  one; it fails when its run misses a test of its share. Its `required` job is the one check branch
-  protection targets, green only when every other job but `layout-budget` succeeded or was skipped for a
-  change of only docs and media (below), so the ruleset never changes when a job does. Every action is pinned
-  by commit. The audit gate fails on high and critical advisories unless `scripts/audit-allowlist.json`
+- **Each e2e leg is a round-robin share** of its projects' tests, every k-th of their listing, run by
+  `--test-list` (`pnpm --filter @gcportrait/e2e leg`), so that the slow files spread over the legs instead of
+  landing in one; it fails when its run misses a test of its share.
+- **The audit gate fails on high and critical advisories** unless `scripts/audit-allowlist.json`
   accepts one with an expiry.
-- **A change of only docs and media runs only the jobs that read them.** A first job, `changes`, compares a
-  push with the commit before it and a pull request with the branch it merges into, and sorts every changed
-  file as docs (`docs/**/*.md`, `.changeset/*.md`, the root's Markdown files, each top-level folder's and
-  package's `README.md` and `CHANGELOG.md`, and each folder's `AGENTS.md`), media (`docs/media/**`) or code
-  (everything else, the skills included). With no code among them, the unit tests of every project but the
-  layout and the frontend, the website and provenance run, licences too for docs (`THIRD_PARTY.md`) and
-  Prettier for media (its manifests are JSON); typecheck, the layout and frontend unit legs,
-  `layout-budget`, catalog-check, build, e2e, the audit, workflows-and-shell and ESLint are skipped, because
-  none of them reads those files, so each could only repeat the result of the tree the change starts from. A
-  comparison that cannot be made runs every job.
+- The workflow's jobs, required check and docs/media classifier follow
+  [.github/AGENTS.md](.github/AGENTS.md), "CI" and "A change of only docs and media".
 - **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
   or applied in a commit that passes the checks) or declined with its reason in
   [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.
@@ -551,23 +537,21 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   that changes behaviour adds a changeset with a summary written for users.
 - **Per release**: `pnpm release:version` (consumes the changesets, writes the `CHANGELOG.md` files and the
   versions), commit, then tag `vX.Y.Z` on `main`. [CHANGELOG.md](CHANGELOG.md) says what each release holds.
-- **`release.yml` on a tag**: `pnpm run check`, the build and the size budgets on the tag; one image for
+- **A tagged release** passes `pnpm run check`, the build and the size budgets on the tag; one image for
   linux/amd64 and linux/arm64, smoke-tested, pushed to `ghcr.io/florianchrometz/gcportrait` as `X.Y.Z`, `X.Y`
-  and `latest` (`latest` only for the newest release, never a pre-release), with the workflow's own
-  `GITHUB_TOKEN`: no secret, no Workload Identity Federation, no registry on Google Cloud; an SPDX SBOM per
-  platform; the GitHub release with notes from the `CHANGELOG.md` sections (the long form first, the installer
-  line, the image's tags and digest), the deploy scripts the installer downloads and `checksums.txt`. Run by
-  hand, it publishes `dev` only.
+  and `latest` (`latest` only for the newest release, never a pre-release); an SPDX SBOM per platform;
+  the GitHub release with notes from the `CHANGELOG.md` sections (the long form first, the installer line,
+  the image's tags and digest), the deploy scripts the installer downloads and `checksums.txt`. A release
+  workflow run by hand publishes `dev` only.
 - **A pre-release tag is a trial run of its release**: a tag such as `vX.Y.Z-rc.1` publishes the image under
   its own version tag only, never `latest` or `X.Y`, creates a GitHub pre-release not marked latest, and takes
   the notes of `X.Y.Z` when no `CHANGELOG.md` has a section of its own, so the pipeline can be checked before
   the release it precedes.
 - **The ghcr.io package is public**, because self-hosters' Artifact Registry pulls it without credentials.
-- **The website** deploys only while the repository variable `PAGES_DEPLOY` is `true`; a tag's website job
-  refuses stale `docs/media/` ([docs/website.md](docs/website.md)).
 - **The first release, 1.0.0, is already versioned**: its tag needs no versioning step. Every later release
   starts from the changesets merged since.
 
+The workflow's execution and website deployment follow [.github/AGENTS.md](.github/AGENTS.md), "Releases".
 [docs/contributing.md](docs/contributing.md) (section 9) has the one-time setup, the trial run and the steps.
 
 ## Documentation

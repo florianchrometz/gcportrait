@@ -301,8 +301,9 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
   (weekly, digests; Node held to 22). Every update passes the same CI gates, the licence and audit gates
   included, and is adopted on `main` or declined with its reason ([AGENTS.md](../AGENTS.md), "Quality gates,
   testing and CI"). Every action of every workflow and of the composite actions is pinned to a commit, with
-  its release as a comment. **Dependabot alerts** and **Dependabot security updates** (Settings → Code
-  security) are repository settings, not files (O7). Not in place yet: a minimum package age for updates
+  its release as a comment ([.github/AGENTS.md](../.github/AGENTS.md), "CI"). **Dependabot alerts** and
+  **Dependabot security updates** (Settings → Code security) are repository settings, not files (O7).
+  Not in place yet: a minimum package age for updates
   (Dependabot's `cooldown`, pnpm's `minimumReleaseAge`; O6).
 
 ## 11. Licence compliance

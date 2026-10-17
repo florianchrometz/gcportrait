@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 #
-# Release pipeline (AGENTS.md, Releases; contributor-workflow skill §7). On a `v*` tag it checks and builds
-# the tag, publishes the container image to GitHub Container Registry and creates the GitHub release. Run by
-# hand (Actions > Release > Run workflow, on any branch) it publishes the same image as `dev` only: no version
-# tags, no `latest`, no GitHub release.
+# Release pipeline (.github/AGENTS.md, Releases; AGENTS.md, Releases; contributor-workflow skill §7). On a `v*`
+# tag it checks and builds the tag, publishes the container image to GitHub Container Registry and creates the
+# GitHub release. Run by hand (Actions > Release > Run workflow, on any branch) it publishes the same image as
+# `dev` only: no version tags, no `latest`, no GitHub release.
 #
 # Credentials: the workflow's own GITHUB_TOKEN, nothing else. No secret, no repository variable, no cloud account.
 #

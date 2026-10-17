@@ -7,7 +7,8 @@ description: The way work gets done on gcportrait — provenance rules, local lo
 # Contributor workflow
 
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("How to work a task", "Licence and
-dependencies", "Quality gates, testing and CI", "Releases", "Documentation" and "Names that never appear");
+dependencies", "Quality gates, testing and CI", "Releases", "Documentation" and "Names that never appear")
+and [.github/AGENTS.md](../../../.github/AGENTS.md) ("CI", "A change of only docs and media" and "Releases");
 this file is the procedure and the checklists.
 
 ## 1. Before you start
@@ -113,8 +114,8 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
   (built and checked, then at phone widths), provenance, licenses, audit and workflows-and-shell (actionlint,
   shellcheck). Its `required` job is the one check branch protection targets:
   green only when all of them are; `layout-budget` only reports. A change of only docs and media (the
-  `changes` job sorts its files; AGENTS.md, "Quality gates, testing and CI") runs only the jobs that read
-  them: `unit (all other projects)`, website, provenance, licenses for docs and Prettier for media; the
+  `changes` job sorts its files; .github/AGENTS.md, "A change of only docs and media") runs only the jobs that
+  read them: `unit (all other projects)`, website, provenance, licenses for docs and Prettier for media; the
   others show as skipped and `required` counts them as passed. A push is sorted as a whole: one file of code
   among its changes runs every job. A failure you cannot reproduce: run the command as the runner does,
   `TZ=UTC LC_ALL=C.UTF-8 CI=true` (`docs/contributing.md` §4, "Continuous integration", has each job's

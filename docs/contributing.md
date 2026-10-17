@@ -169,9 +169,10 @@ and media (below):
 | `workflows-and-shell` | `actionlint`; `shellcheck -x infra/*.sh`; every other shell script with `shellcheck -x --severity=warning` | skipped |
 | `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded | runs: a job skipped for such a change counts as passed |
 
-**A change of only docs and media** runs only the jobs that read such files ([AGENTS.md](../AGENTS.md),
-"Quality gates, testing and CI"). `changes` compares a push with the commit before it and a pull request (its
-merge commit) with the branch it merges into, and sorts every changed file:
+**A change of only docs and media** runs only the jobs that read such files
+([.github/AGENTS.md](../.github/AGENTS.md), "A change of only docs and media"). `changes` compares a push with
+the commit before it and a pull request (its merge commit) with the branch it merges into, and sorts every
+changed file:
 
 - **docs**: `docs/**/*.md`, `.changeset/*.md`, the Markdown files at the root (`AGENTS.md`, `README.md`,
   `THIRD_PARTY.md`, `CHANGELOG.md`), the `README.md` and `CHANGELOG.md` of each top-level folder and each
