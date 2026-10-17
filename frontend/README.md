@@ -222,13 +222,13 @@ eased, the search hit's glide, skill gcp-diagram-style §6; centre in a line and
 reduced motion; a pan or zoom by the person stops it; a centring jump to the node already selected pulses its
 selection ring again; a `reveal` never replaces a centring jump to the same node still waiting to be drawn;
 with `mode: 'reveal'` only the short pan of `revealTransform`, section "Details drawer") as soon as the node
-is drawn, then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump, and
-the pan that follows keyboard focus, keep the node in the part of the canvas that a panel lying over it leaves
-in view (`clearRoom`: each open element marked `data-canvas-overlay` that lies over the canvas, the details
-drawer of a phone or a tablet along its right or lower edge or the top bar's View or More sheet hanging from
-its top edge, leaves the largest part of the canvas it keeps free to its left or right, above or below it, and
-`inRoom` in `diagram/camera.ts` works the camera out for that part as if it were the whole canvas); on a
-desktop nothing lies over the canvas and the room is the canvas.
+is drawn, then reports with `onJumpDone`; and `onHover`, which reports the node under the pointer. A jump,
+the pan that follows keyboard focus and a zoom key's step keep the node in the part of the canvas that a panel
+lying over it leaves in view (`clearRoom`: each open element marked `data-canvas-overlay` that lies over the
+canvas, the details drawer of a phone or a tablet along its right or lower edge or the top bar's View or More
+sheet hanging from its top edge, leaves the largest part of the canvas it keeps free to its left or right,
+above or below it, and `inRoom` in `diagram/camera.ts` works the camera out for that part as if it were the
+whole canvas); on a desktop nothing lies over the canvas and the room is the canvas.
 
 Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
 selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
@@ -377,7 +377,8 @@ column a few characters wide, the top bar's items, the timeline bar's parts (non
 within the canvas, 44-pixel targets, every control one reaches with Tab in sight when focused and tappable at
 its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view, and View
 opened over the drawer closing it), axe; and a theme picked in More, Sign out from More, a long trail, the
-sheet's heights and the canvas's touch input by finger. The same project runs `e2e/tests/touch.spec.ts` at
+sheet's heights, `+` from an external keyboard with the drawer open (the focused card stays above it) and the
+canvas's touch input by finger. The same project runs `e2e/tests/touch.spec.ts` at
 390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a long press) and a mouse's
 drag and double-click on the same page.
 
@@ -1485,8 +1486,10 @@ reaches the zone's header; Home and End go to the zone's first and last item. En
 drawer opens), Escape clears the selection and then returns to the zone around the item, Shift+F10 opens the
 item's menu. The camera pans just enough to show the item, and first zooms in to the subtitle scale (0.55,
 `lod.ts`; not the label scale, 0.35, where a card's text is about 4.5 px) when it is further out (`camera.ts`,
-`keyboardTransform`; at once with reduced motion). `+` and `-` zoom one step (× 1.5) about the focused item
-and `0` fits the drawing. `/` focuses search; `[` and `]` call `stepTick` (one day back and forward). A
+`keyboardTransform`; at once with reduced motion). `+` and `-` zoom one step (× 1.5) about the focused item,
+which stays in the part of the canvas an open drawer or sheet leaves in view (about that part's centre from
+the canvas itself; section "App state", `clearRoom`), and `0` fits the drawing. `/` focuses search; `[` and
+`]` call `stepTick` (one day back and forward). A
 single-key shortcut is matched by the character typed (`keyboard/shortcuts.ts`, `isShortcutKey`): Shift,
 Option and AltGr may have been needed for it (`[` is Option+5 on a German Mac, AltGr+8 on a German PC), Cmd or
 Ctrl alone make it the browser's. The focus ring goes around a focused card or open zone in the diagram token

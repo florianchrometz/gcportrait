@@ -7,7 +7,14 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
 
 import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TOKENINFO_URL } from '../fixtures/gis.js';
 import { stubConfig } from '../fixtures/live.js';
-import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } from './support.js';
+import {
+  boxOf,
+  cameraSettled,
+  DEFAULT_SOURCE_URL,
+  drawnCanvas,
+  expectNoAxeViolations,
+  openDiagram,
+} from './support.js';
 
 /**
  * The app's phone and tablet check (the `mobile` project of playwright.config.ts; `pnpm --filter
@@ -57,8 +64,10 @@ import { DEFAULT_SOURCE_URL, drawnCanvas, expectNoAxeViolations, openDiagram } f
  * which a tap drills out to; a tap on a node opens the drawer as a sheet over the lower half of the canvas, the
  * disclosure bar above it, which its handle takes to the canvas's full height (hiding the canvas's content) and back,
  * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
- * when let go there; one finger dragged across the canvas pans the drawing, two pinched apart zoom it in, and a tap on
- * a project chip opens it in place.
+ * when let go there; with the drawer open from an external keyboard (Enter on the drawing's tab stop), the zoom key `+`
+ * keeps the focused card in the part of the canvas above the drawer, inside it while the card fits and centred in it
+ * once the card is taller; one finger dragged across the canvas pans the drawing, two pinched apart zoom it in, and a
+ * tap on a project chip opens it in place.
  * The pages and diagrams at each size in the light theme come first, the tests that set their own sizes next, and the
  * same pages and diagrams in the dark theme last, so that each shard of a CI leg gets half of the slow diagram tests
  * (pagesAndDiagrams).
@@ -1259,6 +1268,50 @@ test.describe('on a phone, 375 × 667', () => {
     expect((await drawer.boundingBox())?.height ?? Infinity).toBeLessThan(canvas.height * 0.2);
     await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await expect(drawer).toBeHidden();
+  });
+
+  test('with the drawer open, `+` on an external keyboard keeps the focused card in the part of the canvas above it', async ({
+    page,
+  }) => {
+    const svg = await openDiagram(page, DIAGRAMS[0]);
+    // The skip link puts focus on the drawing's tab stop, and Enter selects it: the drawer opens over the canvas's
+    // lower half, and focus stays on the card.
+    await page.getByRole('link', { name: 'Skip to the diagram' }).focus();
+    await page.keyboard.press('Enter');
+    const focused = svg.locator('.dg-node:focus');
+    await expect(focused).toHaveCount(1);
+    const id = await focused.getAttribute('data-id');
+    if (id === null) throw new Error('no focused card');
+    const card = svg.locator(`.dg-node[data-id="${id}"]`);
+    await page.keyboard.press('Enter');
+    const drawer = page.getByRole('complementary', { name: 'Details' });
+    await expect(drawer).toBeVisible();
+    await expect(card).toBeFocused();
+    await cameraSettled(svg);
+    const canvas = await boxOf(svg);
+    // The part of the canvas the drawer leaves in view: from the canvas's top edge down to the drawer's.
+    const top = canvas.y;
+    const bottom = (await boxOf(drawer)).y;
+    expect(bottom - top).toBeGreaterThan(canvas.height / 3);
+    let steps = 0;
+    for (; steps < 16; steps += 1) {
+      await page.keyboard.press('+');
+      await cameraSettled(svg);
+      await expect(card).toBeFocused();
+      const body = await boxOf(card.locator('.dg-body').first());
+      const where = `after ${String(steps + 1)} × +: the card from ${body.y.toFixed(1)} to ${(body.y + body.height).toFixed(1)}, the room from ${top.toFixed(1)} to ${bottom.toFixed(1)}`;
+      if (body.height <= bottom - top) {
+        // It fits: it lies inside the room, none of it under the drawer.
+        expect(body.y, where).toBeGreaterThanOrEqual(top - 1);
+        expect(body.y + body.height, where).toBeLessThanOrEqual(bottom + 1);
+      } else {
+        // Taller than the room: centred in it.
+        expect(Math.abs(body.y + body.height / 2 - (top + bottom) / 2), where).toBeLessThan(1);
+      }
+      if (body.height > canvas.height) break;
+    }
+    // The steps went on until the card was taller than the whole canvas.
+    expect(steps).toBeLessThan(16);
   });
 
   test('one finger dragged across the canvas pans the drawing', async ({ page }) => {

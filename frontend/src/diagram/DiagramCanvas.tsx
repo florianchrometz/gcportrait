@@ -16,9 +16,9 @@
  * The app store reaches the camera through two props only: `jump`, a pending `jumpTo(id)`, which the
  * canvas makes as a glide (camera.ts; at once with reduced motion) as soon as the node is drawn and then reports
  * with `onJumpDone` (a centring glide, or for the details drawer, a short pan that keeps the node and its
- * trace in view); and `onHover`, which tells the store which node is under the pointer. A jump, and the pan that
- * follows keyboard focus, keep the node in the part of the canvas a panel lying over it leaves in view (`clearRoom`):
- * the drawer of a phone or a tablet, or the top bar's View or More sheet.
+ * trace in view); and `onHover`, which tells the store which node is under the pointer. A jump, the pan that
+ * follows keyboard focus and a zoom key's step keep the node in the part of the canvas a panel lying over it leaves in
+ * view (`clearRoom`): the drawer of a phone or a tablet, or the top bar's View or More sheet.
  *
  * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
  * it, and an open zone's collapse button (over its header icon; disclosure/CollapseButton.tsx) collapses it,
@@ -41,10 +41,11 @@
  * nothing that way in the zone carries on among the zone's neighbours (↑ reaches the zone's header), Home and End
  * go to the zone's first and last item; the camera pans just enough to show the item, zooming in first to the
  * scale at which labels are drawn when it is further out (camera.ts, `keyboardTransform`; at once with reduced
- * motion). `+` and `-` zoom about the focused item and `0` fits the drawing (keyboard/zoom.ts). Enter or Space
- * selects (the details drawer opens), Escape clears the selection and, with nothing selected, returns to the zone
- * around the item. The focus ring keeps its screen size at any scale (the painter's `setScale`). After "Drill in"
- * focus waits on the `<svg>` and goes to the new drawing's tab stop (canvasFocus.ts).
+ * motion). `+` and `-` zoom about the focused item, which stays in the part of the canvas left in view (about that
+ * part's centre from the canvas itself), and `0` fits the drawing (keyboard/zoom.ts). Enter or Space selects (the
+ * details drawer opens), Escape clears the selection and, with nothing selected, returns to the zone around the
+ * item. The focus ring keeps its screen size at any scale (the painter's `setScale`). After "Drill in" focus waits on
+ * the `<svg>` and goes to the new drawing's tab stop (canvasFocus.ts).
  */
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity, zoomTransform, type D3ZoomEvent, type ZoomBehavior } from 'd3-zoom';
@@ -152,12 +153,12 @@ interface Edges {
 const areaOf = (box: Edges): number => (box.right - box.left) * (box.bottom - box.top);
 
 /**
- * The part of the canvas a camera jump keeps a node in (camera.ts, `inRoom`): the canvas, less each panel lying over it
- * (`data-canvas-overlay`, AGENTS.md "Product rules": on a phone or a tablet the details drawer along the canvas's right
- * or lower edge, and the top bar's View or More sheet hanging over it from its top edge). Each such panel leaves the
- * room the largest part of it that the panel keeps free: to its left or right, above or below it. A closed panel
- * (`hidden`) covers nothing, and nor does one beside the canvas: on a desktop the drawer stands beside it and no sheet
- * opens, and the room is the canvas.
+ * The part of the canvas a camera jump, the keyboard's pan and a zoom key's step keep a node in (camera.ts, `inRoom`):
+ * the canvas, less each panel lying over it (`data-canvas-overlay`, AGENTS.md "Product rules": on a phone or a tablet
+ * the details drawer along the canvas's right or lower edge, and the top bar's View or More sheet hanging over it from
+ * its top edge). Each such panel leaves the room the largest part of it that the panel keeps free: to its left or
+ * right, above or below it. A closed panel (`hidden`) covers nothing, and nor does one beside the canvas: on a desktop
+ * the drawer stands beside it and no sheet opens, and the room is the canvas.
  */
 function clearRoom(svg: SVGSVGElement): CanvasRoom {
   const size = canvasSize(svg);
@@ -698,13 +699,13 @@ export function DiagramCanvas({
       if (to === null) return;
       glideRef.current = { id, mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
     };
-    // The zoom keys: one step in or out about the focused item (about the canvas's centre from the canvas
-    // itself), keeping the item in view; `0` fits the whole drawing, as a new view opens.
+    // The zoom keys: one step in or out about the focused item (from the canvas itself, about the centre of the
+    // part of the canvas a panel lying over it leaves in view), keeping the item in that part, as a jump and the
+    // keyboard's pan do (`clearRoom`); `0` fits the whole drawing, as a new view opens.
     const zoomBy = (key: ZoomKey, focusedId: string | null): void => {
       const behaviour = zoomRef.current;
       const drawn = frameRef.current;
       if (behaviour === null) return;
-      const size = canvasSize(svg);
       // Pressed again while the last glide is on its way: one more step from where that glide ends, so quick
       // presses add up.
       const running = glideRef.current;
@@ -712,15 +713,14 @@ export function DiagramCanvas({
       let to: CameraTransform | null;
       if (key === 'fit') {
         if (drawn === null) return;
+        const size = canvasSize(svg);
         to = fitTransform(drawn, size.width, size.height);
       } else {
         const rect = focusedId === null ? undefined : model.input.layout.rects[focusedId];
-        to = zoomStepTransform(
-          current,
-          key === 'in' ? 1 : -1,
-          rect === undefined ? null : revealBox(rect),
-          size.width,
-          size.height,
+        const box = rect === undefined ? null : revealBox(rect);
+        const direction = key === 'in' ? 1 : -1;
+        to = inRoom(clearRoom(svg), current, (width, height, camera) =>
+          zoomStepTransform(camera, direction, box, width, height),
         );
       }
       if (to === null) return;
