@@ -171,7 +171,10 @@ async function listPrefix(
       return { ok: false, frame: failureFrame(error, 'the listing of the export in Cloud Storage') };
     }
     if (answer.status !== 200)
-      return { ok: false, frame: googleErrorFrame(googleErrorOf(answer.status, answer.body)) };
+      return {
+        ok: false,
+        frame: googleErrorFrame(googleErrorOf(answer.status, answer.body), isRetryableStatus(answer.status)),
+      };
     const page = readJson(answer.body);
     if (!isRecord(page)) return { ok: false, frame: badAnswer('a listing of objects') };
     const items = page['items'] ?? [];
@@ -262,7 +265,10 @@ async function planObjects(
   }
   if (answer.status === 404) return listPrefix(location, `${location.object}/`, options, signal);
   if (answer.status !== 200)
-    return { ok: false, frame: googleErrorFrame(googleErrorOf(answer.status, answer.body)) };
+    return {
+      ok: false,
+      frame: googleErrorFrame(googleErrorOf(answer.status, answer.body), isRetryableStatus(answer.status)),
+    };
   const object = objectOf(readJson(answer.body));
   if (object === null) return { ok: false, frame: badAnswer('an object') };
   return { ok: true, objects: [object], bytes: object.size };

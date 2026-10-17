@@ -158,6 +158,63 @@ describe('POST /api/export/read', () => {
     expect(gcs.calls).toHaveLength(1);
   });
 
+  describe.each([
+    { stage: 'metadata', uri: 'gs://demo-exports/org/first.json', successfulCalls: 0 },
+    { stage: 'listing', uri: 'gs://demo-exports/org/', successfulCalls: 0 },
+    { stage: 'later listing page', uri: 'gs://demo-exports/org/', successfulCalls: 1 },
+    { stage: 'download', uri: 'gs://demo-exports/org/first.json', successfulCalls: 1 },
+  ])('$stage failures', ({ stage, uri, successfulCalls }) => {
+    it.each([
+      { status: 400, code: 'INVALID_ARGUMENT', reason: 'INVALID_ARGUMENT', retryable: false },
+      { status: 401, code: 'UNAUTHENTICATED', reason: 'ACCESS_TOKEN_EXPIRED', retryable: false },
+      {
+        status: 403,
+        code: 'PERMISSION_DENIED',
+        reason: 'ACCESS_TOKEN_SCOPE_INSUFFICIENT',
+        retryable: false,
+      },
+      { status: 429, code: 'RESOURCE_EXHAUSTED', reason: 'RATE_LIMIT_EXCEEDED', retryable: true },
+      { status: 500, code: 'INTERNAL', reason: 'BACKEND_ERROR', retryable: true },
+      { status: 503, code: 'UNAVAILABLE', reason: 'BACKEND_ERROR', retryable: true },
+      { status: 599, code: 'UNKNOWN', reason: 'BACKEND_ERROR', retryable: true },
+    ])('reports $status with retryable=$retryable', async ({ status, code, reason, retryable }) => {
+      const message = 'Cloud Storage could not complete this request.';
+      const gcs = mockGcs(
+        BUCKET,
+        { 'org/first.json': exportFile(0, 1), 'org/second.json': exportFile(1, 1) },
+        {
+          listPageSize: 1,
+          override: (_call, index) =>
+            index >= successfulCalls
+              ? googleError(status, code, message, [{ reason, domain: 'storage.googleapis.com' }])
+              : undefined,
+        },
+      );
+      const { app, delays } = await start(gcs.fetch);
+      const response = await read(app, uri);
+      expect(response.statusCode).toBe(200);
+      expect(linesOf(response.body)).toEqual([
+        { t: 'error', message, status, code, reason, ...(retryable ? { retryable: true } : {}) },
+      ]);
+      expect(delays).toEqual(retryable ? [250, 500, 1000, 2000] : []);
+      expect(gcs.calls).toHaveLength(successfulCalls + (retryable ? 5 : 1));
+      if (stage === 'later listing page')
+        expect(gcs.calls.slice(1).every((call) => call.url.searchParams.get('pageToken') === '1')).toBe(true);
+      expect(gcs.calls.every((call) => call.headers.get('authorization') === `Bearer ${TOKEN}`)).toBe(true);
+    });
+  });
+
+  it('does not retry a missing prefix or offer a retry', async () => {
+    const gcs = mockGcs(BUCKET, {}, { override: () => googleError(404, 'NOT_FOUND', 'No such bucket.') });
+    const { app, delays } = await start(gcs.fetch);
+    const response = await read(app, 'gs://demo-exports/org/');
+    expect(linesOf(response.body)).toEqual([
+      { t: 'error', message: 'No such bucket.', status: 404, code: 'NOT_FOUND' },
+    ]);
+    expect(gcs.calls).toHaveLength(1);
+    expect(delays).toEqual([]);
+  });
+
   it('retries a transient answer before the download starts', async () => {
     const content = exportFile(0, 3);
     const gcs = mockGcs(

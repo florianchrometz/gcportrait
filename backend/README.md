@@ -177,7 +177,8 @@ Both routes call Google with the caller's own token, through the allowlisted cli
 URL, https on the default port, no redirect followed (`redirect: "manual"`: a 3xx is an answer like any other
 status, never retried), 60 s, 25 MiB (`UPSTREAM_MAX_BYTES`, the live pull's pages included), retries of 429
 and 5xx by skill cai-ingestion §4: `isRetryableStatus` in `src/upstream/retry.ts`, which also decides what the
-checks count as transient and when the error frame of a page or an export object is `retryable`).
+checks count as transient and when the error frame of a page, export metadata lookup, listing or object is
+`retryable`).
 `src/upstream/google.ts` makes the calls: it forwards the bearer token verbatim, sends the incoming request id
 upstream as `x-request-id`, and logs one line per call with a fixed operation name, the host, the status, the
 attempts and the time (never a URL path, which carries the scope, a header value or a body). Its
@@ -294,6 +295,10 @@ break added between objects that need one, and a failure ends the stream with an
 its own. The headers `x-gcportrait-export-objects` and `x-gcportrait-export-bytes` announce what the read
 covers. Caps: 60 s without a byte (an idle timeout), 1 GiB, 10 000 objects listed under a prefix (folder
 placeholders included); nothing under the prefix is a 404 frame.
+
+Cloud Storage 429 and 5xx answers are retried and, if the attempts are exhausted, carry `retryable: true`
+in the error frame, whether they come from the metadata lookup, any listing page or the object download.
+Other statuses end that request without a retry; a metadata lookup's 404 starts the prefix lookup above.
 
 Each stream logs one line when it ends (`asset stream ended`, `export read ended`): the mode, pages, assets or
 objects and bytes, retries, how it ended (`done` or the error code), `finished`, `client-gone` or
