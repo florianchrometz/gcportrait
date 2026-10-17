@@ -61,7 +61,7 @@ Nothing is copied into the site by hand: each page is built from its one source 
 
 | Page | Source |
 |---|---|
-| `/` (landing) | `src/pages/index.astro`: the hero (with "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host", `src/components/StartLink.astro`, in a new tab) and "Three ways to use gcportrait" (self-hosted: the installer line of docs/self-host.md, `src/site.ts` `INSTALL_COMMAND`; web app: the drawer still and the demo; API: the render request of docs/api.md for demo S and the sample export it returns, `S-overview-light.png`), the features each marked with the ways it serves, numbers from the catalog; the FAQ teaser from `docs/faq.md`'s questions (the hosting, data and cost ones first); "About the author" and the Person structured data from `docs/author.md`; the SoftwareApplication's `featureList`, the three ways, from `src/lib/seo.ts` |
+| `/` (landing) | `src/pages/index.astro`: the hero (with "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host", `src/components/StartLink.astro`, in a new tab) and "Three ways to use gcportrait" (self-hosted: the installer line of docs/self-host.md, `src/site.ts` `INSTALL_COMMAND`; web app: the drawer still and the demo; API: the render request of docs/api.md for demo S and the sample export it returns, `S-overview-light.png`), the features each marked with the ways it serves, numbers from the catalog; the FAQ teaser from `docs/faq.md`'s questions (the hosting, data and cost ones first); "About the author" (with the name line "Florian Chrometz & contributors", the contributors linked) and the Person structured data from `docs/author.md`; the SoftwareApplication's `featureList`, the three ways, from `src/lib/seo.ts` |
 | `/docs/<slug>/` | the guides under `docs/` listed in `src/data/docs.ts` (`DOC_PAGES`), rendered by `src/lib/markdown.ts` |
 | `/exports/` | the sample exports in `docs/media/exports/` and their `manifest.json`, written by `node scripts/exports.mjs` (`src/lib/exports.ts`); the landing page's "Sample exports" section shows demo S's and M's overviews from them |
 | `/coverage/` | `@gcportrait/catalog` (the compiled catalog) and `pnpm catalog:coverage --json` |
@@ -79,7 +79,10 @@ links to other repository files go to GitHub, raw HTML in a guide is dropped, an
 becomes its alt text (the site loads nothing from elsewhere). A guide that does not exist yet is left out of
 the build with a warning.
 
-**docs/author.md.** YAML front matter, then the biography in Markdown:
+**docs/author.md.** YAML front matter, then the section's text in Markdown: its first paragraph is also the
+Person's description, and its closing paragraph is the long-form non-affiliation statement. The landing page
+puts the name line above the text, "Florian Chrometz & contributors", with "contributors" linked to the
+repository's contributors on GitHub (`CONTRIBUTORS_URL` in `src/lib/author.ts`, from `REPOSITORY_URL`).
 
 ```markdown
 ---
@@ -88,7 +91,6 @@ url: https://florian-chrometz.de    # required, https
 jobTitle: …                         # optional
 sameAs:                             # optional: profile pages; anything that is not an https URL is left out
   - https://github.com/florianchrometz
-image: docs/media/author/portrait.webp   # optional
 ---
 <!-- SPDX-License-Identifier: MIT -->
 

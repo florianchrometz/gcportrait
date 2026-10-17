@@ -358,8 +358,10 @@ contributor licence agreement (CLA).
 
 ## Author
 
-gcportrait is built and maintained by **Florian Chrometz**. It draws a Google Cloud environment as it actually
-is: every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and
+**Florian Chrometz** & [contributors](https://github.com/florianchrometz/gcportrait/graphs/contributors)
+
+gcportrait is built and maintained by Florian Chrometz. It draws a Google Cloud environment as it actually is:
+every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and
 pull requests are welcome. More about Florian on his [personal website](https://florian-chrometz.de), on
 [GitHub](https://github.com/florianchrometz) and in the [author section of the
 website](https://gcportrait.app/#author).

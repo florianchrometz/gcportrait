@@ -22,7 +22,7 @@ import ExportCard from '../components/ExportCard.astro';
 import StartLink from '../components/StartLink.astro';
 import ThemedPicture from '../components/ThemedPicture.astro';
 import Variables from '../components/Variables.astro';
-import { authorSection } from '../lib/author.js';
+import { CONTRIBUTORS_URL, authorSection } from '../lib/author.js';
 import { coverageReport, percent, totals } from '../lib/coverage.js';
 import { renderedDocs } from '../lib/docs.js';
 import { sampleExports } from '../lib/exports.js';
@@ -600,7 +600,12 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
         <div class="container author">
           <p class="eyebrow">The author</p>
           <h2 id="author">{author.heading}</h2>
-          <div class="prose" set:html={author.html} />
+          <div class="prose">
+            <p>
+              <strong>{author.name}</strong> &amp; <a href={CONTRIBUTORS_URL}>contributors</a>
+            </p>
+            <Fragment set:html={author.html} />
+          </div>
           <ul class="author-links">
             <li>
               <a href={author.url}>{new URL(author.url).host}</a>

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * The landing page's "About the author" section and its Person structured data, from docs/author.md: YAML front
- * matter for the facts, Markdown for the biography.
+ * matter for the facts, Markdown for the text. The page puts the name line above the text, "NAME & contributors",
+ * with "contributors" linked to CONTRIBUTORS_URL.
  *
  * ```markdown
  * ---
@@ -10,7 +11,6 @@
  * jobTitle: …                         # optional
  * sameAs:                             # optional: profile pages (https only; anything else is left out)
  *   - https://github.com/florianchrometz
- * image: docs/media/author/portrait.webp   # optional: a repository image the site carries
  * ---
  * <!-- SPDX-License-Identifier: MIT -->
  *
@@ -23,6 +23,7 @@
  */
 import { parse } from 'yaml';
 
+import { REPOSITORY_URL } from '../site.js';
 import { excerpt, renderMarkdown } from './markdown.js';
 import { placeholdersIn } from './placeholders.js';
 import { isStrictBuild, readRepoFile } from './repo.js';
@@ -30,11 +31,12 @@ import type { Author } from './seo.js';
 
 export const AUTHOR_SOURCE = 'docs/author.md';
 
+/** The repository's contributors on GitHub, whom the author section's name line credits beside the author. */
+export const CONTRIBUTORS_URL = `${REPOSITORY_URL}/graphs/contributors`;
+
 export type AuthorSection = Author & {
   readonly heading: string;
   readonly html: string;
-  /** The image's repository path, when docs/author.md names one. */
-  readonly imagePath?: string | undefined;
   readonly placeholders: readonly string[];
 };
 
@@ -76,7 +78,6 @@ export function parseAuthor(text: string): AuthorSection {
     url,
     sameAs,
     jobTitle: stringField(data, 'jobTitle'),
-    imagePath: stringField(data, 'image'),
     description: rendered.lead === undefined ? undefined : excerpt(rendered.lead, 300),
     heading: rendered.title ?? 'About the author',
     html: rendered.html,

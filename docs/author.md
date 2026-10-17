@@ -9,30 +9,19 @@ jobTitle: 'Google Cloud Solution Architect' # Person.jobTitle, optional: delete 
 sameAs: # Person.sameAs, and the links under the section: profile pages, https only; delete a line to drop it
   - 'https://www.linkedin.com/in/florian-chrometz/'
   - 'https://github.com/florianchrometz'
-# The portrait: a square photo of at least 400 x 400 pixels in WebP, at the path below; uncomment the line
-# once the file is there. Person.image and the section do not show it yet: website/src/lib/author.ts reads
-# the path, and the landing page does not use it so far.
-# image: docs/media/author/portrait.webp
 ---
 <!-- SPDX-License-Identifier: MIT -->
 
 # About the author
 
 <!--
-The bio: one paragraph of 60 to 120 words, in the third person, for the Google Cloud community: what Florian
-does, his work with Google Cloud, what he writes or speaks about, and where to find him. Its first 300
-characters become the description in search results (Person.description). Name no programme membership and
-nothing that suggests Google's endorsement (AGENTS.md, "Non-affiliation, brand and legal"). This comment does
-not appear on the site.
+The landing page shows the name line "Florian Chrometz & contributors" above this text, "contributors"
+linked to the repository's contributors on GitHub. The first paragraph is also the Person's description in
+search results (its first 300 characters, Person.description); the last is the long form of the
+non-affiliation statement, which the website's check requires in this section. Name no programme membership
+and nothing that suggests Google's endorsement (AGENTS.md, "Non-affiliation, brand and legal"). This comment
+does not appear on the site.
 -->
-
-<!-- A draft, for the maintainer's approval; this comment does not appear on the site. -->
-
-Florian Chrometz is a Google Cloud solution architect and developer. By day he designs and runs platforms on
-Google Cloud and Firebase, with serverless services at the core; by night he builds and publishes apps in
-Swift and JavaScript. He holds the Google Cloud Professional Cloud Architect certification. gcportrait grew
-out of that daily work: the wish to see an organisation's real resources and their relations as a clear
-architecture diagram, without drawing it by hand. More about Florian is on his personal website and on GitHub.
 
 Florian Chrometz builds and maintains gcportrait, which draws a Google Cloud environment as it actually is:
 every box a real asset from Cloud Asset Inventory, every arrow a real reference. Feedback, bug reports and
