@@ -12,7 +12,9 @@ export {
   OVERLOAD_PER_CORE,
   PAUSE_MS,
   anotherBatchFits,
+  cutNote,
   measureBatches,
+  measureRuns,
   noteSkipped,
   onCi,
   overloadReason,
@@ -22,6 +24,8 @@ export {
   type BudgetPlan,
   type MissedLimit,
   type OverloadContext,
+  type Runs,
+  type TimedRun,
 } from './budget.js';
 export { CI_PROPERTY_SEED, propertyRuns, propertySeed } from './seed.js';
 export {

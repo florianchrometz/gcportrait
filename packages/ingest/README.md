@@ -246,9 +246,11 @@ message to the `done` reply arriving on the main thread, so it includes reading,
 normalisation, the project index and the structured clone of the result back. The worker runs a warm-up
 job first; a run over the limit is measured again after a 250 ms pause, at most five runs and only while
 another fits in 95 % of the test's timeout, and the best run counts (`measureBatches` of
-`@gcportrait/model/testing`, the rule every package that times its work applies). On a desktop machine with
-little else running a run takes about 1 s; with the machine's cores busy several times over it takes 1.3 to
-2 s, which is why the strict check runs alone (below).
+`@gcportrait/model/testing`, the rule every package that times its work applies); a batch stops its runs at
+that 95 % and one cut short there counts as a miss (`measureRuns`), though a batch here is one run, which
+always runs, so `measureBatches` alone decides whether another fits. On a desktop machine with little else
+running a run takes about 1 s; with the machine's cores busy several times over it takes 1.3 to 2 s, which is
+why the strict check runs alone (below).
 
 In-process the input takes about 500 ms to ingest (JSON.parse about 240 ms, the project index about 80 ms,
 normalisation through `AssetSchema` about 45 ms); posting the 50 000-asset result back to the page (structured

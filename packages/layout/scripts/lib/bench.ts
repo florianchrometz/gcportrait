@@ -13,15 +13,15 @@
  *   between each, its progress messages, and the clone of the Layout back. The worker measures with its memo
  *   off, so every run lays out; its clock gives the layout's own time (`report.timings.total`) as well.
  * - **Medians** of `runs` (10) after `warmUp` (3) runs.
- * - **A busy machine.** The budget tests measure a case again while it is over its limit and skip a missed
- *   2 × ceiling on an overloaded machine, never on CI and never under `test:budget`, by the rule every
- *   package that times its work applies (`measureBatches` and `skipIfOverloaded` of
- *   `@gcportrait/model/testing`).
+ * - **A busy machine.** The budget tests measure a case again while it is over its limit, stop a batch at the
+ *   deadline it is handed and count one cut short as a miss, and skip a missed 2 × ceiling on an overloaded
+ *   machine, never on CI and never under `test:budget`, by the rule every package that times its work
+ *   applies (`measureBatches`, `measureRuns` and `skipIfOverloaded` of `@gcportrait/model/testing`).
  */
 import { cpus, loadavg } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import type { DetailLevel, LensId, Scene } from '@gcportrait/model';
-import { BATCHES, type BudgetPlan } from '@gcportrait/model/testing';
+import { BATCHES, measureRuns, type BudgetPlan } from '@gcportrait/model/testing';
 import { layoutScene, type Layout, type StageTimings } from '../../src/index.js';
 import type { NodeLayoutWorker } from './node-worker.js';
 import type { Fixture } from './scenes.js';
@@ -127,8 +127,8 @@ export interface WorkerFigures extends CaseShape {
 /**
  * Lays a Scene out `runs` times through the worker (after `warmUp` runs) and takes the medians. With a
  * `deadline` (a `performance.now()` time, as `measureBatches` hands it), no layout starts after the first
- * that would end past it if it took as long as the longest one so far: the batch then stops short (`cut`), so
- * that a budget test reports its figures before its timeout fires.
+ * that would end past it if it took as long as the longest one so far (`measureRuns`): the batch then stops
+ * short (`cut`), so that a budget test reports its figures before its timeout fires.
  */
 export async function measureInWorker(
   worker: NodeLayoutWorker,
@@ -137,32 +137,22 @@ export async function measureInWorker(
   warmUp = WARM_UP,
   deadline = Number.POSITIVE_INFINITY,
 ): Promise<WorkerFigures> {
-  if (runs < 1) throw new Error('no runs');
-  const warm: { trip: number; own: number }[] = [];
-  const measured: { trip: number; own: number }[] = [];
-  let last: Layout | undefined;
-  let longest = 0;
-  let cut = false;
-  for (let i = 0; i < warmUp + runs; i += 1) {
-    if (i > 0 && performance.now() + longest > deadline) {
-      cut = true;
-      break;
-    }
-    const started = performance.now();
-    const { layout } = await worker.client.layout(scene);
-    const trip = performance.now() - started;
-    longest = Math.max(longest, trip);
-    (i < warmUp ? warm : measured).push({ trip, own: layout.report.timings?.total ?? Number.NaN });
-    last = layout;
-  }
-  if (last === undefined) throw new Error('no runs');
-  const counted = measured.length > 0 ? measured : warm;
+  const made = await measureRuns(
+    () =>
+      worker.client.layout(scene).then(({ layout }) => ({
+        shape: shapeOf(layout),
+        own: layout.report.timings?.total ?? Number.NaN,
+      })),
+    runs,
+    warmUp,
+    deadline,
+  );
   return {
-    ...shapeOf(last),
-    roundTrip: median(counted.map(({ trip }) => trip)),
-    layout: median(counted.map(({ own }) => own)),
-    runs: measured.map(({ trip }) => trip),
-    cut,
+    ...made.last.shape,
+    roundTrip: median(made.counted.map(({ ms }) => ms)),
+    layout: median(made.counted.map(({ value }) => value.own)),
+    runs: made.runs.map(({ ms }) => ms),
+    cut: made.cut,
   };
 }
 
@@ -170,23 +160,39 @@ export interface InProcessFigures extends CaseShape {
   /** Median stage timings of `layoutScene` on this thread. */
   readonly timings: StageTimings;
   readonly totals: readonly number[];
+  /**
+   * The batch stopped at its deadline before every run was laid out: the medians are those of the runs that
+   * were (`totals`), or of the warm-up runs when none was.
+   */
+  readonly cut: boolean;
 }
 
-/** Lays a Scene out `runs` times on this thread (after `warmUp` runs) and takes the median stage timings. */
-export function measureInProcess(scene: Scene, runs = RUNS, warmUp = WARM_UP): InProcessFigures {
+/**
+ * Lays a Scene out `runs` times on this thread (after `warmUp` runs) and takes the median stage timings,
+ * stopping at a `deadline` as `measureInWorker` does (`measureRuns`).
+ */
+export async function measureInProcess(
+  scene: Scene,
+  runs = RUNS,
+  warmUp = WARM_UP,
+  deadline = Number.POSITIVE_INFINITY,
+): Promise<InProcessFigures> {
   const clock = (): number => performance.now();
-  for (let i = 0; i < warmUp; i += 1) layoutScene(scene, { clock });
-  const timings: StageTimings[] = [];
-  let last: Layout | undefined;
-  for (let i = 0; i < runs; i += 1) {
-    last = layoutScene(scene, { clock });
-    if (last.report.timings === undefined) throw new Error('no timings');
-    timings.push(last.report.timings);
-  }
-  if (last === undefined) throw new Error('no runs');
-  const of = (stage: keyof StageTimings): number => median(timings.map((t) => t[stage]));
+  const made = await measureRuns(
+    () => {
+      const layout = layoutScene(scene, { clock });
+      const { timings } = layout.report;
+      if (timings === undefined) throw new Error('no timings');
+      return { shape: shapeOf(layout), timings };
+    },
+    runs,
+    warmUp,
+    deadline,
+  );
+  const of = (stage: keyof StageTimings): number =>
+    median(made.counted.map(({ value }) => value.timings[stage]));
   return {
-    ...shapeOf(last),
+    ...made.last.shape,
     timings: {
       normalise: of('normalise'),
       size: of('size'),
@@ -194,7 +200,8 @@ export function measureInProcess(scene: Scene, runs = RUNS, warmUp = WARM_UP): I
       route: of('route'),
       total: of('total'),
     },
-    totals: timings.map((t) => t.total),
+    totals: made.runs.map(({ value }) => value.timings.total),
+    cut: made.cut,
   };
 }
 

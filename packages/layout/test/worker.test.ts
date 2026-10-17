@@ -11,9 +11,9 @@
  *   `test:budget` (GCPORTRAIT_LAYOUT_BUDGET=strict) the budget itself (scripts/lib/bench.ts). A case over its
  *   limit is measured again, up to `BATCHES` times after a pause while another batch fits in the test's
  *   timeout, and its best batch counts (`measureBatches`); a batch that would run past 95 % of the timeout
- *   (slower than the one before it, or a first batch that slow) stops there (`measureInWorker`'s deadline)
- *   and counts as a miss, so that an L case on a machine getting busier reports its figures, and is skipped or
- *   fails by the rule below, instead of timing out. Under a local `pnpm test` a case still
+ *   (slower than the one before it, or a first batch that slow) stops there (`measureInWorker`'s deadline,
+ *   `measureRuns`) and counts as a miss, so that an L case on a machine getting busier reports its figures,
+ *   and is skipped or fails by the rule below, instead of timing out. Under a local `pnpm test` a case still
  *   over its ceiling while the machine's load average is above 1.5 per core is skipped with the load and the
  *   figures as its reason (`skipIfOverloaded`), never on CI (where this ceiling is the budget check that
  *   blocks) and never under `test:budget` (the rule of `@gcportrait/model/testing`, the same in every
@@ -27,7 +27,7 @@
  *   `pnpm test`), each a memo miss: the worker must not accumulate (growth under 16 MiB).
  */
 import { performance } from 'node:perf_hooks';
-import { measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
+import { cutNote, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createLayoutClient, createLayoutWorkerHandler, type LayoutResult } from '../src/index.js';
 import {
@@ -83,9 +83,7 @@ describe('budgets through a worker', () => {
         (figures) => figures.roundTrip,
         { plan: PLAN, limit, timeoutMs: task.timeout, laterWarmUp: 1 },
       );
-      const short = best.cut
-        ? `; the batch stopped at the deadline after ${String(best.runs.length)} of ${String(PLAN.runs)} runs`
-        : '';
+      const short = cutNote({ cut: best.cut, made: best.runs.length, planned: PLAN.runs });
       console.log(
         `worker ${fixture} ${lens} ${detail}: ${String(best.rects)} rects, ${String(best.edges)} edges (${best.mode}, ${String(best.passes)} pass(es)); ` +
           `median round trip ${ms(best.roundTrip)}, layout in the worker ${ms(best.layout)} · budget ${String(BUDGET_MS[fixture])} ms, asserted < ${String(limit)} ms (${STRICT ? 'strict' : '2 × budget'})` +
@@ -96,9 +94,9 @@ describe('budgets through a worker', () => {
       if (INSTRUMENTED) return;
       const figures = `median round trip ${ms(best.roundTrip)}${short}`;
       skipIfOverloaded({
-        // Only a whole batch passes a case: one cut short at the deadline is a miss whatever its runs read.
-        value: best.cut ? Number.POSITIVE_INFINITY : best.roundTrip,
+        value: best.roundTrip,
         limit,
+        cut: best.cut,
         strict: STRICT,
         what: `worker ${fixture} ${lens} ${detail} over its ${String(limit)} ms ceiling`,
         figures,

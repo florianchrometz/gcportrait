@@ -15,13 +15,15 @@
  * ceiling of 2 × the budget, as every budget does there, and prints the figures (`--silent=false`). Both
  * measure by the rule of `@gcportrait/model/testing` that every package timing its work applies: a run over
  * the limit is measured again after a pause, at most `BATCHES` runs and only while another fits in the test's
- * timeout, and the best run counts (`measureBatches`); under a local `pnpm test`, never on CI (where the
+ * timeout, and the best run counts (`measureBatches`); a batch stops its runs at 95 % of the timeout and one
+ * cut short there counts as a miss (`measureRuns`; a batch of this plan is one run, which always runs, so
+ * here `measureBatches` alone decides whether another fits); under a local `pnpm test`, never on CI (where the
  * ceiling is the check that blocks) and never strictly, a best run still over the ceiling while the machine's
  * load average is above 1.5 per core is skipped with the load and the figures as its reason
  * (`skipIfOverloaded`).
  */
 import { ProjectIndexSchema, SnapshotSchema } from '@gcportrait/model';
-import { BATCHES, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
+import { BATCHES, cutNote, measureBatches, measureRuns, skipIfOverloaded } from '@gcportrait/model/testing';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
@@ -88,11 +90,55 @@ class IngestWorker {
   }
 }
 
+/** What `measureIngest` measured. */
+interface IngestFigures {
+  /** The fastest counted run. */
+  readonly ms: number;
+  /** The last run's result. */
+  readonly result: IngestResult;
+  /** The timed runs made. */
+  readonly runs: number;
+  /**
+   * The batch stopped at its deadline before every run was made (`measureRuns`): the figures are those of the
+   * runs that were, or of the warm-up runs when none was.
+   */
+  readonly cut: boolean;
+}
+
 describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
   let worker: IngestWorker;
   let blob: Blob;
   let size = 0;
   let bootMs = 0;
+  let jobs = 0;
+
+  /**
+   * Ingests `input` `runs` times through the worker after `warmUp` runs; with a `deadline` (a
+   * `performance.now()` time, as `measureBatches` hands it), no run starts after the first that would end
+   * past it if it took as long as the longest so far (`measureRuns`).
+   */
+  async function measureIngest(
+    input: Blob | string,
+    runs: number,
+    warmUp: number,
+    deadline?: number,
+  ): Promise<IngestFigures> {
+    const made = await measureRuns(
+      () => {
+        jobs += 1;
+        return worker.run(`run-${String(jobs)}`, input);
+      },
+      runs,
+      warmUp,
+      deadline,
+    );
+    return {
+      ms: Math.min(...made.counted.map(({ ms }) => ms)),
+      result: made.last,
+      runs: made.runs.length,
+      cut: made.cut,
+    };
+  }
 
   beforeAll(async () => {
     const text = syntheticExport(ASSETS);
@@ -112,33 +158,23 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
     `parses it in under ${String(LIMIT_MS)} ms (${STRICT ? 'strict budget' : '2 × budget'})`,
     { timeout: 120_000 },
     async ({ skip, task }) => {
-      let jobs = 0;
       const {
-        best: { ms: best, result },
+        best: { ms: best, result, runs, cut },
         medians,
         outOfTime,
       } = await measureBatches(
-        async (runs) => {
-          const timings: number[] = [];
-          let last: IngestResult | undefined;
-          for (let run = 0; run < runs; run += 1) {
-            jobs += 1;
-            const started = performance.now();
-            last = await worker.run(`run-${String(jobs)}`, blob);
-            timings.push(performance.now() - started);
-          }
-          if (last === undefined) throw new Error('no result');
-          return { ms: Math.min(...timings), result: last };
-        },
+        (planned, warmUp, deadline) => measureIngest(blob, planned, warmUp, deadline),
         (figures) => figures.ms,
         { plan: PLAN, limit: LIMIT_MS, timeoutMs: task.timeout, laterWarmUp: 0 },
       );
+      const short = cutNote({ cut, made: runs, planned: PLAN.runs });
       console.log(
         [
           `ingest budget: ${String(ASSETS)} assets, ${(size / 2 ** 20).toFixed(1)} MiB (${(size / ASSETS).toFixed(0)} B per line)`,
           `worker start-up incl. tsx and a 20-line warm-up job: ${bootMs.toFixed(0)} ms`,
           `runs: ${medians.map((ms) => `${ms.toFixed(0)} ms`).join(', ')}; best ${best.toFixed(0)} ms (budget ${String(BUDGET_MS)} ms; asserted < ${String(LIMIT_MS)} ms, ${STRICT ? 'strict' : 'regression ceiling, set GCPORTRAIT_INGEST_BUDGET=strict for the budget'})` +
-            (outOfTime ? ' · no further run fits in the timeout' : ''),
+            (outOfTime ? ' · no further run fits in the timeout' : '') +
+            short,
           `throughput (best run): ${(size / 2 ** 20 / (best / 1000)).toFixed(0)} MiB/s`,
         ].join('\n'),
       );
@@ -156,15 +192,29 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
         inferred: {},
       });
       expect(SnapshotSchema.safeParse(result.snapshot).success).toBe(true);
+      const figures = `best run ${best.toFixed(0)} ms of ${medians.map((ms) => ms.toFixed(0)).join(', ')} ms${short}`;
       skipIfOverloaded({
         value: best,
         limit: LIMIT_MS,
+        cut,
         strict: STRICT,
         what: `ingest of ${String(ASSETS)} assets over its ${String(LIMIT_MS)} ms ceiling`,
-        figures: `best run ${best.toFixed(0)} ms of ${medians.map((ms) => ms.toFixed(0)).join(', ')} ms`,
+        figures,
         skip,
       });
+      expect(cut, `no whole batch within the test's timeout (${figures})`).toBe(false);
       expect(best).toBeLessThan(LIMIT_MS);
     },
   );
+
+  it('stops a batch at its deadline after the first run, and says it was cut short', async () => {
+    const small = syntheticExport(20, 7);
+    const whole = await measureIngest(small, 2, 1, performance.now() + 60_000);
+    expect(whole).toMatchObject({ runs: 2, cut: false });
+    // A deadline already past: the first run (a warm-up) is made, and no other; its time is the figure.
+    const cut = await measureIngest(small, 2, 1, performance.now());
+    expect(cut).toMatchObject({ runs: 0, cut: true });
+    expect(cut.ms).toBeGreaterThan(0);
+    expect(cut.result.snapshot.stats.count).toBe(whole.result.snapshot.stats.count);
+  });
 });

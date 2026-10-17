@@ -6,8 +6,9 @@
  * - **Measured again while over.** A case over its limit is measured again after a `PAUSE_MS` pause, at most
  *   `plan.batches` times and only while another batch fits in the test's timeout, and its best batch counts
  *   (`measureBatches`): under `pnpm test` a budget test starts while every other test file runs and competes
- *   with them for the cores. A batch that would run past the deadline it is handed (`BATCH_TIMEOUT_SHARE` of
- *   the timeout) may stop its runs there, so that its test reports a figure before it times out.
+ *   with them for the cores. A batch stops its runs at the deadline it is handed (`BATCH_TIMEOUT_SHARE` of
+ *   the timeout; `measureRuns`), so that its test reports a figure before it times out, and a batch cut short
+ *   there is a miss (`MissedLimit.cut`).
  * - **Skipped on an overloaded machine, never on CI.** Under a local `pnpm test`, a case still over its limit
  *   while the one-minute load average is above `OVERLOAD_PER_CORE` per core is skipped with the load and
  *   its figures as the reason (`overloadReason`, `skipIfOverloaded`): four times oversubscribed, work reads
@@ -96,9 +97,10 @@ export interface BatchOptions {
  * one that more batches would have failed.
  *
  * `deadline` is the `performance.now()` time at `BATCH_TIMEOUT_SHARE` of the test's timeout, the same for
- * every batch. A measurement of many runs may start no run past it: a batch that runs slower than the one
- * before it (the machine got busier), or a first batch that slow, then ends before the test times out, and
- * its figures say so, for the test to count the case as missed.
+ * every batch. A measurement makes its runs with `measureRuns`, which starts no run that would end past it: a
+ * batch that runs slower than the one before it (the machine got busier), or a first batch that slow, then
+ * ends before the test times out, and its figures say so (`Runs.cut`), for the test to count the case as
+ * missed.
  */
 export async function measureBatches<F>(
   measure: (runs: number, warmUp: number, deadline: number) => F | Promise<F>,
@@ -134,6 +136,81 @@ export async function measureBatches<F>(
   }
   if (best === undefined) throw new Error('a budget plan needs at least one batch');
   return { best: best.figures, medians, outOfTime };
+}
+
+/** One run of a batch (`measureRuns`): what it returned, and how long it took on the wall clock. */
+export interface TimedRun<R> {
+  readonly ms: number;
+  readonly value: R;
+}
+
+/** What `measureRuns` made of a batch. */
+export interface Runs<R> {
+  /** The warm-up runs made, in order. */
+  readonly warmUp: readonly TimedRun<R>[];
+  /** The timed runs made after them, in order: fewer than planned when the batch was `cut`. */
+  readonly runs: readonly TimedRun<R>[];
+  /**
+   * The runs the batch's figures come from: the timed runs, or the warm-up runs when the deadline left no
+   * timed run. Never empty.
+   */
+  readonly counted: readonly TimedRun<R>[];
+  /** The value of the last run made. */
+  readonly last: R;
+  /** The batch stopped at its deadline before every run was made. */
+  readonly cut: boolean;
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return (
+    typeof value === 'object' && value !== null && typeof (value as { then?: unknown }).then === 'function'
+  );
+}
+
+/**
+ * Makes one batch of a budget case: `warmUp` runs of `run`, then `runs` timed ones, each timed on the wall
+ * clock. With a `deadline` (a `performance.now()` time, as `measureBatches` hands it), no run but the first
+ * starts once it would end past the deadline if it took as long as the longest run so far: the batch then
+ * stops short (`cut`), so that its test reports its figures before its timeout fires, and counts the case as
+ * missed. A run that returns a promise is awaited; runs that do not follow each other without a yield.
+ * Every run's value is kept, so a run returns only what its figures need.
+ */
+export async function measureRuns<R>(
+  run: () => R | Promise<R>,
+  runs: number,
+  warmUp: number,
+  deadline = Number.POSITIVE_INFINITY,
+): Promise<Runs<R>> {
+  if (runs < 1) throw new Error('a batch needs at least one run');
+  const { performance } = host();
+  const warm: TimedRun<R>[] = [];
+  const timed: TimedRun<R>[] = [];
+  let longest = 0;
+  let cut = false;
+  for (let index = 0; index < warmUp + runs; index += 1) {
+    if (index > 0 && performance.now() + longest > deadline) {
+      cut = true;
+      break;
+    }
+    const started = performance.now();
+    const pending = run();
+    const value = isPromiseLike(pending) ? await pending : pending;
+    const ms = performance.now() - started;
+    longest = Math.max(longest, ms);
+    (index < warmUp ? warm : timed).push({ ms, value });
+  }
+  const counted = timed.length > 0 ? timed : warm;
+  const last = counted[counted.length - 1];
+  if (last === undefined) throw new Error('a batch needs at least one run');
+  return { warmUp: warm, runs: timed, counted, last: last.value, cut };
+}
+
+/**
+ * What a test adds to its figures when its batch stopped at the deadline (`Runs.cut`): `; the batch stopped
+ * at the deadline after 4 of 10 runs`, or nothing.
+ */
+export function cutNote({ cut, made, planned }: { cut: boolean; made: number; planned: number }): string {
+  return cut ? `; the batch stopped at the deadline after ${String(made)} of ${String(planned)} runs` : '';
 }
 
 /**
@@ -192,6 +269,11 @@ export interface MissedLimit {
   /** The figure, in the limit's unit. */
   readonly value: number;
   readonly limit: number;
+  /**
+   * The batch stopped at its deadline (`Runs.cut`): a miss whatever its figure reads, since only a whole
+   * batch passes a case.
+   */
+  readonly cut?: boolean;
   /** A strict budget run (`OverloadContext.strict`). */
   readonly strict: boolean;
   /** What missed which limit, for the `skipped:` line: `layout S overview auto over its 20 ms ceiling`. */
@@ -203,11 +285,20 @@ export interface MissedLimit {
 }
 
 /**
- * Skips the test when its figure is at or over the limit and `overloadReason` gives a reason, after a
- * `skipped:` line (`noteSkipped`); otherwise returns, and the test asserts the limit itself.
+ * Skips the test when its figure is at or over the limit, or its batch was cut short at the deadline, and
+ * `overloadReason` gives a reason, after a `skipped:` line (`noteSkipped`); otherwise returns, and the test
+ * asserts the limit itself (and, for a batch cut short, that it was not).
  */
-export function skipIfOverloaded({ value, limit, strict, what, figures, skip }: MissedLimit): void {
-  if (value < limit) return;
+export function skipIfOverloaded({
+  value,
+  limit,
+  cut = false,
+  strict,
+  what,
+  figures,
+  skip,
+}: MissedLimit): void {
+  if (value < limit && !cut) return;
   const reason = overloadReason({ strict });
   if (reason === undefined) return;
   const note = `${reason} (${figures})`;

@@ -751,10 +751,10 @@ budgets themselves (100 XL layouts). Both measure by the rule of `@gcportrait/mo
 `@gcportrait/ingest`, `@gcportrait/graph` and `@gcportrait/demo-data` time their work by too. A case over its
 limit is measured again after a 250 ms pause, at most 5 batches (`BATCHES`) and only while another batch fits
 in 95 % of the test's timeout (`measureBatches`: under heavy load five L batches outlast it, and a timed-out
-test shows no figure), and its best batch's median counts; every batch's median is printed. Through the
-worker, a batch that would run past that 95 % (slower than the one before it, the machine having got busier,
-or a first batch that slow) stops there (`measureInWorker`'s deadline) and counts as a miss, so that the case
-still reports its figures and is skipped or fails as below instead of timing out. Under a local
+test shows no figure), and its best batch's median counts; every batch's median is printed. In-process and
+through the worker alike, a batch that would run past that 95 % (slower than the one before it, the machine
+having got busier, or a first batch that slow) stops there (`measureRuns`) and counts as a miss, so that the
+case still reports its figures and is skipped or fails as below instead of timing out. Under a local
 `pnpm test` a case still over its ceiling after the last batch is skipped, with its figures and the load as
 the reason (and a `skipped:` line on standard error names the case, since the reporter does not;
 `skipIfOverloaded`), while the machine's one-minute load average is above 1.5 per core (`OVERLOAD_PER_CORE`,

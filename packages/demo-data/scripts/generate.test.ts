@@ -4,7 +4,14 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { BATCHES, assertSyntheticOnly, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
+import {
+  BATCHES,
+  assertSyntheticOnly,
+  cutNote,
+  measureBatches,
+  measureRuns,
+  skipIfOverloaded,
+} from '@gcportrait/model/testing';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   DEMO_SIZES,
@@ -91,8 +98,10 @@ describe('performance', () => {
    * Wall-clock limits, measured by the rule of `@gcportrait/model/testing` that every package timing its
    * work applies: a run over its limit is measured again after a pause, at most `BATCHES` runs and only while
    * another fits in the test's timeout, and the best run counts (`measureBatches`; other processes taking the
-   * machine's cores make XL take four times its quiet 1.2 s to generate and 4 s to sweep). Under a local
-   * `pnpm test`, never on CI (where the limit is the check that blocks), a best run still over its limit
+   * machine's cores make XL take four times its quiet 1.2 s to generate and 4 s to sweep); a batch stops its
+   * runs at 95 % of the timeout and one cut short there counts as a miss (`measureRuns`; a batch of this plan
+   * is one run, which always runs, so here `measureBatches` alone decides whether another fits). Under a
+   * local `pnpm test`, never on CI (where the limit is the check that blocks), a best run still over its limit
    * while the machine's load average is above 1.5 per core is skipped with the load and the figures as its
    * reason (`skipIfOverloaded`).
    */
@@ -103,18 +112,28 @@ describe('performance', () => {
   // it itself when it runs alone.
   let xl: DemoOrganization | undefined;
 
-  /** Times `work` `runs` times; the fastest run and its result. */
-  function timed<T>(work: () => T): (runs: number) => { ms: number; value: T } {
-    return (runs) => {
-      let fastest: { ms: number; value: T } | undefined;
-      for (let run = 0; run < Math.max(1, runs); run += 1) {
-        const start = performance.now();
-        const value = work();
-        const ms = performance.now() - start;
-        if (fastest === undefined || ms < fastest.ms) fastest = { ms, value };
-      }
-      if (fastest === undefined) throw new Error('no run');
-      return fastest;
+  /** What `timed` measured: the fastest counted run and its result, the timed runs made, and a cut. */
+  interface Timed<T> {
+    readonly ms: number;
+    readonly value: T;
+    readonly runs: number;
+    /**
+     * The batch stopped at its deadline before every run was made (`measureRuns`): the fastest of the runs
+     * that were, or of the warm-up runs when none was.
+     */
+    readonly cut: boolean;
+  }
+
+  /**
+   * Times `work` `runs` times after `warmUp` runs; with a `deadline` (a `performance.now()` time, as
+   * `measureBatches` hands it), no run starts after the first that would end past it if it took as long as
+   * the longest so far (`measureRuns`).
+   */
+  function timed<T>(work: () => T): (runs: number, warmUp: number, deadline?: number) => Promise<Timed<T>> {
+    return async (runs, warmUp, deadline) => {
+      const made = await measureRuns(work, runs, warmUp, deadline);
+      const fastest = made.counted.reduce((best, run) => (run.ms < best.ms ? run : best));
+      return { ms: fastest.ms, value: fastest.value, runs: made.runs.length, cut: made.cut };
     };
   }
 
@@ -131,14 +150,17 @@ describe('performance', () => {
     xl = best.value;
     const stats = JSON.parse(committed('stats.json')) as Stats;
     expect(computeStats(best.value.assets).count).toBe(stats.sizes['XL']?.count);
+    const figures = `best run ${best.ms.toFixed(0)} ms of ${runs(medians)} ms${cutNote({ cut: best.cut, made: best.runs, planned: PLAN.runs })}`;
     skipIfOverloaded({
       value: best.ms,
       limit: GENERATE_MS,
+      cut: best.cut,
       strict: false,
       what: `the XL generation over its ${String(GENERATE_MS)} ms limit`,
-      figures: `best run ${best.ms.toFixed(0)} ms of ${runs(medians)} ms`,
+      figures,
       skip,
     });
+    expect(best.cut, `no whole batch within the test's timeout (${figures})`).toBe(false);
     expect(best.ms).toBeLessThan(GENERATE_MS);
   });
 
@@ -164,17 +186,31 @@ describe('performance', () => {
         },
       );
       // The guard masks e-mail addresses in one pass over the text, not one copy of it per address.
+      const figures = `best run ${best.ms.toFixed(0)} ms of ${runs(medians)} ms${cutNote({ cut: best.cut, made: best.runs, planned: PLAN.runs })}`;
       skipIfOverloaded({
         value: best.ms,
         limit: SWEEP_MS,
+        cut: best.cut,
         strict: false,
         what: `the XL sweep over its ${String(SWEEP_MS)} ms limit`,
-        figures: `best run ${best.ms.toFixed(0)} ms of ${runs(medians)} ms`,
+        figures,
         skip,
       });
+      expect(best.cut, `no whole batch within the test's timeout (${figures})`).toBe(false);
       expect(best.ms).toBeLessThan(SWEEP_MS);
     },
   );
+
+  it('stops a batch at its deadline after the first run, and says it was cut short', async () => {
+    const measure = timed(() => generateOrganization({ size: 'S' }));
+    const whole = await measure(3, 1, performance.now() + 60_000);
+    expect(whole).toMatchObject({ runs: 3, cut: false });
+    // A deadline already past: the first run (a warm-up) is made, and no other; its time is the figure.
+    const cut = await measure(3, 1, performance.now());
+    expect(cut).toMatchObject({ runs: 0, cut: true });
+    expect(cut.ms).toBeGreaterThan(0);
+    expect(cut.value.assets).toHaveLength(whole.value.assets.length);
+  });
 });
 
 describe('README', () => {

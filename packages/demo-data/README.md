@@ -434,6 +434,7 @@ Fixture tests (`scripts/**`): committed fixtures and golden statistics of all fo
 byte, XL generated in under five seconds and swept by the synthetic-only guard in under twenty, the README's
 numbers and checklist, and the `generate` command. The two XL limits are measured by the rule of
 `@gcportrait/model/testing` that every package timing its work applies: a run over its limit is measured
-again, at most five runs, and the best counts; under a local `pnpm test` a best run still over its limit while
-the machine's one-minute load average is above 1.5 per core is skipped with the load as its reason, and on CI
-(`CI` set) it never is.
+again, at most five runs, and the best counts; a batch stops its runs at 95 % of the test's timeout and one
+cut short there counts as a miss (`measureRuns`), though a batch here is one run, which always runs; under a
+local `pnpm test` a best run still over its limit while the machine's one-minute load average is above 1.5 per
+core is skipped with the load as its reason, and on CI (`CI` set) it never is.
