@@ -2,7 +2,8 @@
 /**
  * Layout invariants (stage 6; skill gcp-diagram-layout §5), checked from the Scene
  * and the Layout alone, independently of how the layout was computed. Used by the tests (unit, property and
- * golden) and by the layout worker in development builds. Edge invariants (no segment through a card or a
+ * golden) and by the render library; `pnpm render --strict` fails on reported violations. The app's workers
+ * do not call these checks. Edge invariants (no segment through a card or a
  * header, ports on borders) are checked once edges are routed.
  *
  * 1. No two solid rects (cards, chips, empty zones) overlap, and no two siblings overlap.

@@ -69,7 +69,8 @@ The [gcp-asset-catalog skill](../.agents/skills/gcp-asset-catalog/SKILL.md) and
   (fast-check).
 - **Deterministic.** The same Scene gives a byte-identical Layout, report included (warnings sorted in
   code-point order), whatever order its children or edges came in. The invariants of the gcp-diagram-layout
-  skill (§5) are asserted in development and in tests, with golden layouts per demo fixture and lens.
+  skill (§5) are held by tests, with golden layouts per demo fixture and lens. The render library reports
+  structural violations, and `pnpm render --strict` fails on them; the app's workers do not run these checks.
 - **Packing** keeps sibling order, a card grid above full rows of zones, wider than tall, by the smallest
   frame, held to the packing criterion (gcp-diagram-layout skill §4). Tidy grids read as a picture, and
   sibling order keeps a folder's projects in the order a reader expects.

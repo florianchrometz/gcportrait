@@ -167,7 +167,8 @@ property tests enforce full rows.
 - Fallback: when no gutter path exists (should not happen), A* over a coarse grid avoiding card rects, with
   a warning in dev and a counter in the layout report.
 
-Invariants (asserted in dev and tests):
+Invariants (held by tests; the render library also reports structural violations, and `pnpm render --strict`
+fails on them; the app's workers do not check them):
 1. No two cards overlap. 2. Every child rect lies inside its parent's padding. 3. No edge segment intersects a
 card rect or a zone header rect. 4. Every Scene node has a rect. 5. Running twice gives byte-identical output.
 6. All ports lie on their rect's border. 7. Bounding box is finite and ≥ the content.

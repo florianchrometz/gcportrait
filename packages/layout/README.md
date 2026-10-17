@@ -31,8 +31,12 @@ layout.edges['//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/
 //   points: [{ x, y }, …], elbowRadius: 6, fallback: false, bundle?: { id, end: 'source' | 'target', size } }
 layout.gutters; // the gutter reservations the rects were packed with (the router's widening included)
 layout.report; // { counts, routing, warnings (sorted), timings? }
-assertLayout(scene, layout); // throws LayoutInvariantError in development builds when an invariant breaks
+assertLayout(scene, layout); // throws LayoutInvariantError when a checked invariant breaks
 ```
+
+Tests check structural invariants and determinism. The render library reports structural violations, and
+`pnpm render --strict` exits with failure when it finds any. The app's workers do not run these checks, in
+development or production; calling `assertLayout` explicitly checks a layout in either mode.
 
 ## Public API
 
