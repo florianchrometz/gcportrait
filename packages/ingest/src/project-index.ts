@@ -174,18 +174,6 @@ export function summariseProjects(assets: Iterable<Asset>): ProjectSummary {
   return collector.summary();
 }
 
-/** The project id for a number (`123` or `projects/123`), if the index knows it. */
-export function lookupProjectId(index: ProjectIndex, number: string): string | undefined {
-  const key = number.replace(/^projects\//, '');
-  return Object.hasOwn(index.idByNumber, key) ? index.idByNumber[key] : undefined;
-}
-
-/** The project number for an id (`demo-net` or `projects/demo-net`), if the index knows it. */
-export function lookupProjectNumber(index: ProjectIndex, id: string): string | undefined {
-  const key = id.replace(/^projects\//, '');
-  return Object.hasOwn(index.numberById, key) ? index.numberById[key] : undefined;
-}
-
 function firstSegment(path: string): string {
   const slash = path.indexOf('/');
   return slash === -1 ? path : path.slice(0, slash);

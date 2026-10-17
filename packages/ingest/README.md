@@ -5,14 +5,14 @@
 Turns Cloud Asset Inventory data into a model `Snapshot` (the data flow in
 [docs/packages.md](../../docs/packages.md); the CAI facts in the cai-ingestion skill): a streaming
 NDJSON line reader, a normaliser from the CAI asset shape to the model `Asset`, project number ↔ id
-resolution, snapshot assembly with stats, and a worker protocol. It reads both CAI export files
-(`exportAssets`, one asset per line, snake_case envelope keys) and `assets.list` results (camelCase), as plain
-lines or inside the backend's `/api/assets/stream` frames, from files, `fetch` bodies, streams and strings.
+resolution, and snapshot assembly with stats. It reads both CAI export files (`exportAssets`, one asset per
+line, snake_case envelope keys) and `assets.list` results (camelCase), as plain lines or inside the backend's
+`/api/assets/stream` frames, from files, `fetch` bodies, streams and strings.
 
 The package is a pure core. It compiles without DOM or Node types, depends only on `@gcportrait/model`, has no
-side effects, never reads the clock or a random source itself, and runs the same in a Web Worker, in Node and
-in tests. The single exception is the worker handler's *defaults* for the snapshot id (`Date.now`,
-`crypto.getRandomValues`), which a caller can replace. `src/index.ts` is the only public surface.
+side effects, never reads the clock or a random source itself (the caller passes both), and runs the same in a
+Web Worker, in Node and in tests. The one platform API it uses is `TextDecoder`, to decode UTF-8.
+`src/index.ts` is the only public surface.
 
 ```ts
 import { ingest } from '@gcportrait/ingest';
@@ -26,18 +26,15 @@ const { snapshot, report } = await ingest([fileA, fileB], {
 if (snapshot.readTimeSource === 'estimated-max-update-time') showEstimatedReadTimeNotice(snapshot.readTime);
 ```
 
-In a worker (the app's way, so that the UI thread only renders):
+The app runs it in its workers, so that the UI thread only renders, each with its own protocol: the snapshot
+worker reads a dropped export with `ingest` (`frontend/src/snapshots/worker/handler.ts`), the data worker the
+demo organisations and the timeline's days, and the import worker feeds the chunks of a live pull or an
+export read to a session as the page receives them (`frontend/src/import/worker/handler.ts`):
 
 ```ts
-// ingest.worker.ts
-import { createIngestWorkerHandler } from '@gcportrait/ingest';
-const handle = createIngestWorkerHandler((message) => self.postMessage(message));
-self.onmessage = (event) => handle(event.data);
-
-// page
-import { postIngestJob, type IngestWorkerResponse } from '@gcportrait/ingest';
-worker.onmessage = ({ data }: MessageEvent<IngestWorkerResponse>) => { /* progress, done or error */ };
-await postIngestJob((message, transfer) => worker.postMessage(message, transfer), 'job-1', files, settings);
+const session = createIngestSession({ scope, source, clock: () => Date.now(), entropy: Math.random });
+for await (const chunk of response.body) session.push(chunk); // bytes or text, cut anywhere
+const { snapshot, report } = session.finish();
 ```
 
 ## API
@@ -45,26 +42,23 @@ await postIngestJob((message, transfer) => worker.postMessage(message, transfer)
 | Export | What |
 |---|---|
 | `ingest(input, options): Promise<IngestResult>` | Reads every source of `input` in order, as separate parts, and returns `{ snapshot, report }`. Rejects with an `IngestError` for invalid options or sources, an upstream `error` frame, or (with `strict`) the first malformed line. |
-| `createIngestSession(options): IngestSession` | The synchronous core that `ingest` and the worker drive: `push(chunk)`, `endPart()`, `finish()`. After `finish()` or any throw, every call throws (`closed`, or the original error). |
+| `createIngestSession(options): IngestSession` | The synchronous core that `ingest` drives, for a caller that receives its input chunk by chunk: `push(chunk)`, `endPart()`, `finish()`. After `finish()` or any throw, every call throws (`closed`, or the original error). |
 | `readLines(input, options?)` | The line reader on its own: an async generator of `{ part, line, text }` for every non-blank line. Bad lines go to `onProblem`, or reject. |
 | `normaliseAsset(raw): NormaliseResult` | One raw CAI asset → `{ ok: true, asset }` or `{ ok: false, message }`. |
 | `projectNumberOf(asset)` | The asset's project number: its first `projects/<number>` ancestor. |
 | `ulid(time, entropy)` | A canonical ULID from a time in milliseconds and an entropy source, as the snapshot's `id` is made. The app uses it to give an imported copy a new id. |
-| `lookupProjectId(index, number)`, `lookupProjectNumber(index, id)` | The two lookups on a model `ProjectIndex`; both accept the bare value or `projects/…`. |
-| `createIngestWorkerHandler(postMessage, environment?)` | The worker side of the protocol (below). `environment` overrides `clock` and `entropy`. |
-| `postIngestJob(post, job, input, settings)` | The page side: posts `start`, the chunks of every source with their part index, and `end` (or `cancel` when a source fails). |
-| `IngestError` | `code` (`invalid-options`, `invalid-source`, `malformed`, `upstream`, `unsupported-platform`, `closed`, `protocol`, `cancelled`), `problem` (for `malformed`), `upstream` (`status`, `code`, for `upstream`). |
+| `IngestError` | `code` (`invalid-options`, `invalid-source`, `malformed`, `upstream`, `unsupported-platform`, `closed`), `problem` (for `malformed`), `upstream` (`status`, `code`, for `upstream`). |
 | `DEFAULT_MAX_LINE_BYTES` | 64 MiB. |
 | `DEFAULT_PROGRESS_EVERY_BYTES` | 4 MiB. |
 | `MAX_REPORTED_PROBLEMS` | 20. |
 
 Types: `IngestOptions` (= `IngestSettings` + `clock`, `entropy`, `onEvent`), `IngestSettings` (the
-serialisable part a worker `start` message carries), `IngestResult`, `IngestReport`, `IngestEvent`,
+serialisable part, which a worker message can carry), `IngestResult`, `IngestReport`, `IngestEvent`,
 `ReadTimeSource`, `ReadTimeOrigin`, `UpstreamSummary`, `UnresolvedProjects`, `IngestProblem`,
-`IngestProblemCode`, `IngestInput`, `IngestSource`, `IngestChunk`, `TextLine`, the worker message unions
-`IngestWorkerRequest` and `IngestWorkerResponse`, and the structural stream types `ByteStream`,
-`ByteStreamReader`, `BlobLike`. The project index is the model's `ProjectIndex` (import it from
-`@gcportrait/model`); ingest declares no copy.
+`IngestProblemCode`, `IngestErrorCode`, `IngestInput`, `IngestSource`, `IngestChunk`, `TextLine`, and the
+structural stream types `ByteStream`, `ByteStreamReader`, `BlobLike`. The project index is the model's
+`ProjectIndex` (import it from `@gcportrait/model`, and read it through its two records); ingest declares no
+copy.
 
 ### Options
 
@@ -174,8 +168,7 @@ Everything the rule leaves unpaired is reported next to it in `report.unresolved
 | `referencedIds` | ids that only Compute self-links inside `data` refer to (`https://www.googleapis.com/compute/{v1,beta,alpha}/projects/<id>/…`): a Shared VPC host outside the scope, public image projects (`debian-cloud`), service producers' tenant projects (`…-tp`) |
 | `inferred` | number → id hints: a Compute asset named `…/projects/<id>/…` whose closest ancestor is `projects/<number>`, for numbers and ids the index lacks; one-to-one, first one wins; for display, never used for resolution |
 
-`projectNumberOf(asset)` gives each asset's number (its first `projects/<number>` ancestor);
-`lookupProjectId` and `lookupProjectNumber` resolve through the index.
+`projectNumberOf(asset)` gives each asset's number (its first `projects/<number>` ancestor).
 
 ## Snapshot assembly
 
@@ -206,26 +199,6 @@ The report also has `parts`, `lines`, `blankLines`, `assetLines`, `frameLines`, 
 seen), `projects` and `unresolvedProjects`. The whole `IngestResult` is plain data: it survives `postMessage`,
 `structuredClone` and JSON.
 
-## Worker protocol
-
-| Direction | Message | Meaning |
-|---|---|---|
-| page → worker | `{ type: 'start', job, settings }` | starts a job; `settings` is `IngestSettings` (no functions) |
-| page → worker | `{ type: 'chunk', job, part?, data }` | the next `Uint8Array` or string; `part` is the file index (default: current), never decreasing; a higher index ends the parts before it |
-| page → worker | `{ type: 'end', job, parts? }` | no more input; `parts` is the number of parts (files), so trailing empty files, which send no chunk, still count (default: up to the last part that sent a chunk) |
-| page → worker | `{ type: 'cancel', job }` | abandon the job; the worker drops it and answers `error` with code `cancelled` |
-| worker → page | `{ type: 'progress', job, event }` | an `IngestEvent` |
-| worker → page | `{ type: 'done', job, result }` | the `IngestResult` |
-| worker → page | `{ type: 'error', job, error }` | `{ code, message, problem?, upstream? }`; `code` is an `IngestErrorCode`, or `internal` for an unexpected exception |
-
-One handler runs any number of jobs at once, and answers every job it started with exactly one `done` or
-`error`. After that the job is gone; chunks, `end` or `cancel` still in flight for it are dropped silently.
-Malformed messages, unknown jobs, a repeated `start`, decreasing parts and an `end` announcing fewer parts
-than arrived are `protocol` errors. `postIngestJob` transfers (moves) chunks it read from Blobs and streams
-when they own their whole buffer, and copies caller-owned strings, arrays and iterables; it sends `end` with
-the part count, so the worker's report equals `ingest()`'s for the same input (empty files included). When a
-source fails to read, it posts `cancel` and rejects with the source's error.
-
 ## Limits
 
 | Limit | Value |
@@ -236,37 +209,35 @@ source fails to read, it posts `cancel` and rejects with the source's error.
 
 ## Performance
 
-`test/worker-budget.test.ts` measures the ingest budget: 50 000 assets parsed in a worker in under 1.5 s. The
-input is generated in the test (`test/synthetic-org.ts`) as an `exportAssets` file (snake_case envelope
-keys): one organisation, folders, 50 projects and a realistic mix of Compute instances and disks, GKE pods and
-services, firewalls, service accounts, buckets, BigQuery tables with schemas, Pub/Sub topics, Cloud Run
-services and KMS keys; 76.3 MiB, 1 599 bytes per line on average. The file is posted as a `Blob` through
-`postIngestJob` to a `worker_threads` worker running the package's handler; the clock runs from the first
-message to the `done` reply arriving on the main thread, so it includes reading, transfer, parsing,
-normalisation, the project index and the structured clone of the result back. The worker runs a warm-up
-job first; a run over the limit is measured again after a 250 ms pause, at most five runs and only while
-another fits in 95 % of the test's timeout, and the best run counts (`measureBatches` of
-`@gcportrait/model/testing`, the rule every package that times its work applies); a batch stops its runs at
-that 95 % and one cut short there counts as a miss (`measureRuns`), though a batch here is one run, which
-always runs, so `measureBatches` alone decides whether another fits. On a desktop machine with little else
-running a run takes about 1 s; with the machine's cores busy several times over it takes 1.3 to 2 s, which is
-why the strict check runs alone (below).
+`test/worker-budget.test.ts` measures the ingest budget (AGENTS.md, "Layout and drawing rules": XL ingest
+1.5 s) on the input it names: the demo organisation XL of `@gcportrait/demo-data` (the default seed, the
+demo's day), written as an `exportAssets` file (`toCaiNdjson(assets, 'export')`, snake_case envelope keys):
+51 242 assets in 370 projects, 77.6 MiB, 1 588 bytes per line on average. The file is posted as a `Blob` to a
+`worker_threads` worker (`test/ingest-worker.ts`) that reads it with `ingest()`, as the app's snapshot worker
+reads a dropped export; the clock runs from posting the Blob to the result arriving on the main thread, so it
+includes reading, parsing, normalisation, the project index and the structured clone of the result back. The
+worker runs a warm-up job first (the file's first 100 lines); a run over the limit is measured again after a
+250 ms pause, at most five runs and only while another fits in 95 % of the test's timeout, and the best run
+counts (`measureBatches` of `@gcportrait/model/testing`, the rule every package that times its work applies);
+a batch stops its runs at that 95 % and one cut short there counts as a miss (`measureRuns`), though a batch
+here is one run, which always runs, so `measureBatches` alone decides whether another fits. The budget
+describes a machine with little else running: with the machine's cores busy about twice over a run takes 2.5
+to 5 s, which is why the strict check runs alone (below).
 
-In-process the input takes about 500 ms to ingest (JSON.parse about 240 ms, the project index about 80 ms,
-normalisation through `AssetSchema` about 45 ms); posting the 50 000-asset result back to the page (structured
-clone) takes about 460 ms of the total. Reading the snake_case export style costs nothing extra: the
-normaliser takes about 42 ms (export keys) and 44 ms (`assets.list` keys) per 50 000 assets.
+In process, parsing the lines' JSON takes a third to a half of the ingest, and normalisation through
+`AssetSchema` and the project index each under a tenth; posting the result back to the page (structured clone)
+takes about four fifths as long as the ingest itself. Reading the snake_case export style costs nothing extra:
+the normaliser takes the same time for export keys and `assets.list` keys.
 
 A wall-clock budget only means something on a machine that is not busy with other work, so the strict
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
 unit job) the same measurement asserts a regression ceiling of 2 × 1.5 s instead, as every budget does there
-(AGENTS.md, "Quality gates, testing and CI"); a run on a CI runner takes 1.3 to 2.3 s in that parallel run.
-Under a local `pnpm test` a best run still over the ceiling while the machine's one-minute load average is
-above 1.5 per core is skipped, with the load and the figures as the reason and a `skipped:` line on standard
-error (`skipIfOverloaded`): four times oversubscribed, the figure measures the machine. On CI (`CI` set) the
-ceiling is the check that blocks, so it never skips, and neither does `test:budget`. Add `--silent=false` to
-print the figures there (Vitest ignores flags after a `--`).
+(AGENTS.md, "Quality gates, testing and CI"). Under a local `pnpm test` a best run still over the ceiling
+while the machine's one-minute load average is above 1.5 per core is skipped, with the load and the figures as
+the reason and a `skipped:` line on standard error (`skipIfOverloaded`): four times oversubscribed, the figure
+measures the machine. On CI (`CI` set) the ceiling is the check that blocks, so it never skips, and neither
+does `test:budget`. Add `--silent=false` to print the figures there (Vitest ignores flags after a `--`).
 
 ## Tests
 
@@ -291,11 +262,12 @@ pnpm --filter @gcportrait/ingest typecheck            # src/ without DOM or Node
   styles. Each is also read with a BOM, CRLF, blank lines and 1- and 4096-byte chunks; real Node and web
   sources (`Blob`, `blob.stream()`, a `fetch` Response body, `fs.createReadStream`, a text `Readable`); huge
   lines.
-- `test/synthetic-data.test.ts`: fixtures, generated data and test sources contain no real organisation data,
-  checked with the one guard of `@gcportrait/model/testing` (`findNonSyntheticData`: example domains,
-  the demo organisations 30000000001 to 30000000004, numbers below 100000000000, `demo-…` project ids, private
-  or documentation IPs).
-- `test/worker-budget.test.ts`: the budget above.
+- `test/synthetic-data.test.ts`: fixtures and test sources contain no real organisation data, checked with
+  the one guard of `@gcportrait/model/testing` (`findNonSyntheticData`: example domains, the demo
+  organisations 30000000001 to 30000000004, numbers below 100000000000, `demo-…` project ids, private or
+  documentation IPs). The demo organisation the budget reads passes the same guard in demo-data's own tests.
+- `test/worker-budget.test.ts`: the budget above, with its worker `test/ingest-worker.ts`.
 
 All fixtures are synthetic. The `test/` folder has its own tsconfig with Node types so they never leak into
-`src/`.
+`src/`, and it is the one place that may import `@gcportrait/demo-data`, a dev dependency for the budget's
+input (docs/packages.md §2; `eslint.config.js` holds the edge).

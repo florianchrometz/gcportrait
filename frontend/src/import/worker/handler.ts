@@ -108,7 +108,6 @@ function failureOf(error: unknown, job: Job | undefined): StreamFailure {
         ...(reason === undefined ? {} : { reason }),
       };
     }
-    if (error.code === 'cancelled') return { kind: 'cancelled', message: error.message };
     return { kind: 'invalid', message: error.message };
   }
   return { kind: 'internal', message: error instanceof Error ? error.message : String(error) };

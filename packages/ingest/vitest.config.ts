@@ -3,9 +3,9 @@ import { defineConfig } from 'vitest/config';
 
 /**
  * The `ingest` test project: pure unit tests next to the code (src/) and the Node-only tests (test/: fixture
- * files, the worker_threads harness and the 50 000-asset budget). Like the model package, it uses
- * defineConfig so that `pnpm --filter @gcportrait/ingest test -- --coverage` can enforce its thresholds;
- * the root run ignores the coverage block.
+ * files, the worker_threads harness and the budget on the demo organisation XL). Like the model package, it
+ * uses defineConfig so that `pnpm --filter @gcportrait/ingest test -- --coverage` can enforce its
+ * thresholds; the root run ignores the coverage block.
  */
 export default defineConfig({
   test: {

@@ -2,7 +2,7 @@
   "name": "@gcportrait/ingest",
   "version": "1.0.0",
   "private": true,
-  "description": "Streaming Cloud Asset Inventory ingestion for gcportrait: NDJSON line reader, normaliser, project index, snapshot assembly and a worker protocol.",
+  "description": "Streaming Cloud Asset Inventory ingestion for gcportrait: NDJSON line reader, normaliser, project index and snapshot assembly.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -22,6 +22,7 @@
     "@gcportrait/model": "workspace:*"
   },
   "devDependencies": {
+    "@gcportrait/demo-data": "workspace:*",
     "@types/node": "^22.20.5",
     "fast-check": "^4.10.2",
     "tsx": "^4.23.15"

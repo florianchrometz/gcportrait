@@ -2,8 +2,8 @@
 /**
  * What can go wrong while ingesting. Bad input lines are not errors: they become {@link IngestProblem}s in the
  * report and the rest of the input is still read. {@link IngestError} is thrown only for problems that stop
- * the whole job: invalid options, an unreadable source, an upstream error frame, a protocol misuse, or the
- * first bad line when `strict` is on.
+ * the whole job: invalid options, an unreadable source, an upstream error frame, a session used after it
+ * closed, or the first bad line when `strict` is on.
  */
 
 /** Why a line (or one asset inside a `page` frame) was skipped. */
@@ -49,14 +49,10 @@ export type IngestErrorCode =
   | 'malformed'
   /** The input carried an `error` frame; the message is the upstream message, verbatim. */
   | 'upstream'
-  /** The runtime lacks an API the package needs (TextDecoder, crypto.getRandomValues). */
+  /** The runtime lacks an API the package needs (TextDecoder). */
   | 'unsupported-platform'
   /** A session was used after it finished or failed. */
-  | 'closed'
-  /** A worker message was malformed or out of order. */
-  | 'protocol'
-  /** The page cancelled the worker job (`cancel` request), for example because a source failed to read. */
-  | 'cancelled';
+  | 'closed';
 
 /** What an upstream `error` frame said besides its message. */
 export interface UpstreamFailure {
@@ -72,7 +68,7 @@ export interface IngestErrorDetails {
   readonly upstream?: UpstreamFailure;
 }
 
-/** Thrown (or, in the worker, posted) when an ingest job cannot continue. */
+/** Thrown when an ingest job cannot continue. */
 export class IngestError extends Error {
   readonly code: IngestErrorCode;
   /** The offending line when `code` is `malformed`. */

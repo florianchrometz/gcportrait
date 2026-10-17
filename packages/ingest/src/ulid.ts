@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * ULIDs for snapshot ids, from a caller-supplied clock and entropy source. The package never reads the time
- * or a random source itself (pure core); the worker wrapper supplies `Date.now` and `crypto` by default.
+ * or a random source itself (pure core).
  */
 import { IngestError } from './errors.js';
 

@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { ProjectIndexSchema, type Asset } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
-import {
-  lookupProjectId,
-  lookupProjectNumber,
-  summariseProjects,
-  type ProjectSummary,
-  type UnresolvedProjects,
-} from './project-index.js';
+import { summariseProjects, type ProjectSummary, type UnresolvedProjects } from './project-index.js';
 import { clone } from './testing/helpers.js';
 
 const UPDATED = '2026-10-07T00:00:00Z';
@@ -151,7 +145,10 @@ describe('summariseProjects: the index', () => {
 
   it('accepts legacy domain-scoped project ids', () => {
     const { index } = summarise([project('10000000001', { projectId: 'example.com:demo-a' })]);
-    expect(lookupProjectNumber(index, 'example.com:demo-a')).toBe('10000000001');
+    expect(index).toEqual({
+      numberById: { 'example.com:demo-a': '10000000001' },
+      idByNumber: { '10000000001': 'example.com:demo-a' },
+    });
   });
 
   it('survives structuredClone and JSON unchanged', () => {
@@ -260,32 +257,5 @@ describe('summariseProjects: what stays unresolved', () => {
   it('reads a Compute name that ends with the project segment', () => {
     const { unresolved } = summarise([asset('//compute.googleapis.com/projects/demo-edge', '10000000010')]);
     expect(unresolved.inferred).toEqual({ '10000000010': 'demo-edge' });
-  });
-});
-
-describe('lookups', () => {
-  const { index } = summariseProjects([
-    project('10000000001', { projectId: 'demo-a' }),
-    project('10000000002', { projectId: 'demo-b' }),
-  ]);
-
-  it.each([
-    ['10000000001', 'demo-a'],
-    ['projects/10000000001', 'demo-a'],
-    ['10000000002', 'demo-b'],
-    ['10000000003', undefined],
-    ['constructor', undefined],
-    ['__proto__', undefined],
-  ])('lookupProjectId(%s) → %s', (number, expected) => {
-    expect(lookupProjectId(index, number)).toBe(expected);
-  });
-
-  it.each([
-    ['demo-a', '10000000001'],
-    ['projects/demo-b', '10000000002'],
-    ['demo-c', undefined],
-    ['toString', undefined],
-  ])('lookupProjectNumber(%s) → %s', (id, expected) => {
-    expect(lookupProjectNumber(index, id)).toBe(expected);
   });
 });

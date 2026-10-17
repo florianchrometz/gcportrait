@@ -761,8 +761,9 @@ infra/         Dockerfile, install.sh, deploy.sh, uninstall.sh, compose.yaml, cl
 - **The dependency direction points down**: `model ← catalog ← graph ← frontend`. Packages under `packages/`
   import only `@gcportrait/model`, except that `graph` also imports `catalog`; the graph's tests may use
   `demo-data`, and its `render-scene` command `demo-data` and `ingest`; the layout's tests and `debug-svg`
-  script build demo Scenes through `graph`, `catalog` and `demo-data`. These development edges stay outside
-  the libraries. A cycle-free, downward graph keeps every package testable on its own.
+  script build demo Scenes through `graph`, `catalog` and `demo-data`; ingest's tests may use `demo-data`,
+  whose XL organisation, written as an export, is the ingest budget's input. These development edges stay
+  outside the libraries. A cycle-free, downward graph keeps every package testable on its own.
 - **One upward exception**: `packages/render`, the render library, is Node code on top of the app and imports
   the frontend's headless entry (`frontend/src/headless.ts`), so a view is drawn by the app's own components
   and data readers; the frontend never imports it. `packages/render-cli` and the backend (only in its render

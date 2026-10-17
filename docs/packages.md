@@ -23,7 +23,8 @@ components, and as a draw.io file translated from that SVG.
                     │ NDJSON                            │ NDJSON                       │ NDJSON
                     ▼                                   ▼                              ▼
  ingest       @gcportrait/ingest   ingest(input, { scope, source, readTime?, clock, entropy })
-              (a web worker in the app: createIngestWorkerHandler / postIngestJob)
+              (in the app's workers: ingest for a dropped export and the demo, createIngestSession for
+              the backend's streams)
               → { snapshot: Snapshot, report: IngestReport }        (report.projects is a ProjectIndex)
                     │ Snapshot  (the frontend keeps it in IndexedDB: src/snapshots/)
                     ▼
@@ -76,6 +77,7 @@ anything else.
 | `packages/graph/test/**` | `model`, `catalog`, `demo-data` (a dev dependency: the demo and view tests build the demo organisations) |
 | `packages/graph/scripts/**` | `model`, `catalog`, `demo-data`, `ingest` (the `render-scene` command) |
 | `packages/layout/test/**`, `packages/layout/scripts/**` | `model`, `graph`, `catalog`, `demo-data` (dev dependencies: the golden, performance and debug-render Scenes are built from the demo organisations) |
+| `packages/ingest/test/**` | `model`, `demo-data` (a dev dependency: the budget test reads the demo organisation XL, written as an export) |
 | `packages/render/**` | `model`, `catalog`, `graph`, `layout`, `demo-data`, `frontend` (the render library: Node code on top of the app that reads data and draws with the frontend's own readers and components through `@gcportrait/frontend`, the headless entry point `frontend/src/headless.ts`; the one package that may import the frontend, which may not import it) |
 | `packages/render-cli/**` | `model`, `graph`, `demo-data`, `render` (`pnpm render`, the command line around the render library; nothing imports it) |
 | `frontend/**` | `model`, `catalog`, `graph`, `layout`, `icons`, `ingest`, `demo-data` |
@@ -94,16 +96,16 @@ anything else.
             render-cli ► render, graph, demo-data, model                                    tooling
             graph ┄┄┄┄► demo-data (tests, scripts), ingest (scripts)   development only
             layout ┄┄┄► graph, catalog, demo-data (tests, scripts)    development only
+            ingest ┄┄┄► demo-data (tests)                            development only
 ```
 
-The sketch leaves out direct imports that the table allows anyway (the frontend may also import `catalog`
-and `model` itself). The dotted edges are development dependencies: nothing under `packages/graph/src/`
-imports `demo-data` or `ingest`, and nothing under
-`packages/layout/src/` imports anything but `model`. `render` is the one edge that points up, from
-`packages/` to the app: it exists so the picture `pnpm render` and the render API draw is the app's picture,
-read by the app's own code, and it is recorded in `eslint.config.js` ([AGENTS.md](../AGENTS.md), "Architecture
-and code"); moving the pure SVG components into a package of their own would turn it
-downward (section 5).
+The sketch leaves out direct imports that the table allows anyway (the frontend may also import `catalog` and
+`model` itself). The dotted edges are development dependencies: nothing under `packages/graph/src/` imports
+`demo-data` or `ingest`, and nothing under `packages/layout/src/` or `packages/ingest/src/` imports anything
+but `model`. `render` is the one edge that points up, from `packages/` to the app: it exists so the picture
+`pnpm render` and the render API draw is the app's picture, read by the app's own code, and it is recorded in
+`eslint.config.js` ([AGENTS.md](../AGENTS.md), "Architecture and code"); moving the pure SVG components into a
+package of their own would turn it downward (section 5).
 
 Types that cross a boundary are zod schemas in `@gcportrait/model`, declared once; a package that needs a new
 one adds it there (additively) instead of declaring its own.
@@ -162,9 +164,10 @@ and `… fixtures` (regenerate the committed fixtures). Reference:
 
 **Responsibility.** A streaming NDJSON line reader (strings, bytes, Blobs and Files, `fetch` bodies, async
 iterables; BOM, CRLF, concatenated files, lines up to 64 MiB), a normaliser from the CAI asset shape (both
-key styles) to the model `Asset`, project number ↔ id resolution, snapshot assembly with stats and duplicate
-handling, and a worker protocol. Pure and worker-safe; the caller supplies the clock and the entropy for the
-snapshot id.
+key styles) to the model `Asset`, project number ↔ id resolution, and snapshot assembly with stats and
+duplicate handling. Pure and worker-safe; the caller supplies the clock and the entropy for the snapshot id,
+and the app's workers run it (`ingest` in the snapshot and data workers, `createIngestSession` in the
+import worker).
 
 **Entry point.** `packages/ingest/src/index.ts`:
 
@@ -172,11 +175,11 @@ snapshot id.
 |---|---|
 | `ingest(input, options)` | `{ snapshot, report }`; the report counts malformed lines (first 20 kept), duplicates, says where `readTime` came from (`readTimeSource`), and holds `projects` (a model `ProjectIndex`) and `unresolvedProjects` |
 | `createIngestSession(options)` | the synchronous core: `push(chunk)`, `endPart()`, `finish()` |
-| `createIngestWorkerHandler(post)`, `postIngestJob(post, job, input, settings)` | the worker and page sides of the protocol (`start`, `chunk`, `end`, `cancel` → `progress`, `done`, `error`) |
-| `readLines`, `normaliseAsset`, `projectNumberOf`, `lookupProjectId`, `lookupProjectNumber`, `ulid`, `IngestError` | the building blocks |
+| `readLines`, `normaliseAsset`, `projectNumberOf`, `ulid`, `IngestError` | the building blocks |
 
-**Commands.** `pnpm --filter @gcportrait/ingest test:budget` runs the strict 1.5 s XL-in-a-worker budget on
-its own (the normal test run only asserts a 3 s regression ceiling, twice the budget). Reference:
+**Commands.** `pnpm --filter @gcportrait/ingest test:budget` runs the strict 1.5 s budget on its own: the
+demo organisation XL, written as an export, read in a worker (the normal test run only asserts a 3 s
+regression ceiling, twice the budget). Reference:
 [packages/ingest/README.md](../packages/ingest/README.md).
 
 ### `@gcportrait/catalog` — the asset catalog and its rule engine

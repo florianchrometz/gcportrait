@@ -1,56 +1,68 @@
 // SPDX-License-Identifier: MIT
 /**
- * The ingest budget: a 50 000-asset NDJSON export is parsed inside a worker in under
- * 1.5 s. The worker is a real `worker_threads` worker running test/worker-entry.ts (the package's handler,
- * mounted as a Web Worker would mount it). The input is an `exportAssets` file (snake_case envelope keys)
- * in a Blob, read and posted in chunks by `postIngestJob` exactly as the app will post a dropped file; the
- * clock runs from the first posted message to the `done` reply arriving on this thread, so it includes
- * reading, transfer, parsing, normalisation, the project index and the structured clone of the 50 000-asset
- * result back to this thread.
+ * The ingest budget: the demo organisation XL (@gcportrait/demo-data, default seed, the demo's day), written as
+ * an `exportAssets` file (snake_case envelope keys), is read inside a worker in under 1.5 s. The worker is a
+ * real `worker_threads` worker running test/ingest-worker.ts, which reads the file it is posted with
+ * `ingest()`, as the app's snapshot worker reads a dropped export file; the clock runs from posting the Blob
+ * to the result arriving on this thread, so it includes reading, parsing, normalisation, the project index and
+ * the structured clone of the result back to this thread.
  *
- * The worker is warmed up with a small job first (module loading through tsx is not ingest work). A
- * wall-clock budget is only meaningful on a machine that is not busy with other work, so the strict 1.5 s
- * assertion runs when GCPORTRAIT_INGEST_BUDGET=strict (`pnpm --filter @gcportrait/ingest test:budget`, which
- * runs this file alone). Inside the shared, parallel test run the same measurement asserts a regression
- * ceiling of 2 × the budget, as every budget does there, and prints the figures (`--silent=false`). Both
- * measure by the rule of `@gcportrait/model/testing` that every package timing its work applies: a run over
- * the limit is measured again after a pause, at most `BATCHES` runs and only while another fits in the test's
- * timeout, and the best run counts (`measureBatches`); a batch stops its runs at 95 % of the timeout and one
- * cut short there counts as a miss (`measureRuns`; a batch of this plan is one run, which always runs, so
- * here `measureBatches` alone decides whether another fits); under a local `pnpm test`, never on CI (where the
- * ceiling is the check that blocks) and never strictly, a best run still over the ceiling while the machine's
- * load average is above 1.5 per core is skipped with the load and the figures as its reason
- * (`skipIfOverloaded`).
+ * The worker is warmed up with a small job first, the file's first lines (module loading through tsx is not
+ * ingest work). A wall-clock budget is only meaningful on a machine that is not busy with other work, so the
+ * strict 1.5 s assertion runs when GCPORTRAIT_INGEST_BUDGET=strict
+ * (`pnpm --filter @gcportrait/ingest test:budget`, which runs this file alone). Inside the shared, parallel
+ * test run the same measurement asserts a regression ceiling of 2 × the budget, as every budget does there,
+ * and prints the figures (`--silent=false`). Both measure by the rule of `@gcportrait/model/testing` that
+ * every package timing its work applies: a run over the limit is measured again after a pause, at most
+ * `BATCHES` runs and only while another fits in the test's timeout, and the best run counts
+ * (`measureBatches`); a batch stops its runs at 95 % of the timeout and one cut short there counts as a miss
+ * (`measureRuns`; a batch of this plan is one run, which always runs, so here `measureBatches` alone decides
+ * whether another fits); under a local `pnpm test`, never on CI (where the ceiling is the check that blocks)
+ * and never strictly, a best run still over the ceiling while the machine's load average is above 1.5 per
+ * core is skipped with the load and the figures as its reason (`skipIfOverloaded`).
  */
+import {
+  DEMO_ORGANIZATION_DOMAIN,
+  DEMO_ORGANIZATION_IDS,
+  generateOrganization,
+  toCaiNdjson,
+} from '@gcportrait/demo-data';
 import { ProjectIndexSchema, SnapshotSchema } from '@gcportrait/model';
 import { BATCHES, cutNote, measureBatches, measureRuns, skipIfOverloaded } from '@gcportrait/model/testing';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import {
-  postIngestJob,
-  type IngestResult,
-  type IngestSettings,
-  type IngestWorkerRequest,
-  type IngestWorkerResponse,
-} from '../src/index.js';
-import { syntheticExport } from './synthetic-org.js';
+import type { IngestResult, IngestSettings } from '../src/index.js';
+import type { IngestJob, IngestReply } from './ingest-worker.js';
 
-const ASSETS = 50_000;
+const SIZE = 'XL';
 const BUDGET_MS = 1_500;
-/** One run per batch: a run takes about a second on a quiet machine. */
+/** The warm-up job and the deadline test read the first lines of the same file. */
+const SMALL_LINES = 100;
+/** One run per batch: a run is a whole ingest of XL. */
 const PLAN = { batches: BATCHES, runs: 1, warmUp: 0 };
 const STRICT = process.env['GCPORTRAIT_INGEST_BUDGET'] === 'strict';
 /** What the best run must stay under: the budget itself when strict, else a regression ceiling. */
 const LIMIT_MS = STRICT ? BUDGET_MS : 2 * BUDGET_MS;
 
 const settings: IngestSettings = {
-  scope: { kind: 'organization', id: '30000000001', displayName: 'example.com' },
-  source: { kind: 'export', detail: 'synthetic-50k.ndjson' },
+  scope: { kind: 'organization', id: DEMO_ORGANIZATION_IDS[SIZE], displayName: DEMO_ORGANIZATION_DOMAIN },
+  source: { kind: 'export', detail: `demo-${SIZE}.ndjson` },
 };
 
-/** A worker_threads worker running the ingest handler, with a promise per job. */
+/** The first `count` lines of an NDJSON text. */
+function firstLines(text: string, count: number): string {
+  let end = 0;
+  for (let line = 0; line < count; line += 1) {
+    const newline = text.indexOf('\n', end);
+    if (newline === -1) return text;
+    end = newline + 1;
+  }
+  return text.slice(0, end);
+}
+
+/** A worker_threads worker running test/ingest-worker.ts, with a promise per job. */
 class IngestWorker {
   readonly #worker: Worker;
   readonly #pending = new Map<
@@ -60,13 +72,15 @@ class IngestWorker {
 
   constructor() {
     const tsx = pathToFileURL(createRequire(import.meta.url).resolve('tsx')).href;
-    this.#worker = new Worker(new URL('./worker-entry.ts', import.meta.url), { execArgv: ['--import', tsx] });
-    this.#worker.on('message', (message: IngestWorkerResponse) => {
+    this.#worker = new Worker(new URL('./ingest-worker.ts', import.meta.url), {
+      execArgv: ['--import', tsx],
+    });
+    this.#worker.on('message', (message: IngestReply) => {
       const pending = this.#pending.get(message.job);
-      if (pending === undefined || message.type === 'progress') return;
+      if (pending === undefined) return;
       this.#pending.delete(message.job);
-      if (message.type === 'done') pending.resolve(message.result);
-      else pending.reject(new Error(`${message.error.code}: ${message.error.message}`));
+      if ('result' in message) pending.resolve(message.result);
+      else pending.reject(new Error(message.error));
     });
     this.#worker.on('error', (error) => {
       for (const pending of this.#pending.values()) pending.reject(error);
@@ -74,14 +88,11 @@ class IngestWorker {
     });
   }
 
-  async run(job: string, input: Blob | string): Promise<IngestResult> {
+  run(job: string, input: Blob | string): Promise<IngestResult> {
     const result = new Promise<IngestResult>((resolve, reject) => {
       this.#pending.set(job, { resolve, reject });
     });
-    const post = (message: IngestWorkerRequest, transfer: ArrayBuffer[]) => {
-      this.#worker.postMessage(message, transfer);
-    };
-    await postIngestJob(post, job, input, settings);
+    this.#worker.postMessage({ job, input, settings } satisfies IngestJob);
     return result;
   }
 
@@ -105,10 +116,13 @@ interface IngestFigures {
   readonly cut: boolean;
 }
 
-describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
+describe(`the demo organisation ${SIZE} as an export, in a worker`, () => {
   let worker: IngestWorker;
   let blob: Blob;
+  let small = '';
   let size = 0;
+  let assets = 0;
+  let projects = 0;
   let bootMs = 0;
   let jobs = 0;
 
@@ -141,12 +155,18 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
   }
 
   beforeAll(async () => {
-    const text = syntheticExport(ASSETS);
+    const organisation = generateOrganization({ size: SIZE });
+    assets = organisation.assets.length;
+    projects = organisation.assets.filter(
+      (asset) => asset.assetType === 'cloudresourcemanager.googleapis.com/Project',
+    ).length;
+    const text = toCaiNdjson(organisation.assets, 'export');
     blob = new Blob([text]);
     size = blob.size;
+    small = firstLines(text, SMALL_LINES);
     const started = performance.now();
     worker = new IngestWorker();
-    await worker.run('warm-up', syntheticExport(20, 7));
+    await worker.run('warm-up', small);
     bootMs = performance.now() - started;
   }, 60_000);
 
@@ -170,8 +190,8 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
       const short = cutNote({ cut, made: runs, planned: PLAN.runs });
       console.log(
         [
-          `ingest budget: ${String(ASSETS)} assets, ${(size / 2 ** 20).toFixed(1)} MiB (${(size / ASSETS).toFixed(0)} B per line)`,
-          `worker start-up incl. tsx and a 20-line warm-up job: ${bootMs.toFixed(0)} ms`,
+          `ingest budget: demo ${SIZE} as an export, ${String(assets)} assets, ${(size / 2 ** 20).toFixed(1)} MiB (${(size / assets).toFixed(0)} B per line)`,
+          `worker start-up incl. tsx and a ${String(SMALL_LINES)}-line warm-up job: ${bootMs.toFixed(0)} ms`,
           `runs: ${medians.map((ms) => `${ms.toFixed(0)} ms`).join(', ')}; best ${best.toFixed(0)} ms (budget ${String(BUDGET_MS)} ms; asserted < ${String(LIMIT_MS)} ms, ${STRICT ? 'strict' : 'regression ceiling, set GCPORTRAIT_INGEST_BUDGET=strict for the budget'})` +
             (outOfTime ? ' · no further run fits in the timeout' : '') +
             short,
@@ -179,18 +199,15 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
         ].join('\n'),
       );
 
-      expect(result.snapshot.stats.count).toBe(ASSETS);
+      expect(result.snapshot.stats.count).toBe(assets);
       expect(result.snapshot.stats.bytes).toBe(size);
       expect(result.report.malformed).toBe(0);
       expect(result.report.duplicates).toBe(0);
-      expect(Object.keys(result.report.projects.idByNumber)).toHaveLength(50);
+      expect(Object.keys(result.report.projects.idByNumber)).toHaveLength(projects);
       expect(ProjectIndexSchema.safeParse(result.report.projects).success).toBe(true);
-      expect(result.report.unresolvedProjects).toEqual({
-        numbers: [],
-        ids: [],
-        referencedIds: ['demo-host-1', 'demo-images-1'],
-        inferred: {},
-      });
+      // Every project the assets live in is named; only projects outside the organisation (public images,
+      // service producers' tenant projects) are referenced without a number.
+      expect(result.report.unresolvedProjects).toMatchObject({ numbers: [], ids: [], inferred: {} });
       expect(SnapshotSchema.safeParse(result.snapshot).success).toBe(true);
       const figures = `best run ${best.toFixed(0)} ms of ${medians.map((ms) => ms.toFixed(0)).join(', ')} ms${short}`;
       skipIfOverloaded({
@@ -198,7 +215,7 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
         limit: LIMIT_MS,
         cut,
         strict: STRICT,
-        what: `ingest of ${String(ASSETS)} assets over its ${String(LIMIT_MS)} ms ceiling`,
+        what: `ingest of demo ${SIZE} (${String(assets)} assets) over its ${String(LIMIT_MS)} ms ceiling`,
         figures,
         skip,
       });
@@ -208,7 +225,6 @@ describe(`a ${String(ASSETS)}-asset export in a worker`, () => {
   );
 
   it('stops a batch at its deadline after the first run, and says it was cut short', async () => {
-    const small = syntheticExport(20, 7);
     const whole = await measureIngest(small, 2, 1, performance.now() + 60_000);
     expect(whole).toMatchObject({ runs: 2, cut: false });
     // A deadline already past: the first run (a warm-up) is made, and no other; its time is the figure.

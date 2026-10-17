@@ -38,6 +38,9 @@ const SOURCE_FILES = ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'];
 const WORKSPACE_DEPENDENCIES = [
   { files: 'packages/*/**', allowed: ['model'] },
   { files: 'packages/model/**', allowed: [] },
+  // The ingest budget test reads the demo organisation XL from @gcportrait/demo-data, written as an export (a
+  // dev dependency; tests only: nothing under packages/ingest/src/ imports it).
+  { files: 'packages/ingest/test/**', allowed: ['model', 'demo-data'] },
   // The graph builder evaluates catalog rules through @gcportrait/catalog's rule engine: the catalog owns
   // rule semantics (AGENTS.md, Data and graph semantics).
   { files: 'packages/graph/**', allowed: ['model', 'catalog'] },
