@@ -118,8 +118,8 @@ now, and what changed in the last five weeks?
     phone, or, on a canvas too short for it there, hidden while the sheet is open; on a phone it is hidden
     while View or More is open too), and the drawer's content scrolls inside it, never past its edge; the
     timeline bar and the disclosure bar wrap onto more lines instead, a phone's timeline with the slider
-    across the width on a line as tall as its touch target, the day markers under its track inside that line,
-    the readout below it and the buttons below the readout;
+    across the width on a line as tall as its touch target and the row of day markers under its track, the
+    readout below it and the buttons below the readout;
   - no control is ever out of sight when it has focus or under something when tapped: a control the chrome
     covers is moved clear of it or hidden with what covers it;
   - a page flows in the width it has and only its own box scrolls, never the document, because a document
