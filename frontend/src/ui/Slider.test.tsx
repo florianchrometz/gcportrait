@@ -69,13 +69,110 @@ describe('Slider', () => {
     renderInPage(<Timeline />);
     const slider = screen.getByRole('slider', { name: 'Timeline' });
     const track = laidOutTrack(slider);
-    fireEvent.pointerDown(track, { clientX: 100, pointerId: 1 });
+    fireEvent.pointerDown(track, { buttons: 1, clientX: 100, pointerId: 1 });
     expect(slider.getAttribute('aria-valuenow')).toBe('0');
     expect(document.activeElement).toBe(slider);
-    fireEvent.pointerMove(track, { clientX: 270, pointerId: 1 });
+    // A drag's moves carry the primary button (`buttons` 1), a finger's and a pen's tip's as a mouse's.
+    fireEvent.pointerMove(track, { buttons: 1, clientX: 270, pointerId: 1 });
     expect(slider.getAttribute('aria-valuenow')).toBe('17');
     fireEvent.pointerUp(track, { pointerId: 1 });
-    fireEvent.pointerMove(track, { clientX: 440, pointerId: 1 });
+    fireEvent.pointerMove(track, { buttons: 1, clientX: 440, pointerId: 1 });
+    expect(slider.getAttribute('aria-valuenow')).toBe('17');
+  });
+
+  it.each([
+    { pointerType: 'mouse', button: 2, held: 2, by: "a mouse's right button" },
+    { pointerType: 'mouse', button: 1, held: 4, by: "a mouse's middle button" },
+    { pointerType: 'pen', button: 2, held: 2, by: "a pen's barrel button" },
+  ])(
+    'ends a drag when the primary button comes up while $by is held, as a native range input does',
+    ({ pointerType, button, held }) => {
+      renderInPage(<Timeline />);
+      const slider = screen.getByRole('slider', { name: 'Timeline' });
+      const track = laidOutTrack(slider);
+      const captured: number[] = [];
+      const released: number[] = [];
+      track.setPointerCapture = (pointerId) => {
+        captured.push(pointerId);
+      };
+      track.hasPointerCapture = (pointerId) => captured.includes(pointerId) && !released.includes(pointerId);
+      track.releasePointerCapture = (pointerId) => {
+        released.push(pointerId);
+      };
+      fireEvent.pointerDown(track, { button: 0, buttons: 1, clientX: 270, pointerId: 1, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('17');
+      // The other button pressed during the drag (a move with both held): the drag goes on.
+      fireEvent.pointerMove(track, { button, buttons: 1 | held, clientX: 250, pointerId: 1, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('15');
+      // The primary button released while the other is held: no pointerup until the last button is up, only a
+      // move whose `buttons` lacks the primary bit. The drag ends there, the pointer's capture let go, and the
+      // value stays where it was, for that move and every one after it.
+      fireEvent.pointerMove(track, { button: 0, buttons: held, clientX: 200, pointerId: 1, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('15');
+      expect(released).toEqual([1]);
+      fireEvent.pointerMove(track, { button: -1, buttons: held, clientX: 120, pointerId: 1, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('15');
+      // The other button up: the pointerup, and moves without a button after it.
+      fireEvent.pointerUp(track, { button, buttons: 0, clientX: 120, pointerId: 1, pointerType });
+      fireEvent.pointerMove(track, { button: -1, buttons: 0, clientX: 440, pointerId: 1, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('15');
+      expect(document.activeElement).toBe(slider);
+      // A new press of the primary button drags as ever.
+      fireEvent.pointerDown(track, { button: 0, buttons: 1, clientX: 100, pointerId: 1, pointerType });
+      fireEvent.pointerMove(track, { button: -1, buttons: 1, clientX: 140, pointerId: 1, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('4');
+      expect(captured).toEqual([1, 1]);
+    },
+  );
+
+  it("follows the pointer that drags it only: a hovering mouse neither moves nor ends a finger's drag", () => {
+    renderInPage(<Timeline />);
+    const slider = screen.getByRole('slider', { name: 'Timeline' });
+    const track = laidOutTrack(slider);
+    fireEvent.pointerDown(track, { button: 0, buttons: 1, clientX: 270, pointerId: 1, pointerType: 'touch' });
+    expect(slider.getAttribute('aria-valuenow')).toBe('17');
+    // A mouse moved over the track meanwhile, no button held: another pointer's move.
+    fireEvent.pointerMove(track, {
+      button: -1,
+      buttons: 0,
+      clientX: 440,
+      pointerId: 2,
+      pointerType: 'mouse',
+    });
+    expect(slider.getAttribute('aria-valuenow')).toBe('17');
+    // The finger's drag goes on, and its lift ends it.
+    fireEvent.pointerMove(track, {
+      button: -1,
+      buttons: 1,
+      clientX: 300,
+      pointerId: 1,
+      pointerType: 'touch',
+    });
+    expect(slider.getAttribute('aria-valuenow')).toBe('20');
+    fireEvent.pointerUp(track, { button: 0, buttons: 0, clientX: 300, pointerId: 1, pointerType: 'touch' });
+    fireEvent.pointerMove(track, {
+      button: -1,
+      buttons: 0,
+      clientX: 100,
+      pointerId: 2,
+      pointerType: 'mouse',
+    });
+    expect(slider.getAttribute('aria-valuenow')).toBe('20');
+  });
+
+  it('ends a drag the browser cancels', () => {
+    renderInPage(<Timeline />);
+    const slider = screen.getByRole('slider', { name: 'Timeline' });
+    const track = laidOutTrack(slider);
+    fireEvent.pointerDown(track, { button: 0, buttons: 1, clientX: 270, pointerId: 1, pointerType: 'touch' });
+    fireEvent.pointerCancel(track, { pointerId: 1, pointerType: 'touch' });
+    fireEvent.pointerMove(track, {
+      button: -1,
+      buttons: 1,
+      clientX: 440,
+      pointerId: 1,
+      pointerType: 'touch',
+    });
     expect(slider.getAttribute('aria-valuenow')).toBe('17');
   });
 
@@ -109,8 +206,8 @@ describe('Slider', () => {
       expect(pointerMark(slider)).toBeNull();
       expect(slider.getAttribute('aria-valuenow')).toBe('16');
       // A drag along the track after it: the thumb has focus already, and its ring stays.
-      fireEvent.pointerDown(track, { clientX: 300, pointerId: 2, pointerType });
-      fireEvent.pointerMove(track, { clientX: 310, pointerId: 2, pointerType });
+      fireEvent.pointerDown(track, { buttons: 1, clientX: 300, pointerId: 2, pointerType });
+      fireEvent.pointerMove(track, { buttons: 1, clientX: 310, pointerId: 2, pointerType });
       fireEvent.pointerUp(track, { clientX: 310, pointerId: 2, pointerType });
       expect(slider.getAttribute('aria-valuenow')).toBe('21');
       expect(pointerMark(slider)).toBeNull();
@@ -142,12 +239,14 @@ describe('Slider', () => {
     expect(pointerMark(slider)).toBeNull();
     expect(captured).toEqual([]);
     // The primary button (a mouse's left, a pen's tip) presses and drags as ever.
-    expect(fireEvent.pointerDown(track, { button: 0, clientX: 100, pointerId: 2, pointerType })).toBe(false);
+    expect(
+      fireEvent.pointerDown(track, { button: 0, buttons: 1, clientX: 100, pointerId: 2, pointerType }),
+    ).toBe(false);
     expect(slider.getAttribute('aria-valuenow')).toBe('0');
     expect(document.activeElement).toBe(slider);
     expect(pointerMark(slider)).toBe('true');
     expect(captured).toEqual([2]);
-    fireEvent.pointerMove(track, { clientX: 270, pointerId: 2, pointerType });
+    fireEvent.pointerMove(track, { buttons: 1, clientX: 270, pointerId: 2, pointerType });
     fireEvent.pointerUp(track, { button: 0, clientX: 270, pointerId: 2, pointerType });
     expect(slider.getAttribute('aria-valuenow')).toBe('17');
     // Nor does a press of the other button move the thumb that has focus now, which keeps it and its mark.
@@ -192,9 +291,16 @@ describe('Slider', () => {
     renderInPage(<Timeline disabled />);
     const slider = screen.getByRole('slider', { name: 'Timeline' });
     expect(slider.getAttribute('aria-disabled')).toBe('true');
-    // A press neither moves nor focuses it.
-    fireEvent.pointerDown(laidOutTrack(slider), { clientX: 100, pointerId: 1 });
-    expect(document.activeElement).not.toBe(slider);
+    const track = laidOutTrack(slider);
+    const outside = screen.getByRole('button', { name: 'outside' });
+    outside.focus();
+    // A press and a drag neither move nor focus it. The press's default is prevented, as an active slider's is,
+    // so the browser leaves focus where it is rather than moving it to the page (a right press's context menu is
+    // not a default of the press).
+    expect(fireEvent.pointerDown(track, { button: 0, buttons: 1, clientX: 100, pointerId: 1 })).toBe(false);
+    fireEvent.pointerMove(track, { buttons: 1, clientX: 270, pointerId: 1 });
+    fireEvent.pointerUp(track, { button: 0, buttons: 0, clientX: 270, pointerId: 1 });
+    expect(document.activeElement).toBe(outside);
     expect(pointerMark(slider)).toBeNull();
     expect(slider.getAttribute('aria-valuenow')).toBe('34');
     slider.focus();

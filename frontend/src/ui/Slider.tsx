@@ -4,14 +4,22 @@
  * `aria-valuemin/max/now` and `aria-valuetext` (`valueText`, e.g. a date), named by its visible label. ← ↓ and
  * → ↑ step down and up, Page Down / Page Up by `bigStep`, Home and End to the ends; a press or a drag on the
  * track moves it there (and focuses the thumb). `onChange` fires for each new value. Inert (`disabled`):
- * announced unavailable, focusable, fixed. `marks` are drawn inside the track, under the thumb, where a press is a
- * press on the track (the timeline's tick markers; the caller hides them from assistive technology).
+ * announced unavailable, focusable, fixed; a press on its track moves nothing and, its default prevented as an
+ * active slider's is, leaves focus where it is. `marks` are drawn inside the track, under the thumb, where a press
+ * is a press on the track (the timeline's tick markers; the caller hides them from assistive technology).
  *
  * Only the primary button presses, as on a native range input: a mouse's left button, a pen's tip and a finger
  * (`button` 0). A press of another (a mouse's right or middle button, a pen's barrel button or eraser) moves
  * nothing and starts no drag, and it leaves focus where it is (a native range input takes it): its default is
  * prevented as a primary press's is, so the browser does not move focus off the track either, and a right press
  * still opens the context menu.
+ *
+ * A drag follows the pointer that pressed (its `pointerId`: another pointer's moves, a hovering mouse's beside a
+ * finger, are not the drag's) and ends at that pointer's `pointerup` or `pointercancel`, or at its first move that
+ * no longer holds the primary button (`buttons` without bit 1), as on a native range input: a mouse's left button
+ * released while its right one is still held sends no `pointerup` until the last button is up, so the drag ends at
+ * that move, lets the pointer's capture go and leaves the value where it was. A finger and a pen's tip report the
+ * bit (`buttons` 1) for as long as they touch, so their drags end at the lift as ever.
  *
  * The focus ring is keyboard focus's, as on a native range input: a press of a mouse, a pen or a finger that focuses
  * the thumb marks it (`data-pointer-focus`), and the mark hides the ring (Slider.module.css) until a key is pressed
@@ -61,6 +69,12 @@ function capturePointer(element: Element, pointerId: number): void {
   if (typeof capturable.setPointerCapture === 'function') element.setPointerCapture(pointerId);
 }
 
+/** Lets a drag's pointer go before its `pointerup` (where the browser supports pointer capture; jsdom does not). */
+function releasePointer(element: Element, pointerId: number): void {
+  const capturable: Partial<Pick<Element, 'hasPointerCapture' | 'releasePointerCapture'>> = element;
+  if (capturable.hasPointerCapture?.(pointerId) === true) element.releasePointerCapture(pointerId);
+}
+
 /** `value` on the step grid from `min`, within [min, max]. */
 export function clampToStep(value: number, min: number, max: number, step: number): number {
   const stepped = min + Math.round((value - min) / step) * step;
@@ -83,7 +97,8 @@ export function Slider({
   const labelId = useId();
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
+  // The pointer that drags the thumb (its `pointerId`), null between drags.
+  const dragging = useRef<number | null>(null);
   // Focused by a pointer's press, until a key or a move of focus away (see above).
   const [pointerFocus, setPointerFocus] = useState(false);
   const inert = isInert(disabled);
@@ -130,26 +145,33 @@ export function Slider({
         ref={trackRef}
         className={cx(styles.track, inert && styles.inert)}
         onPointerDown={(event) => {
-          if (inert) return;
+          // Every press's default is prevented, an inert slider's too, so the browser moves focus nowhere.
           event.preventDefault();
-          if (event.button !== 0) return;
+          if (inert || event.button !== 0) return;
           const thumb = thumbRef.current;
           if (thumb !== null && thumb.ownerDocument.activeElement !== thumb) {
             thumb.focus();
             if (thumb.ownerDocument.activeElement === thumb) setPointerFocus(true);
           }
-          dragging.current = true;
+          dragging.current = event.pointerId;
           capturePointer(event.currentTarget, event.pointerId);
           fromPointer(event);
         }}
         onPointerMove={(event) => {
-          if (dragging.current) fromPointer(event);
+          if (event.pointerId !== dragging.current) return;
+          if ((event.buttons & 1) === 0) {
+            // The primary button is up while another is still held, which sends no pointerup (see above).
+            dragging.current = null;
+            releasePointer(event.currentTarget, event.pointerId);
+            return;
+          }
+          fromPointer(event);
         }}
-        onPointerUp={() => {
-          dragging.current = false;
+        onPointerUp={(event) => {
+          if (event.pointerId === dragging.current) dragging.current = null;
         }}
-        onPointerCancel={() => {
-          dragging.current = false;
+        onPointerCancel={(event) => {
+          if (event.pointerId === dragging.current) dragging.current = null;
         }}
       >
         <div className={styles.fill} style={{ width: `${String(percent)}%` }} />
