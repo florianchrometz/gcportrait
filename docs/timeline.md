@@ -118,12 +118,17 @@ you came from**:
   inside" with a link. A zone the view no longer draws for what went from it (a region whose resources are
   all removed, a project that Hide › Empty projects hides once its last resource is removed) comes back as a
   ghost around those ghosts, with "not drawn now" under its name when it is still there itself; one that was
-  collapsed comes back collapsed, counting only what of it is gone;
+  collapsed comes back collapsed, counting only what of it is gone. A resource the tick you came from showed
+  only inside a collapsed zone comes back in the zone it lay in when the new tick draws that zone open (a VM
+  in a subnet that another group of subnets holds now, the group that held it being gone), unless that zone
+  is the collapsed zone itself, drawn open now only because nothing is left in it;
 - **changed** (same name, a different `updateTime`): a small amber dot on the node's top-right corner. A
   collapsed zone holding anything added, removed or changed gets the dot too, and its name says how many of
   each. A node that moved (a project into another folder) is marked only where it is now, never at its old
   place; one the view no longer draws where it stood (a project marked for deletion) comes back as a ghost
-  there, with "not drawn now" under its name;
+  there, with "not drawn now" under its name, holding what in it was removed or changed and is not drawn now
+  either (a job that finished). What a project marked for deletion still holds is drawn in its folder, and is
+  no ghost;
 - the legend adds a row for each marker drawn ("added since 2026-09-23"; "compared with 2026-09-24" when you
   stepped back), and the details drawer of a changed node gets a **What changed** section: its update time on
   both ticks, the fields of its data that differ ("targetSize 2 → 4"), and for a container what inside it was

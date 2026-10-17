@@ -79,7 +79,8 @@ interface Drawing {
   readonly zones: ReadonlyMap<string, ZoneState>;
   /**
    * On a timeline day, the zones its ghosts depend on as the earlier day drew them (the diff's `earlier`): every
-   * ghost zone, and every zone around a ghost there.
+   * ghost zone, and every zone around a ghost there (around a ghost of what that day drew only inside a chip, the
+   * zones the drawn day draws, through which its zones' depth is counted).
    */
   readonly earlier: ReadonlyMap<string, ZoneFacts>;
 }

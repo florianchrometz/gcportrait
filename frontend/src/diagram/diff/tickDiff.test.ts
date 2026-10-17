@@ -13,11 +13,16 @@
  * asset left out in such a zone comes back in its ghost, not drawn now, the zone not drawn now when nothing in it was
  * removed (demo M's two Batch jobs that succeeded); an asset zone unchanged itself that the view no longer draws is
  * not drawn now where it was, holding what was removed in it (demo M's CI runner VM removed, empty projects hidden);
- * a changed asset the drawn day still holds is a ghost only where the view leaves it out (on demo M's two days with
- * a project moved into another folder, it is none, and the chip that holds it counts it); chips count what changed
- * inside them, also those that are no Graph container (a region zone flipped closed, and on demo L's history a
- * bundle), and what they count is no ghost; nothing changes when the days are alike, and nothing is ghosted when the
- * drill-in root moved.
+ * what the earlier day drew only inside a chip comes back in the zone it lay in when the drawn day draws that zone
+ * open (demo L's VM in a subnet of a bundle bundled anew; demo M's network of a project moved out of its folders, as
+ * the drawn day's view draws a zone there), not in a zone the earlier day drew as a chip and the drawn day draws only
+ * because it holds nothing now; inside the ghost of an asset an asset comes back as in a container drawn open (demo
+ * M's job that succeeded in a project marked for deletion, not drawn now; a project the removed perimeter secured,
+ * emptied, with empty projects hidden); a changed asset the drawn day still holds is a ghost only where the view
+ * leaves it out (on demo M's two days with a project moved into another folder, it is none, and the chip that holds
+ * it counts it); chips count what changed inside them, also those that are no Graph container (a region zone flipped
+ * closed, and on demo L's history a bundle), and what they count is no ghost; nothing changes when the days are alike,
+ * and nothing is ghosted when the drill-in root moved.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
@@ -34,14 +39,21 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { DEMO_S } from '../testing/demoData';
 import {
+  bundledVmRemoved,
   ciRunnerRemoved,
   demoDayGraph,
+  demoLDay,
+  DEMO_L_RESPLIT,
   DEMO_M_CI_RUNNER,
   DEMO_M_JOBS,
   DEMO_M_MOVE,
+  DEMO_M_PARTNER_NETWORK,
   DEMO_M_PERIMETER,
   DEMO_M_REGION,
   jobsSucceeded,
+  partnerNetworkRemoved,
+  paymentsWebRetired,
+  perimeterEmptied,
   perimeterRemoved,
   projectMoved,
   regionRemoved,
@@ -102,11 +114,6 @@ function pairInput(before: DemoDay, after: DemoDay, view: ViewSpecInput): TickDi
   };
 }
 
-/** Demo L's day `day` (`YYYY-MM-DD`), as the data worker holds it, with its tick. */
-async function demoLDay(day: string): Promise<DemoDay> {
-  return { ...(await demoDayGraph('L', day)), tick: day };
-}
-
 /** How long a test on demo L may take (its days are read and its Scenes built ten times larger than M's). */
 const DEMO_L = 30_000;
 
@@ -126,7 +133,7 @@ const BUNDLE = `${BUNDLE_ID_PREFIX}//compute.googleapis.com/projects/demo-net-1/
 const BUNDLED_SUBNET =
   '//compute.googleapis.com/projects/demo-net-1/regions/us-central1/subnetworks/demo-vm-3-us-central1';
 /** A bundle of demo L's everything lens at `all` on 26 September that no bundle of 27 September is. */
-const RESPLIT_BUNDLE = `${BUNDLE_ID_PREFIX}//compute.googleapis.com/projects/demo-net-1/regions/europe-west1/subnetworks/demo-web-7-europe-west1`;
+const RESPLIT_BUNDLE = DEMO_L_RESPLIT.bundle;
 /** In that bundle on 26 September; removed on 27 September. */
 const RESPLIT_FIREWALL = '//compute.googleapis.com/projects/demo-net-1/global/firewalls/allow-debug-164';
 
@@ -344,6 +351,51 @@ describe('what a ghost holds', () => {
       }
     }
   });
+
+  it('is what would come back in a container drawn open: a project the removed perimeter secured, emptied, with empty projects hidden, not drawn now', async () => {
+    const [before, after] = await perimeterEmptied();
+    // The perimeter focus with every zone open: the earlier day drew the perimeter around its two projects; the drawn
+    // day has no perimeter (the view falls back to the organisation) and no longer draws the data project, which is
+    // still there, unchanged, emptied by the removals.
+    const view = {
+      snapshot: 'demo:M',
+      detail: 'all',
+      focus: { kind: 'perimeter', params: { perimeter: 'data_perimeter' } },
+    } as const;
+    const input = pairInput(before, after, { ...view, filters: { hideEmptyProjects: true } });
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    expect(parents(earlier.scene).get(STILL_THERE)).toBe(PERIMETER);
+    const held = parents({ ...earlier.scene, children: zoneOf(earlier.scene, STILL_THERE)?.children ?? [] });
+    expect(held.size).toBeGreaterThanOrEqual(10);
+    expect(parents(input.scene).has(STILL_THERE)).toBe(false);
+    expect(Object.hasOwn(after.graph.nodes, STILL_THERE)).toBe(true);
+
+    const { scene, diff } = tickDiff(input);
+    expect([...diff.removed, ...diff.changed]).not.toContain(STILL_THERE);
+    // Not drawn now, in the perimeter's ghost, holding what was removed in it, each where it stood.
+    expect(diff.ghosts).toMatchObject({
+      [PERIMETER]: 'removed',
+      [SECURED]: 'removed',
+      [STILL_THERE]: 'hidden',
+    });
+    expect(SceneSchema.safeParse(scene).success).toBe(true);
+    const up = parents(scene);
+    expect(up.get(STILL_THERE)).toBe(PERIMETER);
+    for (const [id, zone] of held) {
+      expect(diff.ghosts[id], id).toBe('removed');
+      expect(up.get(id), id).toBe(zone ?? STILL_THERE);
+    }
+    expect(diff.earlier[STILL_THERE]).toMatchObject({ kind: 'project', parent: PERIMETER, collapsed: false });
+    expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + Object.keys(diff.ghosts).length);
+    // With empty projects drawn, the drawn day draws the project, open and empty, in its folder: what was removed
+    // in it comes back there, and the project is no ghost.
+    const shown = tickDiff(pairInput(before, after, view));
+    expect(Object.hasOwn(shown.diff.ghosts, STILL_THERE)).toBe(false);
+    for (const [id, zone] of held) {
+      expect(shown.diff.ghosts[id], id).toBe('removed');
+      expect(parents(shown.scene).get(id), id).toBe(zone ?? STILL_THERE);
+    }
+  });
 });
 
 describe('a region zone whose contents were removed', () => {
@@ -541,6 +593,120 @@ describe('a zone that is no asset, drawn as a chip, whose contents were removed'
   );
 });
 
+describe('what the earlier day drew only inside a chip, with the zone it lay in', () => {
+  const { bundle: GONE_BUNDLE, subnet: SUBNET, vm: VM } = DEMO_L_RESPLIT;
+  const { project: PARTNER, from: NETWORKING } = DEMO_M_MOVE;
+  const NETWORK = DEMO_M_PARTNER_NETWORK;
+
+  it(
+    'comes back in that zone when the drawn day draws it open: a VM in a subnet of a demo L bundle bundled anew',
+    async () => {
+      // Demo L's everything lens at `all`, the bundle "demo-web-7 – allow-grpc-to-demo-web-2" closed by hand: the
+      // earlier day drew it as a chip, holding the subnet dmz-europe-west3 and its one VM. On 27 September the
+      // network's members are bundled anew, no bundle has that id any more, the subnet is drawn open in a new
+      // bundle, and the VM is removed.
+      const [before, after] = await bundledVmRemoved();
+      const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
+      const input = pairInput(before, after, { ...open, flips: [flipIdOf(GONE_BUNDLE)] });
+      const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+      expect(zoneOf(earlier.scene, GONE_BUNDLE)?.collapsed).toBeDefined();
+      for (const id of [SUBNET, VM]) expect(parents(earlier.scene).has(id), id).toBe(false);
+      const bundle = parents(input.scene).get(SUBNET) ?? '';
+      expect(bundle.startsWith(BUNDLE_ID_PREFIX) && bundle !== GONE_BUNDLE, bundle).toBe(true);
+      expect(zoneOf(input.scene, bundle)?.collapsed).toBeUndefined();
+      expect(zoneOf(input.scene, SUBNET)).toMatchObject({ children: [] });
+      expect(zoneOf(input.scene, SUBNET)?.collapsed).toBeUndefined();
+
+      const { scene, diff } = tickDiff(input);
+      expect(diff.removed).toContain(VM);
+      // A ghost in the subnet, where the earlier day's view with every zone open has it, and counted by no chip.
+      expect(diff.ghosts[VM]).toBe('removed');
+      expect(SceneSchema.safeParse(scene).success).toBe(true);
+      expect(parents(scene).get(VM)).toBe(SUBNET);
+      expect(diff.inside).toEqual({});
+      // The bundle's ghost chip still counts only the firewall rule removed in it.
+      expect(zoneOf(scene, GONE_BUNDLE)?.collapsed).toEqual({ resources: 1 });
+      // It depends on the zones around it as the drawn day draws them.
+      expect(diff.earlier[SUBNET]).toEqual({
+        kind: 'subnet',
+        parent: bundle,
+        overlay: false,
+        collapsed: false,
+        empty: true,
+      });
+      expect(diff.earlier[bundle]).toMatchObject({ kind: 'group', collapsed: false, empty: false });
+      expectPlacedAmongSiblings(layoutScene(scene), VM, SUBNET);
+      // With the bundle open, the earlier day drew the VM in the subnet: the same ghost, in the same place.
+      const plain = tickDiff(pairInput(before, after, open));
+      expect(plain.diff.ghosts[VM]).toBe('removed');
+      expect(parents(plain.scene).get(VM)).toBe(SUBNET);
+    },
+    DEMO_L,
+  );
+
+  it('comes back with its zones as the drawn day’s view draws a zone there: demo M’s network of a project moved out of its folders', async () => {
+    // The networking lens with every zone open but those deeper than one asset zone: the earlier day drew Platform
+    // open and Platform / Networking as a chip, holding partner exchange and its network; the drawn day draws the
+    // project open at the top level, where it lies now, without the network, removed with all it held.
+    const [before, after] = await partnerNetworkRemoved();
+    const view = { snapshot: 'demo:M', lens: 'networking', detail: 'all', filters: { depth: 1 } } as const;
+    const input = pairInput(before, after, view);
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    expect(zoneOf(earlier.scene, NETWORKING)?.collapsed).toBeDefined();
+    for (const id of [PARTNER, NETWORK]) expect(parents(earlier.scene).has(id), id).toBe(false);
+    expect(parents(input.scene).get(PARTNER)).toBeNull();
+    expect(zoneOf(input.scene, PARTNER)?.collapsed).toBeUndefined();
+    const opened = buildSceneWithReport(before.graph, openView(input.spec), catalog, input.envBefore);
+    expect(parents(opened.scene).get(NETWORK)).toBe(PARTNER);
+
+    const { scene, diff } = tickDiff(input);
+    // Two asset zones deep, past the depth filter: a chip, as the view draws a network there, counting what was
+    // removed in it (a subnet, its forwarding rule, a firewall rule and a route).
+    expect(diff.ghosts).toEqual({ [NETWORK]: 'removed' });
+    expect(SceneSchema.safeParse(scene).success).toBe(true);
+    expect(parents(scene).get(NETWORK)).toBe(PARTNER);
+    expect(zoneOf(scene, NETWORK)).toMatchObject({ collapsed: { subnets: 1, resources: 3 }, children: [] });
+    expect(diff.inside).toEqual({});
+    expect(diff.earlier[NETWORK]).toEqual({
+      kind: 'vpc',
+      parent: PARTNER,
+      overlay: false,
+      collapsed: true,
+      empty: false,
+    });
+    expect(diff.earlier[PARTNER]).toMatchObject({ kind: 'project', parent: null, collapsed: false });
+    expectPlacedAmongSiblings(layoutScene(scene), NETWORK, PARTNER);
+
+    // Opened by hand, it comes back open, holding the ghosts of what it held, each zone as the view draws it there:
+    // the subnet, three asset zones deep, a chip.
+    const flipped = tickDiff(pairInput(before, after, { ...view, flips: [flipIdOf(NETWORK)] }));
+    const network = zoneOf(flipped.scene, NETWORK);
+    expect(network?.collapsed).toBeUndefined();
+    const subnets = sceneZones(network?.children ?? []).filter((zone) => zone.kind === 'subnet');
+    expect(subnets).toHaveLength(1);
+    expect(subnets[0]?.collapsed).toEqual({ resources: 1 });
+    for (const child of network?.children ?? [])
+      expect(flipped.diff.ghosts[child.id], child.id).toBe('removed');
+    expect(flipped.diff.earlier[NETWORK]).toMatchObject({ collapsed: false, empty: false });
+  });
+
+  it('does not come back in a zone the earlier day drew as a chip that the drawn day draws only as it holds nothing now', async () => {
+    // Demo S's everything lens at the folder level, which draws projects as chips: on 17 September the reports
+    // project, marked for deletion (this lens draws what is hidden too), holds nothing, so it is drawn open.
+    const input = await inputOf('2026-09-16', '2026-09-17', { lens: 'everything', detail: 'folders' });
+    const earlier = buildSceneWithReport(input.before.graph, input.spec, catalog, input.envBefore);
+    expect(zoneOf(earlier.scene, REPORTS_PROJECT)?.collapsed).toBeDefined();
+    expect(zoneOf(input.scene, REPORTS_PROJECT)).toMatchObject({ children: [] });
+    expect(zoneOf(input.scene, REPORTS_PROJECT)?.collapsed).toBeUndefined();
+
+    const { scene, diff } = tickDiff(input);
+    expect(diff.removed).toContain(REPORTS_VM);
+    // What it held showed as that chip: the drawn day draws it as it is, empty.
+    expect(zoneOf(scene, REPORTS_PROJECT)?.children).toEqual([]);
+    expect(Object.hasOwn(diff.ghosts, REPORTS_VM)).toBe(false);
+  });
+});
+
 describe('a changed asset left out in a zone that is no asset, which is gone', () => {
   const { project: PROJECT, region: REGION } = DEMO_M_REGION;
   const { inRegion: IN_REGION, alone: ALONE, aloneRegion: ALONE_REGION } = DEMO_M_JOBS;
@@ -670,6 +836,45 @@ describe('an asset zone the drawn day no longer draws, itself unchanged', () => 
     // Empty projects drawn: the drawn day draws the project, open and empty, and the VM and the disk are its ghosts.
     const shown = tickDiff(pairInput(before, after, view));
     expect(shown.diff.ghosts).toEqual({ [VM]: 'removed', [DISK]: 'removed' });
+  });
+});
+
+describe('a changed asset inside the ghost of a changed asset', () => {
+  const { project: PROJECT } = DEMO_M_REGION;
+  const { alone: JOB, aloneRegion: JOB_REGION } = DEMO_M_JOBS;
+  const view = { snapshot: 'demo:M', lens: 'overview', detail: 'all' } as const;
+
+  it('comes back not drawn now where it stood, as in a container drawn open: a job that succeeded in a project marked for deletion', async () => {
+    const [before, after] = await paymentsWebRetired();
+    // The earlier day drew the running job in the project; the drawn day draws neither: a project being deleted is
+    // hidden (what else it holds is drawn in its folder), and a finished job starts hidden.
+    const input = pairInput(before, after, view);
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    const folder = parents(earlier.scene).get(PROJECT) ?? '';
+    expect(parents(earlier.scene).get(JOB)).toBe(PROJECT);
+    for (const id of [PROJECT, JOB]) expect(parents(input.scene).has(id), id).toBe(false);
+    expect(after.graph.containment.parent[JOB]).toBe(PROJECT);
+    const others = (zoneOf(earlier.scene, PROJECT)?.children ?? []).filter((child) => child.id !== JOB);
+    expect(others.length).toBeGreaterThan(0);
+    for (const child of others) expect(parents(input.scene).get(child.id), child.id).toBe(folder);
+
+    const { scene, diff } = tickDiff(input);
+    expect([diff.added, diff.removed, diff.changed]).toEqual([[], [], [JOB, PROJECT].sort()]);
+    // The project's ghost holds the job's: the change shows where it happened. What else it held is drawn in the
+    // folder, and is no ghost.
+    expect(diff.ghosts).toEqual({ [PROJECT]: 'hidden', [JOB]: 'hidden' });
+    expect(SceneSchema.safeParse(scene).success).toBe(true);
+    expect(parents(scene).get(PROJECT)).toBe(folder);
+    expect(zoneOf(scene, PROJECT)?.children.map((child) => child.id)).toEqual([JOB]);
+    expect(diff.inside).toEqual({});
+    expect(scene.metadata.rectCount).toBe(input.scene.metadata.rectCount + 2);
+    expectPlacedAmongSiblings(layoutScene(scene), PROJECT, folder);
+
+    // With region zones shown, the job's region zone comes back around it, with the reason of the ghost around it.
+    const regions = tickDiff(pairInput(before, after, { ...view, filters: { showRegions: true } }));
+    expect(regions.diff.ghosts).toEqual({ [PROJECT]: 'hidden', [JOB_REGION]: 'hidden', [JOB]: 'hidden' });
+    expect(parents(regions.scene).get(JOB_REGION)).toBe(PROJECT);
+    expect(parents(regions.scene).get(JOB)).toBe(JOB_REGION);
   });
 });
 

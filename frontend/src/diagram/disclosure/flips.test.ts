@@ -10,7 +10,9 @@
  * zone drawn empty among them, whose flip each keeps as the person's choice), and on a timeline day exactly when it
  * also draws the same ghosts (a property over demo M's days), where a ghost's flip goes or stays as a zone's does
  * and the ghosts are judged by the zones the earlier day drew (a perimeter removed, a project moved between the
- * days); the 48-flip cap and an `auto` level change are told apart from every other change.
+ * days), or by those the drawn day draws around what the earlier day drew only inside a chip (a network of a project
+ * moved out of its folders, a VM of a bundle that demo L bundles anew); the 48-flip cap and an `auto` level change
+ * are told apart from every other change.
  */
 import { catalog } from '@gcportrait/catalog';
 import {
@@ -47,10 +49,14 @@ import { tickDiff, type DiffDayData } from '../diff/tickDiff';
 import type { EarlierZone } from '../diff/types';
 import { demoHistory } from '../pipeline/demo';
 import {
+  bundledVmRemoved,
   demoDayGraph,
   demoGraphSync,
-  demoMNextDay,
+  DEMO_L_RESPLIT,
+  DEMO_M_MOVE,
+  DEMO_M_PARTNER_NETWORK,
   DEMO_M_PERIMETER,
+  partnerNetworkRemoved,
   perimeterRemoved,
   sceneEnv,
 } from '../testing/demoScenes';
@@ -1052,19 +1058,8 @@ describe('on a timeline day the ghosts count', () => {
   describe('the zones the ghosts depend on are judged as the earlier day drew them', () => {
     const { perimeter: PERIMETER, secured: SECURED } = DEMO_M_PERIMETER;
     /** Partner exchange, in the Networking folder of the Platform folder, and the network it holds. */
-    const PARTNER = '//cloudresourcemanager.googleapis.com/projects/10000000003';
-    const PARTNER_NETWORK = '//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner';
-
-    /** The node `id` and every node the Graph nests in it. */
-    function nestedIn(graph: Graph, id: string): Set<string> {
-      const ids = new Set<string>();
-      const visit = (current: string): void => {
-        ids.add(current);
-        for (const child of graph.containment.children[current] ?? []) visit(child);
-      };
-      visit(id);
-      return ids;
-    }
+    const PARTNER = DEMO_M_MOVE.project;
+    const PARTNER_NETWORK = DEMO_M_PARTNER_NETWORK;
 
     /** Each button is inert exactly when the view it writes draws the day with the same ghosts. */
     function judgedRight(before: Day, after: Day, spec: ViewSpec, drawing: DayDrawing): void {
@@ -1100,21 +1095,7 @@ describe('on a timeline day the ghosts count', () => {
     });
 
     it('a project moved out of two folders, the network it held removed: the network’s ghost is as deep as the earlier day drew it', async () => {
-      const [before, after] = await demoMNextDay((graph, assets) => {
-        const removed = nestedIn(graph, PARTNER_NETWORK);
-        return assets.flatMap((asset) => {
-          if (removed.has(asset.name)) return [];
-          if (asset.name !== PARTNER) return [asset];
-          // Straight into the organisation, as the Sandbox project lies.
-          return [
-            {
-              ...asset,
-              parent: '//cloudresourcemanager.googleapis.com/organizations/30000000002',
-              ancestors: ['projects/10000000003', 'organizations/30000000002'],
-            },
-          ];
-        });
-      });
+      const [before, after] = await partnerNetworkRemoved();
       // Every zone open but those deeper than three asset zones: on the earlier day the network was the fourth.
       const spec = normalizeViewSpec({
         snapshot: 'demo:M',
@@ -1131,6 +1112,45 @@ describe('on a timeline day the ghosts count', () => {
       expect(expandAllView(spec, drawing.shown)).toBeNull();
       judgedRight(before, after, spec, drawing);
     });
+
+    it('the same network, which the earlier day drew only inside its folder’s chip: its ghost is judged as the drawn day draws a zone where it comes back', async () => {
+      const [before, after] = await partnerNetworkRemoved();
+      // One asset zone deep: on the earlier day Platform / Networking was a chip holding the project and its network;
+      // the network comes back in the project, two asset zones deep, a chip, and opened by hand open.
+      const view: ViewSpecInput = {
+        snapshot: 'demo:M',
+        lens: 'networking',
+        detail: 'all',
+        filters: { depth: 1 },
+      };
+      for (const flips of [[], [flipIdOf(PARTNER_NETWORK)]]) {
+        const spec = normalizeViewSpec({ ...view, flips });
+        const drawing = between(before, after, spec);
+        expect(drawing.shown.diff.ghosts[PARTNER_NETWORK], flips.join()).toBe('removed');
+        expect(parentsOf(drawing.shown.scene).get(PARTNER_NETWORK)).toBe(PARTNER);
+        const chip = zoneIn(drawing.shown.scene, PARTNER_NETWORK)?.collapsed;
+        expect(chip === undefined, flips.join()).toBe(flips.length > 0);
+        judgedRight(before, after, spec, drawing);
+      }
+    });
+
+    it(
+      'a VM the earlier day drew only inside a bundle closed by hand, bundled anew (demo L): its ghost depends on the subnet it comes back in',
+      async () => {
+        const [before, after] = await bundledVmRemoved();
+        const spec = normalizeViewSpec({
+          snapshot: 'demo:L',
+          lens: 'everything',
+          detail: 'all',
+          flips: [flipIdOf(DEMO_L_RESPLIT.bundle)],
+        });
+        const drawing = between(before, after, spec);
+        expect(drawing.shown.diff.ghosts[DEMO_L_RESPLIT.vm]).toBe('removed');
+        expect(parentsOf(drawing.shown.scene).get(DEMO_L_RESPLIT.vm)).toBe(DEMO_L_RESPLIT.subnet);
+        judgedRight(before, after, spec, drawing);
+      },
+      DEMO_L,
+    );
   });
 
   describe('each button is inert exactly when the view it writes draws the day with the same ghosts (property)', () => {

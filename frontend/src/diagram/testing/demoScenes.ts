@@ -5,16 +5,24 @@
  * budget, and the layout. Synchronous parts are cached per organisation; nothing here touches a DOM. A day of an
  * organisation's history is read as the data worker reads it (timeline/worker/replay.ts), and a day compared with
  * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts), also for the two-day pairs
- * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`, a project moved into
- * another folder, `projectMoved`, everything a project holds in one region removed, `regionRemoved`, or in one zone,
- * `zoneRemoved`, two Batch jobs that succeeded, one where the rest of its region was removed, `jobsSucceeded`, or a
- * project's only VM removed, `ciRunnerRemoved`). For the tests that only need the scene builder: the builder's
- * environment for a snapshot (`sceneEnv`), and a demo Graph built synchronously straight from the generator
- * (`demoGraphSync`). Demo data without a Scene is in demoData.ts.
+ * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`, or with all the other
+ * project it secures holds, `perimeterEmptied`, a project moved into another folder, `projectMoved`, or out of its
+ * folders with its network removed, `partnerNetworkRemoved`, everything a project holds in one region removed,
+ * `regionRemoved`, or in one zone, `zoneRemoved`, two Batch jobs that succeeded, one where the rest of its region was
+ * removed, `jobsSucceeded`, one as its project is marked for deletion, `paymentsWebRetired`, or a project's only VM
+ * removed, `ciRunnerRemoved`; demo L's VM in a subnet of a bundle that is bundled anew removed, `bundledVmRemoved`).
+ * For the tests that only need the scene builder: the builder's environment for a snapshot (`sceneEnv`), and a demo
+ * Graph built synchronously straight from the generator (`demoGraphSync`). Demo data without a Scene is in
+ * demoData.ts.
  */
 import { catalog } from '@gcportrait/catalog';
 import { generateOrganization, toSnapshot } from '@gcportrait/demo-data';
-import { buildGraph, buildSceneWithReport, DEFAULT_VIEWPORT_BUDGET } from '@gcportrait/graph';
+import {
+  BUNDLE_ID_PREFIX,
+  buildGraph,
+  buildSceneWithReport,
+  DEFAULT_VIEWPORT_BUDGET,
+} from '@gcportrait/graph';
 import { layoutScene, type Layout } from '@gcportrait/layout';
 import {
   normalizeViewSpec,
@@ -207,6 +215,11 @@ export async function demoMDay(day: string): Promise<DemoDay> {
   return { ...(await demoDayGraph('M', day)), tick: day };
 }
 
+/** Demo L's day `day` (`YYYY-MM-DD`), as the data worker holds it, with its tick. */
+export async function demoLDay(day: string): Promise<DemoDay> {
+  return { ...(await demoDayGraph('L', day)), tick: day };
+}
+
 /** How a two-day pair makes a day's assets from those of the day it starts from, whose Graph it is given. */
 type AssetChange = (graph: Graph, assets: readonly Asset[]) => Asset[];
 
@@ -260,6 +273,22 @@ export function perimeterRemoved(): Promise<readonly [DemoDay, DemoDay]> {
     assets.filter(
       (asset) =>
         asset.name !== DEMO_M_PERIMETER.perimeter && !asset.ancestors.includes('projects/10000000011'),
+    ),
+  );
+}
+
+/**
+ * Demo M's perimeter removed between two days with Retail services, as in `perimeterRemoved`, and everything the
+ * data project holds removed too; the data project itself is still there, unchanged, in its folder.
+ */
+export function perimeterEmptied(): Promise<readonly [DemoDay, DemoDay]> {
+  const data = DEMO_M_PERIMETER.stillThere.slice(DEMO_M_PERIMETER.stillThere.indexOf('projects/'));
+  return demoMNextDay((_graph, assets) =>
+    assets.filter(
+      (asset) =>
+        asset.name !== DEMO_M_PERIMETER.perimeter &&
+        !asset.ancestors.includes('projects/10000000011') &&
+        (asset.name === DEMO_M_PERIMETER.stillThere || !asset.ancestors.includes(data)),
     ),
   );
 }
@@ -374,6 +403,38 @@ export function jobsSucceeded(): Promise<readonly [DemoDay, DemoDay]> {
   );
 }
 
+/** When `paymentsWebRetired` marks the project for deletion: between the two days. */
+const RETIRED_AT = '2026-09-16T15:00:00Z';
+
+/**
+ * Demo M's Payments web (prod) marked for deletion between two days (`demoMChangedDays`): on 2026-09-16 it runs a
+ * Batch job in europe-west3 (`DEMO_M_JOBS.alone`), which has succeeded the next day (a finished job starts hidden),
+ * when the project's `lifecycleState` is `DELETE_REQUESTED` (a project being deleted is hidden: what it holds that the
+ * view draws is drawn in its folder). Nothing else changes.
+ */
+export function paymentsWebRetired(): Promise<readonly [DemoDay, DemoDay]> {
+  const project = (assets: readonly Asset[]): Asset => {
+    const found = assets.find((asset) => asset.name === DEMO_M_REGION.project);
+    if (found === undefined) throw new Error(`demo M has no project ${PAYMENTS_WEB}`);
+    return found;
+  };
+  return demoMChangedDays(
+    (_graph, assets) => [
+      ...assets,
+      paymentsWebJob(project(assets), DEMO_M_JOBS.alone, 'RUNNING', '2026-09-15T22:00:00Z'),
+    ],
+    (_graph, assets) =>
+      assets.map((asset) => {
+        if (asset.name === DEMO_M_JOBS.alone) {
+          return paymentsWebJob(project(assets), asset.name, 'SUCCEEDED', '2026-09-16T04:30:00Z');
+        }
+        if (asset.name !== DEMO_M_REGION.project) return asset;
+        const data = typeof asset.data === 'object' && asset.data !== null ? asset.data : {};
+        return { ...asset, updateTime: RETIRED_AT, data: { ...data, lifecycleState: 'DELETE_REQUESTED' } };
+      }),
+  );
+}
+
 /** Demo M's CI runner VM and its boot disk, which `ciRunnerRemoved` removes, and the zones around them. */
 export const DEMO_M_CI_RUNNER = {
   vm: '//compute.googleapis.com/projects/demo-mgmt-1/zones/europe-west3-a/instances/ci-runner-1',
@@ -393,6 +454,31 @@ export const DEMO_M_CI_RUNNER = {
 export function ciRunnerRemoved(): Promise<readonly [DemoDay, DemoDay]> {
   const removed: readonly string[] = [DEMO_M_CI_RUNNER.vm, DEMO_M_CI_RUNNER.disk];
   return demoMNextDay((_graph, assets) => assets.filter((asset) => !removed.includes(asset.name)));
+}
+
+/** Demo L's bundle that is bundled anew on 27 September, and the subnet and VM `bundledVmRemoved` takes from it. */
+export const DEMO_L_RESPLIT = {
+  /**
+   * The bundle "demo-web-7 – allow-grpc-to-demo-web-2" of the shared production network in the everything lens on 26
+   * September, which no bundle of 27 September is (its id names its first member).
+   */
+  bundle: `${BUNDLE_ID_PREFIX}//compute.googleapis.com/projects/demo-net-1/regions/europe-west1/subnetworks/demo-web-7-europe-west1`,
+  /** In that bundle on 26 September, and in a new bundle on 27 September. */
+  subnet: '//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/subnetworks/dmz-europe-west3',
+  /** The one VM that subnet holds, which `bundledVmRemoved` removes on 27 September. */
+  vm: '//compute.googleapis.com/projects/demo-net-1/zones/europe-west3-a/instances/nva-inspect-1',
+} as const;
+
+/**
+ * Demo L's 26 September and its 27 September (on which the shared production network's members are bundled anew)
+ * with the inspection VM of its dmz subnet removed too; nothing else differs from the history.
+ */
+export async function bundledVmRemoved(): Promise<readonly [DemoDay, DemoDay]> {
+  const [before, after] = await Promise.all([demoLDay('2026-09-26'), demoLDay('2026-09-27')]);
+  const removed = changedDay(after, after.tick, (_graph, assets) =>
+    assets.filter((asset) => asset.name !== DEMO_L_RESPLIT.vm),
+  );
+  return [before, removed];
 }
 
 /** Demo M's partner exchange project, and the folders `projectMoved` moves it from and into. */
@@ -432,6 +518,35 @@ export function projectMoved(): Promise<readonly [DemoDay, DemoDay]> {
         updateTime: MOVED_AT,
         data: { ...data, parent: { type: 'folder', id: folder.slice('folders/'.length) } },
       };
+    });
+  });
+}
+
+/** Partner exchange's network, which `partnerNetworkRemoved` removes with everything nested in it. */
+export const DEMO_M_PARTNER_NETWORK =
+  '//compute.googleapis.com/projects/demo-partner-1/global/networks/vpc-partner';
+
+/** Demo M's organisation, which `partnerNetworkRemoved` moves partner exchange into. */
+const DEMO_M_ORGANIZATION = '//cloudresourcemanager.googleapis.com/organizations/30000000002';
+
+/**
+ * Demo M's partner exchange moved out of Platform / Networking straight into the organisation (as the Sandbox project
+ * lies) between two days (`demoMNextDay`), its network `vpc-partner` removed with everything the Graph nests in it;
+ * the project's `parent` and `ancestors` change, nothing else does.
+ */
+export function partnerNetworkRemoved(): Promise<readonly [DemoDay, DemoDay]> {
+  return demoMNextDay((graph, assets) => {
+    const removed = new Set<string>();
+    const visit = (id: string): void => {
+      removed.add(id);
+      for (const child of graph.containment.children[id] ?? []) visit(child);
+    };
+    visit(DEMO_M_PARTNER_NETWORK);
+    const project = DEMO_M_MOVE.project.slice(DEMO_M_MOVE.project.indexOf('projects/'));
+    return assets.flatMap((asset) => {
+      if (removed.has(asset.name)) return [];
+      if (asset.name !== DEMO_M_MOVE.project) return [asset];
+      return [{ ...asset, parent: DEMO_M_ORGANIZATION, ancestors: [project, 'organizations/30000000002'] }];
     });
   });
 }

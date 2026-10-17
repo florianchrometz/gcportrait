@@ -35,12 +35,15 @@ export interface DiffCounts {
  * and the view no longer draws it where it stood, like a project marked for deletion, which changed, or a project
  * that `hideEmptyProjects` no longer draws since what it held was removed, which did not (one the drawn day holds
  * in another container, or inside a chip, is no ghost: it is drawn there, or the chip counts it). Inside the ghost
- * of an asset only what was removed comes back, and the zones that are no asset around it (a region of a removed
- * project) take the reason of the ghost around them; an asset still there on the drawn day is never a ghost inside
- * it. A zone gone for what it held (a zone that is no asset, or an asset zone that did not change) holds what
- * changed or was removed in it, each with its own reason: such an asset zone is `hidden`, and a zone that is no
- * asset (a region zone whose contents were all removed, or whose one job succeeded) is `removed` when something
- * removed comes back in it, else `hidden`.
+ * of an asset what was removed or changed in it comes back as in a container drawn open, each with its own reason
+ * (a Batch job that succeeded in a project marked for deletion is `hidden` in the project's), and the zones that
+ * are no asset around it (a region of a removed project) take the reason of the ghost around them; an asset still
+ * there that the drawn day draws, or holds in a chip, is never a ghost inside it. A zone gone for what it held (a
+ * zone that is no asset, or an asset zone that did not change) holds what changed or was removed in it, each with
+ * its own reason: such an asset zone is `hidden`, and a zone that is no asset (a region zone whose contents were
+ * all removed, or whose one job succeeded) is `removed` when something removed comes back in it, else `hidden`.
+ * What the earlier day drew only inside a chip comes back by the same reasons, in the zone it lies in on that day's
+ * view with every zone open, when the drawn day draws that zone open.
  */
 export type GhostReason = 'removed' | 'hidden';
 
@@ -48,7 +51,9 @@ export type GhostReason = 'removed' | 'hidden';
  * A zone of the earlier day's view (built at the detail level the drawn Scene uses, with the view's flips) that the
  * ghosts depend on, as that day drew it: what the scene builder decided its state from there and the state it gave
  * it. These can differ from the drawn day's (a zone moved, a perimeter removed), so the disclosure buttons judge
- * a press's ghosts by them (disclosure/flips.ts).
+ * a press's ghosts by them (disclosure/flips.ts). For a ghost of what the earlier day drew only inside a chip, its
+ * zones are as it comes back (in the state the drawn day's view gives a zone there) and the zones around it as the
+ * drawn day draws them.
  */
 export interface EarlierZone {
   readonly kind: ZoneKind;
@@ -85,7 +90,8 @@ export interface TickDiff {
   readonly ghosts: Readonly<Record<string, GhostReason>>;
   /**
    * The zones the ghosts depend on, by node id, as the earlier day drew them: every ghost zone, and every zone
-   * around a ghost there (those all the way up to the canvas, each open).
+   * around a ghost there (those all the way up to the canvas, each open); around a ghost of what the earlier day drew
+   * only inside a chip, the zones the drawn day draws.
    */
   readonly earlier: Readonly<Record<string, EarlierZone>>;
   /**
