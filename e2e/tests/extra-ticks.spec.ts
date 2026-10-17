@@ -5,7 +5,7 @@ import path from 'node:path';
 
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 
-import { expectNoAxeViolations, hashOf, openDiagram, primaryNav, scratchShot } from './support.js';
+import { drawingOf, expectNoAxeViolations, hashOf, openDiagram, primaryNav, scratchShot } from './support.js';
 import {
   expectDrawn,
   playbackStopped,
@@ -201,9 +201,10 @@ test('an imported export of the demo organisation is an extra tick: selected, dr
   await scratchShot(bar, 'extra-ticks', 'bar-M-extra-light');
 
   // A press on it selects it, like a day: its id in the hash, the export drawn.
+  const ownDay = await drawingOf(page);
   await marker.click();
   await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&tick=${EXTRA}`);
-  await expectDrawn(bar, EXTRA);
+  await expectDrawn(bar, EXTRA, ownDay);
   const svg = page.locator('svg.dg-canvas[data-diagram-ready="true"]');
   await expect(svg.locator('.dg-title-block')).toContainText('read 2026-10-05T14:30:00+00:00');
   await expect(bar.getByTestId('timeline-readout')).toHaveText('export 2026-10-05 14:30 · extra tick');
@@ -219,12 +220,14 @@ test('an imported export of the demo organisation is an extra tick: selected, dr
 
   // [ and ] step off it and back onto it, like days.
   await page.locator('main').focus();
+  const extra = await drawingOf(page);
   await page.keyboard.press('[');
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-10-05');
-  await expectDrawn(bar, '2026-10-05');
+  await expectDrawn(bar, '2026-10-05', extra);
+  const fifth = await drawingOf(page);
   await page.keyboard.press(']');
   await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&tick=${EXTRA}`);
-  await expectDrawn(bar, EXTRA);
+  await expectDrawn(bar, EXTRA, fifth);
 
   // A reload keeps it.
   await page.reload();
@@ -276,8 +279,9 @@ test('an export whose read time is later than the clock is noted at the import a
   const bar = await timelineBar(page);
   // After the history's last day (8 October): at the present, not in the future.
   await expect(bar.locator('[data-state]').last()).toHaveAttribute('data-day', ahead);
+  const ownDay = await drawingOf(page);
   await bar.locator(`[data-day="${ahead}"]`).click();
-  await expectDrawn(bar, ahead);
+  await expectDrawn(bar, ahead, ownDay);
   const readout = bar.getByTestId('timeline-readout');
   await expect(readout).toHaveText('export 2026-10-11 08:00 · extra tick, shown at the present');
   await expect(readout).toHaveAttribute(
@@ -320,8 +324,9 @@ test('an export without its operation.json is an estimated extra tick; one with 
   const typed = bar.locator('[data-day="2026-09-30T08:00:00Z"]');
   await expect(typed).not.toHaveAttribute('data-estimated', 'true');
   await expect(typed).toHaveAttribute('title', 'export 2026-09-30 08:00: ready');
+  const ownDay = await drawingOf(page);
   await typed.click();
-  await expectDrawn(bar, '2026-09-30T08:00:00Z');
+  await expectDrawn(bar, '2026-09-30T08:00:00Z', ownDay);
   await expect(bar.getByRole('slider', { name: 'Timeline' })).toHaveAttribute(
     'aria-valuetext',
     'export 2026-09-30 08:00, extra tick, read time entered when it was loaded, on screen',
@@ -334,6 +339,9 @@ test('an export without its operation.json is an estimated extra tick; one with 
  * way.
  */
 async function playFromOctober4(page: Page, withExtras: boolean): Promise<string[]> {
+  // A page loaded afresh, whose first drawing is the 4th's: from the diagram a link that changes only the hash keeps
+  // the page, and the last day's drawing on the canvas until the 4th's replaces it.
+  await page.goto('about:blank');
   await openDiagram(page, `${DEMO_M}&tick=2026-10-04`);
   const bar = await timelineBar(page);
   await expectDrawn(bar, '2026-10-04');
@@ -342,11 +350,12 @@ async function playFromOctober4(page: Page, withExtras: boolean): Promise<string
   if (withExtras) await toggle.click();
   await expect(toggle).toHaveAttribute('aria-pressed', String(withExtras));
   const recorded = await recordHashes(page);
+  const fourth = await drawingOf(page);
   await stoppedPlayButton(bar).click();
   await expect(bar.getByRole('button', { name: 'Pause playback' })).toBeVisible();
   // It stops by itself on the last day (the snapshot itself: no tick).
   await playUntil(page, () => playbackStopped(bar));
-  await expectDrawn(bar, '2026-10-08');
+  await expectDrawn(bar, '2026-10-08', fourth);
   return recorded();
 }
 

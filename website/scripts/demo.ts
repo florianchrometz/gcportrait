@@ -106,12 +106,31 @@ async function visible(locator: Locator, what: string, timeout = STEP_TIMEOUT): 
   }
 }
 
-function canvas(page: Page): Locator {
-  return page.locator('svg.dg-canvas[data-diagram-ready="true"]');
+/** The canvas `<svg>` once a drawing is on it, fitted and interactive (frontend/src/diagram/DiagramCanvas.tsx). */
+const DRAWN_CANVAS = 'svg.dg-canvas[data-diagram-ready="true"]';
+
+/**
+ * The number of the drawing on the canvas (`data-drawing`), once one is drawn: every drawing the canvas puts up takes
+ * the page's next number. Read before a view change, for `drawn`'s `previous`.
+ */
+async function drawingOf(page: Page): Promise<string> {
+  const drawing = await page.locator(DRAWN_CANVAS).getAttribute('data-drawing', { timeout: DRAW_TIMEOUT });
+  if (drawing === null) throw new Error('the canvas numbers no drawing');
+  return drawing;
 }
 
-async function drawn(page: Page, what: string): Promise<void> {
-  await visible(canvas(page), `the diagram of ${what}`, DRAW_TIMEOUT);
+/**
+ * Waits until a drawing is on the canvas, fitted and interactive, and the web fonts have loaded. The canvas stays
+ * ready while the next view is prepared, the drawing before it still on it, so after a view change (a drill-in, a day
+ * of the timeline) `previous`, the number `drawingOf` read before the change, makes it wait for a drawing after that
+ * one; without it, it waits for the first drawing of a page just loaded.
+ */
+async function drawn(page: Page, what: string, previous?: string): Promise<void> {
+  const canvas =
+    previous === undefined
+      ? page.locator(DRAWN_CANVAS)
+      : page.locator(`${DRAWN_CANVAS}:not([data-drawing="${previous}"])`);
+  await visible(canvas, `the diagram of ${what}`, DRAW_TIMEOUT);
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
@@ -226,16 +245,21 @@ async function checkDiagram(
   shots?: string,
 ): Promise<string[]> {
   const problems: string[] = [];
+  // A page loaded afresh, whose first drawing is this view's: from the diagram of the demo tried last, an address
+  // that changes only the hash keeps the page, and that demo's drawing on the canvas until this one replaces it.
+  await page.goto('about:blank');
   await page.goto(`${base}${DEMO_URL}diagram#snapshot=demo:M&lens=compute&selection=${PROJECT}`);
   await drawn(page, 'demo M with a project selected');
   const drawer = page.getByRole('complementary', { name: 'Details' });
   await visible(drawer, 'the details drawer');
+  const organisation = await drawingOf(page);
   await drawer.getByRole('button', { name: 'Details' }).click();
   await waitForHash(page, `root=${PROJECT}`);
-  await drawn(page, 'the drilled-in project');
+  await drawn(page, 'the drilled-in project', organisation);
+  const ownDay = await drawingOf(page);
   await page.keyboard.press('[');
   await waitForHash(page, 'tick=');
-  await drawn(page, 'the day before');
+  await drawn(page, 'the day before', ownDay);
   problems.push(...(await axeOn(page, axe)).map((problem) => `diagram: ${problem}`));
   await shot(page, shots, `diagram-M-drilled-in-${theme}`);
 

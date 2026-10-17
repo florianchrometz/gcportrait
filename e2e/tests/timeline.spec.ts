@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 import { expect, test } from '@playwright/test';
 
-import { drawnCanvas, expectNoAxeViolations, hashOf, openDiagram, scratchShot } from './support.js';
+import {
+  drawingOf,
+  drawnCanvas,
+  expectNoAxeViolations,
+  hashOf,
+  openDiagram,
+  scratchShot,
+} from './support.js';
 import {
   expectDrawn,
   playbackStopped,
@@ -56,18 +63,20 @@ test('scrubbing to a day with changes draws that day, and the day is in the hash
   const svg = await openDiagram(page, DEMO_M);
   const bar = await timelineBar(page);
   const entries = await page.evaluate(() => history.length);
+  const ownDay = await drawingOf(page);
   await scrubTo(page, bar, '2026-09-16');
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-09-16');
-  await expectDrawn(bar, '2026-09-16');
+  await expectDrawn(bar, '2026-09-16', ownDay);
   await expect(svg.locator('.dg-title-block')).toContainText(
     'Overview lens · read 2026-09-16T00:00:00+00:00',
   );
   await expect(svg.locator(`[data-id="${REPORTS_PROJECT}"]`)).toHaveCount(1);
   await expect(bar.getByTestId('timeline-readout')).toHaveText('Wednesday, 16 September 2026');
   // The day the reports project was deleted: it is gone.
+  const sixteenth = await drawingOf(page);
   await scrubTo(page, bar, '2026-09-17');
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-09-17');
-  await expectDrawn(bar, '2026-09-17');
+  await expectDrawn(bar, '2026-09-17', sixteenth);
   await expect(svg.locator('.dg-title-block')).toContainText('read 2026-09-17T00:00:00+00:00');
   await expect(svg.locator(`[data-id="${REPORTS_PROJECT}"]`)).toHaveCount(0);
   // A drag moves the view in place: no history entry per day.
@@ -81,17 +90,20 @@ test('[ and ] move one day back and forward; past the last day they say why they
   await openDiagram(page, DEMO_M);
   const bar = await timelineBar(page);
   await page.locator('main').focus();
+  const ownDay = await drawingOf(page);
   await page.keyboard.press('[');
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-10-07');
-  await expectDrawn(bar, '2026-10-07');
+  await expectDrawn(bar, '2026-10-07', ownDay);
+  const seventh = await drawingOf(page);
   await page.keyboard.press('[');
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-10-06');
-  await expectDrawn(bar, '2026-10-06');
+  await expectDrawn(bar, '2026-10-06', seventh);
   await expect(bar.getByRole('slider', { name: 'Timeline' })).toHaveAttribute(
     'aria-valuetext',
     'Tuesday, 6 October 2026, on screen',
   );
   // The step buttons and Back: each step was a history entry.
+  const sixth = await drawingOf(page);
   await bar.getByRole('button', { name: 'Next day' }).click();
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-10-07');
   await page.goBack();
@@ -101,7 +113,7 @@ test('[ and ] move one day back and forward; past the last day they say why they
   await page.keyboard.press(']');
   // The last day is the snapshot itself: the hash names no tick.
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M');
-  await expectDrawn(bar, '2026-10-08');
+  await expectDrawn(bar, '2026-10-08', sixth);
   await page.keyboard.press(']');
   await expect(page.getByTestId('timeline-keys-status')).toHaveText(
     'This is the latest day of the timeline (8 Oct).',
@@ -135,6 +147,7 @@ test('playback runs through the days to the last one, and a key press stops it',
   await expectDrawn(bar, '2026-10-05');
   await bar.getByRole('radio', { name: /0\.5 s/ }).click();
   const played = await recordHashes(page);
+  const fifth = await drawingOf(page);
   await stoppedPlayButton(bar).click();
   await expect(bar.getByRole('button', { name: 'Pause playback' })).toHaveAttribute('aria-pressed', 'true');
   await scratchShot(page, 'timeline', 'timeline-M-playing-light');
@@ -145,7 +158,7 @@ test('playback runs through the days to the last one, and a key press stops it',
     '#snapshot=demo:M&tick=2026-10-07',
     '#snapshot=demo:M',
   ]);
-  await expectDrawn(bar, '2026-10-08');
+  await expectDrawn(bar, '2026-10-08', fifth);
   // From the last day it starts again at the first; any key stops it.
   const replayed = await recordHashes(page);
   await stoppedPlayButton(bar).click();

@@ -400,12 +400,14 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
       const next = bar.getByRole('button', { name: 'Next day' });
       await expectTarget(previous, 'Previous day');
       await expectTarget(next, 'Next day');
+      const fifth = await drawingOf(page);
       await previous.tap();
       await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-10-04');
-      await expectDrawn(bar, '2026-10-04');
+      await expectDrawn(bar, '2026-10-04', fifth);
+      const fourth = await drawingOf(page);
       await next.tap();
       await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-10-05');
-      await expectDrawn(bar, '2026-10-05');
+      await expectDrawn(bar, '2026-10-05', fourth);
 
       const fast = bar.getByRole('radio', { name: /0\.5 s/ });
       await expectTarget(fast, '0.5 s');
@@ -414,6 +416,7 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
       const played = await recordHashes(page);
       const play = stoppedPlayButton(bar);
       await expectTarget(play, 'Play through the days');
+      const fifthAgain = await drawingOf(page);
       await play.tap();
       await expect(bar.getByRole('button', { name: 'Pause playback' })).toHaveAttribute(
         'aria-pressed',
@@ -425,7 +428,7 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
         '#snapshot=demo:M&tick=2026-10-07',
         '#snapshot=demo:M',
       ]);
-      await expectDrawn(bar, '2026-10-08');
+      await expectDrawn(bar, '2026-10-08', fifthAgain);
     });
   });
 

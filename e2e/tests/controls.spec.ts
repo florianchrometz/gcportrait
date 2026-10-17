@@ -3,10 +3,12 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import {
   DEMO_M_DIAGRAM,
+  drawingOf,
   drawnCanvas,
   expectNoAxeViolations,
   hashOf,
   openDiagram,
+  redrawnCanvas,
   scratchShot,
 } from './support.js';
 
@@ -45,9 +47,17 @@ async function reload(page: Page): Promise<Locator> {
   return drawnCanvas(page);
 }
 
-/** Waits until no request of the pipeline is pending (the view on screen is the one in the hash). */
-async function pipelineIdle(page: Page): Promise<void> {
-  // The page's loading line ("Building the view…", "Laying out the diagram…") shows while a request is pending.
+/**
+ * Waits until the view in the hash is the one on screen: a drawing after `previous` (`drawingOf`, read before the view
+ * changes) is on the canvas, and no request of the pipeline is pending. The page's loading line ("Building the view…",
+ * "Laying out the diagram…") shows while a request is pending and goes in the commit that puts its drawing up, but it
+ * is also absent before the pipeline has marked the last change's request pending, while the drawing from before the
+ * changes is still on the canvas, ready: the number tells that drawing from a later one. The loading line in turn
+ * tells the last change's drawing from one of an earlier change that came first, when several changes followed
+ * `previous`.
+ */
+async function pipelineIdle(page: Page, previous: string): Promise<void> {
+  await redrawnCanvas(page, previous);
   const pending = page.locator('section[aria-label="Diagram canvas"] [role="status"]', { hasText: '…' });
   await expect(pending).toHaveCount(0, { timeout: 60_000 });
 }
@@ -152,12 +162,13 @@ test('the detail control writes the level, names the one auto picked, and a relo
       .getByRole('radio', { name: /^Auto · / })
       .textContent()) ?? '';
   expect(auto).toMatch(/Auto · (folders|projects|networks|all)$/);
+  const atAuto = await drawingOf(page);
   await detail(page).getByRole('radio', { name: 'Networks' }).click();
   await expectHash(page, 'snapshot=demo:M&detail=networks');
   await page.keyboard.press('ArrowRight');
   await expectHash(page, 'snapshot=demo:M&detail=all');
   await expect(detail(page).getByRole('radio', { name: 'All' })).toBeFocused();
-  await pipelineIdle(page);
+  await pipelineIdle(page, atAuto);
   await reload(page);
   await expect(detail(page).getByRole('radio', { name: 'All' })).toHaveAttribute('aria-checked', 'true');
   await page.goBack();
@@ -168,14 +179,16 @@ test('the Focus control picks a project, a host, a perimeter, an application and
   page,
 }) => {
   await openDiagram(page, DEMO_M_DIAGRAM);
+  const unfocused = await drawingOf(page);
   await chooseFocusKind(page, 'Single project');
   await pickFocus(page, 'Project', 'retail web', 'demo-web-1');
   await expectHash(page, 'snapshot=demo:M&focus=project&focus.project=demo-web-1');
   await expect(focusButton(page)).toHaveText(/^Focus: demo-web-1/);
-  await pipelineIdle(page);
+  await pipelineIdle(page, unfocused);
   await reload(page);
   await expect(focusButton(page)).toHaveText(/^Focus: demo-web-1/);
 
+  const project = await drawingOf(page);
   await chooseFocusKind(page, 'Shared VPC');
   await pickFocus(page, 'Host project', 'non-production', 'demo-net-2');
   await expectHash(page, 'snapshot=demo:M&focus=shared-vpc&focus.host=demo-net-2');
@@ -188,7 +201,7 @@ test('the Focus control picks a project, a host, a perimeter, an application and
   await chooseFocusKind(page, 'Application');
   await pickFocus(page, 'Application', 'app hub storefront', 'Storefront');
   await expectHash(page, `snapshot=demo:M&focus=application&focus.application=${STOREFRONT}`);
-  await pipelineIdle(page);
+  await pipelineIdle(page, project);
   await reload(page);
   await expect(focusButton(page)).toHaveText(/^Focus: Storefront/);
 
@@ -206,6 +219,7 @@ test('the Filters popover writes every filter, counts them, a reload restores th
   page,
 }) => {
   await openDiagram(page, DEMO_M_DIAGRAM);
+  const unfiltered = await drawingOf(page);
   const dialog = await openFilters(page);
   for (const name of ['Empty projects', 'Empty folders', 'Disconnected resources']) {
     await dialog.getByRole('checkbox', { name }).check();
@@ -235,7 +249,7 @@ test('the Filters popover writes every filter, counts them, a reload restores th
   await expect(dialog).toBeHidden();
   await expect(filtersButton(page)).toBeFocused();
 
-  await pipelineIdle(page);
+  await pipelineIdle(page, unfiltered);
   await reload(page);
   expect(hashOf(page)).toBe(`#${all}`);
   await expect(filtersButton(page)).toHaveAccessibleName('Filters (11 active)');
@@ -272,6 +286,7 @@ test('filters apply under a drill-in and under a focus', async ({ page }) => {
   // and the drill-in stays.
   const svg = await openDiagram(page, `/diagram#snapshot=demo:M&lens=compute&detail=all&root=${WORKLOADS}`);
   await expect.poll(() => svg.locator(VM_CARDS).count(), { timeout: 30_000 }).toBeGreaterThan(0);
+  const withVms = await drawingOf(page);
   let dialog = await openFilters(page);
   await pickFilter(
     dialog,
@@ -285,22 +300,23 @@ test('filters apply under a drill-in and under a focus', async ({ page }) => {
   );
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
-  await pipelineIdle(page);
+  await pipelineIdle(page, withVms);
   await expect(svg.locator(VM_CARDS)).toHaveCount(0);
   await expect(scope(page).getByRole('listitem')).toHaveText(['example.com', 'Workloads']);
 
   // Under a Shared VPC focus: the region filter keeps only us-central1's resources, and hiding empty projects
   // then drops the projects left without any.
+  // A page loaded afresh (about:blank first): its first drawing is this view's, so the counts below are read at once.
   await page.goto('about:blank');
   await openDiagram(
     page,
     '/diagram#snapshot=demo:M&lens=compute&detail=all&focus=shared-vpc&focus.host=demo-net-1',
   );
-  await pipelineIdle(page);
   const projects = svg.locator('g.dg-zone[aria-label^="Project: "]');
   const before = await projects.count();
   const vmsBefore = await svg.locator(VM_CARDS).count();
   expect(vmsBefore).toBeGreaterThan(0);
+  const allRegions = await drawingOf(page);
   dialog = await openFilters(page);
   await pickFilter(dialog, 'regions', 'us-central', 'us-central1');
   await dialog.getByRole('checkbox', { name: 'Empty projects' }).check();
@@ -309,7 +325,7 @@ test('filters apply under a drill-in and under a focus', async ({ page }) => {
     'snapshot=demo:M&lens=compute&focus=shared-vpc&focus.host=demo-net-1&detail=all&hide=empty-projects&regions=us-central1',
   );
   await page.keyboard.press('Escape');
-  await pipelineIdle(page);
+  await pipelineIdle(page, allRegions);
   await expect.poll(() => projects.count()).toBeLessThan(before);
   await expect.poll(() => svg.locator(VM_CARDS).count()).toBeLessThan(vmsBefore);
   await expect(focusButton(page)).toHaveText(/^Focus: demo-net-1/);

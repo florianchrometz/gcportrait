@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-import { expectNoAxeViolations, hashOf, openDiagram, scratchShot } from './support.js';
+import { drawingOf, expectNoAxeViolations, hashOf, openDiagram, scratchShot } from './support.js';
 import { expectDrawn, scrubTo, timelineBar } from './timelineSupport.js';
 
 /**
@@ -37,9 +37,10 @@ async function scrubbedToTheScaleOut(page: Page): Promise<{ svg: Locator; bar: L
   await expectDrawn(bar, '2026-09-23');
   // Opened from a link: compared with nothing, so no markers.
   await expect(svg.locator('.dg-diff, .dg-ghosts')).toHaveCount(0);
+  const twentyThird = await drawingOf(page);
   await scrubTo(page, bar, '2026-09-24', 6);
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-09-24&lens=compute&detail=all');
-  await expectDrawn(bar, '2026-09-24');
+  await expectDrawn(bar, '2026-09-24', twentyThird);
   await expect(svg.locator(`.dg-ghost[data-ghost="${REMOVED_VM}"]`)).toHaveCount(1, { timeout: 60_000 });
   return { svg, bar };
 }
@@ -111,9 +112,10 @@ test('the drawer of the changed manager says what changed: both update times and
 test('stepping back compares with the later day; another lens keeps the day’s markers', async ({ page }) => {
   const { svg, bar } = await scrubbedToTheScaleOut(page);
   await page.locator('main').focus();
+  const twentyFourth = await drawingOf(page);
   await page.keyboard.press('[');
   await expect.poll(() => hashOf(page)).toBe('#snapshot=demo:M&tick=2026-09-23&lens=compute&detail=all');
-  await expectDrawn(bar, '2026-09-23');
+  await expectDrawn(bar, '2026-09-23', twentyFourth);
   // The 23rd compared with the 24th: the scale-out's VMs are the ghosts now, the test VM is "added".
   await expect(svg.locator(`.dg-ghost[data-ghost="${NEW_VM}"]`)).toHaveCount(1, { timeout: 60_000 });
   await expect(svg.locator(`.dg-added-lines path[data-added="${REMOVED_VM}"]`)).toHaveCount(1);

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { drawnCanvas, redrawnCanvas } from './support.js';
+
 /**
  * Helpers for the timeline's specs (timeline, diff, extra-ticks): the bar, the day on screen, scrubbing, the hashes
  * the timeline writes in place, and playback on Playwright's clock.
@@ -13,10 +15,18 @@ export async function timelineBar(page: Page, timeout?: number): Promise<Locator
   return bar;
 }
 
-/** Waits until `day` (a day, or an extra tick's read time) is the one on screen and drawn. */
-export async function expectDrawn(bar: Locator, day: string): Promise<void> {
+/**
+ * Waits until `day` (a day, or an extra tick's read time) is the one on screen and drawn, fitted and interactive. The
+ * day's marker turns current in the commit that puts its drawing up, before the painter attaches to it, and the canvas
+ * keeps the ready flag of the drawing before it until then; so after the day moved (a scrub, `[` or `]`, a step
+ * button, a marker, Back, playback), `previous` is the number of the drawing on screen before the move (`drawingOf`),
+ * and only a drawing after it counts. Without it, the first drawing of a page just opened or reloaded.
+ */
+export async function expectDrawn(bar: Locator, day: string, previous?: string): Promise<void> {
   await expect(bar.locator('[data-state="current"]')).toHaveAttribute('data-day', day, { timeout: 60_000 });
-  await expect(bar.page().locator('svg.dg-canvas[data-diagram-ready="true"]')).toBeVisible();
+  const page = bar.page();
+  if (previous === undefined) await drawnCanvas(page);
+  else await redrawnCanvas(page, previous);
 }
 
 /** Drags the slider's thumb to the marker of `day`, as a person scrubs, in `steps` pointer moves. */

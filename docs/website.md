@@ -865,7 +865,11 @@ demo in Chromium at 1440 × 900, in both themes: the Connect page (axe), "Try th
 drill-in, a day back on the timeline, a PNG and an SVG export, a reload on that deep link, a direct load of
 every route, `/demo` without its slash, an unknown address (404); it fails on any request that leaves the
 site's origin, any policy violation and any uncaught error (`--shots DIR` saves screenshots, `--theme dark`
-one theme).
+one theme). The canvas stays ready (`data-diagram-ready`) with the drawing before it while the next view is
+prepared, so after the drill-in and the day back the check waits for the next drawing, a ready canvas whose
+number (`data-drawing`) differs from the one read before the click or the key, and it opens the project it
+drills into on a page loaded afresh, whose first drawing is that view's; the axe run and the screenshots see
+the view they name.
 
 **When it changes.** The demo is the app of the commit the site is built from: `main` on every deploy of the
 site, the tag on a release. In `pnpm website:dev`, `/demo/` serves the last `pnpm demo:static` bundle
