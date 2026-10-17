@@ -135,9 +135,10 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Phones and tablets:** a node's menu has no touch gesture on the canvas and drill-in none of its own (the
   details drawer carries both actions; a long press shows what hover shows, a double tap zooms, and on a chip
   leaves the tap's flip); the phone and tablet check runs in Chromium's emulation only, not in WebKit or on a
-  real device; on a small phone turned sideways (568 × 320) the canvas is about 90 px tall, so the half-height
-  sheet shows little more than the node's name (drag it up to read the details) and Expand all and Collapse
-  all hide while it is open; a disclosure notice shown while the sheet is at half height can still be cut by
+  real device; on a phone whose canvas is under 20.25rem tall while the details sheet is open (568 × 320,
+  640 × 360 and 667 × 375 turned sideways, 320 × 568 upright) Expand all and Collapse all hide until the sheet
+  closes, and at 568 × 320 the half-height sheet shows little more than the node's name (drag it up to read
+  the details); a disclosure notice shown while the sheet is at half height can still be cut by
   the canvas's top on a short canvas; a sheet stays open when the app moves focus out of it by itself (the
   Connect page's heading once a sign-in started before the sheet was opened completes); crossing the phone's
   breakpoint (turning a phone) mounts the view controls again, so a search text not yet sent is lost.
