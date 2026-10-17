@@ -14,7 +14,14 @@ import { DEMO_SIZES } from '@gcportrait/demo-data';
 import { diagramIcons, zoneTypeNames, type DiagramInput } from '@gcportrait/frontend';
 import { buildGraph, buildSceneWithReport, viewportBudget } from '@gcportrait/graph';
 import { checkLayout, layoutScene, type InvariantViolation, type Layout } from '@gcportrait/layout';
-import type { DemoSize, Graph, SceneReport, Snapshot, ViewSpec } from '@gcportrait/model';
+import {
+  RENDER_DEFAULT_VIEWPORT,
+  type DemoSize,
+  type Graph,
+  type SceneReport,
+  type Snapshot,
+  type ViewSpec,
+} from '@gcportrait/model';
 
 import { initRasteriser } from './raster.js';
 import { snapshotFromDemo } from './snapshot.js';
@@ -25,7 +32,7 @@ export interface Viewport {
 }
 
 /** The app's smallest supported canvas, and what `auto` detail is computed for unless told otherwise. */
-export const DEFAULT_VIEWPORT: Viewport = { width: 1280, height: 800 };
+export const DEFAULT_VIEWPORT: Viewport = RENDER_DEFAULT_VIEWPORT;
 
 /** The demo organisations, smallest first. */
 export const FIXTURES: readonly DemoSize[] = DEMO_SIZES;

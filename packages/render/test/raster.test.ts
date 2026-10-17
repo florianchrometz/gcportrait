@@ -2,15 +2,38 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { defaultFontMetrics, measureText } from '@gcportrait/layout';
+import { pngGeometry as appPngGeometry } from '@gcportrait/frontend';
 import { PNG } from 'pngjs';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { faceFiles, FONT_FACES, fontBuffers, fontFiles, fontPackageVersions } from '../src/fonts.js';
 import { initRasteriser, svgFrame } from '../src/index.js';
-import { framedSvg, pngGeometry, RASTER_LIMITS, RasterError, rasterise } from '../src/raster.js';
+import { framedSvg, pngGeometry, RasterError, rasterise } from '../src/raster.js';
 
 beforeAll(async () => {
   await initRasteriser();
+});
+
+describe('PNG geometry boundaries', () => {
+  it.each([
+    [{ width: 52, height: 6570 }, { scale: 3 }],
+    [{ width: 352, height: 52 }, { width: 999 }],
+    [
+      { width: 2333, height: 1326.5 },
+      { scale: 3, maxPixels: 2 ** 24 },
+    ],
+  ])('uses exactly the browser geometry for capped scales and requested widths', (frame, options) => {
+    const { reduced, ...expected } = appPngGeometry(frame, options);
+    expect(pngGeometry(frame, options)).toEqual({ ...expected, capped: reduced });
+  });
+
+  it.each([
+    [{ width: 2_000_000, height: 1_000_000 }, {}],
+    [{ width: 53, height: 53 }, { maxPixels: 2 }],
+  ])('refuses a frame with no positive capped scale within the limits', (frame, options) => {
+    expect(() => pngGeometry(frame, { scale: 3, ...options })).toThrow(RasterError);
+    expect(() => pngGeometry(frame, { scale: 3, ...options })).toThrow(/cannot fit.*PNG.*limits/i);
+  });
 });
 
 function decodePng(bytes: Uint8Array): { width: number; height: number; data: Uint8Array } {
@@ -131,26 +154,7 @@ describe('rasterise', () => {
       '<?xml version="1.0"?>\n<svg width="4762" height="2749" viewBox="-24 -102 2381 1374.5" preserveAspectRatio="none" ' +
         'xmlns="http://www.w3.org/2000/svg" data-theme="light"><rect width="1" height="1" stroke-width="2"/></svg>',
     );
-    const capped = pngGeometry({ width: 20_000, height: 10_000 }, { scale: 2 });
-    expect(capped.capped).toBe(true);
-    expect(capped.width).toBeLessThanOrEqual(RASTER_LIMITS.side);
-    expect(capped.width * capped.height).toBeLessThanOrEqual(RASTER_LIMITS.area);
-    expect(pngGeometry({ width: 352, height: 52 }, { width: 800 })).toMatchObject({
-      width: 800,
-      scale: 2,
-      capped: false,
-    });
     expect(() => pngGeometry({ width: 400, height: 100 }, { scale: 0 })).toThrow(RasterError);
-    // A lower pixel limit (the backend's RENDER_MAX_PIXELS) lowers the scale the same way.
-    const limited = pngGeometry({ width: 2333, height: 1326.5 }, { scale: 3, maxPixels: 2 ** 24 });
-    expect(limited.capped).toBe(true);
-    expect(limited.width * limited.height).toBeLessThanOrEqual(2 ** 24);
-    expect(limited.scale).toBe(Math.round(limited.scale * 100) / 100);
-    expect(pngGeometry({ width: 2333, height: 1326.5 }, { scale: limited.scale })).toMatchObject({
-      width: limited.width,
-      height: limited.height,
-      capped: false,
-    });
     expect(() => pngGeometry({ width: 10, height: 10 }, { maxPixels: 0 })).toThrow(RasterError);
   });
 });

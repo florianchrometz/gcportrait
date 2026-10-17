@@ -2504,7 +2504,8 @@ src/export/
   serialize.ts      clones that live <svg> into a standalone file (below)
   fonts.ts          the embedded faces: Roboto 400/500/700 and Roboto Mono 400, latin woff2 of the fontsource
                     packages, as data: URIs, fetched from the app's origin once per session
-  raster.ts         PNG geometry, the raster frame with the margin and the font sentinels, drawing on a canvas
+  pngGeometry.ts    pure PNG geometry shared with the server through the headless entry point
+  raster.ts         browser geometry adapter, the raster frame and font sentinels, drawing on a canvas
   deliver.ts        the temporary download link, and the clipboard (ClipboardItem)
   exportDiagram.ts  the flow: crop, prepare, serialise, rasterise, name; exportDrawioFile loads drawio/ on demand
   drawio/           the draw.io translator (below): xml.ts (a DOM-free XML reader and writer), svg.ts (presentation
@@ -2540,7 +2541,13 @@ legend are in the file even when they are scrolled away.
 **PNG.** (frame + 2 × 24 px) × scale, rounded up; the margin is in drawing units (48 px at 2×), filled with
 the theme's canvas colour, as is the canvas behind the image. A canvas is capped at 16 384 px a side and 2^27
 px in all (`CANVAS_LIMITS`); a larger export is drawn at the largest two-decimal scale that fits and the
-status line says so. The SVG goes into an `<img>` as a `data:` URL (the production CSP allows `img-src data:`;
+status line says so. The pure `pngGeometry.ts` core also serves the server through the headless entry point,
+without importing browser font URLs. Its defaults and limits come from `@gcportrait/model`'s zod-free
+vocabulary; its options and result types are inferred from the model's schemas. Both adapters use the same
+whole-pixel rounding, allowing for floating-point noise at an integer boundary without producing zero pixels.
+If no positive two-decimal capped scale fits, the export reports the refusal and suggests SVG, draw.io or a
+narrower view. An explicit positive scale whose inverse frame cannot be represented is refused too.
+The SVG goes into an `<img>` as a `data:` URL (the production CSP allows `img-src data:`;
 an SVG image from one does not taint the canvas). An SVG drawn as an image cannot use the page's fonts, so the
 PNG's SVG always embeds the Roboto faces; Chromium loads those asynchronously inside the image, after
 `decode()` resolves, and paints text invisible until then. The PNG's SVG therefore carries one sentinel glyph

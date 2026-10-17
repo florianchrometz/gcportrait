@@ -11,32 +11,30 @@
  * band over with the background again (it lies in the margin, outside the diagram's frame).
  */
 import type { Rect } from '@gcportrait/layout';
+import {
+  RENDER_DEFAULT_SCALE,
+  RENDER_MAX_SCALE,
+  RENDER_PNG_LIMITS,
+  RENDER_PNG_MARGIN,
+  type PngGeometry,
+} from '@gcportrait/model';
 
 import { EMBEDDED_FACES, type EmbeddedFace } from './fonts';
+import { pngGeometry as sharedPngGeometry } from './pngGeometry';
 import { svgChild, type PreparedSvg } from './serialize';
 
 /** Space around the exported frame, in drawing units. */
-export const PNG_MARGIN = 24;
+export const PNG_MARGIN = RENDER_PNG_MARGIN;
 
-export type PngScale = 2 | 3;
-export const PNG_SCALES: readonly PngScale[] = [2, 3];
+export const PNG_SCALES = [RENDER_DEFAULT_SCALE, RENDER_MAX_SCALE] as const;
+export type PngScale = (typeof PNG_SCALES)[number];
 
 /**
  * The largest canvas this app draws: 16 384 px a side (the smallest per-side cap of the desktop browsers) and
  * 2^27 px in all (half Chromium's area cap, about 512 MB of pixels).
  */
-export const CANVAS_LIMITS = Object.freeze({ side: 16_384, area: 2 ** 27 });
-
-export interface PngGeometry {
-  /** Pixel size of the PNG. */
-  readonly width: number;
-  readonly height: number;
-  /** Pixels per drawing unit: the asked scale, or less when the canvas limits require it. */
-  readonly scale: number;
-  readonly margin: number;
-  /** The scale was lowered to fit the canvas limits. */
-  readonly reduced: boolean;
-}
+export const CANVAS_LIMITS = RENDER_PNG_LIMITS;
+export type { PngGeometry } from '@gcportrait/model';
 
 /**
  * The PNG for a frame of `frame.width` × `frame.height` drawing units at `scale`: (frame + 2 × margin) × scale,
@@ -49,25 +47,7 @@ export function pngGeometry(
   margin: number = PNG_MARGIN,
   limits: { readonly side: number; readonly area: number } = CANVAS_LIMITS,
 ): PngGeometry {
-  const outerWidth = frame.width + 2 * margin;
-  const outerHeight = frame.height + 2 * margin;
-  const sizeAt = (at: number): { width: number; height: number } => ({
-    width: Math.ceil(outerWidth * at),
-    height: Math.ceil(outerHeight * at),
-  });
-  const fits = (at: number): boolean => {
-    const { width, height } = sizeAt(at);
-    return width <= limits.side && height <= limits.side && width * height <= limits.area;
-  };
-  if (fits(scale)) return { ...sizeAt(scale), scale, margin, reduced: false };
-  const bound = Math.min(
-    limits.side / outerWidth,
-    limits.side / outerHeight,
-    Math.sqrt(limits.area / (outerWidth * outerHeight)),
-  );
-  let used = Math.floor(bound * 100) / 100;
-  while (used > 0.01 && !fits(used)) used = Math.round((used - 0.01) * 100) / 100;
-  return { ...sizeAt(used), scale: used, margin, reduced: true };
+  return sharedPngGeometry(frame, { scale, margin, maxSide: limits.side, maxPixels: limits.area });
 }
 
 /** "2×", "1.83×". */

@@ -38,6 +38,10 @@ const EXEMPTIONS: Readonly<Record<string, Exemption>> = {
     reason: 'reads the bundle’s notices: the npm registry the MPL-2.0 package’s source is at',
     allowed: [/^registry\.npmjs\.org$/],
   },
+  'backend/src/render/job.test.ts': {
+    reason: 'the PNG refusal names a diagram editor’s file format, whose name is a host name too',
+    allowed: [/^draw\.io$/],
+  },
   'backend/src/routes/render.test.ts': {
     reason: 'the render options’ message names a diagram editor’s file format, whose name is a host name too',
     allowed: [/^draw\.io$/],

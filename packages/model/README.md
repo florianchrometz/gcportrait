@@ -219,6 +219,12 @@ What `@gcportrait/render`'s `renderView` and the backend's `POST /api/render` ta
 `renderTooManyAssetsMessage(limit)`, the one sentence of a render refused for more assets than the instance
 allows, whether the backend stops a pull or the render library counts what it read.
 
+`PngGeometryOptionsSchema` and `PngGeometrySchema` declare the shared PNG geometry options and result;
+`PngGeometryOptions` and `PngGeometry` are their inferred types. The pure browser/server geometry core
+imports only types and the zod-free constants in `schemas/vocabulary.ts`: `RENDER_DEFAULT_SCALE`,
+`RENDER_MAX_SCALE`, `RENDER_MAX_SIDE`, `RENDER_MAX_PIXELS`, `RENDER_PNG_MARGIN`, `RENDER_PNG_LIMITS`,
+`RENDER_DEFAULT_VIEWPORT` and `RENDER_THEMES`. Browser consumers do not load zod for those constants.
+
 ### The command lines' flags
 
 | Export | What |

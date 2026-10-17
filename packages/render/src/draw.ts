@@ -16,10 +16,12 @@ import {
   type DrawioFile,
 } from '@gcportrait/frontend';
 
+import { RENDER_THEMES } from '@gcportrait/model';
+
 import { rasterise, type Raster, type RasterOptions } from './raster.js';
 import type { PreparedView } from './view.js';
 
-export const THEMES: readonly DiagramTheme[] = ['light', 'dark'];
+export const THEMES: readonly DiagramTheme[] = RENDER_THEMES;
 
 /** The view as a standalone SVG document (XML declaration, trailing newline). */
 export function drawSvg(view: PreparedView, theme: DiagramTheme): string {

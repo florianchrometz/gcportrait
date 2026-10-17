@@ -17,16 +17,14 @@
  * while the thread lives (about 10 bytes per pixel), which is why the backend draws each render in a fresh worker.
  */
 import { Resvg, initWasm } from '@resvg/resvg-wasm';
+import { pngGeometry as sharedPngGeometry, PngGeometryError } from '@gcportrait/frontend';
+import { RENDER_PNG_LIMITS, type PngGeometry as SharedPngGeometry } from '@gcportrait/model';
 
 import { packageAssets, type RenderAssets } from './assets.js';
 import { fontBuffers } from './fonts.js';
 
-export const DEFAULT_SCALE = 2;
-export const MAX_SCALE = 3;
-/** Space around the drawing in the PNG, in drawing units (skill §8). */
-export const PNG_MARGIN = 24;
 /** The largest PNG: 16 384 px a side and 2^27 px in all, the limits of the app's export canvas. */
-export const RASTER_LIMITS = Object.freeze({ side: 16_384, area: 2 ** 27 });
+export const RASTER_LIMITS = RENDER_PNG_LIMITS;
 
 export interface RasterOptions {
   /** The theme's canvas colour, under everything and in the margin. */
@@ -53,8 +51,8 @@ export interface Raster {
 }
 
 export class RasterError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'RasterError';
   }
 }
@@ -93,45 +91,20 @@ export function svgFrame(svg: string): Frame {
   return { x: x ?? 0, y: y ?? 0, width: width ?? 0, height: height ?? 0 };
 }
 
-export interface PngGeometry {
-  readonly width: number;
-  readonly height: number;
-  readonly scale: number;
-  readonly margin: number;
-  readonly capped: boolean;
-}
+export type PngGeometry = Omit<SharedPngGeometry, 'reduced'> & { readonly capped: boolean };
 
 /** The PNG's pixel size and scale for a frame (see the module comment). */
 export function pngGeometry(
   frame: Pick<Frame, 'width' | 'height'>,
   options: Pick<RasterOptions, 'scale' | 'width' | 'margin' | 'maxPixels'> = {},
 ): PngGeometry {
-  const margin = options.margin ?? PNG_MARGIN;
-  const area = Math.min(RASTER_LIMITS.area, options.maxPixels ?? RASTER_LIMITS.area);
-  if (!(area >= 1)) throw new RasterError('the pixel limit must be positive');
-  const outerWidth = frame.width + 2 * margin;
-  const outerHeight = frame.height + 2 * margin;
-  const requested =
-    options.width === undefined ? (options.scale ?? DEFAULT_SCALE) : options.width / outerWidth;
-  if (!(requested > 0) || !Number.isFinite(requested)) throw new RasterError('the scale must be positive');
-  // A tiny allowance so that a width-derived scale gives exactly that width despite floating point.
-  const sizeAt = (scale: number): { width: number; height: number } => ({
-    width: Math.ceil(outerWidth * scale - 1e-9),
-    height: Math.ceil(outerHeight * scale - 1e-9),
-  });
-  const fits = (scale: number): boolean => {
-    const { width, height } = sizeAt(scale);
-    return width <= RASTER_LIMITS.side && height <= RASTER_LIMITS.side && width * height <= area;
-  };
-  if (fits(requested)) return { ...sizeAt(requested), scale: requested, margin, capped: false };
-  const bound = Math.min(
-    RASTER_LIMITS.side / outerWidth,
-    RASTER_LIMITS.side / outerHeight,
-    Math.sqrt(area / (outerWidth * outerHeight)),
-  );
-  let scale = Math.floor(bound * 100) / 100;
-  while (scale > 0.01 && !fits(scale)) scale = Math.round((scale - 0.01) * 100) / 100;
-  return { ...sizeAt(scale), scale, margin, capped: true };
+  try {
+    const { reduced, ...geometry } = sharedPngGeometry(frame, options);
+    return { ...geometry, capped: reduced };
+  } catch (error) {
+    if (error instanceof PngGeometryError) throw new RasterError(error.message, { cause: error });
+    throw error;
+  }
 }
 
 /**

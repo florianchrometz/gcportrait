@@ -11,7 +11,7 @@
  * does. Unlike the command line, which reports them, a refused drill-in root or a focus that does not apply is an
  * error ({@link ViewRefusedError}).
  */
-import { DRAWIO_MEDIA_TYPE, exportFileName } from '@gcportrait/frontend';
+import { DRAWIO_MEDIA_TYPE, exportFileName, PngGeometryError } from '@gcportrait/frontend';
 import { viewSpecOf } from '@gcportrait/graph';
 import {
   RENDER_DEFAULT_SCALE,
@@ -24,9 +24,10 @@ import {
 } from '@gcportrait/model';
 
 import { drawDrawio, drawPng, drawSvg } from './draw.js';
+import { RasterError } from './raster.js';
 import { prepareView, type PreparedView } from './view.js';
 
-/** The drill-in root was refused, or the focus does not apply to the snapshot; the message is for the person. */
+/** The root, focus or PNG geometry was refused; the message is for the person. */
 export class ViewRefusedError extends Error {
   constructor(message: string) {
     super(message);
@@ -111,12 +112,20 @@ export function renderView(
       fileName: exportFileName(parts, 'svg'),
     };
   }
-  const raster = drawPng(svg, options.theme, {
-    ...(options.width === undefined
-      ? { scale: options.scale ?? RENDER_DEFAULT_SCALE }
-      : { width: options.width }),
-    ...(context.maxPixels === undefined ? {} : { maxPixels: context.maxPixels }),
-  });
+  let raster;
+  try {
+    raster = drawPng(svg, options.theme, {
+      ...(options.width === undefined
+        ? { scale: options.scale ?? RENDER_DEFAULT_SCALE }
+        : { width: options.width }),
+      ...(context.maxPixels === undefined ? {} : { maxPixels: context.maxPixels }),
+    });
+  } catch (error) {
+    if (error instanceof RasterError && error.cause instanceof PngGeometryError) {
+      throw new ViewRefusedError(error.message);
+    }
+    throw error;
+  }
   return {
     ...common,
     bytes: raster.png,

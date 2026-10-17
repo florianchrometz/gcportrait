@@ -55,6 +55,16 @@ async function drive(job: JobSpec, chunks: readonly Uint8Array[]): Promise<JobOu
 }
 
 describe('the render job', () => {
+  it('reports impossible PNG geometry as a refused view rather than an internal failure', async () => {
+    const posted = await drive({ ...spec({ kind: 'demo', size: 'S' }, {}), maxPixels: 1 }, []);
+    expect(posted.at(-1)).toMatchObject({
+      type: 'error',
+      code: 'VIEW_REFUSED',
+      message:
+        'This diagram cannot fit within the PNG size limits. Export SVG or draw.io, or narrow the view.',
+    });
+  });
+
   it('acknowledges every chunk, reports progress and answers once with the drawing', async () => {
     const bytes = ndjson(40);
     const half = Math.floor(bytes.byteLength / 2);

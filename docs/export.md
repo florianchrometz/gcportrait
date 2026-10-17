@@ -105,7 +105,9 @@ so older editors draw what browsers draw.
 **PNG.** The same SVG, with the Roboto faces always embedded, drawn by your browser on a canvas in the theme's
 background colour with a 24-unit margin, at 2× or 3×: a drawing 1861 units wide is (1861 + 48) × 2 = 3818
 pixels wide at 2×. The canvas is capped at 16 384 pixels a side and 2^27 pixels in all, what browsers can
-draw; a larger export is drawn at the largest scale that fits, and the status line says so.
+draw; a larger export is drawn at the largest two-decimal scale that fits, and the status line says so.
+If no positive capped scale fits, the export stops with a message: export SVG or draw.io instead, or narrow
+the view. The app, command line and render API share this geometry and whole-pixel rounding.
 
 **draw.io.** The same drawing as draw.io's own cells, so diagrams.net and draw.io open it as a diagram you can
 edit, not as a picture: zones are containers nested as on the canvas, each with its title, so moving a zone

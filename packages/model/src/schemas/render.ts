@@ -18,20 +18,31 @@ import { decodeViewSpec } from '../codec/view-hash.js';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';
 import { TextSchema } from './primitives.js';
 import { FocusSchema, VIEW_SPEC_MAX_FLIPS, ViewFiltersSchema } from './view-spec.js';
+import { RENDER_DEFAULT_VIEWPORT, RENDER_MAX_SCALE, RENDER_MAX_SIDE, RENDER_THEMES } from './vocabulary.js';
 
-/** PNG pixels per drawing unit at most (the app's export offers 2× and 3×). */
-export const RENDER_MAX_SCALE = 3;
-/** The PNG scale when neither `scale` nor `width` is given (the export's default). */
-export const RENDER_DEFAULT_SCALE = 2;
-/** The longest side of a PNG, and of the viewport, in pixels (the limit of the app's export canvas). */
-export const RENDER_MAX_SIDE = 16_384;
-/** The viewport `auto` detail fits when none is given: the app's smallest supported canvas (1280×800). */
-export const RENDER_DEFAULT_VIEWPORT = Object.freeze({ width: 1280, height: 800 });
 /** The longest view hash accepted (an app link's hash is far shorter). */
 export const RENDER_MAX_HASH_LENGTH = 8192;
 
-export const RenderThemeSchema = z.enum(['light', 'dark']);
+export const RenderThemeSchema = z.enum(RENDER_THEMES);
 export type RenderTheme = z.infer<typeof RenderThemeSchema>;
+
+export const PngGeometryOptionsSchema = z.strictObject({
+  scale: z.number().positive().optional(),
+  width: z.number().positive().optional(),
+  margin: z.number().nonnegative().optional(),
+  maxPixels: z.number().min(1).optional(),
+  maxSide: z.number().min(1).optional(),
+});
+export type PngGeometryOptions = z.infer<typeof PngGeometryOptionsSchema>;
+
+export const PngGeometrySchema = z.strictObject({
+  width: z.int().min(1).max(RENDER_MAX_SIDE),
+  height: z.int().min(1).max(RENDER_MAX_SIDE),
+  scale: z.number().positive(),
+  margin: z.number().nonnegative(),
+  reduced: z.boolean(),
+});
+export type PngGeometry = z.infer<typeof PngGeometrySchema>;
 
 /** `drawio`: a `.drawio` file of the same drawing that diagrams.net opens as an editable diagram. */
 export const RenderFormatSchema = z.enum(['png', 'svg', 'drawio']);

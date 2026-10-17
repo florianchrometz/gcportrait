@@ -155,7 +155,7 @@ same request again.
 | 408 | `REQUEST_TIMEOUT` | The body, a render's upload included, was still arriving after 30 s; the connection is closed. |
 | 413 | `BODY_TOO_LARGE` | A JSON body over 64 KiB, or an upload over `RENDER_MAX_BODY_BYTES`. |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | A render source sent in the wrong body, or an upload without its `file` part. |
-| 422 | `INVALID_FILE`, `EMPTY_SNAPSHOT`, `TOO_MANY_ASSETS`, `VIEW_REFUSED` | A file the app could not read either (its message), no assets, more than `RENDER_MAX_ASSETS`, a `root` or `focus` the snapshot does not have. |
+| 422 | `INVALID_FILE`, `EMPTY_SNAPSHOT`, `TOO_MANY_ASSETS`, `VIEW_REFUSED` | A file the app could not read either (its message), no assets, more than `RENDER_MAX_ASSETS`, a `root` or `focus` the snapshot does not have, or PNG geometry that cannot fit the pixel limits or represent the requested scale. |
 | 429 | `RATE_LIMITED`, `STREAMS_BUSY`, `RENDER_BUSY` | Too many requests for the token or address (`Retry-After`: until the minute's window ends), four streams already running for the token (30 s), another render running on the instance (10 s). |
 | 501 | `SA_MODE_UNAVAILABLE` | Service-account mode asked of a build without the instance's identity. |
 | 502, 503, 504 | `UPSTREAM_UNREACHABLE`, `INSTANCE_BUSY`, `UPSTREAM_TIMEOUT`, `BAD_UPSTREAM_ANSWER`, `UPSTREAM_ERROR`, Google's code | Google could not be reached or answered with an error after the retries (`UPSTREAM_ERROR`: no kind of a scope search answered); `retryable` ones with `Retry-After` (10 s, 30 s for `INSTANCE_BUSY`). |

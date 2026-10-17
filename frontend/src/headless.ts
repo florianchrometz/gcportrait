@@ -32,6 +32,7 @@ export {
   type ReadDrawio,
 } from './export/drawio';
 export { exportFileName, type ExportExtension, type FileNameParts } from './export/fileName';
+export { pngGeometry, PngGeometryError } from './export/pngGeometry';
 export { drawnViewKey } from './state/sceneKey';
 export { createImportHandler, type HandlerEnvironment } from './import/worker/handler';
 export type { ImportResponse, StreamFailure, StreamSettings } from './import/worker/protocol';

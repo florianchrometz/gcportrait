@@ -12,6 +12,15 @@ import type { DetailLevel, LensId } from './lens.js';
 import type { RelationKind } from './relation.js';
 import { ULID_PATTERN } from './patterns.js';
 
+export const RENDER_DEFAULT_SCALE = 2;
+export const RENDER_MAX_SCALE = 3;
+export const RENDER_MAX_SIDE = 16_384;
+export const RENDER_MAX_PIXELS = 2 ** 27;
+export const RENDER_PNG_MARGIN = 24;
+export const RENDER_PNG_LIMITS = Object.freeze({ side: RENDER_MAX_SIDE, area: RENDER_MAX_PIXELS });
+export const RENDER_DEFAULT_VIEWPORT = Object.freeze({ width: 1280, height: 800 });
+export const RENDER_THEMES = ['light', 'dark'] as const;
+
 /** The lenses, in menu order (`packages/catalog/lenses/<id>.yaml`). */
 export const LENS_IDS = [
   'overview',

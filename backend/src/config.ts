@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { RENDER_MAX_PIXELS } from '@gcportrait/model';
 
 import * as z from 'zod';
 
@@ -205,13 +206,7 @@ const EnvSchema = z.object({
     z.enum(['true', 'false'], { error: 'must be "true" or "false" (or unset, which means on)' }),
   ),
   RENDER_MAX_ASSETS: optional(z.coerce.number().int().min(1).max(1_000_000)),
-  RENDER_MAX_PIXELS: optional(
-    z.coerce
-      .number()
-      .int()
-      .min(1_000_000)
-      .max(2 ** 27),
-  ),
+  RENDER_MAX_PIXELS: optional(z.coerce.number().int().min(1_000_000).max(RENDER_MAX_PIXELS)),
   RENDER_TIMEOUT_MS: optional(z.coerce.number().int().min(10_000).max(3_600_000)),
   RENDER_MAX_BODY_BYTES: optional(
     z.coerce

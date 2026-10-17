@@ -794,6 +794,17 @@ describe('POST /api/render: refusals', () => {
     expect(errorOf(root.body).message).toMatch(/^root: /);
   });
 
+  it('422 VIEW_REFUSED when a positive PNG scale cannot be represented', async () => {
+    const { server: app } = await start();
+    const result = await post(app, { source: { kind: 'demo', size: 'S' }, scale: Number.MIN_VALUE });
+    expect(result.statusCode).toBe(422);
+    expect(errorOf(result.body)).toMatchObject({
+      code: 'VIEW_REFUSED',
+      message:
+        'The requested PNG scale cannot be represented. Choose a larger scale, or export SVG or draw.io.',
+    });
+  });
+
   it('429 RENDER_BUSY while another render runs, and STREAMS_BUSY with four streams for the token, each with Retry-After', async () => {
     const lock = createRenderLock();
     const slots = new StreamSlots();

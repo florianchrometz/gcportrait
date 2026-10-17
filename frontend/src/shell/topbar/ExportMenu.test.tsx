@@ -347,6 +347,32 @@ describe('the Export menu', () => {
     expect(recorded.rasterized).toHaveLength(0);
   });
 
+  it('reports an impossible PNG frame before rasterizing or saving it', async () => {
+    const { io, recorded } = services();
+    const source = {
+      ...SOURCE,
+      model: {
+        ...SOURCE.model,
+        input: {
+          ...SOURCE.model.input,
+          layout: {
+            ...SOURCE.model.input.layout,
+            bounds: { ...SOURCE.model.input.layout.bounds, width: 2_000_000, height: 1_000_000 },
+          },
+        },
+      },
+    };
+    renderMenu(source, io);
+    await userEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Download PNG' }));
+    await waitFor(() => {
+      expect(statusText()).toBe(
+        'The PNG export failed: This diagram cannot fit within the PNG size limits. Export SVG or draw.io, or narrow the view.',
+      );
+    });
+    expect(recorded.rasterized).toHaveLength(0);
+    expect(recorded.saved).toHaveLength(0);
+  });
+
   it('reports a failed export and a refused clipboard in words', async () => {
     const { io } = services({
       rasterize: () => Promise.reject(new Error('canvas too large')),

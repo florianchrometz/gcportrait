@@ -14,7 +14,9 @@ import {
   normalizeViewSpec,
   type RenderOptionsInput,
 } from '@gcportrait/model';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import * as drawing from '../src/draw.js';
+import { RasterError } from '../src/raster.js';
 
 import {
   TAGLINE,
@@ -116,6 +118,23 @@ describe('renderView', () => {
         options({ format: 'svg', view: { focus: { kind: 'project', params: { project: 'demo-none-1' } } } }),
       ),
     ).toThrow(/^focus: /);
+  });
+
+  it('refuses impossible PNG geometry without disguising unrelated raster failures', async () => {
+    const snapshot = await snapshotFromDemo('S');
+    expect(() => renderView(snapshot, options({}), { maxPixels: 1 })).toThrow(ViewRefusedError);
+    expect(() => renderView(snapshot, options({}), { maxPixels: 1 })).toThrow(/cannot fit.*PNG.*limits/i);
+    expect(() => renderView(snapshot, options({ scale: Number.MIN_VALUE }))).toThrow(ViewRefusedError);
+    expect(() => renderView(snapshot, options({ scale: Number.MIN_VALUE }))).toThrow(/cannot be represented/);
+    const failure = new RasterError('unexpected raster failure');
+    const draw = vi.spyOn(drawing, 'drawPng').mockImplementationOnce(() => {
+      throw failure;
+    });
+    try {
+      expect(() => renderView(snapshot, options({}))).toThrow(failure);
+    } finally {
+      draw.mockRestore();
+    }
   });
 
   it('lowers the scale to the pixel limit and says so; that scale gives the same bytes uncapped', async () => {

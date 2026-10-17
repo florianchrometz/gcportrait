@@ -2,9 +2,50 @@
 import { describe, expect, it } from 'vitest';
 
 import { issueLines } from '../testing/issues.js';
-import { RenderOptionsSchema, renderTooManyAssetsMessage } from './render.js';
+import {
+  PngGeometryOptionsSchema,
+  PngGeometrySchema,
+  RenderOptionsSchema,
+  RenderThemeSchema,
+  renderTooManyAssetsMessage,
+} from './render.js';
+import {
+  RENDER_DEFAULT_SCALE,
+  RENDER_MAX_PIXELS,
+  RENDER_MAX_SCALE,
+  RENDER_MAX_SIDE,
+  RENDER_PNG_LIMITS,
+  RENDER_PNG_MARGIN,
+  RENDER_THEMES,
+} from './vocabulary.js';
 
 const issues = (input: unknown): string[] => issueLines(RenderOptionsSchema, input);
+
+describe('shared PNG geometry', () => {
+  it('keeps the browser-safe limits and theme vocabulary equal to the render contract', () => {
+    expect(RENDER_DEFAULT_SCALE).toBe(2);
+    expect(RENDER_MAX_SCALE).toBe(3);
+    expect(RENDER_PNG_MARGIN).toBe(24);
+    expect(RENDER_PNG_LIMITS).toEqual({ side: 16_384, area: 2 ** 27 });
+    expect(RENDER_PNG_LIMITS).toEqual({ side: RENDER_MAX_SIDE, area: RENDER_MAX_PIXELS });
+    expect(RenderThemeSchema.options).toEqual(RENDER_THEMES);
+  });
+
+  it('describes positive pixel geometry and rejects zero or non-finite sizes', () => {
+    const geometry = { width: 247, height: 16347, scale: 2.47, margin: 24, reduced: true };
+    expect(PngGeometrySchema.parse(geometry)).toEqual(geometry);
+    for (const value of [0, -1, Infinity, NaN]) {
+      expect(PngGeometrySchema.safeParse({ ...geometry, width: value }).success).toBe(false);
+      expect(PngGeometrySchema.safeParse({ ...geometry, scale: value }).success).toBe(false);
+    }
+    expect(PngGeometryOptionsSchema.parse({ width: 999, maxPixels: 1, margin: 0 })).toEqual({
+      width: 999,
+      maxPixels: 1,
+      margin: 0,
+    });
+    expect(PngGeometryOptionsSchema.parse({ scale: 1e-20 }).scale).toBe(1e-20);
+  });
+});
 
 describe('RenderOptionsSchema', () => {
   it('fills in the defaults: the overview at auto detail, light, PNG, a 1280×800 viewport', () => {
