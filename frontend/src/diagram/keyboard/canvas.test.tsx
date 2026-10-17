@@ -8,8 +8,6 @@
  * a drill-in goes to the new view's tab stop, and only then.
  */
 import { fireEvent, render, screen } from '@testing-library/react';
-import { select } from 'd3-selection';
-import { zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '../../test/axe';
@@ -19,11 +17,13 @@ import { DiagramCanvas, type DiagramCanvasProps } from '../DiagramCanvas';
 import { planDrawing } from '../Drawing';
 import { FOCUS_DISTANCE } from '../marks';
 import {
+  cameraOf,
   canvasOf as canvas,
   canvasProps,
   collapseOf,
   element,
   manualFrames,
+  moveCamera,
   nodeOf,
   reduceMotion,
   tabStops,
@@ -87,7 +87,7 @@ describe('the arrow keys on the canvas', () => {
     const subnet = model.input.layout.rects['subnets/a'];
     expect(focusRing(svg).shown).toBe(true);
     // Fitted below 100 %: the ring keeps its screen size (FOCUS_DISTANCE on screen outside the zone's border).
-    const { k } = zoomTransform(svg);
+    const { k } = cameraOf(svg);
     expect(k).toBeLessThan(1);
     expect(((subnet?.x ?? 0) - focusRing(svg).x) * k).toBeCloseTo(FOCUS_DISTANCE);
     press('Escape');
@@ -152,20 +152,14 @@ describe('the arrow keys on the canvas', () => {
     const wide = modelOf(wideScene());
     const { container } = render(<DiagramCanvas {...props({ model: wide })} />);
     const svg = canvas(container);
-    // Zoomed right in on the top-left corner: most of the drawing is out of view (d3-zoom keeps the camera on the
-    // <svg>, whichever behaviour set it).
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1280, 800],
-      ])
-      .transform(select(svg), zoomIdentity.scale(4));
-    expect(zoomTransform(svg)).toMatchObject({ k: 4, x: 0, y: 0 });
+    // Zoomed right in on the top-left corner: most of the drawing is out of view.
+    moveCamera(svg, { k: 4, x: 0, y: 0 });
+    expect(cameraOf(svg)).toMatchObject({ k: 4, x: 0, y: 0 });
     const start = keyboardMap(wide.rects, true).items.get(null)?.at(-1);
     if (start === undefined) throw new Error('no items');
     collapseOf(svg, start).focus();
     press('ArrowDown');
-    const after = zoomTransform(svg);
+    const after = cameraOf(svg);
     expect(after.k).toBe(4);
     expect(after.x !== 0 || after.y !== 0).toBe(true);
   });
@@ -175,12 +169,7 @@ describe('the arrow keys on the canvas', () => {
     const wide = modelOf(wideScene());
     const { container, rerender } = render(<DiagramCanvas {...props({ model: wide })} />);
     const svg = canvas(container);
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1280, 800],
-      ])
-      .transform(select(svg), zoomIdentity.scale(4));
+    moveCamera(svg, { k: 4, x: 0, y: 0 });
     const last = keyboardMap(wide.rects, true).items.get(null)?.at(-1);
     if (last === undefined) throw new Error('no items');
     collapseOf(svg, last).focus();
@@ -192,7 +181,7 @@ describe('the arrow keys on the canvas', () => {
     const fit = fitTransform(plan.frame, 1280, 800);
     // Every frame the pan asked for runs, as late as can be: none of them moves the new view.
     frames.run(performance.now() + 10_000);
-    const now = zoomTransform(svg);
+    const now = cameraOf(svg);
     expect(now.k).toBeCloseTo(fit.k);
     expect(now.x).toBeCloseTo(fit.x);
     expect(now.y).toBeCloseTo(fit.y);
@@ -236,10 +225,10 @@ describe('the arrow keys on the canvas', () => {
     api.focus();
     // Zoomed out as far as the camera goes, with the zoom key.
     for (let presses = 0; presses < 20; presses += 1) press('-');
-    expect(zoomTransform(svg).k).toBe(SCALE_EXTENT[0]);
+    expect(cameraOf(svg).k).toBe(SCALE_EXTENT[0]);
     expect(svg.getAttribute('class')).toContain('dg-lod-nolabel');
     press('ArrowRight');
-    const moved = zoomTransform(svg);
+    const moved = cameraOf(svg);
     expect(moved.k).toBe(KEYBOARD_MIN_SCALE);
     // Labels are drawn again, and the item the keyboard reached is in view.
     expect(svg.getAttribute('class')).not.toContain('dg-lod-nolabel');
@@ -254,9 +243,9 @@ describe('the arrow keys on the canvas', () => {
     expect(top + rect.height * moved.k).toBeLessThanOrEqual(800);
     // Already at or past that scale, a move only pans.
     press('+');
-    const closer = zoomTransform(svg).k;
+    const closer = cameraOf(svg).k;
     press('ArrowLeft');
-    expect(zoomTransform(svg).k).toBe(closer);
+    expect(cameraOf(svg).k).toBe(closer);
   });
 
   it('zoom with + and -, about the focused item, and fit the drawing with 0; modified keys are the browser’s', () => {
@@ -265,40 +254,40 @@ describe('the arrow keys on the canvas', () => {
     const svg = canvas(container);
     const plan = planDrawing(model, { overlays: true, interactive: true, utcOffsetMinutes: 0 });
     const fit = fitTransform(plan.frame, 1280, 800);
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k);
     const api = nodeOf(svg, 'run/api');
     api.focus();
     const rect = model.input.layout.rects['run/api'];
     if (rect === undefined) throw new Error('no rect');
     const centre = (): { x: number; y: number } => {
-      const t = zoomTransform(svg);
+      const t = cameraOf(svg);
       return { x: (rect.x + rect.width / 2) * t.k + t.x, y: (rect.y + rect.height / 2) * t.k + t.y };
     };
     const before = centre();
     press('+');
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
     // About the item: it stays where it was on screen (it was in view, and still is).
     expect(centre().x).toBeCloseTo(before.x);
     expect(centre().y).toBeCloseTo(before.y);
     press('=');
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k * ZOOM_STEP ** 2);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k * ZOOM_STEP ** 2);
     press('-');
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
     // Ctrl or Cmd with them zoom the page: the browser's.
     press('+', { ctrlKey: true });
     press('-', { metaKey: true });
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
     // AltGr (Ctrl+Alt) typing the key is the key.
     press('+', { ctrlKey: true, altKey: true });
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k * ZOOM_STEP ** 2);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k * ZOOM_STEP ** 2);
     press('0');
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k);
-    expect(zoomTransform(svg).x).toBeCloseTo(fit.x);
-    expect(zoomTransform(svg).y).toBeCloseTo(fit.y);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k);
+    expect(cameraOf(svg).x).toBeCloseTo(fit.x);
+    expect(cameraOf(svg).y).toBeCloseTo(fit.y);
     // From the canvas itself, about the canvas's centre.
     svg.focus();
     fireEvent.keyDown(svg, { key: '+' });
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k * ZOOM_STEP);
     expect(document.activeElement).toBe(api.ownerSVGElement);
   });
 
@@ -323,7 +312,7 @@ describe('the arrow keys on the canvas', () => {
     if (rect === undefined || !(api instanceof SVGElement)) throw new Error('no focused card');
     expect(rect.role).toBe('card');
     for (let presses = 0; presses < 20; presses += 1) press('-');
-    const k = zoomTransform(svg).k;
+    const k = cameraOf(svg).k;
     expect(k).toBe(SCALE_EXTENT[0]);
     const ring = focusRing(svg);
     expect(ring.shown).toBe(true);
@@ -333,7 +322,7 @@ describe('the arrow keys on the canvas', () => {
     expect((rect.x - ring.x) * k).toBeCloseTo(FOCUS_DISTANCE);
     // At 100 % and closer, the drawing's own ring (drawing units).
     for (let presses = 0; presses < 20; presses += 1) press('+');
-    expect(zoomTransform(svg).k).toBeGreaterThan(1);
+    expect(cameraOf(svg).k).toBeGreaterThan(1);
     expect(focusRing(svg).line).toBe(FOCUS_WIDTH);
     expect(focusRing(svg).band).toBe(FOCUS_WIDTH + 2 * RING_GAP);
     // Focus gone: no ring, and its widths as React drew them.

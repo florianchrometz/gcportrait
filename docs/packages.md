@@ -47,7 +47,7 @@ components, and as a draw.io file translated from that SVG.
                     │ Layout  (+ the Scene's icons, resolved through @gcportrait/icons in the data worker)
                     ▼
  render       frontend src/diagram/: DiagramSvg / DiagramCanvas: Scene + Layout + theme → SVG
-              (zones, cards, chips, icons, edges, secures overlays, legend, title block); d3-zoom, LOD,
+              (zones, cards, chips, icons, edges, secures overlays, legend, title block); pan and zoom, LOD,
               hover, selection, the selection trace and the console action painted by attributes only
               frontend src/export/: the export flow behind the top bar's Export menu
               (src/shell/topbar/ExportMenu.tsx): standalone SVG, PNG at 2×/3×, clipboard

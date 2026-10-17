@@ -145,7 +145,7 @@ Google Cloud's, used under the terms Google Cloud states for them; the notices f
 
 <!-- BEGIN GENERATED: npm-dependencies (scripts/check-licenses.mjs --write) -->
 
-70 direct dependencies across 14 workspace projects. "runtime" means
+66 direct dependencies across 14 workspace projects. "runtime" means
 `dependencies`/`optionalDependencies`, "dev" means `devDependencies`. Transitive dependencies are not listed
 here but are checked against the same allowlist and deny list on every run.
 
@@ -169,8 +169,6 @@ here but are checked against the same allowlist and deny list on every run.
 | `@testing-library/dom` | MIT | frontend | dev |
 | `@testing-library/react` | MIT | frontend | dev |
 | `@testing-library/user-event` | MIT | frontend | dev |
-| `@types/d3-selection` | MIT | frontend | dev |
-| `@types/d3-zoom` | MIT | frontend | dev |
 | `@types/hast` | MIT | website | dev |
 | `@types/node` | MIT | (root), backend, e2e, packages/catalog, packages/demo-data, packages/graph, packages/ingest, packages/layout, packages/render, packages/render-cli, website | dev |
 | `@types/opentype.js` | MIT | packages/layout | dev |
@@ -181,8 +179,6 @@ here but are checked against the same allowlist and deny list on every run.
 | `@vitest/coverage-v8` | MIT | (root) | dev |
 | `astro` | MIT | website | runtime |
 | `axe-core` | MPL-2.0 | frontend | dev |
-| `d3-selection` | ISC | frontend | runtime |
-| `d3-zoom` | ISC | frontend | runtime |
 | `esbuild` | MIT | backend, e2e | dev |
 | `eslint` | MIT | (root) | dev |
 | `eslint-import-resolver-typescript` | ISC | (root) | dev |

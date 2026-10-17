@@ -7,12 +7,12 @@
  * without `onFlip` behaves as before.
  */
 import { fireEvent, render } from '@testing-library/react';
-import { zoomTransform } from 'd3-zoom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '../../test/axe';
 import { DiagramCanvas, type DiagramCanvasProps } from '../DiagramCanvas';
 import {
+  cameraOf,
   canvasOf as canvas,
   canvasProps,
   chipOf,
@@ -177,13 +177,13 @@ describe('the camera and focus after a flip', () => {
     reduceMotion();
     const { container, rerender } = render(<DiagramCanvas {...props()} />);
     const svg = canvas(container);
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     fireEvent.click(chipOf(svg, 'projects/data'));
     rerender(<DiagramCanvas {...props({ model: expanded })} />);
     const rect = expanded.input.layout.rects['projects/data'];
     if (rect === undefined) throw new Error('no rect');
     const expected = flipTransform(rect, 1280, 800, before, true);
-    const now = zoomTransform(svg);
+    const now = cameraOf(svg);
     expect(now.k).toBeCloseTo(expected.k);
     expect(now.x).toBeCloseTo(expected.x);
     expect(now.y).toBeCloseTo(expected.y);
@@ -193,13 +193,13 @@ describe('the camera and focus after a flip', () => {
     const frames = manualFrames();
     const { container, rerender } = render(<DiagramCanvas {...props()} />);
     const svg = canvas(container);
-    const before = zoomTransform(svg).toString();
+    const before = cameraOf(svg);
     fireEvent.click(chipOf(svg, 'projects/data'));
     rerender(<DiagramCanvas {...props({ model: expanded })} />);
-    expect(zoomTransform(svg).toString()).toBe(before);
+    expect(cameraOf(svg)).toEqual(before);
     expect(frames.pending()).toBeGreaterThan(0);
     frames.run(performance.now() + 10_000);
-    expect(zoomTransform(svg).toString()).not.toBe(before);
+    expect(cameraOf(svg)).not.toEqual(before);
 
     // A new drawing that no flip here asked for (another view) is fitted.
     rerender(<DiagramCanvas {...props({ model: collapsed })} />);
@@ -214,8 +214,8 @@ describe('the camera and focus after a flip', () => {
       1280,
       800,
     );
-    expect(zoomTransform(svg).k).toBeCloseTo(fit.k);
-    expect(zoomTransform(svg).x).toBeCloseTo(fit.x);
+    expect(cameraOf(svg).k).toBeCloseTo(fit.k);
+    expect(cameraOf(svg).x).toBeCloseTo(fit.x);
   });
 
   it('moves focus from a chip expanded with Enter to its collapse button, and back to the chip', () => {

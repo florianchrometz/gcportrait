@@ -302,9 +302,9 @@ draws it. [docs/packages.md](docs/packages.md) maps every package and function o
 
 - [TypeScript](https://www.typescriptlang.org/) (strict), [Node.js](https://nodejs.org/) 22 and
   [pnpm](https://pnpm.io/) workspaces: one language from the browser to the tooling
-- [React](https://react.dev/) 19 and [Vite](https://vite.dev/): the single-page app, with
-  [d3-zoom](https://d3js.org/d3-zoom) for pan and zoom, [Fuse.js](https://www.fusejs.io/) for search, and
-  web workers and IndexedDB for the data path
+- [React](https://react.dev/) 19 and [Vite](https://vite.dev/): the single-page app, with its own pan and
+  zoom for a mouse, a pen and a finger, [Fuse.js](https://www.fusejs.io/) for search, and web workers and
+  IndexedDB for the data path
 - [Fastify](https://fastify.dev/) with [zod](https://zod.dev/) schemas and [pino](https://getpino.io/)
   logs: the stateless backend, on [Cloud Run](https://cloud.google.com/run)
 - Its own layout engine: nested-zone grid packing and orthogonal gutter routing in pure TypeScript

@@ -488,7 +488,7 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
   it does not cover: the gcportrait name and icon, and the third-party material) from the repository root,
   byte for byte, to `dist/licenses/gcportrait-LICENSE.txt` (the `gcportrait:own-licence` plugin), so the built
   app and the image that ships it carry it.
-- Inlined packages' licences: a bundle drops the `LICENSE` files of the npm packages it inlines (React, d3,
+- Inlined packages' licences: a bundle drops the `LICENSE` files of the npm packages it inlines (React,
   fuse.js, zod, ...), while their licences ask for the notice to travel with every copy. The
   `gcportrait:inlined-licences` plugin collects the modules of every chunk, of the app and of each worker, and
   writes name, version, declared licence and licence text of each package they came from to
@@ -1274,7 +1274,9 @@ src/diagram/
   Drawing.tsx              the pure SVG scene graph: zones, headers, badges, cards, chips, icons, edges and
                            their markers, secures overlays, legend, title block
   DiagramSvg.tsx, static.tsx  the drawing as a standalone SVG document / string (baselines)
-  DiagramCanvas.tsx        the interactive canvas: d3-zoom, level of detail, pointer and keyboard events
+  DiagramCanvas.tsx        the interactive canvas: its camera (pan and zoom by every pointer and the wheel),
+                           level of detail, pointer and keyboard events
+  canvasCamera.ts          the camera a canvas publishes by its <svg>: read by the export, moved by the tests
   touch.ts                 a finger's pointer events read as gestures: pan, pinch, tap, double tap, long press
   painter.ts               the selection trace, hover preview, selection, console action and focus, painted by
                            classes and attributes, and the traced lines it clones from per-kind prototypes
@@ -1336,27 +1338,41 @@ tint most of the drawn chips have, as chips take their zone's tint), so nothing 
 The Settings page's "Show the legend and the title block on the canvas" (`diagramOverlays`, default on) hides
 them on the canvas only; the standalone SVG always has them.
 
-**Interaction.** d3-zoom pans and zooms the drawing's group with a mouse's or a pen's drag and the wheel
-(`scaleExtent [0.05, 200]`; double-click does not zoom, it is kept for drill-in), and the canvas moves the
-same camera for a finger (paragraph "Touch" below). A new view is fitted to the canvas (never enlarged past
-100 %), or on a phone or a tablet to the part of it an open sheet or drawer leaves, which a panel opening or
-closing fits it to again while the camera still rests on that fit (section "App state"); a theme change keeps
-the camera, and so does a selection on a desktop. Level of detail by the effective scale sets classes on
-the `<svg>` (`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×.
-Hover previews the node's selection trace (below): its path to the root in `accent.path` 3 px (path rings the
-painter places on each border, on a 1 px `pathCasing` band on each side; one ring per level of the deepest
-chain is drawn once, hidden), its traced lines and the nodes they reach. A click (a mouse's or a pen's press
-let go within 4 px of where it was pressed, `CLICK_DISTANCE` in `viewport.ts`, d3-zoom's `clickDistance`;
-moved further, it is a drag, which pans and selects nothing) or Enter/Space selects (on a chip it expands it
-instead: section "Progressive disclosure"): the selection goes into the hash (`selection=`, history replaced),
-the `accent.select` ring (3 px between 2 px canvas-coloured gaps) pulses twice in a second (no animation with
-reduced motion), the node's lines are traced (below), and the details drawer opens (section "Details drawer"
-below). Escape or Close clears it.
+**Interaction.** The canvas keeps its camera itself and puts it on the drawing's group as a
+`translate(x,y) scale(k)` transform (`cameraAttribute`, `viewport.ts`), within `scaleExtent [0.05, 200]`; it
+publishes the camera by its `<svg>` (`canvasCamera.ts`) for the export's "current viewport" and the tests. A
+mouse and a pen come as pointer events: a press of the primary button without Ctrl (with Ctrl, a Mac's
+right-click) takes hold of the drawing, and once it has moved further than the click distance it is a drag,
+which keeps the drawing's point it pressed under the pointer (`camera.ts`, `isDrag`, `panTransform`), takes
+the pointer (`setPointerCapture`), and whose click the canvas takes on the window before anything else hears
+it; while held, the browser neither drags what was pressed (the console action's link) nor selects text. The
+wheel zooms about the pointer by 2 to the power of its delta: 0.002 a pixel, 0.05 a line, 1 a page, ten times
+as much with Ctrl, which is how a browser sends a touchpad's pinch, so a notch of 100 px scales by 2^0.2
+(`wheelZoom`, `wheelTransform`); turns less than 150 ms apart are one gesture, whose turns the canvas keeps
+from the page even where the scale extent leaves them nothing to do, while a turn on its own there is the
+page's (with Ctrl, the browser's zoom). A press, a drag and a turn of the wheel stop a glide on its way.
+Double-click does not zoom: it is kept for drill-in. `camera.test.ts` holds the arithmetic, and
+`DiagramCanvas.test.tsx` the mouse, the pen and the wheel on the canvas, with the events a browser sends for
+them. The canvas moves the same camera for a finger (paragraph "Touch" below). A new view is fitted to the
+canvas (never enlarged past 100 %), or on a phone or a tablet to the part of it an open sheet or drawer
+leaves, which a panel opening or closing fits it to again while the camera still rests on that fit (section
+"App state"); a theme change keeps the camera, and so does a selection on a desktop. Level of detail by the
+effective scale sets classes on the `<svg>` (`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px
+strokes thin to 1.5 px past 2×. Hover previews the node's selection trace (below): its path to the root in
+`accent.path` 3 px (path rings the painter places on each border, on a 1 px `pathCasing` band on each side;
+one ring per level of the deepest chain is drawn once, hidden), its traced lines and the nodes they reach. A
+click (a mouse's or a pen's press let go within 4 px of where it was pressed, `CLICK_DISTANCE` in
+`viewport.ts`, which moves nothing, so the camera still rests on a fit after it; moved further, it is a drag,
+which pans and selects nothing) or Enter/Space selects (on a chip it expands it instead: section "Progressive
+disclosure"): the selection goes into the hash (`selection=`, history replaced), the `accent.select` ring (3
+px between 2 px canvas-coloured gaps) pulses twice in a second (no animation with reduced motion), the node's
+lines are traced (below), and the details drawer opens (section "Details drawer" below). Escape or Close
+clears it.
 
 **Touch.** A finger comes as pointer events of `pointerType` `touch` (AGENTS.md, Product rules, the touch
-model), which `touch.ts` reads into gestures on a clock it is given and the canvas carries out; d3-zoom's own
-touch listeners stay off (`touchable(false)`), and a mouse and a pen keep its drag and wheel, the click, the
-double-click, the right-click and hover exactly as above:
+model), which `touch.ts` reads into gestures on a clock it is given and the canvas carries out, while a mouse
+and a pen keep their drag and the wheel, the click, the double-click, the right-click and hover exactly as
+above:
 
 | Gesture | What it does |
 |---|---|
@@ -1368,14 +1384,14 @@ double-click, the right-click and hover exactly as above:
 
 A click, a double-click or a right-click is the finger's, and changes nothing more, when it says so
 (Chromium's click of a tap has `pointerType` `touch`) or comes while a finger is on the canvas or has left it
-less than 500 ms ago (`TOUCH_MOUSE_MS`); a `mousedown` in that time is kept from d3-zoom, so a tap never
-starts a mouse drag. A pan or a pinch stops a glide on its way, as a mouse's drag does; a tap leaves it, so
-the glide that frames a chip the first tap of a double tap opened goes on. A finger's moves and lifts are
-heard on the window, where they go once the node it pressed is redrawn mid-gesture. `touch.test.ts` drives the
-gestures on a clock the test runs, `camera.test.ts` the arithmetic, and `DiagramCanvas.touch.test.tsx` every
-gesture on the canvas with synthetic pointer events: a pan that never selects, a pinch whose midpoint stays
-put, taps, double taps, a long press, a glide a tap leaves and a pan stops, and a mouse's and a pen's own
-input after a finger.
+less than 500 ms ago (`TOUCH_MOUSE_MS`); the mouse events a browser makes of a tap move nothing, as the canvas
+reads a mouse from its pointer events. A pan or a pinch stops a glide on its way, as a mouse's drag does; a
+tap leaves it, so the glide that frames a chip the first tap of a double tap opened goes on. A finger's moves
+and lifts are heard on the window, where they go once the node it pressed is redrawn mid-gesture.
+`touch.test.ts` drives the gestures on a clock the test runs, `camera.test.ts` the arithmetic, and
+`DiagramCanvas.touch.test.tsx` every gesture on the canvas with synthetic pointer events: a pan that never
+selects, a pinch whose midpoint stays put, taps, double taps, a long press, a glide a tap leaves and a pan
+stops, and a mouse's and a pen's own input after a finger.
 
 **Selection trace and console affordance.** `trace.ts` computes, from the Layout alone (no Graph), the
 trace of a node: the zones on its path to the root, the lines touching it or anything inside it, the
@@ -2460,8 +2476,8 @@ id and the read time at UTC in ISO-8601 basic format, each reduced to `A–Z a�
 ```
 src/export/
   source.ts         ExportSource: the drawn model, the viewer's UTC offset, the canvas's visible area (its size
-                    through the inverse d3-zoom camera) and the view's key; the diagram page publishes it in the
-                    diagram session
+                    through the inverse of the camera the canvas publishes) and the view's key; the diagram page
+                    publishes it in the diagram session
   render.tsx        draws DiagramSvg (the component of the baselines and of the headless renderer) with React into
                     a detached element, in the export's theme, legend and title block always on
   serialize.ts      clones that live <svg> into a standalone file (below)

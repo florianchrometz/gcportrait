@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-import { select } from 'd3-selection';
-import { zoom, zoomIdentity } from 'd3-zoom';
 import { describe, expect, it } from 'vitest';
 
+import { publishCamera } from '../diagram/canvasCamera';
 import { canvasVisibleArea, intersectRects, visibleAreaIn } from './source';
 
 function canvas(width: number, height: number): SVGSVGElement {
@@ -14,18 +13,19 @@ function canvas(width: number, height: number): SVGSVGElement {
 }
 
 describe('the visible area of the canvas', () => {
-  it('is the canvas size through the inverse of the d3-zoom camera, in drawing coordinates', () => {
+  it('is the canvas size through the inverse of the camera the canvas publishes, in drawing coordinates', () => {
     const svg = canvas(1200, 800);
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1200, 800],
-      ])
-      .transform(select(svg), zoomIdentity.translate(-300, 40).scale(2));
+    const unpublish = publishCamera(svg, { get: () => ({ k: 2, x: -300, y: 40 }), moveTo: () => undefined });
     expect(canvasVisibleArea(svg)).toEqual({ x: 150, y: -20, width: 600, height: 400 });
     const page = document.createElement('section');
     page.append(svg);
     expect(visibleAreaIn(page)).toEqual({ x: 150, y: -20, width: 600, height: 400 });
+    // Once the canvas takes its camera back, the <svg> shows the drawing at 100 % from its corner.
+    unpublish();
+    const area = canvasVisibleArea(svg);
+    expect(area).toMatchObject({ width: 1200, height: 800 });
+    expect(area?.x).toBeCloseTo(0);
+    expect(area?.y).toBeCloseTo(0);
   });
 
   it('is unknown without a laid-out canvas', () => {

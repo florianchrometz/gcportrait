@@ -10,15 +10,22 @@
  * moved; and the node under the pointer is reported for the store's hover.
  */
 import { fireEvent, render } from '@testing-library/react';
-import { select } from 'd3-selection';
-import { zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import { describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { focusTransform, REVEAL_MARGIN, REVEAL_MS, ZOOM_STEP } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
-import { canvasOf as canvas, canvasProps, manualFrames, nodeOf, reduceMotion } from './testing/canvas';
+import {
+  cameraOf,
+  canvasOf as canvas,
+  canvasProps,
+  manualFrames,
+  mouseClick,
+  moveCamera,
+  nodeOf,
+  reduceMotion,
+} from './testing/canvas';
 import { card, modelOf, scene, smallScene, wideScene, zone } from './testing/scenes';
-import { FIT_PADDING, fitTransform } from './viewport';
+import { cameraAttribute, CLICK_DISTANCE, FIT_PADDING, fitTransform } from './viewport';
 
 const model = modelOf(smallScene([['run/web', 'run/api', 'uses']]));
 
@@ -31,16 +38,16 @@ describe('the camera jump', () => {
     const done = vi.fn();
     const { container, rerender } = render(<DiagramCanvas {...props({ onJumpDone: done })} />);
     const svg = canvas(container);
-    const fitted = zoomTransform(svg);
+    const fitted = cameraOf(svg);
     const rect = model.input.layout.rects['run/api'];
     if (rect === undefined) throw new Error('no rect');
     rerender(<DiagramCanvas {...props({ onJumpDone: done, jump: { id: 'run/api', seq: 1 } })} />);
     const expected = focusTransform(rect, 1280, 800, fitted);
-    const now = zoomTransform(svg);
+    const now = cameraOf(svg);
     expect(now.k).toBeCloseTo(expected.k);
     expect(now.x).toBeCloseTo(expected.x);
     expect(now.y).toBeCloseTo(expected.y);
-    expect(svg.querySelector('.dg-viewport')?.getAttribute('transform')).toBe(now.toString());
+    expect(svg.querySelector('.dg-viewport')?.getAttribute('transform')).toBe(cameraAttribute(now));
     expect(done).toHaveBeenCalledWith(1);
   });
 
@@ -49,18 +56,18 @@ describe('the camera jump', () => {
     const begin = performance.now();
     const { container, rerender } = render(<DiagramCanvas {...props()} />);
     const svg = canvas(container);
-    const fitted = zoomTransform(svg);
+    const fitted = cameraOf(svg);
     rerender(<DiagramCanvas {...props({ jump: { id: 'run/web', seq: 4 } })} />);
     const rect = model.input.layout.rects['run/web'];
     if (rect === undefined) throw new Error('no rect');
     const target = focusTransform(rect, 1280, 800, fitted);
     frames.step(begin + 225);
-    const halfway = zoomTransform(svg);
+    const halfway = cameraOf(svg);
     expect(halfway.k).toBeGreaterThan(Math.min(fitted.k, target.k) - 1e-9);
     expect(halfway.k).toBeLessThan(Math.max(fitted.k, target.k) + 1e-9);
     frames.run(begin + 10_000);
-    expect(zoomTransform(svg).k).toBeCloseTo(target.k);
-    expect(zoomTransform(svg).x).toBeCloseTo(target.x);
+    expect(cameraOf(svg).k).toBeCloseTo(target.k);
+    expect(cameraOf(svg).x).toBeCloseTo(target.x);
   });
 
   it('keeps a jump to a node that is not drawn pending until a drawing has it', () => {
@@ -119,7 +126,7 @@ const sized = (svg: SVGSVGElement, width: number, height: number): void => {
 const onScreen = (svg: SVGSVGElement, id: string) => {
   const rect = model.input.layout.rects[id];
   if (rect === undefined) throw new Error('no rect');
-  const { k, x, y } = zoomTransform(svg);
+  const { k, x, y } = cameraOf(svg);
   const top = rect.y * k + y;
   const bottom = (rect.y + rect.height) * k + y;
   return { top, bottom, x: (rect.x + rect.width / 2) * k + x, y: (top + bottom) / 2 };
@@ -136,7 +143,7 @@ const frameOf = (svg: SVGSVGElement): Box => {
 /** Where the drawing's frame is on screen under the canvas's camera. */
 const drawingOnScreen = (svg: SVGSVGElement): Box => {
   const frame = frameOf(svg);
-  const { k, x, y } = zoomTransform(svg);
+  const { k, x, y } = cameraOf(svg);
   return { x: frame.x * k + x, y: frame.y * k + y, width: frame.width * k, height: frame.height * k };
 };
 
@@ -146,7 +153,7 @@ const drawingOnScreen = (svg: SVGSVGElement): Box => {
  */
 const expectFittedTo = (svg: SVGSVGElement, room: Box): void => {
   const box = drawingOnScreen(svg);
-  expect(zoomTransform(svg).k).toBeCloseTo(fitTransform(frameOf(svg), room.width, room.height).k);
+  expect(cameraOf(svg).k).toBeCloseTo(fitTransform(frameOf(svg), room.width, room.height).k);
   expect(box.x + box.width / 2).toBeCloseTo(room.x + room.width / 2);
   expect(box.y + box.height / 2).toBeCloseTo(room.y + room.height / 2);
   expect(box.x).toBeGreaterThanOrEqual(room.x + FIT_PADDING - 1e-6);
@@ -265,23 +272,17 @@ describe('the room a zoom key keeps the focused item in', () => {
     const k = 120 / rect.height;
     const cx = rect.x + rect.width / 2;
     const cy = rect.y + rect.height / 2;
-    // d3-zoom keeps the camera on the <svg>, whichever behaviour set it.
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1280, 800],
-      ])
-      .transform(select(svg), zoomIdentity.translate(640 - cx * k, 330 - cy * k).scale(k));
+    moveCamera(svg, { k, x: 640 - cx * k, y: 330 - cy * k });
     return svg;
   };
 
   it('keeps the focused item above a drawer over the canvas’s lower half (a phone’s) on a step in', () => {
     const svg = aboveTheDrawer();
-    const before = zoomTransform(svg).k;
+    const before = cameraOf(svg).k;
     const api = nodeOf(svg, 'run/api');
     api.focus();
     fireEvent.keyDown(api, { key: '+' });
-    expect(zoomTransform(svg).k).toBeCloseTo(before * ZOOM_STEP);
+    expect(cameraOf(svg).k).toBeCloseTo(before * ZOOM_STEP);
     // 180 px tall now: about its centre it would reach 20 px under the drawer; it moves up, inside the room's margin.
     const node = onScreen(svg, 'run/api');
     expect(node.bottom).toBeCloseTo(400 - REVEAL_MARGIN);
@@ -291,12 +292,12 @@ describe('the room a zoom key keeps the focused item in', () => {
 
   it('zooms about the centre of the room the drawer leaves when the canvas itself has focus', () => {
     const svg = aboveTheDrawer();
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     // The drawing's point at the centre of the room above the drawer, (640, 200), stays there.
     const held = { x: (640 - before.x) / before.k, y: (200 - before.y) / before.k };
     svg.focus();
     fireEvent.keyDown(svg, { key: '+' });
-    const after = zoomTransform(svg);
+    const after = cameraOf(svg);
     expect(after.k).toBeCloseTo(before.k * ZOOM_STEP);
     expect(held.x * after.k + after.x).toBeCloseTo(640);
     expect(held.y * after.k + after.y).toBeCloseTo(200);
@@ -319,12 +320,7 @@ describe('the room a zoom key keeps the focused item in', () => {
     const { container } = render(<DiagramCanvas {...props()} />);
     const svg = canvas(container);
     atTopLeft(svg);
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1280, 800],
-      ])
-      .transform(select(svg), zoomIdentity.translate(-300, -200).scale(2));
+    moveCamera(svg, { k: 2, x: -300, y: -200 });
     svg.focus();
     fireEvent.keyDown(svg, { key: '0' });
     expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 800 });
@@ -395,18 +391,13 @@ describe('the refit when a panel over the canvas opens or closes', () => {
 
   /** Moves the camera as a person's pan does: `dx` px to the right, at its scale. */
   const pan = (svg: SVGSVGElement, dx: number): void => {
-    const { k, x, y } = zoomTransform(svg);
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1280, 800],
-      ])
-      .transform(select(svg), zoomIdentity.translate(x + dx, y).scale(k));
+    const { k, x, y } = cameraOf(svg);
+    moveCamera(svg, { k, x: x + dx, y });
   };
 
   /** The camera as plain numbers, to compare. */
   const camera = (svg: SVGSVGElement) => {
-    const { k, x, y } = zoomTransform(svg);
+    const { k, x, y } = cameraOf(svg);
     return { k, x, y };
   };
 
@@ -449,6 +440,30 @@ describe('the refit when a panel over the canvas opens or closes', () => {
     expect(camera(svg)).toEqual(panned);
     show(false, { panels: '' });
     expect(camera(svg)).toEqual(panned);
+  });
+
+  it('rests on its fit after a mouse’s click that wobbled, which moves nothing: a sheet that opens refits', () => {
+    reduceMotion();
+    const { svg, show } = fittedUnder(SHEET);
+    const fit = camera(svg);
+    // A click on the bare canvas whose hand moved as far as the click distance between the press and the release.
+    mouseClick(svg, 5, 5, CLICK_DISTANCE, 0);
+    expect(camera(svg)).toEqual(fit);
+    show(true, { panels: 'view' });
+    expectFittedTo(svg, BELOW_THE_SHEET);
+  });
+
+  it('leaves one a mouse dragged, and the click the browser makes of the drag selects nothing', () => {
+    reduceMotion();
+    const onSelect = vi.fn();
+    const { svg, show } = fittedUnder(SHEET);
+    const fit = camera(svg);
+    mouseClick(nodeOf(svg, 'run/api'), 300, 200, 12, -5, { steps: 3 });
+    const dragged = camera(svg);
+    expect(dragged).toEqual({ k: fit.k, x: fit.x + 12, y: fit.y - 5 });
+    show(true, { panels: 'view', onSelect });
+    expect(camera(svg)).toEqual(dragged);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   it('and one a zoom key stepped', () => {
@@ -517,15 +532,10 @@ describe('the refit when a panel over the canvas opens or closes', () => {
     const rect = model.input.layout.rects['run/api'];
     if (rect === undefined) throw new Error('no rect');
     // Zoomed to 100 % and panned until the node's top lies 600 px down, where the drawer will be.
-    zoom<SVGSVGElement, unknown>()
-      .extent([
-        [0, 0],
-        [1280, 800],
-      ])
-      .transform(select(svg), zoomIdentity.translate(640 - rect.x - rect.width / 2, 600 - rect.y).scale(1));
+    moveCamera(svg, { k: 1, x: 640 - rect.x - rect.width / 2, y: 600 - rect.y });
     show(true, { panels: 'drawer', selection: 'run/api', jump: { id: 'run/api', seq: 1, mode: 'reveal' } });
     const node = onScreen(svg, 'run/api');
-    expect(zoomTransform(svg).k).toBe(1);
+    expect(cameraOf(svg).k).toBe(1);
     expect(node.top).toBeGreaterThanOrEqual(REVEAL_MARGIN - 1e-6);
     expect(node.bottom).toBeLessThanOrEqual(400 - REVEAL_MARGIN + 1e-6);
     const revealed = camera(svg);

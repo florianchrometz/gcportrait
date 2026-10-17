@@ -22,11 +22,16 @@
  * under them as near as a scale and a pan can, so they zoom about their midpoint and pan with it (`pinchTransform`),
  * and a double tap zooms in by `DOUBLE_TAP_ZOOM` about the point tapped (`doubleTapTransform`), all within the scale
  * extent a mouse wheel has.
+ *
+ * And a mouse's and a pen's (DiagramCanvas): a press let go within `CLICK_DISTANCE` of where it was pressed is a click
+ * and moves nothing, one moved further is a drag (`isDrag`), which keeps what was pressed under the pointer as a
+ * finger's pan does (`panTransform`); the wheel zooms about the pointer by a power of two of its delta (`wheelZoom`,
+ * `wheelTransform`).
  */
 import type { Rect } from '@gcportrait/layout';
 
 import { SUBTITLE_MIN_SCALE } from './lod';
-import { SCALE_EXTENT, type CameraTransform } from './viewport';
+import { CLICK_DISTANCE, SCALE_EXTENT, type CameraTransform } from './viewport';
 
 /**
  * How long a centring glide takes (ms): 200, the search hit's "200 ms glide to centre" (skill gcp-diagram-style
@@ -350,6 +355,61 @@ export const DOUBLE_TAP_ZOOM = 2;
  */
 export function doubleTapTransform(current: CameraTransform, at: ScreenPoint): CameraTransform | null {
   const k = clampScale(current.k * DOUBLE_TAP_ZOOM);
+  if (k === current.k) return null;
+  return zoomAbout(current, k, at.x, at.y);
+}
+
+/**
+ * Whether a mouse's or a pen's press, made at `from`, is a drag once the pointer is at `at`: further than
+ * `CLICK_DISTANCE` away. As far as that, a hand's wobble, its release is still a click.
+ */
+export function isDrag(from: ScreenPoint, at: ScreenPoint): boolean {
+  return (at.x - from.x) ** 2 + (at.y - from.y) ** 2 > CLICK_DISTANCE ** 2;
+}
+
+/**
+ * How far a wheel's delta zooms, in powers of two per unit of its `deltaMode`, here a pixel (0): a notch of a mouse
+ * wheel, 100 px in most browsers, scales the camera by 2^0.2, about 1.15.
+ */
+export const WHEEL_ZOOM_PER_PIXEL = 0.002;
+/** The same per line (`deltaMode` 1): three lines, a notch where a browser counts in lines, scale by 2^0.15. */
+export const WHEEL_ZOOM_PER_LINE = 0.05;
+/** The same per page (`deltaMode` 2, or any other): a page doubles or halves the scale. */
+export const WHEEL_ZOOM_PER_PAGE = 1;
+/**
+ * A wheel's turn with Ctrl zooms this many times as far: a browser sends a touchpad's pinch as one, in deltas of a few
+ * pixels, so a pinch zooms about as fast as the wheel does.
+ */
+export const WHEEL_CTRL_FACTOR = 10;
+
+/** What the camera reads of a wheel's turn (a `WheelEvent`'s). */
+export interface WheelTurn {
+  readonly deltaY: number;
+  readonly deltaMode: number;
+  readonly ctrlKey: boolean;
+}
+
+/** The power of two a wheel's turn scales the camera by: turned up (a negative `deltaY`) it zooms in. */
+export function wheelZoom(turn: WheelTurn): number {
+  const unit =
+    turn.deltaMode === 0
+      ? WHEEL_ZOOM_PER_PIXEL
+      : turn.deltaMode === 1
+        ? WHEEL_ZOOM_PER_LINE
+        : WHEEL_ZOOM_PER_PAGE;
+  return -turn.deltaY * unit * (turn.ctrlKey ? WHEEL_CTRL_FACTOR : 1);
+}
+
+/**
+ * A wheel's turn with the pointer at `at`: the camera `current` scaled by `wheelZoom`'s power of two about that point,
+ * within the scale extent; null when that leaves the scale as it is (at the extent, or a turn with no `deltaY`).
+ */
+export function wheelTransform(
+  current: CameraTransform,
+  turn: WheelTurn,
+  at: ScreenPoint,
+): CameraTransform | null {
+  const k = clampScale(current.k * 2 ** wheelZoom(turn));
   if (k === current.k) return null;
   return zoomAbout(current, k, at.x, at.y);
 }

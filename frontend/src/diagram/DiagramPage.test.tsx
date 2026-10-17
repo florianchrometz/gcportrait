@@ -55,7 +55,7 @@ describe('the diagram page', () => {
     );
     expect(svg.textContent).not.toMatch(/affiliated/i);
     expect(svg.querySelector('.dg-legend')?.textContent).toContain('routes — traffic path');
-    // The canvas was fitted: the viewport group carries a d3-zoom transform.
+    // The canvas was fitted: the viewport group carries the camera's transform.
     expect(svg.querySelector('.dg-viewport')?.getAttribute('transform')).toMatch(
       /^translate\(.+\) scale\(.+\)$/,
     );

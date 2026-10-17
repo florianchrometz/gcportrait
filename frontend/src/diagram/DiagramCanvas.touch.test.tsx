@@ -6,26 +6,27 @@
  * double tap zooms in about its point (on a chip the first tap's flip stands, and nothing zooms), and a long press
  * shows what hover shows a mouse, until the next finger touches. A tap leaves a glide on its way, a pan stops it. The
  * clicks, double-clicks and right-clicks the browser makes of a finger change nothing more, and its mouse events move
- * no camera, while a mouse keeps its hover, click, double-click and drag.
+ * no camera, while a mouse keeps its hover, click, double-click and drag, and a pen is read as a mouse is.
  */
 import { act, fireEvent, render } from '@testing-library/react';
-import { zoomTransform } from 'd3-zoom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DOUBLE_TAP_ZOOM, focusTransform } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
 import {
+  cameraOf,
   canvasOf,
   canvasProps,
   chipOf,
   manualFrames,
+  mouseClick,
   mouseEvent,
   nodeOf,
   reduceMotion,
 } from './testing/canvas';
 import { card, modelOf, scene, smallScene, withConsoleLinks, zone } from './testing/scenes';
 import { LONG_PRESS_MS, TOUCH_MOUSE_MS } from './touch';
-import { SCALE_EXTENT } from './viewport';
+import { cameraAttribute, SCALE_EXTENT } from './viewport';
 
 const model = modelOf(smallScene([['run/web', 'run/api', 'uses']]));
 
@@ -58,7 +59,7 @@ function tap(target: Element, x: number, y: number, id = 1): void {
 
 /** Where the drawing's point under the screen point (`x`, `y`) is, under the canvas's camera now. */
 function drawingPoint(svg: SVGSVGElement, x: number, y: number): { x: number; y: number } {
-  const camera = zoomTransform(svg);
+  const camera = cameraOf(svg);
   return { x: (x - camera.x) / camera.k, y: (y - camera.y) / camera.k };
 }
 
@@ -79,23 +80,23 @@ describe('one finger', () => {
     const { container } = render(<DiagramCanvas {...props({ onSelect })} />);
     const svg = canvasOf(container);
     const api = nodeOf(svg, 'run/api');
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     const under = drawingPoint(svg, 300, 200);
     const touch = finger(1);
     touch.down(api, 300, 200);
     touch.move(api, 300, 206);
     // Within the slop: nothing moves yet.
-    expect(zoomTransform(svg)).toEqual(before);
+    expect(cameraOf(svg)).toEqual(before);
     touch.move(api, 260, 260);
     touch.up(api, 260, 260);
     fireEvent.click(api, { clientX: 260, clientY: 260, detail: 1 });
-    const after = zoomTransform(svg);
+    const after = cameraOf(svg);
     expect(after.k).toBe(before.k);
     expect(after.x).toBeCloseTo(before.x - 40);
     expect(after.y).toBeCloseTo(before.y + 60);
     expect(drawingPoint(svg, 260, 260).x).toBeCloseTo(under.x);
     expect(drawingPoint(svg, 260, 260).y).toBeCloseTo(under.y);
-    expect(svg.querySelector('.dg-viewport')?.getAttribute('transform')).toBe(after.toString());
+    expect(svg.querySelector('.dg-viewport')?.getAttribute('transform')).toBe(cameraAttribute(after));
     expect(onSelect).not.toHaveBeenCalled();
   });
 
@@ -103,10 +104,10 @@ describe('one finger', () => {
     const onSelect = vi.fn();
     const { container } = render(<DiagramCanvas {...props({ onSelect })} />);
     const svg = canvasOf(container);
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     tap(nodeOf(svg, 'run/api'), 300, 200);
     expect(onSelect.mock.calls).toEqual([['run/api']]);
-    expect(zoomTransform(svg)).toEqual(before);
+    expect(cameraOf(svg)).toEqual(before);
   });
 
   it('taps the bare canvas to clear the selection, as a click there does', () => {
@@ -135,11 +136,11 @@ describe('a double tap', () => {
     const { container } = render(<DiagramCanvas {...props({ onSelect })} />);
     const svg = canvasOf(container);
     const api = nodeOf(svg, 'run/api');
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     const under = drawingPoint(svg, 320, 210);
     tap(api, 320, 210, 1);
     tap(api, 324, 212, 2);
-    const after = zoomTransform(svg);
+    const after = cameraOf(svg);
     expect(after.k).toBeCloseTo(before.k * DOUBLE_TAP_ZOOM);
     // The second tap's point keeps what was drawn there (4 px from the first's).
     const kept = drawingPoint(svg, 324, 212);
@@ -154,11 +155,11 @@ describe('a double tap', () => {
     const onSelect = vi.fn();
     const { container } = render(<DiagramCanvas {...props({ onSelect })} />);
     const svg = canvasOf(container);
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     tap(nodeOf(svg, 'run/api'), 320, 210, 1);
     advance(400);
     tap(nodeOf(svg, 'run/web'), 320, 210, 2);
-    expect(zoomTransform(svg).k).toBe(before.k);
+    expect(cameraOf(svg).k).toBe(before.k);
     expect(onSelect.mock.calls).toEqual([['run/api'], ['run/web']]);
   });
 
@@ -169,7 +170,7 @@ describe('a double tap', () => {
     const onSelect = vi.fn();
     const { container } = render(<DiagramCanvas {...props({ onFlip, onDrillIn, onSelect })} />);
     const svg = canvasOf(container);
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     const chip = chipOf(svg, 'projects/data');
     tap(chip, 600, 400, 1);
     expect(onFlip.mock.calls).toEqual([['projects/data']]);
@@ -179,20 +180,20 @@ describe('a double tap', () => {
     expect(onFlip.mock.calls).toEqual([['projects/data']]);
     expect(onDrillIn).not.toHaveBeenCalled();
     expect(onSelect).not.toHaveBeenCalled();
-    expect(zoomTransform(svg)).toEqual(before);
+    expect(cameraOf(svg)).toEqual(before);
   });
 
   it('zooms in on the bare canvas too, and never past the scale extent', () => {
     reduceMotion();
     const { container } = render(<DiagramCanvas {...props()} />);
     const svg = canvasOf(container);
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     tap(svg, 5, 5, 1);
     tap(svg, 5, 5, 2);
-    expect(zoomTransform(svg).k).toBeCloseTo(before.k * DOUBLE_TAP_ZOOM);
+    expect(cameraOf(svg).k).toBeCloseTo(before.k * DOUBLE_TAP_ZOOM);
     // A tap after a double tap starts over, the next one is a double tap again: twenty of them reach the extent.
     for (let id = 3; id < 43; id += 1) tap(svg, 5, 5, id);
-    expect(zoomTransform(svg).k).toBe(SCALE_EXTENT[1]);
+    expect(cameraOf(svg).k).toBe(SCALE_EXTENT[1]);
   });
 });
 
@@ -205,13 +206,13 @@ describe('a glide on its way', () => {
     rerender(<DiagramCanvas {...props({ jump: { id: 'run/web', seq: 1 } })} />);
     const rect = model.input.layout.rects['run/web'];
     if (rect === undefined) throw new Error('no rect');
-    const target = focusTransform(rect, 1280, 800, zoomTransform(svg));
+    const target = focusTransform(rect, 1280, 800, cameraOf(svg));
     frames.step(begin + 50);
     // A tap on the bare canvas: the glide goes on to its end.
     tap(svg, 5, 5);
     frames.run(begin + 10_000);
-    expect(zoomTransform(svg).k).toBeCloseTo(target.k);
-    expect(zoomTransform(svg).x).toBeCloseTo(target.x);
+    expect(cameraOf(svg).k).toBeCloseTo(target.k);
+    expect(cameraOf(svg).x).toBeCloseTo(target.x);
     // Another glide, and a finger's pan on its way: the camera stays where the finger leaves it.
     rerender(<DiagramCanvas {...props({ jump: { id: 'run/api', seq: 2 } })} />);
     frames.step(begin + 10_050);
@@ -219,10 +220,10 @@ describe('a glide on its way', () => {
     touch.down(svg, 100, 100);
     touch.move(svg, 140, 100);
     touch.up(svg, 140, 100);
-    const panned = zoomTransform(svg);
+    const panned = cameraOf(svg);
     expect(frames.pending()).toBe(0);
     frames.run(begin + 20_000);
-    expect(zoomTransform(svg)).toEqual(panned);
+    expect(cameraOf(svg)).toEqual(panned);
   });
 });
 
@@ -232,7 +233,7 @@ describe('two fingers', () => {
     const { container } = render(<DiagramCanvas {...props({ onSelect })} />);
     const svg = canvasOf(container);
     const api = nodeOf(svg, 'run/api');
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     const middle = drawingPoint(svg, 450, 300);
     const one = finger(1);
     const two = finger(2, false);
@@ -240,13 +241,13 @@ describe('two fingers', () => {
     two.down(svg, 500, 300);
     one.move(api, 350, 300);
     two.move(svg, 550, 300);
-    expect(zoomTransform(svg).k).toBeCloseTo(before.k * 2);
+    expect(cameraOf(svg).k).toBeCloseTo(before.k * 2);
     expect(drawingPoint(svg, 450, 300).x).toBeCloseTo(middle.x);
     expect(drawingPoint(svg, 450, 300).y).toBeCloseTo(middle.y);
     // Both fingers move up together: the midpoint pans, the scale stays.
     one.move(api, 350, 250);
     two.move(svg, 550, 250);
-    expect(zoomTransform(svg).k).toBeCloseTo(before.k * 2);
+    expect(cameraOf(svg).k).toBeCloseTo(before.k * 2);
     expect(drawingPoint(svg, 450, 250).y).toBeCloseTo(middle.y);
     one.up(api, 350, 250);
     two.up(svg, 550, 250);
@@ -349,7 +350,7 @@ describe('a mouse', () => {
     const svg = canvasOf(container);
     tap(svg, 5, 5);
     advance(TOUCH_MOUSE_MS);
-    const before = zoomTransform(svg);
+    const before = cameraOf(svg);
     const chip = chipOf(svg, 'projects/data');
     fireEvent.pointerDown(chip, { pointerType: 'mouse', clientX: 600, clientY: 400 });
     fireEvent.click(chip, { clientX: 600, clientY: 400, detail: 1 });
@@ -357,43 +358,46 @@ describe('a mouse', () => {
     fireEvent.dblClick(chip, { clientX: 600, clientY: 400, detail: 2 });
     expect(onFlip.mock.calls).toEqual([['projects/data'], ['projects/data', { history: 'replace' }]]);
     expect(onDrillIn.mock.calls).toEqual([['projects/data', { history: 'replace' }]]);
-    // A pen pressed and moved far: the recogniser never reads it (d3-zoom takes a pen's mouse events), and its tap
-    // on a node selects by its click.
+    expect(cameraOf(svg)).toEqual(before);
+    // A pen is read as a mouse is, never as a finger: its press let go where it was pressed selects by its click, it
+    // rests on the drawing as long as it likes without a long press, and its drag pans the drawing as far as it moved,
+    // whose click selects nothing.
     const api = nodeOf(svg, 'run/api');
-    const pen = { pointerType: 'pen', pointerId: 9, isPrimary: true };
-    fireEvent.pointerDown(api, { ...pen, clientX: 300, clientY: 200 });
-    fireEvent.pointerMove(api, { ...pen, clientX: 300, clientY: 200 });
-    fireEvent.pointerUp(api, { ...pen, clientX: 300, clientY: 200 });
-    fireEvent.click(api, { clientX: 300, clientY: 200, detail: 1 });
+    mouseClick(api, 300, 200, 0, 0, { pointerType: 'pen', pointerId: 9 });
+    const pen = { pointerType: 'pen', pointerId: 9, isPrimary: true, buttons: 1 };
     fireEvent.pointerDown(svg, { ...pen, clientX: 100, clientY: 100 });
-    fireEvent.pointerMove(svg, { ...pen, clientX: 300, clientY: 300 });
-    fireEvent.pointerUp(svg, { ...pen, clientX: 300, clientY: 300 });
     advance(LONG_PRESS_MS);
+    expect(container.querySelector('p[aria-hidden="true"]')).toBeNull();
+    fireEvent.pointerMove(svg, { ...pen, clientX: 300, clientY: 300 });
+    fireEvent.pointerUp(svg, { ...pen, buttons: 0, clientX: 300, clientY: 300 });
+    fireEvent.click(svg, { clientX: 300, clientY: 300, detail: 1 });
     expect(onSelect.mock.calls).toEqual([[null], ['run/api']]);
-    expect(zoomTransform(svg)).toEqual(before);
+    const dragged = cameraOf(svg);
+    expect(dragged.k).toBe(before.k);
+    expect(dragged.x).toBeCloseTo(before.x + 200);
+    expect(dragged.y).toBeCloseTo(before.y + 200);
   });
 
   it('drags the camera, while the mouse events a browser makes of a finger’s tap do not', () => {
     vi.useFakeTimers();
     const { container } = render(<DiagramCanvas {...props()} />);
     const svg = canvasOf(container);
-    const drag = (): void => {
-      svg.dispatchEvent(mouseEvent('mousedown', 100, 100));
-      window.dispatchEvent(mouseEvent('mousemove', 160, 100));
-      window.dispatchEvent(mouseEvent('mouseup', 160, 100));
-    };
-    const before = zoomTransform(svg);
-    // Right after a tap, its mousedown is the finger's.
+    const before = cameraOf(svg);
+    // Right after a tap, the mouse events the browser makes of it move nothing, even as a drag: the canvas reads a
+    // mouse from its pointer events.
     const touch = finger(1);
     touch.down(svg, 100, 100);
     touch.up(svg, 100, 100);
-    drag();
-    expect(zoomTransform(svg)).toEqual(before);
-    // A mouse's own drag pans, as ever.
+    svg.dispatchEvent(mouseEvent('mousedown', 100, 100));
+    window.dispatchEvent(mouseEvent('mousemove', 160, 100, { buttons: 1 }));
+    window.dispatchEvent(mouseEvent('mouseup', 160, 100));
+    expect(cameraOf(svg)).toEqual(before);
+    // A mouse's own drag pans the drawing as far as the mouse moved.
     advance(TOUCH_MOUSE_MS);
-    fireEvent.pointerDown(svg, { pointerType: 'mouse', clientX: 100, clientY: 100 });
-    drag();
-    expect(zoomTransform(svg).x).toBeCloseTo(before.x + 60);
+    mouseClick(svg, 100, 100, 60, 0, { steps: 3 });
+    expect(cameraOf(svg).k).toBe(before.k);
+    expect(cameraOf(svg).x).toBeCloseTo(before.x + 60);
+    expect(cameraOf(svg).y).toBeCloseTo(before.y);
   });
 });
 
@@ -411,11 +415,11 @@ describe('a drawing replaced mid-gesture', () => {
       scene([zone('projects/demo-app', 'project', 'demo-app', [card('run/new', 'new')])]),
     );
     rerender(<DiagramCanvas {...props({ model: other, onSelect })} />);
-    const fitted = zoomTransform(svg);
+    const fitted = cameraOf(svg);
     fireEvent.pointerMove(window, { pointerType: 'touch', pointerId: 1, clientX: 360, clientY: 200 });
     fireEvent.pointerUp(window, { pointerType: 'touch', pointerId: 1, clientX: 360, clientY: 200 });
     // The pan goes on at the new camera's scale, the point it touched under the finger.
-    expect(zoomTransform(svg).k).toBe(fitted.k);
+    expect(cameraOf(svg).k).toBe(fitted.k);
     expect(drawingPoint(svg, 360, 200).x).toBeCloseTo(touched.x);
     expect(drawingPoint(svg, 360, 200).y).toBeCloseTo(touched.y);
     expect(onSelect).not.toHaveBeenCalled();

@@ -786,9 +786,10 @@ infra/         Dockerfile, install.sh, deploy.sh, uninstall.sh, compose.yaml, cl
   - ingest, the graph build and the layout run in workers, and the UI thread only renders; the demo generator
     runs in workers only (the data worker, and a demo worker per "Try the demo" job), and zod never loads on
     the UI thread (its codec and vocabularies come from zod-free modules);
-  - the diagram is SVG drawn by React; zoom and pan use d3-zoom with `scaleExtent [0.05, 200]` for a mouse and
-    a pen, and the canvas's own gesture reader for a finger within the same extent; double-click is reserved
-    for drill-in; the level of detail follows the effective scale;
+  - the diagram is SVG drawn by React; the canvas pans and zooms it itself within `scaleExtent [0.05, 200]`,
+    reading a mouse's and a pen's drag and the wheel from their pointer and wheel events and a finger's
+    gestures from its pointer events; double-click is reserved for drill-in; the level of detail follows the
+    effective scale;
   - search is Fuse.js over the graph's node index;
   - the work a view sends to the renderer is proportional to the view, not to the organisation.
 

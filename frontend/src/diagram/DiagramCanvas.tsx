@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive diagram (AGENTS.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that
- * d3-zoom pans and zooms (`scaleExtent [0.05, 200]`, wheel and drag; a press that moved at most `CLICK_DISTANCE`, 4 px,
- * is a click; double-click is reserved for drill-in and does not zoom), level of detail by the effective scale, and
- * hover, selection (with its trace) and keyboard focus painted by the highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting
- * only set attributes and classes on it, and never ask for a new layout. `data-diagram-ready="true"` on the
- * `<svg>` says the drawing is fitted and interactive: it is set once the painter and its listeners are attached, and
- * stays set while the next view is prepared, as the drawing before it stays on the canvas until then. `data-drawing`,
- * set in the same step, numbers the drawing: every drawing the canvas puts up (a new view, or the same view in another
- * theme or with other settings) takes the page's next number, so a new number tells the next drawing from the last.
+ * The interactive diagram (AGENTS.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that the
+ * canvas pans and zooms itself (`scaleExtent [0.05, 200]`; a mouse's or a pen's drag and the wheel, read from their
+ * pointer and wheel events; a press that moved at most `CLICK_DISTANCE`, 4 px, is a click and moves nothing;
+ * double-click is reserved for drill-in and does not zoom), level of detail by the effective scale, and hover,
+ * selection (with its trace) and keyboard focus painted by the highlight painter. The drawing renders once per model,
+ * theme and settings; zooming, hovering and selecting only set attributes and classes on it, and never ask for a new
+ * layout. `data-diagram-ready="true"` on the `<svg>` says the drawing is fitted and interactive: it is set once the
+ * painter and its listeners are attached, and stays set while the next view is prepared, as the drawing before it stays
+ * on the canvas until then. `data-drawing`, set in the same step, numbers the drawing: every drawing the canvas puts up
+ * (a new view, or the same view in another theme or with other settings) takes the page's next number, so a new number
+ * tells the next drawing from the last.
  *
  * A node's menu ("Open in Cloud Console", "Copy resource name", "Drill in") opens on a right-click, on
  * Shift+F10 or the context-menu key on a focused node, and on Enter on the selected node; it selects the node
@@ -50,13 +52,13 @@
  * button, or its chip). Without `onFlip` a chip is selected like any node.
  *
  * Fingers (touch.ts; AGENTS.md, Product rules, the touch model) come as pointer events of `pointerType` `touch`, read
- * here into gestures rather than by d3-zoom: one finger pans, two pinch about their midpoint and pan, a tap does what a
- * click does (selects, clears, or flips a chip), a double tap zooms in about its point (on a chip or a collapse button
- * the first tap's flip stands instead, as a double-click's second click does not flip it back), and a long press
- * (500 ms, without moving) shows what hover shows a mouse, the trace's preview and the tooltip there, until the next
- * finger touches; a long press on the selected node's console action also shows its label, and leaves the browser's
- * own menu for its link. The browser's click, double-click, right-click and mouse events made from a finger are the
- * finger's, already read; a mouse and a pen keep everything above exactly as it is.
+ * here into gestures: one finger pans, two pinch about their midpoint and pan, a tap does what a click does (selects,
+ * clears, or flips a chip), a double tap zooms in about its point (on a chip or a collapse button the first tap's flip
+ * stands instead, as a double-click's second click does not flip it back), and a long press (500 ms, without moving)
+ * shows what hover shows a mouse, the trace's preview and the tooltip there, until the next finger touches; a long
+ * press on the selected node's console action also shows its label, and leaves the browser's own menu for its link. The
+ * browser's click, double-click, right-click and mouse events made from a finger are the finger's, already read; a
+ * mouse and a pen keep everything above exactly as it is.
  *
  * The keyboard (style skill §13; keyboard/navigation.ts): the drawing is one tab stop (roving `tabindex`; at first
  * its top-left solid node); the arrow keys move between the items of a zone (cards, chips, card-sized zones and the
@@ -70,8 +72,6 @@
  * around the item. The focus ring keeps its screen size at any scale (the painter's `setScale`). After "Drill in"
  * focus waits on the `<svg>` and goes to the new drawing's tab stop (canvasFocus.ts).
  */
-import { select } from 'd3-selection';
-import { zoom, zoomIdentity, zoomTransform, type D3ZoomEvent, type ZoomBehavior } from 'd3-zoom';
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 
 import './theme/tokens.css';
@@ -84,21 +84,26 @@ import { Menu, type MenuCloseReason, type MenuItem } from '../ui/Menu';
 import { canDrillIn, nodeMenuItems } from './actions';
 import {
   doubleTapTransform,
+  drawingPointAt,
   easeInOut,
   focusTransform,
   GLIDE_MS,
   glideAt,
   inRoom,
+  isDrag,
   keyboardTransform,
+  panTransform,
   REVEAL_MS,
   revealTransform,
   sameCamera,
   showsWhole,
+  wheelTransform,
   zoomStepTransform,
   type CanvasRoom,
   type JumpMode,
   type ScreenPoint,
 } from './camera';
+import { publishCamera } from './canvasCamera';
 import { isCanvasFocusParked, parkCanvasFocus, unparkCanvasFocus } from './canvasFocus';
 import { DiagramDrawing, planDrawing, type DrawingOptions } from './Drawing';
 import { collapseButtonOf, collapseZoneOf } from './disclosure/CollapseButton';
@@ -113,7 +118,13 @@ import type { DiagramTheme } from './theme/tokens';
 import { createTouchGestures, type TouchGestures, type TouchHandlers } from './touch';
 import styles from './touchHint.module.css';
 import { computeTrace } from './trace';
-import { CLICK_DISTANCE, FIT_PADDING, fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
+import {
+  cameraAttribute,
+  FIT_PADDING,
+  fitTransform,
+  IDENTITY_CAMERA,
+  type CameraTransform,
+} from './viewport';
 
 export interface DiagramCanvasProps {
   readonly model: DiagramModel;
@@ -336,23 +347,20 @@ function traceExtent(model: DiagramModel, id: string, rect: Rect): Rect {
 }
 
 /**
- * Glides the camera to `to` (camera.ts) in `ms`, frame by frame; at once with reduced motion or without
- * animation frames. A pan or zoom by the person stops it.
+ * Glides the camera from `from` to `to` (camera.ts) in `ms`, frame by frame, each step `place`d; at once with reduced
+ * motion or without animation frames. The person's own pan or zoom stops it (the canvas calls `stop`).
  */
 function glideTo(
   svg: SVGSVGElement,
-  behaviour: ZoomBehavior<SVGSVGElement, unknown>,
+  from: CameraTransform,
   to: CameraTransform,
   ms: number,
+  place: (camera: CameraTransform) => void,
 ): Pick<Glide, 'to' | 'stop' | 'running'> {
   const size = canvasSize(svg);
-  const from = zoomTransform(svg);
-  const apply = (camera: { x: number; y: number; k: number }): void => {
-    behaviour.transform(select(svg), zoomIdentity.translate(camera.x, camera.y).scale(camera.k));
-  };
   const view = svg.ownerDocument.defaultView;
   if (prefersReducedMotion(svg) || typeof view?.requestAnimationFrame !== 'function') {
-    apply(to);
+    place(to);
     return { to, stop: () => undefined, running: () => false };
   }
   let frame = 0;
@@ -361,17 +369,12 @@ function glideTo(
     if (stopped) return;
     stopped = true;
     view.cancelAnimationFrame(frame);
-    behaviour.on('start.glide', null);
   };
-  behaviour.on('start.glide', (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
-    // Only the person's own pan or zoom has a source event; the glide's steps have none.
-    if (event.sourceEvent !== null && event.sourceEvent !== undefined) stop();
-  });
   const begin = view.performance.now();
   const step = (now: number): void => {
     if (stopped) return;
     const t = Math.min(1, Math.max(0, now - begin) / ms);
-    apply(glideAt(from, to, easeInOut(t), size.width, size.height));
+    place(glideAt(from, to, easeInOut(t), size.width, size.height));
     if (t < 1) frame = view.requestAnimationFrame(step);
     else stop();
   };
@@ -429,6 +432,12 @@ interface HeldHint {
   readonly at: ScreenPoint;
 }
 
+/**
+ * How long after a wheel's turn the next one still belongs to the same gesture (ms): a mouse wheel's notches and a
+ * touchpad's scroll come as a stream of turns.
+ */
+const WHEEL_GESTURE_MS = 150;
+
 /** How far above the finger a long press's hint stands (CSS px): a fingertip would cover it nearer. */
 const HINT_LIFT = 40;
 /** The room a long press's hint keeps from the canvas's edges (CSS px). */
@@ -474,7 +483,9 @@ export function DiagramCanvas({
 }: DiagramCanvasProps): ReactElement {
   const svgRef = useRef<SVGSVGElement>(null);
   const viewportRef = useRef<SVGGElement>(null);
-  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  // The camera the drawing is shown through, and how to set it (the pan and zoom effect's, null before and after it).
+  const cameraRef = useRef<CameraTransform>(IDENTITY_CAMERA);
+  const placeRef = useRef<((to: CameraTransform) => void) | null>(null);
   const painterRef = useRef<Painter | null>(null);
   const onSelectRef = useRef(onSelect);
   const onHoverRef = useRef(onHover);
@@ -583,40 +594,55 @@ export function DiagramCanvas({
   // end, so a panel closed while the refit for its opening still glides fits the drawing back to the canvas.
   const refit = (): Fit | null => {
     const svg = svgRef.current;
-    const behaviour = zoomRef.current;
+    const place = placeRef.current;
     const fit = fitRef.current;
     const drawn = frameRef.current;
-    if (svg === null || behaviour === null || fit === null || drawn === null) return null;
+    if (svg === null || place === null || fit === null || drawn === null) return null;
     const running = glideRef.current;
-    const camera = running !== null && running.running() ? running.to : zoomTransform(svg);
+    const camera = running !== null && running.running() ? running.to : cameraRef.current;
     if (!sameCamera(camera, fit.camera)) return null;
     const room = fitRoom(svg);
     const insets = insetsOf(svg, room);
     if (sameInsets(insets, fit.insets)) return fit;
     const to = inRoom(room, camera, (width, height) => fitTransform(drawn, width, height));
     running?.stop();
-    glideRef.current = { id: '', mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
+    glideRef.current = { id: '', mode: 'reveal', ...glideTo(svg, cameraRef.current, to, REVEAL_MS, place) };
     const next = { camera: to, insets };
     fitRef.current = next;
     return next;
   };
 
-  // Pan and zoom, set up once per <svg>: the transform goes straight onto the viewport group. A layout effect,
-  // like the fit below (which needs the behaviour), so the first frame the browser paints is already fitted. A mouse's
-  // drag and wheel are d3-zoom's; fingers are read from pointer events into gestures (touch.ts), which move the same
-  // camera, so d3-zoom's own touch listeners stay off.
+  // The camera, set up once per <svg>: kept here (`cameraRef`), put straight onto the viewport group (`place`) and
+  // published for the export's "current viewport" and the tests (canvasCamera.ts). A layout effect, like the fit below
+  // (which needs `place`), so the first frame the browser paints is already fitted. The canvas reads every pointer
+  // itself and moves the one camera for each, within the scale extent: a finger's pointer events as gestures
+  // (touch.ts), a mouse's and a pen's as a click or a drag, and the wheel.
   useLayoutEffect(() => {
     const svg = svgRef.current;
     const viewport = viewportRef.current;
     if (svg === null || viewport === null) return undefined;
+    const place = (to: CameraTransform): void => {
+      cameraRef.current = to;
+      viewport.setAttribute('transform', cameraAttribute(to));
+      applyLevelOfDetail(svg, to.k);
+      // The focus ring keeps its screen size below 100 %.
+      painterRef.current?.setScale(to.k);
+    };
+    placeRef.current = place;
+    // The person moved the camera (a finger, a mouse's or a pen's drag, the wheel): a glide still on its way stops
+    // where it is.
+    const move = (to: CameraTransform): void => {
+      glideRef.current?.stop();
+      place(to);
+    };
+    const unpublish = publishCamera(svg, { get: () => cameraRef.current, moveTo: move });
     const gestures = createTouchGestures({
-      camera: () => zoomTransform(svg),
+      camera: () => cameraRef.current,
       moveCamera: (to) => {
         // A finger moved the camera: a glide still on its way stops where it is (a tap leaves it, so the glide that
         // frames a chip the first tap of a double tap opened goes on), and what a long press showed by the finger goes.
-        glideRef.current?.stop();
         touchActionsRef.current.release();
-        behaviour.transform(select(svg), zoomIdentity.translate(to.x, to.y).scale(to.k));
+        move(to);
       },
       begin: () => {
         touchActionsRef.current.release();
@@ -632,67 +658,140 @@ export function DiagramCanvas({
       },
     });
     gesturesRef.current = gestures;
-    const behaviour = zoom<SVGSVGElement, unknown>()
-      .scaleExtent([...SCALE_EXTENT])
-      .touchable(false)
-      // A mouse's or a pen's press let go within the click distance is a click (it selects, or flips a chip), the
-      // hand's wobble panning no further than that; one moved further is a drag, whose click d3-zoom cancels.
-      .clickDistance(CLICK_DISTANCE)
-      // d3-zoom's own rule (no secondary button; Ctrl only with the wheel, a touchpad's pinch), and the mouse events the
-      // browser makes from a finger (a tap's mousedown) are the finger's.
-      .filter((event: MouseEvent) => {
-        if (event.type === 'mousedown' && gestures.touching()) return false;
-        return (!event.ctrlKey || event.type === 'wheel') && event.button === 0;
-      })
-      .extent((): [[number, number], [number, number]] => {
-        const size = canvasSize(svg);
-        return [
-          [0, 0],
-          [size.width, size.height],
-        ];
-      })
-      .on('zoom', (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
-        viewport.setAttribute('transform', event.transform.toString());
-        applyLevelOfDetail(svg, event.transform.k);
-        // The focus ring keeps its screen size below 100 %.
-        painterRef.current?.setScale(event.transform.k);
-      });
-    const selection = select(svg);
-    selection.call(behaviour).on('dblclick.zoom', null);
-    zoomRef.current = behaviour;
-    // A finger's presses are heard on the canvas, its moves and lifts on the window, where they go once the node it
-    // pressed is redrawn mid-gesture. A mouse's and a pen's pointer events pass by.
     const view = svg.ownerDocument.defaultView;
-    const local = (event: PointerEvent): ScreenPoint => {
+    const local = (event: MouseEvent): ScreenPoint => {
       const box = svg.getBoundingClientRect();
       return { x: event.clientX - box.left, y: event.clientY - box.top };
     };
+    // What a browser would make of a press while a mouse or a pen holds the drawing (a drag of what was pressed, the
+    // console action's link; a text selection) and of a drag's click (a selection, the link opened): none of it.
+    const refuse = (event: Event): void => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    // The click a browser makes of a drag's release is taken on the window, before anything else hears it, when it
+    // comes in the same task as the release, as a browser sends it.
+    let unswallow: (() => void) | null = null;
+    const swallowClick = (): void => {
+      unswallow?.();
+      if (view === null) return;
+      const stop = (): void => {
+        clearTimeout(timer);
+        view.removeEventListener('click', swallow, true);
+        unswallow = null;
+      };
+      const swallow = (event: Event): void => {
+        refuse(event);
+        stop();
+      };
+      view.addEventListener('click', swallow, true);
+      const timer = setTimeout(stop, 0);
+      unswallow = stop;
+    };
+    // A mouse's or a pen's press of the primary button: its pointer, where it was pressed and the drawing's point there,
+    // and whether it has moved past the click distance since (a drag, which keeps that point under the pointer).
+    let press: {
+      readonly id: number;
+      readonly at: ScreenPoint;
+      readonly held: ScreenPoint;
+      dragging: boolean;
+    } | null = null;
+    const letGo = (dragged: boolean): void => {
+      if (press === null) return;
+      press = null;
+      view?.removeEventListener('dragstart', refuse, true);
+      view?.removeEventListener('selectstart', refuse, true);
+      if (dragged) swallowClick();
+    };
+    // A finger's presses are heard on the canvas, its moves and lifts on the window, where they go once the node it
+    // pressed is redrawn mid-gesture; a mouse's and a pen's too, which the canvas takes over once they drag.
     const onDown = (event: PointerEvent): void => {
-      if (event.pointerType === 'touch')
+      if (event.pointerType === 'touch') {
         gestures.down(event.pointerId, local(event), event.target, event.isPrimary);
+        return;
+      }
+      // The primary button without Ctrl (with it, a Mac's right-click) takes hold of the drawing; any other button is
+      // the other listeners' (the right-click's menu).
+      if (event.button !== 0 || event.ctrlKey) return;
+      letGo(false);
+      // The person took hold of the camera: a glide on its way stops where it is.
+      glideRef.current?.stop();
+      const at = local(event);
+      press = { id: event.pointerId, at, held: drawingPointAt(cameraRef.current, at), dragging: false };
+      view?.addEventListener('dragstart', refuse, true);
+      view?.addEventListener('selectstart', refuse, true);
     };
     const onMove = (event: PointerEvent): void => {
-      if (event.pointerType === 'touch') gestures.move(event.pointerId, local(event));
+      if (event.pointerType === 'touch') {
+        gestures.move(event.pointerId, local(event));
+        return;
+      }
+      if (press === null || event.pointerId !== press.id) return;
+      // The button was let go where the canvas did not hear it: the press is over.
+      if ((event.buttons & 1) === 0) {
+        letGo(false);
+        return;
+      }
+      const at = local(event);
+      if (!press.dragging) {
+        // A hand's wobble moves nothing: the press may still be a click.
+        if (!isDrag(press.at, at)) return;
+        press.dragging = true;
+        // A drag from now on: its moves and its release come to the canvas wherever the pointer goes.
+        try {
+          svg.setPointerCapture(event.pointerId);
+        } catch {
+          // A pointer the browser no longer knows (or a test's): the window still hears it.
+        }
+      }
+      move(panTransform(cameraRef.current, press.held, at));
     };
     const onUp = (event: PointerEvent): void => {
-      if (event.pointerType === 'touch') gestures.up(event.pointerId, local(event));
+      if (event.pointerType === 'touch') {
+        gestures.up(event.pointerId, local(event));
+        return;
+      }
+      if (press !== null && event.pointerId === press.id) letGo(press.dragging);
     };
     const onCancel = (event: PointerEvent): void => {
-      if (event.pointerType === 'touch') gestures.cancel(event.pointerId);
+      if (event.pointerType === 'touch') {
+        gestures.cancel(event.pointerId);
+        return;
+      }
+      if (press !== null && event.pointerId === press.id) letGo(false);
+    };
+    // The wheel zooms about the pointer (camera.ts, `wheelTransform`; with Ctrl, a touchpad's pinch). Turns less than
+    // `WHEEL_GESTURE_MS` apart are one gesture: once one of them zoomed, the rest are the canvas's even where the scale
+    // extent leaves them nothing to do, while a turn on its own there is the page's (with Ctrl, the browser's zoom).
+    let wheeling: ReturnType<typeof setTimeout> | undefined;
+    const onWheel = (event: WheelEvent): void => {
+      const to = wheelTransform(cameraRef.current, event, local(event));
+      if (to === null && wheeling === undefined) return;
+      event.preventDefault();
+      clearTimeout(wheeling);
+      wheeling = setTimeout(() => {
+        wheeling = undefined;
+      }, WHEEL_GESTURE_MS);
+      if (to !== null) move(to);
     };
     svg.addEventListener('pointerdown', onDown);
+    svg.addEventListener('wheel', onWheel, { passive: false });
     view?.addEventListener('pointermove', onMove);
     view?.addEventListener('pointerup', onUp);
     view?.addEventListener('pointercancel', onCancel);
     return () => {
       svg.removeEventListener('pointerdown', onDown);
+      svg.removeEventListener('wheel', onWheel);
       view?.removeEventListener('pointermove', onMove);
       view?.removeEventListener('pointerup', onUp);
       view?.removeEventListener('pointercancel', onCancel);
+      letGo(false);
+      unswallow?.();
+      clearTimeout(wheeling);
       gestures.dispose();
       gesturesRef.current = null;
-      selection.on('.zoom', null);
-      zoomRef.current = null;
+      unpublish();
+      placeRef.current = null;
     };
   }, []);
 
@@ -719,35 +818,39 @@ export function DiagramCanvas({
     if (pending === null || pending.model === model) return;
     flipRef.current = null;
     const svg = svgRef.current;
-    const behaviour = zoomRef.current;
+    const place = placeRef.current;
     const rect = model.input.layout.rects[pending.id];
-    if (svg === null || behaviour === null || rect === undefined || !isFlipDrawn(pending, rect)) return;
+    if (svg === null || place === null || rect === undefined || !isFlipDrawn(pending, rect)) return;
     keepCameraRef.current = model;
     if (pending.keyboard) focusAfterRef.current = pending.id;
     const size = canvasSize(svg);
-    const to = flipTransform(rect, size.width, size.height, zoomTransform(svg), pending.wasChip);
+    const to = flipTransform(rect, size.width, size.height, cameraRef.current, pending.wasChip);
     glideRef.current?.stop();
-    glideRef.current = { id: pending.id, mode: 'centre', ...glideTo(svg, behaviour, to, FLIP_GLIDE_MS) };
+    glideRef.current = {
+      id: pending.id,
+      mode: 'centre',
+      ...glideTo(svg, cameraRef.current, to, FLIP_GLIDE_MS, place),
+    };
   }, [model]);
 
   // Fit the whole drawing whenever its frame changes (a new view), to the part of the canvas the panels lying over it
   // leave (`fitRoom`; the whole canvas when none does), and remember the fit, which the camera rests on until the
   // person moves it; a theme or selection change keeps the camera, and so does the drawing of a flip made here
-  // (above). d3-zoom applies the transform synchronously, so the viewport carries it before the first paint. A glide
+  // (above). The camera is set synchronously, so the viewport carries it before the first paint. A glide
   // still on its way (a keyboard move's pan, made just before a drill-in) was heading for a place in the previous
   // drawing: it stops, so it cannot carry the camera off the new one; a jump waiting for this drawing glides
   // afterwards.
   useLayoutEffect(() => {
     const svg = svgRef.current;
-    const behaviour = zoomRef.current;
-    if (svg === null || behaviour === null || keepCameraRef.current === modelRef.current) return;
+    const place = placeRef.current;
+    if (svg === null || place === null || keepCameraRef.current === modelRef.current) return;
     glideRef.current?.stop();
     glideRef.current = null;
     const room = fitRoom(svg);
-    const fit = inRoom(room, zoomTransform(svg), (width, height) =>
+    const fit = inRoom(room, cameraRef.current, (width, height) =>
       fitTransform({ x: frame.x, y: frame.y, width: frame.width, height: frame.height }, width, height),
     );
-    behaviour.transform(select(svg), zoomIdentity.translate(fit.x, fit.y).scale(fit.k));
+    place(fit);
     fitRef.current = { camera: fit, insets: insetsOf(svg, room) };
   }, [frame.x, frame.y, frame.width, frame.height]);
 
@@ -766,7 +869,7 @@ export function DiagramCanvas({
     if (svg === null) return undefined;
     const painter = createPainter(svg, model);
     painterRef.current = painter;
-    painter.setScale(zoomTransform(svg).k);
+    painter.setScale(cameraRef.current.k);
     painter.select(selectionRef.current);
     const active = svg.ownerDocument.activeElement;
     const focusedId = active !== null && svg.contains(active) ? nodeIdOf(active) : null;
@@ -833,29 +936,29 @@ export function DiagramCanvas({
       target.focus({ preventScroll: true });
       // Moved by a key: the ring shows whatever the browser's focus-visible heuristic says.
       painter.focus(id);
-      const behaviour = zoomRef.current;
-      if (behaviour === null) return;
+      const place = placeRef.current;
+      if (place === null) return;
       // The person moved on: a glide still on its way (a search hit's) stops where it is, and the camera pans
       // from there.
       glideRef.current?.stop();
-      const to = inRoom(clearRoom(svg), zoomTransform(svg), (width, height, camera) =>
+      const to = inRoom(clearRoom(svg), cameraRef.current, (width, height, camera) =>
         keyboardTransform(revealBox(rect), width, height, camera),
       );
       if (to === null) return;
-      glideRef.current = { id, mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
+      glideRef.current = { id, mode: 'reveal', ...glideTo(svg, cameraRef.current, to, REVEAL_MS, place) };
     };
     // The zoom keys: one step in or out about the focused item (from the canvas itself, about the centre of the
     // part of the canvas a panel lying over it leaves in view), keeping the item in that part, as a jump and the
     // keyboard's pan do (`clearRoom`); `0` fits the whole drawing to that part (`fitRoom`), a fit the camera then rests
     // on as on a new view's, so a panel closed afterwards fits the drawing to the canvas again.
     const zoomBy = (key: ZoomKey, focusedId: string | null): void => {
-      const behaviour = zoomRef.current;
+      const place = placeRef.current;
       const drawn = frameRef.current;
-      if (behaviour === null) return;
+      if (place === null) return;
       // Pressed again while the last glide is on its way: one more step from where that glide ends, so quick
       // presses add up.
       const running = glideRef.current;
-      const current = running !== null && running.running() ? running.to : zoomTransform(svg);
+      const current = running !== null && running.running() ? running.to : cameraRef.current;
       let to: CameraTransform | null;
       if (key === 'fit') {
         if (drawn === null) return;
@@ -872,7 +975,11 @@ export function DiagramCanvas({
       }
       if (to === null) return;
       glideRef.current?.stop();
-      glideRef.current = { id: focusedId ?? '', mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
+      glideRef.current = {
+        id: focusedId ?? '',
+        mode: 'reveal',
+        ...glideTo(svg, cameraRef.current, to, REVEAL_MS, place),
+      };
     };
     // The drawing's tab stop (a node, or an open zone's collapse button), by its node id.
     const tabStopId = (): string | null =>
@@ -897,17 +1004,17 @@ export function DiagramCanvas({
       if (fromFinger(event)) return;
       // The console action is a link of its own: it opens its page (a new tab) and changes nothing here.
       if (isConsoleAction(event.target)) return;
-      // A drag, which pans the canvas, never gets here: d3-zoom cancels its click (the behaviour's click distance).
+      // A drag, which pans the canvas, never gets here: the canvas takes its click on the window (the click distance).
       activate(event.target, event.detail);
     };
     // A double tap at a point: one step in, about that point (camera.ts, `doubleTapTransform`), as a glide.
     const zoomInAt = (at: ScreenPoint): void => {
-      const behaviour = zoomRef.current;
-      if (behaviour === null) return;
-      const to = doubleTapTransform(zoomTransform(svg), at);
+      const place = placeRef.current;
+      if (place === null) return;
+      const to = doubleTapTransform(cameraRef.current, at);
       if (to === null) return;
       glideRef.current?.stop();
-      glideRef.current = { id: '', mode: 'reveal', ...glideTo(svg, behaviour, to, REVEAL_MS) };
+      glideRef.current = { id: '', mode: 'reveal', ...glideTo(svg, cameraRef.current, to, REVEAL_MS, place) };
     };
     touchActionsRef.current = {
       release,
@@ -1118,9 +1225,9 @@ export function DiagramCanvas({
   useEffect(() => {
     if (jump === null || jump === undefined) return;
     const svg = svgRef.current;
-    const behaviour = zoomRef.current;
+    const place = placeRef.current;
     const rect = model.input.layout.rects[jump.id];
-    if (svg === null || behaviour === null || rect === undefined) return;
+    if (svg === null || place === null || rect === undefined) return;
     const mode = jump.mode ?? 'centre';
     const room = clearRoom(svg);
     const fit = mode === 'reveal' ? refit() : null;
@@ -1133,7 +1240,7 @@ export function DiagramCanvas({
       onJumpDoneRef.current?.(jump.seq);
       return;
     }
-    const current = fit?.camera ?? zoomTransform(svg);
+    const current = fit?.camera ?? cameraRef.current;
     const running = glideRef.current;
     const centring = running?.mode === 'centre' && running.id === jump.id && running.running();
     const to =
@@ -1146,7 +1253,7 @@ export function DiagramCanvas({
             );
     if (to !== null) {
       running?.stop();
-      const glide = glideTo(svg, behaviour, to, mode === 'centre' ? GLIDE_MS : REVEAL_MS);
+      const glide = glideTo(svg, cameraRef.current, to, mode === 'centre' ? GLIDE_MS : REVEAL_MS, place);
       glideRef.current = { id: jump.id, mode, ...glide };
     }
     // A centring jump to the node already selected (a search hit) blinks it like a new selection does.

@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive canvas (DiagramCanvas.tsx) in jsdom: its props with defaults, the elements the tests look up, a
- * mouse's click as a browser sends it, and the two things jsdom lacks that the camera reads: `prefers-reduced-motion`
- * (glides land at once) and animation frames the test runs by hand (a glide steps only when the test says so, at the
- * time it gives).
+ * The interactive canvas (DiagramCanvas.tsx) in jsdom: its props with defaults, the elements the tests look up, its
+ * camera (read, and moved as a person's pan or zoom does), a mouse's click and drag as a browser sends them, and the two
+ * things jsdom lacks that the camera reads: `prefers-reduced-motion` (glides land at once) and animation frames the
+ * test runs by hand (a glide steps only when the test says so, at the time it gives).
  */
 import { fireEvent } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
+import { canvasCamera } from '../canvasCamera';
 import type { DiagramCanvasProps } from '../DiagramCanvas';
 import type { DiagramModel } from '../model';
+import type { CameraTransform } from '../viewport';
+
+export { cameraOf } from '../canvasCamera';
 
 /** The canvas's props on `model`: light theme, legend and title block, nothing selected; `overrides` win. */
 export function canvasProps(
@@ -52,8 +56,19 @@ export const collapseOf = (svg: Element, id: string): SVGGElement =>
 export const tabStops = (svg: Element): Element[] => [...svg.querySelectorAll('[tabindex="0"]')];
 
 /**
- * A mouse event at the client point (`x`, `y`) with its window as `view`, as a browser makes it: d3-zoom follows a
- * drag on that window. jsdom refuses vitest's window as a `view` in the constructor, so it is set afterwards.
+ * Moves the camera of the canvas `svg` to `to` (`k`, then the drawing's origin on the canvas, as the viewport group's
+ * transform has them), as a person's pan or zoom does: at once, stopping a glide on its way.
+ */
+export function moveCamera(svg: SVGSVGElement, to: CameraTransform): void {
+  const camera = canvasCamera(svg);
+  if (camera === null) throw new Error('no canvas publishes a camera for this <svg>');
+  camera.moveTo(to);
+}
+
+/**
+ * A mouse event at the client point (`x`, `y`) with its window as `view`, as a browser makes it next to a pointer event
+ * (the canvas reads the pointer events; the mouse events change nothing there). jsdom refuses vitest's window as a
+ * `view` in the constructor, so it is set afterwards.
  */
 export function mouseEvent(type: string, x: number, y: number, init: MouseEventInit = {}): MouseEvent {
   const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, ...init });
@@ -62,26 +77,65 @@ export function mouseEvent(type: string, x: number, y: number, init: MouseEventI
 }
 
 /**
- * A mouse's left button pressed on `target` at (`x`, `y`), moved by (`dx`, `dy`) and let go there, with every event a
- * browser sends for it in its order: the pointer events and the mouse events of the press, the move and the release
- * (d3-zoom hears the move and the release on the window), then the click it makes of them on `target`.
+ * A mouse's left button pressed on `target` at (`x`, `y`), moved by (`dx`, `dy`) in `steps` moves and let go there,
+ * with every event a browser sends for it in its order: the pointer events and the mouse events of the press, the moves
+ * and the release (the moves and the release on `target`, from where they bubble to the window, which hears them),
+ * then the click it makes of them on `target`. `init` adds to every pointer event: another `pointerType` (a pen's), or
+ * a modifier key. Answers whether the click went on as the browser sent it (nothing cancelled it: a link would open).
  */
-export function mouseClick(target: Element, x: number, y: number, dx: number, dy: number): void {
-  const pointer = (at: number, by: number): PointerEventInit => ({
+export function mouseClick(
+  target: Element,
+  x: number,
+  y: number,
+  dx: number,
+  dy: number,
+  { steps = 1, ...init }: PointerEventInit & { readonly steps?: number } = {},
+): boolean {
+  const pointer = (at: number, by: number, buttons: number): PointerEventInit => ({
     pointerType: 'mouse',
     pointerId: 1,
     isPrimary: true,
     clientX: at,
     clientY: by,
+    buttons,
+    ...init,
   });
   const [toX, toY] = [x + dx, y + dy];
-  fireEvent.pointerDown(target, pointer(x, y));
-  target.dispatchEvent(mouseEvent('mousedown', x, y, { detail: 1 }));
-  fireEvent.pointerMove(target, pointer(toX, toY));
-  window.dispatchEvent(mouseEvent('mousemove', toX, toY));
-  fireEvent.pointerUp(target, pointer(toX, toY));
-  window.dispatchEvent(mouseEvent('mouseup', toX, toY, { detail: 1 }));
-  target.dispatchEvent(mouseEvent('click', toX, toY, { detail: 1 }));
+  // The left button, held from the press to the release.
+  const held = 1;
+  fireEvent.pointerDown(target, pointer(x, y, held));
+  target.dispatchEvent(mouseEvent('mousedown', x, y, { detail: 1, ...init }));
+  for (let step = 1; step <= steps; step += 1) {
+    const [atX, atY] = [x + (dx * step) / steps, y + (dy * step) / steps];
+    fireEvent.pointerMove(target, pointer(atX, atY, held));
+    window.dispatchEvent(mouseEvent('mousemove', atX, atY, { buttons: held }));
+  }
+  fireEvent.pointerUp(target, pointer(toX, toY, 0));
+  window.dispatchEvent(mouseEvent('mouseup', toX, toY, { detail: 1, ...init }));
+  return target.dispatchEvent(mouseEvent('click', toX, toY, { detail: 1, ...init }));
+}
+
+/**
+ * The wheel turned by `deltaY` (in pixels, or `init.deltaMode`'s units) with the pointer at the client point (`x`, `y`)
+ * over `target`; answers whether the canvas took it (its default prevented: the page neither scrolls nor zooms).
+ */
+export function wheel(
+  target: Element,
+  x: number,
+  y: number,
+  deltaY: number,
+  init: WheelEventInit = {},
+): boolean {
+  const event = new WheelEvent('wheel', {
+    bubbles: true,
+    cancelable: true,
+    clientX: x,
+    clientY: y,
+    deltaY,
+    ...init,
+  });
+  target.dispatchEvent(event);
+  return event.defaultPrevented;
 }
 
 /**

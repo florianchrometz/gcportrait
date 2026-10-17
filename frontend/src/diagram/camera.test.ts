@@ -11,6 +11,7 @@ import {
   GLIDE_PADDING,
   glideAt,
   inRoom,
+  isDrag,
   keyboardTransform,
   panTransform,
   pinchTransform,
@@ -20,12 +21,15 @@ import {
   SAME_CAMERA_SCALE,
   sameCamera,
   showsWhole,
+  WHEEL_CTRL_FACTOR,
+  wheelTransform,
+  wheelZoom,
   ZOOM_STEP,
   zoomAbout,
   zoomStepTransform,
 } from './camera';
 import { SUBTITLE_MIN_SCALE } from './lod';
-import { fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
+import { CLICK_DISTANCE, fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
 
 const CANVAS = { width: 1280, height: 624 };
 
@@ -332,5 +336,62 @@ describe('the fingers’ camera', () => {
     expect(onScreen(to, tapped.x, tapped.y).y).toBeCloseTo(200);
     expect(doubleTapTransform({ x: 0, y: 0, k: 150 }, { x: 0, y: 0 })?.k).toBe(SCALE_EXTENT[1]);
     expect(doubleTapTransform({ x: 0, y: 0, k: SCALE_EXTENT[1] }, { x: 0, y: 0 })).toBeNull();
+  });
+});
+
+describe('a mouse’s, a pen’s and the wheel’s camera', () => {
+  const start = { x: -120, y: 40, k: 0.8 };
+  const at = { x: 300, y: 200 };
+  /** A wheel's turn: `deltaY` in `deltaMode`'s units (0 pixels, 1 lines, 2 pages), with or without Ctrl. */
+  const wheel = (deltaY: number, deltaMode = 0, ctrlKey = false) => ({ deltaY, deltaMode, ctrlKey });
+
+  it('tells a click from a drag: a press let go as far as the click distance away clicks, further it drags', () => {
+    expect(isDrag(at, at)).toBe(false);
+    expect(isDrag(at, { x: 303, y: 200 })).toBe(false);
+    expect(isDrag(at, { x: 300, y: 200 - CLICK_DISTANCE })).toBe(false);
+    expect(isDrag(at, { x: 303, y: 203 })).toBe(true);
+    expect(isDrag(at, { x: 300 + CLICK_DISTANCE + 0.01, y: 200 })).toBe(true);
+  });
+
+  it('drags the drawing pixel for pixel: what was pressed stays under the pointer', () => {
+    const held = drawingPointAt(start, at);
+    const to = panTransform(start, held, { x: 337, y: 223 });
+    expect(to).toEqual({ k: start.k, x: start.x + 37, y: start.y + 23 });
+  });
+
+  it('scales by 2^0.2 a wheel notch of 100 px, in or out, by 2^0.15 three lines and by 2 a page; up zooms in', () => {
+    expect(wheelZoom(wheel(-100))).toBeCloseTo(0.2, 12);
+    expect(wheelZoom(wheel(100))).toBeCloseTo(-0.2, 12);
+    expect(wheelZoom(wheel(-3, 1))).toBeCloseTo(0.15, 12);
+    expect(wheelZoom(wheel(-1, 2))).toBeCloseTo(1, 12);
+    expect(wheelZoom(wheel(0))).toBeCloseTo(0, 12);
+  });
+
+  it('zooms WHEEL_CTRL_FACTOR times as far with Ctrl, so a touchpad’s pinch of 10 px scales as a notch does', () => {
+    expect(WHEEL_CTRL_FACTOR).toBe(10);
+    expect(wheelZoom(wheel(-10, 0, true))).toBeCloseTo(0.2, 12);
+    expect(wheelZoom(wheel(-100, 0, true))).toBeCloseTo(2, 12);
+    expect(wheelZoom(wheel(1, 1, true))).toBeCloseTo(-0.5, 12);
+  });
+
+  it('zooms about the pointer, which keeps what was drawn under it', () => {
+    const to = wheelTransform(start, wheel(-100), at);
+    if (to === null) throw new Error('no zoom');
+    expect(to.k).toBeCloseTo(start.k * 2 ** 0.2, 12);
+    const held = drawingPointAt(start, at);
+    expect(onScreen(to, held.x, held.y).x).toBeCloseTo(300);
+    expect(onScreen(to, held.x, held.y).y).toBeCloseTo(200);
+    const back = wheelTransform(to, wheel(100), at);
+    expect(back?.k).toBeCloseTo(start.k, 12);
+    expect(back?.x).toBeCloseTo(start.x);
+    expect(back?.y).toBeCloseTo(start.y);
+  });
+
+  it('stops at the scale extent, where a turn further has nothing to do, as has one with no vertical delta', () => {
+    expect(wheelTransform({ x: 0, y: 0, k: 190 }, wheel(-1000), at)?.k).toBe(SCALE_EXTENT[1]);
+    expect(wheelTransform({ x: 0, y: 0, k: 0.06 }, wheel(1000), at)?.k).toBe(SCALE_EXTENT[0]);
+    expect(wheelTransform({ x: 0, y: 0, k: SCALE_EXTENT[1] }, wheel(-100), at)).toBeNull();
+    expect(wheelTransform({ x: 0, y: 0, k: SCALE_EXTENT[0] }, wheel(100), at)).toBeNull();
+    expect(wheelTransform(start, wheel(0), at)).toBeNull();
   });
 });

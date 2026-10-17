@@ -5,8 +5,8 @@
  * and never reaches into the page; the page never knows about the menu.
  */
 import type { Rect } from '@gcportrait/layout';
-import { zoomTransform } from 'd3-zoom';
 
+import { cameraOf } from '../diagram/canvasCamera';
 import type { DiagramModel } from '../diagram/model';
 
 export interface ExportSource {
@@ -23,14 +23,14 @@ export interface ExportSource {
 }
 
 /**
- * The part of the drawing a canvas `<svg>` shows: its size in CSS px through the inverse of its d3-zoom
- * transform (the camera DiagramCanvas sets). Null for a canvas with no size (not laid out, hidden).
+ * The part of the drawing a canvas `<svg>` shows: its size in CSS px through the inverse of its camera (the one
+ * DiagramCanvas keeps and publishes, diagram/canvasCamera.ts). Null for a canvas with no size (not laid out, hidden).
  */
 export function canvasVisibleArea(svg: SVGSVGElement): Rect | null {
   const width = svg.clientWidth;
   const height = svg.clientHeight;
   if (width <= 0 || height <= 0) return null;
-  const { k, x, y } = zoomTransform(svg);
+  const { k, x, y } = cameraOf(svg);
   return { x: -x / k, y: -y / k, width: width / k, height: height / k };
 }
 

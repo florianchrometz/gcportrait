@@ -18,7 +18,7 @@ import { cameraSettled, drawingOf, openDiagram, redrawnCanvas } from './support.
  *   tap does, and neither drills in nor selects;
  * - a long press on a card shows what hover shows a mouse (the card's path ring) and the card's name by the finger
  *   (inside the canvas, clear of the finger), selects nothing and opens no menu, and the next tap takes it away;
- * - a mouse on the same page keeps d3-zoom's drag, and its double-click on a chip drills in;
+ * - a mouse on the same page keeps its drag, and its double-click on a chip drills in;
  * - only the canvas keeps the browser's own gestures off: the page pinch-zooms as the browser does.
  */
 

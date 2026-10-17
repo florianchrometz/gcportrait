@@ -377,8 +377,8 @@ async function zoomAt(page, at, notches) {
 }
 
 /**
- * Drags the canvas by (dx, dy) from a spot near its left edge: a drag pans the diagram, and d3-zoom does not count it
- * as a click, so the selection stays.
+ * Drags the canvas by (dx, dy) from a spot near its left edge: a drag pans the diagram, and the canvas does not count
+ * it as a click, so the selection stays.
  * @param {Page} page @param {number} dx @param {number} dy
  */
 async function panBy(page, dx, dy) {
@@ -418,7 +418,7 @@ async function fitCamera(page, measure) {
     (canvas.width - 2 * FIT_ROOM) / part.width,
     (canvas.height - 2 * FIT_ROOM) / part.height,
   );
-  // A wheel notch scales by 2^0.2 (d3-zoom's default for a delta of 100 pixels).
+  // A wheel notch scales by 2^0.2 (the canvas's zoom for a delta of 100 pixels: camera.ts, `wheelZoom`).
   await zoomAt(page, centre(part), Math.floor(Math.log2(fits) / 0.2));
   await page.mouse.move(RESTING.x, RESTING.y);
   await sleep(400);

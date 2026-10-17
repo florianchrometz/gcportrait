@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * The canvas's touch input (AGENTS.md, Product rules, the touch model): the pointer events of fingers
- * (`pointerType` `touch`) read as gestures. A mouse and a pen never come here: d3-zoom keeps their drag and wheel, and
- * the canvas its click, double-click, right-click and hover, as they are.
+ * (`pointerType` `touch`) read as gestures. A mouse and a pen never come here: the canvas reads their drag and the
+ * wheel itself, and keeps their click, double-click, right-click and hover as they are.
  *
  * - One finger moved further than `TAP_SLOP` from where it touched pans: what lay under it stays under it.
  * - Two fingers pinch about their midpoint and pan with it (a third and more are ignored); lifting one of them leaves
@@ -29,7 +29,7 @@ export const DOUBLE_TAP_MS = 300;
 export const DOUBLE_TAP_DISTANCE = 24;
 /**
  * How long after the last finger left the canvas the browser's events made from a touch (a tap's `mousedown` and
- * `click`, a double tap's `dblclick`) are still the touch's, and not a mouse's (ms; d3-zoom's own figure).
+ * `click`, a double tap's `dblclick`) are still the touch's, and not a mouse's (ms).
  */
 export const TOUCH_MOUSE_MS = 500;
 

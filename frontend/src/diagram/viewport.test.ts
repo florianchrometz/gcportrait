@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
 
-import { fitTransform } from './viewport';
+import { cameraAttribute, fitTransform, IDENTITY_CAMERA } from './viewport';
 
 describe('fitTransform', () => {
   it('centres a drawing smaller than the canvas at 100 %', () => {
@@ -21,5 +21,15 @@ describe('fitTransform', () => {
 
   it('never goes below the smallest scale, 5 %', () => {
     expect(fitTransform({ x: 0, y: 0, width: 1e7, height: 10 }, 1000, 800).k).toBe(0.05);
+  });
+});
+
+describe('cameraAttribute', () => {
+  it('writes the camera as the viewport group’s translate and scale, each number as JavaScript writes it', () => {
+    expect(cameraAttribute({ k: 0.5095729013254786, x: 121.50662739322536, y: -55.75 })).toBe(
+      'translate(121.50662739322536,-55.75) scale(0.5095729013254786)',
+    );
+    expect(cameraAttribute({ k: 200, x: 1e-7, y: 0 })).toBe('translate(1e-7,0) scale(200)');
+    expect(cameraAttribute(IDENTITY_CAMERA)).toBe('translate(0,0) scale(1)');
   });
 });

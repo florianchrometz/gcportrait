@@ -9,11 +9,11 @@ const DEMO_S_DIAGRAM = '/diagram#snapshot=demo:S';
 /**
  * The diagram renderer in a real browser, on demo organisation M in demo mode: the page draws it through both
  * workers, hover paints, a theme change leaves no stale highlight, the wheel zooms (and double-click does
- * not), selection opens the drawer (a click that wobbled a few pixels selects, a drag pans and selects
- * nothing), the legend and the title block are in the SVG (where the non-affiliation statement is not:
- * shell.spec.ts; the Lens picker: controls.spec.ts). Pixels are not compared here: the visual baselines are
- * SVG text (e2e/baselines/diagram/, checked by the frontend's unit tests), because screenshots differ between
- * platforms.
+ * not), selection opens the drawer (a click that wobbled a few pixels selects and moves nothing, a drag
+ * pans and selects nothing), the legend and the title block are in the SVG (where the non-affiliation
+ * statement is not: shell.spec.ts; the Lens picker: controls.spec.ts). Pixels are not compared here: the
+ * visual baselines are SVG text (e2e/baselines/diagram/, checked by the frontend's unit tests), because
+ * screenshots differ between platforms.
  */
 test('draws demo M with zones, chips and edges, named for assistive technology', async ({ page }) => {
   const svg = await openDiagram(page);
@@ -144,10 +144,20 @@ test('a click selects: the ring pulses, the drawer opens with the node id, the h
   await expect(drawer).toBeHidden();
 });
 
-test('a click that wobbled 2 px still selects; a drag of 10 px pans the drawing and selects nothing', async ({
+test('a click that wobbled 2 px selects and moves nothing; a drag of 10 px pans and selects nothing', async ({
   page,
 }) => {
   const svg = await openDiagram(page, DEMO_S_DIAGRAM);
+  // A wobble of 2 px on the bare canvas is a click there, which moves nothing: the camera stays on its fit.
+  const viewport = svg.locator('.dg-viewport');
+  const fitted = await viewport.getAttribute('transform');
+  const canvas = await svg.boundingBox();
+  if (canvas === null) throw new Error('the canvas has no box');
+  await page.mouse.move(canvas.x + 4, canvas.y + 4);
+  await page.mouse.down();
+  await page.mouse.move(canvas.x + 6, canvas.y + 5, { steps: 2 });
+  await page.mouse.up();
+  expect(await viewport.getAttribute('transform')).toBe(fitted);
   const card = svg.locator('.dg-card').first();
   const id = await card.getAttribute('data-id');
   const start = await card.boundingBox();
