@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
-import type { Scene } from '@gcportrait/model';
+import { LayoutRectSchema, type Scene } from '@gcportrait/model';
 import { DEFAULT_ROUTING, DEFAULT_SIZING, MAX_SCENE_DEPTH } from './constants.js';
 import { LayoutInputError } from './errors.js';
 import { packingAspects } from './aspects.js';
@@ -86,6 +86,22 @@ describe('layoutScene', () => {
     // The loose card sits in the canvas's card row; the zones start one row gap below it.
     expect(layout.rects.loose?.y).toBe(24);
     expect(f?.y).toBe(24 + 44 + 20);
+  });
+
+  it('emits model-owned rect shapes unchanged, including optional padding and every role', () => {
+    const widened = layoutScene(small, {
+      gutters: { zones: { p: { ringSides: { left: 10, bottom: 6 } } } },
+    });
+    expect(new Set(Object.values(layout.rects).map((rect) => rect.role))).toEqual(
+      new Set(['zone', 'chip', 'empty', 'card']),
+    );
+    expect(widened.rects.p?.paddingExtra).toEqual({ top: 0, right: 0, bottom: 6, left: 10 });
+    for (const output of [layout, widened]) {
+      for (const rect of Object.values(output.rects)) {
+        expect(LayoutRectSchema.parse(rect)).toEqual(rect);
+        expect(LayoutRectSchema.parse(JSON.parse(JSON.stringify(rect)))).toEqual(rect);
+      }
+    }
   });
 
   it('reports each container’s arrangement: the canvas and every open zone, in paint order', () => {

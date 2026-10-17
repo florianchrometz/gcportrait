@@ -108,6 +108,11 @@ describe('public surface', () => {
         'FocusErrorSchema',
         'RootErrorCodeSchema',
         'RootErrorSchema',
+        'PointSchema',
+        'RectSchema',
+        'InsetsSchema',
+        'RectRoleSchema',
+        'LayoutRectSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',

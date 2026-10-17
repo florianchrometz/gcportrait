@@ -157,6 +157,19 @@ export {
 } from './schemas/scene.js';
 
 export {
+  InsetsSchema,
+  LayoutRectSchema,
+  PointSchema,
+  RectRoleSchema,
+  RectSchema,
+  type Insets,
+  type LayoutRect,
+  type Point,
+  type Rect,
+  type RectRole,
+} from './schemas/layout.js';
+
+export {
   CatalogEntrySchema,
   CatalogProductSchema,
   CatalogRelationKindSchema,

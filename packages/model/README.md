@@ -4,10 +4,10 @@
 
 The single definition of every type that crosses a package boundary in gcportrait (AGENTS.md, Data and graph
 semantics): Asset and Snapshot, relation kinds, Graph, ViewSpec, Scene, the asset catalog's shapes, the
-timeline's Tick and Diff, and the URL-hash codec for views. Every type is inferred from a zod schema
-(`z.infer`); nothing is declared twice. The package sits at the bottom of the dependency graph, imports no
-other `@gcportrait` package, has no side effects, runs unchanged in the browser, in workers and in Node, and
-exposes its public API only through `src/index.ts`.
+timeline's Tick and Diff, layout geometry, and the URL-hash codec for views. Every type is inferred from a
+zod schema (`z.infer`); nothing is declared twice. The package sits at the bottom of the dependency graph,
+imports no other `@gcportrait` package, has no side effects, runs unchanged in the browser, in workers and
+in Node, and exposes its public API only through `src/index.ts`.
 
 ```ts
 import { decodeViewSpec, encodeViewSpec, migrateSnapshot, type ViewSpec } from '@gcportrait/model';
@@ -265,6 +265,25 @@ The layout's own output type belongs to `packages/layout`.
 | `SceneEdgeSchema`, `SceneEdge` | `{ from, to, kind, count?, merged? }`: `count` (≥ 2) relations folded into one edge; `merged` when an end was re-targeted to a collapsed zone's chip |
 | `SceneMetadataSchema`, `SceneMetadata` | `rootLabel`, `lens`, `readTime`, `rectCount`, `focusError?` and `rootError?` (why a requested focus or drill-in root was refused, as in the scene report) |
 | `FocusErrorSchema`, `FocusErrorCodeSchema`, `RootErrorSchema`, `RootErrorCodeSchema` | `{ code, param?, message }` and `{ code, message }`: a refused focus or root |
+
+## Layout geometry
+
+The layout's geometry contracts live in `schemas/layout.ts`; `@gcportrait/layout` re-exports their inferred
+types so its callers keep the same imports. The schemas describe the existing shapes, with finite numbers
+(including negative and fractional values), readonly fields and no defaults or geometry refinements.
+`LayoutRect.paddingExtra` is absent or a complete `Insets`, never explicitly `undefined`.
+
+| Export | What |
+|---|---|
+| `PointSchema`, `Point` | `x`, `y` |
+| `RectSchema`, `Rect` | `x`, `y`, `width`, `height` |
+| `InsetsSchema`, `Insets` | `top`, `right`, `bottom`, `left` |
+| `RectRoleSchema`, `RectRole` | `zone`, `chip`, `empty`, `card` |
+| `LayoutRectSchema`, `LayoutRect` | a `Rect` with its nullable `parent`, `role`, zone kind or `card`, `depth`, `headerHeight`, `padding`, optional `paddingExtra` and `collapsed` flag |
+
+These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
+tests check emitted rects against the schemas. The complete `Layout`, its other output shapes and the
+worker protocol remain declared in `@gcportrait/layout`.
 
 ## Scene builder environment and report
 

@@ -40,6 +40,10 @@ development or production; calling `assertLayout` explicitly checks a layout in 
 
 ## Public API
 
+`Point`, `Rect`, `Insets`, `RectRole` and `LayoutRect` are inferred from the model's
+[layout geometry schemas](../model/README.md#layout-geometry) and re-exported here as types. No runtime
+schema parsing is added to the layout pipeline; the other output shapes and worker protocol remain here.
+
 | Export | What |
 |---|---|
 | `layoutScene(scene, options?)` | `Layout`: `rects` (one per Scene node, keyed by id, parents before children), `edges` (one routed `EdgePath` per drawn edge, keyed `<from> -<kind>-> <to>`), `chips` (ids of collapsed zones), `bounds` (the canvas), `arrangements` (how each container was packed), `gutters` (the reservations it was packed with), `report` |

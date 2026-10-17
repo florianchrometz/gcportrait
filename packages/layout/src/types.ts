@@ -4,61 +4,11 @@
  * survives `postMessage` from the layout worker and JSON unchanged. Every coordinate is in px at scale 1 in
  * the canvas's coordinate system: the canvas (the organisation, or the drill-in root) spans `bounds`.
  */
-import type { RelationKind, ZoneKind } from '@gcportrait/model';
+import type { Insets, LayoutRect, Point, Rect, RelationKind } from '@gcportrait/model';
 import type { Routing, Sizing } from './constants.js';
 import type { FontMetricsTable } from './metrics.js';
 
-export interface Point {
-  readonly x: number;
-  readonly y: number;
-}
-
-export interface Rect {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-/** A length per side of a rect. */
-export interface Insets {
-  readonly top: number;
-  readonly right: number;
-  readonly bottom: number;
-  readonly left: number;
-}
-
-/**
- * How a Scene node is drawn:
- * - `zone`: an open zone with a header band and children inside its padding;
- * - `chip`: a collapsed zone, a fixed-size chip in the zone's tint;
- * - `empty`: a zone with no children in the Scene, drawn card-sized with its icon (skill §2 rule 4);
- * - `card`: a resource card.
- * Chips, empty zones and cards are solid: nothing is drawn inside them and no edge crosses them.
- */
-export type RectRole = 'zone' | 'chip' | 'empty' | 'card';
-
-export interface LayoutRect extends Rect {
-  /** The parent zone's id; `null` for the top level (the canvas). */
-  readonly parent: string | null;
-  readonly role: RectRole;
-  /** The zone kind (zones, chips and empty zones) or `card`. */
-  readonly kind: ZoneKind | 'card';
-  /** Depth from the canvas: the canvas is 0, so top-level zones and cards are 1. */
-  readonly depth: number;
-  /** Height of the header band at the top of an open zone; 0 for chips, empty zones and cards. */
-  readonly headerHeight: number;
-  /** The open zone's inner padding ring (including any uniform `ring` reservation); 0 otherwise. */
-  readonly padding: number;
-  /**
-   * Extra padding on single sides of an open zone (the router's lane space, `GutterWidening.ringSides`), on top
-   * of `padding`; absent when there is none. The children lie inside `padding` + `paddingExtra` on each side;
-   * the header is unaffected (a folder's title still starts `padding` from the left).
-   */
-  readonly paddingExtra?: Insets;
-  /** True for a chip (a collapsed zone). */
-  readonly collapsed: boolean;
-}
+export type { Insets, LayoutRect, Point, Rect, RectRole } from '@gcportrait/model';
 
 /** A side of a rect. */
 export type Side = 'top' | 'right' | 'bottom' | 'left';
