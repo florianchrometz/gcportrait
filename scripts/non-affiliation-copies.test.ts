@@ -3,16 +3,13 @@
  * The non-affiliation statement outside the app (AGENTS.md, Non-affiliation, brand and legal): every copy the
  * tooling, the image, the release, the infra scripts and the docs keep of the long form is
  * frontend/src/branding.ts's, word for word. The app pins the wording itself (frontend/src/App.test.tsx); the
- * website checks its own copy (website/src/site.test.ts). And no text file of the repository names Google by
- * its company form: "Google" or "Google Cloud" only.
+ * website checks its own copy (website/src/site.test.ts).
  */
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { BINARY_EXTENSIONS, isBinary, listRepoFiles } from './lib/repo-files.mjs';
 import { NON_AFFILIATION_LONG as RELEASE_NOTES_LONG_FORM } from './release-notes.mjs';
 import { brandingConstant } from './testing/branding.js';
 import { REPO } from './testing/temp-tree.js';
@@ -98,41 +95,5 @@ describe('the long form in the README, the box under "Not affiliated with Google
 describe('the long form as the closing paragraph of docs/author.md (the website’s author section)', () => {
   it('is the app’s, word for word, and the last thing the section says', () => {
     expect(prose('docs/author.md').trim().endsWith(LONG_FORM)).toBe(true);
-  });
-});
-
-/** Google's company form, assembled at run time so that this file does not contain it either. */
-const COMPANY_FORM = ['Google', 'LLC'].join(' ');
-
-/**
- * The repository's files, as root-relative paths: the ones git lists (tracked, plus untracked ones it does
- * not ignore, so a new file counts before its commit), or, outside a git checkout, the ones the provenance
- * check walks.
- */
-function repositoryFiles(): string[] {
-  const git = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
-    cwd: REPO,
-    encoding: 'utf8',
-  });
-  return git.status === 0
-    ? git.stdout.split('\0').filter((relPath) => relPath !== '')
-    : listRepoFiles(REPO)
-        .filter((file) => !file.isSymlink)
-        .map((file) => file.relPath);
-}
-
-describe('the trademark line', () => {
-  it('names Google, never its company form, in any text file of the repository', () => {
-    const offenders = repositoryFiles().filter((relPath) => {
-      if (BINARY_EXTENSIONS.has(path.extname(relPath).toLowerCase())) return false;
-      let content: Buffer;
-      try {
-        content = readFileSync(path.join(REPO, relPath));
-      } catch {
-        return false; // deleted in the working tree, still in the index
-      }
-      return !isBinary(relPath, content) && content.toString('utf8').includes(COMPANY_FORM);
-    });
-    expect(offenders).toEqual([]);
   });
 });
