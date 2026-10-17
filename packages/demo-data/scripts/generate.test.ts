@@ -95,15 +95,8 @@ describe('committed fixtures', () => {
 
 describe('performance', () => {
   /**
-   * Wall-clock limits, measured by the rule of `@gcportrait/model/testing` that every package timing its
-   * work applies: a run over its limit is measured again after a pause, at most `BATCHES` runs and only while
-   * another fits in the test's timeout, and the best run counts (`measureBatches`; other processes taking the
-   * machine's cores make XL take four times its quiet 1.2 s to generate and 4 s to sweep); a batch stops its
-   * runs at 95 % of the timeout and one cut short there counts as a miss (`measureRuns`; a batch of this plan
-   * is one run, which always runs, so here `measureBatches` alone decides whether another fits). Under a
-   * local `pnpm test`, never on CI (where the limit is the check that blocks), a best run still over its limit
-   * while the machine's load average is above 1.5 per core is skipped with the load and the figures as its
-   * reason (`skipIfOverloaded`).
+   * Wall-clock limits use `measureBatches`, `measureRuns` and `skipIfOverloaded` from
+   * `@gcportrait/model/testing` (packages/model/README.md, "Testing export"), with one run per batch.
    */
   const PLAN = { batches: BATCHES, runs: 1, warmUp: 0 };
   const GENERATE_MS = 5000;

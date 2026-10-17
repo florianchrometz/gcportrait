@@ -8,16 +8,10 @@
  *   posting the Scene, the memo key, the layout in steps, its progress messages and the Layout's way back. The
  *   worker keeps no memo here, so every request lays out. XL is the demo organisation of about 51 000 assets
  *   at detail `folders` (collapsed, as `auto` opens it). Under `pnpm test` the limit is 2 × the budget; under
- *   `test:budget` (GCPORTRAIT_LAYOUT_BUDGET=strict) the budget itself (scripts/lib/bench.ts). A case over its
- *   limit is measured again, up to `BATCHES` times after a pause while another batch fits in the test's
- *   timeout, and its best batch counts (`measureBatches`); a batch that would run past 95 % of the timeout
- *   (slower than the one before it, or a first batch that slow) stops there (`measureInWorker`'s deadline,
- *   `measureRuns`) and counts as a miss, so that an L case on a machine getting busier reports its figures,
- *   and is skipped or fails by the rule below, instead of timing out. Under a local `pnpm test` a case still
- *   over its ceiling while the machine's load average is above 1.5 per core is skipped with the load and the
- *   figures as its reason (`skipIfOverloaded`), never on CI (where this ceiling is the budget check that
- *   blocks) and never under `test:budget` (the rule of `@gcportrait/model/testing`, the same in every
- *   package). Under coverage each case is laid out once and no time limit is checked (`budgetPlan`).
+ *   `test:budget` (GCPORTRAIT_LAYOUT_BUDGET=strict) the budget itself (scripts/lib/bench.ts). Measurement and
+ *   overload handling use `measureBatches`, `measureRuns` and `skipIfOverloaded` from
+ *   `@gcportrait/model/testing` (packages/model/README.md, "Testing export"). Under coverage each case is
+ *   laid out once and no time limit is checked (`budgetPlan`).
  * - **Memoisation**: a repeated request is answered from the worker's memo in under 1 ms (in-process: the
  *   handler and the client on one thread, so the figure is the protocol's own) with a byte-identical Layout;
  *   through the real worker the round trip of a hit is printed.

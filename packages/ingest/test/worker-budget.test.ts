@@ -12,14 +12,9 @@
  * strict 1.5 s assertion runs when GCPORTRAIT_INGEST_BUDGET=strict
  * (`pnpm --filter @gcportrait/ingest test:budget`, which runs this file alone). Inside the shared, parallel
  * test run the same measurement asserts a regression ceiling of 2 × the budget, as every budget does there,
- * and prints the figures (`--silent=false`). Both measure by the rule of `@gcportrait/model/testing` that
- * every package timing its work applies: a run over the limit is measured again after a pause, at most
- * `BATCHES` runs and only while another fits in the test's timeout, and the best run counts
- * (`measureBatches`); a batch stops its runs at 95 % of the timeout and one cut short there counts as a miss
- * (`measureRuns`; a batch of this plan is one run, which always runs, so here `measureBatches` alone decides
- * whether another fits); under a local `pnpm test`, never on CI (where the ceiling is the check that blocks)
- * and never strictly, a best run still over the ceiling while the machine's load average is above 1.5 per
- * core is skipped with the load and the figures as its reason (`skipIfOverloaded`).
+ * and prints the figures (`--silent=false`). Measurement and overload handling use `measureBatches`,
+ * `measureRuns` and `skipIfOverloaded` from `@gcportrait/model/testing` (packages/model/README.md,
+ * "Testing export"), with one run per batch.
  */
 import {
   DEMO_ORGANIZATION_DOMAIN,

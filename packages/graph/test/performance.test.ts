@@ -9,14 +9,9 @@
  * `pnpm --filter @gcportrait/graph test:budget` (GCPORTRAIT_GRAPH_BUDGET=strict) runs this file alone, asserts
  * the budget itself whatever the load and adds the two L figures (the memo's results are the property tests'
  * concern, build.property.test.ts and memo.test.ts, and the L builds would take most of the package's run).
- * Both measure by the rule of `@gcportrait/model/testing` that every package timing its work applies: a batch
- * whose median is over the limit is measured again after a pause, at most `BATCHES` times and only while
- * another batch fits in the test's timeout, and the best batch's median counts (`measureBatches`); a batch
- * that would run past 95 % of the timeout stops there and counts as a miss (`measureRuns`), so that a build on
- * a machine getting busier reports its figures instead of timing out; under a local `pnpm test`, never on CI
- * (where the ceiling is the check that blocks) and never strictly, a case still over its ceiling while the
- * machine's load average is above 1.5 per core is skipped with the load and the figures as its reason
- * (`skipIfOverloaded`). Every batch's median is printed (`--silent=false`).
+ * Measurement and overload handling use `measureBatches`, `measureRuns` and `skipIfOverloaded` from
+ * `@gcportrait/model/testing` (packages/model/README.md, "Testing export"). Every batch's median is printed
+ * (`--silent=false`).
  */
 import { generateOrganization, historyFor, snapshotAt, toSnapshot } from '@gcportrait/demo-data';
 import { GraphBuildSchema, type Catalog, type Snapshot } from '@gcportrait/model';

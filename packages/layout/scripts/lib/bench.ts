@@ -13,10 +13,8 @@
  *   between each, its progress messages, and the clone of the Layout back. The worker measures with its memo
  *   off, so every run lays out; its clock gives the layout's own time (`report.timings.total`) as well.
  * - **Medians** of `runs` (10) after `warmUp` (3) runs.
- * - **A busy machine.** The budget tests measure a case again while it is over its limit, stop a batch at the
- *   deadline it is handed and count one cut short as a miss, and skip a missed 2 × ceiling on an overloaded
- *   machine, never on CI and never under `test:budget`, by the rule every package that times its work
- *   applies (`measureBatches`, `measureRuns` and `skipIfOverloaded` of `@gcportrait/model/testing`).
+ * - **The budget tests' measurement and overload handling** use `measureBatches`, `measureRuns` and
+ *   `skipIfOverloaded` from `@gcportrait/model/testing` (packages/model/README.md, "Testing export").
  */
 import { cpus, loadavg } from 'node:os';
 import { performance } from 'node:perf_hooks';

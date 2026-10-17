@@ -216,13 +216,11 @@ demo's day), written as an `exportAssets` file (`toCaiNdjson(assets, 'export')`,
 `worker_threads` worker (`test/ingest-worker.ts`) that reads it with `ingest()`, as the app's snapshot worker
 reads a dropped export; the clock runs from posting the Blob to the result arriving on the main thread, so it
 includes reading, parsing, normalisation, the project index and the structured clone of the result back. The
-worker runs a warm-up job first (the file's first 100 lines); a run over the limit is measured again after a
-250 ms pause, at most five runs and only while another fits in 95 % of the test's timeout, and the best run
-counts (`measureBatches` of `@gcportrait/model/testing`, the rule every package that times its work applies);
-a batch stops its runs at that 95 % and one cut short there counts as a miss (`measureRuns`), though a batch
-here is one run, which always runs, so `measureBatches` alone decides whether another fits. The budget
-describes a machine with little else running: with the machine's cores busy about twice over a run takes 2.5
-to 5 s, which is why the strict check runs alone (below).
+worker runs a warm-up job first (the file's first 100 lines), with one run per batch. Measurement and
+overload handling use `measureBatches`, `measureRuns` and `skipIfOverloaded` from
+`@gcportrait/model/testing` ([Testing export](../model/README.md#testing-export-gcportraitmodeltesting)).
+The budget describes a machine with little else running: with the machine's cores busy about twice over a run
+takes 2.5 to 5 s, which is why the strict check runs alone (below).
 
 In process, parsing the lines' JSON takes a third to a half of the ingest, and normalisation through
 `AssetSchema` and the project index each under a tenth; posting the result back to the page (structured clone)
@@ -233,11 +231,8 @@ A wall-clock budget only means something on a machine that is not busy with othe
 assertion runs only with `GCPORTRAIT_INGEST_BUDGET=strict`: `pnpm --filter @gcportrait/ingest test:budget`
 runs this one file that way and prints the figures. Inside the normal, parallel test run (`pnpm test`, the CI
 unit job) the same measurement asserts a regression ceiling of 2 × 1.5 s instead, as every budget does there
-(packages/AGENTS.md, "Performance budgets"). Under a local `pnpm test` a best run still over the ceiling
-while the machine's one-minute load average is above 1.5 per core is skipped, with the load and the figures as
-the reason and a `skipped:` line on standard error (`skipIfOverloaded`): four times oversubscribed, the figure
-measures the machine. On CI (`CI` set) the ceiling is the check that blocks, so it never skips, and neither
-does `test:budget`. Add `--silent=false` to print the figures there (Vitest ignores flags after a `--`).
+(packages/AGENTS.md, "Performance budgets"). Add `--silent=false` to print the figures there (Vitest ignores
+flags after a `--`).
 
 ## Tests
 

@@ -11,14 +11,9 @@
  * Two limits (scripts/lib/bench.ts, the split ingest uses): `pnpm test` runs this file in parallel with every
  * other test file, on CI on a shared runner, and asserts a regression ceiling of 2 × the budget;
  * `pnpm --filter @gcportrait/layout test:budget` (GCPORTRAIT_LAYOUT_BUDGET=strict) runs the budget files alone
- * and asserts the budget itself, whatever the load. By the rule of `@gcportrait/model/testing` that every
- * package timing its work applies, a batch whose median is over the limit is measured again after a pause, at
- * most `BATCHES` times and only while another batch fits in the test's timeout, and the best batch's median
- * counts (`measureBatches`); a batch that would run past 95 % of the timeout stops there and counts as a
- * miss (`measureInProcess`'s deadline, `measureRuns`), so that a case on a machine getting busier reports its
- * figures instead of timing out. Locally, never on CI (where this is the budget check that blocks) and never
- * strictly, a case still over its ceiling while the machine's load average is above 1.5 per core is skipped
- * with the load and the figures as its reason (`skipIfOverloaded`). Every batch's median is printed
+ * and asserts the budget itself, whatever the load. Measurement and overload handling use `measureBatches`,
+ * `measureRuns` and `skipIfOverloaded` from `@gcportrait/model/testing` (packages/model/README.md,
+ * "Testing export"). Every batch's median is printed
  * (`--silent=false`). Under coverage each case is laid out once and no limit is checked (`budgetPlan`).
  */
 import { performance } from 'node:perf_hooks';
