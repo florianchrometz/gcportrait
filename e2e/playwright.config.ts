@@ -26,7 +26,7 @@ import { DEMO_URL, LIVE_URL, NAMED } from './fixtures/servers.js';
  *   reached and prints no error into the run's output.
  *
  * - `mobile` runs mobile.spec.ts and touch.spec.ts against demo mode, and a live instance's pages against normal mode:
- *   the phone and tablet layouts (AGENTS.md, Product rules) and the canvas's touch gestures, in Chromium emulating a
+ *   the phone and tablet layouts (frontend/AGENTS.md, Phones, tablets and desktops) and the canvas's touch gestures, in Chromium emulating a
  *   touch device at the sizes the specs set (`pnpm --filter @gcportrait/frontend mobile` runs it alone).
  * - `chromium-phone` and `chromium-tablet` run the tests tagged `@phone` and `@tablet` against demo mode, in Chromium
  *   emulating a touch device at 390 × 844 (an iPhone 13's window, the phone's layout) and 820 × 1180 (an iPad Air's,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Bundle-size budgets for the SPA (AGENTS.md, Quality gates, testing and CI). The build in frontend/dist is
+ * Bundle-size budgets for the SPA (frontend/AGENTS.md, Bundle budgets). The build in frontend/dist is
  * split by thread and each part has its own budget, both gzipped:
  *
  *   UI thread  350 kB  the entry script, every chunk it imports statically, and the CSS index.html links, plus a

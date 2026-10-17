@@ -2,7 +2,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 /**
- * Helpers for the specs of the phone and tablet layouts (mobile.spec.ts, handheld.spec.ts; AGENTS.md, Product rules):
+ * Helpers for the specs of the phone and tablet layouts (mobile.spec.ts, handheld.spec.ts; frontend/AGENTS.md, Phones, tablets and desktops):
  * the layouts' measures and the top bar's two folds. The app is driven only through the browser; nothing here
  * imports it.
  */

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * Camera arithmetic for the canvas (zoom and pan, `scaleExtent [0.05, 200]`, which the canvas carries out itself for
- * every pointer; AGENTS.md, Architecture and code). Pure.
+ * every pointer; frontend/AGENTS.md, Code). Pure.
  */
 import type { Rect } from '@gcportrait/layout';
 

@@ -33,7 +33,7 @@ export const MEDIA = {
  * `shortCanvas`: a phone's canvas under 20.25rem tall (a phone turned sideways, the smallest phones upright), too short
  * for the disclosure bar above the half-height details sheet: the sheet covers half of the canvas, and with the bar
  * (its 44-pixel buttons in their panel, 54 px) it would leave less than a third of the canvas in view, the least a
- * View or More sheet leaves (AGENTS.md, Product rules; the bar's 54 px six times: 324 px), so the bar is hidden while
+ * View or More sheet leaves (frontend/AGENTS.md, Phones, tablets and desktops; the bar's 54 px six times: 324 px), so the bar is hidden while
  * the sheet is open (diagram/disclosure/DisclosureBar.module.css). From that height the bar leaves the drawing a band
  * at least 78 px tall above itself (half the canvas less the bar, the sheet handle's outer half and a gap, 84 px),
  * which a camera jump and a fit keep to (diagram/DiagramCanvas, `clearRoom`).

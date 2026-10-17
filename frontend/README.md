@@ -4,7 +4,7 @@
 
 The gcportrait single-page app: React 19, Vite and TypeScript (strict), for phones, tablets and desktops
 (three layouts, every control at every width: section "Layouts"), light and dark themes, everything the user
-loads kept in the browser's IndexedDB (AGENTS.md, Product rules; Architecture and code). It may import the
+loads kept in the browser's IndexedDB (AGENTS.md, Product rules; frontend/AGENTS.md, Code). It may import the
 shared `@gcportrait/*` packages through their entry points but never the backend. One workspace imports it:
 the render library ([`@gcportrait/render`](../packages/render/README.md)), behind both `pnpm render` and the
 backend's `POST /api/render`, reaches the diagram's SVG components and the app's own data readers through
@@ -21,7 +21,7 @@ Snapshots page (`src/snapshots/`), progressive disclosure (`src/diagram/disclosu
 Connect page's sign-in card and mode selector, the top bar's account menu and the store's `connect` slice),
 the live pull and the export load (`src/import/`: "Pull now" and the Connect page's export card, with a role
 of its own in the worker script) and the Export menu (`src/export/`), each in its section below. The bundle is
-budgeted by thread (AGENTS.md, Quality gates, testing and CI), with no zod on the UI thread and the demo
+budgeted by thread (frontend/AGENTS.md, Bundle budgets), with no zod on the UI thread and the demo
 generator only in workers (AGENTS.md, Architecture and code); section "Performance" says how the app stays
 fast on demo L and XL, and the accessibility rules it follows (the keyboard map, accessible names, focus
 rings, colour never alone, axe on every page) are the gcp-diagram-style skill's §13.
@@ -432,7 +432,7 @@ long press) and a mouse's drag and double-click on the same page.
 
 ## UI primitives (`src/ui/`)
 
-Headless, accessible, small (no component library; AGENTS.md, Architecture and code). Each takes the app
+Headless, accessible, small (no component library; frontend/AGENTS.md, Diagram and themes). Each takes the app
 chrome tokens only (both themes; `ui/tokens.test.ts` fails on a raw colour or a colour token one theme lacks),
 is keyboard operable and has Testing Library tests with axe (`src/test/axe.ts`: axe-core in jsdom, all rules
 but colour contrast, which needs a rendering browser, one audit at a time, each waiting for the one before it,
@@ -1232,8 +1232,9 @@ pages in both themes).
 
 ## Diagram renderer (`src/diagram/`)
 
-The diagram page draws the view in the URL hash (AGENTS.md, Architecture and code; the gcp-diagram-style and
-gcp-diagram-layout skills): the hash's ViewSpec names a snapshot (a demo organisation, `#snapshot=demo:S|M|L`,
+The diagram page draws the view in the URL hash (AGENTS.md, Product rules; frontend/AGENTS.md, Code; the
+gcp-diagram-style and gcp-diagram-layout skills): the hash's ViewSpec names a snapshot (a demo organisation,
+`#snapshot=demo:S|M|L`,
 or a stored snapshot), the **data worker** turns it into a Scene and resolves
 the icons it draws, the **layout worker** lays the Scene out, and the page renders the Layout as SVG in React.
 Hover, selection, keyboard focus, zoom and level of detail then only change attributes and classes of that
@@ -1377,10 +1378,10 @@ px between 2 px canvas-coloured gaps) pulses twice in a second (no animation wit
 lines are traced (below), and the details drawer opens (section "Details drawer" below). Escape or Close
 clears it.
 
-**Touch.** A finger comes as pointer events of `pointerType` `touch` (AGENTS.md, Product rules, the touch
-model), which `touch.ts` reads into gestures on a clock it is given and the canvas carries out, while a mouse
-and a pen keep their drag and the wheel, the click, the double-click, the right-click and hover exactly as
-above:
+**Touch.** A finger comes as pointer events of `pointerType` `touch` (frontend/AGENTS.md, "Phones, tablets
+and desktops"), which `touch.ts` reads into gestures on a clock it is given and the canvas carries out,
+while a mouse and a pen keep their drag and the wheel, the click, the double-click, the right-click and hover
+exactly as above:
 
 | Gesture | What it does |
 |---|---|
@@ -1469,7 +1470,7 @@ the viewBox. Where the layout ends an edge with a final segment shorter than its
 head, at L detail `projects`), the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the
 layout's routing owns that segment.
 
-**Bundle.** `pnpm size` budgets the build by thread (AGENTS.md, Quality gates, testing and CI; gzipped, fonts
+**Bundle.** `pnpm size` budgets the build by thread (frontend/AGENTS.md, Bundle budgets; gzipped, fonts
 and the JSON data tables excluded): the UI thread's initial chunks (the entry, its static imports and the CSS)
 350 kB, and the workers' chunks 400 kB in total; a lazily imported UI chunk counts only when it is part of the
 first paint of `/diagram`. What keeps them well within it: the icons travel with the Scene (above),
@@ -2604,4 +2605,4 @@ is its label and its state is `aria-checked`.
 Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the
 flow, the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium,
 and `e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with maxGraph and holds it to the SVG
-export (within the fidelity limits of AGENTS.md, Exports and the render API).
+export (within the fidelity limits of frontend/AGENTS.md, Exports, and the gcp-diagram-style skill §8).

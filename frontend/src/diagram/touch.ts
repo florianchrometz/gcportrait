@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The canvas's touch input (AGENTS.md, Product rules, the touch model): the pointer events of fingers
+ * The canvas's touch input (frontend/AGENTS.md, Phones, tablets and desktops, the touch model): the pointer events of fingers
  * (`pointerType` `touch`) read as gestures. A mouse and a pen never come here: the canvas reads their drag and the
  * wheel itself, and keeps their click, double-click, right-click and hover as they are.
  *

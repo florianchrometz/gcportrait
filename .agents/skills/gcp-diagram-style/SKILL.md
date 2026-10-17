@@ -7,8 +7,9 @@ description: Visual rules for gcportrait diagrams and app chrome — zone tints,
 # gcportrait diagram style
 
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("Style and accessibility", "Exports
-and the render API" and "Non-affiliation, brand and legal"); this file holds the palettes, the sizes and the
-checklists that carry them out.
+and the render API" and "Non-affiliation, brand and legal") and
+[frontend/AGENTS.md](../../../frontend/AGENTS.md) ("Diagram and themes", "Exports" and "Phones, tablets and
+desktops"); this file holds the palettes, the sizes and the checklists that carry them out.
 
 Load this before changing anything a user can see in a diagram or exporting one, and when reviewing a render.
 Rules here win over personal taste. Where Google's architecture-diagram conventions and WCAG conflict, keep
@@ -177,7 +178,7 @@ tint; §10 gives each token its contrast figure.
   ring (its path starts there). With a selection, only cards, chips and card-sized zones preview, so resting
   the pointer on an open zone never hides the selection's trace. On a touch screen a long press is the hover:
   the same preview, with the tooltip there (or else the node's name) in a chrome tooltip's look above the
-  finger, inside the canvas, until the next touch (AGENTS.md, Product rules, the touch model).
+  finger, inside the canvas, until the next touch (frontend/AGENTS.md, "Phones, tablets and desktops").
 - Search hit: as select plus a 200 ms glide to centre; collapsed ancestors expand first.
 - Domain/related peers: `accent.peer` outline; the direct edge between peers turns `accent.peer` and dashed.
 - Timeline: added → `accent.peer` outline for one tick; removed → ghost card (dashed `accent.removed`, 50 %
@@ -320,8 +321,8 @@ tablet's and the desktop's (AGENTS.md, "Style and accessibility").
 - **Colour never carries meaning alone**: edge kinds differ by dash or head, zone kinds by title position,
   header mark or badge, timeline changes by outline, ghost or dot (§10, "Non-colour cues").
 - **Touch.** On the canvas a finger pans, pinches, taps to select, double-taps to zoom in and long-presses for
-  what hover shows (AGENTS.md, Product rules, the touch model); a node's menu and drill-in are in the details
-  drawer.
+  what hover shows (frontend/AGENTS.md, "Phones, tablets and desktops"); a node's menu and drill-in are in
+  the details drawer.
 - **Motion** follows the reduced-motion setting (no selection pulse).
 - **Checked by** the e2e suite (`e2e/tests/a11y.spec.ts`): axe reports zero violations on every page in both
   themes, and on the diagram also with the keyboard inside a zone and with a node's menu and the drawer open;

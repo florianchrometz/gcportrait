@@ -4,7 +4,7 @@ import { expect, test, type CDPSession, type Locator, type Page } from '@playwri
 import { cameraSettled, drawingOf, openDiagram, redrawnCanvas, viewParam } from './support.js';
 
 /**
- * The canvas by finger (AGENTS.md, Product rules, the touch model; frontend/src/diagram/touch.ts), run by the `mobile`
+ * The canvas by finger (frontend/AGENTS.md, Phones, tablets and desktops, the touch model; frontend/src/diagram/touch.ts), run by the `mobile`
  * project of playwright.config.ts with mobile.spec.ts: Chromium emulating a touch device at 390 × 844 (a phone's
  * layout), against demo mode. Fingers come as Playwright's taps and, for drags, pinches and presses, as touch events
  * through the Chrome DevTools Protocol; the browser makes its own pointer, mouse and click events of them, as on a

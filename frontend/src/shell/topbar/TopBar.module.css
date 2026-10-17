@@ -140,7 +140,7 @@
 }
 
 /*
- * Narrower than a desktop (ui/screen.ts, AGENTS.md "Product rules"): the same controls, folded into the View and More
+ * Narrower than a desktop (ui/screen.ts, frontend/AGENTS.md, "Phones, tablets and desktops"): the same controls, folded into the View and More
  * sheets (ui/Popover `sheet`), every target at least 44 px (the token --control-height grows to it). The bar stays on
  * top of the page and clear of a phone's notch and rounded corners (the safe-area insets); a sheet hangs from the
  * bar's lower edge, over the page, never as tall as the window, and over the diagram's canvas at most two thirds of

@@ -188,7 +188,7 @@ const IDLE_PIPELINE: PipelineSlice = {
 const INITIAL_UI: UiSlice = { drawerOpen: true, searchOpen: false, popover: null, sheet: null, jump: null };
 
 /**
- * The ui slice with a sheet of the top bar and the details drawer kept apart (AGENTS.md, Product rules): on a phone or
+ * The ui slice with a sheet of the top bar and the details drawer kept apart (frontend/AGENTS.md, Phones, tablets and desktops): on a phone or
  * a tablet both lie over the canvas, a sheet over up to its upper two thirds and the drawer over its lower half or its
  * right side, and together they would leave next to nothing of it in view. A sheet that opens (View or More, by its
  * button or by `/`) closes the drawer, so the sheet is alone over the canvas; the selection stays, its ring and its

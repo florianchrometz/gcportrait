@@ -23,7 +23,7 @@ import { decodePng, mismatch, OUT_DIR, REPO_ROOT, renderWithResvg } from './expo
 import { openDiagram, TAGLINE } from './support.js';
 
 /**
- * The draw.io export's fidelity (AGENTS.md, Exports and the render API): the `.drawio` file the Export menu
+ * The draw.io export's fidelity (frontend/AGENTS.md, Exports): the `.drawio` file the Export menu
  * downloads, drawn by maxGraph (the maintained successor of mxGraph, the library diagrams.net is built on) in
  * Chromium, against the SVG export of the same view: demo S, M and L in both themes.
  *

@@ -491,7 +491,7 @@ and waiting for an item of [backlog.md](backlog.md) or a maintainer decision:
 - **One chip-opening loop.** Search's `locate`, which the drawer's jump links ask too (without offers), uses
   `frontend/src/diagram/disclosure/openAround.ts`: toggle the flip of the chip that shows a node and rebuild
   the Scene, one level deeper each time, in the data worker.
-- **The bundle budgets** (AGENTS.md, "Quality gates, testing and CI"). `pnpm size` budgets the UI thread
+- **The bundle budgets** (frontend/AGENTS.md, "Bundle budgets"). `pnpm size` budgets the UI thread
   (350 kB gzipped) and the workers (400 kB) apart and prints the table per chunk. The UI thread ships no
   zod: the URL-hash codec and the vocabularies it reads come from `@gcportrait/model` modules without it, so a
   UI-thread import of a schema would bring it back, and `pnpm size` fails on it. The demo generator runs in

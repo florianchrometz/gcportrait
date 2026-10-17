@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive diagram (AGENTS.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that the
+ * The interactive diagram (frontend/AGENTS.md, Code; style skill §13): the drawing inside an `<svg>` that the
  * canvas pans and zooms itself (`scaleExtent [0.05, 200]`; a mouse's or a pen's drag and the wheel, read from their
  * pointer and wheel events; a press that moved at most `CLICK_DISTANCE`, 4 px, is a click and moves nothing;
  * double-click is reserved for drill-in and does not zoom), level of detail by the effective scale, and hover,
@@ -53,7 +53,7 @@
  * frame the zone (disclosure/flipCamera.ts); after a flip from the keyboard, focus follows the zone (its collapse
  * button, or its chip). Without `onFlip` a chip is selected like any node.
  *
- * Fingers (touch.ts; AGENTS.md, Product rules, the touch model) come as pointer events of `pointerType` `touch`, read
+ * Fingers (touch.ts; frontend/AGENTS.md, Phones, tablets and desktops, the touch model) come as pointer events of `pointerType` `touch`, read
  * here into gestures: one finger pans, two pinch about their midpoint and pan, a tap does what a click does (selects,
  * clears, or flips a chip), a double tap zooms in about its point (on a chip or a collapse button the first tap's flip
  * stands instead, as a double-click's second click does not flip it back), and a long press (500 ms, without moving)
@@ -230,7 +230,7 @@ function lyingOpen(element: Element): boolean {
 /**
  * The part of the canvas a camera jump, the keyboard's pan and a zoom key's step keep a node in, and `0` fits the
  * drawing to (`fitRoom`; camera.ts, `inRoom`): the largest part of the canvas that no panel lying over it covers
- * (`data-canvas-overlay`, AGENTS.md "Product rules": on a phone or a tablet the details drawer along the canvas's right
+ * (`data-canvas-overlay`, frontend/AGENTS.md, "Phones, tablets and desktops": on a phone or a tablet the details drawer along the canvas's right
  * or lower edge, and with it the disclosure bar's row in the part it leaves, above a phone's sheet or beside a tablet's
  * panel; the top bar's View or More sheet hanging over it from its top edge). One panel leaves the largest part of the
  * canvas it keeps free, to its left or right, above or below it; with the drawer and the row, the largest part clear of

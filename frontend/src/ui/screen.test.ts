@@ -1,7 +1,7 @@
 // @vitest-environment node
 // SPDX-License-Identifier: MIT
 /**
- * The three layouts (ui/screen.ts; AGENTS.md, Product rules): the queries name the breakpoints in rem, tokens.css
+ * The three layouts (ui/screen.ts; frontend/AGENTS.md, Phones, tablets and desktops): the queries name the breakpoints in rem, tokens.css
  * names the same widths, every stylesheet of the app asks for a width only with one of those queries (or for
  * the colour scheme, motion and the like), and a width maps to its layout on either side of each breakpoint.
  */

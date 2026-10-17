@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /**
  * The rows of the Snapshots page's tables (SnapshotTable.tsx, ScopeTimelines.tsx), drawn from one list of columns
- * (AGENTS.md, Product rules): a table on a tablet and a desktop; on a phone, where a row of five or seven columns
+ * (frontend/AGENTS.md, Phones, tablets and desktops): a table on a tablet and a desktop; on a phone, where a row of five or seven columns
  * could be read only by scrolling it sideways, a list of cards, one per row, each column a labelled line of a
  * description list (its header, then its cell) with the row's actions under them, as wide as the page. Both come from
  * the same columns and the same `actions`, and only one of them is drawn at a time, so a card shows the row's facts

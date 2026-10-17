@@ -125,9 +125,10 @@ and open `https://app.diagrams.net/?url=` followed by that address, URL-encoded.
 with maxGraph, the maintained successor of mxGraph, the library diagrams.net is built on, and holds it to the
 SVG: every box and every line's end within half a pixel of its place, every line of text within 1.25 pixels,
 the arrowheads within a few pixels, and at most 5 % of the pixels different; the exact limits are in
-[AGENTS.md](../AGENTS.md#exports-and-the-render-api), "Exports and the render API". The differences come
-from draw.io's own arrowheads, which stop a line a little short of an open head's tip and draw a block head a
-little wider, from odd line widths snapped to whole pixels, and from the text's anti-aliasing. What you change
+[frontend/AGENTS.md](../frontend/AGENTS.md#exports), "Exports", and the gcp-diagram-style skill §8. The
+differences come from draw.io's own arrowheads, which stop a line a little short of an open head's tip and
+draw a block head a little wider, from odd line widths snapped to whole pixels, and from the text's
+anti-aliasing. What you change
 there stays in the file: gcportrait does not import a draw.io file, so that its diagrams show only what Cloud
 Asset Inventory returned ([faq.md](faq.md#why-can-i-not-import-a-drawio-file)).
 

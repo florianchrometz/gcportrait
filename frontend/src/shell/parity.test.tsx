@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /**
- * Feature parity across the layouts (AGENTS.md, Product rules; ui/screen.ts): the diagram page, drawn from demo S with
+ * Feature parity across the layouts (AGENTS.md, Product rules; frontend/AGENTS.md, Phones, tablets and desktops; ui/screen.ts): the diagram page, drawn from demo S with
  * a project selected (so the details drawer, the disclosure bar and the timeline bar are there), the Connect page
  * of a live instance signed in with Google (the account menu), the Permissions page, whose reference table is a
  * list on a phone, and the Snapshots page with snapshots stored, whose tables are a card per row on a phone, each at a

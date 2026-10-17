@@ -205,7 +205,7 @@ core per layout, no other load.
 
 Memoise by Scene hash; cancel superseded requests; never block the UI thread. The pipeline around it has its
 own budgets: ingest of XL < 1.5 s and the graph build of M < 150 ms (`test:budget` in `packages/ingest` and
-`packages/graph`), and the bundle budgets (`pnpm size`; AGENTS.md, "Quality gates, testing and CI").
+`packages/graph`), and the bundle budgets (`pnpm size`; frontend/AGENTS.md, "Bundle budgets").
 
 The app's targets, measured in the browser on a production demo build (`VITE_DEMO=1`) in Chromium at
 1280 × 800, with `performance.measureUserAgentSpecificMemory()` behind COOP and COEP for the heap:
@@ -228,7 +228,7 @@ timeline's data path measures these again, before and after, on the same machine
    checklist below. Do the same for `--lens load-balancing` (dense edges) and `--fixture L --detail projects`.
 3. Compare against the renderer's SVG baselines in `e2e/baselines/diagram/` and the render golden PNG in
    `e2e/baselines/render/`; a diff needs a reason in the PR (the update commands are in packages/AGENTS.md,
-   "Commands", for the render goldens, and AGENTS.md, "Commands", for the renderer's SVG baselines).
+   "Commands", for the render goldens, and frontend/AGENTS.md, "Commands", for the renderer's SVG baselines).
 4. For a routing or packing change, `pnpm --filter @gcportrait/layout measure` prints each view's total edge
    length, bends, border-hugging length, detours, crossings, the routes in the canvas margin and the routes
    that run more than 1 000 px past both of their ends (overshoots; `src/testing/quality.ts`; `--view

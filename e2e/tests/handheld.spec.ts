@@ -27,8 +27,8 @@ import {
 } from './timelineSupport.js';
 
 /**
- * The app's flows by finger on a phone and on a tablet (AGENTS.md, Product rules: every control at every width, and
- * the touch model). The `chromium-phone` and `chromium-tablet` projects of playwright.config.ts run every test here,
+ * The app's flows by finger on a phone and on a tablet (AGENTS.md, Product rules: every control at every width;
+ * frontend/AGENTS.md, Phones, tablets and desktops: the touch model). The `chromium-phone` and `chromium-tablet` projects of playwright.config.ts run every test here,
  * each tagged `@phone` and `@tablet`, in Chromium emulating a touch device at 390 × 844 (the phone's layout) and
  * 820 × 1180 (the tablet's), against demo mode; the desktop's `chromium` project leaves them out. Every step is a tap
  * (Playwright's touchscreen) on the app's own controls, under the accessible names the desktop's specs use, with View
