@@ -1126,6 +1126,21 @@ function sheetRoom(sheet: Locator): Promise<{ readonly uncovered: number; readon
   });
 }
 
+async function expectSheetRoom(sheet: Locator, where: string): Promise<void> {
+  await expect
+    .poll(async () => (await sheetRoom(sheet)).uncovered, {
+      timeout: 15_000,
+      message: `${where}: the share of the canvas in view after the resized canvas height reaches the sheet`,
+    })
+    .toBeGreaterThanOrEqual(1 / 3);
+  await expect
+    .poll(async () => (await sheetRoom(sheet)).below, {
+      timeout: 15_000,
+      message: `${where}: the canvas below the sheet after the resized canvas height reaches the sheet`,
+    })
+    .toBeGreaterThanOrEqual(1 / 4);
+}
+
 for (const size of [...SIZES, ...SIDEWAYS]) {
   test(`${String(size.width)} × ${String(size.height)}: an open View or More sheet leaves at least a third of the canvas in view, in both themes, and View closes the open drawer`, async ({
     page,
@@ -1138,9 +1153,7 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
         await page.emulateMedia({ colorScheme: theme });
         for (const name of ['View', 'More'] as const) {
           const where = `${hash}, ${theme} theme, ${name} open`;
-          const room = await sheetRoom(await openSheet(page, name, 'click'));
-          expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
-          expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
+          await expectSheetRoom(await openSheet(page, name, 'click'), where);
           await expectClean(page, where, { axe: false, focus: true });
           await closeSheet(page, name);
         }
@@ -1150,10 +1163,9 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
         await selectACard(page, svg);
         const details = page.getByRole('complementary', { name: 'Details' });
         if (size.width < TABLET_FROM) await expect(details).toHaveAttribute('data-sheet', 'half');
-        const room = await sheetRoom(await openSheet(page, 'View', 'click'));
+        const view = await openSheet(page, 'View', 'click');
         await expect(details, `${where}: the drawer`).toBeHidden();
-        expect(room.uncovered, `${where}: the share of the canvas in view`).toBeGreaterThanOrEqual(1 / 3);
-        expect(room.below, `${where}: the canvas below the sheet`).toBeGreaterThanOrEqual(1 / 4);
+        await expectSheetRoom(view, where);
         await closeSheet(page, 'View');
         await expect(details, `${where}: the drawer once View is closed`).toBeHidden();
         expect(await page.evaluate(() => window.location.hash)).toContain('selection=');
