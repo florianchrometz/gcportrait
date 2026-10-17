@@ -11,8 +11,10 @@ import {
 } from './support.js';
 import {
   expectDrawn,
+  focusRingShown,
   playbackStopped,
   playUntil,
+  pressThumb,
   recordHashes,
   scrubTo,
   stoppedPlayButton,
@@ -28,6 +30,8 @@ import {
  * - scrubbing: a drag along the slider to 16 September draws that day (its read time in the title block, the
  *   decommissioned reports project still there), one day on (17 September, the day it was deleted) it is gone, and
  *   each day is in the hash (`tick`), the slider moving in place (no history entry per day);
+ * - a mouse press on the slider's thumb focuses it without the focus ring, on the page's first press and after a
+ *   click elsewhere, and a key pressed then shows the ring, as on a native range input; Tab to the thumb shows it;
  * - `[` and `]` move one day back and forward, the last day as no tick, and say why they cannot move past it;
  * - a link with a tick opens on that day, and a reload keeps it;
  * - playback runs through the days to the last one and stops there, and stops on a key press (on Playwright's clock,
@@ -82,6 +86,38 @@ test('scrubbing to a day with changes draws that day, and the day is in the hash
   // A drag moves the view in place: no history entry per day.
   expect(await page.evaluate(() => history.length)).toBe(entries);
   await scratchShot(page, 'timeline', 'timeline-M-2026-09-17-light');
+});
+
+test('a press on the slider’s thumb shows no focus ring, a key after it does, and Tab to the thumb shows it', async ({
+  page,
+}) => {
+  await openDiagram(page, DEMO_M);
+  const bar = await timelineBar(page);
+  const thumb = bar.getByRole('slider', { name: 'Timeline' });
+  // The playback speed chosen: a click focuses it and leaves it as it is.
+  const speed = bar.getByRole('radio', { checked: true });
+  // The page's first press: the thumb takes focus from the press, without the ring, on the last day still.
+  await pressThumb(page, bar);
+  await expect(thumb).toBeFocused();
+  await expect(thumb).toHaveAttribute('aria-valuenow', '34');
+  expect(await focusRingShown(thumb)).toBe(false);
+  // A key on it brings the ring (→ on the last day moves nothing, so the drawing stays).
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => focusRingShown(thumb)).toBe(true);
+  // A press after a click elsewhere on the page.
+  await speed.click();
+  await expect(speed).toBeFocused();
+  await pressThumb(page, bar);
+  await expect(thumb).toBeFocused();
+  expect(await focusRingShown(thumb)).toBe(false);
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => focusRingShown(thumb)).toBe(true);
+  // Shift+Tab from the speed back to the thumb: keyboard focus, with the ring.
+  await speed.click();
+  await page.keyboard.press('Shift+Tab');
+  await expect(thumb).toBeFocused();
+  expect(await focusRingShown(thumb)).toBe(true);
+  expect(hashOf(page)).toBe('#snapshot=demo:M');
 });
 
 test('[ and ] move one day back and forward; past the last day they say why they cannot', async ({

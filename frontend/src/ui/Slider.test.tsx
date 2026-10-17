@@ -8,6 +8,19 @@ import { expectNoAxeViolations } from '../test/axe';
 import { renderInPage } from '../test/page';
 import { clampToStep, Slider } from './Slider';
 
+/** The slider's track, laid out from x 100 at ten pixels per day of the 0 to 34 range (jsdom lays nothing out). */
+function laidOutTrack(slider: HTMLElement): HTMLElement {
+  const track = slider.parentElement;
+  if (track === null) throw new Error('no track');
+  track.getBoundingClientRect = () => DOMRect.fromRect({ x: 100, y: 0, width: 340, height: 4 });
+  return track;
+}
+
+/** The mark that hides the focus ring of a thumb a pointer's press focused (null without it). */
+function pointerMark(slider: HTMLElement): string | null {
+  return slider.getAttribute('data-pointer-focus');
+}
+
 function Timeline({ disabled }: { readonly disabled?: boolean }): ReactElement {
   const [day, setDay] = useState(34);
   return (
@@ -55,9 +68,7 @@ describe('Slider', () => {
   it('follows a press and a drag on the track', () => {
     renderInPage(<Timeline />);
     const slider = screen.getByRole('slider', { name: 'Timeline' });
-    const track = slider.parentElement;
-    if (track === null) throw new Error('no track');
-    track.getBoundingClientRect = () => DOMRect.fromRect({ x: 100, y: 0, width: 340, height: 4 });
+    const track = laidOutTrack(slider);
     fireEvent.pointerDown(track, { clientX: 100, pointerId: 1 });
     expect(slider.getAttribute('aria-valuenow')).toBe('0');
     expect(document.activeElement).toBe(slider);
@@ -68,10 +79,83 @@ describe('Slider', () => {
     expect(slider.getAttribute('aria-valuenow')).toBe('17');
   });
 
+  it.each([
+    { pointerType: 'mouse', by: 'a mouse' },
+    { pointerType: 'pen', by: 'a pen' },
+    { pointerType: 'touch', by: 'a finger' },
+  ])(
+    'hides the ring of a thumb that $by pressed into focus until a key is pressed on it, as on a native range input',
+    async ({ pointerType }) => {
+      renderInPage(<Timeline />);
+      const slider = screen.getByRole('slider', { name: 'Timeline' });
+      const track = laidOutTrack(slider);
+      expect(pointerMark(slider)).toBeNull();
+      fireEvent.pointerDown(track, { clientX: 270, pointerId: 1, pointerType });
+      fireEvent.pointerUp(track, { clientX: 270, pointerId: 1, pointerType });
+      expect(document.activeElement).toBe(slider);
+      expect(slider.getAttribute('aria-valuenow')).toBe('17');
+      expect(pointerMark(slider)).toBe('true');
+      // A shortcut with Ctrl, Alt or Meta leaves the mark, as it leaves a native range input's ring off.
+      fireEvent.keyDown(slider, { key: 'c', ctrlKey: true });
+      fireEvent.keyDown(slider, { key: 'Alt', altKey: true });
+      fireEvent.keyDown(slider, { key: 'Meta', metaKey: true });
+      expect(pointerMark(slider)).toBe('true');
+      // The window losing focus leaves focus on the thumb, and the mark with it.
+      fireEvent.blur(slider);
+      expect(document.activeElement).toBe(slider);
+      expect(pointerMark(slider)).toBe('true');
+      // The first key takes it off, so the ring shows again; the key moves the thumb as ever.
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(pointerMark(slider)).toBeNull();
+      expect(slider.getAttribute('aria-valuenow')).toBe('16');
+      // A drag along the track after it: the thumb has focus already, and its ring stays.
+      fireEvent.pointerDown(track, { clientX: 300, pointerId: 2, pointerType });
+      fireEvent.pointerMove(track, { clientX: 310, pointerId: 2, pointerType });
+      fireEvent.pointerUp(track, { clientX: 310, pointerId: 2, pointerType });
+      expect(slider.getAttribute('aria-valuenow')).toBe('21');
+      expect(pointerMark(slider)).toBeNull();
+    },
+  );
+
+  it('takes the mark off when focus leaves the thumb, and Tab back to it shows the ring', async () => {
+    renderInPage(<Timeline />);
+    const slider = screen.getByRole('slider', { name: 'Timeline' });
+    const track = laidOutTrack(slider);
+    fireEvent.pointerDown(track, { clientX: 270, pointerId: 1 });
+    fireEvent.pointerUp(track, { clientX: 270, pointerId: 1 });
+    expect(pointerMark(slider)).toBe('true');
+    await userEvent.click(screen.getByRole('button', { name: 'outside' }));
+    expect(document.activeElement).not.toBe(slider);
+    expect(pointerMark(slider)).toBeNull();
+    await userEvent.tab({ shift: true });
+    expect(document.activeElement).toBe(slider);
+    expect(pointerMark(slider)).toBeNull();
+    // A press on the thumb that has keyboard focus leaves its ring as it is.
+    fireEvent.pointerDown(track, { clientX: 100, pointerId: 2 });
+    fireEvent.pointerUp(track, { clientX: 100, pointerId: 2 });
+    expect(slider.getAttribute('aria-valuenow')).toBe('0');
+    expect(pointerMark(slider)).toBeNull();
+    // A press that moves focus to it from elsewhere marks it again; Tab away and back by Shift+Tab: no mark.
+    await userEvent.click(screen.getByRole('button', { name: 'outside' }));
+    fireEvent.pointerDown(track, { clientX: 100, pointerId: 3 });
+    fireEvent.pointerUp(track, { clientX: 100, pointerId: 3 });
+    expect(pointerMark(slider)).toBe('true');
+    await userEvent.tab();
+    expect(document.activeElement).not.toBe(slider);
+    await userEvent.tab({ shift: true });
+    expect(document.activeElement).toBe(slider);
+    expect(pointerMark(slider)).toBeNull();
+  });
+
   it('is inert when disabled', async () => {
     renderInPage(<Timeline disabled />);
     const slider = screen.getByRole('slider', { name: 'Timeline' });
     expect(slider.getAttribute('aria-disabled')).toBe('true');
+    // A press neither moves nor focuses it.
+    fireEvent.pointerDown(laidOutTrack(slider), { clientX: 100, pointerId: 1 });
+    expect(document.activeElement).not.toBe(slider);
+    expect(pointerMark(slider)).toBeNull();
+    expect(slider.getAttribute('aria-valuenow')).toBe('34');
     slider.focus();
     await userEvent.keyboard('{Home}');
     expect(slider.getAttribute('aria-valuenow')).toBe('34');

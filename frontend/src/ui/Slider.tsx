@@ -6,10 +6,18 @@
  * track moves it there (and focuses the thumb). `onChange` fires for each new value. Inert (`disabled`):
  * announced unavailable, focusable, fixed. `marks` are drawn inside the track, under the thumb, where a press is a
  * press on the track (the timeline's tick markers; the caller hides them from assistive technology).
+ *
+ * The focus ring is keyboard focus's, as on a native range input: a press of a mouse, a pen or a finger that focuses
+ * the thumb marks it (`data-pointer-focus`), and the mark hides the ring (Slider.module.css) until a key is pressed
+ * on it or focus leaves it. Any key but a shortcut with Ctrl, Alt or Meta takes the mark off, as such a key turns
+ * a native range input's ring on, and the ring then shows as `:focus-visible` says; the mark stays while the
+ * window loses focus and gets it back. A press on a thumb that has focus already leaves its ring as it is. Not
+ * `focus({ focusVisible: false })`, which in Chromium keeps the ring off for the keys that follow as well.
  */
 import {
   useId,
   useRef,
+  useState,
   type KeyboardEvent,
   type PointerEvent,
   type ReactElement,
@@ -68,6 +76,8 @@ export function Slider({
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  // Focused by a pointer's press, until a key or a move of focus away (see above).
+  const [pointerFocus, setPointerFocus] = useState(false);
   const inert = isInert(disabled);
   const range = Math.max(step, max - min);
   const page = bigStep ?? Math.max(step, Math.round(range / 10 / step) * step);
@@ -80,6 +90,7 @@ export function Slider({
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (!event.ctrlKey && !event.altKey && !event.metaKey) setPointerFocus(false);
     const keys: Record<string, number> = {
       ArrowRight: current + step,
       ArrowUp: current + step,
@@ -113,7 +124,11 @@ export function Slider({
         onPointerDown={(event) => {
           if (inert) return;
           event.preventDefault();
-          thumbRef.current?.focus();
+          const thumb = thumbRef.current;
+          if (thumb !== null && thumb.ownerDocument.activeElement !== thumb) {
+            thumb.focus();
+            if (thumb.ownerDocument.activeElement === thumb) setPointerFocus(true);
+          }
           dragging.current = true;
           capturePointer(event.currentTarget, event.pointerId);
           fromPointer(event);
@@ -142,8 +157,14 @@ export function Slider({
           aria-valuenow={current}
           aria-valuetext={valueText?.(current)}
           aria-orientation="horizontal"
+          data-pointer-focus={pointerFocus ? 'true' : undefined}
           {...inertProps(disabled)}
           onKeyDown={onKeyDown}
+          onBlur={(event) => {
+            // Focus moved away; the window losing focus leaves it on the thumb, and the mark with it.
+            const thumb = event.currentTarget;
+            if (thumb.ownerDocument.activeElement !== thumb) setPointerFocus(false);
+          }}
         />
       </div>
     </span>

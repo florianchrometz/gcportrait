@@ -37,6 +37,15 @@
   transform: translate(-50%, -50%);
 }
 
+/* A thumb a pointer's press focused (a mouse, a pen or a finger; Slider.tsx marks it until a key is pressed on it or
+   focus leaves) shows no ring, as a native range input shows none after a press: the ring is keyboard focus's, and
+   the first key brings it back. Two classes, the mark and the pseudo-class outrank a caller's own ring for the thumb
+   (TimelineBar's band), whatever order the stylesheets come in. */
+.track .thumb[data-pointer-focus='true']:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .inert {
   cursor: not-allowed;
 }

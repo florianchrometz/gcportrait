@@ -16,6 +16,7 @@ import {
   openDiagram,
   type Box,
 } from './support.js';
+import { focusRingShown, timelineBar } from './timelineSupport.js';
 
 /**
  * The app's phone and tablet check (the `mobile` project of playwright.config.ts; `pnpm --filter
@@ -61,7 +62,8 @@ import {
  * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
  * And on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
  * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
- * onto the search; a long drill-in trail rests at its current level, and a swipe brings its first crumb into view,
+ * onto the search; a tap on the timeline's thumb focuses it without the focus ring, which a key on an external
+ * keyboard then shows; a long drill-in trail rests at its current level, and a swipe brings its first crumb into view,
  * which a tap drills out to; a tap on a node opens the drawer as a sheet over the lower half of the canvas, the
  * disclosure bar above it, which its handle takes to the canvas's full height (hiding the canvas's content) and back,
  * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
@@ -1146,6 +1148,18 @@ test.describe('on a phone, 375 × 667', () => {
     await page.locator('body').press('/');
     await expect(page.getByRole('combobox', { name: 'Search assets' })).toBeFocused();
     await expect(fold(page, 'View').sheet).toBeVisible();
+  });
+
+  test('a tap on the timeline’s thumb focuses it without the focus ring, and a key on an external keyboard shows the ring', async ({
+    page,
+  }) => {
+    await openDiagram(page, DIAGRAMS[0]);
+    const thumb = (await timelineBar(page)).getByRole('slider', { name: 'Timeline' });
+    await thumb.tap();
+    await expect(thumb).toBeFocused();
+    expect(await focusRingShown(thumb)).toBe(false);
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => focusRingShown(thumb)).toBe(true);
   });
 
   test('a long drill-in trail rests at its current level; a swipe brings its first crumb into view, and a tap drills out to it', async ({

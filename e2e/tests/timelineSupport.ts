@@ -4,8 +4,9 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { drawnCanvas, redrawnCanvas } from './support.js';
 
 /**
- * Helpers for the timeline's specs (timeline, diff, extra-ticks): the bar, the day on screen, scrubbing, the hashes
- * the timeline writes in place, and playback on Playwright's clock.
+ * Helpers for the timeline's specs (timeline, diff, extra-ticks, and the timeline's tests in handheld and mobile):
+ * the bar, the day on screen, scrubbing and a press on the slider's thumb, its focus ring, the hashes the timeline
+ * writes in place, and playback on Playwright's clock.
  */
 
 /** The timeline bar, once the snapshot's timeline is known (within `timeout` ms, Playwright's default otherwise). */
@@ -39,6 +40,23 @@ export async function scrubTo(page: Page, bar: Locator, day: string, steps = 12)
   await page.mouse.down();
   await page.mouse.move(to.x + to.width / 2, from.y + from.height / 2, { steps });
   await page.mouse.up();
+}
+
+/** Presses the slider's thumb with the mouse where it is (the day stays) and lets go. */
+export async function pressThumb(page: Page, bar: Locator): Promise<void> {
+  const box = await bar.getByRole('slider', { name: 'Timeline' }).boundingBox();
+  if (box === null) throw new Error('the slider is not laid out');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.up();
+}
+
+/** Whether `control` shows a focus ring: the chrome ring's box shadows or its outline (global.css draws both). */
+export function focusRingShown(control: Locator): Promise<boolean> {
+  return control.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return style.boxShadow !== 'none' || style.outlineStyle !== 'none';
+  });
 }
 
 /**

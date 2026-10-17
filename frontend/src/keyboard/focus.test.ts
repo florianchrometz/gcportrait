@@ -45,6 +45,9 @@ const OUTLINE_OFF: Readonly<Record<string, readonly string[]>> = {
   // action's focused pill and the collapse button's focused plate (the focus colour on a canvas rim).
   'diagram/diagram.css': ['.dg-console-action', '.dg-node:focus'],
   'diagram/disclosure/disclosure.css': ['.dg-collapse'],
+  // A slider's thumb that a pointer's press focused: no ring until a key is pressed on it, as on a native range
+  // input (the thumb lies under the pointer that pressed it); the key brings the chrome ring back.
+  'ui/Slider.module.css': [".track .thumb[data-pointer-focus='true']:focus-visible"],
 };
 
 /** The selectors of the rules in a stylesheet that set `outline: none` (or `0`). */

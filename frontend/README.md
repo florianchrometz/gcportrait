@@ -425,7 +425,7 @@ focusable, doing nothing).
 | `Popover` | button + non-modal `role="dialog"` panel (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`); an `adornment` after the label (the Filters count badge, the Focus summary); `sheet`: a fold of other controls, its content kept mounted (hidden) while closed, its panel marked `data-canvas-overlay` (a camera jump keeps a node clear of it, `DiagramCanvas`'s `clearRoom`), and `inline`: the same content in place without a button (section "Layouts") | focus moves in, Tab is trapped inside, Escape closes back to the button, a press outside closes; `children` may be a function of `close`; a sheet leaves an Escape its content handled alone, ignores presses while a modal dialog makes it inert, and closed with focus inside it (a pick) gives focus back to its button |
 | `Dialog` | modal dialog (`aria-modal`, labelled by its title, described by `description`) at the end of `<body>`, the rest made `inert`; `alert`: an alert dialog (`role="alertdialog"`, a decision its own actions make: no Close button) with `initialFocus` on its least destructive action | focus moves in, Tab trapped, Escape, Close and the backdrop close (an alert dialog: Escape only), focus returns to the opener |
 | `SegmentedControl` | radio group (`role="radiogroup"`, `role="radio"`), the checked option the one tab stop and check-marked | ← → ↑ ↓ move and choose (wrapping), Home End, click |
-| `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track |
+| `Slider` | `role="slider"` with `aria-valuetext` (the timeline's day); `marks` drawn inside the track (the timeline's markers); inert, its thumb is hollow, so the state shows by shape as well as colour; the focus ring is keyboard focus's, as on a native range input: a press (a mouse, a pen, a finger) that focuses the thumb marks it `data-pointer-focus`, which hides the ring until a key is pressed on it (any key but a shortcut with Ctrl, Alt or Meta) or focus leaves it | ← ↓ → ↑ step, Page Down / Up `bigStep`, Home End, press and drag on the track (focusing the thumb without the ring) |
 | `Tooltip` | `role="tooltip"`, always in the DOM, named by the trigger's `aria-describedby` | shows on focus at once and after a resting pointer, stays while the pointer is on it, Escape and blur hide it (WCAG 1.4.13) |
 
 `dom.ts` holds the shared pieces (focusable elements, the Tab trap, the outside-press hook, the inert props,
@@ -475,7 +475,8 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
   writes name, version, declared licence and licence text of each package they came from to
   `dist/licenses/third-party-LICENSES.txt`. `backend/bundle.ts` does the same for the server.
 - Focus ring: 2 px primary with a 2 px surface gap on `:focus-visible`, drawn as box shadows plus a
-  transparent outline so forced-colours mode still shows it.
+  transparent outline so forced-colours mode still shows it. A slider's thumb that a press focused shows it
+  from the first key pressed on it, as a native range input does (`ui/Slider`, section "UI primitives").
 - Placeholder controls (the top-bar slots, the Connect page actions, the timeline slider without a snapshot)
   are marked `aria-disabled="true"`, not `disabled`: they stay in the tab order with the focus ring, are
   announced as unavailable, and do nothing when activated (the `ui/` primitives have the same inert state
