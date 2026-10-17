@@ -34,6 +34,12 @@
  *   nodes inside it that the view would draw were it open (the view built with every zone open: detail `all`, no
  *   flips, no `depth` filter; on the drawn day for added and changed nodes, on the earlier day for removed ones).
  *   The extra builds happen only when the Scene has a chip and the days differ.
+ * - **The chip that holds a node** (`holdingChip`) is found through the zones of the drawn Scene, virtual ones
+ *   included: a region zone or a bundle is no Graph container (the Graph holds what lies in it in the zone around
+ *   it, drawn open), so the open view that draws the node is walked up by that Scene's own structure, and the first
+ *   zone the drawn Scene draws holds it when that zone is such a chip; an asset zone's chip is found by the Graph's
+ *   containment. The same chip decides a changed node's count and whether it is a ghost (left out where it stood), so
+ *   a node is never both.
  */
 import { BUNDLE_ID_PREFIX, buildSceneWithReport, diffSnapshots, isVirtualNode } from '@gcportrait/graph';
 import {
@@ -140,8 +146,50 @@ export function openView(spec: ViewSpec): ViewSpec {
 /** How many containment steps a walk up the Graph takes at most (deeper than any real chain; cycle-safe). */
 const MAX_CHAIN = 64;
 
-/** The chip of the drawn Scene that holds node `id` (by the Graph's containment), or null. */
-function holdingChip(graph: Graph, now: SceneIndex, id: string): string | null {
+/** An index of no Scene: the earlier day's open view when nothing was removed or changed. */
+const NO_SCENE: SceneIndex = { nodes: new Map(), parent: new Map() };
+
+/**
+ * The views with every zone open (`openView`) on the drawn day (`now`) and on the earlier one (`then`), as the chips'
+ * counts and the holding chips read them. Only a drawn Scene with a chip builds them, the earlier day's only when
+ * something was removed or changed (the file comment).
+ */
+interface OpenViews {
+  readonly now: SceneIndex;
+  readonly then: SceneIndex;
+}
+
+function openViews(
+  input: TickDiffInput,
+  now: SceneIndex,
+  diff: { readonly removed: readonly string[]; readonly changed: readonly string[] },
+): OpenViews | null {
+  if (![...now.nodes.values()].some(isChip)) return null;
+  const open = openView(input.spec);
+  return {
+    now: indexScene(buildOn(input, input.after.graph, open, input.envAfter).scene),
+    then:
+      diff.removed.length === 0 && diff.changed.length === 0
+        ? NO_SCENE
+        : indexScene(buildOn(input, input.before.graph, open, input.envBefore).scene),
+  };
+}
+
+/**
+ * The chip of the drawn Scene that holds node `id`, or null. A region zone or a bundle is no Graph container, so
+ * when the open view `open` draws the node, it is walked up first, by that Scene's own structure, to the first zone
+ * the drawn Scene draws: when that zone is a chip that is no asset, it holds the node. Otherwise the Graph's
+ * containment is walked up to the first node the drawn Scene draws, which holds it when it is a chip.
+ */
+function holdingChip(graph: Graph, now: SceneIndex, open: SceneIndex, id: string): string | null {
+  if (open.nodes.has(id)) {
+    for (let up = open.parent.get(id) ?? null; up !== null; up = open.parent.get(up) ?? null) {
+      const node = now.nodes.get(up);
+      if (node === undefined) continue;
+      if (!isAsset(up) && isChip(node)) return up;
+      break;
+    }
+  }
   let current = graph.containment.parent[id];
   for (let step = 0; current !== undefined && step < MAX_CHAIN; step += 1) {
     const node = now.nodes.get(current);
@@ -149,10 +197,6 @@ function holdingChip(graph: Graph, now: SceneIndex, id: string): string | null {
     current = graph.containment.parent[current];
   }
   return null;
-}
-
-function nodeIds(scene: Scene): Set<string> {
-  return new Set(indexScene(scene).nodes.keys());
 }
 
 /** The view `spec` on one day's Graph, through the input's builder (the memo) or the scene builder itself. */
@@ -164,27 +208,40 @@ function buildOn(input: TickDiffInput, graph: Graph, spec: ViewSpec, env: SceneE
 
 type MutableCounts = { added: number; removed: number; changed: number };
 
+/**
+ * The chip of the drawn Scene that holds a node of the diff, or null (always when the drawn Scene has no chip): an
+ * added node by the drawn day's Graph and open view, a removed one by the earlier day's, a changed one by the drawn
+ * day's Graph and the drawn day's open view where that draws it, else the earlier day's.
+ */
+function chipOf(
+  input: TickDiffInput,
+  now: SceneIndex,
+  open: OpenViews | null,
+  id: string,
+  kind: keyof MutableCounts,
+): string | null {
+  if (open === null) return null;
+  if (kind === 'added') return holdingChip(input.after.graph, now, open.now, id);
+  if (kind === 'removed') return holdingChip(input.before.graph, now, open.then, id);
+  return holdingChip(input.after.graph, now, open.now.nodes.has(id) ? open.now : open.then, id);
+}
+
 /** The chips with changes inside them that the view would draw (see the file comment). */
 function insideChips(
   input: TickDiffInput,
   now: SceneIndex,
+  open: OpenViews | null,
   diff: {
     readonly added: readonly string[];
     readonly removed: readonly string[];
     readonly changed: readonly string[];
   },
 ): Record<string, DiffCounts> {
+  if (open === null) return {};
   const counts = new Map<string, MutableCounts>();
-  if (![...now.nodes.values()].some(isChip)) return {};
-  const open = openView(input.spec);
-  const openNow = nodeIds(buildOn(input, input.after.graph, open, input.envAfter).scene);
-  const openThen =
-    diff.removed.length === 0 && diff.changed.length === 0
-      ? new Set<string>()
-      : nodeIds(buildOn(input, input.before.graph, open, input.envBefore).scene);
-  const count = (graph: Graph, id: string, kind: keyof MutableCounts): void => {
+  const count = (id: string, kind: keyof MutableCounts): void => {
     if (now.nodes.has(id)) return;
-    const chip = holdingChip(graph, now, id);
+    const chip = chipOf(input, now, open, id, kind);
     if (chip === null) return;
     let entry = counts.get(chip);
     if (entry === undefined) {
@@ -193,11 +250,11 @@ function insideChips(
     }
     entry[kind] += 1;
   };
-  for (const id of diff.added) if (openNow.has(id)) count(input.after.graph, id, 'added');
+  for (const id of diff.added) if (open.now.nodes.has(id)) count(id, 'added');
   for (const id of diff.changed) {
-    if (openNow.has(id) || openThen.has(id)) count(input.after.graph, id, 'changed');
+    if (open.now.nodes.has(id) || open.then.nodes.has(id)) count(id, 'changed');
   }
-  for (const id of diff.removed) if (openThen.has(id)) count(input.before.graph, id, 'removed');
+  for (const id of diff.removed) if (open.then.nodes.has(id)) count(id, 'removed');
   const out: Record<string, DiffCounts> = {};
   for (const id of [...counts.keys()].sort(compare)) {
     const entry = counts.get(id);
@@ -218,6 +275,7 @@ interface Ghosts {
 function ghostsOf(
   input: TickDiffInput,
   now: SceneIndex,
+  open: OpenViews | null,
   removed: ReadonlySet<string>,
   changed: ReadonlySet<string>,
 ): Ghosts {
@@ -234,10 +292,11 @@ function ghostsOf(
   const overlays = new Set(earlier.report.overlays.map((overlay) => overlay.zone));
   const gone = (id: string): boolean => !now.nodes.has(id);
   // Whether the drawn day's view leaves out a changed asset where it stood: the drawn day's Graph holds it in the
-  // container it lay in the day before (it did not move), and no chip of the drawn Scene holds it.
+  // container it lay in the day before (it did not move), and no chip of the drawn Scene holds it (a chip that holds
+  // it counts it, so it is never both).
   const leftOut = (id: string): boolean =>
     input.after.graph.containment.parent[id] === input.before.graph.containment.parent[id] &&
-    holdingChip(input.after.graph, now, id) === null;
+    chipOf(input, now, open, id, 'changed') === null;
   // A zone of the earlier Scene, with what the scene builder decided its state from there.
   const keep = (node: SceneNode): void => {
     if (node.type !== 'zone') return;
@@ -326,7 +385,8 @@ function withGhosts(
 export function tickDiff(input: TickDiffInput): TickDiffResult {
   const diff = diffSnapshots(input.before.snapshot, input.after.snapshot);
   const now = indexScene(input.scene);
-  const { roots, reasons, zones } = ghostsOf(input, now, new Set(diff.removed), new Set(diff.changed));
+  const open = openViews(input, now, diff);
+  const { roots, reasons, zones } = ghostsOf(input, now, open, new Set(diff.removed), new Set(diff.changed));
   return {
     scene: withGhosts(input.scene, roots, reasons.size),
     diff: {
@@ -339,7 +399,7 @@ export function tickDiff(input: TickDiffInput): TickDiffResult {
       changed: diff.changed,
       ghosts: sortedRecord(reasons),
       earlier: sortedRecord(zones),
-      inside: insideChips(input, now, diff),
+      inside: insideChips(input, now, open, diff),
     },
   };
 }

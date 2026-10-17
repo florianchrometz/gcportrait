@@ -7,11 +7,18 @@
  * gone (on demo M's two days with its perimeter removed, a project it secured that is still there, inside a chip,
  * comes back with nothing), and the zones the ghosts depend on are listed as that day drew them; a changed asset the
  * drawn day still holds is a ghost only where the view leaves it out (on demo M's two days with a project moved into
- * another folder, it is none, and the chip that holds it counts it); chips count what changed inside them; nothing
- * changes when the days are alike, and nothing is ghosted when the drill-in root moved.
+ * another folder, it is none, and the chip that holds it counts it); chips count what changed inside them, also
+ * those that are no Graph container (a region zone flipped closed, and on demo L's history a bundle), and what they
+ * count is no ghost; nothing changes when the days are alike, and nothing is ghosted when the drill-in root moved.
  */
 import { catalog } from '@gcportrait/catalog';
-import { buildGraph, buildSceneWithReport, diffSnapshots } from '@gcportrait/graph';
+import {
+  BUNDLE_ID_PREFIX,
+  buildGraph,
+  buildSceneWithReport,
+  diffSnapshots,
+  flipIdOf,
+} from '@gcportrait/graph';
 import { layoutScene } from '@gcportrait/layout';
 import { normalizeViewSpec, SceneSchema, type Snapshot, type ViewSpecInput } from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -78,6 +85,30 @@ function pairInput(before: DemoDay, after: DemoDay, view: ViewSpecInput): TickDi
     envAfter: env(after.snapshot),
   };
 }
+
+/** Demo L's day `day` (`YYYY-MM-DD`), as the data worker holds it, with its tick. */
+async function demoLDay(day: string): Promise<DemoDay> {
+  return { ...(await demoDayGraph('L', day)), tick: day };
+}
+
+/** How long a test on demo L may take (its days are read and its Scenes built ten times larger than M's). */
+const DEMO_L = 30_000;
+
+/** Demo S's data project's europe-west3 region zone (region zones shown): it holds the lake bucket. */
+const DATA_REGION = '//gcportrait.virtual/projects/demo-data-1/locations/europe-west3';
+/** Changed on 17 September. */
+const LAKE_BUCKET = '//storage.googleapis.com/demo-data-1-lake';
+
+/** Demo S's view with region zones shown and every zone open but the data project's region. */
+function regionClosed(): Partial<ViewSpecInput> {
+  return { detail: 'all', filters: { showRegions: true }, flips: [flipIdOf(DATA_REGION)] };
+}
+
+/** A bundle of demo L's everything lens at `all` (its id names its first member), and a subnet in it. */
+const BUNDLE = `${BUNDLE_ID_PREFIX}//compute.googleapis.com/projects/demo-net-1/regions/us-central1/subnetworks/demo-svc-4-run-us-central1`;
+/** Changed on 22 September. */
+const BUNDLED_SUBNET =
+  '//compute.googleapis.com/projects/demo-net-1/regions/us-central1/subnetworks/demo-vm-3-us-central1';
 
 function reversed(snapshot: Snapshot): Snapshot {
   return { ...snapshot, assets: [...snapshot.assets].reverse() };
@@ -351,6 +382,78 @@ describe('chips', () => {
     });
     expect(diff.ghosts).toEqual({});
   });
+
+  it('that are no asset zone count what changed inside them too: a region zone flipped closed', async () => {
+    // Demo S's data project with region zones shown, every zone open but its europe-west3 region: the region holds
+    // the lake bucket, changed on 17 September. No Graph holds a region zone: the Graph holds the bucket in the
+    // project, which is drawn open around the region's chip.
+    const input = await inputOf('2026-09-16', '2026-09-17', regionClosed());
+    expect(zoneOf(input.scene, DATA_REGION)?.collapsed).toBeDefined();
+    expect(parents(input.scene).get(DATA_REGION)).toBe(DATA_PROJECT);
+    expect(zoneOf(input.scene, DATA_PROJECT)?.collapsed).toBeUndefined();
+    expect(input.after.graph.containment.parent[LAKE_BUCKET]).toBe(DATA_PROJECT);
+
+    const { diff } = tickDiff(input);
+    expect(diff.changed).toContain(LAKE_BUCKET);
+    // No ghost (the earlier day drew the region closed too), but the chip that holds it counts it.
+    expect(Object.hasOwn(diff.ghosts, LAKE_BUCKET)).toBe(false);
+    expect(diff.inside).toEqual({ [DATA_REGION]: { added: 0, removed: 0, changed: 1 } });
+  });
+
+  it('that are region zones count what was removed or added inside them, either way, with no ghost of it', async () => {
+    // The region held the scratch bucket until 8 September.
+    const forwards = tickDiff(await inputOf('2026-09-07', '2026-09-08', regionClosed())).diff;
+    expect(forwards.removed).toContain(SCRATCH_BUCKET);
+    expect(forwards.ghosts).toEqual({});
+    expect(forwards.inside).toEqual({ [DATA_REGION]: { added: 0, removed: 1, changed: 0 } });
+    const backwards = tickDiff(await inputOf('2026-09-08', '2026-09-07', regionClosed())).diff;
+    expect(backwards.added).toContain(SCRATCH_BUCKET);
+    // The one ghost is the subscription, global and so drawn in its project, not in a region.
+    expect(backwards.ghosts).toEqual({ [DEBUG_SUBSCRIPTION]: 'removed' });
+    expect(backwards.inside).toEqual({ [DATA_REGION]: { added: 1, removed: 0, changed: 0 } });
+  });
+
+  it(
+    'that are bundles count what changed inside them: what the bundle holds opened (demo L)',
+    async () => {
+      // Demo L's everything lens at `all` bundles the subnets of the shared production network, both days alike; on
+      // 22 September a subnet in the bundle "demo-svc-4 – demo-web-4" changed. No Graph holds a bundle: the Graph
+      // holds the subnet in its network, which is drawn open around the bundle's chip.
+      const [before, after] = await Promise.all([demoLDay('2026-09-21'), demoLDay('2026-09-22')]);
+      const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
+      const input = pairInput(before, after, { ...open, flips: [flipIdOf(BUNDLE)] });
+      expect(zoneOf(input.scene, BUNDLE)?.collapsed).toBeDefined();
+      const network = input.after.graph.containment.parent[BUNDLED_SUBNET];
+      expect(network).toBeDefined();
+      expect(zoneOf(input.scene, network ?? '')?.collapsed).toBeUndefined();
+      // What the bundle holds opened, on each day: the same view without the flip.
+      const held = (day: DemoDay): Set<string> => {
+        const { scene } = buildSceneWithReport(
+          day.graph,
+          normalizeViewSpec(open),
+          catalog,
+          env(day.snapshot),
+        );
+        const bundle = zoneOf(scene, BUNDLE);
+        if (bundle === undefined) throw new Error(`no bundle ${BUNDLE}`);
+        return new Set(parents({ ...scene, children: bundle.children }).keys());
+      };
+      const now = held(after);
+      const then = held(before);
+
+      const { diff } = tickDiff(input);
+      expect(diff.changed).toContain(BUNDLED_SUBNET);
+      const expected = {
+        added: diff.added.filter((id) => now.has(id)).length,
+        removed: diff.removed.filter((id) => then.has(id)).length,
+        changed: diff.changed.filter((id) => now.has(id) || then.has(id)).length,
+      };
+      expect(expected.changed).toBeGreaterThan(0);
+      for (const id of Object.keys(diff.ghosts)) expect(now.has(id) || then.has(id), id).toBe(false);
+      expect(diff.inside).toEqual({ [BUNDLE]: expected });
+    },
+    DEMO_L,
+  );
 
   it('opens every zone of the view, and nothing else of it, to count', () => {
     const spec = normalizeViewSpec({
