@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive canvas (DiagramCanvas.tsx) in jsdom: its props with defaults, the elements the tests look up, and
- * the two things jsdom lacks that the camera reads: `prefers-reduced-motion` (glides land at once) and animation
- * frames the test runs by hand (a glide steps only when the test says so, at the time it gives).
+ * The interactive canvas (DiagramCanvas.tsx) in jsdom: its props with defaults, the elements the tests look up, a
+ * mouse's click as a browser sends it, and the two things jsdom lacks that the camera reads: `prefers-reduced-motion`
+ * (glides land at once) and animation frames the test runs by hand (a glide steps only when the test says so, at the
+ * time it gives).
  */
+import { fireEvent } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
 import type { DiagramCanvasProps } from '../DiagramCanvas';
@@ -48,6 +50,39 @@ export const collapseOf = (svg: Element, id: string): SVGGElement =>
   element(svg, `.dg-collapse[data-collapse="${id}"]`);
 /** The elements in the tab order (the drawing keeps one, plus the console action of a selection). */
 export const tabStops = (svg: Element): Element[] => [...svg.querySelectorAll('[tabindex="0"]')];
+
+/**
+ * A mouse event at the client point (`x`, `y`) with its window as `view`, as a browser makes it: d3-zoom follows a
+ * drag on that window. jsdom refuses vitest's window as a `view` in the constructor, so it is set afterwards.
+ */
+export function mouseEvent(type: string, x: number, y: number, init: MouseEventInit = {}): MouseEvent {
+  const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, ...init });
+  Object.defineProperty(event, 'view', { value: window });
+  return event;
+}
+
+/**
+ * A mouse's left button pressed on `target` at (`x`, `y`), moved by (`dx`, `dy`) and let go there, with every event a
+ * browser sends for it in its order: the pointer events and the mouse events of the press, the move and the release
+ * (d3-zoom hears the move and the release on the window), then the click it makes of them on `target`.
+ */
+export function mouseClick(target: Element, x: number, y: number, dx: number, dy: number): void {
+  const pointer = (at: number, by: number): PointerEventInit => ({
+    pointerType: 'mouse',
+    pointerId: 1,
+    isPrimary: true,
+    clientX: at,
+    clientY: by,
+  });
+  const [toX, toY] = [x + dx, y + dy];
+  fireEvent.pointerDown(target, pointer(x, y));
+  target.dispatchEvent(mouseEvent('mousedown', x, y, { detail: 1 }));
+  fireEvent.pointerMove(target, pointer(toX, toY));
+  window.dispatchEvent(mouseEvent('mousemove', toX, toY));
+  fireEvent.pointerUp(target, pointer(toX, toY));
+  window.dispatchEvent(mouseEvent('mouseup', toX, toY, { detail: 1 }));
+  target.dispatchEvent(mouseEvent('click', toX, toY, { detail: 1 }));
+}
 
 /**
  * Answers `prefers-reduced-motion` with `reduce` for the rest of the test (jsdom has no matchMedia), so the camera

@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 import { expect, test } from '@playwright/test';
 
-import { openDiagram, TAGLINE } from './support.js';
+import { cameraSettled, hashOf, openDiagram, TAGLINE } from './support.js';
 
 /** Demo organisation S, which opens fully (at most 100 rects never collapse): cards, no chips. */
 const DEMO_S_DIAGRAM = '/diagram#snapshot=demo:S';
 
 /**
- * The diagram renderer in a real browser, on demo organisation M in demo mode: the page draws it
- * through both workers, hover paints, a theme change leaves no stale highlight, the wheel zooms (and
- * double-click does not), selection opens the drawer, the legend and the title block are in the SVG (where the
- * non-affiliation statement is not: shell.spec.ts; the Lens picker: controls.spec.ts). Pixels are
- * not compared here: the visual baselines are SVG text (e2e/baselines/diagram/, checked by the frontend's unit
- * tests), because screenshots differ between platforms.
+ * The diagram renderer in a real browser, on demo organisation M in demo mode: the page draws it through both
+ * workers, hover paints, a theme change leaves no stale highlight, the wheel zooms (and double-click does
+ * not), selection opens the drawer (a click that wobbled a few pixels selects, a drag pans and selects
+ * nothing), the legend and the title block are in the SVG (where the non-affiliation statement is not:
+ * shell.spec.ts; the Lens picker: controls.spec.ts). Pixels are not compared here: the visual baselines are
+ * SVG text (e2e/baselines/diagram/, checked by the frontend's unit tests), because screenshots differ between
+ * platforms.
  */
 test('draws demo M with zones, chips and edges, named for assistive technology', async ({ page }) => {
   const svg = await openDiagram(page);
@@ -141,6 +142,37 @@ test('a click selects: the ring pulses, the drawer opens with the node id, the h
   expect(decodeURIComponent(new URL(page.url()).hash)).toContain(`selection=${id ?? ''}`);
   await drawer.getByRole('button', { name: 'Close' }).click();
   await expect(drawer).toBeHidden();
+});
+
+test('a click that wobbled 2 px still selects; a drag of 10 px pans the drawing and selects nothing', async ({
+  page,
+}) => {
+  const svg = await openDiagram(page, DEMO_S_DIAGRAM);
+  const card = svg.locator('.dg-card').first();
+  const id = await card.getAttribute('data-id');
+  const start = await card.boundingBox();
+  if (start === null) throw new Error('the card has no box');
+  const x = start.x + start.width / 2;
+  const y = start.y + start.height / 2;
+  // A drag from the card: the drawing follows the mouse, and the click the browser makes of it selects nothing.
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 10, y, { steps: 5 });
+  await page.mouse.up();
+  await cameraSettled(svg);
+  const dragged = await card.boundingBox();
+  expect(dragged?.x).toBeCloseTo(start.x + 10, 0);
+  expect(dragged?.y).toBeCloseTo(start.y, 0);
+  await expect(card).toHaveAttribute('aria-pressed', 'false');
+  expect(hashOf(page)).not.toContain('selection=');
+  // A hand's wobble of 2 px between the press and the release is a click, which selects.
+  await page.mouse.move(x + 10, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 12, y + 1, { steps: 2 });
+  await page.mouse.up();
+  await expect(card).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('complementary', { name: 'Details' })).toContainText(id ?? '');
+  expect(hashOf(page)).toContain(`selection=${id ?? ''}`);
 });
 
 test('keyboard users reach a node with Tab, see its focus ring and open it with Enter', async ({ page }) => {

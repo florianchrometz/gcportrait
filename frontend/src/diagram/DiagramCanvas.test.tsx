@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MIT
 /**
  * The interactive canvas on its own: it says it is ready (`data-diagram-ready`) only once it can be used, numbers
- * each drawing (`data-drawing`) so that the next one can be told from the last, and a theme change, which re-renders
- * the same elements, leaves no stale highlight behind but keeps the selection and the keyboard focus painted.
+ * each drawing (`data-drawing`) so that the next one can be told from the last, a theme change, which re-renders
+ * the same elements, leaves no stale highlight behind but keeps the selection and the keyboard focus painted, and a
+ * mouse's click selects though the hand wobbled a few pixels, while a drag pans and selects nothing.
  */
 import { fireEvent, render } from '@testing-library/react';
+import { zoomTransform } from 'd3-zoom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
-import { canvasOf as canvas, canvasProps, nodeOf as node } from './testing/canvas';
+import { canvasOf as canvas, canvasProps, mouseClick, nodeOf as node } from './testing/canvas';
 import { modelOf, smallScene, withConsoleLinks } from './testing/scenes';
+import { CLICK_DISTANCE } from './viewport';
 
 const model = modelOf(
   smallScene([
@@ -133,6 +136,27 @@ describe('DiagramCanvas', () => {
     expect(shownRings(svg, '.dg-select-ring')).toBe(1);
     expect(shownRings(svg, '.dg-focus-ring')).toBe(1);
     expect(stops()).toEqual(['run/api']);
+  });
+
+  it('selects on a mouse click that wobbled a few pixels; a drag further pans and selects nothing', () => {
+    const onSelect = vi.fn();
+    const { container } = render(<DiagramCanvas {...props({ selection: 'run/web', onSelect })} />);
+    const svg = canvas(container);
+    const api = node(svg, 'run/api');
+    // A 3 px wobble between the press and the release is still a click: on a node it selects ...
+    mouseClick(api, 300, 200, 3, 0);
+    // ... and on the bare canvas it clears the selection.
+    mouseClick(svg, 5, 5, 0, 3);
+    // As far as the click distance, still a click.
+    mouseClick(api, 300, 200, 0, -CLICK_DISTANCE);
+    expect(onSelect.mock.calls).toEqual([['run/api'], [null], ['run/api']]);
+    // A drag of 10 px pans the drawing by as much, and the click the browser makes of it selects nothing.
+    onSelect.mockClear();
+    const before = zoomTransform(svg);
+    mouseClick(node(svg, 'run/web'), 300, 200, 10, 0);
+    expect(zoomTransform(svg).x).toBeCloseTo(before.x + 10);
+    expect(zoomTransform(svg).y).toBeCloseTo(before.y);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   it('makes the selected card’s console action the tab stop after it; Escape there goes back to the card', () => {

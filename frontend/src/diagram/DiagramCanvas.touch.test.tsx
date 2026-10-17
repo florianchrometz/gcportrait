@@ -14,7 +14,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DOUBLE_TAP_ZOOM, focusTransform } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
-import { canvasOf, canvasProps, chipOf, manualFrames, nodeOf, reduceMotion } from './testing/canvas';
+import {
+  canvasOf,
+  canvasProps,
+  chipOf,
+  manualFrames,
+  mouseEvent,
+  nodeOf,
+  reduceMotion,
+} from './testing/canvas';
 import { card, modelOf, scene, smallScene, withConsoleLinks, zone } from './testing/scenes';
 import { LONG_PRESS_MS, TOUCH_MOUSE_MS } from './touch';
 import { SCALE_EXTENT } from './viewport';
@@ -369,16 +377,10 @@ describe('a mouse', () => {
     vi.useFakeTimers();
     const { container } = render(<DiagramCanvas {...props()} />);
     const svg = canvasOf(container);
-    // A mouse event with its window (d3-zoom follows a drag there); jsdom refuses vitest's window as a `view`.
-    const mouse = (type: string, x: number): MouseEvent => {
-      const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: 100 });
-      Object.defineProperty(event, 'view', { value: window });
-      return event;
-    };
     const drag = (): void => {
-      svg.dispatchEvent(mouse('mousedown', 100));
-      window.dispatchEvent(mouse('mousemove', 160));
-      window.dispatchEvent(mouse('mouseup', 160));
+      svg.dispatchEvent(mouseEvent('mousedown', 100, 100));
+      window.dispatchEvent(mouseEvent('mousemove', 160, 100));
+      window.dispatchEvent(mouseEvent('mouseup', 160, 100));
     };
     const before = zoomTransform(svg);
     // Right after a tap, its mousedown is the finger's.

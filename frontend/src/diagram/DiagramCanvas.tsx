@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 /**
  * The interactive diagram (AGENTS.md, Architecture and code; style skill §13): the drawing inside an `<svg>` that
- * d3-zoom pans and zooms (`scaleExtent [0.05, 200]`, wheel and drag; double-click is reserved for drill-in and does
- * not zoom), level of detail by the effective scale, and hover, selection (with its trace) and keyboard focus painted
- * by the highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting
+ * d3-zoom pans and zooms (`scaleExtent [0.05, 200]`, wheel and drag; a press that moved at most `CLICK_DISTANCE`, 4 px,
+ * is a click; double-click is reserved for drill-in and does not zoom), level of detail by the effective scale, and
+ * hover, selection (with its trace) and keyboard focus painted by the highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting
  * only set attributes and classes on it, and never ask for a new layout. `data-diagram-ready="true"` on the
  * `<svg>` says the drawing is fitted and interactive: it is set once the painter and its listeners are attached, and
  * stays set while the next view is prepared, as the drawing before it stays on the canvas until then. `data-drawing`,
@@ -111,7 +111,7 @@ import type { DiagramTheme } from './theme/tokens';
 import { createTouchGestures, type TouchGestures, type TouchHandlers } from './touch';
 import styles from './touchHint.module.css';
 import { computeTrace } from './trace';
-import { FIT_PADDING, fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
+import { CLICK_DISTANCE, FIT_PADDING, fitTransform, SCALE_EXTENT, type CameraTransform } from './viewport';
 
 export interface DiagramCanvasProps {
   readonly model: DiagramModel;
@@ -609,6 +609,9 @@ export function DiagramCanvas({
     const behaviour = zoom<SVGSVGElement, unknown>()
       .scaleExtent([...SCALE_EXTENT])
       .touchable(false)
+      // A mouse's or a pen's press let go within the click distance is a click (it selects, or flips a chip), the
+      // hand's wobble panning no further than that; one moved further is a drag, whose click d3-zoom cancels.
+      .clickDistance(CLICK_DISTANCE)
       // d3-zoom's own rule (no secondary button; Ctrl only with the wheel, a touchpad's pinch), and the mouse events the
       // browser makes from a finger (a tap's mousedown) are the finger's.
       .filter((event: MouseEvent) => {
@@ -745,7 +748,6 @@ export function DiagramCanvas({
       painter.setTabStop(focusedId);
       painter.focus(focusVisible(active) ? focusedId : null);
     }
-    let pressed: { x: number; y: number } | null = null;
     let hovered: string | null = null;
     const hover = (id: string | null): void => {
       painter.hover(id);
@@ -778,8 +780,7 @@ export function DiagramCanvas({
       if (isTouchEvent(event)) return;
       hover(null);
     };
-    const onPointerDown = (event: PointerEvent): void => {
-      pressed = { x: event.clientX, y: event.clientY };
+    const onPointerDown = (): void => {
       unparkCanvasFocus(svg);
     };
     // The zone a chip or a collapse button flips, when the page flips zones.
@@ -870,10 +871,7 @@ export function DiagramCanvas({
       if (fromFinger(event)) return;
       // The console action is a link of its own: it opens its page (a new tab) and changes nothing here.
       if (isConsoleAction(event.target)) return;
-      // A drag pans the canvas; only a click that stayed put selects.
-      const moved = pressed !== null && Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y) > 4;
-      pressed = null;
-      if (moved) return;
+      // A drag, which pans the canvas, never gets here: d3-zoom cancels its click (the behaviour's click distance).
       activate(event.target, event.detail);
     };
     // A double tap at a point: one step in, about that point (camera.ts, `doubleTapTransform`), as a glide.

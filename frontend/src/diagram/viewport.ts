@@ -6,6 +6,11 @@
 import type { Rect } from '@gcportrait/layout';
 
 export const SCALE_EXTENT: readonly [number, number] = [0.05, 200];
+/**
+ * How far (CSS px) a mouse or a pen may move between its press and its release and still click (d3-zoom's
+ * `clickDistance`): a hand's wobble. Further, it is a drag, which pans and selects nothing.
+ */
+export const CLICK_DISTANCE = 4;
 /** Space kept around the drawing when it is fitted to the canvas (CSS px). */
 export const FIT_PADDING = 16;
 

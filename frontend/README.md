@@ -1338,11 +1338,13 @@ the camera, and so does a selection on a desktop. Level of detail by the effecti
 the `<svg>` (`lod.ts`): subtitles hide below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×.
 Hover previews the node's selection trace (below): its path to the root in `accent.path` 3 px (path rings the
 painter places on each border, on a 1 px `pathCasing` band on each side; one ring per level of the deepest
-chain is drawn once, hidden), its traced lines and the nodes they reach. A click (that did not pan) or
-Enter/Space selects (on a chip it expands it instead: section "Progressive disclosure"): the selection goes
-into the hash (`selection=`, history replaced), the `accent.select` ring (3 px between 2 px canvas-coloured
-gaps) pulses twice in a second (no animation with reduced motion), the node's lines are traced (below), and
-the details drawer opens (section "Details drawer" below). Escape or Close clears it.
+chain is drawn once, hidden), its traced lines and the nodes they reach. A click (a mouse's or a pen's press
+let go within 4 px of where it was pressed, `CLICK_DISTANCE` in `viewport.ts`, d3-zoom's `clickDistance`;
+moved further, it is a drag, which pans and selects nothing) or Enter/Space selects (on a chip it expands it
+instead: section "Progressive disclosure"): the selection goes into the hash (`selection=`, history replaced),
+the `accent.select` ring (3 px between 2 px canvas-coloured gaps) pulses twice in a second (no animation with
+reduced motion), the node's lines are traced (below), and the details drawer opens (section "Details drawer"
+below). Escape or Close clears it.
 
 **Touch.** A finger comes as pointer events of `pointerType` `touch` (AGENTS.md, Product rules, the touch
 model), which `touch.ts` reads into gestures on a clock it is given and the canvas carries out; d3-zoom's own
