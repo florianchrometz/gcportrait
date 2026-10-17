@@ -58,6 +58,15 @@ order of the projects in `playwright.config.ts` (`chromium-live` before `chromiu
 before `mobile`) and of the files and tests in each; `tests/mobile.spec.ts` orders its tests so that each
 phones and tablets leg gets one theme's slow ones.
 
+The diagram's helpers in `tests/support.ts` wait for the state a step needs, never for a time. `openDiagram`
+opens a view and waits for its drawing, and `drawnCanvas` for a drawing on the canvas (`data-diagram-ready`),
+which stays set while the next view is prepared, as the drawing before it stays on the canvas until then. A
+spec that changes the view (a lens, a focus, a filter, a flip, a drill-in, a snapshot, a day of the timeline,
+Back) and needs the drawing after it reads the drawing's number with `drawingOf` before the change and waits
+with `redrawnCanvas` for another (`data-drawing`: every drawing the canvas puts up takes a new number, while a
+selection, a hover or a pan leaves it). `cameraSettled` waits until the camera stands still after a glide (a
+panel's refit, a flip's framing, a jump), which draws nothing new.
+
 ## Specs
 
 | Spec | Covers |

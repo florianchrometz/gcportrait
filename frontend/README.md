@@ -1403,9 +1403,14 @@ knows it ("Compute Engine instance group: api-mig"); edges are hidden from assis
 come from the catalog's lens files through the data worker. The canvas fits the camera in a layout effect,
 before the first paint, and sets `data-diagram-ready="true"` on the `<svg>` (what the tests wait for) only
 once the painter and its pointer and keyboard listeners are attached, so whoever sees the flag can hover,
-focus and select at once. A theme or settings change re-renders the same elements, which keep the classes and
-attributes the painter set: the old painter takes its marks off when it is replaced, the new one paints the
-selection and the keyboard focus again, and a hover waits for the pointer's next move.
+focus and select at once. The flag stays set while the next view is prepared, as the drawing before it stays
+on the canvas until then; `data-drawing`, set in the same step, numbers the drawing: every drawing the canvas
+puts up (a new view, or the same view in another theme or with other settings) takes the page's next number,
+so a test that changed the view waits for another number (the e2e suite's `redrawnCanvas`), and a selection, a
+hover or the camera leaves it. An export drops both. A theme or settings change re-renders the same elements,
+which keep the classes and attributes the painter set: the old painter takes its marks off when it is
+replaced, the new one paints the selection and the keyboard focus again, and a hover waits for the pointer's
+next move.
 
 **Known limits.** Edges are not hoverable (no count tooltip). `@resvg/resvg-js` 2.6.2 (the layout's debug
 rasteriser, and the render CLI's) panics when an icon's nested `<svg>` lies outside a *cropped* viewBox; the

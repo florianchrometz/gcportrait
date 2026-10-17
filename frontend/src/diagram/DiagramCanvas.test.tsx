@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive canvas on its own: it says it is ready (`data-diagram-ready`) only once it can be used, and
- * a theme change, which re-renders the same elements, leaves no stale highlight behind but keeps the selection
- * and the keyboard focus painted.
+ * The interactive canvas on its own: it says it is ready (`data-diagram-ready`) only once it can be used, numbers
+ * each drawing (`data-drawing`) so that the next one can be told from the last, and a theme change, which re-renders
+ * the same elements, leaves no stale highlight behind but keeps the selection and the keyboard focus painted.
  */
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -25,9 +25,9 @@ const shownRings = (svg: Element, selector: string): number =>
   [...svg.querySelectorAll(selector)].filter((ring) => ring.getAttribute('display') === null).length;
 
 describe('DiagramCanvas', () => {
-  it('sets data-diagram-ready only once the painter and its listeners are attached', () => {
-    // What a test (or the e2e suite) can do the moment it sees the flag: find the tab stop, hover a node.
-    const seen: Array<{ stops: number; hoverPaints: boolean }> = [];
+  it('sets data-diagram-ready and data-drawing only once the painter and its listeners are attached', () => {
+    // What a test (or the e2e suite) can do the moment it sees either: find the tab stop, hover a node.
+    const seen: Array<{ name: string; stops: number; hoverPaints: boolean }> = [];
     // The real method, read off its descriptor: it runs with whatever element the spy is called on.
     const original: unknown = Object.getOwnPropertyDescriptor(Element.prototype, 'setAttribute')?.value;
     if (typeof original !== 'function') throw new Error('no Element.prototype.setAttribute');
@@ -36,10 +36,11 @@ describe('DiagramCanvas', () => {
       name: string,
       value: string,
     ) {
-      if (name === 'data-diagram-ready') {
+      if (name === 'data-diagram-ready' || name === 'data-drawing') {
         const card = this.querySelector('[data-id="run/api"]');
         card?.dispatchEvent(new Event('pointerover', { bubbles: true }));
         seen.push({
+          name,
           stops: this.querySelectorAll('.dg-node[tabindex="0"]').length,
           hoverPaints: card?.classList.contains('is-path') === true,
         });
@@ -53,7 +54,38 @@ describe('DiagramCanvas', () => {
     } finally {
       spy.mockRestore();
     }
-    expect(seen).toEqual([{ stops: 1, hoverPaints: true }]);
+    expect(seen).toEqual([
+      { name: 'data-drawing', stops: 1, hoverPaints: true },
+      { name: 'data-diagram-ready', stops: 1, hoverPaints: true },
+    ]);
+  });
+
+  it('gives every drawing the next number: a new view and a theme change draw again, a selection does not', () => {
+    const { container, rerender } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    const drawing = (): number => Number(svg.getAttribute('data-drawing'));
+    const first = drawing();
+    expect(first).toBeGreaterThan(0);
+    // A selection only paints the drawing on the canvas.
+    rerender(<DiagramCanvas {...props({ selection: 'run/web' })} />);
+    expect(drawing()).toBe(first);
+    // Another view (a lens, a drill-in, a day): a drawing of its own, and the canvas is ready again at once.
+    const other = modelOf(smallScene([['run/web', 'run/api', 'uses']]));
+    rerender(<DiagramCanvas {...props({ model: other, selection: 'run/web' })} />);
+    const second = drawing();
+    expect(second).toBeGreaterThan(first);
+    expect(svg.getAttribute('data-diagram-ready')).toBe('true');
+    // The same view in the other theme is drawn again too.
+    rerender(<DiagramCanvas {...props({ model: other, selection: 'run/web', theme: 'dark' })} />);
+    expect(drawing()).toBeGreaterThan(second);
+  });
+
+  it('numbers the drawings for the page: a canvas mounted again repeats no number', () => {
+    const before = render(<DiagramCanvas {...props()} />);
+    const first = Number(canvas(before.container).getAttribute('data-drawing'));
+    before.unmount();
+    const after = render(<DiagramCanvas {...props()} />);
+    expect(Number(canvas(after.container).getAttribute('data-drawing'))).toBeGreaterThan(first);
   });
 
   it('leaves no hover highlight behind when the theme changes under the pointer', () => {

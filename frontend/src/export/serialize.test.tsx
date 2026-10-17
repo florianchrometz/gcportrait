@@ -314,6 +314,7 @@ describe('the live interactive canvas as the source', () => {
     const model = smallModel();
     const canvas = liveCanvas(model);
     expect(canvas.querySelector('.dg-marks')).not.toBeNull();
+    expect(canvas.getAttribute('data-drawing')).toMatch(/^\d+$/);
     const svg = prepareExportSvg(canvas, optionsFor(model, 'light')).svg;
     expect(svg.querySelector('.dg-marks')).toBeNull();
     expect(svg.querySelector('.dg-edges-top')).toBeNull();
@@ -322,6 +323,7 @@ describe('the live interactive canvas as the source', () => {
     expect(svg.querySelectorAll('[class*="is-"], [class*="dg-lod-"]')).toHaveLength(0);
     expect(svg.classList.contains('dg-canvas')).toBe(false);
     expect(svg.hasAttribute('data-diagram-ready')).toBe(false);
+    expect(svg.hasAttribute('data-drawing')).toBe(false);
     expect(svg.querySelector('.dg-title-block')?.textContent).toContain(TAGLINE);
     expect(svg.getAttribute('viewBox')).not.toBeNull();
   });

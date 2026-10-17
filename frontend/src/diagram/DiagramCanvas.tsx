@@ -5,7 +5,10 @@
  * not zoom), level of detail by the effective scale, and hover, selection (with its trace) and keyboard focus painted
  * by the highlight painter. The drawing renders once per model, theme and settings; zooming, hovering and selecting
  * only set attributes and classes on it, and never ask for a new layout. `data-diagram-ready="true"` on the
- * `<svg>` says the drawing is fitted and interactive: it is set once the painter and its listeners are attached.
+ * `<svg>` says the drawing is fitted and interactive: it is set once the painter and its listeners are attached, and
+ * stays set while the next view is prepared, as the drawing before it stays on the canvas until then. `data-drawing`,
+ * set in the same step, numbers the drawing: every drawing the canvas puts up (a new view, or the same view in another
+ * theme or with other settings) takes the page's next number, so a new number tells the next drawing from the last.
  *
  * A node's menu ("Open in Cloud Console", "Copy resource name", "Drill in") opens on a right-click, on
  * Shift+F10 or the context-menu key on a focused node, and on Enter on the selected node; it selects the node
@@ -412,6 +415,12 @@ interface HeldHint {
 const HINT_LIFT = 40;
 /** The room a long press's hint keeps from the canvas's edges (CSS px). */
 const HINT_MARGIN = 8;
+
+/**
+ * The drawings the page's canvases have put up, the last one's number (`data-drawing`). Counted for the page rather
+ * than for a canvas, so a canvas mounted again (the diagram page left and opened again) repeats no number.
+ */
+let drawingsShown = 0;
 
 /**
  * What a long press on `target` names: the tooltip a resting mouse would show there (the `<title>` of the target or
@@ -1032,7 +1041,10 @@ export function DiagramCanvas({
     svg.addEventListener('keydown', onKeyDown);
     svg.addEventListener('focusin', onFocusIn);
     svg.addEventListener('focusout', onFocusOut);
-    // Fitted (the layout effects ran first) and now interactive: what the tests and the e2e suite wait for.
+    // Fitted (the layout effects ran first) and now interactive: what the tests and the e2e suite wait for, the
+    // drawing's number first, which tells this drawing from the one before it.
+    drawingsShown += 1;
+    svg.setAttribute('data-drawing', String(drawingsShown));
     svg.setAttribute('data-diagram-ready', 'true');
     // After a flip from the keyboard, focus follows the zone: its collapse button, or its chip.
     const focusAfter = focusAfterRef.current;

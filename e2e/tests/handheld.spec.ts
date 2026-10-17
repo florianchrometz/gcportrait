@@ -7,10 +7,12 @@ import {
   boxOf,
   cameraSettled,
   DEMO_M_DIAGRAM,
+  drawingOf,
   drawnCanvas,
   expectNoAxeViolations,
   hashOf,
   openDiagram,
+  redrawnCanvas,
   type Box,
 } from './support.js';
 import {
@@ -203,10 +205,11 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     await expect(lenses).toBeVisible();
     const networking = lenses.getByRole('option', { name: 'Networking', exact: true });
     await expectTarget(networking, 'the Networking option');
+    const overview = await drawingOf(page);
     await networking.tap();
     await expect.poll(() => viewParam(page, 'lens')).toBe('networking');
     await expect(lens).toContainText('Networking');
-    await drawnCanvas(page);
+    await redrawnCanvas(page, overview);
     // The Filters panel opens inside the sheet; Escape closes it onto its button, then the sheet onto View.
     await filters.tap();
     await expect(view.getByRole('dialog', { name: 'Filters' })).toBeVisible();
@@ -318,9 +321,10 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     // Drill-in has no gesture of its own; the details offer it.
     const drill = details(page).getByRole('button', { name: 'Details', exact: true });
     await expectTarget(drill, 'Details');
+    const organisation = await drawingOf(page);
     await drill.tap();
     await expect.poll(() => viewParam(page, 'root')).toBe(folder.id);
-    await drawnCanvas(page);
+    await redrawnCanvas(page, organisation);
     await expect(page.getByRole('banner').getByRole('navigation', { name: 'Scope' })).toContainText(heading);
   });
 
@@ -371,14 +375,16 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     const atRest = await shown();
     const expand = bar.getByRole('button', { name: 'Expand all' });
     await expectTarget(expand, 'Expand all');
+    const collapsed = await drawingOf(page);
     await expand.tap();
     await expect.poll(shown, { timeout: 30_000 }).toBeGreaterThan(atRest);
-    await drawnCanvas(page);
+    await redrawnCanvas(page, collapsed);
+    const expanded = await drawingOf(page);
     const collapse = bar.getByRole('button', { name: 'Collapse all' });
     await expectTarget(collapse, 'Collapse all');
     await collapse.tap();
     await expect.poll(shown, { timeout: 30_000 }).toBe(atRest);
-    await drawnCanvas(page);
+    await redrawnCanvas(page, expanded);
   });
 
   test.describe('the timeline', () => {

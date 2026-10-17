@@ -176,11 +176,42 @@ export async function expectNoAxeViolations(page: Page): Promise<void> {
 /** The diagram of demo organisation M (the e2e suite's diagram fixture). */
 export const DEMO_M_DIAGRAM = '/diagram#snapshot=demo:M';
 
-/** Waits until both workers have answered and the diagram on the page is drawn; returns the canvas `<svg>`. */
+/** The canvas `<svg>` once a drawing is on it, fitted and interactive (frontend/src/diagram/DiagramCanvas.tsx). */
+const DRAWN_CANVAS = 'svg.dg-canvas[data-diagram-ready="true"]';
+
+/**
+ * Waits until both workers have answered and a diagram is drawn on the page; returns the canvas `<svg>`. The canvas
+ * stays ready while the next view is prepared, its drawing still on it, so after a view change this answers at once
+ * with that drawing: a spec that needs the next one reads `drawingOf` before the change and waits with
+ * `redrawnCanvas` after it.
+ */
 export async function drawnCanvas(page: Page): Promise<Locator> {
-  const svg = page.locator('svg.dg-canvas[data-diagram-ready="true"]');
+  const svg = page.locator(DRAWN_CANVAS);
   await expect(svg).toBeVisible({ timeout: 60_000 });
   return svg;
+}
+
+/**
+ * The number of the drawing on the canvas (`data-drawing`), once one is drawn: every drawing the canvas puts up (a
+ * new view, or the same view in another theme) takes the page's next number. Read before a view change, for
+ * `redrawnCanvas`.
+ */
+export async function drawingOf(page: Page): Promise<string> {
+  const drawing = await (await drawnCanvas(page)).getAttribute('data-drawing');
+  if (drawing === null) throw new Error('the canvas numbers no drawing');
+  return drawing;
+}
+
+/**
+ * Waits until the canvas holds a drawing after `previous` (`drawingOf`, read before the view changed: a lens, a
+ * focus, a filter, a flip, a drill-in, a snapshot, a day of the timeline, Back), fitted and interactive; returns the
+ * canvas `<svg>`.
+ */
+export async function redrawnCanvas(page: Page, previous: string): Promise<Locator> {
+  await expect(page.locator(`${DRAWN_CANVAS}:not([data-drawing="${previous}"])`)).toBeVisible({
+    timeout: 60_000,
+  });
+  return page.locator(DRAWN_CANVAS);
 }
 
 /**

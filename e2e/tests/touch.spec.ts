@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type CDPSession, type Locator, type Page } from '@playwright/test';
 
-import { cameraSettled, drawnCanvas, openDiagram } from './support.js';
+import { cameraSettled, drawingOf, openDiagram, redrawnCanvas } from './support.js';
 
 /**
  * The canvas by finger (AGENTS.md, Product rules, the touch model; frontend/src/diagram/touch.ts), run by the `mobile`
@@ -315,10 +315,11 @@ test('a mouse on the same page keeps its drag, and its double-click on a chip dr
   expect(after.x - before.x).toBeCloseTo(50, 0);
   expect(after.y - before.y).toBeCloseTo(30, 0);
   const chip = await pointOn(svg, 'chip', 2);
+  const overview = await drawingOf(page);
   await page.mouse.dblclick(chip.x, chip.y);
   await expect.poll(() => viewParam(page, 'root'), { timeout: 30_000 }).toBe(chip.id);
   expect(viewParam(page, 'flips')).toBeNull();
-  await drawnCanvas(page);
+  await redrawnCanvas(page, overview);
 });
 
 test('only the canvas keeps the browser’s gestures off: the page pinch-zooms as the browser does', async ({

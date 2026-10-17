@@ -188,6 +188,7 @@ const INTERACTIVE_ATTRIBUTES = [
   'aria-label',
   'aria-labelledby',
   'data-diagram-ready',
+  'data-drawing',
   'data-scale',
 ];
 /** Highlight and level-of-detail classes the painter and the camera set. */

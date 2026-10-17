@@ -2,7 +2,14 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import { COMPUTE_ALL, selectVm as selectBastion, stubConsole, VM, VM_PAGE } from './consoleSupport.js';
-import { drawnCanvas, expectNoAxeViolations, hashOf, openDiagram, scratchShot } from './support.js';
+import {
+  drawingOf,
+  drawnCanvas,
+  expectNoAxeViolations,
+  hashOf,
+  openDiagram,
+  scratchShot,
+} from './support.js';
 
 /**
  * The details drawer in a real browser, on demo organisation M: selecting the bastion VM
@@ -108,6 +115,7 @@ test('opening the drawer pans a card it would cover back into view, without a ne
   const viewport = svg.locator('.dg-viewport');
   const before = await viewport.getAttribute('transform');
   const drawn = await svg.locator('.dg-node').count();
+  const drawing = await drawingOf(page);
   await card.click();
   const drawer = drawerOf(page);
   await expect(drawer).toBeVisible();
@@ -118,10 +126,11 @@ test('opening the drawer pans a card it would cover back into view, without a ne
       return box !== null && aside !== null && box.x + box.width <= aside.x;
     })
     .toBe(true);
-  // A pan: the scale is the same, the drawing is the same.
+  // A pan: the scale is the same, the drawing is the same one (no new drawing came).
   const scale = (transform: string | null): string => /scale\(([^)]+)\)/.exec(transform ?? '')?.[1] ?? '';
   expect(scale(await viewport.getAttribute('transform'))).toBe(scale(before));
   expect(await svg.locator('.dg-node').count()).toBe(drawn);
+  expect(await drawingOf(page)).toBe(drawing);
 });
 
 test('a jump link selects the subnet; one into a collapsed zone flips it open', async ({ page }) => {

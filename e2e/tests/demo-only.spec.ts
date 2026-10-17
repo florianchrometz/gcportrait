@@ -8,11 +8,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { routeApiTo, startHarness as startBackend } from '../fixtures/harness.js';
 import {
   DEFAULT_SOURCE_URL,
-  drawnCanvas,
+  drawingOf,
   expectNoAxeViolations,
   FOOTER_NOTICE,
   primaryNav,
   recordApiRequests,
+  redrawnCanvas,
   SOURCE_LINK_TEXT,
 } from './support.js';
 
@@ -134,10 +135,10 @@ test.describe('a demo-only instance with legal texts', () => {
       .getByRole('button', { name: 'Try the demo' })
       .click();
     await expect(page).toHaveURL(/\/diagram#snapshot=demo:S$/, { timeout: 60_000 });
-    await drawnCanvas(page);
+    const ownDay = await drawingOf(page);
     await page.keyboard.press('[');
     await expect(page).toHaveURL(/tick=/);
-    await drawnCanvas(page);
+    await redrawnCanvas(page, ownDay);
     expect(requests.filter((request) => request !== '/api/config')).toEqual([]);
   });
 

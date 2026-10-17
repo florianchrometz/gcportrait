@@ -4,11 +4,13 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
   boxOf,
   cameraSettled,
+  drawingOf,
   drawnCanvas,
   expectNoAxeViolations,
   hashOf,
   inside,
   openDiagram,
+  redrawnCanvas,
   scratchShot,
 } from './support.js';
 
@@ -307,9 +309,10 @@ test.describe('at project level (demo M’s Shared VPC host)', () => {
     page,
   }) => {
     const svg = await openDiagram(page, DEMO_M);
+    const organisation = await drawingOf(page);
     await svg.locator(`.dg-chip[data-id="${HOST}"]`).dblclick();
     await expect.poll(() => hashOf(page)).toBe(`#snapshot=demo:M&root=${HOST}`);
-    await drawnCanvas(page);
+    await redrawnCanvas(page, organisation);
     const whole = await shownOf(page);
     await expect.poll(async () => (await shownOf(page)).shown).toBe(whole.total);
     await expectInert(page, 'Expand all', true);
