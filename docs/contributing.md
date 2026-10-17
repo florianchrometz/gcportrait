@@ -119,8 +119,8 @@ licenses: OK. 565 installed packages are under allowed licences; the workspace p
 - **One package at a time:** `pnpm --filter @gcportrait/<package> lint`, `... typecheck` or `... test`, for
   example `pnpm --filter @gcportrait/model test`.
 - **One test project from the root:** `pnpm test --project <name>`, where the name is `model`, `demo-data`,
-  `ingest`, `catalog`, `graph`, `layout`, `icons`, `render-cli`, `frontend`, `backend` or `tooling`. `pnpm
-  test:watch` re-runs tests as you edit.
+  `ingest`, `catalog`, `graph`, `layout`, `icons`, `render`, `render-cli`, `frontend`, `backend`, `website` or
+  `tooling`. `pnpm test:watch` re-runs tests as you edit.
 - **Coverage:** `pnpm test --coverage` writes a report to `coverage/`; it is not enforced repository-wide yet.
   Some packages enforce their own thresholds when run with coverage: `@gcportrait/model` 100 % of its schemas
   and codec, `@gcportrait/ingest` and `@gcportrait/graph` near 100 % (see their `vitest.config.ts`), for

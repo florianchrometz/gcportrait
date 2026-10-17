@@ -11,8 +11,8 @@ export default defineConfig({
     name: 'render',
     environment: 'node',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
-    testTimeout: 180_000,
-    hookTimeout: 180_000,
+    testTimeout: 60_000,
+    hookTimeout: 60_000,
     coverage: {
       enabled: process.argv.includes('--coverage'),
       provider: 'v8',

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Helpers for the export spec: where downloaded exports go, rendering an SVG with resvg (the rasteriser the
- * headless renderer uses) on the app's own Roboto files, decoding and comparing PNGs. Nothing here imports the
- * app.
+ * Helpers for the export spec: where downloaded exports go, rendering an SVG with native resvg on the app's
+ * own Roboto files, decoding and comparing PNGs. The headless renderer uses resvg's WebAssembly build instead;
+ * their versions are pinned independently. Nothing here imports the app.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
