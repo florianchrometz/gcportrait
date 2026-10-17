@@ -13,7 +13,9 @@ export default defineProject({
     name: 'frontend',
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
-    setupFiles: ['./src/test/setup.ts'],
+    // Testing Library's cleanup (src/test/setup.ts) and the property tests' seed
+    // (src/test/fast-check-seed.ts: FC_SEED when set, a fixed one on CI, else fresh).
+    setupFiles: ['./src/test/setup.ts', './src/test/fast-check-seed.ts'],
     // CSS is stubbed in tests, except the diagram's token file, which theme.test.ts reads (`?raw`) to check it
     // against the token table.
     css: { include: [/diagram\/theme\/tokens\.css/] },

@@ -62,6 +62,10 @@ the engine cannot reach for Node APIs by accident; `tsconfig.tooling.json` check
 | Fetch the official list into a new dated snapshot and print the drift | `pnpm catalog:fetch-official` |
 | Tests, lint, types (each builds the catalog first) | `pnpm --filter @gcportrait/catalog test` (also `lint`, `typecheck`) |
 
+The rule engine's property tests (`src/engine/rules.property.test.ts`, fast-check) run under the seed rule of
+`@gcportrait/model/testing` (`src/testing/fast-check-seed.ts`): a fresh seed on every local run, the fixed
+`CI_PROPERTY_SEED` on CI, and `FC_SEED=<n>` replays the seed fast-check prints with a failure.
+
 **The compiled catalog is a build artefact.** The package is consumed from source (`exports` points at
 `src/index.ts`) by Vite, Vitest, tsc and ESLint, so `src/generated/compiled-catalog.ts` must exist before any
 of them runs, but it is never committed: every catalog change would regenerate that one file, and groups

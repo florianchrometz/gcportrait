@@ -98,7 +98,7 @@ export const STRAY = 1.5;
 export const SINGLE_PASS_WEIGHT = 1.5;
 
 /** A run before its lane is chosen: a line and the node positions along it. */
-interface Span {
+export interface Span {
   readonly line: number;
   readonly from: number;
   readonly to: number;
@@ -462,18 +462,9 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
     return null;
   };
 
-  /** A line's position `pos` as a coordinate along it (x on a horizontal line, y on a vertical one). */
-  const along = (line: number, pos: number): number => {
-    const node = lineNodes[(lineStart[line] as number) + pos] as number;
-    return (lines[line] as GutterLine).horizontal ? (nodeX[node] as number) : (nodeY[node] as number);
-  };
   /** Where lane `lane` of a line runs: its fixed coordinate. */
   const laneAt = (line: number, lane: number): number =>
     (lines[line] as GutterLine).c + laneSlot(lane) * pitch;
-
-  /** A span's first covered segment (to read what kind of line it runs along). */
-  const firstSegmentOf = (span: Span): number =>
-    coveredSegments(network, span.line, span.from, span.to)[0] ?? -1;
 
   /** The segments a run holds its lane on (`coveredSegments`). */
   const covered = (line: number, from: number, to: number): number[] =>
@@ -559,40 +550,26 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
     const last = count - 1;
     const { source, target } = edgePorts;
     // A run along a port line (portlines.ts) takes lane 0, the port's own coordinate, and starts (ends) at
-    // the port itself: the stub is part of it.
-    const portRun = spans.map((span) => {
-      const only = network.exclusive[firstSegmentOf(span)];
-      return only !== undefined && only >= 0 && (only === holder || only === searchingEdge);
-    });
-    const startsAtPort =
-      portRun[0] === true &&
-      (lines[(spans[0] as Span).line] as GutterLine).horizontal ===
-        (source.side !== 'bottom' && source.side !== 'top');
-    const endsAtPort =
-      portRun[last] === true &&
-      (lines[(spans[last] as Span).line] as GutterLine).horizontal ===
-        (target.side !== 'bottom' && target.side !== 'top');
+    // the port itself: the stub is part of it. Each run's clearance is checked over the stretch its points
+    // draw (runEnds).
+    const {
+      portRun,
+      startsAtPort,
+      endsAtPort,
+      start: firstStart,
+      end: runEnd,
+    } = runEnds(network, spans, edgePorts, searchingEdge);
     const runSegments: number[][] = [];
     const runPreferred: number[][] = [];
     const runHighest: number[] = [];
     const runRoom: number[] = [];
-    const runEnd: number[] = [];
-    spans.forEach((span, i) => {
+    for (const span of spans) {
       const segments = covered(span.line, span.from, span.to);
       let room = Infinity;
       for (const s of segments) room = Math.min(room, maxSlot[s] as number);
       runSegments.push(segments);
       runRoom.push(Number.isFinite(room) ? room : 0);
-      runEnd.push(
-        i === last
-          ? endsAtPort
-            ? (lines[span.line] as GutterLine).horizontal
-              ? target.x
-              : target.y
-            : target.t
-          : along(span.line, span.to),
-      );
-    });
+    }
     /**
      * Each run's lanes in order of preference: a route laid onto the widened gutters takes its old lane first;
      * then the lanes the holder already has here (a bundle's trunk); then the lane the edge took in these
@@ -643,22 +620,24 @@ export function* routePassSteps(input: PassInput, pass: number): Generator<Layou
       const entry = lines[span.line] as GutterLine;
       const horizontal = entry.horizontal;
       const at = laneAt(span.line, lane);
-      const start = i === 0 ? (startsAtPort ? (horizontal ? source.x : source.y) : source.t) : previousAt;
+      const start = i === 0 ? firstStart : previousAt;
+      const end = runEnd[i] as number;
       // A run along a port line is its port's stub drawn straight on: it keeps the stubs' clearance.
       const stub = (i === 0 && startsAtPort) || (i === last && endsAtPort);
-      if (occupancy.blocked(horizontal, at, start, runEnd[i] as number, holder, stub)) return false;
+      if (occupancy.blocked(horizontal, at, start, end, holder, stub)) return false;
       // The previous run reaches on to this lane (its elbow).
       if (i > 0 && occupancy.blocked(!horizontal, previousAt, entry.c, at, holder)) return false;
+      // The stub from the port to the run's lane, across the run's line where the run starts (ends).
       if (
         i === 0 &&
         !startsAtPort &&
-        occupancy.blocked(!horizontal, source.t, horizontal ? source.y : source.x, at, holder, true)
+        occupancy.blocked(!horizontal, start, horizontal ? source.y : source.x, at, holder, true)
       )
         return false;
       if (
         i === last &&
         !endsAtPort &&
-        occupancy.blocked(!horizontal, target.t, horizontal ? target.y : target.x, at, holder, true)
+        occupancy.blocked(!horizontal, end, horizontal ? target.y : target.x, at, holder, true)
       )
         return false;
       return true;
@@ -1052,6 +1031,65 @@ function coveredSegments(network: Network, line: number, from: number, to: numbe
   }
   for (let i = Math.min(from, to); i < Math.max(from, to); i += 1) result.push(segment0 + i);
   return result;
+}
+
+/** How the runs of a route meet its ports (`runEnds`). */
+export interface RunEnds {
+  /** Per run: it runs along a port line of the route's own, on lane 0, the port's own coordinate. */
+  readonly portRun: readonly boolean[];
+  /** The first run is its source port's stub drawn straight on: a port run in the stub's direction. */
+  readonly startsAtPort: boolean;
+  /** The last run is its target port's stub drawn straight on. */
+  readonly endsAtPort: boolean;
+  /** Where the first run starts, as a coordinate along its own line. */
+  readonly start: number;
+  /** Where each run ends, as a coordinate along its own line. */
+  readonly end: readonly number[];
+}
+
+/**
+ * How the runs of a route meet its ports, for the lane search: `edge` is the route's edge and `ports.holder`
+ * the holder of its lanes.
+ *
+ * - A run along a port line of the route's own (portlines.ts) is a port run. The line says so, not the
+ *   segments the run covers: each of its pieces names the holder it belongs to (the edge, or at a hub's
+ *   shared port the bundle), so a run that covers no segment (one of no length along a line of a single
+ *   node) is a port run too and is held on the port's coordinate. A first (last) port run whose line runs in
+ *   its port's stub's direction starts (ends) at the port itself: the stub is part of it.
+ * - The first run starts and the last one ends where the route's points put them (`corePoints`): at the
+ *   port's coordinate along the run's own line, its x along a horizontal line and its y along a vertical
+ *   one. On the port's gutter line that is where the stub meets it (`Port.t`), along a port line the port
+ *   itself; never `t` on a line across the gutter line, where `t` is a coordinate on the other axis. Every
+ *   other run ends at its last node.
+ */
+export function runEnds(network: Network, spans: readonly Span[], ports: EdgePorts, edge: number): RunEnds {
+  const { lines } = network;
+  const { source, target, holder } = ports;
+  const last = spans.length - 1;
+  const horizontal = (span: Span): boolean => (lines[span.line] as GutterLine).horizontal;
+  /** A port's coordinate along a line of the run's orientation. */
+  const portAlong = (port: Port, span: Span): number => (horizontal(span) ? port.x : port.y);
+  /** Whether the run's line runs in the direction of the port's stub (across the port's side). */
+  const inStub = (port: Port, span: Span): boolean =>
+    horizontal(span) === (port.side !== 'bottom' && port.side !== 'top');
+  const portRun = spans.map((span) => {
+    const own = (lines[span.line] as GutterLine).pieces[0]?.holder;
+    return own !== undefined && (own === holder || own === edge);
+  });
+  const first = spans[0] as Span;
+  const final = spans[last] as Span;
+  const end = spans.map((span, i) => {
+    if (i === last) return portAlong(target, span);
+    const node = network.nodes[(network.start[span.line] as number) + span.to] as number;
+    return horizontal(span) ? (network.x[node] as number) : (network.y[node] as number);
+  });
+  return {
+    portRun,
+    startsAtPort: portRun[0] === true && inStub(source, first),
+    endsAtPort: portRun[last] === true && inStub(target, final),
+    start: portAlong(source, first),
+    end,
+  };
 }
 
 /**

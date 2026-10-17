@@ -12,6 +12,8 @@ export default defineConfig({
     name: 'ingest',
     environment: 'node',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
+    // The property tests' seed (test/fast-check-seed.ts): FC_SEED when set, a fixed one on CI, else fresh.
+    setupFiles: ['test/fast-check-seed.ts'],
     coverage: {
       enabled: process.argv.includes('--coverage'),
       provider: 'v8',

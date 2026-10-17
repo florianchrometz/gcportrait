@@ -314,8 +314,9 @@ packer's choice of arrangement does not look at `gaps` (they are positional).
      runs alongside it (within its lanes' reach and a pitch), another port's stub runs on it, or another port
      line meets it at nearly the same coordinate, and none of no length: without padding a zone's ring lies on
      its border, and without a gap beside the zone so does the gutter the line would end at, so the stub's own
-     gutter is the way out (a run along a single point would hold no lane, and nothing would keep it on the
-     port's coordinate).
+     gutter is the way out (a single point leads nowhere). The router knows a port run by its line, whose
+     pieces name the holder it belongs to, not by the segments the run covers, so a run along a port line is
+     held on lane 0 even where it covers none (`runEnds` in `src/route.ts`).
    - *Graph.* Gutter lines are the segments, their intersections and the stubs' attach points the nodes
      (typed arrays). A segment's lane cost is `laneCost` spread over the gutter it belongs to, in proportion
      to length, so running the length of one gutter costs 50 per lane already in it, however many other
@@ -338,13 +339,15 @@ packer's choice of arrangement does not look at `gaps` (they are positional).
      lane, past the end of the run's own line when the lane lies beyond the centre-line, the T-junction case)
      and the stub at either end must not run alongside another holder's segment closer than the lane pitch (8
      px; two stubs from facing ports: half the port spacing, 6 px, as close as the shifted slot grids put
-     them). An index of every segment drawn so far, in absolute coordinates, answers those questions
-     (`src/occupancy.ts`). Whether a lane keeps clear depends on the neighbouring runs' lanes, so a route's
-     lanes are found together, lowest first, by a depth-first search over its runs (at most 200 candidates;
-     then lane by lane, and a run that finds no clear lane is counted in `overlaps`). Lane k sits
-     `laneSlot(k)` pitches from the line's centre-line, alternately either side (0, +1, −1, +2, …), so the
-     busiest stretch of a line does not push its quiet stretches' lanes aside: n lanes need n × 8 + 8 px of
-     gutter (one pitch more for an even n, keeping the outer lanes 8 px from the boxes).
+     them). The first run is checked from its source port's coordinate along the run's own line and the last
+     up to its target port's, where the route's points turn into the stubs. An index of every segment drawn so
+     far, in absolute coordinates, answers those questions (`src/occupancy.ts`). Whether a lane keeps clear
+     depends on the neighbouring runs' lanes, so a route's lanes are found together, lowest first, by a
+     depth-first search over its runs (at most 200 candidates; then lane by lane, and a run that finds no
+     clear lane is counted in `overlaps`). Lane k sits `laneSlot(k)` pitches from the line's centre-line,
+     alternately either side (0, +1, −1, +2, …), so the busiest stretch of a line does not push its quiet
+     stretches' lanes aside: n lanes need n × 8 + 8 px of gutter (one pitch more for an even n, keeping the
+     outer lanes 8 px from the boxes).
    - *Passes.* Route (search every edge); widen every gutter whose lanes do not fit (its own gap, or its side
      of its container's ring, through the gutter hook) and re-pack with the arrangements pinned; re-route: the
      three passes. A laid route whose old lanes are all still free, fitting and clear keeps them without
@@ -853,8 +856,10 @@ catalog and a stale one would silently change them.
   spilling to the neighbouring and the opposite sides, zone bands, below the header with no padding and no
   corner clearance, inward ports, keeping the previous pass's plan), port lines (`src/portlines.test.ts`: out
   through every zone a chip is the last of, one piece per container, none where a neighbour stands beside,
-  none of no length, a straight exit, and with no padding and no gaps a route that keeps out of its zone's
-  header), stack gaps and hugging stretches in the gutters and the network (with each hugging segment's side
+  none of no length, a straight exit, with no padding and no gaps a route that keeps out of its zone's
+  header, and on a line of no length `runEnds`: a run along its own port line a port run though it covers no
+  segment, a run across a port's gutter line starting or ending at the port's coordinate along its own line),
+  stack gaps and hugging stretches in the gutters and the network (with each hugging segment's side
   length), the length factors (`hugFactors`: a ring side capped per side, the margin), the router (straight
   edges, heads and tips, zone ends, lanes 8 px apart, widening, hub bundles sharing one trunk and head, one
   bundle per kind, the re-route laying routes onto widened gutters, scope (order independence: the property

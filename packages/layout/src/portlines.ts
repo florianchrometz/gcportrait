@@ -18,8 +18,9 @@
  * coordinate), where another port's stub runs on it, or where another port line meets it at nearly the same
  * coordinate (two rects facing each other across a gap at one height); and where it would have no length: with
  * no padding a zone's ring lies on its border, and with no gap beside the zone so does the gutter it would end
- * at. Such a line would be a single point, a run along it would hold no segment, and nothing would keep that
- * run on lane 0: the stub's own gutter line is the way out there.
+ * at. Such a line would be a single point that leads nowhere, and a run along it would cover no segment
+ * (the router still knows it for a port run by the line, route.ts `runEnds`): the stub's own gutter line is
+ * the way out there.
  */
 import type { Routing } from './constants.js';
 import { EPSILON } from './geometry.js';

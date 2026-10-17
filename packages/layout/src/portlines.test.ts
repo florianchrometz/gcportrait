@@ -2,11 +2,13 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ROUTING } from './constants.js';
 import { mergeEdges } from './edges.js';
-import { buildGutters } from './gutters.js';
+import { buildGutters, type GutterLine } from './gutters.js';
 import { assertLayout, checkLayout } from './invariants.js';
 import { layoutScene, placedTree } from './layout.js';
+import { buildNetwork } from './network.js';
 import { assignPorts } from './ports.js';
 import { isPortPiece, portLines } from './portlines.js';
+import { runEnds, type Span } from './route.js';
 import { card, scene, zone } from './testing/scenes.js';
 import type { LayoutOptions, Point } from './types.js';
 
@@ -21,6 +23,36 @@ const input = scene(
   [{ from: 'a', to: 'b', kind: 'uses' }],
 );
 const SIDE_BY_SIDE: LayoutOptions = { arrangements: { canvas: { cardColumns: 0, zoneRows: [2] } } };
+
+// Folder f, flush against the empty folder g, holds cards a and b above c and d, and a chip and a sub-folder
+// below them; f's edge to its own card b leaves f's right side on the inside. With no padding, no gaps and no
+// lane cost, b's way out to the right, from f's ring to the gap beside f, lies on f's border.
+const FLUSH_FOLDER = scene(
+  [
+    zone('f', 'folder', [
+      zone('sub', 'folder', [
+        card('w'),
+        card('wide', 'wide card, its label long enough for the widest card'),
+      ]),
+      card('c'),
+      zone('chip', 'folder', [], { collapsed: { resources: 7 } }),
+      card('d'),
+      card('a'),
+      card('b'),
+    ]),
+    zone('g', 'folder', []),
+  ],
+  [
+    { from: 'c', to: 'b', kind: 'uses' },
+    { from: 'chip', to: 'a', kind: 'uses' },
+    { from: 'd', to: 'a', kind: 'uses' },
+    { from: 'f', to: 'b', kind: 'uses' },
+  ],
+);
+const NO_GAPS: LayoutOptions = {
+  sizing: { gapHorizontal: 0, gapVertical: 0, zonePadding: 0 },
+  routing: { lanePitch: 12, laneCost: 0, wideningRounds: 0 },
+};
 
 function linesOf(options: LayoutOptions = SIDE_BY_SIDE) {
   const tree = placedTree(input, options);
@@ -140,39 +172,9 @@ describe('routing along port lines', () => {
   });
 
   it('keeps a route out of a header where a port’s way out has no length (no padding, no gaps, no pressure)', () => {
-    // Folder f, flush against the empty folder g, holds cards a and b above c and d, and a chip and a
-    // sub-folder below them; f's edge to its own card b leaves f's right side on the inside. A line of no
-    // length for b's right port (from f's ring to the gap beside f, both on f's border) would give the route's
-    // run along it no segment, so nothing would hold the run on lane 0, the port's own coordinate: it took a
-    // lane 24 px up, and the route's elbow ran through f's header.
-    const flush = scene(
-      [
-        zone('f', 'folder', [
-          zone('sub', 'folder', [
-            card('w'),
-            card('wide', 'wide card, its label long enough for the widest card'),
-          ]),
-          card('c'),
-          zone('chip', 'folder', [], { collapsed: { resources: 7 } }),
-          card('d'),
-          card('a'),
-          card('b'),
-        ]),
-        zone('g', 'folder', []),
-      ],
-      [
-        { from: 'c', to: 'b', kind: 'uses' },
-        { from: 'chip', to: 'a', kind: 'uses' },
-        { from: 'd', to: 'a', kind: 'uses' },
-        { from: 'f', to: 'b', kind: 'uses' },
-      ],
-    );
-    const options: LayoutOptions = {
-      sizing: { gapHorizontal: 0, gapVertical: 0, zonePadding: 0 },
-      routing: { lanePitch: 12, laneCost: 0, wideningRounds: 0 },
-    };
-    const layout = layoutScene(flush, options);
-    expect(checkLayout(flush, layout, options)).toEqual([]);
+    // b's right port has no port line (FLUSH_FOLDER): the route runs up f's border to b's stub.
+    const layout = layoutScene(FLUSH_FOLDER, NO_GAPS);
+    expect(checkLayout(FLUSH_FOLDER, layout, NO_GAPS)).toEqual([]);
     const f = layout.rects.f;
     const edge = layout.edges['f -uses-> b'];
     if (f === undefined || edge === undefined) throw new Error('f or its edge is missing');
@@ -180,5 +182,95 @@ describe('routing along port lines', () => {
     for (const point of edge.points) expect(point.y).toBeGreaterThanOrEqual(f.y + f.headerHeight);
     // The route reaches b along f's border and its stub runs straight in from there, at the port's height.
     expect(edge.points.slice(-2).map((point) => point.y)).toEqual([edge.target.y, edge.target.y]);
+  });
+});
+
+describe('runEnds on a line of no length', () => {
+  /**
+   * FLUSH_FOLDER's routing graph with a horizontal line of no length at b's right port, on f's border where
+   * f's ring and the gap beside f lie: b's port line, `owned` by the edge f -uses-> b, or else a line that
+   * is no port line. It has a single node, where b's stub meets f's ring, so a run along it covers no
+   * segment. The spans are a route of that edge: up f's ring from f's port to b's stub, then turning onto
+   * that line there.
+   */
+  function routeOntoNoLength(owned: boolean) {
+    const tree = placedTree(FLUSH_FOLDER, NO_GAPS);
+    const gutters = buildGutters(tree);
+    const nodes = new Map(tree.order.map((node) => [node.id, node] as const));
+    const { edges } = mergeEdges(FLUSH_FOLDER, nodes);
+    const routing = { ...DEFAULT_ROUTING, ...NO_GAPS.routing };
+    const ports = assignPorts(edges, gutters, routing);
+    const exits = portLines(edges, ports, gutters, routing, gutters.lines.length);
+    const edge = edges.findIndex((drawn) => drawn.id === 'f -uses-> b');
+    const own = ports[edge];
+    const ring = gutters.lines[own?.target.line ?? -1];
+    const b = nodes.get('b');
+    if (own === undefined || ring === undefined || b === undefined) throw new Error('f -uses-> b is missing');
+    // f's port and b's stub are both on f's ring, the vertical line on f's right border.
+    expect(own.source.line).toBe(own.target.line);
+    expect(exits.lineOf[edge * 2 + 1]).toBe(-1);
+    const strip = 2 * routing.gutterBase;
+    const span = { a: ring.c, b: ring.c, owner: gutters.parentOf[b.index] ?? 0, strip };
+    const piece: GutterLine['pieces'][number] = owned
+      ? { ...span, gap: { kind: 'port', key: `${String(edge)}.1` }, holder: own.holder }
+      : { ...span, gap: { kind: 'row', index: 0 } };
+    const lines: GutterLine[] = [
+      ...gutters.lines,
+      ...exits.lines,
+      { horizontal: true, c: own.target.y, a: ring.c, b: ring.c, strip, pieces: [piece] },
+    ];
+    const line = lines.length - 1;
+    const { network, attached } = buildNetwork(
+      lines,
+      ports.flatMap(({ source, target }) => [
+        { line: source.line, t: source.t },
+        { line: target.line, t: target.t },
+      ]),
+      routing.laneCost,
+    );
+    expect((network.start[line + 1] ?? 0) - (network.start[line] ?? 0)).toBe(1);
+    const from = attached[edge * 2] ?? -1;
+    const to = attached[edge * 2 + 1] ?? -1;
+    const spans: Span[] = [
+      { line: own.target.line, from: network.pos[from * 2 + 1] ?? -1, to: network.pos[to * 2 + 1] ?? -1 },
+      { line, from: network.pos[to * 2] ?? -1, to: network.pos[to * 2] ?? -1 },
+    ];
+    return { network, spans, ports: own, edge };
+  }
+
+  /** The same route the other way round: from b's port onto the line, then down f's ring to f's port. */
+  function reversed({ network, spans, ports, edge }: ReturnType<typeof routeOntoNoLength>) {
+    const back = [...spans].reverse().map(({ line, from, to }) => ({ line, from: to, to: from }));
+    return runEnds(network, back, { ...ports, source: ports.target, target: ports.source }, edge);
+  }
+
+  it('knows a run along its own port line for a port run where it covers no segment', () => {
+    const route = routeOntoNoLength(true);
+    const { source, target } = route.ports;
+    // The run along the port line is held on lane 0 and ends at b's port: the stub is part of it.
+    expect(runEnds(route.network, route.spans, route.ports, route.edge)).toEqual({
+      portRun: [false, true],
+      startsAtPort: false,
+      endsAtPort: true,
+      start: source.y,
+      end: [target.y, target.x],
+    });
+    expect(reversed(route)).toMatchObject({ portRun: [true, false], startsAtPort: true, start: target.x });
+  });
+
+  it('starts and ends a run across a port’s gutter line at the port’s coordinate along its own line', () => {
+    const route = routeOntoNoLength(false);
+    const { source, target } = route.ports;
+    // Along a horizontal line that is b's port's x, where the route's points turn into its stub; t is a y.
+    expect(target.t).toBe(target.y);
+    expect(target.x).not.toBe(target.y);
+    expect(runEnds(route.network, route.spans, route.ports, route.edge)).toEqual({
+      portRun: [false, false],
+      startsAtPort: false,
+      endsAtPort: false,
+      start: source.y,
+      end: [target.y, target.x],
+    });
+    expect(reversed(route)).toMatchObject({ portRun: [false, false], startsAtPort: false, start: target.x });
   });
 });

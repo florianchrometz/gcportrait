@@ -16,6 +16,8 @@ export default defineConfig({
     name: 'model',
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // The property tests' seed (src/testing/fast-check-seed.ts): FC_SEED, a fixed one on CI, else fresh.
+    setupFiles: ['src/testing/fast-check-seed.ts'],
     coverage: {
       enabled: process.argv.includes('--coverage'),
       provider: 'v8',

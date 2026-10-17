@@ -35,7 +35,7 @@ rings, colour never alone, axe on every page) are the gcp-diagram-style skill's 
 | `pnpm --filter @gcportrait/frontend build` | Production bundle in `dist/` (served by the backend in the production image). No source maps; includes the font licences (below). |
 | `pnpm --filter @gcportrait/frontend preview` | Serves `dist/` locally (no backend, no CSP). |
 | `pnpm demo:static` (root) | The static demo (section "Static demo" below): this package's build with `VITE_STATIC_DEMO=1`, for `/demo/`, into the repository's `dist/demo/`. |
-| `pnpm --filter @gcportrait/frontend test` | Unit tests (Vitest, jsdom, Testing Library, fake-indexeddb). |
+| `pnpm --filter @gcportrait/frontend test` | Unit tests (Vitest, jsdom, Testing Library, fake-indexeddb). The fast-check properties run under the seed rule of `@gcportrait/model/testing` (`src/test/fast-check-seed.ts`): a fresh seed on every local run, the fixed `CI_PROPERTY_SEED` on CI, and `FC_SEED=<n>` replays the seed fast-check prints with a failure. |
 | `pnpm --filter @gcportrait/frontend lint` / `typecheck` | ESLint and `tsc -b` for this package. |
 | `pnpm --filter @gcportrait/frontend mobile` | The phone and tablet check in Chromium: the e2e suite's `mobile` project (`e2e/tests/mobile.spec.ts`; section "Layouts"), against the demo mode's Vite server (started, or reused when it runs). |
 

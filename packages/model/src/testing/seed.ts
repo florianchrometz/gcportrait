@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
  * The property tests' seed and number of runs, one rule for every package whose test setup applies it to
- * fast-check (the layout and the graph):
+ * fast-check (`fast-check-seed.ts` in the catalog, ingest, this package, the graph, the layout and the
+ * frontend):
  *
  * - **`FC_SEED`, when set, is the seed** of every property (an integer), so a reported failure replays.
  * - **On CI it is `CI_PROPERTY_SEED` otherwise** (`onCi`): the blocking runs draw the same inputs on every push,
