@@ -324,10 +324,10 @@ only there) to the same bytes. Reference: [packages/render/README.md](../package
 
 ### `@gcportrait/render-cli` — the headless renderer's command line
 
-**Responsibility.** `pnpm render` draws a view of a demo organisation exactly as the app draws it, through the
-render library above, byte-stable for the same arguments; it adds the command line, the comparisons and the
-golden check. The first line on standard error names the command, `gcportrait render`; neither it, its
-`index.json` nor the drawing carries an affiliation line. It is Node tooling, not a library.
+**Responsibility.** `pnpm render` draws a view of a demo organisation exactly as the app's renderer draws it,
+through the render library above, byte-stable for the same arguments; it adds the command line, the
+comparisons and the golden check. The first line on standard error names the command, `gcportrait render`;
+neither it, its `index.json` nor the drawing carries an affiliation line. It is Node tooling, not a library.
 
 **Entry point.** `packages/render-cli/src/index.ts` (for tests and scripts): `run`, `parseCommand`,
 `comparePng`, `samePixels`, `checkGolden`, `checkTextGolden`. **Goldens.**
@@ -409,7 +409,7 @@ it, to prepare one. [frontend/README.md](../frontend/README.md) is the reference
 | `pnpm --filter @gcportrait/demo-data fixtures` | demo-data | regenerates `fixtures/S.ndjson`, `M.ndjson` and `stats.json` |
 | `pnpm --filter @gcportrait/ingest test:budget` | ingest | the strict XL ingest budget (1.5 s in a worker), alone |
 | `pnpm --filter @gcportrait/graph test:budget` | graph | the M build budget (150 ms), alone, printing its figures |
-| `pnpm render --fixture M --lens networking --png out.png` | render-cli | draws a demo view as the app draws it, as PNG and/or SVG (`--theme`, `--detail`, `--focus`, `--root`, `--filter`, `--flip`, `--hash`, `--viewport`, `--scale`/`--width`, `--svg`, `--compare`, `--strict`, `--all`, `--list-fixtures`, `--help`); without `--png`/`--svg` it writes `out/render/<fixture>-<lens>-<detail>-<theme>.png` |
+| `pnpm render --fixture M --lens networking --png out.png` | render-cli | draws a demo view as the app's renderer draws it, as PNG and/or SVG (`--theme`, `--detail`, `--focus`, `--root`, `--filter`, `--flip`, `--hash`, `--viewport`, `--scale`/`--width`, `--svg`, `--compare`, `--strict`, `--all`, `--list-fixtures`, `--help`); without `--png`/`--svg` it writes `out/render/<fixture>-<lens>-<detail>-<theme>.png` |
 | `pnpm --filter @gcportrait/render-cli test:golden:update` | render-cli | rewrites the render golden `e2e/baselines/render/S-overview-auto-light.png`; look at it and say why in the pull request |
 | `pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u` | frontend | rewrites the 28 SVG baselines under `e2e/baselines/diagram/` (the file before `-u`) |
 | `pnpm --filter @gcportrait/layout test:budget` | layout | the strict layout budgets through a worker (S 10 ms, M 60 ms, L 400 ms, XL at `folders` 2 s), the memo hit, cancellation and memory, alone, printing their figures |

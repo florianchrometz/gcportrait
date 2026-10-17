@@ -22,9 +22,10 @@ import { expectNoAxeViolations, openDiagram, TAGLINE } from './support.js';
 /**
  * The Export menu in demo mode: downloads of the SVG and the PNG (whole diagram and current viewport,
  * light and dark, 2× and 3×) checked as files; the SVG parsed and opened in the browser; the PNG's size, theme
- * background and margin; the copy to the clipboard. Faithfulness: the exported SVG rendered by resvg matches
- * resvg's render of the renderer's own SVG for the same view (the committed baseline, which the headless
- * renderer draws), and the PNG Chromium draws matches resvg's render of the exported SVG.
+ * background and margin; the copy to the clipboard. Faithfulness, in three checks: the exported SVG rendered
+ * by resvg matches resvg's render of the renderer's own SVG for the same view (the committed baseline, which
+ * the headless renderer draws); the PNG Chromium draws matches the PNG the headless renderer draws of the
+ * same view (`pnpm render`, resvg); and the PNG Chromium draws matches resvg's render of the exported SVG.
  *
  * Demo S at detail `auto` is fully open whatever the canvas size, so its view is the S overview baseline. The
  * read time is shown at the viewer's offset; the suite runs at UTC, as the baselines are written.

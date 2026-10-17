@@ -57,7 +57,7 @@ pnpm build && pnpm size  # production build, then the gzipped budgets: UI thread
 pnpm e2e                 # Playwright: functional + axe in both themes, on demo mode, and the phone and tablet check
                          # (once per machine: pnpm --filter @gcportrait/e2e install-browsers)
 pnpm --filter @gcportrait/frontend mobile   # the phone and tablet check alone (AGENTS.md, Product rules)
-pnpm render --fixture M --lens networking --png out.png --theme dark   # a demo view drawn as the app draws it
+pnpm render --fixture M --lens networking --png out.png --theme dark   # a demo view drawn as the app's renderer draws it
 pnpm format              # fix formatting (Markdown is hand-wrapped at 110 columns, not formatted)
 pnpm run licenses --write   # after a dependency change: regenerate THIRD_PARTY.md (`run` is required)
 ```

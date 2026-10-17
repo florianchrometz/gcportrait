@@ -3,10 +3,10 @@
 # @gcportrait/render-cli
 
 The headless renderer (export rules: skill gcp-diagram-style §8): `pnpm render` draws a view of a demo
-organisation exactly as the app draws it, legend and title block included, and writes it as SVG and as a PNG
-rasterised with [resvg](https://github.com/thx/resvg-js)'s WebAssembly build (`@resvg/resvg-wasm`, MPL-2.0,
-used unmodified). The output is byte-stable: the same arguments give the same bytes, on every run, in every
-process and on every platform. The drawing is done by the render library,
+organisation exactly as the app's renderer draws it, legend and title block included, and writes it as SVG and
+as a PNG rasterised with [resvg](https://github.com/thx/resvg-js)'s WebAssembly build (`@resvg/resvg-wasm`,
+MPL-2.0, used unmodified). The output is byte-stable: the same arguments give the same bytes, on every run, in
+every process and on every platform. The drawing is done by the render library,
 [`@gcportrait/render`](../render/README.md), which the backend's `POST /api/render` draws with too: a view an
 instance draws through its API is byte for byte what this command writes (`--hash` takes the API's
 `x-gcportrait-view` header). The website's sample exports (`node scripts/exports.mjs`), the render golden

@@ -42,11 +42,11 @@ export const USAGE = `Usage:
               [--viewport WIDTHxHEIGHT] [--scale N | --width PX] [--strict]
   pnpm render --list-fixtures
 
-Draws a view of a demo organisation exactly as the app draws it (legend and title block included) and writes
-it as PNG (resvg, 2× by default, on the theme's canvas colour with a 24 px margin), SVG and/or a draw.io file (the
-same drawing as cells diagrams.net can edit). Output is byte-stable: the same arguments give the same bytes. Without
---png, --svg or --drawio the PNG goes to out/render/<fixture>-<lens>-<detail>-<theme>.png. A FILE of - writes to
-standard output (then the report goes to standard error).
+Draws a view of a demo organisation exactly as the app's renderer draws it (legend and title block included) and
+writes it as PNG (resvg, 2× by default, on the theme's canvas colour with a 24 px margin), SVG and/or a draw.io file
+(the same drawing as cells diagrams.net can edit). Output is byte-stable: the same arguments give the same bytes.
+Without --png, --svg or --drawio the PNG goes to out/render/<fixture>-<lens>-<detail>-<theme>.png. A FILE of -
+writes to standard output (then the report goes to standard error).
 
   --fixture    ${FIXTURES.join(', ')} (default M)
   --lens       ${LensIdSchema.options.join(', ')} (default overview)

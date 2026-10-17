@@ -2,9 +2,9 @@
 
 # @gcportrait/render
 
-The render library (AGENTS.md, Exports and the render API): a snapshot and a view drawn as the app draws them,
-as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on every platform. `pnpm render`
-([`@gcportrait/render-cli`](../render-cli/README.md)) and the backend's `POST /api/render`
+The render library (AGENTS.md, Exports and the render API): a snapshot and a view drawn as the app's renderer
+draws them, as a standalone SVG, a PNG and a draw.io file, byte-stable for the same input on every platform.
+`pnpm render` ([`@gcportrait/render-cli`](../render-cli/README.md)) and the backend's `POST /api/render`
 ([docs/api.md](../../docs/api.md)) both draw through it, so a demo view comes out byte for byte the same from
 either.
 

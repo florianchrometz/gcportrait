@@ -141,9 +141,9 @@ export more, open more first (Expand all, a deeper detail level) or export the w
 
 ## 5. Exporting without a browser: `pnpm render`
 
-From a checkout, `pnpm render` draws a view of a demo organisation exactly as the app draws it, legend and
-title block included, and writes it as PNG (drawn with resvg), SVG and/or draw.io, byte for byte the same on
-every run:
+From a checkout, `pnpm render` draws a view of a demo organisation exactly as the app's renderer draws it,
+legend and title block included, and writes it as PNG (drawn with resvg), SVG and/or draw.io, byte for byte
+the same on every run:
 
 ```sh
 pnpm render --fixture M --lens networking --png out.png --svg out.svg --drawio out.drawio
