@@ -253,11 +253,19 @@ describe('helpers', () => {
 });
 
 describe('regionFromName', () => {
-  // A zone becomes its region by the one rule of @gcportrait/model (`regionOfZone`), AI zones included.
+  // A zone becomes its region by the one rule of @gcportrait/model (`regionOfZone`), AI zones included,
+  // whether it stands after `zones/`, after `locations/` or alone.
   it.each([
     ['//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instances/web-1', 'europe-west3'],
     ['//compute.googleapis.com/projects/demo-app-1/zones/us-central1-ai1a/instances/train-1', 'us-central1'],
+    ['//compute.googleapis.com/projects/demo-app-1/zones/u-france-east1-b/instances/web-1', 'u-france-east1'],
     ['projects/demo-app-1/regions/europe-west3', 'europe-west3'],
+    // A zonal GKE cluster and a TPU node name their zone under `locations/`.
+    ['//container.googleapis.com/projects/demo-app-1/locations/europe-west3-a/clusters/c', 'europe-west3'],
+    ['//tpu.googleapis.com/projects/demo-app-1/locations/us-central1-ai1a/nodes/train-1', 'us-central1'],
+    ['//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/c', 'europe-west3'],
+    ['//cloudkms.googleapis.com/projects/demo-app-1/locations/eu/keyRings/k', 'eu'],
+    ['//cloudkms.googleapis.com/projects/demo-app-1/locations/global/keyRings/k', 'global'],
     ['us-central1-ai1a', 'us-central1'],
     ['us-central1-f', 'us-central1'],
     ['europe-west3', 'europe-west3'],

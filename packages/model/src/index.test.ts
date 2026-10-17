@@ -137,7 +137,8 @@ describe('public surface', () => {
         'isLensId',
         'isRelationKind',
         'isSnapshotRef',
-        // locations: the zone and region rule
+        // locations: the shape of a name, and the zone and region rule
+        'LOCATION_PATTERN',
         'isRegion',
         'isZone',
         'regionOfZone',

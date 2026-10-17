@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { GraphSchema, type Asset } from '@gcportrait/model';
+import { GraphSchema, zoneRegion, type Asset } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { buildGraph, buildGraphWithReport } from './build.js';
 import { REGION_TYPE, ZONE_TYPE } from './structure.js';
@@ -344,7 +344,7 @@ describe('rule 3: virtual region and zone containers', () => {
   const region = (projectId: string, location: string): string =>
     `//gcportrait.virtual/projects/${projectId}/locations/${location}`;
   const zone = (projectId: string, location: string): string =>
-    `${region(projectId, location.slice(0, location.lastIndexOf('-')))}/zones/${location}`;
+    `${region(projectId, zoneRegion(location) ?? '')}/zones/${location}`;
 
   it('groups a project’s direct children by region and zone', () => {
     expect(parentOf(graph, ON_HOST)).toBe(zone(WEB_ID, 'europe-west3-a'));
@@ -394,20 +394,25 @@ describe('rule 3: virtual region and zone containers', () => {
     expect(built.nodes[region(WEB_ID, 'eu')]?.subtitle).toBe('multi-region');
   });
 
-  it('puts a zone with a longer suffix (an AI zone) in its region, as the regions filter counts it', () => {
+  // A zone with a longer suffix (an AI zone) and a sovereign cloud's zone (`u-`) lie in their region, as the
+  // regions filter counts them.
+  it.each([
+    ['us-central1-ai1a', 'us-central1'],
+    ['u-france-east1-a', 'u-france-east1'],
+  ])('puts a disk in %s in the zone of region %s', (location, inRegion) => {
     const disk = resource(
-      computeName(WEB_ID, 'zones/us-central1-ai1a/disks/train-scratch'),
+      computeName(WEB_ID, `zones/${location}/disks/train-scratch`),
       'compute.googleapis.com/Disk',
       WEB_NUMBER,
       { name: 'train-scratch' },
-      { location: 'us-central1-ai1a' },
+      { location },
     );
     const built = checkedBuild([...scenarioAssets(), disk], CATALOG, { showRegions: true }).graph;
-    expect(parentOf(built, disk.name)).toBe(zone(WEB_ID, 'us-central1-ai1a'));
-    expect(parentOf(built, zone(WEB_ID, 'us-central1-ai1a'))).toBe(region(WEB_ID, 'us-central1'));
-    expect(built.nodes[region(WEB_ID, 'us-central1')]?.subtitle).toBe('region');
-    expect(built.nodes[zone(WEB_ID, 'us-central1-ai1a')]?.subtitle).toBe('zone');
-    expect(built.nodes[region(WEB_ID, 'us-central1-ai1a')]).toBeUndefined();
+    expect(parentOf(built, disk.name)).toBe(zone(WEB_ID, location));
+    expect(parentOf(built, zone(WEB_ID, location))).toBe(region(WEB_ID, inRegion));
+    expect(built.nodes[region(WEB_ID, inRegion)]?.subtitle).toBe('region');
+    expect(built.nodes[zone(WEB_ID, location)]?.subtitle).toBe('zone');
+    expect(built.nodes[region(WEB_ID, location)]).toBeUndefined();
   });
 });
 

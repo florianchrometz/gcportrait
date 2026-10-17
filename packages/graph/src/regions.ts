@@ -4,13 +4,12 @@
  * Only built when the view asks for them (`showRegions`). They group a project's direct children by
  * `location` — a zonal resource in Project › region › zone, a regional or multi-regional one in Project ›
  * region — and never touch what sits deeper: a VPC is global and stays under the project, its subnets and
- * everything nested in them stay where they are. What is a zone and which region holds it is the one rule
- * of `@gcportrait/model` (`isZone`, `regionOfZone`, `isRegion`), which the regions filter follows too.
+ * everything nested in them stay where they are. What is a location, what is a zone and which region holds
+ * it is the one rule of `@gcportrait/model` (`LOCATION_PATTERN`, `isZone`, `regionOfZone`, `isRegion`), which
+ * the regions filter follows too.
  */
-import { isRegion, isZone, regionOfZone, type GraphNode } from '@gcportrait/model';
+import { LOCATION_PATTERN, isRegion, isZone, regionOfZone, type GraphNode } from '@gcportrait/model';
 import { PROJECT_TYPE, REGION_TYPE, VIRTUAL_SERVICE, ZONE_TYPE } from './structure.js';
-
-const LOCATION = /^[a-z0-9][a-z0-9-]*$/;
 
 function virtualNode(
   id: string,
@@ -58,7 +57,8 @@ export function addRegionContainers(
     const project = projectId === undefined ? undefined : nodes.get(projectId);
     const location = nodes.get(id)?.location?.toLowerCase();
     if (projectId === undefined || project?.assetType !== PROJECT_TYPE || location === undefined) continue;
-    if (location === 'global' || !LOCATION.test(location)) continue;
+    // Only a location name gets a container (tested lower-cased), as it becomes part of the container's id.
+    if (location === 'global' || !LOCATION_PATTERN.test(location)) continue;
     const zonal = isZone(location);
     const region = regionOfZone(location);
     const projectKey =

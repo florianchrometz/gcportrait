@@ -25,7 +25,7 @@ import type {
   ViewFilters,
   ViewSpecInput,
 } from '@gcportrait/model';
-import { LensIdSchema } from '@gcportrait/model';
+import { LensIdSchema, zoneRegion } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { REAL_CATALOG } from '../../src/testing/fixtures.js';
 import { childIds, parentOf, placed, shows, zone, zones } from '../../src/testing/scene.js';
@@ -268,7 +268,7 @@ const PROOF_FILTERS: Readonly<Record<string, ProofFilter>> = {
         if (node.assetType.startsWith('cloudresourcemanager.googleapis.com/')) return false;
         const location = node.location?.toLowerCase();
         if (location === undefined || (location === 'global' && node.role === 'container')) return false;
-        return location !== 'us-central1' && !location.startsWith('us-central1-');
+        return location !== 'us-central1' && zoneRegion(location) !== 'us-central1';
       }),
   },
   'depth-1': { filters: { depth: 1 }, lens: 'everything', bites: (_size, result) => deeperThan(result, 1) },

@@ -235,9 +235,10 @@ with numeric strings by value.
 `{{variable | filter | …}}` in literal text. Variables: `name`, `assetType`, `location`, `projectId`,
 `projectNumber` (from the asset's project and the project index), `data.*` with `.key` and `[n]` steps.
 Filters: `lastSegment` (trailing slashes ignored), `projectFromName`, `regionFromName` (also turns a zone into
-its region, by `regionOfZone` of `@gcportrait/model`), `short(n)` (counts user-perceived characters, ends with
-`…`), `lower`, `parentSegment(<collection>)`, the segment after the first `<collection>/` in the value, so a
-nested resource can name its parents (`{{name | parentSegment(clusters)}}` is a Kubernetes namespace's
+its region, by `regionOfZone` of `@gcportrait/model`, wherever it stands: after `zones/`, after `locations/`
+as in a zonal cluster's name, or alone), `short(n)` (counts user-perceived characters, ends with `…`),
+`lower`, `parentSegment(<collection>)`, the segment after the first `<collection>/` in the value, so a nested
+resource can name its parents (`{{name | parentSegment(clusters)}}` is a Kubernetes namespace's
 cluster), and `first(<variable>, …)`: when the value is missing, the first of the listed variables that has
 one (`{{data.gke.cluster | first(data.anthosCluster.membership, data.run.location) | lastSegment}}`), filters
 after it applying to the chosen value, and `plural(<word>)` or `plural(<word>, <words>)`: the count with its

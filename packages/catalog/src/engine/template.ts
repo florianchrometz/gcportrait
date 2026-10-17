@@ -11,9 +11,10 @@
  * Filters, applied left to right:
  * - `lastSegment`: the text after the last `/`, ignoring trailing slashes (`a/b/c/` → `c`).
  * - `projectFromName`: the segment after `projects/` (`//x.googleapis.com/projects/p/…` → `p`).
- * - `regionFromName`: the segment after `regions/` or `locations/`, or the region of a zone after `zones/`;
- *   a bare zone (`europe-west3-a`, `us-central1-ai1a`) becomes its region (`regionOfZone` of
- *   `@gcportrait/model`), any other bare value is kept.
+ * - `regionFromName`: the segment after `regions/` or `locations/`, else after `zones/`, or a bare value,
+ *   with a zone turned into its region (`regionOfZone` of `@gcportrait/model`): a zonal cluster's
+ *   `…/locations/europe-west3-a/clusters/c` and a bare `us-central1-ai1a` give `europe-west3` and
+ *   `us-central1`; a region, a multi-region or any other bare value is kept.
  * - `short(n)`: at most n characters (graphemes); longer text keeps n − 1 and ends with `…`.
  * - `lower`: lower case.
  * - `parentSegment(collection)`: the segment after the first `<collection>/` in the value, so a name can
@@ -175,10 +176,10 @@ function applyFilter(value: string, filter: TemplateFilter, scope: TemplateScope
     case 'projectFromName':
       return segmentAfter(value, ['projects']) ?? '';
     case 'regionFromName': {
-      const region = segmentAfter(value, ['regions', 'locations']);
-      if (region !== undefined) return region;
-      const zone = segmentAfter(value, ['zones']);
-      if (zone !== undefined) return regionOfZone(zone);
+      // A zone may stand under `locations/` too (a zonal GKE cluster, a TPU node), so every segment goes
+      // through the one rule.
+      const location = segmentAfter(value, ['regions', 'locations']) ?? segmentAfter(value, ['zones']);
+      if (location !== undefined) return regionOfZone(location);
       return value.includes('/') ? '' : regionOfZone(value);
     }
     case 'short': {

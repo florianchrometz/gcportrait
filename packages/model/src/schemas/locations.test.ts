@@ -13,6 +13,11 @@ const LOCATIONS: readonly (readonly [string, boolean, boolean, string])[] = [
   // AI zones: the region, then `ai`, the deployment group and the letter of the zone they follow.
   ['us-central1-ai1a', false, true, 'us-central1'],
   ['us-west4-ai2b', false, true, 'us-west4'],
+  // A sovereign cloud's region and zones: the same shape after `u-`.
+  ['u-france-east1', true, false, 'u-france-east1'],
+  ['u-france-east1-a', false, true, 'u-france-east1'],
+  ['u-germany-northeast1', true, false, 'u-germany-northeast1'],
+  ['u-germany-northeast1-c', false, true, 'u-germany-northeast1'],
   // Multi-regions and multi-region configurations are locations of their own.
   ['us', false, false, 'us'],
   ['eu', false, false, 'eu'],
@@ -25,6 +30,9 @@ const LOCATIONS: readonly (readonly [string, boolean, boolean, string])[] = [
   ['europe-west3-', false, false, 'europe-west3-'],
   ['europe-west3-b-1', false, false, 'europe-west3-b-1'],
   ['zones/europe-west3-b', false, false, 'zones/europe-west3-b'],
+  ['u-france', false, false, 'u-france'],
+  ['x-france-east1-a', false, false, 'x-france-east1-a'],
+  ['u-u-france-east1', false, false, 'u-u-france-east1'],
   ['', false, false, ''],
 ];
 

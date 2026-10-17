@@ -6,9 +6,11 @@
  * choices all read a location through these functions, so a resource lies in the same region for the filter
  * as in the drawing. The module imports nothing (no zod), so the app's UI thread may use it too.
  *
- * - A region is `<geography>-<area><n>`: `europe-west3`, `us-central1`, `northamerica-northeast1`.
- * - A zone is its region, a hyphen and a suffix of lower-case letters and digits: `europe-west3-b`, or an AI
- *   zone's longer suffix, `us-central1-ai1a`.
+ * - A region is `<geography>-<area><n>`: `europe-west3`, `us-central1`, `northamerica-northeast1`. A region
+ *   of a sovereign cloud (Google Cloud Dedicated, run by a partner in one jurisdiction) has the same shape
+ *   after a `u-`: `u-france-east1`, `u-germany-northeast1`.
+ * - A zone is its region, a hyphen and a suffix of lower-case letters and digits: `europe-west3-b`,
+ *   `u-france-east1-a`, or an AI zone's longer suffix, `us-central1-ai1a`.
  * - Anything else is a location of its own: `global`, a multi-region (`us`, `eu`) or a multi-region
  *   configuration (`nam4`, `eur3`).
  *
@@ -16,15 +18,17 @@
  * cases lower-cases them first.
  */
 
-const REGION = /^[a-z]+-[a-z]+[0-9]+$/;
-const ZONE = /^([a-z]+-[a-z]+[0-9]+)-[a-z0-9]+$/;
+const REGION = /^(?:u-)?[a-z]+-[a-z]+[0-9]+$/;
+const ZONE = /^((?:u-)?[a-z]+-[a-z]+[0-9]+)-[a-z0-9]+$/;
 
-/** Whether a location is a region (`europe-west3`), not a zone, a multi-region or `global`. */
+/**
+ * Whether a location is a region (`europe-west3`, `u-france-east1`), not a zone, a multi-region or `global`.
+ */
 export function isRegion(location: string): boolean {
   return REGION.test(location);
 }
 
-/** Whether a location is a zone (`europe-west3-b`, `us-central1-ai1a`). */
+/** Whether a location is a zone (`europe-west3-b`, `us-central1-ai1a`, `u-france-east1-a`). */
 export function isZone(location: string): boolean {
   return ZONE.test(location);
 }

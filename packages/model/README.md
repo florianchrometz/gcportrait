@@ -63,8 +63,9 @@ as Cloud Asset Inventory writes it, in lower case.
 
 | Export | What |
 |---|---|
-| `isRegion(location)` | a region, `<geography>-<area><n>`: `europe-west3`, `northamerica-northeast1` |
-| `isZone(location)` | a zone: its region, a hyphen and a suffix of lower-case letters and digits, `europe-west3-b` or an AI zone such as `us-central1-ai1a` |
+| `LOCATION_PATTERN` | the shape of any location name, in either case: `global`, a region, a zone, a multi-region such as `EU` (`LocationSchema`'s pattern; the graph tests a lower-cased location with it before it draws a region zone) |
+| `isRegion(location)` | a region, `<geography>-<area><n>`: `europe-west3`, `northamerica-northeast1`; a sovereign cloud's region has the same shape after `u-`: `u-france-east1` |
+| `isZone(location)` | a zone: its region, a hyphen and a suffix of lower-case letters and digits, `europe-west3-b`, `u-france-east1-a` or an AI zone such as `us-central1-ai1a` |
 | `zoneRegion(location)` | the region a zone lies in (`us-central1-ai1a` → `us-central1`); undefined for any other location |
 | `regionOfZone(location)` | a zone's region; any other location unchanged (`global`, multi-regions such as `us` and `eu`, configurations such as `nam4`) |
 

@@ -130,12 +130,12 @@ diagram.
 
 **Virtual regions (rule 3).** With `showRegions`, each project's *direct* children that have a non-global
 location move into a region container (`europe-west3`, or a multi-region such as `eu`, lower-cased) and, for a
-zone (`europe-west3-b`, or an AI zone such as `us-central1-ai1a`), a zone container inside it. What is a zone
-and which region holds it is the model's one rule (`isZone`, `regionOfZone`, `isRegion`), which the regions
-filter, the catalog's templates and the app's filter choices follow too. VPCs are global and stay under the
-project; subnets and everything nested in them stay where they are. Virtual nodes are `container`s of type
-`gcportrait.virtual/Region` or `…/Zone`, carry the project's id and number, and are in `byType` and
-`byProject` like any node.
+zone (`europe-west3-b`, an AI zone such as `us-central1-ai1a`, a sovereign cloud's `u-france-east1-a`), a zone
+container inside it. What is a location, what is a zone and which region holds it is the model's one rule
+(`LOCATION_PATTERN`, `isZone`, `regionOfZone`, `isRegion`), which the regions filter, the catalog's templates
+and the app's filter choices follow too. VPCs are global and stay under the project; subnets and everything
+nested in them stay where they are. Virtual nodes are `container`s of type `gcportrait.virtual/Region` or
+`…/Zone`, carry the project's id and number, and are in `byType` and `byProject` like any node.
 
 ## Aliases and dangling references
 

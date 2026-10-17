@@ -210,6 +210,7 @@ export {
 } from './schemas/vocabulary.js';
 export { RELATION_KINDS } from './schemas/relation-kinds.js';
 export { isRegion, isZone, regionOfZone, zoneRegion } from './schemas/locations.js';
+export { LOCATION_PATTERN } from './schemas/patterns.js';
 export {
   COMMAND_VARIABLES,
   VARIABLE_NAME_PATTERN,
