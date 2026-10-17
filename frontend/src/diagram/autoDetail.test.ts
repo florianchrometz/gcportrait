@@ -10,6 +10,7 @@ import { buildSceneWithReport, viewportBudget } from '@gcportrait/graph';
 import { normalizeViewSpec, type LensId, type SceneDetail } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 
+import { BREAKPOINTS_REM, CONTAINER } from '../ui/screen';
 import { autoLevel, autoLevelChange, budgetOf } from './autoDetail';
 import { demoGraphSync } from './testing/demoScenes';
 
@@ -97,5 +98,16 @@ describe('autoLevelChange (hysteresis)', () => {
     expect(budgetOf({ width: 1280, height: 624 })).toBe(viewportBudget(1280, 624));
     expect(budgetOf({ width: 1280, height: 624 })).toBe(57);
     expect(budgetOf({ width: 1280, height: 800 })).toBe(73);
+  });
+
+  it('gives a phone’s canvas in a workspace too short for the whole timeline bar the smallest budget, so the bar’s fold never changes the level', () => {
+    // The widest phone and the tallest workspace `CONTAINER.shortWorkspace` takes, at the default 16-pixel rem: the
+    // canvas is at most that big whatever the timeline bar under it folds to (pages/diagram/TimelineBar.module.css).
+    const rem = 16;
+    const tallest = Number(/max-height: ([\d.]+)rem/.exec(CONTAINER.shortWorkspace)?.[1]) * rem;
+    const widest = BREAKPOINTS_REM.tablet * rem;
+    expect(Number.isFinite(tallest)).toBe(true);
+    expect(budgetOf({ width: widest, height: tallest })).toBe(budgetOf({ width: 0, height: 0 }));
+    expect(budgetOf({ width: 0, height: 0 })).toBe(24);
   });
 });

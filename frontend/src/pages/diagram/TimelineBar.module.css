@@ -2,7 +2,8 @@
 
 /* The timeline bar (TimelineBar.tsx): the second row of the diagram workspace, across both columns
    (DiagramPage.module.css), 48 px tall on a desktop so the canvas keeps its size, two lines on a tablet and three on a
-   phone (the end of this sheet). Chrome tokens only (skill gcp-diagram-style §9),
+   phone, one on a phone turned sideways while the details sheet is open (the end of this sheet). Chrome tokens only
+   (skill gcp-diagram-style §9),
    so both themes follow; every marker shape keeps 3 : 1 against the bar's surface container in both themes. */
 .timeline {
   /* How far the thumb's focus ring reaches past the thumb's centre (below): the dot's 8 px radius, the ring and the
@@ -406,5 +407,24 @@
 
   .options {
     margin-left: auto;
+  }
+
+  /* A phone turned sideways, its workspace too short for the whole bar and a canvas whose half-height details sheet
+     holds its header's Close button whole (`CONTAINER.shortWorkspace` of ui/screen.ts, the workspace its container,
+     pages/DiagramPage.module.css): while the sheet is open (at half height or full) the bar keeps one line, the slider
+     and after it, as in the tab order, the step and play buttons, so Pause and the steps stay in reach (as do the
+     slider, and `[` and `]`), and the canvas above it is tall enough for the sheet's header. The readout (with "Try
+     again") and the playback options (the speed, "Play extras") are hidden meanwhile, out of sight, focus and the
+     accessibility tree, as the disclosure bar is on a canvas this short (the markers still show a day's state), and
+     come back when the sheet closes. The slider's line wraps under the buttons where it would be narrower than 12rem. */
+  @container (max-height: 18.49rem) {
+    :has(> [data-sheet]:not([hidden])) > .timeline .track {
+      flex: 1 1 12rem;
+    }
+
+    :has(> [data-sheet]:not([hidden])) > .timeline .readoutRow,
+    :has(> [data-sheet]:not([hidden])) > .timeline .options {
+      display: none;
+    }
   }
 }

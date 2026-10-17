@@ -455,9 +455,10 @@
     opacity: 0.6;
   }
 
-  /* A control scrolled into view (by focus) stops just below the handle's inner half, so in a half-height sheet too
-     short to show the header's Close button whole (a small phone turned sideways) focus scrolls the header up to that
-     half and the button's middle stays in view. */
+  /* A control scrolled into view (by focus) stops just below the handle's inner half, which lies over the top of this
+     box: none lands under the handle. On a phone turned sideways the timeline bar keeps one line while the sheet is
+     open (pages/diagram/TimelineBar.module.css), so the canvas is tall enough for the half-height sheet to hold the
+     header's Close button whole, and every 44-pixel control below the handle. */
   .content {
     border-radius: inherit;
     scroll-padding-top: calc(var(--touch-target) / 2);

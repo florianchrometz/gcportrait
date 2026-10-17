@@ -22,8 +22,14 @@
 
 /* A phone: while the drawer's sheet covers the canvas (`data-sheet="full"`), what the canvas holds (the drawing, the
    disclosure bar) is hidden from view, from focus and from assistive technology alike, as it is out of sight; it
-   comes back when the sheet goes down to half height or closes. */
+   comes back when the sheet goes down to half height or closes. The workspace is the query container of the timeline
+   bar's fold on a phone turned sideways (`CONTAINER.shortWorkspace` of ui/screen.ts, TimelineBar.module.css): its
+   height, the window's less the top bar and the footer, is the same whatever the bar folds to. */
 @media (max-width: 47.99rem) {
+  .workspace {
+    container-type: size;
+  }
+
   .workspace:has(> [data-sheet='full']:not([hidden])) > .canvas > * {
     visibility: hidden;
   }

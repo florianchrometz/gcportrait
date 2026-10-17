@@ -11,7 +11,9 @@
  * played through only once "Play extras" is pressed.
  *
  * Narrower than a desktop the same parts wrap (`PART_ORDER`): a tablet's readout goes below the slider, a phone's
- * slider spans the width with the readout and then the buttons below it.
+ * slider spans the width with the readout and then the buttons below it. On a phone turned sideways, while the details
+ * sheet is open, the bar keeps one line, the slider and the buttons after it, its readout and playback options hidden
+ * until the sheet closes, so the canvas holds the sheet's header (TimelineBar.module.css, `CONTAINER.shortWorkspace`).
  *
  * The view's day is its `tick` in the URL hash (the snapshot's own day is no tick), written through the store's
  * actions only: the slider in place (continuous), the buttons as history entries. The timeline controller

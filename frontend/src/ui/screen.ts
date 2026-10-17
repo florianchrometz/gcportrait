@@ -4,7 +4,7 @@
  * and landscape), the tablet from 48rem to 79.99rem, the desktop from 80rem. Media queries cannot read custom
  * properties, so the stylesheets write these queries out, in rem, exactly as `MEDIA` has them (ui/screen.test.ts holds
  * every sheet to them, and styles/tokens.css names the two widths as `--breakpoint-tablet` and `--breakpoint-desktop`);
- * the one container query, a part's own height, is `CONTAINER`'s.
+ * the container queries, a part's own height, are `CONTAINER`'s.
  *
  * What moves between the layouts is the chrome only, never a control: a fold (ui/Popover `sheet`) keeps the same
  * components and shows them in place on the desktop and behind a button on narrower screens.
@@ -34,9 +34,19 @@ export const MEDIA = {
  * above the half-height details sheet, which covers half of it (the bar's 44-pixel buttons in their panel, 54 px, the
  * sheet handle's outer half and a gap, 30 px: 84 px, twice), so the bar is hidden while the sheet is open
  * (diagram/disclosure/DisclosureBar.module.css).
+ * `shortWorkspace`: a phone's diagram workspace, the canvas and the timeline bar under it, under 18.5rem tall (a phone
+ * turned sideways), too short for the whole bar and a canvas whose half-height details sheet holds its header's Close
+ * button whole (the sheet's border, the handle's inner half and a gap, 27 px, and the 44-pixel button: 71 px, twice;
+ * the phone's bar at its tallest, the slider's line, a readout row with "Try again", the buttons' and options' line,
+ * gaps and padding, 150 px: 292 px), so the bar keeps only its slider and the step and play buttons while the sheet is
+ * open (pages/diagram/TimelineBar.module.css). The workspace's height is the window's less the top bar and the footer,
+ * whatever the bar folds to, so the query never flips as the bar folds; and a canvas that fits in such a workspace on a
+ * phone, under 768 × 296 px, has the smallest `auto` budget whatever the bar's height (24 rects, 336 000 px² at
+ * 14 000 each), so folding the bar never lays the diagram out again under a node just tapped (diagram/autoDetail.ts).
  */
 export const CONTAINER = {
   shortCanvas: '(max-height: 10.49rem)',
+  shortWorkspace: '(max-height: 18.49rem)',
 } as const;
 
 export type Screen = 'phone' | 'tablet' | 'desktop';

@@ -211,8 +211,10 @@ a phone or a tablet the top bar's controls fold behind two buttons, View (lens, 
 search) and More (the pages, the snapshot, saved views, Copy link, Export, the theme and the account); the
 details open as a panel over the diagram's right side on a tablet and as a sheet over its lower half on a
 phone, which you drag up to the full height and back, or down to close it; the timeline and the other bars
-wrap onto more lines. When the breadcrumb is longer than the bar, swipe it sideways to reach the levels above
-the one you are on. On the diagram one finger pans, two fingers pinch to zoom, a tap selects a node (or opens
+wrap onto more lines. On a phone turned sideways the timeline keeps only its slider and the day and play
+buttons while the details are open, so the details have room; its date and speed come back when you close
+them. When the breadcrumb is longer than the bar, swipe it sideways to reach the levels above the one you are
+on. On the diagram one finger pans, two fingers pinch to zoom, a tap selects a node (or opens
 a collapsed project), a double tap zooms in where you tap, and pressing and holding a node for half a second
 shows its name and previews its connections, as resting a mouse on it does, without selecting it; the next
 touch takes that away. A node's menu (a right-click on a desktop) and drilling in (a double-click on a

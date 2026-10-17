@@ -56,11 +56,19 @@ describe('the layouts’ breakpoints', () => {
       expect(CONTAINER_QUERIES, `${path}: @container ${query}`).toContain(query);
   });
 
-  it('has its one container query in rem, used where the short canvas is', () => {
-    expect(CONTAINER.shortCanvas).toMatch(/^\(max-height: [\d.]+rem\)$/);
+  it('has its container queries in rem, each used where its part is', () => {
+    for (const query of Object.values(CONTAINER)) expect(query).toMatch(/^\(max-height: [\d.]+rem\)$/);
+    // The short canvas: the disclosure bar's frame is the container, over the canvas.
     expect(mediaQueries(readSource('diagram/disclosure/DisclosureBar.module.css'), 'container')).toEqual([
       CONTAINER.shortCanvas,
     ]);
+    // The short workspace: the diagram page's workspace is the container, the timeline bar's fold asks it.
+    expect(mediaQueries(readSource('pages/diagram/TimelineBar.module.css'), 'container')).toEqual([
+      CONTAINER.shortWorkspace,
+    ]);
+    expect(withoutComments(readSource('pages/DiagramPage.module.css'))).toMatch(
+      /\.workspace\s*\{\s*container-type:\s*size;\s*\}/,
+    );
   });
 });
 

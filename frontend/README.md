@@ -292,19 +292,23 @@ names the three layouts and their breakpoints, in rem: the phone up to 47.99rem 
 tablet from 48rem to 79.99rem, the desktop from 80rem (1280 px at the default text size); `useScreen()`
 follows the window through `matchMedia` (a window without it, as in jsdom, is a desktop). Media queries cannot
 read custom properties, so the stylesheets write the same queries out (`MEDIA`): `(max-width: 79.99rem)` for
-what the phone and the tablet share, `(max-width: 47.99rem)` for the phone alone. One container query asks for
-a part's own room instead: `CONTAINER.shortCanvas`, `(max-height: 10.49rem)`, a phone's canvas too short for
-the disclosure bar above the half-height drawer. `ui/screen.test.ts` refuses any other width or container
-query in any stylesheet and checks `--breakpoint-tablet` and `--breakpoint-desktop` in `styles/tokens.css`
-against the constants. Where the folding needs the DOM to change (a fold's button, the order of the timeline
-bar's parts), the component reads `useScreen()`; everything else is CSS.
+what the phone and the tablet share, `(max-width: 47.99rem)` for the phone alone. Two container queries ask
+for a part's own room instead: `CONTAINER.shortCanvas`, `(max-height: 10.49rem)`, a phone's canvas too short
+for the disclosure bar above the half-height drawer (the bar's frame over the canvas is the container), and
+`CONTAINER.shortWorkspace`, `(max-height: 18.49rem)`, a phone's diagram workspace (the canvas and the timeline
+bar, the window less the top bar and the footer) too short for the whole timeline bar and a canvas whose
+half-height drawer holds its header's Close button whole (the workspace is the container). `ui/screen.test.ts`
+refuses any other width or container query in any stylesheet and checks `--breakpoint-tablet` and
+`--breakpoint-desktop` in `styles/tokens.css` against the constants. Where the folding needs the DOM to change
+(a fold's button, the order of the timeline bar's parts), the component reads `useScreen()`; everything else
+is CSS.
 
 | Part | Desktop | Tablet | Phone |
 |---|---|---|---|
 | Top bar | the app row, and on `/diagram` the view row | the same two rows; the navigation and the app row's actions fold into More, the view row's controls but the breadcrumb into View | one row: the mark (the wordmark for assistive technology only), the breadcrumb on `/diagram`, View and More; the demo badge at the top of More |
 | Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe or a focused crumb brings the others into view, and the edge where they are cut fades out | as on a tablet |
 | Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
-| Timeline bar | one row; the slider and its dates sit above the bar's middle, so the day markers under the track fit in below the reach of the thumb's focus ring | the readout below the slider's line, which is as on a phone | the slider across the width on a line of its 44-pixel thumb and, below the reach of the thumb's focus ring, the day markers under its track (the bar no taller for them); the readout below, then the buttons and the playback options |
+| Timeline bar | one row; the slider and its dates sit above the bar's middle, so the day markers under the track fit in below the reach of the thumb's focus ring | the readout below the slider's line, which is as on a phone | the slider across the width on a line of its 44-pixel thumb and, below the reach of the thumb's focus ring, the day markers under its track (the bar no taller for them); the readout below, then the buttons and the playback options; on a workspace under 18.5rem tall (a phone turned sideways), while the drawer is open, one line, the slider and the step and play buttons after it, the readout and the playback options hidden until the drawer closes, so the canvas holds the half-height drawer's header |
 | Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways); hidden while View or More is open |
 | Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
@@ -362,10 +366,15 @@ drawer's content scrolls inside it and never reaches past its edge (onto the tim
 moves clear of the drawer (to the bottom left on a tablet, above the sheet on a phone, by the sheet's
 `data-sheet`; hidden while the sheet is open on a canvas too short for it there, `CONTAINER.shortCanvas` on
 the bar's frame), the canvas's content is hidden (`visibility`) while the phone's sheet covers it at full
-height, and the skip links show over the top bar. In a half-height sheet too short for the drawer's Close
-button (a small phone turned sideways), focus scrolls the header up to the handle's inner half, so the
-button's middle stays in view. A control is either in sight when it has focus and tappable at its centre, or
-not focusable at all.
+height, and the skip links show over the top bar. A control scrolled into view in the sheet by focus stops
+below the handle's inner half, which lies over the top of the sheet's content (`scroll-padding-top`). On a
+phone turned sideways, whose workspace is too short for the whole timeline bar and a canvas whose half-height
+sheet holds its header (`CONTAINER.shortWorkspace` on the workspace), the timeline bar keeps one line while
+the sheet is open, the slider and the step and play buttons, and hides its readout and playback options until
+the sheet closes: the canvas then holds the sheet's Close button whole above the bar (and every other 44-pixel
+control of the sheet below the handle), and a canvas that short has the smallest `auto` budget either way, so
+the fold never lays the diagram out again. A control is either wholly in sight when it has focus and tappable
+there, or not focusable at all.
 
 **Tables and hidden text.** A table too wide for its page scrolls sideways in its own box (`tableWrap` in
 `snapshots/` and `preflight/`), and that box is positioned, as is the permission check's panel (`panel` in
@@ -394,9 +403,12 @@ View and More opened, on a live instance signed in and on the Snapshots page wit
 per row on a phone, where no box scrolls sideways, not even a table's; the tables whole on a tablet): sideways
 scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a
 column a few characters wide, the top bar's items, the timeline bar's parts (none over another), the drawer
-within the canvas, 44-pixel targets, every control one reaches with Tab in sight when focused and tappable at
-its centre, the canvas's room (the share of it an open drawer, View or More sheet leaves in view, and View
-opened over the drawer closing it), axe; and a theme picked in More, Sign out from More, a long trail, the
+within the canvas, 44-pixel targets, every control one reaches with Tab wholly in sight when focused (its
+whole box inside the window, and inside the canvas when it lies over it) and tappable at its centre (and, over
+the canvas, just inside each edge), the canvas's room (the share of it an open drawer, View or More sheet
+leaves in view, and View opened over the drawer closing it), the drawer's Close button whole inside the canvas
+as the drawer opens on a phone turned sideways, with the timeline bar on one line meanwhile, axe; and a theme
+picked in More, Sign out from More, a long trail, the
 sheet's heights, `+` and `0` from an external keyboard with the drawer open (the focused card stays above it,
 and the drawing is fitted above it), View opened, a lens picked in it and View closed by taps (the drawing
 fitted whole below the sheet, the lens's view too, then the whole canvas again) and the canvas's touch input

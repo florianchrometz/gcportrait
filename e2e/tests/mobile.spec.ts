@@ -59,11 +59,16 @@ import {
  *   44 × 44 CSS pixels;
  * - a control one reaches with Tab (in the open sheet or dialog when there is one, as their focus stays inside; not in
  *   the folded part of a closed <details>) is out of sight when it has focus or cannot be tapped: focused, which
- *   scrolls the box it is in to it, the point at its centre is not the control but something over it (WCAG 2.2's
- *   2.4.11 and target size);
+ *   scrolls the box it is in to it, its box reaches past the window's edge or, over the canvas (in it, the drawer, a
+ *   View or More sheet), past the canvas's, by more than a screen pixel, or the point at its centre (over the canvas
+ *   also each point just inside the middle of an edge) is not the control but something over it (WCAG 2.2's 2.4.11
+ *   and target size);
  * - the canvas is shorter than a quarter of the window, or the drawer, open at its first height, leaves less than a
  *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
- *   nor (a canvas under 10.5 rem) hidden until the sheet closes;
+ *   nor (a canvas under 10.5 rem) hidden until the sheet closes, the drawer's Close button, as the drawer opens, is not
+ *   whole inside the canvas or something lies over a point of it, or the timeline bar keeps its readout or speed on a
+ *   phone's layout (or loses its slider or a step or play button) while the drawer is open, or does not get them back
+ *   once it closes;
  * - an open View or More sheet, with the disclosure bar's row while it shows, leaves less than a third of the canvas in
  *   view, or the sheet reaches below three quarters of the canvas's height, or View opened while the drawer is open
  *   leaves the drawer open, or it opens again once View is closed (at every size, the sideways ones too);
@@ -612,9 +617,14 @@ function sidewaysBoxes(page: Page): Promise<string[]> {
 /**
  * The controls one reaches with Tab (not the drawing's own nodes) that are out of sight when focused or cannot be
  * tapped. Inside the innermost open dialog or sheet when there is one (their focus trap keeps Tab there), else on the
- * whole page: each is focused, which scrolls the boxes it is in (the page, the drawer, the breadcrumb) to it, and the
- * point at its centre must be the control (or its label) rather than something lying over it. Focus and every box's
- * scroll position are put back afterwards.
+ * whole page: each is focused, which scrolls the boxes it is in (the page, the drawer, the breadcrumb) to it, and then
+ * its whole target, not only its middle, must be in sight: each of its boxes (a link in a sentence may wrap onto two
+ * lines) lies wholly inside the viewport and, for a control over the diagram's canvas (in the canvas, or in a panel
+ * over it: the details drawer, the View or More sheet), wholly inside the canvas, so a 44-pixel target that the
+ * timeline bar or the top bar cuts by a pixel fails. The point at its centre must be the control (or its label) rather
+ * than something lying over it; over the canvas, where panels lie over one another (the drawer over the drawing, its
+ * handle over the top of its own content, the disclosure bar above the sheet), so must the points just inside the
+ * middle of each of its edges. Focus and every box's scroll position are put back afterwards.
  */
 async function hiddenControls(page: Page): Promise<string[]> {
   // A key pressed first: focus moved from script then shows as keyboard focus does (`:focus-visible`), skip links
@@ -662,6 +672,27 @@ async function hiddenControls(page: Page): Promise<string[]> {
     const tabbable = scope.querySelectorAll<HTMLElement>(
       'a[href], button, input:not([type="hidden"]), select, textarea, summary, [tabindex]',
     );
+    // The diagram's canvas, while it shows: what lies over it (in it, or in a panel over it) stays inside it.
+    const canvasElement = document.getElementById('diagram-canvas');
+    const canvas =
+      canvasElement !== null && shown(canvasElement) ? canvasElement.getBoundingClientRect() : null;
+    // One of the screen's pixels and layout's rounding: the scroll position focus sets snaps to the screen's pixels,
+    // which can leave a control scrolled into view that much past the edge of the box it scrolls in.
+    const ROUNDING = 1 / window.devicePixelRatio + 0.05;
+    const px = (n: number): string => String(Math.round(n * 10) / 10);
+    /** How far `part` reaches past each edge of `frame` that it crosses, in words. */
+    const past = (part: DOMRect, frame: DOMRect, what: string): string[] =>
+      (
+        [
+          ['left', frame.left - part.left],
+          ['top', frame.top - part.top],
+          ['right', part.right - frame.right],
+          ['bottom', part.bottom - frame.bottom],
+        ] as const
+      )
+        .filter(([, by]) => by > ROUNDING)
+        .map(([edge, by]) => `${px(by)} px past the ${what}'s ${edge} edge`);
+    const viewport = new DOMRect(0, 0, window.innerWidth, window.innerHeight);
     for (const element of tabbable) {
       if (element.tabIndex < 0 || element.closest('svg.dg-canvas, [inert]') !== null) continue;
       if ((element instanceof HTMLButtonElement || element instanceof HTMLInputElement) && element.disabled)
@@ -670,25 +701,45 @@ async function hiddenControls(page: Page): Promise<string[]> {
       element.focus();
       // Text for assistive technology only (a skip link shows once focused, and is checked then).
       if (visuallyHidden(element)) continue;
-      // The centre of each of its boxes (a link in a sentence may wrap onto two lines): one of them is the control.
       const label = element instanceof HTMLInputElement ? element.closest('label') : null;
-      let hit: Element | null = null;
-      let ok = false;
+      const over =
+        canvas !== null &&
+        (canvasElement?.contains(element) === true || element.closest('[data-canvas-overlay]') !== null);
+      // Each of its boxes (a link in a sentence may wrap onto two lines), whole.
       for (const part of element.getClientRects()) {
+        if (part.width <= 0 || part.height <= 0) continue;
+        const at = `${name(element)} at ${[part.left, part.top, part.right, part.bottom].map(px).join(',')}`;
+        const outside = [...past(part, viewport, 'window'), ...(over ? past(part, canvas, 'canvas') : [])];
+        if (outside.length > 0) {
+          problems.push(`${at} reaches ${outside.join(' and ')} when focused`);
+          break;
+        }
+        // Its middle and, over the canvas, just inside the middle of each edge: a point there is the control, not what
+        // covers or clips it.
+        const inset = (size: number): number => Math.min(2, size / 4);
         const x = part.left + part.width / 2;
         const y = part.top + part.height / 2;
-        hit =
-          x >= 0 && y >= 0 && x < window.innerWidth && y < window.innerHeight
-            ? document.elementFromPoint(x, y)
-            : null;
-        ok = hit !== null && (element.contains(hit) || label?.contains(hit) === true);
-        if (ok) break;
+        const points = [
+          ['middle', x, y],
+          ...(over
+            ? ([
+                ['top', x, part.top + inset(part.height)],
+                ['bottom', x, part.bottom - inset(part.height)],
+                ['left', part.left + inset(part.width), y],
+                ['right', part.right - inset(part.width), y],
+              ] as const)
+            : []),
+        ] as const;
+        const covered = points
+          .map(([where, left, top]) => ({ where, hit: document.elementFromPoint(left, top) }))
+          .find(({ hit }) => hit === null || !(element.contains(hit) || label?.contains(hit) === true));
+        if (covered !== undefined) {
+          problems.push(
+            `${at} is ${covered.hit === null ? 'out of sight' : `under ${name(covered.hit)}`} at its ${covered.where} when focused`,
+          );
+          break;
+        }
       }
-      const box = element.getBoundingClientRect();
-      if (!ok)
-        problems.push(
-          `${name(element)} at ${[box.left, box.top, box.right, box.bottom].map((n) => String(Math.round(n))).join(',')} is ${hit === null ? 'out of sight' : `under ${name(hit)}`} when focused`,
-        );
     }
     if (before instanceof HTMLElement || before instanceof SVGElement) before.focus();
     else (document.activeElement as HTMLElement | null)?.blur();
@@ -928,12 +979,65 @@ for (const size of SIDEWAYS) {
     } else {
       expect(canvas?.height ?? Infinity).toBeLessThan(10.5 * 16);
     }
-    await expectClean(page, 'with the drawer open', { focus: true });
+    // The drawer's Close button as the drawer opens, before any focus scrolls it: whole inside the canvas, and a tap
+    // anywhere on it reaches it. On a phone the timeline bar keeps one line meanwhile (its slider and the step and play
+    // buttons), its readout and playback options hidden until the sheet closes, so the canvas above it holds the
+    // half-height sheet's header.
     const details = page.getByRole('complementary', { name: 'Details' });
-    await details.getByRole('button', { name: 'Close', exact: true }).click();
+    const close = details.getByRole('button', { name: 'Close', exact: true });
+    const readout = page.getByTestId('timeline-readout');
+    const speed = page.getByRole('radiogroup', { name: 'Speed' });
+    expect(await close.evaluate(wholeAndTappable)).toEqual([]);
+    const bar = await timelineBar(page);
+    for (const name of ['Previous day', 'Play through the days', 'Next day']) {
+      await expect(bar.getByRole('button', { name })).toBeVisible();
+    }
+    await expect(bar.getByRole('slider')).toBeVisible();
+    if (size.width < TABLET_FROM) {
+      await expect(readout).toBeHidden();
+      await expect(speed).toBeHidden();
+    } else {
+      await expect(readout).toBeVisible();
+    }
+    await expectClean(page, 'with the drawer open', { focus: true });
+    await close.click();
     await expect(details).toBeHidden();
     await expect(expand).toBeVisible();
+    await expect(readout).toBeVisible();
+    await expect(speed).toBeVisible();
   });
+}
+
+/**
+ * What keeps a control from being whole and tappable where it is, unscrolled: the parts of its box past the canvas's
+ * edges, or a point (its middle, and just inside the middle of each edge) where something else lies over it or a box
+ * clips it. For a control in a panel over the canvas (the details drawer), run in the page.
+ */
+function wholeAndTappable(element: Element): string[] {
+  const canvas = document.getElementById('diagram-canvas')?.getBoundingClientRect();
+  const box = element.getBoundingClientRect();
+  if (canvas === undefined) return ['no canvas'];
+  // One of the screen's pixels and layout's rounding.
+  const rounding = 1 / window.devicePixelRatio + 0.05;
+  const problems: string[] = [];
+  const px = (n: number): string => String(Math.round(n * 10) / 10);
+  if (box.top < canvas.top - rounding) problems.push(`${px(canvas.top - box.top)} px above the canvas`);
+  if (box.bottom > canvas.bottom + rounding)
+    problems.push(`${px(box.bottom - canvas.bottom)} px below the canvas`);
+  const x = box.left + box.width / 2;
+  const y = box.top + box.height / 2;
+  for (const [where, left, top] of [
+    ['middle', x, y],
+    ['top', x, box.top + 2],
+    ['bottom', x, box.bottom - 2],
+    ['left', box.left + 2, y],
+    ['right', box.right - 2, y],
+  ] as const) {
+    const hit = document.elementFromPoint(left, top);
+    if (hit === null || !element.contains(hit))
+      problems.push(`its ${where} is under <${hit?.tagName.toLowerCase() ?? 'nothing'}>`);
+  }
+  return problems;
 }
 
 /**
