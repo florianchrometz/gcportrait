@@ -20,8 +20,8 @@ export const HEADER_WINDOW = 10;
 
 /**
  * The AI assistants' own folders: per-user settings and a tool's instruction files, git-ignored at any depth, as
- * AGENTS.md and .agents/skills/ are the one source of instructions (AGENTS.md, "Assistants"; `pnpm agents:setup`
- * writes the local pointer files). Keep in step with the assistants' block of .gitignore.
+ * the AGENTS.md files and .agents/skills/ are the one source of instructions (AGENTS.md, "Assistants"; `pnpm
+ * agents:setup` writes the local pointer files). Keep in step with the assistants' block of .gitignore.
  */
 export const ASSISTANT_DIR_NAMES = Object.freeze([
   '.claude',

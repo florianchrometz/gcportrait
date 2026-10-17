@@ -567,3 +567,79 @@ export function openingProblems(root) {
       (file) => `${file}: the first paragraph after its title does not open with "${FOLDER_FILE_OPENING}"`,
     );
 }
+
+/**
+ * @typedef {{ line: number, folders: readonly string[], rules: string | undefined }} FolderRow
+ */
+
+/**
+ * The rows of the root's folder table (`| Folder | What it holds | Its rules |`): the line, the folders the
+ * first cell names (`frontend/` as `frontend`), and the rules file the third names (`frontend/AGENTS.md`),
+ * undefined where the root's rules apply. Undefined when the text has no such table.
+ * @param {string} text
+ * @returns {FolderRow[] | undefined}
+ */
+export function folderTable(text) {
+  const lines = text.split(/\r?\n/);
+  const header = lines.findIndex((line) =>
+    /^\|\s*Folder\s*\|\s*What it holds\s*\|\s*Its rules\s*\|\s*$/.test(line),
+  );
+  if (header < 0) return undefined;
+  /** @type {FolderRow[]} */
+  const rows = [];
+  for (let index = header + 2; index < lines.length && (lines[index] ?? '').startsWith('|'); index += 1) {
+    const cells = (lines[index] ?? '')
+      .split('|')
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    rows.push({
+      line: index + 1,
+      folders: [...(cells[0] ?? '').matchAll(/`([^`/]+)\/`/g)].map((match) => match[1] ?? ''),
+      rules: /^`([^`]+)`$/.exec(cells[2] ?? '')?.[1],
+    });
+  }
+  return rows;
+}
+
+/**
+ * What is wrong with the root's folder table of a checkout: it names exactly the folders that hold an AGENTS.md,
+ * each in a row of its own with that file, and every folder it names exists and, in a row of the root's rules,
+ * holds no AGENTS.md.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function folderTableProblems(root) {
+  const rows = folderTable(readFileSync(path.join(root, RULES_FILE), 'utf8'));
+  if (rows === undefined) return [`${RULES_FILE}: no folder table (| Folder | What it holds | Its rules |)`];
+  const folders = new Set(topLevelFolders(root));
+  const rules = rulesFolders(root);
+  /** @type {string[]} */
+  const problems = [];
+  /** @type {Set<string>} */
+  const named = new Set();
+  for (const row of rows) {
+    const where = `${RULES_FILE}:${String(row.line)}`;
+    for (const folder of row.folders) {
+      if (!folders.has(folder)) problems.push(`${where}: names ${folder}/, which is no top-level folder`);
+    }
+    if (row.rules === undefined) {
+      for (const folder of row.folders) {
+        if (rules.includes(folder))
+          problems.push(`${where}: gives ${folder}/ the root's rules, but ${folder}/${RULES_FILE} exists`);
+      }
+      continue;
+    }
+    const [folder] = row.folders;
+    if (row.folders.length !== 1 || folder === undefined || row.rules !== `${folder}/${RULES_FILE}`) {
+      problems.push(`${where}: a row of a folder file names one folder and its ${RULES_FILE}`);
+      continue;
+    }
+    if (!rules.includes(folder)) problems.push(`${where}: names ${row.rules}, which does not exist`);
+    named.add(folder);
+  }
+  for (const folder of rules) {
+    if (!named.has(folder))
+      problems.push(`${RULES_FILE}: the folder table has no row for ${folder}/${RULES_FILE}`);
+  }
+  return problems;
+}

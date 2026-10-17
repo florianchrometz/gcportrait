@@ -33,10 +33,11 @@
 # CI). `changes` sorts every changed file into one of three kinds:
 #
 #   docs    Markdown that people read and, of the jobs, only unit (all other projects), website, provenance and
-#           licenses: docs/**/*.md, .changeset/*.md, the root's *.md files, and each top-level folder's and each
-#           package's README.md and CHANGELOG.md. Not the skills' files (.agents/skills/: the frontend's theme test
-#           reads the style skill's palette) and no other Markdown (catalog-check, for one, refuses a file in the
-#           catalog's data folders that is not YAML or JSON).
+#           licenses: docs/**/*.md, .changeset/*.md, the root's *.md files, each top-level folder's and each
+#           package's README.md and CHANGELOG.md, and each top-level folder's AGENTS.md (a rules file, whose
+#           citations the tooling tests in unit (all other projects) check). Not the skills' files
+#           (.agents/skills/: the frontend's theme test reads the style skill's palette) and no other Markdown
+#           (catalog-check, for one, refuses a file in the catalog's data folders that is not YAML or JSON).
 #   media   docs/media/**, what `pnpm media` and `node scripts/exports.mjs` write.
 #   code    every other file.
 #
@@ -99,7 +100,7 @@ jobs:
           GIT_NO_LAZY_FETCH: '1'
           GIT_TERMINAL_PROMPT: '0'
           MEDIA: '^docs/media/'
-          DOCS: '^(docs/.+|\.changeset/[^/]+|[^/]+|([^/]+|packages/[^/]+)/(README|CHANGELOG))\.md$'
+          DOCS: '^(docs/.+|\.changeset/[^/]+|[^/]+|([^/]+|packages/[^/]+)/(README|CHANGELOG|AGENTS))\.md$'
         run: |
           base=''
           if [ "$EVENT" = pull_request ]; then

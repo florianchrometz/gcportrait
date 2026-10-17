@@ -13,7 +13,8 @@
  *   about how it was verified, a dated note of when something changed or was decided, a machine and its
  *   versions, a measured or timed run, the record of a first version, a shell prompt with its output in
  *   code): a user document says what to do, and keeps no record of runs (AGENTS.md, Documentation). The user
- *   documents are the guides, the documents whose commands are checked, and LOG_FREE_DOCS;
+ *   documents are the guides, the documents whose commands are checked, and logFreeDocs (every rules file,
+ *   every skill and LISTED_LOG_FREE_DOCS);
  * - the self-hosting guide asks for nothing but QUICK_START_VARIABLES: the website's Variables panel lists the
  *   variables of a page's code, and the page that starts a deploy asks for the project id, the OAuth client id and
  *   the email address to grant, nothing optional;
@@ -56,6 +57,7 @@ import { parseArgs } from 'node:util';
 
 import { dependencyVersions, exactPinProblem } from './lib/dependency-versions.mjs';
 import { isHeaderExempt, listRepoFiles } from './lib/repo-files.mjs';
+import { rulesFiles } from './lib/rules-files.mjs';
 import { workspaceDirs } from './release-notes.mjs';
 
 /** The user guides: the commands in their code must exist, and they keep no verification log. */
@@ -80,22 +82,16 @@ const COMMAND_DOCS = Object.freeze([
 ]);
 
 /**
- * Other documents, checked for verification logs only (their commands are not all the scripts'): the README,
- * the rules (AGENTS.md) and the skills, the contributor references and the package READMEs. Every document
- * says what is, never how it came to be (AGENTS.md, Documentation). Not listed: the generated THIRD_PARTY.md
- * and CHANGELOGs, the changesets, docs/contributing.md (its troubleshooting table names Node versions), and
- * the catalog's and the icons' READMEs (dates of Google's own retirements and of the icon download are data
- * there).
+ * Other documents, checked for verification logs only (their commands are not all the scripts'), besides the
+ * rules files and the skills that logFreeDocs adds: the README, the skills' README, the contributor references
+ * and the package READMEs. Every document says what is, never how it came to be (AGENTS.md, Documentation).
+ * Not listed: the generated THIRD_PARTY.md and CHANGELOGs, the changesets, docs/contributing.md (its
+ * troubleshooting table names Node versions), and the catalog's and the icons' READMEs (dates of Google's own
+ * retirements and of the icon download are data there).
  */
-export const LOG_FREE_DOCS = Object.freeze([
+export const LISTED_LOG_FREE_DOCS = Object.freeze([
   'README.md',
-  'AGENTS.md',
   '.agents/README.md',
-  '.agents/skills/cai-ingestion/SKILL.md',
-  '.agents/skills/contributor-workflow/SKILL.md',
-  '.agents/skills/gcp-asset-catalog/SKILL.md',
-  '.agents/skills/gcp-diagram-layout/SKILL.md',
-  '.agents/skills/gcp-diagram-style/SKILL.md',
   'infra/README.md',
   'docs/website.md',
   'docs/backlog.md',
@@ -117,6 +113,27 @@ export const LOG_FREE_DOCS = Object.freeze([
   'packages/render-cli/README.md',
   'packages/demo-data/README.md',
 ]);
+
+/** The skills, one folder each with its SKILL.md. */
+const SKILLS_DIR = '.agents/skills';
+
+/**
+ * Every document checked for verification logs only: every rules file of the checkout (the root's AGENTS.md
+ * and each folder's, scripts/lib/rules-files.mjs), every skill's SKILL.md, and LISTED_LOG_FREE_DOCS. Found on
+ * disk, so a new folder file or skill is checked without a change here.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function logFreeDocs(root) {
+  const skillsDir = path.join(root, SKILLS_DIR);
+  const skills = existsSync(skillsDir)
+    ? readdirSync(skillsDir, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory() && existsSync(path.join(skillsDir, entry.name, 'SKILL.md')))
+        .map((entry) => `${SKILLS_DIR}/${entry.name}/SKILL.md`)
+        .sort()
+    : [];
+  return [...rulesFiles(root), ...skills, ...LISTED_LOG_FREE_DOCS];
+}
 
 /**
  * What reads as a log for the maintainer rather than an instruction, matched per line outside code: a line or
@@ -1059,7 +1076,7 @@ export function checkUserDocs(root) {
     );
   }
 
-  for (const doc of [...GUIDES, ...COMMAND_DOCS, ...LOG_FREE_DOCS]) {
+  for (const doc of [...GUIDES, ...COMMAND_DOCS, ...logFreeDocs(root)]) {
     for (const problem of verificationLogLines(readFileSync(path.join(root, doc), 'utf8')))
       problems.push(`${doc}: ${problem}`);
   }
@@ -1177,7 +1194,7 @@ function main() {
   }
   const rasteriser = dependencyVersions(root, RASTERISER.workspace, RASTERISER.name).installed ?? '';
   process.stdout.write(
-    `user-docs: OK. ${String(GUIDES.length)} guides current with the tree; ${String(GUIDES.length + COMMAND_DOCS.length + LOG_FREE_DOCS.length)} user documents without a verification log; ${QUICK_START_DOC} asks only for ${QUICK_START_VARIABLES.join(', ')}; ${RASTERISER_DOC} alone names ${RASTERISER.name}'s version, ${rasteriser} as installed; ${String(wrappedMarkdownFiles(root).length)} Markdown files wrapped at ${String(WIDTH)} columns.\n`,
+    `user-docs: OK. ${String(GUIDES.length)} guides current with the tree; ${String(GUIDES.length + COMMAND_DOCS.length + logFreeDocs(root).length)} user documents without a verification log; ${QUICK_START_DOC} asks only for ${QUICK_START_VARIABLES.join(', ')}; ${RASTERISER_DOC} alone names ${RASTERISER.name}'s version, ${rasteriser} as installed; ${String(wrappedMarkdownFiles(root).length)} Markdown files wrapped at ${String(WIDTH)} columns.\n`,
   );
 }
 

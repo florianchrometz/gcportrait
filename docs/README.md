@@ -35,7 +35,7 @@ the author" section from [author.md](author.md).
 
 | Path | What it is for |
 |---|---|
-| [AGENTS.md](../AGENTS.md) | Every rule of the project in one place, for people and AI assistants alike: what gcportrait is and is not, the product, data, layout, export, style, security, hosting, brand, licence, architecture, quality and release rules, how to work a task, the skills and every command. Cite a rule by its heading ("AGENTS.md, Security and privacy"). |
+| [AGENTS.md](../AGENTS.md) | The rules of the project, for people and AI assistants alike: what gcportrait is and is not, the product, data, layout, export, style, security, hosting, brand, licence, architecture, quality and release rules, how to work a task, the skills and every command; a top-level folder with rules of its own holds them in its own `AGENTS.md`, which the root names. Cite a rule by its file and heading ("AGENTS.md, Security and privacy"). |
 | [contributing.md](contributing.md) | From a clone of your fork to a green `pnpm check` and a small, focused pull request: setup, the local loop, the checks, the provenance rules, changesets, and the maintainer's release setup. |
 | [website.md](website.md) | The website at `gcportrait.app` (`website/`): building and checking it, the generated screenshots, animated demos and link-preview images in [media/](media/manifest.json) (`pnpm media`, and `pnpm media --check` for staleness), Lighthouse, deploying to GitHub Pages, the DNS records for the apex and `www`, the footer's links to the legal pages on the maintainer's website, the favicon and logo from `brand/icon.svg`, the static demo at `/demo/`, the sample exports, the fillable commands, the sticky header, and the header's repository widget (the latest release, the stars and the forks). |
 | [legal/](legal/README.md) | What `gcportrait.app` (the demo under `/demo/` included) processes (a fact sheet, not legal advice): the data-processing inventory (GitHub Pages' request logs, the header's repository widget, the website's page views counted with TelemetryDeck, what stays in the visitor's browser) and what they do not, and the facts the maintainer's privacy notice covers. The Impressum and the privacy notice themselves are on the maintainer's website, which the site and the demo both link. |
@@ -47,8 +47,9 @@ the author" section from [author.md](author.md).
 
 ## Documentation elsewhere in the repository
 
-- [AGENTS.md](../AGENTS.md): every rule of the project, the repository map, the commands and how to work a
-  task; the one rules file for humans and AI assistants alike.
+- [AGENTS.md](../AGENTS.md): the rules of the project, the repository map, the commands and how to work a
+  task, for humans and AI assistants alike; a top-level folder with rules of its own holds them in an
+  `AGENTS.md` of its own, which the root names.
 - [.agents/skills/](../.agents/README.md): style, layout, asset catalog, ingestion and contributor-workflow
   skills, the handbooks that apply AGENTS.md's rules, usable as checklists by reviewers too.
 - [brand/](../brand/README.md): `icon.svg`, the one source of gcportrait's mark (the favicons and the

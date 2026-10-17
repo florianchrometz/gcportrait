@@ -346,7 +346,8 @@ pnpm dev:demo
 ```
 
 [docs/contributing.md](docs/contributing.md) takes you from there to a green `pnpm check` and a pull request,
-and [AGENTS.md](AGENTS.md) holds every rule of the project in one file, for people and AI assistants alike.
+and [AGENTS.md](AGENTS.md) holds the rules of the project, with one `AGENTS.md` per folder that has rules of
+its own, for people and AI assistants alike.
 Every pull request states that the change is original work. Bugs, ideas and asset-type requests go in an
 [issue](https://github.com/florianchrometz/gcportrait/issues/new/choose).
 
@@ -367,9 +368,9 @@ contributor licence agreement (CLA).
 - **API**: [docs/api.md](docs/api.md), every route an instance serves for scripts, with curl examples: `POST
   /api/render` for SVG, PNG and draw.io renders of a scope, an export file, a snapshot or a demo organisation,
   and the live pull and export read the app streams from.
-- For contributors: [docs/contributing.md](docs/contributing.md), every rule of the project in
-  [AGENTS.md](AGENTS.md), the package map in [docs/packages.md](docs/packages.md) and the open work in
-  [docs/backlog.md](docs/backlog.md).
+- For contributors: [docs/contributing.md](docs/contributing.md), the rules of the project in
+  [AGENTS.md](AGENTS.md) and the folder files it names, the package map in
+  [docs/packages.md](docs/packages.md) and the open work in [docs/backlog.md](docs/backlog.md).
 
 ## Author
 

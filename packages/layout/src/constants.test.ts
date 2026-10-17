@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The tuning constants AGENTS.md, the skills and the README state as numbers, pinned in one place so a change
- * is deliberate and lands with its documentation. The behaviour tests use the constants by name; this table
- * holds their values.
+ * The tuning constants the rules files, the skills and the README state as numbers, pinned in one place so
+ * a change is deliberate and lands with its documentation. The behaviour tests use the constants by name;
+ * this table holds their values.
  */
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ROUTING, DEFAULT_SIZING } from './constants.js';

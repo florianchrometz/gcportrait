@@ -39,6 +39,7 @@ const RECORD_NUMBERED = ['decision', 'record', '42'].join(' ');
 const RECORD_FOLDER = ['handbook', RECORD.toLowerCase()].join('/');
 const RULE_NUMBER = ['AGENTS.md', 'rule', '9'].join(' ');
 const RULE_OF = ['rule', '12', 'of', 'AGENTS.md'].join(' ');
+const FOLDER_RULE_NUMBER = ['frontend/AGENTS.md', 'rule', '3'].join(' ');
 // Build-record wording the checker refuses by pattern.
 const VERIFIED = ['Verified', 'on'].join(' ');
 const AMENDED_ON = ['amended', 'on'].join(' ');
@@ -298,7 +299,8 @@ describe('check-provenance', () => {
     {
       // A citation with and without a number, a plural, one broken across a line, in any case and with or
       // without a separator before the number, spelled out, links into a folder of records (relative and
-      // from the root), a folder of records as a path, and a numbered rule of AGENTS.md in both orders.
+      // from the root), a folder of records as a path, and a numbered rule of AGENTS.md in both orders and of
+      // a folder's AGENTS.md.
       name: 'citations of decision records and numbered rules',
       files: {
         'backend/src/cache.ts': `${TS_HEADER}\n// The cache (${RECORD} 12 §3).\nexport {};\n`,
@@ -312,6 +314,7 @@ describe('check-provenance', () => {
         ].join('\n'),
         [`${RECORD_FOLDER}/notes.md`]: `${MD_HEADER}\n\n# Notes\n`,
         'backend/src/rules.ts': `${TS_HEADER}\n// Colours (${RULE_NUMBER}).\n// Pure (${RULE_OF}).\nexport {};\n`,
+        'frontend/src/layouts.ts': `${TS_HEADER}\n// Folds (${FOLDER_RULE_NUMBER}).\nexport {};\n`,
         'docs/forms.md': [
           MD_HEADER,
           '',
@@ -324,7 +327,7 @@ describe('check-provenance', () => {
         ].join('\n'),
       },
       lines: [
-        `backend/src/cache.ts:2  [banned-term] mentions "${RECORD} 12" (a citation of a decision record); state the rule, or point to the section of AGENTS.md that holds it`,
+        `backend/src/cache.ts:2  [banned-term] mentions "${RECORD} 12" (a citation of a decision record); state the rule, or point to the section of the AGENTS.md that holds it`,
         `docs/modes.md:3  [banned-term] mentions "${RECORD}" (a citation of a decision record)`,
         `docs/modes.md:4  [banned-term] mentions "${RECORD.toLowerCase()}/" (a citation of a decision record)`,
         `docs/index.md:3  [banned-term] mentions "${RECORD}s"`,
@@ -332,6 +335,7 @@ describe('check-provenance', () => {
         `${RECORD_FOLDER}/notes.md  [banned-term] path mentions "${RECORD.toLowerCase()}/"`,
         `backend/src/rules.ts:2  [banned-term] mentions "${RULE_NUMBER}" (a numbered rule of AGENTS.md)`,
         `backend/src/rules.ts:3  [banned-term] mentions "${RULE_OF}"`,
+        `frontend/src/layouts.ts:2  [banned-term] mentions "${FOLDER_RULE_NUMBER.slice('frontend/'.length)}" (a numbered rule of AGENTS.md); cite the AGENTS.md that holds the rule`,
         `docs/forms.md:3  [banned-term] mentions "${RECORD.toLowerCase()} 0042"`,
         `docs/forms.md:4  [banned-term] mentions "${RECORD.charAt(0)}${RECORD.slice(1).toLowerCase()} 9"`,
         `docs/forms.md:5  [banned-term] mentions "${RECORD}0042"`,
@@ -339,7 +343,7 @@ describe('check-provenance', () => {
         `docs/forms.md:7  [banned-term] mentions "${RECORD_NUMBERED.slice(0, -1)}"`,
       ],
       // One finding per label and line: the line broken in docs/modes.md is not reported twice.
-      summary: [13, 6],
+      summary: [14, 7],
       absent: ['across a line break'],
     },
     {
@@ -881,6 +885,10 @@ describe('check-provenance', () => {
     // What `pnpm agents:setup` writes, a link among it, and what a person keeps for their own tool.
     tree.write('CLAUDE.md', `@AGENTS.md\n\nA line with ${NAME_A}.\n`);
     tree.write('GEMINI.md', '@./AGENTS.md\n');
+    // The pointers beside a folder's AGENTS.md, at any depth.
+    tree.write('frontend/CLAUDE.md', `@AGENTS.md\n\nA line with ${NAME_A}.\n`);
+    tree.write('frontend/GEMINI.md', '@./AGENTS.md\n');
+    tree.write('.github/instructions/frontend.instructions.md', '---\napplyTo: "frontend/**"\n---\n');
     tree.write('packages/model/AGENTS.override.md', 'no header\n');
     tree.write('.cursor/rules/agents.mdc', '---\nalwaysApply: true\n---\n');
     tree.write('.github/copilot-instructions.md', 'no header\n');

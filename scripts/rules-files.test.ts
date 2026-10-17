@@ -3,8 +3,8 @@
  * The rules files and the citations of them (AGENTS.md, How this file works): every citation of a rules file
  * in a file git tracks names a heading, a principle or an anchor that exists; every rules file is AGENTS.md in
  * those capitals, at the root or one folder down; every folder file opens with the sentence that names the
- * root. The parser's own cases build the name of the file at run time, so that this file's fixed strings are
- * not read as citations of the tree.
+ * root, and the root's folder table names each. The parser's own cases build the name of the file at run
+ * time, so that this file's fixed strings are not read as citations of the tree.
  */
 import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
@@ -19,6 +19,8 @@ import {
   citationProblems,
   citationsOf,
   findCitations,
+  folderTable,
+  folderTableProblems,
   githubSlug,
   openingProblems,
   opensWithRootSentence,
@@ -354,6 +356,52 @@ describe('the rules files of a checkout', () => {
       `backend/${FILE}: the first paragraph after its title does not open with "${FOLDER_FILE_OPENING}"`,
     ]);
   });
+
+  it('are named by the root’s folder table, each folder file in a row of its own', () => {
+    const table = (...rows: string[]) =>
+      [
+        '# Rules',
+        '',
+        '| Folder | What it holds | Its rules |',
+        '|---|---|---|',
+        ...rows,
+        '',
+        '## Tokens',
+        '',
+      ].join('\n');
+    const rootRow = '| `scripts/`, `brand/` | tooling, the mark | this file |';
+    for (const folder of ['scripts', 'brand', 'frontend', 'backend'])
+      tree.write(`${folder}/README.md`, '# Folder\n');
+    tree.write(`frontend/${FILE}`, FOLDER_RULES);
+    tree.write(FILE, table('| `frontend/` | the app | `frontend/AGENTS.md` |', rootRow));
+    expect(folderTable(tree.read(FILE))).toEqual([
+      { line: 5, folders: ['frontend'], rules: `frontend/${FILE}` },
+      { line: 6, folders: ['scripts', 'brand'], rules: undefined },
+    ]);
+    expect(folderTableProblems(tree.root)).toEqual([]);
+
+    tree.write(FILE, table(rootRow, '| `docs/` | the guides | this file |'));
+    expect(folderTableProblems(tree.root)).toEqual([
+      `${FILE}:6: names docs/, which is no top-level folder`,
+      `${FILE}: the folder table has no row for frontend/${FILE}`,
+    ]);
+    tree.write(
+      FILE,
+      table(
+        '| `frontend/`, `backend/` | the app | this file |',
+        '| `backend/` | the API | `backend/AGENTS.md` |',
+      ),
+    );
+    expect(folderTableProblems(tree.root)).toEqual([
+      `${FILE}:5: gives frontend/ the root's rules, but frontend/${FILE} exists`,
+      `${FILE}:6: names backend/${FILE}, which does not exist`,
+      `${FILE}: the folder table has no row for frontend/${FILE}`,
+    ]);
+    tree.write(FILE, '# Rules\n');
+    expect(folderTableProblems(tree.root)).toEqual([
+      `${FILE}: no folder table (| Folder | What it holds | Its rules |)`,
+    ]);
+  });
 });
 
 describe('the repository’s rules files', () => {
@@ -384,5 +432,9 @@ describe('the repository’s rules files', () => {
 
   it('open, in each folder, with the sentence that names the root', () => {
     expect(openingProblems(REPO)).toEqual([]);
+  });
+
+  it('are named by the root’s folder table, which names the folders whose rules are the root’s too', () => {
+    expect(folderTableProblems(REPO)).toEqual([]);
   });
 });

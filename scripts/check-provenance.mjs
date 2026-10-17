@@ -120,7 +120,8 @@ const FORBIDDEN_NAME_EXEMPTIONS = Object.freeze([
 
 /** The messages of rule (e), by the kind of term. */
 const STATE_THE_RULE =
-  'state the rule, or point to the section of AGENTS.md that holds it ("AGENTS.md, <heading>")';
+  'state the rule, or point to the section of the AGENTS.md that holds it ("AGENTS.md, <heading>", a ' +
+  'folder\'s "<folder>/AGENTS.md, <heading>")';
 const SAY_WHAT_IS = 'a file says what is, not how it came to be (AGENTS.md, Documentation)';
 const NEVER_APPEARS = 'it never appears (AGENTS.md, Names that never appear)';
 
@@ -516,7 +517,9 @@ const BANNED_TERMS = Object.freeze([
     label: 'a numbered rule of AGENTS.md',
     pattern:
       /\bagents\.md\b[`'"]?(?:'s)?[,:]?\s+(?:[a-z]+\s+)?rules?\s+#?\d|\brules?\s+#?\d+\s+(?:of|in)\s+[`'"]?agents\.md\b/i,
-    message: 'cite AGENTS.md by the heading of the section that holds the rule ("AGENTS.md, <heading>")',
+    message:
+      'cite the AGENTS.md that holds the rule by the heading of its section ("AGENTS.md, <heading>", a ' +
+      'folder\'s "<folder>/AGENTS.md, <heading>")',
     binary: true,
   }),
   ...BUILD_RECORD_PATTERNS.map((pattern) =>

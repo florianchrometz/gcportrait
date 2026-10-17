@@ -3,13 +3,15 @@
 # Contributing to gcportrait
 
 This guide takes you from a fork to a green `pnpm check` and an open pull request. It is written for people
-and AI assistants alike. [AGENTS.md](../AGENTS.md) holds every rule of the project in one place, and
+and AI assistants alike. [AGENTS.md](../AGENTS.md) holds the rules of the project, with the `AGENTS.md` of
+each top-level folder that has rules of its own, and
 [.agents/skills/contributor-workflow/SKILL.md](../.agents/skills/contributor-workflow/SKILL.md) is the
 checklist version that reviewers use.
 
 > What gcportrait does, with its features, screenshots and animated demos, is on the [root
 README](../README.md), whose "Roadmap" section says what comes later; [backlog.md](backlog.md) lists the open
-work, and [AGENTS.md](../AGENTS.md) every rule. [packages.md](packages.md) maps the packages.
+work, and [AGENTS.md](../AGENTS.md) the rules, with the folder files it names. [packages.md](packages.md)
+maps the packages.
 Not ready for a pull request? Open an issue from one of the forms (a bug report, a feature request or an
 asset type request; the chooser also links the user guides and the sign-in-free demo), and reproduce a
 problem in demo mode first: the demo organisations are synthetic and safe to share.
@@ -48,14 +50,18 @@ them.
 
 ### With an AI assistant
 
-[AGENTS.md](../AGENTS.md) and the skills under `.agents/skills/` are the one source of instructions for every
-assistant; Codex CLI, Cursor and GitHub Copilot read both as they are. The repository commits no file of a
+The rules files, [AGENTS.md](../AGENTS.md) at the root and the `AGENTS.md` of each top-level folder with
+rules of its own, and the skills under `.agents/skills/` are the one source of instructions for every
+assistant; Codex CLI, Cursor and GitHub Copilot read them as they are. The repository commits no file of a
 particular tool. `pnpm agents:setup` writes the local, git-ignored pointer files that close the gaps, each one
-paragraph that points to AGENTS.md and the skills: `CLAUDE.md` with an `@AGENTS.md` import and a link per
-skill under `.claude/skills/` for Claude Code, `GEMINI.md` with an `@./AGENTS.md` import for Gemini CLI, a
-Cursor rule and Copilot's instructions file. It never overwrites a file of yours without `--force`, and
-running it again changes nothing; `--tool claude` writes one tool's files only ([AGENTS.md](../AGENTS.md),
-"Assistants"). A rule goes in AGENTS.md, never in a pointer file.
+paragraph that points to the rules files and the skills: `CLAUDE.md` with an `@AGENTS.md` import and a link
+per skill under `.claude/skills/` for Claude Code, `GEMINI.md` with an `@./AGENTS.md` import for Gemini CLI,
+a Cursor rule and Copilot's instructions file, and for each folder file a `CLAUDE.md` and a `GEMINI.md` beside
+it and Copilot's instructions for the folder's files under `.github/instructions/`. It never overwrites a file
+of yours without `--force`, and running it again changes nothing; `--tool claude` writes one tool's files
+only ([AGENTS.md](../AGENTS.md), "Assistants"; [.agents/README.md](../.agents/README.md) has what each tool
+reads). A rule goes in an AGENTS.md, never in a pointer file. Before you change a folder's files, read its
+`AGENTS.md`.
 
 ## 3. Run the app
 
@@ -150,7 +156,7 @@ and media (below):
 | `lint` | `pnpm format:check`, then `pnpm lint` | Prettier only, when media changed (its two manifests are JSON); skipped for docs alone |
 | `typecheck` | `pnpm typecheck` | skipped |
 | `unit (layout)`, `unit (frontend)` | `pnpm test --project layout`; `pnpm test --project frontend` | skipped |
-| `unit (all other projects)` | `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included | runs: the user guides' check, the README's and the media's tests and the backend's and the website's tests read docs and media |
+| `unit (all other projects)` | `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included | runs: the user guides' check, the citation check of the rules files, the README's and the media's tests and the backend's and the website's tests read docs and media |
 | `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking | skipped |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` | skipped |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
@@ -168,10 +174,10 @@ and media (below):
 merge commit) with the branch it merges into, and sorts every changed file:
 
 - **docs**: `docs/**/*.md`, `.changeset/*.md`, the Markdown files at the root (`AGENTS.md`, `README.md`,
-  `THIRD_PARTY.md`, `CHANGELOG.md`) and the `README.md` and `CHANGELOG.md` of each top-level folder and each
-  package. The skills (`.agents/skills/`) are code: the frontend's theme test reads the style skill's palette.
-  So is any other Markdown file, a `README.md` in the catalog's fixture folders for one, which
-  `catalog:check` refuses.
+  `THIRD_PARTY.md`, `CHANGELOG.md`), the `README.md` and `CHANGELOG.md` of each top-level folder and each
+  package, and the `AGENTS.md` of each top-level folder. The skills (`.agents/skills/`) are code: the
+  frontend's theme test reads the style skill's palette. So is any other Markdown file, a `README.md` in the
+  catalog's fixture folders for one, which `catalog:check` refuses.
 - **media**: `docs/media/**`, what `pnpm media` and `node scripts/exports.mjs` write.
 - **code**: every other file.
 
@@ -276,8 +282,8 @@ a layout change.
 
 ## 5. Rules every change follows
 
-Every rule is in [AGENTS.md](../AGENTS.md); these are the ones the checks enforce or that reviewers most often
-catch.
+Every rule is in [AGENTS.md](../AGENTS.md) or in the `AGENTS.md` of the folder it binds; these are the ones
+the checks enforce or that reviewers most often catch.
 
 ### Provenance
 
@@ -290,8 +296,11 @@ licence or an obligation that would force the project to publish its code or rel
 - No Go files, no Graphviz `.dot` or `.gv` files, no Gizmo graph queries, and no symbolic links.
 - The strings of AGENTS.md, "Names that never appear", never appear in a file's contents or its name: Google's
   name with its company suffix (Google is "Google" or "Google Cloud"), a few project names, decision-record
-  numbers and links, numbered rules of AGENTS.md, phrases that record how something was built rather than what
-  it is, and work-item ids. Say what a thing is or does, and cite a rule by its heading in AGENTS.md.
+  numbers and links, numbered rules of an AGENTS.md, phrases that record how something was built rather than
+  what it is, and work-item ids. Say what a thing is or does, and cite a rule by the AGENTS.md that holds it
+  and its heading: "AGENTS.md, Security and privacy", and for a folder file its path from the root first,
+  `<folder>/AGENTS.md, <heading>`. `scripts/rules-files.test.ts` (part of `pnpm test`) fails on a citation
+  whose file, heading, principle or anchor does not exist.
   `--list-exempt` prints the rules. Some phrases are known to the check only by their SHA-256 digest;
   `node scripts/check-provenance.mjs --digest-of "<phrase>"` prints the entry that adds one to
   `PHRASE_DIGESTS`.
@@ -389,21 +398,22 @@ dependency must pass `pnpm run licenses`.
 
 ## 6. Making a change
 
-1. **Pick the work.** An issue or an item of [backlog.md](backlog.md); a change to a rule updates
-   [AGENTS.md](../AGENTS.md) in the same pull request. Load the skills its area needs from `.agents/skills/`
-   ([AGENTS.md](../AGENTS.md), "Skills"), and read the README of every package you change.
+1. **Pick the work.** An issue or an item of [backlog.md](backlog.md); a change to a rule updates the
+   `AGENTS.md` that holds it in the same pull request. Load the skills its area needs from `.agents/skills/`
+   ([AGENTS.md](../AGENTS.md), "Skills"), and read the `AGENTS.md` of every top-level folder you change and
+   the README of every package you change.
 2. **Branch.** Name it after the topic: `<topic>-<slug>` or `<issue>-<slug>`, for example `ingest-parser` or
    `412-gutter-lanes`.
 3. **Tests first** for `packages/*`; fixtures first for catalog work; an e2e test for anything a user does.
 4. **Docs in the same pull request:** the package README if behaviour changed, the user guide under `docs/` if
    users will notice it (the guides are listed in [README.md](README.md#user-guides); a guide says what to do,
-   with no record of when or where it was checked), and `AGENTS.md` and the skill that applies it if a rule
-   changed. `node scripts/user-docs.mjs` (part of `pnpm test`) fails while a guide names a `pnpm` script, an
-   `infra/` flag or a setting the tree does not have, logs a verification, while the generated lens tables
-   differ from the catalog (`--write` regenerates them), while a Markdown line is wider than 110 columns
-   outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation", or while the render goldens' README
-   names another version of `@resvg/resvg-wasm` than the one installed or another document names a version of
-   resvg.
+   with no record of when or where it was checked), and the `AGENTS.md` that holds a rule and the skill that
+   applies it if the rule changed. `node scripts/user-docs.mjs` (part of `pnpm test`) fails while a guide
+   names a `pnpm` script, an `infra/` flag or a setting the tree does not have, logs a verification, while
+   the generated lens tables differ from the catalog (`--write` regenerates them), while a Markdown line is
+   wider than 110 columns outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation", or while the
+   render goldens' README names another version of `@resvg/resvg-wasm` than the one installed or another
+   document names a version of resvg.
 5. **Add a changeset** (below) if users will notice the change.
 6. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
 7. **Open the pull request** (section 7).

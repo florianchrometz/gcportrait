@@ -2,14 +2,21 @@
 
 # AGENTS.md: the rules of gcportrait
 
-This file holds every rule of gcportrait in one place, for the people and the AI assistants (Claude Code,
-Gemini CLI, Codex, Cursor, Copilot or whatever comes next) who change this repository. Each rule is stated as
-it stands, with the reason for it in one sentence. Humans new to the repository start with
+This file holds the rules of gcportrait that bind the whole repository, for the people and the AI assistants
+(Claude Code, Gemini CLI, Codex, Cursor, Copilot or whatever comes next) who change it; a top-level folder
+with rules of its own holds them in an `AGENTS.md` of its own, which the table below names. Each rule is
+stated as it stands, with the reason for it in one sentence. Humans new to the repository start with
 [docs/contributing.md](docs/contributing.md); assistants load the skills the work needs ([Skills](#skills)).
+
+| Folder | What it holds | Its rules |
+|---|---|---|
+| `scripts/`, `brand/`, `.agents/`, `.changeset/` | repository tooling, the mark, the skills, changesets | this file |
+
+The sections of this file:
 
 | Section | What it settles |
 |---|---|
-| [How this file works](#how-this-file-works) | One rules file, the skills as handbooks, how to cite a rule, how a rule changes |
+| [How this file works](#how-this-file-works) | The root's rules and the folders', reading them, their size, the skills as handbooks, how to cite a rule, how a rule changes |
 | [What gcportrait is and is not](#what-gcportrait-is-and-is-not) | The question it answers, its users, what version 1 does, the non-goals |
 | [Product rules](#product-rules) | Phones, tablets and desktops, both themes, the demo, the timeline, "as of", views as links, composition, the source link |
 | [Data and graph semantics](#data-and-graph-semantics) | Data over code, the Snapshot, synthetic data, the catalog and the graph builder |
@@ -26,34 +33,46 @@ it stands, with the reason for it in one sentence. Humans new to the repository 
 | [Documentation](#documentation) | Where things are written down, and how; the README's order |
 | [How to work a task](#how-to-work-a-task) | From an issue to a reviewed pull request; git |
 | [Skills](#skills) | Which handbook to load for which work |
-| [Assistants](#assistants) | What each assistant reads by itself, and the local pointer files `pnpm agents:setup` writes |
+| [Assistants](#assistants) | The local pointer files `pnpm agents:setup` writes, and where the table of tools is |
 | [Commands](#commands) | Every command, with what it does |
 | [Names that never appear](#names-that-never-appear) | Strings the provenance check refuses |
 
 ## How this file works
 
-- **AGENTS.md is the one rules file**, under the name the assistants look for: Claude Code, Codex, Cursor and
+- **The rules are in AGENTS.md files**, under the name the assistants look for: Claude Code, Codex, Cursor and
   GitHub Copilot read `AGENTS.md` by that name, in capitals, which a case-sensitive file system tells apart
-  from any other spelling. Every rule of the project is here and is kept current. No instruction file of a
-  particular tool is committed (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules/`, `.github/copilot-instructions.md`,
-  `AGENTS.override.md` and the like are git-ignored, as are per-user settings such as `.claude/`, and the
-  provenance check skips them all): copies of the same rules for different tools drift apart and favour some
-  tools over others. Who wants such a file locally writes one that points here with `pnpm agents:setup`
-  ([Assistants](#assistants)).
+  from any other spelling. This file, at the root, holds every rule that binds two or more top-level folders
+  or that every change needs; a top-level folder with rules of its own has an `AGENTS.md` that holds the
+  rules binding changes in that folder alone, and the folder table above names it. A rule's home follows from
+  what it binds: one folder, that folder's file; two or more, or every change, the root. No `AGENTS.md` lies
+  deeper than one folder below the root. A folder file opens with "These rules add to the root AGENTS.md,
+  which applies here too." and repeats nothing of the root, so that a tool that reads only the nearest
+  `AGENTS.md` still learns of the root, and no rule has two copies to drift apart. Every rule is kept current
+  where it is. No instruction file of a particular tool is committed (`CLAUDE.md`, `GEMINI.md`,
+  `.cursor/rules/`, `.github/copilot-instructions.md`, `AGENTS.override.md` and the like are git-ignored at
+  any depth, as are per-user settings such as `.claude/`, and the provenance check skips them all): copies of
+  the same rules for different tools drift apart and favour some tools over others. Who wants such a file
+  locally writes one that points to the rules files with `pnpm agents:setup` ([Assistants](#assistants)).
+- **Read the AGENTS.md of every folder you change before changing its files**, because its rules bind those
+  files as this file's rules do.
+- **This file holds at most 32 768 bytes, and a folder file at most 16 384**, because Codex reads at most
+  32 KiB of the AGENTS.md files from the root down and cuts the rest, and every session of an assistant loads
+  this file whole.
 - **The skills are handbooks.** Each skill in `.agents/skills/` is a plain Markdown procedure for one domain
   (`SKILL.md` with a `name` and a `description` in its frontmatter, optional `references/`): it says how the
-  work is done and which constants it uses, and points here for the rules it applies. A skill never restates
-  why or when a rule came about. [.agents/README.md](.agents/README.md) explains how to load one with any
-  tool.
+  work is done and which constants it uses, and points to the AGENTS.md that holds each rule it applies. A
+  skill never restates why or when a rule came about. [.agents/README.md](.agents/README.md) explains how to
+  load one with any tool.
 - **A rule is stated as it is.** Present tense, its reason in one sentence, no history: not who decided it,
   not when, not what it replaced.
-- **Cite a rule by this file and its heading**: "AGENTS.md, Security and privacy", or for a numbered principle
-  "AGENTS.md, Security and privacy, principle 2". The headings are anchors: renaming one updates every
-  citation in the same change. A comment or a guide that needs a rule's reason points here instead of
-  retelling it.
-- **A rule changes in the same pull request as the code it governs**, here and in the skill that applies it.
-  A change to the product's scope, a hosted surface, a security and privacy principle, the licence or the
-  non-affiliation wording is the maintainer's call.
+- **Cite a rule by its file and its heading**: "AGENTS.md, Security and privacy", or for a numbered principle
+  "AGENTS.md, Security and privacy, principle 2"; a rule of a folder file by the file's path from the root,
+  as in `<folder>/AGENTS.md, <heading>`. The headings are anchors: renaming one updates every citation in the
+  same change, and `scripts/rules-files.test.ts` fails on a citation whose file, heading, principle or anchor
+  does not exist. A comment or a guide that needs a rule's reason points to the rule instead of retelling it.
+- **A rule changes in the same pull request as the code it governs**, in the AGENTS.md that holds it and in
+  the skill that applies it. A change to the product's scope, a hosted surface, a security and privacy
+  principle, the licence or the non-affiliation wording is the maintainer's call.
 - **Open work is not a rule.** It lives in [docs/backlog.md](docs/backlog.md) (the asset catalog's in
   [docs/catalog-followups.md](docs/catalog-followups.md)), questions only the maintainer can settle included.
 
@@ -836,13 +855,14 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   accepts one with an expiry.
 - **A change of only docs and media runs only the jobs that read them.** A first job, `changes`, compares a
   push with the commit before it and a pull request with the branch it merges into, and sorts every changed
-  file as docs (`docs/**/*.md`, `.changeset/*.md`, the root's Markdown files and each top-level folder's and
-  package's `README.md` and `CHANGELOG.md`), media (`docs/media/**`) or code (everything else, the skills
-  included). With no code among them, the unit tests of every project but the layout and the frontend, the
-  website and provenance run, licences too for docs (`THIRD_PARTY.md`) and Prettier for media (its manifests
-  are JSON); typecheck, the layout and frontend unit legs, `layout-budget`, catalog-check, build, e2e, the
-  audit, workflows-and-shell and ESLint are skipped, because none of them reads those files, so each could
-  only repeat the result of the tree the change starts from. A comparison that cannot be made runs every job.
+  file as docs (`docs/**/*.md`, `.changeset/*.md`, the root's Markdown files, each top-level folder's and
+  package's `README.md` and `CHANGELOG.md`, and each folder's `AGENTS.md`), media (`docs/media/**`) or code
+  (everything else, the skills included). With no code among them, the unit tests of every project but the
+  layout and the frontend, the website and provenance run, licences too for docs (`THIRD_PARTY.md`) and
+  Prettier for media (its manifests are JSON); typecheck, the layout and frontend unit legs,
+  `layout-budget`, catalog-check, build, e2e, the audit, workflows-and-shell and ESLint are skipped, because
+  none of them reads those files, so each could only repeat the result of the tree the change starts from. A
+  comparison that cannot be made runs every job.
 - **Dependabot's pull requests are never closed unread.** Each proposed update is adopted on `main` (merged,
   or applied in a commit that passes the checks) or declined with its reason in
   [docs/backlog.md](docs/backlog.md), because what Dependabot finds belongs in the tree from the start.
@@ -875,15 +895,15 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
 
 ## Documentation
 
-- **Where things are written down**: the rules here; the procedures in the skills; what a user does in the
-  user guides under `docs/` (listed in [docs/README.md](docs/README.md)); each package's reference in its
-  README; open work in [docs/backlog.md](docs/backlog.md) and
+- **Where things are written down**: the rules here and in the folders' AGENTS.md files; the procedures in
+  the skills; what a user does in the user guides under `docs/` (listed in [docs/README.md](docs/README.md));
+  each package's reference in its README; open work in [docs/backlog.md](docs/backlog.md) and
   [docs/catalog-followups.md](docs/catalog-followups.md).
 - **A document describes what is, never how it came to be**: no record of runs, machines, timings of a
   particular run, reviews, the dates of decisions or of changes, and no story of what something replaced. A
   measured figure appears only as the current value. `node scripts/user-docs.mjs` and the provenance check
   enforce it, because the repository is all a reader sees.
-- **Cite rules by this file and its heading**; a guide says what to do and links the guide or section that
+- **Cite rules by their file and heading**; a guide says what to do and links the guide or section that
   explains more.
 - **Markdown is hand-wrapped at 110 columns**, table rows, lines that hold a URL, fenced code, the YAML
   frontmatter and a line of one word or one HTML tag excepted, which `node scripts/user-docs.mjs` checks, and
@@ -901,13 +921,14 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
   bottom "Not affiliated with Google" (the long form) and "Licence". A visitor decides on the first screen
   whether gcportrait fits and how to start, so what it does and how to run it come first and the statements
   last. `scripts/readme.test.ts` holds the order.
-- **Docs, skills and this file change in the same pull request as the code** they describe.
+- **Docs, skills and the AGENTS.md files change in the same pull request as the code** they describe.
 
 ## How to work a task
 
-1. Start from an issue or an item of [docs/backlog.md](docs/backlog.md). A change to a rule changes this file
-   in the same pull request.
-2. Load the skills the work needs ([Skills](#skills)). Read the README of every package you change.
+1. Start from an issue or an item of [docs/backlog.md](docs/backlog.md). A change to a rule changes the
+   AGENTS.md that holds it in the same pull request.
+2. Load the skills the work needs ([Skills](#skills)). Read the AGENTS.md of every folder you change and the
+   README of every package you change.
 3. Work in a branch or worktree named after the topic (`gutter-lanes`, or `412-gutter-lanes` with the issue
    number).
 4. Tests first for pure packages; fixtures first for catalog work; golden or visual baseline for renderer
@@ -915,13 +936,13 @@ Scene, Layout, Lens, Focus, Tick, dangling reference); each package's README is 
 5. Run `pnpm check`; for app work also `pnpm build`, `pnpm size` and `pnpm e2e`; for visual work `pnpm render`
    on the M fixture, looked at in both themes.
 6. Write the pull request with the template: what, why, how verified (commands and their results),
-   screenshots, changeset, provenance statement. Update the docs, the skills and this file in the same pull
-   request, and take the item off the backlog. **A pull request is one change: small, about one feature or one
-   function, with its changeset**, because a focused change is quick to review and to merge; a rewrite of a
-   whole part is proposed in an issue first and then made in small steps.
+   screenshots, changeset, provenance statement. Update the docs, the skills and the AGENTS.md files in the
+   same pull request, and take the item off the backlog. **A pull request is one change: small, about one
+   feature or one function, with its changeset**, because a focused change is quick to review and to merge; a
+   rewrite of a whole part is proposed in an issue first and then made in small steps.
 7. Finish with a short, honest report: what was built, what was verified (commands and their real results,
    failures included), what was left out. A reviewer, human or agent, checks the acceptance criteria of the
-   issue or backlog item, the skills' rules and this file before merging.
+   issue or backlog item, the skills' rules and the AGENTS.md files before merging.
 
 **Git.** `main` is the project's history: it is never force-pushed and its history is never rewritten, so
 every clone and fork stays valid. Whether and where history is ever cut is the maintainer's decision alone.
@@ -938,27 +959,25 @@ every clone and fork stays valid. Whether and where history is ever cut is the m
 
 ## Assistants
 
-`AGENTS.md` and the skills under `.agents/skills/` are the one source of instructions for every assistant, so
-that each works from the same rules and none is favoured.
+The AGENTS.md files and the skills under `.agents/skills/` are the one source of instructions for every
+assistant, so that each works from the same rules and none is favoured. What each tool reads by itself, and
+what `pnpm agents:setup` writes for it at the root and for each folder file, is in
+[.agents/README.md](.agents/README.md).
 
-| Tool | Reads by itself | What `pnpm agents:setup` writes |
-|---|---|---|
-| Claude Code | `AGENTS.md` while no `CLAUDE.md` is present; skills only from `.claude/skills/` | `CLAUDE.md` with an `@AGENTS.md` import, and a link `.claude/skills/NAME` to each skill |
-| Gemini CLI | `GEMINI.md`; the skills under `.agents/skills/` | `GEMINI.md` with an `@./AGENTS.md` import |
-| Codex CLI | `AGENTS.md` and the skills under `.agents/skills/` | nothing |
-| Cursor | `AGENTS.md`, `.cursor/rules/*.mdc` and the skills under `.agents/skills/` | `.cursor/rules/agents.mdc`, applied in every chat |
-| GitHub Copilot | `AGENTS.md`, `.github/copilot-instructions.md` and the skills under `.agents/skills/` | `.github/copilot-instructions.md` |
-
-- **A pointer file holds no rule.** Each says in one paragraph "Read AGENTS.md and the skills under
-  .agents/skills/ first; this file only points there.", with the tool's import line where it has one; it is
-  git-ignored and the provenance check skips it. A rule goes here, so that no copy can drift.
+- **A pointer file holds no rule.** Each says in one paragraph "Read AGENTS.md, the AGENTS.md of every folder
+  you change and the skills under .agents/skills/ first; this file only points there." (one beside a folder
+  file names `../AGENTS.md` and the folder's own), with the tool's import line where it has one; it is
+  git-ignored and the provenance check skips it. A rule goes in an AGENTS.md, so that no copy can drift.
 - **`pnpm agents:setup` is safe to run at any time**: it never overwrites a file that exists (`--force` does,
   but never a folder, and it never writes through a link), changes nothing that is in place, links a skill
-  added since and removes the link to one that is gone; `--tool claude` (gemini, codex, cursor, copilot)
-  limits it to one tool. `scripts/agents-setup.mjs` names the documentation each row of the table follows.
-- **The rules file is `AGENTS.md` in git as on disk.** On a case-insensitive file system (macOS, Windows) git
-  does not notice a rename that changes only the case, so such a rename is made with `git mv -f`;
-  `scripts/agents-setup.test.ts` fails while git tracks another spelling.
+  added since and writes the pointers of a folder file added since, and removes only what it made for a
+  skill or a folder file that is gone, a pointer only while it holds exactly what the script writes;
+  `--tool claude` (gemini, codex, cursor, copilot) limits it to one tool. `scripts/agents-setup.mjs` names the
+  documentation each tool's files follow.
+- **Every rules file is `AGENTS.md` in git as on disk.** On a case-insensitive file system (macOS, Windows)
+  git does not notice a rename that changes only the case, so such a rename is made with `git mv -f`;
+  `scripts/rules-files.test.ts` fails while git tracks another spelling, or an `AGENTS.md` deeper than one
+  folder below the root.
 
 ## Commands
 
@@ -980,7 +999,7 @@ that each works from the same rules and none is favoured.
 | One of CI's e2e legs: every K-th test of the projects' listing from the I-th, run by `--test-list`, failing when the run misses one, with the share's count and summed test time (Quality gates, testing and CI) / the share alone, as a test list | `CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3` (`--projects '!chromium-live !chromium'` for every other project, `-- ARGS` for Playwright) / `... --list-only` |
 | The app on phones and tablets: sideways scrolling and a page that scrolls by itself or is laid out wider than the window (every menu and panel of the View and More sheets opened, a live instance signed in, a snapshot stored), text squeezed into a narrow column, the top bar's items, the timeline bar's parts, the drawer within the canvas, 44-pixel targets, every control in sight when focused and tappable, the canvas's room, axe, at 320 to 430 and 820 CSS pixels in both themes and on phones turned sideways; and the canvas's gestures by finger at 390 × 844 (`e2e/tests/touch.spec.ts`; Product rules, the touch model; part of `pnpm e2e`) | `pnpm --filter @gcportrait/frontend mobile` |
 | Add a changeset | `pnpm changeset` |
-| Write the local, git-ignored pointer files that lead an assistant to AGENTS.md and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
+| Write the local, git-ignored pointer files that lead an assistant to the AGENTS.md files and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Validate the asset catalog and report coverage (exit 1 on any violation) | `pnpm catalog:check` (`--group <group>` / `--file <path>` for one group's or file's problems, `--verbose` for rule traces, `pnpm -s catalog:check --json` for JSON) |
 | Per-group catalog coverage (owned official types, mapped by role, unmapped, missing) | `pnpm catalog:coverage` (`--group <group>`, `--json`) |
 | Compile the catalog into its git-ignored module (also run by install, lint, typecheck and test) | `pnpm catalog:build` |
@@ -1017,10 +1036,10 @@ that each works from the same rules and none is favoured.
 
 The strings `scripts/check-provenance.mjs` refuses never appear in any file's contents or in any file or
 directory name: Google's name with its company suffix, a few project names, decision-record numbers and links,
-numbered rules of this file, phrases that record how something was built rather than what it is, and work-item
-ids. The check assembles them at run time or knows them only by their SHA-256 digest, so no file spells them
-out. It reads every file git tracks and every other file of the tree outside the git-ignored directories:
-text in any encoding, and the metadata of images and other binary files. `node scripts/check-provenance.mjs
---list-exempt` lists its rules, with the refused names and phrases as labels only; `--digest-of <phrase>`
-prints the entry that adds a phrase to the refused ones. Say what a thing is or does, and cite the rule by its
-heading here.
+numbered rules of an AGENTS.md, phrases that record how something was built rather than what it is, and
+work-item ids. The check assembles them at run time or knows them only by their SHA-256 digest, so no file
+spells them out. It reads every file git tracks and every other file of the tree outside the git-ignored
+directories: text in any encoding, and the metadata of images and other binary files. `node
+scripts/check-provenance.mjs --list-exempt` lists its rules, with the refused names and phrases as labels
+only; `--digest-of <phrase>` prints the entry that adds a phrase to the refused ones. Say what a thing is or
+does, and cite the rule by its file and heading.

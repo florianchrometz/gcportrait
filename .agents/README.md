@@ -8,8 +8,8 @@ directory with a `SKILL.md` (frontmatter `name` + `description`, then the instru
 a reviewer can use the same file as a checklist to fact-check a change.
 
 The skills are the procedural handbooks of their domains: they say how the work is done. The rules they apply
-are in [AGENTS.md](../AGENTS.md), the one rules file of the project; a skill points there for a rule and never
-restates how or when a rule came about.
+are in the rules files, [AGENTS.md](../AGENTS.md) at the root and the `AGENTS.md` of each top-level folder
+with rules of its own; a skill points there for a rule and never restates how or when a rule came about.
 
 | Skill | Purpose |
 |---|---|
@@ -29,5 +29,31 @@ How to load a skill:
   which work.
 - Humans: read it; the checklists are meant for review too.
 
-Keep skills factual and short. When a rule changes, change `AGENTS.md` and the skill in the same PR as the
-code.
+## What each assistant reads, and what the setup writes
+
+What each tool reads by itself, as its documentation says, and the local, git-ignored pointer files
+`pnpm agents:setup` writes for it: at the root, and for each top-level folder with an `AGENTS.md` (FOLDER;
+NAME is the folder without a leading dot). `scripts/agents-setup.mjs` names the documentation each row
+follows.
+
+| Tool | Reads by itself | What the setup writes at the root | What it writes per folder file |
+|---|---|---|---|
+| Claude Code | `AGENTS.md` while no `CLAUDE.md` is present, and a folder's when it reads a file there; skills only from `.claude/skills/` | `CLAUDE.md` with an `@AGENTS.md` import, and a link `.claude/skills/NAME` to each skill | `FOLDER/CLAUDE.md` with an `@AGENTS.md` import, which loads once a file of the folder is read or changed |
+| Gemini CLI | `GEMINI.md`, and a folder's when a tool touches a file there; the skills under `.agents/skills/` | `GEMINI.md` with an `@./AGENTS.md` import | `FOLDER/GEMINI.md` with an `@./AGENTS.md` import |
+| Codex CLI | the `AGENTS.md` of each folder from the root down to the one it starts in, 32 KiB together by default; the skills under `.agents/skills/` | nothing | nothing |
+| Cursor | `AGENTS.md` at the root and in folders, `.cursor/rules/*.mdc` and the skills under `.agents/skills/` | `.cursor/rules/agents.mdc`, applied in every chat | nothing |
+| GitHub Copilot | `AGENTS.md` (the nearest one first), `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md` and the skills under `.agents/skills/` | `.github/copilot-instructions.md` | `.github/instructions/NAME.instructions.md` with `applyTo: "FOLDER/**"`, as VS Code reads a folder's `AGENTS.md` only with an experimental setting |
+
+- Each pointer file is one paragraph that points to the rules files and the skills, with the tool's import
+  line where it has one. `pnpm agents:setup` never overwrites a file that exists (`--force` does, but never a
+  folder, and it never writes through a link), changes nothing that is in place, links a skill added since
+  and removes the link to one that is gone, writes the pointers of a folder file added since and removes those
+  it wrote for one that is gone, while they hold exactly what it writes; `--tool claude` (gemini, codex,
+  cursor, copilot) limits it to one tool.
+- Codex started at the root reads the root's `AGENTS.md` alone, and a folder file when the root sends it
+  there. Started in a folder, it reads the root's and that folder's within one limit of 32 KiB, which cuts the
+  folder file after what the root leaves of it; raise `project_doc_max_bytes` in `~/.codex/config.toml` to
+  start it there.
+
+Keep skills factual and short. When a rule changes, change the `AGENTS.md` that holds it and the skill in the
+same PR as the code.
