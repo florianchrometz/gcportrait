@@ -2,29 +2,45 @@
 // @ts-check
 /**
  * `pnpm agents:setup`: writes the local pointer files that lead an AI assistant to the repository's one source of
- * instructions, AGENTS.md and the skills under .agents/skills/ (AGENTS.md, "Assistants"). Each file is one paragraph
- * that points there, with the tool's own way to include a file where it has one; it holds no rule. Every path it
- * writes is git-ignored (.gitignore) and skipped by the provenance check, so nothing it writes can be committed by
- * accident or drift from AGENTS.md.
+ * instructions, the AGENTS.md files (the root's and that of each top-level folder with rules of its own) and the
+ * skills under .agents/skills/ (AGENTS.md, "Assistants"). Each file is one paragraph that points there, with the
+ * tool's own way to include a file where it has one; it holds no rule. Every path it writes is git-ignored
+ * (.gitignore) and skipped by the provenance check, so nothing it writes can be committed by accident or drift from
+ * the AGENTS.md files. The folder files are found on disk (scripts/lib/rules-files.mjs), as the skills are, so a
+ * new one needs no change here.
  *
  * What each tool reads by itself, and so what it gets, as its documentation says:
- * - Claude Code (from v2.1.277) reads AGENTS.md only while no CLAUDE.md is present, imports a file named on an `@path`
- *   line of a CLAUDE.md, and loads skills only from .claude/skills/, where a skill's folder may be a symbolic link to
- *   a folder elsewhere (https://code.claude.com/docs/en/memory, "AGENTS.md" and "Import additional files";
- *   https://code.claude.com/docs/en/skills, where skills live). It gets CLAUDE.md with `@AGENTS.md`, and a link
- *   .claude/skills/NAME to .agents/skills/NAME for each skill.
- * - Gemini CLI reads GEMINI.md, which imports a file named on an `@./path` line, and the skills under .agents/skills/
- *   (https://geminicli.com/docs/cli/gemini-md/; https://geminicli.com/docs/cli/skills/). It gets GEMINI.md with
- *   `@./AGENTS.md`.
- * - Codex CLI reads AGENTS.md (an AGENTS.override.md in the same folder would replace it) and the skills under
- *   .agents/skills/ (https://learn.chatgpt.com/docs/agent-configuration/agents-md;
- *   https://learn.chatgpt.com/docs/build-skills). It needs nothing.
- * - Cursor reads AGENTS.md, its project rules in .cursor/rules/*.mdc (`alwaysApply: true`: in every chat) and the
- *   skills under .agents/skills/ (https://cursor.com/docs/context/rules; https://cursor.com/docs/context/skills). It
- *   gets .cursor/rules/agents.mdc.
- * - GitHub Copilot reads AGENTS.md, .github/copilot-instructions.md and the skills under .agents/skills/
+ * - Claude Code (from v2.1.277) reads the root's AGENTS.md at start and a folder's when it opens a file there with
+ *   its Read tool, but only while no CLAUDE.md is present in the folder or above; it loads a folder's CLAUDE.md once
+ *   it reads, writes or edits a file in that folder, imports a file named on an `@path` line of a CLAUDE.md
+ *   (relative to that file), and loads skills only from .claude/skills/, where a skill's folder may be a symbolic
+ *   link to a folder elsewhere (https://code.claude.com/docs/en/memory, "How CLAUDE.md files load", "When Claude
+ *   Code reads AGENTS.md" and "Import additional files"; https://code.claude.com/docs/en/skills, where skills
+ *   live). A CLAUDE.md at the root would hide every folder's AGENTS.md, so it gets CLAUDE.md with `@AGENTS.md`,
+ *   FOLDER/CLAUDE.md with `@AGENTS.md` for each folder file, and a link .claude/skills/NAME to .agents/skills/NAME
+ *   for each skill.
+ * - Gemini CLI reads GEMINI.md at start and, when a tool touches a file or folder, the GEMINI.md files of that
+ *   folder and its parents; it imports a file named on an `@./path` line, and reads the skills under
+ *   .agents/skills/ (https://geminicli.com/docs/cli/gemini-md/; https://geminicli.com/docs/cli/skills/). It gets
+ *   GEMINI.md with `@./AGENTS.md`, and FOLDER/GEMINI.md with `@./AGENTS.md` for each folder file.
+ * - Codex CLI reads one AGENTS.md per folder from the project root down to the folder it starts in (an
+ *   AGENTS.override.md in the same folder would replace it), root first, at most 32 KiB together by default
+ *   (`project_doc_max_bytes`), and the skills under .agents/skills/
+ *   (https://learn.chatgpt.com/docs/agent-configuration/agents-md; https://learn.chatgpt.com/docs/build-skills).
+ *   It needs nothing.
+ * - Cursor reads AGENTS.md at the root and in folders, a folder's when it works with files there, its project rules
+ *   in .cursor/rules/*.mdc (`alwaysApply: true`: in every chat) and the skills under .agents/skills/
+ *   (https://cursor.com/docs/context/rules; https://cursor.com/docs/context/skills). It gets
+ *   .cursor/rules/agents.mdc, and nothing per folder.
+ * - GitHub Copilot reads AGENTS.md (the nearest one in the tree taking precedence), .github/copilot-instructions.md,
+ *   each .github/instructions/NAME.instructions.md whose `applyTo` globs match the files it works on, next to the
+ *   repository-wide file, and the skills under .agents/skills/
  *   (https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions;
- *   https://docs.github.com/en/copilot/concepts/agents/about-agent-skills). It gets .github/copilot-instructions.md.
+ *   https://docs.github.com/en/copilot/concepts/agents/about-agent-skills). In VS Code a nested AGENTS.md is read
+ *   only with an experimental setting, `chat.useNestedAgentsMdFiles`
+ *   (https://code.visualstudio.com/docs/copilot/customization/custom-instructions). It gets
+ *   .github/copilot-instructions.md, and .github/instructions/NAME.instructions.md with `applyTo: "FOLDER/**"` for
+ *   each folder file, NAME the folder without a leading dot.
  *
  * Usage:
  *   node scripts/agents-setup.mjs                  write the pointer files of every tool
@@ -33,8 +49,10 @@
  *   node scripts/agents-setup.mjs --root <dir>     write into another checkout (used by the tests)
  *
  * It never overwrites a file that exists without --force, and running it again changes nothing that is in place: a
- * skill added since gets its link, and a link to a skill that is gone is removed. Exit code 0 when everything is in
- * place, 1 when something could not be written, 2 on a usage error. Plain ESM, Node built-ins only.
+ * skill or a folder file added since gets its link or its pointers, a link to a skill that is gone is removed, and
+ * so is a pointer it wrote for a folder whose AGENTS.md is gone, while the pointer holds exactly what it writes.
+ * Exit code 0 when everything is in place, 1 when something could not be written, 2 on a usage error. Plain ESM,
+ * Node built-ins only.
  */
 import {
   existsSync,
@@ -51,20 +69,58 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-/** The one rules file, under the name the tools look for. */
-export const RULES_FILE = 'AGENTS.md';
+import { RULES_FILE, rulesFolders, topLevelFolders } from './lib/rules-files.mjs';
+
+/** The name of every rules file, under the name the tools look for. */
+export { RULES_FILE };
 /** The skills, one folder each with its SKILL.md. */
 export const SKILLS_DIR = '.agents/skills';
+/** Where GitHub Copilot reads its path-specific instructions. */
+export const COPILOT_INSTRUCTIONS_DIR = '.github/instructions';
 
-/** What every pointer file says. */
+/** What every pointer file at the root says. */
 export const POINTER =
-  'Read AGENTS.md and the skills under .agents/skills/ first; this file only points there. It is git-ignored and ' +
-  'written by `pnpm agents:setup`: a rule belongs in AGENTS.md, never here.';
+  'Read AGENTS.md, the AGENTS.md of every folder you change and the skills under .agents/skills/ first; this ' +
+  'file only points there. It is git-ignored and written by `pnpm agents:setup`: a rule belongs in AGENTS.md, ' +
+  'never here.';
+
+/** What every pointer file in a folder with an AGENTS.md says. */
+export const FOLDER_POINTER =
+  "Read ../AGENTS.md, this folder's AGENTS.md and the skills under .agents/skills/ first; this file only points " +
+  'there. It is git-ignored and written by `pnpm agents:setup`: a rule belongs in an AGENTS.md, never here.';
+
+/**
+ * What GitHub Copilot's instructions for a folder say: they lie in .github/instructions/, so they name the folder.
+ * @param {string} folder
+ * @returns {string}
+ */
+export function copilotFolderPointer(folder) {
+  return (
+    `Read AGENTS.md, ${folder}/${RULES_FILE} and the skills under .agents/skills/ first; this file only points ` +
+    'there. It is git-ignored and written by `pnpm agents:setup`: a rule belongs in an AGENTS.md, never here.'
+  );
+}
+
+/**
+ * The name of a folder's instructions file for GitHub Copilot: the folder without a leading dot.
+ * @param {string} folder
+ * @returns {string}
+ */
+export function copilotInstructionsPath(folder) {
+  return `${COPILOT_INSTRUCTIONS_DIR}/${folder.replace(/^\./, '')}.instructions.md`;
+}
 
 /**
  * @typedef {'claude' | 'gemini' | 'codex' | 'cursor' | 'copilot'} ToolId
  * @typedef {{ path: string, content: string }} PointerFile
- * @typedef {{ id: ToolId, name: string, files: readonly PointerFile[], linkSkillsInto?: string, note?: string }} Tool
+ * @typedef {{
+ *   id: ToolId,
+ *   name: string,
+ *   files: readonly PointerFile[],
+ *   folderFile?: (folder: string) => PointerFile,
+ *   linkSkillsInto?: string,
+ *   note?: string,
+ * }} Tool
  */
 
 /** @type {readonly Tool[]} */
@@ -73,18 +129,28 @@ export const TOOLS = Object.freeze([
     id: 'claude',
     name: 'Claude Code',
     files: [{ path: 'CLAUDE.md', content: `@${RULES_FILE}\n\n${POINTER}\n` }],
+    folderFile: (folder) => ({
+      path: `${folder}/CLAUDE.md`,
+      content: `@${RULES_FILE}\n\n${FOLDER_POINTER}\n`,
+    }),
     linkSkillsInto: '.claude/skills',
   },
   {
     id: 'gemini',
     name: 'Gemini CLI',
     files: [{ path: 'GEMINI.md', content: `@./${RULES_FILE}\n\n${POINTER}\n` }],
+    folderFile: (folder) => ({
+      path: `${folder}/GEMINI.md`,
+      content: `@./${RULES_FILE}\n\n${FOLDER_POINTER}\n`,
+    }),
   },
   {
     id: 'codex',
     name: 'Codex CLI',
     files: [],
-    note: 'reads AGENTS.md and the skills under .agents/skills/ itself: nothing to write',
+    note:
+      'reads the AGENTS.md files from the root down to the folder it starts in, and the skills under ' +
+      '.agents/skills/, itself: nothing to write',
   },
   {
     id: 'cursor',
@@ -102,6 +168,10 @@ export const TOOLS = Object.freeze([
     id: 'copilot',
     name: 'GitHub Copilot',
     files: [{ path: '.github/copilot-instructions.md', content: `${POINTER}\n` }],
+    folderFile: (folder) => ({
+      path: copilotInstructionsPath(folder),
+      content: `---\napplyTo: "${folder}/**"\n---\n\n${copilotFolderPointer(folder)}\n`,
+    }),
   },
 ]);
 
@@ -175,6 +245,55 @@ function writePointer(root, file, force, lines) {
   }
   lines.push(`  ${existing === undefined ? 'wrote' : 'overwrote'} ${file.path}`);
   return true;
+}
+
+/**
+ * The folders a pointer of this script may stand for: every top-level folder, and every folder a file in
+ * .github/instructions/ is named after (with and without a leading dot).
+ * @param {string} root
+ * @returns {string[]}
+ */
+function pointerFolders(root) {
+  const folders = new Set(topLevelFolders(root));
+  const dir = path.join(root, COPILOT_INSTRUCTIONS_DIR);
+  if (entryAt(dir)?.isDirectory()) {
+    for (const name of readdirSync(dir)) {
+      const folder = /^(.+)\.instructions\.md$/.exec(name)?.[1];
+      if (folder === undefined) continue;
+      folders.add(folder);
+      folders.add(`.${folder}`);
+    }
+  }
+  return [...folders].sort();
+}
+
+/**
+ * Removes the pointers a tool's `folderFile` wrote for folders that hold no AGENTS.md any more, each only while it
+ * is a file that says exactly what the script writes, so that a file of a person's own stays.
+ * @param {string} root
+ * @param {(folder: string) => PointerFile} folderFile
+ * @param {readonly string[]} rules the folders that hold an AGENTS.md
+ * @param {string[]} lines
+ * @returns {boolean} false when a pointer could not be removed
+ */
+function removeStalePointers(root, folderFile, rules, lines) {
+  let ok = true;
+  for (const folder of pointerFolders(root)) {
+    if (rules.includes(folder)) continue;
+    const file = folderFile(folder);
+    const absPath = path.join(root, file.path);
+    if (entryAt(absPath)?.isFile() !== true || readFileSync(absPath, 'utf8') !== file.content) continue;
+    try {
+      unlinkSync(absPath);
+      lines.push(`  removed ${file.path} (${folder}/${RULES_FILE} is gone)`);
+    } catch (error) {
+      ok = false;
+      lines.push(
+        `  could not remove ${file.path}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+  return ok;
 }
 
 /**
@@ -255,6 +374,7 @@ export function setup({ root, tools = TOOLS.map((tool) => tool.id), force = fals
   /** @type {string[]} */
   const lines = [];
   let failed = false;
+  const rules = rulesFolders(root);
   for (const tool of TOOLS.filter((candidate) => tools.includes(candidate.id))) {
     if (tool.note !== undefined) {
       lines.push(`${tool.name} ${tool.note}.`);
@@ -262,6 +382,11 @@ export function setup({ root, tools = TOOLS.map((tool) => tool.id), force = fals
     }
     lines.push(`${tool.name}:`);
     for (const file of tool.files) failed = !writePointer(root, file, force, lines) || failed;
+    if (tool.folderFile !== undefined) {
+      for (const folder of rules)
+        failed = !writePointer(root, tool.folderFile(folder), force, lines) || failed;
+      failed = !removeStalePointers(root, tool.folderFile, rules, lines) || failed;
+    }
     if (tool.linkSkillsInto !== undefined)
       failed = !linkSkills(root, tool.linkSkillsInto, force, lines) || failed;
   }

@@ -87,17 +87,25 @@ function holdsRulesFile(absDir) {
 }
 
 /**
+ * The top-level folders of a checkout that may hold a rules file (none of the skipped ones), sorted.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function topLevelFolders(root) {
+  if (!existsSync(root)) return [];
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !isSkippedFolder(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+}
+
+/**
  * The top-level folders of a checkout that hold a rules file of their own, sorted.
  * @param {string} root
  * @returns {string[]}
  */
 export function rulesFolders(root) {
-  if (!existsSync(root)) return [];
-  return readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !isSkippedFolder(entry.name))
-    .map((entry) => entry.name)
-    .filter((name) => holdsRulesFile(path.join(root, name)))
-    .sort();
+  return topLevelFolders(root).filter((name) => holdsRulesFile(path.join(root, name)));
 }
 
 /**
@@ -189,10 +197,10 @@ export function readHeadings(text) {
 const LINE_LEAD = /^\s*(?:\/\/+|\*+|#+(?=\s)|<!--|>+)?\s*/;
 
 /**
- * A mention of a rules file: an optional path of folders, then AGENTS.md, never inside a longer name, a URL or
- * a path with a placeholder (`<folder>/AGENTS.md`).
+ * A mention of a rules file: an optional path of folders, then AGENTS.md, never inside a longer name, a URL, a
+ * path with a placeholder (`<folder>/AGENTS.md`) or an import line (`@AGENTS.md`, `@./AGENTS.md`).
  */
-const MENTION = /(?<![\w./-])((?:[\w.-]+\/)*)AGENTS\.md(?![\w-])/g;
+const MENTION = /(?<![\w./@-])((?:[\w.-]+\/)*)AGENTS\.md(?![\w-])/g;
 
 /** An opening quote around a heading, and a closing one. */
 const OPEN_QUOTE = /^["“]?/;

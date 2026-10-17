@@ -162,7 +162,13 @@ describe('a citation', () => {
     expect(cite(`${FILE}, which applies here too.`)).toEqual([]);
     expect(cite(`Read ${FILE} and the skills; ${FILE} is the one name.`)).toEqual([]);
     expect(cite(`\`${FILE}\`, \`README.md\` and \`CHANGELOG.md\``)).toEqual([]);
+  });
+
+  it('is none in an import line', () => {
     expect(cite(`"@./${FILE}\\n\\n" and @${FILE}`)).toEqual([]);
+    expect(cite(`CLAUDE.md with \`@${FILE}\`, FOLDER/CLAUDE.md with \`@./${FILE}\`, Product rules`)).toEqual(
+      [],
+    );
   });
 
   it('names a quoted heading, or a parenthesised list of them', () => {
