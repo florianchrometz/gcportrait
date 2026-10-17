@@ -16,7 +16,7 @@ The sections of this file:
 
 | Section | What it settles |
 |---|---|
-| [How this file works](#how-this-file-works) | The root's rules and the folders', reading them, their size, the skills as handbooks, how to cite a rule, how a rule changes |
+| [How this file works](#how-this-file-works) | The root's rules and the folders', reading them, the skills as handbooks, how to cite a rule, how a rule changes |
 | [What gcportrait is and is not](#what-gcportrait-is-and-is-not) | The question it answers, its users, what version 1 does, the non-goals |
 | [Product rules](#product-rules) | Phones, tablets and desktops, both themes, the demo, the timeline, "as of", views as links, composition, the source link |
 | [Data and graph semantics](#data-and-graph-semantics) | Data over code, the Snapshot, synthetic data, the catalog and the graph builder |
@@ -55,9 +55,6 @@ The sections of this file:
   locally writes one that points to the rules files with `pnpm agents:setup` ([Assistants](#assistants)).
 - **Read the AGENTS.md of every folder you change before changing its files**, because its rules bind those
   files as this file's rules do.
-- **This file holds at most 32 768 bytes, and a folder file at most 16 384**, because Codex reads at most
-  32 KiB of the AGENTS.md files from the root down and cuts the rest, and every session of an assistant loads
-  this file whole.
 - **The skills are handbooks.** Each skill in `.agents/skills/` is a plain Markdown procedure for one domain
   (`SKILL.md` with a `name` and a `description` in its frontmatter, optional `references/`): it says how the
   work is done and which constants it uses, and points to the AGENTS.md that holds each rule it applies. A
