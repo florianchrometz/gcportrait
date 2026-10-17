@@ -53,6 +53,7 @@ report.focus; // { status: 'applied', … } or { status: 'error', error: { code,
 | `buildSceneWithReport(graph, viewSpec, catalog, env)` | `SceneBuild` (`{ scene, report }`, `SceneBuildSchema` in the model): the scene and the report below |
 | `prepareView(graph, viewSpec, catalog, env)`, `buildPreparedScene(prepared, viewSpec, env)`, `preparedViewKey(viewSpec, env)`, `PreparedView` | the same build in two parts: steps (a)–(d), the scene tree and its badges once, then step (e) and the report for any view with the same `preparedViewKey` (see "Performance" under "Views") |
 | `flipIdOf(zoneId)` | the URL-hash token of a zone for `ViewSpec.flips` (64-bit FNV-1a, base 36, ≤ 13 characters) |
+| `viewSpecOf(renderView, snapshot)` | the `ViewSpec` of a render's view (`RenderView` in the model, the view of `POST /api/render`, `pnpm render` and `pnpm render-scene`): a `hash` decoded by `decodeViewSpec` with its `snapshot` replaced, or the explicit fields normalised (lens `overview` and detail `auto` by default) with each flip's zone id turned into its `flipIdOf` token. The render library re-exports it |
 | `viewportBudget(width, height)`, `DEFAULT_VIEWPORT_BUDGET` | the `auto` rect budget: `width × height / 14000`, clamped to 24–250; 73 for 1280×800 |
 | `NEVER_COLLAPSE_RECTS`, `BUNDLE_THRESHOLD`, `BUNDLE_SIZE` | 100, 120 and 24 (skill gcp-diagram-layout §6) |
 | `BUNDLE_ID_PREFIX` | `group:`, the prefix of a bundle zone's id (the rest is its first member's id) |
@@ -343,9 +344,13 @@ NDJSON fixtures, L generated and serialised to NDJSON — ingests it with `@gcpo
 entropy), builds the graph and the scene with the real catalog, and prints a summary: the level used and the
 rect count at every level, root and focus, zones by kind, chips by kind, cards, edges by kind and the
 relations they stand for, stubs, overlays, held-back nodes, dangling references and warnings. Options:
-`--lens`, `--focus kind=…,name=value`, `--root`, `--detail`, `--filter key=value` (repeatable; booleans,
-comma-separated lists, `depth`), `--flip zone-id` (repeatable), `--budget N` or `--viewport WxH`,
-`--selection`, `--highlight`, `--json`. Invalid input exits with code 2 and the usage.
+`--lens`, `--focus kind=…,name=value`, `--root`, `--detail`, `--filter key=value` (repeatable), `--flip
+zone-id` (repeatable), `--budget N` or `--viewport WxH` (`--budget` wins when both are given),
+`--selection`, `--highlight`, `--json`. The view flags and `--viewport` are `pnpm render`'s, read by the
+model's `readRenderFlags` and checked by `RenderOptionsSchema` as `POST /api/render` checks its fields, and
+the view is resolved by `viewSpecOf`: a focus parameter's name starts with a letter, a boolean filter takes
+`true` or `false` (the key alone is `true`), a list filter comma-separated items, `depth` a whole number from
+1 to 64, and the viewport is at most 16 384 px a side. Invalid input exits with code 2 and the usage.
 
 ### Performance
 

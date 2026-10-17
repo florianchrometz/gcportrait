@@ -155,7 +155,9 @@ pnpm render --help
 
 It takes the view as options (`--lens`, `--focus`, `--root`, `--filter`, `--detail`, `--flip`) or as the part
 of an app link after `#` (`--hash`), the canvas size `auto` fits (`--viewport`, default 1280x800) and the
-PNG's scale (`--scale`, up to 3, default 2). It draws the demo organisations only, never a real snapshot.
+PNG's scale (`--scale`, up to 3, default 2). These options are checked as the render API below checks its
+fields, so a view the API refuses (a viewport over 16 384 px a side, a hash that names a timeline day) is
+refused here too. It draws the demo organisations only, never a real snapshot.
 [packages/render-cli/README.md](../packages/render-cli/README.md) is its reference.
 
 **From an instance, without the app.** A self-hosted instance draws the same files on the server: `POST

@@ -53,14 +53,8 @@ export {
   type Raster,
   type RasterOptions,
 } from './raster.js';
-export {
-  checkView,
-  renderView,
-  viewSpecOf,
-  ViewRefusedError,
-  type RenderContext,
-  type RenderResult,
-} from './render.js';
+export { checkView, renderView, ViewRefusedError, type RenderContext, type RenderResult } from './render.js';
+export { viewSpecOf } from '@gcportrait/graph';
 export {
   checkAssetCount,
   createSnapshotReader,

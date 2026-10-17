@@ -84,6 +84,9 @@ describe('public surface', () => {
         'RenderViewportSchema',
         'checkRenderOptions',
         'renderTooManyAssetsMessage',
+        // the command lines' render flags
+        'FILTER_FLAG_KEYS',
+        'readRenderFlags',
         // scene
         'ChipCountKindSchema',
         'ChipCountsSchema',

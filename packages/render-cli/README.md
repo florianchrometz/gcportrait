@@ -51,16 +51,24 @@ root (git-ignored). A path of `-` writes to standard output; the report then goe
 | `--lens LENS` | one of the eleven lenses (default `overview`) |
 | `--theme light\|dark` | default `light` |
 | `--detail auto\|folders\|projects\|networks\|all` | default `auto`: what the app opens at the viewport |
-| `--focus kind=KIND[,NAME=VALUE…]`, `--root NODE_ID`, `--filter KEY=VALUE`, `--flip ZONE_ID` | the rest of the ViewSpec, as `pnpm render-scene` takes them; an invalid value is an error, never silently dropped |
-| `--hash VIEW_HASH` | the whole view from an app URL (the part after `#`); its `snapshot=demo:<size>` names the fixture |
-| `--viewport WIDTHxHEIGHT` | the canvas the `auto` detail level fits (default `1280x800`, the smallest the app supports) |
-| `--scale N` / `--width PX` | PNG pixels per drawing unit, up to 3 (default 2, the export's default), or the PNG's width in pixels (margin included). A PNG beyond the app export's canvas limits (16 384 px a side, 2^27 px in all) is drawn at the largest two-decimal scale that fits, and the report says so |
+| `--focus kind=KIND[,NAME=VALUE…]`, `--root NODE_ID`, `--filter KEY=VALUE`, `--flip ZONE_ID` | the rest of the view, as `pnpm render-scene` takes them: a focus parameter's name starts with a letter; a boolean filter takes `true` or `false` (the key alone is `true`), a list filter comma-separated items, `depth` a whole number from 1 to 64; repeat `--filter` and `--flip`. An invalid value is an error, never silently dropped |
+| `--hash VIEW_HASH` | the whole view from an app URL (the part after `#`), instead of the view options above; its `snapshot=demo:<size>` names the fixture; a hash that names a timeline day (`tick=`) is refused, as a render draws the snapshot's own day |
+| `--viewport WIDTHxHEIGHT` | the canvas the `auto` detail level fits, at most 16 384 px a side (default `1280x800`, the smallest the app supports) |
+| `--scale N` / `--width PX` | PNG pixels per drawing unit, above 0 and up to 3 (default 2, the export's default), or the PNG's width in pixels (margin included), not both, and only when a PNG is drawn (`--png`, `--compare`, or no file named). A PNG beyond the app export's canvas limits (16 384 px a side, 2^27 px in all) is drawn at the largest two-decimal scale that fits, and the report says so |
 | `--png FILE`, `--svg FILE`, `--drawio FILE` | where to write; any of them |
 | `--drawio-plain` | the draw.io file's diagram as plain XML instead of compressed as diagrams.net saves it (several times larger, readable and diffable) |
 | `--drawio-unversioned` | the draw.io file's `agent` without this package's version (`gcportrait` alone, as the library writes it by default and the golden is), so a release changes no byte of the file; the website's sample exports are written this way (`scripts/exports.mjs`) |
 | `--compare EXPECTED.png [--max-diff N] [--diff FILE]` | compare the PNG with an earlier one (pixelmatch, colour threshold 0, anti-aliased pixels counted); exit 1 when more than N pixels (default 0) differ; `--diff` writes the differences as an image |
 | `--strict` | exit 1 when the layout breaks one of its invariants (skill gcp-diagram-layout §5); the report always says whether they hold |
 | `--all [--out DIR] [--fixtures …] [--lenses …] [--themes …] [--formats png,svg,drawio] [--drawio-plain] [--drawio-unversioned]` | every combination (default: S, M, L, XL × all lenses × both themes, PNG and SVG; `drawio` adds the draw.io files) into `DIR` (default `out/render/all`), named like the renderer's baselines, with an `index.json` listing each file, its size, rect and edge counts and the detail level used. All 88 take a few minutes |
+
+**The render API's options.** The view, `--theme`, `--viewport`, `--scale` and `--width` are read by
+`@gcportrait/model`'s `readRenderFlags`, the reader `pnpm render-scene` uses too, and checked by
+`RenderOptionsSchema`, the schema `POST /api/render` checks its fields with
+([docs/api.md](../../docs/api.md#post-apirender)): what the API refuses, this command refuses, with a message
+in the flags' words (`render: --viewport width: Too big: expected number to be <=16384`). The view is then
+resolved by `viewSpecOf`, as the API resolves it. The outputs, `--compare`, `--strict` and `--all` are this
+command's own.
 
 Exit codes: 0 done, 1 a check failed (`--compare`, `--strict`), 2 a usage error.
 
@@ -115,11 +123,12 @@ unless `--drawio-plain` is given.
    to Roboto and text is set with the advances the layout measured (a test checks a bold label's drawn width
    against `measureText`).
 
-The CLI imports the render library only (`eslint.config.js` allows it `model`, `graph`, `demo-data` and
-`render`), and nothing may import it. The library reaches the frontend's components through the frontend's
-entry point for other workspaces, `frontend/src/headless.ts`, which the app never imports. The `render` script
-runs `src/cli.ts` through tsx with the frontend's tsconfig, so the frontend's `.tsx` files compile with its
-JSX settings; Vitest picks each file's nearest tsconfig by itself.
+The CLI imports the render library only (`eslint.config.js` allows it `model`, `demo-data` and `render`, and
+its tests `graph` too, whose `auto` budget they check against), and nothing may import it. The library reaches
+the frontend's components through the frontend's entry point for other workspaces, `frontend/src/headless.ts`,
+which the app never imports. The `render` script runs `src/cli.ts` through tsx with the frontend's tsconfig,
+so the frontend's `.tsx` files compile with its JSX settings; Vitest picks each file's nearest tsconfig by
+itself.
 
 ## Goldens and comparisons
 
@@ -160,7 +169,8 @@ A failing golden test leaves the actual file (and for the PNG a picture of the d
 `@gcportrait/render` (which brings `@resvg/resvg-wasm`, MPL-2.0, pinned exactly, the `@fontsource` Roboto
 packages, OFL-1.1, the font exception of AGENTS.md, Licence and dependencies, and through the frontend's
 draw.io translator fflate, MIT, pinned exactly), `pixelmatch` (ISC) and `pngjs` (MIT) for the comparisons,
-both pinned exactly in `package.json`, and the workspace packages above.
+both pinned exactly in `package.json`, and the workspace packages above (`@gcportrait/graph` as a dev
+dependency, for the tests).
 
 ## Known limits
 

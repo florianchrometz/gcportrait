@@ -119,6 +119,13 @@ export {
   type RenderView,
   type RenderViewport,
 } from './schemas/render.js';
+export {
+  FILTER_FLAG_KEYS,
+  readRenderFlags,
+  type FilterFlagKind,
+  type RenderFlags,
+  type RenderFlagsResult,
+} from './schemas/render-flags.js';
 
 export {
   ChipCountKindSchema,

@@ -79,7 +79,8 @@ anything else.
 | `packages/layout/test/**`, `packages/layout/scripts/**` | `model`, `graph`, `catalog`, `demo-data` (dev dependencies: the golden, performance and debug-render Scenes are built from the demo organisations) |
 | `packages/ingest/test/**` | `model`, `demo-data` (a dev dependency: the budget test reads the demo organisation XL, written as an export) |
 | `packages/render/**` | `model`, `catalog`, `graph`, `layout`, `demo-data`, `frontend` (the render library: Node code on top of the app that reads data and draws with the frontend's own readers and components through `@gcportrait/frontend`, the headless entry point `frontend/src/headless.ts`; the one package that may import the frontend, which may not import it) |
-| `packages/render-cli/**` | `model`, `graph`, `demo-data`, `render` (`pnpm render`, the command line around the render library; nothing imports it) |
+| `packages/render-cli/**` | `model`, `demo-data`, `render` (`pnpm render`, the command line around the render library; nothing imports it) |
+| `packages/render-cli/test/**` | `model`, `graph`, `demo-data`, `render` (a dev dependency: the tests check the `auto` budget against the graph's) |
 | `frontend/**` | `model`, `catalog`, `graph`, `layout`, `icons`, `ingest`, `demo-data` |
 | `backend/**` | `model`, `catalog`, `ingest`, `render` (the render library only in the render job, `src/render/job.ts` and `worker.ts`, which the bundle turns into `dist/render-worker.mjs`; `dist/server.mjs` never holds it, `src/render/bundle.test.ts`) |
 | `website/**` | `model`, `catalog`, `demo-data` |
@@ -93,7 +94,7 @@ anything else.
                └───────► icons                (imports nothing)
             backend ───► ingest, catalog, model; render (its render worker only)
             render ────► frontend (headless entry), graph, layout, catalog, demo-data, model   on top of the app
-            render-cli ► render, graph, demo-data, model                                    tooling
+            render-cli ► render, demo-data, model; graph (tests)                            tooling
             graph ┄┄┄┄► demo-data (tests, scripts), ingest (scripts)   development only
             layout ┄┄┄► graph, catalog, demo-data (tests, scripts)    development only
             ingest ┄┄┄► demo-data (tests)                            development only
@@ -127,6 +128,7 @@ inferred types, plus the URL-hash codec for views. Imports no other workspace pa
 | Views | `ViewSpecSchema`/`ViewSpec`, `normalizeViewSpec`, `encodeViewSpec`, `decodeViewSpec`, `DEFAULT_VIEW_SPEC` (the codec and its normaliser import no zod, so the UI thread loads none) |
 | Vocabularies without zod | `LENS_IDS`, `DETAIL_LEVEL_IDS`, `RELATION_KIND_IDS`, `FOCUS_KIND_IDS`, `DEMO_SIZES` and the guards `isLensId`, `isDetailLevel`, `isRelationKind`, `isFocusKind`, `isDemoSize`, `isSnapshotRef`: what the app's UI thread lists and tests values with |
 | Locations without zod | `isRegion`, `isZone`, `zoneRegion`, `regionOfZone`: the one rule of what a region and a zone are and which region holds a zone (`europe-west3-b`, AI zones such as `us-central1-ai1a`, a sovereign cloud's `u-france-east1-a`), read by the catalog's templates and `siblingName`, the graph's region zones and regions filter, and the app's filter choices; `LOCATION_PATTERN`, the shape of any location name |
+| Render options | `RenderOptionsSchema`/`RenderOptions`, `RenderViewSchema`/`RenderView`, `checkRenderOptions`: what the render library and `POST /api/render` take; `readRenderFlags`, `FILTER_FLAG_KEYS`: the command lines' flags (`pnpm render`, `pnpm render-scene`) read into those options and checked by the same schema |
 | Scene | `SceneSchema`/`Scene`, `SceneZone`, `SceneCard`, `SceneEdge`; `SceneEnvSchema`/`SceneEnv`, `SceneBuildSchema`/`SceneBuild`, `SceneReport` |
 | Catalog | `CatalogSchema`/`Catalog`, `CatalogEntrySchema`, `CatalogZoneKindSchema`, `LensSchema`, `RelationRuleSchema`; `ProjectIndexSchema`/`ProjectIndex`, `buildProjectIndex`, `projectIndexBuilder` (the one number↔id pairing rule), `aliasKey`, `EvaluatedRelation`, `RelationTarget` |
 | Testing (`@gcportrait/model/testing`) | `findNonSyntheticData`, `assertSyntheticOnly`: the one "synthetic only" guard for fixtures and generated data; `measureBatches`, `measureRuns`, `skipIfOverloaded`: the one rule for the tests' wall-clock limits (measured again while over, each batch stopped at the deadline, skipped on an overloaded machine but never on CI) |
@@ -239,6 +241,7 @@ turn a Graph and a `ViewSpec` into the `Scene` the layout consumes: drill-in roo
 | `prepareView(…)`, `buildPreparedScene(…)`, `preparedViewKey(…)` | the same Scene build in two parts: a view prepared once, then finished for every view with the same key (another detail level, flips, `depth` filter, selection or highlight) |
 | `diffSnapshots(before, after)`, `compareTimestamps(a, b)` | the timeline diff (cai-ingestion skill §5) |
 | `viewportBudget(width, height)`, `flipIdOf(zoneId)`, `DETAIL_LEVELS`, `BUNDLE_THRESHOLD`, `GENERIC_ICON`, … | what the UI needs to drive the views |
+| `viewSpecOf(renderView, snapshot)` | the ViewSpec of a render's view (`RenderView`): a hash decoded as the app decodes it, or explicit fields normalised with the flips' zone ids as flip tokens; `POST /api/render` (through the render library, which re-exports it), `pnpm render` and `pnpm render-scene` resolve a view with it |
 | `ZONE_OPENS_AT`, `zoneOpensAt`, `autoDetailLevel`, `autoCeiling`, `BUNDLE_ID_PREFIX` | the level table of step (e), the `auto` rule with the lens's `defaultDetail` as its ceiling, and the bundle id prefix, so the app's disclosure controls read them instead of restating them |
 | `PROJECT_TYPE`, `NETWORK_TYPE`, `projectNodeId`, `isVirtualNode`, … | the few structural types the builder knows by identity |
 

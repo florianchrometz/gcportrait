@@ -219,6 +219,26 @@ What `@gcportrait/render`'s `renderView` and the backend's `POST /api/render` ta
 `renderTooManyAssetsMessage(limit)`, the one sentence of a render refused for more assets than the instance
 allows, whether the backend stops a pull or the render library counts what it read.
 
+### The command lines' flags
+
+| Export | What |
+|---|---|
+| `readRenderFlags(flags, format?)`, `RenderFlags`, `RenderFlagsResult` | the flags of `pnpm render` and `pnpm render-scene` (`--hash`, `--lens`, `--detail`, `--focus`, `--root`, `--filter`, `--flip`, `--theme`, `--viewport`, `--scale`, `--width`, each as its text) read into the render options and checked by `RenderOptionsSchema` with the format the command writes; `{ success: true, options }` or `{ success: false, error }` with every problem in one message |
+| `FILTER_FLAG_KEYS`, `FilterFlagKind` | the filters by how `--filter` writes them (`boolean`, `list`, `number`), read from `ViewFiltersSchema` in its order, for a command's usage text |
+
+`readRenderFlags` is the one reader of both command lines, so each takes exactly what the render API takes.
+It knows each flag's grammar only: `--focus kind=KIND[,NAME=VALUE…]` (a value may hold `=`), `--filter
+KEY=VALUE` (a key alone is `KEY=true`, the last entry of a key wins; a boolean filter's `true` and `false`
+become booleans, a list filter's value is split at commas with empty items dropped, `depth` becomes a number),
+`--viewport WIDTHxHEIGHT`, and a number for `--scale` and `--width`; a text that is no number is passed on as
+it is, so the schema refuses it. Everything else is the schema's rule: a boolean filter is `true` or `false`,
+never `1` or `0`; a focus parameter's name starts with a letter; the viewport is at most 16 384 px a side;
+`scale` and `width` apply to a PNG only. Each issue is told in the flag's words, quoting the value typed where
+that helps (`--lens takes overview, …, not "nope"`, `--filter showRegions takes true or false, not "1"`,
+`--viewport width: Too big: expected number to be <=16384`, `--hash: names a timeline day (tick); …`); the
+schema's own messages, which the API answers with, never name a value. Every message is asserted in
+`src/schemas/render-flags.test.ts`.
+
 ## Scene
 
 What `packages/graph` hands to `packages/layout`. It lives here because layout must not depend on graph. The

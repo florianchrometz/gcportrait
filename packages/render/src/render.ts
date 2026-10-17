@@ -5,25 +5,22 @@
  * app's export file name and what was drawn. The same functions as `pnpm render` (view.ts, draw.ts,
  * raster.ts), so a demo view comes out byte for byte as the command line writes it.
  *
- * The view is resolved as the command line resolves it: a hash is decoded leniently by `decodeViewSpec`, as the app
- * decodes its URL (its `snapshot`, `selection` and `highlight` do not change the drawing); explicit fields are
- * normalised with the flips' zone ids turned into flip tokens, as `--flip` does. Unlike the command line, which
- * reports them, a refused drill-in root or a focus that does not apply is an error ({@link ViewRefusedError}).
+ * The view is resolved by `viewSpecOf` (`@gcportrait/graph`), as the command line resolves it: a hash is decoded
+ * leniently by `decodeViewSpec`, as the app decodes its URL (its `snapshot`, `selection` and `highlight` do not
+ * change the drawing); explicit fields are normalised with the flips' zone ids turned into flip tokens, as `--flip`
+ * does. Unlike the command line, which reports them, a refused drill-in root or a focus that does not apply is an
+ * error ({@link ViewRefusedError}).
  */
 import { DRAWIO_MEDIA_TYPE, exportFileName } from '@gcportrait/frontend';
-import { flipIdOf } from '@gcportrait/graph';
+import { viewSpecOf } from '@gcportrait/graph';
 import {
   RENDER_DEFAULT_SCALE,
-  decodeViewSpec,
   encodeViewSpec,
-  normalizeViewSpec,
   type DetailLevel,
   type Graph,
   type RenderOptions,
-  type RenderView,
   type Snapshot,
   type SnapshotRef,
-  type ViewSpec,
 } from '@gcportrait/model';
 
 import { drawDrawio, drawPng, drawSvg } from './draw.js';
@@ -35,23 +32,6 @@ export class ViewRefusedError extends Error {
     super(message);
     this.name = 'ViewRefusedError';
   }
-}
-
-/** The ViewSpec of the render options' view, for `snapshot` (the hash's own `snapshot` is replaced). */
-export function viewSpecOf(view: RenderView, snapshot: SnapshotRef): ViewSpec {
-  if (view.hash !== undefined) {
-    const decoded = decodeViewSpec(view.hash.startsWith('#') ? view.hash : `#${view.hash}`);
-    return { ...decoded, snapshot };
-  }
-  return normalizeViewSpec({
-    snapshot,
-    lens: view.lens ?? 'overview',
-    detail: view.detail ?? 'auto',
-    filters: view.filters ?? {},
-    flips: (view.flips ?? []).map(flipIdOf),
-    ...(view.focus === undefined ? {} : { focus: view.focus }),
-    ...(view.root === undefined ? {} : { root: view.root }),
-  });
 }
 
 export interface RenderContext {

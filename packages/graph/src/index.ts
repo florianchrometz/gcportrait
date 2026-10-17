@@ -41,3 +41,4 @@ export {
 export { DETAIL_LEVELS, ZONE_OPENS_AT, autoCeiling, autoDetailLevel, zoneOpensAt } from './views/detail.js';
 export { CHIP_COUNT_OF_KIND } from './views/emit.js';
 export { flipIdOf } from './views/flip.js';
+export { viewSpecOf } from './views/render-view.js';

@@ -27,7 +27,7 @@ only.
 | `src/raster.ts` | The export's PNG geometry (`pngGeometry`, `framedSvg`: scale or width, a 24 px margin, 16 384 px a side, 2^27 px or a lower `maxPixels`) and `rasterise` with resvg's WebAssembly build; `initRasteriser(assets)` once per thread. |
 | `src/fonts.ts`, `src/woff.ts` | The self-hosted Roboto faces in their loading order (Latin subsets first), unwrapped from WOFF to OpenType in memory. |
 | `src/assets.ts` | `packageAssets()` (the wasm module and the faces from the installed packages), `writeAssetDir(dir)` and `readAssetDir(dir)`: the directory the backend's bundle ships, written and read by one module, so the font order has one source. |
-| `src/render.ts` | `renderView(snapshot, options, context)`: `RenderOptionsSchema` (`@gcportrait/model`) to the bytes (PNG, SVG or draw.io), the app's export file name, the view's hash, the detail level and the scale used; `context.version` goes into a draw.io file's `agent`. A refused root or a focus that does not apply is a `ViewRefusedError`. |
+| `src/render.ts` | `renderView(snapshot, options, context)`: `RenderOptionsSchema` (`@gcportrait/model`) to the bytes (PNG, SVG or draw.io), the app's export file name, the view's hash, the detail level and the scale used; `context.version` goes into a draw.io file's `agent`. The view is resolved by `viewSpecOf` (`@gcportrait/graph`'s, re-exported here), as `pnpm render` and `pnpm render-scene` resolve theirs. A refused root or a focus that does not apply is a `ViewRefusedError`. |
 
 ```ts
 import { RenderOptionsSchema } from '@gcportrait/model';

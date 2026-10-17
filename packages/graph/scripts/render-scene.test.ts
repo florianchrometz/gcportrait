@@ -4,8 +4,8 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { SceneBuildSchema, type SceneBuild } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
-import { flipIdOf } from '../src/index.js';
-import { BANNER, USAGE, loadFixture, parseCommand, run } from './render-scene.js';
+import { flipIdOf, viewportBudget } from '../src/index.js';
+import { BANNER, USAGE, UsageError, loadFixture, parseCommand, run } from './render-scene.js';
 
 async function capture(argv: readonly string[]): Promise<{ code: number; out: string; err: string }> {
   let out = '';
@@ -52,7 +52,7 @@ describe('parseCommand', () => {
       '--filter',
       'depth=2',
       '--filter',
-      'showIdentities=0',
+      'showIdentities=false',
       '--flip',
       '//cloudresourcemanager.googleapis.com/projects/10000000001',
       '--viewport',
@@ -96,20 +96,35 @@ describe('parseCommand', () => {
     expect(parseCommand(['--help'])).toBe('help');
   });
 
+  it('reads a viewport into its budget, the budget winning when both are given', () => {
+    expect(parseCommand(['--viewport', '16384x16384'])).toMatchObject({
+      budget: viewportBudget(16_384, 16_384),
+    });
+    expect(parseCommand(['--budget', '30', '--viewport', '1920x1080'])).toMatchObject({ budget: 30 });
+  });
+
   it.each([
-    [['--fixture', 'XL'], /--fixture takes S, M, L/],
-    [['--lens', 'nope'], /--lens takes/],
-    [['--detail', 'some'], /--detail takes/],
-    [['--focus', 'project'], /NAME=VALUE pairs/],
-    [['--focus', 'kind=nope'], /--focus needs kind=/],
-    [['--filter', 'colour=red'], /unknown filter "colour"/],
-    [['--filter', 'hideDisconnected=maybe'], /takes true or false/],
-    [['--filter', 'depth=0'], /invalid --filter depth/],
-    [['--filter', 'includeTypes=not a type'], /invalid --filter includeTypes/],
+    [['--fixture', 'XL'], /^--fixture takes S, M, L, not "XL"$/],
+    [['--lens', 'nope'], /^--lens takes overview, networking, .*, not "nope"$/],
+    [['--detail', 'some'], /^--detail takes auto, folders, projects, networks, all, not "some"$/],
+    [['--focus', 'project'], /^--focus takes NAME=VALUE pairs, not "project"$/],
+    [['--focus', 'kind=nope'], /^--focus needs kind=project\|shared-vpc\|.*, not "nope"$/],
+    // As pnpm render and the render API: a focus parameter's name starts with a letter.
+    [['--focus', 'kind=project,=demo-web-1'], /^--focus parameter "": must start with a letter/],
+    [['--filter', 'colour=red'], /^--filter takes hideEmptyProjects, .*, not "colour"$/],
+    [['--filter', 'hideDisconnected=maybe'], /^--filter hideDisconnected takes true or false, not "maybe"$/],
+    // As pnpm render and the render API: a boolean filter is true or false, never 1 or 0.
+    [['--filter', 'showRegions=1'], /^--filter showRegions takes true or false, not "1"$/],
+    [['--filter', 'showIdentities=0'], /^--filter showIdentities takes true or false, not "0"$/],
+    [['--filter', 'depth=0'], /^--filter depth: Too small: expected number to be >=1$/],
+    [['--filter', 'includeTypes=not a type'], /^--filter includeTypes: must be an asset type/],
+    [['--root', ''], /^--root: must be non-empty, well-formed text$/],
     [['--budget', '0'], /--budget takes a positive integer/],
     [['--budget', 'many'], /--budget takes a positive integer/],
-    [['--viewport', 'big'], /--viewport takes WIDTHxHEIGHT/],
+    [['--viewport', 'big'], /^--viewport takes WIDTHxHEIGHT, not "big"$/],
+    [['--viewport', '20000x800'], /^--viewport width: Too big: expected number to be <=16384$/],
   ])('refuses %j', (argv, message) => {
+    expect(() => parseCommand(argv)).toThrow(UsageError);
     expect(() => parseCommand(argv)).toThrow(message);
   });
 });

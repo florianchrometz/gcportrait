@@ -61,8 +61,10 @@ const WORKSPACE_DEPENDENCIES = [
     files: 'packages/render/**',
     allowed: ['model', 'catalog', 'graph', 'layout', 'demo-data', 'frontend'],
   },
-  // `pnpm render`: the command line around the render library. Nothing imports it.
-  { files: 'packages/render-cli/**', allowed: ['model', 'graph', 'demo-data', 'render'] },
+  // `pnpm render`: the command line around the render library. Nothing imports it. Its tests check the `auto`
+  // budget against @gcportrait/graph's (a dev dependency; tests only: nothing under src/ imports it).
+  { files: 'packages/render-cli/**', allowed: ['model', 'demo-data', 'render'] },
+  { files: 'packages/render-cli/test/**', allowed: ['model', 'graph', 'demo-data', 'render'] },
   { files: 'frontend/**', allowed: ['model', 'catalog', 'graph', 'layout', 'icons', 'ingest', 'demo-data'] },
   // The backend reaches the frontend only through the render library, in its render worker (AGENTS.md,
   // Architecture and code).

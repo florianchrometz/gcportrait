@@ -27,19 +27,22 @@ import {
 import { ingest } from '@gcportrait/ingest';
 import {
   DetailLevelSchema,
+  FILTER_FLAG_KEYS,
   FocusKindSchema,
   LensIdSchema,
+  RENDER_MAX_SIDE,
   RelationKindSchema,
-  ViewFiltersSchema,
+  VIEW_SPEC_MAX_DEPTH,
   ZoneKindSchema,
   normalizeViewSpec,
+  readRenderFlags,
   type Catalog,
   type SceneBuild,
   type SceneNode,
   type Snapshot,
   type ViewSpec,
 } from '@gcportrait/model';
-import { buildGraphWithReport, buildSceneWithReport, flipIdOf, viewportBudget } from '../src/index.js';
+import { buildGraphWithReport, buildSceneWithReport, viewSpecOf, viewportBudget } from '../src/index.js';
 
 export const FIXTURES_DIR = path.resolve(import.meta.dirname, '../../demo-data/fixtures');
 const FIXTURES = ['S', 'M', 'L'] as const;
@@ -58,15 +61,20 @@ export const USAGE = `Usage:
                     [--budget N | --viewport WIDTHxHEIGHT] [--selection NODE_ID] [--highlight TEXT] [--json]
 
 Builds the scene of a view of a demo organisation and prints a summary: zones by kind, cards, edges by kind,
-chips, dangling references and warnings. --json prints the scene and its report instead.
+chips, dangling references and warnings. --json prints the scene and its report instead. The view flags and
+--viewport are pnpm render's, checked as POST /api/render checks its fields.
 
   --lens       ${LensIdSchema.options.join(', ')} (default overview)
+  --detail     ${DetailLevelSchema.options.join(', ')} (default auto)
   --focus      kind=${FocusKindSchema.options.join('|')}, then its parameters:
-               project=…, host=…, perimeter=…, application=… (e.g. kind=project,project=demo-web-1)
-  --filter     hideEmptyProjects, hideEmptyFolders, hideDisconnected, showRegions, showIdentities (true|false);
-               regions, projects, folders, includeTypes, excludeTypes (comma-separated); depth (1–64)
+               project=…, host=…, perimeter=…, application=… (e.g. kind=project,project=demo-web-1); a
+               parameter's name starts with a letter
+  --filter     ${FILTER_FLAG_KEYS.boolean.join(', ')} (true or false;
+               the key alone is true); ${FILTER_FLAG_KEYS.list.join(', ')} (comma-separated);
+               ${FILTER_FLAG_KEYS.number.join(', ')} (1–${String(VIEW_SPEC_MAX_DEPTH)})
   --flip       a zone id to flip (expand a chip, collapse an open zone); repeatable
-  --budget     the rect budget of detail level auto (default: the 1280×800 viewport's, 73)`;
+  --budget     the rect budget of detail level auto (default: the 1280×800 viewport's, 73)
+  --viewport   the canvas whose budget auto fits instead, up to ${String(RENDER_MAX_SIDE)} px a side`;
 
 export class UsageError extends Error {}
 
@@ -77,67 +85,11 @@ export interface Command {
   readonly json: boolean;
 }
 
-const BOOLEAN_FILTERS = [
-  'hideEmptyProjects',
-  'hideEmptyFolders',
-  'hideDisconnected',
-  'showRegions',
-  'showIdentities',
-];
-const LIST_FILTERS = ['regions', 'projects', 'folders', 'includeTypes', 'excludeTypes'];
-
-function parseBoolean(key: string, value: string): boolean {
-  if (value === 'true' || value === '1') return true;
-  if (value === 'false' || value === '0') return false;
-  throw new UsageError(`--filter ${key} takes true or false, not "${value}"`);
-}
-
-/** The `--filter` values, each checked against the ViewSpec schema. */
-function parseFilters(entries: readonly string[]): Record<string, unknown> {
-  const filters: Record<string, unknown> = {};
-  for (const entry of entries) {
-    const at = entry.indexOf('=');
-    const key = at < 0 ? entry : entry.slice(0, at);
-    const value = at < 0 ? 'true' : entry.slice(at + 1);
-    if (BOOLEAN_FILTERS.includes(key)) filters[key] = parseBoolean(key, value);
-    else if (LIST_FILTERS.includes(key)) filters[key] = value.split(',').filter((item) => item !== '');
-    else if (key === 'depth') filters[key] = Number(value);
-    else throw new UsageError(`unknown filter "${key}"`);
-  }
-  // Every value must survive validation: the app's normaliser drops invalid ones silently, a CLI should not.
-  const result = ViewFiltersSchema.partial().safeParse(filters);
-  if (!result.success) {
-    const issue = result.error.issues[0];
-    throw new UsageError(`invalid --filter ${String(issue?.path[0] ?? '')}: ${issue?.message ?? 'invalid'}`);
-  }
-  return filters;
-}
-
-function parseFocus(value: string | undefined): ViewSpec['focus'] {
-  if (value === undefined) return undefined;
-  const pairs = value.split(',').map((pair) => {
-    const at = pair.indexOf('=');
-    if (at < 0) throw new UsageError(`--focus takes NAME=VALUE pairs, not "${pair}"`);
-    return [pair.slice(0, at), pair.slice(at + 1)] as const;
-  });
-  const params = Object.fromEntries(pairs);
-  const kind = FocusKindSchema.safeParse(params.kind);
-  if (!kind.success) throw new UsageError(`--focus needs kind=${FocusKindSchema.options.join('|')}`);
-  delete params.kind;
-  return { kind: kind.data, params };
-}
-
-function parseBudget(budget: string | undefined, viewport: string | undefined): number | undefined {
-  if (budget !== undefined) {
-    const value = Number(budget);
-    if (!Number.isInteger(value) || value < 1)
-      throw new UsageError(`--budget takes a positive integer, not "${budget}"`);
-    return value;
-  }
-  if (viewport === undefined) return undefined;
-  const match = /^(\d+)x(\d+)$/.exec(viewport);
-  if (match === null) throw new UsageError(`--viewport takes WIDTHxHEIGHT, not "${viewport}"`);
-  return viewportBudget(Number(match[1]), Number(match[2]));
+function parseBudget(budget: string): number {
+  const value = Number(budget);
+  if (!Number.isInteger(value) || value < 1)
+    throw new UsageError(`--budget takes a positive integer, not "${budget}"`);
+  return value;
 }
 
 export function parseCommand(argv: readonly string[]): Command | 'help' {
@@ -145,12 +97,12 @@ export function parseCommand(argv: readonly string[]): Command | 'help' {
     args: [...argv],
     options: {
       fixture: { type: 'string', default: 'M' },
-      lens: { type: 'string', default: 'overview' },
+      lens: { type: 'string' },
       focus: { type: 'string' },
       root: { type: 'string' },
-      detail: { type: 'string', default: 'auto' },
-      filter: { type: 'string', multiple: true, default: [] },
-      flip: { type: 'string', multiple: true, default: [] },
+      detail: { type: 'string' },
+      filter: { type: 'string', multiple: true },
+      flip: { type: 'string', multiple: true },
       budget: { type: 'string' },
       viewport: { type: 'string' },
       selection: { type: 'string' },
@@ -165,26 +117,27 @@ export function parseCommand(argv: readonly string[]): Command | 'help' {
   const fixture = FIXTURES.find((size) => size === values.fixture);
   if (fixture === undefined)
     throw new UsageError(`--fixture takes ${FIXTURES.join(', ')}, not "${values.fixture}"`);
-  const lens = LensIdSchema.safeParse(values.lens);
-  if (!lens.success)
-    throw new UsageError(`--lens takes ${LensIdSchema.options.join(', ')}, not "${values.lens}"`);
-  const detail = DetailLevelSchema.safeParse(values.detail);
-  if (!detail.success) {
-    throw new UsageError(`--detail takes ${DetailLevelSchema.options.join(', ')}, not "${values.detail}"`);
-  }
-  const focus = parseFocus(values.focus);
+  // The view and the viewport as `pnpm render` and the render API read them.
+  const read = readRenderFlags({
+    lens: values.lens,
+    detail: values.detail,
+    focus: values.focus,
+    root: values.root,
+    filter: values.filter,
+    flip: values.flip,
+    viewport: values.viewport,
+  });
+  if (!read.success) throw new UsageError(read.error);
+  const { view, viewport } = read.options;
   const spec = normalizeViewSpec({
-    snapshot: `demo:${fixture}`,
-    lens: lens.data,
-    detail: detail.data,
-    filters: parseFilters(values.filter),
-    flips: values.flip.map(flipIdOf),
-    ...(focus === undefined ? {} : { focus }),
-    ...(values.root === undefined ? {} : { root: values.root }),
+    ...viewSpecOf(view, `demo:${fixture}`),
     ...(values.selection === undefined ? {} : { selection: values.selection }),
     ...(values.highlight === undefined ? {} : { highlight: values.highlight }),
   });
-  return { fixture, spec, budget: parseBudget(values.budget, values.viewport), json: values.json };
+  let budget: number | undefined;
+  if (values.budget !== undefined) budget = parseBudget(values.budget);
+  else if (values.viewport !== undefined) budget = viewportBudget(viewport.width, viewport.height);
+  return { fixture, spec, budget, json: values.json };
 }
 
 /** The demo organisation as CAI NDJSON: the committed fixture for S and M, generated for L. */

@@ -26,13 +26,13 @@
   },
   "dependencies": {
     "@gcportrait/demo-data": "workspace:*",
-    "@gcportrait/graph": "workspace:*",
     "@gcportrait/model": "workspace:*",
     "@gcportrait/render": "workspace:*",
     "pixelmatch": "7.2.0",
     "pngjs": "7.0.0"
   },
   "devDependencies": {
+    "@gcportrait/graph": "workspace:*",
     "@types/node": "^22.20.5",
     "@types/pngjs": "6.0.5",
     "tsx": "^4.23.15"

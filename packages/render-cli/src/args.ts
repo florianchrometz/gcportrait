@@ -1,34 +1,33 @@
 // SPDX-License-Identifier: MIT
 /**
- * The command line of `pnpm render`, parsed into a command. Pure apart from reading `argv`: every value is
- * checked here (an invalid filter or focus is an error, never silently dropped as the app's URL normaliser
- * would), and paths are left relative for the caller to resolve.
+ * The command line of `pnpm render`, parsed into a command. Pure apart from reading `argv`. The view, the theme,
+ * the viewport and the PNG's size are read by the model's `readRenderFlags` and checked by `RenderOptionsSchema`
+ * as `POST /api/render` checks its fields, so the command takes exactly what the API takes (an invalid filter or
+ * focus is an error, never silently dropped as the app's URL normaliser would), and the view is resolved by
+ * `viewSpecOf`, as the API resolves it. The outputs, `--compare`, `--strict` and `--all` are this command's own.
+ * Paths are left relative for the caller to resolve.
  */
 import { parseArgs } from 'node:util';
-import { flipIdOf } from '@gcportrait/graph';
 import {
   DemoSizeSchema,
   DetailLevelSchema,
+  FILTER_FLAG_KEYS,
   FocusKindSchema,
   LensIdSchema,
-  ViewFiltersSchema,
+  RENDER_DEFAULT_VIEWPORT,
+  RENDER_MAX_SCALE,
+  RENDER_MAX_SIDE,
+  VIEW_SPEC_MAX_DEPTH,
   decodeViewSpec,
-  normalizeViewSpec,
+  readRenderFlags,
   type DemoSize,
   type DetailLevel,
   type LensId,
+  type RenderFormat,
+  type RenderOptions,
   type ViewSpec,
 } from '@gcportrait/model';
-import {
-  DEFAULT_VIEWPORT,
-  FIXTURES,
-  isTheme,
-  MAX_SCALE,
-  RASTER_LIMITS,
-  THEMES,
-  type DiagramTheme,
-  type Viewport,
-} from '@gcportrait/render';
+import { FIXTURES, THEMES, viewSpecOf, type DiagramTheme, type Viewport } from '@gcportrait/render';
 
 export const USAGE = `Usage:
   pnpm render --fixture S|M|L|XL --lens LENS [--png FILE] [--svg FILE]
@@ -46,23 +45,27 @@ Draws a view of a demo organisation exactly as the app's renderer draws it (lege
 writes it as PNG (resvg, 2× by default, on the theme's canvas colour with a 24 px margin), SVG and/or a draw.io file
 (the same drawing as cells diagrams.net can edit). Output is byte-stable: the same arguments give the same bytes.
 Without --png, --svg or --drawio the PNG goes to out/render/<fixture>-<lens>-<detail>-<theme>.png. A FILE of -
-writes to standard output (then the report goes to standard error).
+writes to standard output (then the report goes to standard error). The view, --theme, --viewport, --scale and
+--width are checked as POST /api/render checks its fields: what the API refuses, this command refuses.
 
   --fixture    ${FIXTURES.join(', ')} (default M)
   --lens       ${LensIdSchema.options.join(', ')} (default overview)
   --theme      ${THEMES.join(', ')} (default light)
   --detail     ${DetailLevelSchema.options.join(', ')} (default auto: what the app opens at the viewport)
   --focus      kind=${FocusKindSchema.options.join('|')}, then its parameters:
-               project=…, host=…, perimeter=…, application=… (e.g. kind=project,project=demo-web-1)
+               project=…, host=…, perimeter=…, application=… (e.g. kind=project,project=demo-web-1); a
+               parameter's name starts with a letter
   --root       drill in: the id of the container to root the view at
-  --filter     hideEmptyProjects, hideEmptyFolders, hideDisconnected, showRegions, showIdentities (true|false);
-               regions, projects, folders, includeTypes, excludeTypes (comma-separated); depth (1–64)
+  --filter     ${FILTER_FLAG_KEYS.boolean.join(', ')} (true or false;
+               the key alone is true); ${FILTER_FLAG_KEYS.list.join(', ')} (comma-separated);
+               ${FILTER_FLAG_KEYS.number.join(', ')} (1–${String(VIEW_SPEC_MAX_DEPTH)})
   --flip       a zone id to flip (expand a chip, collapse an open zone); repeatable
   --hash       the view part of an app URL (after #), e.g. snapshot=demo%3AM&lens=networking; replaces the
-               view options above, and its demo snapshot names the fixture
-  --viewport   the canvas size detail auto fits (default ${String(DEFAULT_VIEWPORT.width)}x${String(DEFAULT_VIEWPORT.height)})
-  --scale      PNG pixels per drawing unit, up to ${String(MAX_SCALE)} (default 2); --width sets the PNG width instead
-               (margin included); a PNG beyond 16 384 px a side or 2^27 px is drawn at the largest scale that fits
+               view options above, and its demo snapshot names the fixture; a timeline day (tick) is refused
+  --viewport   the canvas size detail auto fits, up to ${String(RENDER_MAX_SIDE)} px a side (default ${String(RENDER_DEFAULT_VIEWPORT.width)}x${String(RENDER_DEFAULT_VIEWPORT.height)})
+  --scale      PNG pixels per drawing unit, up to ${String(RENDER_MAX_SCALE)} (default 2); --width sets the PNG width instead
+               (margin included); a PNG beyond 16 384 px a side or 2^27 px is drawn at the largest scale that fits;
+               either needs a PNG among the files written
   --drawio     the .drawio file, compressed as draw.io saves it; --drawio-plain writes its diagram as plain XML;
                its agent is gcportrait and this command's version, or gcportrait alone with --drawio-unversioned
                (as the render library writes it by default: a release changes no byte)
@@ -134,89 +137,6 @@ export function viewFileName(
   return `${fixture}-${lens}-${detail}-${theme}`;
 }
 
-const BOOLEAN_FILTERS = new Set([
-  'hideEmptyProjects',
-  'hideEmptyFolders',
-  'hideDisconnected',
-  'showRegions',
-  'showIdentities',
-]);
-const LIST_FILTERS = new Set(['regions', 'projects', 'folders', 'includeTypes', 'excludeTypes']);
-
-function parseFilters(entries: readonly string[]): Record<string, unknown> {
-  const filters: Record<string, unknown> = {};
-  for (const entry of entries) {
-    const at = entry.indexOf('=');
-    const key = at < 0 ? entry : entry.slice(0, at);
-    const value = at < 0 ? 'true' : entry.slice(at + 1);
-    if (BOOLEAN_FILTERS.has(key)) {
-      if (value !== 'true' && value !== 'false') {
-        throw new UsageError(`--filter ${key} takes true or false, not "${value}"`);
-      }
-      filters[key] = value === 'true';
-    } else if (LIST_FILTERS.has(key)) {
-      filters[key] = value.split(',').filter((item) => item !== '');
-    } else if (key === 'depth') {
-      filters[key] = Number(value);
-    } else {
-      throw new UsageError(`unknown filter "${key}"`);
-    }
-  }
-  const result = ViewFiltersSchema.partial().safeParse(filters);
-  if (!result.success) {
-    const issue = result.error.issues[0];
-    throw new UsageError(`invalid --filter ${String(issue?.path[0] ?? '')}: ${issue?.message ?? 'invalid'}`);
-  }
-  return filters;
-}
-
-function parseFocus(value: string): NonNullable<ViewSpec['focus']> {
-  const params: Record<string, string> = {};
-  let kind: string | undefined;
-  for (const pair of value.split(',')) {
-    const at = pair.indexOf('=');
-    if (at <= 0) throw new UsageError(`--focus takes NAME=VALUE pairs, not "${pair}"`);
-    const name = pair.slice(0, at);
-    if (name === 'kind') kind = pair.slice(at + 1);
-    else params[name] = pair.slice(at + 1);
-  }
-  const parsed = FocusKindSchema.safeParse(kind);
-  if (!parsed.success) throw new UsageError(`--focus needs kind=${FocusKindSchema.options.join('|')}`);
-  return { kind: parsed.data, params };
-}
-
-function parseViewport(value: string | undefined): Viewport {
-  if (value === undefined) return DEFAULT_VIEWPORT;
-  const match = /^(\d{1,5})x(\d{1,5})$/.exec(value);
-  const width = Number(match?.[1]);
-  const height = Number(match?.[2]);
-  if (match === null || width < 1 || height < 1) {
-    throw new UsageError(`--viewport takes WIDTHxHEIGHT, not "${value}"`);
-  }
-  return { width, height };
-}
-
-function parseRaster(scale: string | undefined, width: string | undefined): RasterChoice {
-  if (scale !== undefined && width !== undefined) throw new UsageError('give --scale or --width, not both');
-  if (scale !== undefined) {
-    const value = Number(scale);
-    if (!(value > 0) || value > MAX_SCALE) {
-      throw new UsageError(`--scale takes a number above 0 and up to ${String(MAX_SCALE)}, not "${scale}"`);
-    }
-    return { scale: value };
-  }
-  if (width !== undefined) {
-    const value = Number(width);
-    if (!Number.isInteger(value) || value < 1 || value > RASTER_LIMITS.side) {
-      throw new UsageError(
-        `--width takes a whole number of pixels (1–${String(RASTER_LIMITS.side)}), not "${width}"`,
-      );
-    }
-    return { width: value };
-  }
-  return {};
-}
-
 function oneOf<T extends string>(flag: string, options: readonly T[], value: string): T {
   const found = options.find((option) => option === value);
   if (found === undefined) throw new UsageError(`${flag} takes ${options.join(', ')}, not "${value}"`);
@@ -274,7 +194,38 @@ function refuse(values: Values, names: readonly (keyof Values)[], mode: string):
   if (given.length > 0) throw new UsageError(`--${String(given[0])} cannot be used with ${mode}`);
 }
 
-const VIEW_FLAGS = ['lens', 'detail', 'focus', 'root', 'filter', 'flip'] as const;
+/**
+ * The render options of the view, theme, viewport and PNG flags, checked as the API checks a request for `format`
+ * (the PNG-only and draw.io-only rules).
+ */
+function optionsOf(values: Values, format: RenderFormat): RenderOptions {
+  const result = readRenderFlags(
+    {
+      hash: values.hash,
+      lens: values.lens,
+      detail: values.detail,
+      focus: values.focus,
+      root: values.root,
+      filter: values.filter,
+      flip: values.flip,
+      theme: values.theme,
+      viewport: values.viewport,
+      scale: values.scale,
+      width: values.width,
+    },
+    format,
+  );
+  if (!result.success) throw new UsageError(result.error);
+  return result.options;
+}
+
+function rasterOf(options: RenderOptions): RasterChoice {
+  return {
+    ...(options.scale === undefined ? {} : { scale: options.scale }),
+    ...(options.width === undefined ? {} : { width: options.width }),
+  };
+}
+
 const SINGLE_FLAGS = [
   'fixture',
   'lens',
@@ -300,6 +251,11 @@ function parseAll(values: Values): AllCommand {
     if (values[flag] === true && !formats.includes('drawio'))
       throw new UsageError(`--${flag} needs drawio in --formats`);
   }
+  // Checked as the PNG's options when PNGs are among the formats, else as the first format's.
+  const options = optionsOf(
+    values,
+    formats.includes('png') ? 'png' : formats.includes('svg') ? 'svg' : 'drawio',
+  );
   return {
     kind: 'all',
     ...(values.out === undefined ? {} : { out: values.out }),
@@ -309,42 +265,35 @@ function parseAll(values: Values): AllCommand {
     formats,
     drawioPlain: values['drawio-plain'] === true,
     drawioUnversioned: values['drawio-unversioned'] === true,
-    detail: oneOf('--detail', DetailLevelSchema.options, values.detail ?? 'auto'),
-    viewport: parseViewport(values.viewport),
-    raster: parseRaster(values.scale, values.width),
+    detail: options.view.detail ?? 'auto',
+    viewport: options.viewport,
+    raster: rasterOf(options),
     strict: values.strict === true,
   };
 }
 
-function specFromHash(hash: string): { fixture: DemoSize; spec: ViewSpec } {
-  const spec = decodeViewSpec(hash.startsWith('#') ? hash : `#${hash}`);
-  const size = DemoSizeSchema.safeParse(spec.snapshot.startsWith('demo:') ? spec.snapshot.slice(5) : '');
+/** The demo organisation a hash's snapshot names: the fixture of `--hash`. */
+function fixtureOfHash(hash: string): DemoSize {
+  const { snapshot } = decodeViewSpec(hash);
+  const size = DemoSizeSchema.safeParse(snapshot.startsWith('demo:') ? snapshot.slice(5) : '');
   if (!size.success) throw new UsageError('--hash must name a demo snapshot (snapshot=demo:S|M|L|XL)');
-  return { fixture: size.data, spec };
+  return size.data;
 }
 
 function parseRender(values: Values): RenderCommand {
   refuse(values, ALL_FLAGS, 'a single render (they belong to --all)');
-  let fixture: DemoSize;
-  let spec: ViewSpec;
-  if (values.hash !== undefined) {
-    refuse(values, ['fixture', ...VIEW_FLAGS], '--hash (the hash holds the whole view)');
-    ({ fixture, spec } = specFromHash(values.hash));
-  } else {
-    fixture = oneOf('--fixture', FIXTURES, values.fixture ?? 'M');
-    const focus = values.focus === undefined ? undefined : parseFocus(values.focus);
-    spec = normalizeViewSpec({
-      snapshot: `demo:${fixture}`,
-      lens: oneOf('--lens', LensIdSchema.options, values.lens ?? 'overview'),
-      detail: oneOf('--detail', DetailLevelSchema.options, values.detail ?? 'auto'),
-      filters: parseFilters(values.filter ?? []),
-      flips: (values.flip ?? []).map(flipIdOf),
-      ...(focus === undefined ? {} : { focus }),
-      ...(values.root === undefined ? {} : { root: values.root }),
-    });
-  }
-  const themeName = values.theme ?? 'light';
-  if (!isTheme(themeName)) throw new UsageError(`--theme takes ${THEMES.join(', ')}, not "${themeName}"`);
+  if (values.hash !== undefined) refuse(values, ['fixture'], '--hash (its demo snapshot names the fixture)');
+  // Checked as the PNG's options when the command draws one (asked for, compared, or written by default), else as
+  // the first file's: --scale and --width apply to a PNG only.
+  const drawsPng =
+    values.png !== undefined ||
+    values.compare !== undefined ||
+    (values.svg === undefined && values.drawio === undefined);
+  const options = optionsOf(values, drawsPng ? 'png' : values.svg !== undefined ? 'svg' : 'drawio');
+  const fixture =
+    values.hash === undefined
+      ? oneOf('--fixture', FIXTURES, values.fixture ?? 'M')
+      : fixtureOfHash(values.hash);
   if ([values.png, values.svg, values.drawio].filter((file) => file === '-').length > 1) {
     throw new UsageError('only one of --png, --svg and --drawio can write to standard output');
   }
@@ -376,10 +325,10 @@ function parseRender(values: Values): RenderCommand {
   return {
     kind: 'render',
     fixture,
-    spec,
-    theme: themeName,
-    viewport: parseViewport(values.viewport),
-    raster: parseRaster(values.scale, values.width),
+    spec: viewSpecOf(options.view, `demo:${fixture}`),
+    theme: options.theme,
+    viewport: options.viewport,
+    raster: rasterOf(options),
     ...outputs,
     drawioPlain: values['drawio-plain'] === true,
     drawioUnversioned: values['drawio-unversioned'] === true,
