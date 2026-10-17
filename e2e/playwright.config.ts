@@ -36,6 +36,11 @@ import { DEMO_URL, LIVE_URL, NAMED } from './fixtures/servers.js';
  * checkout left running is never tested in this one's place: something that answers on a port the run picked fails the
  * run. Only a server whose URL a person named (E2E_DEMO_URL, E2E_LIVE_URL) is reused, and only locally; CI always
  * starts fresh ones. Chromium only for now; the desktop's functional specs at a window of 1440 × 900.
+ *
+ * A failed test leaves its trace in test-results/. A local run records one for every test and keeps a failed test's
+ * (`retain-on-failure`); on CI, which retries a failed test twice, only a test's first retry records one
+ * (`on-first-retry`): a trace holds a snapshot of the page at every action, the diagram's large SVG included, so a
+ * test that passes at once records none, and a test that failed has the trace of its first retry.
  */
 const LIVE_SPECS = /(?:live|signin|preflight|live-pull|sa-mode|demo-only|permissions-variables)\.spec\.ts$/;
 const MOBILE_SPECS = /(?:mobile|touch)\.spec\.ts$/;
@@ -106,7 +111,7 @@ export default defineConfig({
   use: {
     viewport: VIEWPORT,
     colorScheme: 'light',
-    trace: 'retain-on-failure',
+    trace: isCI ? 'on-first-retry' : 'retain-on-failure',
   },
   // CI's e2e legs (.github/workflows/pr.yml) each run every k-th test of their projects' JSON listing
   // (scripts/leg.ts), file after file in the order these projects reach them, so that no leg gets a slow file

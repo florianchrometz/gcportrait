@@ -210,9 +210,10 @@ webkit`).
 **Running a job as the runner does.** Each job's commands are in the table. The runner's time zone is UTC, its
 locale is `C.UTF-8` (Node formats dates and numbers as `en-US` then) and `CI` is set, which changes three
 things: the tests' wall-clock limits (the layout's, the ingest's and the graph build's budget ceilings, the
-demo organisations' generation) are never skipped for a busy machine, Playwright retries a failed test twice,
-runs against fresh builds of the app instead of the dev servers and writes an HTML report, and `test.only`
-fails the run. To reproduce a failure that does not happen on your machine:
+demo organisations' generation) are never skipped for a busy machine, Playwright retries a failed test twice
+and records a trace on a test's first retry only (a local run records one for every test and keeps a failed
+test's), runs against fresh builds of the app instead of the dev servers and writes an HTML report, and
+`test.only` fails the run. To reproduce a failure that does not happen on your machine:
 
 ```sh
 TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner
@@ -221,11 +222,11 @@ actionlint && shellcheck -x infra/*.sh                            # workflows-an
 ```
 
 A failed `e2e` leg uploads `playwright-report-` and its id (`desktop-1` to `desktop-3`,
-`phones-and-tablets-1`, `phones-and-tablets-2`): the HTML report, the traces of the failed tests
-(`pnpm --filter @gcportrait/e2e exec playwright show-trace FILE` opens one) and, under `out/export/e2e/`,
-the export comparisons' images and their difference pictures. A failed `unit (all other projects)`, the leg
-that runs the render golden's tests, uploads `render-golden-failures` when the render golden did not match:
-the image the runner drew and a picture of the differences.
+`phones-and-tablets-1`, `phones-and-tablets-2`): the HTML report, the trace of each failed test's first
+retry (`pnpm --filter @gcportrait/e2e exec playwright show-trace FILE` opens one) and, under
+`out/export/e2e/`, the export comparisons' images and their difference pictures. A failed `unit (all other
+projects)`, the leg that runs the render golden's tests, uploads `render-golden-failures` when the render
+golden did not match: the image the runner drew and a picture of the differences.
 
 **Required checks.** Branch protection needs exactly one check: `required`. In Settings > Rules > Rulesets, a
 branch ruleset for the default branch with "Require status checks to pass" and the check `required` (source:

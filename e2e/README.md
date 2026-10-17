@@ -51,7 +51,7 @@ where the dev server serves every module on its own, and the suite tests the bun
 leaves out only what React's development build adds: StrictMode runs every effect twice under the dev server,
 which a local run exercises and CI's does not (the app reads no `import.meta.env.DEV`); the frontend's unit
 tests mount under StrictMode on every run (`frontend/README.md`, "Scripts"). `CI=true pnpm e2e` runs the suite
-as CI does (the built servers, two retries, the HTML report).
+as CI does (the built servers, two retries with a trace of the first, the HTML report).
 
 Every run starts its own two servers, on ports of its own: when Playwright's runner loads the config,
 `fixtures/servers.ts` has the system pick two free ports and names the servers' URLs in `E2E_DEMO_URL` and
@@ -154,4 +154,8 @@ after a glide (a panel's refit, a flip's framing, a jump), which draws nothing n
 | `tests/handheld.spec.ts` | The app's flows by finger (AGENTS.md, Product rules), every test tagged `@phone` and `@tablet` and run by the `chromium-phone` (390 × 844) and `chromium-tablet` (820 × 1180) projects on demo mode, each step a tap on the app's own controls under the names the desktop's specs use: View and More hold the desktop rows' controls, each at least 44 × 44 px, a lens picked from the Lens list, the Filters panel opened and closed onto its button, a theme picked in More's Theme menu (More closing onto its button), the Saved views dialog opened and closed; demo S opened from the Connect page and loaded again from the Snapshots page (a card on a phone, a table row on a tablet), both reached through More; a tap on a folder opens its details over the canvas (a sheet over its lower half on a phone, a panel over at most half its width at its right on a tablet) with its name and resource name, and their Details button drills in; a search result tapped in the View sheet is selected, in the details and in the part of the canvas they leave in view; Expand all and Collapse all; Previous day, Next day and playback to the last day (on Playwright's clock, in UTC and en-GB); the Export menu through More and an SVG download; axe in light and dark on the diagram at rest, with View and with the details open, and on the Connect and Snapshots pages. Nothing is saved or compared as a screenshot. |
 | `tests/minimum-viewport.spec.ts` | The app in the desktop layout's smallest window, 1280 × 800, in both themes: the Networking lens on demo M opens at `auto`, no deeper than `networks`, with its labels drawn; the top bar's Theme menu sets the preference the Settings page shows and it survives a reload; after "Try the demo" focus is on `<main>` and the page is announced; the view row is shown on the diagram page only; a link naming no snapshot and a refused focus say so. Screenshots go to `e2e/.scratch/minimum-viewport/` (git-ignored). |
 
-Test output goes to `test-results/` (and `playwright-report/` on CI). Both are git-ignored.
+Test output goes to `test-results/` (and `playwright-report/` on CI). Both are git-ignored. A failed test
+leaves its trace in `test-results/` (`pnpm --filter @gcportrait/e2e exec playwright show-trace FILE` opens
+it). A local run records a trace for every test and keeps a failed test's (`retain-on-failure`). On CI only a
+test's first retry records one (`on-first-retry`), as a trace holds a snapshot of the page at every action: a
+test that passes at once records none, and a test that failed has the trace of its first retry.
