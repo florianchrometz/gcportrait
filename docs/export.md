@@ -119,12 +119,15 @@ Google Fonts' stylesheet, which diagrams.net loads when it opens the file (your 
 gcportrait); where it cannot, it uses its default font and the labels keep their places but not their widths.
 The diagram is stored compressed, as diagrams.net saves it. To open the file: in diagrams.net, File, Open
 from, Device (or drag it onto the page); in draw.io's desktop app, File, Open; or put it at a public address
-and open `https://app.diagrams.net/?url=` followed by that address, URL-encoded. Rendered by maxGraph, the
-maintained successor of mxGraph, the library diagrams.net is built on, the file matches the SVG within a pixel
-for every shape and every line of text; draw.io draws a little differently in detail (its own arrowheads, odd
-line widths snapped to whole pixels). What you change there stays in the file: gcportrait does not import a
-draw.io file, so that its diagrams show only what Cloud Asset Inventory returned
-([faq.md](faq.md#why-can-i-not-import-a-drawio-file)).
+and open `https://app.diagrams.net/?url=` followed by that address, URL-encoded. The test suite draws the file
+with maxGraph, the maintained successor of mxGraph, the library diagrams.net is built on, and holds it to the
+SVG: every box and every line's end within half a pixel of its place, every line of text within 1.25 pixels,
+the arrowheads within a few pixels, and at most 5 % of the pixels different; the exact limits are in
+[AGENTS.md](../AGENTS.md#exports-and-the-render-api), "Exports and the render API". The differences come
+from draw.io's own arrowheads, which stop a line a little short of an open head's tip and draw a block head a
+little wider, from odd line widths snapped to whole pixels, and from the text's anti-aliasing. What you change
+there stays in the file: gcportrait does not import a draw.io file, so that its diagrams show only what Cloud
+Asset Inventory returned ([faq.md](faq.md#why-can-i-not-import-a-drawio-file)).
 
 **Current viewport.** The canvas's visible part of the diagram, clipped; content keeps its position, the title
 block goes into a band above it and the legend into a band below it, 24 units away. A draw.io file holds no
