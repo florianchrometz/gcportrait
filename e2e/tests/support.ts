@@ -243,6 +243,10 @@ export const DEMO_M_DIAGRAM = '/diagram#snapshot=demo:M';
 /** The canvas `<svg>` once a drawing is on it, fitted and interactive (frontend/src/diagram/DiagramCanvas.tsx). */
 export const DRAWN_CANVAS = 'svg.dg-canvas[data-diagram-ready="true"]';
 
+export function detailsDrawer(page: Page): Locator {
+  return page.getByRole('complementary', { name: 'Details' });
+}
+
 /**
  * Waits until both workers have answered and a diagram is drawn on the page; returns the canvas `<svg>`. The canvas
  * stays ready while the next view is prepared, its drawing still on it, so after a view change this answers at once

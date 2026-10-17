@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type CDPSession, type Locator, type Page } from '@playwright/test';
 
-import { cameraSettled, drawingOf, openDiagram, redrawnCanvas, viewParam } from './support.js';
+import { cameraSettled, detailsDrawer, drawingOf, openDiagram, redrawnCanvas, viewParam } from './support.js';
 
 /**
  * The canvas by finger (frontend/AGENTS.md, Phones, tablets and desktops, the touch model; frontend/src/diagram/touch.ts), run by the `mobile`
@@ -190,7 +190,7 @@ test('one finger dragged from a card pans the drawing by the drag, what it touch
   expect(under.x).toBeCloseTo(touched.x, 0);
   expect(under.y).toBeCloseTo(touched.y, 0);
   expect(viewParam(page, 'selection')).toBeNull();
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeHidden();
+  await expect(detailsDrawer(page)).toBeHidden();
 });
 
 test('two fingers pinched apart zoom in by the ratio of their distances, about a midpoint that stays put', async ({
@@ -221,7 +221,7 @@ test('a tap on a card selects it and opens the details; a tap on the bare canvas
   await page.touchscreen.tap(target.x, target.y);
   await expect.poll(() => viewParam(page, 'selection')).toBe(target.id);
   await expect(svg.locator(`[data-id="${target.id}"].is-selected`)).toHaveCount(1);
-  const drawer = page.getByRole('complementary', { name: 'Details' });
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible();
   await expect(drawer.getByRole('heading', { level: 2 })).not.toBeEmpty();
   // The camera keeps the card clear of the sheet; then a tap on nothing drawn, above the sheet.
@@ -278,7 +278,7 @@ test('a long press on a card shows what hover shows and its name by the finger, 
   await expect(heldHint(page)).toBeVisible();
   expect(viewParam(page, 'selection')).toBeNull();
   await expect(page.getByRole('menu')).toHaveCount(0);
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeHidden();
+  await expect(detailsDrawer(page)).toBeHidden();
   await expect(svg.locator(`[data-id="${card.id}"].is-path`)).toHaveCount(1);
   const hint = await heldHint(page).boundingBox();
   const canvas = await page.locator('#diagram-canvas').boundingBox();

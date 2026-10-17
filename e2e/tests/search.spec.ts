@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-import { DEMO_M_DIAGRAM, expectNoAxeViolations, hashOf, openDiagram, scratchShot } from './support.js';
+import {
+  DEMO_M_DIAGRAM,
+  detailsDrawer,
+  expectNoAxeViolations,
+  hashOf,
+  openDiagram,
+  scratchShot,
+} from './support.js';
 
 /**
  * Search on demo organisation M: `/` focuses the box, the results are grouped by kind with a count, and
@@ -58,7 +65,7 @@ async function expectLanded(page: Page, svg: Locator, id: string): Promise<void>
   const node = svg.locator(`[data-id="${id}"]`).first();
   await expect(node).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
   await expect(svg.locator('.dg-select-ring')).not.toHaveAttribute('display', 'none');
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+  await expect(detailsDrawer(page)).toBeVisible();
   await expect
     .poll(
       async () => {

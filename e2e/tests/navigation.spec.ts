@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test } from '@playwright/test';
 
-import { primaryNav } from './support.js';
+import { detailsDrawer, primaryNav } from './support.js';
 
 /** The URL hash on /diagram is the ViewSpec (@gcportrait/model); the router must never drop or rewrite it. */
 const VIEW_HASH = '#lens=networking&root=folders%2F123';
@@ -46,7 +46,7 @@ test('the skip link moves focus to the content without touching the hash', async
 test('the details drawer is closed and the timeline bar is present on /diagram', async ({ page }) => {
   await page.goto('/diagram');
   await expect(page.getByRole('region', { name: 'Diagram canvas' })).toBeVisible();
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeHidden();
+  await expect(detailsDrawer(page)).toBeHidden();
   const timeline = page.getByRole('region', { name: 'Timeline' });
   await expect(timeline).toBeVisible();
   const slider = timeline.getByRole('slider', { name: 'Timeline' });

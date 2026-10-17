@@ -5,6 +5,7 @@ import { PNG } from 'pngjs';
 import {
   cameraSettled,
   contrastRatio,
+  detailsDrawer,
   DRAWN_CANVAS,
   expectNoAxeViolations,
   hashOf,
@@ -246,7 +247,7 @@ test('a keyboard-only walkthrough: demo, arrows, chip, lens, search, drawer, dri
   await expect(page.getByRole('listbox', { name: 'Search assets' })).not.toHaveAttribute('aria-busy', 'true');
   await page.keyboard.press('Enter');
   await expect.poll(() => hashOf(page)).toContain('selection=//compute.googleapis.com/');
-  const drawer = page.getByRole('complementary', { name: 'Details' });
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible({ timeout: 30_000 });
   await expect(drawer.getByRole('heading', { level: 2, name: 'bastion' })).toBeVisible();
 
@@ -555,7 +556,7 @@ for (const scheme of ['light', 'dark'] as const) {
       'true',
     );
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+    await expect(detailsDrawer(page)).toBeVisible();
     // Let the 200 ms glide to the card end (at 100 %: the project's header is then out of view, and the keyboard
     // moving there pans the camera to show it).
     await cameraSettled(canvas(page));
@@ -578,7 +579,7 @@ for (const scheme of ['light', 'dark'] as const) {
       await page.keyboard.press('ArrowDown');
     }
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+    await expect(detailsDrawer(page)).toBeVisible();
     const seen: Indicator[] = [plate, ...(await tabThrough(page))];
     expect(seen.length).toBeGreaterThan(20);
     for (const kind of ['chrome ring', 'canvas ring', 'collapse plate', 'console pill']) {
@@ -876,7 +877,7 @@ test('focus after a drill-in from the drawer goes to the new view, and after a d
   await page.keyboard.press('Shift+F10');
   await expect(page.getByRole('menu')).toBeVisible();
   await page.keyboard.press('Escape');
-  const drawer = page.getByRole('complementary', { name: 'Details' });
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible();
   // The drawer's "Drill in", by keyboard.
   await tabTo(page, (at) => at.name === 'Details');

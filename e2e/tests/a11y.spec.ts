@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-import { expectNoAxeViolations, openDiagram } from './support.js';
+import { detailsDrawer, expectNoAxeViolations, openDiagram } from './support.js';
 
 /**
  * axe-core (all non-experimental rules, best practices included) on every page of the app in demo mode, in
@@ -93,7 +93,7 @@ for (const scheme of ['light', 'dark'] as const) {
         await page.keyboard.press('ArrowDown');
         await page.keyboard.press('Shift+F10');
         await expect(page.getByRole('menu')).toBeVisible();
-        await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+        await expect(detailsDrawer(page)).toBeVisible();
         await expectNoAxeViolations(page);
         await page.keyboard.press('Escape');
         await expect(page.getByRole('menu')).toHaveCount(0);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { expect, test } from '@playwright/test';
 
-import { cameraSettled, hashOf, openDiagram, TAGLINE } from './support.js';
+import { cameraSettled, detailsDrawer, hashOf, openDiagram, TAGLINE } from './support.js';
 
 /** Demo organisation S, which opens fully (at most 100 rects never collapse): cards, no chips. */
 const DEMO_S_DIAGRAM = '/diagram#snapshot=demo:S';
@@ -134,7 +134,7 @@ test('a click selects: the ring pulses, the drawer opens with the node id, the h
   const card = svg.locator('.dg-card').first();
   const id = await card.getAttribute('data-id');
   await card.click();
-  const drawer = page.getByRole('complementary', { name: 'Details' });
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible();
   await expect(drawer).toContainText(id ?? '');
   await expect(card).toHaveAttribute('aria-pressed', 'true');
@@ -181,7 +181,7 @@ test('a click that wobbled 2 px selects and moves nothing; a drag of 10 px pans 
   await page.mouse.move(x + 12, y + 1, { steps: 2 });
   await page.mouse.up();
   await expect(card).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('complementary', { name: 'Details' })).toContainText(id ?? '');
+  await expect(detailsDrawer(page)).toContainText(id ?? '');
   expect(hashOf(page)).toContain(`selection=${id ?? ''}`);
 });
 
@@ -195,7 +195,7 @@ test('keyboard users reach a node with Tab, see its focus ring and open it with 
   await expect(stop).toBeFocused();
   await expect(svg.locator('.dg-focus-ring')).not.toHaveAttribute('display', 'none');
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+  await expect(detailsDrawer(page)).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeHidden();
+  await expect(detailsDrawer(page)).toBeHidden();
 });

@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-import { drawingOf, expectNoAxeViolations, hashOf, openDiagram, scratchShot } from './support.js';
+import {
+  detailsDrawer,
+  drawingOf,
+  expectNoAxeViolations,
+  hashOf,
+  openDiagram,
+  scratchShot,
+} from './support.js';
 import { expectDrawn, scrubTo, timelineBar } from './timelineSupport.js';
 
 /**
@@ -85,7 +92,7 @@ test('the drawer of the changed manager says what changed: both update times and
 }) => {
   const { svg } = await scrubbedToTheScaleOut(page);
   await svg.locator(`[data-id="${MANAGER}"]`).click();
-  const drawer = page.getByRole('complementary', { name: 'Details' });
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible();
   const section = drawer.getByTestId('what-changed');
   await expect(section.getByRole('heading', { level: 3 })).toHaveText('What changed since 2026-09-23');
@@ -135,9 +142,7 @@ for (const scheme of ['light', 'dark'] as const) {
     const { svg } = await scrubbedToTheScaleOut(page);
     await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
     await svg.locator(`[data-id="${MANAGER}"]`).click();
-    await expect(
-      page.getByRole('complementary', { name: 'Details' }).getByTestId('what-changed'),
-    ).toContainText('targetSize');
+    await expect(detailsDrawer(page).getByTestId('what-changed')).toContainText('targetSize');
     await expectNoAxeViolations(page);
     await scratchShot(page, 'diff', `diff-M-compute-2026-09-24-drawer-${scheme}`);
   });

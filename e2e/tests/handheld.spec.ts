@@ -8,6 +8,7 @@ import {
   boxOf,
   cameraSettled,
   DEMO_M_DIAGRAM,
+  detailsDrawer,
   drawingOf,
   drawnCanvas,
   expectNoAxeViolations,
@@ -70,11 +71,6 @@ function onPhone(page: Page): boolean {
   return (page.viewportSize()?.width ?? 0) < TABLET_FROM;
 }
 
-/** The details drawer. */
-function details(page: Page): Locator {
-  return page.getByRole('complementary', { name: 'Details' });
-}
-
 /** A point a finger can land on, and the node it lands on. */
 interface Spot {
   readonly x: number;
@@ -130,7 +126,7 @@ async function folderSpot(svg: Locator, reach = 10): Promise<Spot> {
 /** The part of the canvas the details leave in view: above a phone's sheet, left of a tablet's panel. */
 async function uncovered(page: Page): Promise<Box> {
   const canvas = await boxOf(page.locator('#diagram-canvas'));
-  const drawer = await boxOf(details(page));
+  const drawer = await boxOf(detailsDrawer(page));
   return onPhone(page)
     ? { x: canvas.x, y: canvas.y, width: canvas.width, height: drawer.y - canvas.y }
     : { x: canvas.x, y: canvas.y, width: drawer.x - canvas.x, height: canvas.height };
@@ -145,7 +141,7 @@ async function tapAFolder(page: Page, svg: Locator): Promise<Spot> {
   const folder = await folderSpot(svg);
   await page.touchscreen.tap(folder.x, folder.y);
   await expect.poll(() => viewParam(page, 'selection')).toBe(folder.id);
-  await expect(details(page)).toBeVisible();
+  await expect(detailsDrawer(page)).toBeVisible();
   return folder;
 }
 
@@ -272,30 +268,31 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     // Over the canvas, never all of it: a sheet over its lower half on a phone, a panel over at most half its width
     // at its right on a tablet.
     const canvas = await boxOf(page.locator('#diagram-canvas'));
-    const drawer = await boxOf(details(page));
+    const drawer = await boxOf(detailsDrawer(page));
     if (onPhone(page)) {
-      await expect(details(page)).toHaveAttribute('data-sheet', 'half');
+      await expect(detailsDrawer(page)).toHaveAttribute('data-sheet', 'half');
       expect(drawer.height).toBeCloseTo(canvas.height / 2, -1);
       expect(drawer.y + drawer.height).toBeCloseTo(canvas.y + canvas.height, 0);
       expect(drawer.width).toBeCloseTo(canvas.width, 0);
     } else {
-      await expect(details(page)).not.toHaveAttribute('data-sheet');
+      await expect(detailsDrawer(page)).not.toHaveAttribute('data-sheet');
       expect(drawer.width).toBeLessThanOrEqual(canvas.width / 2 + 0.5);
       expect(drawer.x + drawer.width).toBeCloseTo(canvas.x + canvas.width, 0);
       expect(drawer.y).toBeGreaterThanOrEqual(canvas.y - 0.5);
       expect(drawer.y + drawer.height).toBeLessThanOrEqual(canvas.y + canvas.height + 0.5);
     }
     // The folder's name as its accessible name has it ("Folder: Platform"), and its resource name.
-    const heading = (await details(page).getByRole('heading', { level: 2 }).textContent())?.trim() ?? '';
+    const heading =
+      (await detailsDrawer(page).getByRole('heading', { level: 2 }).textContent())?.trim() ?? '';
     expect(heading).not.toBe('');
     expect(folder.name).toContain(heading);
-    await expect(details(page).locator('code').first()).toHaveText(folder.id);
+    await expect(detailsDrawer(page).locator('code').first()).toHaveText(folder.id);
     await expectTarget(
-      details(page).getByRole('button', { name: 'Copy resource name' }),
+      detailsDrawer(page).getByRole('button', { name: 'Copy resource name' }),
       'Copy resource name',
     );
     // Drill-in has no gesture of its own; the details offer it.
-    const drill = details(page).getByRole('button', { name: 'Details', exact: true });
+    const drill = detailsDrawer(page).getByRole('button', { name: 'Details', exact: true });
     await expectTarget(drill, 'Details');
     const organisation = await drawingOf(page);
     await drill.tap();
@@ -323,8 +320,8 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     await expect.poll(() => hashOf(page)).toContain(`selection=${WEB_PROJECT}`);
     const node = svg.locator(`[data-id="${WEB_PROJECT}"]`).first();
     await expect(node).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
-    await expect(details(page)).toBeVisible();
-    await expect(details(page).getByRole('heading', { level: 2 })).toHaveText('Retail web (prod)');
+    await expect(detailsDrawer(page)).toBeVisible();
+    await expect(detailsDrawer(page).getByRole('heading', { level: 2 })).toHaveText('Retail web (prod)');
     // The details and a sheet are never open together: the pick closed View, focus back on its button.
     await expect(view).toBeHidden();
     await expect(fold(page, 'View').button).toBeFocused();

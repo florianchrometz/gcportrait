@@ -13,6 +13,7 @@ import {
   cameraSettled,
   DEFAULT_SOURCE_URL,
   demoCaiExport,
+  detailsDrawer,
   drawnCanvas,
   expectNoAxeViolations,
   exportOperation,
@@ -777,7 +778,7 @@ async function selectACard(page: Page, svg: Locator): Promise<void> {
   await page.evaluate((selection) => {
     window.location.hash = `${window.location.hash.slice(1)}&selection=${encodeURIComponent(selection)}`;
   }, id ?? '');
-  await expect(page.getByRole('complementary', { name: 'Details' })).toBeVisible();
+  await expect(detailsDrawer(page)).toBeVisible();
 }
 
 /**
@@ -930,7 +931,7 @@ for (const size of SIDEWAYS) {
     // anywhere on it reaches it. On a phone the timeline bar keeps one line meanwhile (its slider and the step and play
     // buttons), its readout and playback options hidden until the sheet closes, so the canvas above it holds the
     // half-height sheet's header.
-    const details = page.getByRole('complementary', { name: 'Details' });
+    const details = detailsDrawer(page);
     const close = details.getByRole('button', { name: 'Close', exact: true });
     const readout = page.getByTestId('timeline-readout');
     const speed = page.getByRole('radiogroup', { name: 'Speed' });
@@ -1025,7 +1026,7 @@ for (const size of SIDEWAYS) {
     });
     if (tap === null) throw new Error('no card to tap');
     await page.touchscreen.tap(tap.x, tap.y);
-    const details = page.getByRole('complementary', { name: 'Details' });
+    const details = detailsDrawer(page);
     await expect(details).toBeVisible();
     await expect(svg.locator(`.dg-card[data-id="${tap.id}"]`)).toHaveAttribute('aria-pressed', 'true');
     await cameraSettled(svg);
@@ -1161,7 +1162,7 @@ for (const size of [...SIZES, ...SIDEWAYS]) {
         // the canvas, and stays closed when the sheet does; the selection stays.
         const where = `${hash}, ${theme} theme, View opened over the drawer`;
         await selectACard(page, svg);
-        const details = page.getByRole('complementary', { name: 'Details' });
+        const details = detailsDrawer(page);
         if (size.width < TABLET_FROM) await expect(details).toHaveAttribute('data-sheet', 'half');
         const view = await openSheet(page, 'View', 'click');
         await expect(details, `${where}: the drawer`).toBeHidden();
@@ -1220,7 +1221,7 @@ for (const theme of ['light', 'dark'] as const) {
       page,
       `/diagram#snapshot=demo:S&detail=folders&selection=${project}&flips=${flips.join(',')}`,
     );
-    const details = page.getByRole('complementary', { name: 'Details' });
+    const details = detailsDrawer(page);
     await expect(details).toBeVisible();
     const fittedAboveBar = async (): Promise<void> => {
       await cameraSettled(svg);
@@ -1548,7 +1549,7 @@ test.describe('on a phone, 375 × 667', () => {
     });
     expect(card).not.toBeNull();
     await page.touchscreen.tap(card?.x ?? 0, card?.y ?? 0);
-    const drawer = page.getByRole('complementary', { name: 'Details' });
+    const drawer = detailsDrawer(page);
     await expect(drawer).toBeVisible();
     const canvas = await page.locator('#diagram-canvas').boundingBox();
     const half = await drawer.boundingBox();
@@ -1623,7 +1624,7 @@ test.describe('on a phone, 375 × 667', () => {
     if (id === null) throw new Error('no focused card');
     const card = svg.locator(`.dg-node[data-id="${id}"]`);
     await page.keyboard.press('Enter');
-    const drawer = page.getByRole('complementary', { name: 'Details' });
+    const drawer = detailsDrawer(page);
     await expect(drawer).toBeVisible();
     await expect(card).toBeFocused();
     await cameraSettled(svg);
@@ -1664,7 +1665,7 @@ test.describe('on a phone, 375 × 667', () => {
     const focused = svg.locator('.dg-node:focus');
     await expect(focused).toHaveCount(1);
     await page.keyboard.press('Enter');
-    const drawer = page.getByRole('complementary', { name: 'Details' });
+    const drawer = detailsDrawer(page);
     await expect(drawer).toBeVisible();
     await expect(focused).toHaveCount(1);
     // Closer in first, so that the fit has a camera to undo.

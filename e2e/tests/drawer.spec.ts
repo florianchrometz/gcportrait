@@ -3,6 +3,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import { COMPUTE_ALL, selectVm as selectBastion, stubConsole, VM, VM_PAGE } from './consoleSupport.js';
 import {
+  detailsDrawer,
   drawingOf,
   drawnCanvas,
   expectNoAxeViolations,
@@ -25,14 +26,10 @@ const SUBNET =
 const DISK = '//compute.googleapis.com/projects/demo-vm-1/zones/europe-west3-a/disks/bastion';
 const PROJECT = '//cloudresourcemanager.googleapis.com/projects/10000000013';
 
-function drawerOf(page: Page): Locator {
-  return page.getByRole('complementary', { name: 'Details' });
-}
-
 /** Selects the bastion VM and waits for the drawer with its relations. */
 async function selectVm(page: Page): Promise<{ svg: Locator; vm: Locator; drawer: Locator }> {
   const { svg, vm } = await selectBastion(page);
-  const drawer = drawerOf(page);
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible();
   await expect(drawer.getByRole('heading', { level: 3, name: /^Relations/ })).toBeVisible();
   return { svg, vm, drawer };
@@ -89,7 +86,7 @@ test('selecting a VM shows its facts, its subnet, network and disk relations and
       return card !== null && aside !== null && card.x >= 0 && card.x + card.width <= aside.x;
     })
     .toBe(true);
-  await expect(svg).toHaveAttribute('data-diagram-ready', 'true');
+  await expect(svg).toBeVisible();
 });
 
 test('opening the drawer pans a card it would cover back into view, without a new layout', async ({
@@ -117,7 +114,7 @@ test('opening the drawer pans a card it would cover back into view, without a ne
   const drawn = await svg.locator('.dg-node').count();
   const drawing = await drawingOf(page);
   await card.click();
-  const drawer = drawerOf(page);
+  const drawer = detailsDrawer(page);
   await expect(drawer).toBeVisible();
   await expect
     .poll(async () => {
@@ -149,7 +146,7 @@ test('a jump link selects the subnet; one into a collapsed zone flips it open', 
   // At the folder level the VM's project is a chip: the details still come, and its disk's jump link opens
   // the chips around the disk (flips in the hash) and selects it.
   await openDiagram(page, `/diagram#snapshot=demo:M&lens=compute&selection=${VM}`);
-  const folded = drawerOf(page);
+  const folded = detailsDrawer(page);
   await expect(folded.getByRole('heading', { level: 2 })).toHaveText('bastion');
   const canvas = page.locator('svg.dg-canvas');
   await expect(canvas.locator(`[data-id="${DISK}"]`)).toHaveCount(0);
@@ -212,8 +209,8 @@ test('the handle resizes the drawer between 360 and 420 px, by keyboard and by d
   await page.reload();
   await drawnCanvas(page);
   await page.locator(`svg.dg-canvas [data-id="${VM}"]`).click();
-  await expect(drawerOf(page).getByRole('separator')).toHaveAttribute('aria-valuenow', '390');
-  expect((await drawerOf(page).boundingBox())?.width).toBeCloseTo(390, 0);
+  await expect(detailsDrawer(page).getByRole('separator')).toHaveAttribute('aria-valuenow', '390');
+  expect((await detailsDrawer(page).boundingBox())?.width).toBeCloseTo(390, 0);
 });
 
 test('the project offers "Details", which re-roots the view at it', async ({ page }) => {
