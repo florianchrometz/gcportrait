@@ -2168,9 +2168,10 @@ when something removed does, else not drawn now (everything demo M's Payments we
 removed: the region zone's ghost in the open project, around their ghosts; the one Batch job a region held
 succeeded: the region zone not drawn now, around the job's). Any zone the earlier day drew as a chip, an asset
 or not, comes back as that chip, counting only what comes back of what the earlier day's view with every zone
-open draws in it, and nothing when nothing does (a bundle of demo L whose members are bundled anew counts its
-one removed member, not those the new bundles draw; demo M's Payments web (prod), marked for deletion and a
-chip at the folder level, counts the Batch job that succeeded in it, not what its folder draws now). A node
+open draws in it; an asset's chip of which nothing comes back counts nothing, and a region zone's or a
+bundle's does not come back at all (a bundle of demo L whose members are bundled anew counts its one removed
+member, not those the new bundles draw; demo M's Payments web (prod), marked for deletion and a chip at the
+folder level, counts the Batch job that succeeded in it, not what its folder draws now). A node
 still there that the drawn day's Graph holds in another container (it moved: drawn there, in a
 chip there, or out of the view now) or inside a chip of the drawn Scene is no ghost: it is drawn once, where
 the drawn day has it, and the chip that holds it counts what changed of it (demo M's partner exchange moved
