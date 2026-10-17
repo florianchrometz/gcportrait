@@ -14,6 +14,9 @@ describe('chipCountLine', () => {
     expect(chipCountLine({ subnets: 1, folders: 3, containers: 1 })).toBe(
       '3 folders · 1 subnet · 1 container',
     );
+    expect(chipCountLine({ networks: 1, subnets: 2, resources: 1 })).toBe(
+      '1 network · 2 subnets · 1 resource',
+    );
     expect(chipCountLine({})).toBe('');
   });
 
@@ -21,6 +24,7 @@ describe('chipCountLine', () => {
     expect(chipCountLine({ networks: 1, subnets: 17, containers: 6, resources: 33 }, true)).toBe(
       '1 net · 17 sub · 6 ctr · 33 res',
     );
+    expect(chipCountLine({ projects: 3, resources: 12 }, true)).toBe('3 prj · 12 res');
     expect(CHIP_COUNT_NAMES.map(([kind]) => kind)).toEqual([
       'folders',
       'projects',

@@ -23,18 +23,13 @@ import {
   DEFAULT_SIZING,
   TEXT_WEIGHTS,
   ZONE_TITLE_SEPARATOR,
+  chipCountLine,
   measureText,
   zoneTitleSizeAt,
 } from '@gcportrait/layout';
 import type { LayoutRect, Rect, TextRun } from '@gcportrait/layout';
 import type { Icon } from '@gcportrait/icons';
-import {
-  RELATION_KINDS,
-  RELATION_KIND_IDS,
-  type ChipCounts,
-  type RelationKind,
-  type SceneNode,
-} from '@gcportrait/model';
+import { RELATION_KINDS, RELATION_KIND_IDS, type RelationKind, type SceneNode } from '@gcportrait/model';
 import { Fragment, type ReactElement, type ReactNode, type SVGProps } from 'react';
 
 import { CONSOLE_LABELS } from './actions';
@@ -251,24 +246,6 @@ export function planDrawing(
     legend: { x: bounds.x + MARGIN, y: legendY, rows, layout: legendLayout },
     ...common,
   };
-}
-
-const COUNT_NAMES: ReadonlyArray<readonly [keyof ChipCounts, string, string]> = [
-  ['folders', 'folder', 'fld'],
-  ['projects', 'project', 'prj'],
-  ['networks', 'network', 'net'],
-  ['subnets', 'subnet', 'sub'],
-  ['containers', 'container', 'ctr'],
-  ['resources', 'resource', 'res'],
-];
-
-/** "2 networks · 39 resources", or the short form "2 net · 39 res". */
-export function chipCountLine(counts: ChipCounts, short = false): string {
-  return COUNT_NAMES.flatMap(([key, singular, abbreviation]) => {
-    const count = counts[key];
-    if (count === undefined) return [];
-    return [`${String(count)} ${short ? abbreviation : count === 1 ? singular : `${singular}s`}`];
-  }).join(ZONE_TITLE_SEPARATOR);
 }
 
 /**

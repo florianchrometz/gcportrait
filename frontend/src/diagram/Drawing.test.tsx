@@ -11,7 +11,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { TAGLINE } from '../branding';
-import { accessibleName, cardTypeName, chipCountLine, DiagramDrawing, planDrawing } from './Drawing';
+import { accessibleName, cardTypeName, DiagramDrawing, planDrawing } from './Drawing';
 import { placeIconMarkup } from './icons';
 import { buildDiagramModel } from './model';
 import { renderDiagramSvg } from './static';
@@ -577,11 +577,7 @@ describe('accessible names (style skill §13)', () => {
     expect(cardTypeName(product, assetType)).toBe(name);
   });
 
-  it('writes chip counts in full, or short when asked', () => {
-    expect(chipCountLine({ networks: 1, subnets: 2, resources: 1 })).toBe(
-      '1 network · 2 subnets · 1 resource',
-    );
-    expect(chipCountLine({ projects: 3, resources: 12 }, true)).toBe('3 prj · 12 res');
+  it('names a rect without a node by its id, and a chip that counts nothing as collapsed', () => {
     const rect = model.input.layout.rects['projects/data'];
     if (rect === undefined) throw new Error('missing rect');
     expect(accessibleName(undefined, rect, 'x')).toBe('x');

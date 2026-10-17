@@ -480,9 +480,7 @@ and waiting for an item of [backlog.md](backlog.md) or a maintainer decision:
   the Scene, so the map is only the fallback for folders, projects, networks and zones without one, but
   AGENTS.md, "Data and graph semantics", still wants it in the icons data. `ZONE_KIND_RANK` is declared once
   (`@gcportrait/model`, shared by the graph and the layout), and so is the `ConsoleLink` type (the
-  frontend imports the catalog engine's, `packages/catalog/src/engine/console.ts`). One declaration is still
-  doubled: the chip count line (`chipCountLine` in `packages/layout` sizes the chip,
-  `frontend/src/diagram/Drawing.tsx` has its own copy of the wording).
+  frontend imports the catalog engine's, `packages/catalog/src/engine/console.ts`).
 - **Rules the app restates.** The scene builder's level table, its `auto` rule (with the lens ceiling) and its
   `group:` bundle prefix are exported by `@gcportrait/graph` (`ZONE_OPENS_AT`, `zoneOpensAt`,
   `autoDetailLevel`, `autoCeiling`, `BUNDLE_ID_PREFIX`), and `frontend/src/diagram/autoDetail.ts` and

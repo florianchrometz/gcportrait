@@ -99,10 +99,9 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 ## 5. App
 
 - **Renderer and layout:** zone badges and the title block's scope line have no width cap; a selection inside
-  a chip after a lens or detail change shows nothing (`selection.shownAs` is unused); the chip count line is
-  declared twice (`packages/layout` and `frontend/src/diagram/Drawing.tsx`), and `ZONE_MARKS` belongs in the
-  icons data ([packages.md](packages.md), section 5); identical GKE marks on every Kubernetes object, and the
-  kubernetes lens draws disks, MIGs and forwarding rules; blank areas under Platform and right of Retail
+  a chip after a lens or detail change shows nothing (`selection.shownAs` is unused); `ZONE_MARKS` belongs in
+  the icons data ([packages.md](packages.md), section 5); identical GKE marks on every Kubernetes object, and
+  the kubernetes lens draws disks, MIGs and forwarding rules; blank areas under Platform and right of Retail
   (packing; layout skill §4); underline routes along long ring tops and long ways round in root row gaps;
   margin routes in L networking; the `secures` line from a lone card in the root's card row runs to the canvas
   edge; the trace is weak at the fitted scale; the drawer covers the right quarter of the canvas without

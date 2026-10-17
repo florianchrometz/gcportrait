@@ -52,7 +52,7 @@ assertLayout(scene, layout); // throws LayoutInvariantError in development build
 | `defaultFontMetrics()`, `parseFontMetricsTable(value)`, `fontFaceKey`, `FONT_FACE_KEYS`, `FontMetricsTable` | the table and its format |
 | `DEFAULT_SIZING`, `Sizing`, `DEFAULT_ROUTING`, `Routing`, `TARGET_ASPECT`, `ROOT_ASPECT`, `ASPECT_TOLERANCE`, `TEXT_WEIGHTS`, `ZONE_TITLE_SEPARATOR`, `ZONE_KIND_RANK`, `MAX_SCENE_DEPTH` | the constants below; the SVG renderer reads the same ones so text fits the boxes and heads fit the edges |
 | `cardWidth`, `headerHeightAt`, `zoneTitleSizeAt`, `zoneTitleWidth` | the sizing rules, for the renderer |
-| `chipWidth`, `chipCountLine`, `CHIP_COUNT_NAMES`, `ChipText` | a chip's width from its label and count line (148–220) and the count line itself ("2 networks · 39 resources", short form "2 net · 39 res"): the one definition of its wording, which the renderer should import (the frontend still has its own copy: see "Known limits") |
+| `chipWidth`, `chipCountLine`, `CHIP_COUNT_NAMES`, `ChipText` | a chip's width from its label and count line (148–220) and the count line itself ("2 networks · 39 resources", short form "2 net · 39 res"): the one definition of its wording, which the renderer imports |
 | `compareCodePoints`, `compareSiblings` | the deterministic sibling order |
 | `checkLayout(scene, layout, options?)`, `assertLayout(…)`, `checkEdges(…)`, `checkDeterminism(scene, options?)`, `contentBox`, `canvasContentBox`, `LayoutInvariantError` | the invariants (`checkLayout` includes `checkEdges`) |
 | `packingAspects(layout, options?)` | each container's children box, its aspect, target, relative deviation and fill |
@@ -684,9 +684,6 @@ started in (`INIT_CWD`, which pnpm sets), not from the package directory pnpm ru
   that they coincide along its trunk; a trunk shared by two kinds would lay a solid and a dashed line on top
   of each other and lose the dashed one. One trunk per host would need the renderer to draw a mixed trunk (two
   lanes, or one style), a style-skill decision.
-- **The chip count line is defined twice.** `chipCountLine` here sizes the chip; the frontend's renderer still
-  has its own copy of the wording (`frontend/src/diagram/Drawing.tsx`), with the same output; it should import
-  this one.
 - **Empty space beside a tall sibling that comes later.** Stacks keep sibling order, so the blank area under a
   short folder beside a much taller one (M at `auto`: under Platform, beside Workloads) stays; filling it
   needs a later sibling stacked under an earlier one (an open item of
