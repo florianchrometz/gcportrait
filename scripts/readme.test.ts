@@ -2,14 +2,16 @@
 /**
  * The root README's order (AGENTS.md, Documentation): what gcportrait is and does first, then the quick
  * starts, the features with their images, the contributing sections, and the non-affiliation statement and the
- * licence at the bottom. Its wording is free; this test holds the order and the pieces each part must show, and
- * the alt text of each generated still and animated demo it shows to the website's (website/src/data/media.json).
+ * licence at the bottom. Its wording is free; this test holds the order and the pieces each part must show, the
+ * alt text of each generated still and animated demo it shows to the website's (website/src/data/media.json), and
+ * the alt text of each sample export it shows to that sample's title and summary (scripts/exports.mjs, SAMPLES).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { EXPORTS_DIR, SAMPLES, expectedFiles } from './exports.mjs';
 import { paths, readConfig } from './lib/media-core.mjs';
 import { REPO } from './testing/temp-tree.js';
 
@@ -93,6 +95,20 @@ const WEBSITE_ALTS = (() => {
 })();
 
 /**
+ * The alt text of each sample export's files, by the path of each here: the sample's title and summary
+ * (scripts/exports.mjs, SAMPLES), as the website's export card shows them above its previews and ends their alt
+ * texts with (website/src/components/ExportCard.astro, from the manifest the script writes). A README picture
+ * follows the reader's colour scheme, so its alt text names no theme.
+ */
+const EXPORT_ALTS = new Map<string, string>(
+  SAMPLES.flatMap((sample) =>
+    expectedFiles([sample]).map(
+      (file) => [`${EXPORTS_DIR}/${file}`, `${sample.title}. ${sample.summary}`] as const,
+    ),
+  ),
+);
+
+/**
  * Whether a picture shows its medium in the theme the reader is not using (the dark file by default, the light
  * one for a dark colour scheme): it is about the theme, and its alt text says so in words of its own.
  */
@@ -141,6 +157,27 @@ describe('the README', () => {
     expect(differing).toEqual([]);
   });
 
+  it('describes each sample export in its sample’s title and summary, so it says what the website’s card says', () => {
+    const shown = images(README).filter(
+      (image) => image.src.startsWith(`${EXPORTS_DIR}/`) && !showsOtherTheme(image),
+    );
+    expect(shown.length).toBeGreaterThanOrEqual(1);
+    const differing = shown
+      .filter(
+        (image) =>
+          !EXPORT_ALTS.has(image.src) ||
+          image.alt !== EXPORT_ALTS.get(image.src) ||
+          (image.dark !== undefined && EXPORT_ALTS.get(image.dark) !== EXPORT_ALTS.get(image.src)),
+      )
+      .map((image) => ({
+        src: image.src,
+        dark: image.dark,
+        readme: image.alt,
+        sample: EXPORT_ALTS.get(image.src) ?? 'not a file of a sample',
+      }));
+    expect(differing).toEqual([]);
+  });
+
   it('reads the images of its pictures, their dark-scheme files and their alt texts', () => {
     const html = [
       '<p><img src="docs/media/stills/hero-light.png" alt="A &quot;whole&quot; organisation &amp; more"></p>',
@@ -165,6 +202,11 @@ describe('the README', () => {
     ]);
     expect(found.map(showsOtherTheme)).toEqual([false, true, false]);
     expect(WEBSITE_ALTS.get('docs/media/animated/trace-dark.gif')).toMatch(/^Animation: /);
+    const sharedVpc = SAMPLES.find((sample) => sample.id === 'M-shared-vpc');
+    expect(EXPORT_ALTS.get('docs/media/exports/M-shared-vpc-dark-960.webp')).toBe(
+      `${sharedVpc?.title ?? ''}. ${sharedVpc?.summary ?? ''}`,
+    );
+    expect(EXPORT_ALTS.has('docs/media/exports/M-shared-vpc-dark-1200.webp')).toBe(false);
   });
 
   it('points only at media that exist', () => {

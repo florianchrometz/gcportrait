@@ -474,7 +474,9 @@ const STILLS = {
     await sleep(800);
     await fitCamera(page, () => boxOf(page, nodeSelector(DEMO.retailBatch)));
   },
-  // A day compared with the day before: 23 to 24 September, the web group's scale-out.
+  // A day compared with the day before: 23 to 24 September, the web group's scale-out, then the camera fitted to the
+  // web group's project, Retail web: its added machines and disks, the removed machine's ghost and the changed
+  // instance group manager.
   timeline: async (page, url) => {
     await openView(page, url, '/diagram#snapshot=demo:M&tick=2026-09-23&lens=compute&detail=all');
     await scrubToDay(page, '2026-09-24', 6);
@@ -483,6 +485,7 @@ const STILLS = {
     await frameNode(page, nodeSelector(DEMO.webManager), 7, { x: 560, y: 420 });
     await page.mouse.move(RESTING.x, RESTING.y);
     await sleep(800);
+    await fitCamera(page, () => boxOf(page, nodeSelector(DEMO.retailWeb)));
   },
   // The Export menu over demo S.
   export: async (page, url) => {

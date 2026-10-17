@@ -362,10 +362,12 @@ reads the same in every run, and scrolls the page until its import area shows wh
 and the timelines. The trace still selects a forwarding rule and then fits the camera to its trace beside the
 details drawer. The drawer still selects the bastion VM and fits the camera to the VM's project beside the
 drawer, its disk and the project's other machines around it: its trace also reaches a subnetwork across the
-organisation, too far off to fit with every card readable. The list of stills, scenes and cards, with their
-alt texts, is `website/src/data/media.json`; what each one does is in `scripts/media.mjs`. The README's
-pictures carry the same alt texts, and `scripts/readme.test.ts` fails when one differs from the website's.
-Only the synthetic demo organisations are ever captured.
+organisation, too far off to fit with every card readable. The timeline still moves the timeline from 23 to
+24 September, the web group's scale-out, and fits the camera to the group's project, Retail web: its added
+machines and disks, the removed machine's ghost and the changed instance group manager. The list of stills,
+scenes and cards, with their alt texts, is `website/src/data/media.json`; what each one does is in
+`scripts/media.mjs`. The README's pictures carry the same alt texts, and `scripts/readme.test.ts` fails when
+one differs from the website's. Only the synthetic demo organisations are ever captured.
 
 The hero shows the whole of demo S, where every zone, the Shared VPC, the title block and the legend are
 visible: fitted to 1440×900, demo M's overview shows only its folders and collapsed projects (38 of 369 items,
@@ -494,6 +496,12 @@ viewer draws the labels in another font and they may reflow (the PNGs are always
 non-affiliation line; `/exports/` says it is in the footer, not in the drawings, and asks that a picture not
 be presented as Google's. `pnpm website:check` checks every export link ([Building and
 checking](#building-and-checking)).
+
+**In the README.** The catalog feature shows the `M-shared-vpc` preview at 960 pixels, in the dark theme for
+a dark colour scheme. Its alt text is the sample's title and summary from `SAMPLES` ("Title. Summary"), the
+words the export card shows above its previews and ends their alt texts with; it names no theme, since the
+picture follows the reader's. `scripts/readme.test.ts` fails when a README picture of a sample export says
+anything else.
 
 ## GitHub repository widget
 

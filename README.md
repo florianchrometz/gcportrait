@@ -246,7 +246,7 @@ the other 9 are listed with a reason. A type the catalog does not know still ren
 <a href="packages/catalog/README.md">Catalog</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/exports/M-shared-vpc-dark-960.webp">
-  <img src="docs/media/exports/M-shared-vpc-light-960.webp" width="400" alt="A drawing of the synthetic demo organisation M in the Networking lens, focused on its production Shared VPC: forwarding rules, addresses, network endpoint groups, Cloud DNS zones, VPN tunnels, an Interconnect with its attachment, a Network Connectivity Center hub and spokes, a VMware Engine network and a Cloud Build worker pool, each type with its icon.">
+  <img src="docs/media/exports/M-shared-vpc-light-960.webp" width="400" alt="Demo M, Networking lens, focused on the production Shared VPC. The production Shared VPC of demo M and the projects attached to it: load balancers, addresses, Cloud Interconnect and VPN, with the host project’s network.">
 </picture>
 </td>
 <td width="50%" valign="top">

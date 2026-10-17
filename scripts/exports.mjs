@@ -100,7 +100,9 @@ const TOOLS = Object.freeze([
  * The samples: the whole of demo S and demo M in the Overview lens, as the app opens them (detail `auto` at the
  * 1280×800 canvas the render CLI fits by default), and demo M's production Shared VPC in the Networking lens, which
  * shows resources the overview of M keeps collapsed. L and XL are left out: L's overview alone is a 8172×5284 PNG of
- * about 1.9 MB per theme, which would take the set over its budget.
+ * about 1.9 MB per theme, which would take the set over its budget. A sample's title and summary are the words the
+ * website's export card and the README's picture of the sample describe it with (scripts/readme.test.ts holds the
+ * README to them).
  * @type {readonly Sample[]}
  */
 export const SAMPLES = Object.freeze([
