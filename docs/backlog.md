@@ -48,7 +48,6 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Dependabot** alerts and security updates on in the repository settings (security finding O7).
 - **Make the repository and the ghcr.io package public, and tag `v1.0.0`** ([contributing.md, "9.
   Releases"](contributing.md#9-releases)); the tag is the release workflow's first run.
-- **`docs/author.md`**: fill in its placeholders; a portrait needs its licence stated before it is committed.
 - **The legal pages** on the maintainer's website, checked against [legal/](legal/README.md): the privacy
   notice at <https://florian-chrometz.de/legal/privacy-policy> must mention TelemetryDeck, which counts the
   website's page views once it deploys (the inventory's row W4; [website.md](website.md), "Analytics"), and
