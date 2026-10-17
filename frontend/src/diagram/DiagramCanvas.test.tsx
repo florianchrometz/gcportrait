@@ -71,10 +71,16 @@ describe('DiagramCanvas', () => {
     } finally {
       spy.mockRestore();
     }
-    expect(seen).toEqual([
-      { name: 'data-drawing', stops: 1, hoverPaints: true },
-      { name: 'data-diagram-ready', stops: 1, hoverPaints: true },
-    ]);
+    // Each mount writes the pair once (under StrictMode the first mount's pair comes first), and at every write
+    // the tab stop is there and hover paints.
+    expect(seen.length % 2).toBe(0);
+    expect(seen.length).toBeGreaterThan(0);
+    for (let i = 0; i < seen.length; i += 2) {
+      expect(seen.slice(i, i + 2)).toEqual([
+        { name: 'data-drawing', stops: 1, hoverPaints: true },
+        { name: 'data-diagram-ready', stops: 1, hoverPaints: true },
+      ]);
+    }
   });
 
   it('gives every drawing the next number: a new view and a theme change draw again, a selection does not', () => {
