@@ -4,7 +4,7 @@
  * and SVG sizes, the non-affiliation rule for an exported SVG (no affiliation line in its title block,
  * <title> or <desc>) and for a draw.io file's labels, the draw.io file read as diagrams.net reads it, the
  * staleness check against the manifest, the committed samples themselves, and the command line's paths that
- * need no browser.
+ * need no browser, run in this process (`run`) and once as a command of its own.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -25,13 +25,21 @@ import {
   readDrawio,
   readManifest,
   renderCommand,
+  run,
   sha256,
   statesAffiliation,
   svgProblems,
   svgSize,
   type ExportManifest,
 } from './exports.mjs';
-import { SCRIPTS_DIR, createTempTree, runScript, type TempTree } from './testing/temp-tree.js';
+import {
+  SCRIPTS_DIR,
+  SPAWN_TIMEOUT,
+  createTempTree,
+  runInProcess,
+  runScript,
+  type TempTree,
+} from './testing/temp-tree.js';
 
 const REPO = path.resolve(SCRIPTS_DIR, '..');
 /** The first sentence of the footer notice (frontend/src/branding.ts), which no export may carry. */
@@ -341,21 +349,35 @@ describe('the committed samples (docs/media/exports)', () => {
 });
 
 describe('the command line', () => {
-  it('prints its usage and its files without a browser, and refuses --render alone', () => {
-    const help = runScript('exports.mjs', ['--help']);
+  const command = (...args: string[]) => runInProcess(() => run(args));
+
+  it('prints its usage and its files without a browser, and refuses --render alone', async () => {
+    const help = await command('--help');
     expect(help.status).toBe(0);
     expect(help.stdout).toContain('usage: node scripts/exports.mjs');
-    const list = runScript('exports.mjs', ['--list']);
+    const list = await command('--list');
     expect(list.status).toBe(0);
     expect(list.stdout.trim().split('\n')).toHaveLength(expectedFiles().length + 1);
     expect(list.stdout).toContain('docs/media/exports/manifest.json');
-    expect(runScript('exports.mjs', ['--render']).status).toBe(2);
-    expect(runScript('exports.mjs', ['--nope']).status).toBe(2);
+    const alone = await command('--render');
+    expect(alone.status).toBe(2);
+    expect(alone.stderr).toBe('exports: --render goes with --check\n');
+    expect((await command('--nope')).status).toBe(2);
   });
 
-  it('passes its own check on the committed samples', () => {
-    const check = runScript('exports.mjs', ['--check']);
+  it('passes its own check on the committed samples', async () => {
+    const check = await command('--check');
     expect(check.stderr).toBe('');
     expect(check.status).toBe(0);
   });
+
+  it(
+    'runs as a command of its own: the output `run` gives in-process, and its exit code',
+    SPAWN_TIMEOUT,
+    async () => {
+      const spawned = runScript('exports.mjs', ['--render']);
+      expect(spawned.status).toBe(2);
+      expect(spawned).toEqual(await command('--render'));
+    },
+  );
 });

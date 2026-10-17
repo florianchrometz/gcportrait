@@ -676,24 +676,32 @@ export async function main(argv) {
   }
 }
 
+/**
+ * The command line on `argv`: `main`'s exit code, or 2 on a usage error and 1 on any other failure, each with its
+ * reason on standard error.
+ * @param {readonly string[]} argv
+ * @returns {Promise<number>}
+ */
+export async function run(argv) {
+  try {
+    return await main(argv);
+  } catch (/** @type {unknown} */ error) {
+    if (
+      error instanceof UsageError ||
+      (error instanceof Error && 'code' in error && String(error.code).startsWith('ERR_PARSE_ARGS'))
+    ) {
+      process.stderr.write(`exports: ${error.message}\n`);
+      return 2;
+    }
+    process.stderr.write(
+      `exports: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+    );
+    return 1;
+  }
+}
+
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main(process.argv.slice(2)).then(
-    (code) => {
-      process.exitCode = code;
-    },
-    (/** @type {unknown} */ error) => {
-      if (
-        error instanceof UsageError ||
-        (error instanceof Error && 'code' in error && String(error.code).startsWith('ERR_PARSE_ARGS'))
-      ) {
-        process.stderr.write(`exports: ${error.message}\n`);
-        process.exitCode = 2;
-      } else {
-        process.stderr.write(
-          `exports: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
-        );
-        process.exitCode = 1;
-      }
-    },
-  );
+  void run(process.argv.slice(2)).then((code) => {
+    process.exitCode = code;
+  });
 }

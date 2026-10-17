@@ -10,33 +10,16 @@
  */
 import 'fake-indexeddb/auto';
 
-import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { useFreshIndexedDb } from '../test/indexedDb';
 import { TICK_CONTENT_TYPE, tickCacheKey } from '../timeline/cacheKey';
-import { DB_NAME, DB_VERSION, openDatabase, type GcportraitDB, type StoredTick } from './db';
+import { DB_NAME, DB_VERSION, type StoredTick } from './db';
 import { createTickCacheStore, staleTicks, TickWriteCancelled } from './tickCache';
 import type { TickCacheChange, TickCacheChanges } from './tickCacheChanges';
 
-const realFactory = globalThis.indexedDB;
-const open: GcportraitDB[] = [];
-
-async function database(): Promise<GcportraitDB> {
-  const db = await openDatabase();
-  if (db === null) throw new Error('expected IndexedDB to open');
-  open.push(db);
-  return db;
-}
-
-beforeEach(() => {
-  globalThis.indexedDB = new IDBFactory();
-});
-
-afterEach(() => {
-  for (const db of open.splice(0)) db.close();
-  globalThis.indexedDB = realFactory;
-});
+const { database } = useFreshIndexedDb();
 
 function tick(scope: string, day: string, extra: Partial<StoredTick> = {}): StoredTick {
   const readTime = `${day}T00:00:00Z`;

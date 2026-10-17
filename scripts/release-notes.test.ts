@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: MIT
 /**
  * scripts/release-notes.mjs: the GitHub release's notes from the CHANGELOG.md sections changesets
- * writes, run end to end on synthetic workspaces.
+ * writes, its command line run in this process on synthetic workspaces (`run`), and once as a command of its own.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { NON_AFFILIATION_LONG, releaseNotes } from './release-notes.mjs';
-import { REPO, createTempTree, runScript, type TempTree } from './testing/temp-tree.js';
+import { NON_AFFILIATION_LONG, releaseNotes, run } from './release-notes.mjs';
+import {
+  REPO,
+  SPAWN_TIMEOUT,
+  createTempTree,
+  runInProcess,
+  runScript,
+  type TempTree,
+} from './testing/temp-tree.js';
 
 /** A changelog the way `changeset version` writes it (@changesets/cli/changelog). */
 const BACKEND = `# @gcportrait/backend
@@ -75,10 +82,10 @@ describe('release-notes.mjs', () => {
     tree.remove();
   });
 
-  const notes = (...args: string[]) => runScript('release-notes.mjs', ['--root', tree.root, ...args]);
+  const notes = (...args: string[]) => runInProcess(() => run(['--root', tree.root, ...args]));
 
-  it('lists each change of the version once, by kind, without hashes and dependency bookkeeping', () => {
-    const result = notes(
+  it('lists each change of the version once, by kind, without hashes and dependency bookkeeping', async () => {
+    const result = await notes(
       '--tag',
       'v1.2.0',
       '--image',
@@ -139,21 +146,35 @@ describe('release-notes.mjs', () => {
     );
   });
 
-  it('names only the tags the image gets: no X.Y for a pre-release, latest only for the newest release', () => {
+  it('names only the tags the image gets: no X.Y for a pre-release, latest only for the newest release', async () => {
     tree.write('backend/CHANGELOG.md', BACKEND.replace('## 1.2.0', '## 1.3.0-rc.1'));
-    const pre = notes('--tag', 'v1.3.0-rc.1', '--image', 'ghcr.io/example/gcportrait');
+    const pre = await notes('--tag', 'v1.3.0-rc.1', '--image', 'ghcr.io/example/gcportrait');
     expect(pre.status, pre.stderr).toBe(0);
     expect(pre.stdout).toContain('tagged `1.3.0-rc.1`.');
-    const older = notes('--tag', 'v1.1.0', '--image', 'ghcr.io/example/gcportrait', '--latest', 'false');
+    const older = await notes(
+      '--tag',
+      'v1.1.0',
+      '--image',
+      'ghcr.io/example/gcportrait',
+      '--latest',
+      'false',
+    );
     expect(older.status, older.stderr).toBe(0);
     expect(older.stdout).toContain('tagged `1.1.0`, `1.1`.');
     expect(older.stdout).toContain('- An older change.');
     expect(older.stdout).not.toContain('Shared change');
   });
 
-  it('takes the notes of the release a pre-release precedes when it has no section of its own', () => {
-    const release = notes('--tag', 'v1.2.0');
-    const pre = notes('--tag', 'v1.2.0-rc.1', '--image', 'ghcr.io/example/gcportrait', '--latest', 'false');
+  it('takes the notes of the release a pre-release precedes when it has no section of its own', async () => {
+    const release = await notes('--tag', 'v1.2.0');
+    const pre = await notes(
+      '--tag',
+      'v1.2.0-rc.1',
+      '--image',
+      'ghcr.io/example/gcportrait',
+      '--latest',
+      'false',
+    );
     expect(pre.status, pre.stderr).toBe(0);
     expect(
       pre.stdout.startsWith(
@@ -170,7 +191,7 @@ describe('release-notes.mjs', () => {
     expect(release.stdout).not.toContain('A pre-release of');
   });
 
-  it('takes a pre-release’s own sections when a changelog has them, not those of its release', () => {
+  it('takes a pre-release’s own sections when a changelog has them, not those of its release', async () => {
     tree.write(
       'backend/CHANGELOG.md',
       BACKEND.replace(
@@ -178,22 +199,22 @@ describe('release-notes.mjs', () => {
         '## 1.2.0-rc.1\n\n### Minor Changes\n\n- 2b3c4d5: Only in the pre-release.\n\n## 1.1.0',
       ),
     );
-    const pre = notes('--tag', 'v1.2.0-rc.1');
+    const pre = await notes('--tag', 'v1.2.0-rc.1');
     expect(pre.status, pre.stderr).toBe(0);
     expect(changesOf(pre.stdout)).toBe('### Minor changes\n\n- Only in the pre-release.');
     expect(pre.stdout).not.toContain('A pre-release of');
     expect(pre.stdout).not.toContain('The export menu moved.');
   });
 
-  it('finds no notes for a pre-release of a version no changelog has', () => {
+  it('finds no notes for a pre-release of a version no changelog has', async () => {
     expect(releaseNotes({ root: tree.root, tag: 'v9.9.9-rc.1' })).toBeNull();
-    const missing = notes('--tag', 'v9.9.9-rc.1');
+    const missing = await notes('--tag', 'v9.9.9-rc.1');
     expect(missing.status).toBe(1);
     expect(missing.stdout).toBe('');
     expect(missing.stderr).toContain('no CHANGELOG.md has a section "## 9.9.9-rc.1" or "## 9.9.9".');
   });
 
-  it('keeps the long form once when an entry repeats it, wrapped as the hand-written notes wrap it', () => {
+  it('keeps the long form once when an entry repeats it, wrapped as the hand-written notes wrap it', async () => {
     const wrapped = NON_AFFILIATION_LONG.replace('project and is ', 'project and is\n  ').replace(
       'Google Cloud product icons are ',
       'Google Cloud product icons are\n  ',
@@ -202,7 +223,7 @@ describe('release-notes.mjs', () => {
       'backend/CHANGELOG.md',
       `# @gcportrait/backend\n\n## 2.0.0\n\n### Major Changes\n\n- The first release.\n  \n  ${wrapped}\n  \n  ### Highlights\n  \n  - A highlight.\n`,
     );
-    const result = notes('--tag', 'v2.0.0');
+    const result = await notes('--tag', 'v2.0.0');
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout.split('is not affiliated with').length - 1).toBe(1);
     expect(result.stdout).toContain(
@@ -239,14 +260,25 @@ describe('release-notes.mjs', () => {
     expect(changesOf(pre)).toBe(changesOf(text));
   });
 
-  it('refuses a version that no changelog has, and bad arguments', () => {
-    const missing = notes('--tag', 'v9.9.9');
+  it('refuses a version that no changelog has, and bad arguments', async () => {
+    const missing = await notes('--tag', 'v9.9.9');
     expect(missing.status).toBe(1);
     expect(missing.stderr).toContain('no CHANGELOG.md has a section "## 9.9.9"');
     expect(missing.stderr).toContain('pnpm release:version');
-    expect(notes('--tag', '1.2.0').status).toBe(2);
-    expect(notes('--tag', 'v1.2.0', '--latest', 'yes').status).toBe(2);
-    expect(notes('--tag', 'v1.2.0', '--unknown').status).toBe(2);
-    expect(notes().status).toBe(2);
+    expect((await notes('--tag', '1.2.0')).status).toBe(2);
+    expect((await notes('--tag', 'v1.2.0', '--latest', 'yes')).status).toBe(2);
+    expect((await notes('--tag', 'v1.2.0', '--unknown')).status).toBe(2);
+    expect((await notes()).status).toBe(2);
   });
+
+  it(
+    'runs as a command of its own: the output `run` gives in-process, and its exit code',
+    SPAWN_TIMEOUT,
+    async () => {
+      const args = ['--root', tree.root, '--tag', 'v9.9.9'];
+      const command = runScript('release-notes.mjs', args);
+      expect(command.status).toBe(1);
+      expect(command).toEqual(await runInProcess(() => run(args)));
+    },
+  );
 });

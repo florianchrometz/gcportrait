@@ -11,6 +11,7 @@ import type { DatabaseConnection } from '../storage/connection';
 import { DEFAULT_SOURCE_URL } from '../source';
 import { createMemoryPreferenceStore, type PreferenceStore } from '../storage/preferences';
 import { SavedViewStoreContext, type SavedViewStore } from '../views/savedViewStore';
+import { DRAW_TIMEOUT } from './diagram';
 import { currentLocation, hashOf, LocationProbe } from './location';
 
 export { currentLocation } from './location';
@@ -41,6 +42,13 @@ export type RenderAppOptions = {
  * default; the assertions are the same whatever the timeout.
  */
 export const WHOLE_APP_TIMEOUT = { timeout: 20_000 } as const;
+
+/**
+ * The per-test timeout of the whole-app tests that draw a demo organisation (in-process workers) before they work
+ * through the app: the draw alone may take DRAW_TIMEOUT on a loaded machine (a file's first draw the longest, as it
+ * also generates the organisation and loads the pipeline's modules), and the work after it is a whole-app test's.
+ */
+export const DRAWING_APP_TIMEOUT = { timeout: DRAW_TIMEOUT + WHOLE_APP_TIMEOUT.timeout } as const;
 
 export interface AppRender extends RenderResult {
   /** The router's path, query string and hash. */

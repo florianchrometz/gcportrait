@@ -20,7 +20,7 @@ import { expectNoAxeViolations } from '../../test/axe';
 import { staticDemoConfig, stubBackend } from '../../test/backend';
 import { stubClipboard } from '../../test/clipboard';
 import { drawn } from '../../test/diagram';
-import { renderApp, WHOLE_APP_TIMEOUT, type AppRender } from '../../test/renderApp';
+import { DRAWING_APP_TIMEOUT, renderApp, WHOLE_APP_TIMEOUT, type AppRender } from '../../test/renderApp';
 import { installViewport, type ViewportControl } from '../../test/viewport';
 import { createSavedViewStore } from '../../views/savedViewStore';
 
@@ -307,25 +307,30 @@ describe('the More sheet on a phone', WHOLE_APP_TIMEOUT, () => {
     expectOpenOn(button, sheet, copy);
   });
 
-  it('stays open for Export, whose own menu opens inside the sheet and closes with Escape onto it', async () => {
-    viewport = installViewport(375);
-    const { container } = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: createInProcessWorkers });
-    await drawn(container);
-    const { button, sheet } = await openMore();
-    const exportButton = within(sheet).getByRole('button', { name: 'Export' });
-    await waitFor(() => {
-      expect(exportButton.getAttribute('aria-disabled')).toBeNull();
-    });
-    await userEvent.click(exportButton);
-    expect(within(sheet).getByRole('menu', { name: 'Export' })).toBeDefined();
-    expect(button.getAttribute('aria-expanded')).toBe('true');
-    await userEvent.keyboard('{Escape}');
-    expect(within(sheet).queryByRole('menu', { name: 'Export' })).toBeNull();
-    expectOpenOn(button, sheet, exportButton);
-  });
+  // It draws demo S first, the file's first draw.
+  it(
+    'stays open for Export, whose own menu opens inside the sheet and closes with Escape onto it',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      viewport = installViewport(375);
+      const { container } = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: createInProcessWorkers });
+      await drawn(container);
+      const { button, sheet } = await openMore();
+      const exportButton = within(sheet).getByRole('button', { name: 'Export' });
+      await waitFor(() => {
+        expect(exportButton.getAttribute('aria-disabled')).toBeNull();
+      });
+      await userEvent.click(exportButton);
+      expect(within(sheet).getByRole('menu', { name: 'Export' })).toBeDefined();
+      expect(button.getAttribute('aria-expanded')).toBe('true');
+      await userEvent.keyboard('{Escape}');
+      expect(within(sheet).queryByRole('menu', { name: 'Export' })).toBeNull();
+      expectOpenOn(button, sheet, exportButton);
+    },
+  );
 });
 
-describe('the sheets and the details drawer', WHOLE_APP_TIMEOUT, () => {
+describe('the sheets and the details drawer', DRAWING_APP_TIMEOUT, () => {
   let viewport: ViewportControl | undefined;
 
   afterEach(() => {
@@ -396,7 +401,6 @@ describe('the sheets and the details drawer', WHOLE_APP_TIMEOUT, () => {
       expect(details()).toBeNull();
       expect(app.hash()).toContain(`selection=${id}`);
     },
-    30_000,
   );
 
   it('on a phone, a search result picked in View closes the sheet onto its button and opens the drawer on it', async () => {
@@ -425,7 +429,7 @@ describe('the sheets and the details drawer', WHOLE_APP_TIMEOUT, () => {
     expect(document.activeElement).toBe(viewButton);
     const drawer = screen.getByRole('complementary', { name: 'Details' });
     expect(within(drawer).getByText(ORDERS_API)).toBeDefined();
-  }, 30_000);
+  });
 
   it('on a desktop, where the folds are in place, `/` focuses the search box and leaves the drawer open', async () => {
     const { app, id } = await selectACard();
@@ -435,5 +439,5 @@ describe('the sheets and the details drawer', WHOLE_APP_TIMEOUT, () => {
     );
     expect(details()).not.toBeNull();
     expect(app.hash()).toContain(`selection=${id}`);
-  }, 30_000);
+  });
 });

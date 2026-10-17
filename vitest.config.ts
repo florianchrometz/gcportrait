@@ -7,8 +7,8 @@ import { defineConfig } from 'vitest/config';
  * e2e/ is not a Vitest project; it runs under Playwright.
  *
  * Coverage (V8) is configured but not enforced yet: `pnpm test --coverage` writes reports to coverage/.
- * The scripts/*.mjs command-line tools are tested end to end in child processes, which V8 coverage does not
- * follow, so their coverage figure reads far lower than what the tooling tests actually exercise.
+ * Most of the scripts/*.mjs command-line tools are tested end to end in child processes, which V8 coverage does
+ * not follow, so their coverage figure reads far lower than what the tooling tests actually exercise.
  */
 export default defineConfig({
   test: {

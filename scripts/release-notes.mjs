@@ -261,8 +261,29 @@ export function releaseNotes({ root, tag, image, digest, latest = false }) {
   return `${out.join('\n').trimEnd()}\n`;
 }
 
-function main() {
+/**
+ * The command line on `argv`: the notes on standard output and 0, or the reason on standard error and 1 when no
+ * CHANGELOG.md has a section for the version, or 2 on a usage error.
+ * @param {readonly string[]} argv
+ * @returns {number}
+ */
+export function run(argv) {
+  try {
+    return main(argv);
+  } catch (error) {
+    // parseArgs reports an unknown or malformed option as a TypeError with a code (ERR_PARSE_ARGS_...).
+    if (error instanceof UsageError || (error instanceof TypeError && 'code' in error)) {
+      process.stderr.write(`release-notes: ${error.message}\n`);
+      return 2;
+    }
+    throw error;
+  }
+}
+
+/** @param {readonly string[]} argv @returns {number} */
+function main(argv) {
   const { values } = parseArgs({
+    args: [...argv],
     options: {
       tag: { type: 'string' },
       image: { type: 'string' },
@@ -291,22 +312,12 @@ function main() {
       `release-notes: no CHANGELOG.md has a section ${sections}. Run \`pnpm release:version\` ` +
         'and commit its changes before tagging the release.\n',
     );
-    process.exitCode = 1;
-    return;
+    return 1;
   }
   process.stdout.write(notes);
+  return 0;
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try {
-    main();
-  } catch (error) {
-    // parseArgs reports an unknown or malformed option as a TypeError with a code (ERR_PARSE_ARGS_...).
-    if (error instanceof UsageError || (error instanceof TypeError && 'code' in error)) {
-      process.stderr.write(`release-notes: ${error.message}\n`);
-      process.exitCode = 2;
-    } else {
-      throw error;
-    }
-  }
+  process.exitCode = run(process.argv.slice(2));
 }

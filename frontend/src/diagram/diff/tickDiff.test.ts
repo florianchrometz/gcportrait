@@ -46,7 +46,7 @@ import {
   type Snapshot,
   type ViewSpecInput,
 } from '@gcportrait/model';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { DEMO_S } from '../testing/demoData';
 import {
@@ -76,6 +76,11 @@ import {
 } from '../testing/demoScenes';
 import { parentsOf as parents, sceneZones, zoneOf } from '../testing/scenes';
 import { hasChip, openView, tickDiff, type TickDiffInput } from './tickDiff';
+
+// Each test builds two days of a demo organisation, the view's Scenes on both and the diff's own, and a layout: the
+// graph and layout packages' work, with their timeout (vitest.config.ts there); up to about 350 ms on demo M and over
+// a second on demo L on a quiet machine, many times that when every core runs another test process.
+vi.setConfig({ testTimeout: 60_000 });
 
 beforeAll(async () => {
   await import('../pipeline/demo');
@@ -126,9 +131,6 @@ function pairInput(before: DemoDay, after: DemoDay, view: ViewSpecInput): TickDi
     envAfter: env(after.snapshot),
   };
 }
-
-/** How long a test on demo L may take (its days are read and its Scenes built ten times larger than M's). */
-const DEMO_L = 30_000;
 
 /** Demo S's data project's europe-west3 region zone (region zones shown): it holds the lake bucket. */
 const DATA_REGION = '//gcportrait.virtual/projects/demo-data-1/locations/europe-west3';
@@ -583,41 +585,37 @@ describe('a zone that is no asset, drawn as a chip, whose contents were removed'
     expect(diff.earlier[REGION]).toMatchObject({ parent: PROJECT, collapsed: true });
   });
 
-  it(
-    'counts only what is gone of what it held: a bundle of demo L whose members are bundled anew',
-    async () => {
-      // Demo L's everything lens at `all`, the bundle "demo-web-7 – allow-grpc-to-demo-web-2" of the shared
-      // production network closed by hand. On 27 September a firewall rule in it is removed, the network's members
-      // are bundled anew, and no bundle has that id any more; the other members are drawn in the new bundles.
-      const [before, after] = await Promise.all([demoLDay('2026-09-26'), demoLDay('2026-09-27')]);
-      const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
-      const input = pairInput(before, after, { ...open, flips: [flipIdOf(RESPLIT_BUNDLE)] });
-      const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
-      const chip = zoneOf(earlier.scene, RESPLIT_BUNDLE);
-      expect(chip?.collapsed).toMatchObject({ subnets: expect.any(Number) as number });
-      const network = parents(earlier.scene).get(RESPLIT_BUNDLE) ?? '';
-      expect(zoneOf(input.scene, network)?.collapsed).toBeUndefined();
-      expect(parents(input.scene).has(RESPLIT_BUNDLE)).toBe(false);
-      const members = heldOpen(input, RESPLIT_BUNDLE);
-      expect(members.length).toBeGreaterThan(10);
+  it('counts only what is gone of what it held: a bundle of demo L whose members are bundled anew', async () => {
+    // Demo L's everything lens at `all`, the bundle "demo-web-7 – allow-grpc-to-demo-web-2" of the shared
+    // production network closed by hand. On 27 September a firewall rule in it is removed, the network's members
+    // are bundled anew, and no bundle has that id any more; the other members are drawn in the new bundles.
+    const [before, after] = await Promise.all([demoLDay('2026-09-26'), demoLDay('2026-09-27')]);
+    const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
+    const input = pairInput(before, after, { ...open, flips: [flipIdOf(RESPLIT_BUNDLE)] });
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    const chip = zoneOf(earlier.scene, RESPLIT_BUNDLE);
+    expect(chip?.collapsed).toMatchObject({ subnets: expect.any(Number) as number });
+    const network = parents(earlier.scene).get(RESPLIT_BUNDLE) ?? '';
+    expect(zoneOf(input.scene, network)?.collapsed).toBeUndefined();
+    expect(parents(input.scene).has(RESPLIT_BUNDLE)).toBe(false);
+    const members = heldOpen(input, RESPLIT_BUNDLE);
+    expect(members.length).toBeGreaterThan(10);
 
-      const { scene, diff } = tickDiff(input);
-      const removed = members.filter((id) => diff.removed.includes(id));
-      expect(removed).toEqual([RESPLIT_FIREWALL]);
-      // The members still there are drawn where the drawn day has them, and none is a ghost.
-      const drawn = parents(scene);
-      for (const id of members) {
-        if (id !== RESPLIT_FIREWALL) expect(drawn.has(id) && !Object.hasOwn(diff.ghosts, id), id).toBe(true);
-      }
-      // The chip comes back as it was, counting only what was removed in it.
-      expect(diff.ghosts[RESPLIT_BUNDLE]).toBe('removed');
-      expect(drawn.get(RESPLIT_BUNDLE)).toBe(network);
-      expect(zoneOf(scene, RESPLIT_BUNDLE)).toEqual({ ...chip, collapsed: { resources: 1 } });
-      expect(Object.hasOwn(diff.inside, RESPLIT_BUNDLE)).toBe(false);
-      expect(diff.earlier[RESPLIT_BUNDLE]).toMatchObject({ kind: 'group', parent: network, collapsed: true });
-    },
-    DEMO_L,
-  );
+    const { scene, diff } = tickDiff(input);
+    const removed = members.filter((id) => diff.removed.includes(id));
+    expect(removed).toEqual([RESPLIT_FIREWALL]);
+    // The members still there are drawn where the drawn day has them, and none is a ghost.
+    const drawn = parents(scene);
+    for (const id of members) {
+      if (id !== RESPLIT_FIREWALL) expect(drawn.has(id) && !Object.hasOwn(diff.ghosts, id), id).toBe(true);
+    }
+    // The chip comes back as it was, counting only what was removed in it.
+    expect(diff.ghosts[RESPLIT_BUNDLE]).toBe('removed');
+    expect(drawn.get(RESPLIT_BUNDLE)).toBe(network);
+    expect(zoneOf(scene, RESPLIT_BUNDLE)).toEqual({ ...chip, collapsed: { resources: 1 } });
+    expect(Object.hasOwn(diff.inside, RESPLIT_BUNDLE)).toBe(false);
+    expect(diff.earlier[RESPLIT_BUNDLE]).toMatchObject({ kind: 'group', parent: network, collapsed: true });
+  });
 });
 
 describe('what the earlier day drew only inside a chip, with the zone it lay in', () => {
@@ -625,51 +623,47 @@ describe('what the earlier day drew only inside a chip, with the zone it lay in'
   const { project: PARTNER, from: NETWORKING } = DEMO_M_MOVE;
   const NETWORK = DEMO_M_PARTNER_NETWORK;
 
-  it(
-    'comes back in that zone when the drawn day draws it open: a VM in a subnet of a demo L bundle bundled anew',
-    async () => {
-      // Demo L's everything lens at `all`, the bundle "demo-web-7 – allow-grpc-to-demo-web-2" closed by hand: the
-      // earlier day drew it as a chip, holding the subnet dmz-europe-west3 and its one VM. On 27 September the
-      // network's members are bundled anew, no bundle has that id any more, the subnet is drawn open in a new
-      // bundle, and the VM is removed.
-      const [before, after] = await bundledVmRemoved();
-      const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
-      const input = pairInput(before, after, { ...open, flips: [flipIdOf(GONE_BUNDLE)] });
-      const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
-      expect(zoneOf(earlier.scene, GONE_BUNDLE)?.collapsed).toBeDefined();
-      for (const id of [SUBNET, VM]) expect(parents(earlier.scene).has(id), id).toBe(false);
-      const bundle = parents(input.scene).get(SUBNET) ?? '';
-      expect(bundle.startsWith(BUNDLE_ID_PREFIX) && bundle !== GONE_BUNDLE, bundle).toBe(true);
-      expect(zoneOf(input.scene, bundle)?.collapsed).toBeUndefined();
-      expect(zoneOf(input.scene, SUBNET)).toMatchObject({ children: [] });
-      expect(zoneOf(input.scene, SUBNET)?.collapsed).toBeUndefined();
+  it('comes back in that zone when the drawn day draws it open: a VM in a subnet of a demo L bundle bundled anew', async () => {
+    // Demo L's everything lens at `all`, the bundle "demo-web-7 – allow-grpc-to-demo-web-2" closed by hand: the
+    // earlier day drew it as a chip, holding the subnet dmz-europe-west3 and its one VM. On 27 September the
+    // network's members are bundled anew, no bundle has that id any more, the subnet is drawn open in a new
+    // bundle, and the VM is removed.
+    const [before, after] = await bundledVmRemoved();
+    const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
+    const input = pairInput(before, after, { ...open, flips: [flipIdOf(GONE_BUNDLE)] });
+    const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
+    expect(zoneOf(earlier.scene, GONE_BUNDLE)?.collapsed).toBeDefined();
+    for (const id of [SUBNET, VM]) expect(parents(earlier.scene).has(id), id).toBe(false);
+    const bundle = parents(input.scene).get(SUBNET) ?? '';
+    expect(bundle.startsWith(BUNDLE_ID_PREFIX) && bundle !== GONE_BUNDLE, bundle).toBe(true);
+    expect(zoneOf(input.scene, bundle)?.collapsed).toBeUndefined();
+    expect(zoneOf(input.scene, SUBNET)).toMatchObject({ children: [] });
+    expect(zoneOf(input.scene, SUBNET)?.collapsed).toBeUndefined();
 
-      const { scene, diff } = tickDiff(input);
-      expect(diff.removed).toContain(VM);
-      // A ghost in the subnet, where the earlier day's view with every zone open has it, and counted by no chip.
-      expect(diff.ghosts[VM]).toBe('removed');
-      expect(SceneSchema.safeParse(scene).success).toBe(true);
-      expect(parents(scene).get(VM)).toBe(SUBNET);
-      expect(diff.inside).toEqual({});
-      // The bundle's ghost chip still counts only the firewall rule removed in it.
-      expect(zoneOf(scene, GONE_BUNDLE)?.collapsed).toEqual({ resources: 1 });
-      // It depends on the zones around it as the drawn day draws them.
-      expect(diff.earlier[SUBNET]).toEqual({
-        kind: 'subnet',
-        parent: bundle,
-        overlay: false,
-        collapsed: false,
-        empty: true,
-      });
-      expect(diff.earlier[bundle]).toMatchObject({ kind: 'group', collapsed: false, empty: false });
-      expectPlacedAmongSiblings(layoutScene(scene), VM, SUBNET);
-      // With the bundle open, the earlier day drew the VM in the subnet: the same ghost, in the same place.
-      const plain = tickDiff(pairInput(before, after, open));
-      expect(plain.diff.ghosts[VM]).toBe('removed');
-      expect(parents(plain.scene).get(VM)).toBe(SUBNET);
-    },
-    DEMO_L,
-  );
+    const { scene, diff } = tickDiff(input);
+    expect(diff.removed).toContain(VM);
+    // A ghost in the subnet, where the earlier day's view with every zone open has it, and counted by no chip.
+    expect(diff.ghosts[VM]).toBe('removed');
+    expect(SceneSchema.safeParse(scene).success).toBe(true);
+    expect(parents(scene).get(VM)).toBe(SUBNET);
+    expect(diff.inside).toEqual({});
+    // The bundle's ghost chip still counts only the firewall rule removed in it.
+    expect(zoneOf(scene, GONE_BUNDLE)?.collapsed).toEqual({ resources: 1 });
+    // It depends on the zones around it as the drawn day draws them.
+    expect(diff.earlier[SUBNET]).toEqual({
+      kind: 'subnet',
+      parent: bundle,
+      overlay: false,
+      collapsed: false,
+      empty: true,
+    });
+    expect(diff.earlier[bundle]).toMatchObject({ kind: 'group', collapsed: false, empty: false });
+    expectPlacedAmongSiblings(layoutScene(scene), VM, SUBNET);
+    // With the bundle open, the earlier day drew the VM in the subnet: the same ghost, in the same place.
+    const plain = tickDiff(pairInput(before, after, open));
+    expect(plain.diff.ghosts[VM]).toBe('removed');
+    expect(parents(plain.scene).get(VM)).toBe(SUBNET);
+  });
 
   it('comes back with its zones as the drawn day’s view draws a zone there: demo M’s network of a project moved out of its folders', async () => {
     // The networking lens with every zone open but those deeper than one asset zone: the earlier day drew Platform
@@ -1164,47 +1158,38 @@ describe('chips', () => {
     expect(backwards.inside).toEqual({ [DATA_REGION]: { added: 1, removed: 0, changed: 0 } });
   });
 
-  it(
-    'that are bundles count what changed inside them: what the bundle holds opened (demo L)',
-    async () => {
-      // Demo L's everything lens at `all` bundles the subnets of the shared production network, both days alike; on
-      // 22 September a subnet in the bundle "demo-svc-4 – demo-web-4" changed. No Graph holds a bundle: the Graph
-      // holds the subnet in its network, which is drawn open around the bundle's chip.
-      const [before, after] = await Promise.all([demoLDay('2026-09-21'), demoLDay('2026-09-22')]);
-      const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
-      const input = pairInput(before, after, { ...open, flips: [flipIdOf(BUNDLE)] });
-      expect(zoneOf(input.scene, BUNDLE)?.collapsed).toBeDefined();
-      const network = input.after.graph.containment.parent[BUNDLED_SUBNET];
-      expect(network).toBeDefined();
-      expect(zoneOf(input.scene, network ?? '')?.collapsed).toBeUndefined();
-      // What the bundle holds opened, on each day: the same view without the flip.
-      const held = (day: DemoDay): Set<string> => {
-        const { scene } = buildSceneWithReport(
-          day.graph,
-          normalizeViewSpec(open),
-          catalog,
-          env(day.snapshot),
-        );
-        const bundle = zoneOf(scene, BUNDLE);
-        if (bundle === undefined) throw new Error(`no bundle ${BUNDLE}`);
-        return new Set(parents({ ...scene, children: bundle.children }).keys());
-      };
-      const now = held(after);
-      const then = held(before);
+  it('that are bundles count what changed inside them: what the bundle holds opened (demo L)', async () => {
+    // Demo L's everything lens at `all` bundles the subnets of the shared production network, both days alike; on
+    // 22 September a subnet in the bundle "demo-svc-4 – demo-web-4" changed. No Graph holds a bundle: the Graph
+    // holds the subnet in its network, which is drawn open around the bundle's chip.
+    const [before, after] = await Promise.all([demoLDay('2026-09-21'), demoLDay('2026-09-22')]);
+    const open = { snapshot: 'demo:L', lens: 'everything', detail: 'all' } as const;
+    const input = pairInput(before, after, { ...open, flips: [flipIdOf(BUNDLE)] });
+    expect(zoneOf(input.scene, BUNDLE)?.collapsed).toBeDefined();
+    const network = input.after.graph.containment.parent[BUNDLED_SUBNET];
+    expect(network).toBeDefined();
+    expect(zoneOf(input.scene, network ?? '')?.collapsed).toBeUndefined();
+    // What the bundle holds opened, on each day: the same view without the flip.
+    const held = (day: DemoDay): Set<string> => {
+      const { scene } = buildSceneWithReport(day.graph, normalizeViewSpec(open), catalog, env(day.snapshot));
+      const bundle = zoneOf(scene, BUNDLE);
+      if (bundle === undefined) throw new Error(`no bundle ${BUNDLE}`);
+      return new Set(parents({ ...scene, children: bundle.children }).keys());
+    };
+    const now = held(after);
+    const then = held(before);
 
-      const { diff } = tickDiff(input);
-      expect(diff.changed).toContain(BUNDLED_SUBNET);
-      const expected = {
-        added: diff.added.filter((id) => now.has(id)).length,
-        removed: diff.removed.filter((id) => then.has(id)).length,
-        changed: diff.changed.filter((id) => now.has(id) || then.has(id)).length,
-      };
-      expect(expected.changed).toBeGreaterThan(0);
-      for (const id of Object.keys(diff.ghosts)) expect(now.has(id) || then.has(id), id).toBe(false);
-      expect(diff.inside).toEqual({ [BUNDLE]: expected });
-    },
-    DEMO_L,
-  );
+    const { diff } = tickDiff(input);
+    expect(diff.changed).toContain(BUNDLED_SUBNET);
+    const expected = {
+      added: diff.added.filter((id) => now.has(id)).length,
+      removed: diff.removed.filter((id) => then.has(id)).length,
+      changed: diff.changed.filter((id) => now.has(id) || then.has(id)).length,
+    };
+    expect(expected.changed).toBeGreaterThan(0);
+    for (const id of Object.keys(diff.ghosts)) expect(now.has(id) || then.has(id), id).toBe(false);
+    expect(diff.inside).toEqual({ [BUNDLE]: expected });
+  });
 
   it('opens every zone of the view, and nothing else of it, to count', () => {
     const spec = normalizeViewSpec({

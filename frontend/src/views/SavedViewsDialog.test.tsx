@@ -10,23 +10,17 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
-import { openDatabase } from '../storage/db';
 import { expectNoAxeViolations } from '../test/axe';
 import { useFreshIndexedDb } from '../test/indexedDb';
 import controls from '../ui/controls.module.css';
 import { createSavedViewStore } from './savedViewStore';
 import { inTopBar, renderControls } from './testing/controls';
 
-useFreshIndexedDb();
+// The app's database, given a test's time to open (TEST_OPEN_TIMEOUT_MS): the whole app rendered under StrictMode
+// on a loaded machine can hold the opening back past the app's own timeout, which would keep the views in memory.
+const { database } = useFreshIndexedDb();
 /** IndexedDB answers asynchronously; under a loaded test run that can take more than the default second. */
 const SLOW = { timeout: 10_000 } as const;
-
-/**
- * The app's database, given as long to open as the queries wait: the app gives up after OPEN_TIMEOUT_MS and keeps
- * the views in memory, and the whole app rendered under StrictMode on a loaded machine can hold the opening back
- * that long.
- */
-const database = (): ReturnType<typeof openDatabase> => openDatabase(SLOW.timeout);
 
 async function openDialog(): Promise<HTMLElement> {
   await userEvent.click(inTopBar().getByRole('button', { name: 'Saved views' }));
@@ -155,7 +149,7 @@ describe('saved views', () => {
     await userEvent.type(name, '{Enter}');
     await waitFor(async () => {
       expect(await app.savedViews.list()).toHaveLength(1);
-    });
+    }, SLOW);
     await within(dialog).findByText(/^Updated “Mine”\./, {}, SLOW);
   }, 30_000);
 });

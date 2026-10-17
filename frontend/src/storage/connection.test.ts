@@ -11,7 +11,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
 import { describe, expect, it, vi } from 'vitest';
 
-import { useFreshIndexedDb } from '../test/indexedDb';
+import { TEST_OPEN_TIMEOUT_MS, useFreshIndexedDb } from '../test/indexedDb';
 import { createSavedViewStore } from '../views/savedViewStore';
 import { createDatabaseConnection, databaseOf } from './connection';
 import { DB_NAME, DB_VERSION, openDatabase, type GcportraitDB } from './db';
@@ -19,9 +19,14 @@ import { createPreferenceStore } from './preferences';
 
 useFreshIndexedDb();
 
+/** The connection's opener, given a test's time to open (TEST_OPEN_TIMEOUT_MS) rather than the app's. */
+function openInTest(onClose: () => void): ReturnType<typeof openDatabase> {
+  return openDatabase(TEST_OPEN_TIMEOUT_MS, onClose);
+}
+
 describe('the page’s IndexedDB connection', () => {
   it('opens once for every caller', async () => {
-    const open = vi.fn((onClose: () => void) => openDatabase(undefined, onClose));
+    const open = vi.fn(openInTest);
     const connection = createDatabaseConnection(open);
     const [a, b] = await Promise.all([connection.database(), connection.database()]);
     expect(a).not.toBeNull();
@@ -31,7 +36,7 @@ describe('the page’s IndexedDB connection', () => {
   });
 
   it('opens again after another tab’s upgrade closed it, and every store reads through the new one', async () => {
-    const connection = createDatabaseConnection();
+    const connection = createDatabaseConnection(openInTest);
     const preferences = createPreferenceStore(connection.database);
     const views = createSavedViewStore(connection.database);
     await preferences.set('theme', 'dark');
