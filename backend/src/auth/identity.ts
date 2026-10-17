@@ -36,6 +36,7 @@ import path from 'node:path';
 
 import * as z from 'zod';
 
+import { readBody } from '../upstream/body.js';
 import { parseJson } from '../upstream/json.js';
 
 /** Where the identity came from (logged once at start-up; never the credentials themselves). */
@@ -154,26 +155,11 @@ export function checkIdentityUrl(url: string): void {
 
 /** Reads a body up to `MAX_ANSWER_BYTES`. */
 async function readCapped(response: Response): Promise<string> {
-  const reader = response.body?.getReader() as
-    | {
-        read(): Promise<{ done: true; value?: undefined } | { done: false; value: Uint8Array }>;
-        cancel(): Promise<void>;
-      }
-    | undefined;
-  if (reader === undefined) return '';
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > MAX_ANSWER_BYTES) {
-      await reader.cancel().catch(() => undefined);
+  const bytes = await readBody(response, (_bytes, total) => {
+    if (total > MAX_ANSWER_BYTES)
       throw new IdentityError('an identity endpoint answered with more than 64 KiB.');
-    }
-    chunks.push(value);
-  }
-  return Buffer.concat(chunks).toString('utf8');
+  });
+  return Buffer.from(bytes).toString('utf8');
 }
 
 interface Answer {
@@ -191,21 +177,15 @@ async function send(
   signal?: AbortSignal,
 ): Promise<Answer> {
   checkIdentityUrl(url);
-  const controller = new AbortController();
-  const timer = setTimeout(() => {
-    controller.abort();
-  }, dependencies.timeoutMs);
-  const onAbort = (): void => {
-    controller.abort();
-  };
-  signal?.addEventListener('abort', onAbort, { once: true });
+  const timeout = AbortSignal.timeout(dependencies.timeoutMs);
+  const combined = signal === undefined ? timeout : AbortSignal.any([signal, timeout]);
   try {
     const response = await dependencies.fetch(url, {
       method: init.method,
       headers: init.headers,
       ...(init.body === undefined ? {} : { body: init.body }),
       redirect: 'error',
-      signal: controller.signal,
+      signal: combined,
     });
     return { status: response.status, headers: response.headers, text: await readCapped(response) };
   } catch (error) {
@@ -213,13 +193,10 @@ async function send(
     if (signal?.aborted === true)
       throw signal.reason instanceof Error ? signal.reason : new Error('Aborted.');
     throw new IdentityError(
-      controller.signal.aborted
+      timeout.aborted
         ? `${what} did not answer within ${String(Math.round(dependencies.timeoutMs / 1000))} s.`
         : `${what} could not be reached.`,
     );
-  } finally {
-    clearTimeout(timer);
-    signal?.removeEventListener('abort', onAbort);
   }
 }
 

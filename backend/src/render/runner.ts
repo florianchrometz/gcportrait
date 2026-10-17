@@ -55,22 +55,11 @@ export interface RenderRun {
 
 export type RenderRunner = (spec: JobSpec) => RenderRun;
 
-interface Deferred<T> {
-  readonly promise: Promise<T>;
-  readonly resolve: (value: T) => void;
-  readonly reject: (error: unknown) => void;
-}
-
-function deferred<T>(): Deferred<T> {
-  let resolve: (value: T) => void = () => undefined;
-  let reject: (error: unknown) => void = () => undefined;
-  const promise = new Promise<T>((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
+function deferred<T>(): PromiseWithResolvers<T> {
+  const deferred = Promise.withResolvers<T>();
   // Nobody may be waiting yet when a job fails; the route awaits the promise later (or never, once stopped).
-  promise.catch(() => undefined);
-  return { promise, resolve, reject };
+  deferred.promise.catch(() => undefined);
+  return deferred;
 }
 
 /**
@@ -85,7 +74,7 @@ export function createRun(
   readonly receive: (output: JobOutput) => void;
   readonly fail: (error: RenderJobError) => void;
 } {
-  let ack: Deferred<undefined> | undefined;
+  let ack: PromiseWithResolvers<undefined> | undefined;
   const result = deferred<JobResult>();
   let failure: RenderJobError | undefined;
   let closed = false;

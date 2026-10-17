@@ -142,9 +142,6 @@ class PullFailure extends Error {
   }
 }
 
-/** The render ran out of time (`RENDER_TIMEOUT_MS`). */
-class RenderTimeout extends Error {}
-
 /** The upload passed `RENDER_MAX_BODY_BYTES`. */
 class UploadTooLarge extends Error {}
 
@@ -410,12 +407,8 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
       const current: { run?: RenderRun } = {};
       let outcome: string | undefined;
       let bytes = 0;
-      const controller = new AbortController();
-      const timer = setTimeout(() => {
-        controller.abort(new RenderTimeout('The render took longer than this instance allows.'));
-      }, limits.timeoutMs);
+      const timeout = AbortSignal.timeout(limits.timeoutMs);
       const life = watchResponse(reply, (ended: StreamOutcome) => {
-        clearTimeout(timer);
         current.run?.stop();
         releaseSlot();
         unlock();
@@ -435,13 +428,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
           'render ended',
         );
       });
-      life.signal.addEventListener(
-        'abort',
-        () => {
-          controller.abort(life.signal.reason);
-        },
-        { once: true },
-      );
+      const signal = AbortSignal.any([life.signal, timeout]);
       const fail = (failure: RenderFailure): FastifyReply => {
         outcome = failure.code;
         return refuse(failure);
@@ -483,7 +470,6 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
       };
       const job = options.runner(spec);
       current.run = job;
-      const { signal } = controller;
       let result: JobResult;
       try {
         if (source.kind === 'scope' && credentials !== undefined) {
@@ -533,11 +519,12 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
             code: 'BODY_TOO_LARGE',
             message: 'The upload is larger than this instance accepts (RENDER_MAX_BODY_BYTES).',
           });
-        if (error instanceof RenderTimeout)
+        if (timeout.aborted && error === timeout.reason)
           return fail({
             status: 503,
             code: 'RENDER_TIMEOUT',
-            message: `${error.message} Narrow the data or the view, or ask for an SVG.`,
+            message:
+              'The render took longer than this instance allows. Narrow the data or the view, or ask for an SVG.',
             retryable: false,
           });
         if (error instanceof PullFailure) {
@@ -556,7 +543,6 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         if (error instanceof UploadUnreadable) return fail(unreadable(error));
         throw error;
       }
-      clearTimeout(timer);
       outcome = 'finished';
       bytes = result.bytes.byteLength;
       return sendPieces(reply, life, () => [result.bytes], {

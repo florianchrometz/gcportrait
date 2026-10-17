@@ -9,6 +9,7 @@
  * the quota project) go to `fetch` and nowhere else.
  */
 import { allowedUpstreamUrl } from './allowlist.js';
+import { readBody, readerOf, type ByteReader } from './body.js';
 import {
   DEFAULT_RETRY_POLICY,
   backoffDelay,
@@ -184,18 +185,6 @@ function tooLarge(maxBytes: number): UpstreamExchangeError {
   return new UpstreamExchangeError('too-large', `Google's answer is larger than ${limit}.`);
 }
 
-/** A body reader, typed: Node's `Response.body` is a stream of `any`. */
-interface ByteReader {
-  read(): Promise<
-    { readonly done: true; readonly value?: undefined } | { readonly done: false; readonly value: Uint8Array }
-  >;
-  cancel(): Promise<void>;
-}
-
-function readerOf(response: Response): ByteReader | undefined {
-  return response.body?.getReader() as ByteReader | undefined;
-}
-
 /**
  * Reads a body in full, stopping (and cancelling the transfer) once it exceeds `maxBytes`, or once `claim` cannot
  * hold the next chunk.
@@ -206,32 +195,10 @@ async function readCapped(response: Response, maxBytes: number, claim?: ByteClai
     await response.body?.cancel().catch(() => undefined);
     throw tooLarge(maxBytes);
   }
-  const reader = readerOf(response);
-  if (reader === undefined) return new Uint8Array(0);
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > maxBytes) {
-      await reader.cancel().catch(() => undefined);
-      throw tooLarge(maxBytes);
-    }
-    if (claim !== undefined && !claim.take(value.byteLength)) {
-      await reader.cancel().catch(() => undefined);
-      throw busy();
-    }
-    chunks.push(value);
-  }
-  if (chunks.length === 1 && chunks[0] !== undefined) return chunks[0];
-  const body = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    body.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return body;
+  return readBody(response, (bytes, total) => {
+    if (total > maxBytes) throw tooLarge(maxBytes);
+    if (claim !== undefined && !claim.take(bytes)) throw busy();
+  });
 }
 
 /**

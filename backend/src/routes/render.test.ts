@@ -849,7 +849,57 @@ describe('POST /api/render: refusals', () => {
     const { server: app, lock } = await start({ runner: hangingRunner, limits: { timeoutMs: 50 } });
     const response = await post(app, { source: { kind: 'demo', size: 'S' } });
     expect(response.statusCode).toBe(503);
-    expect(errorOf(response.body)).toMatchObject({ code: 'RENDER_TIMEOUT' });
+    expect(errorOf(response.body)).toMatchObject({
+      code: 'RENDER_TIMEOUT',
+      message:
+        'The render took longer than this instance allows. Narrow the data or the view, or ask for an SVG.',
+    });
+    expect(lock.size).toBe(0);
+  });
+
+  it('does not classify an unrelated TimeoutError as the render deadline', async () => {
+    const stop = vi.fn();
+    const { server: app, lock } = await start({
+      runner: () => ({
+        push: () => Promise.resolve(),
+        end: () => Promise.reject(new DOMException('Different timeout.', 'TimeoutError')),
+        stop,
+        assets: 0,
+      }),
+    });
+    const response = await post(app, { source: { kind: 'demo', size: 'S' } });
+    expect(response.statusCode).toBe(500);
+    expect(errorOf(response.body)).toMatchObject({ code: 'INTERNAL' });
+    expect(stop).toHaveBeenCalled();
+    expect(lock.size).toBe(0);
+  });
+
+  it('keeps a disconnected render client-gone after its deadline passes', async () => {
+    const started = Promise.withResolvers<undefined>();
+    const stop = vi.fn();
+    const {
+      server: app,
+      lock,
+      logs,
+    } = await start({
+      limits: { timeoutMs: 250 },
+      runner: () => {
+        started.resolve(undefined);
+        return { push: () => Promise.resolve(), end: () => new Promise(() => undefined), stop, assets: 0 };
+      },
+    });
+    const client = httpRequest(await listening(app), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...OWN },
+    });
+    client.on('error', () => undefined);
+    client.end(JSON.stringify({ source: { kind: 'demo', size: 'S' } }));
+    await started.promise;
+    client.destroy();
+    await expect.poll(() => outcomesOf(logs())).toEqual(['client-gone']);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(outcomesOf(logs())).toEqual(['client-gone']);
+    expect(stop).toHaveBeenCalled();
     expect(lock.size).toBe(0);
   });
 

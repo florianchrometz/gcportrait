@@ -114,7 +114,7 @@ export function createRenderJob(
       case 'bundle': {
         let text: string;
         try {
-          text = new TextDecoder('utf-8', { fatal: true }).decode(concat(chunks));
+          text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
         } catch {
           throw new SnapshotInputError('INVALID_FILE', 'The file is not UTF-8 text.');
         }
@@ -187,14 +187,4 @@ export function createRenderJob(
       finish(errorOf(error));
     }
   };
-}
-
-function concat(chunks: readonly Uint8Array[]): Uint8Array {
-  const bytes = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0));
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return bytes;
 }

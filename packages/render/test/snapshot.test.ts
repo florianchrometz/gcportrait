@@ -113,6 +113,15 @@ describe('NDJSON, read by the app’s import handler', () => {
 });
 
 describe('bundles and limits', () => {
+  it('handles cancellation before end is awaited and preserves the refusal on later calls', async () => {
+    const reader = createSnapshotReader({ kind: 'export', scope: null, detail: 'x', maxAssets: 10 });
+    reader.cancel();
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    const first = await failure(reader.end());
+    expect(first.code).toBe('CANCELLED');
+    expect(await failure(reader.end())).toBe(first);
+  });
+
   it('reads a bundle’s snapshot, and refuses what is not one, with the app’s messages', async () => {
     const demo = await snapshotFromDemo('S');
     const text = JSON.stringify({

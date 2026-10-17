@@ -149,12 +149,7 @@ export function createSnapshotReader(settings: NdjsonSettings): SnapshotReader {
   let failure: SnapshotInputError | undefined;
   let result: Promise<Snapshot> | undefined;
   let first = true;
-  let resolveEnd: (snapshot: Snapshot) => void = () => undefined;
-  let rejectEnd: (error: unknown) => void = () => undefined;
-  const ended = new Promise<Snapshot>((resolve, reject) => {
-    resolveEnd = resolve;
-    rejectEnd = reject;
-  });
+  const { promise: ended, resolve: resolveEnd, reject: rejectEnd } = Promise.withResolvers<Snapshot>();
   // A rejection nobody awaits yet (a failure before `end`) must not surface as unhandled.
   ended.catch(() => undefined);
 

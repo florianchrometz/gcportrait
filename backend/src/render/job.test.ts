@@ -6,13 +6,14 @@
  * and privacy, principle 6).
  */
 import { RenderOptionsSchema, type RenderOptionsInput } from '@gcportrait/model';
+import { snapshotFromDemo } from '@gcportrait/render';
 import { describe, expect, it } from 'vitest';
 
 import { syntheticAsset } from '../stream/google.testing.js';
 import { inProcessRunner } from './in-process.js';
 import { createRenderJob } from './job.js';
 import type { JobOutput, JobSource, JobSpec } from './protocol.js';
-import { RenderJobError } from './runner.js';
+import { createRun, RenderJobError } from './runner.js';
 
 const spec = (
   source: JobSource,
@@ -55,6 +56,45 @@ async function drive(job: JobSpec, chunks: readonly Uint8Array[]): Promise<JobOu
 }
 
 describe('the render job', () => {
+  it('decodes a bundle with a multibyte character split between chunks', async () => {
+    const snapshot = await snapshotFromDemo('S');
+    const bytes = encoder.encode(
+      JSON.stringify({
+        format: 'gcportrait.snapshot',
+        version: 1,
+        exportedAt: '2026-10-08T00:00:00Z',
+        generator: 'gcportrait',
+        snapshot,
+        note: 'é',
+      }),
+    );
+    const split = bytes.indexOf(0xc3) + 1;
+    expect(split).toBeGreaterThan(0);
+    const posted = await drive(spec({ kind: 'bundle' }, { format: 'svg' }), [
+      bytes.subarray(0, split),
+      bytes.subarray(split),
+    ]);
+    expect(posted.at(-1)).toMatchObject({ type: 'result', result: { assets: snapshot.assets.length } });
+  });
+
+  it('handles a channel failure before anybody awaits a result or pending acknowledgement', async () => {
+    let closes = 0;
+    const channel = createRun(
+      () => undefined,
+      () => {
+        closes += 1;
+      },
+    );
+    const pending = channel.run.push(new Uint8Array([1]));
+    const error = new RenderJobError('INTERNAL', 'Worker failed.');
+    channel.fail(error);
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    await expect(pending).rejects.toBe(error);
+    await expect(channel.run.end()).rejects.toBe(error);
+    channel.fail(error);
+    expect(closes).toBe(1);
+  });
+
   it('reports impossible PNG geometry as a refused view rather than an internal failure', async () => {
     const posted = await drive({ ...spec({ kind: 'demo', size: 'S' }, {}), maxPixels: 1 }, []);
     expect(posted.at(-1)).toMatchObject({

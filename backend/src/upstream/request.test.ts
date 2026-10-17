@@ -205,6 +205,53 @@ describe('requestJson retries', () => {
 });
 
 describe('the byte cap', () => {
+  it('keeps a single chunk without copying and accepts an absent body', async () => {
+    const chunk = new Uint8Array([0x61, 0x62]);
+    const { fetch } = scripted([
+      () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              controller.enqueue(chunk);
+              controller.close();
+            },
+          }),
+        ),
+      () => new Response(null, { status: 204 }),
+    ]);
+    const client = createUpstreamClient({ fetch });
+    expect((await requestJson(client, LIST, { signal: never, maxBytes: 2 })).body).toBe(chunk);
+    expect((await requestJson(client, LIST, { signal: never, maxBytes: 2 })).body.byteLength).toBe(0);
+  });
+
+  it('cancels before claiming an oversized chunk and releases the earlier claim', async () => {
+    const cancel = vi.fn(() => Promise.reject(new Error('cancel failed')));
+    const take = vi.fn(() => true);
+    const release = vi.fn();
+    const { fetch } = scripted([
+      () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              controller.enqueue(new Uint8Array(2));
+              controller.enqueue(new Uint8Array(2));
+            },
+            cancel,
+          }),
+        ),
+    ]);
+    await expect(
+      requestJson(createUpstreamClient({ fetch }), LIST, {
+        signal: never,
+        maxBytes: 3,
+        claim: () => ({ take, release }),
+      }),
+    ).rejects.toMatchObject({ kind: 'too-large', attempts: 1 });
+    expect(take).toHaveBeenCalledExactlyOnceWith(2);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(release).toHaveBeenCalledOnce();
+  });
+
   it('refuses a declared body over the cap without reading it, and does not retry', async () => {
     const { fetch, calls } = scripted([
       () => new Response('x'.repeat(10), { status: 200, headers: { 'content-length': '2000' } }),

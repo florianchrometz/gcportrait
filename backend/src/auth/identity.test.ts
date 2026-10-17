@@ -147,6 +147,76 @@ function impersonation(
 }
 
 describe('the metadata server (Cloud Run)', () => {
+  it.each(['timeout', 'transport'] as const)(
+    'classifies a token request %s without leaking its error',
+    async (kind) => {
+      const base = options(metadataServer()).options;
+      const fetch: IdentityFetch = (url, init) => {
+        if (url.endsWith('/email')) return Promise.resolve(text(200, ACCOUNT, FLAVOR));
+        if (kind === 'transport') return Promise.reject(new Error('private credential detail'));
+        return new Promise((_resolve, reject) => {
+          init.signal?.addEventListener(
+            'abort',
+            () => {
+              reject(init.signal?.reason instanceof Error ? init.signal.reason : new Error('Aborted.'));
+            },
+            { once: true },
+          );
+        });
+      };
+      await expect(resolveServiceAccountIdentity({ ...base, fetch, timeoutMs: 20 })).rejects.toMatchObject({
+        name: 'IdentityError',
+        message: `no token could be minted for ${ACCOUNT}: ${kind === 'timeout' ? 'The metadata server did not answer within 0 s.' : 'The metadata server could not be reached.'}`,
+      });
+    },
+  );
+
+  it('accepts exactly 64 KiB despite an oversized declared length and preserves split lenient UTF-8', async () => {
+    const encoder = new TextEncoder();
+    const prefix = encoder.encode(`{"access_token":"${ACCOUNT_TOKEN}","ignored":"é`);
+    const suffix = encoder.encode('"}');
+    const padding = new Uint8Array(64 * 1024 - prefix.length - suffix.length - 1).fill(0x20);
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(prefix.subarray(0, prefix.length - 1));
+        controller.enqueue(prefix.subarray(prefix.length - 1));
+        controller.enqueue(new Uint8Array([0xff]));
+        controller.enqueue(padding);
+        controller.enqueue(suffix);
+        controller.close();
+      },
+    });
+    const { options: resolveOptions } = options(
+      metadataServer(
+        () =>
+          new Response(body, {
+            headers: { ...FLAVOR, 'content-length': String(128 * 1024) },
+          }),
+      ),
+    );
+    const identity = await resolveServiceAccountIdentity(resolveOptions);
+    expect(await identity.accessToken(signal())).toBe(ACCOUNT_TOKEN);
+  });
+
+  it('cancels an oversized token body and preserves the cap error if cancellation rejects', async () => {
+    const cancel = vi.fn(() => Promise.reject(new Error('cancel failed')));
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(64 * 1024));
+        controller.enqueue(new Uint8Array(1));
+      },
+      cancel,
+    });
+    const { options: resolveOptions } = options(
+      metadataServer(() => new Response(body, { headers: FLAVOR })),
+    );
+    await expect(resolveServiceAccountIdentity(resolveOptions)).rejects.toMatchObject({
+      name: 'IdentityError',
+      message: `no token could be minted for ${ACCOUNT}: an identity endpoint answered with more than 64 KiB.`,
+    });
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
   it('without a credentials file, reads the default account and mints its token at start-up', async () => {
     const { options: resolveOptions, calls } = options(metadataServer());
     const identity = await resolveServiceAccountIdentity(resolveOptions);
@@ -537,8 +607,9 @@ describe('the token cache', () => {
     const leaving = new AbortController();
     const first = tokens(leaving.signal);
     const second = tokens(signal());
-    leaving.abort(new Error('client gone'));
-    await expect(first).rejects.toThrow('client gone');
+    const reason = new Error('client gone');
+    leaving.abort(reason);
+    await expect(first).rejects.toBe(reason);
     release({ token: 'token-1', lifetimeMs: 3600_000 });
     expect(await second).toBe('token-1');
   });
