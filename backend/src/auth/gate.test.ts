@@ -201,7 +201,7 @@ describe('denied', () => {
       },
     );
 
-  it('a transport failure on step 1 is transient (503), and closed', async () => {
+  it('a transport failure in the caller check is transient (503), and closed', async () => {
     const { identity, check } = setup({
       testIam: () => {
         throw new TypeError('fetch failed');

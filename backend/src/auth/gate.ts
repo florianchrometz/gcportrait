@@ -4,17 +4,18 @@
  * Before the backend reads a scope with its own identity, it proves, with the same parsed scope in every call, that
  * the *caller* may see that scope:
  *
- * 1. **Caller check** (always). Resource Manager v3 `testIamPermissions` on the scope with the caller's own token,
+ * - **`caller`** (always). Resource Manager v3 `testIamPermissions` on the scope with the caller's own token,
  *    asking for `resourcemanager.{organizations,folders,projects}.get`: the permission must be in the returned set.
  *    A 200 without it (Google answers `{}` for a scope the caller may not see, and for one that does not exist) is
  *    a denial; every other answer refuses too (fail closed). The caller's own `GET` of the scope is not asked: the
  *    gate wants the permission itself, not a document that happened to be readable.
- * 2. **The account's token** from Application Default Credentials (./identity.ts).
- * 3. **Exposure check** (only with `SA_MODE_STRICT_EXPOSURE=true`). `GET /v3/{scope}` with the account's token must
+ * - **`credentials`**: the account's token from Application Default Credentials (./identity.ts).
+ * - **`exposure`** (only with `SA_MODE_STRICT_EXPOSURE=true`). `GET /v3/{scope}` with the account's token must
  *    answer exactly Resource Manager's IAM denial of that `get` ({@link isExactGetDenial}). A 200 means the scope's
- *    `get` is public, or the account holds more than `roles/cloudasset.viewer` there; with either, step 1 cannot
- *    tell a member from anyone, so strict mode refuses. Off by default, because it also refuses service-account
- *    mode wherever a customer granted the account more than `roles/cloudasset.viewer` (a Viewer grant, say).
+ *    `get` is public, or the account holds more than `roles/cloudasset.viewer` there. Public `get` lets anyone
+ *    signed in pass the caller check; the account's 200 cannot distinguish that from an account-specific grant,
+ *    so strict mode refuses both. Off by default, because it also refuses service-account mode wherever a
+ *    customer granted the account more than `roles/cloudasset.viewer` (a Viewer grant, say).
  *
  * Only then may the account's own CAI call run. The gate cannot be configured away: `SA_MODE_ENABLED` switches
  * service-account mode off as a whole, never the gate, and every route that takes `mode: "sa"` calls
@@ -91,13 +92,13 @@ export type GateStep = 'caller' | 'credentials' | 'exposure';
 /**
  * What a step came to:
  * - `ok`: passed;
- * - `denied`: the caller does not hold the scope's `get` permission (step 1);
- * - `exposed`: the account can `get` the scope itself (step 3, strict mode);
+ * - `denied`: the caller does not hold the scope's `get` permission (`caller`);
+ * - `exposed`: the account can `get` the scope itself (`exposure`, strict mode);
  * - `unauthenticated`: Google did not accept the caller's token at all;
  * - `sign-in`: the caller's token lacks the OAuth scope Resource Manager needs;
  * - `transient`: 429, 5xx or no answer after the retries;
  * - `unexpected`: an answer the gate does not understand (it fails closed);
- * - `no-credentials`: the instance could not get its own account's token (step 2).
+ * - `no-credentials`: the instance could not get its own account's token (`credentials`).
  */
 export type GateFinding =
   'ok' | 'denied' | 'exposed' | 'unauthenticated' | 'sign-in' | 'transient' | 'unexpected' | 'no-credentials';
@@ -161,7 +162,7 @@ export interface GateRequest {
 
 export interface ServiceAccountGateOptions {
   readonly identity: ServiceAccountIdentity;
-  /** `SA_MODE_STRICT_EXPOSURE`: run step 3. */
+  /** `SA_MODE_STRICT_EXPOSURE`: run the `exposure` check. */
   readonly strictExposure: boolean;
   /** How long a pass is remembered; clamped to {@link GATE_MEMO_MAX_MS}. */
   readonly memoMs?: number;
@@ -231,7 +232,7 @@ export function auditLoggerOf(log: FastifyBaseLogger): FastifyBaseLogger {
 /** The pino levels that would drop an `info` line; `silent` is not among them on purpose. */
 const QUIETER_THAN_INFO: ReadonlySet<string> = new Set(['warn', 'error', 'fatal']);
 
-/** Resource Manager v3 `testIamPermissions` on the scope with one permission (step 1). Never a quota header. */
+/** Resource Manager v3 `testIamPermissions` on the scope with one permission (`caller`). Never a quota header. */
 export function testScopePermission(
   context: GoogleCallContext,
   scope: ParsedScope,
@@ -248,7 +249,7 @@ export function testScopePermission(
   });
 }
 
-/** Step 1's answer, as a finding: only a 200 whose `permissions` hold exactly the permission asked for passes. */
+/** The `caller` answer, as a finding: only a 200 whose `permissions` contain the permission asked for passes. */
 export function classifyCallerCheck(outcome: GoogleOutcome, permission: string): GateFinding {
   if (outcome.kind === 'answer' && outcome.httpStatus === 200) {
     if (!isRecord(outcome.body)) return 'unexpected';
@@ -269,7 +270,7 @@ export function classifyCallerCheck(outcome: GoogleOutcome, permission: string):
   return 'unexpected';
 }
 
-/** Step 3's answer, as a finding: the exact denial passes; a 200 means the scope is exposed. */
+/** The `exposure` answer, as a finding: the exact denial passes; a 200 is classified as exposed. */
 export function classifyExposureCheck(outcome: GoogleOutcome, scope: ParsedScope): GateFinding {
   if (isExactGetDenial(outcome, scope)) return 'ok';
   if (outcome.kind === 'answer' && outcome.httpStatus === 200) return 'exposed';
@@ -401,7 +402,7 @@ export class ServiceAccountGate {
       return { allowed: true, cached: true, token, caller, steps: [] };
     }
 
-    // Step 1, with tokeninfo next to it for the audit line's email hash and the memo's lifetime.
+    // The caller check, with tokeninfo next to it for the audit line's email hash and the memo's lifetime.
     const permission = getPermissionOf(scope);
     const [facts, tested] = await Promise.all([
       tokenFacts(context, callerToken),
@@ -419,7 +420,7 @@ export class ServiceAccountGate {
     if (callerFinding !== 'ok')
       return this.#refuse(request, key, caller, steps, 'caller', callerFinding, false);
 
-    // Step 2: the account's own token. Nothing has been asked as the account before this point.
+    // Credentials: the account's own token. Nothing has been asked as the account before this point.
     const token = await this.#accountToken(context);
     if (token === null) {
       steps.push({ step: 'credentials', finding: 'no-credentials' });
@@ -427,7 +428,7 @@ export class ServiceAccountGate {
     }
     steps.push({ step: 'credentials', finding: 'ok' });
 
-    // Step 3 (strict mode only): the account must not be able to read the scope's details itself.
+    // Exposure (strict mode only): the account must not be able to read the scope's details itself.
     if (this.strictExposure) {
       const exposed = await getScope(context, scope, token);
       const exposureFinding = classifyExposureCheck(exposed, scope);
@@ -461,10 +462,10 @@ export class ServiceAccountGate {
   }
 
   /**
-   * A refusal. A refusal about the caller or the scope (step 1 or 3) also forgets any pass remembered for this
-   * token and scope: a check that now says "refused" (the preflight checks afresh) must not leave an earlier pass
-   * open for the next pull. The account's own token being unavailable (step 2) says nothing about the caller, so
-   * a pass stays.
+   * A refusal. A refusal about the caller or the scope (`caller` or `exposure`) also forgets any pass remembered
+   * for this token and scope: a check that now says "refused" (the preflight checks afresh) must not leave an
+   * earlier pass open for the next pull. The account's own token being unavailable (`credentials`) says nothing
+   * about the caller, so a pass stays.
    */
   #refuse(
     request: GateRequest,

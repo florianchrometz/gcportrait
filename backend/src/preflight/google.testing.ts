@@ -272,7 +272,7 @@ export interface GateAnswer {
 }
 
 /**
- * Every answer to the caller's `testIamPermissions` (gate step 1) that keeps the gate closed: the gate's own tests,
+ * Every answer to the caller's `testIamPermissions` (`caller`) that keeps the gate closed: the gate's own tests,
  * the preflight's checklist and the routes over HTTP each run them (as synthetic cases).
  */
 export const CALLER_REFUSALS: readonly GateAnswer[] = [
@@ -411,7 +411,7 @@ const exposure = (
 });
 
 /**
- * Every answer to the account's own `get` of the scope (gate step 2 with SA_MODE_STRICT_EXPOSURE) that keeps the
+ * Every answer to the account's own `get` of the scope (`exposure` with SA_MODE_STRICT_EXPOSURE) that keeps the
  * gate closed: only Resource Manager's exact IAM denial of the scope's `get` opens it.
  */
 export const EXPOSURE_REFUSALS: readonly GateAnswer[] = [

@@ -110,7 +110,7 @@ export function projectIdOf(outcome: GoogleOutcome): string | undefined {
   return parsed.success ? parsed.data : undefined;
 }
 
-/** A Resource Manager `get` of the scope (user step 1, gate step 1), as a finding. */
+/** A Resource Manager `get` of the scope in user-mode preflight, as a finding; the gate has its own classifiers. */
 export function classifyGet(outcome: GoogleOutcome): Finding {
   if (outcome.kind === 'answer' && outcome.httpStatus === 200) return 'ok';
   if (

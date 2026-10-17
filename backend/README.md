@@ -211,8 +211,8 @@ Quota project and the permission check, and The service-account gate), in `src/p
 | user | `scope-details` (a warning, not blocking) | Resource Manager `GET {scope}` | the `roles/browser` binding |
 | user | `quota-project` | CAI `assets.list` `pageSize: 1` with `x-goog-user-project`: the scope itself (a project), then the picked project; `candidates` says why each failed | `gcloud services enable …` and the `serviceUsageConsumer` binding |
 | user | `cai-access` | the same probe: a 403 without `ErrorInfo` once a quota project works | the `roles/cloudasset.viewer` binding for the scope's kind |
-| sa | `sa-caller` (gate step 1) | Resource Manager `testIamPermissions` on the scope with the caller's token: the scope's `get` permission returned | the `roles/browser` binding for the caller |
-| sa | `sa-exposure` (gate step 2; only with `SA_MODE_STRICT_EXPOSURE=true`, otherwise the item is left out) | `GET {scope}` with the account's token: exactly Resource Manager's IAM denial | none: a 200 (`exposed`) refuses the mode |
+| sa | `sa-caller` (the gate's `caller` check) | Resource Manager `testIamPermissions` on the scope with the caller's token: the scope's `get` permission returned | the `roles/browser` binding for the caller |
+| sa | `sa-exposure` (the gate's `exposure` check; only with `SA_MODE_STRICT_EXPOSURE=true`, otherwise the item is left out) | `GET {scope}` with the account's token: exactly Resource Manager's IAM denial | none: a 200 (`exposed`) refuses the mode |
 | sa | `sa-access` | the account's own probe, without a quota header, only after the gate passed | the binding for `serviceAccount:BACKEND_SA_EMAIL` |
 
 Each item's `status` is `ok`, `missing` or `unknown`, with a `finding` the Permissions page words (`denied`,
@@ -354,17 +354,17 @@ supported, and the module needs no dependency.
 config, and asked by every route that takes `mode: "sa"` (`/api/preflight`, `/api/assets/stream`) before each
 CAI call as the account, each page of a stream included:
 
-1. the caller's own Resource Manager v3 `testIamPermissions` on the scope, for
+- **`caller`**: the caller's own Resource Manager v3 `testIamPermissions` on the scope, for
    `resourcemanager.{organizations,folders,projects}.get` of its kind, next to tokeninfo; it passes only when
    the returned set holds that permission (`{}`, Google's answer for a scope the caller may not see or that
    does not exist, is a denial; any other answer refuses, fail closed). Nothing is asked as the account before
    it passes;
-2. the account's token from the identity;
-3. with `SA_MODE_STRICT_EXPOSURE=true` only: the account's own `GET` of the scope must be exactly Resource
-   Manager's IAM denial (a 200, a public `get` or more than `roles/cloudasset.viewer`, refuses). Off by
-   default, because it refuses every scope where a customer granted the account more than
-   `roles/cloudasset.viewer`; with it off, a scope whose `get` is public passes step 1 for everyone signed in
-   (docs/permissions.md says so).
+- **`credentials`**: the account's token from the identity;
+- **`exposure`**, with `SA_MODE_STRICT_EXPOSURE=true` only: the account's own `GET` of the scope must be
+   exactly Resource Manager's IAM denial (a 200, a public `get` or more than `roles/cloudasset.viewer`,
+   refuses). Off by default, because it refuses every scope where a customer granted the account more than
+   `roles/cloudasset.viewer`; with it off, a scope whose `get` is public passes the caller check for everyone
+   signed in (docs/permissions.md says so).
 
 A pass is remembered in memory for at most five minutes, keyed by the SHA-256 of the caller's token and the
 scope, never past the token's own expiry (tokeninfo's `expires_in`), never a refusal (a refusal at the caller

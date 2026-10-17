@@ -201,7 +201,7 @@ export async function callGoogle(context: GoogleCallContext, call: GoogleCall): 
   }
 }
 
-/** Resource Manager `GET /v3/{scope}` (preflight step 1, gate steps 1 and 2). */
+/** Resource Manager `GET /v3/{scope}` (user-mode scope details and the gate's `exposure` check). */
 export function getScope(
   context: GoogleCallContext,
   scope: ParsedScope,

@@ -563,7 +563,7 @@ describe('every call', () => {
   });
 });
 
-describe('service-account mode, row "caller still needs resourcemanager.*.get on the scope (gate step 1)"', () => {
+describe('service-account mode, row "caller still needs resourcemanager.*.get on the scope (caller check)"', () => {
   it('ok: the caller’s testIamPermissions opens the gate, and the account probes without a quota header', async () => {
     const identity = fakeAccount();
     const { google, result } = await run({}, { mode: 'sa' }, lenient(identity));
@@ -666,7 +666,7 @@ describe('service-account mode, row "caller still needs resourcemanager.*.get on
     ]);
   });
 
-  it('401 on step 1, or tokeninfo calling the token invalid: unauthenticated', async () => {
+  it('401 in the caller check, or tokeninfo calling the token invalid: unauthenticated', async () => {
     expect(
       (await run({ testIam: always(answers.unauthenticated) }, { mode: 'sa' }, lenient())).result,
     ).toEqual({ kind: 'unauthenticated' });
@@ -676,7 +676,7 @@ describe('service-account mode, row "caller still needs resourcemanager.*.get on
   });
 });
 
-describe('service-account mode, gate step 2 with SA_MODE_STRICT_EXPOSURE (the account must not get the scope)', () => {
+describe('service-account mode, exposure check with SA_MODE_STRICT_EXPOSURE (the account must not get the scope)', () => {
   it.each(EXPOSURE_REFUSALS)('$label keeps the gate closed: no CAI call is made', async (row) => {
     const { google, result } = await run({ get: accountGetAnswer(row) }, { mode: 'sa' }, strict());
     if (result.kind !== 'checklist') throw new Error('expected a checklist');

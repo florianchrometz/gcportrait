@@ -42,8 +42,9 @@ export const ITEM_STATUSES = ['ok', 'missing', 'unknown'] as const;
  * The checklist rows (docs/permissions.md):
  * - user mode: `scope-details` (`resourcemanager.*.get`, a warning only), `quota-project` (the API enabled and
  *   `serviceusage.services.use` on it), `cai-access` (`roles/cloudasset.viewer` on the scope);
- * - service-account mode: `sa-caller` (gate step 1: the caller's own `get`), `sa-exposure` (gate step 2: the
- *   account must not be able to `get` the scope), `sa-access` (the account's own `roles/cloudasset.viewer`).
+ * - service-account mode: `sa-caller` (the gate's `caller` check: `testIamPermissions` must return the scope's
+ *   `get` permission), `sa-exposure` (the optional `exposure` check: the account's `get` must be an exact IAM
+ *   denial), `sa-access` (the account's own `roles/cloudasset.viewer`).
  */
 export const PREFLIGHT_ITEM_IDS = [
   'scope-details',
