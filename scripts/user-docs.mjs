@@ -622,6 +622,27 @@ export function configurationProblems(root, help) {
   return problems;
 }
 
+/** @param {string[]} lines */
+function* fencedLines(lines) {
+  /** @type {{ marker: string, language: string } | null} */
+  let fence = null;
+  for (const [index, line] of lines.entries()) {
+    const match = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    const marker = match?.[1];
+    const info = match?.[2] ?? '';
+    if (fence !== null) {
+      const boundary = marker !== undefined && marker.startsWith(fence.marker) && /^[ \t]*$/.test(info);
+      yield { line, index, language: fence.language, boundary };
+      if (boundary) fence = null;
+    } else if (marker !== undefined && (marker[0] !== '`' || !info.includes('`'))) {
+      fence = { marker, language: info.trim().split(/\s+/)[0] ?? '' };
+      yield { line, index, language: fence.language, boundary: true };
+    } else {
+      yield { line, index, language: null, boundary: false };
+    }
+  }
+}
+
 /**
  * The commands in a Markdown document's code: the lines of `sh`/`bash`/plain fenced blocks (continuations
  * joined, `$ ` prompts and comments removed), the `$ ` lines of `text` blocks (with their continuations), and inline
@@ -643,23 +664,18 @@ export function commandsIn(markdown) {
       if (command !== '') commands.push(command);
     }
   };
-  const lines = markdown.split('\n');
-  /** @type {string | null} */
-  let fence = null;
   let pending = '';
-  for (const raw of lines) {
-    const fenceLine = /^\s*```(\w*)/.exec(raw);
-    if (fenceLine !== null) {
-      fence = fence === null ? (fenceLine[1] ?? '') : null;
+  for (const { line: raw, language, boundary } of fencedLines(markdown.split(/\r?\n/))) {
+    if (boundary) {
       pending = '';
       continue;
     }
-    if (fence !== null) {
+    if (language !== null) {
       let line = raw.trimEnd();
-      if (fence === 'text') {
+      if (language === 'text') {
         // A prompt line, or the continuation of one that ended in a backslash.
         if (pending === '' && !line.startsWith('$ ')) continue;
-      } else if (!['', 'sh', 'bash', 'shell', 'console'].includes(fence)) {
+      } else if (!['', 'sh', 'bash', 'shell', 'console'].includes(language)) {
         continue;
       }
       line = line.replace(/^\s*\$ /, '').replace(/(^|\s)#.*$/, '');
@@ -741,8 +757,6 @@ export function commandProblem(command, tree) {
 export function codeIn(markdown) {
   /** @type {string[]} */
   const code = [];
-  /** @type {string | null} */
-  let fence = null;
   /** @type {string[]} */
   let paragraph = [];
   const flush = () => {
@@ -754,12 +768,10 @@ export function codeIn(markdown) {
       code.push((match[2] ?? '').replace(/\n/g, ' ').replace(/^ ([\s\S]*\S[\s\S]*) $/, '$1'));
     }
   };
-  for (const line of markdown.split('\n')) {
-    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
-    if (marker !== undefined && (fence === null || marker.startsWith(fence))) {
-      if (fence === null) flush();
-      fence = fence === null ? marker : null;
-    } else if (fence !== null) {
+  for (const { line, language, boundary } of fencedLines(markdown.split(/\r?\n/))) {
+    if (boundary) {
+      flush();
+    } else if (language !== null) {
       code.push(line);
     } else if (line.trim() === '') {
       flush();
@@ -849,25 +861,21 @@ function variableDocs(root) {
 export function verificationLogLines(markdown) {
   /** @type {string[]} */
   const problems = [];
-  let fenced = false;
-  markdown.split('\n').forEach((line, index) => {
-    if (/^\s*(```|~~~)/.test(line)) {
-      fenced = !fenced;
-      return;
-    }
+  for (const { line, index, language, boundary } of fencedLines(markdown.split(/\r?\n/))) {
+    if (boundary) continue;
     const quoted = line.trim().slice(0, 60);
-    if (fenced) {
+    if (language !== null) {
       if (PROMPT.test(line))
         problems.push(
           `line ${String(index + 1)} records a run ("${quoted}"): show the command without a prompt and its output; a guide keeps no record of runs`,
         );
-      return;
+      continue;
     }
     if (VERIFICATION_LOG.some((pattern) => pattern.test(line)))
       problems.push(
         `line ${String(index + 1)} logs a verification ("${quoted}"): a guide says what to do, not when or where it was checked`,
       );
-  });
+  }
   return problems;
 }
 
@@ -1009,20 +1017,13 @@ export function overlongLines(markdown) {
   const frontmatterEnd = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
   /** @type {Array<{ line: number, columns: number }>} */
   const found = [];
-  /** @type {string | null} */
-  let fence = null;
-  lines.forEach((line, index) => {
-    if (index <= frontmatterEnd) return;
-    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
-    if (marker !== undefined && (fence === null || marker.startsWith(fence))) {
-      fence = fence === null ? marker : null;
-      return;
-    }
-    if (fence !== null) return;
+  const offset = frontmatterEnd + 1;
+  for (const { line, index, language, boundary } of fencedLines(lines.slice(offset))) {
+    if (boundary || language !== null) continue;
     const columns = Array.from(line).length;
-    if (columns <= WIDTH || /^\s*\|/.test(line) || URL_IN_LINE.test(line) || isOneWord(line)) return;
-    found.push({ line: index + 1, columns });
-  });
+    if (columns <= WIDTH || /^\s*\|/.test(line) || URL_IN_LINE.test(line) || isOneWord(line)) continue;
+    found.push({ line: index + offset + 1, columns });
+  }
   return found;
 }
 

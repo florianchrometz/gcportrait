@@ -173,6 +173,83 @@ describe('the configuration checks', () => {
   });
 });
 
+describe('the shared fenced-code boundaries', () => {
+  it.each(['`', '~'])('keeps shorter, mismatched and suffixed %s fences inside code', (marker) => {
+    const opening = marker.repeat(4);
+    const other = marker === '`' ? '~~~~' : '````';
+    const logged = ['Verified', 'on', '2026-10-11'].join(' ');
+    const wide = 'words '.repeat(23).trimEnd();
+    const content = [
+      'pnpm install',
+      marker.repeat(3),
+      other,
+      `${opening}text`,
+      `    ${opening}`,
+      'pnpm check',
+      logged,
+      wide,
+      '$ pnpm test',
+    ];
+    const markdown = [`  ${opening} sh extra`, ...content, ` ${opening}${marker} \t`, logged, wide].join(
+      '\n',
+    );
+    expect(commandsIn(markdown).filter((command) => command.startsWith('pnpm '))).toEqual([
+      'pnpm install',
+      'pnpm check',
+      'pnpm test',
+    ]);
+    expect(codeIn(markdown)).toEqual(content);
+    expect(verificationLogLines(markdown).map((problem) => /^line (\d+)/.exec(problem)?.[1])).toEqual([
+      '10',
+      '12',
+    ]);
+    expect(overlongLines(markdown)).toEqual([{ line: 13, columns: wide.length }]);
+  });
+
+  it('reads tilde shell and text blocks, but keeps commands inside another language literal', () => {
+    const markdown = [
+      '~~~bash',
+      'infra/deploy.sh --project P \\',
+      '  --dry-run',
+      '~~~',
+      '~~~text',
+      '$ pnpm check',
+      'pnpm output-only',
+      '~~~',
+      '````json',
+      '```',
+      '`pnpm not-a-command`',
+      '````',
+      'Run `pnpm install`.',
+    ].join('\r\n');
+    expect(commandsIn(markdown)).toEqual([
+      'infra/deploy.sh --project P --dry-run',
+      'pnpm check',
+      'pnpm install',
+    ]);
+  });
+
+  it('keeps an unclosed block through the end of the document', () => {
+    const markdown = ['~~~~sh', 'pnpm install', '~~~', 'pnpm check'].join('\n');
+    expect(commandsIn(markdown)).toEqual(['pnpm install', '~~~', 'pnpm check']);
+    expect(codeIn(markdown)).toEqual(['pnpm install', '~~~', 'pnpm check']);
+  });
+
+  it('refuses backticks in a backtick opener’s info string', () => {
+    const logged = ['Verified', 'on', '2026-10-11'].join(' ');
+    const markdown = ['```sh `invalid`', logged, 'Run `pnpm check`.'].join('\n');
+    expect(verificationLogLines(markdown)).toHaveLength(1);
+    expect(commandsIn(markdown)).toContain('pnpm check');
+  });
+
+  it('ignores fence-like values in frontmatter without shifting reported line numbers', () => {
+    const wide = 'words '.repeat(23).trimEnd();
+    expect(overlongLines(['---', '```', '---', wide].join('\n'))).toEqual([
+      { line: 4, columns: wide.length },
+    ]);
+  });
+});
+
 describe('the commands in a guide', () => {
   const markdown = [
     'Run `pnpm dev:demo`, then `LEGAL_DIR=~/x pnpm --filter @gcportrait/backend start`.',
