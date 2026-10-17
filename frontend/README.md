@@ -1565,9 +1565,12 @@ container (`DiagramCanvas`) and the details drawer. *Snapshot menu*: the open sn
 read 2026-10-08 00:00 UTC · demo organisation"; an unavailable item), the snapshots on offer, and the
 Snapshots page (a route change, not a view change). *Saved views*: a modal dialog that saves the view under a
 name (a taken name is updated), lists the saved views newest first with a summary, and applies
-(`actions.setView`), renames and deletes them; they live in the browser's `savedViews` store only. *Copy
-link*: the diagram page's URL with the view's hash to the clipboard, and a toast (a polite status message kept
-in the DOM).
+(`actions.setView`), renames and deletes them; they live in the browser's `savedViews` store only. A view's
+Delete is the destructive variant (`controls.danger`) and acts at once, without a confirmation, since a saved
+view is a name over a link and is saved again in a moment from the same view: the status line names the view
+deleted, and focus goes to the row that takes its place, the row above when it was the last, or the name field
+when none is left. *Copy link*: the diagram page's URL with the view's hash to the clipboard, and a toast (a
+polite status message kept in the DOM).
 
 **Width.** On a desktop the view row fits a 1280 px window (the desktop layout's narrowest; AGENTS.md, Product
 rules): the breadcrumb takes the free space without widening the row (inline-size containment, crumbs cut with
@@ -1583,9 +1586,9 @@ against the scene builder: every offered focus parameter applies, every region k
 answer and its cache), `savedViewStore.test.ts` (fake-indexeddb: save, list, rename, delete, a new connection,
 memory fallback), the controls' tests next to each slot file (`ui/tokens.test.ts` guards the views'
 stylesheets with the rest of the chrome: tokens both themes define, no raw colour),
-`SavedViewsDialog.test.tsx` (save, list, apply, rename, delete, a reload, axe; the view is the hash, so no
-diagram is drawn), `CopyLink.test.tsx` (the URL with its hash to the clipboard, the toast, inert away from the
-diagram) and `e2e/tests/controls.spec.ts` in Chromium on demo M.
+`SavedViewsDialog.test.tsx` (save, list, apply, rename, delete with its variant, status line and focus, a
+reload, axe; the view is the hash, so no diagram is drawn), `CopyLink.test.tsx` (the URL with its hash to the
+clipboard, the toast, inert away from the diagram) and `e2e/tests/controls.spec.ts` in Chromium on demo M.
 
 ## Progressive disclosure (`src/diagram/disclosure/`)
 

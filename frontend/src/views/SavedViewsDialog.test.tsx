@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { openDatabase } from '../storage/db';
 import { expectNoAxeViolations } from '../test/axe';
 import { useFreshIndexedDb } from '../test/indexedDb';
+import controls from '../ui/controls.module.css';
 import { createSavedViewStore } from './savedViewStore';
 import { inTopBar, renderControls } from './testing/controls';
 
@@ -82,6 +83,60 @@ describe('saved views', () => {
     ).toBe('true');
     later.unmount();
   }, 40_000);
+
+  it('deletes a view at once with the destructive control, says which, and moves focus on', async () => {
+    // A saved view is a name over a link, saved again in a moment from the same view: Delete asks nothing.
+    const app = renderControls('/diagram#snapshot=demo:S&detail=projects', { workers: false });
+    const dialog = await openDialog();
+    const name = within(dialog).getByRole('textbox', { name: 'Name' });
+    for (const view of ['First', 'Second', 'Third']) {
+      await userEvent.clear(name);
+      await userEvent.type(name, `${view}{Enter}`);
+      await within(dialog).findByText(new RegExp(`^Saved “${view}”\\.`), {}, SLOW);
+    }
+    await waitFor(() => {
+      expect(within(dialog).getAllByRole('listitem')).toHaveLength(3);
+    }, SLOW);
+
+    // Every Delete wears the destructive variant on the control (ui/controls.module.css); the rest do not.
+    for (const view of ['First', 'Second', 'Third']) {
+      const remove = within(dialog).getByRole('button', { name: `Delete ${view}` });
+      expect(remove.classList).toContain(controls.control);
+      expect(remove.classList).toContain(controls.danger);
+      for (const other of [`Apply ${view}`, `Rename ${view}`]) {
+        expect(within(dialog).getByRole('button', { name: other }).classList).not.toContain(controls.danger);
+      }
+    }
+    expect(within(dialog).getByRole('button', { name: 'Save current view' }).classList).not.toContain(
+      controls.danger,
+    );
+
+    // Newest first: Third, Second, First. Deleting the middle one asks nothing, says so in the status line
+    // and focuses the row that takes its place.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete Second' }));
+    await waitFor(() => {
+      expect(within(dialog).getByRole('status').textContent).toBe('Deleted “Second”.');
+    }, SLOW);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.getAllByRole('dialog')).toEqual([dialog]);
+    expect(within(dialog).queryByRole('button', { name: 'Delete Second' })).toBeNull();
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Apply First' }));
+    expect(await app.savedViews.list()).toHaveLength(2);
+
+    // The last row: focus goes to the row above it.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete First' }));
+    await waitFor(() => {
+      expect(within(dialog).getByRole('status').textContent).toBe('Deleted “First”.');
+    }, SLOW);
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Apply Third' }));
+
+    // The only row: focus goes to the name field, and the list says it is empty.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete Third' }));
+    await within(dialog).findByText('No saved views yet.', {}, SLOW);
+    expect(within(dialog).getByRole('status').textContent).toBe('Deleted “Third”.');
+    expect(document.activeElement).toBe(name);
+    expect(await app.savedViews.list()).toHaveLength(0);
+  }, 30_000);
 
   it('updates a view saved again under the same name', async () => {
     const app = renderControls('/diagram#snapshot=demo:S&detail=projects', { workers: false });

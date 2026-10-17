@@ -2,6 +2,7 @@
 import { decodeViewSpec, type LensId, type SnapshotRef } from '@gcportrait/model';
 import { useId, useLayoutEffect, useRef, useState, type SyntheticEvent, type ReactElement } from 'react';
 
+import { cx } from '../classNames';
 import { humanLensId, useDiagramSession } from '../diagram/session';
 import { useAppState, useDiagramActions, usePopover } from '../state';
 import type { StoredView } from '../storage/db';
@@ -28,12 +29,13 @@ function useViewWords(): ViewWords {
 }
 
 /**
- * The top bar's "Saved views" button and its dialog (saved views in IndexedDB). The dialog
- * saves the view on screen under a name (its URL hash, so it reopens as its link would; a taken name is updated),
- * and lists the saved views, newest first, each to apply (`actions.setView`, a history entry, back to the
- * diagram page), rename or delete. A status line says what happened, and when the browser keeps them for the
- * session only. The views stay in this browser (views/savedViewStore.ts, over the page's IndexedDB connection).
- * `onApplied` follows an applied view, once the dialog has closed (the top bar closes its More sheet).
+ * The top bar's "Saved views" button and its dialog (saved views in IndexedDB). The dialog saves the view on
+ * screen under a name (its URL hash, so it reopens as its link would; a taken name is updated), and lists the
+ * saved views, newest first, each to apply (`actions.setView`, a history entry, back to the diagram page),
+ * rename or delete (at once, in the destructive control's colours). A status line says what happened and when
+ * the browser keeps them for the session only. The views stay in this browser (views/savedViewStore.ts, over
+ * the page's IndexedDB connection). `onApplied` follows an applied view, once the dialog has closed (the top
+ * bar closes its More sheet).
  */
 export function SavedViewsButton({ onApplied }: { readonly onApplied?: () => void }): ReactElement {
   const [open, setOpen] = usePopover('saved-views');
@@ -115,7 +117,9 @@ function SavedViewsPanel({ onApplied }: { readonly onApplied: () => void }): Rea
   };
 
   const remove = (view: StoredView, index: number): void => {
-    // Focus moves to the row that takes this one's place, or to the name field when it was the last.
+    // At once, with no question: a saved view is a name over a link, saved again in a moment from the
+    // same view. Focus moves to the next row's Apply, the row above when this was the last, or the name
+    // field when none is left.
     const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-row-apply]');
     const next = rows?.[index + 1] ?? rows?.[index - 1] ?? null;
     store.remove(view.id).then(
@@ -213,7 +217,7 @@ function SavedViewsPanel({ onApplied }: { readonly onApplied: () => void }): Rea
                   </button>
                   <button
                     type="button"
-                    className={controls.control}
+                    className={cx(controls.control, controls.danger)}
                     aria-label={`Delete ${view.name}`}
                     onClick={() => {
                       remove(view, index);
