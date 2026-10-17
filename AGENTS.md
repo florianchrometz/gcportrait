@@ -346,8 +346,8 @@ normalisers and the authoring procedure; [packages/graph/README.md](packages/gra
   tests/drawio.spec.ts`, maxGraph in Chromium) holds it to the SVG: at most 5 % of the pixels differ, a text
   line within 1.25 px, a box or a line's end within 0.5 px, an open head's gap within 3 px and a block head's
   width within 1.5 px.
-- **`pnpm render` draws byte for byte what the app draws**, through the frontend's headless entry
-  (`frontend/src/headless.ts`), for tests, screenshots and agents' self-checks.
+- **`pnpm render` draws byte for byte what the app's renderer draws**, through the frontend's headless
+  entry (`frontend/src/headless.ts`), for tests, screenshots and agents' self-checks.
 - **The render API**, `POST /api/render`, draws SVG, PNG and draw.io on the server with the code `pnpm render`
   runs, so an instance's users can script exports:
   - **one render library**, `@gcportrait/render`, between a snapshot and the bytes, used by the CLI and the

@@ -227,10 +227,13 @@ only after it has run once, so add it after the first push to `main`.
   `packages/render/test/parity.test.ts` compares resvg's native Linux binding with the WebAssembly build the
   same way, and is the comparison most likely to differ. Should one of these golden comparisons fail on the
   runner: download the artifact, look at the difference picture, and if it is anti-aliasing only, add a second
-  golden for Linux rather than a tolerance. The export checks in `e2e/tests/export.spec.ts` have no golden:
-  they compare the PNG that Chromium draws with resvg's drawing of the same SVG, both made on the runner, and
-  allow 1 % of pixels to differ; the log prints the figure. Linux draws text through FreeType and macOS
-  through Core Text, so the figure differs between them, though not near the limit.
+  golden for Linux rather than a tolerance. The export checks in `e2e/tests/export.spec.ts` compare pictures
+  drawn on the runner and print each figure in the log: the exported SVG and the renderer's committed
+  baseline of the same view (`e2e/baselines/diagram/S-overview-auto-{light,dark}.svg`), both drawn by resvg,
+  with at most 0.05 % of pixels different; the PNG that Chromium draws and the PNG `pnpm render` draws of
+  that view, with at most 1 %; and Chromium's PNG inside its margin and resvg's drawing of the exported SVG
+  at 2×, with at most 1 %. Linux draws text through FreeType and macOS through Core Text, so the two figures
+  of Chromium's PNG differ between them, though not near the limit.
 - **Locale and time zone.** A unit test that passes on your machine can fail on the runner when it formats a
   date or a number in the viewer's locale without fixing one: reproduce it with `TZ=UTC LC_ALL=C.UTF-8`
   (above). The end-to-end specs that read dates fix `en-GB` and UTC themselves.
