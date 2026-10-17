@@ -38,7 +38,7 @@ import { openDiagram, TAGLINE } from './support.js';
  *
  * The limits sit a little above what maxGraph 0.25.0 draws, and the spec fails on more: 2 to 3.3 % of the
  * pixels differ (text anti-aliasing, draw.io's half-pixel snap of odd line widths, its own arrowheads); every
- * text line lies within 1 px; before an open head draw.io stops the line 2.236 × its width short of the tip
+ * text line lies within 1.25 px; before an open head draw.io stops the line 2.236 × its width short of the tip
  * (2.68 px at the 1.2 px memberOf line), where the SVG runs it to the tip; a block head is up to 1.26 px
  * wider than the drawing's. Boxes and line ends are exact in the file, so their limit is half a pixel. And
  * demo S light, the render golden's view, downloads byte for byte as the golden.
@@ -60,7 +60,7 @@ const LIMITS = {
    * 4.15 % on demo L on Linux, whose FreeType text differs more from resvg's.
    */
   pixels: 0.05,
-  /** A text line's place, its left edge and its middle: within 1 px. */
+  /** A text line's place, its left edge and its middle: within 1.25 px. */
   text: 1.25,
   /**
    * How far before an open head's tip draw.io stops the line: 2.236 × the line's width (maxGraph's open arrow), so
