@@ -120,7 +120,8 @@ with … Google" sentence) in its title block, its `<title>`, its `<desc>` or an
 anything from elsewhere, that every draw.io file reads as diagrams.net reads it (compressed), with no
 affiliation line in a label and no address but Google Fonts' stylesheet, that every "Open in diagrams.net"
 link is `https://app.diagrams.net/?url=` with the address of a draw.io file of the build on
-`https://gcportrait.app` and opens a new tab that its name announces, and that `/exports/` offers a PNG, an
+`https://gcportrait.app` and opens a new tab that its name announces, that every export link's name begins
+with the text the link shows and has no space before a punctuation mark, and that `/exports/` offers a PNG, an
 SVG, a draw.io file and a diagrams.net link of each theme ([Sample exports](#sample-exports)).
 `app.diagrams.net` is a link target only: like any other host it may not serve a resource of a page; a link to
 it may go anywhere there, but one that opens a file (`?url=`) must be an export's checked "Open in
@@ -196,8 +197,10 @@ mobile` (`website/scripts/mobile.ts`) checks the rendered pages in Playwright an
   page scrolls sideways or an element reaches past the viewport outside a scrolling box, when two header items
   overlap or one leaves the screen, when the header is not at the top of the window once the page is scrolled
   to its end or an anchor jump to the page's last level-2 heading leaves it under the header, when a link or
-  button that is not inline text is under 44 × 44 pixels, or when axe-core 4.13 (all non-experimental rules,
-  as `e2e/` runs it) finds a violation (panels closed at every width, open at 375).
+  button that is not inline text is under 44 × 44 pixels, when axe-core 4.13 (all non-experimental rules, as
+  `e2e/` runs it) finds a violation (panels closed at every width, open at 375), or when the name Chromium
+  gives a link or a button (its accessibility tree, what a screen reader reads, which axe-core does not check;
+  panels open, at the first width) has a space before a punctuation mark, as in "Open SVG , Demo S".
 - **Playback**: the landing page on an iPhone 15 (Playwright's WebKit) and a Pixel 7 (its Chromium) with their
   device descriptors, light and dark. Each of the five demos is scrolled into view and must play (as WebM, or
   as the GIF); its button must pause it (the video's time stands still, or the GIF gives way to the poster)
@@ -493,20 +496,25 @@ PNG", "Download SVG" and "Download draw.io" (the `download` attribute names the 
 browser, and "Open in diagrams.net", which opens the draw.io file in a new tab at
 `https://app.diagrams.net/?url=` with the file's public address on `https://gcportrait.app` (diagrams.net
 loads it from the site; nothing of diagrams.net is loaded by the site), under the line "Editable: open the
-`.drawio` file in draw.io or diagrams.net.". The page `/exports/` (title, description, its own link-preview
-image `social/exports.jpg`, in the sitemap, and in the docs menu and on `/docs/` after the Export guide) has
-all three samples with larger previews, the files' dimensions and the commands. The previews are lazy-loaded
-WebPs (`srcset` of 480 and 960 px). Both say that the SVGs name the Roboto font stack without embedding it, as
-the Export menu writes an SVG unless its "Embed fonts" option is ticked, so where Roboto is not installed a
-viewer draws the labels in another font and they may reflow (the PNGs are always drawn with Roboto), and
-`/exports/` gives the measured reason demo L and XL are left out. Neither says the files carry the
-non-affiliation line; `/exports/` says it is in the footer, not in the drawings, and asks that a picture not
-be presented as Google's. Above the section, the landing page's feature "Export to draw.io, edit in
-diagrams.net" presents the draw.io file as a feature of its own, beside the one of the Export menu: what the
-file holds in diagrams.net, why draw.io is an export only (a link to the FAQ's answer), and the `M-shared-vpc`
-sample, which no other part of the page shows, as its preview in the visitor's theme with "Open in
-diagrams.net" and "Download draw.io" for the file of that theme (the other theme's two links are hidden with
-its picture). `pnpm website:check` checks every export link ([Building and checking](#building-and-checking)).
+`.drawio` file in draw.io or diagrams.net.". Each link's name is its `aria-label` (`exportLinkName`): the text
+it shows, then the sample and the theme, as "Download PNG (743 kB), Demo S, Overview lens, light theme"; "Open
+in diagrams.net" ends with "(opens in a new tab)". It is not text for assistive technology only
+(`.visually-hidden`): browsers read that absolutely placed span as a block, with a space before it, so a
+hidden part beginning with a comma would read "Download PNG (743 kB) , Demo S". The page `/exports/` (title,
+description, its own link-preview image `social/exports.jpg`, in the sitemap, and in the docs menu and on
+`/docs/` after the Export guide) has all three samples with larger previews, the files' dimensions and the
+commands. The previews are lazy-loaded WebPs (`srcset` of 480 and 960 px). Both say that the SVGs name the
+Roboto font stack without embedding it, as the Export menu writes an SVG unless its "Embed fonts" option is
+ticked, so where Roboto is not installed a viewer draws the labels in another font and they may reflow (the
+PNGs are always drawn with Roboto), and `/exports/` gives the measured reason demo L and XL are left out.
+Neither says the files carry the non-affiliation line; `/exports/` says it is in the footer, not in the
+drawings, and asks that a picture not be presented as Google's. Above the section, the landing page's feature
+"Export to draw.io, edit in diagrams.net" presents the draw.io file as a feature of its own, beside the one of
+the Export menu: what the file holds in diagrams.net, why draw.io is an export only (a link to the FAQ's
+answer), and the `M-shared-vpc` sample, which no other part of the page shows, as its preview in the visitor's
+theme with "Open in diagrams.net" and "Download draw.io" for the file of that theme (the other theme's two
+links are hidden with its picture). `pnpm website:check` checks every export link ([Building and
+checking](#building-and-checking)).
 
 **In the README.** The draw.io feature shows the `S-overview` preview and the catalog feature the
 `M-shared-vpc` preview, each at 960 pixels and in the dark theme for a dark colour scheme. Their alt text is

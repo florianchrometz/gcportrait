@@ -48,6 +48,7 @@ import {
   exportDrawioProblems,
   exportSvgProblems,
   keepsMediaInBox,
+  linkName,
   scriptConnectionProblems,
   timelineShorthands,
   urlPathOf,
@@ -894,11 +895,11 @@ describe('checkExports', () => {
     `https://app.diagrams.net/?url=${encodeURIComponent(`https://gcportrait.app${file}`)}`;
   const links = (theme: string): string =>
     [
-      `<a data-export="png" href="/_astro/S-${theme}.png" download="gcportrait-demo-S-${theme}.png">Download PNG</a>`,
+      `<a data-export="png" href="/_astro/S-${theme}.png" download="gcportrait-demo-S-${theme}.png" aria-label="Download PNG (1 kB), S, ${theme} theme">Download PNG <span>(1 kB)</span></a>`,
       `<a data-export="svg" href="/_astro/S-${theme}.svg" download="gcportrait-demo-S-${theme}.svg">Download SVG</a>`,
       `<a data-export="svg-open" href="/_astro/S-${theme}.svg">Open SVG</a>`,
       `<a data-export="drawio" href="/_astro/S-${theme}.drawio" download="gcportrait-demo-S-${theme}.drawio">Download draw.io</a>`,
-      `<a data-export="drawio-open" href="${open(`/_astro/S-${theme}.drawio`)}" target="_blank" rel="noopener">Open in diagrams.net<span class="visually-hidden">, S, ${theme} theme (opens in a new tab)</span></a>`,
+      `<a data-export="drawio-open" href="${open(`/_astro/S-${theme}.drawio`)}" target="_blank" rel="noopener" aria-label="Open in diagrams.net, S, ${theme} theme (opens in a new tab)">Open in diagrams.net</a>`,
     ].join('');
   const exportsPage = { path: '/exports/', html: `${links('light')}${links('dark')}` };
 
@@ -1013,10 +1014,36 @@ describe('checkExports', () => {
     expect(checkExports([exportsPage, page], (file) => files[file])).toEqual([
       '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): does not open a new tab (target="_blank")',
       '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): has no rel="noopener"',
-      '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): does not say it opens a new tab ("(opens in a new tab)", visually hidden)',
+      '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): does not say in its name that it opens a new tab ("(opens in a new tab)")',
       '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2Fgone.drawio (drawio-open): not in the build',
       '/: export link https://example.org/ (drawio-open): not https://app.diagrams.net/?url= with the address of a draw.io file on https://gcportrait.app',
       '/: a link that opens a file in diagrams.net outside the exports\' "Open in diagrams.net" links: https://app.diagrams.net/?url=https%3A%2F%2Fexample.org%2Fx.drawio',
+    ]);
+  });
+
+  it('names each link as the browsers do: what it shows first, and no space before a punctuation mark', () => {
+    // A visually hidden span is absolutely placed, so the browsers read it as a block, with a space before it.
+    expect(linkName({}, 'Open SVG\n  <span class="visually-hidden">, S, light theme</span>\n')).toBe(
+      'Open SVG , S, light theme',
+    );
+    expect(linkName({}, 'Open the demo<span class="visually-hidden"> (opens in a new tab)</span>')).toBe(
+      'Open the demo (opens in a new tab)',
+    );
+    expect(linkName({ 'aria-label': 'Open SVG, S, light theme' }, 'Open SVG')).toBe(
+      'Open SVG, S, light theme',
+    );
+    const page = {
+      path: '/',
+      html: [
+        '<a data-export="svg-open" href="/_astro/S-light.svg">Open SVG<span class="visually-hidden">, S, light theme</span></a>',
+        '<a data-export="svg-open" href="/_astro/S-light.svg" aria-label="SVG, S, light theme">Open SVG</a>',
+        '<a data-export="svg-open" href="/_astro/S-light.svg" aria-label="Open SVG , S, light theme">Open SVG</a>',
+      ].join(''),
+    };
+    expect(checkExports([exportsPage, page], (file) => files[file])).toEqual([
+      '/: export link /_astro/S-light.svg (svg-open): its name "Open SVG , S, light theme" has a space before ","',
+      '/: export link /_astro/S-light.svg (svg-open): its name "SVG, S, light theme" does not begin with the text it shows, "Open SVG"',
+      '/: export link /_astro/S-light.svg (svg-open): its name "Open SVG , S, light theme" has a space before ","',
     ]);
   });
 });

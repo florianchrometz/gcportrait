@@ -25,11 +25,11 @@ import Variables from '../components/Variables.astro';
 import { CONTRIBUTORS_URL, authorSection } from '../lib/author.js';
 import { coverageReport, percent, totals } from '../lib/coverage.js';
 import { renderedDocs } from '../lib/docs.js';
-import { sampleExports } from '../lib/exports.js';
+import { exportLinkName, sampleExports } from '../lib/exports.js';
 import { renderCommandBlock, renderInlineCode } from '../lib/markdown.js';
 import { scene, socialImage, still, type ThemedImage } from '../lib/media.js';
 import { personLd, softwareApplicationLd, sourceCodeLd } from '../lib/seo.js';
-import { IMAGE, INSTALL_COMMAND, NEW_TAB_NOTE } from '../site.js';
+import { IMAGE, INSTALL_COMMAND } from '../site.js';
 
 const author = authorSection();
 const report = coverageReport();
@@ -395,13 +395,18 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
                     target="_blank"
                     rel="noopener"
                     data-export="drawio-open"
+                    aria-label={exportLinkName('Open in diagrams.net', drawioSample.title, item.theme, { newTab: true })}
                   >
                     Open in diagrams.net
-                    <span class="visually-hidden">{`, ${drawioSample.title}, ${item.theme} theme${NEW_TAB_NOTE}`}</span>
                   </a>
-                  <a class="button" href={item.drawio.url} download={item.drawio.downloadName} data-export="drawio">
+                  <a
+                    class="button"
+                    href={item.drawio.url}
+                    download={item.drawio.downloadName}
+                    data-export="drawio"
+                    aria-label={exportLinkName(`Download draw.io (${item.drawio.size})`, drawioSample.title, item.theme)}
+                  >
                     Download draw.io <span class="drawio-size">({item.drawio.size})</span>
-                    <span class="visually-hidden">{`, ${drawioSample.title}, ${item.theme} theme`}</span>
                   </a>
                 </div>
               ))

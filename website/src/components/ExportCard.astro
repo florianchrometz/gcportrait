@@ -8,10 +8,10 @@
  *
  * Every link carries `data-export` (png, svg, svg-open, drawio, drawio-open) for `pnpm website:check`, which checks
  * that each file is in the build, served from the site itself, that no SVG or draw.io file carries an affiliation line
- * (a drawing never does), and that the diagrams.net link opens a draw.io file of the site.
+ * (a drawing never does), and that the diagrams.net link opens a draw.io file of the site. Each link's name is its
+ * `aria-label` (exportLinkName): what it shows, then the sample and the theme, so the card's ten links read apart.
  */
-import { NEW_TAB_NOTE } from '../site.js';
-import type { SampleExport } from '../lib/exports.js';
+import { exportLinkName, type SampleExport } from '../lib/exports.js';
 
 interface Props {
   sample: SampleExport;
@@ -58,21 +58,35 @@ const first = sample.themes[0];
           </figure>
           <ul class="export-links">
             <li>
-              <a class="button export-link" href={item.png.url} download={item.png.downloadName} data-export="png">
+              <a
+                class="button export-link"
+                href={item.png.url}
+                download={item.png.downloadName}
+                data-export="png"
+                aria-label={exportLinkName(`Download PNG (${item.png.size})`, sample.title, item.theme)}
+              >
                 Download PNG <span class="export-size">({item.png.size})</span>
-                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
               </a>
             </li>
             <li>
-              <a class="button export-link" href={item.svg.url} download={item.svg.downloadName} data-export="svg">
+              <a
+                class="button export-link"
+                href={item.svg.url}
+                download={item.svg.downloadName}
+                data-export="svg"
+                aria-label={exportLinkName(`Download SVG (${item.svg.size})`, sample.title, item.theme)}
+              >
                 Download SVG <span class="export-size">({item.svg.size})</span>
-                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
               </a>
             </li>
             <li>
-              <a class="button export-link" href={item.svg.url} data-export="svg-open">
+              <a
+                class="button export-link"
+                href={item.svg.url}
+                data-export="svg-open"
+                aria-label={exportLinkName('Open SVG', sample.title, item.theme)}
+              >
                 Open SVG
-                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
               </a>
             </li>
             <li>
@@ -81,9 +95,9 @@ const first = sample.themes[0];
                 href={item.drawio.url}
                 download={item.drawio.downloadName}
                 data-export="drawio"
+                aria-label={exportLinkName(`Download draw.io (${item.drawio.size})`, sample.title, item.theme)}
               >
                 Download draw.io <span class="export-size">({item.drawio.size})</span>
-                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme`}</span>
               </a>
             </li>
             <li>
@@ -93,9 +107,9 @@ const first = sample.themes[0];
                 target="_blank"
                 rel="noopener"
                 data-export="drawio-open"
+                aria-label={exportLinkName('Open in diagrams.net', sample.title, item.theme, { newTab: true })}
               >
                 Open in diagrams.net
-                <span class="visually-hidden">{`, ${sample.title}, ${item.theme} theme${NEW_TAB_NOTE}`}</span>
               </a>
             </li>
           </ul>

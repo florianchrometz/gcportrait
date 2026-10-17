@@ -15,7 +15,9 @@
  * - a link or button that is not inline text (its display is not `inline`; prose is left out) is smaller than 44 × 44
  *   CSS pixels;
  * - axe-core finds a violation (all its non-experimental rules, as the app's end-to-end tests run it; folded at every
- *   width, unfolded at 375).
+ *   width, unfolded at 375);
+ * - the name Chromium gives a link or a button (its accessibility tree, as a screen reader reads it; unfolded, at the
+ *   first width) has a space before a punctuation mark, as "Open SVG , Demo S" (axe-core does not look at it).
  *
  * Playback (the animated demos of the landing page): an iPhone 15 on Playwright's WebKit and a Pixel 7 on its
  * Chromium, with their device descriptors (viewport, pixel ratio, touch, user agent), both themes. Each demo is
@@ -56,6 +58,7 @@ import {
   timeoutGives,
   type MockedFacts,
 } from './browser.js';
+import { SPACE_BEFORE_PUNCTUATION } from './check-site.js';
 import { serve } from './serve.js';
 
 const WIDTHS: readonly number[] = [320, 375, 390, 430];
@@ -161,6 +164,31 @@ function layoutProblems(page: Page, target: number): Promise<string[]> {
     }
     return problems;
   }, target);
+}
+
+/**
+ * The names Chromium gives the page's links and buttons, read from its accessibility tree over the DevTools protocol:
+ * what a screen reader reads, which axe-core does not check. None may have a space before a punctuation mark. Text
+ * for assistive technology only (.visually-hidden) is absolutely placed, so the browsers read it as a block, with a
+ * space before it: a hidden part beginning with a comma reads "Open SVG , Demo S" (such a name is an `aria-label`,
+ * as src/lib/exports.ts, exportLinkName, writes the sample exports' names).
+ */
+async function nameProblems(page: Page): Promise<string[]> {
+  const session = await page.context().newCDPSession(page);
+  try {
+    const { nodes } = await session.send('Accessibility.getFullAXTree');
+    const problems: string[] = [];
+    for (const node of nodes) {
+      const role: unknown = node.role?.value;
+      const name: unknown = node.name?.value;
+      if (node.ignored || (role !== 'link' && role !== 'button') || typeof name !== 'string') continue;
+      const mark = SPACE_BEFORE_PUNCTUATION.exec(name)?.[1];
+      if (mark !== undefined) problems.push(`a ${role} is named "${name}", with a space before "${mark}"`);
+    }
+    return problems;
+  } finally {
+    await session.detach();
+  }
 }
 
 /**
@@ -279,6 +307,10 @@ async function layout(
         for (const problem of await stickyProblems(page)) found.push(`${where}: ${problem}`);
         for (const problem of await axeProblems(page, source)) found.push(`${where}: ${problem}`);
         const unfolded = await setDisclosures(page, true);
+        // The names once per page and theme, with every disclosure unfolded, so no link is folded out of the tree.
+        if (width === widths[0]) {
+          for (const problem of await nameProblems(page)) found.push(`${pagePath} ${theme}: ${problem}`);
+        }
         if (unfolded > 0) {
           for (const problem of await layoutProblems(page, TARGET))
             found.push(`${where}, unfolded: ${problem}`);
@@ -549,7 +581,7 @@ async function main(): Promise<number> {
     return 1;
   }
   console.log(
-    `\nwebsite mobile: OK (${wanted('layout') ? `${String(pages.length)} pages at ${widths.join(', ')} px, ${themes.join(' and ')}: no sideways scrolling, no overlapping header items, the header at the top when scrolled and above anchor targets, 44-pixel targets, no axe violation` : ''}${wanted('layout') && wanted('playback') ? '; ' : ''}${wanted('playback') ? 'the demos play on the iPhone and the Pixel, pause and play again, and fall back to the GIF' : ''}${facts === undefined ? '' : `; GitHub's answers mocked as ${facts.version}, ${String(facts.stars)} stars, ${String(facts.forks)} forks`}).`,
+    `\nwebsite mobile: OK (${wanted('layout') ? `${String(pages.length)} pages at ${widths.join(', ')} px, ${themes.join(' and ')}: no sideways scrolling, no overlapping header items, the header at the top when scrolled and above anchor targets, 44-pixel targets, no axe violation, no name with a space before a punctuation mark` : ''}${wanted('layout') && wanted('playback') ? '; ' : ''}${wanted('playback') ? 'the demos play on the iPhone and the Pixel, pause and play again, and fall back to the GIF' : ''}${facts === undefined ? '' : `; GitHub's answers mocked as ${facts.version}, ${String(facts.stars)} stars, ${String(facts.forks)} forks`}).`,
   );
   return 0;
 }

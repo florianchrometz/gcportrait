@@ -11,7 +11,7 @@
  * A sample whose files are missing is left out with a warning (a strict build fails), so the site still builds on a
  * fresh clone of a branch whose samples are being regenerated.
  */
-import { SITE_URL } from '../site.js';
+import { NEW_TAB_NOTE, SITE_URL } from '../site.js';
 import { isStrictBuild, readRepoFile } from './repo.js';
 
 export const EXPORT_THEMES = ['light', 'dark'] as const;
@@ -24,6 +24,22 @@ export const DIAGRAMS_NET_URL = 'https://app.diagrams.net/';
 /** The diagrams.net link that opens the file at `path` on the published site (`?url=` and its public address). */
 export function diagramsNetLink(path: string, site: string = SITE_URL): string {
   return `${DIAGRAMS_NET_URL}?url=${encodeURIComponent(new URL(path, `${site}/`).href)}`;
+}
+
+/**
+ * The accessible name of a sample export's link, its `aria-label`: the text the link shows (`shown`, "Download PNG
+ * (743 kB)"), then the sample and the theme, which the card shows around the link, and the new-tab note for a link
+ * that opens one: "Download PNG (743 kB), Demo S, Overview lens, light theme". It is an `aria-label` rather than text
+ * for assistive technology only (`.visually-hidden`), because browsers read that absolutely placed text as a block,
+ * with a space before it, so a hidden part beginning with a comma would read "Download PNG (743 kB) , Demo S".
+ */
+export function exportLinkName(
+  shown: string,
+  title: string,
+  theme: ExportTheme,
+  options: { readonly newTab?: boolean } = {},
+): string {
+  return `${shown}, ${title}, ${theme} theme${options.newTab === true ? NEW_TAB_NOTE : ''}`;
 }
 
 export type ExportFileEntry = {

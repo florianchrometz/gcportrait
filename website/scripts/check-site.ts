@@ -55,10 +55,12 @@
  * (compressed), with no affiliation line in its labels and no address but Google Fonts' stylesheet its labels name for
  * the user's diagrams.net; every "Open in diagrams.net" link (`drawio-open`) is `https://app.diagrams.net/?url=` with
  * the public address of a draw.io file of the build on https://gcportrait.app, opens a new tab (`rel="noopener"`) and
- * says so in its name; and /exports/ offers at least one PNG, one SVG, one draw.io file and one diagrams.net link of
- * each theme. diagrams.net's host is a link target only: like every other host, the page rules refuse it as a resource;
- * a link to it may go anywhere there, but one that opens a file (`?url=`) is an export's checked "Open in diagrams.net"
- * link.
+ * says so in its name; every export link's name (its `aria-label`, or else its text, a visually hidden span read as the
+ * browsers read it, as a block with a space before it) begins with the text the link shows (WCAG 2.5.3) and has no
+ * space before a punctuation mark ("Open SVG , Demo S"); and /exports/ offers at least one PNG, one SVG, one draw.io
+ * file and one diagrams.net link of each theme. diagrams.net's host is a link target only: like every other host, the
+ * page rules refuse it as a resource; a link to it may go anywhere there, but one that opens a file (`?url=`) is an
+ * export's checked "Open in diagrams.net" link.
  *
  * The installer (docs/website.md, "The installer"): /install.sh is infra/install.sh byte for byte (the build copies it;
  * website/public/ holds no copy), the content type it is served with is one `curl … | bash` and a browser both take
@@ -258,6 +260,28 @@ export function keepsMediaInBox(css: string): boolean {
 /** The text of an HTML fragment: its tags dropped, its entities decoded, its spacing kept. */
 function fragmentText(html: string): string {
   return decode(html.replace(/<[^>]+>/g, ''));
+}
+
+/** A visually hidden span (text for assistive technology only, src/styles/global.css) and its text. */
+const VISUALLY_HIDDEN = /<span\b[^>]*\bclass="[^"]*\bvisually-hidden\b[^"]*"[^>]*>([\s\S]*?)<\/span>/gi;
+
+/** A space before a punctuation mark in a name, as in "Open SVG , Demo S" (scripts/mobile.ts reads it too). */
+export const SPACE_BEFORE_PUNCTUATION = /\s([,.;:!?)])/;
+
+/**
+ * A link's accessible name from its attributes and its inner HTML, as the browsers compute it for the rules here: its
+ * `aria-label`, or else its text, where a visually hidden span, absolutely placed and so a block, is read with a space
+ * on either side (Chromium, WebKit and Playwright all add one) and every other tag adds nothing.
+ */
+export function linkName(attributes: Readonly<Record<string, string>>, inner: string): string {
+  const label = attributes['aria-label'];
+  const text = label ?? fragmentText(inner.replace(VISUALLY_HIDDEN, (_, hidden: string) => ` ${hidden} `));
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/** The text a link shows: its text without its visually hidden spans. */
+function shownText(inner: string): string {
+  return fragmentText(inner.replace(VISUALLY_HIDDEN, '')).replace(/\s+/g, ' ').trim();
 }
 
 /** A field the build made of a token: `<span class="var" data-var="YOUR_X">YOUR_X</span>`. */
@@ -1125,6 +1149,12 @@ export function checkExports(
         where('not a known kind (png, svg, svg-open, drawio, drawio-open)');
         continue;
       }
+      const name = linkName(anchor, match[2] ?? '');
+      const shown = shownText(match[2] ?? '');
+      if (!name.startsWith(shown))
+        where(`its name "${name}" does not begin with the text it shows, "${shown}"`);
+      const mark = SPACE_BEFORE_PUNCTUATION.exec(name)?.[1];
+      if (mark !== undefined) where(`its name "${name}" has a space before "${mark}"`);
       if (kind === 'drawio-open') {
         const file = diagramsNetFile(href);
         if (file === null) {
@@ -1133,8 +1163,8 @@ export function checkExports(
         }
         if (anchor.target !== '_blank') where('does not open a new tab (target="_blank")');
         if (!(anchor.rel ?? '').split(/\s+/).includes('noopener')) where('has no rel="noopener"');
-        if (!textContent(match[2] ?? '').endsWith(NEW_TAB_NOTE.trim()))
-          where(`does not say it opens a new tab ("${NEW_TAB_NOTE.trim()}", visually hidden)`);
+        if (!name.endsWith(NEW_TAB_NOTE.trim()))
+          where(`does not say in its name that it opens a new tab ("${NEW_TAB_NOTE.trim()}")`);
         if ('download' in anchor) where('downloads the file instead of opening it in diagrams.net');
         for (const problem of contentProblems(file, '.drawio')) where(problem);
         continue;
@@ -1550,6 +1580,6 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     process.exit(1);
   }
   console.log(
-    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the Cloud Shell and Cloud Run buttons opening a new tab, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
+    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's and TelemetryDeck's for page views, focusable code blocks, the header's GitHub link, the Cloud Shell and Cloud Run buttons opening a new tab, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports and their links' names; the demo at ${DEMO_URL}: its pages, policy, favicon and links, no analytics in it, every link to it opening a new tab).`,
   );
 }

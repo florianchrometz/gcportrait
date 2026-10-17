@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   diagramsNetLink,
+  exportLinkName,
   exportSamples,
   formatBytes,
   parseExportsManifest,
@@ -135,6 +136,15 @@ describe('the sample exports manifest (docs/media/exports/manifest.json)', () =>
     );
     expect(diagramsNetLink('/_astro/a.drawio', 'http://localhost:4321')).toBe(
       'https://app.diagrams.net/?url=http%3A%2F%2Flocalhost%3A4321%2F_astro%2Fa.drawio',
+    );
+  });
+
+  it('names a link by what it shows, then the sample and the theme, without a space before a comma', () => {
+    expect(exportLinkName('Download PNG (743 kB)', 'Demo S, Overview lens', 'light')).toBe(
+      'Download PNG (743 kB), Demo S, Overview lens, light theme',
+    );
+    expect(exportLinkName('Open in diagrams.net', 'Demo S, Overview lens', 'dark', { newTab: true })).toBe(
+      'Open in diagrams.net, Demo S, Overview lens, dark theme (opens in a new tab)',
     );
   });
 
