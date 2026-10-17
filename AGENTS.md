@@ -137,7 +137,7 @@ now, and what changed in the last five weeks?
   The touch model: on a phone and a tablet every target is at least 44 × 44 CSS pixels and the bars keep clear
   of the safe-area insets ([Style and accessibility](#style-and-accessibility)). The canvas reads a finger
   from its pointer events (`pointerType` `touch`, `frontend/src/diagram/touch.ts`) and leaves a mouse and a
-  pen their own input (d3-zoom's drag and wheel, the click, the double-click that drills in, the right-click
+  pen their own input (their drag and the wheel, the click, the double-click that drills in, the right-click
   menu, hover), so a device with a touch screen and a mouse works with both:
   - one finger pans and two pinch about their midpoint, what they touched staying under them; neither selects;
   - a tap (lifted within 10 px, before 500 ms) does what a click does: it selects, clears the selection on the
