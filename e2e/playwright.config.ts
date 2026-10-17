@@ -4,12 +4,19 @@ import { defineConfig, devices, type ReporterDescription } from '@playwright/tes
 import { DEMO_URL, LIVE_URL } from './fixtures/servers.js';
 
 /**
- * End-to-end tests run against the SPA's Vite dev server; no backend and no Google Cloud access needed.
+ * End-to-end tests run against the SPA in two servers, one in demo mode (port 5174) and one in normal mode (port 5173);
+ * no backend and no Google Cloud access needed. Locally they are the Vite dev servers (`pnpm dev:demo`, and `pnpm dev`'s
+ * Vite server), with hot reload for a person iterating on a spec. On CI (`CI` set, so `CI=true` runs what CI runs) they
+ * are the app as it ships, a build of each mode served by `vite preview` on the same port with the same `/api` proxy
+ * (scripts/built-app.ts): every test opens a fresh browser context, so every page load is cold, and against the build
+ * it fetches a few chunks instead of every module; the suite also tests the bundle that ships. The build leaves out
+ * only what React's development build adds: StrictMode runs every effect twice under the dev server and not in the
+ * build (the app reads no `import.meta.env.DEV`).
  *
- * - `chromium` runs every spec except the live ones against demo mode (`pnpm dev:demo`, port 5174).
+ * - `chromium` runs every spec except the live ones against demo mode.
  * - `chromium-live` runs live.spec.ts, signin.spec.ts, preflight.spec.ts, live-pull.spec.ts, permissions-variables.spec.ts,
- *   sa-mode.spec.ts and demo-only.spec.ts against normal mode (`pnpm dev`'s Vite server, port 5173). Their backend calls
- *   (GET /api/config, and the scope search and the preflight) and Google's (the sign-in script, tokeninfo) are
+ *   sa-mode.spec.ts and demo-only.spec.ts against normal mode. Their backend calls (GET /api/config, and the scope
+ *   search and the preflight) and Google's (the sign-in script, tokeninfo) are
  *   answered inside the browser by the specs (fixtures/live.ts, fixtures/gis.ts);
  *   sa-mode.spec.ts instead sends the backend calls to the real backend, started by the spec with a pretend Google
  *   (backend/src/auth/sa-harness.testing.ts); demo-only.spec.ts to the real backend in demo-only mode
@@ -25,8 +32,9 @@ import { DEMO_URL, LIVE_URL } from './fixtures/servers.js';
  *   emulating a touch device at 390 × 844 (an iPhone 13's window, the phone's layout) and 820 × 1180 (an iPad Air's,
  *   the tablet's): handheld.spec.ts, the app's flows by finger. `chromium` leaves the tagged tests out.
  *
- * Locally a server that is already running on either port is reused; CI always starts fresh ones. Chromium
- * only for now; the desktop's functional specs at a window of 1440 × 900.
+ * Locally a server that is already running on either port is reused; CI always starts fresh ones, and a port already
+ * taken fails the run, so a dev server left running is never tested in the build's place. Chromium only for now; the
+ * desktop's functional specs at a window of 1440 × 900.
  */
 const LIVE_SPECS = /(?:live|signin|preflight|live-pull|sa-mode|demo-only|permissions-variables)\.spec\.ts$/;
 const MOBILE_SPECS = /(?:mobile|touch)\.spec\.ts$/;
@@ -61,12 +69,24 @@ const REPORTERS: ReporterDescription[] = [
   ...(process.env.PLAYWRIGHT_JSON_OUTPUT_FILE ? [['json'] as const] : []),
 ];
 
-function devServer(script: 'dev' | 'dev:demo', url: string) {
+/**
+ * The server of one mode: on CI the build served by `vite preview` (scripts/built-app.ts, which builds first and
+ * removes the build once SIGTERM has stopped the preview), locally the mode's Vite dev server.
+ */
+function server(mode: 'demo' | 'normal', url: string) {
+  const local = {
+    command: `pnpm --filter @gcportrait/frontend run ${mode === 'demo' ? 'dev:demo' : 'dev'}`,
+    timeout: 60_000,
+  } as const;
+  const built = {
+    command: `node scripts/built-app.ts --mode ${mode}`,
+    timeout: 120_000,
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
+  } as const;
   return {
-    command: `pnpm --filter @gcportrait/frontend run ${script}`,
+    ...(isCI ? built : local),
     url,
     reuseExistingServer: !isCI,
-    timeout: 60_000,
     stdout: 'ignore',
     stderr: 'pipe',
   } as const;
@@ -117,5 +137,5 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], baseURL: DEMO_URL },
     },
   ],
-  webServer: [devServer('dev:demo', DEMO_URL), devServer('dev', LIVE_URL)],
+  webServer: [server('demo', DEMO_URL), server('normal', LIVE_URL)],
 });

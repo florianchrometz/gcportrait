@@ -15,7 +15,7 @@ import {
 } from './support.js';
 
 /**
- * Live (non-demo) mode, run by the `chromium-live` project against `pnpm dev` without VITE_DEMO. The only
+ * Live (non-demo) mode, run by the `chromium-live` project against the normal-mode server (no VITE_DEMO). The only
  * backend call the shell makes, GET /api/config, is answered inside the browser, so no backend has to run
  * and the Vite proxy is never reached. The footer's source link follows the configured `sourceUrl`
  * (CONFIGURED_SOURCE_URL, the operator's SOURCE_URL: a fork elsewhere), and its legal links follow `legal`.

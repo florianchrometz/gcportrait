@@ -14,7 +14,7 @@ import { expectTokenNowhere, stubConfig, test } from '../fixtures/live.js';
 import { expectNoAxeViolations } from './support.js';
 
 /**
- * Google sign-in in normal mode, run by the `chromium-live` project against `pnpm dev`'s Vite server. The
+ * Google sign-in in normal mode, run by the `chromium-live` project against the normal-mode server. The
  * backend's GET /api/config, Google's sign-in script and Google's tokeninfo are all answered inside the browser
  * (fixtures/gis.ts): the stub script hands the app a fake token, so no Google window opens and nothing leaves the
  * machine. Expiry and renewal run on Playwright's clock.

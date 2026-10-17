@@ -13,7 +13,7 @@ import {
 import { expectNoAxeViolations, scratchShot } from './support.js';
 
 /**
- * The Permissions page in normal mode, run by the `chromium-live` project against `pnpm dev`'s Vite server.
+ * The Permissions page in normal mode, run by the `chromium-live` project against the normal-mode server.
  * Everything outside the browser is answered inside it, as a mock service worker would: the backend's GET
  * /api/config, POST /api/scopes/search and POST /api/preflight (answers shaped like the backend's contract,
  * backend/src/preflight/schemas.ts and routes/scopes.ts), and Google's sign-in script and tokeninfo

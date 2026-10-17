@@ -20,7 +20,7 @@ import {
 
 /**
  * Demo-only mode (a sign-in-free demo instance; AGENTS.md, Modes and hosting) end to end, run by the
- * `chromium-live` project against `pnpm dev`'s Vite server. The backend is the real one in demo-only mode:
+ * `chromium-live` project against the normal-mode server. The backend is the real one in demo-only mode:
  * the spec starts `backend/src/demo-only-harness.testing.ts` as a process (DEMO_ONLY=true, and LEGAL_DIR for
  * the legal pages) and sends the browser's `/api` requests to it, as sa-mode.spec.ts does. Legal texts are
  * synthetic (AGENTS.md, Security and privacy, principle 6).
@@ -117,8 +117,8 @@ test.describe('a demo-only instance with legal texts', () => {
       'href',
       DEFAULT_SOURCE_URL,
     );
-    // Only the configuration was asked for (twice in the dev server: React's StrictMode runs effects twice); Google's
-    // sign-in script was never loaded.
+    // Only the configuration was asked for (twice under the dev server, whose React StrictMode runs effects twice, and
+    // once in a build); Google's sign-in script was never loaded.
     expect([...new Set(requests)]).toEqual(['/api/config']);
     expect(
       await page.evaluate(() => document.querySelector('script[src*="accounts.google.com"]')),

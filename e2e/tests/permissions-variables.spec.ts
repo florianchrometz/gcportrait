@@ -11,8 +11,8 @@ import { expectNoAxeViolations, scratchShot } from './support.js';
  * command is a labelled field filled in place, and every field of a variable on the page shows one value,
  * prefilled from what the app knows (the scope picked, the signed-in account, the instance's service account)
  * and editable; Copy copies the command with the values (an unfilled one as its token) and says so; the
- * values outlive a reload in the tab's sessionStorage. Run by the `chromium-live` project on `pnpm dev`'s
- * Vite server (every backend and Google call answered in the page): signed out, signed in, demo-only and
+ * values outlive a reload in the tab's sessionStorage. Run by the `chromium-live` project on the normal-mode
+ * server (every backend and Google call answered in the page): signed out, signed in, demo-only and
  * service-account cases; axe and screenshots in both themes. The demo mode case:
  * permissions-variables-demo.spec.ts. Synthetic values only (AGENTS.md, Security and privacy, principle 6).
  */

@@ -36,7 +36,7 @@ export const SOURCE_LINK_TEXT = 'Source (MIT)';
 
 /**
  * Where the footer's source link points when nothing configures it: the default of VITE_SOURCE_URL (the e2e
- * dev servers set none) and of the backend's SOURCE_URL.
+ * suite's servers set none) and of the backend's SOURCE_URL.
  */
 export const DEFAULT_SOURCE_URL = 'https://github.com/florianchrometz/gcportrait';
 

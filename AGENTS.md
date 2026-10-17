@@ -166,7 +166,8 @@ now, and what changed in the last five weeks?
   of history, generated from a seed by `packages/demo-data` in CAI's NDJSON shape, are what the tests, the
   screenshots, the website, the agents' self-checks and the app's "Try the demo" draw: realistic organisations
   are needed everywhere, and real inventories may not be used. `pnpm dev:demo` runs the app without a backend,
-  without `/api` calls and without a Google account, and the e2e suite runs against it.
+  without `/api` calls and without a Google account, and the e2e suite runs against it locally and against a
+  build of the same demo mode on CI.
 - **The timeline** has one tick per day for the last 35 days: today and the 34 days before at 00:00 UTC, the
   latest tick reading "now" so that no read time lies in the future. A tick is one set of `assets.list` calls
   with its read time, read only when the view rests on it, because each day is a full read of the scope:

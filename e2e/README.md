@@ -31,18 +31,31 @@ renderer's tests ([`packages/render-cli`](../packages/render-cli/README.md); its
 how to update it). A person reviews a render against the style skill's fact-check list (gcp-diagram-style §11)
 and the layout skill's checks (gcp-diagram-layout §8).
 
-`playwright.config.ts` starts two Vite dev servers as its `webServer`s and runs five projects:
+`playwright.config.ts` starts two servers as its `webServer`s, the app in demo mode and in normal mode
+(`fixtures/servers.ts`), and runs five projects:
 
 | Project | Server | Specs |
 |---|---|---|
-| `chromium` | demo mode, `pnpm dev:demo`, <http://localhost:5174> | everything except the live specs, `mobile.spec.ts`, `touch.spec.ts` and the tests tagged `@phone` or `@tablet` |
-| `chromium-live` | normal mode, the Vite server of `pnpm dev`, <http://localhost:5173> | `live.spec.ts`, `signin.spec.ts`, `preflight.spec.ts`, `live-pull.spec.ts`, `permissions-variables.spec.ts`, `sa-mode.spec.ts`, `demo-only.spec.ts` |
+| `chromium` | demo mode, <http://localhost:5174> | everything except the live specs, `mobile.spec.ts`, `touch.spec.ts` and the tests tagged `@phone` or `@tablet` |
+| `chromium-live` | normal mode, <http://localhost:5173> | `live.spec.ts`, `signin.spec.ts`, `preflight.spec.ts`, `live-pull.spec.ts`, `permissions-variables.spec.ts`, `sa-mode.spec.ts`, `demo-only.spec.ts` |
 | `mobile` | demo mode, as `chromium`; a live instance's pages on the normal-mode server, as `chromium-live` | `mobile.spec.ts` and `touch.spec.ts`: the phone and tablet layouts and the canvas's touch gestures, in Chromium emulating a touch device at the sizes the specs set (`pnpm --filter @gcportrait/frontend mobile` runs this project alone) |
 | `chromium-phone` | demo mode, as `chromium` | the tests tagged `@phone` (`handheld.spec.ts`), in Chromium emulating a touch device at 390 × 844, 3× (an iPhone 13's window, the phone's layout) |
 | `chromium-tablet` | demo mode, as `chromium` | the tests tagged `@tablet` (`handheld.spec.ts`), in Chromium emulating a touch device at 820 × 1180, 2× (an iPad Air's window, the tablet's layout) |
 
-Locally a server that is already running on either port is reused; on CI (`CI` set) fresh ones are always
-started. The live project needs no running backend: its specs answer `GET /api/config` inside the browser
+Locally the two servers are the Vite dev servers, `pnpm dev:demo` and the Vite server of `pnpm dev`, with hot
+reload for a person iterating on a spec, and a server already running on either port is reused. On CI (`CI`
+set) they are the app as it ships: `scripts/built-app.ts` builds the frontend in its mode (`VITE_DEMO=1` for
+demo mode) into a new temporary directory and serves the build with `vite preview`, which takes the dev
+server's port and `/api` proxy from `frontend/vite.config.ts`, until Playwright stops it and the directory is
+removed. Every test opens a fresh browser context, so every page load is cold; the build answers one with a
+few chunks where the dev server serves every module on its own, and the suite tests the bundle that ships.
+The build leaves out only what React's development build adds: StrictMode runs every effect twice under the
+dev server, which a local run exercises and CI's does not (the app reads no `import.meta.env.DEV`). CI always
+starts fresh servers, and a port already taken fails the run, so a dev server left running is never tested in
+the build's place. `CI=true pnpm e2e` runs the suite as CI does (the built servers, two retries, the HTML
+report), once nothing listens on ports 5173 and 5174.
+
+The live project needs no running backend: its specs answer `GET /api/config` inside the browser
 (`fixtures/live.ts`), and the signed-in ones also answer Google's sign-in script and tokeninfo
 (`fixtures/gis.ts`), so nothing reaches Google. `sa-mode.spec.ts` and `demo-only.spec.ts` start the backend
 itself (`fixtures/harness.ts`), the first with a pretend Google inside it, so nothing reaches Google there

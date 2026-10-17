@@ -5,7 +5,7 @@ import { storedEverywhere, type GoogleStubs } from './gis.js';
 import { LIVE_URL } from './servers.js';
 
 /**
- * What the live specs (run by the `chromium-live` project against `pnpm dev`'s Vite server) share: their `test`, which
+ * What the live specs (run by the `chromium-live` project against the normal-mode server) share: their `test`, which
  * lets no request reach the server's proxy, the backend's GET /api/config answered inside the browser, the Permissions
  * page's check section, and the checks that the access token travels only in gcportrait's own header and is kept
  * nowhere (AGENTS.md, Security and privacy, Tokens). Everything is synthetic.

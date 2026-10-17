@@ -366,8 +366,8 @@ jobs:
         run: pnpm run catalog:check
 
   # The app's workspaces (frontend, backend, catalog, icons; `pnpm build:app`, which leaves out the website that
-  # the `website` job builds), then the SPA's size budgets on frontend/dist. The end-to-end tests run against the
-  # Vite dev servers, so nothing waits for this build.
+  # the `website` job builds), then the SPA's size budgets on frontend/dist. Each e2e leg builds the SPA itself
+  # (e2e/scripts/built-app.ts), so nothing waits for this build.
   build:
     name: build
     needs: changes
@@ -389,9 +389,12 @@ jobs:
   # axe in both themes, the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts and the
   # canvas's touch gestures in touch.spec.ts; alone: `pnpm --filter @gcportrait/frontend mobile`) and the flows by
   # finger on a phone and a tablet (the `chromium-phone` and `chromium-tablet` projects, e2e/tests/handheld.spec.ts).
-  # Five legs, each starting its own two dev servers: the desktop window's projects (chromium-live and chromium) in
-  # three, and every other project (chromium-phone, chromium-tablet and mobile, named by negation so that a new
-  # project is never left out) in two. Each leg runs a round-robin share of its projects' tests, every k-th of
+  # Five legs, each with its own two servers: the app built in demo mode and in normal mode and served by `vite
+  # preview` (with `CI` set, e2e/playwright.config.ts runs e2e/scripts/built-app.ts in place of the Vite dev
+  # servers, so that every cold page load fetches the build's chunks, not every module, and the suite tests the
+  # bundle that ships). The desktop window's projects (chromium-live and chromium) run in three legs, and every
+  # other project (chromium-phone, chromium-tablet and mobile, named by negation so that a new project is never
+  # left out) in two. Each leg runs a round-robin share of its projects' tests, every k-th of
   # their JSON listing, through `--test-list` (`pnpm --filter @gcportrait/e2e leg`, e2e/scripts/leg.ts), so that
   # the slow files spread over the legs; the script fails the leg when the run did not address every test of its
   # share, and writes the share's count and summed test time to the job summary. There are no screenshot

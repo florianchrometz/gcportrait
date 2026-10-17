@@ -14,8 +14,8 @@ import {
 import { drawnCanvas, expectNoAxeViolations, primaryNav, scratchShot } from './support.js';
 
 /**
- * The live pull and the export load in normal mode, run by the `chromium-live` project against `pnpm dev`'s
- * Vite server, with the backend stubbed inside the browser: GET /api/config, the scope search and the preflight
+ * The live pull and the export load in normal mode, run by the `chromium-live` project against the normal-mode
+ * server, with the backend stubbed inside the browser: GET /api/config, the scope search and the preflight
  * (in the backend's contract), POST /api/assets/stream (the NDJSON frames of backend/src/stream/asset-list.ts) and
  * POST /api/export/read (an export's lines), and Google's sign-in script and tokeninfo (fixtures/gis.ts). The
  * streams go through the real import worker into IndexedDB, and the diagram is drawn from what was stored. Dropped

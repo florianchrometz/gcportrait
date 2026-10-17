@@ -21,6 +21,11 @@ import { boxOf, inside, openDiagram, type Box } from './support.js';
 const PROJECT_HOME = 'https://console.cloud.google.com/home/dashboard?project=demo-vm-1';
 /** Where the pill screenshots go (git-ignored), for a person to look at. */
 const SHOTS = path.resolve(import.meta.dirname, '..', '..', 'out', 'e2e', 'console-pill');
+/**
+ * The compiled asset catalog as the data worker fetches it: the module under the dev server, the JSON table
+ * `assets/catalog-data-<hash>.json` in a build.
+ */
+const CATALOG_TABLE = /\/(?:compiled-catalog\.ts|assets\/catalog-data-[^/?]*\.json)(?:\?|$)/;
 
 /** Whether two boxes share area (touching does not count). */
 function overlaps(a: Box, b: Box): boolean {
@@ -220,12 +225,14 @@ test('a type without a console template offers its project’s console home and 
   context,
 }) => {
   await stubConsole(context);
-  // Serve a catalog whose VM type has no console template (the demo's data worker reads the compiled catalog).
+  // Serve a catalog whose VM type has no console template. The demo's data worker reads the compiled catalog: the
+  // module itself from the dev server, the build's JSON table of it from a build (frontend/vite.config.ts,
+  // `dataTablesAsJson`), where the key is quoted too.
   let stripped = false;
-  await context.route('**/compiled-catalog.ts*', async (route) => {
+  await context.route(CATALOG_TABLE, async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /console:\s*["']https:\/\/console\.cloud\.google\.com\/compute\/instancesDetail\/[^"']*["'],?/,
+      /["']?console["']?:\s*["']https:\/\/console\.cloud\.google\.com\/compute\/instancesDetail\/[^"']*["'],?/,
       () => {
         stripped = true;
         return '';
