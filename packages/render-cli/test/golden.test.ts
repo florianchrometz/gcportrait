@@ -11,17 +11,10 @@
  */
 import path from 'node:path';
 import { normalizeViewSpec } from '@gcportrait/model';
+import { createDemoViews, drawDrawio, drawPng, drawSvg } from '@gcportrait/render';
 import { describe, expect, it } from 'vitest';
 
-import {
-  checkGolden,
-  checkTextGolden,
-  createDemoViews,
-  drawDrawio,
-  drawPng,
-  drawSvg,
-  REPO_ROOT,
-} from '../src/index.js';
+import { checkGolden, checkTextGolden, REPO_ROOT } from '../src/index.js';
 
 const GOLDEN = path.join(REPO_ROOT, 'e2e/baselines/render/S-overview-auto-light.png');
 const DRAWIO_GOLDEN = path.join(REPO_ROOT, 'e2e/baselines/render/S-overview-auto-light.drawio');

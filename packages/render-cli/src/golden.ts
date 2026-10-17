@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * Golden PNG checks. `exact` (the default) is tolerance-free: same size, same RGBA bytes, as the committed
- * S × overview × light golden under e2e/baselines/render/ is checked. For renders too large to commit as goldens
- * (screenshots, before/after self-checks) `exact: false` compares with pixelmatch and accepts up to
- * `maxDiffPixels` differing pixels. A mismatch leaves the actual image and a picture of the differences in
+ * Golden PNG checks are tolerance-free: same size, same RGBA bytes, as the committed
+ * S × overview × light golden under e2e/baselines/render/ is checked.
+ * A mismatch leaves the actual image and a picture of the differences in
  * `failureDir` for review; `update` rewrites the golden instead (deliberately: review the diff and say why).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -14,12 +13,6 @@ import { comparePng, samePixels, type PngDiff } from './compare.js';
 export interface GoldenOptions {
   /** Write `actual` as the new golden. */
   readonly update?: boolean;
-  /** Tolerance-free (default true); false compares with pixelmatch. */
-  readonly exact?: boolean;
-  /** With `exact: false`: how many pixels may differ (default 0). */
-  readonly maxDiffPixels?: number;
-  /** With `exact: false`: pixelmatch's colour threshold, 0–1 (default 0). */
-  readonly threshold?: number;
   /** Where a mismatch leaves `<name>.actual.png` and `<name>.diff.png`; nothing is written without it. */
   readonly failureDir?: string;
 }
@@ -49,20 +42,10 @@ export function checkGolden(actual: Uint8Array, golden: string, options: GoldenO
     };
   }
   const expected = readFileSync(golden);
-  const exact = options.exact ?? true;
-  const maxDiffPixels = exact ? 0 : (options.maxDiffPixels ?? 0);
-  if (exact && samePixels(actual, expected)) return { status: 'match', message: `${name}: identical pixels` };
+  if (samePixels(actual, expected)) return { status: 'match', message: `${name}: identical pixels` };
   const diff = comparePng(actual, expected, {
-    threshold: exact ? 0 : (options.threshold ?? 0),
     diffImage: options.failureDir !== undefined,
   });
-  if (!exact && !diff.sizeMismatch && diff.diffPixels <= maxDiffPixels) {
-    return {
-      status: 'match',
-      diff,
-      message: `${name}: ${String(diff.diffPixels)} pixels differ (allowed ${String(maxDiffPixels)})`,
-    };
-  }
   let artefacts: GoldenResult['artefacts'];
   if (options.failureDir !== undefined) {
     mkdirSync(options.failureDir, { recursive: true });
@@ -77,10 +60,9 @@ export function checkGolden(actual: Uint8Array, golden: string, options: GoldenO
   }
   const what = diff.sizeMismatch
     ? `size ${String(diff.width)}×${String(diff.height)} differs`
-    : exact && diff.diffPixels === 0
+    : diff.diffPixels === 0
       ? 'pixels differ below pixelmatch threshold 0 (alpha or rounding only)'
-      : `${String(diff.diffPixels)} of ${String(diff.width * diff.height)} pixels differ` +
-        (exact ? ' (tolerance-free)' : ` (allowed ${String(maxDiffPixels)})`);
+      : `${String(diff.diffPixels)} of ${String(diff.width * diff.height)} pixels differ (tolerance-free)`;
   return {
     status: 'mismatch',
     diff,

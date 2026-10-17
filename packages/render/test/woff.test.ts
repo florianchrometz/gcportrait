@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 
-import { faceFiles, FONT_FACES, WoffError, woffToSfnt } from '../src/index.js';
+import { faceFiles, FONT_FACES } from '../src/fonts.js';
+import { WoffError, woffToSfnt } from '../src/woff.js';
 
 /** The OpenType table checksum: the sum of the table's big-endian uint32 words, zero-padded. */
 function tableChecksum(bytes: Uint8Array): number {

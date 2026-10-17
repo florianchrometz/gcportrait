@@ -5,20 +5,9 @@ import { defaultFontMetrics, measureText } from '@gcportrait/layout';
 import { PNG } from 'pngjs';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import {
-  faceFiles,
-  FONT_FACES,
-  fontBuffers,
-  fontFiles,
-  fontPackageVersions,
-  framedSvg,
-  initRasteriser,
-  pngGeometry,
-  RASTER_LIMITS,
-  RasterError,
-  rasterise,
-  svgFrame,
-} from '../src/index.js';
+import { faceFiles, FONT_FACES, fontBuffers, fontFiles, fontPackageVersions } from '../src/fonts.js';
+import { initRasteriser, svgFrame } from '../src/index.js';
+import { framedSvg, pngGeometry, RASTER_LIMITS, RasterError, rasterise } from '../src/raster.js';
 
 beforeAll(async () => {
   await initRasteriser();

@@ -176,11 +176,6 @@ export function initRasteriser(assets?: RenderAssets): Promise<void> {
   return started;
 }
 
-/** Whether {@link initRasteriser} has finished in this thread. */
-export function rasteriserReady(): boolean {
-  return faces !== undefined;
-}
-
 export function rasterise(svg: string, options: RasterOptions): Raster {
   if (faces === undefined) throw new RasterError('the rasteriser has not been started (initRasteriser)');
   const frame = svgFrame(svg);

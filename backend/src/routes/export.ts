@@ -32,9 +32,15 @@ export const ExportReadRequestSchema = z.strictObject({
   gcsUri: z
     .string()
     .max(1100)
-    .refine((uri) => parseGcsUri(uri) !== null, 'must be gs://BUCKET/OBJECT or gs://BUCKET/PREFIX/'),
+    .transform((uri, context) => {
+      const location = parseGcsUri(uri);
+      if (location === null) {
+        context.addIssue({ code: 'custom', message: 'must be gs://BUCKET/OBJECT or gs://BUCKET/PREFIX/' });
+        return z.NEVER;
+      }
+      return location;
+    }),
 });
-export type ExportReadRequest = z.infer<typeof ExportReadRequestSchema>;
 
 /** The response headers that announce what the read covers, so the app can show a share of the bytes read. */
 export const EXPORT_OBJECTS_HEADER = 'x-gcportrait-export-objects';
@@ -56,12 +62,7 @@ export function registerExportReadRoute(app: FastifyInstance, options: ExportRea
     if (token === null) return reply;
     const parsed = ExportReadRequestSchema.safeParse(request.body);
     if (!parsed.success) return sendError(request, reply, invalidRequest(parsed.error));
-    const location = parseGcsUri(parsed.data.gcsUri);
-    if (location === null)
-      return sendError(request, reply, {
-        status: 400,
-        message: 'Invalid request: gcsUri: must be gs://BUCKET/OBJECT.',
-      });
+    const location = parsed.data.gcsUri;
 
     const release = takeStreamSlot(request, reply, options.slots, token);
     if (release === null) return reply;

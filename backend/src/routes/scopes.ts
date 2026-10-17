@@ -68,7 +68,6 @@ export const ScopeSearchRequestSchema = z.strictObject({
   /** `nextPageToken` of the previous answer for the same query and kinds. */
   pageToken: z.string().max(8192).optional(),
 });
-export type ScopeSearchRequest = z.infer<typeof ScopeSearchRequestSchema>;
 
 export const ScopeSearchResultSchema = z.object({
   kind: ScopeKindSchema,

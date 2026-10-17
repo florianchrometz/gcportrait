@@ -15,8 +15,6 @@ export const SCOPE_COLLECTIONS = {
   project: 'projects',
 } as const satisfies Readonly<Record<ScopeKind, string>>;
 
-export type ScopeCollection = (typeof SCOPE_COLLECTIONS)[ScopeKind];
-
 /** A parsed, validated scope. */
 export interface ParsedScope {
   readonly kind: ScopeKind;

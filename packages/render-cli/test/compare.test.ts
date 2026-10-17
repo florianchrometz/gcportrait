@@ -82,17 +82,23 @@ describe('checkGolden', () => {
     expect(size.message).toMatch(/size 8×4 differs/);
   });
 
-  it('accepts up to maxDiffPixels with pixelmatch for the larger renders', () => {
+  it.each([
+    ['one colour step', withPixel(white, 0, [255, 255, 254, 255])],
+    ['one alpha step', withPixel(white, 0, [255, 255, 255, 254])],
+    ['two pixels', withPixel(withPixel(white, 0, [0, 0, 0, 255]), 5, [0, 0, 0, 255])],
+  ])('rejects %s even when an older caller supplies tolerance options', (_name, changed) => {
     const dir = tempDir();
-    const golden = path.join(dir, 'large.png');
+    const golden = path.join(dir, 'g.png');
     checkGolden(white, golden, { update: true });
-    const two = withPixel(withPixel(white, 0, [0, 0, 0, 255]), 5, [0, 0, 0, 255]);
-    expect(checkGolden(two, golden, { exact: false, maxDiffPixels: 2 })).toMatchObject({ status: 'match' });
-    expect(checkGolden(two, golden, { exact: false, maxDiffPixels: 1 }).message).toMatch(
-      /2 of 32 pixels differ \(allowed 1\)/,
-    );
-    expect(
-      checkGolden(withPixel(white, 0, [250, 250, 250, 255]), golden, { exact: false, threshold: 0.2 }).status,
-    ).toBe('match');
+    const options = {
+      exact: false,
+      maxDiffPixels: 2,
+      threshold: 0.2,
+      failureDir: path.join(dir, 'failed'),
+    };
+    const result = checkGolden(changed, golden, options);
+    expect(result.status).toBe('mismatch');
+    expect(result.message).not.toContain('allowed');
+    expect(readFileSync(result.artefacts?.actual ?? '').equals(changed)).toBe(true);
   });
 });

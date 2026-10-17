@@ -325,8 +325,8 @@ addon, so the backend's image can carry it: its render worker reads the wasm mod
 ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal").
 
 **Entry point.** `packages/render/src/index.ts`: `renderView`, `snapshotFromDemo`, `snapshotFromBundle`,
-`createSnapshotReader`, `prepareView`, `createDemoViews`, `drawSvg`, `drawPng`, `drawDrawio`, `rasterise`,
-`pngGeometry`, `initRasteriser`, `packageAssets`, `writeAssetDir`, `readAssetDir`, `woffToSfnt`. **Tests.**
+`createSnapshotReader`, `createDemoViews`, `drawSvg`, `drawPng`, `drawDrawio`, `initRasteriser`,
+`writeAssetDir`, `readAssetDir`. Internal view, raster and font helpers stay in their modules. **Tests.**
 `test/render.test.ts` holds `renderView` to the renderer's SVG baselines and the render golden PNG, byte for
 byte. Reference: [packages/render/README.md](../packages/render/README.md).
 

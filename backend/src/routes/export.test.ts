@@ -12,6 +12,7 @@ import { exportLines, planExportRead, type ExportReadStats } from '../stream/exp
 import { linesOf, mockGcs, syntheticAsset } from '../stream/google.testing.js';
 import { googleError, jsonResponse, recordingSleep } from '../upstream/google.testing.js';
 import { createUpstreamClient, type UpstreamFetch } from '../upstream/request.js';
+import { ExportReadRequestSchema } from './export.js';
 
 const TOKEN = 'ya29.synthetic-test-token';
 const BUCKET = 'demo-exports';
@@ -71,6 +72,16 @@ async function assetsOf(body: string): Promise<number> {
 }
 
 describe('POST /api/export/read', () => {
+  it.each([
+    ['gs://demo-exports/exports/org.json', 'exports/org.json'],
+    ['gs://demo-exports/exports/', 'exports/'],
+    [' gs://demo-exports ', ''],
+  ])('validates and parses %s into the location used by the route', (gcsUri, object) => {
+    expect(ExportReadRequestSchema.parse({ gcsUri })).toEqual({
+      gcsUri: { bucket: BUCKET, object },
+    });
+  });
+
   it('streams one object’s lines, with its size announced', async () => {
     const content = exportFile(0, 30);
     const gcs = mockGcs(BUCKET, { 'exports/org.json': content }, { chunkSize: 1000 });

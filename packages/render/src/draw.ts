@@ -21,10 +21,6 @@ import type { PreparedView } from './view.js';
 
 export const THEMES: readonly DiagramTheme[] = ['light', 'dark'];
 
-export function isTheme(value: string): value is DiagramTheme {
-  return (THEMES as readonly string[]).includes(value);
-}
-
 /** The view as a standalone SVG document (XML declaration, trailing newline). */
 export function drawSvg(view: PreparedView, theme: DiagramTheme): string {
   return renderDiagramSvg(view.input, { theme, utcOffsetMinutes: 0 });

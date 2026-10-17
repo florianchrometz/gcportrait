@@ -9,14 +9,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import {
-  ASSET_MANIFEST,
-  fontFiles,
-  fontPackageVersions,
-  packageAssets,
-  readAssetDir,
-  writeAssetDir,
-} from '../src/index.js';
+import { ASSET_MANIFEST, packageAssets } from '../src/assets.js';
+import { fontFiles, fontPackageVersions } from '../src/fonts.js';
+import { readAssetDir, writeAssetDir } from '../src/index.js';
 import { exactPin } from './pins.js';
 
 const dir = mkdtempSync(path.join(tmpdir(), 'gcportrait-render-assets-'));

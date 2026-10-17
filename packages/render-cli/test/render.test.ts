@@ -10,19 +10,19 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { generateOrganization } from '@gcportrait/demo-data';
 import { DEFAULT_VIEWPORT_BUDGET, viewportBudget } from '@gcportrait/graph';
-import { PALETTES, TAGLINE } from '@gcportrait/render';
+import {
+  createDemoViews,
+  drawPng,
+  drawSvg,
+  PALETTES,
+  TAGLINE,
+  THEMES,
+  type DemoViews,
+} from '@gcportrait/render';
 import { normalizeViewSpec, type DemoSize, type LensId } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 
-import {
-  createDemoViews,
-  decodePng,
-  drawPng,
-  drawSvg,
-  REPO_ROOT,
-  THEMES,
-  type DemoViews,
-} from '../src/index.js';
+import { decodePng, REPO_ROOT } from '../src/index.js';
 
 const spec = (fixture: DemoSize, lens: LensId) => normalizeViewSpec({ snapshot: `demo:${fixture}`, lens });
 

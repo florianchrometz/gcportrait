@@ -15,8 +15,8 @@ import {
   snapshotFromBundle,
   snapshotFromDemo,
   SnapshotInputError,
-  type NdjsonSettings,
 } from '../src/index.js';
+import type { NdjsonSettings } from '../src/snapshot.js';
 
 const READ_TIME = `${DEMO_TODAY}T00:00:00Z`;
 const encoder = new TextEncoder();

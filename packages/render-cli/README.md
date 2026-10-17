@@ -136,7 +136,7 @@ itself.
 |---|---|
 | `samePixels(a, b)` | tolerance-free: same size, same RGBA bytes |
 | `comparePng(actual, expected, { threshold?, includeAA?, diffImage? })` | pixelmatch count of differing pixels (threshold 0 and anti-aliased pixels counted by default), the ratio, and optionally an image of the differences |
-| `checkGolden(png, goldenPath, { exact?, maxDiffPixels?, threshold?, update?, failureDir? })` | the golden check: exact by default; `exact: false` accepts up to `maxDiffPixels` (for renders too large to commit); a mismatch leaves `<name>.actual.png` and `<name>.diff.png` in `failureDir`; `update` rewrites the golden |
+| `checkGolden(png, goldenPath, { update?, failureDir? })` | the golden check: always tolerance-free, matching size and every RGBA byte; a mismatch leaves `<name>.actual.png` and `<name>.diff.png` in `failureDir`; `update` rewrites the golden |
 
 | `checkTextGolden(text, goldenPath, { update?, failureDir? })` | a text golden (the draw.io file): the same bytes; a mismatch names the first line and column that differ and leaves `<name>.actual<ext>` in `failureDir` |
 

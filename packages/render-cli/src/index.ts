@@ -5,8 +5,7 @@
  * file, byte-stable for the same input, through the render library (`@gcportrait/render`), which the
  * backend's `POST /api/render` draws with too. Used by the website's sample exports (scripts/exports.mjs),
  * the render goldens under e2e/baselines/render/, and agents' self-checks. This file is the package's only
- * public surface: the command line, the comparisons, and the library's drawing functions the command runs,
- * re-exported for its tests.
+ * public surface: the command line and the comparisons.
  */
 export {
   parseCommand,
@@ -45,23 +44,3 @@ export {
   type IndexEntry,
   type Io,
 } from './run.js';
-export {
-  DEFAULT_SCALE,
-  DEFAULT_VIEWPORT,
-  FIXTURES,
-  MAX_SCALE,
-  PNG_MARGIN,
-  RASTER_LIMITS,
-  THEMES,
-  createDemoViews,
-  drawDrawio,
-  drawPng,
-  drawSvg,
-  isTheme,
-  readDrawioFile,
-  type DemoView,
-  type DemoViews,
-  type PreparedView,
-  type Raster,
-  type Viewport,
-} from '@gcportrait/render';

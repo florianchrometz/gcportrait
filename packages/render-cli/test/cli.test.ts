@@ -12,21 +12,10 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { generateOrganization } from '@gcportrait/demo-data';
 import { DEFAULT_VIEWPORT_BUDGET } from '@gcportrait/graph';
+import { DEFAULT_VIEWPORT, FIXTURES, readDrawioFile, THEMES } from '@gcportrait/render';
 import { describe, expect, it } from 'vitest';
 
-import {
-  BANNER,
-  CLI_VERSION,
-  decodePng,
-  DEFAULT_VIEWPORT,
-  FIXTURES,
-  REPO_ROOT,
-  readDrawioFile,
-  run,
-  THEMES,
-  type IndexEntry,
-  type Io,
-} from '../src/index.js';
+import { BANNER, CLI_VERSION, decodePng, REPO_ROOT, run, type IndexEntry, type Io } from '../src/index.js';
 import { tempDirs } from './helpers.js';
 
 const PACKAGE_DIR = path.resolve(import.meta.dirname, '..');

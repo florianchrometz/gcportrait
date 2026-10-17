@@ -51,7 +51,6 @@ export const AssetsStreamRequestSchema = PullFieldsSchema.extend({
 }).superRefine((body, context) => {
   checkPullMode(body, context);
 });
-export type AssetsStreamRequest = z.infer<typeof AssetsStreamRequestSchema>;
 
 export interface AssetStreamRouteOptions {
   readonly config: Pick<ServerConfig, 'saModeEnabled'>;

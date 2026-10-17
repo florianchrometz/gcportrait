@@ -34,11 +34,9 @@ export const PreflightRequestSchema = z
         message: "must be left out in service-account mode, which uses this instance's own project",
       });
   });
-export type PreflightRequest = z.infer<typeof PreflightRequestSchema>;
 
 /** `ok`: verified; `missing`: verified absent (a command fixes it); `unknown`: could not be verified. */
 export const ITEM_STATUSES = ['ok', 'missing', 'unknown'] as const;
-export type ItemStatus = (typeof ITEM_STATUSES)[number];
 
 /**
  * The checklist rows (docs/permissions.md):
@@ -55,7 +53,6 @@ export const PREFLIGHT_ITEM_IDS = [
   'sa-exposure',
   'sa-access',
 ] as const;
-export type PreflightItemId = (typeof PREFLIGHT_ITEM_IDS)[number];
 
 /**
  * Why an item has its status:
