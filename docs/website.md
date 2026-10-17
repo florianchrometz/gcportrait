@@ -364,8 +364,10 @@ details drawer. The drawer still selects the bastion VM and fits the camera to t
 drawer, its disk and the project's other machines around it: its trace also reaches a subnetwork across the
 organisation, too far off to fit with every card readable. The timeline still moves the timeline from 23 to
 24 September, the web group's scale-out, and fits the camera to the group's project, Retail web: its added
-machines and disks, the removed machine's ghost and the changed instance group manager. The list of stills,
-scenes and cards, with their alt texts, is `website/src/data/media.json`; what each one does is in
+machines and disks, the removed machine's ghost and the changed instance group manager. The canvas keeps the
+23rd's drawing, ready, while the 24th's is prepared, so the still waits for the 24th's marker to turn current
+and for a ready drawing whose number (`data-drawing`) differs from the one read before the move. The list of
+stills, scenes and cards, with their alt texts, is `website/src/data/media.json`; what each one does is in
 `scripts/media.mjs`. The README's pictures carry the same alt texts, and `scripts/readme.test.ts` fails when
 one differs from the website's. Only the synthetic demo organisations are ever captured.
 
@@ -865,11 +867,12 @@ demo in Chromium at 1440 × 900, in both themes: the Connect page (axe), "Try th
 drill-in, a day back on the timeline, a PNG and an SVG export, a reload on that deep link, a direct load of
 every route, `/demo` without its slash, an unknown address (404); it fails on any request that leaves the
 site's origin, any policy violation and any uncaught error (`--shots DIR` saves screenshots, `--theme dark`
-one theme). The canvas stays ready (`data-diagram-ready`) with the drawing before it while the next view is
-prepared, so after the drill-in and the day back the check waits for the next drawing, a ready canvas whose
-number (`data-drawing`) differs from the one read before the click or the key, and it opens the project it
-drills into on a page loaded afresh, whose first drawing is that view's; the axe run and the screenshots see
-the view they name.
+one theme). Each step waits for the state it needs, never for a time: for the view in the address
+(`page.waitForURL`, as the app writes the hash within the page) and for its drawing. The canvas stays ready
+(`data-diagram-ready`) with the drawing before it while the next view is prepared, so after the drill-in and
+the day back the check waits for the next drawing, a ready canvas whose number (`data-drawing`) differs from
+the one read before the click or the key, and it opens the project it drills into on a page loaded afresh,
+whose first drawing is that view's; the axe run and the screenshots see the view they name.
 
 **When it changes.** The demo is the app of the commit the site is built from: `main` on every deploy of the
 site, the tag on a release. In `pnpm website:dev`, `/demo/` serves the last `pnpm demo:static` bundle

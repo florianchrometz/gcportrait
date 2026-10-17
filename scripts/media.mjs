@@ -87,6 +87,7 @@ import {
  * @typedef {{ state?: 'attached' | 'visible' | 'hidden', timeout?: number }} WaitOptions
  * @typedef {{
  *   boundingBox: () => Promise<Box | null>,
+ *   getAttribute: (name: string) => Promise<string | null>,
  *   click: () => Promise<void>,
  *   waitFor: (options?: WaitOptions) => Promise<void>,
  *   first: () => Locator,
@@ -306,7 +307,13 @@ async function openView(page, url, view) {
   await page.evaluate('document.fonts.ready.then(() => true)');
 }
 
-/** @param {Page} page */
+/**
+ * Waits until a drawing is on the canvas, fitted and interactive (`data-diagram-ready`). The canvas stays ready while
+ * the next view is prepared, the drawing before it still on it, so this is the wait for the first drawing of a page
+ * just opened; after a view change, a capture waits for a ready canvas whose drawing number (`data-drawing`,
+ * frontend/src/diagram/DiagramCanvas.tsx) differs from the one read before the change (the timeline still).
+ * @param {Page} page
+ */
 async function diagramReady(page) {
   await page
     .locator('svg.dg-canvas[data-diagram-ready="true"]')
@@ -479,9 +486,19 @@ const STILLS = {
   // instance group manager.
   timeline: async (page, url) => {
     await openView(page, url, '/diagram#snapshot=demo:M&tick=2026-09-23&lens=compute&detail=all');
+    // The canvas keeps the 23rd's drawing, ready, while the 24th's is prepared: the camera waits for the 24th's marker
+    // to turn current (in the commit that puts its drawing up) and then for a ready drawing with another number.
+    const drawn = 'svg.dg-canvas[data-diagram-ready="true"]';
+    const before = await page.locator(drawn).getAttribute('data-drawing');
+    if (before === null) throw new Error('media: the canvas numbers no drawing');
     await scrubToDay(page, '2026-09-24', 6);
-    await page.locator('svg.dg-canvas .dg-ghost').first().waitFor({ state: 'attached', timeout: 60_000 });
-    await diagramReady(page);
+    await page
+      .getByRole('region', { name: 'Timeline' })
+      .locator('[data-state="current"][data-day="2026-09-24"]')
+      .waitFor({ state: 'attached', timeout: 60_000 });
+    await page
+      .locator(`${drawn}:not([data-drawing="${before}"])`)
+      .waitFor({ state: 'visible', timeout: 60_000 });
     await frameNode(page, nodeSelector(DEMO.webManager), 7, { x: 560, y: 420 });
     await page.mouse.move(RESTING.x, RESTING.y);
     await sleep(800);

@@ -136,15 +136,20 @@ async function drawn(page: Page, what: string, previous?: string): Promise<void>
   });
 }
 
-function hashOf(page: Page): string {
-  return decodeURIComponent(new URL(page.url()).hash);
+/** The view in an address: its hash, percent-decoded. */
+function hashOf(address: string | URL): string {
+  return decodeURIComponent(new URL(address).hash);
 }
 
+/**
+ * Waits until the page's address holds `part` in its hash. The app writes the view there through the history API, a
+ * navigation within the page (no new document), which Playwright follows.
+ */
 async function waitForHash(page: Page, part: string): Promise<void> {
-  const until = Date.now() + STEP_TIMEOUT;
-  while (!hashOf(page).includes(part)) {
-    if (Date.now() > until) throw new Error(`the address never got ${part} (it is ${page.url()})`);
-    await page.waitForTimeout(100);
+  try {
+    await page.waitForURL((url) => hashOf(url).includes(part), { timeout: STEP_TIMEOUT });
+  } catch {
+    throw new Error(`the address never got ${part} (it is ${page.url()})`);
   }
 }
 
@@ -282,7 +287,7 @@ async function checkDiagram(
   await page.reload();
   await drawn(page, 'the deep link after a reload');
   if (page.url() !== deepLink) problems.push(`the reload of ${deepLink} ended on ${page.url()}`);
-  if (!hashOf(page).includes(`root=${PROJECT}`)) problems.push('the reload lost the drill-in');
+  if (!hashOf(page.url()).includes(`root=${PROJECT}`)) problems.push('the reload lost the drill-in');
   const scope = await page.getByRole('navigation', { name: 'Scope' }).textContent();
   if (!(scope ?? '').includes('Retail batch VMs (prod)'))
     problems.push(`after the reload the scope reads "${scope ?? ''}", not the drilled-in project`);
