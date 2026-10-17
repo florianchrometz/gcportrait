@@ -465,5 +465,7 @@ defines at build time. `dist/render-assets/`, written by the library's `writeAss
 reads at run time without `node_modules`: resvg's WebAssembly module, unmodified, and the Roboto faces in
 their loading order with their licences. The bundle step fails on any native addon (`.node`), and the licence
 report covers both bundles and the copied packages (`src/render/bundle.test.ts` builds into a temporary
-directory, draws the golden PNG with the bundled worker and finds in neither bundle a file of the tests or a
-zod locale but English).
+directory, draws the golden PNG with the bundled worker, finds in neither bundle a file of the tests or a zod
+locale but English, and finds resvg-wasm, fflate and `@fastify/multipart` in the report at the versions
+installed, which the declaring `package.json` files pin exactly, read by the repository's one lookup,
+`scripts/lib/dependency-versions.mjs`).

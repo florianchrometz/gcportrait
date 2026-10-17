@@ -41,24 +41,22 @@ afterAll(() => {
   rmSync(out, { recursive: true, force: true });
 });
 
+/** The part of scripts/lib/dependency-versions.mjs this test uses (repository tooling, loaded by its path). */
+interface DependencyVersions {
+  readonly exactPin: (root: string, workspace: string, name: string) => string;
+}
+
+const versions = (await import(
+  pathToFileURL(path.join(REPO_ROOT, 'scripts/lib/dependency-versions.mjs')).href
+)) as DependencyVersions;
+
 /**
  * The version of `name` installed for the workspace package that declares it (the lockfile's), read from the
- * package's own package.json, after checking that the declaration pins exactly that version.
+ * package's own package.json, after checking that the declaration pins exactly that version: it throws what
+ * is wrong otherwise.
  */
 function exactPin(workspace: string, name: string): string {
-  const manifest = path.join(REPO_ROOT, workspace, 'package.json');
-  const { dependencies } = JSON.parse(readFileSync(manifest, 'utf8')) as {
-    dependencies?: Record<string, string>;
-  };
-  // Node's lookup of the package's directory: a package's `exports` may leave its package.json out.
-  const dir = createRequire(manifest)
-    .resolve.paths(name)
-    ?.map((modules) => path.join(modules, name))
-    .find((candidate) => existsSync(path.join(candidate, 'package.json')));
-  if (dir === undefined) throw new Error(`${name} is not installed for ${workspace}`);
-  const { version } = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8')) as { version: string };
-  expect(dependencies?.[name], `${workspace}/package.json pins ${name} exactly`).toBe(version);
-  return version;
+  return versions.exactPin(REPO_ROOT, workspace, name);
 }
 
 describe('the bundles', () => {

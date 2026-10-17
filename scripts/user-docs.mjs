@@ -32,9 +32,9 @@
  * - docs/modes.md names the size above which the app asks before it draws a snapshot ("more than 10,000 assets")
  *   with the model's own `LARGE_SNAPSHOT_ASSETS` (packages/model/src/schemas/vocabulary.ts), and no other;
  * - the render goldens' README (e2e/baselines/render/README.md) names the rasteriser, `@resvg/resvg-wasm`,
- *   with the version installed for packages/render, which pins it exactly, and no other Markdown file names a
- *   version of resvg: the golden PNG is that version's bytes, and a number written anywhere else would drift
- *   on every bump;
+ *   with the version installed for packages/render, which pins it exactly (scripts/lib/dependency-versions.mjs
+ *   reads both), and no other Markdown file names a version of resvg: the golden PNG is that version's bytes,
+ *   and a number written anywhere else would drift on every bump;
  * - every Markdown file of the tree (as scripts/lib/repo-files.mjs walks it, the generated CHANGELOGs and the
  *   changesets aside) is wrapped at WIDTH columns, counted in code points, but where a line break cannot
  *   shorten a line or must not go: the YAML frontmatter, fenced code, table rows, a line that holds a URL, and
@@ -54,6 +54,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { dependencyVersions, exactPinProblem } from './lib/dependency-versions.mjs';
 import { isHeaderExempt, listRepoFiles } from './lib/repo-files.mjs';
 import { workspaceDirs } from './release-notes.mjs';
 
@@ -927,46 +928,9 @@ export function resvgVersionsIn(markdown) {
   }));
 }
 
-/**
- * A JSON file's top-level object, or an empty one when it holds something else.
- * @param {string} file
- * @returns {Record<string, unknown>}
- */
-function readJsonObject(file) {
-  /** @type {unknown} */
-  const value = JSON.parse(readFileSync(file, 'utf8'));
-  return typeof value === 'object' && value !== null ? /** @type {Record<string, unknown>} */ (value) : {};
-}
-
-/**
- * A dependency as a workspace package declares it (its package.json's `dependencies`) and as it is installed
- * for that package (the version in the installed package's own package.json, its directory found as Node
- * looks a package up, since a package's `exports` may leave its package.json out, but only in the
- * `node_modules` directories of the tree: the NODE_PATH that pnpm's scripts set installs nothing for a
- * package); null where there is none.
- * @param {string} root
- * @param {string} workspace
- * @param {string} name
- * @returns {{ declared: string | null, installed: string | null }}
- */
-export function dependencyVersions(root, workspace, name) {
-  const manifest = path.join(root, workspace, 'package.json');
-  const { dependencies } = readJsonObject(manifest);
-  const declared =
-    typeof dependencies === 'object' && dependencies !== null
-      ? /** @type {Record<string, unknown>} */ (dependencies)[name]
-      : undefined;
-  const dir = createRequire(manifest)
-    .resolve.paths(name)
-    ?.filter((modules) => !path.relative(root, modules).startsWith('..'))
-    .map((modules) => path.join(modules, name))
-    .find((candidate) => existsSync(path.join(candidate, 'package.json')));
-  const installed = dir === undefined ? undefined : readJsonObject(path.join(dir, 'package.json')).version;
-  return {
-    declared: typeof declared === 'string' ? declared : null,
-    installed: typeof installed === 'string' ? installed : null,
-  };
-}
+// The rasteriser's pin, as packages/render declares it and as it is installed for it
+// (scripts/lib/dependency-versions.mjs), exported for the tests next to the check that reads it.
+export { dependencyVersions };
 
 /**
  * What is wrong with the versions of resvg the documents name: the rasteriser is pinned exactly at the
@@ -978,14 +942,11 @@ export function dependencyVersions(root, workspace, name) {
  */
 export function rasteriserVersionProblems(pin, docs) {
   const { name, workspace } = RASTERISER;
-  const { declared, installed } = pin;
-  if (installed === null) return [`${name} is not installed for ${workspace}; run \`pnpm install\``];
+  const pinProblem = exactPinProblem(pin, workspace, name);
   /** @type {string[]} */
-  const problems = [];
-  if (declared !== installed)
-    problems.push(
-      `${workspace}/package.json declares ${name} ${declared ?? 'not at all'}, not exactly the version installed, ${installed}`,
-    );
+  const problems = pinProblem === null ? [] : [pinProblem];
+  const { installed } = pin;
+  if (installed === null) return problems;
   const stated = resvgVersionsIn(docs.get(RASTERISER_DOC) ?? '');
   if (stated.length === 0)
     problems.push(`${RASTERISER_DOC}: it does not name ${name} ${installed}, the version installed`);

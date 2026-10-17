@@ -44,7 +44,10 @@ const result = renderView(await snapshotFromDemo('M'), RenderOptionsSchema.parse
 
 `@resvg/resvg-wasm` (MPL-2.0, used unmodified), pinned to an exact version in `package.json`: the pixels
 depend on its version, and the render golden PNG is that version's bytes
-([e2e/baselines/render/README.md](../../e2e/baselines/render/README.md) names it). A WebAssembly build
+([e2e/baselines/render/README.md](../../e2e/baselines/render/README.md) names it). The tests read the
+version installed and fail when the declaration is not exactly that version (`test/pins.ts`, through the
+repository's one lookup, `scripts/lib/dependency-versions.mjs`, which the user-docs check and the backend's
+bundle test share), so a bump changes `package.json` and the lockfile and no test. A WebAssembly build
 computes the same pixels on every platform, and it can be bundled into the backend's image, which has no
 `node_modules`. The committed golden (`e2e/baselines/render/S-overview-auto-light.png`) holds the bytes that
 ship, compared without tolerance on every machine the unit tests run on, CI's Linux runner included: through
