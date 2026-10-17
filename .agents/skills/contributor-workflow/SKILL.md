@@ -20,31 +20,20 @@ procedure and the checklists.
   "Skills"). A tool that does not read the AGENTS.md files or `.agents/skills/` by itself gets local,
   git-ignored pointer files from `pnpm agents:setup` (AGENTS.md, "Assistants"); a rule never goes into one of
   them.
-- You are writing original code. Nothing is copied, ported or paraphrased from another licensed project.
-  gcportrait's own code is `MIT` (AGENTS.md, "Licence and dependencies"), and nothing may bring in an
-  obligation that would force the project to publish or relicense its combined work under someone else's
-  terms. `scripts/check-provenance.mjs` enforces: no `.go`, `.dot` or `.gv` files and no Gizmo queries, no
-  symbolic links, none of the strings of AGENTS.md, "Names that never appear" (in contents, binary metadata
-  included, and in file and directory names), text files in UTF-8 without NUL bytes, the names of denied
-  licences only in the deny list and the verbatim licence texts, and an
-  SPDX header on every text source file, checked against the `license` field of the root `package.json`
-  (`MIT`; the forms per file type are in AGENTS.md, "Licence and dependencies", and `docs/contributing.md`
-  §5). The header line to add to a new file:
+- Check provenance and licensing against AGENTS.md, "Licence and dependencies" and "Names that never
+  appear". For a new text source, add the header line for its type:
   `// SPDX-License-Identifier: MIT` (TypeScript and JavaScript),
   `# SPDX-License-Identifier: MIT` (YAML, shell and the `#`-comment dotfiles),
   `/* SPDX-License-Identifier: MIT */` (CSS),
-  `<!-- SPDX-License-Identifier: MIT -->` (Markdown, HTML, Astro). A text file of a type the
-  checker does not know fails until `scripts/lib/repo-files.mjs` gives it a header form or lists it as
-  header-free, in the same change. `node scripts/check-provenance.mjs --list-exempt` prints the rules and
-  exemptions.
+  `<!-- SPDX-License-Identifier: MIT -->` (Markdown, HTML, Astro).
+  [The SPDX header](../../../docs/contributing.md#the-spdx-header) explains placement, exemptions and
+  registering an unknown type; `node scripts/check-provenance.mjs --list-exempt` prints the check's rules
+  and exemptions. Run `pnpm provenance` to check the tree.
 - Branch or worktree per topic: `<topic>-<slug>` or `<issue>-<slug>` (for example `412-gutter-lanes`).
-- **Contributions and licensing.** External contributions are accepted under the MIT License, the licence of
-  the project (inbound = outbound): by opening a pull request you offer your change under it, and you confirm
-  the provenance statement in the template. There is no contributor licence agreement, and none is needed.
-  The gcportrait name and icon are not covered by the MIT License (`brand/LICENSE.md`).
-- A new dependency must pass `pnpm run licenses`: permissive licences, file-scoped MPL-2.0 and the two OFL-1.1
-  Roboto font packages only. `node scripts/check-licenses.mjs --list-rules` prints every licence it allows
-  and every one it denies, each with its reason; `THIRD_PARTY.md` lists the same.
+- Read [Contributions and licensing](../../../docs/contributing.md#contributions-and-licensing) before
+  submitting; confirm the provenance statement in the PR template.
+- For a new dependency, inspect `node scripts/check-licenses.mjs --list-rules`, then run `pnpm run
+  licenses`. After changing dependencies, regenerate `THIRD_PARTY.md` with `pnpm run licenses --write`.
 
 ## 2. Local loop
 
@@ -108,20 +97,10 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
 
 - The acceptance criteria of the issue or backlog item, and the rules in the skills, met and demonstrated
   (commands + output in the PR).
-- `pnpm check` and `pnpm e2e` green locally; CI green. CI (`.github/workflows/pr.yml`) runs its jobs side by
-  side, each installing from the pnpm store cache: lint, typecheck, `unit` in three legs (layout, frontend,
-  every other project), catalog-check, build with the size budgets, `e2e` in five Chromium legs (the desktop
-  specs in three, the phone and tablet check with `chromium-phone` and `chromium-tablet` in two, each leg
-  every k-th test of its projects, `pnpm --filter @gcportrait/e2e leg`), website
-  (built and checked, then at phone widths), provenance, licenses, audit and workflows-and-shell (actionlint,
-  shellcheck). Its `required` job is the one check branch protection targets:
-  green only when all of them are; `layout-budget` only reports. A change of only docs and media (the
-  `changes` job sorts its files; .github/AGENTS.md, "A change of only docs and media") runs only the jobs that
-  read them: `unit (all other projects)`, website, provenance, licenses for docs and Prettier for media; the
-  others show as skipped and `required` counts them as passed. A push is sorted as a whole: one file of code
-  among its changes runs every job. A failure you cannot reproduce: run the command as the runner does,
-  `TZ=UTC LC_ALL=C.UTF-8 CI=true` (`docs/contributing.md` §4, "Continuous integration", has each job's
-  command, its time and the artifacts a failed job uploads).
+- `pnpm check` and `pnpm e2e` green locally; CI green. Follow .github/AGENTS.md, "CI" and "A change of
+  only docs and media". For a failure, find the job's command and artifacts in
+  [Continuous integration](../../../docs/contributing.md#continuous-integration), then reproduce with
+  `TZ=UTC LC_ALL=C.UTF-8 CI=true`.
 - Both themes verified for visual work; contrast tests green.
 - Docs updated: package README, user docs under `docs/` or `website/` if behaviour changed, `AGENTS.md` and
   the skill if a rule changed.
@@ -174,22 +153,11 @@ first, then made in small steps (AGENTS.md, "How to work a task").
 
 ## 7. Releases
 
-- Maintainer runs `pnpm release:version` (consumes the changesets, writes the changelogs), commits, then tags
-  `vX.Y.Z` on `main`. `release.yml` builds and tests the tag, builds the image for linux/amd64 and
-  linux/arm64, smoke-tests both, pushes it to GitHub Container Registry (`ghcr.io/OWNER/gcportrait`: `X.Y.Z`,
-  `X.Y`, `latest`) with the workflow's own `GITHUB_TOKEN`, attaches one SBOM per platform and creates the
-  GitHub release from the `CHANGELOG.md` sections with the non-affiliation long form
-  (`scripts/release-notes.mjs`). Run by hand it publishes `dev` only. A pre-release tag (`vX.Y.Z-rc.1`) is
-  a trial run of its release: its own version tag only, a GitHub pre-release not marked latest, and the notes
-  of `X.Y.Z` when it has no `CHANGELOG.md` section of its own. One-time setup: make the package public
-  (`docs/contributing.md`, "9. Releases"). Its website jobs run on a tag only while the repository variable
-  `PAGES_DEPLOY` is `true`: they build the site strictly, refuse stale `docs/media/` and deploy to GitHub
-  Pages (`docs/website.md`); `pages.yml` deploys `main` under the same switch.
-- Self-hosters get the newest release with the installer line, `curl -fsSL https://gcportrait.app/install.sh |
-  bash -s -- --project P` (the image pulled through an Artifact Registry remote repository in their project),
-  and pin one with `--version vX.Y.Z`.
-- **Versioning.** Semantic versioning through changesets, one fixed version for every workspace package
-  (`.changeset/config.json`, `fixed`). The first release, 1.0.0, is already versioned, so its tag needs no
-  versioning step; every later release starts from the changesets merged since. The asset catalog carries its
-  own `version` and `officialListDate`; the snapshot file format carries a `schemaVersion`, and a format
-  change adds a migration to `@gcportrait/model` (`migrateSnapshot`) in the same change.
+For the maintainer, follow [docs/contributing.md §9](../../../docs/contributing.md#9-releases): one-time
+registry setup, a pre-release trial, then version, commit and tag; the already-versioned first release has
+its own steps there. The release rules are AGENTS.md, "Releases"; workflow execution follows
+.github/AGENTS.md, "Releases". Self-hosters install or pin a release through
+[docs/self-host.md](../../../docs/self-host.md).
+
+For catalog version fields, follow packages/AGENTS.md, "Catalog and graph semantics". For a snapshot format
+change, follow [the model's migration policy](../../../packages/model/README.md#migration-policy).
