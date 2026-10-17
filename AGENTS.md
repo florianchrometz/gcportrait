@@ -13,6 +13,8 @@ stated as it stands, with the reason for it in one sentence. Humans new to the r
 | `packages/` | the nine workspace packages | `packages/AGENTS.md` |
 | `backend/` | the stateless service, upstream calls and render API | `backend/AGENTS.md` |
 | `frontend/` | the app, its chrome, diagram and browser exports | `frontend/AGENTS.md` |
+| `website/` | the Astro site and its static demo | `website/AGENTS.md` |
+| `infra/` | the image and the deploy scripts | `infra/AGENTS.md` |
 | `scripts/`, `brand/`, `.agents/`, `.changeset/` | repository tooling, the mark, the skills, changesets | this file |
 
 The sections of this file:
@@ -296,39 +298,23 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
 - **Demo-only mode** (`DEMO_ONLY`) is a sign-in-free instance: `/api/config` reports `demoOnly: true` and no
   OAuth client, no service-account mode and no render API. The backend's settings, routes and Content Security
   Policy follow [backend/AGENTS.md](backend/AGENTS.md), "Demo-only mode and legal pages".
-  `infra/deploy.sh --demo-only` deploys it with a runtime account of its own that holds no role, 256 MiB and
-  at most two instances.
+  Its deployment settings follow [infra/AGENTS.md](infra/AGENTS.md), "Self-hosting".
 - **The static demo** at `gcportrait.app/demo/` is a static build of the app in demo-only mode (`pnpm
   demo:static`, `VITE_STATIC_DEMO=1`, base `/demo/`), deployed with the website: its configuration is built in
   (exactly what a demo-only instance's `/api/config` answers), a byte-for-byte copy of `index.html` serves
   each route, the backend's demo-only policy travels as a `<meta>` Content Security Policy (without
   `frame-ancestors`, which a `<meta>` cannot carry) next to `<meta name="referrer" content="no-referrer">`,
   and the bundle holds no sign-in code. A demo needs no server, so it costs nothing and holds nothing.
-- **Every link to the demo on the website opens a new tab**, wherever it is (a page, a guide, the header, the
-  footer), with `rel="noopener"`, and says so in its name ("opens in a new tab", visually hidden): the demo is
-  the app, with no way back to the page it was opened from. `pnpm website:check` enforces it.
 - **Hosted surfaces.** The maintainer hosts only the website `gcportrait.app` (Astro on GitHub Pages) and its
   static demo: no sign-in instance, no accounts, no service and so no terms of use. The project has no
   revenue, so the maintainer runs nothing that holds accounts, tokens or anyone's data. Self-hosters who
   enable sign-in run their own instance with their own OAuth client.
-- **The website explains gcportrait and is built to be found.** It presents the project and its features with
-  screenshots and animated demos of the demo organisations, and renders the user guides. Every page has a
-  unique title (at most 60 characters) and description (50 to 160), as search results show them whole, a
-  canonical URL on `https://gcportrait.app`, OpenGraph and Twitter card tags with a 1200 × 630 image,
-  parseable JSON-LD and an entry in the sitemap; the JSON-LD never names an Organization, so that nothing
-  reads as Google's, and no metadata carries the non-affiliation statement, which belongs in the footer and
-  the long-form texts. The landing page presents the maintainer in an author section with links and Person
-  structured data ([docs/author.md](docs/author.md)). People find a tool through search and link previews, and
-  judge an open-source project by who stands behind it. `pnpm website:check` enforces all of it
-  ([docs/website.md](docs/website.md)).
+- The website's presentation, demo links and page metadata follow [website/AGENTS.md](website/AGENTS.md),
+  "The site" and "The static demo".
 - **No telemetry, except the website's page views.** The app, the static demo and every self-hosted instance
   send no usage data, error reports or page views anywhere: an instance runs in someone else's project and
-  must never phone home. The website alone counts its own pages' views with TelemetryDeck, through its npm SDK
-  bundled into the site (no script from a CDN): only in a deploying build (the repository variable
-  `WEBSITE_ANALYTICS`, which a fork sets to `0`), only when served from `gcportrait.app` itself, never when
-  the browser sends Do Not Track or Global Privacy Control, without a cookie and without query strings or
-  fragments. A count of visits is all the maintainer needs, and the privacy notice describes exactly that
-  ([docs/website.md](docs/website.md), "Analytics").
+  must never phone home. The website's analytics follow
+  [website/AGENTS.md](website/AGENTS.md), "Analytics".
 - **Legal pages.** The Impressum and the privacy notice are on the maintainer's website, and the website, the
   static demo and the app's footer link them. An instance's links or served pages follow
   [backend/AGENTS.md](backend/AGENTS.md), "Demo-only mode and legal pages". Legal texts never live in the
@@ -337,27 +323,11 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
   only, on folders or projects rather than the organisation where they can, since every member of a domain
   can usually `get` its organisation.
 - **Self-hosting.** [docs/self-host.md](docs/self-host.md) and
-  [docs/self-host-options.md](docs/self-host-options.md):
-  - the installer line (`curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT`)
-    downloads the newest release's deploy scripts and checks them against the release's checksums before it
-    runs anything;
-  - `infra/deploy.sh` and `infra/uninstall.sh` are declarative (each run sets the service to its flags), touch
-    only what they created (marked by labels and descriptions) and print every change with `--dry-run`; never
-    run them against a project you do not own;
-  - a release image is pulled from ghcr.io through an Artifact Registry remote repository in the operator's
-    project, so a redeploy does not depend on ghcr.io;
-  - `--build` builds the checkout with Cloud Build as an account of its own, `SERVICE-build@PROJECT`, with
-    Storage Admin on its labelled build bucket and Artifact Registry Writer on its repository and nothing at
-    project level, never as the Compute Engine default account, which often holds Editor on the whole project;
-  - `--iap` puts Identity-Aware Proxy in front, with user mode inside; `--domain` maps a custom domain through
-    a Cloud Run domain mapping in a region that offers them;
-  - a full instance gets 2 GiB of memory (the render API's worker and pixels need it), a demo-only one 256
-    MiB;
-  - the "Open in Cloud Shell" tutorial ([docs/cloudshell-tutorial.md](docs/cloudshell-tutorial.md)) and the
-    "Run on Google Cloud" button (`app.json` with `infra/cloud-run-button.sh`) sit next to the manual steps in
-    the README and the self-hosting guide, and beside "Self-host" on the website's landing page, where they
-    open a new tab that their name announces and draw a mark of the site's own (the site loads nothing from
-    another host).
+  [docs/self-host-options.md](docs/self-host-options.md) are the guides; deployment follows
+  [infra/AGENTS.md](infra/AGENTS.md), "Self-hosting". The "Open in Cloud Shell" tutorial
+  ([docs/cloudshell-tutorial.md](docs/cloudshell-tutorial.md)) and the "Run on Google Cloud" button
+  (`app.json` with `infra/cloud-run-button.sh`) sit next to the manual steps in the README and the
+  self-hosting guide; their landing-page placement follows [website/AGENTS.md](website/AGENTS.md), "The site".
 
 ## Non-affiliation, brand and legal
 
@@ -707,13 +677,6 @@ what `pnpm agents:setup` writes for it at the root and for each folder file, is 
 | Add a changeset | `pnpm changeset` |
 | Write the local, git-ignored pointer files that lead an assistant to the AGENTS.md files and the skills (Assistants) | `pnpm agents:setup` (`--tool claude`, `--force`, `--help`) |
 | Draw a demo view as the app's renderer draws it (PNG, SVG and draw.io, byte-stable; the drawing carries no non-affiliation line) | `pnpm render --fixture M --lens networking --png out.png` (`--theme dark`, `--detail`, `--svg`, `--drawio`, `--strict`, `--compare`, `--all`, `--help`; without `--png`/`--svg`/`--drawio` it writes `out/render/`) |
-| Deploy your checkout to Cloud Run in a project of yours / remove it again (docs/self-host-options.md; `--dry-run` prints the changes; never against a project you do not own) | `infra/deploy.sh --project YOUR_PROJECT --region europe-west3 --build` / `infra/uninstall.sh --project YOUR_PROJECT --region europe-west3` (`--yes` without a terminal) |
-| Check a deployed instance from outside (Cloud Run's front end answers `/healthz` itself) | `curl -s https://YOUR_INSTANCE/api/healthz` (and `/api/config` for its settings) |
-| Build and run the production image locally (needs Docker) | `pnpm docker:build`, then `pnpm docker:run` (<http://localhost:8080>) |
-| Shell-check the infra scripts after a change / run them offline against stand-ins | `shellcheck -x infra/*.sh` / `pnpm test:infra` |
-| Build / check / serve the website (`website/`, docs/website.md) | `pnpm website:build`, then `pnpm website:check` (metadata, links, sitemap, the footer notice, the demo and its links) / `pnpm website:dev` (live) / `pnpm website:lighthouse` |
-| Check the built website in real browsers: on phones (layout, the sticky header, touch targets, the names of links and buttons, axe, the animated demos' playback) / the fillable commands / the header's repository widget / the static demo | `pnpm website:mobile` / `pnpm --filter @gcportrait/website fillable` / `... stars` / `... demo` (each after `pnpm website:build`) |
-| Build the static demo the website serves at `/demo/` (Modes and hosting; `pnpm website:build` runs it) | `pnpm demo:static` (`--out DIR`, `--base PATH`) |
 | Regenerate the screenshots, animated demos and link-preview images from demo mode (`docs/media/`, both themes; needs Playwright's Chromium) / check them for staleness | `pnpm media` (`--only ID`, `--theme dark`) / `pnpm media --check` |
 | Regenerate the website's sample exports (SVG, PNG and draw.io drawn by `pnpm render`, `docs/media/exports/`) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render` also draws them again and compares) |
 | Check the draw.io export against the SVG export (maxGraph in Chromium, demos S, M and L in both themes; the limits in the gcp-diagram-style skill §8) | `pnpm e2e tests/drawio.spec.ts --project chromium` |
@@ -721,8 +684,11 @@ what `pnpm agents:setup` writes for it at the root and for each folder file, is 
 [packages/AGENTS.md](packages/AGENTS.md), "Commands", lists catalog, graph, layout, render-golden and icon
 commands; [backend/AGENTS.md](backend/AGENTS.md), "Commands", lists the render smoke test, API probe and
 production start; [frontend/AGENTS.md](frontend/AGENTS.md), "Commands", lists the phone and tablet check
-and the SVG-baseline update. [docs/packages.md](docs/packages.md) maps the packages, their entry points and
-data flow; [docs/configuration.md](docs/configuration.md) lists every setting of an instance.
+and the SVG-baseline update; [website/AGENTS.md](website/AGENTS.md), "Commands", lists the site and
+static-demo commands; [infra/AGENTS.md](infra/AGENTS.md), "Commands", lists deployment, image and shell
+checks.
+[docs/packages.md](docs/packages.md) maps the packages, their entry points and data flow;
+[docs/configuration.md](docs/configuration.md) lists every setting of an instance.
 
 ## Names that never appear
 

@@ -568,7 +568,7 @@ jobs:
   # (rhysd/actionlint) checks every workflow: syntax, expressions, job dependencies, the inputs of local
   # actions and, through the pinned shellcheck, the shell of every `run:` step in the workflow files (not
   # those of the composite actions, which only install). shellcheck then checks every shell script: the
-  # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, AGENTS.md, Commands),
+  # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, infra/AGENTS.md, Commands),
   # the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit (all other
   # projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
   workflows-and-shell:

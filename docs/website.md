@@ -12,8 +12,8 @@ view as SVG, PNG or draw.io without the app. Its landing page gives each way its
 that deploys it, a still of the app and the demo, a render request with the sample export it returns), shows
 the features with screenshots and animated demos of the demo organisations, and presents the author, with
 the Person structured data; the site also renders the user guides of this folder and publishes the asset
-catalog's coverage ([AGENTS.md](../AGENTS.md), "Modes and hosting"). It serves the sign-in-free demo itself,
-at the address <https://gcportrait.app/demo/>: a static build of the app in demo-only mode ([The demo](#the-demo)), and
+catalog's coverage ([website/AGENTS.md](../website/AGENTS.md), "The site"). It serves the sign-in-free demo
+itself, at the address <https://gcportrait.app/demo/>: a static build of the app in demo-only mode ([The demo](#the-demo)), and
 links to the self-hosting guide. Everything is hosted on GitHub: one GitHub Pages site for the website and the
 demo, the images on ghcr.io, releases and CI on GitHub Actions. The site is the `website/` package, a static
 Astro build for GitHub Pages; [website/README.md](../website/README.md) describes its code. This guide is for

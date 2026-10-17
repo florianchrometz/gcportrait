@@ -18,9 +18,9 @@
 # its default), so re-running with one more flag changes only that. It enables the APIs the instance needs,
 # creates the backend service account with no roles at all, builds the image with Cloud Build (--build) or
 # pulls the published one from GitHub Container Registry through an Artifact Registry remote repository
-# (AGENTS.md, Modes and hosting), deploys the Cloud Run service, optionally puts Identity-Aware Proxy in
-# front, then prints the next steps (open the address, create the OAuth client, redeploy with its id), then
-# the address, the account and the rest. It never grants anything on an organisation, folder or other project,
+# (infra/AGENTS.md, Self-hosting; AGENTS.md, Modes and hosting), deploys the Cloud Run service, optionally puts
+# Identity-Aware Proxy in front, then prints the next steps (open the address, create the OAuth client, redeploy with
+# its id), then the address, the account and the rest. It never grants anything on an organisation, folder or other project,
 # never creates a key, and never stores a credential. infra/uninstall.sh removes what it made.
 
 set -Eeuo pipefail
