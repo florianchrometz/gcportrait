@@ -381,9 +381,10 @@ The data worker answers `lenses`, `scene` (with its progress stages), `choices`,
 `details` and `reveal` (`diagram/pipeline/protocol.ts`); a demo worker started for one "Try the demo" job
 answers `demo`. A view's timeline `tick` draws that day of the snapshot, or the stored export or pull an extra
 tick names, and each Scene carries the snapshot's timeline; a Scene request may name the day on screen before
-it (`diffFrom`): the answer then carries the diff of the two days and its Scene the ghosts of what the view no
-longer draws, and `changes` answers what changed about one node between two days; before it reuses the Graph
-it keeps for a stored snapshot it asks IndexedDB whether the record is unchanged. One worker script serves
+it (`diffFrom`): the answer then carries the diff of the two days and its Scene the ghosts of what is gone and
+of what the view no longer draws where it stood (a moved node is marked where it is now), and `changes`
+answers what changed about one node between two days; before it reuses the Graph it keeps for a stored
+snapshot it asks IndexedDB whether the record is unchanged. One worker script serves
 five roles (data, layout, snapshots, imports and demo), so the model, zod and ingest are bundled once for the
 workers; the demo generator runs in workers only (AGENTS.md, "Architecture and code"): the data role loads it
 on first use to draw a demo organisation, and the demo role, started for one "Try the demo" job and ended with
