@@ -71,8 +71,7 @@ export function takeStreamSlot(
     void sendError(request, reply, {
       status: 429,
       code: 'STREAMS_BUSY',
-      message:
-        'Four asset streams are already running for this sign-in. Wait for one to finish, then try again.',
+      message: `${String(slots.limit)} asset streams are already running for this sign-in. Wait for one to finish, then try again.`,
       retryable: true,
       retryAfter: STREAMS_BUSY_RETRY_SECONDS,
     });

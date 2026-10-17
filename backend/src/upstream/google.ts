@@ -13,7 +13,9 @@
  *   {@link GoogleOutcome}, never raw bytes.
  */
 import type { FastifyBaseLogger } from 'fastify';
+import type * as z from 'zod';
 
+import type { UpstreamSummarySchema } from '../schemas.js';
 import { errorDetailOf, isRecord, type GoogleErrorDetail } from './google-error.js';
 import {
   requestJson,
@@ -62,13 +64,11 @@ export type GoogleOutcome =
       readonly message: string;
     };
 
-/** What the browser is told about an upstream answer (status, canonical code, reason, Google's message). */
-export interface UpstreamSummary {
-  readonly status: number;
-  readonly code?: string;
-  readonly reason?: string;
-  readonly message?: string;
-}
+/**
+ * What the browser is told about an upstream answer (status, canonical code, reason, Google's message):
+ * `UpstreamSummarySchema` of ../schemas.ts, declared once.
+ */
+export type UpstreamSummary = Readonly<z.infer<typeof UpstreamSummarySchema>>;
 
 /** The reason of the answer's only ErrorInfo; undefined with none, with several, or for another outcome. */
 export function soleReason(outcome: GoogleOutcome): string | undefined {

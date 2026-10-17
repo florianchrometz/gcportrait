@@ -186,7 +186,7 @@ export function isPreflightAnswer(value: unknown): value is PreflightAnswer {
   );
 }
 
-/** A sentence for an error answer of this backend (`{ statusCode, error, message, requestId }`). */
+/** A sentence for an error answer of this backend (`{ statusCode, error, message, requestId, code }`). */
 export function readError(status: number, body: unknown): string {
   if (status === 429) return 'Too many requests for this sign-in. Wait a minute, then try again.';
   const message = isRecord(body) && typeof body.message === 'string' ? body.message : null;

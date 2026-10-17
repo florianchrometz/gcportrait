@@ -642,6 +642,20 @@ describe('POST /api/render: refusals', () => {
     expect(refused.statusCode).toBe(401);
     expect(errorOf(refused.body).code).toBe('UNAUTHENTICATED');
     expect(invalid.lock.size).toBe(0);
+    // A refused upload closes the connection like every other refusal, instead of draining its file.
+    const upload = multipart([
+      { name: 'request', value: JSON.stringify({ source: { kind: 'ndjson', readTime: READ_TIME } }) },
+      { name: 'file', value: syntheticNdjson(40), filename: 'export.ndjson' },
+    ]);
+    const cut = await invalid.server.inject({
+      method: 'POST',
+      url: '/api/render',
+      headers: { ...OWN, 'content-type': upload.contentType },
+      payload: upload.payload,
+    });
+    expect(cut.statusCode, cut.body).toBe(401);
+    expect(errorOf(cut.body).code).toBe('UNAUTHENTICATED');
+    expect(cut.headers.connection).toBe('close');
     const silent = await start({ google: { tokeninfo: () => answers.unavailable() } });
     const unknown = await post(silent.server, { source: { kind: 'demo', size: 'S' } });
     expect(unknown.statusCode).toBe(503);

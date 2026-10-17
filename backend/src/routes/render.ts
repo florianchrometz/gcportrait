@@ -374,7 +374,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
       } else {
         const facts = await tokenFacts(googleContextFor(request, reply, authority.upstream), callerToken);
         if (facts.kind === 'invalid')
-          return sendError(request, reply, { status: 401, message: SIGN_IN_AGAIN_MESSAGE });
+          return refuse({ status: 401, code: 'UNAUTHENTICATED', message: SIGN_IN_AGAIN_MESSAGE });
         if (facts.kind === 'unknown')
           return refuse({
             status: 503,

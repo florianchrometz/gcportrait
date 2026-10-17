@@ -38,6 +38,11 @@ export class StreamSlots {
     };
   }
 
+  /** How many streams one key may hold at once (the refusal names it). */
+  get limit(): number {
+    return this.#limit;
+  }
+
   /** Slots in use for `key` (tests and the log). */
   inUse(key: string): number {
     return this.#used.get(key) ?? 0;
