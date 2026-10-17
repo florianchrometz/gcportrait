@@ -97,7 +97,8 @@
 /* A phone: one compact row across the foot of the canvas, the count at its start and the two buttons (44-pixel
    targets, --control-height) at its end; the notice above it as wide as the row. While the details sheet is open at
    half height (its `data-sheet`), the row rides above the sheet and its handle, in the half of the canvas the sheet
-   leaves in view; at full height the canvas's content is hidden (pages/DiagramPage.module.css). */
+   leaves in view, where a camera jump and a fit keep the drawing above it (the bar's `data-canvas-overlay`,
+   DisclosureBar.tsx); at full height the canvas's content is hidden (pages/DiagramPage.module.css). */
 @media (max-width: 47.99rem) {
   /* The canvas's area, over it and passing the pointer through: the query container of the rule below. */
   .frame {
@@ -120,11 +121,12 @@
     bottom: calc(50% + var(--touch-target) / 2 + var(--space-2));
   }
 
-  /* A canvas too short for the row above the half-height sheet and its handle (`CONTAINER.shortCanvas` of
-     ui/screen.ts, under 10.5 rem; a small phone turned sideways): the row is hidden while the sheet is open, as at
-     full height, rather than reaching under the top bar, and the strip of the canvas left in view shows the drawing.
-     It comes back when the sheet closes. */
-  @container (max-height: 10.49rem) {
+  /* A canvas too short for the row above the half-height sheet and a band of the drawing above the row
+     (`CONTAINER.shortCanvas` of ui/screen.ts, under 20.25 rem: the sheet and the row would leave less than a third of
+     the canvas in view; a phone turned sideways, the smallest phones upright): the row is hidden while the sheet is
+     open, as at full height, and the half of the canvas left in view shows the drawing. It comes back when the sheet
+     closes. */
+  @container (max-height: 20.24rem) {
     :has(> [data-sheet='half']:not([hidden])) .bar {
       visibility: hidden;
     }

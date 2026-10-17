@@ -20,8 +20,9 @@
  * canvas makes as a glide (camera.ts; at once with reduced motion) as soon as the node is drawn and then reports
  * with `onJumpDone` (a centring glide, or for the details drawer, a short pan that keeps the node and its
  * trace in view); and `onHover`, which tells the store which node is under the pointer. A jump, the pan that
- * follows keyboard focus and a zoom key's step keep the node in the part of the canvas a panel lying over it leaves in
- * view (`clearRoom`): the drawer of a phone or a tablet, or the top bar's View or More sheet.
+ * follows keyboard focus and a zoom key's step keep the node in the part of the canvas the panels lying over it leave
+ * in view (`clearRoom`): the drawer of a phone or a tablet with the disclosure bar's row in the part it leaves, or the
+ * top bar's View or More sheet.
  *
  * A fit shows the whole drawing in that part too (`fitRoom`), so none of it lies under a panel: the fit a new view
  * opens with (whatever draws a new frame: a drill-in, a lens or a filter picked in the View sheet, a day whose drawing
@@ -36,10 +37,11 @@
  * with reduced motion), never a new layout; while the camera rests on a fit to the part the drawer leaves, the
  * drawer's reveal has nothing more to do, as the whole drawing is in view there. The canvas learns of a panel through
  * `panels`, a value the diagram page derives from the store (the open sheet, the drawer's open state), rather than by
- * observing the `data-canvas-overlay` elements: the prop changes in the same commit as the panel's `hidden`, so the
- * refit (a layout effect) measures the panel as it now is, before the browser paints and before the drawer's reveal
- * asks for its pan, where a mutation or resize observer would answer after both; and the canvas still knows nothing
- * of the store. On a desktop nothing lies over the canvas: every fit fills it, and a panel changes nothing.
+ * observing the `data-canvas-overlay` elements: the prop changes in the same commit as the panel's `hidden` (and as
+ * the disclosure bar's marker, which the bar takes from the same state), so the refit (a layout effect) measures the
+ * panel as it now is, before the browser paints and before the drawer's reveal asks for its pan, where a mutation or
+ * resize observer would answer after both; and the canvas still knows nothing of the store. On a desktop nothing lies
+ * over the canvas: every fit fills it, and a panel changes nothing.
  *
  * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
  * it, and an open zone's collapse button (over its header icon; disclosure/CollapseButton.tsx) collapses it,
@@ -183,38 +185,62 @@ interface Edges {
 const areaOf = (box: Edges): number => (box.right - box.left) * (box.bottom - box.top);
 
 /**
+ * The largest part of `room` that none of `panels` covers: a panel lying over it leaves the parts to its left and
+ * right, above and below it, the next panel is taken in each of those in turn, and the largest part that remains wins
+ * (the first of equals, in that order). A part free of every panel lies wholly to one side of each, so this finds the
+ * largest whatever order the panels come in.
+ */
+function largestFree(room: Edges, panels: readonly Edges[]): Edges {
+  const [panel, ...rest] = panels;
+  if (panel === undefined) return room;
+  const across = Math.min(room.right, panel.right) - Math.max(room.left, panel.left);
+  const down = Math.min(room.bottom, panel.bottom) - Math.max(room.top, panel.top);
+  if (across <= 0 || down <= 0) return largestFree(room, rest);
+  const parts: readonly Edges[] = [
+    { ...room, right: Math.max(room.left, panel.left) },
+    { ...room, left: Math.min(room.right, panel.right) },
+    { ...room, bottom: Math.max(room.top, panel.top) },
+    { ...room, top: Math.min(room.bottom, panel.bottom) },
+  ];
+  return parts
+    .map((part) => largestFree(part, rest))
+    .reduce((largest, part) => (areaOf(part) > areaOf(largest) ? part : largest));
+}
+
+/** Whether an element lies open on screen: not inside a closed (`hidden`) element, and not `visibility: hidden`. */
+function lyingOpen(element: Element): boolean {
+  if (element.closest('[hidden]') !== null) return false;
+  const visibility = element.ownerDocument.defaultView?.getComputedStyle(element).visibility;
+  return visibility !== 'hidden' && visibility !== 'collapse';
+}
+
+/**
  * The part of the canvas a camera jump, the keyboard's pan and a zoom key's step keep a node in, and `0` fits the
- * drawing to (`fitRoom`; camera.ts, `inRoom`): the canvas, less each panel lying over it (`data-canvas-overlay`,
- * AGENTS.md "Product rules": on a phone or a tablet the details drawer along the canvas's right or lower edge, and the
- * top bar's View or More sheet hanging over it from its top edge). Each such panel leaves the room the largest part of
- * it that the panel keeps free: to its left or right, above or below it. A closed panel (`hidden`) covers nothing, and
- * nor does one beside the canvas: on a desktop the drawer stands beside it and no sheet opens, and the room is the
- * canvas.
+ * drawing to (`fitRoom`; camera.ts, `inRoom`): the largest part of the canvas that no panel lying over it covers
+ * (`data-canvas-overlay`, AGENTS.md "Product rules": on a phone or a tablet the details drawer along the canvas's right
+ * or lower edge, and with it the disclosure bar's row in the part it leaves, above a phone's sheet or beside a tablet's
+ * panel; the top bar's View or More sheet hanging over it from its top edge). One panel leaves the largest part of the
+ * canvas it keeps free, to its left or right, above or below it; with the drawer and the row, the largest part clear of
+ * both (`largestFree`). A closed panel (`hidden`) or one out of sight (`visibility: hidden`: the row under the phone's
+ * sheet at full height, or on a canvas too short for it) covers nothing, and nor does one beside the canvas: on a
+ * desktop the drawer stands beside it and no sheet opens, and the room is the canvas.
  */
 function clearRoom(svg: SVGSVGElement): CanvasRoom {
   const size = canvasSize(svg);
   const box = svg.getBoundingClientRect();
   if (box.width <= 0 || box.height <= 0) return { x: 0, y: 0, ...size };
-  let room: Edges = { left: 0, top: 0, right: size.width, bottom: size.height };
+  const panels: Edges[] = [];
   for (const overlay of svg.ownerDocument.querySelectorAll('[data-canvas-overlay]')) {
-    if (overlay.closest('[hidden]') !== null) continue;
+    if (!lyingOpen(overlay)) continue;
     const over = overlay.getBoundingClientRect();
-    const left = over.left - box.left;
-    const top = over.top - box.top;
-    const right = over.right - box.left;
-    const bottom = over.bottom - box.top;
-    const across = Math.min(room.right, right) - Math.max(room.left, left);
-    const down = Math.min(room.bottom, bottom) - Math.max(room.top, top);
-    if (across <= 0 || down <= 0) continue;
-    // The parts of the room to the panel's left and right, above and below it.
-    const parts: readonly Edges[] = [
-      { ...room, right: Math.max(room.left, left) },
-      { ...room, left: Math.min(room.right, right) },
-      { ...room, bottom: Math.max(room.top, top) },
-      { ...room, top: Math.min(room.bottom, bottom) },
-    ];
-    room = parts.reduce((largest, part) => (areaOf(part) > areaOf(largest) ? part : largest));
+    panels.push({
+      left: over.left - box.left,
+      top: over.top - box.top,
+      right: over.right - box.left,
+      bottom: over.bottom - box.top,
+    });
   }
+  const room = largestFree({ left: 0, top: 0, right: size.width, bottom: size.height }, panels);
   return {
     x: room.left,
     y: room.top,

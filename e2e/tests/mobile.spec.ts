@@ -65,10 +65,13 @@ import {
  *   2.2's 2.4.11 and target size);
  * - the canvas is shorter than a quarter of the window, or the drawer, open at its first height, leaves less than a
  *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
- *   nor (a canvas under 10.5 rem) hidden until the sheet closes, the drawer's Close button, as the drawer opens, is not
- *   whole inside the canvas or something lies over a point of it, or the timeline bar keeps its readout or speed on a
- *   phone's layout (or loses its slider or a step or play button) while the drawer is open, or does not get them back
- *   once it closes;
+ *   nor (a canvas under 20.25 rem) hidden until the sheet closes, the drawer's Close button, as the drawer opens, is
+ *   not whole inside the canvas or something lies over a point of it, or the timeline bar keeps its readout or speed
+ *   on a phone's layout (or loses its slider or a step or play button) while the drawer is open, or does not get them
+ *   back once it closes; and with the drawer open there on demo S, the disclosure bar's row is hidden other than on a
+ *   phone's canvas under 20.25 rem, or it shows and the card the drawer is of (one a tap opened it on, then each of
+ *   the drawing's cards in turn) lies under it once the camera has revealed it, or the drawer and the row leave less
+ *   than a third of the canvas in view;
  * - an open View or More sheet, with the disclosure bar's row while it shows, leaves less than a third of the canvas in
  *   view, or the sheet reaches below three quarters of the canvas's height, or View opened while the drawer is open
  *   leaves the drawer open, or it opens again once View is closed (at every size, the sideways ones too);
@@ -84,8 +87,9 @@ import {
  * disclosure bar above it, which its handle takes to the canvas's full height (hiding the canvas's content) and back,
  * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
  * when let go there; with the drawer open from an external keyboard (Enter on the drawing's tab stop), the zoom key `+`
- * keeps the focused card in the part of the canvas above the drawer, inside it while the card fits and centred in it
- * once the card is taller, and `0` fits the whole drawing to that part, none of it under the drawer; the View sheet
+ * keeps the focused card in the part of the canvas above the drawer and the disclosure bar's row riding above it,
+ * inside it while the card fits and centred in it once the card is taller, and `0` fits the whole drawing to that
+ * part, none of it under the row or the drawer; the View sheet
  * opened by a tap fits the drawing whole into the part of the canvas below it, a lens picked in it by a tap draws its
  * view whole there, and View closed by a tap fits the drawing to the whole canvas again; one finger dragged across
  * the canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in place.
@@ -164,6 +168,11 @@ const SCOPES = [
 const TARGET = 43.5;
 /** Where the tablet's layout starts (48rem at a 16-pixel rem, frontend/src/ui/screen.ts): narrower is a phone. */
 const TABLET_FROM = 768;
+/**
+ * A phone's canvas shorter than this hides the disclosure bar's row while the details sheet is open at half height
+ * (20.25rem at a 16-pixel rem, `CONTAINER.shortCanvas` of frontend/src/ui/screen.ts).
+ */
+const SHORT_CANVAS = 20.25 * 16;
 const REPO = path.resolve(import.meta.dirname, '..', '..');
 /** When the export of demo organisation S was taken, as its operation.json says. */
 const EXPORT_READ_TIME = '2026-10-05T14:30:00Z';
@@ -973,7 +982,7 @@ for (const size of SIDEWAYS) {
     if (await expand.isVisible()) {
       expect((await expand.boundingBox())?.y ?? -Infinity).toBeGreaterThanOrEqual(canvas?.y ?? Infinity);
     } else {
-      expect(canvas?.height ?? Infinity).toBeLessThan(10.5 * 16);
+      expect(canvas?.height ?? Infinity).toBeLessThan(SHORT_CANVAS);
     }
     // The drawer's Close button as the drawer opens, before any focus scrolls it: whole inside the canvas, and a tap
     // anywhere on it reaches it. On a phone the timeline bar keeps one line meanwhile (its slider and the step and play
@@ -1001,6 +1010,109 @@ for (const size of SIDEWAYS) {
     await expect(expand).toBeVisible();
     await expect(readout).toBeVisible();
     await expect(speed).toBeVisible();
+  });
+}
+
+/**
+ * What is wrong with the disclosure bar's row while the details show the card `id`: on a phone the row is hidden only
+ * on a canvas too short for it above the half-height sheet (`SHORT_CANVAS`); where it shows, the card's body lies clear
+ * of it, and the drawer and the row together leave at least a third of the canvas in view. Run in the page.
+ */
+function rowProblems([id, short, tabletFrom]: readonly [string, number, number]): string[] {
+  const px = (n: number): string => String(Math.round(n * 10) / 10);
+  const canvas = document.getElementById('diagram-canvas')?.getBoundingClientRect();
+  const drawer = document.querySelector('aside[aria-label="Details"]:not([hidden])')?.getBoundingClientRect();
+  const card = document.querySelector(`svg.dg-canvas .dg-card[data-id="${CSS.escape(id)}"]`);
+  const body = (card?.querySelector('.dg-body') ?? card)?.getBoundingClientRect();
+  if (canvas === undefined || drawer === undefined || body === undefined)
+    return ['no canvas, drawer or card'];
+  const panel = document.querySelector('#diagram-canvas [role="group"][aria-label="Expand and collapse"]');
+  if (panel?.checkVisibility({ visibilityProperty: true }) !== true)
+    return window.innerWidth < tabletFrom && canvas.height < short
+      ? []
+      : [`the row is hidden over a canvas ${px(canvas.width)} × ${px(canvas.height)} px`];
+  const row = panel.getBoundingClientRect();
+  const problems: string[] = [];
+  const box = (rect: DOMRect): string => [rect.left, rect.top, rect.right, rect.bottom].map(px).join(',');
+  const overlap = (a: DOMRect, b: DOMRect): number =>
+    Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+    Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+  if (overlap(body, row) > 0.25) problems.push(`the card at ${box(body)} lies under the row at ${box(row)}`);
+  const covered = overlap(drawer, canvas) + overlap(row, canvas) - overlap(drawer, row);
+  const uncovered = 1 - covered / (canvas.width * canvas.height);
+  if (uncovered < 1 / 3)
+    problems.push(`the drawer and the row leave ${px(uncovered * 100)} % of the canvas in view`);
+  return problems;
+}
+
+for (const size of SIDEWAYS) {
+  test(`a phone turned sideways, ${String(size.width)} × ${String(size.height)}: with the details open, the disclosure bar's row is hidden, or the card the details are of lies clear of it`, async ({
+    page,
+  }) => {
+    // Up to all of demo S's cards selected in turn where the row shows (a tablet's layout).
+    test.slow();
+    await page.setViewportSize(size);
+    const view = DIAGRAMS[0].slice(DIAGRAMS[0].indexOf('#'));
+    const svg = await openDiagram(page, DIAGRAMS[0]);
+    const cards = await svg.evaluate((element) =>
+      [...element.querySelectorAll('.dg-card[data-id]')].map((card) => card.getAttribute('data-id') ?? ''),
+    );
+    expect(cards.length).toBeGreaterThan(0);
+    // A tap on a card in the canvas's lower half, which the details then cover on a phone: the camera reveals it.
+    const tap = await svg.evaluate((element) => {
+      const canvas = element.getBoundingClientRect();
+      const cardAt = (x: number, y: number): Element | null => {
+        const hit = document.elementFromPoint(x, y);
+        if (hit === null || !element.contains(hit)) return null;
+        if (hit.closest('[data-ghost], .dg-console-action, .dg-collapse, .dg-chip') !== null) return null;
+        return hit.closest('.dg-card[data-id]');
+      };
+      const middle = canvas.top + canvas.height / 2;
+      for (const [from, to] of [
+        [middle, canvas.bottom - 4],
+        [canvas.top + 4, middle],
+      ] as const) {
+        for (let y = from; y < to; y += 2) {
+          for (let x = canvas.left + 4; x < canvas.right - 4; x += 2) {
+            const card = cardAt(x, y);
+            if (card !== null) return { x, y, id: card.getAttribute('data-id') ?? '' };
+          }
+        }
+      }
+      return null;
+    });
+    if (tap === null) throw new Error('no card to tap');
+    await page.touchscreen.tap(tap.x, tap.y);
+    const details = page.getByRole('complementary', { name: 'Details' });
+    await expect(details).toBeVisible();
+    await expect(svg.locator(`.dg-card[data-id="${tap.id}"]`)).toHaveAttribute('aria-pressed', 'true');
+    await cameraSettled(svg);
+    const where = (id: string): string => `${String(size.width)} × ${String(size.height)}, ${id}`;
+    expect(
+      await page.evaluate(rowProblems, [tap.id, SHORT_CANVAS, TABLET_FROM] as const),
+      where(tap.id),
+    ).toEqual([]);
+    // Where the row shows, every other card selected in turn through the address, each revealed by the camera.
+    const row = page.getByRole('group', { name: 'Expand and collapse' });
+    if (!(await row.isVisible())) return;
+    const problems: string[] = [];
+    for (const id of cards.filter((card) => card !== tap.id)) {
+      await page.evaluate(
+        ([hash, selection]) => {
+          window.location.hash = `${hash.slice(1)}&selection=${encodeURIComponent(selection)}`;
+        },
+        [view, id] as const,
+      );
+      await expect(svg.locator(`.dg-card[data-id="${id}"]`)).toHaveAttribute('aria-pressed', 'true');
+      await expect(details).toBeVisible();
+      await cameraSettled(svg);
+      problems.push(
+        ...(await page.evaluate(rowProblems, [id, SHORT_CANVAS, TABLET_FROM] as const)).map(
+          (problem) => `${where(id)}: ${problem}`,
+        ),
+      );
+    }
+    expect(problems).toEqual([]);
   });
 }
 
@@ -1463,7 +1575,7 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(drawer).toBeHidden();
   });
 
-  test('with the drawer open, `+` on an external keyboard keeps the focused card in the part of the canvas above it', async ({
+  test('with the drawer open, `+` on an external keyboard keeps the focused card in the part of the canvas above it and the disclosure bar', async ({
     page,
   }) => {
     const svg = await openDiagram(page, DIAGRAMS[0]);
@@ -1482,10 +1594,11 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(card).toBeFocused();
     await cameraSettled(svg);
     const canvas = await boxOf(svg);
-    // The part of the canvas the drawer leaves in view: from the canvas's top edge down to the drawer's.
+    // The part of the canvas the drawer leaves in view, from the canvas's top edge down to the drawer's, more than a
+    // third of it; the disclosure bar's row rides in it, above the drawer, so the room is the band above the row.
     const top = canvas.y;
-    const bottom = (await boxOf(drawer)).y;
-    expect(bottom - top).toBeGreaterThan(canvas.height / 3);
+    expect((await boxOf(drawer)).y - top).toBeGreaterThan(canvas.height / 3);
+    const bottom = (await boxOf(page.getByRole('group', { name: 'Expand and collapse' }))).y;
     let steps = 0;
     for (; steps < 16; steps += 1) {
       await page.keyboard.press('+');
@@ -1494,7 +1607,7 @@ test.describe('on a phone, 375 × 667', () => {
       const body = await boxOf(card.locator('.dg-body').first());
       const where = `after ${String(steps + 1)} × +: the card from ${body.y.toFixed(1)} to ${(body.y + body.height).toFixed(1)}, the room from ${top.toFixed(1)} to ${bottom.toFixed(1)}`;
       if (body.height <= bottom - top) {
-        // It fits: it lies inside the room, none of it under the drawer.
+        // It fits: it lies inside the room, none of it under the row or the drawer.
         expect(body.y, where).toBeGreaterThanOrEqual(top - 1);
         expect(body.y + body.height, where).toBeLessThanOrEqual(bottom + 1);
       } else {
@@ -1507,7 +1620,7 @@ test.describe('on a phone, 375 × 667', () => {
     expect(steps).toBeLessThan(16);
   });
 
-  test('with the drawer open, `0` on an external keyboard fits the drawing to the part of the canvas above it', async ({
+  test('with the drawer open, `0` on an external keyboard fits the drawing to the part of the canvas above it and the disclosure bar', async ({
     page,
   }) => {
     const svg = await openDiagram(page, DIAGRAMS[0]);
@@ -1529,8 +1642,10 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(focused).toHaveCount(1);
     const canvas = await boxOf(svg);
     const top = canvas.y;
-    const bottom = (await boxOf(drawer)).y;
-    // The drawing's frame (its background) lies whole in the part of the canvas above the drawer.
+    // The disclosure bar's row rides above the drawer: the room is the band of the canvas above the row.
+    const bottom = (await boxOf(page.getByRole('group', { name: 'Expand and collapse' }))).y;
+    expect(bottom).toBeLessThan((await boxOf(drawer)).y);
+    // The drawing's frame (its background) lies whole in that part of the canvas.
     const drawing = await boxOf(svg.locator('.dg-background'));
     const where = `the drawing from ${drawing.y.toFixed(1)} to ${(drawing.y + drawing.height).toFixed(1)}, the room from ${top.toFixed(1)} to ${bottom.toFixed(1)}`;
     expect(drawing.y, where).toBeGreaterThanOrEqual(top - 0.5);

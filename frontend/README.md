@@ -225,12 +225,15 @@ with `mode: 'reveal'` only the short pan of `revealTransform`, section "Details 
 is drawn, then reports with `onJumpDone`; `onHover`, which reports the node under the pointer; and `panels`,
 which the diagram page derives from `ui.sheet` and the drawer's open state (`drawerOpen` with a selection), a
 value that changes when a panel over the canvas opens or closes. A jump,
-the pan that follows keyboard focus and a zoom key's step keep the node in the part of the canvas that a panel
-lying over it leaves in view (`clearRoom`: each open element marked `data-canvas-overlay` that lies over the
-canvas, the details drawer of a phone or a tablet along its right or lower edge or the top bar's View or More
-sheet hanging from its top edge, leaves the largest part of the canvas it keeps free to its left or right,
-above or below it, and `inRoom` in `diagram/camera.ts` works the camera out for that part as if it were the
-whole canvas); on a desktop nothing lies over the canvas and the room is the canvas. A fit shows the whole
+the pan that follows keyboard focus and a zoom key's step keep the node in the part of the canvas that the
+panels lying over it leave in view (`clearRoom`: the elements marked `data-canvas-overlay` that lie open over
+the canvas, the details drawer of a phone or a tablet along its right or lower edge with the disclosure bar's
+row in the part it leaves, or the top bar's View or More sheet hanging from its top edge; one panel leaves the
+largest part of the canvas it keeps free to its left or right, above or below it, and the drawer and the row
+the largest part clear of both, whichever comes first, `largestFree`; a closed panel or one out of sight,
+`visibility: hidden`, counts for nothing; and `inRoom` in `diagram/camera.ts` works the camera out for that
+part as if it were the whole canvas); on a desktop nothing lies over the canvas and the room is the canvas. A
+fit shows the whole
 drawing in that part too (`fitRoom`; the whole canvas where the panels leave nothing to fit into, a phone's
 drawer at full height, which hides the drawing): the fit a new view opens with (a new frame drawn: a drill-in,
 a lens or a filter picked in the View sheet, a day whose drawing is another size, a resize that picks another
@@ -293,8 +296,9 @@ tablet from 48rem to 79.99rem, the desktop from 80rem (1280 px at the default te
 follows the window through `matchMedia` (a window without it, as in jsdom, is a desktop). Media queries cannot
 read custom properties, so the stylesheets write the same queries out (`MEDIA`): `(max-width: 79.99rem)` for
 what the phone and the tablet share, `(max-width: 47.99rem)` for the phone alone. Two container queries ask
-for a part's own room instead: `CONTAINER.shortCanvas`, `(max-height: 10.49rem)`, a phone's canvas too short
-for the disclosure bar above the half-height drawer (the bar's frame over the canvas is the container), and
+for a part's own room instead: `CONTAINER.shortCanvas`, `(max-height: 20.24rem)`, a phone's canvas too short
+for the disclosure bar above the half-height drawer, where the drawer and the bar would leave less than a
+third of the canvas in view (the bar's frame over the canvas is the container), and
 `CONTAINER.shortWorkspace`, `(max-height: 18.49rem)`, a phone's diagram workspace (the canvas and the timeline
 bar, the window less the top bar and the footer) too short for the whole timeline bar and a canvas whose
 half-height drawer holds its header's Close button whole (the workspace is the container). `ui/screen.test.ts`
@@ -309,7 +313,7 @@ is CSS.
 | Breadcrumb | crumbs cut with an ellipsis | the crumbs at full width in a box that scrolls sideways (no scroll bar) and rests at its end, so the current level always shows; a swipe brings the others into view, a crumb that takes focus from the keyboard scrolls the trail until it shows whole, clear of the faded edge where they are cut (a tap or a click scrolls nothing, so it lands on the crumb it was aimed at) | as on a tablet |
 | Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
 | Timeline bar | one row; the slider and its dates sit above the bar's middle, so the day markers under the track fit in below the reach of the thumb's focus ring | the readout below the slider's line, which is as on a phone | the slider across the width on a line of its 44-pixel thumb and, below the reach of the thumb's focus ring, the day markers under its track (the bar no taller for them); the readout below, then the buttons and the playback options; on a workspace under 18.5rem tall (a phone turned sideways), while the drawer is open, one line, the slider and the step and play buttons after it, the readout and the playback options hidden until the drawer closes, so the canvas holds the half-height drawer's header |
-| Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel | a compact row across the canvas's foot, above the drawer's sheet while it is open, or hidden while it is open on a canvas under 10.5rem tall (a small phone turned sideways); hidden while View or More is open |
+| Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel; while the drawer is open, the camera keeps the drawing clear of it too | a compact row across the canvas's foot, above the drawer's sheet while it is open (the camera then keeps the drawing in the band above it), or hidden while it is open on a canvas under 20.25rem tall (a phone turned sideways, the smallest phones upright); hidden while View or More is open |
 | Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
 **Folds.** View and More are `ui/Popover` sheets (`sheet`). On a desktop they are `inline`: no button, the
@@ -364,9 +368,11 @@ stay off the canvas alone (`touch-action: none`), so every page pinch-zooms as t
 **Out of sight, out of reach.** The chrome over the canvas never hides a control that can take focus: the
 drawer's content scrolls inside it and never reaches past its edge (onto the timeline bar), the disclosure bar
 moves clear of the drawer (to the bottom left on a tablet, above the sheet on a phone, by the sheet's
-`data-sheet`; hidden while the sheet is open on a canvas too short for it there, `CONTAINER.shortCanvas` on
-the bar's frame), the canvas's content is hidden (`visibility`) while the phone's sheet covers it at full
-height, and the skip links show over the top bar. A control scrolled into view in the sheet by focus stops
+`data-sheet`; hidden while the sheet is open on a canvas too short for it and a band of the drawing above it,
+`CONTAINER.shortCanvas` on the bar's frame; marked `data-canvas-overlay` while the drawer is open, so a camera
+jump and a fit keep the drawing clear of both, section "App state", `clearRoom`), the canvas's content is
+hidden (`visibility`) while the phone's sheet covers it at full height, and the skip links show over the top
+bar. A control scrolled into view in the sheet by focus stops
 below the handle's inner half, which lies over the top of the sheet's content (`scroll-padding-top`). On a
 phone turned sideways, whose workspace is too short for the whole timeline bar and a canvas whose half-height
 sheet holds its header (`CONTAINER.shortWorkspace` on the workspace), the timeline bar keeps one line while
@@ -407,12 +413,13 @@ within the canvas, 44-pixel targets, every control one reaches with Tab wholly i
 whole box inside the window, and inside the canvas when it lies over it) and tappable at its centre and just
 inside each edge, the canvas's room (the share of it an open drawer, View or More sheet
 leaves in view, and View opened over the drawer closing it), the drawer's Close button whole inside the canvas
-as the drawer opens on a phone turned sideways, with the timeline bar on one line meanwhile, axe; and a theme
-picked in More, Sign out from More, a long trail, the
-sheet's heights, `+` and `0` from an external keyboard with the drawer open (the focused card stays above it,
-and the drawing is fitted above it), View opened, a lens picked in it and View closed by taps (the drawing
-fitted whole below the sheet, the lens's view too, then the whole canvas again) and the canvas's touch input
-by finger. The same project runs
+as the drawer opens on a phone turned sideways, with the timeline bar on one line meanwhile, and there the
+disclosure bar's row hidden on a phone's canvas under 20.25rem or else clear of each card the drawer is of,
+axe; and a theme picked in More, Sign out from More, a long trail, the sheet's heights, `+` and `0` from an
+external keyboard with the drawer open (the focused card stays above it and the disclosure bar's row riding
+above it, and the drawing is fitted there), View opened, a lens picked in it and View closed by taps (the
+drawing fitted whole below the sheet, the lens's view too, then the whole canvas again) and the canvas's touch
+input by finger. The same project runs
 `e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a
 long press) and a mouse's drag and double-click on the same page.
 
@@ -1535,9 +1542,10 @@ drawer opens), Escape clears the selection and then returns to the zone around t
 item's menu. The camera pans just enough to show the item, and first zooms in to the subtitle scale (0.55,
 `lod.ts`; not the label scale, 0.35, where a card's text is about 4.5 px) when it is further out (`camera.ts`,
 `keyboardTransform`; at once with reduced motion). `+` and `-` zoom one step (× 1.5) about the focused item,
-which stays in the part of the canvas an open drawer or sheet leaves in view (about that part's centre from
-the canvas itself; section "App state", `clearRoom`), and `0` fits the whole drawing to that part, with 16 px
-around it (`FIT_PADDING`) and none of it under the drawer or the sheet (`fitRoom`; the whole canvas when a
+which stays in the part of the canvas an open drawer (and the disclosure bar's row in the part it leaves) or
+sheet leaves in view (about that part's centre from the canvas itself; section "App state", `clearRoom`), and
+`0` fits the whole drawing to that part, with 16 px around it (`FIT_PADDING`) and none of it under the drawer,
+the row or the sheet (`fitRoom`; the whole canvas when a
 phone's drawer at full height leaves nothing to fit into, and when nothing is open), a fit the camera then
 rests on as on a new view's, so the drawer or the sheet closing afterwards fits the drawing to the whole
 canvas again (section "App state", `panels`). `/`
@@ -1677,7 +1685,8 @@ src/diagram/disclosure/
                        cached per view and result) and useDisclosureNotice
   DisclosureBar.tsx    the bar at the canvas's bottom right (on a tablet the bottom left; on a phone a compact row
                        across the canvas's foot, above the details sheet while it is open): "N of M shown",
-                       Expand all, Collapse all, the notice
+                       Expand all, Collapse all, the notice; marked `data-canvas-overlay` while the drawer lies
+                       over the canvas, so the camera keeps the drawing clear of it
   CollapseButton.tsx   an open zone's collapse button (interactive canvas only), disclosure.css its states
   flipCamera.ts        the camera after a flip: keep the viewBox, glide 200 ms to frame the zone
   openAround.ts        in the data worker: the flips that open the chips around a node until it is drawn as
@@ -1799,8 +1808,9 @@ height, less the strip the handle stands in), whose handle along its top edge (`
 `axis="height"`, the same name) moves freely while dragged and, let go, settles at the nearer of the two
 heights, or closes the sheet when let go well below half; ↑ and End take it to full height, ↓ and Home to
 half; it opens at half height each time. The sheet's `data-sheet` (`half`, `full`) lets the page's stylesheets
-keep the disclosure bar above it at half height and hide the canvas's content while it covers the canvas at
-full height (no focus lands out of sight). Either way the header and the details scroll together in one box
+keep the disclosure bar above it at half height (where the bar, marked `data-canvas-overlay` while the drawer
+is open, is kept clear by the reveal and the fit too) and hide the canvas's content while it covers the canvas
+at full height (no focus lands out of sight). Either way the header and the details scroll together in one box
 (`.content`, `display: contents` on a desktop), so nothing in the drawer reaches past its edge whatever its
 height. Close and Escape close it as on a desktop, and so does the top bar's View or More sheet as it opens,
 the selection kept (section "Layouts", paragraph "Folds"); a node selected opens it again, at half height on a

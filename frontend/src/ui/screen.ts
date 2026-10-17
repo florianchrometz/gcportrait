@@ -30,10 +30,13 @@ export const MEDIA = {
 
 /**
  * The container queries a stylesheet may use, in rem as well: a part's own room rather than the window's width.
- * `shortCanvas`: a phone's canvas under 10.5rem tall (a small phone turned sideways), too short for the disclosure bar
- * above the half-height details sheet, which covers half of it (the bar's 44-pixel buttons in their panel, 54 px, the
- * sheet handle's outer half and a gap, 30 px: 84 px, twice), so the bar is hidden while the sheet is open
- * (diagram/disclosure/DisclosureBar.module.css).
+ * `shortCanvas`: a phone's canvas under 20.25rem tall (a phone turned sideways, the smallest phones upright), too short
+ * for the disclosure bar above the half-height details sheet: the sheet covers half of the canvas, and with the bar
+ * (its 44-pixel buttons in their panel, 54 px) it would leave less than a third of the canvas in view, the least a
+ * View or More sheet leaves (AGENTS.md, Product rules; the bar's 54 px six times: 324 px), so the bar is hidden while
+ * the sheet is open (diagram/disclosure/DisclosureBar.module.css). From that height the bar leaves the drawing a band
+ * at least 78 px tall above itself (half the canvas less the bar, the sheet handle's outer half and a gap, 84 px),
+ * which a camera jump and a fit keep to (diagram/DiagramCanvas, `clearRoom`).
  * `shortWorkspace`: a phone's diagram workspace, the canvas and the timeline bar under it, under 18.5rem tall (a phone
  * turned sideways), too short for the whole bar and a canvas whose half-height details sheet holds its header's Close
  * button whole (the sheet's border, the handle's inner half and a gap, 27 px, and the 44-pixel button: 71 px, twice;
@@ -45,7 +48,7 @@ export const MEDIA = {
  * 14 000 each), so folding the bar never lays the diagram out again under a node just tapped (diagram/autoDetail.ts).
  */
 export const CONTAINER = {
-  shortCanvas: '(max-height: 10.49rem)',
+  shortCanvas: '(max-height: 20.24rem)',
   shortWorkspace: '(max-height: 18.49rem)',
 } as const;
 

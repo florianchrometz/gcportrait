@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
  * What the app store asks of the canvas: a pending `jumpTo` becomes a camera glide to the node as soon as
- * it is drawn (at once with reduced motion), into the part of the canvas a panel lying over it leaves in view (a
- * phone's or a tablet's View or More sheet, or details drawer), where a zoom key's step keeps the focused item too and
+ * it is drawn (at once with reduced motion), into the part of the canvas the panels lying over it leave in view (a
+ * phone's or a tablet's View or More sheet, or details drawer with the disclosure bar's row in the part it leaves: the
+ * largest part clear of both, whichever comes first; a panel out of sight counts for nothing), where a zoom key's step
+ * keeps the focused item too and
  * which a fit shows the whole drawing in (a new view's, `0`'s); a panel opening or closing (`panels`) fits the drawing
  * again to the part the panels then leave while the camera still rests on the last fit, and leaves a camera the person
  * moved; and the node under the pointer is reported for the store's hover.
@@ -196,6 +198,42 @@ describe('the room a jump keeps the node in', () => {
     const lower = onScreen(jumpTo('run/api', [{ x: 0, y: 400, width: 1280, height: 400 }]), 'run/api');
     expect(lower.x).toBeCloseTo(640);
     expect(lower.y).toBeCloseTo(200);
+  });
+
+  /** A phone's drawer over the canvas's lower half, and the disclosure bar's row riding above it and its handle. */
+  const sheet: Box = { x: 0, y: 400, width: 1280, height: 400 };
+  const row: Box = { x: 8, y: 316, width: 1264, height: 54 };
+
+  it.each([
+    ['the drawer first', [sheet, row]],
+    ['the row first', [row, sheet]],
+  ] as const)(
+    'keeps the node in the band above the disclosure bar’s row riding above a phone’s drawer (%s)',
+    (_, panels) => {
+      // The row leaves 316 px above it and 30 px between it and the drawer: the band above it, whatever the order.
+      const node = onScreen(jumpTo('run/api', panels), 'run/api');
+      expect(node.x).toBeCloseTo(640);
+      expect(node.y).toBeCloseTo(316 / 2);
+      expect(node.bottom).toBeLessThan(316);
+    },
+  );
+
+  it('and above the row at the foot of the part a tablet’s drawer leaves, beside it', () => {
+    // Left of the drawer, 640 × 800; the row in its bottom-left corner leaves 640 × 734 above it, the most.
+    const svg = jumpTo('run/api', [
+      { x: 640, y: 0, width: 640, height: 800 },
+      { x: 12, y: 734, width: 400, height: 54 },
+    ]);
+    const node = onScreen(svg, 'run/api');
+    expect(node.x).toBeCloseTo(320);
+    expect(node.y).toBeCloseTo(734 / 2);
+  });
+
+  it('counts a panel out of sight (`visibility: hidden`) for nothing: the row on a canvas too short for it', () => {
+    panel(row, false).style.visibility = 'hidden';
+    const node = onScreen(jumpTo('run/api', [sheet]), 'run/api');
+    expect(node.x).toBeCloseTo(640);
+    expect(node.y).toBeCloseTo(200);
   });
 
   it('counts a closed sheet, and a drawer beside the canvas (a desktop’s), for nothing', () => {

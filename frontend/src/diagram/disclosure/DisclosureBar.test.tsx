@@ -5,7 +5,9 @@
  * by a click, "Expand all" opens the next level and "Collapse all" goes back to the default, all through the URL
  * hash; an unavailable action stays focusable and says why; the 48-flip cap is told in a live region until
  * dismissed (on demo S at the folder level: one chip is all it needs; flips.test.ts counts the cap itself); axe
- * finds nothing.
+ * finds nothing. While the details drawer lies over the canvas (a phone's sheet, a tablet's panel) the bar is marked
+ * as a panel over it, which a camera jump and a fit keep the drawing clear of; on a desktop, or with the drawer closed,
+ * it is not.
  */
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -13,6 +15,7 @@ import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '../../test/axe';
 import { drawn } from '../../test/diagram';
 import { currentLocation, renderApp } from '../../test/renderApp';
+import { installViewport } from '../../test/viewport';
 import { createInProcessWorkers } from '../pipeline/inProcess';
 import { shownText } from './DisclosureBar';
 
@@ -100,6 +103,35 @@ describe('the disclosure bar', () => {
     await expectNoAxeViolations(container);
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(screen.queryByText(/At most 48 zones/)).toBeNull();
+  }, 60_000);
+
+  it('is a panel over the canvas while the details drawer lies over it, on a phone and a tablet only', async () => {
+    const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
+    const marked = (): boolean => bar().closest('[data-canvas-overlay]') !== null;
+    for (const [width, over] of [
+      [375, true],
+      [820, true],
+      [1280, false],
+    ] as const) {
+      const viewport = installViewport(width);
+      try {
+        const { container, unmount } = renderApp(
+          `/diagram#snapshot=demo:S&detail=folders&selection=${project}`,
+          { diagramWorkers: createInProcessWorkers },
+        );
+        await drawn(container);
+        await shows(' shown');
+        const details = screen.getByRole('complementary', { name: 'Details' });
+        expect(details.hidden).toBe(false);
+        expect(marked(), `${String(width)} px, the drawer open`).toBe(over);
+        fireEvent.click(within(details).getByRole('button', { name: 'Close' }));
+        expect(details.hidden).toBe(true);
+        expect(marked(), `${String(width)} px, the drawer closed`).toBe(false);
+        unmount();
+      } finally {
+        viewport.uninstall();
+      }
+    }
   }, 60_000);
 
   it('writes the count with thousands separators', () => {
