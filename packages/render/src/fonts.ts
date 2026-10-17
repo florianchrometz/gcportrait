@@ -42,7 +42,8 @@ export const FONT_PACKAGES: readonly FontFace['pkg'][] = [
 /**
  * An installed package's directory (development, tests and the bundle step; never at run time in the image): the
  * nearest directory above its entry point whose package.json names it (a package's `exports` may hide its
- * package.json).
+ * package.json). Repository tooling uses scripts/lib/dependency-versions.mjs; this library does not import
+ * the scripts across the package boundary (AGENTS.md, Architecture and code).
  */
 export function packageDir(pkg: string): string {
   let dir = path.dirname(require.resolve(pkg));

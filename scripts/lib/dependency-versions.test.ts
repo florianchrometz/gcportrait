@@ -11,7 +11,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { REPO, createTempTree, type TempTree } from '../testing/temp-tree.js';
-import { dependencyVersions, exactPin, exactPinProblem } from './dependency-versions.mjs';
+import { dependencyVersions, exactPin, exactPinProblem, packageDirectory } from './dependency-versions.mjs';
 
 let tree: TempTree;
 beforeEach(() => {
@@ -42,6 +42,9 @@ describe('dependencyVersions', () => {
         '@resvg/resvg-wasm/package.json',
       ),
     ).toThrow(/not defined by "exports"/);
+    expect(packageDirectory(tree.root, 'packages/render', '@resvg/resvg-wasm')).toBe(
+      path.join(tree.root, 'packages/render/node_modules/@resvg/resvg-wasm'),
+    );
     expect(dependencyVersions(tree.root, 'packages/render', '@resvg/resvg-wasm')).toEqual({
       declared: '2.6.2',
       installed: '2.6.2',
@@ -51,6 +54,9 @@ describe('dependencyVersions', () => {
   it('finds a package hoisted to the root and a declaration among the dev dependencies', () => {
     tree.write('backend/package.json', JSON.stringify({ devDependencies: { fflate: '0.8.3' } }));
     install('.', 'fflate', '0.8.3');
+    expect(packageDirectory(tree.root, 'backend', 'fflate')).toBe(
+      path.join(tree.root, 'node_modules/fflate'),
+    );
     expect(dependencyVersions(tree.root, 'backend', 'fflate')).toEqual({
       declared: '0.8.3',
       installed: '0.8.3',
@@ -60,6 +66,7 @@ describe('dependencyVersions', () => {
   it('looks in no node_modules directory outside the tree', () => {
     tree.write('tree/frontend/package.json', JSON.stringify({ dependencies: { fflate: '0.8.3' } }));
     install('.', 'fflate', '0.8.3');
+    expect(packageDirectory(path.join(tree.root, 'tree'), 'frontend', 'fflate')).toBeUndefined();
     expect(dependencyVersions(path.join(tree.root, 'tree'), 'frontend', 'fflate')).toEqual({
       declared: '0.8.3',
       installed: null,
@@ -70,10 +77,37 @@ describe('dependencyVersions', () => {
 
   it('is null for a package neither declared nor installed', () => {
     tree.write('packages/other/package.json', JSON.stringify({ devDependencies: { x: '1.0.0' } }));
+    expect(packageDirectory(tree.root, 'packages/other', '@resvg/resvg-wasm')).toBeUndefined();
     expect(dependencyVersions(tree.root, 'packages/other', '@resvg/resvg-wasm')).toEqual({
       declared: null,
       installed: null,
     });
+  });
+});
+
+describe('packageDirectory', () => {
+  it('prefers the workspace’s installed package over one hoisted to the root', () => {
+    tree.write('website/package.json', '{}');
+    install('.', 'pngjs', '7.0.0');
+    install('website', 'pngjs', '7.0.0');
+    expect(packageDirectory(tree.root, 'website', 'pngjs')).toBe(
+      path.join(tree.root, 'website/node_modules/pngjs'),
+    );
+  });
+
+  it('finds a package with no exported entry point', () => {
+    tree.write('website/package.json', '{}');
+    tree.write(
+      'website/node_modules/example-assets/package.json',
+      JSON.stringify({
+        name: 'example-assets',
+        version: '1.0.0',
+        exports: { './asset': './asset.bin' },
+      }),
+    );
+    expect(packageDirectory(tree.root, 'website', 'example-assets')).toBe(
+      path.join(tree.root, 'website/node_modules/example-assets'),
+    );
   });
 });
 

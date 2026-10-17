@@ -333,7 +333,12 @@ describe('staleness', () => {
     tree.write('app/index.html', '<html></html>');
     tree.write('app/assets/index-abc.js', 'console.log(1)');
     tree.write('packages/demo-data/fixtures/S.ndjson', '{}\n');
-    for (const file of ['scripts/media.mjs', 'scripts/lib/media-core.mjs']) tree.write(file, file);
+    for (const file of [
+      'scripts/media.mjs',
+      'scripts/lib/media-core.mjs',
+      'scripts/lib/dependency-versions.mjs',
+    ])
+      tree.write(file, file);
     tree.write('website/src/data/media.json', JSON.stringify(config()));
   });
   afterEach(() => {
@@ -344,6 +349,15 @@ describe('staleness', () => {
   /** The staleness inputs of the test's tree, its app in app/, with `extra` options. */
   const inputsOf = (extra: Partial<Parameters<typeof computeInputs>[0]> = {}) =>
     computeInputs({ root: tree.root, appDir: path.join(tree.root, 'app'), toolVersion: tools, ...extra });
+
+  it('includes package lookup code in the shared hash but ignores its comments', () => {
+    const file = 'scripts/lib/dependency-versions.mjs';
+    const before = inputsOf();
+    tree.write(file, `// Package lookup.\n${file}`);
+    expect(inputsOf().script).toBe(before.script);
+    tree.write(file, 'export const lookup = 1;');
+    expect(inputsOf().script).not.toBe(before.script);
+  });
 
   it('hashes the app bundle, the fixtures, the script and the tools, and notices a change in each', () => {
     const before = inputsOf();

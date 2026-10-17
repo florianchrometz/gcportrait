@@ -48,15 +48,21 @@ export const CONFIG_FILE = 'website/src/data/media.json';
 export const FIXTURES_DIR = 'packages/demo-data/fixtures';
 /**
  * The files whose text is "the script" in the shared staleness hash: scripts/media.mjs without the items' own capture
- * code (each item's fingerprint holds that), this file, and the media list's settings (its lists of stills, scenes and
- * cards go into the items' fingerprints instead; titles and alt texts change no pixel and count nowhere).
+ * code (each item's fingerprint holds that), this file, the package lookup, and the media list's settings (its lists
+ * of stills, scenes and cards go into the items' fingerprints instead; titles and alt texts change no pixel and
+ * count nowhere).
  */
-export const SCRIPT_FILES = Object.freeze(['scripts/media.mjs', 'scripts/lib/media-core.mjs', CONFIG_FILE]);
+export const SCRIPT_FILES = Object.freeze([
+  'scripts/media.mjs',
+  'scripts/lib/media-core.mjs',
+  'scripts/lib/dependency-versions.mjs',
+  CONFIG_FILE,
+]);
 /** The script whose items' capture code is cut out of the shared hash. */
 export const MEDIA_SCRIPT = 'scripts/media.mjs';
 /**
- * The tools whose version changes the output, read from website/node_modules/<name>/package.json: the capture, the
- * encoders, and the Roboto files the link-preview cards are set in.
+ * The tools whose version changes the output, resolved for the website package: the capture, the encoders, and
+ * the Roboto files the link-preview cards are set in.
  */
 export const TOOLS = Object.freeze(['playwright', 'gifenc', 'mediabunny', 'pngjs', '@fontsource/roboto']);
 /** Centiseconds the last frame of every GIF stays before the loop starts again (a loop is the scene plus this). */
@@ -352,8 +358,8 @@ export function sharedConfigText(text) {
 
 /**
  * The shared staleness inputs: the demo app bundle the media are captured from (a production build in demo mode), the
- * demo fixtures, the script (scripts/media.mjs without the items' capture code, this file, the media list's
- * settings), and the versions of the capture and encoding tools.
+ * demo fixtures, the script (scripts/media.mjs without the items' capture code, this file, the package lookup,
+ * the media list's settings), and the versions of the capture and encoding tools.
  * @param {{ root: string, appDir: string, toolVersion: (name: string) => string, captures?: Readonly<Record<string, readonly string[]>> }} options
  * @returns {Inputs}
  */

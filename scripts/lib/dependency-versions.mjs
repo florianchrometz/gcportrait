@@ -9,7 +9,9 @@
  * time, as the bundle test loads scripts/third-party-notices.mjs and the frontend's build
  * scripts/lib/static-demo.mjs: repository tooling is no workspace package to import by name, eslint.config.js
  * refuses a relative import from a workspace into it (`import-x/no-relative-packages`; AGENTS.md, Architecture
- * and code), and their TypeScript projects check no JavaScript. Plain ESM, Node built-ins only.
+ * and code), and their TypeScript projects check no JavaScript. Plain ESM, Node built-ins only. Media tooling
+ * uses packageDirectory too; the render library's runtime lookup stays in packages/render/src/fonts.ts,
+ * across that same package boundary.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -41,6 +43,22 @@ function declaredIn(manifest, field, name) {
 }
 
 /**
+ * An installed dependency's directory, as Node looks it up for a workspace, without requiring package.json
+ * or an entry point to be exported. Only node_modules directories inside root count.
+ * @param {string} root the tree's root
+ * @param {string} workspace the workspace package's directory, relative to root
+ * @param {string} name
+ * @returns {string | undefined}
+ */
+export function packageDirectory(root, workspace, name) {
+  return createRequire(path.join(root, workspace, 'package.json'))
+    .resolve.paths(name)
+    ?.filter((modules) => !path.relative(root, modules).startsWith('..'))
+    .map((modules) => path.join(modules, name))
+    .find((candidate) => existsSync(path.join(candidate, 'package.json')));
+}
+
+/**
  * A dependency as a workspace package declares it (its package.json's `dependencies`, else its
  * `devDependencies`) and as it is installed for that package (the version in the installed package's own
  * package.json, its directory found as Node looks a package up, since a package's `exports` may leave its
@@ -57,11 +75,7 @@ export function dependencyVersions(root, workspace, name) {
   const manifest = readJsonObject(manifestFile);
   const declared =
     declaredIn(manifest, 'dependencies', name) ?? declaredIn(manifest, 'devDependencies', name);
-  const dir = createRequire(manifestFile)
-    .resolve.paths(name)
-    ?.filter((modules) => !path.relative(root, modules).startsWith('..'))
-    .map((modules) => path.join(modules, name))
-    .find((candidate) => existsSync(path.join(candidate, 'package.json')));
+  const dir = packageDirectory(root, workspace, name);
   const installed = dir === undefined ? undefined : readJsonObject(path.join(dir, 'package.json')).version;
   return {
     declared: declared ?? null,

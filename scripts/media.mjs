@@ -51,6 +51,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { packageDirectory } from './lib/dependency-versions.mjs';
 import {
   GIF_HOLD,
   MANIFEST,
@@ -157,10 +158,10 @@ function parseJson(/** @type {string} */ text) {
   return value;
 }
 
-/** A dependency's folder as pnpm links it for the website package (some packages export no package.json). */
+/** A dependency's folder resolved for the website package (some packages export no package.json). */
 function packageDir(/** @type {string} */ name) {
-  const dir = path.join(ROOT, 'website', 'node_modules', name);
-  if (!existsSync(path.join(dir, 'package.json'))) {
+  const dir = packageDirectory(ROOT, 'website', name);
+  if (dir === undefined) {
     throw new Error(`media: ${name} is not installed for the website package; run \`pnpm install\``);
   }
   return dir;

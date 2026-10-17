@@ -1,10 +1,10 @@
 {
   "generator": "scripts/media.mjs (pnpm media)",
-  "inputsHash": "466a74374ff56455e7d80f2a9123d7401b778c4500d9f8de80d7cc5476cd5391",
+  "inputsHash": "b68a601f79acaa8dea53f61a93693f45b2bf5086d7e225f1e0635b2bd7264676",
   "inputs": {
     "bundle": "9be6f1af30383b672fa97b8c6aad81b00d790ea478a40693e1a28894dbcf377c",
     "fixtures": "c087084dbb344d5fe8b3a350d8b341d7f507e66c640246b37baa030d38fe1438",
-    "script": "a4447007b68b17d9332e3f96ff91383bc9087f90049b5c67bcb51a24a663473a",
+    "script": "587182bda9e8f35c1723de9b75e02e50a42d5a2553e0548f22550098261a4a42",
     "tools": {
       "playwright": "1.64.0",
       "gifenc": "1.0.3",
@@ -23,8 +23,8 @@
       "item": "f70006890d6799ad5c6b34787fca088ff1368491638516bd4f4174ef77a799a0"
     },
     "animated/drill-in-dark.gif": {
-      "sha256": "6fb01aeed91f9ea3e9c9c8b5453ff62002a0ca2210022920a8135a16eec3f652",
-      "bytes": 518760,
+      "sha256": "06caeccd57488110ba300303b7e6adde9447751758b26184555ea7fd408abcb5",
+      "bytes": 489847,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -32,8 +32,8 @@
       "item": "f70006890d6799ad5c6b34787fca088ff1368491638516bd4f4174ef77a799a0"
     },
     "animated/drill-in-dark.webm": {
-      "sha256": "7806228e90cf64c2cc9e7b4d7e3d25279ace9e3fa9f7b7537e12fb88b7b60bcf",
-      "bytes": 833769,
+      "sha256": "1c979653b84805588f63b765df9f012b8d4807b0c04d6f622f77119ca38f5115",
+      "bytes": 801168,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -48,8 +48,8 @@
       "item": "f70006890d6799ad5c6b34787fca088ff1368491638516bd4f4174ef77a799a0"
     },
     "animated/drill-in-light.gif": {
-      "sha256": "468236974f93655b5440f7975c612a8d2665d0b37888839a87d16d5eda964213",
-      "bytes": 519385,
+      "sha256": "4cdccc7331abb478139f83927c7e174ae521462eaac57eb33c04ecd1219a0f65",
+      "bytes": 493695,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -57,8 +57,8 @@
       "item": "f70006890d6799ad5c6b34787fca088ff1368491638516bd4f4174ef77a799a0"
     },
     "animated/drill-in-light.webm": {
-      "sha256": "ea294c29cb46b15efdc771e1f838b7998a77ac7caf257d28e9a19263b9a7c1ad",
-      "bytes": 825906,
+      "sha256": "bb94dd0de94410012899ebfee9c8eb22c8e5fd2fbec24724bae7439ba9937f63",
+      "bytes": 805561,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -73,8 +73,8 @@
       "item": "8d6a3b58dde267bb86282f40b8d8219f4a886d385916533f837a0540cb8a4828"
     },
     "animated/lenses-dark.gif": {
-      "sha256": "f2ab9a40924f6812205562dd9649e1a85634ccb88fad2e378fd2006598c025a8",
-      "bytes": 503619,
+      "sha256": "47ff5cef1ded5d0018191442747714a49961dd87c69d5fdea38a9556ffb1db6c",
+      "bytes": 570055,
       "width": 1200,
       "height": 750,
       "frames": 114,
@@ -82,8 +82,8 @@
       "item": "8d6a3b58dde267bb86282f40b8d8219f4a886d385916533f837a0540cb8a4828"
     },
     "animated/lenses-dark.webm": {
-      "sha256": "14f9bd1651ef431291e1d847379d489cbad23c598901d15ce483337d1d654114",
-      "bytes": 819427,
+      "sha256": "a12c5778fcbde99f4245dfb72cd285f7c87f0d3b367841ef3cedebb6bb91f4e3",
+      "bytes": 824503,
       "width": 1200,
       "height": 750,
       "frames": 114,
@@ -98,8 +98,8 @@
       "item": "8d6a3b58dde267bb86282f40b8d8219f4a886d385916533f837a0540cb8a4828"
     },
     "animated/lenses-light.gif": {
-      "sha256": "0b699a156dbc7eaac7caf073746dd20194ef8904e3f4e6907df33240c70c4cf1",
-      "bytes": 541503,
+      "sha256": "bac2dabf5a21a3161a8af975f8ab59959c1f047e190543b9576ebcac0857dbd8",
+      "bytes": 566060,
       "width": 1200,
       "height": 750,
       "frames": 114,
@@ -107,8 +107,8 @@
       "item": "8d6a3b58dde267bb86282f40b8d8219f4a886d385916533f837a0540cb8a4828"
     },
     "animated/lenses-light.webm": {
-      "sha256": "18a6517c17913fec8186c262078ca4f0ef65416fe158d73bbb84719e76c84bd5",
-      "bytes": 834046,
+      "sha256": "285b3065eb91f5ece77a737ca6aaeba6d1d0e969cc3a5a40071f7b238d0aa22d",
+      "bytes": 827527,
       "width": 1200,
       "height": 750,
       "frames": 114,
@@ -123,8 +123,8 @@
       "item": "83e274621d252238eaf308fcd16e80e4d00b1122c039c48e223e59dcdb2b7922"
     },
     "animated/search-dark.gif": {
-      "sha256": "358ae8661accfc3a974ce92d697fcad0da1ecc1ec04483a8c95bceaebb536744",
-      "bytes": 402258,
+      "sha256": "69705d9be8eb8596baf0778a80197ec9e20113562647354de03946149047f36c",
+      "bytes": 370574,
       "width": 1200,
       "height": 750,
       "frames": 96,
@@ -132,8 +132,8 @@
       "item": "83e274621d252238eaf308fcd16e80e4d00b1122c039c48e223e59dcdb2b7922"
     },
     "animated/search-dark.webm": {
-      "sha256": "ba9a8cef307b82d79819ff85b6ecbf44da96fb66dce5eeba7b3d9bf4b4504b2f",
-      "bytes": 765921,
+      "sha256": "b23e9e158d9eb3e30155d60d06c3f92bb94d94c15c2f62c4c84c92d813929571",
+      "bytes": 759861,
       "width": 1200,
       "height": 750,
       "frames": 96,
@@ -148,8 +148,8 @@
       "item": "83e274621d252238eaf308fcd16e80e4d00b1122c039c48e223e59dcdb2b7922"
     },
     "animated/search-light.gif": {
-      "sha256": "e2423e8484c6bef22ed1e05f504225fa026d24935e3558697e3a18c08a3fa7e6",
-      "bytes": 373454,
+      "sha256": "029d681e47f825a40d0e264b375222bc6a368730b0b62eb96544b69739a57d8c",
+      "bytes": 422343,
       "width": 1200,
       "height": 750,
       "frames": 96,
@@ -157,8 +157,8 @@
       "item": "83e274621d252238eaf308fcd16e80e4d00b1122c039c48e223e59dcdb2b7922"
     },
     "animated/search-light.webm": {
-      "sha256": "13767f39a3a55620aac1bf84e7455c4eff10f89068c0dbbf7ac5832568c5e468",
-      "bytes": 807135,
+      "sha256": "b1a0974a976cf250a70fdd43651ac0f40d55ecd198279cf321936c75be343fc2",
+      "bytes": 814435,
       "width": 1200,
       "height": 750,
       "frames": 96,
@@ -166,15 +166,15 @@
       "item": "83e274621d252238eaf308fcd16e80e4d00b1122c039c48e223e59dcdb2b7922"
     },
     "animated/timeline-dark-poster.webp": {
-      "sha256": "ad89d52d18b7e514c7cb61e09e11230bdf7acabe1dc81cade3b7fb14dd4d7c13",
-      "bytes": 51314,
+      "sha256": "4985c6a6f0fdebc2d370745ffb445b685cb817197ae9d87cdfb4e6a41d50d8a6",
+      "bytes": 51316,
       "width": 1200,
       "height": 750,
       "item": "373baa401d102e50ba243205ffadbf4a58237dab801f236e261714c39f868b23"
     },
     "animated/timeline-dark.gif": {
-      "sha256": "e98908c03d0afe6d062eb7dfce0dd011051b90bbc7f8f1d7a3f3c875c98546a4",
-      "bytes": 1413943,
+      "sha256": "ebebe8f2acd05b961a875afc758228650893130ae5ad02605f7a6ea53f58586a",
+      "bytes": 1441483,
       "width": 1200,
       "height": 750,
       "frames": 144,
@@ -182,8 +182,8 @@
       "item": "373baa401d102e50ba243205ffadbf4a58237dab801f236e261714c39f868b23"
     },
     "animated/timeline-dark.webm": {
-      "sha256": "12e2c184f33232792d6955600bec02b5ad6853839bbec2fee84c9651411aba08",
-      "bytes": 1645379,
+      "sha256": "6db9655941c58bca1c13db6ee1a9ef3e286979d640ba2bf09ecdc709d4cbb7eb",
+      "bytes": 1630328,
       "width": 1200,
       "height": 750,
       "frames": 144,
@@ -191,15 +191,15 @@
       "item": "373baa401d102e50ba243205ffadbf4a58237dab801f236e261714c39f868b23"
     },
     "animated/timeline-light-poster.webp": {
-      "sha256": "bfae0ed6a39a2171c65aba6d5b6c0939bb6fa973f019fa51a0bbbd523908c1bb",
-      "bytes": 53132,
+      "sha256": "0b36ee986735b80eba07871e33fa090fe893d3fa4f12265fb3cec4131b602e33",
+      "bytes": 53136,
       "width": 1200,
       "height": 750,
       "item": "373baa401d102e50ba243205ffadbf4a58237dab801f236e261714c39f868b23"
     },
     "animated/timeline-light.gif": {
-      "sha256": "d6372cdaa66c5c304346409d8654c0efd42b9c6ccd5afe1f0fb7bf3280ec9172",
-      "bytes": 1319056,
+      "sha256": "8c003223b06c838c94b13b0072b97eafe5732dc132159f5ab6e5efb3f7caa32a",
+      "bytes": 1380825,
       "width": 1200,
       "height": 750,
       "frames": 144,
@@ -207,8 +207,8 @@
       "item": "373baa401d102e50ba243205ffadbf4a58237dab801f236e261714c39f868b23"
     },
     "animated/timeline-light.webm": {
-      "sha256": "e40033ca6cf0cc046ff4c581c7f1a22010c0f1cebeb8ae017f595b8a755cf3f5",
-      "bytes": 1780939,
+      "sha256": "05e40931f49cd87a99e9b5cd2c004641364b15fb60fa8c9ee93e4c5c19d534b4",
+      "bytes": 1739935,
       "width": 1200,
       "height": 750,
       "frames": 144,
@@ -223,8 +223,8 @@
       "item": "17538342d8aaeac1830f92d7485a5e8cd15854137284654b0f480f3b4e41c0ba"
     },
     "animated/trace-dark.gif": {
-      "sha256": "f61e09d013d7fdb424cca25906a1ef4b7ad3175b5c4fa4c368e5d5c1176e93ac",
-      "bytes": 398826,
+      "sha256": "8b811b84d1dc2b3f67a4100a873327c6eca78bde994313441b9ec230dbd17e3c",
+      "bytes": 399725,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -232,8 +232,8 @@
       "item": "17538342d8aaeac1830f92d7485a5e8cd15854137284654b0f480f3b4e41c0ba"
     },
     "animated/trace-dark.webm": {
-      "sha256": "ab6742a56955dc1883e7f8599c6a4869c3db41264bc1da5e7f7c54a6656f9745",
-      "bytes": 873546,
+      "sha256": "9fa15dfe75a6a2bc266a2a69266c355dc89dc450b98b2cac44208e9a01628ea3",
+      "bytes": 882303,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -248,8 +248,8 @@
       "item": "17538342d8aaeac1830f92d7485a5e8cd15854137284654b0f480f3b4e41c0ba"
     },
     "animated/trace-light.gif": {
-      "sha256": "3b63d3b57b6a457fd56acf6dd6305efa6a9cbb7b15049f116c5f2fbeebff6f94",
-      "bytes": 431482,
+      "sha256": "db3231755abee882bec38bc4112ae2f0f63f70558965e9c84a0c19a1ebfa5657",
+      "bytes": 392757,
       "width": 1200,
       "height": 750,
       "frames": 108,
@@ -257,8 +257,8 @@
       "item": "17538342d8aaeac1830f92d7485a5e8cd15854137284654b0f480f3b4e41c0ba"
     },
     "animated/trace-light.webm": {
-      "sha256": "0f7d303ad3d2d163e9f50fb73cfea0128a0288bd69eba95d924152f8126f1a1b",
-      "bytes": 915492,
+      "sha256": "9826b896944ab6aaece9c8f1841993d5857c87889f3b23d6797564df31f9aa5d",
+      "bytes": 893901,
       "width": 1200,
       "height": 750,
       "frames": 108,
