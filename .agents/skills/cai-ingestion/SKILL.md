@@ -105,13 +105,9 @@ order: the scanned project (project scope) → the user's chosen project → err
 listed. Service-account mode sends no quota header: the account's own project pays (AGENTS.md, "Security and
 privacy"), which deploy.sh makes the instance's project.
 
-Service-account mode gate (AGENTS.md, "Security and privacy"): before using the backend identity for a scope,
-the backend asks `testIamPermissions` on the scope with the **caller's** token for
-`resourcemanager.{organizations,folders,projects}.get`, and goes on only when that permission comes back. A
-public `get` counts as the caller's; `SA_MODE_STRICT_EXPOSURE=true` adds the exposure check (the account's own
-`GET {scope}` must be exactly Resource Manager's IAM denial), off by default. A pass is remembered for at most
-five minutes per caller-token hash and scope. No exceptions: every route that takes `mode: "sa"` goes through
-it, before every CAI call as the account.
+Service-account mode gate: the backend checks the caller before every CAI call it makes as the account. Its
+steps, its memo and its audit line are the rules of AGENTS.md, "Security and privacy", "The service-account
+gate"; §9 has the answers of Google's APIs they rest on.
 
 `gcloud` snippets shown by the permissions page (fill from preflight results):
 
@@ -148,10 +144,13 @@ gcloud asset export --organization=ORG_ID --content-type=resource --output-path=
 
 - Ticks: `today@00:00Z` and the 34 previous days. A tick's `readTime` is `YYYY-MM-DDT00:00:00Z`; the latest
   tick uses "now" so it is never in the future. Label ticks in the viewer's local date.
-- Cache key: `(scope, readTime, contentType, assetTypes?)`. Never reuse a cache entry across scopes.
+- Cache: read days live in IndexedDB, in the `tickCache` store, keyed `(scope, readTime, contentType,
+  assetTypes?)`. Never reuse a cache entry across scopes.
 - Diff between ticks A→B: added = names in B not in A; removed = names in A not in B; changed = same name,
   different `updateTime`. Pure function, no API calls.
-- Do not prefetch all 35 ticks; fetch on demand plus two neighbours at idle, max two in flight.
+- Do not prefetch all 35 ticks: read a tick when the view rests on it, then its two neighbours at idle, at
+  most two reads in flight; cancel the read of a day the view moved away from (no longer the day or a
+  neighbour). Read nothing while the page stays on the snapshot's own day.
 - A tick whose `readTime` lies before the scope existed answers 404 `NOT_FOUND` ("Requested entity was not
   found."), even inside the 35-day window: the timeline draws it as "did not exist yet", not as a failure. A
   future `readTime` is 400 `INVALID_ARGUMENT`, which is why the latest tick sends none.

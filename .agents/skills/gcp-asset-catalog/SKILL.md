@@ -100,12 +100,14 @@ zone's lake), `first(<variables>)` (the first present of the listed variables wh
 `plural(<word>)` / `plural(<word>, <words>)` (a count with its noun: `{{data.size | plural(instance)}}` →
 `1 instance`, `4 instances`; use it wherever a subtitle counts). Console URLs are built in one place,
 `consoleUrlFor` of the engine (the app's card action, menu and drawer all use it); a type without a `console`
-template gets its project's console home in the app, and `catalog:check` counts such types. Labels and
-subtitles drop a ` · ` segment whose expressions are all missing, unit words included. Available variables:
-`name`, `assetType`, `location`, `projectId`, `projectNumber`, `data.*` (with `.key` and `[n]` steps). The
-entry, lens and compiled-catalog schemas live in `@gcportrait/model` (`CatalogEntrySchema`, `LensSchema`,
-`CatalogSchema`); the template grammar is enforced there (`TEMPLATE_VARIABLES`, `TEMPLATE_FILTERS`), so a new
-variable or filter is a change to `packages/model` as well.
+template gets its project's console home in the app, and `catalog:check` counts such types. A console link
+drops whole when the asset lacks a variable its template needs, never a partial URL; the app then offers the
+project's console home too. Labels and subtitles drop a ` · ` segment whose expressions are all missing, unit
+words included. Available variables: `name`, `assetType`, `location`, `projectId`, `projectNumber`, `data.*`
+(with `.key` and `[n]` steps). The entry, lens and compiled-catalog schemas live in `@gcportrait/model`
+(`CatalogEntrySchema`, `LensSchema`, `CatalogSchema`); the template grammar is enforced there
+(`TEMPLATE_VARIABLES`, `TEMPLATE_FILTERS`), so a new variable or filter is a change to `packages/model` as
+well.
 
 ## 3. Roles (tiers) — decision guide
 
@@ -118,6 +120,9 @@ variable or filter is a change to `packages/model` as well.
 
 Rule of thumb: if an org of 50 projects would produce more than ~20 of these per project and a reader would
 not put them on a whiteboard, it is `hidden`.
+
+`includeTypes` reveals the nodes of a `hidden` type, not the assets a type's `hiddenWhen` matches: only a lens
+with `showHidden` draws those.
 
 A type the catalog does not map still renders: a generic card nested by `parent`, with the product or category
 icon and no edges (gcp-diagram-layout skill §2, rule 6). `pnpm catalog:check` reports every official type that
@@ -148,7 +153,8 @@ that is not about identities or security.
 
 Choose the most specific kind; `uses` is the fallback. A rule whose data sits on the other side writes
 `reverse: true`. `weak: true` makes an edge yield to a stronger one from the same asset (NIC network
-vs. subnet).
+vs. subnet). Copies of one edge merge: one (from, kind, to) is one edge, strong when any copy is. Reciprocal
+`peers` and `connects` edges fold into one, so either side's rule may draw the link.
 
 ## 5. Normalisers (turn a field value into a full resource name)
 

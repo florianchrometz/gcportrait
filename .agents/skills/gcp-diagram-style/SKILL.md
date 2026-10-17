@@ -215,6 +215,11 @@ from the interactive canvas when the user disables them in settings, but always 
 - PNG: 2× default, 3× option, theme background filled, 24 px margin.
 - Whole diagram or current viewport; file name `gcportrait_<scope>_<lens>_<readTime>.<ext>`.
 - Clipboard copy for PNG.
+- draw.io: the SVG drawing translated, never a second renderer (`frontend/README.md`, "Export
+  (`src/export/`)"). The fidelity check (`pnpm e2e tests/drawio.spec.ts --project chromium`, maxGraph in
+  Chromium, demos S, M and L in both themes) holds it to the SVG: at most 5 % of the pixels differ, a text
+  line within 1.25 px, a box or a line's end within 0.5 px, an open head's gap within 3 px and a block head's
+  width within 1.5 px.
 
 ## 9. App chrome tokens (Material-3-style, minimal)
 

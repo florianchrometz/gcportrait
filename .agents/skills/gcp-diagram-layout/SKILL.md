@@ -157,7 +157,8 @@ property tests enforce full rows.
 - Ports: an edge leaves/enters a rect at the side facing the other endpoint, at a port slot spaced 12 px along
   that side, never on a zone header; top and left sides use a grid shifted by half a spacing, so stubs of
   rects facing each other across a gap may run 6 px apart. Edges to a zone target end at its border; edges to
-  a collapsed zone are re-targeted to its chip; an edge with both ends in one chip is not drawn (counted).
+  a collapsed zone are re-targeted to its chip; an edge from a node to itself, or with both ends in one chip,
+  is not drawn (counted).
 - Hub bundles: the edges of one kind that meet one rect at the same end are bundled from 3 (from 2 on a
   crowded side): one shared port, one trunk, one head; one bundle per kind.
 - Merging: reciprocal `peers` edges become one double-headed edge; identical (from, to, kind) edges collapse

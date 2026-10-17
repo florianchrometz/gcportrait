@@ -12,10 +12,11 @@ this file is the procedure and the checklists.
 
 ## 1. Before you start
 
-- Read `AGENTS.md` and the issue or the [docs/backlog.md](../../../docs/backlog.md) item you work on. Load the
-  skills its area needs (AGENTS.md, "Skills"). A tool that does not read `AGENTS.md` or `.agents/skills/` by
-  itself gets local, git-ignored pointer files from `pnpm agents:setup` (AGENTS.md, "Assistants"); a rule
-  never goes into one of them.
+- Read `AGENTS.md`, the `AGENTS.md` of every top-level folder you change, and the issue or the
+  [docs/backlog.md](../../../docs/backlog.md) item you work on. Load the skills its area needs (AGENTS.md,
+  "Skills"). A tool that does not read the AGENTS.md files or `.agents/skills/` by itself gets local,
+  git-ignored pointer files from `pnpm agents:setup` (AGENTS.md, "Assistants"); a rule never goes into one of
+  them.
 - You are writing original code. Nothing is copied, ported or paraphrased from another licensed project.
   gcportrait's own code is `MIT` (AGENTS.md, "Licence and dependencies"), and nothing may bring in an
   obligation that would force the project to publish or relicense its combined work under someone else's
@@ -39,10 +40,8 @@ this file is the procedure and the checklists.
   the provenance statement in the template. There is no contributor licence agreement, and none is needed.
   The gcportrait name and icon are not covered by the MIT License (`brand/LICENSE.md`).
 - A new dependency must pass `pnpm run licenses`: permissive licences, file-scoped MPL-2.0 and the two OFL-1.1
-  Roboto font packages only; the GPL family in every variant (the library and the network ones included),
-  SSPL, EUPL, OSL, CPAL, EPL, CDDL, CC-BY-SA, CC-BY-NC, proprietary and unknown licences are denied
-  (`THIRD_PARTY.md` explains why: an MIT project cannot carry copyleft code that reaches beyond its own
-  files).
+  Roboto font packages only. `node scripts/check-licenses.mjs --list-rules` prints every licence it allows
+  and every one it denies, each with its reason; `THIRD_PARTY.md` lists the same.
 
 ## 2. Local loop
 
