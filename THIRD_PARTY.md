@@ -172,7 +172,7 @@ here but are checked against the same allowlist and deny list on every run.
 | `@types/hast` | MIT | website | dev |
 | `@types/node` | MIT | (root), backend, e2e, packages/catalog, packages/demo-data, packages/graph, packages/ingest, packages/layout, packages/render, packages/render-cli, website | dev |
 | `@types/opentype.js` | MIT | packages/layout | dev |
-| `@types/pngjs` | MIT | e2e, packages/render, packages/render-cli, website | dev |
+| `@types/pngjs` | MIT | e2e, packages/render, packages/render-cli | dev |
 | `@types/react` | MIT | frontend | dev |
 | `@types/react-dom` | MIT | frontend | dev |
 | `@vitejs/plugin-react` | MIT | frontend | dev |

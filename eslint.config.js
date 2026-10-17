@@ -69,7 +69,7 @@ const WORKSPACE_DEPENDENCIES = [
   // The backend reaches the frontend only through the render library, in its render worker (AGENTS.md,
   // Architecture and code).
   { files: 'backend/**', allowed: ['model', 'catalog', 'ingest', 'render'] },
-  { files: 'website/**', allowed: ['model', 'catalog', 'demo-data'] },
+  { files: 'website/**', allowed: ['model', 'catalog'] },
   { files: 'e2e/**', allowed: ['model', 'demo-data'] },
 ];
 
