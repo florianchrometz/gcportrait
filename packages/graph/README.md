@@ -58,6 +58,7 @@ report.focus; // { status: 'applied', … } or { status: 'error', error: { code,
 | `BUNDLE_ID_PREFIX` | `group:`, the prefix of a bundle zone's id (the rest is its first member's id) |
 | `DETAIL_LEVELS` | `folders`, `projects`, `networks`, `all`, shallowest first |
 | `ZONE_OPENS_AT`, `zoneOpensAt(kind, overlay)` | the level table of step (e): the shallowest level each zone kind is open at by default (folders and bundles `folders`, projects and region zones `projects`, VPCs and subnets `networks`, product containers `all`; an overlay always open). The app's disclosure controls read it rather than restating it |
+| `CHIP_COUNT_OF_KIND` | what a chip counts a zone it holds as, by its kind (`folders`, `projects`, `networks`, `subnets`, `containers`; a card is one of its `resources`, a region zone or a bundle is not counted). The app counts what a timeline day's ghost of a chip holds by it |
 | `autoDetailLevel(rectCounts, budget, ceiling?)`, `autoCeiling(defaultDetail)` | the rule `auto` follows (step (e)) and the ceiling a lens's `defaultDetail` sets it (`all` for an `auto` lens), for the app's resize hysteresis and "Collapse all" |
 | `GENERIC_ICON` | `cloud_generic`, the icon of a card whose type and service the catalog does not know |
 

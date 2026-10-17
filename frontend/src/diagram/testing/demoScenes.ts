@@ -6,10 +6,11 @@
  * organisation's history is read as the data worker reads it (timeline/worker/replay.ts), and a day compared with
  * another one gets its diff and ghosts as the data worker gives them (diff/tickDiff.ts), also for the two-day pairs
  * the history does not have (demo M's perimeter removed between two days, `perimeterRemoved`, a project moved into
- * another folder, `projectMoved`, or everything a project holds in one region removed, `regionRemoved`). For the
- * tests that only need the scene builder: the builder's environment
- * for a snapshot (`sceneEnv`), and a demo Graph built synchronously straight from the generator (`demoGraphSync`).
- * Demo data without a Scene is in demoData.ts.
+ * another folder, `projectMoved`, everything a project holds in one region removed, `regionRemoved`, or in one zone,
+ * `zoneRemoved`, two Batch jobs that succeeded, one where the rest of its region was removed, `jobsSucceeded`, or a
+ * project's only VM removed, `ciRunnerRemoved`). For the tests that only need the scene builder: the builder's
+ * environment for a snapshot (`sceneEnv`), and a demo Graph built synchronously straight from the generator
+ * (`demoGraphSync`). Demo data without a Scene is in demoData.ts.
  */
 import { catalog } from '@gcportrait/catalog';
 import { generateOrganization, toSnapshot } from '@gcportrait/demo-data';
@@ -206,21 +207,38 @@ export async function demoMDay(day: string): Promise<DemoDay> {
   return { ...(await demoDayGraph('M', day)), tick: day };
 }
 
+/** How a two-day pair makes a day's assets from those of the day it starts from, whose Graph it is given. */
+type AssetChange = (graph: Graph, assets: readonly Asset[]) => Asset[];
+
+/** Day `tick` (`YYYY-MM-DD`, read at its 00:00 UTC) made of the assets of day `from` as `change` leaves them. */
+function changedDay(from: DemoDay, tick: string, change: AssetChange): DemoDay {
+  const snapshot: Snapshot = {
+    ...from.snapshot,
+    readTime: `${tick}T00:00:00Z`,
+    assets: change(from.graph, from.snapshot.assets),
+  };
+  return { snapshot, graph: buildGraph(snapshot, catalog), console: consoleSource(snapshot), tick };
+}
+
 /**
  * Demo M's day 2026-09-16 and a next day, 2026-09-17, made of its assets as `change` leaves them: a two-day pair
  * the demo history does not have.
  */
-export async function demoMNextDay(
-  change: (graph: Graph, assets: readonly Asset[]) => Asset[],
-): Promise<readonly [DemoDay, DemoDay]> {
+export async function demoMNextDay(change: AssetChange): Promise<readonly [DemoDay, DemoDay]> {
   const before = await demoMDay('2026-09-16');
-  const snapshot: Snapshot = {
-    ...before.snapshot,
-    readTime: '2026-09-17T00:00:00Z',
-    assets: change(before.graph, before.snapshot.assets),
-  };
-  const after = { snapshot, graph: buildGraph(snapshot, catalog), console: consoleSource(snapshot) };
-  return [before, { ...after, tick: '2026-09-17' }];
+  return [before, changedDay(before, '2026-09-17', change)];
+}
+
+/**
+ * Demo M's day 2026-09-16 with its assets as `earlier` leaves them, and a next day, 2026-09-17, made of those as
+ * `next` leaves them (`demoMNextDay`): for a pair whose first day holds what the demo history does not.
+ */
+export async function demoMChangedDays(
+  earlier: AssetChange,
+  next: AssetChange,
+): Promise<readonly [DemoDay, DemoDay]> {
+  const before = changedDay(await demoMDay('2026-09-16'), '2026-09-16', earlier);
+  return [before, changedDay(before, '2026-09-17', next)];
 }
 
 /** Demo M's perimeter and the two projects it secures (a perimeter focus draws it around them as an overlay). */
@@ -252,10 +270,27 @@ export const DEMO_M_REGION = {
   project: '//cloudresourcemanager.googleapis.com/projects/10000000016',
   /** Its us-central1 region zone, which holds its zone us-central1-a and the regional assets. */
   region: '//gcportrait.virtual/projects/demo-web-2/locations/us-central1',
+  /** Its zone us-central1-a, inside the region zone, which holds its instance groups and VMs. */
+  zone: '//gcportrait.virtual/projects/demo-web-2/locations/us-central1/zones/us-central1-a',
 } as const;
 
-/** The region whose assets `regionRemoved` removes. */
+/** The region whose assets `regionRemoved` removes, and the zone in it whose assets `zoneRemoved` removes. */
 const REMOVED_REGION = 'us-central1';
+const REMOVED_ZONE = 'us-central1-a';
+
+/** Payments web (prod)'s `projects/…` ancestor entry. */
+const PAYMENTS_WEB = DEMO_M_REGION.project.slice(DEMO_M_REGION.project.indexOf('projects/'));
+
+/** Whether an asset of a day lies in Payments web (prod), at any depth, at a location `at` accepts. */
+function inPaymentsWeb(graph: Graph, asset: Asset, at: (location: string) => boolean): boolean {
+  if (asset.name === DEMO_M_REGION.project || !asset.ancestors.includes(PAYMENTS_WEB)) return false;
+  return at(graph.nodes[asset.name]?.location?.toLowerCase() ?? '');
+}
+
+/** Whether a location lies in the region `regionRemoved` empties: the region itself, or one of its zones. */
+function inRemovedRegion(location: string): boolean {
+  return location === REMOVED_REGION || location.startsWith(`${REMOVED_REGION}-`);
+}
 
 /**
  * Everything demo M's Payments web (prod) holds in us-central1 (in the region, or in one of its zones) removed
@@ -263,14 +298,101 @@ const REMOVED_REGION = 'us-central1';
  * nothing else changes.
  */
 export function regionRemoved(): Promise<readonly [DemoDay, DemoDay]> {
-  const project = DEMO_M_REGION.project.slice(DEMO_M_REGION.project.indexOf('projects/'));
   return demoMNextDay((graph, assets) =>
-    assets.filter((asset) => {
-      if (asset.name === DEMO_M_REGION.project || !asset.ancestors.includes(project)) return true;
-      const location = graph.nodes[asset.name]?.location?.toLowerCase() ?? '';
-      return location !== REMOVED_REGION && !location.startsWith(`${REMOVED_REGION}-`);
-    }),
+    assets.filter((asset) => !inPaymentsWeb(graph, asset, inRemovedRegion)),
   );
+}
+
+/**
+ * Everything demo M's Payments web (prod) holds in its zone us-central1-a (its instance groups, their managers and
+ * VMs) removed between two days (`demoMNextDay`); what it holds in the region us-central1 itself, and globally, is
+ * still there, and nothing else changes.
+ */
+export function zoneRemoved(): Promise<readonly [DemoDay, DemoDay]> {
+  return demoMNextDay((graph, assets) =>
+    assets.filter((asset) => !inPaymentsWeb(graph, asset, (location) => location === REMOVED_ZONE)),
+  );
+}
+
+/** The Batch jobs `jobsSucceeded` runs in demo M's Payments web (prod) (`DEMO_M_REGION.project`). */
+export const DEMO_M_JOBS = {
+  /** In us-central1 (`DEMO_M_REGION.region`), where everything else the project holds is removed the next day. */
+  inRegion: '//batch.googleapis.com/projects/demo-web-2/locations/us-central1/jobs/nightly-export',
+  /** In europe-west3, where the project holds nothing else. */
+  alone: '//batch.googleapis.com/projects/demo-web-2/locations/europe-west3/jobs/reindex',
+  /** The project's europe-west3 region zone, which holds only that job. */
+  aloneRegion: '//gcportrait.virtual/projects/demo-web-2/locations/europe-west3',
+} as const;
+
+/**
+ * A Batch job of Payments web (prod) named `name` (`//batch.googleapis.com/projects/demo-web-2/locations/<region>/
+ * jobs/<job>`) in `state` since `updateTime`, held as the project's other assets are.
+ */
+function paymentsWebJob(project: Asset, name: string, state: string, updateTime: string): Asset {
+  const [, region = '', job = ''] = /\/locations\/([^/]+)\/jobs\/([^/]+)$/.exec(name) ?? [];
+  const number = project.name.slice(project.name.lastIndexOf('/') + 1);
+  return {
+    name,
+    assetType: 'batch.googleapis.com/Job',
+    parent: project.name,
+    ancestors: project.ancestors,
+    location: region,
+    updateTime,
+    data: {
+      name: `projects/${number}/locations/${region}/jobs/${job}`,
+      uid: `${job}-0916`,
+      status: { state, runDuration: '1800s' },
+    },
+  };
+}
+
+/**
+ * Two Batch jobs of demo M's Payments web (prod) running on 2026-09-16 (`demoMChangedDays`), one in us-central1 and
+ * one in europe-west3, where the project holds nothing else; the next day both succeeded, so the view no longer
+ * draws them (a finished job starts hidden), and everything else the project holds in us-central1 is removed, as
+ * in `regionRemoved`. Nothing else changes.
+ */
+export function jobsSucceeded(): Promise<readonly [DemoDay, DemoDay]> {
+  const jobs: readonly string[] = [DEMO_M_JOBS.inRegion, DEMO_M_JOBS.alone];
+  const projectOf = (assets: readonly Asset[]): Asset => {
+    const project = assets.find((asset) => asset.name === DEMO_M_REGION.project);
+    if (project === undefined) throw new Error(`demo M has no project ${PAYMENTS_WEB}`);
+    return project;
+  };
+  return demoMChangedDays(
+    (_graph, assets) => [
+      ...assets,
+      ...jobs.map((name) => paymentsWebJob(projectOf(assets), name, 'RUNNING', '2026-09-15T22:00:00Z')),
+    ],
+    (graph, assets) =>
+      assets.flatMap((asset) => {
+        if (jobs.includes(asset.name)) {
+          return [paymentsWebJob(projectOf(assets), asset.name, 'SUCCEEDED', '2026-09-16T04:30:00Z')];
+        }
+        return inPaymentsWeb(graph, asset, inRemovedRegion) ? [] : [asset];
+      }),
+  );
+}
+
+/** Demo M's CI runner VM and its boot disk, which `ciRunnerRemoved` removes, and the zones around them. */
+export const DEMO_M_CI_RUNNER = {
+  vm: '//compute.googleapis.com/projects/demo-mgmt-1/zones/europe-west3-a/instances/ci-runner-1',
+  disk: '//compute.googleapis.com/projects/demo-mgmt-1/zones/europe-west3-a/disks/ci-runner-1',
+  /** Platform management, `demo-mgmt-1`, whose only VM it is (the compute lens draws nothing else of it). */
+  project: '//cloudresourcemanager.googleapis.com/projects/10000000005',
+  /** Platform / Operations, which holds the project, and CI and operations (empty in the compute lens). */
+  folder: '//cloudresourcemanager.googleapis.com/folders/20000000004',
+  /** Platform, which holds Operations, Networking and Security. */
+  platform: '//cloudresourcemanager.googleapis.com/folders/20000000001',
+} as const;
+
+/**
+ * Demo M's CI runner VM in Platform management removed with its boot disk between two days (`demoMNextDay`); the
+ * project itself does not change, and nothing else does.
+ */
+export function ciRunnerRemoved(): Promise<readonly [DemoDay, DemoDay]> {
+  const removed: readonly string[] = [DEMO_M_CI_RUNNER.vm, DEMO_M_CI_RUNNER.disk];
+  return demoMNextDay((_graph, assets) => assets.filter((asset) => !removed.includes(asset.name)));
 }
 
 /** Demo M's partner exchange project, and the folders `projectMoved` moves it from and into. */

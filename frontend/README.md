@@ -2156,25 +2156,33 @@ at its last position. It could be overlaid at the rect the previous Layout gave 
 its container without it, so that rect may hold something else now, and the UI thread would need the previous
 Layout and a rule for containers that moved. Instead the data worker builds the view on the earlier day too
 (at the detail level the drawn Scene uses, with the same flips), takes every node drawn there that the drawn
-Scene does not draw and that was removed, or that changed and the drawn day's view leaves out where it stood
-(a project marked for deletion has changed and the view hides it: "not drawn now"), with what it held that is
-gone now, and puts it back into its old container in the drawn Scene. A zone that is no asset (a region, a
-bundle) drawn open there and not drawn now comes back the same way when it held something removed, holding
-what was removed in it, as `removed` (everything demo M's Payments web (prod) held in us-central1 removed: the
-region zone's ghost in the open project, around their ghosts). A changed asset the drawn day's Graph
-holds in another container (it moved: drawn there, in a chip there, or out of the view now) or inside a chip
-of the drawn Scene is no ghost: it is drawn once, where the drawn day has it, and the chip that holds it
-counts it (demo M's partner exchange moved into a folder drawn as a chip: the chip's dot only). The layout's
-deterministic sibling order (zones before cards, then by label: `@gcportrait/layout` `order.ts`) places a
-ghost where it stood among its siblings, nothing overlaps it, and lines route around it; for that day the
-diagram makes room for it. A ghost needs its container: one whose container is not drawn open now (gone, or
-collapsed into a chip) gets none of its own, and comes back inside its container's ghost or the chip counts it
-instead; a drill-in whose root moved draws none.
-Inside a ghost only what the diff found removed comes back, with the zones that are no asset around it (a
-region, a bundle), which take the ghost's reason; an asset still there on the drawn day never does, wherever
-that day draws it or whichever chip holds it (a removed perimeter takes none of the projects it secured that
-are still there). Ghost ids are the nodes' ids: a removed asset is in no Graph of the drawn day, a changed one
-or a zone that is no asset in no node of its Scene.
+Scene does not draw and that was removed, or that is still there and the drawn day's view leaves out where it
+stood: changed (a project marked for deletion has changed and the view hides it: "not drawn now"), or an asset
+zone unchanged itself holding something that comes back (demo M's Platform management with its CI runner VM
+removed, no longer drawn once empty projects are hidden: not drawn now, around the VM's ghost). With what it
+held that is gone now, it puts it back into its old container in the drawn Scene. A zone that is no asset (a
+region, a bundle) not drawn now comes back the same way when it held something that comes back, as `removed`
+when something removed does, else not drawn now (everything demo M's Payments web (prod) held in us-central1
+removed: the region zone's ghost in the open project, around their ghosts; the one Batch job a region held
+succeeded: the region zone not drawn now, around the job's). One the earlier day drew as a chip comes back as
+that chip, counting only what comes back of what the earlier day's view with every zone open draws in it (a
+bundle of demo L whose members are bundled anew counts its one removed member, not those the new bundles
+draw). A node still there that the drawn day's Graph holds in another container (it moved: drawn there, in a
+chip there, or out of the view now) or inside a chip of the drawn Scene is no ghost: it is drawn once, where
+the drawn day has it, and the chip that holds it counts what changed of it (demo M's partner exchange moved
+into a folder drawn as a chip: the chip's dot only). The layout's deterministic sibling order (zones before
+cards, then by label: `@gcportrait/layout` `order.ts`) places a ghost where it stood among its siblings,
+nothing overlaps it, and lines route around it; for that day the diagram makes room for it. A ghost needs its
+container: one whose container is not drawn open now (gone, or collapsed into a chip) gets none of its own,
+and comes back inside its container's ghost or the chip counts it instead; a drill-in whose root moved draws
+none.
+Inside the ghost of an asset only what the diff found removed comes back, with the zones that are no asset
+around it (a region, a bundle), which take the ghost's reason; an asset still there on the drawn day never
+does, wherever that day draws it or whichever chip holds it (a removed perimeter takes none of the projects it
+secured that are still there). Inside a zone gone for what it held (a zone that is no asset, or an asset zone
+unchanged itself) what changed or was removed comes back, each with its own reason, as it would in a
+container drawn open. Ghost ids are the nodes' ids: a removed asset is in no Graph of the drawn day, one still
+there or a zone that is no asset in no node of its Scene.
 
 **A ghost is no node.** The model keeps the ghosts apart (`DiagramModel.ghosts`), so nothing walks, focuses or
 selects them: no `data-id`, no tab stop, no trace, no drill-in, no flip (`zonesByFlip`), not counted in "N of
@@ -2195,7 +2203,8 @@ the red one, and the legend's `secures` row names it.
 added, removed or changed gets the changed dot, and its accessible name says how many of each (", changes
 inside since 2026-09-07: 2 removed, 1 changed"). "Would draw" is the view built with every zone open (detail
 `all`, no flips, no `depth` filter) on the drawn day (added, changed) and on the earlier one (removed); these
-builds happen only when the Scene has a chip.
+builds happen only when the Scene has a chip, the earlier day's alone also when a zone that day drew as a chip
+is gone now (its ghost counts what comes back of what it held).
 
 **Drawing** (`Drawing.tsx` with `marks.ts`; the sizes in `theme/styles.ts`): the ghosts after the nodes; then,
 under the overlays and the lines, the added outlines (2 px `accent.peer` centred 8 px outside the node's
@@ -2239,8 +2248,13 @@ Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the dif
 in their old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend
 on, backwards, drill-in, chips' counts; on demo M's perimeter removed, a ghost holds only what is gone; on
 demo M's Payments web (prod) with what it held in us-central1 removed, the region zone's ghost in the open
-project, or the project's chip counting them; on demo M's partner exchange moved into another folder, it is no
-ghost, moved into a chip, drawn there or out of the view), `pipeline/dataHandler.test.ts` (the removed
+project, or the project's chip counting them; with what it held in us-central1-a removed, the zone closed by
+hand as a ghost chip in its open region, or the region's chip counting them; on demo L's bundle whose members
+are bundled anew, closed by hand, its ghost chip counting only the removed member; on demo M's two Batch jobs
+that succeeded, each not drawn now in its region zone's ghost, not drawn now or removed; on demo M's CI runner
+VM removed with empty projects hidden, its project not drawn now in its folder around the ghosts, and with
+empty folders hidden the folder too; on demo M's partner exchange moved into another folder, it is no ghost,
+moved into a chip, drawn there or out of the view), `pipeline/dataHandler.test.ts` (the removed
 perimeter's ghost named by its asset type), `diff/marks.test.ts` (the marker painter: which rects, where, the
 words), `diff/drawing.test.tsx` (the markers in the drawing in both themes, paint order, legend rows,
 description, names, a ghost is no node, an overlay's ghost), `diff/handler.test.ts` (the data worker's `scene`

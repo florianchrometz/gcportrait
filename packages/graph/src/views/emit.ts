@@ -20,13 +20,17 @@ import { compareTuples } from '../order.js';
 import type { Disclosure } from './detail.js';
 import type { SceneTree } from './tree.js';
 
-const CHIP_COUNT_OF_KIND: Readonly<Partial<Record<ZoneKind, ChipCountKind>>> = {
+/**
+ * What a chip counts a zone it holds as, by the zone's kind (a card it holds is one of its `resources`; a region
+ * zone or a bundle is not counted).
+ */
+export const CHIP_COUNT_OF_KIND: Readonly<Partial<Record<ZoneKind, ChipCountKind>>> = Object.freeze({
   folder: 'folders',
   project: 'projects',
   vpc: 'networks',
   subnet: 'subnets',
   'product-container': 'containers',
-};
+});
 
 /** What a zone holds, at any depth: folders, projects, networks, subnets, containers and resources. */
 function chipCounts(tree: SceneTree, id: string): ChipCounts {

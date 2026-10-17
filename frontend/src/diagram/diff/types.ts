@@ -31,13 +31,16 @@ export interface DiffCounts {
 }
 
 /**
- * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden`: it changed so
- * that the view no longer draws it where it stood, like a project marked for deletion (one the drawn day holds in
- * another container, or inside a chip, is no ghost: it is drawn there, or the chip counts it). Inside a ghost only
- * what was removed comes back, and the zones that are no asset around it (a region of a removed project) take the
- * reason of the ghost around them; an asset still there on the drawn day is never a ghost inside another. A zone
- * that is no asset is a ghost of its own when the drawn day no longer draws it and it held something removed (a
- * region zone whose contents were all removed): it holds what was removed, and is `removed`.
+ * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden`: it is still there
+ * and the view no longer draws it where it stood, like a project marked for deletion, which changed, or a project
+ * that `hideEmptyProjects` no longer draws since what it held was removed, which did not (one the drawn day holds
+ * in another container, or inside a chip, is no ghost: it is drawn there, or the chip counts it). Inside the ghost
+ * of an asset only what was removed comes back, and the zones that are no asset around it (a region of a removed
+ * project) take the reason of the ghost around them; an asset still there on the drawn day is never a ghost inside
+ * it. A zone gone for what it held (a zone that is no asset, or an asset zone that did not change) holds what
+ * changed or was removed in it, each with its own reason: such an asset zone is `hidden`, and a zone that is no
+ * asset (a region zone whose contents were all removed, or whose one job succeeded) is `removed` when something
+ * removed comes back in it, else `hidden`.
  */
 export type GhostReason = 'removed' | 'hidden';
 
@@ -75,9 +78,9 @@ export interface TickDiff {
   readonly changed: readonly string[];
   /**
    * The ghosts the data worker put into the Scene, by node id: the nodes the view drew on the earlier day and no
-   * longer draws, removed or left out where they stood (`GhostReason`; a zone that is no asset when it held
-   * something removed), each in its old container, so the layout places it where it was (a ghost card for one
-   * tick).
+   * longer draws, removed or left out where they stood (`GhostReason`; a zone gone for what it held when something
+   * in it comes back), each in its old container, so the layout places it where it was (a ghost card for one tick;
+   * a chip as the chip it was).
    */
   readonly ghosts: Readonly<Record<string, GhostReason>>;
   /**

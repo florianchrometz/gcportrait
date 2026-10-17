@@ -115,7 +115,10 @@ you came from**:
 - **removed** (absent now): a *ghost* of the node where it stood, its body faded to half, a dashed red
   outline, and "removed" under its name. A ghost is not a node: it cannot be clicked or focused on the canvas
   (pointing at it points at the zone around it), but the drawer of the zone it lay in lists it under "Removed
-  inside" with a link;
+  inside" with a link. A zone the view no longer draws for what went from it (a region whose resources are
+  all removed, a project that Hide › Empty projects hides once its last resource is removed) comes back as a
+  ghost around those ghosts, with "not drawn now" under its name when it is still there itself; one that was
+  collapsed comes back collapsed, counting only what of it is gone;
 - **changed** (same name, a different `updateTime`): a small amber dot on the node's top-right corner. A
   collapsed zone holding anything added, removed or changed gets the dot too, and its name says how many of
   each. A node that moved (a project into another folder) is marked only where it is now, never at its old
