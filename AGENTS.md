@@ -774,7 +774,9 @@ infra/         Dockerfile, install.sh, deploy.sh, uninstall.sh, compose.yaml, cl
 - **The backend** is Fastify 5: response contracts written once as zod schemas and handed to Fastify as JSON
   Schema; `@fastify/helmet` with a strict CSP, rate limits, request ids and pino JSON logs with a header
   allowlist; two esbuild bundles (`server.mjs` and `render-worker.mjs`); a distroless image without
-  `node_modules`.
+  `node_modules`. zod is imported as a namespace everywhere (`import * as z from 'zod'`), which lets esbuild
+  leave zod's locales out of both bundles; ESLint refuses the named form, and the bundle test checks that no
+  locale but the English one is bundled.
 - **The frontend** is React 19 and Vite:
   - the URL hash is the view, and IndexedDB, through a small versioned wrapper with a memory fallback, holds
     preferences, snapshots, saved views and the timeline's day cache;
