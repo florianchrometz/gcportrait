@@ -76,6 +76,26 @@ describe('measureBatches (a budget case measured again while over its limit)', (
     expect(calls).toHaveLength(1);
   });
 
+  it('hands every batch the deadline at 95 % of the test’s timeout', async () => {
+    const clock = (globalThis as unknown as { performance: { now(): number } }).performance;
+    const deadlines: number[] = [];
+    const before = clock.now();
+    await measureBatches(
+      (_runs, _warmUp, deadline) => {
+        deadlines.push(deadline);
+        return deadlines.length === 1 ? 30 : 1;
+      },
+      (median) => median,
+      options,
+    );
+    const after = clock.now();
+    const share = BATCH_TIMEOUT_SHARE * options.timeoutMs;
+    expect(deadlines).toHaveLength(2);
+    expect(deadlines[1]).toBe(deadlines[0]);
+    expect(deadlines[0]).toBeGreaterThanOrEqual(before + share);
+    expect(deadlines[0]).toBeLessThanOrEqual(after + share);
+  });
+
   it('awaits a measurement that returns a promise', async () => {
     const result = await measureBatches(
       (runs) => Promise.resolve({ runs, ms: 3 }),

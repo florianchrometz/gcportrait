@@ -12,7 +12,7 @@ import type { PublicConfig } from '../api/config';
 import { fakeLibrary } from '../snapshots/testing';
 import { expectNoAxeViolations } from '../test/axe';
 import { publicConfig, stubBackend, type StubbedBackend } from '../test/backend';
-import { renderApp } from '../test/renderApp';
+import { renderApp, WHOLE_APP_TIMEOUT } from '../test/renderApp';
 import { installViewport } from '../test/viewport';
 import { GIS_SCRIPT_URL } from './gis';
 import { hostedByLine } from './labels';
@@ -83,7 +83,7 @@ describe('who runs the instance (hostedByLine)', () => {
   });
 });
 
-describe('sign-in on the Connect page', () => {
+describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
   it('signs in, names the account in the top bar and moves on to reading the environment', async () => {
     const { gis, backend } = live();
     renderApp('/', { demo: false, snapshots: fakeLibrary() });
@@ -241,7 +241,7 @@ describe('sign-in on the Connect page', () => {
   });
 });
 
-describe('expiry', () => {
+describe('expiry', WHOLE_APP_TIMEOUT, () => {
   it('says the sign-in ended, in the top bar and on the page, and signs in again', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const { gis } = live();

@@ -8,7 +8,7 @@ import { fakeLibrary, storedRecord } from '../snapshots/testing';
 import { SnapshotJobError } from '../snapshots/worker/client';
 import { DAMAGED_RECORD } from '../snapshots/worker/protocol';
 import { expectNoAxeViolations } from '../test/axe';
-import { currentLocation, renderApp } from '../test/renderApp';
+import { currentLocation, renderApp, WHOLE_APP_TIMEOUT } from '../test/renderApp';
 import { installViewport } from '../test/viewport';
 
 vi.mock('../export/deliver', () => ({ saveFile: vi.fn() }));
@@ -59,7 +59,7 @@ function rows(table: HTMLElement): string[][] {
     .map((row) => [...row.querySelectorAll('th, td')].map((cell) => cell.textContent));
 }
 
-describe('the Snapshots page', () => {
+describe('the Snapshots page', WHOLE_APP_TIMEOUT, () => {
   it('lists the stored snapshots with scope, read time, source, assets, size and stored date', async () => {
     const { table } = await openPage();
     expect(

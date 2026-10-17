@@ -32,6 +32,16 @@ export type RenderAppOptions = {
   readonly savedViews?: SavedViewStore;
 };
 
+/**
+ * The per-test timeout of the suites whose tests render the whole app (`renderApp`) and work through it: such a
+ * test is CPU work in jsdom (every render of the shell and the page, Testing Library's role queries over the
+ * document, an axe audit of it), a few hundred milliseconds of it on a quiet machine and about a second for a
+ * file's first test, which runs the modules and axe for the first time. A machine whose every core runs
+ * another test process stretches that work several times over, past Vitest's 5 s default; the assertions are
+ * the same whatever the timeout.
+ */
+export const WHOLE_APP_TIMEOUT = { timeout: 20_000 } as const;
+
 export interface AppRender extends RenderResult {
   /** The router's path, query string and hash. */
   readonly location: () => string;

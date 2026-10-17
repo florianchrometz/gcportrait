@@ -117,28 +117,53 @@ export interface WorkerFigures extends CaseShape {
   /** Median of the layout's own time in the worker (`report.timings.total`, yields included). */
   readonly layout: number;
   readonly runs: readonly number[];
+  /**
+   * The batch stopped at its deadline before every run was laid out: the medians are those of the runs that
+   * were (`runs`), or of the warm-up runs when none was.
+   */
+  readonly cut: boolean;
 }
 
-/** Lays a Scene out `runs` times through the worker (after `warmUp` runs) and takes the medians. */
+/**
+ * Lays a Scene out `runs` times through the worker (after `warmUp` runs) and takes the medians. With a
+ * `deadline` (a `performance.now()` time, as `measureBatches` hands it), no layout starts after the first
+ * that would end past it if it took as long as the longest one so far: the batch then stops short (`cut`), so
+ * that a budget test reports its figures before its timeout fires.
+ */
 export async function measureInWorker(
   worker: NodeLayoutWorker,
   scene: Scene,
   runs = RUNS,
   warmUp = WARM_UP,
+  deadline = Number.POSITIVE_INFINITY,
 ): Promise<WorkerFigures> {
-  for (let i = 0; i < warmUp; i += 1) await worker.client.layout(scene);
-  const trips: number[] = [];
-  const own: number[] = [];
+  if (runs < 1) throw new Error('no runs');
+  const warm: { trip: number; own: number }[] = [];
+  const measured: { trip: number; own: number }[] = [];
   let last: Layout | undefined;
-  for (let i = 0; i < runs; i += 1) {
+  let longest = 0;
+  let cut = false;
+  for (let i = 0; i < warmUp + runs; i += 1) {
+    if (i > 0 && performance.now() + longest > deadline) {
+      cut = true;
+      break;
+    }
     const started = performance.now();
     const { layout } = await worker.client.layout(scene);
-    trips.push(performance.now() - started);
-    own.push(layout.report.timings?.total ?? Number.NaN);
+    const trip = performance.now() - started;
+    longest = Math.max(longest, trip);
+    (i < warmUp ? warm : measured).push({ trip, own: layout.report.timings?.total ?? Number.NaN });
     last = layout;
   }
   if (last === undefined) throw new Error('no runs');
-  return { ...shapeOf(last), roundTrip: median(trips), layout: median(own), runs: trips };
+  const counted = measured.length > 0 ? measured : warm;
+  return {
+    ...shapeOf(last),
+    roundTrip: median(counted.map(({ trip }) => trip)),
+    layout: median(counted.map(({ own }) => own)),
+    runs: measured.map(({ trip }) => trip),
+    cut,
+  };
 }
 
 export interface InProcessFigures extends CaseShape {

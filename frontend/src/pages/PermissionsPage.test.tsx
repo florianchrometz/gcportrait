@@ -4,10 +4,16 @@
  * backend's /api routes stood in for: sign-in on the page, the scope picker (search, a typed name, the recent
  * scopes), the quota project, the check and its checklist with copy-ready commands, service-account mode, and
  * the demo page; axe on each.
+ *
+ * The scope search asks the backend once typing pauses (`SEARCH_DEBOUNCE_MS`): the tests run on fake timeouts
+ * that move with the real clock in 1 ms steps (`shouldAdvanceTime`, so the app's other waits and Testing
+ * Library's own short ones pass as they would), jump the clock past that pause once a text is typed instead of
+ * waiting it out (`pickFromSearch`), and let user-event's own pauses between keys and clicks advance it too
+ * (`user`).
  */
-import { screen, waitFor, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, screen, waitFor, within } from '@testing-library/react';
+import { userEvent, type UserEvent } from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PublicConfig } from '../api/config';
 import { installGis, signInThroughGis, TEST_CLIENT_ID, type FakeGis } from '../auth/testing';
@@ -15,11 +21,12 @@ import { TOKENINFO_URL } from '../auth/tokeninfo';
 import { FOOTER_NOTICE } from '../branding';
 import type { PreflightAnswer } from '../preflight/api';
 import { BLOCKED_ANSWER } from '../preflight/testing';
+import { SEARCH_DEBOUNCE_MS } from '../scope/useScopeSearch';
 import { createMemoryPreferenceStore, type PreferenceStore } from '../storage/preferences';
 import { expectNoAxeViolations } from '../test/axe';
 import { publicConfig, stubBackend, type BackendCall, type StubbedBackend } from '../test/backend';
 import { stubClipboard } from '../test/clipboard';
-import { renderApp } from '../test/renderApp';
+import { renderApp, WHOLE_APP_TIMEOUT } from '../test/renderApp';
 
 const TOKEN = 'secret-permissions-token';
 const ACCOUNT_EMAIL = 'gcportrait-backend@demo-host.iam.gserviceaccount.com';
@@ -113,19 +120,30 @@ async function openSignedIn(
   return { backend, bodies: backend.bodies, view };
 }
 
+/** The person at the keyboard and the pointer, on the test's fake clock (set up for each test). */
+let user: UserEvent;
+
 async function pickFromSearch(text: string, option: RegExp): Promise<void> {
   const field = within(checkSection()).getByRole('combobox', { name: 'Scope' });
-  await userEvent.click(field);
-  await userEvent.type(field, text);
+  await user.click(field);
+  await user.type(field, text);
+  // The search goes out once typing pauses.
+  await act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS));
   const choice = await screen.findByRole('option', { name: option }, { timeout: 2000 });
-  await userEvent.click(choice);
+  await user.click(choice);
 }
 
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldAdvanceTime: true, advanceTimeDelta: 1 });
+  user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
-describe('the Permissions page, signed out', () => {
+describe('the Permissions page, signed out', WHOLE_APP_TIMEOUT, () => {
   it('offers sign-in, the reference with placeholders, the service account and the gate, and the short non-affiliation line', async () => {
     live();
     renderApp('/permissions', { demo: false });
@@ -157,7 +175,7 @@ describe('the Permissions page, signed out', () => {
   });
 });
 
-describe('the Permissions page, signed in', () => {
+describe('the Permissions page, signed in', WHOLE_APP_TIMEOUT, () => {
   it('searches scopes with the token, picks one, checks it and lists what is missing with commands', async () => {
     const { bodies, backend } = await openSignedIn();
     await pickFromSearch('demo', /Demo app 1/);
@@ -167,7 +185,7 @@ describe('the Permissions page, signed in', () => {
     });
     expect(within(checkSection()).getByText('Demo app 1 (projects/demo-app-1)')).toBeDefined();
 
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     // Said twice: on screen, and in the live region that announces it.
     expect(
       await within(checkSection()).findAllByText(
@@ -205,11 +223,11 @@ describe('the Permissions page, signed in', () => {
     const writeText = stubClipboard();
     await openSignedIn();
     await pickFromSearch('demo', /Demo app 1/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     const copy = await within(checkSection()).findByRole('button', {
       name: 'Copy the command that grants roles/cloudasset.viewer on demo-app-1',
     });
-    await userEvent.click(copy);
+    await user.click(copy);
     expect(writeText).toHaveBeenCalledWith(
       'gcloud projects add-iam-policy-binding demo-app-1 --member="user:ada@example.com" --role="roles/cloudasset.viewer"',
     );
@@ -220,13 +238,13 @@ describe('the Permissions page, signed in', () => {
     const preferences = createMemoryPreferenceStore();
     await openSignedIn(preferences);
     const field = within(checkSection()).getByRole('combobox', { name: 'Scope' });
-    await userEvent.type(field, 'folders/abc');
+    await user.type(field, 'folders/abc');
     expect(
       await within(checkSection()).findByText('A folder id is a number, such as folders/123456789012.'),
     ).toBeDefined();
-    await userEvent.clear(field);
-    await userEvent.type(field, 'organizations/30000000001');
-    await userEvent.click(await screen.findByRole('option', { name: /Use organizations\/30000000001/ }));
+    await user.clear(field);
+    await user.type(field, 'organizations/30000000001');
+    await user.click(await screen.findByRole('option', { name: /Use organizations\/30000000001/ }));
     expect(
       within(checkSection()).getByRole('button', { name: 'Clear scope organizations/30000000001' }),
     ).toBeDefined();
@@ -244,9 +262,9 @@ describe('the Permissions page, signed in', () => {
     const { bodies } = await openSignedIn(preferences);
     await pickFromSearch('web', /Web shop/);
     const quota = within(checkSection()).getByRole('combobox', { name: 'Quota project' });
-    await userEvent.type(quota, 'demo-quota-1');
-    await userEvent.click(await screen.findByRole('option', { name: /Use projects\/demo-quota-1/ }));
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.type(quota, 'demo-quota-1');
+    await user.click(await screen.findByRole('option', { name: /Use projects\/demo-quota-1/ }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     await waitFor(() => {
       expect(bodies('/api/preflight')).toEqual([
         { scope: 'folders/20000000001', mode: 'user', quotaProject: 'demo-quota-1' },
@@ -260,9 +278,9 @@ describe('the Permissions page, signed in', () => {
   it('marks a result out of date when the scope changes', async () => {
     await openSignedIn();
     await pickFromSearch('demo', /Demo app 1/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     await within(checkSection()).findAllByText(/^Not ready yet/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: /^Clear scope/ }));
+    await user.click(within(checkSection()).getByRole('button', { name: /^Clear scope/ }));
     await pickFromSearch('web', /Web shop/);
     expect(
       within(checkSection()).getByText(/This result is for another scope, mode or quota project/),
@@ -309,10 +327,10 @@ describe('the Permissions page, signed in', () => {
       candidates: [],
     };
     const { bodies } = await openSignedIn(undefined, () => Response.json(answer));
-    await userEvent.click(within(checkSection()).getByRole('radio', { name: 'Service account' }));
+    await user.click(within(checkSection()).getByRole('radio', { name: 'Service account' }));
     expect(within(checkSection()).queryByRole('combobox', { name: 'Quota project' })).toBeNull();
     await pickFromSearch('web', /Web shop/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     await within(checkSection()).findByText(/so service-account mode is refused for folders\/20000000001\.$/);
     expect(bodies('/api/preflight')).toEqual([{ scope: 'folders/20000000001', mode: 'sa' }]);
     await expectNoAxeViolations();
@@ -321,13 +339,13 @@ describe('the Permissions page, signed in', () => {
   it('shows a failed check as an alert', async () => {
     await openSignedIn(undefined, () => Response.json({ message: 'Internal error.' }, { status: 500 }));
     await pickFromSearch('demo', /Demo app 1/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     const alert = await within(checkSection()).findByRole('alert');
     expect(alert.textContent).toContain('The backend could not answer (HTTP 500). Try again.');
   });
 });
 
-describe('the Permissions page, service-account mode', () => {
+describe('the Permissions page, service-account mode', WHOLE_APP_TIMEOUT, () => {
   function section(): HTMLElement {
     return screen.getByRole('region', { name: 'Service-account mode' });
   }
@@ -418,9 +436,9 @@ describe('the Permissions page, service-account mode', () => {
         { status: 403 },
       ),
     );
-    await userEvent.click(within(checkSection()).getByRole('radio', { name: 'Service account' }));
+    await user.click(within(checkSection()).getByRole('radio', { name: 'Service account' }));
     await pickFromSearch('web', /Web shop/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     await within(checkSection()).findByText(
       'You cannot see folders/20000000001 yourself, so service-account mode is refused for it.',
     );
@@ -445,13 +463,13 @@ describe('the Permissions page, service-account mode', () => {
       ),
     );
     await pickFromSearch('demo', /Demo app 1/);
-    await userEvent.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
+    await user.click(within(checkSection()).getByRole('button', { name: 'Check permissions' }));
     const alert = await within(checkSection()).findByRole('alert');
     expect(alert.textContent).toContain('Service-account mode is off on this gcportrait instance.');
   });
 });
 
-describe('the Permissions page in demo mode', () => {
+describe('the Permissions page in demo mode', WHOLE_APP_TIMEOUT, () => {
   it('checks nothing and keeps the guidance', async () => {
     const { fetch } = stubBackend();
     renderApp('/permissions', { demo: true });

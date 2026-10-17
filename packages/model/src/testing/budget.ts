@@ -6,7 +6,8 @@
  * - **Measured again while over.** A case over its limit is measured again after a `PAUSE_MS` pause, at most
  *   `plan.batches` times and only while another batch fits in the test's timeout, and its best batch counts
  *   (`measureBatches`): under `pnpm test` a budget test starts while every other test file runs and competes
- *   with them for the cores.
+ *   with them for the cores. A batch that would run past the deadline it is handed (`BATCH_TIMEOUT_SHARE` of
+ *   the timeout) may stop its runs there, so that its test reports a figure before it times out.
  * - **Skipped on an overloaded machine, never on CI.** Under a local `pnpm test`, a case still over its limit
  *   while the one-minute load average is above `OVERLOAD_PER_CORE` per core is skipped with the load and
  *   its figures as the reason (`overloadReason`, `skipIfOverloaded`): four times oversubscribed, work reads
@@ -88,19 +89,25 @@ export interface BatchOptions {
 }
 
 /**
- * Measures a budget case in batches: `measure(runs, warmUp)` once, then again after a `PAUSE_MS` pause while
- * every median so far is over the limit, at most `plan.batches` times, and only while another batch, as long
- * per run as the last one, fits in the test's timeout. The batch with the lowest median is the best. Stopping
- * early only leaves fewer batches to choose from, so it can fail or skip a case but never pass one that more
- * batches would have failed.
+ * Measures a budget case in batches: `measure(runs, warmUp, deadline)` once, then again after a `PAUSE_MS`
+ * pause while every median so far is over the limit, at most `plan.batches` times, and only while another
+ * batch, as long per run as the last one, fits in the test's timeout. The batch with the lowest median is the
+ * best. Stopping early only leaves fewer batches to choose from, so it can fail or skip a case but never pass
+ * one that more batches would have failed.
+ *
+ * `deadline` is the `performance.now()` time at `BATCH_TIMEOUT_SHARE` of the test's timeout, the same for
+ * every batch. A measurement of many runs may start no run past it: a batch that runs slower than the one
+ * before it (the machine got busier), or a first batch that slow, then ends before the test times out, and
+ * its figures say so, for the test to count the case as missed.
  */
 export async function measureBatches<F>(
-  measure: (runs: number, warmUp: number) => F | Promise<F>,
+  measure: (runs: number, warmUp: number, deadline: number) => F | Promise<F>,
   medianOf: (figures: F) => number,
   { plan, limit, timeoutMs, laterWarmUp }: BatchOptions,
 ): Promise<Batches<F>> {
   const { performance } = host();
   const started = performance.now();
+  const deadline = started + BATCH_TIMEOUT_SHARE * timeoutMs;
   const medians: number[] = [];
   let best: { figures: F; median: number } | undefined;
   let perRun = 0;
@@ -118,7 +125,7 @@ export async function measureBatches<F>(
     }
     const warmUp = batch === 0 ? plan.warmUp : laterWarmUp;
     const batchStarted = performance.now();
-    const figures = await measure(plan.runs, warmUp);
+    const figures = await measure(plan.runs, warmUp, deadline);
     perRun = (performance.now() - batchStarted) / Math.max(1, plan.runs + warmUp);
     const value = medianOf(figures);
     medians.push(value);

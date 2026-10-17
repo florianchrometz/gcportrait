@@ -390,12 +390,15 @@ It also holds the rule for the tests' wall-clock limits, the one every package t
 (the layout's budgets, the ingest budget, the graph build's budget, the demo organisations' generation):
 `measureBatches` measures a case again after a 250 ms pause (`PAUSE_MS`) while it is over its limit, at most
 `BATCHES` (5) times and only while another batch fits in 95 % of the test's timeout (`anotherBatchFits`), and
-keeps the best batch; `skipIfOverloaded` skips a test whose best figure is still over its limit, with the load
-and the figures as the reason and a `skipped:` line on standard error (`noteSkipped`), when `overloadReason`
-finds the machine's one-minute load average above 1.5 per core (`OVERLOAD_PER_CORE`), but never on CI
-(`onCi`: `CI` set and not `false` or `0`) and never in a strict budget run. This package has no Node types,
-so the helpers reach the process, its clock and its timers through `globalThis` and `node:os` through
-`process.getBuiltinModule`; loaded anywhere else, they find no load and never skip.
+keeps the best batch; it hands every batch that 95 % as its deadline, at which a measurement of many runs may
+stop, so that a batch slower than the one before it ends, and its test reports a figure, before the test times
+out (the layout's worker test does, and counts a batch cut short as a miss); `skipIfOverloaded` skips a test
+whose best figure is still over its limit, with the load and the figures as the reason and a `skipped:` line
+on standard error (`noteSkipped`), when `overloadReason` finds the machine's one-minute load average above
+1.5 per core (`OVERLOAD_PER_CORE`), but never on CI (`onCi`: `CI` set and not `false` or `0`) and never in a
+strict budget run. This package has no Node types, so the helpers reach the process, its clock and its timers
+through `globalThis` and `node:os` through `process.getBuiltinModule`; loaded anywhere else, they find no
+load and never skip.
 
 And the property tests' seed and number of runs, which the test setup of every package with fast-check
 properties gives fast-check (`fast-check-seed.ts`: the catalog's, ingest's, this package's, the graph's, the
