@@ -38,7 +38,7 @@
  * describes them without printing the forbidden names, the secret patterns or the digests.
  */
 import { createHash } from 'node:crypto';
-import { readFileSync, readlinkSync } from 'node:fs';
+import { readFileSync, readlinkSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -275,8 +275,6 @@ function addDigest(phrases, entry) {
   phrases.count += 1;
 }
 
-const PHRASES = parseDigests(PHRASE_DIGESTS);
-
 /** @param {string} gap the text between two words */
 function normaliseGap(gap) {
   const kept = gap.replace(/[_-]/g, '');
@@ -346,16 +344,17 @@ const wordEnds = /** @type {number[]} */ ([]);
 const gaps = /** @type {string[]} */ ([]);
 
 /**
- * The phrases of PHRASES in a text, in every form, in order; with `onlyFirst`, at most one. A candidate is
+ * The refused phrases in a text, in every form, in order; with `onlyFirst`, at most one. A candidate is
  * hashed only when its normalised length is the length of a refused phrase.
  * @param {string} text
  * @param {boolean} onlyFirst
+ * @param {PhraseDigests} phrases
  * @returns {Hit[]}
  */
-function findPhrases(text, onlyFirst) {
+function findPhrases(text, onlyFirst, phrases) {
   /** @type {Hit[]} */
   const hits = [];
-  const { words: wordSet, path: pathSet, dated: datedSet } = PHRASES;
+  const { words: wordSet, path: pathSet, dated: datedSet } = phrases;
   if (wordSet.lengths.size > 0) {
     let count = 0;
     WORD.lastIndex = 0;
@@ -525,21 +524,28 @@ const BANNED_TERMS = Object.freeze([
   ...BUILD_RECORD_PATTERNS.map((pattern) =>
     regexTerm({ label: BUILD_RECORD_LABEL, pattern, message: SAY_WHAT_IS, secret: true, binary: true }),
   ),
-  {
-    label: BUILD_RECORD_LABEL,
-    message: SAY_WHAT_IS,
-    secret: true,
-    binary: true,
-    get digests() {
-      return PHRASES.count;
-    },
-    get window() {
-      return Math.max(PHRASES.words.longest, PHRASES.path.longest, PHRASES.dated.longest + 24) + 1;
-    },
-    first: (text) => findPhrases(text, true)[0],
-    find: (text) => findPhrases(text, false),
-  },
 ]);
+
+/** @param {PhraseDigests} phrases @returns {readonly Term[]} */
+function bannedTermsOf(phrases) {
+  return [
+    ...BANNED_TERMS,
+    {
+      label: BUILD_RECORD_LABEL,
+      message: SAY_WHAT_IS,
+      secret: true,
+      binary: true,
+      get digests() {
+        return phrases.count;
+      },
+      get window() {
+        return Math.max(phrases.words.longest, phrases.path.longest, phrases.dated.longest + 24) + 1;
+      },
+      first: (text) => findPhrases(text, true, phrases)[0],
+      find: (text) => findPhrases(text, false, phrases),
+    },
+  ];
+}
 
 /**
  * Rule (f): ids of work items. Text says what a thing is or does; an id from a work plan means nothing to a
@@ -657,8 +663,9 @@ function isLicenceNameExempt(relPath) {
  * either. Applies to binary files too.
  * @param {string} relPath
  * @param {Problem[]} problems
+ * @param {readonly Term[]} bannedTerms
  */
-function checkPath(relPath, problems) {
+function checkPath(relPath, problems, bannedTerms) {
   for (const term of LICENCE_NAME_TERMS) {
     if (!term.pattern.test(relPath)) continue;
     problems.push({
@@ -670,7 +677,7 @@ function checkPath(relPath, problems) {
   }
   /** @type {Set<string>} */
   const labels = new Set();
-  for (const term of BANNED_TERMS) {
+  for (const term of bannedTerms) {
     if (labels.has(term.label)) continue;
     const hit = term.first(relPath);
     if (hit === undefined) continue;
@@ -734,15 +741,16 @@ function window(line, size, side) {
  * @param {readonly string[]} lines
  * @param {Problem[]} problems
  * @param {Set<string>} reported `<label>:<line>` of the findings so far
+ * @param {readonly Term[]} bannedTerms
  */
-function checkWrappedTerms(relPath, lines, problems, reported) {
+function checkWrappedTerms(relPath, lines, problems, reported, bannedTerms) {
   for (let index = 0; index + 1 < lines.length; index += 1) {
     const end = (lines[index] ?? '').trimEnd();
     const start = (lines[index + 1] ?? '').replace(CONTINUATION_MARKER, '');
     if (end === '' || start === '') continue;
     /** @type {Map<number, { tail: string, joined: string }>} */
     const joins = new Map();
-    for (const term of BANNED_TERMS) {
+    for (const term of bannedTerms) {
       const key = `${term.label}:${String(index + 1)}`;
       if (reported.has(key)) continue;
       let join = joins.get(term.window);
@@ -773,13 +781,14 @@ function checkWrappedTerms(relPath, lines, problems, reported) {
  * @param {string} relPath
  * @param {readonly string[]} lines
  * @param {Problem[]} problems
+ * @param {readonly Term[]} bannedTerms
  */
-function checkTerms(relPath, lines, problems) {
+function checkTerms(relPath, lines, problems, bannedTerms) {
   const exempt = isForbiddenNameExempt(relPath);
   /** @type {Set<string>} */
   const reported = new Set();
   lines.forEach((lineText, index) => {
-    for (const term of BANNED_TERMS) {
+    for (const term of bannedTerms) {
       const key = `${term.label}:${String(index + 1)}`;
       if (reported.has(key)) continue;
       const hit = term.first(lineText);
@@ -803,7 +812,7 @@ function checkTerms(relPath, lines, problems) {
       });
     }
   });
-  checkWrappedTerms(relPath, lines, problems, reported);
+  checkWrappedTerms(relPath, lines, problems, reported, bannedTerms);
 }
 
 /**
@@ -859,10 +868,11 @@ function checkLicenceNames(relPath, lines, problems) {
  * @param {string} relPath
  * @param {string} text
  * @param {Problem[]} problems
+ * @param {readonly Term[]} bannedTerms
  */
-function checkText(relPath, text, problems) {
+function checkText(relPath, text, problems, bannedTerms) {
   const lines = splitLines(text);
-  checkTerms(relPath, lines, problems);
+  checkTerms(relPath, lines, problems, bannedTerms);
   checkPlanIds(relPath, lines, problems);
   checkLicenceNames(relPath, lines, problems);
 }
@@ -1016,8 +1026,9 @@ function pngTexts(content) {
  * @param {string} relPath
  * @param {Buffer} content
  * @param {Problem[]} problems
+ * @param {readonly Term[]} bannedTerms
  */
-function checkBinary(relPath, content, problems) {
+function checkBinary(relPath, content, problems, bannedTerms) {
   const bytes = content.toString('latin1');
   const runs = [bytes, bytes.replaceAll('\u0000', ''), ...pngTexts(content)].flatMap((view) =>
     Array.from(view.matchAll(PRINTABLE_RUN), (match) => match[0]),
@@ -1039,7 +1050,7 @@ function checkBinary(relPath, content, problems) {
   }
   /** @type {Set<string>} */
   const labels = new Set();
-  for (const term of BANNED_TERMS) {
+  for (const term of bannedTerms) {
     if (!term.binary || labels.has(term.label)) continue;
     const hit = term.first(text);
     if (hit === undefined) continue;
@@ -1158,8 +1169,9 @@ function checkHeader(relPath, text, licenseId, problems) {
  * Runs every rule over the tree rooted at `root`.
  * @param {string} root
  * @returns {{ problems: Problem[], fileCount: number, headerCount: number, licenseId: string }}
+ * @param {readonly Term[]} bannedTerms
  */
-function checkTree(root) {
+function checkTree(root, bannedTerms) {
   const licenseId = readProjectLicenseId(root);
   /** @type {Problem[]} */
   const problems = [];
@@ -1167,7 +1179,7 @@ function checkTree(root) {
   let headerCount = 0;
   for (const { absPath, relPath, isSymlink } of listRepoFiles(root)) {
     fileCount += 1;
-    checkPath(relPath, problems);
+    checkPath(relPath, problems, bannedTerms);
     if (isSymlink) {
       reportSymlink(relPath, absPath, problems);
       continue;
@@ -1181,14 +1193,14 @@ function checkTree(root) {
           rule: 'encoding',
           message: 'holds plain text under a binary extension; give it the extension of its format',
         });
-        checkText(relPath, content.toString('utf8'), problems);
-      } else checkBinary(relPath, content, problems);
+        checkText(relPath, content.toString('utf8'), problems, bannedTerms);
+      } else checkBinary(relPath, content, problems, bannedTerms);
       continue;
     }
     const { text, problem } = decodeText(content);
     if (problem !== undefined)
       problems.push({ relPath, line: undefined, rule: 'encoding', message: problem });
-    checkText(relPath, text, problems);
+    checkText(relPath, text, problems, bannedTerms);
     if (checkBannedFiles(relPath, text, problems)) continue;
     if (checkHeader(relPath, text, licenseId, problems)) headerCount += 1;
   }
@@ -1198,13 +1210,14 @@ function checkTree(root) {
 /**
  * Rule (e) for `--list-exempt`: a printed term with its pattern, a secret label once, with its count.
  * @returns {string[]}
+ * @param {readonly Term[]} bannedTerms
  */
-function describeBannedTerms() {
+function describeBannedTerms(bannedTerms) {
   /** @type {Map<string, { patterns: number, digests: number }>} */
   const secret = new Map();
   /** @type {string[]} */
   const lines = [];
-  for (const term of BANNED_TERMS) {
+  for (const term of bannedTerms) {
     if (!term.secret) {
       lines.push(`      ${term.label}: ${String(term.pattern)}`);
       continue;
@@ -1226,8 +1239,11 @@ function describeBannedTerms() {
   });
 }
 
-/** @returns {string} */
-function describeRules() {
+/**
+ * @returns {string}
+ * @param {readonly Term[]} bannedTerms
+ */
+function describeRules(bannedTerms) {
   /** @type {Map<string, string[]>} */
   const headerForms = new Map();
   for (const [match, style] of [...HEADER_STYLE_BY_EXTENSION, ...HEADER_STYLE_BY_FILENAME]) {
@@ -1279,7 +1295,7 @@ function describeRules() {
     "(e) banned-term: per line and across a line break (the next line's comment marker dropped), in file",
     '    contents and in file/directory names, with no exemption ("since <date>" stays legal); in binary files',
     '    all but the citations of a decision record by abbreviation or folder:',
-    ...describeBannedTerms(),
+    ...describeBannedTerms(bannedTerms),
     `(f) plan-id: per line, ${PLAN_IDS.filter((id) => !id.markdownOnly)
       .map((id) => `${id.label} (${String(id.pattern)})`)
       .join(' and ')} in every text file,`,
@@ -1316,18 +1332,20 @@ function parseCli(argv) {
  * @param {readonly string[]} argv
  * @returns {number} exit code
  */
-function main(argv) {
+export function run(argv) {
   /** @type {ReturnType<typeof parseCli>} */
   let parsed;
+  /** @type {readonly Term[]} */
+  let bannedTerms;
   try {
     parsed = parseCli(argv);
-    for (const entry of parsed.values['also-refuse'] ?? []) addDigest(PHRASES, entry);
+    bannedTerms = bannedTermsOf(parseDigests([...PHRASE_DIGESTS, ...(parsed.values['also-refuse'] ?? [])]));
   } catch (error) {
     console.error(`provenance: ${error instanceof Error ? error.message : String(error)}`);
     return 2;
   }
   if (parsed.values['list-exempt'] === true) {
-    console.log(describeRules());
+    console.log(describeRules(bannedTerms));
     return 0;
   }
   const phrases = parsed.values['digest-of'];
@@ -1343,7 +1361,7 @@ function main(argv) {
     return 0;
   }
   const root = path.resolve(parsed.values.root ?? fileURLToPath(new URL('..', import.meta.url)));
-  const { problems, fileCount, headerCount, licenseId } = checkTree(root);
+  const { problems, fileCount, headerCount, licenseId } = checkTree(root, bannedTerms);
   if (problems.length === 0) {
     console.log(
       `provenance: OK. ${String(fileCount)} files scanned, ${String(headerCount)} SPDX headers ` +
@@ -1364,4 +1382,6 @@ function main(argv) {
   return 1;
 }
 
-process.exitCode = main(process.argv.slice(2));
+if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exitCode = run(process.argv.slice(2));
+}

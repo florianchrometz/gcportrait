@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: MIT
 import { spawnSync } from 'node:child_process';
+import { Console } from 'node:console';
 import { readFileSync, rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { run } from './check-provenance.mjs';
 import {
   FIXTURE_LICENSE,
   REPO,
   createTempTree,
   manifest,
+  runInProcess,
   runScript,
+  SPAWN_TIMEOUT,
   type TempTree,
 } from './testing/temp-tree.js';
 
@@ -98,14 +102,10 @@ function utf16(text: string, order: 'le' | 'be' = 'le'): Buffer {
 }
 
 /**
- * The PHRASE_DIGESTS entries the checker prints for phrases, in their order: one run for all of them, since a
- * node process takes a moment to start and a busy machine multiplies it.
+ * The PHRASE_DIGESTS entries the checker prints for phrases, in their order, in one invocation.
  */
-function digestsOf(...phrases: readonly string[]): string[] {
-  const result = runScript(
-    'check-provenance.mjs',
-    phrases.flatMap((phrase) => ['--digest-of', phrase]),
-  );
+async function digestsOf(...phrases: readonly string[]): Promise<string[]> {
+  const result = await runInProcess(() => run(phrases.flatMap((phrase) => ['--digest-of', phrase])));
   expect(result.stderr).toBe('');
   const entries = result.stdout.trim().split('\n');
   expect(entries).toHaveLength(phrases.length);
@@ -141,16 +141,20 @@ describe('check-provenance', () => {
   beforeEach(() => {
     tree = createTempTree('provenance');
     writeCleanTree(tree);
+    const output = new Console(process.stdout, process.stderr);
+    vi.spyOn(console, 'log').mockImplementation(output.log.bind(output));
+    vi.spyOn(console, 'error').mockImplementation(output.error.bind(output));
   });
 
   afterEach(() => {
     tree.remove();
+    vi.restoreAllMocks();
   });
 
-  const check = (...args: string[]) => runScript('check-provenance.mjs', ['--root', tree.root, ...args]);
+  const check = (...args: string[]) => runInProcess(() => run(['--root', tree.root, ...args]));
 
-  it('passes a clean tree', () => {
-    const result = check();
+  it('passes a clean tree', async () => {
+    const result = await check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
@@ -665,10 +669,10 @@ describe('check-provenance', () => {
 
   // A loop rather than it.each: its `$name` would cut the names at 40 characters.
   for (const { name, files, lines, summary, absent = [], refuse = [] } of FAILING) {
-    it(`fails on ${name}`, () => {
+    it(`fails on ${name}`, async () => {
       for (const [relPath, content] of Object.entries(files)) tree.write(relPath, content);
-      const digests = refuse.length === 0 ? [] : digestsOf(...refuse);
-      const result = check(...digests.flatMap((digest) => ['--also-refuse', digest]));
+      const digests = refuse.length === 0 ? [] : await digestsOf(...refuse);
+      const result = await check(...digests.flatMap((digest) => ['--also-refuse', digest]));
       expect(result.status).toBe(1);
       for (const line of lines) expect(result.stderr).toContain(line);
       for (const text of absent) expect(result.stderr).not.toContain(text);
@@ -679,14 +683,14 @@ describe('check-provenance', () => {
     });
   }
 
-  it('does not mistake ordinary uses of the words for a Google copyright notice', () => {
+  it('does not mistake ordinary uses of the words for a Google copyright notice', async () => {
     tree.write('src/ok.ts', `${TS_HEADER}\n// ${COMPANY} Cloud renders here.\n// ${NOTICE}: see LICENSE.\n`);
-    const result = check();
+    const result = await check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
-  it('allows the words the banned terms resemble, where they mean something else', () => {
+  it('allows the words the banned terms resemble, where they mean something else', async () => {
     tree.write(
       'src/words.ts',
       [
@@ -716,24 +720,24 @@ describe('check-provenance', () => {
       'pnpm-lock.yaml',
       `lockfileVersion: '9.0'\npackages:\n  character-entities@2.0.2:\n    resolution: {integrity: sha512-${RECORD}+${RECORD.toLowerCase()}/Q==}\n`,
     );
-    const result = check();
+    const result = await check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
-  it('allows look-alikes of the work-item ids', () => {
+  it('allows look-alikes of the work-item ids', async () => {
     // Versions, colours, CSS, and words that only start like an id.
     tree.write(
       'docs/notes.md',
       `${MD_HEADER}\n\nVersion 3.6.0, colours #D1D5DB and #D93025, a DE1 adapter, P35, phased 2, ${DECISION_ID}x, D1234.\n`,
     );
     tree.write('src/sizes.ts', `${TS_HEADER}\nexport const P = { P30: 1, p3: 2 };\n`);
-    const result = check();
+    const result = await check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
-  it('looks for short terms in text only, not in the bytes of a binary file', () => {
+  it('looks for short terms in text only, not in the bytes of a binary file', async () => {
     // Abbreviations, licence ids and work-item ids are short enough to occur by chance in compressed data.
     tree.write(
       'assets/noise.png',
@@ -750,12 +754,12 @@ describe('check-provenance', () => {
         [0, 0x89],
       ),
     );
-    const result = check();
+    const result = await check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
-  it('allows the denied licence family in the deny list and the licence texts', () => {
+  it('allows the denied licence family in the deny list and the licence texts', async () => {
     tree.write('THIRD_PARTY.md', `${MD_HEADER}\n\nDenied: GPL, LGPL, ${LICENCE_SHORT} (network copyleft).\n`);
     tree.write('scripts/check-licenses.mjs', `${TS_HEADER}\nexport const family = '${LICENCE_SHORT}-*';\n`);
     tree.write(
@@ -768,15 +772,15 @@ describe('check-provenance', () => {
       'src/hash.ts',
       `${TS_HEADER}\nexport const integrity = 'sha512-x${LICENCE_SHORT.toLowerCase()}Q==';\nexport const lgpl = 'LGPL-2.1';\n`,
     );
-    const result = check();
+    const result = await check();
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
-  it('finds no refused string in the checker and in this test, which spell none of them out', () => {
+  it('finds no refused string in the checker and in this test, which spell none of them out', async () => {
     for (const file of ['scripts/check-provenance.mjs', 'scripts/check-provenance.test.ts'])
       tree.write(file, readFileSync(path.join(REPO, file), 'utf8'));
-    const result = check();
+    const result = await check();
     // Their headers name MIT, not the fixture's identifier; nothing else may be reported.
     const reported = result.stderr
       .split('\n')
@@ -787,9 +791,9 @@ describe('check-provenance', () => {
     ]);
   });
 
-  it('requires the identifier named in the root package.json', () => {
+  it('requires the identifier named in the root package.json', async () => {
     tree.write('package.json', manifest('MIT'));
-    const result = check();
+    const result = await check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(`[spdx-header] SPDX header names "${FIXTURE_LICENSE}"`);
     // Files matched by name are held to the same identifier as files matched by extension.
@@ -799,7 +803,7 @@ describe('check-provenance', () => {
     );
   });
 
-  it('skips a .git file at the root, as a linked work tree or a submodule has one', () => {
+  it('skips a .git file at the root, as a linked work tree or a submodule has one', async () => {
     // A linked work tree's `.git` is a file naming the git directory, not a directory: VCS data either way,
     // never a source file that needs a header.
     const gitData = createTempTree('git-data');
@@ -809,7 +813,7 @@ describe('check-provenance', () => {
         encoding: 'utf8',
       });
       expect(initialized.status, initialized.stderr).toBe(0);
-      const result = check();
+      const result = await check();
       expect(result.stderr).toBe('');
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('provenance: OK. 14 files scanned');
@@ -818,7 +822,7 @@ describe('check-provenance', () => {
     }
   });
 
-  it('reports symbolic links instead of following them', () => {
+  it('reports symbolic links instead of following them', async () => {
     // The link targets live under node_modules/, which the walker skips; only the links themselves are
     // visible.
     tree.write('node_modules/vendor/main.go', 'package main\n');
@@ -834,7 +838,7 @@ describe('check-provenance', () => {
       path.join(tree.root, 'src/util.ts'),
       'file',
     );
-    const result = check();
+    const result = await check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(
       'packages/model/vendor  [symlink] symbolic link to "' +
@@ -845,46 +849,49 @@ describe('check-provenance', () => {
     expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
   });
 
-  it.each(['present', 'missing'] as const)('refuses a root manifest link to a %s outside file', (target) => {
-    const outside = createTempTree('outside-root-manifest');
-    const privateLicense = 'LicenseRef-outside-private';
-    try {
-      if (target === 'present') outside.write('package.json', manifest(privateLicense));
-      rmSync(path.join(tree.root, 'package.json'));
-      symlinkSync(path.join(outside.root, 'package.json'), path.join(tree.root, 'package.json'));
-      const result = check();
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain('package.json must be a regular file');
-      expect(result.stderr).not.toContain(privateLicense);
-      expect(result.stdout).not.toContain(privateLicense);
-      if (target === 'present') expect(outside.read('package.json')).toBe(manifest(privateLicense));
-    } finally {
-      outside.remove();
-    }
-  });
+  it.each(['present', 'missing'] as const)(
+    'refuses a root manifest link to a %s outside file',
+    async (target) => {
+      const outside = createTempTree('outside-root-manifest');
+      const privateLicense = 'LicenseRef-outside-private';
+      try {
+        if (target === 'present') outside.write('package.json', manifest(privateLicense));
+        rmSync(path.join(tree.root, 'package.json'));
+        symlinkSync(path.join(outside.root, 'package.json'), path.join(tree.root, 'package.json'));
+        const rejected = check();
+        await expect(rejected).rejects.toThrow('package.json must be a regular file');
+        await expect(rejected).rejects.not.toThrow(privateLicense);
+        expect(console.log).not.toHaveBeenCalled();
+        expect(console.error).not.toHaveBeenCalled();
+        if (target === 'present') expect(outside.read('package.json')).toBe(manifest(privateLicense));
+      } finally {
+        outside.remove();
+      }
+    },
+  );
 
-  it('uses the fallback identifier when the root manifest is missing', () => {
+  it('uses the fallback identifier when the root manifest is missing', async () => {
     rmSync(path.join(tree.root, 'package.json'));
-    const result = check();
+    const result = await check();
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain(`(${FIXTURE_LICENSE}) verified`);
   });
 
-  it('requires the hash header on .env.example, which is walked although other .env files are not', () => {
+  it('requires the hash header on .env.example, which is walked although other .env files are not', async () => {
     tree.write('backend/.env', 'SECRET=never-read\n');
     tree.write('backend/.env.local', 'SECRET=never-read\n');
     tree.write('backend/.env.example', 'OAUTH_CLIENT_ID=\n');
-    const failing = check();
+    const failing = await check();
     expect(failing.status).toBe(1);
     expect(failing.stderr).toContain(
       `backend/.env.example  [spdx-header] missing SPDX header; add the line "${HASH_HEADER}"`,
     );
     expect(failing.stderr).toContain('FAILED with 1 problem(s) in 1 file(s)');
     tree.write('backend/.env.example', `${HASH_HEADER}\nOAUTH_CLIENT_ID=\n`);
-    expect(check().status).toBe(0);
+    expect((await check()).status).toBe(0);
   });
 
-  it('reports a tracked directory replaced by a link without reading the outside files', () => {
+  it('reports a tracked directory replaced by a link without reading the outside files', async () => {
     const outside = createTempTree('outside-provenance');
     try {
       outside.write('file.ts', `${TS_HEADER}\nexport const name = '${NAME_A}';\n`);
@@ -893,7 +900,7 @@ describe('check-provenance', () => {
       expect(spawnSync('git', ['add', 'tracked/file.ts'], { cwd: tree.root }).status).toBe(0);
       rmSync(path.join(tree.root, 'tracked'), { recursive: true });
       symlinkSync(outside.root, path.join(tree.root, 'tracked'));
-      const result = check();
+      const result = await check();
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('tracked  [symlink]');
       expect(result.stderr).not.toContain(NAME_A);
@@ -904,30 +911,30 @@ describe('check-provenance', () => {
     }
   });
 
-  it('skips build output only where .gitignore ignores it, and walks a deeper dist or build directory', () => {
+  it('skips build output only where .gitignore ignores it, and walks a deeper dist or build directory', async () => {
     tree.write('dist/demo/index.js', `console.log('${EVERY_REFUSED_STRING}');\n`);
     tree.write('packages/model/build/out.js', `console.log('${EVERY_REFUSED_STRING}');\n`);
-    expect(check().status).toBe(0);
+    expect((await check()).status).toBe(0);
     // A directory of that name inside a source tree is committed, so it is checked.
     tree.write('frontend/src/build/leak.ts', 'export {};\n');
     tree.write('packages/model/src/dist/leak.ts', 'export {};\n');
-    const result = check();
+    const result = await check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('frontend/src/build/leak.ts  [spdx-header] missing SPDX header');
     expect(result.stderr).toContain('packages/model/src/dist/leak.ts  [spdx-header] missing SPDX header');
     expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
   });
 
-  it('skips Playwright output only under e2e/, and git-ignored scratch files anywhere', () => {
+  it('skips Playwright output only under e2e/, and git-ignored scratch files anywhere', async () => {
     tree.write('e2e/test-results/run/trace.ts', 'export {};\n');
     tree.write('e2e/playwright-report/index.html', '<p>report</p>\n');
     tree.write('debug.log', 'log line\n');
     tree.write('frontend/.DS_Store', 'not really binary\n');
-    expect(check().status).toBe(0);
+    expect((await check()).status).toBe(0);
     // The same directory names elsewhere are walked like any other directory.
     tree.write('frontend/test-results/leak.ts', 'export {};\n');
     tree.write('packages/model/playwright-report/leak.ts', 'export {};\n');
-    const result = check();
+    const result = await check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('frontend/test-results/leak.ts  [spdx-header] missing SPDX header');
     expect(result.stderr).toContain(
@@ -935,7 +942,7 @@ describe('check-provenance', () => {
     );
   });
 
-  it('skips the assistants’ local instruction files and folders, as .gitignore ignores them', () => {
+  it('skips the assistants’ local instruction files and folders, as .gitignore ignores them', async () => {
     // What `pnpm agents:setup` writes, a link among it, and what a person keeps for their own tool.
     tree.write('CLAUDE.md', `@AGENTS.md\n\nA line with ${NAME_A}.\n`);
     tree.write('GEMINI.md', '@./AGENTS.md\n');
@@ -951,29 +958,31 @@ describe('check-provenance', () => {
     tree.write('.agents/skills/one/SKILL.md', `---\nname: one\n---\n${MD_HEADER}\n`);
     tree.write('.claude/skills/.keep', '');
     symlinkSync('../../.agents/skills/one', path.join(tree.root, '.claude/skills/one'));
-    expect(check().status).toBe(0);
+    expect((await check()).status).toBe(0);
     // A file of the same name elsewhere than .github/ is walked like any other.
     tree.write('docs/copilot-instructions.md', 'no header\n');
-    expect(check().stderr).toContain('docs/copilot-instructions.md  [spdx-header] missing SPDX header');
+    expect((await check()).stderr).toContain(
+      'docs/copilot-instructions.md  [spdx-header] missing SPDX header',
+    );
   });
 
-  it('checks every file git tracks, also under a path the walk skips', () => {
+  it('checks every file git tracks, also under a path the walk skips', async () => {
     tree.write('coverage/kept.ts', `${TS_HEADER}\nexport const name = '${NAME_A}';\n`);
     tree.write('src/.claude/notes.md', `${MD_HEADER}\n\nA line with ${NAME_B}.\n`);
-    expect(check().status).toBe(0);
+    expect((await check()).status).toBe(0);
     const git = (...args: string[]) => spawnSync('git', args, { cwd: tree.root, encoding: 'utf8' });
     expect(git('init', '--quiet').status).toBe(0);
     expect(git('add', '--force', 'coverage/kept.ts', 'src/.claude/notes.md').status).toBe(0);
-    const result = check();
+    const result = await check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(`coverage/kept.ts:2  [forbidden-name] mentions "${NAME_A}"`);
     expect(result.stderr).toContain(`src/.claude/notes.md:3  [forbidden-name] mentions "${NAME_B}"`);
     expect(result.stderr).toContain('FAILED with 2 problem(s) in 2 file(s)');
   });
 
-  it('prints the digest entry of a phrase with --digest-of, the same for every form it stands for', () => {
+  it('prints the digest entry of a phrase with --digest-of, the same for every form it stands for', async () => {
     const forms = ['Blue_Lantern', 'BlueLanterns', 'blue-lanterns', 'bluelantern'];
-    const [joined, ...entries] = digestsOf(
+    const [joined, ...entries] = await digestsOf(
       JOINED_PHRASE,
       ...forms,
       'blue lantern',
@@ -994,19 +1003,16 @@ describe('check-provenance', () => {
     expect(dated).toMatch(/^dated:6:[0-9a-f]{8}:[0-9a-f]{64}$/);
     expect(voyage).toBe(dated);
     // One phrase it cannot take refuses the whole run, and prints no entry.
-    const refused = runScript('check-provenance.mjs', [
-      '--digest-of',
-      JOINED_PHRASE,
-      '--digest-of',
-      'one two three four',
-    ]);
+    const refused = await runInProcess(() =>
+      run(['--digest-of', JOINED_PHRASE, '--digest-of', 'one two three four']),
+    );
     expect(refused.status).toBe(2);
     expect(refused.stdout).toBe('');
-    expect(check('--also-refuse', 'words:3:0:abc').status).toBe(2);
+    expect((await check('--also-refuse', 'words:3:0:abc')).status).toBe(2);
   });
 
-  it('prints the rules with --list-exempt, without the forbidden names, the secret patterns or the digests', () => {
-    const result = runScript('check-provenance.mjs', ['--list-exempt']);
+  it('prints the rules with --list-exempt, without the forbidden names, the secret patterns or the digests', async () => {
+    const result = await runInProcess(() => run(['--list-exempt']));
     expect(result.status).toBe(0);
     for (const heading of [
       '(a) forbidden-name',
@@ -1037,8 +1043,8 @@ describe('check-provenance', () => {
       expect(result.stdout.toLowerCase()).not.toContain(secret.toLowerCase());
   });
 
-  it('exempts only the checker from the name rule, and only generated or consumed files from the header rule', () => {
-    const result = runScript('check-provenance.mjs', ['--list-exempt']);
+  it('exempts only the checker from the name rule, and only generated or consumed files from the header rule', async () => {
+    const result = await runInProcess(() => run(['--list-exempt']));
     expect(result.status).toBe(0);
     const notApplied = /^ {4}not applied in: (.+)$/m.exec(result.stdout)?.[1];
     expect(notApplied).toBe('scripts/check-provenance.mjs (this checker)');
@@ -1055,8 +1061,76 @@ describe('check-provenance', () => {
     ]);
   });
 
-  it('rejects unknown options', () => {
-    const result = runScript('check-provenance.mjs', ['--bogus']);
+  it('rejects unknown options', async () => {
+    const result = await runInProcess(() => run(['--bogus']));
     expect(result.status).toBe(2);
+  });
+
+  it('keeps custom phrases and malformed partial additions local to one invocation', async () => {
+    const command = (...args: string[]) => runInProcess(() => run(['--root', tree.root, ...args]));
+    const baseline = await command('--list-exempt');
+    const generated = await command('--digest-of', JOINED_PHRASE);
+    const digest = generated.stdout.trim();
+    expect(generated.status).toBe(0);
+    tree.write('src/custom.ts', `${TS_HEADER}\nconst label = '${JOINED_PHRASE}';\n`);
+    expect((await command('--also-refuse', digest)).status).toBe(1);
+    expect((await command()).status).toBe(0);
+    const count = (text: string): number => Number(/(\d+) phrase digests/.exec(text)?.[1]);
+    const custom = await command('--also-refuse', digest, '--list-exempt');
+    expect(count(custom.stdout)).toBe(count(baseline.stdout) + 1);
+    expect(await command('--list-exempt')).toEqual(baseline);
+    expect((await command('--also-refuse', digest, '--also-refuse', 'malformed')).status).toBe(2);
+    expect((await command()).status).toBe(0);
+    expect(await command('--list-exempt')).toEqual(baseline);
+    expect((await command('--also-refuse', digest, '--digest-of', JOINED_PHRASE)).stdout).toBe(
+      generated.stdout,
+    );
+    expect((await command()).status).toBe(0);
+    expect(await command('--list-exempt')).toEqual(baseline);
+  });
+
+  it('does not reuse word offsets from a longer scan in a short or empty one', async () => {
+    const [digest] = await digestsOf(JOINED_PHRASE);
+    if (digest === undefined) throw new Error('expected a phrase digest');
+    tree.write('notes.txt', `ordinary words `.repeat(400) + JOINED_PHRASE);
+    expect((await check('--also-refuse', digest)).status).toBe(1);
+    for (const text of ['', 'ordinary']) {
+      tree.write('notes.txt', text);
+      expect((await check('--also-refuse', digest)).status).toBe(0);
+    }
+  });
+
+  it('imports without scanning, printing or changing the exit code', async () => {
+    const exitCode = process.exitCode;
+    const scan = vi.fn(() => {
+      throw new Error('import must not scan');
+    });
+    vi.doMock('./lib/repo-files.mjs', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('./lib/repo-files.mjs')>()),
+      listRepoFiles: scan,
+      readProjectLicenseId: scan,
+    }));
+    vi.resetModules();
+    try {
+      const imported = await runInProcess(async () => {
+        const module = await import('./check-provenance.mjs');
+        expect(module.run).toBeTypeOf('function');
+        return 0;
+      });
+      expect(imported).toEqual({ status: 0, stdout: '', stderr: '' });
+      expect(scan).not.toHaveBeenCalled();
+      expect(process.exitCode).toBe(exitCode);
+    } finally {
+      vi.doUnmock('./lib/repo-files.mjs');
+      vi.resetModules();
+      process.exitCode = exitCode;
+    }
+  });
+
+  it('matches the real command output and nonzero exit code', SPAWN_TIMEOUT, async () => {
+    tree.write('src/refused.ts', `${TS_HEADER}\nconst label = '${NAME_A}';\n`);
+    const expected = await check();
+    expect(expected.status).toBe(1);
+    expect(runScript('check-provenance.mjs', ['--root', tree.root])).toEqual(expected);
   });
 });
