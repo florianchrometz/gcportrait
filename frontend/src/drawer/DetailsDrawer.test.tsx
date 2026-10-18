@@ -23,7 +23,7 @@ import { AppStoreContext } from '../state/context';
 import { createMemoryPreferenceStore } from '../storage/preferences';
 import { expectNoAxeViolations } from '../test/axe';
 import { stubClipboard } from '../test/clipboard';
-import { drawn } from '../test/diagram';
+import { DRAW_TIMEOUT, drawn } from '../test/diagram';
 import { currentLocation, DRAWING_APP_TIMEOUT, renderApp } from '../test/renderApp';
 import { requestLog } from '../test/requests';
 import { installViewport } from '../test/viewport';
@@ -63,11 +63,16 @@ async function delayedJumps() {
       </ThemeContext>
     </AppStoreContext>,
   );
-  const targets = await waitFor(() => {
-    const buttons = [...drawer().querySelectorAll<HTMLButtonElement>('[data-kind] button[title]')];
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
-    return buttons;
-  });
+  // The relations come with the VM's details, which the in-process data worker answers only after generating
+  // organisation S and its graph: a first draw's work without the layout, so a first draw's wait.
+  const targets = await waitFor(
+    () => {
+      const buttons = [...drawer().querySelectorAll<HTMLButtonElement>('[data-kind] button[title]')];
+      expect(buttons.length).toBeGreaterThanOrEqual(2);
+      return buttons;
+    },
+    { timeout: DRAW_TIMEOUT },
+  );
   const target = (index: number): HTMLButtonElement => {
     const button = targets[index];
     if (button === undefined) throw new Error('no jump link');
@@ -87,7 +92,7 @@ async function delayedJumps() {
   return { ...rendered, store, requests, target, request, answer, vm };
 }
 
-describe('pending drawer jumps', () => {
+describe('pending drawer jumps', DRAWING_APP_TIMEOUT, () => {
   it('retries a stale scene with current flips and viewport, then selects the target', async () => {
     const { store, target, request, requests, answer } = await delayedJumps();
     const canvas = { width: 900, height: 700 };
