@@ -112,12 +112,12 @@ export function primaryNav(page: Page): Locator {
 }
 
 /**
- * Reads the stored theme preference straight from IndexedDB (database `gcportrait`, store `preferences`).
+ * Reads a stored preference straight from IndexedDB (database `gcportrait`, store `preferences`).
  * Never creates the database: if it does not exist yet the version-change transaction is aborted.
  */
-export async function readStoredTheme(page: Page): Promise<unknown> {
+export async function readStoredPreference(page: Page, key: string): Promise<unknown> {
   return page.evaluate(
-    () =>
+    (preferenceKey) =>
       new Promise<unknown>((resolve) => {
         const request = indexedDB.open('gcportrait');
         request.onupgradeneeded = () => {
@@ -133,7 +133,7 @@ export async function readStoredTheme(page: Page): Promise<unknown> {
             resolve(undefined);
             return;
           }
-          const get = db.transaction('preferences').objectStore('preferences').get('theme');
+          const get = db.transaction('preferences').objectStore('preferences').get(preferenceKey);
           get.onsuccess = () => {
             db.close();
             resolve(get.result);
@@ -144,7 +144,12 @@ export async function readStoredTheme(page: Page): Promise<unknown> {
           };
         };
       }),
+    key,
   );
+}
+
+export async function readStoredTheme(page: Page): Promise<unknown> {
+  return readStoredPreference(page, 'theme');
 }
 
 /** Collects the paths of every request the page makes to the backend API. */

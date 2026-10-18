@@ -9,6 +9,7 @@ import {
   expectNoAxeViolations,
   hashOf,
   openDiagram,
+  readStoredPreference,
   scratchShot,
 } from './support.js';
 
@@ -206,6 +207,7 @@ test('the handle resizes the drawer between 360 and 420 px, by keyboard and by d
   await page.mouse.up();
   await expect(handle).toHaveAttribute('aria-valuenow', '390');
   // Kept in the preferences (IndexedDB): the next visit opens it at that width.
+  await expect.poll(() => readStoredPreference(page, 'drawerWidth')).toBe(390);
   await page.reload();
   await drawnCanvas(page);
   await page.locator(`svg.dg-canvas [data-id="${VM}"]`).click();
