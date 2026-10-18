@@ -76,13 +76,13 @@ describe('the stored snapshot opener', () => {
     await db.put('snapshots', saved);
     const open = vi.spyOn(storage, 'openDatabase');
     expect(await storedSnapshotVersion(IMPORTED)).toBe(saved.meta.savedAt);
-    expect(open).toHaveBeenLastCalledWith(TEST_OPEN_TIMEOUT_MS);
+    expect(open).toHaveBeenLastCalledWith(TEST_OPEN_TIMEOUT_MS, expect.any(Function));
     const first = open.mock.settledResults[0];
     if (first?.type !== 'fulfilled' || first.value === null) throw new Error('expected IndexedDB to open');
     first.value.close();
     expect(await storedSnapshotVersion(IMPORTED)).toBe(saved.meta.savedAt);
     expect(open).toHaveBeenCalledTimes(2);
-    expect(open).toHaveBeenLastCalledWith(TEST_OPEN_TIMEOUT_MS);
+    expect(open).toHaveBeenLastCalledWith(TEST_OPEN_TIMEOUT_MS, expect.any(Function));
     const second = open.mock.settledResults[1];
     if (second?.type !== 'fulfilled' || second.value === null)
       throw new Error('expected IndexedDB to reopen');
@@ -93,7 +93,7 @@ describe('the stored snapshot opener', () => {
     resetStoredSnapshotDatabase();
     const open = vi.spyOn(storage, 'openDatabase');
     expect(await storedSnapshotVersion(IMPORTED)).toBe('missing');
-    expect(open).toHaveBeenCalledExactlyOnceWith(storage.OPEN_TIMEOUT_MS);
+    expect(open).toHaveBeenCalledExactlyOnceWith(storage.OPEN_TIMEOUT_MS, expect.any(Function));
     const opened = open.mock.settledResults[0];
     if (opened?.type !== 'fulfilled' || opened.value === null) throw new Error('expected IndexedDB to open');
     opened.value.close();

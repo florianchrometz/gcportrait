@@ -14,28 +14,20 @@ import type { DemoHistory } from '@gcportrait/demo-data';
 import { migrateSnapshot, SnapshotFormatError, type Snapshot, type SnapshotRef } from '@gcportrait/model';
 
 import { DataError, loadDemoSnapshot, type SnapshotLoader } from '../diagram/pipeline/dataHandler';
-import { OPEN_TIMEOUT_MS, openDatabase, type GcportraitDB, type StoredSnapshot } from '../storage/db';
+import { OPEN_TIMEOUT_MS, type GcportraitDB, type StoredSnapshot } from '../storage/db';
+import { recoverWorkerDatabase, resetWorkerDatabase, workerDatabase } from '../storage/workerDatabase';
 import { pickExtra, type TimelineOwner } from '../timeline/extraTicks';
 import type { StoredExtra } from '../timeline/worker/source';
 import { decodeJson } from './codec';
 import { parseHistory } from './worker/parse';
 
-let opening: Promise<GcportraitDB | null> | null = null;
-let openTimeoutMs = OPEN_TIMEOUT_MS;
-
-function database(): Promise<GcportraitDB | null> {
-  opening ??= openDatabase(openTimeoutMs);
-  return opening;
-}
-
-/** Forgets the open connection and sets the next opens' timeout (tests replace IndexedDB between cases). */
+/** Forgets the worker's shared connection and sets its next opens' timeout (tests replace IndexedDB). */
 export function resetStoredSnapshotDatabase(timeoutMs = OPEN_TIMEOUT_MS): void {
-  opening = null;
-  openTimeoutMs = timeoutMs;
+  resetWorkerDatabase(timeoutMs);
 }
 
-async function read(ref: string): Promise<StoredSnapshot | undefined> {
-  const db = await database();
+async function read(ref: string, opening: Promise<GcportraitDB | null>): Promise<StoredSnapshot | undefined> {
+  const db = await opening;
   if (db === null)
     throw new DataError(
       'unknown-snapshot',
@@ -46,13 +38,14 @@ async function read(ref: string): Promise<StoredSnapshot | undefined> {
 
 async function storedRecord(ref: string): Promise<StoredSnapshot> {
   let record: StoredSnapshot | undefined;
+  let opening: Promise<GcportraitDB | null> | undefined;
   try {
-    record = await read(ref);
+    opening = workerDatabase();
+    record = await read(ref, opening);
   } catch (error) {
     if (error instanceof DataError) throw error;
     // The connection was closed (another tab upgraded the schema): open a new one, once.
-    opening = null;
-    record = await read(ref);
+    record = await read(ref, recoverWorkerDatabase(opening));
   }
   if (record === undefined)
     throw new DataError('unknown-snapshot', `No snapshot "${ref}" is stored in this browser.`);
@@ -115,14 +108,14 @@ export async function loadStoredHistory(ref: SnapshotRef): Promise<DemoHistory |
 
 /** Every stored record (their Blobs are handles, read only when a snapshot is loaded); none without IndexedDB. */
 async function allRecords(): Promise<readonly StoredSnapshot[]> {
-  const db = await database();
+  const opening = workerDatabase();
+  const db = await opening;
   if (db === null) return [];
   try {
     return await db.getAll('snapshots');
   } catch {
     // The connection was closed (another tab upgraded the schema): open a new one, once.
-    opening = null;
-    const again = await database();
+    const again = await recoverWorkerDatabase(opening);
     return again === null ? [] : again.getAll('snapshots');
   }
 }
