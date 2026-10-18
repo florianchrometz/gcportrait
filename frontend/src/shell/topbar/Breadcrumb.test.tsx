@@ -12,6 +12,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '../../test/axe';
+import { DRAWING_APP_TIMEOUT } from '../../test/renderApp';
 import { installViewport, type ViewportControl } from '../../test/viewport';
 import { drawn, inTopBar, renderControls } from '../../views/testing/controls';
 
@@ -33,42 +34,54 @@ async function crumbs(count: number): Promise<HTMLElement[]> {
 }
 
 describe('the scope breadcrumb', () => {
-  it('shows "No scope loaded" without a diagram, and the scope alone at the organisation', async () => {
-    const app = renderControls('/diagram', { workers: false });
-    expect(scope().textContent).toBe('No scope loaded');
-    app.unmount();
-    const drawnApp = renderControls('/diagram#snapshot=demo:S');
-    await drawn(drawnApp.container);
-    await waitFor(() => {
-      expect(scope().textContent).toBe('example.com');
-    });
-    expect(within(scope()).queryByRole('button')).toBeNull();
-  }, 30_000);
+  it(
+    'shows "No scope loaded" without a diagram, and the scope alone at the organisation',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const app = renderControls('/diagram', { workers: false });
+      expect(scope().textContent).toBe('No scope loaded');
+      app.unmount();
+      const drawnApp = renderControls('/diagram#snapshot=demo:S');
+      await drawn(drawnApp.container);
+      await waitFor(() => {
+        expect(scope().textContent).toBe('example.com');
+      });
+      expect(within(scope()).queryByRole('button')).toBeNull();
+    },
+  );
 
-  it('runs the trail from the scope to the drill-in root, and each crumb drills out to its container', async () => {
-    const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}20000000004`);
-    await drawn(app.container);
-    const items = await crumbs(4);
-    expect(items.map((item) => item.textContent)).toEqual([
-      'example.com',
-      'Workloads',
-      'Retail',
-      'Production',
-    ]);
-    expect(items[3]?.getAttribute('aria-current')).toBe('location');
-    expect(within(items[3] ?? scope()).queryByRole('button')).toBeNull();
-    await expectNoAxeViolations(scope());
+  it(
+    'runs the trail from the scope to the drill-in root, and each crumb drills out to its container',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}20000000004`);
+      await drawn(app.container);
+      const items = await crumbs(4);
+      expect(items.map((item) => item.textContent)).toEqual([
+        'example.com',
+        'Workloads',
+        'Retail',
+        'Production',
+      ]);
+      expect(items[3]?.getAttribute('aria-current')).toBe('location');
+      expect(within(items[3] ?? scope()).queryByRole('button')).toBeNull();
+      await expectNoAxeViolations(scope());
 
-    await userEvent.click(within(scope()).getByRole('button', { name: 'Retail' }));
-    expect(app.hash()).toBe(`snapshot=demo:S&root=${FOLDER}20000000003`);
-    expect((await crumbs(3)).map((item) => item.textContent)).toEqual(['example.com', 'Workloads', 'Retail']);
+      await userEvent.click(within(scope()).getByRole('button', { name: 'Retail' }));
+      expect(app.hash()).toBe(`snapshot=demo:S&root=${FOLDER}20000000003`);
+      expect((await crumbs(3)).map((item) => item.textContent)).toEqual([
+        'example.com',
+        'Workloads',
+        'Retail',
+      ]);
 
-    await userEvent.click(within(scope()).getByRole('button', { name: 'example.com' }));
-    expect(app.hash()).toBe('snapshot=demo:S');
-    await crumbs(1);
-  }, 40_000);
+      await userEvent.click(within(scope()).getByRole('button', { name: 'example.com' }));
+      expect(app.hash()).toBe('snapshot=demo:S');
+      await crumbs(1);
+    },
+  );
 
-  it('follows a drill-in from the node menu', async () => {
+  it('follows a drill-in from the node menu', DRAWING_APP_TIMEOUT, async () => {
     const app = renderControls('/diagram#snapshot=demo:S&lens=networking&detail=all');
     const svg = await drawn(app.container);
     const project = svg.querySelector<SVGGElement>('.dg-zone[aria-label^="Project: "]');
@@ -79,18 +92,22 @@ describe('the scope breadcrumb', () => {
     const items = await crumbs(3);
     expect(items[0]?.textContent).toBe('example.com');
     expect(items[2]?.getAttribute('aria-current')).toBe('location');
-  }, 40_000);
+  });
 
-  it('says when the root is not found, and the scope still drills out of it', async () => {
-    const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}99999999999`);
-    await drawn(app.container);
-    const items = await crumbs(2);
-    await waitFor(() => {
-      expect(items[1]?.textContent).toBe('99999999999 (not found)');
-    });
-    await userEvent.click(within(scope()).getByRole('button', { name: 'example.com' }));
-    expect(app.hash()).toBe('snapshot=demo:S');
-  }, 40_000);
+  it(
+    'says when the root is not found, and the scope still drills out of it',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}99999999999`);
+      await drawn(app.container);
+      const items = await crumbs(2);
+      await waitFor(() => {
+        expect(items[1]?.textContent).toBe('99999999999 (not found)');
+      });
+      await userEvent.click(within(scope()).getByRole('button', { name: 'example.com' }));
+      expect(app.hash()).toBe('snapshot=demo:S');
+    },
+  );
 });
 
 describe('the scope breadcrumb on a phone, a trail that scrolls sideways', () => {
@@ -176,50 +193,58 @@ describe('the scope breadcrumb on a phone, a trail that scrolls sideways', () =>
     live[0]?.fire();
   }
 
-  it('rests at its end; a crumb that takes focus from the keyboard scrolls into view, whole, and one a pointer focuses does not', async () => {
-    const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}20000000004`);
-    await drawn(app.container);
-    await crumbs(4);
-    const nav = scope();
-    await waitFor(() => {
-      expect(nav.scrollLeft).toBe(TRAIL.scrollWidth - TRAIL.clientWidth);
-    });
-    expect(nav.hasAttribute('data-cut')).toBe(true);
+  it(
+    'rests at its end; a crumb that takes focus from the keyboard scrolls into view, whole, and one a pointer focuses does not',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}20000000004`);
+      await drawn(app.container);
+      await crumbs(4);
+      const nav = scope();
+      await waitFor(() => {
+        expect(nav.scrollLeft).toBe(TRAIL.scrollWidth - TRAIL.clientWidth);
+      });
+      expect(nav.hasAttribute('data-cut')).toBe(true);
 
-    await tabToTheTrail();
-    for (const name of ['example.com', 'Workloads', 'Retail']) {
-      const crumb = within(nav).getByRole('button', { name });
-      expect(document.activeElement).toBe(crumb);
-      expect(scrolled.at(-1)).toEqual({ crumb, options: { block: 'nearest', inline: 'nearest' } });
+      await tabToTheTrail();
+      for (const name of ['example.com', 'Workloads', 'Retail']) {
+        const crumb = within(nav).getByRole('button', { name });
+        expect(document.activeElement).toBe(crumb);
+        expect(scrolled.at(-1)).toEqual({ crumb, options: { block: 'nearest', inline: 'nearest' } });
+        await userEvent.tab();
+      }
+      expect(nav.contains(document.activeElement)).toBe(false);
+
+      // Focus without its focus ring, as a tap or a click gives it: the crumb stays where the pointer found it.
+      scrolled = [];
+      ring = false;
+      within(nav).getByRole('button', { name: 'Workloads' }).focus();
+      expect(scrolled).toEqual([]);
+    },
+  );
+
+  it(
+    'keeps a crumb with keyboard focus in view when its box changes size, and the end once focus has left',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}20000000004`);
+      await drawn(app.container);
+      await crumbs(4);
+      const nav = scope();
+      await tabToTheTrail();
       await userEvent.tab();
-    }
-    expect(nav.contains(document.activeElement)).toBe(false);
+      const crumb = within(nav).getByRole('button', { name: 'Workloads' });
+      expect(document.activeElement).toBe(crumb);
+      nav.scrollLeft = 120;
+      scrolled = [];
 
-    // Focus without its focus ring, as a tap or a click gives it: the crumb stays where the pointer found it.
-    scrolled = [];
-    ring = false;
-    within(nav).getByRole('button', { name: 'Workloads' }).focus();
-    expect(scrolled).toEqual([]);
-  }, 40_000);
+      resized();
+      expect(scrolled).toEqual([{ crumb, options: { block: 'nearest', inline: 'nearest' } }]);
+      expect(nav.scrollLeft).toBe(120);
 
-  it('keeps a crumb with keyboard focus in view when its box changes size, and the end once focus has left', async () => {
-    const app = renderControls(`/diagram#snapshot=demo:S&root=${FOLDER}20000000004`);
-    await drawn(app.container);
-    await crumbs(4);
-    const nav = scope();
-    await tabToTheTrail();
-    await userEvent.tab();
-    const crumb = within(nav).getByRole('button', { name: 'Workloads' });
-    expect(document.activeElement).toBe(crumb);
-    nav.scrollLeft = 120;
-    scrolled = [];
-
-    resized();
-    expect(scrolled).toEqual([{ crumb, options: { block: 'nearest', inline: 'nearest' } }]);
-    expect(nav.scrollLeft).toBe(120);
-
-    crumb.blur();
-    resized();
-    expect(nav.scrollLeft).toBe(TRAIL.scrollWidth - TRAIL.clientWidth);
-  }, 40_000);
+      crumb.blur();
+      resized();
+      expect(nav.scrollLeft).toBe(TRAIL.scrollWidth - TRAIL.clientWidth);
+    },
+  );
 });

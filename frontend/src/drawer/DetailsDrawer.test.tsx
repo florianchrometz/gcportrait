@@ -24,7 +24,7 @@ import { createMemoryPreferenceStore } from '../storage/preferences';
 import { expectNoAxeViolations } from '../test/axe';
 import { stubClipboard } from '../test/clipboard';
 import { drawn } from '../test/diagram';
-import { currentLocation, renderApp } from '../test/renderApp';
+import { currentLocation, DRAWING_APP_TIMEOUT, renderApp } from '../test/renderApp';
 import { requestLog } from '../test/requests';
 import { installViewport } from '../test/viewport';
 import { ThemeContext } from '../theme/useTheme';
@@ -265,215 +265,238 @@ async function selectCard(svg: SVGSVGElement, match: (id: string) => boolean): P
 }
 
 describe('the details drawer', () => {
-  it('shows a VM’s facts, relations, console link and raw JSON, and asks only for its details', async () => {
-    const { counts, factory } = countingWorkers();
-    const { container } = renderApp('/diagram#snapshot=demo:S&lens=compute&detail=all', {
-      diagramWorkers: factory,
-    });
-    const svg = await drawn(container);
-    const card = await selectCard(svg, (id) => id.includes('/instances/'));
-    const id = card.getAttribute('data-id') ?? '';
-    const aside = drawer();
-    expect(within(aside).getByText(id)).toBeDefined();
-    await waitFor(() => {
-      expect(within(aside).getByRole('heading', { level: 3, name: /^Relations/ })).toBeDefined();
-    });
-    expect(within(aside).getByText('Compute Engine instance')).toBeDefined();
-    expect(within(aside).getByRole('heading', { level: 2 }).textContent).toBe(
-      id.slice(id.lastIndexOf('/') + 1),
-    );
-    // Relations by kind in the model's order: the subnet (attaches) before the disk (uses).
-    const groups = [...aside.querySelectorAll('[data-kind]')].map((element) =>
-      element.getAttribute('data-kind'),
-    );
-    expect(groups.indexOf('attaches')).toBeGreaterThanOrEqual(0);
-    expect(groups.indexOf('attaches')).toBeLessThan(groups.indexOf('uses'));
-    // The console link: the catalog template's page, opening a new tab only when activated.
-    const link = within(aside).getByRole('link', { name: 'Open in Cloud Console (opens a new tab)' });
-    expect(link.getAttribute('href')).toMatch(
-      /^https:\/\/console\.cloud\.google\.com\/compute\/instancesDetail\/zones\/[a-z0-9-]+\/instances\/[a-z0-9-]+\?project=demo-/,
-    );
-    expect(link.getAttribute('target')).toBe('_blank');
-    expect(link.getAttribute('rel')).toBe('noopener noreferrer');
-    // Raw JSON: resource.data, pretty-printed, on request.
-    const toggle = within(aside).getByRole('button', { name: 'Show resource.data' });
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    fireEvent.click(toggle);
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    const code = aside.querySelector('pre code');
-    expect(code?.textContent).toContain('"kind": "compute#instance"');
-    expect(within(aside).getByRole('button', { name: 'Copy JSON' })).toBeDefined();
-    expect(counts().scene).toBe(1);
-    expect(counts().layout).toBe(1);
-    expect(counts().details).toBe(1);
-    await expectNoAxeViolations(aside);
-  }, 30_000);
+  it(
+    'shows a VM’s facts, relations, console link and raw JSON, and asks only for its details',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const { counts, factory } = countingWorkers();
+      const { container } = renderApp('/diagram#snapshot=demo:S&lens=compute&detail=all', {
+        diagramWorkers: factory,
+      });
+      const svg = await drawn(container);
+      const card = await selectCard(svg, (id) => id.includes('/instances/'));
+      const id = card.getAttribute('data-id') ?? '';
+      const aside = drawer();
+      expect(within(aside).getByText(id)).toBeDefined();
+      await waitFor(() => {
+        expect(within(aside).getByRole('heading', { level: 3, name: /^Relations/ })).toBeDefined();
+      });
+      expect(within(aside).getByText('Compute Engine instance')).toBeDefined();
+      expect(within(aside).getByRole('heading', { level: 2 }).textContent).toBe(
+        id.slice(id.lastIndexOf('/') + 1),
+      );
+      // Relations by kind in the model's order: the subnet (attaches) before the disk (uses).
+      const groups = [...aside.querySelectorAll('[data-kind]')].map((element) =>
+        element.getAttribute('data-kind'),
+      );
+      expect(groups.indexOf('attaches')).toBeGreaterThanOrEqual(0);
+      expect(groups.indexOf('attaches')).toBeLessThan(groups.indexOf('uses'));
+      // The console link: the catalog template's page, opening a new tab only when activated.
+      const link = within(aside).getByRole('link', { name: 'Open in Cloud Console (opens a new tab)' });
+      expect(link.getAttribute('href')).toMatch(
+        /^https:\/\/console\.cloud\.google\.com\/compute\/instancesDetail\/zones\/[a-z0-9-]+\/instances\/[a-z0-9-]+\?project=demo-/,
+      );
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+      // Raw JSON: resource.data, pretty-printed, on request.
+      const toggle = within(aside).getByRole('button', { name: 'Show resource.data' });
+      expect(toggle.getAttribute('aria-expanded')).toBe('false');
+      fireEvent.click(toggle);
+      expect(toggle.getAttribute('aria-expanded')).toBe('true');
+      const code = aside.querySelector('pre code');
+      expect(code?.textContent).toContain('"kind": "compute#instance"');
+      expect(within(aside).getByRole('button', { name: 'Copy JSON' })).toBeDefined();
+      expect(counts().scene).toBe(1);
+      expect(counts().layout).toBe(1);
+      expect(counts().details).toBe(1);
+      await expectNoAxeViolations(aside);
+    },
+  );
 
-  it('jumps to a relation’s target, copies the name, and closes with Escape back onto the card', async () => {
-    const writeText = stubClipboard();
-    const { container } = renderApp('/diagram#snapshot=demo:S&lens=compute&detail=all', {
-      diagramWorkers: createInProcessWorkers,
-    });
-    const svg = await drawn(container);
-    const card = await selectCard(svg, (id) => id.includes('/instances/'));
-    const id = card.getAttribute('data-id') ?? '';
-    const aside = drawer();
-
-    fireEvent.click(within(aside).getByRole('button', { name: 'Copy resource name' }));
-    await waitFor(() => {
-      expect(within(aside).getByRole('status').textContent).toBe('Copied the resource name.');
-    });
-    expect(writeText).toHaveBeenCalledWith(id);
-
-    // The disk the VM uses: a jump link selects it (it is drawn, so no flip is needed).
-    const uses = await waitFor(() => {
-      const group = aside.querySelector('[data-kind="uses"]');
-      if (group === null) throw new Error('no uses group yet');
-      return group;
-    });
-    const target = within(uses as HTMLElement).getAllByRole('button')[0];
-    if (target === undefined) throw new Error('no jump link');
-    const targetId = target.getAttribute('title') ?? '';
-    await act(async () => {
-      fireEvent.click(target);
-      await Promise.resolve();
-    });
-    expect(decodeURIComponent(currentLocation(container))).toContain(`selection=${targetId}`);
-    await waitFor(() => {
-      expect(within(drawer()).getByText(targetId)).toBeDefined();
-    });
-
-    // Escape inside the drawer closes it and puts focus on the selected node on the canvas.
-    const disk = svg.querySelector<SVGGElement>(`[data-id="${targetId}"]`);
-    fireEvent.keyDown(within(drawer()).getByRole('button', { name: 'Close' }), { key: 'Escape' });
-    await waitFor(() => {
-      expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
-    });
-    expect(document.activeElement).toBe(disk);
-    expect(decodeURIComponent(currentLocation(container))).not.toContain('selection=');
-  }, 30_000);
-
-  it('opens the collapsed zones around a jump link’s target: one locate without offers, then the flips', async () => {
-    const vm = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
-    const offers: boolean[] = [];
-    const factory = (): DiagramWorkers => {
-      const workers = createInProcessWorkers();
-      const locate = workers.data.locate.bind(workers.data);
-      workers.data.locate = (query, options) => {
-        offers.push(query.offers);
-        return locate(query, options);
-      };
-      return workers;
-    };
-    // At the folder level the VM's project is a chip; the drawer shows the VM's details all the same.
-    const { container } = renderApp(`/diagram#snapshot=demo:S&lens=compute&detail=folders&selection=${vm}`, {
-      diagramWorkers: factory,
-    });
-    await drawn(container);
-    expect(container.querySelector(`svg [data-id="${vm}"]`)).toBeNull();
-    const uses = await waitFor(() => {
-      const group = drawer().querySelector('[data-kind="uses"]');
-      if (group === null) throw new Error('no uses group yet');
-      return group;
-    });
-    const target = within(uses as HTMLElement).getAllByRole('button')[0];
-    if (target === undefined) throw new Error('no jump link');
-    const targetId = target.getAttribute('title') ?? '';
-    await act(async () => {
-      fireEvent.click(target);
-      await Promise.resolve();
-    });
-    // The flips that open the chips around the disk and its selection, written in one step.
-    await waitFor(() => {
-      const hash = decodeURIComponent(currentLocation(container));
-      expect(hash).toContain(`selection=${targetId}`);
-      expect(hash).toMatch(/flips=/);
-    });
-    expect(offers).toEqual([false]);
-    await waitFor(() => {
-      expect(container.querySelector(`svg [data-id="${targetId}"]`)).not.toBeNull();
-    });
-  }, 30_000);
-
-  it('resizes with the keyboard between 360 and 420 px and keeps the width', async () => {
-    const preferences = createMemoryPreferenceStore();
-    const { container } = renderApp('/diagram#snapshot=demo:S&lens=compute&detail=all', {
-      diagramWorkers: createInProcessWorkers,
-      preferences,
-    });
-    const svg = await drawn(container);
-    await selectCard(svg, (id) => id.includes('/instances/'));
-    const aside = drawer();
-    const handle = within(aside).getByRole('separator', { name: 'Resize the details drawer' });
-    expect(handle.getAttribute('aria-valuenow')).toBe('360');
-    expect(aside.style.width).toBe('360px');
-    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
-    expect(handle.getAttribute('aria-valuenow')).toBe('370');
-    expect(aside.style.width).toBe('370px');
-    fireEvent.keyDown(handle, { key: 'End' });
-    expect(handle.getAttribute('aria-valuenow')).toBe('420');
-    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
-    expect(handle.getAttribute('aria-valuenow')).toBe('420');
-    await waitFor(async () => {
-      expect(await preferences.get('drawerWidth')).toBe(420);
-    });
-    fireEvent.keyDown(handle, { key: 'Home' });
-    fireEvent.keyDown(handle, { key: 'ArrowRight' });
-    expect(handle.getAttribute('aria-valuenow')).toBe('360');
-    // A drag moves the left edge: leftwards widens.
-    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 900 });
-    fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientX: 870 });
-    expect(handle.getAttribute('aria-valuenow')).toBe('390');
-    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 880 });
-    expect(handle.getAttribute('aria-valuenow')).toBe('380');
-    await waitFor(async () => {
-      expect(await preferences.get('drawerWidth')).toBe(380);
-    });
-  }, 30_000);
-
-  it('is a sheet on a phone: half height, taken to full height and back by its handle', async () => {
-    const viewport = installViewport(375);
-    try {
-      const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
-      const { container } = renderApp(`/diagram#snapshot=demo:S&detail=folders&selection=${project}`, {
+  it(
+    'jumps to a relation’s target, copies the name, and closes with Escape back onto the card',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const writeText = stubClipboard();
+      const { container } = renderApp('/diagram#snapshot=demo:S&lens=compute&detail=all', {
         diagramWorkers: createInProcessWorkers,
       });
-      await drawn(container);
+      const svg = await drawn(container);
+      const card = await selectCard(svg, (id) => id.includes('/instances/'));
+      const id = card.getAttribute('data-id') ?? '';
       const aside = drawer();
-      const handle = within(aside).getByRole('separator', { name: 'Resize the details drawer' });
-      expect(handle.getAttribute('aria-orientation')).toBe('horizontal');
-      expect(aside.getAttribute('data-sheet')).toBe('half');
-      expect(aside.style.height).toBe('50%');
-      // The header and the details share one box (what scrolls inside the sheet).
-      const heading = within(aside).getByRole('heading', { level: 2 });
-      const name = within(aside).getByRole('button', { name: 'Copy resource name' });
-      const box = heading.closest('aside > div');
-      expect(box?.contains(name)).toBe(true);
-      fireEvent.keyDown(handle, { key: 'ArrowUp' });
-      expect(handle.getAttribute('aria-valuenow')).toBe('100');
-      expect(aside.getAttribute('data-sheet')).toBe('full');
-      fireEvent.keyDown(handle, { key: 'Home' });
-      expect(aside.getAttribute('data-sheet')).toBe('half');
-      // Dragged down, the sheet follows below half; far enough that letting go closes it, it fades; let go there,
-      // it closes.
-      fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientY: 300 });
-      fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientY: 310 });
-      expect(aside.style.height).toBe('40%');
-      expect(aside.hasAttribute('data-dismissing')).toBe(false);
-      fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientY: 900 });
-      expect(aside.style.height).toBe('0%');
-      expect(aside.hasAttribute('data-dismissing')).toBe(true);
-      expect(handle.getAttribute('aria-valuenow')).toBe('50');
-      fireEvent.pointerUp(handle, { pointerId: 1, clientY: 900 });
+
+      fireEvent.click(within(aside).getByRole('button', { name: 'Copy resource name' }));
+      await waitFor(() => {
+        expect(within(aside).getByRole('status').textContent).toBe('Copied the resource name.');
+      });
+      expect(writeText).toHaveBeenCalledWith(id);
+
+      // The disk the VM uses: a jump link selects it (it is drawn, so no flip is needed).
+      const uses = await waitFor(() => {
+        const group = aside.querySelector('[data-kind="uses"]');
+        if (group === null) throw new Error('no uses group yet');
+        return group;
+      });
+      const target = within(uses as HTMLElement).getAllByRole('button')[0];
+      if (target === undefined) throw new Error('no jump link');
+      const targetId = target.getAttribute('title') ?? '';
+      await act(async () => {
+        fireEvent.click(target);
+        await Promise.resolve();
+      });
+      expect(decodeURIComponent(currentLocation(container))).toContain(`selection=${targetId}`);
+      await waitFor(() => {
+        expect(within(drawer()).getByText(targetId)).toBeDefined();
+      });
+
+      // Escape inside the drawer closes it and puts focus on the selected node on the canvas.
+      const disk = svg.querySelector<SVGGElement>(`[data-id="${targetId}"]`);
+      fireEvent.keyDown(within(drawer()).getByRole('button', { name: 'Close' }), { key: 'Escape' });
       await waitFor(() => {
         expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
       });
-    } finally {
-      viewport.uninstall();
-    }
-  }, 30_000);
+      expect(document.activeElement).toBe(disk);
+      expect(decodeURIComponent(currentLocation(container))).not.toContain('selection=');
+    },
+  );
 
-  it('offers "Details" as a container’s primary action', async () => {
+  it(
+    'opens the collapsed zones around a jump link’s target: one locate without offers, then the flips',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const vm = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
+      const offers: boolean[] = [];
+      const factory = (): DiagramWorkers => {
+        const workers = createInProcessWorkers();
+        const locate = workers.data.locate.bind(workers.data);
+        workers.data.locate = (query, options) => {
+          offers.push(query.offers);
+          return locate(query, options);
+        };
+        return workers;
+      };
+      // At the folder level the VM's project is a chip; the drawer shows the VM's details all the same.
+      const { container } = renderApp(
+        `/diagram#snapshot=demo:S&lens=compute&detail=folders&selection=${vm}`,
+        {
+          diagramWorkers: factory,
+        },
+      );
+      await drawn(container);
+      expect(container.querySelector(`svg [data-id="${vm}"]`)).toBeNull();
+      const uses = await waitFor(() => {
+        const group = drawer().querySelector('[data-kind="uses"]');
+        if (group === null) throw new Error('no uses group yet');
+        return group;
+      });
+      const target = within(uses as HTMLElement).getAllByRole('button')[0];
+      if (target === undefined) throw new Error('no jump link');
+      const targetId = target.getAttribute('title') ?? '';
+      await act(async () => {
+        fireEvent.click(target);
+        await Promise.resolve();
+      });
+      // The flips that open the chips around the disk and its selection, written in one step.
+      await waitFor(() => {
+        const hash = decodeURIComponent(currentLocation(container));
+        expect(hash).toContain(`selection=${targetId}`);
+        expect(hash).toMatch(/flips=/);
+      });
+      expect(offers).toEqual([false]);
+      await waitFor(() => {
+        expect(container.querySelector(`svg [data-id="${targetId}"]`)).not.toBeNull();
+      });
+    },
+  );
+
+  it(
+    'resizes with the keyboard between 360 and 420 px and keeps the width',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const preferences = createMemoryPreferenceStore();
+      const { container } = renderApp('/diagram#snapshot=demo:S&lens=compute&detail=all', {
+        diagramWorkers: createInProcessWorkers,
+        preferences,
+      });
+      const svg = await drawn(container);
+      await selectCard(svg, (id) => id.includes('/instances/'));
+      const aside = drawer();
+      const handle = within(aside).getByRole('separator', { name: 'Resize the details drawer' });
+      expect(handle.getAttribute('aria-valuenow')).toBe('360');
+      expect(aside.style.width).toBe('360px');
+      fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+      expect(handle.getAttribute('aria-valuenow')).toBe('370');
+      expect(aside.style.width).toBe('370px');
+      fireEvent.keyDown(handle, { key: 'End' });
+      expect(handle.getAttribute('aria-valuenow')).toBe('420');
+      fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+      expect(handle.getAttribute('aria-valuenow')).toBe('420');
+      await waitFor(async () => {
+        expect(await preferences.get('drawerWidth')).toBe(420);
+      });
+      fireEvent.keyDown(handle, { key: 'Home' });
+      fireEvent.keyDown(handle, { key: 'ArrowRight' });
+      expect(handle.getAttribute('aria-valuenow')).toBe('360');
+      // A drag moves the left edge: leftwards widens.
+      fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 900 });
+      fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientX: 870 });
+      expect(handle.getAttribute('aria-valuenow')).toBe('390');
+      fireEvent.pointerUp(handle, { pointerId: 1, clientX: 880 });
+      expect(handle.getAttribute('aria-valuenow')).toBe('380');
+      await waitFor(async () => {
+        expect(await preferences.get('drawerWidth')).toBe(380);
+      });
+    },
+  );
+
+  it(
+    'is a sheet on a phone: half height, taken to full height and back by its handle',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const viewport = installViewport(375);
+      try {
+        const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
+        const { container } = renderApp(`/diagram#snapshot=demo:S&detail=folders&selection=${project}`, {
+          diagramWorkers: createInProcessWorkers,
+        });
+        await drawn(container);
+        const aside = drawer();
+        const handle = within(aside).getByRole('separator', { name: 'Resize the details drawer' });
+        expect(handle.getAttribute('aria-orientation')).toBe('horizontal');
+        expect(aside.getAttribute('data-sheet')).toBe('half');
+        expect(aside.style.height).toBe('50%');
+        // The header and the details share one box (what scrolls inside the sheet).
+        const heading = within(aside).getByRole('heading', { level: 2 });
+        const name = within(aside).getByRole('button', { name: 'Copy resource name' });
+        const box = heading.closest('aside > div');
+        expect(box?.contains(name)).toBe(true);
+        fireEvent.keyDown(handle, { key: 'ArrowUp' });
+        expect(handle.getAttribute('aria-valuenow')).toBe('100');
+        expect(aside.getAttribute('data-sheet')).toBe('full');
+        fireEvent.keyDown(handle, { key: 'Home' });
+        expect(aside.getAttribute('data-sheet')).toBe('half');
+        // Dragged down, the sheet follows below half; far enough that letting go closes it, it fades; let go there,
+        // it closes.
+        fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientY: 300 });
+        fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientY: 310 });
+        expect(aside.style.height).toBe('40%');
+        expect(aside.hasAttribute('data-dismissing')).toBe(false);
+        fireEvent.pointerMove(handle, { buttons: 1, pointerId: 1, clientY: 900 });
+        expect(aside.style.height).toBe('0%');
+        expect(aside.hasAttribute('data-dismissing')).toBe(true);
+        expect(handle.getAttribute('aria-valuenow')).toBe('50');
+        fireEvent.pointerUp(handle, { pointerId: 1, clientY: 900 });
+        await waitFor(() => {
+          expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
+        });
+      } finally {
+        viewport.uninstall();
+      }
+    },
+  );
+
+  it('offers "Details" as a container’s primary action', DRAWING_APP_TIMEOUT, async () => {
     const project = '//cloudresourcemanager.googleapis.com/projects/10000000002';
     const { container } = renderApp(`/diagram#snapshot=demo:S&detail=folders&selection=${project}`, {
       diagramWorkers: createInProcessWorkers,
@@ -487,5 +510,5 @@ describe('the details drawer', () => {
     });
     expect(decodeURIComponent(currentLocation(container))).toContain(`root=${project}`);
     expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
-  }, 30_000);
+  });
 });
