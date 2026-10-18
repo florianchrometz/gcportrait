@@ -116,6 +116,7 @@ inferred types, plus the URL-hash codec for views. Imports no other workspace pa
 | Catalog | `CatalogSchema`/`Catalog`, `CatalogEntrySchema`, `CatalogZoneKindSchema`, `LensSchema`, `RelationRuleSchema`; `ProjectIndexSchema`/`ProjectIndex`, `buildProjectIndex`, `projectIndexBuilder` (the one number↔id pairing rule), `aliasKey`, `EvaluatedRelation`, `RelationTarget` |
 | Testing (`@gcportrait/model/testing`) | `findNonSyntheticData`, `assertSyntheticOnly`: the one "synthetic only" guard for fixtures and generated data; `measureBatches`, `measureRuns`, `skipIfOverloaded`: the one rule for the tests' wall-clock limits (measured again while over, each batch stopped at the deadline, skipped on an overloaded machine but never on CI) |
 | Timeline | `TickSchema`/`Tick` (a day, or an extra tick's read time to the second in UTC), `DiffSchema`/`Diff` |
+| Demo history | `DemoHistorySchema`/`DemoHistory`, `HistoryTickSchema`/`HistoryTick`, `MutationSchema`/`Mutation`: a demo organisation's 35 days, stored in IndexedDB and written into `.gcportrait.json` bundles |
 
 The builder schemas check invariants as well as shapes (`GraphBuildSchema`: report and graph agree;
 `SceneBuildSchema`: report and scene agree), so other packages' tests use `XSchema.parse(output)` as their

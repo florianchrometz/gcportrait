@@ -982,14 +982,14 @@ object whose `format` key comes first, so a reader recognises it from its first 
 The reader ignores every key it does not read.
 
 `snapshot` is read through `migrateSnapshot` (its own `schemaVersion` follows the model's migration policy),
-and `history` is checked asset by asset, replayed to its last day, and must end with the bundle's snapshot
-(its last day holds the same assets, by name: `parseHistoryOf`) before anything is stored; a bundle `version`
-above 1 is refused with "Update gcportrait". The file is written from the stored blobs without parsing them on
-the page (`bundleParts`), after the snapshot worker has read them in full (the `check` job: the snapshot
-through `migrateSnapshot`, the history through `parseHistoryOf`), so a damaged record (one that does not
-decompress, is not JSON, is no valid snapshot, or carries another snapshot's history) is refused with the
-reason instead of being written to a file that would not import; the table shows "Checking …" meanwhile (a
-second or two for XL). It is named like the diagram's exports:
+and `history` through the model's `DemoHistorySchema`, then replayed to its last day, and it must end with
+the bundle's snapshot (its last day holds the same assets, by name: `parseHistoryOf`) before anything is
+stored; a bundle `version` above 1 is refused with "Update gcportrait". The file is written from the stored
+blobs without parsing them on the page (`bundleParts`), after the snapshot worker has read them in full (the
+`check` job: the snapshot through `migrateSnapshot`, the history through `parseHistoryOf`), so a damaged
+record (one that does not decompress, is not JSON, is no valid snapshot, or carries another snapshot's
+history) is refused with the reason instead of being written to a file that would not import; the table
+shows "Checking …" meanwhile (a second or two for XL). It is named like the diagram's exports:
 `gcportrait_<scope>_<readTime>.gcportrait.json`. An exported bundle imports back to the same snapshot and
 history (`library.test.ts`, `parse.test.ts`, and the e2e spec). Raw CAI NDJSON is imported but never written:
 it would lose the scope and the read time.

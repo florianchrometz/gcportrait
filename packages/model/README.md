@@ -177,6 +177,21 @@ UI reads it for zone badges, the drawer and the cycle error.
 | `TickSchema`, `Tick` | a day tick, a UTC day `YYYY-MM-DD`, or an extra tick (an export or a manual pull of the scope), its read time to the second in UTC, `YYYY-MM-DDTHH:MM:SSZ` |
 | `DiffSchema`, `Diff` | `{ added, removed, changed }` asset names between two ticks; a name appears at most once overall |
 
+## Demo history
+
+The 35-day history of a demo organisation (`packages/demo-data`): the app stores it in IndexedDB, writes it
+into a `.gcportrait.json` bundle and replays it for the timeline and the render API.
+
+| Export | What |
+|---|---|
+| `MutationSchema`, `Mutation` | one change between two ticks: `add` (its `asset`), `change` (the new `asset` and the dotted `fields` that changed), `remove` (its `name` and `assetType`) |
+| `HistoryTickSchema`, `HistoryTick` | `tick` (a day: an extra tick's read time is no history day), `readTime` (`<tick>T00:00:00Z`) and its `mutations` |
+| `DemoHistorySchema`, `DemoHistory` | `size`, `seed`, `today`, `base` (the organisation at the first tick) and at least one `ticks`, the last of which is `today` |
+
+Unknown keys are stripped, so a newer bundle still parses. `DemoHistorySchema` is the only reader of a stored
+history: its issue paths name the place (`ticks.3.mutations.0.asset.name`), and the snapshot worker keeps only
+the replay and the check that the last day is the snapshot's.
+
 ## ViewSpec
 
 | Export | What |

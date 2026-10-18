@@ -80,6 +80,15 @@ export {
 export { DiffSchema, TickSchema, type Diff, type Tick } from './schemas/timeline.js';
 
 export {
+  DemoHistorySchema,
+  HistoryTickSchema,
+  MutationSchema,
+  type DemoHistory,
+  type HistoryTick,
+  type Mutation,
+} from './schemas/demo-history.js';
+
+export {
   DemoSizeSchema,
   DepthSchema,
   FlipIdSchema,

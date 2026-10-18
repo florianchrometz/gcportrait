@@ -133,18 +133,14 @@ describe('parseHistory', () => {
 
   it.each([
     ['not an object', null, 'The history is not an object.'],
-    ['without a size', { ...history, size: 'XXL' }, 'The history has no valid size, seed or day.'],
-    ['without ticks', { ...history, ticks: [] }, 'The history has no base or no ticks.'],
-    [
-      'ending on another day',
-      { ...history, today: '2026-10-09' },
-      'The history does not end on its own day.',
-    ],
+    ['without a size', { ...history, size: 'XXL' }, 'The history is invalid at size.'],
+    ['without ticks', { ...history, ticks: [] }, 'The history is invalid at ticks.'],
+    ['ending on another day', { ...history, today: '2026-10-09' }, 'The history is invalid at ticks.'],
     // A timeline tick may be an extra tick's read time; a history's days are days only.
     [
       'whose day is a time',
       { ...history, today: '2026-10-08T00:00:00Z' },
-      'The history has no valid size, seed or day.',
+      'The history is invalid at today.',
     ],
     [
       'with a tick that is a time',
@@ -154,20 +150,18 @@ describe('parseHistory', () => {
           index === 0 ? { ...tick, tick: `${tick.tick}T00:00:00Z` } : tick,
         ),
       },
-      "The history's tick 1 is invalid.",
+      'The history is invalid at ticks.0.tick.',
     ],
   ])('refuses one %s', (_, value, message) => {
     expect(() => parseHistory(value)).toThrow(new SnapshotFileError(message));
   });
 
-  it('refuses an invalid asset and an invalid change', () => {
-    expect(() => parseHistory({ ...history, base: [{ name: 'x' }] })).toThrow(
-      /invalid asset \(base, asset 1\)/,
-    );
+  it('refuses an invalid asset and an invalid change, naming where', () => {
+    expect(() => parseHistory({ ...history, base: [{ name: 'x' }] })).toThrow(/invalid at base\.0/);
     const ticks = history.ticks.map((tick, index) =>
       index === 1 ? { ...tick, mutations: [{ kind: 'rename' }] } : tick,
     );
-    expect(() => parseHistory({ ...history, ticks })).toThrow(/invalid change/);
+    expect(() => parseHistory({ ...history, ticks })).toThrow(/invalid at ticks\.1\.mutations\.0/);
   });
 
   it('refuses a history that does not replay', () => {

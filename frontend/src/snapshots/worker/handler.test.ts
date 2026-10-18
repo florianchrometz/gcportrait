@@ -363,7 +363,7 @@ describe('the check job', () => {
     });
     await expect(client.check(snapshot, new Blob(['{"size":"S"}']))).rejects.toMatchObject({
       message: DAMAGED_RECORD,
-      problems: ['The history has no valid size, seed or day.'],
+      problems: ['The history is invalid at seed.'],
     });
     // Demo S's history kept with demo M's snapshot.
     const medium = await plainDemo('M');

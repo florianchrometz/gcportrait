@@ -56,6 +56,10 @@ describe('public surface', () => {
         // timeline
         'DiffSchema',
         'TickSchema',
+        // demo history
+        'DemoHistorySchema',
+        'HistoryTickSchema',
+        'MutationSchema',
         // view spec
         'DEFAULT_VIEW_SPEC',
         'DemoSizeSchema',

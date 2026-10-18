@@ -263,6 +263,9 @@ an add never duplicates an asset, a remove or change never misses one. `generate
 | `remove` | `{ kind: 'remove', name, assetType }` |
 | `change` | `{ kind: 'change', asset, fields }`: the new version (new `updateTime`) and the dotted data paths that changed |
 
+`DemoHistory`, `HistoryTick` and `Mutation` are `@gcportrait/model`'s schemas (`DemoHistorySchema`, …),
+re-exported here: a stored history is read through `DemoHistorySchema`, which names the place of a problem.
+
 Four scripted events happen in every size, at fixed ticks:
 
 | Tick (with today = 2026-10-08) | Event |
