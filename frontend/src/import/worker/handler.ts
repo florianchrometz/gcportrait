@@ -12,7 +12,7 @@
  */
 import { IngestError, createIngestSession, type IngestProblem, type IngestSession } from '@gcportrait/ingest';
 
-import { formatUtc, scopeName } from '../../snapshots/labels';
+import { formatUtc, plural, scopeName } from '../../snapshots/labels';
 import { prepareSnapshot } from '../../snapshots/worker/prepare';
 import { inferScope } from '../../snapshots/worker/scope';
 import { futureReadTimeNote, namedScope } from '../sidecar';
@@ -83,10 +83,6 @@ function concat(chunks: readonly Uint8Array[]): Uint8Array {
     offset += chunk.byteLength;
   }
   return bytes;
-}
-
-function plural(count: number, one: string, many: string): string {
-  return `${count.toLocaleString('en')} ${count === 1 ? one : many}`;
 }
 
 function listed(problems: readonly IngestProblem[]): string[] {

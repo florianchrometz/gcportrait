@@ -21,16 +21,12 @@ import { READ_TIME_SOURCE_WORDS, readTimeSourceOf } from '../timeline/extraTicks
 import controls from '../ui/controls.module.css';
 import { Dialog } from '../ui/Dialog';
 import { JobStatus, type JobState } from './JobStatus';
-import { distinctNames, formatBytes, formatCount, formatUtc, sourceLabel } from './labels';
+import { distinctNames, formatBytes, formatCount, formatUtc, plural, sourceLabel } from './labels';
 import type { ListedSnapshot } from './repository';
 import { RowTable, type RowColumn, type RowData } from './RowTable';
 import { scopeTimelines, type ScopeEntry, type ScopeTimeline } from './scopeEntries';
 import { useSnapshotLibrary } from './SnapshotLibraryProvider';
 import styles from './Snapshots.module.css';
-
-function plural(count: number, one: string, many: string): string {
-  return `${formatCount(count)} ${count === 1 ? one : many}`;
-}
 
 /** "1 snapshot, 2 extra ticks and 5 cached days: 1.7 MB in this browser." */
 export function scopeSummary(timeline: ScopeTimeline): string {

@@ -7,7 +7,7 @@
  * Rules: counters never go back; elapsed time runs from `start` to the end and then stays; once the import has
  * ended (done, failed, cancelled), nothing but a new `start` changes it.
  */
-import { formatBytes, formatCount } from '../snapshots/labels';
+import { formatBytes, plural } from '../snapshots/labels';
 
 export type ImportKind = 'pull' | 'export';
 
@@ -151,10 +151,6 @@ export function formatElapsed(ms: number): string {
   return hours > 0
     ? `${String(hours)}:${String(minutes).padStart(2, '0')}:${rest}`
     : `${String(minutes)}:${rest}`;
-}
-
-function plural(count: number, one: string, many: string): string {
-  return `${formatCount(count)} ${count === 1 ? one : many}`;
 }
 
 /** "12 pages · 5,400 assets · 3.2 MB · 0:04": the counters, as the page shows them under the bar. */

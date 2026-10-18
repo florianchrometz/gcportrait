@@ -13,6 +13,7 @@ import {
   distinctLabels,
   distinctNames,
   formatUtc,
+  plural,
   scopeName,
   snapshotLabel,
 } from './labels';
@@ -20,6 +21,34 @@ import { storedRecord } from './testing';
 
 /** A stored demo snapshot's facts of example.com, read on 8 October, with `change`. */
 const meta = (change: Partial<SnapshotMeta> = {}): SnapshotMeta => storedRecord('x', change).meta;
+
+describe('plural labels', () => {
+  it.each([
+    [0, '0 assets were'],
+    [1, '1 asset was'],
+    [2, '2 assets were'],
+    [1000, '1,000 assets were'],
+    [-0, '-0 assets were'],
+    [-1, '-1 assets were'],
+    [1.0001, '1 assets were'],
+    [Number.NaN, 'NaN assets were'],
+    [Number.POSITIVE_INFINITY, '∞ assets were'],
+    [Number.NEGATIVE_INFINITY, '-∞ assets were'],
+  ])('formats %s without changing which phrase its exact value selects', (count, expected) => {
+    expect(plural(count, 'asset was', 'assets were')).toBe(expected);
+  });
+
+  it('keeps caller-supplied phrases, including empty strings, verbatim', () => {
+    expect(plural(1, 'organisation or project', 'different organisations or projects')).toBe(
+      '1 organisation or project',
+    );
+    expect(plural(2, 'organisation or project', 'different organisations or projects')).toBe(
+      '2 different organisations or projects',
+    );
+    expect(plural(1, '', 'many')).toBe('1 ');
+    expect(plural(2, 'one', '')).toBe('2 ');
+  });
+});
 
 describe('snapshot labels', () => {
   it.each([

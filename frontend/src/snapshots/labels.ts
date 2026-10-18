@@ -102,6 +102,11 @@ export function formatCount(count: number): string {
   return count.toLocaleString('en');
 }
 
+/** "1 asset" or "1,234 assets": the count, then `one` when it is exactly 1 and `many` otherwise. */
+export function plural(count: number, one: string, many: string): string {
+  return `${formatCount(count)} ${count === 1 ? one : many}`;
+}
+
 /** The longest source detail a label repeats (an export of many files lists them all in its detail). */
 const LABEL_DETAIL_LENGTH = 60;
 

@@ -31,7 +31,7 @@ import {
   type ExportSidecar,
 } from '../../import/sidecar';
 import { isBundle } from '../bundle';
-import { formatUtc, scopeName } from '../labels';
+import { formatUtc, plural, scopeName } from '../labels';
 import { parseBundle, parseHistoryOf, SnapshotFileError } from './parse';
 import { prepareSnapshot as prepare, type Report } from './prepare';
 import {
@@ -120,10 +120,6 @@ function renamed(
     snapshot: renamedSnapshot,
     note: `The snapshot in ${file} ${where}, so it was stored again as a separate copy.`,
   };
-}
-
-function plural(count: number, one: string, many: string): string {
-  return `${count.toLocaleString('en')} ${count === 1 ? one : many}`;
 }
 
 function describeProblems(problems: readonly IngestProblem[], names: readonly string[]): string[] {
