@@ -15,9 +15,9 @@ describes the servers and the live-mode specs' stand-ins.
 - The functional specs run at 1440 × 900, `e2e/tests/touch.spec.ts` uses the canvas by finger at a phone's
   size and `e2e/tests/handheld.spec.ts` the app's flows by finger at a phone's and a tablet's (the
   `chromium-phone` and `chromium-tablet` projects).
-- The suite runs axe in both themes, at the desktop's size and at the phone's and the tablet's
-  (`pnpm --filter @gcportrait/frontend mobile`). The shared accessibility contract follows
-  [AGENTS.md](../AGENTS.md), "Style and accessibility".
+- The suite runs axe on every state in light at every size, and in dark at one phone size and the tablet, a
+  popup's state audited on the popup (`pnpm --filter @gcportrait/frontend mobile`). The shared accessibility
+  contract follows [AGENTS.md](../AGENTS.md), "Style and accessibility".
 
 The app's layout and export contracts follow [frontend/AGENTS.md](../frontend/AGENTS.md), "Phones, tablets
 and desktops" and "Exports"; the gcp-diagram-style skill (§8, §13) holds the export limits and accessibility

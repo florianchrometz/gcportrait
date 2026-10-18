@@ -86,7 +86,8 @@ are an *explorer*, a *reviewer* checking exposure and a *contributor* without Cl
 ## Style and accessibility
 
 - **WCAG 2.2 AA** in every page, diagram, theme and width; only decorative subnet and VPC strokes are
-  excepted (e2e/AGENTS.md, "Widths, gestures and axe").
+  excepted (axe on every state in light at every size, and in dark at one phone size and the tablet, a
+  popup's state audited on the popup; e2e/AGENTS.md, "Widths, gestures and axe").
 - **44×44 CSS-pixel targets below desktop** (WCAG 2.5.5), except sentence links and code-line fields, with
   safe-area clearance on persistent bars.
 - **Colour never stands alone**: edge dash or head, zone title position or badge identify them too.
@@ -293,15 +294,14 @@ icons, console links or coverage; **cai-ingestion** for CAI, parsing, permission
 | Install (Node ≥ 22.22.2) | `pnpm install` |
 | App + backend (:5173, :8080) | `pnpm dev` |
 | Demo mode (:5174, no GCP) | `pnpm dev:demo` |
-| Everything CI checks but build, size, e2e | `pnpm check` (format:check, lint, typecheck, test, catalog:check, provenance, licenses) |
+| Everything CI checks but build, size, e2e | `pnpm check` (format, lint, typecheck, test, catalog, provenance, licenses) |
 | One package / one test project | `pnpm --filter @gcportrait/<pkg> test` (also `lint`, `typecheck`) / `pnpm test --project <name>` |
 | Provenance / licences / audit | `pnpm provenance`, `pnpm run licenses` (`--write`, `--list-rules`), `node scripts/check-audit.mjs` |
 | Build, then size budgets | `pnpm build`, then `pnpm size` |
-| End-to-end + accessibility | `pnpm e2e` (once: `pnpm --filter @gcportrait/e2e install-browsers`; `--project chromium-phone --project chromium-tablet` for phones and tablets) |
-| Draw a demo view as the app does | `pnpm render --fixture M --lens networking --png out.png` (`--svg`, `--drawio`, `--theme dark`, `--detail`, `--compare`, `--all`, `--help`) |
+| End-to-end + accessibility | `pnpm e2e` (once: `pnpm --filter @gcportrait/e2e install-browsers`; `--project mobile` for handheld) |
+| Draw a demo view as the app does | `pnpm render --fixture M --lens networking --png out.png` (`--svg`, `--drawio`, `--theme dark`, `--detail`, `--help`) |
 
-Every folder's AGENTS.md, "Commands" holds the rest; `pnpm dev:demo` opens a demo organisation straight on
-the diagram. References: docs/packages.md, docs/configuration.md.
+Every folder's AGENTS.md, "Commands" holds the rest. References: docs/packages.md, docs/configuration.md.
 
 ## Names that never appear
 

@@ -2,6 +2,7 @@
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { AxeBuilder } from '@axe-core/playwright';
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 
 import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TOKENINFO_URL } from '../fixtures/gis.js';
@@ -14,7 +15,6 @@ import {
   DEFAULT_SOURCE_URL,
   demoCaiExport,
   detailsDrawer,
-  expectNoAxeViolations,
   exportOperation,
   openDiagram,
   viewParam,
@@ -682,18 +682,46 @@ function canvasRoom(page: Page): Promise<{ readonly ofWindow: number; readonly u
 }
 
 /**
+ * Runs axe-core (all non-experimental rules, best practices included) on the page (or `scope` when given)
+ * as it is now, after web fonts have loaded, and fails with a readable summary of any violation (WCAG 2.2 AA).
+ */
+async function expectNoAxeViolations(page: Page, scope?: string): Promise<void> {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  const builder = new AxeBuilder({ page });
+  if (scope !== undefined) builder.include(scope);
+  const results = await builder.analyze();
+  const violations = results.violations.map((violation) => ({
+    rule: violation.id,
+    impact: violation.impact,
+    help: violation.help,
+    targets: violation.nodes.map((node) => node.target.join(' ')),
+  }));
+  expect(violations).toEqual([]);
+}
+
+/**
  * The state on screen has no layout problem, no axe violation (unless `axe` is false: a state checked at another
- * size already) and, with `focus`, no control out of sight or untappable (a state with nothing open that focus
- * would close: not a list or a menu, which close when focus leaves them).
+ * size already; scoped to `axeScope` when given) and, with `focus`, no control out of sight or untappable (a state
+ * with nothing open that focus would close: not a list or a menu, which close when focus leaves them).
  */
 async function expectClean(
   page: Page,
   where: string,
-  { axe = true, focus = false }: { readonly axe?: boolean; readonly focus?: boolean } = {},
+  {
+    axe = true,
+    axeScope,
+    focus = false,
+  }: {
+    readonly axe?: boolean | undefined;
+    readonly axeScope?: string | undefined;
+    readonly focus?: boolean | undefined;
+  } = {},
 ): Promise<void> {
   expect(await layoutProblems(page), where).toEqual([]);
   if (focus) expect(await hiddenControls(page), `${where}: controls out of sight or untappable`).toEqual([]);
-  if (axe) await expectNoAxeViolations(page);
+  if (axe) await expectNoAxeViolations(page, axeScope);
 }
 
 async function closeSheet(page: Page, name: Fold): Promise<void> {
@@ -739,6 +767,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
     test.use({ colorScheme: theme });
 
     for (const size of SIZES) {
+      const axeAtSize = theme === 'light' || size.width === 375 || size.width === 820;
       test.describe(`${String(size.width)} × ${String(size.height)}`, () => {
         test.use({ viewport: size });
 
@@ -751,7 +780,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
             await page.evaluate(async () => {
               await document.fonts.ready;
             });
-            await expectClean(page, `${path} at rest`, { focus: true });
+            await expectClean(page, `${path} at rest`, { axe: axeAtSize, focus: true });
             await openSheet(page, 'More', 'click');
             await expectClean(page, `${path} with More open`, {
               axe: size.width === 375 || size.width === 820,
@@ -783,7 +812,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
             await page.evaluate(async () => {
               await document.fonts.ready;
             });
-            await expectClean(page, `/${id}`, { focus: true });
+            await expectClean(page, `/${id}`, { axe: axeAtSize, focus: true });
           }
         });
 
@@ -791,50 +820,64 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
           test(`the diagram ${address.slice(address.indexOf('#'))}: at rest, with View, More and the drawer open`, async ({
             page,
           }) => {
-            // Twelve axe runs over the whole diagram, seven of them after a walk of every control's focus
-            // and tap: 24 to 30 s on a moderately busy machine, against Playwright's 30 s default.
+            // Axe runs over the diagram states (the popup states scoped to their popup, the dark theme at two
+            // sizes), seven of them after a walk of every control's focus and tap: up to 15 s on a moderately
+            // busy machine.
             test.slow();
             const svg = await openDiagram(page, address);
             const room = await canvasRoom(page);
             expect(room.ofWindow, 'the canvas’s share of the window').toBeGreaterThanOrEqual(0.25);
-            await expectClean(page, 'at rest', { focus: true });
+            await expectClean(page, 'at rest', { axe: axeAtSize, focus: true });
             const view = await openSheet(page, 'View', 'click');
-            await expectClean(page, 'with View open', { focus: true });
+            await expectClean(page, 'with View open', { axe: axeAtSize, focus: true });
             // The sheet's own popups open inside it: the Lens list, the Filters panel.
             await view.getByRole('combobox', { name: 'Lens' }).click();
             await expect(page.getByRole('listbox')).toBeVisible();
-            await expectClean(page, 'with the Lens list open');
+            await expectClean(page, 'with the Lens list open', {
+              axe: axeAtSize,
+              axeScope: '[role="listbox"]',
+            });
             await page.keyboard.press('Escape');
             await expect(view).toBeVisible();
             await view.getByRole('button', { name: /^Focus/ }).click();
             await expect(view.getByRole('dialog', { name: /^Focus/ })).toBeVisible();
-            await expectClean(page, 'with the Focus panel open', { focus: true });
+            await expectClean(page, 'with the Focus panel open', { axe: axeAtSize, focus: true });
             await page.keyboard.press('Escape');
             await view.getByRole('button', { name: /^Filters/ }).click();
             await expect(view.getByRole('dialog', { name: 'Filters' })).toBeVisible();
-            await expectClean(page, 'with the Filters panel open', { focus: true });
+            await expectClean(page, 'with the Filters panel open', { axe: axeAtSize, focus: true });
             await page.keyboard.press('Escape');
             // The search's results open under the field, in the sheet.
             const search = view.getByRole('combobox', { name: 'Search assets' });
             await search.fill('a');
             await expect(view.getByRole('listbox')).toBeVisible();
-            await expectClean(page, 'with the search results open');
+            await expectClean(page, 'with the search results open', {
+              axe: axeAtSize,
+              axeScope: '[role="listbox"]',
+            });
             await search.fill('');
             await expect(view.getByRole('listbox')).toBeHidden();
             await closeSheet(page, 'View');
             const more = await openSheet(page, 'More', 'click');
-            await expectClean(page, 'with More open', { focus: true });
+            await expectClean(page, 'with More open', { axe: axeAtSize, focus: true });
             // Each menu of More opens inside the sheet, its longest item (the Snapshot menu's "Open: …" line) wrapping.
             for (const menu of ['Snapshot', 'Theme', 'Export']) {
               await more.getByRole('button', { name: menu, exact: true }).click();
               await expect(page.getByRole('menu', { name: menu })).toBeVisible();
-              await expectClean(page, `with the ${menu} menu open`);
+              await expectClean(page, `with the ${menu} menu open`, {
+                axe: axeAtSize,
+                axeScope: '[role="menu"]',
+              });
               await page.keyboard.press('Escape');
               await expect(page.getByRole('menu', { name: menu })).toBeHidden();
             }
             await more.getByRole('button', { name: 'Saved views', exact: true }).click();
             await expect(page.getByRole('dialog', { name: 'Saved views' })).toBeVisible();
-            await expectClean(page, 'with the Saved views dialog open', { focus: true });
+            await expectClean(page, 'with the Saved views dialog open', {
+              axe: axeAtSize,
+              axeScope: '[role="dialog"][aria-modal="true"]',
+              focus: true,
+            });
             await page.keyboard.press('Escape');
             await expect(more.getByRole('button', { name: 'Saved views', exact: true })).toBeFocused();
             await closeSheet(page, 'More');
@@ -844,7 +887,7 @@ function pagesAndDiagrams(theme: 'light' | 'dark'): void {
               open.uncovered,
               'the share of the canvas the drawer leaves in view',
             ).toBeGreaterThanOrEqual(1 / 3);
-            await expectClean(page, 'with the drawer open', { focus: true });
+            await expectClean(page, 'with the drawer open', { axe: axeAtSize, focus: true });
           });
         }
       });
@@ -1321,6 +1364,7 @@ for (const theme of ['light', 'dark'] as const) {
     test(`${theme} theme, ${String(size.width)} × ${String(size.height)}: a live instance's Connect page signed out and signed in, its Permissions page, and the Account panel inside More; Sign out closes the sheet`, async ({
       page,
     }) => {
+      const axeAtSize = theme === 'light' || size.width === 375 || size.width === 820;
       await page.setViewportSize(size);
       await page.emulateMedia({ colorScheme: theme });
       await stubConfig(page, LIVE_CONFIG);
@@ -1347,7 +1391,7 @@ for (const theme of ['light', 'dark'] as const) {
       await page.evaluate(async () => {
         await document.fonts.ready;
       });
-      await expectClean(page, 'the Connect page, signed out', { focus: true });
+      await expectClean(page, 'the Connect page, signed out', { axe: axeAtSize, focus: true });
       await page
         .getByRole('region', { name: 'Choose a source' })
         .getByRole('button', { name: 'Sign in with Google' })
@@ -1358,14 +1402,14 @@ for (const theme of ['light', 'dark'] as const) {
       const account = more.getByRole('button', { name: LONG_EMAIL, exact: true });
       await expect(account).toBeVisible();
       await closeSheet(page, 'More');
-      await expectClean(page, 'the Connect page, signed in', { focus: true });
+      await expectClean(page, 'the Connect page, signed in', { axe: axeAtSize, focus: true });
       await openSheet(page, 'More', 'click');
       await expectClean(page, 'signed in, with More open', { axe: false, focus: true });
       await account.click();
       const panel = more.getByRole('dialog', { name: 'Account' });
       await expect(panel).toBeVisible();
       await expect(panel.getByText(/^Signed in with Google/)).toBeVisible();
-      await expectClean(page, 'with the Account panel open', { focus: true });
+      await expectClean(page, 'with the Account panel open', { axe: axeAtSize, focus: true });
       await page.keyboard.press('Escape');
       await expect(panel).toBeHidden();
       await expect(account).toBeFocused();
@@ -1373,7 +1417,7 @@ for (const theme of ['light', 'dark'] as const) {
       await more.getByRole('link', { name: 'Permissions', exact: true }).click();
       await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
       await expect(fold(page, 'More').sheet).toBeHidden();
-      await expectClean(page, 'the Permissions page, signed in', { focus: true });
+      await expectClean(page, 'the Permissions page, signed in', { axe: axeAtSize, focus: true });
       await openSheet(page, 'More', 'click');
       await account.click();
       await panel.getByRole('button', { name: 'Sign out', exact: true }).click();

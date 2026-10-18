@@ -32,10 +32,12 @@ how to update it). A person reviews a render against the style skill's fact-chec
 and the layout skill's checks (gcp-diagram-layout §8).
 
 [playwright.config.ts](playwright.config.ts) defines the projects and their servers, spec patterns, tags
-and device settings (`projects`, `LIVE_SPECS`, `MOBILE_SPECS`, `PHONE`, `TABLET` and `VIEWPORT`). The
-`mobile` project's [mobile.spec.ts](tests/mobile.spec.ts) also opens normal-mode pages for live-instance
-checks; its demo base URL does not limit those checks. `pnpm --filter @gcportrait/frontend mobile` runs
-that project alone, including [touch.spec.ts](tests/touch.spec.ts).
+and device settings (`projects`, `LIVE_SPECS`, `MOBILE_SPECS`, `PHONE`, `TABLET` and `VIEWPORT`).
+The `mobile` project's [mobile.spec.ts](tests/mobile.spec.ts) audits layout, touch targets and axe (in
+light at every size, and in dark at one phone size and the tablet, a popup's state audited on the
+popup), also opening normal-mode pages for live-instance checks; its demo base URL does not limit those
+checks. `pnpm --filter @gcportrait/frontend mobile` runs that project alone, including
+[touch.spec.ts](tests/touch.spec.ts).
 
 Locally the two servers are Vite dev servers, started by `scripts/built-app.ts --dev`. Each server gets a
 private temporary dependency cache through `GCPORTRAIT_VITE_CACHE_DIR`: simultaneous runs of one checkout
