@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 
+import { copyFailureMessage, copyText } from '../export/deliver';
 import { appPath, DIAGRAM_PATH } from '../routes';
 import { useAppState } from '../state';
 import controls from '../ui/controls.module.css';
@@ -47,19 +48,13 @@ export function CopyLinkButton(): ReactElement {
   const copy = (): void => {
     if (!onDiagram) return;
     const link = viewLink(hash, window.location.href);
-    const clipboard = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
-    if (clipboard === undefined) {
-      toast('Copying is not available here: copy the address bar instead.');
-      return;
-    }
-    clipboard.writeText(link).then(
-      () => {
+    void copyText(link).then((outcome) => {
+      if (outcome === 'copied') {
         toast('Link copied to the clipboard.');
-      },
-      () => {
-        toast('The browser did not allow copying: copy the address bar instead.');
-      },
-    );
+      } else {
+        toast(copyFailureMessage(outcome, 'copy the address bar instead'));
+      }
+    });
   };
 
   return (

@@ -28,6 +28,7 @@ import './disclosure/disclosure.css';
 import type { Rect } from '@gcportrait/layout';
 
 import { focusVisible, prefersReducedMotion } from '../ui/dom';
+import { copyFailureMessage, copyText } from '../export/deliver';
 import { Menu, type MenuCloseReason, type MenuItem } from '../ui/Menu';
 import { canDrillIn, nodeMenuItems } from './actions';
 import {
@@ -494,19 +495,13 @@ export function DiagramCanvas({
       const svg = svgRef.current;
       const items = nodeMenuItems(model, id, {
         copy: (name) => {
-          const clipboard = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
-          if (clipboard === undefined) {
-            setStatus('Copying is not available here.');
-            return;
-          }
-          clipboard.writeText(name).then(
-            () => {
+          void copyText(name).then((outcome) => {
+            if (outcome === 'copied') {
               setStatus(`Copied the resource name ${name}.`);
-            },
-            () => {
-              setStatus('The browser did not allow copying.');
-            },
-          );
+            } else {
+              setStatus(copyFailureMessage(outcome));
+            }
+          });
         },
         ...(onDrillIn === undefined
           ? {}

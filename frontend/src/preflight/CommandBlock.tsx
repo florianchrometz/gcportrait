@@ -15,6 +15,7 @@ import { cx } from '../classNames';
 import { useCommandVariables } from '../commands/useCommandVariables';
 import { copiedMessage, resolveCommand, unfilledNote } from '../commands/values';
 import { VariableField } from '../commands/VariableField';
+import { copyFailureMessage, copyText } from '../export/deliver';
 import controls from '../ui/controls.module.css';
 import styles from './Preflight.module.css';
 
@@ -73,20 +74,14 @@ export function CommandBlock({ command, context }: CommandBlockProps): ReactElem
         aria-label={`Copy the command that ${purpose}${context === undefined ? '' : ` (${context})`}`}
         aria-describedby={note === '' ? undefined : noteId}
         onClick={() => {
-          const clipboard = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
-          if (clipboard === undefined) {
-            setStatus('Copying is not available here; select the command instead.');
-            return;
-          }
           const { text, unfilled } = resolved;
-          clipboard.writeText(text).then(
-            () => {
+          void copyText(text).then((outcome) => {
+            if (outcome === 'copied') {
               setStatus(copiedMessage(unfilled));
-            },
-            () => {
-              setStatus('The browser did not allow copying; select the command instead.');
-            },
-          );
+            } else {
+              setStatus(copyFailureMessage(outcome, 'select the command instead'));
+            }
+          });
         }}
       >
         Copy

@@ -44,3 +44,38 @@ export async function copyPng(png: Promise<Blob>, scope: typeof globalThis = glo
     await clipboard.write([new scope.ClipboardItem({ 'image/png': await png })]);
   }
 }
+
+/** The three possible outcomes of writing text to the clipboard. */
+export type CopyTextOutcome = 'copied' | 'unavailable' | 'refused';
+
+/**
+ * Copies plain text to the clipboard through the async Clipboard API (`navigator.clipboard.writeText`).
+ * Returns `'unavailable'` when the browser offers no clipboard API (e.g. non-secure contexts),
+ * `'copied'` when the text was written, or `'refused'` when the browser denied permission.
+ */
+export async function copyText(
+  text: string,
+  scope: typeof globalThis = globalThis,
+): Promise<CopyTextOutcome> {
+  const clipboard = (scope.navigator as Navigator | undefined)?.clipboard;
+  if (typeof clipboard?.writeText !== 'function') return 'unavailable';
+  try {
+    await clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'refused';
+  }
+}
+
+/**
+ * Wording for a clipboard failure, either unavailable (no clipboard API) or refused (permission denied),
+ * optionally suggesting an alternative (`instead`: "copy the address bar instead").
+ */
+export function copyFailureMessage(
+  outcome: Exclude<CopyTextOutcome, 'copied'>,
+  instead?: string,
+): string {
+  const base = outcome === 'unavailable' ? 'Copying is not available here' : 'The browser did not allow copying';
+  return instead === undefined ? `${base}.` : `${base}: ${instead}.`;
+}
+

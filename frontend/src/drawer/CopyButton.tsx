@@ -6,6 +6,7 @@
  */
 import type { ReactElement } from 'react';
 
+import { copyFailureMessage, copyText } from '../export/deliver';
 import styles from './DetailsDrawer.module.css';
 
 export interface CopyButtonProps {
@@ -24,19 +25,13 @@ export function CopyButton({ value, label, what, onStatus }: CopyButtonProps): R
       className={styles.copy}
       aria-label={label}
       onClick={() => {
-        const clipboard = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
-        if (clipboard === undefined) {
-          onStatus('Copying is not available here.');
-          return;
-        }
-        clipboard.writeText(value).then(
-          () => {
+        void copyText(value).then((outcome) => {
+          if (outcome === 'copied') {
             onStatus(`Copied ${what}.`);
-          },
-          () => {
-            onStatus('The browser did not allow copying.');
-          },
-        );
+          } else {
+            onStatus(copyFailureMessage(outcome));
+          }
+        });
       }}
     >
       Copy

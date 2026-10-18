@@ -2163,7 +2163,7 @@ src/export/
                     packages, as data: URIs, fetched from the app's origin once per session
   pngGeometry.ts    pure PNG geometry shared with the server through the headless entry point
   raster.ts         browser geometry adapter, the raster frame and font sentinels, drawing on a canvas
-  deliver.ts        the temporary download link, and the clipboard (ClipboardItem)
+  deliver.ts        the temporary download link, and the clipboard (ClipboardItem, copyText)
   exportDiagram.ts  the flow: crop, prepare, serialise, rasterise, name; exportDrawioFile loads drawio/ on demand
   drawio/           the draw.io translator (below): xml.ts (a DOM-free XML reader and writer), svg.ts (presentation
                     attributes, colours, transforms, path data), label.ts (text lines as HTML labels at their
