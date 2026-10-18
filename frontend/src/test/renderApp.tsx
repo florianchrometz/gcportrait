@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach } from 'vitest';
 
 import type { PublicConfig } from '../api/config';
+import { readDemoConfig } from '../api/demoConfig';
 import { App } from '../App';
 import type { DiagramWorkersFactory } from '../diagram/pipeline/workers';
 import type { SnapshotLibrary } from '../snapshots/library';
@@ -30,11 +31,13 @@ afterEach(() => {
 });
 
 export type RenderAppOptions = {
-  readonly demo?: boolean;
   /** The build-time source URL (VITE_SOURCE_URL); the default one unless a test sets its own. */
   readonly sourceUrl?: string;
-  /** The static demo's built-in configuration (api/staticConfig.ts); none unless a test sets one (with `demo: false`). */
-  readonly staticConfig?: PublicConfig;
+  /**
+   * The configuration built in (api/demoConfig.ts): a demo build's by default, as `pnpm dev:demo` serves it. Null
+   * asks a backend instead, as a live instance does (`stubBackend` answers).
+   */
+  readonly demoConfig?: PublicConfig | null;
   readonly preferences?: PreferenceStore;
   /** The diagram's workers (e.g. `createInProcessWorkers`); none by default, so no diagram is drawn. */
   readonly diagramWorkers?: DiagramWorkersFactory;
@@ -103,9 +106,11 @@ export function renderApp(path: string, options: RenderAppOptions = {}): AppRend
     <MemoryRouter initialEntries={[path]}>
       <App
         mode={{
-          demo: options.demo ?? true,
           sourceUrl: options.sourceUrl ?? DEFAULT_SOURCE_URL,
-          ...(options.staticConfig === undefined ? {} : { staticConfig: options.staticConfig }),
+          demoConfig:
+            options.demoConfig === undefined
+              ? (readDemoConfig({ VITE_DEMO: '1', VITE_SOURCE_URL: options.sourceUrl }) ?? null)
+              : options.demoConfig,
         }}
         preferences={options.preferences ?? createMemoryPreferenceStore()}
         diagramWorkers={options.diagramWorkers}

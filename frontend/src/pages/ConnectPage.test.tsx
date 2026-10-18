@@ -19,7 +19,7 @@ function demoCard(): HTMLElement {
 
 describe('Try the demo', () => {
   it('offers the four sizes, S first, and describes the chosen one', async () => {
-    renderApp('/', { demo: true, snapshots: fakeLibrary() });
+    renderApp('/', { snapshots: fakeLibrary() });
     const card = demoCard();
     const sizes = within(card).getByRole('radiogroup', { name: 'Size' });
     expect(
@@ -43,7 +43,7 @@ describe('Try the demo', () => {
 
   it('generates the chosen size with progress, then opens it on the diagram', async () => {
     const snapshots = fakeLibrary();
-    const { container } = renderApp('/', { demo: true, snapshots });
+    const { container } = renderApp('/', { snapshots });
     const card = demoCard();
     await userEvent.click(within(card).getByRole('radio', { name: 'M' }));
     await userEvent.click(within(card).getByRole('button', { name: 'Try the demo' }));
@@ -72,7 +72,7 @@ describe('Try the demo', () => {
 
   it('a second click while it runs starts nothing', async () => {
     const snapshots = fakeLibrary();
-    renderApp('/', { demo: true, snapshots });
+    renderApp('/', { snapshots });
     const button = within(demoCard()).getByRole('button', { name: 'Try the demo' });
     await userEvent.click(button);
     await userEvent.click(button);
@@ -81,7 +81,7 @@ describe('Try the demo', () => {
 
   it('says what went wrong and stays on the page', async () => {
     const snapshots = fakeLibrary();
-    const { container } = renderApp('/', { demo: true, snapshots });
+    const { container } = renderApp('/', { snapshots });
     const card = demoCard();
     await userEvent.click(within(card).getByRole('button', { name: 'Try the demo' }));
     await act(() => snapshots.answer({ error: new SnapshotJobError('The worker failed.', ['detail one']) }));

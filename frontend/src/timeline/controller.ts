@@ -19,7 +19,7 @@
  *   Nothing is read while the view stays where the page opened it on the snapshot's own day.
  *   A day that failed is read again only when the view comes back to it, or on `retry`. A cached day is drawn by
  *   the normal pipeline once its status says so (model.ts `tickToDraw`).
- * - It says why days cannot be read (`blocked`): demo mode, no sign-in, or a permission check for another scope.
+ * - It says why days cannot be read (`blocked`): no sign-in, or a permission check for another scope.
  */
 import type { SnapshotRef } from '@gcportrait/model';
 
@@ -48,8 +48,6 @@ export interface TimelineControllerOptions {
   /** The tick cache's changes in the other tabs of this browser (the page's: `tickCacheChanges()`). */
   readonly changes: TickCacheChanges;
   readonly fetchTick: TickFetcher;
-  /** Demo mode reads nothing from Google Cloud. */
-  readonly demo: boolean;
   readonly clock?: () => number;
   readonly debounceMs?: number;
   /** Runs `callback` once the page is idle; returns a cancel (default: requestIdleCallback, else a timeout). */
@@ -114,13 +112,8 @@ export interface LiveAccess {
 }
 
 /** Whether (and as whom) a live scope's days can be read from Google Cloud now. */
-export function liveAccess(connect: AppState['connect'], info: LiveInfo, demo: boolean): LiveAccess {
+export function liveAccess(connect: AppState['connect'], info: LiveInfo): LiveAccess {
   const name = scopeName(info.scope);
-  if (demo)
-    return {
-      target: null,
-      blocked: `This demo instance reads nothing from Google Cloud, so only the days of ${name} kept in this browser can be shown.`,
-    };
   const readiness = pullTargetOf(connect);
   if ('blocked' in readiness)
     return {
@@ -156,7 +149,7 @@ function countsAsRead(record: StoredTick, key: string, today: string): boolean {
 }
 
 export function createTimelineController(options: TimelineControllerOptions): TimelineController {
-  const { store, cache, changes, fetchTick, demo } = options;
+  const { store, cache, changes, fetchTick } = options;
   const clock = options.clock ?? (() => Date.now());
   const debounceMs = options.debounceMs ?? READ_DEBOUNCE_MS;
   const idle = options.idle ?? defaultIdle;
@@ -401,7 +394,7 @@ export function createTimelineController(options: TimelineControllerOptions): Ti
     }
     const live = liveOf(timeline);
     if (live === null) return;
-    const access = liveAccess(state.connect, live.info, demo);
+    const access = liveAccess(state.connect, live.info);
     target = access.target;
     if (access.blocked !== timeline.blocked) {
       update(ref, (current) => ({ ...current, blocked: access.blocked }));

@@ -2,11 +2,10 @@
 import { useEffect, type CSSProperties, type ReactElement } from 'react';
 import { Link, NavLink, useLocation, type To } from 'react-router';
 
-import { UNKNOWN_VERSION } from '../../api/staticConfig';
+import { UNKNOWN_VERSION } from '../../api/demoConfig';
 import { WORDMARK } from '../../branding';
 import { cx } from '../../classNames';
 import { useDemoOnly } from '../../demoOnly';
-import { useAppMode } from '../../mode';
 import { useAppState, useAppStore, useSheet } from '../../state';
 import { Popover } from '../../ui/Popover';
 import { useScreen } from '../../ui/screen';
@@ -70,8 +69,7 @@ function brandMarkSource(): string {
  * which closes the sheet onto its button first. On a desktop, where the sheets are in place, the drawer stays as it is.
  */
 export function TopBar(): ReactElement {
-  const { demo } = useAppMode();
-  // A demo-only instance is a demo too, for the badge.
+  // A demo build is a demo too, for the badge.
   const demoOnly = useDemoOnly();
   const onDiagram = useAppState((state) => state.view.onDiagram);
   // The instance's version, for a draw.io export's `agent` (none in the demo, which has no backend to ask).
@@ -117,12 +115,11 @@ export function TopBar(): ReactElement {
     if (onDiagram) setMoreOpen(false);
   };
 
-  const badge =
-    demo || demoOnly ? (
-      <span key="badge" className={styles.demoBadge} data-testid="demo-badge">
-        Demo mode
-      </span>
-    ) : null;
+  const badge = demoOnly ? (
+    <span key="badge" className={styles.demoBadge} data-testid="demo-badge">
+      Demo mode
+    </span>
+  ) : null;
 
   const viewFold = (
     <Popover

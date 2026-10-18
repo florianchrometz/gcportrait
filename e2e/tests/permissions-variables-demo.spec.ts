@@ -11,7 +11,7 @@ import { copied, grantClipboard, row, values } from './permissionsSupport.js';
 test('demo mode: the guidance’s commands fill in place too', async ({ page, context }) => {
   await grantClipboard(context);
   await page.goto('/permissions');
-  await expect(page.getByText(/Demo mode needs no permissions/)).toBeVisible();
+  await expect(page.getByText(/This instance is a demo/)).toBeVisible();
   await expect.poll(() => values(page, 'Organisation number')).toEqual(['', '', '', '']);
   await page.getByRole('textbox', { name: 'Organisation number' }).last().fill('30000000001');
   await expect.poll(() => values(page, 'Organisation number')).toEqual(Array(4).fill('30000000001'));

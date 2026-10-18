@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
 
+import { readDemoConfig } from './api/demoConfig';
 import { readAppMode } from './mode';
 import { DEFAULT_SOURCE_URL, isSourceUrl, readSourceUrl } from './source';
 
@@ -37,11 +38,14 @@ describe('readSourceUrl (VITE_SOURCE_URL)', () => {
 });
 
 describe('readAppMode', () => {
-  it('reads demo mode and the build-time source URL', () => {
-    expect(readAppMode({})).toEqual({ demo: false, sourceUrl: DEFAULT_SOURCE_URL });
+  it('reads the build-time source URL and the demo configuration built in', () => {
+    expect(readAppMode({})).toEqual({ demoConfig: null, sourceUrl: DEFAULT_SOURCE_URL });
     expect(readAppMode({ VITE_DEMO: '1', VITE_SOURCE_URL: 'https://git.example.org/me/gcportrait' })).toEqual(
       {
-        demo: true,
+        demoConfig: readDemoConfig({
+          VITE_DEMO: '1',
+          VITE_SOURCE_URL: 'https://git.example.org/me/gcportrait',
+        }),
         sourceUrl: 'https://git.example.org/me/gcportrait',
       },
     );

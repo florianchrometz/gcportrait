@@ -103,7 +103,7 @@ async function signedIn(): Promise<void> {
     config: publicConfig({ oauthClientId: TEST_CLIENT_ID }),
     routes: { [TOKENINFO_URL]: () => Response.json({ aud: TEST_CLIENT_ID, email: 'ada@example.com' }) },
   });
-  renderApp('/', { demo: false, snapshots: fakeLibrary() });
+  renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
   const button = await waitFor(() => {
     const found = screen.getByRole('button', { name: 'Sign in with Google' });
     expect(found.getAttribute('aria-disabled')).toBeNull();

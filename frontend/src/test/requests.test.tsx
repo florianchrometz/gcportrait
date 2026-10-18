@@ -49,7 +49,7 @@ describe('StrictMode in the unit tests', () => {
     async () => {
       const backend = stubBackend({ config: publicConfig() });
       try {
-        renderApp('/', { demo: false, snapshots: fakeLibrary() });
+        renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
         await screen.findByText(/Backend version 0\.0\.0-test/);
         expect(backend.urls()).toEqual(['/api/config', '/api/config']);
         expect(backend.calls.map((call) => call.calledOff())).toEqual([true, false]);

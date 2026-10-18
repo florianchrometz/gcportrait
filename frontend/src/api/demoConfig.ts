@@ -3,14 +3,16 @@ import { readSourceUrl } from '../source';
 import { isLegalUrl, type PublicConfig } from './config';
 
 /**
- * The static demo (`pnpm demo:static`; AGENTS.md, Modes and hosting): the app built in demo-only mode for a static
- * host, the maintainer's demo at https://gcportrait.app/demo/ on GitHub Pages. There is no backend to ask, so the
- * public configuration that a demo-only instance's GET /api/config would answer is built in at build time, from these
- * variables (the root command scripts/static-demo.mjs sets them):
+ * A demo build (AGENTS.md, Modes and hosting): the app in demo-only mode with its configuration built in, because
+ * there is no backend to ask. `pnpm dev:demo` serves it on a checkout (`VITE_DEMO=1`, at the root of its origin) and
+ * `pnpm demo:static` builds it for a static host (`VITE_STATIC_DEMO=1`, below `/demo/`; the maintainer's demo at
+ * https://gcportrait.app/demo/). The two variables exclude each other: a build is one or the other.
  *
- * - `VITE_STATIC_DEMO`: "1" for the static demo's bundle;
+ * The configuration is what a demo-only instance's GET /api/config answers, built in at build time from these
+ * variables (frontend/package.json's `dev:demo` and the root scripts/static-demo.mjs set them):
+ *
  * - `VITE_APP_VERSION`: the version shown where an instance shows its backend's (`git describe` by default);
- * - `VITE_SOURCE_URL`: the footer's "Source (MIT)" link (source.ts), as in the build-time demo mode;
+ * - `VITE_SOURCE_URL`: the footer's "Source (MIT)" link (source.ts);
  * - `VITE_LEGAL_IMPRESSUM_URL`, `VITE_LEGAL_PRIVACY_URL`: the Impressum and the privacy notice the footer links, as a
  *   demo-only instance links its LEGAL_IMPRESSUM_URL and LEGAL_PRIVACY_URL (https only; anything else links nothing).
  *
@@ -18,7 +20,8 @@ import { isLegalUrl, type PublicConfig } from './config';
  * read from Google Cloud, the way to deploy gcportrait to one's own project. auth/AuthProvider.tsx puts this
  * configuration into the store instead of asking /api/config, and the static bundle leaves the sign-in code out.
  */
-export type StaticDemoEnv = {
+export type DemoConfigEnv = {
+  readonly VITE_DEMO?: string | undefined;
   readonly VITE_STATIC_DEMO?: string | undefined;
   readonly VITE_APP_VERSION?: string | undefined;
   readonly VITE_SOURCE_URL?: string | undefined;
@@ -35,13 +38,12 @@ function legalUrl(value: string | undefined): string | null {
 }
 
 /**
- * The static demo's public configuration, or null for every other build (the app then asks the backend, or, in the
- * build-time demo mode, nobody). It is what a demo-only instance answers: no OAuth client, no service-account mode,
- * no account, no render API, and no `hostedBy` line (nobody runs a service; the footer carries the non-affiliation
- * notice).
+ * The demo build's public configuration, or null for every other build (the app then asks the backend). It is what a
+ * demo-only instance answers: no OAuth client, no service-account mode, no account, no render API, and no `hostedBy`
+ * line (nobody runs a service; the footer carries the non-affiliation notice).
  */
-export function readStaticConfig(env: StaticDemoEnv): PublicConfig | null {
-  if (env.VITE_STATIC_DEMO !== '1') return null;
+export function readDemoConfig(env: DemoConfigEnv): PublicConfig | null {
+  if (env.VITE_DEMO !== '1' && env.VITE_STATIC_DEMO !== '1') return null;
   return {
     oauthClientId: null,
     saMode: false,

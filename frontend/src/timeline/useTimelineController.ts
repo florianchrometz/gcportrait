@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { useAuth } from '../auth';
 import { useImportClient } from '../import/ImportWorkerProvider';
-import { useAppMode } from '../mode';
 import { useAppStore } from '../state';
 import { useDatabaseConnection } from '../storage/connection';
 import { createTickCacheStore } from '../storage/tickCache';
@@ -22,7 +21,6 @@ export function useTimelineController(): (day: string) => void {
   const { database } = useDatabaseConnection();
   const auth = useAuth();
   const worker = useImportClient();
-  const { demo } = useAppMode();
   const cache = useMemo(() => createTickCacheStore(database), [database]);
   const controller = useRef<TimelineController | null>(null);
 
@@ -31,7 +29,6 @@ export function useTimelineController(): (day: string) => void {
       store,
       cache,
       changes: tickCacheChanges(),
-      demo,
       fetchTick: createTickFetcher({ auth, worker, cache }),
     });
     controller.current = next;
@@ -40,7 +37,7 @@ export function useTimelineController(): (day: string) => void {
       next.stop();
       if (controller.current === next) controller.current = null;
     };
-  }, [store, cache, demo, auth, worker]);
+  }, [store, cache, auth, worker]);
 
   return useCallback((day: string) => {
     controller.current?.retry(day);

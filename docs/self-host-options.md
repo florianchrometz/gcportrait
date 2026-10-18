@@ -333,7 +333,7 @@ Check it from outside (its address with `/api/config` added says `"demoOnly":tru
 `infra/uninstall.sh --project YOUR_PROJECT --region europe-west1 --service gcportrait-demo`. Without Cloud
 Run, build the app once with `pnpm build`, then run `DEMO_ONLY=true pnpm --filter @gcportrait/backend start`
 and open <http://localhost:8080>; with compose, put `DEMO_ONLY=true` into `infra/.env`. For a demo on your
-laptop without any backend there is also `pnpm dev:demo` (the build-time demo mode), and for one on a static
+laptop without any backend there is also `pnpm dev:demo` (a demo build), and for one on a static
 host the static build above. A public demo usually needs an Impressum and a privacy notice: [Legal pages: link
 or serve](#legal-pages-link-or-serve) (deploy.sh's next steps say how when a demo-only deploy has neither).
 

@@ -42,7 +42,7 @@ function mount(emails: Readonly<Record<string, string>>, offline: readonly strin
   }
   render(
     <MemoryRouter initialEntries={['/']}>
-      <AppModeContext value={{ demo: false, sourceUrl: DEFAULT_SOURCE_URL }}>
+      <AppModeContext value={{ demoConfig: null, sourceUrl: DEFAULT_SOURCE_URL }}>
         <AppStateProvider>
           <AuthProvider
             dependencies={{

@@ -115,7 +115,7 @@ async function openSignedIn(
   preflight?: (body: unknown) => Response,
 ) {
   const { gis, backend } = live(preflight);
-  const view = renderApp('/permissions', { demo: false, preferences });
+  const view = renderApp('/permissions', { demoConfig: null, preferences });
   await signIn(gis);
   return { backend, bodies: backend.bodies, view };
 }
@@ -146,7 +146,7 @@ afterEach(() => {
 describe('the Permissions page, signed out', WHOLE_APP_TIMEOUT, () => {
   it('offers sign-in, the reference with placeholders, the service account and the gate, and the short non-affiliation line', async () => {
     live();
-    renderApp('/permissions', { demo: false });
+    renderApp('/permissions', { demoConfig: null });
     await within(checkSection()).findByRole('button', { name: 'Sign in with Google' });
     const reference = screen.getByRole('region', { name: 'What each mode needs' });
     // Signed out, nothing is known: the variables are empty fields (their tokens as placeholders) to fill in place.
@@ -352,7 +352,7 @@ describe('the Permissions page, service-account mode', WHOLE_APP_TIMEOUT, () => 
 
   it('reads the account’s email from /api/config and words the gate as this instance runs it (default)', async () => {
     live();
-    renderApp('/permissions', { demo: false });
+    renderApp('/permissions', { demoConfig: null });
     await within(section()).findByText(ACCOUNT_EMAIL);
     expect(
       within(section()).getByText(/everyone who can sign in here passes the gate for a scope/),
@@ -371,7 +371,7 @@ describe('the Permissions page, service-account mode', WHOLE_APP_TIMEOUT, () => 
 
   it('says so when the instance runs the strict exposure check', async () => {
     live(undefined, { ...CONFIG, saStrictExposure: true });
-    renderApp('/permissions', { demo: false });
+    renderApp('/permissions', { demoConfig: null });
     await within(section()).findByText(ACCOUNT_EMAIL);
     expect(
       within(section()).getByText(
@@ -383,7 +383,7 @@ describe('the Permissions page, service-account mode', WHOLE_APP_TIMEOUT, () => 
 
   it('names no account when the instance does not offer the mode', async () => {
     live(undefined, { ...CONFIG, saMode: false, saStrictExposure: true });
-    renderApp('/permissions', { demo: false });
+    renderApp('/permissions', { demoConfig: null });
     await within(section()).findByText(/This instance does not offer service-account mode/);
     expect(within(section()).queryByText(ACCOUNT_EMAIL)).toBeNull();
     expect(within(section()).queryByText(/This instance also checks/)).toBeNull();
@@ -469,11 +469,11 @@ describe('the Permissions page, service-account mode', WHOLE_APP_TIMEOUT, () => 
   });
 });
 
-describe('the Permissions page in demo mode', WHOLE_APP_TIMEOUT, () => {
-  it('checks nothing and keeps the guidance', async () => {
+describe('the Permissions page', WHOLE_APP_TIMEOUT, () => {
+  it('says in demo mode that nothing can be checked here, and keeps the guidance', async () => {
     const { fetch } = stubBackend();
-    renderApp('/permissions', { demo: true });
-    expect(screen.getByText(/Demo mode needs no permissions/)).toBeDefined();
+    renderApp('/permissions', {});
+    expect(screen.getByText(/This instance is a demo/)).toBeDefined();
     expect(screen.queryByRole('region', { name: 'Check a scope' })).toBeNull();
     expect(screen.getByRole('region', { name: 'What each mode needs' })).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();

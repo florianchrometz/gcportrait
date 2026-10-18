@@ -129,7 +129,7 @@ export interface UiSlice {
  * is never in the store: ask `useAuth().accessToken()` (src/auth) for it when a request needs it.
  */
 export interface ConnectSlice {
-  /** GET /api/config as fetched once per page load (live mode); `demo` in demo mode. */
+  /** GET /api/config as fetched once per page load (live mode), or the demo build's configuration. */
   readonly backend: BackendState;
   /** The Google sign-in session: status, account, expiry, renewal (auth/types.ts). */
   readonly session: SessionState;

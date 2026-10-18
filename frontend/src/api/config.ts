@@ -2,7 +2,7 @@
 
 /**
  * Client for the backend's public configuration (GET /api/config, docs/api.md). Never
- * called in demo mode, nor in the static demo, whose configuration is built in (api/staticConfig.ts). The response is
+ * called in a demo build, whose configuration is built in (api/demoConfig.ts). The response is
  * validated before use; anything unexpected counts as "unavailable". auth/AuthProvider.tsx fetches it once per page
  * into the app store (`connect.backend`), where the Connect page reads the backend status and the shell footer its
  * `sourceUrl` and legal pages.
@@ -13,7 +13,7 @@
  * the types come from it erased, so no zod reaches the UI thread, and `isPublicConfig` below checks an answer by
  * hand, held to the schema by config.test.ts. `legal` says which legal pages the instance serves (/impressum and
  * /privacy read their text from GET /api/legal, legal/) and which it links elsewhere (`impressumUrl`,
- * `privacyUrl`; the static demo's build settings, api/staticConfig.ts); the footer links either kind.
+ * `privacyUrl`; a demo build's settings, api/demoConfig.ts); the footer links either kind.
  */
 export type { LegalPages, PublicConfig } from '@gcportrait/model';
 import type { LegalPages, PublicConfig, RenderLimits } from '@gcportrait/model';

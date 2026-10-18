@@ -61,9 +61,7 @@ interface Read {
   readonly reject: (error: Error) => void;
 }
 
-function setup(
-  options: { readonly hash?: string; readonly cached?: readonly StoredTick[]; readonly demo?: boolean } = {},
-) {
+function setup(options: { readonly hash?: string; readonly cached?: readonly StoredTick[] } = {}) {
   const store = createAppStore({
     location: { pathname: '/diagram', hash: options.hash ?? `#snapshot=${REF}` },
   });
@@ -110,7 +108,6 @@ function setup(
     store,
     cache,
     changes,
-    demo: options.demo ?? false,
     clock: () => NOW,
     fetchTick: (job, signal, progress) =>
       new Promise<void>((resolve, reject) => {
@@ -609,12 +606,14 @@ describe('when reading becomes possible', () => {
 });
 
 describe('why days cannot be read', () => {
-  it('says so in demo mode, without a sign-in, and for a check of another scope; reads nothing then', async () => {
-    const { store, controller, flush, rest, idle, moveTo, reads } = setup({ demo: true });
+  it('says so without a sign-in and for a check of another scope; reads nothing then', async () => {
+    const { store, controller, flush, rest, idle, moveTo, reads } = setup();
     controller.start();
     onScreen(store, { ref: REF, timeline: LIVE });
     await flush();
-    expect(store.getState().timeline.blocked).toMatch(/^This demo instance reads nothing from Google Cloud/);
+    expect(store.getState().timeline.blocked).toBe(
+      'Reading other days of example.com needs Google Cloud: Sign in with Google first on the Connect page.',
+    );
     moveTo('2026-10-02');
     rest();
     idle();
@@ -622,14 +621,14 @@ describe('why days cannot be read', () => {
     expect(reads).toEqual([]);
     controller.stop();
     const signedOut = { ...connect(), session: SIGNED_OUT_SESSION };
-    expect(liveAccess(signedOut, LIVE, false).blocked).toBe(
+    expect(liveAccess(signedOut, LIVE).blocked).toBe(
       'Reading other days of example.com needs Google Cloud: Sign in with Google first on the Connect page.',
     );
-    expect(liveAccess(connect('30000000002'), LIVE, false)).toEqual({
+    expect(liveAccess(connect('30000000002'), LIVE)).toEqual({
       target: null,
       blocked: 'Reading other days of example.com needs its permission check: choose it on the Connect page.',
     });
-    expect(liveAccess(connect(), LIVE, false)).toEqual({
+    expect(liveAccess(connect(), LIVE)).toEqual({
       target: { mode: 'user', quotaProject: 'demo-quota-1' },
       blocked: null,
     });

@@ -143,7 +143,7 @@ describe('the footer’s source link', () => {
 
   it.each(ROUTES)('links to the backend’s sourceUrl in live mode on %s', async (path) => {
     const backend = backendWithSource('https://git.example.org/team/gcportrait-fork');
-    renderApp(path, { demo: false });
+    renderApp(path, { demoConfig: null });
     await waitFor(() => {
       expect(sourceLink().getAttribute('href')).toBe('https://git.example.org/team/gcportrait-fork');
     });
@@ -152,7 +152,7 @@ describe('the footer’s source link', () => {
 
   it('keeps the build-time URL in live mode when the backend does not answer', async () => {
     const backend = stubBackend();
-    renderApp('/settings', { demo: false, sourceUrl: 'https://git.example.org/build/gcportrait' });
+    renderApp('/settings', { demoConfig: null, sourceUrl: 'https://git.example.org/build/gcportrait' });
     await waitFor(() => {
       expect(backend.fetch).toHaveBeenCalled();
     });
@@ -163,7 +163,7 @@ describe('the footer’s source link', () => {
     'ignores a sourceUrl of %j from the backend',
     async (sourceUrl) => {
       const backend = backendWithSource(sourceUrl);
-      renderApp('/settings', { demo: false });
+      renderApp('/settings', { demoConfig: null });
       await waitFor(() => {
         expect(backend.fetch).toHaveBeenCalled();
       });
@@ -307,9 +307,9 @@ describe('app shell', () => {
   });
 });
 
-describe('demo mode', () => {
+describe('a demo build', () => {
   it('shows the demo badge and offers only "Try the demo"', () => {
-    renderApp('/', { demo: true });
+    renderApp('/', {});
     expect(within(screen.getByRole('banner')).getByText('Demo mode')).toBeDefined();
     const sources = screen.getByRole('region', { name: 'Demo mode' });
     const buttons = within(sources).getAllByRole('button');
@@ -325,7 +325,7 @@ describe('live mode', () => {
   // The sources a live instance offers: pages/ConnectPage.demoOnly.test.tsx, "the Connect page of a live instance".
   it('reports the backend', async () => {
     backendWithSource(DEFAULT_SOURCE_URL);
-    renderApp('/', { demo: false });
+    renderApp('/', { demoConfig: null });
     expect(screen.queryByText('Demo mode')).toBeNull();
     expect(
       await screen.findByText(/Backend version 1\.2\.3\. Google sign-in is not configured/),
@@ -334,7 +334,7 @@ describe('live mode', () => {
 
   it('says so when the backend does not answer', async () => {
     stubBackend();
-    renderApp('/', { demo: false });
+    renderApp('/', { demoConfig: null });
     expect(await screen.findByText(/The backend did not answer/)).toBeDefined();
   });
 });

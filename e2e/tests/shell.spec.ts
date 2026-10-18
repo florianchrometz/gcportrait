@@ -40,6 +40,17 @@ test('the Connect page offers only the demo, with the About block', async ({ pag
   await expect(sources.getByRole('button')).toHaveCount(1);
   // snapshots.spec.ts drives it.
   await expect(sources.getByRole('button', { name: 'Try the demo' })).toBeEnabled();
+  // A demo build is a demo-only instance, with the configuration built in: the way to one's own project and the
+  // privacy note are there as on a demo-only instance (demo-only.spec.ts checks the instance itself).
+  await expect(
+    page
+      .getByRole('region', { name: 'Your own Google Cloud' })
+      .getByRole('link', { name: 'Deploy gcportrait to your own Google Cloud project' }),
+  ).toBeVisible();
+  await expect(page.getByRole('region', { name: 'No personal data' })).toContainText(
+    'This demo processes no personal data',
+  );
+  await expect(page.getByRole('region', { name: 'Backend' })).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'About' })).toContainText('not affiliated with, endorsed by');
 });
 

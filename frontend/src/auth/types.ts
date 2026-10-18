@@ -12,15 +12,14 @@ import type { PublicConfig } from '../api/config';
  */
 export type AccessMode = 'user' | 'sa';
 
-/** What GET /api/config said: `demo` (never asked), `loading`, `ready` with the answer, or `unavailable`. */
+/** What GET /api/config said, or what a demo build has built in: `loading`, `ready` with the answer, or `unavailable`. */
 export type BackendState =
-  | { readonly status: 'demo' }
   | { readonly status: 'loading' }
   | { readonly status: 'ready'; readonly config: PublicConfig }
   | { readonly status: 'unavailable' };
 
 /**
- * - `unavailable`: no sign-in on this page (demo mode, the backend did not answer, or it names no OAuth client);
+ * - `unavailable`: no sign-in on this page (a demo build, the backend did not answer, or it names no OAuth client);
  * - `signed-out`; `signing-in` (the Google window is open, or the account is being read);
  * - `signed-in`: a token is held in memory until `expiresAt`;
  * - `expired`: the token ended (or Google refused it) and was dropped; `account` says who was signed in.

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Connect page of a demo-only instance (the backend's DEMO_ONLY), whether its
- * configuration comes from /api/config or is built in (the static demo): only "Try the demo" with its four
- * sizes, the call to deploy gcportrait to one's own project, the notice that the demo processes no personal data; no
+ * The Connect page of a demo-only instance (the backend's DEMO_ONLY) and of a demo build, whether the configuration
+ * comes from /api/config or is built in (`pnpm dev:demo`, the static demo): only "Try the demo" with its four sizes,
+ * the call to deploy gcportrait to one's own project, the notice that the demo processes no personal data; no
  * sign-in, no export, no backend section; and while /api/config is on its way, nothing of the live sources flashes
  * up. Also the top bar's badge and the Permissions page's note. And the Connect page of a live instance, for
  * contrast: the demo while the backend is asked, then every source.
@@ -16,6 +16,7 @@ import { SELF_HOST_GUIDE_URL } from '../projectSite';
 import { fakeLibrary } from '../snapshots/testing';
 import { expectNoAxeViolations } from '../test/axe';
 import {
+  demoBuildConfig,
   publicConfig,
   STATIC_DEMO,
   staticDemoConfig,
@@ -39,8 +40,8 @@ interface ConfigSource {
   readonly open: (path: string) => StubbedBackend;
   /** Whether the app knows it is demo-only on the first render, before any answer. */
   readonly atOnce: boolean;
-  /** The privacy notice's link: the instance's own page, or the operator's site in a new tab. */
-  readonly privacy: { readonly name: string; readonly href: string; readonly external: boolean };
+  /** The privacy notice's link: the instance's own page, the operator's site in a new tab, or none. */
+  readonly privacy: { readonly name: string; readonly href: string; readonly external: boolean } | null;
   /** Every request the page makes. */
   readonly requests: readonly string[];
 }
@@ -50,7 +51,7 @@ const SOURCES: readonly ConfigSource[] = [
     name: 'answered by /api/config',
     open: (path) => {
       const backend = stubBackend({ config: DEMO_ONLY, held: true });
-      renderApp(path, { demo: false, snapshots: fakeLibrary() });
+      renderApp(path, { demoConfig: null, snapshots: fakeLibrary() });
       return backend;
     },
     atOnce: false,
@@ -61,7 +62,7 @@ const SOURCES: readonly ConfigSource[] = [
     name: 'built in (the static demo)',
     open: (path) => {
       const backend = stubBackend();
-      renderApp(path, { demo: false, staticConfig: staticDemoConfig(), snapshots: fakeLibrary() });
+      renderApp(path, { demoConfig: staticDemoConfig(), snapshots: fakeLibrary() });
       return backend;
     },
     // A demo-only instance from the first render, without asking anything.
@@ -71,6 +72,18 @@ const SOURCES: readonly ConfigSource[] = [
       href: STATIC_DEMO.privacy,
       external: true,
     },
+    requests: [],
+  },
+  {
+    name: 'built in (a demo build)',
+    open: (path) => {
+      const backend = stubBackend();
+      renderApp(path, { demoConfig: demoBuildConfig(), snapshots: fakeLibrary() });
+      return backend;
+    },
+    atOnce: true,
+    // No legal pages named: the note says the demo processes no personal data and links no notice.
+    privacy: null,
     requests: [],
   },
 ];
@@ -115,11 +128,15 @@ describe('the Connect page of a demo-only instance', () => {
 
       const privacy = screen.getByRole('region', { name: 'No personal data' });
       expect(privacy.textContent).toContain('This demo processes no personal data');
-      const link = within(privacy).getByRole('link', { name: source.privacy.name });
-      expect(link.getAttribute('href')).toBe(source.privacy.href);
-      if (source.privacy.external) {
-        expect(link.getAttribute('target')).toBe('_blank');
-        expect(link.getAttribute('rel')).toBe('noopener');
+      if (source.privacy === null) {
+        expect(within(privacy).queryByRole('link')).toBeNull();
+      } else {
+        const link = within(privacy).getByRole('link', { name: source.privacy.name });
+        expect(link.getAttribute('href')).toBe(source.privacy.href);
+        if (source.privacy.external) {
+          expect(link.getAttribute('target')).toBe('_blank');
+          expect(link.getAttribute('rel')).toBe('noopener');
+        }
       }
 
       // No sign-in, no export, no environment, no backend section; the About block with the non-affiliation
@@ -145,7 +162,7 @@ describe('the Connect page of a demo-only instance', () => {
         legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null },
       },
     });
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     const privacy = await screen.findByRole('region', { name: 'No personal data' });
     expect(within(privacy).queryByRole('link')).toBeNull();
   });
@@ -177,7 +194,7 @@ describe('the Connect page of a live instance', () => {
       },
       held: true,
     });
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     const sources = screen.getByRole('region', { name: 'Choose a source' });
     expect(within(sources).getAllByRole('listitem')).toHaveLength(1);
     expect(screen.queryByRole('region', { name: 'Your own Google Cloud' })).toBeNull();

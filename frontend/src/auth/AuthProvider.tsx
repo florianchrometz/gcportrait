@@ -6,11 +6,10 @@
  * `connect.session`. The controls go to the page through `AuthContext` (`useAuth()`). Google's script is not
  * loaded here: only the first press of "Sign in with Google" loads it.
  *
- * Demo mode asks nothing: `connect.backend` is `demo` and there is no sign-in. The static demo (`pnpm demo:static`,
- * api/staticConfig.ts) asks nothing either: its built-in configuration, a demo-only instance's, goes into
- * `connect.backend` at once, and there is no sign-in. The permission check (`connect.preflight`; "Pull now"
- * relies on it) answered for one account: it is cleared on a sign-out and when another account than the last one
- * signs in (after an expiry or a sign-out), whichever page is open.
+ * A demo build (`pnpm dev:demo`, `pnpm demo:static`; api/demoConfig.ts) asks nothing: its built-in configuration,
+ * a demo-only instance's, goes into `connect.backend` at once, and there is no sign-in. The permission check
+ * (`connect.preflight`; "Pull now" relies on it) answered for one account: it is cleared on a sign-out and when
+ * another account than the last one signs in (after an expiry or a sign-out), whichever page is open.
  */
 import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 
@@ -32,7 +31,7 @@ export interface AuthDependencies {
 }
 
 /**
- * Whether this is the static demo's bundle (VITE_STATIC_DEMO=1; api/staticConfig.ts). Written out as a comparison of
+ * Whether this is the static demo's bundle (VITE_STATIC_DEMO=1; api/demoConfig.ts). Written out as a comparison of
  * the variable Vite replaces at build time, so the static bundle's build sees a constant and leaves Google's sign-in
  * script, tokeninfo and /api/config out of it (`pnpm website:check` looks for their hosts).
  */
@@ -66,7 +65,7 @@ export function AuthProvider({
   readonly children: ReactNode;
   readonly dependencies?: Partial<AuthDependencies>;
 }): ReactElement {
-  const { demo, staticConfig = null } = useAppMode();
+  const { demoConfig } = useAppMode();
   const store = useAppStore();
   const [controls, setControls] = useState<AuthControls>(NO_AUTH);
   const fetchConfig = dependencies?.fetchConfig ?? BROWSER.fetchConfig;
@@ -74,20 +73,10 @@ export function AuthProvider({
   const tokenInfo = dependencies?.tokenInfo ?? BROWSER.tokenInfo;
 
   useEffect(() => {
-    if (demo) {
+    if (STATIC_BUNDLE || demoConfig !== null) {
       store.updateConnect((connect) => ({
         ...connect,
-        backend: { status: 'demo' },
-        session: UNAVAILABLE_SESSION,
-        mode: 'user',
-      }));
-      return;
-    }
-    if (STATIC_BUNDLE || staticConfig !== null) {
-      store.updateConnect((connect) => ({
-        ...connect,
-        backend:
-          staticConfig === null ? { status: 'unavailable' } : { status: 'ready', config: staticConfig },
+        backend: demoConfig === null ? { status: 'unavailable' } : { status: 'ready', config: demoConfig },
         session: UNAVAILABLE_SESSION,
         mode: 'user',
       }));
@@ -142,7 +131,7 @@ export function AuthProvider({
       setControls(NO_AUTH);
       store.updateConnect((connect) => ({ ...connect, session: UNAVAILABLE_SESSION }));
     };
-  }, [demo, staticConfig, store, fetchConfig, gis, tokenInfo]);
+  }, [demoConfig, store, fetchConfig, gis, tokenInfo]);
 
   return <AuthContext value={controls}>{children}</AuthContext>;
 }

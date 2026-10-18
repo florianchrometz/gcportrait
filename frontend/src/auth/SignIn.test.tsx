@@ -81,7 +81,7 @@ describe('who runs the instance (hostedByLine)', () => {
 describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
   it('signs in, names the account in the top bar and moves on to reading the environment', async () => {
     const { gis, backend } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     // The card arrives with the backend's answer (until then the Connect page shows the demo only).
     const card = await waitFor(sourceCard);
     expect(await within(card).findByText(CONFIG.hostedBy ?? '')).toBeDefined();
@@ -108,7 +108,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
 
   it('explains the service-account gate when that mode is chosen', async () => {
     const { gis } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
     await userEvent.click(screen.getByRole('radio', { name: 'Service account' }));
     expect(screen.getByRole('radio', { name: 'Service account' }).getAttribute('aria-checked')).toBe('true');
@@ -122,7 +122,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
 
   it('offers only the own account when the backend has no service-account mode', async () => {
     const { gis } = live({ ...CONFIG, saMode: false, backendServiceAccount: null });
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
     expect(screen.queryByRole('radiogroup', { name: 'Read with' })).toBeNull();
     expect(screen.getByText(/This instance does not offer service-account mode/)).toBeDefined();
@@ -130,7 +130,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
 
   it('signs out from the account menu: revokes the token and offers sign-in again', async () => {
     const { gis } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
     const banner = screen.getByRole('banner');
     await userEvent.click(within(banner).getByRole('button', { name: 'ada@example.com' }));
@@ -149,7 +149,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
     const viewport = installViewport(375);
     try {
       const { gis } = live();
-      renderApp('/', { demo: false, snapshots: fakeLibrary() });
+      renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
       // The account's button is in the More sheet, closed: signed in once the page moves on to reading.
       await signInThroughGis(gis, await signInButton());
       await screen.findByRole('heading', { name: 'Read your environment' });
@@ -172,7 +172,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
 
   it('signs out from the card and puts focus on "Sign in with Google"', async () => {
     const { gis } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
     await userEvent.click(within(sourceCard()).getByRole('button', { name: 'Sign out' }));
     expect(gis.revoked).toEqual(['secret-token-1']);
@@ -183,7 +183,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
 
   it('shows a refused sign-in as an alert next to the button', async () => {
     const { gis } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await userEvent.click(await signInButton());
     await waitFor(() => {
       expect(gis.requests).toHaveLength(1);
@@ -198,7 +198,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
 
   it('asks Google again when the button is pressed while its window is open', async () => {
     const { gis } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await userEvent.click(await signInButton());
     await waitFor(() => {
       expect(gis.requests).toHaveLength(1);
@@ -222,7 +222,7 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
   it('never loads Google’s script without a press, and keeps the button inert without an OAuth client', async () => {
     live({ ...CONFIG, oauthClientId: null });
     delete (window as GoogleHost).google;
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await screen.findByText(
       'Backend version 0.0.0-test. Google sign-in is not configured; service-account mode is on.',
     );
@@ -241,7 +241,7 @@ describe('expiry', WHOLE_APP_TIMEOUT, () => {
   it('says the sign-in ended, in the top bar and on the page, and signs in again', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const { gis } = live();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
     // The silent renewal is blocked (as a browser does without a click): the menu offers "Stay signed in".
     await act(async () => {

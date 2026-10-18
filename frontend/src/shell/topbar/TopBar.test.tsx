@@ -146,7 +146,7 @@ describe('the brand mark', WHOLE_APP_TIMEOUT, () => {
   it('comes from the build’s base path in the static demo, /demo/', () => {
     vi.stubEnv('BASE_URL', '/demo/');
     stubBackend();
-    renderApp('/settings', { demo: false, staticConfig: staticDemoConfig(), snapshots: fakeLibrary() });
+    renderApp('/settings', { demoConfig: staticDemoConfig(), snapshots: fakeLibrary() });
     expect(mark().getAttribute('src')).toBe('/demo/favicon.svg');
   });
 });

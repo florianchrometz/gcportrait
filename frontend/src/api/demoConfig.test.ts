@@ -5,20 +5,20 @@ import { describe, expect, it } from 'vitest';
 import { readAppMode } from '../mode';
 import { DEFAULT_SOURCE_URL } from '../source';
 import { isLegalUrl, isPublicConfig } from './config';
-import { readStaticConfig, UNKNOWN_VERSION } from './staticConfig';
+import { readDemoConfig, UNKNOWN_VERSION } from './demoConfig';
 
 const IMPRESSUM = 'https://operator.example.com/legal/impressum';
 const PRIVACY = 'https://operator.example.com/legal/privacy';
 
-describe('readStaticConfig (the static demo)', () => {
-  it('is null for every build but the static demo', () => {
-    expect(readStaticConfig({})).toBeNull();
-    expect(readStaticConfig({ VITE_STATIC_DEMO: '0', VITE_APP_VERSION: '1.0.0' })).toBeNull();
-    expect(readAppMode({}).staticConfig).toBeUndefined();
+describe('readDemoConfig (a demo build)', () => {
+  it('is null for every build that is neither demo build', () => {
+    expect(readDemoConfig({})).toBeNull();
+    expect(readDemoConfig({ VITE_STATIC_DEMO: '0', VITE_APP_VERSION: '1.0.0' })).toBeNull();
+    expect(readAppMode({}).demoConfig).toBeNull();
   });
 
   it('is what a demo-only instance answers: no sign-in, no service account, the legal pages linked', () => {
-    const config = readStaticConfig({
+    const config = readDemoConfig({
       VITE_STATIC_DEMO: '1',
       VITE_APP_VERSION: ' 1.2.0-3-gabc1234 ',
       VITE_SOURCE_URL: 'https://git.example.org/me/gcportrait',
@@ -40,9 +40,24 @@ describe('readStaticConfig (the static demo)', () => {
     });
     expect(isPublicConfig(config)).toBe(true);
     expect(readAppMode({ VITE_STATIC_DEMO: '1' })).toEqual({
-      demo: false,
       sourceUrl: DEFAULT_SOURCE_URL,
-      staticConfig: readStaticConfig({ VITE_STATIC_DEMO: '1' }),
+      demoConfig: readDemoConfig({ VITE_STATIC_DEMO: '1' }),
+    });
+  });
+
+  it('is the same configuration for the build-time demo mode, which links no legal page it was not given', () => {
+    expect(readDemoConfig({ VITE_DEMO: '1' })).toEqual({
+      oauthClientId: null,
+      saMode: false,
+      saStrictExposure: false,
+      backendServiceAccount: null,
+      version: UNKNOWN_VERSION,
+      sourceUrl: DEFAULT_SOURCE_URL,
+      hostedBy: null,
+      demo: false,
+      demoOnly: true,
+      legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null },
+      render: null,
     });
   });
 
@@ -54,7 +69,7 @@ describe('readStaticConfig (the static demo)', () => {
       'javascript:alert(1)',
       'https://me:pw@x.example.com/',
     ]) {
-      const config = readStaticConfig({
+      const config = readDemoConfig({
         VITE_STATIC_DEMO: '1',
         VITE_LEGAL_IMPRESSUM_URL: value,
         VITE_LEGAL_PRIVACY_URL: value,
@@ -70,7 +85,7 @@ describe('readStaticConfig (the static demo)', () => {
     }
   });
 
-  it('refuses the build-time demo mode next to it', () => {
+  it('refuses the build-time demo mode next to the static demo', () => {
     expect(() => readAppMode({ VITE_DEMO: '1', VITE_STATIC_DEMO: '1' })).toThrow(/exclude each other/);
   });
 });

@@ -8,7 +8,7 @@
 import { vi, type Mock } from 'vitest';
 
 import type { PublicConfig } from '../api/config';
-import { readStaticConfig } from '../api/staticConfig';
+import { readDemoConfig } from '../api/demoConfig';
 import { watchRequest } from './requests';
 
 /** What a live instance without sign-in or service-account mode answers on GET /api/config. */
@@ -36,9 +36,16 @@ export const STATIC_DEMO = {
   privacy: 'https://operator.example.com/legal/privacy-policy',
 } as const;
 
-/** The static demo's built-in configuration (api/staticConfig.ts) for `STATIC_DEMO`'s settings. */
+/** A demo build's configuration (api/demoConfig.ts) as `pnpm dev:demo` serves it: no legal pages named. */
+export function demoBuildConfig(): PublicConfig {
+  const config = readDemoConfig({ VITE_DEMO: '1' });
+  if (config === null) throw new Error('the demo configuration is missing');
+  return config;
+}
+
+/** The static demo's built-in configuration (api/demoConfig.ts) for `STATIC_DEMO`'s settings. */
 export function staticDemoConfig(): PublicConfig {
-  const config = readStaticConfig({
+  const config = readDemoConfig({
     VITE_STATIC_DEMO: '1',
     VITE_APP_VERSION: '1.0.0',
     VITE_SOURCE_URL: STATIC_DEMO.source,

@@ -152,7 +152,7 @@ describe('the rules', () => {
 describe('Try the demo on the Connect page', () => {
   it('asks before generating XL; Cancel stays on the Connect page and generates nothing', async () => {
     const snapshots = fakeLibrary();
-    const app = renderApp('/', { demo: true, snapshots });
+    const app = renderApp('/', { snapshots });
     await tryDemo('XL');
     const dialog = question();
     expect(dialog.getAttribute('aria-modal')).toBe('true');
@@ -175,7 +175,7 @@ describe('Try the demo on the Connect page', () => {
 
   it('Escape cancels too', async () => {
     const snapshots = fakeLibrary();
-    const app = renderApp('/', { demo: true, snapshots });
+    const app = renderApp('/', { snapshots });
     await tryDemo('XL');
     expect(question()).toBeDefined();
     await userEvent.keyboard('{Escape}');
@@ -187,7 +187,7 @@ describe('Try the demo on the Connect page', () => {
   it('"Draw it anyway" generates XL and opens it without asking again; the session box silences the next', async () => {
     const snapshots = fakeLibrary();
     const workers = recordingWorkers();
-    const app = renderApp('/', { demo: true, snapshots, diagramWorkers: workers.factory });
+    const app = renderApp('/', { snapshots, diagramWorkers: workers.factory });
     await tryDemo('XL');
     const dialog = question();
     await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Do not ask again in this session' }));
@@ -210,7 +210,7 @@ describe('Try the demo on the Connect page', () => {
 
   it('a tab that said "Do not ask again" is not asked; S, M and L never are', async () => {
     const snapshots = fakeLibrary();
-    renderApp('/', { demo: true, snapshots });
+    renderApp('/', { snapshots });
     for (const size of ['S', 'M', 'L'] as const) {
       await tryDemo(size);
       expect(screen.queryByRole('alertdialog')).toBeNull();
@@ -223,7 +223,7 @@ describe('Try the demo on the Connect page', () => {
   it('is silenced by the session setting a reload kept', async () => {
     window.sessionStorage.setItem(DRAW_LARGE_KEY, 'draw');
     const snapshots = fakeLibrary();
-    renderApp('/', { demo: true, snapshots });
+    renderApp('/', { snapshots });
     await tryDemo('XL');
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(snapshots.calls).toEqual(['tryDemo XL']);

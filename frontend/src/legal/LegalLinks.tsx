@@ -36,10 +36,10 @@ export function LegalPageLink({
 
 /**
  * The footer's "Impressum · Privacy", on every route next to the non-affiliation notice and the source link: one link
- * per legal page the instance publishes (`legal` in /api/config, or the static demo's built-in configuration,
- * api/staticConfig.ts): its own page for a text it serves, the page elsewhere for one it links (LEGAL_IMPRESSUM_URL,
+ * per legal page the instance publishes (`legal` in /api/config, or a demo build's built-in configuration,
+ * api/demoConfig.ts): its own page for a text it serves, the page elsewhere for one it links (LEGAL_IMPRESSUM_URL,
  * LEGAL_PRIVACY_URL; the static demo's maintainer pages); none at all when it publishes none (a self-hoster without
- * texts, the build-time demo mode).
+ * texts, a demo build).
  */
 export function LegalLinks({ className }: { readonly className?: string | undefined }): ReactElement | null {
   const published = useLegalPages();

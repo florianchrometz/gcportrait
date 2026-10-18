@@ -4,7 +4,6 @@ import { Link } from 'react-router';
 
 import { useLegalPages } from '../demoOnly';
 import actions from '../snapshots/Snapshots.module.css';
-import { useAppMode } from '../mode';
 import page from '../pages/Page.module.css';
 import { useDocumentTitle } from '../pages/useDocumentTitle';
 import { useAppState } from '../state';
@@ -43,13 +42,12 @@ type TextState =
  * HTML (markdown.ts, RenderMarkdown.tsx). A text that starts with a level-1 heading supplies the page's `<h1>`; otherwise the
  * page's own name does, and the text's headings move one level down. A page the instance links instead
  * (LEGAL_IMPRESSUM_URL, LEGAL_PRIVACY_URL; the static demo's maintainer pages) is a link to it here, in a new tab like
- * the footer's (ExternalLegalLink.tsx), so an old link or a typed address still leads there. An instance without the page (the build-time demo mode, which has no backend,
- * included) says that it publishes none; the footer links only what exists.
+ * the footer's (ExternalLegalLink.tsx), so an old link or a typed address still leads there. An instance without the
+ * page (a demo build, which asks no backend, included) says that it publishes none; the footer links only what exists.
  */
 export function LegalPage({ id }: { readonly id: LegalPageId }): ReactElement {
   const title = LEGAL_PAGE_TITLES[id];
   useDocumentTitle(title);
-  const { demo } = useAppMode();
   const backend = useAppState((state) => state.connect.backend.status);
   const pages = useLegalPages();
   const published = pages[id];
@@ -75,7 +73,7 @@ export function LegalPage({ id }: { readonly id: LegalPageId }): ReactElement {
   const first = blocks[0];
   const ownTitle = first?.kind === 'heading' && first.level === 1 ? first : null;
 
-  const waiting = !demo && backend === 'loading';
+  const waiting = backend === 'loading';
   let body: ReactElement;
   if (waiting || (published && state.status === 'loading')) {
     body = (

@@ -31,7 +31,7 @@ rings, colour never alone, axe on every page) are the gcp-diagram-style skill's 
 | Command | What it does |
 |---|---|
 | `pnpm dev` (root) | Vite on <http://localhost:5173> plus the backend on :8080; Vite proxies `/api` to the backend. |
-| `pnpm dev:demo` (root) | Vite only, in demo mode (`VITE_DEMO=1`), on <http://localhost:5174>. No proxy, no backend calls. |
+| `pnpm dev:demo` (root) | Vite only, as a demo build (`VITE_DEMO=1`), on <http://localhost:5174>. No proxy, no backend calls, a demo-only instance's configuration built in. |
 | `pnpm --filter @gcportrait/frontend build` | Production bundle in `dist/` (served by the backend in the production image). No source maps; includes the font licences (below). |
 | `pnpm --filter @gcportrait/frontend preview` | Serves `dist/` locally (no backend, no CSP). |
 | `pnpm demo:static` (root) | The static demo (section "Static demo" below): this package's build with `VITE_STATIC_DEMO=1`, for `/demo/`, into the repository's `dist/demo/`. |
@@ -74,8 +74,8 @@ src/headless.ts         the entry point for other workspaces (`@gcportrait/front
                         needs (renderDiagramSvg, palettes, demo loader, icons, the tagline and wordmark, the export
                         file name, the import handler, the bundle reader, the stored-document decoder and the
                         draw.io translator)
-src/mode.ts             AppMode (demo or not, the build-time source URL, the static demo's built-in configuration)
-                        from VITE_DEMO, VITE_SOURCE_URL and the static demo's variables, and its context
+src/mode.ts             AppMode (the build-time source URL and the demo configuration built in) from VITE_DEMO,
+                        VITE_STATIC_DEMO, VITE_SOURCE_URL and the static demo's variables, and its context
 src/source.ts           the footer's source link: SOURCE_LINK_TEXT, DEFAULT_SOURCE_URL, URL checks
 src/styles/             tokens.css (design tokens), global.css (element defaults, focus ring)
 src/theme/              theme.ts (pure state + reducer), browser.ts (matchMedia, mirror, <html>),
@@ -108,8 +108,8 @@ src/api/config.ts       GET /api/config client (live mode only: auth/AuthProvide
                         the answer into the store, where the footer's source link reads `sourceUrl` and its legal
                         links `legal`); the contract is the model's `PublicConfigSchema`, which config.test.ts
                         holds the zod-free guard to
-src/api/staticConfig.ts the static demo's configuration, built in from VITE_STATIC_DEMO and its variables: what a
-                        demo-only instance's /api/config answers (section "Static demo" below)
+src/api/demoConfig.ts   a demo build's configuration, built in from VITE_DEMO or VITE_STATIC_DEMO and its variables:
+                        what a demo-only instance's /api/config answers (section "Demo builds" below)
 src/demoOnly.ts         useDemoOnly() (the backend's DEMO_ONLY; the Connect page's demo-only variant, the
                         demo badge, the Permissions note) and useLegalPages() (`legal` in /api/config)
 src/projectSite.ts      the website's address and its self-hosting guide, the demo-only Connect page's link
@@ -473,16 +473,22 @@ own changes; its channel is open only while something listens, and a change post
 channel opened for that message alone. A message is checked field by field (no zod on the UI thread); a
 browser without `BroadcastChannel` posts and hears nothing, and nothing else changes.
 
-## Demo mode
+## Demo builds
 
-`VITE_DEMO=1` (what `pnpm dev:demo` sets) shows a "Demo mode" badge in the top bar, makes the Connect page
-offer only "Try the demo" (a size from S to XL, generated, stored and opened; section "Snapshots"), drops the
-`/api` proxy, and makes no backend calls at all: the backend status line on the Connect page exists only in
-normal mode, and the footer's source link uses the build-time `VITE_SOURCE_URL` (section "Source link"). In
-both modes the Snapshot menu and the empty diagram canvas offer the demo organisations S, M and L
-(`#snapshot=demo:M`); they are generated in the browser, in the data worker, and never fetched (the worker
-fetches only the build's data tables, below). Demo mode has no sign-in: the account menu is absent and
-Google's sign-in script is never loaded.
+`VITE_DEMO=1` (what `pnpm dev:demo` sets) and `VITE_STATIC_DEMO=1` (the static demo, section below) build
+the app as a demo-only instance with no backend to ask: `src/api/demoConfig.ts` builds the answer such an
+instance's `GET /api/config` would give (no OAuth client, no service-account mode, `demoOnly: true`) from
+`VITE_APP_VERSION`, `VITE_SOURCE_URL`, `VITE_LEGAL_IMPRESSUM_URL` and `VITE_LEGAL_PRIVACY_URL`, and
+`auth/AuthProvider.tsx` puts it into the store at once. From there the app is a demo-only instance
+(`useDemoOnly()`): a "Demo mode" badge in the top bar, the Connect page with the demo, the way to one's own
+project and the privacy note, the Permissions page's note, and the footer's source link from `VITE_SOURCE_URL`
+(section "Source link"). No `/api` proxy and no backend call at all. The two variables exclude each other: a
+build is one or the other.
+
+Demo builds have no sign-in: the account menu is absent and Google's sign-in script is never loaded (the
+static bundle leaves the code out entirely, section "Static demo"). In every mode the Snapshot menu and the
+empty diagram canvas offer the demo organisations S, M and L (`#snapshot=demo:M`); they are generated in the
+browser, in the data worker, and never fetched (the worker fetches only the build's data tables, below).
 
 ## Static demo
 
@@ -491,13 +497,13 @@ Google's sign-in script is never loaded.
 the root (`scripts/static-demo.mjs`), which sets the variables, runs this package's build and checks the
 bundle; [docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
 
-- **Demo-only, without a backend.** The app does not ask `GET /api/config`: `src/api/staticConfig.ts` builds
+- **Demo-only, without a backend.** The app does not ask `GET /api/config`: `src/api/demoConfig.ts` builds
   the answer a demo-only instance gives (no OAuth client, no service-account mode, `demoOnly: true`) from
   `VITE_APP_VERSION`, `VITE_SOURCE_URL`, `VITE_LEGAL_IMPRESSUM_URL` and `VITE_LEGAL_PRIVACY_URL`, and
   `auth/AuthProvider.tsx` puts it into the store at once. From there the app is a demo-only instance
-  (`useDemoOnly()`): the Connect page with the demo, the way to one's own project and the privacy note, the
-  demo badge, the Permissions note. `mode.demo` stays false, so the footer's source link and the legal links
-  come from that configuration. `AuthProvider.tsx` compares `import.meta.env.VITE_STATIC_DEMO` with `'1'`
+  (`useDemoOnly()`), as `pnpm dev:demo` is: the Connect page with the demo, the way to one's own project and
+  the privacy note, the demo badge, the Permissions note. The footer's source link and the legal links come
+  from that configuration. `AuthProvider.tsx` compares `import.meta.env.VITE_STATIC_DEMO` with `'1'`
   where it is used, so the build sees a constant and leaves the sign-in code out: the static bundle has no
   Google sign-in script, no tokeninfo and no `/api/config` (`pnpm website:check` looks for their hosts).
 - **Base path.** `base: '/demo/'` (another with `--base`); `main.tsx` gives the router
@@ -514,7 +520,7 @@ bundle; [docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
   below); `/impressum` and `/privacy` link to them; the Connect page's privacy note does too. A live instance
   whose backend reports `LEGAL_IMPRESSUM_URL` or `LEGAL_PRIVACY_URL` links them the same way.
 
-Tests: `src/api/staticConfig.test.ts`, `src/routes.test.ts`, `src/pages/ConnectPage.staticDemo.test.tsx`,
+Tests: `src/api/demoConfig.test.ts`, `src/routes.test.ts`, `src/pages/ConnectPage.staticDemo.test.tsx`,
 `src/pages/ConnectPage.demoOnly.test.tsx` and `scripts/static-demo.test.ts` at the root;
 `pnpm --filter @gcportrait/website demo` drives the built demo in a browser.
 
@@ -552,7 +558,7 @@ default it points at the project's repository (AGENTS.md, Product rules). Export
 | Mode | Link target |
 |---|---|
 | live (`pnpm dev`, the production image) | `sourceUrl` from `GET /api/config`, the backend's `SOURCE_URL` (`backend/.env.example`), read from the store's `connect.backend` (`auth/AuthProvider.tsx` asks once per page); until the answer arrives, or when the backend does not answer or names no http(s) URL, the build-time URL below |
-| demo (`pnpm dev:demo`, no backend) | the build-time `VITE_SOURCE_URL` |
+| demo build (`pnpm dev:demo`, no backend) | the built-in configuration's `sourceUrl`, the build-time `VITE_SOURCE_URL` |
 | the static demo (`pnpm demo:static`) | the built-in configuration's `sourceUrl`, which is the build-time `VITE_SOURCE_URL` |
 
 `VITE_SOURCE_URL` is read when Vite serves or builds the app (`VITE_SOURCE_URL=https://… pnpm dev:demo`);
@@ -567,14 +573,14 @@ short of what 11 px text needs.
 ## Legal links and the favicon
 
 The footer's "Impressum · Privacy" (`legal/LegalLinks.tsx`) sits after "Source (MIT)" on every route and links
-what the instance publishes, as `legal` in `GET /api/config` (or the static demo's built-in configuration,
-`api/staticConfig.ts`) says, page by page:
+what the instance publishes, as `legal` in `GET /api/config` (or a demo build's built-in configuration,
+`api/demoConfig.ts`) says, page by page:
 
 | The page is | The footer's link |
 |---|---|
 | a text the instance serves (`legal.impressum` / `legal.privacy` true: the backend's `LEGAL_DIR` or `LEGAL_BUNDLE`) | an app link to `/impressum` or `/privacy`, which render the text |
 | published elsewhere (`legal.impressumUrl` / `legal.privacyUrl`: `LEGAL_IMPRESSUM_URL`, `LEGAL_PRIVACY_URL`, or the static demo's `VITE_LEGAL_IMPRESSUM_URL`, `VITE_LEGAL_PRIVACY_URL`; an `https://` URL without credentials, anything else links nothing) | the same words, linking that page in a new tab (`target="_blank"`, `rel="noopener"`; `legal/ExternalLegalLink.tsx`): the sign-in lives in the tab's memory only, so following the link in the same tab would end a signed-in session (the website, which has no session, keeps its own legal links in the same tab). An arrow after the text (hidden from assistive technology) and the accessible name "Impressum (opens HOST in a new tab)", the visible text first (WCAG 2.5.3); `/impressum`, `/privacy` and the demo-only Connect page's privacy note link the same way |
-| neither, or the build-time demo mode (no backend) | nothing; with no page at all the footer has no "Legal" navigation |
+| neither, or a demo build (no backend) | nothing; with no page at all the footer has no "Legal" navigation |
 
 The links take the footer's text colour, underlined, with the chrome focus ring, like the footer's other
 links. Tests: `legal/LegalPage.test.tsx`, `pages/ConnectPage.staticDemo.test.tsx` and
@@ -624,7 +630,8 @@ src/auth/
 ```
 
 **When Google's script loads.** Only when a person presses "Sign in with Google" on an instance whose
-`/api/config` names an OAuth client (`oauthClientId`); never in demo mode, never on page load, once per page.
+`/api/config` names an OAuth client (`oauthClientId`); never in a demo build, never on page load, once per
+page.
 Without a client id, or without a backend, the button stays in place, inert, and says why. Because the first
 press loads the script before Google's window can open, a browser that allows a window only right after the
 click (Safari) or a slow network can block that first window; the card then says the browser blocked it, and
@@ -690,8 +697,8 @@ The Permissions page (`pages/PermissionsPage.tsx`) checks a scope with the signe
 and says what is missing, with copy-ready `gcloud` commands; below it, what each mode needs (the table of
 [docs/permissions.md](../docs/permissions.md), its commands' variables as fields prefilled from what the page
 knows; section "Fillable commands") and service-account mode in that guide's words, with the instance's
-account and the gate. Signed out it shows the sign-in card; in demo mode it checks nothing and keeps the
-guidance.
+account and the gate. Signed out it shows the sign-in card; in a demo build it says that nothing can be
+checked here and keeps the guidance.
 
 ```
 src/scope/
@@ -1887,8 +1894,9 @@ day whose abort lands while it is written, putting back what it replaced), so th
 timeline counted as read; a failed day is read again only when the view comes back to it or on "Try again";
 nothing is read while the view stays where the page opened it on the snapshot's own day (a neighbour is a
 whole read of the scope). Days are read only with a signed-in session whose permission check is ready for the
-snapshot's scope; otherwise the readout says what is missing (demo mode reads nothing; cached days are still
-drawn). A read asks the tick cache for its day first: a day another tab of the browser stored after the page
+snapshot's scope; otherwise the readout says what is missing (a demo build reads nothing, having no sign-in;
+cached days are still drawn). A read asks the tick cache for its day first: a day another tab of the browser
+stored after the page
 listed the cached days counts as read from there (`cached`), without a read from Google Cloud. While a live
 timeline is adopted, the controller also listens to the tick cache's changes in the other tabs (section
 "Storage schema", "Changes between tabs"), from before it lists the cached days: a day of its scope another

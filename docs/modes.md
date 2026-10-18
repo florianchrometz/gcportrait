@@ -104,8 +104,10 @@ The demo runs in four places:
   not even for `/api/config`), so any static host serves it; the website's GitHub Pages site serves the
   project's. It looks and behaves like a demo-only instance, links its legal pages elsewhere, and keeps
   everything in your browser ([website.md, "The demo"](website.md#the-demo));
-- **in a demo build** without any backend: `pnpm dev:demo` (the SPA built with `VITE_DEMO=1`), for
-  contributors and for trying gcportrait from a checkout.
+- **in a demo build** without any backend: `pnpm dev:demo` (the SPA served with `VITE_DEMO=1`), for
+  contributors and for trying gcportrait from a checkout. It builds the same demo-only configuration in as
+  the static demo, so it too looks and behaves like a demo-only instance, linking no legal page unless it was
+  given one.
 
 ## 5. Export files
 

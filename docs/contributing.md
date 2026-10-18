@@ -67,7 +67,7 @@ reads). A rule goes in an AGENTS.md, never in a pointer file. Before you change 
 
 | Command | What starts | Open |
 |---|---|---|
-| `pnpm dev:demo` | The single-page app in demo mode: no backend, no API calls, no Google account. | <http://localhost:5174> |
+| `pnpm dev:demo` | The single-page app as a demo build, a demo-only instance with its configuration built in: no backend, no API calls, no Google account. | <http://localhost:5174> |
 | `pnpm dev` | The app (Vite, which proxies `/api` to the backend) and the backend (Fastify under `tsx watch`, pretty logs). | <http://localhost:5173>; the backend answers on <http://localhost:8080/healthz> |
 
 Stop either with Ctrl+C. The app draws the synthetic demo organisations as diagrams: open
@@ -411,7 +411,8 @@ dependency must pass `pnpm run licenses`.
   or Google's, and never name Google with its company suffix.
 - The app links its source on every route, a courtesy to the people who use an instance (the MIT License does
   not ask for it): the footer's "Source (MIT)" link, next to the non-affiliation notice, points at the
-  backend's `SOURCE_URL` (`sourceUrl` in `/api/config`) or, in demo mode, at the build-time `VITE_SOURCE_URL`.
+  backend's `SOURCE_URL` (`sourceUrl` in `/api/config`) or, in a demo build, at the build-time
+  `VITE_SOURCE_URL`.
   Do not remove it or move it off a route.
 - A value the reader fills in, in a guide's code or a command the app shows, is written `YOUR_` and capitals
   as one word (`YOUR_PROJECT`, `YOUR_ORG_ID`): a plain word to a shell, so an unfilled copy fails clearly.

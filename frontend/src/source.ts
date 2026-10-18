@@ -4,7 +4,7 @@
  * The app's link to its own source (AGENTS.md, Product rules; frontend/AGENTS.md, The source link): where the
  * source of the version in use is published, and under which licence, as the shell footer's "Source (MIT)" link
  * on every route (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the backend's
- * SOURCE_URL) in live mode, and the build-time VITE_SOURCE_URL in demo mode, where there is no backend; both fall
+ * SOURCE_URL) in live mode, and the build-time VITE_SOURCE_URL in a demo build, where there is no backend; both fall
  * back to DEFAULT_SOURCE_URL, so an unmodified copy links to the project's repository.
  */
 

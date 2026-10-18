@@ -100,7 +100,7 @@ describe('the footer', () => {
     'links %s, as "Impressum · Privacy" after the non-affiliation notice and the source link',
     async (_case, legal, links) => {
       const fetch = backend(config(legal));
-      renderApp('/settings', { demo: false, snapshots: fakeLibrary() });
+      renderApp('/settings', { demoConfig: null, snapshots: fakeLibrary() });
       const nav = await within(footer()).findByRole('navigation', { name: 'Legal' });
       const found = within(nav).getAllByRole('link');
       expect(
@@ -130,7 +130,7 @@ describe('the footer', () => {
 
   it('links only the page that exists, and nothing without texts, for an address that is not https, or with the backend down', async () => {
     backend(config({ impressum: false, privacy: true }));
-    const first = renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    const first = renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     const legal = await within(footer()).findByRole('navigation', { name: 'Legal' });
     expect(
       within(legal)
@@ -149,20 +149,20 @@ describe('the footer', () => {
       }),
     ]) {
       backend(answer);
-      const view = renderApp('/', { demo: false, snapshots: fakeLibrary() });
+      const view = renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
       await screen.findByText(/Backend version 0\.0\.0-test/);
       expect(within(footer()).queryByRole('navigation', { name: 'Legal' })).toBeNull();
       view.unmount();
     }
     stubBackend();
-    renderApp('/', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await screen.findByText(/The backend did not answer/);
     expect(within(footer()).queryByRole('navigation', { name: 'Legal' })).toBeNull();
   });
 
   it('has no legal links in the build-time demo mode, which never asks a backend', () => {
     const fetch = backend(config({ impressum: true, privacy: true }));
-    renderApp('/', { demo: true, snapshots: fakeLibrary() });
+    renderApp('/', { snapshots: fakeLibrary() });
     expect(within(footer()).queryByRole('navigation', { name: 'Legal' })).toBeNull();
     expect(fetch.fetch).not.toHaveBeenCalled();
   });
@@ -171,7 +171,7 @@ describe('the footer', () => {
 describe('/impressum and /privacy', () => {
   it('renders the Markdown, its first heading as the page title, and no HTML from the text', async () => {
     const fetch = backend(config({ impressum: true, privacy: true }, true));
-    const { container } = renderApp('/impressum', { demo: false, snapshots: fakeLibrary() });
+    const { container } = renderApp('/impressum', { demoConfig: null, snapshots: fakeLibrary() });
     const main = screen.getByRole('main');
     // The page is titled "Impressum" while its text is on its way: the text's own heading shows it has arrived.
     expect(await within(main).findByRole('heading', { level: 2, name: 'Kontakt' })).toBeDefined();
@@ -208,7 +208,7 @@ describe('/impressum and /privacy', () => {
 
   it('says so when the instance publishes no such page, and fetches nothing', async () => {
     const fetch = backend(config({ impressum: false, privacy: false }));
-    renderApp('/privacy', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/privacy', { demoConfig: null, snapshots: fakeLibrary() });
     expect(await screen.findByText(/This instance publishes no privacy notice\./)).toBeDefined();
     expect(screen.getByRole('heading', { level: 1, name: 'Privacy notice' })).toBeDefined();
     expect(fetch.keptUrls()).toEqual(['/api/config']);
@@ -216,13 +216,13 @@ describe('/impressum and /privacy', () => {
   });
 
   it('says so in the build-time demo mode too', () => {
-    renderApp('/impressum', { demo: true, snapshots: fakeLibrary() });
+    renderApp('/impressum', { snapshots: fakeLibrary() });
     expect(screen.getByText(/This instance publishes no Impressum\./)).toBeDefined();
   });
 
   it('offers another try when the text could not be loaded', async () => {
     const fetch = backend(config({ impressum: true, privacy: false }), 'down');
-    renderApp('/impressum', { demo: false, snapshots: fakeLibrary() });
+    renderApp('/impressum', { demoConfig: null, snapshots: fakeLibrary() });
     expect((await screen.findByRole('alert')).textContent).toBe('The text could not be loaded.');
     await expectNoAxeViolations();
     backend(config({ impressum: true, privacy: false }));

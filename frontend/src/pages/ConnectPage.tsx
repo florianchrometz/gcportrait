@@ -7,7 +7,6 @@ import type { BackendState } from '../auth/types';
 import { NON_AFFILIATION_LONG } from '../branding';
 import { cx } from '../classNames';
 import { useDemoOnly, useLegalPages } from '../demoOnly';
-import { useAppMode } from '../mode';
 import { LoadExport } from '../import/LoadExport';
 import { legalTarget } from '../legal/api';
 import { LegalPageLink } from '../legal/LegalLinks';
@@ -58,19 +57,18 @@ const LIVE_SOURCES: readonly Source[] = [SIGN_IN_SOURCE, DEMO_SOURCE, EXPORT_SOU
  * "Try the demo" (snapshots/DemoEntry.tsx); "Sign in with Google" (auth/SignInCard.tsx), after which
  * the "Read your environment" section offers the mode (auth/ModeSelector.tsx), the scope and "Pull now".
  *
- * Three variants: the build-time demo mode (no backend) and a demo-only instance (the backend's DEMO_ONLY, such
- * as the maintainer's sign-in-free demo) offer the demo organisations only; a demo-only instance adds the way to
- * deploy gcportrait to one's own Google Cloud project and says that the demo processes no personal data. Live mode
- * offers every source once the backend has answered; until then only the demo, which every variant has, so the
- * sources of the other variant never flash up while /api/config is on its way.
+ * Two variants: a demo-only instance (the backend's DEMO_ONLY, such as the maintainer's sign-in-free demo) and a demo
+ * build (`pnpm dev:demo`, `pnpm demo:static`), which builds that configuration in, offer the demo organisations only,
+ * the way to deploy gcportrait to one's own Google Cloud project and a note that the demo processes no personal data.
+ * Live mode offers every source once the backend has answered; until then only the demo, which every variant has, so
+ * the sources of the other variant never flash up while /api/config is on its way.
  */
 export function ConnectPage() {
-  const { demo } = useAppMode();
   const demoOnly = useDemoOnly();
-  const deciding = useAppState((state) => !demo && state.connect.backend.status === 'loading');
+  const backendStatus = useAppState((state) => state.connect.backend.status);
   useDocumentTitle('Connect');
-  const demoVariant = demo || demoOnly;
-  const sources = demoVariant || deciding ? [DEMO_SOURCE] : LIVE_SOURCES;
+  const deciding = backendStatus === 'loading';
+  const sources = demoOnly || deciding ? [DEMO_SOURCE] : LIVE_SOURCES;
 
   return (
     <div className={page.page}>
@@ -84,7 +82,7 @@ export function ConnectPage() {
 
       <section className={page.section} aria-labelledby="connect-sources">
         <h2 id="connect-sources" className={page.sectionTitle}>
-          {demoVariant ? 'Demo mode' : 'Choose a source'}
+          {demoOnly ? 'Demo mode' : 'Choose a source'}
         </h2>
         <ul className={styles.sources}>
           {sources.map((source) => (
@@ -122,8 +120,8 @@ export function ConnectPage() {
 
       {demoOnly ? <SelfHost /> : null}
       {demoOnly ? <DemoPrivacy /> : null}
-      {demoVariant || deciding ? null : <Environment />}
-      {demoVariant ? null : <BackendStatus />}
+      {demoOnly || deciding ? null : <Environment />}
+      {demoOnly ? null : <BackendStatus />}
 
       <section className={cx(page.section, styles.about)} aria-labelledby="connect-about">
         <h2 id="connect-about" className={page.sectionTitle}>
@@ -225,7 +223,6 @@ function PullStep() {
 
 function describeBackend(backend: BackendState): string {
   switch (backend.status) {
-    case 'demo':
     case 'loading':
       return 'Checking the backend…';
     case 'unavailable':

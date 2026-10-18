@@ -10,13 +10,11 @@
  * - "Service-account mode": the explanation of docs/permissions.md §3, the account's email from /api/config and
  *   the gate as this instance runs it (with or without the strict exposure check, `saStrictExposure`).
  * The non-affiliation statement is the footer's, as on every page.
- * In demo mode nothing is checked (there is no backend), nor on a demo-only instance (no sign-in); the
- * guidance stays.
+ * Nothing is checked where there is no sign-in: a demo-only instance and a demo build say so; the guidance stays.
  */
 import { ModeSelector } from '../auth/ModeSelector';
 import { SignInCard } from '../auth/SignInCard';
 import { useDemoOnly } from '../demoOnly';
-import { useAppMode } from '../mode';
 import { PermissionsReference, ServiceAccountExplainer } from '../preflight/PermissionsGuide';
 import { PreflightPanel } from '../preflight/PreflightPanel';
 import { ScopeStep } from '../scope/ScopeStep';
@@ -54,7 +52,6 @@ function CheckSection() {
 
 export function PermissionsPage() {
   useDocumentTitle('Permissions');
-  const { demo } = useAppMode();
   const demoOnly = useDemoOnly();
   const backend = useAppState((state) => state.connect.backend);
   const scope = useAppState((state) => state.connect.scope);
@@ -71,12 +68,7 @@ export function PermissionsPage() {
         </p>
       </div>
 
-      {demo ? (
-        <p className={page.note}>
-          Demo mode needs no permissions: its organisations are made up in this browser. Checking a real scope
-          needs the backend and a Google sign-in.
-        </p>
-      ) : demoOnly ? (
+      {demoOnly ? (
         <p className={page.note}>
           This instance is a demo: its organisations are made up in this browser, and it offers no sign-in, so
           no scope can be checked here. Deployed to a Google Cloud project of yours, gcportrait checks a real

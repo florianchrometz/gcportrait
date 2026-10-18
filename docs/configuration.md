@@ -300,9 +300,9 @@ Read by Vite when the frontend is built (`frontend/README.md`); the image builds
 
 | Variable | Default | Effect |
 |---|---|---|
-| `VITE_DEMO` | unset | `1` builds or serves the demo-only app (no backend calls); `pnpm dev:demo` sets it. |
-| `VITE_SOURCE_URL` | `https://github.com/florianchrometz/gcportrait` | The footer's source link when no backend answers (demo mode, the static demo); the image's app takes `SOURCE_URL` from `/api/config`. |
-| `VITE_STATIC_DEMO` | unset | `1` builds the static demo: demo-only mode with its configuration built in instead of `/api/config`, below `/demo/`, for a static host ([website.md, "The demo"](website.md#the-demo)). `pnpm demo:static` sets it with the three below; not together with `VITE_DEMO`. |
+| `VITE_DEMO` | unset | `1` serves the app as a demo build: a demo-only instance's configuration built in, no backend calls; `pnpm dev:demo` sets it. |
+| `VITE_SOURCE_URL` | `https://github.com/florianchrometz/gcportrait` | The footer's source link when no backend answers (a demo build); the image's app takes `SOURCE_URL` from `/api/config`. |
+| `VITE_STATIC_DEMO` | unset | `1` builds the static demo: the same demo build, its configuration built in instead of `/api/config`, below `/demo/`, for a static host ([website.md, "The demo"](website.md#the-demo)). `pnpm demo:static` sets it with the three below; not together with `VITE_DEMO`. |
 | `VITE_APP_VERSION` | `git describe` (by `pnpm demo:static`) | The static demo's version (`--app-version`). |
 | `VITE_LEGAL_IMPRESSUM_URL` | the maintainer's Impressum (by `pnpm demo:static`) | The Impressum the static demo's footer links (`--impressum-url`; an `https://` URL, anything else links nothing), as `LEGAL_IMPRESSUM_URL` does for an instance. |
 | `VITE_LEGAL_PRIVACY_URL` | the maintainer's privacy notice (by `pnpm demo:static`) | The same for the privacy notice (`--privacy-url`). |
