@@ -497,9 +497,10 @@ workflow's own `GITHUB_TOKEN`: no secret, no repository variable, no Google Clou
    `X.Y.Z`, `X.Y` and `latest`. `latest` moves only for the newest release: never for a pre-release
    (`v1.2.0-rc.1` gets only its own tag), and not for a patch of an older line tagged after a newer release.
    The image carries the OCI labels and index annotations `org.opencontainers.image.source` (the repository),
-   `.licenses` (`MIT`) and `.description` (the long non-affiliation statement). Then it checks that anyone can
-   pull the image, as the remote repository of deploy.sh does, and writes one SPDX SBOM per platform with
-   Syft.
+   `.licenses` (`MIT`) and `.description` (the long non-affiliation statement), the last two from
+   `infra/Dockerfile`'s `LABEL`; `scripts/release-image.mjs` computes the tags, labels and annotations. Then
+   it checks that anyone can pull the image, as the remote repository of deploy.sh does, and writes one SPDX
+   SBOM per platform with Syft, a release pinned by version and checked by its SHA-256 before it runs.
 3. **github-release**: the GitHub release `vX.Y.Z`, its notes built by `scripts/release-notes.mjs` from the
    version's sections of the `CHANGELOG.md` files, with the long non-affiliation statement, the installer
    line, the image's tags and digest. Attached: both SBOMs, the deploy scripts the installer downloads

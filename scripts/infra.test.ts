@@ -36,9 +36,6 @@ describe('the image labels', () => {
     expect(/org\.opencontainers\.image\.licenses="([^"]+)"/.exec(read('infra/Dockerfile'))?.[1]).toBe(
       manifest.license,
     );
-    expect(
-      /org\.opencontainers\.image\.licenses=(\S+)$/m.exec(read('.github/workflows/release.yml'))?.[1],
-    ).toBe(manifest.license);
   });
 });
 

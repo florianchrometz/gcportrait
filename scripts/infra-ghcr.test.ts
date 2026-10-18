@@ -49,7 +49,7 @@ describe.skipIf(!BASH_AVAILABLE)(
             ],
           );
           expect(result.status, result.out).toBe(0);
-          // release.yml publishes tag v1.2.3 as the image tag 1.2.3 (docker/metadata-action's {{version}}), pulled
+          // release.yml publishes tag v1.2.3 as the image tag 1.2.3 (scripts/release-image.mjs), pulled
           // through the remote repository `ghcr` in the instance's own project.
           expect(result.calls.find((call) => call.includes('https://ghcr.io/v2/'))).toMatch(
             new RegExp(
