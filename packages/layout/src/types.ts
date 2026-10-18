@@ -4,79 +4,22 @@
  * survives `postMessage` from the layout worker and JSON unchanged. Every coordinate is in px at scale 1 in
  * the canvas's coordinate system: the canvas (the organisation, or the drill-in root) spans `bounds`.
  */
-import type { Insets, LayoutRect, Point, Rect, RelationKind } from '@gcportrait/model';
+import type { EdgePath, Insets, LayoutRect, Rect } from '@gcportrait/model';
 import type { Routing, Sizing } from './constants.js';
 import type { FontMetricsTable } from './metrics.js';
 
-export type { Insets, LayoutRect, Point, Rect, RectRole } from '@gcportrait/model';
-
-/** A side of a rect. */
-export type Side = 'top' | 'right' | 'bottom' | 'left';
-
-/** Where an edge meets one of its rects: a point on that rect's border and the side it lies on. */
-export interface EdgePort extends Point {
-  readonly side: Side;
-}
-
-/**
- * Which ends of an edge carry an arrowhead, from the relation kind's default style (`RELATION_KINDS` in
- * `@gcportrait/model`): `both` for a double-headed (symmetric) kind such as `peers`, `none` for a kind drawn
- * with round caps (`connects`), `end` otherwise.
- */
-export type EdgeHeads = 'end' | 'both' | 'none';
-
-/**
- * A routed edge (stage 5): an orthogonal polyline through the gutters. `points` run from the source end to
- * the target end; an end with an arrowhead stops at the head's tip, `Routing.arrowInset` (2 px) inside the
- * rect's border, an end without one at its port. Every segment is horizontal or vertical; the renderer rounds
- * each elbow with `elbowRadius`, at most half the shorter of its two segments and, next to an arrowhead, at
- * most what the end segment leaves beside the head (the end segment can be as short as the gutter allows,
- * e.g. 10 px in a 16 px padding ring, shorter than a 9 px head plus the radius): the head sits on a straight
- * stretch.
- */
-export interface EdgePath {
-  readonly from: string;
-  readonly to: string;
-  readonly kind: RelationKind;
-  /** How many Scene relations the edge stands for (merged duplicates, re-targeted ends); at least 1. */
-  readonly count: number;
-  /** Whether the Scene marked an end re-targeted to a chip or the layout merged several Scene edges into it. */
-  readonly merged: boolean;
-  readonly heads: EdgeHeads;
-  /** The port on the border of `from`'s rect. */
-  readonly source: EdgePort;
-  /** The port on the border of `to`'s rect. */
-  readonly target: EdgePort;
-  readonly points: readonly Point[];
-  /** Radius of the rounded elbows; 0 when the path is straight. */
-  readonly elbowRadius: number;
-  /** True when no gutter path existed and the coarse-grid fallback routed the edge (should never happen). */
-  readonly fallback: boolean;
-  /**
-   * The hub bundle the edge belongs to; absent for an edge of its own. Its members share the port at the
-   * bundle's end (`end`), and lanes towards it: where their points coincide they are one trunk, so the renderer
-   * draws a member's dashes from that shared end (the dash patterns then coincide along the trunk) and its
-   * shared arrowhead once.
-   */
-  readonly bundle?: EdgeBundle;
-}
-
-/**
- * A hub's bundle (skill gcp-diagram-layout §5, ports): the edges of one kind that meet one rect at the same end
- * (all as targets, or all as sources) and from the same side, sharing that end's port and their lanes towards it.
- */
-export interface EdgeBundle {
-  /**
-   * Unique per bundle: `<rect id> <-<kind>- * (<side>)` for a shared target, `<rect id> -<kind>-> * (<side>)` for
-   * a shared source (`<side>, inside` for a port on the inside of a zone that contains the other ends; a `#2`, …
-   * suffix in the rare case of two bundles of one kind on one side).
-   */
-  readonly id: string;
-  /** The end the members share. */
-  readonly end: 'source' | 'target';
-  /** How many edges the bundle holds. */
-  readonly size: number;
-}
+export type {
+  EdgeBundle,
+  EdgeHeads,
+  EdgePath,
+  EdgePort,
+  Insets,
+  LayoutRect,
+  Point,
+  Rect,
+  RectRole,
+  Side,
+} from '@gcportrait/model';
 
 export interface StageTimings {
   readonly normalise: number;

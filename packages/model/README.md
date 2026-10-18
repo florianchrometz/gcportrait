@@ -271,7 +271,7 @@ The layout's own output type belongs to `packages/layout`.
 The layout's geometry contracts live in `schemas/layout.ts`; `@gcportrait/layout` re-exports their inferred
 types so its callers keep the same imports. The schemas describe the existing shapes, with finite numbers
 (including negative and fractional values), readonly fields and no defaults or geometry refinements.
-`LayoutRect.paddingExtra` is absent or a complete `Insets`, never explicitly `undefined`.
+`LayoutRect.paddingExtra` and `EdgePath.bundle` are absent or complete objects, never explicitly `undefined`.
 
 | Export | What |
 |---|---|
@@ -280,14 +280,19 @@ types so its callers keep the same imports. The schemas describe the existing sh
 | `InsetsSchema`, `Insets` | `top`, `right`, `bottom`, `left` |
 | `RectRoleSchema`, `RectRole` | `zone`, `chip`, `empty`, `card` |
 | `LayoutRectSchema`, `LayoutRect` | a `Rect` with its nullable `parent`, `role`, zone kind or `card`, `depth`, `headerHeight`, `padding`, optional `paddingExtra` and `chipCountLine`, and `collapsed` flag |
+| `SideSchema`, `Side` | `top`, `right`, `bottom`, `left` |
+| `EdgePortSchema`, `EdgePort` | a `Point` with its `side` |
+| `EdgeHeadsSchema`, `EdgeHeads` | `end`, `both`, `none` |
+| `EdgeBundleSchema`, `EdgeBundle` | `id`, shared `end` (`source` or `target`) and `size` |
+| `EdgePathSchema`, `EdgePath` | `from`, `to`, relation `kind`, `count`, `merged`, `heads`, `source` and `target` ports, readonly `points`, `elbowRadius`, `fallback` and optional `bundle` |
 
 The layout emits `chipCountLine` for every chip, including an empty string when it counts nothing, and
 omits it on other rects. It is the full or short count line chosen during sizing, before the renderer fits
 it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
-tests check emitted rects against the schemas. The complete `Layout`, its other output shapes and the
-worker protocol remain declared in `@gcportrait/layout`.
+tests check emitted rects and routes against the schemas. The complete `Layout`, its other output shapes
+and the worker protocol remain declared in `@gcportrait/layout`.
 
 ## Scene builder environment and report
 

@@ -113,6 +113,11 @@ describe('public surface', () => {
         'InsetsSchema',
         'RectRoleSchema',
         'LayoutRectSchema',
+        'SideSchema',
+        'EdgePortSchema',
+        'EdgeHeadsSchema',
+        'EdgeBundleSchema',
+        'EdgePathSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',

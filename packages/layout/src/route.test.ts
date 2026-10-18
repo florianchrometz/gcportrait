@@ -1,6 +1,23 @@
 // SPDX-License-Identifier: MIT
-import { describe, expect, it } from 'vitest';
-import type { Scene, SceneEdge, SceneNode } from '@gcportrait/model';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import {
+  EdgePathSchema,
+  type EdgeBundle,
+  type EdgeHeads,
+  type EdgePath as ModelEdgePath,
+  type EdgePort,
+  type Scene,
+  type SceneEdge,
+  type SceneNode,
+  type Side,
+} from '@gcportrait/model';
+import type {
+  EdgeBundle as LayoutEdgeBundle,
+  EdgeHeads as LayoutEdgeHeads,
+  EdgePath as PublicEdgePath,
+  EdgePort as LayoutEdgePort,
+  Side as LayoutSide,
+} from './index.js';
 import { DEFAULT_ROUTING } from './constants.js';
 import { assertLayout, checkLayout } from './invariants.js';
 import { layoutScene } from './layout.js';
@@ -79,11 +96,21 @@ describe('laneSlot', () => {
 });
 
 describe('routing', () => {
+  it('keeps the public layout edge types compatible with their model contracts', () => {
+    expectTypeOf<LayoutSide>().toEqualTypeOf<Side>();
+    expectTypeOf<LayoutEdgePort>().toEqualTypeOf<EdgePort>();
+    expectTypeOf<LayoutEdgeHeads>().toEqualTypeOf<EdgeHeads>();
+    expectTypeOf<LayoutEdgeBundle>().toEqualTypeOf<EdgeBundle>();
+    expectTypeOf<PublicEdgePath>().toEqualTypeOf<ModelEdgePath>();
+  });
+
   it('draws two neighbouring cards’ edge straight across the gap, the head 2 px inside the target', () => {
     const input = scene([card('a'), card('b')], [{ from: 'a', to: 'b', kind: 'uses' }]);
     const layout = layoutScene(input, SIDE_BY_SIDE);
     assertLayout(input, layout, SIDE_BY_SIDE);
     const edge = edgeOf(layout, 'a -uses-> b');
+    expect(EdgePathSchema.parse(edge)).toEqual(edge);
+    expect(EdgePathSchema.parse(JSON.parse(JSON.stringify(edge)))).toEqual(edge);
     const [a, b] = [layout.rects.a, layout.rects.b];
     expect(edge.source).toMatchObject({ side: 'right', x: (a?.x ?? 0) + (a?.width ?? 0) });
     expect(edge.target).toMatchObject({ side: 'left', x: b?.x });
@@ -111,6 +138,10 @@ describe('routing', () => {
     expect(peering).toMatchObject({ heads: 'both', count: 2, merged: true });
     expect(peering.points[0]).toEqual({ x: peering.source.x - 2, y: peering.source.y });
     const connection = edgeOf(layout, 'a -connects-> b');
+    for (const edge of [peering, connection]) {
+      expect(EdgePathSchema.parse(edge)).toEqual(edge);
+      expect(EdgePathSchema.parse(JSON.parse(JSON.stringify(edge)))).toEqual(edge);
+    }
     expect(connection.heads).toBe('none');
     expect(connection.points[connection.points.length - 1]).toEqual({
       x: connection.target.x,
@@ -217,6 +248,10 @@ describe('routing', () => {
     const [left = 0, right = 0] = [...heads].sort((a, b) => a - b);
     expect(right - left).toBeGreaterThanOrEqual(DEFAULT_ROUTING.portSpacing);
     expect(layout.edges['s0 -uses-> other']?.bundle).toBeUndefined();
+    for (const edge of Object.values(layout.edges)) {
+      expect(EdgePathSchema.parse(edge)).toEqual(edge);
+      expect(EdgePathSchema.parse(JSON.parse(JSON.stringify(edge)))).toEqual(edge);
+    }
   });
 
   it('re-routes by laying the first routes onto the widened gutters, keeping every lane inside them', () => {

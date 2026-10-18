@@ -157,16 +157,26 @@ export {
 } from './schemas/scene.js';
 
 export {
+  EdgeBundleSchema,
+  EdgeHeadsSchema,
+  EdgePathSchema,
+  EdgePortSchema,
   InsetsSchema,
   LayoutRectSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
+  SideSchema,
+  type EdgeBundle,
+  type EdgeHeads,
+  type EdgePath,
+  type EdgePort,
   type Insets,
   type LayoutRect,
   type Point,
   type Rect,
   type RectRole,
+  type Side,
 } from './schemas/layout.js';
 
 export {

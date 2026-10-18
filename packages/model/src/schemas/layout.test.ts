@@ -1,16 +1,27 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  EdgeBundleSchema,
+  EdgeHeadsSchema,
+  EdgePathSchema,
+  EdgePortSchema,
   InsetsSchema,
   LayoutRectSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
+  RelationKindSchema,
+  SideSchema,
+  type EdgeBundle,
+  type EdgeHeads,
+  type EdgePath,
+  type EdgePort,
   type Insets,
   type LayoutRect,
   type Point,
   type Rect,
   type RectRole,
+  type Side,
 } from '../index.js';
 
 const point = { x: -1.25, y: 0.5 };
@@ -106,5 +117,111 @@ describe('layout geometry contracts', () => {
     expect(LayoutRectSchema.parse(layoutRect)).not.toHaveProperty('chipCountLine');
     expect(LayoutRectSchema.safeParse({ ...layoutRect, chipCountLine: undefined }).success).toBe(false);
     expect(LayoutRectSchema.safeParse({ ...layoutRect, chipCountLine: 2 }).success).toBe(false);
+  });
+});
+
+const port = { ...point, side: 'left' } as const;
+const bundle = { id: '', end: 'source', size: -0.5 } as const;
+const edgePath = {
+  from: '',
+  to: 'target/example.com',
+  kind: 'uses',
+  count: -1.5,
+  merged: false,
+  heads: 'end',
+  source: port,
+  target: { ...port, side: 'right' },
+  points: [point],
+  elbowRadius: -2.25,
+  fallback: true,
+} as const;
+
+describe('layout edge contracts', () => {
+  it.each(['top', 'right', 'bottom', 'left'] as const)('preserves the %s port side', (side) => {
+    expect(SideSchema.parse(side)).toBe(side);
+    expect(EdgePortSchema.parse({ ...port, side })).toEqual({ ...port, side });
+  });
+
+  it.each(['end', 'both', 'none'] as const)('preserves %s arrowheads', (heads) => {
+    expect(EdgeHeadsSchema.parse(heads)).toBe(heads);
+    expect(EdgePathSchema.parse({ ...edgePath, heads }).heads).toBe(heads);
+  });
+
+  it.each(RelationKindSchema.options)('preserves the %s relation kind', (kind) => {
+    expect(EdgePathSchema.parse({ ...edgePath, kind }).kind).toBe(kind);
+  });
+
+  it.each(['source', 'target'] as const)('preserves a bundle at the %s end', (end) => {
+    const bundled = { ...edgePath, bundle: { ...bundle, end } };
+    expect(EdgeBundleSchema.parse(bundled.bundle)).toEqual(bundled.bundle);
+    expect(EdgePathSchema.parse(bundled)).toEqual(bundled);
+    expect(EdgePathSchema.parse(JSON.parse(JSON.stringify(bundled)))).toEqual(bundled);
+  });
+
+  it.each([-1.5, 0, 2.25])('preserves finite geometry and counts without range refinements: %s', (value) => {
+    expect(EdgePortSchema.parse({ ...port, x: value, y: value })).toEqual({ ...port, x: value, y: value });
+    expect(EdgeBundleSchema.parse({ ...bundle, size: value }).size).toBe(value);
+    const edge = { ...edgePath, count: value, elbowRadius: value };
+    expect(EdgePathSchema.parse(edge)).toEqual(edge);
+  });
+
+  it('preserves empty identifiers and point lists without routing refinements', () => {
+    const edge = { ...edgePath, from: '', to: '', points: [] };
+    expect(EdgePathSchema.parse(edge)).toEqual(edge);
+    expect(EdgeBundleSchema.parse(bundle).id).toBe('');
+  });
+
+  it('keeps a bundle absent or complete, never explicitly undefined', () => {
+    expect(EdgePathSchema.parse(edgePath)).not.toHaveProperty('bundle');
+    for (const invalid of [undefined, null, {}, { ...bundle, end: undefined }]) {
+      expect(EdgePathSchema.safeParse({ ...edgePath, bundle: invalid }).success).toBe(false);
+    }
+  });
+
+  it.each([Number.NaN, Infinity, -Infinity])('refuses non-finite geometry and counts: %s', (value) => {
+    expect(EdgePortSchema.safeParse({ ...port, x: value }).success).toBe(false);
+    expect(EdgeBundleSchema.safeParse({ ...bundle, size: value }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, count: value }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, elbowRadius: value }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, points: [{ ...point, y: value }] }).success).toBe(false);
+  });
+
+  it('refuses unknown enums, missing fields, wrong scalar types and unknown fields', () => {
+    expect(SideSchema.safeParse('middle').success).toBe(false);
+    expect(EdgeHeadsSchema.safeParse('start').success).toBe(false);
+    expect(EdgePortSchema.safeParse(point).success).toBe(false);
+    expect(EdgePortSchema.safeParse({ ...port, extra: 1 }).success).toBe(false);
+    expect(EdgeBundleSchema.safeParse({ ...bundle, end: 'both' }).success).toBe(false);
+    expect(EdgeBundleSchema.safeParse({ ...bundle, size: '1' }).success).toBe(false);
+    expect(EdgeBundleSchema.safeParse({ ...bundle, extra: 1 }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, kind: 'unknown' }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, merged: 1 }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, source: undefined }).success).toBe(false);
+    expect(EdgePathSchema.safeParse({ ...edgePath, extra: 1 }).success).toBe(false);
+  });
+
+  it('preserves readonly fields, nested arrays and exact optionality in the inferred types', () => {
+    expectTypeOf<Side>().toEqualTypeOf<'top' | 'right' | 'bottom' | 'left'>();
+    expectTypeOf<EdgeHeads>().toEqualTypeOf<'end' | 'both' | 'none'>();
+    expectTypeOf<EdgePort>().toEqualTypeOf<Readonly<{ x: number; y: number; side: Side }>>();
+    expectTypeOf<EdgeBundle>().toEqualTypeOf<
+      Readonly<{ id: string; end: 'source' | 'target'; size: number }>
+    >();
+    expectTypeOf<Pick<EdgePath, 'source' | 'target'>>().toEqualTypeOf<
+      Readonly<{ source: EdgePort; target: EdgePort }>
+    >();
+    expectTypeOf<Pick<EdgePath, 'points'>>().toEqualTypeOf<Readonly<{ points: readonly Point[] }>>();
+    expectTypeOf<Pick<EdgePath, 'bundle'>>().toEqualTypeOf<Readonly<{ bundle?: EdgeBundle }>>();
+    const parsed = EdgePathSchema.parse({ ...edgePath, bundle });
+    for (const value of [
+      parsed,
+      parsed.source,
+      parsed.target,
+      parsed.points,
+      parsed.points[0],
+      parsed.bundle,
+    ]) {
+      expect(Object.isFrozen(value)).toBe(true);
+    }
   });
 });
