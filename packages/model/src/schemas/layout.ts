@@ -126,3 +126,124 @@ export const EdgePathSchema = z
   })
   .readonly();
 export type EdgePath = z.infer<typeof EdgePathSchema>;
+
+export const StageTimingsSchema = z
+  .strictObject({
+    normalise: z.number(),
+    /** Stage 2 of the first pass. */
+    size: z.number(),
+    /** Stage 3 of the first pass. */
+    pack: z.number(),
+    /** Stages 4–5: gutter networks, routing, and the widening re-pack between the passes. */
+    route: z.number(),
+    total: z.number(),
+  })
+  .readonly();
+export type StageTimings = z.infer<typeof StageTimingsSchema>;
+
+export const LayoutCountsSchema = z
+  .strictObject({
+    /** Every rect: zones, chips, empty zones and cards. */
+    rects: z.number(),
+    zones: z.number(),
+    chips: z.number(),
+    emptyZones: z.number(),
+    cards: z.number(),
+    /** Edges in the Scene (before merging; `report.routing` says what became of them). */
+    edges: z.number(),
+    /** The deepest rect's depth (0 for an empty canvas). */
+    maxDepth: z.number(),
+    /** Organisation zones unwrapped because the canvas is the organisation (normally 0: the Scene omits it). */
+    organisationZonesDropped: z.number(),
+    /**
+     * Cards, empty zones and chips whose text is wider than their widest box (the renderer ellipsises it).
+     */
+    truncatedLabels: z.number(),
+    /**
+     * Open zones whose title is wider than `Sizing.zoneTitleMaxWidth`: the zone is no wider for it and the
+     * renderer ellipsises the title (the full label stays in the Scene).
+     */
+    cappedTitles: z.number(),
+    /** Open zones made wider than their children by their header (title, id and badges). */
+    headerWidened: z.number(),
+  })
+  .readonly();
+export type LayoutCounts = z.infer<typeof LayoutCountsSchema>;
+
+/**
+ * What stages 4–5 did. `mode` is the policy: `three-pass` (route; widen the gutters whose lanes do not fit and
+ * re-pack; re-route, keeping lanes inside the widened gutters: the second and third passes run only when some
+ * gutter is too narrow, see `passes`), `single-pass` (the first pass's search work reached
+ * `Routing.singlePassWork`: the rest of it was searched weighted, one routing pass, no widening), or `none`
+ * (nothing to route, or `LayoutOptions.route` is false).
+ */
+export const RoutingReportSchema = z
+  .strictObject({
+    mode: z.enum(['none', 'single-pass', 'three-pass']),
+    /** Routing passes run: 1, or 2 when a widening round re-packed and re-routed (more only with `wideningRounds`). */
+    passes: z.number(),
+    /** Routed edges: `Layout.edges`. */
+    edges: z.number(),
+    /**
+     * Lane holders: the edges routed on their own plus the hub bundles (whose members share lanes). Above
+     * `Routing.lateRoundsUpTo` of them at most two widening rounds run.
+     */
+    holders: z.number(),
+    /**
+     * The first routing pass's search work: the A* states it settled. Single-pass mode starts where it reaches
+     * `Routing.singlePassWork`; above `Routing.oneRoundWork` one widening round runs at most (skill §5).
+     */
+    work: z.number(),
+    /**
+     * Scene edges folded into another one with the same ends and kind (their count is added to it), the second
+     * edge of a reciprocal pair included.
+     */
+    duplicatesMerged: z.number(),
+    /** Reciprocal pairs of a symmetric kind (`peers`) merged into one double-headed edge. */
+    reciprocalMerged: z.number(),
+    /** Hub bundles (edges sharing a port and lanes, `EdgePath.bundle`) and the edges in them. */
+    bundles: z.number(),
+    bundledEdges: z.number(),
+    /** Scene edges not drawn: an end at a dropped organisation zone (the canvas), or both ends in one chip. */
+    dropped: z.number(),
+    /** Edges the coarse-grid fallback routed because no gutter path existed (0 unless something is wrong). */
+    fallbacks: z.number(),
+    /** Edges not even the fallback could route (drawn as a plain orthogonal line; 0 unless something is wrong). */
+    failed: z.number(),
+    /** Edges by number of bends: `bends[k]` edges have k elbows. */
+    bends: z.array(z.number()).readonly(),
+    /** The most lanes any gutter line carries (the highest lane used + 1). */
+    maxLanes: z.number(),
+    /** Containers (the canvas or open zones) whose gutters the widening passes made wider. */
+    widened: z.number(),
+    /**
+     * Widen-and-re-route rounds run after the first route (0: nothing needed widening, or single-pass mode):
+     * the three passes (route, widen and re-pack, re-route) are one round (`Routing.wideningRounds`, default 1,
+     * at most).
+     */
+    wideningRounds: z.number(),
+    /** Gutter lines whose lanes did not fit their width in the final pass and were squeezed closer. */
+    squeezed: z.number(),
+    /**
+     * Edges with a stretch that runs alongside another edge (closer than the lane pitch) because no lane was clear
+     * there; 0 unless something is wrong. Members of one bundle share lanes and do not count.
+     */
+    overlaps: z.number(),
+  })
+  .readonly();
+export type RoutingReport = z.infer<typeof RoutingReportSchema>;
+
+export const LayoutReportSchema = z
+  .strictObject({
+    /** Milliseconds per stage, present only when `LayoutOptions.clock` is given (the layout reads no clock). */
+    timings: StageTimingsSchema.exactOptional(),
+    counts: LayoutCountsSchema,
+    routing: RoutingReportSchema,
+    /**
+     * Human-readable notes about the input, sorted in code-point order (so reordering the Scene's children or
+     * edges gives a byte-identical report).
+     */
+    warnings: z.array(z.string()).readonly(),
+  })
+  .readonly();
+export type LayoutReport = z.infer<typeof LayoutReportSchema>;

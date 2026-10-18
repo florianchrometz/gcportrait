@@ -4,7 +4,7 @@
  * survives `postMessage` from the layout worker and JSON unchanged. Every coordinate is in px at scale 1 in
  * the canvas's coordinate system: the canvas (the organisation, or the drill-in root) spans `bounds`.
  */
-import type { EdgePath, Insets, LayoutRect, Rect } from '@gcportrait/model';
+import type { EdgePath, Insets, LayoutRect, LayoutReport, Rect } from '@gcportrait/model';
 import type { Routing, Sizing } from './constants.js';
 import type { FontMetricsTable } from './metrics.js';
 
@@ -14,121 +14,16 @@ export type {
   EdgePath,
   EdgePort,
   Insets,
+  LayoutCounts,
   LayoutRect,
+  LayoutReport,
   Point,
   Rect,
   RectRole,
+  RoutingReport,
   Side,
+  StageTimings,
 } from '@gcportrait/model';
-
-export interface StageTimings {
-  readonly normalise: number;
-  /** Stage 2 of the first pass. */
-  readonly size: number;
-  /** Stage 3 of the first pass. */
-  readonly pack: number;
-  /** Stages 4–5: gutter networks, routing, and the widening re-pack between the passes. */
-  readonly route: number;
-  readonly total: number;
-}
-
-export interface LayoutCounts {
-  /** Every rect: zones, chips, empty zones and cards. */
-  readonly rects: number;
-  readonly zones: number;
-  readonly chips: number;
-  readonly emptyZones: number;
-  readonly cards: number;
-  /** Edges in the Scene (before merging; `report.routing` says what became of them). */
-  readonly edges: number;
-  /** The deepest rect's depth (0 for an empty canvas). */
-  readonly maxDepth: number;
-  /** Organisation zones unwrapped because the canvas is the organisation (normally 0: the Scene omits it). */
-  readonly organisationZonesDropped: number;
-  /**
-   * Cards, empty zones and chips whose text is wider than their widest box (the renderer ellipsises it).
-   */
-  readonly truncatedLabels: number;
-  /**
-   * Open zones whose title is wider than `Sizing.zoneTitleMaxWidth`: the zone is no wider for it and the
-   * renderer ellipsises the title (the full label stays in the Scene).
-   */
-  readonly cappedTitles: number;
-  /** Open zones made wider than their children by their header (title, id and badges). */
-  readonly headerWidened: number;
-}
-
-/**
- * What stages 4–5 did. `mode` is the policy: `three-pass` (route; widen the gutters whose lanes do not fit and
- * re-pack; re-route, keeping lanes inside the widened gutters: the second and third passes run only when some
- * gutter is too narrow, see `passes`), `single-pass` (the first pass's search work reached
- * `Routing.singlePassWork`: the rest of it was searched weighted, one routing pass, no widening), or `none`
- * (nothing to route, or `LayoutOptions.route` is false).
- */
-export interface RoutingReport {
-  readonly mode: 'none' | 'single-pass' | 'three-pass';
-  /** Routing passes run: 1, or 2 when a widening round re-packed and re-routed (more only with `wideningRounds`). */
-  readonly passes: number;
-  /** Routed edges: `Layout.edges`. */
-  readonly edges: number;
-  /**
-   * Lane holders: the edges routed on their own plus the hub bundles (whose members share lanes). Above
-   * `Routing.lateRoundsUpTo` of them at most two widening rounds run.
-   */
-  readonly holders: number;
-  /**
-   * The first routing pass's search work: the A* states it settled. Single-pass mode starts where it reaches
-   * `Routing.singlePassWork`; above `Routing.oneRoundWork` one widening round runs at most (skill §5).
-   */
-  readonly work: number;
-  /**
-   * Scene edges folded into another one with the same ends and kind (their count is added to it), the second
-   * edge of a reciprocal pair included.
-   */
-  readonly duplicatesMerged: number;
-  /** Reciprocal pairs of a symmetric kind (`peers`) merged into one double-headed edge. */
-  readonly reciprocalMerged: number;
-  /** Hub bundles (edges sharing a port and lanes, `EdgePath.bundle`) and the edges in them. */
-  readonly bundles: number;
-  readonly bundledEdges: number;
-  /** Scene edges not drawn: an end at a dropped organisation zone (the canvas), or both ends in one chip. */
-  readonly dropped: number;
-  /** Edges the coarse-grid fallback routed because no gutter path existed (0 unless something is wrong). */
-  readonly fallbacks: number;
-  /** Edges not even the fallback could route (drawn as a plain orthogonal line; 0 unless something is wrong). */
-  readonly failed: number;
-  /** Edges by number of bends: `bends[k]` edges have k elbows. */
-  readonly bends: readonly number[];
-  /** The most lanes any gutter line carries (the highest lane used + 1). */
-  readonly maxLanes: number;
-  /** Containers (the canvas or open zones) whose gutters the widening passes made wider. */
-  readonly widened: number;
-  /**
-   * Widen-and-re-route rounds run after the first route (0: nothing needed widening, or single-pass mode):
-   * the three passes (route, widen and re-pack, re-route) are one round (`Routing.wideningRounds`, default 1,
-   * at most).
-   */
-  readonly wideningRounds: number;
-  /** Gutter lines whose lanes did not fit their width in the final pass and were squeezed closer. */
-  readonly squeezed: number;
-  /**
-   * Edges with a stretch that runs alongside another edge (closer than the lane pitch) because no lane was clear
-   * there; 0 unless something is wrong. Members of one bundle share lanes and do not count.
-   */
-  readonly overlaps: number;
-}
-
-export interface LayoutReport {
-  /** Milliseconds per stage, present only when `LayoutOptions.clock` is given (the layout reads no clock). */
-  readonly timings?: StageTimings;
-  readonly counts: LayoutCounts;
-  readonly routing: RoutingReport;
-  /**
-   * Human-readable notes about the input, sorted in code-point order (so reordering the Scene's children or
-   * edges gives a byte-identical report).
-   */
-  readonly warnings: readonly string[];
-}
 
 /**
  * How a container's children are packed (stage 3): the card grid on top and the zone rows below it. A Layout

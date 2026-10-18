@@ -1,6 +1,20 @@
 // SPDX-License-Identifier: MIT
-import { describe, expect, it } from 'vitest';
-import { LayoutRectSchema, type Scene } from '@gcportrait/model';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import {
+  LayoutRectSchema,
+  LayoutReportSchema,
+  type LayoutCounts,
+  type LayoutReport,
+  type RoutingReport,
+  type Scene,
+  type StageTimings,
+} from '@gcportrait/model';
+import type {
+  LayoutCounts as PublicLayoutCounts,
+  LayoutReport as PublicLayoutReport,
+  RoutingReport as PublicRoutingReport,
+  StageTimings as PublicStageTimings,
+} from './index.js';
 import { DEFAULT_ROUTING, DEFAULT_SIZING, MAX_SCENE_DEPTH } from './constants.js';
 import { LayoutInputError } from './errors.js';
 import { packingAspects } from './aspects.js';
@@ -145,6 +159,8 @@ describe('layoutScene', () => {
   });
 
   it('reports counts and no timings without a clock', () => {
+    expect(LayoutReportSchema.parse(layout.report)).toEqual(layout.report);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(layout.report)))).toEqual(layout.report);
     expect(layout.report).toEqual({
       counts: {
         rects: 10,
@@ -189,6 +205,8 @@ describe('layoutScene', () => {
   it('reports stage timings from the clock it is given', () => {
     let now = 0;
     const timed = layoutScene(small, { clock: () => (now += 1) });
+    expect(LayoutReportSchema.parse(timed.report)).toEqual(timed.report);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(timed.report)))).toEqual(timed.report);
     expect(timed.report.timings).toEqual({ normalise: 1, size: 1, pack: 1, route: 1, total: 5 });
     expect({ ...timed, report: { ...timed.report, timings: undefined } }).toEqual({
       ...layout,
@@ -198,11 +216,44 @@ describe('layoutScene', () => {
 
   it('lays out an empty Scene as an empty canvas', () => {
     const empty = layoutScene(scene([]));
+    expect(LayoutReportSchema.parse(empty.report)).toEqual(empty.report);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(empty.report)))).toEqual(empty.report);
     expect(empty.rects).toEqual({});
     expect(empty.edges).toEqual({});
     expect(empty.report.routing.mode).toBe('none');
     expect(empty.bounds).toEqual({ x: 0, y: 0, width: 48, height: 48 });
     expect(empty.report.counts.maxDepth).toBe(0);
+  });
+
+  it('keeps the public layout report types compatible with their model contracts', () => {
+    expectTypeOf<PublicStageTimings>().toEqualTypeOf<StageTimings>();
+    expectTypeOf<PublicLayoutCounts>().toEqualTypeOf<LayoutCounts>();
+    expectTypeOf<PublicRoutingReport>().toEqualTypeOf<RoutingReport>();
+    expectTypeOf<PublicLayoutReport>().toEqualTypeOf<LayoutReport>();
+  });
+
+  it('preserves negative fractional durations from the caller clock', () => {
+    let now = 0;
+    const timed = layoutScene(small, { clock: () => (now -= 0.25) });
+    expect(timed.report.timings).toEqual({
+      normalise: -0.25,
+      size: -0.25,
+      pack: -0.25,
+      route: -0.25,
+      total: -1.25,
+    });
+    expect(LayoutReportSchema.parse(timed.report)).toEqual(timed.report);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(timed.report)))).toEqual(timed.report);
+  });
+
+  it.each([
+    ['none', { route: false }],
+    ['single-pass', { routing: { singlePassWork: 0 } }],
+  ] as const)('preserves emitted %s routing reports', (mode, options) => {
+    const output = layoutScene(small, options);
+    expect(output.report.routing.mode).toBe(mode);
+    expect(LayoutReportSchema.parse(output.report)).toEqual(output.report);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(output.report)))).toEqual(output.report);
   });
 
   it('counts zones widened by their header and labels too long for a card', () => {

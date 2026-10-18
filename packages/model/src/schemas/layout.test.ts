@@ -6,25 +6,165 @@ import {
   EdgePathSchema,
   EdgePortSchema,
   InsetsSchema,
+  LayoutCountsSchema,
   LayoutRectSchema,
+  LayoutReportSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
   RelationKindSchema,
+  RoutingReportSchema,
   SideSchema,
+  StageTimingsSchema,
   type EdgeBundle,
   type EdgeHeads,
   type EdgePath,
   type EdgePort,
   type Insets,
+  type LayoutCounts,
   type LayoutRect,
+  type LayoutReport,
   type Point,
   type Rect,
   type RectRole,
+  type RoutingReport,
   type Side,
+  type StageTimings,
 } from '../index.js';
 
 const point = { x: -1.25, y: 0.5 };
+const timings = { normalise: -1.25, size: 0, pack: 2.5, route: -0.5, total: 0.75 };
+const counts = {
+  rects: 1,
+  zones: 2,
+  chips: 3,
+  emptyZones: 4,
+  cards: 5,
+  edges: 6,
+  maxDepth: 7,
+  organisationZonesDropped: 8,
+  truncatedLabels: 9,
+  cappedTitles: 10,
+  headerWidened: 11,
+};
+const routingNumbers = {
+  passes: 1,
+  edges: 2,
+  holders: 3,
+  work: 4,
+  duplicatesMerged: 5,
+  reciprocalMerged: 6,
+  bundles: 7,
+  bundledEdges: 8,
+  dropped: 9,
+  fallbacks: 10,
+  failed: 11,
+  maxLanes: 12,
+  widened: 13,
+  wideningRounds: 14,
+  squeezed: 15,
+  overlaps: 16,
+};
+const routing = { ...routingNumbers, mode: 'none', bends: [0, -1.25, 2.5] } as const;
+const report = { counts, routing, warnings: ['z', '', 'a', 'z'] };
+
+describe('layout report contracts', () => {
+  it.each(['none', 'single-pass', 'three-pass'] as const)('preserves routing mode %s', (mode) => {
+    expect(RoutingReportSchema.parse({ ...routing, mode })).toEqual({ ...routing, mode });
+  });
+
+  it.each([-1.25, 0, 2.5])('preserves every numeric field without range refinements: %s', (value) => {
+    for (const key of Object.keys(timings)) {
+      const sample = { ...timings, [key]: value };
+      expect(StageTimingsSchema.parse(sample)).toEqual(sample);
+    }
+    for (const key of Object.keys(counts)) {
+      const sample = { ...counts, [key]: value };
+      expect(LayoutCountsSchema.parse(sample)).toEqual(sample);
+    }
+    for (const key of Object.keys(routingNumbers)) {
+      const sample = { ...routing, [key]: value };
+      expect(RoutingReportSchema.parse(sample)).toEqual(sample);
+    }
+  });
+
+  it('preserves warning order, duplicates and empty strings without report refinements', () => {
+    expect(LayoutReportSchema.parse(report)).toEqual(report);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(report)))).toEqual(report);
+    const empty = { ...report, routing: { ...routing, bends: [] }, warnings: [] };
+    expect(LayoutReportSchema.parse(empty)).toEqual(empty);
+  });
+
+  it('keeps timings absent or complete, never explicitly undefined', () => {
+    expect(LayoutReportSchema.parse(report)).not.toHaveProperty('timings');
+    const timed = { ...report, timings };
+    expect(LayoutReportSchema.parse(timed)).toEqual(timed);
+    expect(LayoutReportSchema.parse(JSON.parse(JSON.stringify(timed)))).toEqual(timed);
+    for (const invalid of [undefined, null, {}, { ...timings, total: undefined }]) {
+      expect(LayoutReportSchema.safeParse({ ...report, timings: invalid }).success).toBe(false);
+    }
+  });
+
+  it.each([Number.NaN, Infinity, -Infinity, '1', undefined])(
+    'refuses invalid numeric values: %s',
+    (value) => {
+      for (const key of Object.keys(timings)) {
+        expect(StageTimingsSchema.safeParse({ ...timings, [key]: value }).success).toBe(false);
+      }
+      for (const key of Object.keys(counts)) {
+        expect(LayoutCountsSchema.safeParse({ ...counts, [key]: value }).success).toBe(false);
+      }
+      for (const key of Object.keys(routingNumbers)) {
+        expect(RoutingReportSchema.safeParse({ ...routing, [key]: value }).success).toBe(false);
+      }
+      expect(RoutingReportSchema.safeParse({ ...routing, bends: [value] }).success).toBe(false);
+    },
+  );
+
+  it('refuses missing objects, unknown fields, invalid modes and non-string warnings', () => {
+    expect(StageTimingsSchema.safeParse({ ...timings, extra: 1 }).success).toBe(false);
+    expect(LayoutCountsSchema.safeParse({ ...counts, extra: 1 }).success).toBe(false);
+    expect(RoutingReportSchema.safeParse({ ...routing, extra: 1 }).success).toBe(false);
+    expect(RoutingReportSchema.safeParse({ ...routing, mode: 'unknown' }).success).toBe(false);
+    expect(LayoutReportSchema.safeParse({ ...report, counts: undefined }).success).toBe(false);
+    expect(LayoutReportSchema.safeParse({ ...report, routing: undefined }).success).toBe(false);
+    expect(LayoutReportSchema.safeParse({ ...report, warnings: [1] }).success).toBe(false);
+    expect(LayoutReportSchema.safeParse({ ...report, extra: 1 }).success).toBe(false);
+  });
+
+  it('preserves readonly fields, nested arrays and exact optionality in the inferred types', () => {
+    expectTypeOf<StageTimings>().toEqualTypeOf<Readonly<typeof timings>>();
+    expectTypeOf<LayoutCounts>().toEqualTypeOf<Readonly<typeof counts>>();
+    expectTypeOf<RoutingReport>().toEqualTypeOf<
+      Readonly<
+        typeof routingNumbers & {
+          mode: 'none' | 'single-pass' | 'three-pass';
+          bends: readonly number[];
+        }
+      >
+    >();
+    expectTypeOf<LayoutReport>().toEqualTypeOf<
+      Readonly<{
+        timings?: StageTimings;
+        counts: LayoutCounts;
+        routing: RoutingReport;
+        warnings: readonly string[];
+      }>
+    >();
+    const parsed = LayoutReportSchema.parse({ ...report, timings });
+    for (const value of [
+      parsed,
+      parsed.timings,
+      parsed.counts,
+      parsed.routing,
+      parsed.routing.bends,
+      parsed.warnings,
+    ]) {
+      expect(Object.isFrozen(value)).toBe(true);
+    }
+  });
+});
+
 const rect = { ...point, width: -2.75, height: 0 };
 const insets = { top: -3.5, right: 0, bottom: 4.25, left: -1 };
 const layoutRect = {

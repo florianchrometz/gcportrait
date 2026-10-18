@@ -291,8 +291,24 @@ omits it on other rects. It is the full or short count line chosen during sizing
 it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
-tests check emitted rects and routes against the schemas. The complete `Layout`, its other output shapes
-and the worker protocol remain declared in `@gcportrait/layout`.
+tests check emitted rects, routes and reports against the schemas. The complete `Layout`, its other output
+shapes and the worker protocol remain declared in `@gcportrait/layout`.
+
+### Reports
+
+The same module declares the layout's report contracts. Numeric fields accept finite negative and
+fractional values without count, timing or cross-field refinements; warning order is preserved, not sorted
+by the schema. `LayoutReport.timings` is absent or a complete `StageTimings`, never explicitly `undefined`.
+
+| Export | What |
+|---|---|
+| `StageTimingsSchema`, `StageTimings` | `normalise`, `size`, `pack`, `route`, `total` in milliseconds |
+| `LayoutCountsSchema`, `LayoutCounts` | rect, zone, chip, empty-zone, card and edge counts; maximum depth, dropped organisation zones and text-sizing counts |
+| `RoutingReportSchema`, `RoutingReport` | routing `mode` (`none`, `single-pass`, `three-pass`), work, edge, lane, bundle and widening counts, and readonly `bends` histogram |
+| `LayoutReportSchema`, `LayoutReport` | `counts`, `routing`, readonly `warnings` and optional `timings` |
+
+These schemas describe JSON-safe reports. The caller's optional clock remains unchecked by the layout
+engine: this schema declaration does not normalise its results or change how the engine uses it.
 
 ## Scene builder environment and report
 

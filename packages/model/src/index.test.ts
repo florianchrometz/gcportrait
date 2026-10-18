@@ -118,6 +118,10 @@ describe('public surface', () => {
         'EdgeHeadsSchema',
         'EdgeBundleSchema',
         'EdgePathSchema',
+        'StageTimingsSchema',
+        'LayoutCountsSchema',
+        'RoutingReportSchema',
+        'LayoutReportSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',
