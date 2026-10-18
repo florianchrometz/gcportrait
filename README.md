@@ -143,8 +143,9 @@ with `[` and `]`. gcportrait works on phones, tablets and desktops with the same
 <tr>
 <td width="50%" valign="top">
 <h3>Diagrams from real data</h3>
-<p>Nothing to draw by hand. Folders, projects, networks and clusters nest as zones; load balancer chains,
-Shared VPC and every other reference become arrows routed through the gaps, never across a box.</p>
+<p>Nothing to draw by hand. Folders, projects, networks and clusters nest as zones, Google’s product
+icons sit on every card, and load balancer chains, Shared VPC and every other reference become arrows
+routed through the gaps, never across a box.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/hero-dark.png">
   <img src="docs/media/stills/hero-light.png" width="400" alt="gcportrait drawing the whole synthetic demo organisation S in the Overview lens: folders and projects as nested zones, the Shared VPC host's network and subnetworks as tinted zones, resources as cards with Google Cloud product icons, orthogonal arrows for the references between them, a title block and a legend.">
@@ -152,9 +153,10 @@ Shared VPC and every other reference become arrows routed through the gaps, neve
 </td>
 <td width="50%" valign="top">
 <h3>Lenses, focus and filters</h3>
-<p>Eleven lenses redraw the same organisation for one question: networking, load balancing, compute, data,
-security and more. Focus on a project, a Shared VPC or a perimeter; filter by region, project, folder, type
-and depth. The API takes the same view. <a href="docs/lenses-and-filters.md">Guide</a></p>
+<p>Eleven lenses redraw the same organisation: the overview, everything, and one for each question —
+networking, load balancing, compute, serverless, Kubernetes, data, security, identity and operations. Focus
+on a project, a Shared VPC or a perimeter; filter by region, project, folder, type and depth. The API takes
+the same view. <a href="docs/lenses-and-filters.md">Guide</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/lenses-dark.gif">
   <img src="docs/media/animated/lenses-light.gif" width="400" alt="Animation: the Lens picker switches the demo organisation S from the Overview to the Networking lens and then to the Load balancing lens; each redraws the same organisation for a different question.">
@@ -164,9 +166,9 @@ and depth. The API takes the same view. <a href="docs/lenses-and-filters.md">Gui
 <tr>
 <td width="50%" valign="top">
 <h3>Click to trace, open in the console</h3>
-<p>Click a resource and its path to the top and its connections stay traced, the whole chain behind a load
-balancer included. The details drawer lists its facts and relations; "Open in Cloud Console" opens its page
-only when you choose it.</p>
+<p>Hover a resource and its path to the top of the organisation lights up; click it and its path and its
+connections stay traced, the whole chain behind a load balancer included. The details drawer lists its
+facts and relations, and “Open in Cloud Console” opens its page only when you choose it.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/trace-dark.png">
   <img src="docs/media/stills/trace-light.png" width="400" alt="A global forwarding rule selected in the Load balancing lens: its chain through the target HTTPS proxy, the URL map, the backend services and the backend bucket to the instance group and the serverless network endpoint group is highlighted, with its path to the root of the organisation and its details drawer open.">
@@ -174,9 +176,10 @@ only when you choose it.</p>
 </td>
 <td width="50%" valign="top">
 <h3>A 35-day timeline</h3>
-<p>Move any view through the last 35 days. Each day is compared with the day you came from: added
-resources outlined, removed ones as ghosts where they stood, changed ones marked. The API draws any of those
-days. <a href="docs/timeline.md">Guide</a></p>
+<p>Move any view through the last 35 days, each day read from Cloud Asset Inventory when you stop on it and
+kept in your browser. Each day is compared with the day you came from: added resources outlined, removed
+ones as ghosts where they stood, changed ones marked. Exports and manual pulls appear as extra ticks, and
+the API draws any of those days. <a href="docs/timeline.md">Guide</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/timeline-dark.gif">
   <img src="docs/media/animated/timeline-light.gif" width="400" alt="Animation: the Workloads folder of the demo organisation S on the timeline, which jumps from 4 September to 8, 14 and 25 September; each day is drawn compared with the one before. On 8 September a new Pub/Sub subscription is outlined in green, on 14 September the next one is outlined and the first stands as a faded, dashed ghost, and on 25 September the decommissioned reporting project with its bucket, network, subnetwork and virtual machine stands as a ghost, a second machine in the web group is outlined, two more removed resources are ghosts and amber dots mark the changed ones. The view then zooms in on the ghost of the reporting project, marked removed, and moves to the legend, whose rows read added, removed and changed since 14 September.">
@@ -186,8 +189,8 @@ days. <a href="docs/timeline.md">Guide</a></p>
 <tr>
 <td width="50%" valign="top">
 <h3>Drill in and expand</h3>
-<p>Large organisations open collapsed: projects become chips that count what they hold. Click a zone to
-expand it in place, double-click to make it the whole canvas; the breadcrumb leads back out.</p>
+<p>Large organisations open collapsed: projects become chips that count what they hold. Click a zone to expand
+it in place, double-click to make it the whole canvas; the breadcrumb leads back out.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/animated/drill-in-dark.gif">
   <img src="docs/media/animated/drill-in-light.gif" width="400" alt="Animation: a click on a collapsed project expands it in place, then a double-click on another project drills into it so that it fills the canvas, with the breadcrumb leading back out.">
@@ -217,14 +220,15 @@ self-hosted instance draws the same files for scripts through its API (<code>POS
 </td>
 <td width="50%" valign="top">
 <h3>Export to draw.io, edit in diagrams.net</h3>
-<p>The draw.io file is the drawing as a diagram you can edit, not a picture of it: in diagrams.net or
-draw.io every zone is a container that moves with what it holds, every resource a group of its box, Google's
-icon and its label, every arrow a connector between its two resources, and the title block and the legend sit
-on a layer of their own, in the colours of the theme you exported. It is the SVG drawing translated, not drawn
-a second time, and the test suite checks it against the SVG. Open the
-<a href="https://gcportrait.app/exports/">sample exports</a> in diagrams.net to try it. gcportrait itself
-stays a viewer: draw.io is an export, never an import
-(<a href="docs/faq.md#why-can-i-not-import-a-drawio-file">why</a>).</p>
+<p>The draw.io file is the drawing as a diagram you can edit, not a picture of it: in diagrams.net or draw.io
+every zone is a container that moves with what it holds, every resource a group of its box, Google’s icon and
+its label, every arrow a connector between its two resources with its bends, heads and dashes, and the title
+block and the legend sit on a layer of their own, in the colours of the theme you exported. It is the SVG
+drawing translated, not drawn a second time, and the test suite checks it against the SVG. gcportrait itself
+stays a viewer: draw.io is an export, never an import.</p>
+<p>Open the <a href="https://gcportrait.app/exports/">sample exports</a> in diagrams.net to try it.
+<a href="docs/export.md">The draw.io file</a> ·
+<a href="docs/faq.md#why-can-i-not-import-a-drawio-file">Why export only</a></p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/exports/S-overview-dark-960.webp">
   <img src="docs/media/exports/S-overview-light-960.webp" width="400" alt="Demo S, Overview lens. The whole small demo organisation as the app opens it: folders, projects, the Shared VPC with its networks and every resource, with arrows for the references.">
@@ -238,9 +242,9 @@ stays a viewer: draw.io is an export, never an import
 generated in your browser. Try the diagrams, lenses, search, timeline and export before you deploy anything.
 <a href="#try-the-demo">Try it</a></p>
 <h3>Your inventory stays in your browser</h3>
-<p>Snapshots, the demo's and your own, live in your browser and leave it only as files you export. The
-backend is stateless: it streams what Cloud Asset Inventory returns and keeps nothing; your sign-in token
-stays in the tab's memory.</p>
+<p>Snapshots, the demo’s and your own, live in your browser and leave it only as files you export. The backend
+is stateless: it streams what Cloud Asset Inventory returns and keeps nothing; your sign-in token stays in the
+tab’s memory.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/snapshots-dark.png">
   <img src="docs/media/stills/snapshots-light.png" width="400" alt="The Snapshots page listing the demo organisations S and M stored in this browser, each with Load, Export and a red Delete button, then each scope's timeline and the import area; nothing is uploaded anywhere.">
@@ -261,9 +265,10 @@ unmapped types are listed with a reason. A type the catalog does not know still 
 <tr>
 <td colspan="2" valign="top">
 <h3>Light and dark</h3>
-<p>Every view in a light and a dark theme, Google's product icons unchanged. The app follows your system or
-your choice, and an export, from the app or the API, is drawn in the theme you pick. Shown here in the theme
-you are not using.</p>
+<p>Every view in a light and a dark theme, with the same layout, the same tints and Google’s product icons
+unchanged. The app follows your system or the theme you pick, and an export, from the app or the API, is drawn
+in the theme you choose, whatever the screen shows.</p>
+<p>Shown here in the theme you are not using.</p>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/stills/hero-light.png">
   <img src="docs/media/stills/hero-dark.png" width="400" alt="The demo organisation S in the Overview lens in the other theme: the same layout, tints and product icons.">

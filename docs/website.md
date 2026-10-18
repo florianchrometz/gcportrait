@@ -59,9 +59,11 @@ pnpm --filter @gcportrait/website typecheck  # the site's TypeScript: tsc -b ove
 
 The build reads everything from the repository at build time: the guides listed in `website/src/data/docs.ts`
 (every guide in `docs/` is either a page or listed there as not one, which a unit test enforces),
-`docs/author.md`, the compiled catalog and `pnpm catalog:coverage --json`, and the media in `docs/media/`; the
-one thing it asks outside the repository is the repository widget's facts on GitHub ([GitHub repository
-widget](#github-repository-widget)). A deploying build also counts the site's page views
+`docs/author.md`, the compiled catalog and `pnpm catalog:coverage --json`, the features' copy in
+`website/src/data/features.json` (the README's feature cells repeat it, and `scripts/readme.test.ts` compares
+them), and the media in `docs/media/`; the one thing it asks outside the repository is the repository widget's
+facts on GitHub ([GitHub repository widget](#github-repository-widget)). A deploying build also counts the
+site's page views
 ([Analytics](#analytics)); `WEBSITE_ANALYTICS=0` switches that off, `WEBSITE_ANALYTICS=1` on in any build. A
 guide or a medium that is missing is left out with a warning; a **strict** build (`WEBSITE_STRICT=1`, set by
 the deploy jobs) fails instead, and also fails while `docs/author.md` still holds a placeholder (`[IN

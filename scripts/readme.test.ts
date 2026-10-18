@@ -3,8 +3,10 @@
  * The root README's order (AGENTS.md, Documentation): what gcportrait is and does first, then the quick
  * starts, the features with their images, the contributing sections, and the non-affiliation statement and the
  * licence at the bottom. Its wording is free; this test holds the order and the pieces each part must show, the
- * alt text of each generated still and animated demo it shows to the website's (website/src/data/media.json), and
- * the alt text of each sample export it shows to that sample's title and summary (scripts/exports.mjs, SAMPLES).
+ * alt text of each generated still and animated demo it shows to the website's (website/src/data/media.json), the
+ * alt text of each sample export it shows to that sample's title and summary (scripts/exports.mjs, SAMPLES), and
+ * each feature cell's heading and paragraph to the website's copy of it (website/src/data/features.json), which
+ * the landing page shows too.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -115,6 +117,43 @@ const EXPORT_ALTS = new Map<string, string>(
 const showsOtherTheme = (image: Image): boolean =>
   /-dark\.\w+$/.test(image.src) && image.dark === image.src.replace(/-dark(\.\w+)$/, '-light$1');
 
+/** A feature's copy: one entry per feature in website/src/data/features.json, the landing page's source too. */
+type FeatureCopy = { readonly id: string; readonly title: string; readonly blurb: string };
+
+const FEATURES: readonly FeatureCopy[] = JSON.parse(
+  readFileSync(path.join(REPO, 'website/src/data/features.json'), 'utf8'),
+) as readonly FeatureCopy[];
+
+/** HTML as a browser reads it: character references resolved, tags dropped, whitespace collapsed. */
+const htmlText = (html: string): string =>
+  html
+    .replaceAll('&nbsp;', ' ')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/** The features section's cells, each `## h3` heading with the HTML that follows it in its table cell. */
+const FEATURE_CELLS = new Map(
+  [...section('Features').matchAll(/<h3>([^<]+)<\/h3>([\s\S]*?)(?=<h3>|<\/td>)/g)].map((match) => [
+    htmlText(match[1] ?? ''),
+    match[2] ?? '',
+  ]),
+);
+
+/**
+ * A feature cell's claim: its first paragraph without the links, which are each page's own (the README's point at
+ * files of the repository, the landing page's at its guide pages).
+ */
+const claim = (cell: string): string =>
+  htmlText(
+    (/<p>([\s\S]*?)<\/p>/.exec(cell)?.[1] ?? '').replace(/<a\b[^>]*>[\s\S]*?<\/a>/g, ' ').replace(/·/g, ' '),
+  );
+
 describe('the README', () => {
   it('keeps its sections in order, the statement and the licence last', () => {
     expect([...SECTIONS.keys()]).toEqual(ORDER);
@@ -155,6 +194,28 @@ describe('the README', () => {
       .filter((image) => image.alt !== WEBSITE_ALTS.get(image.src))
       .map((image) => ({ src: image.src, readme: image.alt, website: WEBSITE_ALTS.get(image.src) }));
     expect(differing).toEqual([]);
+  });
+
+  it('gives every feature cell the website’s heading and paragraph, so neither front page copies a blurb of its own', () => {
+    // The one source, in the order the two pages show the features: a cell the site has no medium for (asset
+    // coverage) is in it too, so no cell is left out of the check.
+    expect([...FEATURE_CELLS.keys()]).toEqual(FEATURES.map((feature) => feature.title));
+    const differing = FEATURES.filter(
+      (feature) => claim(FEATURE_CELLS.get(feature.title) ?? '') !== htmlText(feature.blurb),
+    ).map((feature) => ({
+      feature: feature.id,
+      readme: claim(FEATURE_CELLS.get(feature.title) ?? ''),
+      website: htmlText(feature.blurb),
+    }));
+    expect(differing).toEqual([]);
+  });
+
+  it('reads a feature cell’s claim without the links its page puts in it', () => {
+    expect(claim('<p>A claim, in words. <a href="docs/export.md">Guide</a></p>')).toBe('A claim, in words.');
+    expect(claim('<p>A claim. <a href="a">One</a> · <a href="b">Two</a></p>')).toBe('A claim.');
+    expect(claim('<p>Press <code>/</code> to search.</p>')).toBe('Press / to search.');
+    expect(claim('')).toBe('');
+    expect(htmlText('A&nbsp;claim &amp; more')).toBe('A claim & more');
   });
 
   it('describes each sample export in its sample’s title and summary, so it says what the website’s card says', () => {

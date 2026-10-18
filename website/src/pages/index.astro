@@ -6,8 +6,10 @@
  * src/components/StartLink.astro) and "Use the API"; then the three ways, each with its proof (the deploy command, a
  * still of the app and the demo, a render request with the sample export it returns) and its guide; the features, each
  * marked with the way it serves (the draw.io export with a sample to open in diagrams.net, the last one the light and
- * the dark theme side by side), the sample exports, how it works, self-hosting in 10 minutes (with the same two buttons
- * below the installer), the service-account grant, questions, the author.
+ * the dark theme side by side), their headings and paragraphs from src/data/features.json, the one source of the
+ * feature copy the README's cells are checked against (scripts/readme.test.ts); the sample exports, how it works,
+ * self-hosting in 10 minutes (with the same two buttons below the installer), the service-account grant, questions,
+ * the author.
  *
  * Its commands are fillable as the docs pages' are (docs/website.md, "Fillable commands"): rendered by the same
  * functions of src/lib/markdown.ts, with the Variables panel and its script after the grant command, and the values
@@ -26,6 +28,7 @@ import { CONTRIBUTORS_URL, authorSection } from '../lib/author.js';
 import { coverageReport, totals } from '../lib/coverage.js';
 import { renderedDocs } from '../lib/docs.js';
 import { exportLinkName, sampleExports } from '../lib/exports.js';
+import { featureCopy } from '../lib/features.js';
 import { renderCommandBlock, renderInlineCode } from '../lib/markdown.js';
 import { scene, socialImage, still, type ThemedImage } from '../lib/media.js';
 import { personLd, softwareApplicationLd, sourceCodeLd } from '../lib/seo.js';
@@ -65,6 +68,23 @@ const media = {
   export: still('export'),
   snapshots: still('snapshots'),
   drawer: still('drawer'),
+};
+
+// Each feature's heading and paragraph come from the one source the README's feature cells are checked against
+// (src/data/features.json, src/lib/features.ts): a feature's promise cannot differ between the two front pages.
+// What only this page can know, its guide links and the counts its build computes, stays here.
+const copy = {
+  diagrams: featureCopy('diagrams'),
+  lenses: featureCopy('lenses'),
+  trace: featureCopy('trace'),
+  timeline: featureCopy('timeline'),
+  drillIn: featureCopy('drill-in'),
+  search: featureCopy('search'),
+  export: featureCopy('export'),
+  drawio: featureCopy('drawio'),
+  demo: featureCopy('demo'),
+  dataStays: featureCopy('data-stays'),
+  lightDark: featureCopy('light-dark'),
 };
 
 // The landing page's teaser shows the whole-organisation samples, one per demo size; /exports/ has them all.
@@ -288,12 +308,11 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Web app · API</p>
-          <h3>Google Cloud-style diagrams from real data</h3>
-          <p>
-            Nested zones for folders, projects, VPC networks, subnetworks and clusters, Google’s product icons, and
-            orthogonal arrows routed through the gaps between them. {`${fmt(numbers.mapped)} of the ${fmt(report.officialTotal)} asset types Cloud Asset Inventory lists`} are
-            described in the catalog
-            (<a href="/coverage/">coverage</a>).
+          <h3>{copy.diagrams.title}</h3>
+          <p><Fragment set:html={copy.diagrams.blurb} /></p>
+          <p class="muted small">
+            {`${fmt(numbers.mapped)} of the ${fmt(report.officialTotal)} asset types Cloud Asset Inventory lists`} are
+            described in the <a href="/coverage/">catalog</a>.
           </p>
         </div>
         {heroStill !== undefined && <figure class="shot"><ThemedPicture image={heroStill} sizes={FEATURE_SIZES} /></figure>}
@@ -302,12 +321,9 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Web app · API</p>
-          <h3>Lenses, focus and filters</h3>
+          <h3>{copy.lenses.title}</h3>
           <p>
-            {numbers.lenses} lenses redraw the same organisation: the overview, everything, and one for each question:
-            networking, load balancing, compute, serverless, Kubernetes, data, security, identity, operations. Focus on
-            a project, a Shared VPC or a perimeter; filter by region, project, folder, type and depth. The API takes the
-            same view.{' '}
+            <Fragment set:html={copy.lenses.blurb} />{' '}
             <a href="/docs/lenses-and-filters/">Lenses and filters</a>
           </p>
         </div>
@@ -317,12 +333,8 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Web app</p>
-          <h3>Click to trace</h3>
-          <p>
-            Hover a resource and its path to the top of the organisation lights up; click it and its connections stay
-            traced, the whole chain behind a load balancer included. The details drawer lists its facts and relations,
-            and “Open in Cloud Console” opens its console page when you choose it.
-          </p>
+          <h3>{copy.trace.title}</h3>
+          <p><Fragment set:html={copy.trace.blurb} /></p>
         </div>
         {media.trace !== undefined && <figure class="shot"><ThemedPicture image={media.trace} sizes={FEATURE_SIZES} /></figure>}
       </article>
@@ -330,23 +342,27 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Web app</p>
-          <h3>Drill in, expand, search</h3>
-          <p>
-            Large organisations open collapsed: a click on a chip expands it in place, a double-click on a project or
-            folder makes it the whole canvas. Search finds any asset by name, IP address, domain or project id and
-            takes you to it.
-          </p>
+          <h3>{copy.drillIn.title}</h3>
+          <p><Fragment set:html={copy.drillIn.blurb} /></p>
         </div>
         {media.drillIn !== undefined && <figure class="shot"><DemoVideo video={media.drillIn} /></figure>}
       </article>
 
       <article class="feature">
         <div class="feature-text">
+          <p class="feature-tag">Web app</p>
+          <h3>{copy.search.title}</h3>
+          <p><Fragment set:html={copy.search.blurb} /></p>
+        </div>
+        {media.search !== undefined && <figure class="shot"><DemoVideo video={media.search} /></figure>}
+      </article>
+
+      <article class="feature">
+        <div class="feature-text">
           <p class="feature-tag">Web app · API</p>
-          <h3>A 35-day timeline</h3>
+          <h3>{copy.timeline.title}</h3>
           <p>
-            Daily ticks over the last 35 days, read from Cloud Asset Inventory when you stop on one and kept in your
-            browser. Exports and manual pulls appear as extra ticks, and the API draws any of those days.{' '}
+            <Fragment set:html={copy.timeline.blurb} />{' '}
             <a href="/docs/timeline/">The timeline</a>
           </p>
         </div>
@@ -356,11 +372,9 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Web app · API</p>
-          <h3>Export SVG, PNG and draw.io</h3>
+          <h3>{copy.export.title}</h3>
           <p>
-            Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file: the whole diagram or the visible part,
-            in either theme, with a title block, a legend and the date it shows. Every view is also a link, and your
-            instance’s API renders the same files for scripts.{' '}
+            <Fragment set:html={copy.export.blurb} />{' '}
             <a href="/docs/export/">Export</a> · <a href="/docs/api/">API</a>
           </p>
         </div>
@@ -370,18 +384,10 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Web app · API</p>
-          <h3>Export to draw.io, edit in diagrams.net</h3>
+          <h3>{copy.drawio.title}</h3>
+          <p><Fragment set:html={copy.drawio.blurb} /></p>
           <p>
-            The draw.io file is the drawing as a diagram you can edit, not a picture of it. Open it in diagrams.net or
-            draw.io and every zone is a container that moves with what it holds, every resource a group of its box,
-            Google’s icon and its label, and every arrow a connector between its two resources, with its bends, heads
-            and dashes; the title block and the legend sit on a layer of their own. It is the SVG drawing translated,
-            not drawn a second time: every shape is where the picture has it, in the colours of the theme you exported,
-            and the test suite checks it against the SVG, box by box and line by line.
-          </p>
-          <p>
-            Move, restyle and annotate it there for a review, a wiki page or a slide. gcportrait itself stays a viewer
-            of what Cloud Asset Inventory holds, so draw.io is an export and never an import.{' '}
+            Move, restyle and annotate it there for a review, a wiki page or a slide.{' '}
             <a href="/docs/export/#4-what-the-files-contain">The draw.io file</a> ·
             <a href="/docs/faq/#why-can-i-not-import-a-drawio-file">Why export only</a>
           </p>
@@ -428,27 +434,21 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
       </article>
 
       <article class="feature">
-        <div class="feature-text">
+        <div class="feature-text feature-text-only">
           <p class="feature-tag">Web app</p>
-          <h3>A demo mode, no account needed</h3>
+          <h3>{copy.demo.title}</h3>
           <p>
-            Four synthetic organisations, from about 100 to about 50 000 assets with a 35-day history, generated in
-            your browser. Try every feature before you deploy anything.{' '}
+            <Fragment set:html={copy.demo.blurb} />{' '}
             <DemoLink>Open the demo</DemoLink>
           </p>
         </div>
-        {media.search !== undefined && <figure class="shot"><DemoVideo video={media.search} /></figure>}
       </article>
 
       <article class="feature">
         <div class="feature-text">
           <p class="feature-tag">Self-hosted · Web app</p>
-          <h3>Your data stays in your browser</h3>
-          <p>
-            Snapshots are stored in your browser and leave it only as files you export. The backend on your instance is
-            stateless: it streams what Cloud Asset Inventory returns to your browser and keeps nothing; your sign-in
-            token stays in the tab’s memory.
-          </p>
+          <h3>{copy.dataStays.title}</h3>
+          <p><Fragment set:html={copy.dataStays.blurb} /></p>
         </div>
         {media.snapshots !== undefined && <figure class="shot"><ThemedPicture image={media.snapshots} sizes={FEATURE_SIZES} /></figure>}
       </article>
@@ -458,13 +458,9 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
           <article class="feature feature-wide">
             <div class="feature-text">
               <p class="feature-tag">Web app · API</p>
-              <h3>Light and dark</h3>
-              <p>
-                Every view in a light and a dark theme, with the same layout, the same tints and Google’s product icons
-                unchanged. The app follows your system or the theme you pick, and an export, from the app or the API,
-                is drawn in the theme you choose, whatever the screen shows. Both pictures are demo S in the Overview
-                lens.
-              </p>
+              <h3>{copy.lightDark.title}</h3>
+              <p><Fragment set:html={copy.lightDark.blurb} /></p>
+              <p class="muted small">Both pictures are demo S in the Overview lens.</p>
             </div>
             <div class="theme-pair">
               <figure class="theme-shot">
@@ -834,6 +830,13 @@ const PILLAR_SIZES = '(min-width: 72rem) 32rem, (min-width: 49rem) calc(50vw - 4
   }
   .feature p {
     color: var(--color-text-muted);
+  }
+  /*
+   * A feature with no medium of its own (the demo mode, which the hero and every scene already show): its text
+   * keeps a readable measure rather than the whole width of the row.
+   */
+  .feature-text-only {
+    max-width: 44rem;
   }
   .feature figure {
     min-width: 0;
