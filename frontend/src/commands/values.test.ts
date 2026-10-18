@@ -21,6 +21,7 @@ import {
   matchesFormat,
   readStoredEntries,
   resolveCommand,
+  safeEmail,
   storedEntriesText,
   unfilledNote,
 } from './values';
@@ -142,6 +143,23 @@ describe('the facts the app knows', () => {
       }),
     ).toEqual({});
   });
+});
+
+describe('the safe-email rule', () => {
+  it.each([
+    'ada@example.com',
+    'gcportrait-backend@demo-host.iam.gserviceaccount.com',
+    'a.b+c_d%e-f@example.org',
+  ])('keeps %s, which a double-quoted shell word holds as it is', (email) => {
+    expect(safeEmail(email)).toBe(email);
+  });
+
+  it.each([null, '', '"$(id)"@example.com', 'a b@c.d', 'ada@example', 'ada@example.c', '`id`@example.com'])(
+    'refuses %j',
+    (email) => {
+      expect(safeEmail(email)).toBeUndefined();
+    },
+  );
 });
 
 describe('what the session keeps', () => {

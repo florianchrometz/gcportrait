@@ -12,7 +12,7 @@
  */
 import type { ReactElement } from 'react';
 
-import { SCOPE_ID_VARIABLES } from '../commands/values';
+import { safeEmail, SCOPE_ID_VARIABLES } from '../commands/values';
 import { VariablesPanel } from '../commands/VariablesPanel';
 import { exportCommand } from '../import/commands';
 import type { ScopeChoice, ScopeKind } from '../scope/scopeName';
@@ -20,13 +20,6 @@ import { useScreen } from '../ui/screen';
 import { CommandBlock } from './CommandBlock';
 import { EMAIL_PLACEHOLDER, serviceAccountParagraphs } from './copy';
 import styles from './Preflight.module.css';
-
-/** An email that is safe inside a double-quoted shell word (the backend's own rule, preflight/commands.ts). */
-const SAFE_EMAIL = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}$/;
-
-function safeEmail(email: string | null | undefined): string | null {
-  return email !== null && email !== undefined && SAFE_EMAIL.test(email) ? email : null;
-}
 
 /** The `gcloud` command group that grants roles on a scope of each kind. */
 const COMMAND_GROUPS: Readonly<Record<ScopeKind, string>> = {

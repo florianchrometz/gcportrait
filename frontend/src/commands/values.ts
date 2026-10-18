@@ -48,7 +48,8 @@ export const SCOPE_ID_VARIABLES = {
 /** An email that is safe inside a double-quoted shell word (the backend's own rule, preflight/commands.ts). */
 const SAFE_EMAIL = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}$/;
 
-function safeEmail(email: string | null): string | undefined {
+/** `email` when {@link SAFE_EMAIL} holds it, else undefined: the app's one rule for an email in a command. */
+export function safeEmail(email: string | null): string | undefined {
   return email !== null && SAFE_EMAIL.test(email) ? email : undefined;
 }
 
