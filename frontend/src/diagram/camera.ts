@@ -31,7 +31,7 @@
 import type { Rect } from '@gcportrait/layout';
 
 import { SUBTITLE_MIN_SCALE } from './lod';
-import { CLICK_DISTANCE, SCALE_EXTENT, type CameraTransform } from './viewport';
+import { CLICK_DISTANCE, centreAt, clampScale, type CameraTransform } from './viewport';
 
 /**
  * How long a centring glide takes (ms): 200, the search hit's "200 ms glide to centre" (skill gcp-diagram-style
@@ -51,10 +51,8 @@ export function focusTransform(
 ): CameraTransform {
   const room = (size: number): number => Math.max(1, size - 2 * padding);
   const fits = Math.min(room(width) / Math.max(1, rect.width), room(height) / Math.max(1, rect.height));
-  const k = Math.min(SCALE_EXTENT[1], Math.max(SCALE_EXTENT[0], Math.min(Math.max(current.k, 1), fits)));
-  const cx = rect.x + rect.width / 2;
-  const cy = rect.y + rect.height / 2;
-  return { k, x: width / 2 - cx * k, y: height / 2 - cy * k };
+  const k = clampScale(Math.min(Math.max(current.k, 1), fits));
+  return centreAt(rect, width, height, k);
 }
 
 /**
@@ -242,10 +240,6 @@ export function revealTransform(
 export const KEYBOARD_MIN_SCALE = SUBTITLE_MIN_SCALE;
 /** One press of a zoom key (`+` in, `-` out) scales the camera by this factor. */
 export const ZOOM_STEP = 1.5;
-
-function clampScale(k: number): number {
-  return Math.min(SCALE_EXTENT[1], Math.max(SCALE_EXTENT[0], k));
-}
 
 /**
  * The camera `current` scaled to `k` (within the scale extent) about the screen point (`px`, `py`): what is drawn

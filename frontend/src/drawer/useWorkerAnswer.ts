@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { isDataCancelled, type DataClient } from '../diagram/pipeline/dataClient';
 import { useDiagramSession } from '../diagram/session';
+import { keepNewest } from '../lru';
 
 /** How many answers are kept (per key). */
 const KEPT = 24;
@@ -44,13 +45,7 @@ export function useWorkerAnswer<T>(
     asked.current(client, controller.signal).then(
       (value) => {
         const state: AnswerState<T> = { status: 'ready', value };
-        kept.current.delete(key);
-        kept.current.set(key, state);
-        while (kept.current.size > KEPT) {
-          const oldest = kept.current.keys().next().value;
-          if (oldest === undefined) break;
-          kept.current.delete(oldest);
-        }
+        keepNewest(kept.current, key, state, KEPT);
         setAnswer({ key, state });
       },
       (error: unknown) => {

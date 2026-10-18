@@ -12,7 +12,7 @@
  * reports that same hash back, nothing changes. The `selection` slice's selected and highlighted ids are derived
  * from the view; nothing else in the store is ever written to the hash.
  */
-import { flipIdOf } from '@gcportrait/graph';
+import { toggleFlipToken } from '@gcportrait/graph';
 import {
   decodeViewSpec,
   encodeViewSpec,
@@ -379,17 +379,7 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
       );
     },
     flip: (zoneId, options) => {
-      const token = flipIdOf(zoneId);
-      write(
-        (spec) => ({
-          ...spec,
-          flips: spec.flips.includes(token)
-            ? spec.flips.filter((flip) => flip !== token)
-            : [...spec.flips, token],
-        }),
-        'push',
-        options,
-      );
+      write((spec) => ({ ...spec, flips: toggleFlipToken(spec.flips, zoneId) }), 'push', options);
     },
     expandAll: (options) => {
       disclose('expand', options?.history ?? 'push');

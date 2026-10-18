@@ -19,6 +19,7 @@ import {
   type PngGeometry,
 } from '@gcportrait/model';
 
+import { parseHex } from '../diagram/theme/contrast';
 import { EMBEDDED_FACES, type EmbeddedFace } from './fonts';
 import { pngGeometry as sharedPngGeometry } from './pngGeometry';
 import { svgChild, type PreparedSvg } from './serialize';
@@ -131,12 +132,6 @@ export function addRasterFrame(prepared: PreparedSvg, geometry: PngGeometry, bac
 const FONT_WAIT_MS = 5_000;
 const FONT_POLL_MS = 20;
 
-function parseColour(colour: string): readonly [number, number, number] {
-  const hex = /^#([0-9a-f]{6})$/i.exec(colour)?.[1];
-  if (hex === undefined) throw new Error(`Not a #rrggbb colour: ${colour}`);
-  return [0, 2, 4].map((at) => Number.parseInt(hex.slice(at, at + 2), 16)) as [number, number, number];
-}
-
 /** Whether a canvas region has a pixel that differs from the background (a painted glyph). */
 function painted(context: CanvasRenderingContext2D, box: Rect, background: readonly number[]): boolean {
   const { data } = context.getImageData(box.x, box.y, Math.max(1, box.width), Math.max(1, box.height));
@@ -167,7 +162,7 @@ export async function rasterizeSvg(
   image.decoding = 'async';
   image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
   await image.decode();
-  const rgb = parseColour(background);
+  const rgb = parseHex(background);
   const band = sentinelBand(geometry);
   const boxes = sentinelBoxes(geometry);
   // The sentinels are polled on a canvas of the band's size; the image itself is drawn once, on the PNG's.

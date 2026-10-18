@@ -19,13 +19,12 @@ import { decodeViewSpec } from '@gcportrait/model';
 import { autoLevelChange, budgetOf } from '../diagram/autoDetail';
 import { diffFrom } from '../diagram/diff/base';
 import { DataWorkerError, isDataCancelled } from '../diagram/pipeline/dataClient';
-import type { DataStage, Viewport } from '../diagram/pipeline/protocol';
+import { FALLBACK_VIEWPORT, type DataStage, type Viewport } from '../diagram/pipeline/protocol';
+
+export { FALLBACK_VIEWPORT };
 import type { DiagramWorkers } from '../diagram/pipeline/workers';
 import type { PipelineError, PipelineSlice, SnapshotStage } from './slices';
 import type { AppStore } from './store';
-
-/** The canvas size used until the canvas has been measured: a 1280 × 800 window's. */
-export const FALLBACK_VIEWPORT: Viewport = { width: 1280, height: 800 };
 
 export function locateViewport(pipeline: Pick<PipelineSlice, 'viewport' | 'canvas'>): Viewport {
   return pipeline.viewport ?? pipeline.canvas ?? FALLBACK_VIEWPORT;

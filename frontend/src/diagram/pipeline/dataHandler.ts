@@ -41,6 +41,7 @@ import {
 import { nodeChanges, type ChangesDay } from '../../drawer/changes';
 import { nodeDetails } from '../../drawer/details';
 import { isObject } from '../../guards';
+import { keepNewest } from '../../lru';
 import { answerLocate, answerSearch, parseLocateQuery, parseSearchQuery } from '../../search/service';
 import { viewChoices } from '../../views/choices';
 import { createTickSource, type TickSource } from '../../timeline/worker/source';
@@ -49,14 +50,15 @@ import type { DiffFrom, TickDiff } from '../diff/types';
 import { diagramIcons } from '../iconTable';
 import { cardTypeName } from '../names';
 import { parseDay, parseFollowUpDay } from './days';
-import type {
-  DataErrorCode,
-  DataRequest,
-  DataResponse,
-  DataStage,
-  DayRef,
-  LensInfo,
-  Viewport,
+import {
+  FALLBACK_VIEWPORT,
+  type DataErrorCode,
+  type DataRequest,
+  type DataResponse,
+  type DataStage,
+  type DayRef,
+  type LensInfo,
+  type Viewport,
 } from './protocol';
 import { createSceneMemo, type SceneMemo } from './sceneMemo';
 
@@ -169,9 +171,11 @@ interface Loaded {
 }
 
 function viewportOf(value: unknown): Viewport {
-  if (!isObject(value)) return { width: 1280, height: 800 };
-  const width = typeof value['width'] === 'number' && value['width'] > 0 ? value['width'] : 1280;
-  const height = typeof value['height'] === 'number' && value['height'] > 0 ? value['height'] : 800;
+  if (!isObject(value)) return FALLBACK_VIEWPORT;
+  const width =
+    typeof value['width'] === 'number' && value['width'] > 0 ? value['width'] : FALLBACK_VIEWPORT.width;
+  const height =
+    typeof value['height'] === 'number' && value['height'] > 0 ? value['height'] : FALLBACK_VIEWPORT.height;
   return { width, height };
 }
 
@@ -382,12 +386,7 @@ export function createDataHandler(
       });
       entry = building;
     }
-    tickGraphs.delete(key);
-    tickGraphs.set(key, entry);
-    for (const old of tickGraphs.keys()) {
-      if (tickGraphs.size <= KEPT_TICK_GRAPHS) break;
-      tickGraphs.delete(old);
-    }
+    keepNewest(tickGraphs, key, entry, KEPT_TICK_GRAPHS);
     return { base, loaded: await entry, tick: resolved.day };
   };
 

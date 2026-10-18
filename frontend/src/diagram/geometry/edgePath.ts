@@ -20,10 +20,19 @@ export interface EdgePathOptions {
   readonly straightEnd?: number;
 }
 
-/** A coordinate as short as it can be written: at most two decimals, no trailing zeros, never `-0`. */
-export function fmt(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
+/**
+ * A number as short as it can be written: at most `decimals` decimals, no trailing zeros, never `-0`. The
+ * geometry's coordinates and the draw.io export's numbers are written this way.
+ */
+export function formatNumber(value: number, decimals = 2): string {
+  const factor = 10 ** decimals;
+  const rounded = Math.round(value * factor) / factor;
   return String(rounded === 0 ? 0 : rounded);
+}
+
+/** A coordinate as short as it can be written. */
+export function fmt(value: number): string {
+  return formatNumber(value);
 }
 
 /** The straight line kept between an elbow and an arrowhead's base. */

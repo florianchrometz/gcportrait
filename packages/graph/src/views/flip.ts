@@ -19,3 +19,12 @@ export function flipIdOf(zoneId: string): string {
   }
   return hash.toString(36);
 }
+
+/**
+ * Toggles `zoneId`'s flip in a list of flip tokens (a ViewSpec's `flips`): added when absent, removed when
+ * present.
+ */
+export function toggleFlipToken(flips: readonly string[], zoneId: string): string[] {
+  const token = flipIdOf(zoneId);
+  return flips.includes(token) ? flips.filter((flip) => flip !== token) : [...flips, token];
+}

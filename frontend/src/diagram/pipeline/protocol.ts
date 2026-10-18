@@ -43,6 +43,9 @@ export interface Viewport {
   readonly height: number;
 }
 
+/** The canvas size used until the canvas has been measured: a 1280 × 800 window's. */
+export const FALLBACK_VIEWPORT: Viewport = { width: 1280, height: 800 };
+
 /**
  * The day of a snapshot a follow-up request reads: the tick its diagram on screen drew (`source.tick`), or
  * `null` for the snapshot's own day. Every request that follows a Scene names it, so its answer is that day's

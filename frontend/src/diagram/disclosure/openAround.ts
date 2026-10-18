@@ -9,7 +9,7 @@
  * that is collapsed always opens it, whatever collapsed it (the detail level, the depth filter or an earlier flip),
  * and never closes anything that was open. Pure; runs in the data worker, where the Graph is.
  */
-import { buildSceneWithReport, flipIdOf } from '@gcportrait/graph';
+import { buildSceneWithReport, toggleFlipToken } from '@gcportrait/graph';
 import {
   normalizeViewSpec,
   type Catalog,
@@ -45,10 +45,7 @@ export interface OpenedAround {
 
 /** The view with one zone's flip toggled (`ViewActions.flip`'s rule). */
 export function toggleFlip(view: ViewSpec, zoneId: string): ViewSpec {
-  const token = flipIdOf(zoneId);
-  const flips = view.flips.includes(token)
-    ? view.flips.filter((flip) => flip !== token)
-    : [...view.flips, token];
+  const flips = toggleFlipToken(view.flips, zoneId);
   return normalizeViewSpec({ ...view, flips });
 }
 

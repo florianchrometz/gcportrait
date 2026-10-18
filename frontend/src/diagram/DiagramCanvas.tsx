@@ -116,6 +116,7 @@ import { zoomKeyOf, type ZoomKey } from './keyboard/zoom';
 import { levelOfDetail, LOD_CLASSES, lodClasses } from './lod';
 import type { DiagramModel } from './model';
 import { createPainter, isConsoleAction, nodeElement, nodeIdOf, type Painter } from './painter';
+import { FALLBACK_VIEWPORT } from './pipeline/protocol';
 import type { DiagramTheme } from './theme/tokens';
 import { createTouchGestures, type TouchGestures, type TouchHandlers } from './touch';
 import styles from './touchHint.module.css';
@@ -178,13 +179,10 @@ interface OpenMenu {
   readonly items: readonly MenuItem[];
 }
 
-/** The canvas size when the element has none yet (jsdom, a hidden page): a 1280 × 800 window's. */
-const FALLBACK_SIZE = { width: 1280, height: 800 };
-
 function canvasSize(svg: SVGSVGElement): { width: number; height: number } {
   const width = svg.clientWidth;
   const height = svg.clientHeight;
-  return width > 0 && height > 0 ? { width, height } : FALLBACK_SIZE;
+  return width > 0 && height > 0 ? { width, height } : FALLBACK_VIEWPORT;
 }
 
 /** A box's edges, in CSS px from the canvas's top-left corner. */

@@ -9,7 +9,7 @@
 import type { Rect } from '@gcportrait/layout';
 
 import { focusTransform } from '../camera';
-import type { CameraTransform } from '../viewport';
+import { centreAt, type CameraTransform } from '../viewport';
 
 /** How long the glide to an expanded or collapsed zone takes (ms); at once with reduced motion. */
 export const FLIP_GLIDE_MS = 200;
@@ -51,6 +51,5 @@ export function flipTransform(
   expanded: boolean,
 ): CameraTransform {
   if (expanded) return focusTransform(rect, width, height, current);
-  const k = current.k;
-  return { k, x: width / 2 - (rect.x + rect.width / 2) * k, y: height / 2 - (rect.y + rect.height / 2) * k };
+  return centreAt(rect, width, height, current.k);
 }

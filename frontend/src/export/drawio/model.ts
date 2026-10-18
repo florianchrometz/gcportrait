@@ -7,8 +7,11 @@
  */
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 
+import { formatNumber } from '../../diagram/geometry/edgePath';
 import type { Box, Point } from './svg';
 import { childElements, escapeAttribute, parseXml, serializeXml, type XmlElement } from './xml';
+
+export { formatNumber };
 
 /** The three layers, bottom to top: zones and nodes, the lines, the title block and the legend. */
 export const LAYERS = [
@@ -47,13 +50,6 @@ export class Style {
     const pairs = this.#entries.map(([key, value]) => `${key}=${value}`);
     return [...(this.#named === undefined ? [] : [this.#named]), ...pairs].map((part) => `${part};`).join('');
   }
-}
-
-/** A number as the file writes it: at most two decimals, no trailing zeros, never `-0`. */
-export function formatNumber(value: number, decimals = 2): string {
-  const factor = 10 ** decimals;
-  const rounded = Math.round(value * factor) / factor;
-  return String(rounded === 0 ? 0 : rounded);
 }
 
 /** What a cell stands for: the export's structure, which the viewport crop and the summary read. */

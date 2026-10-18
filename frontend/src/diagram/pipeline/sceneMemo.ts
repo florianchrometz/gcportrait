@@ -28,6 +28,7 @@ import {
   type ViewSpec,
   type ViewSpecInput,
 } from '@gcportrait/model';
+import { keepNewest } from '../../lru';
 
 /** How many views (keys) each Graph keeps: the drawn view, its `auto` alias, the open view, and a spare. */
 export const SCENES_PER_GRAPH = 6;
@@ -88,12 +89,7 @@ export function createSceneMemo(
   let misses = 0;
 
   const keep = (kept: Map<string, SceneBuild>, key: string, value: SceneBuild): void => {
-    kept.delete(key);
-    kept.set(key, value);
-    for (const oldest of kept.keys()) {
-      if (kept.size <= SCENES_PER_GRAPH) break;
-      kept.delete(oldest);
-    }
+    keepNewest(kept, key, value, SCENES_PER_GRAPH);
   };
 
   return {

@@ -32,6 +32,7 @@
 import { labelOf, faceOfStack, weightOf, FACES, FONT_STYLESHEET, type TextLine, type TextRun } from './label';
 import {
   CellIds,
+  base64Of,
   formatNumber,
   hashOf,
   Style,
@@ -770,7 +771,7 @@ class Translator {
   imageCell(markup: string, box: Box, context: Context, own: ReadonlyMap<string, string>): void {
     let data = this.images.get(markup);
     if (data === undefined) {
-      data = base64OfText(markup);
+      data = base64Of(new TextEncoder().encode(markup));
       this.images.set(markup, data);
     }
     // draw.io's form of a data URI in a style (a `;` would end the value): it adds `;base64` back when it reads it.
@@ -1291,14 +1292,6 @@ function constrain(style: Style, end: 'exit' | 'entry', box: Box, point: Point):
 function boxOfCell(cell: Cell): Box {
   if (cell.kind === 'vertex') return cell.box;
   return boundsOf([cell.from, cell.to, ...cell.points]);
-}
-
-function base64OfText(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  let binary = '';
-  for (let at = 0; at < bytes.length; at += 0x8000)
-    binary += String.fromCharCode(...bytes.subarray(at, at + 0x8000));
-  return btoa(binary);
 }
 
 // The crop ----------------------------------------------------------------------------------------------------------

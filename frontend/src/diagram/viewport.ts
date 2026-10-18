@@ -6,6 +6,18 @@
 import type { Rect } from '@gcportrait/layout';
 
 export const SCALE_EXTENT: readonly [number, number] = [0.05, 200];
+
+/** Clamps a scale `k` to the canvas's scale extent `[0.05, 200]`. */
+export function clampScale(k: number): number {
+  return Math.min(SCALE_EXTENT[1], Math.max(SCALE_EXTENT[0], k));
+}
+
+/** Centres `rect` in a `width` × `height` canvas at scale `k`. */
+export function centreAt(rect: Rect, width: number, height: number, k: number): CameraTransform {
+  const cx = rect.x + rect.width / 2;
+  const cy = rect.y + rect.height / 2;
+  return { k, x: width / 2 - cx * k, y: height / 2 - cy * k };
+}
 /**
  * How far (CSS px) a mouse or a pen may move between its press and its release and still click: a hand's wobble,
  * which moves nothing. Further, it is a drag, which pans and selects nothing (camera.ts, `isDrag`).
@@ -43,10 +55,6 @@ export function fitTransform(
 ): CameraTransform {
   const room = (size: number): number => Math.max(1, size - 2 * padding);
   const fit = Math.min(room(width) / Math.max(1, frame.width), room(height) / Math.max(1, frame.height), 1);
-  const k = Math.min(SCALE_EXTENT[1], Math.max(SCALE_EXTENT[0], fit));
-  return {
-    k,
-    x: (width - frame.width * k) / 2 - frame.x * k,
-    y: (height - frame.height * k) / 2 - frame.y * k,
-  };
+  const k = clampScale(fit);
+  return centreAt(frame, width, height, k);
 }
