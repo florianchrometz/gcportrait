@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import { REPOSITORY_URL } from '../site.js';
@@ -247,6 +249,33 @@ describe('renderMarkdown', () => {
     expect(rendered.html).toMatch(
       /<pre tabindex="0"><code class="language-sh">echo `--build`\n<\/code><\/pre>/,
     );
+  });
+
+  it('renders the package guide’s app modules as a two-column table, not a paragraph', () => {
+    const guide = readFileSync(new URL('../../../docs/packages.md', import.meta.url), 'utf8');
+    const section = guide.split("### The app's modules\n")[1]?.split('\n### ')[0];
+    expect(section).toBeDefined();
+    const { html } = renderMarkdown(section ?? '', { sourcePath: 'docs/packages.md' });
+    const tableStart = html.indexOf('<div class="table-scroll"');
+    expect(tableStart).toBeGreaterThanOrEqual(0);
+    const wrapper = elementAt(html, tableStart);
+    expect(wrapper.attributes.tabindex).toBe('0');
+    const table = childOf(wrapper, 'table');
+    const header = childOf(childOf(table, 'thead'), 'tr');
+    expect(outline(header)).toEqual(['th', 'th']);
+    expect(header?.children.map((cell) => cell.text.trim())).toEqual([
+      'Module (frontend/src/)',
+      'Responsibility',
+    ]);
+    const rows = childOf(table, 'tbody')?.children ?? [];
+    expect(rows).toHaveLength(14);
+    for (const row of rows) {
+      expect(row.name).toBe('tr');
+      expect(outline(row)).toEqual(['td', 'td']);
+      expect(row.children[1]?.text.trim().length).toBeGreaterThan(0);
+    }
+    expect(rows[0]?.children[0]?.text.trim()).toBe('state/');
+    expect(rows.at(-1)?.children[0]?.text.trim()).toBe('storage/, theme/, pages/');
   });
 
   it('makes code blocks focusable, turns empty header cells into data cells and marks command cells', () => {

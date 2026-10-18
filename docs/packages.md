@@ -368,7 +368,7 @@ the UI thread only renders. Snapshots and saved views live in IndexedDB through 
 never touches disk.
 
 | Module (`frontend/src/`) | Responsibility |
- |
+|---|---|
 | `state/` | the store: seven slices (view, snapshot, pipeline, selection, ui, connect and timeline), the hash binding (`AppStateProvider`), the actions (`useDiagramActions`: lens, focus, detail, filters, drill-in, flips, expand/collapse all, snapshot, select, highlight, `jumpTo`, `stepTick`), the pipeline controller and `auto` against the measured canvas |
 | `shell/topbar/` | the top bar, one file per control group: breadcrumb, Lens, Focus, Filters, Detail and search box (the view row, on the diagram page only), Theme menu, Export menu, Snapshot menu |
 | `ui/` | headless accessible primitives: Menu, MenuButton, Select, Combobox, Listbox, Popover, Dialog, SegmentedControl, Slider, Tooltip |
