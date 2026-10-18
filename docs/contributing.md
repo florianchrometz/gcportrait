@@ -168,7 +168,7 @@ below):
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
 | `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode. Runs only when `e2e` is true | skipped |
 | `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`). Runs only when `e2e` is true | skipped |
-| `website` | `pnpm website:build` and `pnpm website:check`, then in Chromium `mobile --only layout`, `demo`, `fillable --profile chromium` and `stars` (on a build made with the widget's facts, `WEBSITE_STAR_COUNT` and the other two). Runs unless `website` is false | runs |
+| `website` | `pnpm website:build` and `pnpm website:check`, then in Chromium `mobile --only layout`, `demo` and `fillable --profile chromium`. Runs unless `website` is false | runs |
 | `repo-checks` | the checks that take seconds, as steps named after them, each run after a failed one: **provenance**, `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard; **catalog-check**, `pnpm catalog:check` on the catalog the install compiled; **licenses**, `pnpm run licenses`; **audit**, `node scripts/check-audit.mjs` (asks the npm registry); **workflows-and-shell**, `actionlint`, `shellcheck -x infra/*.sh` and every other shell script with `shellcheck -x --severity=warning`. Installs the dependencies unless only media changed | provenance runs; licenses runs when docs changed (`THIRD_PARTY.md` is one); the other steps are skipped |
 | `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded, or were skipped as `changes` planned (an e2e leg on `e2e=false`, `website` on `website=false`; `repo-checks` skips steps, never itself) | runs: a job skipped for such a change counts as passed |
 
@@ -259,7 +259,7 @@ matrix legs one by one: `required` already waits for them, and the ruleset then 
 added, renamed or split. The jobs a change leaves out (only docs and media, or the e2e and website gates) are
 skipped inside the workflow, not by a path filter on it, so `required` reports on every pull request and push
 and decides itself when a skipped job counts as passed. `layout-budget` is left out on purpose, and so is
-every job of the Website workflow: it runs on `main` and its daily refresh, never on a pull request, whose
+every job of the Website workflow: it runs on `main`, never on a pull request, whose
 site check is CI's `website` job. GitHub offers a check in the ruleset only after it has run once, so add
 `required` after the first push to `main`.
 

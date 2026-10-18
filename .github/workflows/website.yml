@@ -77,8 +77,6 @@ jobs:
           WEBSITE_STRICT: ${{ inputs.deploy && '1' || '' }}
           # The demo built in the step before, copied into the site instead of built again (website/astro.config.ts).
           WEBSITE_DEMO_DIST: dist/demo
-          # The header's repository widget (website/src/lib/github.ts): authenticated only in a build that deploys.
-          GITHUB_TOKEN: ${{ inputs.deploy && github.token || '' }}
         run: pnpm run website:build
       - name: Check the built site
         run: pnpm run website:check

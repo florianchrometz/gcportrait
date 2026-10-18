@@ -34,14 +34,14 @@ The shared static-demo build, configuration, route copies and policies follow [A
 
 ## Analytics
 
-The site counts nothing and loads no analytics: its only cross-host request is the repository widget, so
-what a visitor reads is all it ever needs to know ([docs/website.md](../docs/website.md), "Analytics"). The
-no-telemetry contract for the site, the app and the demo is in [AGENTS.md](../AGENTS.md), "Modes and hosting".
+The site counts nothing and loads no analytics; it makes no cross-host requests, so what a visitor reads
+is all it ever needs to know ([docs/website.md](../docs/website.md), "Analytics"). The no-telemetry contract
+for the site, the app and the demo is in [AGENTS.md](../AGENTS.md), "Modes and hosting".
 
 ## Commands
 
 | Goal | Command |
 |---|---|
 | Build / check / serve the website (`website/`, docs/website.md) | `pnpm website:build`, then `pnpm website:check` (metadata, links, sitemap, the footer notice, the demo and its links) / `pnpm website:dev` (live) / `pnpm website:lighthouse` |
-| Check the built website in real browsers: on phones (layout, the sticky header, touch targets, the names of links and buttons, axe, the animated demos' playback) / the fillable commands / the header's repository widget / the static demo | `pnpm website:mobile` / `pnpm --filter @gcportrait/website fillable` / `... stars` / `... demo` (each after `pnpm website:build`) |
+| Check the built website in real browsers: on phones (layout, the sticky header, touch targets, the names of links and buttons, axe, the animated demos' playback) / the fillable commands / the static demo | `pnpm website:mobile` / `pnpm --filter @gcportrait/website fillable` / `... demo` (each after `pnpm website:build`) |
 | Build the static demo the website serves at `/demo/` (AGENTS.md, Modes and hosting; `pnpm website:build` runs it) | `pnpm demo:static` (`--out DIR`, `--base PATH`) |

@@ -13,9 +13,9 @@ The maintainer runs no service: no sign-in instance, no accounts, nothing to agr
 ([AGENTS.md](../../AGENTS.md), "Modes and hosting"). The hosted surfaces are the website `gcportrait.app` and
 its sign-in-free demo at `gcportrait.app/demo/`, a static build of the app in demo-only mode, both served by
 one GitHub Pages site, and neither processes personal data by design: no sign-in, no cookies, no server of its
-own, no server-side storage, and no analytics. What remains are the hosting provider's request logs, the
-header's repository widget and what the pages keep in the visitor's own browser. The site still needs an
-Impressum, and a privacy notice for those.
+own, no server-side storage, and no analytics. What remains are the hosting provider's request logs and
+what the pages keep in the visitor's own browser. The site still needs an Impressum, and a privacy notice for
+those.
 
 ## Where the legal texts live
 
@@ -44,25 +44,17 @@ code in the [data-processing inventory](data-processing-inventory.md) (row IDs i
   demo and processes the visitor's IP address, the requested URL, the time and the request headers (user
   agent, referrer) in its own logs, under its own privacy statement, also in the USA; the maintainer receives
   none of them (W1).
-- **The website's header asks GitHub for the repository's facts.** Once a page has loaded, the visitor's
-  browser asks `api.github.com` for the repository's public star and fork counts and its latest release's
-  version (two requests made together), at most once an hour per tab, anonymously (no cookie, no referrer);
-  GitHub receives the IP address, the user agent and the site's origin with each. The browser keeps the time
-  and the facts in session storage for the hour. While the repository is not public the browser does not ask
-  at all (W3).
-- **The website counts no page views and sends nothing to a third party.** It loads nothing from another host
-  but the repository facts above (W3), sets no measurement cookie, and keeps no identifier for analytics. The
-  demo and self-hosted instances send nothing either.
+- **The website counts no page views and sends nothing to a third party.** It loads nothing from another
+  host, sets no measurement cookie, and keeps no identifier for analytics. The demo and self-hosted instances
+  send nothing either.
 - **The demo has no server.** It is files GitHub Pages delivers (W1); it runs in the visitor's browser, reads
   no Google Cloud data and asks no other host.
 - **No cookies, no tracking, no sign-in.** Neither site sets a cookie or loads anything from another host;
   there is no analytics, no tracking across sites, no advertising and no profile; the demo has no sign-in,
   reads no Google Cloud data and sends no analytics.
 - **What stays in the visitor's browser.** The values typed into the website's commands (local storage,
-  `gcportrait.docs.variables`, W2); the repository widget's facts (session storage, `gcportrait.repository`,
-  W3); the demo's theme (local
-  storage, `gcportrait.theme`) and its generated demo organisations, saved views and imported files
-  (IndexedDB); nothing of it reaches the maintainer (DS1).
+  `gcportrait.docs.variables`, W2); the demo's theme (local storage, `gcportrait.theme`) and its generated
+  demo organisations, saved views and imported files (IndexedDB); nothing of it reaches the maintainer (DS1).
 - **Email**, if the page names an address: what is sent, kept until the conversation is over (C1).
 - The usual parts of a notice: the controller (the person the Impressum names), the legal bases the inventory
   names, the visitor's rights, and the supervisory authority.

@@ -30,8 +30,8 @@ the repository's `CHANGELOG.md` stays the hand-written summary of a release.
 | [Fillable commands](#fillable-commands) | The variables in the commands: the `YOUR_…` convention, the fields and how they are edited in place in every browser, Copy, what is kept in the browser. |
 | [Generated media](#generated-media) | The screenshots, animated demos and link-preview images in `docs/media/`, and when to regenerate them. |
 | [Sample exports](#sample-exports) | Real SVG, PNG and draw.io exports of the demo organisations to download or open in diagrams.net: making them, checking them, the page. |
-| [GitHub repository widget](#github-repository-widget) | The header's link to the repository: the build's facts (version, stars, forks), the live refresh in the visitor's browser and what it means for privacy, the fallback. |
-| [Analytics](#analytics) | The site counts nothing: no page views, no third party, no measurement cookie; its only request elsewhere is the repository widget. |
+| [GitHub repository link](#github-repository-link) | The header's link to the repository: the mark, accessible name and touch targets. |
+| [Analytics](#analytics) | The site counts nothing: no page views, no third party, no measurement cookie; it makes no cross-host requests. |
 | [Favicon and logo](#favicon-and-logo) | One drawing from one file, `brand/icon.svg`, for the favicon, the header's and footer's logo and the app's favicon. |
 | [The installer](#the-installer) | `/install.sh`, the one-line installer: `infra/install.sh` copied by the build, its content type, kept out of search. |
 | [The landing page's start buttons](#the-landing-pages-start-buttons) | "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host": where they go, the new tab, the marks. |
@@ -52,7 +52,6 @@ pnpm --filter @gcportrait/website demo     # the demo in the built site, served 
 pnpm website:lighthouse   # Lighthouse on every page, light and dark, desktop and mobile
 pnpm --filter @gcportrait/website mobile   # every page on phones in a browser, the sticky header, and the demos' playback (Mobile)
 pnpm --filter @gcportrait/website fillable # the fillable commands in Chromium, Firefox, WebKit and on phones (Fillable commands)
-pnpm --filter @gcportrait/website stars    # the header's repository widget, live, in a browser (GitHub repository widget)
 pnpm --filter @gcportrait/website typecheck  # the site's TypeScript: tsc -b over the .ts files, then astro check over the .astro files
 ```
 
@@ -60,24 +59,19 @@ The build reads everything from the repository at build time: the guides listed 
 (every guide in `docs/` is either a page or listed there as not one, which a unit test enforces),
 `docs/author.md`, the compiled catalog and `dist/coverage.json`, the features' copy in
 `website/src/data/features.json` (the README's feature cells repeat it, and `scripts/readme.test.ts` compares
-them), and the media in `docs/media/`; the one thing it asks outside the repository is the repository widget's
-facts on GitHub ([GitHub repository widget](#github-repository-widget)), and it counts no page views and
-sends nothing to another host ([Analytics](#analytics)). A
-guide or a medium that is missing is left out with a warning; a **strict** build (`WEBSITE_STRICT=1`, set by
-the deploy jobs) fails instead, and also fails while `docs/author.md` still holds a placeholder (`[IN
-CAPITALS]`, `{{…}}`, `<…>`, `TODO`). The site has no legal pages of its own ([Legal pages](#legal-pages)). The
-build also places the demo at `website/dist/demo/` ([The demo](#the-demo)): it runs `pnpm demo:static` itself,
-or copies the bundle that `WEBSITE_DEMO_DIST` names (a directory relative to the repository root, built before
-for `/demo/`), which is what the workflows do after building the demo as a step of its own. Order, either way:
-the demo is built (or found) after Astro has written the site's pages, so `pnpm website:build` alone gives the
-whole site.
+them), and the media in `docs/media/`; it makes no network requests outside the repository, counts no
+page views and sends nothing to another host ([Analytics](#analytics)). A guide or a medium that is missing
+is left out with a warning; a **strict** build (`WEBSITE_STRICT=1`, set by the deploy jobs) fails instead,
+and also fails while `docs/author.md` still holds a placeholder (`[IN CAPITALS]`, `{{…}}`, `<…>`, `TODO`).
+The site has no legal pages of its own ([Legal pages](#legal-pages)). The build also places the demo at
+`website/dist/demo/` ([The demo](#the-demo)): it runs `pnpm demo:static` itself, or copies the bundle that
+`WEBSITE_DEMO_DIST` names (a directory relative to the repository root, built before for `/demo/`), which is
+what the workflows do after building the demo as a step of its own. Order, either way: the demo is built (or
+found) after Astro has written the site's pages, so `pnpm website:build` alone gives the whole site.
 
 **What CI runs.** CI's `website` job ([pr.yml](../.github/workflows/pr.yml), docs/contributing.md) runs the
-build and `website:check`, then `mobile --only layout`, `demo`, `fillable --profile chromium` and `stars`: the
-checks that need nothing but the Chromium the job installs. The widget's check runs on a build made with
-`WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT` and `WEBSITE_RELEASE`, because a pull request's build asks GitHub
-anonymously and, while the repository is private, is answered with its 404
-([GitHub repository widget](#github-repository-widget)). Three parts stay local, run before a release:
+build and `website:check`, then `mobile --only layout`, `demo` and `fillable --profile chromium`: the checks
+that need nothing but the Chromium the job installs. Three parts stay local, run before a release:
 `mobile --only playback`'s iPhone in WebKit (Playwright's WebKit on Linux plays media through GStreamer, not
 the iPhone's stack, so its result would not say what the check is for), `fillable`'s Firefox, WebKit and phone
 profiles (three more browsers to install and drive, and no pull request would wait for them), and
@@ -115,12 +109,11 @@ has its own phone and tablet check (`pnpm --filter @gcportrait/frontend mobile`)
 themselves, and the breakpoints are in rem (48rem for the header, the footer and the touch targets, 49rem
 where the landing page's features become two columns, 52rem for the docs layout, 30rem for rows of buttons).
 
-- **Header** (below 48rem): the wordmark and a Menu button on the first row, "Try the demo" and the repository
-  widget side by side below. The five menu links fold away behind the button, a disclosure (`aria-expanded`,
+- **Header** (below 48rem): the wordmark and a Menu button on the first row, "Try the demo" and the GitHub
+  link side by side below. The five menu links fold away behind the button, a disclosure (`aria-expanded`,
   `aria-controls`; Escape closes it); the open menu scrolls on its own where it would reach past the window's
-  bottom. With facts, the widget shows the GitHub mark and the star and fork counts, and below 368 pixels the
-  stars only; its name stays "gcportrait on GitHub: version …, N stars, N forks" ([GitHub repository
-  widget](#github-repository-widget)).
+  bottom. The GitHub link shows the mark and the word "GitHub", and below 368 pixels the mark only; its
+  accessible name stays "gcportrait on GitHub" ([GitHub repository link](#github-repository-link)).
 - **Sticky header** (every width): the header stays at the top of the window while the page scrolls
   (`position: sticky`, its background reaching under the status bar where the page is drawn there: the
   safe-area inset). A script in `website/src/layouts/Base.astro` keeps its height in `--header-block` (with an
@@ -169,10 +162,6 @@ Use `--only layout` or `--only playback` to run one part. CI runs the layout par
 WebKit on Linux is not Safari's media stack. The static-file check is separate
 ([Building and checking](#building-and-checking)); the app's own phone and tablet check covers `/demo/`.
 
-Both parts answer the header's repository widget themselves ([GitHub repository
-widget](#github-repository-widget)), never GitHub: with a 404, as GitHub answers while the repository is
-private, so nothing changes; with `--stars N` the answer is N stars, `--forks` forks (N unless given) and the
-release `--release` (v1.0.0 unless given), and the layout is measured with the facts shown where they fit.
 
 ```sh
 pnpm website:build
@@ -426,132 +415,28 @@ diagrams.net is a link target, not a resource loaded by the website.
 When changing a sample's title or summary in `SAMPLES`, keep any README preview's alt text in step;
 [scripts/readme.test.ts](../scripts/readme.test.ts) checks that it matches the sample.
 
-## GitHub repository widget
+## GitHub repository link
 
-The header of every page links to the repository, at the top right next to "Try the demo": the GitHub mark,
-the word "GitHub" and, when known, three facts of the repository in a small pill, each after a drawing of the
-site's own: the latest release's version (a tag), the star count (a star) and the fork count (a fork). Its
-accessible name says them all, "gcportrait on GitHub: version 1.0.0, 12 stars, 3 forks" (singular for one;
-without a release, the version is left out). On a phone the button beside "Try the demo" shows the mark and
-the counts (the word and the version stay in its name), and below 368 pixels the stars only, so it keeps its
-place beside the demo button down to 320 pixels. The facts have two layers, live, as on other projects' sites,
-not values that wait for a redeploy:
+The header of every page links to the repository, at the top right next to "Try the demo": the GitHub mark
+and the word "GitHub". Its accessible name is `gcportrait on GitHub` (`aria-label`). On a phone the button
+beside "Try the demo" shows the mark and the word "GitHub", and below 368 pixels the mark only
+(`.github-word`), keeping its place beside the demo button down to 320 pixels while preserving a 44 × 44 CSS
+pixel touch target (`min-width: 44px; min-height: 44px`). The link opens the repository with
+`rel="noopener"`.
 
-1. **The build's facts, at first paint.** `website/src/lib/github.ts` reads them when the site is built, with
-   two requests made together: `https://api.github.com/repos/florianchrometz/gcportrait` (`stargazers_count`,
-   `forks_count`) and `…/releases/latest` (`tag_name`), and writes them into every page as text. The pill is
-   in the HTML, so nothing moves when the page is shown. It is as fresh as the last build; `pages.yml`
-   rebuilds daily.
-2. **The live facts, after the page has loaded.** A small script (`website/src/lib/star-count-page.ts`, which
-   the build inlines into each page) waits for the `load` event and for the browser to be idle
-   (`requestIdleCallback`, or a short timeout where there is none), so it never delays the first
-   paint. It reads `gcportrait.repository` from the visitor's sessionStorage. If the tab asked GitHub less
-   than an hour ago, it does not ask again: it shows the facts it got then, or, if it got none, leaves the
-   header as the build made it. Otherwise it first notes in sessionStorage that it is asking
-   (`{"facts":null,"at":…}`), then the visitor's browser asks GitHub itself: the same two GETs, made together,
-   each with `Accept: application/vnd.github+json` only (no CORS preflight), `credentials: 'omit'` (no
-   cookies, no HTTP authentication), no referrer, and a 4-second timeout for both. On a 200 for the repository
-   with whole-number `stargazers_count` and `forks_count` it writes the counts, and the release's `tag_name`
-   when that request gave one (no release yet, or any failure of it, keeps the build's version), into the
-   widget and into the link's accessible name with the build's own formatter and name
-   (`website/src/lib/star-count.ts`, shared by both layers), and keeps them in place of the note
-   (`{"facts":{"version":"v1.0.0","stars":1301,"forks":42},"at":…}`). On anything else for the repository (a
-   403, 404 or 429, another status, a body without the counts, offline, the timeout) nothing changes: the
-   build's facts, or none, stay, and the note stays too, so no page of the tab asks again within the hour. The
-   note is written before the requests, so a visitor who leaves the page before the answers does not cause a
-   second pair of requests either. Where sessionStorage is blocked or full, so that the note cannot be
-   written, the browser does not ask at all and the build's facts stay. Nothing is logged.
-3. **No live facts while the repository is not public.** When GitHub answers the build's own request for the
-   repository with a 404 (the repository is private, or not there yet), or with an answer marked private (to
-   the workflow's token, which may read it), the build writes `data-repository-not-public` on the link and no
-   facts, and the script asks nothing at all: an anonymous request from the visitor's browser would only get
-   the same 404, and would still send the visitor's address to GitHub. So a site built before the repository
-   goes public shows no live facts until its next build brings them (`pages.yml` rebuilds daily); a build that
-   could not ask, or was refused for another reason (the rate limit, no network, a 500), leaves the browser to
-   ask as above.
-
-**No layout shift.** The script shows the live facts only where nothing else moves: every item of the header
-keeps its box, the header its height, and the link its place (it may only get wider or narrower at its end,
-where there is room after it). Each count keeps room for every count from 0 to 9.9k (`min-width: 3.4ch`,
-centred: "1.2k" and "9.9k", the widest, are 3.4 digit widths in Roboto's tabular digits), so where the build
-had facts, any live counts up to 9.9k and a version of the same length update at every width: 1.2k becoming
-1.3k, and also 999 becoming 1k or v1.0.0 becoming v1.0.1. Facts that would push the demo button aside keep the
-link as the build made it until the next build brings them: a count of 9.9k becoming 10k, a longer version, or
-a pill where the build had none. Where the build had no facts, the pill is in the page but hidden, and the
-script shows it only where there is room after the link. Change and undoing happen before the next frame is
-painted, so a change taken back is never seen.
-
-**Privacy.** The second layer causes the visitor's browser to make two anonymous requests to `api.github.com`
-at most once an hour per tab, and never when sessionStorage is blocked or while the build found the repository
-not public. Row W3 of the [data-processing inventory](legal/data-processing-inventory.md) specifies the
-transmitted request headers, client hints, sessionStorage keys, and retention rules that the privacy notice on
-the maintainer's website ([Legal pages](#legal-pages)) must describe. `pnpm website:check` allows only these
-requests and refuses any other third-party host in a script or external resource ([Building and
-checking](#building-and-checking)).
-
-- **Token.** With `GITHUB_TOKEN` set the build's requests are authenticated (GitHub allows 60 unauthenticated
-  requests an hour per address, shared on CI runners). The build (`website.yml`) receives the workflow's own
-  read-only token only when its caller deploys (`pages.yml` from `main`, `release.yml` for a tag), so a
-  pull-request or local build asks without one. The token goes to `api.github.com` only and is never
-  printed, and never reaches a page: the visitor's requests are always anonymous, within the visitor's own
-  60 an hour.
-- **Daily refresh.** `pages.yml` also runs every day at 04:17 UTC (`schedule`), rebuilding and redeploying
-  `main` so the first layer follows. Like the deploys, the scheduled run is skipped entirely while
-  `PAGES_DEPLOY` is not `true`. GitHub switches off the schedule of a public repository after 60 days without
-  activity; Actions > Website then offers to switch it on again.
-- **Fallback.** Neither layer ever fails the page. The build never fails over the facts: offline, without an
-  answer within 3 seconds, on a 404 (the repository is private or not published yet), on an answer saying the
-  repository is private (the workflow's token may read it), on a 403 or 429 (rate limit), or on a body without
-  the counts, the build prints one line and the link shows no facts; after the 404 and the private answer the
-  line also says that visitors' browsers will not ask:
-
-  ```text
-  website: GitHub repository widget: GitHub answered 404 for florianchrometz/gcportrait (not found or not public yet); the header's GitHub link shows no stars, forks or version, and visitors' browsers will not ask GitHub for them.
-  ```
-
-  A repository without a release (the release's 404) gets its counts and no version, without a line; any other
-  failure of the release's request prints one line and leaves the version out. The page then makes no request
-  at all while the repository is not public, so Chrome logs nothing. After any other failure of the build (the
-  rate limit, no network, a 500) the browser still asks, and a failure it meets then is logged by Chrome as a
-  failed request (no script can silence it); the 200s of a public repository with a release log nothing.
-- **Override.** `WEBSITE_STAR_COUNT=1234 pnpm website:build` uses 1234 stars without asking GitHub at build
-  time (to see the widget before the repository is public), with `WEBSITE_FORK_COUNT` as the fork count (0
-  when unset) and `WEBSITE_RELEASE` as the latest release's tag (no version when unset);
-  `WEBSITE_STAR_COUNT=off` builds without the requests and without facts. They concern the first layer only:
-  the build learns nothing about the repository, so the visitor's browser still asks (such a build is how the
-  check below runs the live widget's cases while the repository is private).
-- **A fork** whose `REPOSITORY_URL` (`website/src/site.ts`) is not a github.com repository gets neither layer:
-  no facts from the build and no `data-repository` on the link, so the script asks nothing.
-
-The counts are abbreviated as GitHub's own star and fork buttons show them: exact below 1000, then thousands
-with one decimal, rounded, without a trailing `.0` (`1k`, `1.2k`, `63.2k`, `1.2M`); the build and the browser
-share the formatter. The version is the release's tag as it is (`v1.0.0`), read as "version 1.0.0" in the
-link's name. The mark is GitHub's, unmodified and used only to link to the repository, under GitHub's logo
-guidelines; the tag, the star and the fork are the site's own drawings.
-
-**Check.** `pnpm --filter @gcportrait/website stars` validates the repository widget in Playwright's Chromium
-across viewport widths and themes. The header of
-[website/scripts/stars.ts](../website/scripts/stars.ts) defines the full scenario matrix, mock responses,
-layout-shift tolerances, and failure conditions. Use `--count N`, `--forks N` and `--release TAG` to
-customise live values, `--real` to verify unmocked GitHub API requests, and `--shots DIR` to save
-before/after header captures. CI runs `stars` on a build made with `WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT`
-and `WEBSITE_RELEASE` so it exercises widget updates even before the repository is public ([Building and
-checking](#building-and-checking)). The browser checks (`mobile`, `fillable`, `stars`) answer the requests
-themselves, so they do not consume GitHub API rate limits.
+The link is completely static: it makes no requests to GitHub, requires no token, and loads no live facts or
+scripts in the visitor's browser. The mark is GitHub's, unmodified and used only to link to the repository,
+under GitHub's logo guidelines.
 
 ## Analytics
 
 The website counts nothing and sends nothing to a third party: no page views, no error reports, no
-measurement cookie. The header's repository widget is the only request a page of the site makes to another
-host ([GitHub repository widget](#github-repository-widget); row W3 of the [data-processing
-inventory](legal/data-processing-inventory.md)). The demo at `/demo/` and every self-hosted instance send
-nothing anywhere either, because they are the app ([AGENTS.md](../AGENTS.md), "Modes and hosting").
+measurement cookie, and it makes no cross-host requests. The demo at `/demo/` and every self-hosted instance
+send nothing anywhere either, because they are the app ([AGENTS.md](../AGENTS.md), "Modes and hosting").
 
-
-**Checks.** `pnpm website:check` refuses any script that names or fetches any host but the site itself and
-`api.github.com` for the repository widget, and every file of the demo naming a Google sign-in host
-([Building and checking](#building-and-checking)). No build flag, variable or licence file exists for
-analytics, because there is none.
+**Checks.** `pnpm website:check` refuses any cross-host request or script naming or fetching another host,
+and every file of the demo naming a Google sign-in host ([Building and checking](#building-and-checking)). No
+build flag, variable or licence file exists for analytics, because there is none.
 
 ## Favicon and logo
 
@@ -705,12 +590,10 @@ them all.
 
 `.github/workflows/website.yml` builds and checks the site, once, for both workflows that deploy it: first the
 demo (`pnpm demo:static`), then the site with it (`pnpm website:build` with `WEBSITE_DEMO_DIST=dist/demo`),
-then `pnpm website:check`. `pages.yml` calls it on every push to `main` and every day, and deploys the site
-together with the demo, but only while the repository variable `PAGES_DEPLOY` is `true`; until then that run
-is a no-op for GitHub Pages. A pull request runs CI's `website` job instead (`pr.yml`), which builds and
-checks the site without the demo and deploys nothing. Once a deploy is switched on, the daily rebuild and
-redeploy of `main` keeps the repository widget's facts fresh ([GitHub repository
-widget](#github-repository-widget)). Under the same condition `release.yml` calls the same build from each
+then `pnpm website:check`. `pages.yml` calls it on every push to `main`, and deploys the site together with
+the demo, but only while the repository variable `PAGES_DEPLOY` is `true`; until then that run is a no-op for
+GitHub Pages. A pull request runs CI's `website` job instead (`pr.yml`), which builds and checks the site
+without the demo and deploys nothing. Under the same condition `release.yml` calls the same build from each
 `v*` tag (the demo's version the tag's, strict, and refusing stale media) and deploys them; until then a
 release run skips its website jobs (the image and the GitHub release do not depend on them). One-time setup,
 in this order:
@@ -803,8 +686,7 @@ twice, without `rel="noopener"` or without the external-site name, and fails the
 (…)" for assistive technology), and from `/demo/impressum` and `/demo/privacy` (built in by `pnpm
 demo:static`, whose defaults a test keeps equal to `src/site.ts`'s; a self-hosted instance links its own with
 `infra/deploy.sh --impressum-url` and `--privacy-url`), and [docs/legal/README.md](legal/README.md) lists what
-the privacy notice must cover, among it the GitHub Pages logs and the header's repository widget (rows W1 to
-W3 of the inventory).
+the privacy notice must cover, among it the GitHub Pages logs (rows W1 and W2 of the inventory).
 
 ## Lighthouse
 

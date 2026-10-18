@@ -146,7 +146,7 @@ either is revoked and asked again, and without `userinfo.email` sign-in works wi
 - **Static demo** at `gcportrait.app/demo/`, the demo-only build (`VITE_STATIC_DEMO=1`) the site ships, with
   no sign-in code; the maintainer hosts that site alone, so no accounts and no terms of use.
 - **No telemetry, anywhere**: the app, the demo, the website and every instance send no usage data, error
-  reports or page views, the site's only cross-host request being its repository widget.
+  reports or page views; the site makes no cross-host requests.
 - **Legal pages**: the Impressum and privacy notice live on the maintainer's site, never in the repository.
 - `infra/deploy.sh` creates the account with no project roles; customers grant `roles/cloudasset.viewer`
   on folders or projects, not the organisation.

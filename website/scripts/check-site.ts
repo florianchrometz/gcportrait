@@ -13,9 +13,8 @@
  * the footer ("Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project
  * by", the maintainer's name linked to their website, and a full stop), the footer's links to the Impressum and the
  * privacy notice on the maintainer's website (src/site.ts, LEGAL_LINKS: each once, `rel="noopener"`, named as an
- * external site for assistive technology), the header's one link to the repository (the repository widget: same tab,
- * named "gcportrait on GitHub", followed by ": version …, N stars, N forks" when the build knew them, and
- * `data-repository` naming that repository), no text run into a link or code without a space, every code block either
+ * external site for assistive technology), the header's one link to the repository (same tab, named
+ * "gcportrait on GitHub"), no text run into a link or code without a space, every code block either
  * keyboard-focusable (`tabindex="0"`: it may scroll sideways, WCAG 2.1.1) or wrapping its lines (`class="wrap"`),
  * every internal link and anchor resolving to a built page, and every link into the repository (a guide's link to a
  * repository file becomes one) naming a file or folder that exists.
@@ -25,12 +24,9 @@
  * image and use; and in CSS (every stylesheet of the build, every <style> block and style attribute), any address on
  * another host, so url(), @import, image-set() and @font-face src.
  *
- * Scripts (every inline script of a page and every script file of the build) connect to nothing but the site itself
- * and the requests of the header's repository widget (docs/website.md, "GitHub repository widget"): each `fetch(`
- * names its address as a literal, either a path of the site or `https://api.github.com/repos/…` with exactly one
- * `credentials: 'omit'` at the top level of the options written out in the call (no spread, no computed key). No
- * script names an address on any other host (XML namespaces aside), and none uses XMLHttpRequest, WebSocket,
- * EventSource, sendBeacon or importScripts.
+ * Scripts (every inline script of a page and every script file of the build) connect to nothing but the site itself:
+ * each `fetch(` names its address as a literal path of the site. No script names an address on any other host (XML
+ * namespaces aside), and none uses XMLHttpRequest, WebSocket, EventSource, sendBeacon or importScripts.
  *
  * Phones, as far as the HTML shows it (scripts/mobile.ts checks the rendered pages in a browser): one viewport meta
  * tag, `width=device-width, initial-scale=1`, that leaves zooming alone; every table in its own keyboard-focusable
@@ -123,7 +119,6 @@ import {
   drawingOfSvg,
   type Drawing,
 } from '../src/lib/brand.js';
-import { repositorySlug } from '../src/lib/github.js';
 import { CONTENT_TYPES } from './serve.js';
 
 export type Page = { readonly path: string; readonly html: string };
@@ -316,8 +311,6 @@ export function checkVariables(page: Page, where: (message: string) => void): vo
   }
 }
 
-/** The addresses on another host a script may ask: the repository widget's (src/lib/star-count.ts). */
-export const ALLOWED_FETCH_PREFIX = 'https://api.github.com/repos/';
 /** Addresses a script may name without asking them: XML namespaces (an SVG made by a script). */
 const NAMESPACE_PREFIX = 'http://www.w3.org/';
 const QUOTES = new Set(['"', "'", '`']);
@@ -368,61 +361,6 @@ function skipUntil(source: string, from: number, close: ')' | '}' | ']'): number
   return index;
 }
 
-/**
- * The top-level entries of the options object a fetch call writes out after its address (`from`: just past the address
- * literal), as each key with the values it is given (a value that is one plain literal as its text, without quotes;
- * anything else as written). Undefined when no object literal follows the address, or when an entry's key cannot be
- * read (a spread or a computed key, either of which could set `credentials`).
- */
-function fetchOptions(source: string, from: number): Map<string, string[]> | undefined {
-  const open = /^\s*,\s*\{/.exec(source.slice(from));
-  if (open === null) return undefined;
-  const literals: string[] = [];
-  const entries: string[] = [];
-  const closers: Record<string, ')' | '}' | ']'> = { '(': ')', '{': '}', '[': ']' };
-  let entry = '';
-  let index = from + open[0].length;
-  while (index < source.length) {
-    const char = source[index] ?? '';
-    if (QUOTES.has(char)) {
-      const { end } = literalAt(source, index);
-      // A literal stands in the entry as \uE000n\uE000; a template with a ${…} is never a plain value.
-      const text = source.slice(index + 1, end - 1);
-      literals.push(char === '`' && text.includes('${') ? '\uE002' : text);
-      entry += `\uE000${String(literals.length - 1)}\uE000`;
-      index = end;
-      continue;
-    }
-    const closer = closers[char];
-    if (closer !== undefined) {
-      entry += '\uE001'; // a nested bracket: an object, an array, a call, a computed key
-      index = skipUntil(source, index + 1, closer);
-      continue;
-    }
-    if (char === ',' || char === '}') {
-      entries.push(entry.trim());
-      entry = '';
-      if (char === '}') break;
-    } else entry += char;
-    index += 1;
-  }
-  const literalText = (text: string): string | undefined => {
-    const match = /^\uE000(\d+)\uE000$/.exec(text);
-    return match === null ? undefined : literals[Number(match[1])];
-  };
-  const options = new Map<string, string[]>();
-  for (const text of entries) {
-    if (text === '') continue;
-    if (text.startsWith('...') || text.startsWith('\uE001')) return undefined;
-    const colon = text.indexOf(':');
-    const rawKey = (colon < 0 ? text.replace(/\uE001[\s\S]*$/, '') : text.slice(0, colon)).trim();
-    const key = literalText(rawKey) ?? rawKey;
-    const rawValue = colon < 0 ? text : text.slice(colon + 1).trim();
-    options.set(key, [...(options.get(key) ?? []), literalText(rawValue) ?? rawValue]);
-  }
-  return options;
-}
-
 /** Whether an address in an attribute is on another host: `//host…` or a scheme (data: aside: it loads nothing). */
 function isOtherHost(address: string): boolean {
   return /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(address) || /^(?:https?|ftp):/i.test(address);
@@ -467,9 +405,7 @@ export function scriptConnectionProblems(source: string): string[] {
   for (const match of source.matchAll(
     /\b(XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts)\b/g,
   )) {
-    problems.push(
-      `a script uses ${match[1] ?? ''} (the only requests allowed to another host are a fetch of ${ALLOWED_FETCH_PREFIX}…)`,
-    );
+    problems.push(`a script uses ${match[1] ?? ''} (scripts make no requests to another host)`);
   }
   for (const match of source.matchAll(/\bfetch\s*\(\s*/g)) {
     const at = match.index + match[0].length;
@@ -479,13 +415,8 @@ export function scriptConnectionProblems(source: string): string[] {
       problems.push(`a script fetches an address it does not write out: ${call.slice(0, 80)}`);
       continue;
     }
-    const { head, end: addressEnd } = literalAt(source, at);
-    if (head.startsWith(ALLOWED_FETCH_PREFIX)) {
-      // Exactly one `credentials`, at the top level of the options written out in the call, set to 'omit'.
-      const credentials = fetchOptions(source, addressEnd)?.get('credentials');
-      if (credentials?.length !== 1 || credentials[0] !== 'omit')
-        problems.push(`a script fetches ${head}… without credentials: 'omit'`);
-    } else if (!head.startsWith('/') || head.startsWith('//')) {
+    const { head } = literalAt(source, at);
+    if (!head.startsWith('/') || head.startsWith('//')) {
       problems.push(`a script fetches from another host: ${head.slice(0, 80)}`);
     }
   }
@@ -494,7 +425,7 @@ export function scriptConnectionProblems(source: string): string[] {
     const quoted = QUOTES.has(source[match.index - 1] ?? '');
     if (!address.includes(':') && !quoted) continue; // a "//" in code or a regular expression, not an address
     const rest = source.slice(match.index);
-    if (rest.startsWith(ALLOWED_FETCH_PREFIX) || rest.startsWith(NAMESPACE_PREFIX)) continue;
+    if (rest.startsWith(NAMESPACE_PREFIX)) continue;
     problems.push(`a script names another host: ${address}`);
   }
   return problems;
@@ -925,13 +856,9 @@ export function checkPage(page: Page): string[] {
   if (github.length !== 1) where(`${String(github.length)} GitHub links in the header (one)`);
   for (const anchor of github) {
     if (anchor.href !== REPOSITORY_URL) where(`the header's GitHub link goes to ${anchor.href ?? 'nowhere'}`);
-    if (!(anchor['aria-label'] ?? '').startsWith(`${PRODUCT_NAME} on GitHub`))
+    if ((anchor['aria-label'] ?? '') !== `${PRODUCT_NAME} on GitHub`)
       where(`the header's GitHub link is named "${anchor['aria-label'] ?? ''}"`);
     if (anchor.target !== undefined) where("the header's GitHub link opens another tab or window");
-    if (anchor['data-repository'] !== repositorySlug(REPOSITORY_URL))
-      where(
-        `the header's GitHub link has data-repository="${anchor['data-repository'] ?? ''}", not the repository's ${repositorySlug(REPOSITORY_URL) ?? '(none)'}`,
-      );
   }
   const prose = html.replace(/<pre\b[\s\S]*?<\/pre>/gi, '');
   for (const glued of prose.matchAll(
@@ -1501,6 +1428,6 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     process.exit(1);
   }
   console.log(
-    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host but the repository widget's, focusable code blocks, the header's GitHub link, the Cloud Shell and Cloud Run buttons opening a new tab, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports and their links' names; the demo at ${DEMO_URL}: its pages, policy, favicon and links, every link to it opening a new tab).`,
+    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host, focusable code blocks, the header's GitHub link, the Cloud Shell and Cloud Run buttons opening a new tab, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports and their links' names; the demo at ${DEMO_URL}: its pages, policy, favicon and links, every link to it opening a new tab).`,
   );
 }

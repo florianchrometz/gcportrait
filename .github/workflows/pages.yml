@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
-# Deploy the website and the static demo that website.yml builds and checks, from main and on a daily
-# refresh; a pull request runs CI's `website` job instead (pr.yml). Setup, DNS, demo and media
-# operations: docs/website.md. Rules: AGENTS.md, "Modes and hosting", and .github/AGENTS.md, Releases.
+# Deploy the website and the static demo that website.yml builds and checks, from main; a pull request
+# runs CI's `website` job instead (pr.yml). Setup, DNS, demo and media operations: docs/website.md.
+# Rules: AGENTS.md, "Modes and hosting", and .github/AGENTS.md, Releases.
 name: Website
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: '17 4 * * *' # daily, for the repository widget; a no-op until the deploy is switched on (the build job's `if`)
 
 permissions:
   contents: read
@@ -22,8 +20,6 @@ concurrency:
 jobs:
   build:
     name: website-build
-    # A scheduled run only refreshes what is deployed, so it is skipped while the deploy is switched off.
-    if: github.event_name != 'schedule' || vars.PAGES_DEPLOY == 'true'
     uses: ./.github/workflows/website.yml
     with:
       # A push to main deploys while the deploy is switched on; a run by hand on another branch only builds.

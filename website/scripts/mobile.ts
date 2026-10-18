@@ -24,16 +24,9 @@
  * scrolled into view and must play, as WebM or as the GIF fallback; its button must pause it (a video stops on its
  * frame, a GIF gives way to the poster) and play it again. Then, on each device: the GIF fallback when the browser
  * says it cannot play WebM, when the WebM fails to load, or when its requests stall; with reduced motion,
- * nothing plays until the Play button is pressed. Every request must stay on the site's own host, but for the
- * header's repository widget.
- *
- * The header's repository widget (docs/website.md, "GitHub repository widget") is answered by the check, never by
- * GitHub: with a 404, as GitHub answers for a private repository, so nothing changes; with `--stars N`, N stars,
- * `--forks` forks (N unless given) and the release `--release` (v1.0.0 unless given), shown (or added where the build
- * had none) before the layout is measured.
+ * nothing plays until the Play button is pressed. Every request must stay on the site's own host.
  *
  *   pnpm --filter @gcportrait/website mobile [--only layout|playback] [--page /docs/]... [--theme dark] [--width 375]...
- *                                            [--stars 12345 [--forks 678] [--release v1.2.3]]
  *                                            [--dist DIR]   (another build than website/dist)
  *
  * Browsers: Chromium from `pnpm --filter @gcportrait/e2e install-browsers`; WebKit once per machine with
@@ -45,18 +38,8 @@ import { parseArgs } from 'node:util';
 
 import { chromium, devices, webkit, type Browser, type BrowserType, type Page } from 'playwright';
 
-import { formatCount, isReleaseTag } from '../src/lib/star-count.js';
 import { DEMO_URL, SITE_URL } from '../src/site.js';
-import {
-  KEEP_NAMES_SHIM,
-  WEBSITE,
-  answerRepositoryRequests,
-  axeProblems,
-  isRepositoryRequest,
-  settle,
-  timeoutGives,
-  type MockedFacts,
-} from './browser.js';
+import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, settle } from './browser.js';
 import { SPACE_BEFORE_PUNCTUATION } from './check-site.js';
 import { serve } from './serve.js';
 
@@ -204,23 +187,6 @@ async function nameProblems(page: Page): Promise<string[]> {
 }
 
 /**
- * With mocked facts: waits (3 s at most) for the header's repository widget to show the stars, so the layout is
- * measured with them. Where the script keeps the link as it was (it would move the header's items), the wait runs out.
- */
-async function liveFacts(page: Page, facts: MockedFacts | undefined): Promise<void> {
-  if (facts === undefined) return;
-  await page
-    .waitForFunction(
-      (text) =>
-        document.querySelector('.header-github [data-fact="stars"] .fact-value')?.textContent === text,
-      formatCount(facts.stars),
-      { timeout: 3000 },
-    )
-    .catch(timeoutGives(undefined));
-  await settle(page);
-}
-
-/**
  * The sticky header at the current width: scrolled to the end of the page, the header is still at the top of the window
  * (within half a pixel), and an anchor jump to the page's last level-2 heading leaves the heading below the header. The
  * page is scrolled back to its top afterwards.
@@ -290,7 +256,6 @@ async function layout(
   pages: readonly string[],
   themes: readonly Theme[],
   widths: readonly number[],
-  facts: MockedFacts | undefined,
 ): Promise<string[]> {
   const problems: string[] = [];
   for (const theme of themes) {
@@ -302,13 +267,11 @@ async function layout(
       isMobile: true,
     });
     await context.addInitScript(KEEP_NAMES_SHIM);
-    await answerRepositoryRequests(context, facts);
     const page = await context.newPage();
     for (const pagePath of pages) {
       await page.setViewportSize({ width: widths[0] ?? 375, height: HEIGHT });
       await page.goto(`${base}${pagePath}`, { waitUntil: 'load' });
       await page.evaluate(() => document.fonts.ready.then(() => undefined));
-      await liveFacts(page, facts);
       const found: string[] = [];
       for (const width of widths) {
         await page.setViewportSize({ width, height: HEIGHT });
@@ -432,11 +395,7 @@ const SCENARIOS: readonly Scenario[] = [
   { name: 'reduced motion', reducedMotion: true, firstOnly: true },
 ];
 
-async function playback(
-  base: string,
-  themes: readonly Theme[],
-  facts: MockedFacts | undefined,
-): Promise<string[]> {
+async function playback(base: string, themes: readonly Theme[]): Promise<string[]> {
   const problems: string[] = [];
   for (const device of DEVICES) {
     if (!existsSync(device.type.executablePath())) {
@@ -457,17 +416,11 @@ async function playback(
           });
           await context.addInitScript(KEEP_NAMES_SHIM);
           if (scenario.initScript !== undefined) await context.addInitScript(scenario.initScript);
-          await answerRepositoryRequests(context, facts);
           const page = await context.newPage();
           const origin = new URL(base).origin;
           page.on('request', (request) => {
             const url = request.url();
-            if (
-              !url.startsWith('data:') &&
-              !url.startsWith('blob:') &&
-              new URL(url).origin !== origin &&
-              !isRepositoryRequest(url)
-            ) {
+            if (!url.startsWith('data:') && !url.startsWith('blob:') && new URL(url).origin !== origin) {
               problems.push(`${where}: a request to another host: ${url}`);
             }
           });
@@ -534,9 +487,6 @@ async function main(): Promise<number> {
       page: { type: 'string', multiple: true, default: [] },
       theme: { type: 'string', multiple: true, default: [] },
       width: { type: 'string', multiple: true, default: [] },
-      stars: { type: 'string' },
-      forks: { type: 'string' },
-      release: { type: 'string' },
       dist: { type: 'string', default: path.join(WEBSITE, 'dist') },
     },
   });
@@ -550,18 +500,6 @@ async function main(): Promise<number> {
   const widths = values.width.length > 0 ? values.width.map(Number) : WIDTHS;
   if (widths.some((width) => !Number.isInteger(width) || width < 200))
     throw new UsageError('--width: whole pixels');
-  const stars = values.stars === undefined ? undefined : Number(values.stars);
-  if (stars !== undefined && (!Number.isSafeInteger(stars) || stars < 0))
-    throw new UsageError('--stars: a whole number of stars');
-  const forks = values.forks === undefined ? stars : Number(values.forks);
-  if (forks !== undefined && (!Number.isSafeInteger(forks) || forks < 0))
-    throw new UsageError('--forks: a whole number of forks');
-  const release = values.release ?? 'v1.0.0';
-  if (!isReleaseTag(release)) throw new UsageError('--release: a release tag, such as v1.2.3');
-  if (stars === undefined && (values.forks !== undefined || values.release !== undefined))
-    throw new UsageError('--forks and --release go with --stars');
-  const facts: MockedFacts | undefined =
-    stars === undefined ? undefined : { stars, forks: forks ?? stars, version: release };
   if (!existsSync(path.join(dist, 'index.html'))) {
     console.error(`website mobile: no built site in ${dist}; run \`pnpm website:build\` first`);
     return 1;
@@ -576,12 +514,12 @@ async function main(): Promise<number> {
     if (wanted('layout')) {
       const browser = await chromium.launch();
       try {
-        problems.push(...(await layout(browser, base, pages, themes, widths, facts)));
+        problems.push(...(await layout(browser, base, pages, themes, widths)));
       } finally {
         await browser.close();
       }
     }
-    if (wanted('playback')) problems.push(...(await playback(base, themes, facts)));
+    if (wanted('playback')) problems.push(...(await playback(base, themes)));
   } finally {
     await close();
   }
@@ -591,7 +529,7 @@ async function main(): Promise<number> {
     return 1;
   }
   console.log(
-    `\nwebsite mobile: OK (${wanted('layout') ? `${String(pages.length)} pages at ${widths.join(', ')} px, ${themes.join(' and ')}: no sideways scrolling, no overlapping header items, the header at the top when scrolled and above anchor targets, 44-pixel targets, no axe violation, no name with a space before a punctuation mark` : ''}${wanted('layout') && wanted('playback') ? '; ' : ''}${wanted('playback') ? 'the demos play on the iPhone and the Pixel, pause and play again, and fall back to the GIF' : ''}${facts === undefined ? '' : `; GitHub's answers mocked as ${facts.version}, ${String(facts.stars)} stars, ${String(facts.forks)} forks`}).`,
+    `\nwebsite mobile: OK (${wanted('layout') ? `${String(pages.length)} pages at ${widths.join(', ')} px, ${themes.join(' and ')}: no sideways scrolling, no overlapping header items, the header at the top when scrolled and above anchor targets, 44-pixel targets, no axe violation, no name with a space before a punctuation mark` : ''}${wanted('layout') && wanted('playback') ? '; ' : ''}${wanted('playback') ? 'the demos play on the iPhone and the Pixel, pause and play again, and fall back to the GIF' : ''}).`,
   );
   return 0;
 }

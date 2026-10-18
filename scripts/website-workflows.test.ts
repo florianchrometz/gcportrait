@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * The website's build: one definition (.github/workflows/website.yml, a reusable workflow) called by
- * pages.yml (a push to main and the daily refresh) and release.yml (a tag), so a second copy cannot drift
+ * pages.yml (a push to main) and release.yml (a tag), so a second copy cannot drift
  * from it; a pull request runs CI's `website` job alone (pr.yml), and pages.yml does not repeat that gate
  * there (docs/contributing.md, "Continuous integration").
  */

@@ -45,9 +45,7 @@
  * edits before, while and after its field is typed into, and the panel, per profile, page, width and theme. Browsers: Chromium from `pnpm --filter @gcportrait/e2e install-browsers`; WebKit and Firefox once per
  * machine with `pnpm --filter @gcportrait/website exec playwright install webkit firefox`. Firefox runs with a
  * throwaway application-data directory (MOZ_APP_DATA), so it never touches a Firefox profile of the user's (and
- * starts where its own lookup of that directory fails: "Could not find profile folder"). axe-core comes from
- * @axe-core/playwright (scripts/browser.ts). The header's repository widget is answered by the check with GitHub's
- * 404 for a private repository (scripts/browser.ts), so the header does not change and GitHub is never asked.
+ * @axe-core/playwright (scripts/browser.ts).
  */
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -71,14 +69,7 @@ import {
 
 import { STORAGE_KEY, unfilledNote } from '../src/lib/fillable.js';
 import { FIELD_HINT } from '../src/lib/markdown.js';
-import {
-  KEEP_NAMES_SHIM,
-  WEBSITE,
-  answerRepositoryRequests,
-  axeProblems,
-  settle,
-  timeoutGives,
-} from './browser.js';
+import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, settle, timeoutGives } from './browser.js';
 import { serve } from './serve.js';
 
 class UsageError extends Error {}
@@ -217,9 +208,6 @@ async function newContext(
 ): Promise<BrowserContext> {
   const context = await browser.newContext(contextOptions(run, javaScript));
   await context.addInitScript(KEEP_NAMES_SHIM);
-  // The header's repository widget: answered here with GitHub's 404 for a private repository (nothing changes), never
-  // asked of GitHub.
-  await answerRepositoryRequests(context);
   if (run.profile.init !== undefined) await context.addInitScript(run.profile.init);
   if (javaScript) {
     await context.addInitScript(CLIPBOARD_RECORDER);

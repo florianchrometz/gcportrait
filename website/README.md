@@ -28,9 +28,8 @@ From the repository root:
 | Build the static demo alone, into `dist/demo/` at the root | `pnpm demo:static` |
 | Check the static demo in the built site in Chromium ([specification](scripts/demo.ts)) | `pnpm --filter @gcportrait/website demo` (`--theme dark`, `--shots DIR`, `--dist DIR`) |
 | Check built pages, resources, links, metadata, installer, demo and exports ([specification](scripts/check-site.ts)) | `pnpm website:check` |
-| Check phone layouts, accessibility and demo playback ([specification](scripts/mobile.ts)) | `pnpm --filter @gcportrait/website mobile` (`--only layout`, `--only playback`, `--page /docs/`, `--theme dark`, `--width 375`, `--stars 12345` with `--forks 678` and `--release v1.2.3` for GitHub's mocked answers, which a page asks for only on a build that did not find the repository not public, such as one with `WEBSITE_STAR_COUNT`) |
+| Check phone layouts, accessibility and demo playback ([specification](scripts/mobile.ts)) | `pnpm --filter @gcportrait/website mobile` (`--only layout`, `--only playback`, `--page /docs/`, `--theme dark`, `--width 375`) |
 | Check editable command fields, Copy, storage and accessibility across browser and touch profiles ([specification](scripts/fillable.ts)) | `pnpm --filter @gcportrait/website fillable` (`--profile chromium\|firefox\|firefox-fallback\|webkit\|iphone\|pixel`, `--page /docs/permissions/`, `--shots DIR`) |
-| Check the header's repository widget, live, in Chromium ([specification](scripts/stars.ts)) | `pnpm --filter @gcportrait/website stars` (`--count 1301`, `--forks 42`, `--release v1.0.1`, `--real`, `--shots DIR`) |
 | Serve the built site | `pnpm website:preview` |
 | Lighthouse on every page, light and dark, desktop and mobile ([specification](scripts/lighthouse.ts)) | `pnpm website:lighthouse` (`--page /docs/`, `--theme dark`, `--preset desktop`, `--mobile`) |
 | Regenerate the screenshots, animated demos and link-preview images (`docs/media/`) | `pnpm media` (`--only scene:ID`, `--theme light`; `pnpm media --check` for staleness) |
@@ -39,8 +38,7 @@ From the repository root:
 | Type-check the `.astro` files alone: `@astrojs/check` over `tsconfig.astro.json`, failing on any diagnostic, hints such as an unused import included (`typecheck` runs it after `tsc -b`, and so does the root `pnpm typecheck`) | `pnpm --filter @gcportrait/website typecheck:astro` |
 
 **What CI runs.** CI's `website` job (`pr.yml`, docs/contributing.md) runs `pnpm website:build` and
-`pnpm website:check`, then `demo`, `mobile --only layout`, `fillable --profile chromium` and `stars`, the last
-on a build made with `WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT` and `WEBSITE_RELEASE`. `mobile --only
+`pnpm website:check`, then `demo`, `mobile --only layout` and `fillable --profile chromium`. `mobile --only
 playback`, the other fillable profiles and `website:lighthouse` stay local, run before a release
 (docs/website.md, "Building and checking").
 
@@ -52,14 +50,13 @@ landing page make each such token a field (below, and docs/website.md, "Fillable
 
 Astro 7 runs one dev server and one preview server per project and may keep it running in the background (it
 says so with its process id); `pnpm --filter @gcportrait/website exec astro dev stop` (or
-`astro preview stop`) stops it. The build needs no browser and works offline: its one ask outside the
-repository, the repository widget's facts (the latest release, the stars, the forks), falls back to none
-(below). The browser checks (`mobile`, `fillable`, `stars`) answer the pages' own requests for the live facts
-themselves; Lighthouse lets each run ask GitHub. `pnpm media`, `pnpm website:lighthouse` and the phone check
-need Playwright's Chromium (`pnpm --filter @gcportrait/e2e install-browsers` once); the phone check's playback
-part also needs its WebKit, and the fillable-commands check its WebKit and Firefox
-(`pnpm --filter @gcportrait/website exec playwright install webkit firefox` once); both read axe-core from the
-e2e package. Lighthouse itself is run with `pnpm dlx` at a pinned version.
+`astro preview stop`) stops it. The build needs no browser and works offline, making no requests outside the
+repository. The browser checks (`mobile`, `fillable`) run entirely against the local preview server.
+`pnpm media`, `pnpm website:lighthouse` and the phone check need Playwright's Chromium (`pnpm --filter
+@gcportrait/e2e install-browsers` once); the phone check's playback part also needs its WebKit, and the
+fillable-commands check its WebKit and Firefox (`pnpm --filter @gcportrait/website exec playwright install
+webkit firefox` once); both read axe-core from the e2e package. Lighthouse itself is run with `pnpm dlx` at a
+pinned version.
 
 ## Where the content comes from
 
@@ -160,8 +157,7 @@ build warns and goes on.
   link to the demo without both.
 - Small scripts. On every page (`src/layouts/Base.astro`, inlined by Astro): header height measurement and
   panel toggle states (`aria-expanded`). On pages with an animated demo (`src/components/DemoVideo.astro`):
-  themed WebM playback with GIF fallback and pause controls. On every page, the header's repository widget
-  (`src/lib/star-count-page.ts`), inlined into each page by the build. The site runs no analytics and sends
+  themed WebM playback with GIF fallback and pause controls. The site runs no analytics and sends
   no data to third parties ([docs/website.md](../docs/website.md#analytics)).
 - Guides are rendered by `src/lib/markdown.ts`: raw HTML is dropped, and a link keeps its target
   only for http, https, mailto or a path (a `javascript:` or `data:` link becomes plain text). What may scroll
@@ -169,13 +165,9 @@ build warns and goes on.
   `.table-scroll` box. A code block written in a page itself either has `tabindex="0"` too or wraps its lines
   (`class="wrap"`); `pnpm website:check` refuses any other. An empty header cell becomes a data cell, and a
   table cell holding a command keeps a readable width (`cell-command`).
-- The header's GitHub link (top right, next to "Try the demo") is the repository widget
-  (`src/components/Header.astro`), displaying the latest release tag, star count and fork count
-  ([docs/website.md](../docs/website.md#github-repository-widget)). `src/lib/github.ts` fetches build-time
-  facts during `pnpm website:build` (supporting `WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT` and
-  `WEBSITE_RELEASE` overrides); `src/lib/star-count-page.ts` (with formatter and storage keys in
-  `src/lib/star-count.ts`) fetches live facts in the visitor's browser at most once an hour per tab when
-  public, recording requests under row W3 of `docs/legal/data-processing-inventory.md`.
+- The header's GitHub link (top right, next to "Try the demo") is a static link to the repository
+  (`src/components/Header.astro`), linking to the repository on GitHub with `rel="noopener"` and keeping a
+  44×44px touch target on mobile ([docs/website.md](../docs/website.md#mobile)).
 - Light and dark follow `prefers-color-scheme`, with the app's palette values (`src/styles/global.css`;
   `src/styles/contrast.test.ts` checks every text pair at 4.5 : 1). Roboto and Roboto Mono are self-hosted
   from `@fontsource` (Latin subsets; regular, medium and mono are preloaded, so text does not shift when they
@@ -211,22 +203,19 @@ astro.config.ts        site, output, the licence files, the favicon (brand/icon.
 public/                CNAME (the favicon and the installer are copied by the build from brand/ and infra/)
 scripts/               check-site.ts (pnpm website:check), lighthouse.ts (pnpm website:lighthouse), mobile.ts (the
                        phone check), fillable.ts (the fillable-commands check in three engines and on two phones),
-                       stars.ts (the repository widget's live check), demo.ts (the demo's check in a browser),
-                       astro-check.ts (the .astro files'
-                       type check, over tsconfig.astro.json), browser.ts (axe-core, GitHub's mocked answers and
-                       other helpers the browser checks share), serve.ts (the built site served as GitHub Pages
-                       serves it: byte ranges, `x.html` for `x`, the trailing-slash redirect)
+                       demo.ts (the demo's check in a browser), astro-check.ts (the .astro files'
+                       type check, over tsconfig.astro.json), browser.ts (axe-core and other helpers the browser
+                       checks share), serve.ts (the built site served as GitHub Pages serves it:
+                       byte ranges, `x.html` for `x`, the trailing-slash redirect)
 src/site.ts            the fixed facts: hosts, the demo, repository, image, the footer notice and the long form (equal
                        to the app's)
 src/data/              docs.ts (the docs menu, with /exports/ after the Export guide), media.json (the generated
                        media, read by scripts/media.mjs too)
 src/lib/               markdown, docs, coverage, author, placeholders, brand (the mark of brand/icon.svg
                        for the logo, and the favicon-and-logo comparison), media, exports (the sample
-                       exports), seo, sitemap, github (the build's repository facts), star-count and star-count-page
-                       (the formatter and the name both layers share, and the live facts in the visitor's browser),
-                       fillable and
+                       exports), seo, sitemap, fillable and
                        fillable-page (the fillable commands of the docs pages and the landing page)
-src/components/        Header (sticky, with the repository widget), Footer, Logo, DemoLink (a link to the demo, in a
+src/components/        Header (sticky, with the GitHub link), Footer, Logo, DemoLink (a link to the demo, in a
                        new tab), StartLink (the "Open in Cloud Shell" and "Run on Google Cloud" buttons, in a new
                        tab), ThemedPicture, DemoVideo, Variables, ExportCard (a sample export: both themes'
                        previews with their download and open links)

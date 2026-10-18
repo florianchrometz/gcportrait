@@ -53,15 +53,10 @@ import {
 } from './check-site.js';
 import { CONTENT_TYPES } from './serve.js';
 
-const SLUG = 'florianchrometz/gcportrait';
-const HEADER = `<header><a class="button header-github has-facts" href="${REPOSITORY_URL}" rel="noopener" aria-label="gcportrait on GitHub: version 1.0.0, 1.2k stars, 3 forks" data-repository="${SLUG}"><span>GitHub</span> <span class="repo-facts"><span class="repo-fact" data-fact="version"><span class="fact-value">v1.0.0</span></span><span class="repo-fact" data-fact="stars"><span class="fact-value">1.2k</span></span><span class="repo-fact" data-fact="forks"><span class="fact-value">3</span></span></span></a></header>`;
+const HEADER = `<header><a class="button header-github" href="${REPOSITORY_URL}" rel="noopener" aria-label="gcportrait on GitHub"><span>GitHub</span></a></header>`;
 
 /** The footer notice as src/components/Footer.astro writes it: the maintainer's name linked, then a full stop. */
 const FOOTER_NOTICE_HTML = `<p class="footer-notice">${FOOTER_NOTICE_LEAD}<a href="${MAINTAINER_URL}">${MAINTAINER_NAME}</a>.</p>`;
-
-/** The repository widget's live requests as the build minifies them (src/lib/star-count.ts): the allowed requests. */
-const STAR_FETCH =
-  'async function m(e,t=4e3){if(!i(e))return;let n=AbortSignal.timeout(t),o=fetch(`https://api.github.com/repos/${e}`,{headers:{Accept:`application/vnd.github+json`},credentials:`omit`,referrerPolicy:`no-referrer`,signal:n}).then(p).catch(()=>void 0),s=fetch(`https://api.github.com/repos/${e}/releases/latest`,{headers:{Accept:`application/vnd.github+json`},credentials:`omit`,referrerPolicy:`no-referrer`,signal:n}).then(p).catch(()=>void 0),[c,u]=await Promise.all([o,s]);if(c===void 0)return}';
 
 /** The footer's legal links as src/components/Footer.astro writes them. */
 const LEGAL_NAV = `<nav aria-label="Legal"><h2>Legal</h2><ul>${LEGAL_LINKS.map(
@@ -278,11 +273,6 @@ describe('checkPage', () => {
   });
 
   describe('the header’s GitHub link to the repository, in the same tab', () => {
-    it('is accepted without facts too', () => {
-      const header = HEADER.replace(' has-facts', '').replace(': version 1.0.0, 1.2k stars, 3 forks', '');
-      expect(problems('', { header })).toBe('');
-    });
-
     it.each([
       ['missing', '', '0 GitHub links in the header (one)'],
       [
@@ -290,36 +280,22 @@ describe('checkPage', () => {
         HEADER.replace(REPOSITORY_URL, 'https://example.com/'),
         "the header's GitHub link goes to https://example.com/",
       ],
-      [
-        'named without the project',
-        HEADER.replace('gcportrait on GitHub', 'GitHub'),
-        'is named "GitHub: version 1.0.0, 1.2k stars, 3 forks"',
-      ],
+      ['named without the project', HEADER.replace('gcportrait on GitHub', 'GitHub'), 'is named "GitHub"'],
       [
         'opening another tab',
         HEADER.replace('rel="noopener"', 'target="_blank" rel="noopener"'),
         'opens another tab or window',
-      ],
-      [
-        'without data-repository',
-        HEADER.replace(` data-repository="${SLUG}"`, ''),
-        `the header's GitHub link has data-repository="", not the repository's ${SLUG}`,
-      ],
-      [
-        'naming another repository in data-repository',
-        HEADER.replace(`data-repository="${SLUG}"`, 'data-repository="someone/else"'),
-        'has data-repository="someone/else"',
       ],
     ])('is refused %s', (_case, header, problem) => {
       expect(problems('', { header })).toContain(problem);
     });
   });
 
-  it('allows the repository widget’s fetches in an inline script, and no other host', () => {
+  it('refuses fetches to another host in an inline script', () => {
     const inline = (script: string): string => problems(`<script type="module">${script}</script>`);
-    expect(inline(STAR_FETCH)).toBe('');
-    expect(inline(STAR_FETCH.replace('api.github.com', 'example.com'))).toContain(
-      'a script fetches from another host: https://example.com/repos/',
+    expect(inline('fetch("/sitemap.xml")')).toBe('');
+    expect(inline('fetch("https://example.com/api")')).toContain(
+      'a script fetches from another host: https://example.com/api',
     );
     // JSON-LD is data, not a script: its addresses are the page's own metadata.
     const head = `${GOOD_HEAD}<script type="application/ld+json">{"url":"https://example.com/"}</script>`;
@@ -422,13 +398,7 @@ describe('checkPage', () => {
 });
 
 describe('scriptConnectionProblems', () => {
-  it('allows the repository widget’s fetches of https://api.github.com/repos/…, minified or not, and the site’s own paths', () => {
-    expect(scriptConnectionProblems(STAR_FETCH)).toEqual([]);
-    expect(
-      scriptConnectionProblems(
-        "const response = await fetch(`https://api.github.com/repos/${slug}`, {\n  headers: { Accept: 'application/vnd.github+json' },\n  credentials: 'omit',\n});",
-      ),
-    ).toEqual([]);
+  it('allows the site’s own paths and XML namespaces, but no other host', () => {
     expect(scriptConnectionProblems('fetch("/sitemap.xml").then((r)=>r.text())')).toEqual([]);
     expect(
       scriptConnectionProblems(
@@ -451,72 +421,21 @@ describe('scriptConnectionProblems', () => {
     ],
     [
       'GitHub over http',
-      'fetch(`http://api.github.com/repos/${e}`,{credentials:`omit`})',
+      'fetch(`http://api.github.com/repos/${e}`)',
       'a script fetches from another host: http://api.github.com/repos/',
     ],
     [
-      'a host that only starts like GitHub’s API',
-      'fetch(`https://api.github.com.example.net/repos/${e}`,{credentials:`omit`})',
-      'a script fetches from another host: https://api.github.com.example.net/repos/',
-    ],
-    [
-      'another path of GitHub’s API',
-      'fetch(`https://api.github.com/user`,{credentials:`omit`})',
-      'a script fetches from another host: https://api.github.com/user',
+      'GitHub API over https',
+      'fetch(`https://api.github.com/repos/${e}`)',
+      'a script fetches from another host: https://api.github.com/repos/',
     ],
     [
       'an address it does not write out',
-      'let u=`https://api.github.com/repos/${e}`;fetch(u,{credentials:`omit`})',
-      'a script fetches an address it does not write out: fetch(u,{credentials:`omit`})',
-    ],
-    [
-      'the widget’s fetch without credentials',
-      STAR_FETCH.replace('credentials:`omit`,', ''),
-      "a script fetches https://api.github.com/repos/… without credentials: 'omit'",
-    ],
-    [
-      'the widget’s fetch with credentials: include',
-      STAR_FETCH.replace('credentials:`omit`', 'credentials:`include`'),
-      "without credentials: 'omit'",
-    ],
-    [
-      'the latest release’s fetch without credentials',
-      STAR_FETCH.slice(0, STAR_FETCH.indexOf('/releases/latest')) +
-        STAR_FETCH.slice(STAR_FETCH.indexOf('/releases/latest')).replace('credentials:`omit`,', ''),
-      "a script fetches https://api.github.com/repos/… without credentials: 'omit'",
+      'let u=`https://api.github.com/repos/${e}`;fetch(u)',
+      'a script fetches an address it does not write out: fetch(u)',
     ],
   ])('refuses %s', (_case, source, problem) => {
     expect(scriptConnectionProblems(source).join('\n')).toContain(problem);
-  });
-
-  // credentials: 'omit' counts only at the top level of the options, once, with nothing that could override it.
-  it.each([
-    [',{credentials:"omit"}', true],
-    [", { 'credentials': 'omit', headers: { Accept: 'x' } }", true],
-    [',{signal:AbortSignal.timeout(n),credentials:`omit`,}', true],
-    // Nested: an inner object's credentials is not the request's.
-    [',{credentials:`include`,x:{credentials:`omit`}}', false],
-    [',{headers:{credentials:"omit"}}', false],
-    // Twice: the last one wins in JavaScript.
-    [',{credentials:"omit",credentials:"include"}', false],
-    // A spread or a computed key could set it.
-    [',{...o,credentials:"omit"}', false],
-    [',{credentials:"omit",...o}', false],
-    [',{[k]:"include",credentials:"omit"}', false],
-    // Not written out, or not a plain 'omit'.
-    [',options', false],
-    ['', false],
-    [',{credentials}', false],
-    [',{credentials:c}', false],
-    [',{credentials:`om${""}it`}', false],
-    [',{credentials:"omit"+""}', false],
-    [',{"credentials,x":"omit"}', false],
-  ])("takes the star fetch's options «%s» as credentials: 'omit': %s", (options, taken) => {
-    const found = scriptConnectionProblems(`fetch(\`https://api.github.com/repos/\${e}\`${options})`).join(
-      '\n',
-    );
-    if (taken) expect(found).toBe('');
-    else expect(found).toContain("without credentials: 'omit'");
   });
 
   it('refuses another host named anywhere in a script, and every other way to send a request', () => {

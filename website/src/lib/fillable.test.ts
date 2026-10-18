@@ -192,7 +192,7 @@ describe('the page’s script and local storage (fillable-page.ts)', () => {
     const page = startPage(items);
     expect(page.input.value).toBe('');
     items.set(KEY, JSON.stringify({ YOUR_PROJECT: 'from-another-tab' }));
-    page.changedElsewhere('gcportrait.repository');
+    page.changedElsewhere('other-key');
     expect(page.input.value).toBe('');
     page.changedElsewhere(KEY);
     expect(page.input.value).toBe('from-another-tab');

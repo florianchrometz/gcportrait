@@ -3,8 +3,7 @@
  * The page frame: the head with every page's search and link-preview metadata (src/lib/seo.ts), the skip link,
  * the header, the page, and the footer with the footer notice. Fonts are self-hosted (Roboto from
  * @fontsource, Latin subset only), the three faces most text is set in preloaded (no layout shift when they arrive);
- * nothing is loaded from another host (the header's repository widget, once the page has loaded, only asks
- * api.github.com for the repository's version, stars and forks: src/lib/star-count.ts).
+ * nothing is loaded from another host and the site makes no cross-host requests.
  *
  * The header stays at the top while the page scrolls (src/components/Header.astro). The script below keeps its height
  * in `--header-block` on the root element (global.css has an estimate per width until then), and the root's

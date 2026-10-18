@@ -13,7 +13,6 @@
     "lighthouse": "tsx scripts/lighthouse.ts",
     "mobile": "tsx scripts/mobile.ts",
     "fillable": "tsx scripts/fillable.ts",
-    "stars": "tsx scripts/stars.ts",
     "demo": "tsx scripts/demo.ts",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -b && pnpm run typecheck:astro",
