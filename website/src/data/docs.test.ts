@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
@@ -11,6 +12,33 @@ import { DOC_MENU_EXTRAS, DOC_PAGES, NOT_ON_SITE, menuItems } from './docs.js';
 const REPO = path.resolve(import.meta.dirname, '..', '..', '..');
 
 describe('the docs manifest (src/data/docs.ts)', () => {
+  it('checks commands in every published guide except the separately checked getting-started guide', () => {
+    const guides: unknown = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          "import { GUIDES } from './scripts/user-docs.mjs'; process.stdout.write(JSON.stringify(GUIDES));",
+        ],
+        { cwd: REPO, encoding: 'utf8', timeout: 30_000 },
+      ),
+    );
+    const sources = DOC_PAGES.map((page) => page.source).filter(
+      (source) => source !== 'docs/getting-started.md',
+    );
+    expect(guides).toHaveLength(sources.length);
+    expect(guides).toEqual(expect.arrayContaining(sources));
+  });
+
+  it('lists every published guide in the documentation index', () => {
+    const index = readFileSync(path.join(REPO, 'docs/README.md'), 'utf8');
+    const sources = Array.from(index.matchAll(/^\| \[[^\]]+\]\(([^)]+)\) \|/gm), (match) =>
+      path.posix.join('docs', match[1] ?? ''),
+    );
+    expect(sources).toEqual(expect.arrayContaining(DOC_PAGES.map((page) => page.source)));
+  });
+
   it('covers every guide under docs/: each is a page of the site or listed as not one, with the reason', () => {
     const guides = readdirSync(path.join(REPO, 'docs'))
       .filter((name) => name.endsWith('.md'))

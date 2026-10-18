@@ -97,13 +97,7 @@ An instance is one Cloud Run service: the app and a small stateless backend, wit
 token. People sign in with their own Google account and read what their roles allow, or a team grants the
 instance's service account `roles/cloudasset.viewer` once (service-account mode, behind a gate that checks
 each person's own access to the scope); Cloud Asset Inventory export files load too.
-[docs/self-host.md](docs/self-host.md) is the guide (the three steps in detail, using it, updating,
-uninstalling), [docs/self-host-options.md](docs/self-host-options.md) explains every option (another region,
-Identity-Aware Proxy, service-account mode, a demo-only instance, custom domains, legal pages, building from
-source, troubleshooting), [docs/configuration.md](docs/configuration.md) lists every setting,
-[docs/modes.md](docs/modes.md) compares the ways in, [docs/permissions.md](docs/permissions.md) lists every
-permission with the exact `gcloud` command, and [docs/api.md](docs/api.md) is the instance's API: SVG, PNG and
-draw.io renders of a scope, an export or a demo with curl and your own token.
+Follow [the self-hosting guide](docs/self-host.md) to deploy, use, update or uninstall an instance.
 
 ### Try the demo
 
