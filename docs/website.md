@@ -81,61 +81,11 @@ check` and CI's `typecheck` job run, runs `typecheck:astro` after its own `tsc -
 API, an `await` without effect. [website/README.md](../website/README.md) says why the script calls the
 checker itself and what to do when it cannot load the checker.
 
-`pnpm website:check` fails a page that lacks a unique title (at most 60 characters) or description (50 to 160
-characters), as search results show them whole, the canonical URL on `https://gcportrait.app` (the 404 page
-instead must be `noindex` and name no canonical URL), OpenGraph and Twitter card tags with a 1200×630 image,
-parseable JSON-LD (never an Organization, and like every meta tag without the non-affiliation statement, which
-belongs in the footer and the long-form texts, not in metadata), one level-1 heading, alt text and dimensions
-on its images, a button to the Cloud Shell tutorial or the Cloud Run Button that opens in the same tab, does
-not say it opens a new one or loads its mark as an image (the landing page's hero must offer both; [The
-landing page's start buttons](#the-landing-pages-start-buttons)), the footer notice in the footer ("Not
-affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz.",
-the name linked to the maintainer's website; [AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal"),
-the footer's links to the Impressum and the privacy notice on the maintainer's website (each once,
-`rel="noopener"`, named as an external site; [Legal pages](#legal-pages)), or the header's one link to the
-repository (same tab, named "gcportrait on GitHub", `data-repository` naming that repository); that loads
-anything from another host (a script, stylesheet, font, image, video, audio, frame or embedded object, through
-any attribute that loads, every `srcset` candidate included, or through CSS: any address on another host in a
-stylesheet of the build, a `<style>` block or a `style` attribute, so `url()`, `@import`, `image-set()` and
-`@font-face`); that has a script (inline, or a file of the build) asking any other host than the site itself,
-except the repository widget's requests: a `fetch` of `https://api.github.com/repos/…` written out in the
-script with exactly one `credentials: 'omit'` at the top level of the options written out in the call ([GitHub
-repository widget](#github-repository-widget)), and the page views: TelemetryDeck's ingestion host,
-`https://nom.telemetrydeck.com/`, allowed by name, as a POST without credentials, where the SDK's own request
-(whose address is its target, a variable) is accepted once, in the one script that names that address
-([Analytics](#analytics)); a `fetch` of an address it does not write out, options it does not write out or
-that could override `credentials` (a spread, a computed key), any other host named in a script, and
-`XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon` and `importScripts` all fail; that runs text into a
-link without a space; that has a code block the keyboard cannot reach (a `<pre>` scrolls sideways when a line
-is long, so it needs `tabindex="0"`, or `class="wrap"` when it wraps its lines instead); that lacks the one
-viewport tag (`width=device-width, initial-scale=1`, zooming left alone), has a table outside a focusable
-`.table-scroll` box, or an inline width over 320 pixels; whose internal links and anchors do not resolve; or
-that links into the repository at a file or folder the repository does not have. It also checks that the
-sitemap lists exactly the pages built, `robots.txt` names it, the CNAME holds `gcportrait.app`, `/install.sh`
-is `infra/install.sh` byte for byte ([The installer](#the-installer)), the font licences ship next to the
-fonts (and the SDK's next to them when a script carries it), a stylesheet keeps images and videos within their
-box (`img, video { max-width: 100% }`), no page is an `/impressum/` or `/privacy/` of the site's own, and the
-favicon and every page's logo are the drawing of `brand/icon.svg` ([Favicon and logo](#favicon-and-logo)), and
-that the landing page carries the long-form non-affiliation statement in its author section
-(`docs/author.md`'s closing paragraph) and in no other section. The demo below `/demo/` is the app, not a page
-of the site, so these page rules leave it out; it has rules of its own ([The demo](#the-demo)), among them
-that no file of it names TelemetryDeck or the site's analytics app id, every "Try the demo" or "Open the demo"
-link must point at `/demo/` and no link at a demo host, and every link to the demo, on a page, in a guide, in
-the header or the footer, must open it in a new tab (`target="_blank"`, `rel="noopener"`) and say so in its
-name (" (opens in a new tab)", visually hidden): the demo is the app, with no way back to the site. For the
-sample exports it checks that every link of the exports section (on the landing page and `/exports/`) points
-at a PNG, an SVG or a draw.io file of the build itself, a download link with its file name, that no SVG
-offered carries an affiliation line ("Not affiliated with Google / Google Cloud." or any other "affiliated
-with … Google" sentence) in its title block, its `<title>`, its `<desc>` or anywhere else, and none loads
-anything from elsewhere, that every draw.io file reads as diagrams.net reads it (compressed), with no
-affiliation line in a label and no address but Google Fonts' stylesheet, that every "Open in diagrams.net"
-link is `https://app.diagrams.net/?url=` with the address of a draw.io file of the build on
-`https://gcportrait.app` and opens a new tab that its name announces, that every export link's name begins
-with the text the link shows and has no space before a punctuation mark, and that `/exports/` offers a PNG, an
-SVG, a draw.io file and a diagrams.net link of each theme ([Sample exports](#sample-exports)).
-`app.diagrams.net` is a link target only: like any other host it may not serve a resource of a page; a link to
-it may go anywhere there, but one that opens a file (`?url=`) must be an export's checked "Open in
-diagrams.net" link.
+After `pnpm website:build`, run `pnpm website:check` to validate the built pages, local resources, links,
+metadata, accessibility markup, installer, demo and sample exports against the site's requirements; the
+header of [website/scripts/check-site.ts](../website/scripts/check-site.ts) is the full check specification.
+The command reports every problem and exits with status 1 on failure. It checks the built files, not browser
+interaction: use the browser commands above for rendered layout, gestures and behavior.
 
 The guides are rendered so that nothing the keyboard cannot scroll is left (WCAG 2.1.1): every code block is
 focusable, and every table sits in a focusable box that scrolls on its own. A table's empty header cell
