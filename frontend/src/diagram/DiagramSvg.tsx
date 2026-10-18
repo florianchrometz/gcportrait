@@ -11,7 +11,7 @@ import type { ReactElement } from 'react';
 
 import { WORDMARK } from '../branding';
 import { descriptionText, sincePhrase } from './diff/words';
-import { DiagramDrawing, planDrawing, type DrawingOptions } from './Drawing';
+import { DiagramDrawing, planDrawing, type DrawingOptions, type DrawingPlan } from './Drawing';
 import { fmt } from './geometry/edgePath';
 import type { DiagramModel } from './model';
 import { formatReadTime } from './titleBlock';
@@ -43,19 +43,25 @@ export function documentText(model: DiagramModel, utcOffsetMinutes: number): { t
   };
 }
 
+/**
+ * `plan`, when given, is `planDrawing(model, options)`'s for these options: the export plans once and reads the
+ * title block's and the legend's boxes from the same plan.
+ */
 export function DiagramSvg({
   model,
   options,
+  plan: planned,
 }: {
   model: DiagramModel;
   options: StaticOptions;
+  plan?: DrawingPlan | undefined;
 }): ReactElement {
   const drawingOptions: DrawingOptions = {
     ...options,
     overlays: options.overlays ?? true,
     interactive: false,
   };
-  const plan = planDrawing(model, drawingOptions);
+  const plan = planned ?? planDrawing(model, drawingOptions);
   const { frame } = plan;
   const text = documentText(model, options.utcOffsetMinutes);
   return (

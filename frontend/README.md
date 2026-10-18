@@ -2528,20 +2528,19 @@ src/shell/topbar/ExportMenu.tsx   the menu button and its menu (a top-bar slot)
 **A new drawing, not a recoloured canvas.** The canvas is drawn in the app's theme, may hide the legend and
 the title block (a setting), and carries the interactive scaffolding. Re-colouring it by value is ambiguous
 (light `ink` is also the project stroke, the card stroke and the path casing; in dark each has its own token),
-so each export renders the view once more, off-screen, in the chosen theme with both overlays, and clones that
-`<svg>`. The serialiser then: resolves every `var(--dg-…)` in an attribute or `style` declaration with the
-export theme's token table (`cssVariables` in `theme/tokens.ts`; an unknown variable without a fallback is an
-error) and turns `style` declarations into presentation attributes; drops what only the canvas has
-(focused-edge copies, rings, tab stops, roles, state and level-of-detail classes, the camera transform); sets
-`<title>` (scope, lens) and `<desc>` (scope, lens, read time, "Drawn with gcportrait": `documentText`, the
-same wording the canvas and the baselines carry; no affiliation sentence); refuses a drawing without the title
-block, and one drawn in another theme. The title block is the canvas's own (the export adds no affiliation
-line, so the canvas's live drawing exports as it is). Two encodings keep older editors (Illustrator, Inkscape
-0.92) drawing what browsers draw, without changing the picture: `xlink:href` beside `href` on every `<use>`,
-and each haloed zone title written as a stroke-only halo copy under a fill-only label instead of relying on
-`paint-order`. Icons stay inline and unaltered. Apart from these encodings the file is the renderer's own
-drawing of the view: resvg draws it and the renderer's baseline of the same view alike but for at most
-0.05 % of the pixels (pixelmatch, `e2e/tests/export.spec.ts`).
+so each export renders the view once more, off-screen, in the chosen theme with both overlays (`DiagramSvg`,
+the static drawing the baselines carry), and clones that `<svg>`. That drawing is standalone by construction:
+every colour is an attribute of its theme (no `var()`, no `style`), it has none of the canvas's interactive
+scaffolding, and its `<title>` (scope, lens) and `<desc>` (scope, lens, read time, "Drawn with gcportrait")
+are `documentText`'s, the same wording the canvas carries, with no affiliation sentence; `serialize.test.tsx`
+holds it to that in both themes. The serialiser refuses a drawing without the title block, takes the frame and
+the overlay boxes from the plan the drawing was drawn from (planned once), and adds the crop and the encodings
+below. The title block is the canvas's own (the export adds no affiliation line). Two encodings keep older
+editors (Illustrator, Inkscape 0.92) drawing what browsers draw, without changing the picture: `xlink:href`
+beside `href` on every `<use>`, and each haloed zone title written as a stroke-only halo copy under a
+fill-only label instead of relying on `paint-order`. Icons stay inline and unaltered. Apart from these
+encodings the file is the renderer's own drawing of the view: resvg draws it and the renderer's baseline of
+the same view alike but for at most 0.05 % of the pixels (pixelmatch, `e2e/tests/export.spec.ts`).
 
 **Current viewport.** The visible area of the canvas, intersected with the layout's bounds (nothing in view is
 an error with a hint). The content keeps its coordinates and is clipped to the area (`clip-path`); the title

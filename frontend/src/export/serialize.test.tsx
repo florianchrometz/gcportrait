@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * The export serialiser: custom properties resolved for the export theme, `<title>` and `<desc>`,
- * the title block (the canvas's three lines, no affiliation line) and the legend
- * always present, the interactive scaffolding gone, the compatibility encodings (xlink:href, halo copies), the
- * "current viewport" crop, and well-formed XML.
+ * The export serialiser: the standalone drawing it starts from (no custom property, no `style`, no interactive
+ * scaffolding, in either theme), `<title>` and `<desc>`, the title block (the canvas's three lines, no affiliation
+ * line) and the legend always present, the compatibility encodings (xlink:href, halo copies), the "current
+ * viewport" crop, and well-formed XML.
  */
-import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { TAGLINE } from '../branding';
-import { DiagramCanvas } from '../diagram/DiagramCanvas';
-import { documentText } from '../diagram/DiagramSvg';
 import { planDrawing } from '../diagram/Drawing';
 import { renderDiagramSvg } from '../diagram/static';
 import { modelOf, smallScene, TRACE_EDGES } from '../diagram/testing/scenes';
@@ -22,9 +19,7 @@ import {
   embedFontFaces,
   ExportFormatError,
   prepareExportSvg,
-  resolveCustomProperties,
   serializeSvg,
-  themeVariables,
   XLINK_NS,
   type OverlayBoxes,
   type PrepareOptions,
@@ -34,8 +29,8 @@ function smallModel(): DiagramModel {
   return modelOf(smallScene(TRACE_EDGES));
 }
 
-/** What the export orchestrator passes: `planDrawing`'s frame and overlay boxes, the document text. */
-function optionsFor(model: DiagramModel, theme: DiagramTheme): PrepareOptions {
+/** What the export orchestrator passes: `planDrawing`'s frame and overlay boxes. */
+function optionsFor(model: DiagramModel): PrepareOptions {
   const plan = planDrawing(model, { overlays: true, utcOffsetMinutes: 0 });
   if (plan.title === null || plan.legend === null) throw new Error('the small scene draws both overlays');
   const overlays: OverlayBoxes = {
@@ -52,8 +47,7 @@ function optionsFor(model: DiagramModel, theme: DiagramTheme): PrepareOptions {
       height: plan.legend.layout.height,
     },
   };
-  const text = documentText(model, 0);
-  return { theme, title: text.title, desc: text.desc, frame: plan.frame, overlays };
+  return { frame: plan.frame, overlays };
 }
 
 /** The export of the small scene's standalone drawing, as the export flow makes it. */
@@ -62,7 +56,7 @@ function exported(theme: DiagramTheme, extra: Partial<PrepareOptions> = {}): SVG
   return withStandaloneSvg(
     model,
     { theme, utcOffsetMinutes: 0 },
-    (svg) => prepareExportSvg(svg, { ...optionsFor(model, theme), ...extra }).svg,
+    (svg) => prepareExportSvg(svg, { ...optionsFor(model), ...extra }).svg,
   );
 }
 
@@ -82,35 +76,24 @@ function parse(markup: string): SVGSVGElement {
   return root;
 }
 
-describe('resolveCustomProperties', () => {
-  const variables = new Map([
-    ['--dg-ink', '#202124'],
-    ['--dg-canvas', '#FFFFFF'],
-  ]);
-
-  it.each([
-    ['var(--dg-ink)', '#202124'],
-    ['var( --dg-ink )', '#202124'],
-    ['url(#a) var(--dg-canvas)', 'url(#a) #FFFFFF'],
-    ['var(--dg-ink) var(--dg-canvas)', '#202124 #FFFFFF'],
-    ['var(--unknown, #123456)', '#123456'],
-    ['var(--unknown, var(--dg-ink))', '#202124'],
-    ['var(--unknown, rgb(1, 2, 3))', 'rgb(1, 2, 3)'],
-    ['none', 'none'],
-  ])('%s → %s', (value, expected) => {
-    expect(resolveCustomProperties(value, variables)).toBe(expected);
-  });
-
-  it('gives up on an unknown variable without a fallback, and on a malformed value', () => {
-    expect(resolveCustomProperties('var(--unknown)', variables)).toBeNull();
-    expect(resolveCustomProperties('var(--dg-ink', variables)).toBeNull();
-  });
-
-  it('knows every diagram token of both themes, with the token table values', () => {
-    expect(themeVariables('light').get('--dg-zone-project-fill')).toBe(LIGHT_PALETTE.zone.project.fill);
-    expect(themeVariables('dark').get('--dg-zone-project-fill')).toBe(DARK_PALETTE.zone.project.fill);
-    expect(themeVariables('dark').get('--dg-canvas')).toBe(DARK_PALETTE.canvas);
-  });
+describe('the standalone drawing the export starts from', () => {
+  it.each(['light', 'dark'] as const)(
+    'is already standalone in the %s theme: no custom property, no style, no interactive scaffolding',
+    (theme) => {
+      withStandaloneSvg(smallModel(), { theme, utcOffsetMinutes: 0 }, (svg) => {
+        expect(svg.outerHTML).not.toContain('var(');
+        expect(svg.querySelectorAll('[style]')).toHaveLength(0);
+        expect(svg.querySelectorAll('.dg-marks, .dg-edges-top, .dg-actions, .dg-viewport')).toHaveLength(0);
+        expect(
+          svg.querySelectorAll('[tabindex], [role], [aria-pressed], [aria-label], [aria-labelledby]'),
+        ).toHaveLength(0);
+        expect(svg.querySelectorAll('[class*="is-"], [class*="dg-lod-"], .dg-canvas')).toHaveLength(0);
+        for (const name of ['data-diagram-ready', 'data-drawing', 'data-scale'])
+          expect(svg.querySelectorAll(`[${name}]`)).toHaveLength(0);
+        expect(svg.getAttribute('data-theme')).toBe(theme);
+      });
+    },
+  );
 });
 
 describe('prepareExportSvg', () => {
@@ -206,7 +189,7 @@ describe('prepareExportSvg', () => {
     withStandaloneSvg(model, { theme: 'dark', utcOffsetMinutes: 0 }, (source) => {
       const icons = [...source.querySelectorAll('g[id^="dg-icon-"]')];
       expect(icons.length).toBeGreaterThan(3);
-      const svg = prepareExportSvg(source, optionsFor(model, 'dark')).svg;
+      const svg = prepareExportSvg(source, optionsFor(model)).svg;
       for (const icon of icons) {
         expect(svg.querySelector(`g[id="${icon.id}"]`)?.outerHTML).toBe(icon.outerHTML);
       }
@@ -217,15 +200,8 @@ describe('prepareExportSvg', () => {
     const model = smallModel();
     withStandaloneSvg(model, { theme: 'light', utcOffsetMinutes: 0 }, (svg) => {
       const before = svg.outerHTML;
-      prepareExportSvg(svg, optionsFor(model, 'light'));
+      prepareExportSvg(svg, optionsFor(model));
       expect(svg.outerHTML).toBe(before);
-    });
-  });
-
-  it('refuses a drawing in another theme: re-theming is a new drawing, never a recolour', () => {
-    const model = smallModel();
-    withStandaloneSvg(model, { theme: 'light', utcOffsetMinutes: 0 }, (svg) => {
-      expect(() => prepareExportSvg(svg, optionsFor(model, 'dark'))).toThrow(ExportFormatError);
     });
   });
 
@@ -234,7 +210,7 @@ describe('prepareExportSvg', () => {
     const markup = renderDiagramSvg(model.input, { theme: 'light', utcOffsetMinutes: 0, overlays: false });
     const error = (() => {
       try {
-        prepareExportSvg(parse(markup), optionsFor(model, 'light'));
+        prepareExportSvg(parse(markup), optionsFor(model));
         return null;
       } catch (caught) {
         return caught;
@@ -245,94 +221,10 @@ describe('prepareExportSvg', () => {
   });
 });
 
-describe('custom properties in the source', () => {
-  /** The small drawing with CSS variables written into it, as a stylesheet-driven drawing would have them. */
-  function withVariables(theme: DiagramTheme, extra = ''): SVGSVGElement {
-    const model = smallModel();
-    const markup = renderDiagramSvg(model.input, { theme, utcOffsetMinutes: 0 })
-      .replace(
-        'class="dg-background"',
-        `class="dg-background" style="fill: var(--dg-canvas); --dg-local: 1; cursor: default${extra}"`,
-      )
-      .replace(
-        '<g class="dg-zones"',
-        '<g class="dg-zones" stroke="var(--dg-ink)" opacity="var(--missing, 0.9)"',
-      );
-    const svg = prepareExportSvg(parse(markup), optionsFor(model, theme)).svg;
-    return svg;
-  }
-
-  it('resolves var() in attributes and style declarations with the export theme, as attributes', () => {
-    for (const [theme, palette] of [
-      ['light', LIGHT_PALETTE],
-      ['dark', DARK_PALETTE],
-    ] as const) {
-      const svg = withVariables(theme);
-      const background = svg.querySelector('.dg-background');
-      expect(background?.getAttribute('fill')).toBe(palette.canvas);
-      // Custom property declarations go; other declarations that are not presentation attributes stay.
-      expect(background?.getAttribute('style')).toBe('cursor: default');
-      const zones = svg.querySelector('.dg-zones');
-      expect(zones?.getAttribute('stroke')).toBe(palette.ink);
-      expect(zones?.getAttribute('opacity')).toBe('0.9');
-      expect(serializeSvg(svg)).not.toContain('var(');
-    }
-  });
-
-  it('refuses a variable the theme does not define and that has no fallback', () => {
-    expect(() => withVariables('light', '; stroke: var(--dg-nothing)')).toThrow(/does not define/);
-  });
-});
-
-describe('the live interactive canvas as the source', () => {
-  /** The canvas drawn with a selection, live in the DOM. */
-  function liveCanvas(model: DiagramModel): SVGSVGElement {
-    const { container } = render(
-      <DiagramCanvas
-        model={model}
-        theme="light"
-        overlays
-        utcOffsetMinutes={0}
-        selection="run/api"
-        onSelect={() => undefined}
-      />,
-    );
-    const canvas = container.querySelector('svg.dg-canvas');
-    if (!(canvas instanceof SVGSVGElement)) throw new Error('no canvas');
-    return canvas;
-  }
-
-  it('keeps the canvas’s title block in the file, line for line', () => {
-    // That the canvas draws the same block as a standalone file is Drawing.test.tsx's.
-    const model = smallModel();
-    const canvas = liveCanvas(model);
-    expect(titleLines(canvas)).toHaveLength(3);
-    expect(titleLines(prepareExportSvg(canvas, optionsFor(model, 'light')).svg)).toEqual(titleLines(canvas));
-  });
-
-  it('drops the interactive scaffolding: camera, rings, focused-edge copies, tab stops, roles, states', () => {
-    const model = smallModel();
-    const canvas = liveCanvas(model);
-    expect(canvas.querySelector('.dg-marks')).not.toBeNull();
-    expect(canvas.getAttribute('data-drawing')).toMatch(/^\d+$/);
-    const svg = prepareExportSvg(canvas, optionsFor(model, 'light')).svg;
-    expect(svg.querySelector('.dg-marks')).toBeNull();
-    expect(svg.querySelector('.dg-edges-top')).toBeNull();
-    expect(svg.querySelectorAll('[tabindex], [role], [aria-pressed], [aria-label]')).toHaveLength(0);
-    expect(svg.querySelector('.dg-viewport')?.hasAttribute('transform')).toBe(false);
-    expect(svg.querySelectorAll('[class*="is-"], [class*="dg-lod-"]')).toHaveLength(0);
-    expect(svg.classList.contains('dg-canvas')).toBe(false);
-    expect(svg.hasAttribute('data-diagram-ready')).toBe(false);
-    expect(svg.hasAttribute('data-drawing')).toBe(false);
-    expect(svg.querySelector('.dg-title-block')?.textContent).toContain(TAGLINE);
-    expect(svg.getAttribute('viewBox')).not.toBeNull();
-  });
-});
-
 describe('the current-viewport crop', () => {
   it('clips the content to the area and moves the title block and the legend into bands around it', () => {
     const model = smallModel();
-    const options = optionsFor(model, 'light');
+    const options = optionsFor(model);
     const area = { x: 100, y: 120, width: 300, height: 200 };
     const crop = { area, margin: 24 };
     const frame = cropFrame(crop, options.overlays);

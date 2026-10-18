@@ -9,8 +9,7 @@
 import type { Rect } from '@gcportrait/layout';
 
 import { WORDMARK } from '../branding';
-import { documentText } from '../diagram/DiagramSvg';
-import { planDrawing } from '../diagram/Drawing';
+import type { DrawingPlan } from '../diagram/Drawing';
 import { PALETTES, type DiagramTheme } from '../diagram/theme/tokens';
 import { exportFileName, type ExportExtension, type FileNameParts } from './fileName';
 import { addRasterFrame, pngGeometry, rasterizeSvg, PNG_MARGIN, type PngGeometry } from './raster';
@@ -68,12 +67,10 @@ export function viewportCrop(source: ExportSource): Rect {
   return crop;
 }
 
-/** The export SVG as a DOM tree (not yet serialised), with its frame. */
-export function prepareDiagramSvg(source: ExportSource, settings: ExportSettings): PreparedSvg {
-  const { model, utcOffsetMinutes } = source;
-  const plan = planDrawing(model, { overlays: true, utcOffsetMinutes });
+/** Where the plan puts the title block and the legend (the boxes the "current viewport" crop moves). */
+function overlayBoxes(plan: DrawingPlan): OverlayBoxes {
   if (plan.title === null) throw new Error('The drawing plan has no title block.');
-  const overlays: OverlayBoxes = {
+  return {
     title: {
       x: plan.title.x,
       y: plan.title.y,
@@ -90,19 +87,17 @@ export function prepareDiagramSvg(source: ExportSource, settings: ExportSettings
             height: plan.legend.layout.height,
           },
   };
+}
+
+/**
+ * The export SVG as a DOM tree (not yet serialised), with its frame. Its `<title>` and `<desc>` are the drawing's
+ * own (`documentText`), the same the canvas and the baselines carry.
+ */
+export function prepareDiagramSvg(source: ExportSource, settings: ExportSettings): PreparedSvg {
+  const { model, utcOffsetMinutes } = source;
   const crop = settings.area === 'viewport' ? { area: viewportCrop(source), margin: CROP_MARGIN } : undefined;
-  // `<title>` and `<desc>` are the diagram's own (`documentText`), the same the canvas and the baselines carry:
-  // the description reads on its own, with the scope, the lens, the read time and what drew it.
-  const { title, desc } = documentText(model, utcOffsetMinutes);
-  return withStandaloneSvg(model, { theme: settings.theme, utcOffsetMinutes }, (svg) =>
-    prepareExportSvg(svg, {
-      theme: settings.theme,
-      title,
-      desc,
-      frame: plan.frame,
-      overlays,
-      crop,
-    }),
+  return withStandaloneSvg(model, { theme: settings.theme, utcOffsetMinutes }, (svg, plan) =>
+    prepareExportSvg(svg, { frame: plan.frame, overlays: overlayBoxes(plan), crop }),
   );
 }
 

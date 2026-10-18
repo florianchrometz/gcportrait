@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 /**
- * The SVG serialiser of the export (skill gcp-diagram-style §7–§8). It clones a diagram `<svg>` that
- * is live in a DOM and turns the clone into a standalone file:
+ * The SVG serialiser of the export (skill gcp-diagram-style §7–§8). It clones the standalone drawing of
+ * `DiagramSvg` (export/render.tsx draws it off-screen in the export's theme) and turns the clone into a file.
+ * That drawing is already standalone: every colour is an attribute of its theme (no `var()`, no `style`), it
+ * carries no interactive scaffolding, and its `<title>` and `<desc>` are `documentText`'s (neutral metadata: no
+ * affiliation sentence). The icons stay inline as they are. The serialiser adds:
  *
- * - every CSS custom property (`var(--dg-…)`, in an attribute or a `style` declaration) is resolved to the
- *   export theme's token value, and `style` declarations become presentation attributes, so the file does not
- *   depend on the app's stylesheets;
- * - the interactive scaffolding (focused-edge copies, highlight rings, tab stops, roles, state classes, the
- *   camera transform) is dropped; the icons stay inline as they are;
- * - `<title>` and `<desc>` carry the scope, the lens and the read time (neutral metadata: no affiliation
- *   sentence), and the title block and the legend are required: a drawing without them is refused, never
- *   exported. The title block is the canvas's own three lines, ending with the tagline; the non-affiliation
- *   statement is in the app footer, never in a drawing (AGENTS.md, Non-affiliation, brand and legal);
+ * - the title block and the legend are required: a drawing without them is refused, never exported. The title
+ *   block is the canvas's own three lines, ending with the tagline; the non-affiliation statement is in the app
+ *   footer, never in a drawing (AGENTS.md, Non-affiliation, brand and legal);
  * - "current viewport": the drawing is clipped to the visible area and the title block and the legend move into
  *   bands above and below it, so they are in the file even when they are scrolled away;
  * - two encodings make the file draw the same in older editors (Illustrator, Inkscape 0.92) as in a browser,
@@ -23,7 +20,6 @@
 import type { Rect } from '@gcportrait/layout';
 
 import { fmt } from '../diagram/geometry/edgePath';
-import { cssVariables, PALETTES, type DiagramTheme } from '../diagram/theme/tokens';
 
 export const SVG_NS = 'http://www.w3.org/2000/svg';
 export const XLINK_NS = 'http://www.w3.org/1999/xlink';
@@ -31,180 +27,13 @@ const XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
 
 /** Thrown when a drawing cannot be exported as asked; `code` says why. */
 export class ExportFormatError extends Error {
-  readonly code: 'theme-mismatch' | 'missing-title-block' | 'unresolved-variable';
+  readonly code: 'missing-title-block';
 
   constructor(code: ExportFormatError['code'], message: string) {
     super(message);
     this.name = 'ExportFormatError';
     this.code = code;
   }
-}
-
-/** The `--dg-*` custom properties of a theme, name → value (the table `tokens.css` defines). */
-export function themeVariables(theme: DiagramTheme): ReadonlyMap<string, string> {
-  return new Map(cssVariables(PALETTES[theme]));
-}
-
-/** How deep `var()` fallbacks may nest before a value is given up on. */
-const FALLBACK_DEPTH = 8;
-
-/**
- * A CSS value with every `var(--name[, fallback])` replaced by the variable's value, or by its fallback when the
- * variable is unknown. Null when a variable is unknown and has no fallback (the declaration is then invalid),
- * or when the value is malformed.
- */
-export function resolveCustomProperties(
-  value: string,
-  variables: ReadonlyMap<string, string>,
-  depth = 0,
-): string | null {
-  let resolved = '';
-  let index = 0;
-  for (;;) {
-    const start = value.indexOf('var(', index);
-    if (start < 0) return resolved + value.slice(index);
-    resolved += value.slice(index, start);
-    let level = 0;
-    let end = -1;
-    let comma = -1;
-    for (let at = start + 3; at < value.length; at += 1) {
-      const char = value[at];
-      if (char === '(') level += 1;
-      else if (char === ')') {
-        level -= 1;
-        if (level === 0) {
-          end = at;
-          break;
-        }
-      } else if (char === ',' && level === 1 && comma < 0) comma = at;
-    }
-    if (end < 0) return null;
-    const name = value.slice(start + 4, comma < 0 ? end : comma).trim();
-    const known = variables.get(name);
-    let replacement: string | null = known ?? null;
-    if (known === undefined && comma >= 0 && depth < FALLBACK_DEPTH) {
-      replacement = resolveCustomProperties(value.slice(comma + 1, end).trim(), variables, depth + 1);
-    }
-    if (replacement === null) return null;
-    resolved += replacement;
-    index = end + 1;
-  }
-}
-
-/** SVG presentation attributes: a `style` declaration of one of these becomes the attribute. */
-const PRESENTATION = new Set([
-  'clip-path',
-  'clip-rule',
-  'color',
-  'display',
-  'dominant-baseline',
-  'fill',
-  'fill-opacity',
-  'fill-rule',
-  'filter',
-  'font-family',
-  'font-size',
-  'font-style',
-  'font-weight',
-  'marker-end',
-  'marker-mid',
-  'marker-start',
-  'mask',
-  'opacity',
-  'paint-order',
-  'stop-color',
-  'stop-opacity',
-  'stroke',
-  'stroke-dasharray',
-  'stroke-dashoffset',
-  'stroke-linecap',
-  'stroke-linejoin',
-  'stroke-miterlimit',
-  'stroke-opacity',
-  'stroke-width',
-  'text-anchor',
-  'visibility',
-]);
-
-/** Splits a `style` attribute into declarations, keeping `;` inside parentheses (`url(data:…;base64,…)`). */
-function declarations(style: string): Array<readonly [string, string]> {
-  const parts: string[] = [];
-  let level = 0;
-  let from = 0;
-  for (let at = 0; at < style.length; at += 1) {
-    const char = style[at];
-    if (char === '(') level += 1;
-    else if (char === ')') level = Math.max(0, level - 1);
-    else if (char === ';' && level === 0) {
-      parts.push(style.slice(from, at));
-      from = at + 1;
-    }
-  }
-  parts.push(style.slice(from));
-  return parts.flatMap((part) => {
-    const colon = part.indexOf(':');
-    if (colon < 0) return [];
-    const property = part.slice(0, colon).trim();
-    const value = part.slice(colon + 1).trim();
-    return property === '' || value === '' ? [] : [[property, value] as const];
-  });
-}
-
-function unresolved(element: Element, name: string, value: string): ExportFormatError {
-  return new ExportFormatError(
-    'unresolved-variable',
-    `<${element.localName}> ${name}="${value}" names a custom property the export theme does not define.`,
-  );
-}
-
-/** Resolves the custom properties of one element's attributes and moves its `style` into attributes. */
-function resolveElement(element: Element, variables: ReadonlyMap<string, string>): void {
-  for (const attribute of [...element.attributes]) {
-    if (attribute.name === 'style' || !attribute.value.includes('var(')) continue;
-    const value = resolveCustomProperties(attribute.value, variables);
-    if (value === null) throw unresolved(element, attribute.name, attribute.value);
-    attribute.value = value;
-  }
-  const style = element.getAttribute('style');
-  if (style === null) return;
-  const kept: string[] = [];
-  for (const [property, raw] of declarations(style)) {
-    if (property.startsWith('--')) continue;
-    const value = raw.includes('var(') ? resolveCustomProperties(raw, variables) : raw;
-    if (value === null) throw unresolved(element, property, raw);
-    if (PRESENTATION.has(property)) element.setAttribute(property, value.replace(/\s*!important$/, ''));
-    else kept.push(`${property}: ${value}`);
-  }
-  if (kept.length === 0) element.removeAttribute('style');
-  else element.setAttribute('style', kept.join('; '));
-}
-
-/** What only the interactive canvas carries: dropped from an export. */
-const INTERACTIVE_GROUPS = ['.dg-edges-top', '.dg-marks'];
-const INTERACTIVE_ATTRIBUTES = [
-  'tabindex',
-  'role',
-  'aria-pressed',
-  'aria-label',
-  'aria-labelledby',
-  'data-diagram-ready',
-  'data-drawing',
-  'data-scale',
-];
-/** Highlight and level-of-detail classes the painter and the camera set. */
-const STATE_CLASS = /^(?:is-|dg-lod-)/;
-
-function stripInteractive(svg: SVGSVGElement): void {
-  for (const selector of INTERACTIVE_GROUPS)
-    for (const group of svg.querySelectorAll(selector)) group.remove();
-  for (const element of [svg, ...svg.querySelectorAll('*')]) {
-    for (const name of INTERACTIVE_ATTRIBUTES) element.removeAttribute(name);
-    const classes = [...element.classList].filter((name) => STATE_CLASS.test(name) || name === 'dg-canvas');
-    for (const name of classes) element.classList.remove(name);
-    if (element.getAttribute('class') === '') element.removeAttribute('class');
-  }
-  // The canvas camera: the drawing is exported at its own coordinates.
-  for (const viewport of svg.querySelectorAll('.dg-viewport')) viewport.removeAttribute('transform');
 }
 
 /** `xlink:href` beside `href` on every `<use>`: SVG 1.1 editors read only the former. */
@@ -251,21 +80,6 @@ export function svgChild<K extends keyof SVGElementTagNameMap>(
   return element;
 }
 
-/** Sets `<title>` and `<desc>` as the root's first children (creating them when the source has none). */
-function setDocumentText(svg: SVGSVGElement, title: string, desc: string): void {
-  const document = svg.ownerDocument;
-  const existing = (name: 'title' | 'desc'): Element => {
-    const found = [...svg.children].find((child) => child.localName === name);
-    return found ?? svgChild(document, name);
-  };
-  const titleElement = existing('title');
-  const descElement = existing('desc');
-  titleElement.removeAttribute('id');
-  titleElement.textContent = title;
-  descElement.textContent = desc;
-  svg.prepend(titleElement, descElement);
-}
-
 /** Where the title block and the legend sit in the full drawing (top-left corner and size). */
 export interface OverlayBoxes {
   readonly title: Rect;
@@ -280,12 +94,6 @@ export interface CropOptions {
 }
 
 export interface PrepareOptions {
-  /** The theme the source was drawn in; its tokens resolve every custom property. */
-  readonly theme: DiagramTheme;
-  /** `<title>`: the scope and the lens. */
-  readonly title: string;
-  /** `<desc>`: the scope, the lens, the read time and what drew it (no affiliation sentence). */
-  readonly desc: string;
   /** The whole drawing's frame (the source's viewBox when it has one). */
   readonly frame: Rect;
   /** Where the source's title block and legend are. */
@@ -376,19 +184,11 @@ function applyCrop(drawing: Element, crop: CropOptions, overlays: OverlayBoxes, 
 }
 
 /**
- * Clones a diagram `<svg>` (the drawing of `DiagramSvg`, live in a DOM) and makes the clone a standalone export.
- * The source is not changed.
+ * Clones a diagram `<svg>` (the standalone drawing of `DiagramSvg`, drawn in the export's theme with both overlays)
+ * and makes the clone a standalone export. The source is not changed.
  */
 export function prepareExportSvg(source: SVGSVGElement, options: PrepareOptions): PreparedSvg {
-  const drawnIn = source.getAttribute('data-theme');
-  if (drawnIn !== null && drawnIn !== options.theme) {
-    throw new ExportFormatError(
-      'theme-mismatch',
-      `The drawing is in the ${drawnIn} theme; an export in the ${options.theme} theme is drawn in that theme.`,
-    );
-  }
   const svg = source.cloneNode(true) as SVGSVGElement;
-  stripInteractive(svg);
   const drawing = svg.querySelector('.dg-drawing');
   const titleBlock = drawing?.querySelector('.dg-title-block') ?? null;
   if (drawing === null || titleBlock === null) {
@@ -397,8 +197,6 @@ export function prepareExportSvg(source: SVGSVGElement, options: PrepareOptions)
       'An export always carries the title block and the legend; the drawing has no title block.',
     );
   }
-  const variables = themeVariables(options.theme);
-  for (const element of [svg, ...svg.querySelectorAll('*')]) resolveElement(element, variables);
   splitHalos(svg);
   addXlinkHrefs(svg);
   const frame = options.crop === undefined ? options.frame : cropFrame(options.crop, options.overlays);
@@ -406,9 +204,7 @@ export function prepareExportSvg(source: SVGSVGElement, options: PrepareOptions)
   // React writes `xmlns` as a plain attribute; the serialiser declares the namespace itself.
   svg.removeAttribute('xmlns');
   svg.setAttribute('version', '1.1');
-  svg.setAttribute('data-theme', options.theme);
   setFrame(svg, frame);
-  setDocumentText(svg, options.title, options.desc);
   return { svg, frame };
 }
 
