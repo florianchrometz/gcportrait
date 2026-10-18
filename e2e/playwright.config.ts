@@ -90,9 +90,7 @@ export default defineConfig({
     colorScheme: 'light',
     trace: isCI ? 'on-first-retry' : 'retain-on-failure',
   },
-  // CI's e2e legs (.github/workflows/pr.yml) each run every k-th test of their projects' JSON listing
-  // (scripts/leg.ts), file after file in the order these projects reach them, so that no leg gets a slow file
-  // whole.
+  // CI leg selection and validation: e2e/scripts/leg.ts's header (e2e/AGENTS.md, CI legs).
   projects: [
     {
       name: 'chromium-live',
