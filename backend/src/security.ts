@@ -2,61 +2,37 @@
 import { createHash } from 'node:crypto';
 
 /**
- * The security headers of every response (AGENTS.md, Security and privacy; docs/security.md §6): the Content
- * Security Policy, Cross-Origin-Opener-Policy and -Embedder-Policy, and Permissions-Policy. server.ts sends
- * them with @fastify/helmet (which adds HSTS, nosniff, X-Frame-Options, Referrer-Policy and
- * Cross-Origin-Resource-Policy).
- *
- * Scripts and styles load only from the backend's own origin, plus Google Identity Services' client script
- * (Google sign-in), which the SPA loads only when a person presses "Sign in with Google". The one inline
- * script the SPA ships (the theme bootstrap in frontend/index.html, which must run before first paint) is
- * allowed by its SHA-256 hash, computed from the exact index.html being served, so no 'unsafe-inline' is ever
- * needed. Fonts are self-hosted. The browser may talk to the backend, to Google's OAuth host (tokeninfo,
- * revoke) and to GIS's own endpoints; it never calls Cloud Asset Inventory, Resource Manager or Cloud Storage
- * itself (the backend does, through its upstream allowlist, upstream/allowlist.ts), so those hosts are not in
- * `connect-src`.
+ * Browser-facing header values and CSP construction, installed by server.ts through @fastify/helmet.
+ * Policy: backend/AGENTS.md, Hardening; docs/security.md, "Browser-facing headers". Inline-script
+ * hashes come from the exact served index.html so the theme bootstrap needs no unsafe-inline source.
  */
 
 /**
- * The Google origin the SPA itself talks to: `oauth2.googleapis.com`, for tokeninfo (frontend/src/auth/
- * tokeninfo.ts: whose token it is, and for which client) and for revoking a token on sign-out (GIS's
- * `google.accounts.oauth2.revoke`). The other three upstream hosts (upstream/allowlist.ts) are the backend's
- * alone, so they stay out of `connect-src`.
+ * Browser OAuth origin for tokeninfo and sign-out revocation. Other API hosts belong to the backend
+ * upstream allowlist, not the browser's connect-src (docs/security.md, "Browser-facing headers").
  */
 export const BROWSER_GOOGLE_ORIGINS = ['https://oauth2.googleapis.com'] as const;
 
 /**
- * Google Identity Services' token client. `script-src` allows exactly its client script (a source with a
- * path matches that path only). `connect-src` allows its endpoints under `/gsi/` (a trailing slash matches the
- * path prefix), which the script may call (its log and status endpoints). Revoking a token on sign-out goes to
- * `oauth2.googleapis.com/revoke` ({@link BROWSER_GOOGLE_ORIGINS}). Sign-in itself happens in a window of
- * Google's (accounts.google.com), not in a frame, so `frame-src` stays closed. The script also tries to add a
- * stylesheet for Google's sign-in button, which the policy refuses on purpose: the token client draws nothing
- * on the page.
+ * GIS sources: a script-src path matches that file only; a trailing slash on connect-src matches
+ * its path prefix. Revocation uses {@link BROWSER_GOOGLE_ORIGINS}, and sign-in uses a popup, not a
+ * frame. GIS's attempted button stylesheet is deliberately refused: the token client draws no button.
  */
 export const GIS_SCRIPT_SOURCE = 'https://accounts.google.com/gsi/client';
 export const GIS_CONNECT_SOURCE = 'https://accounts.google.com/gsi/';
 
 /**
- * Cross-Origin-Opener-Policy: `same-origin-allow-popups`, not `same-origin`. The GIS token client opens
- * Google's sign-in in a window of its own, which hands the token back to this page through `postMessage` to
- * its opener, and watches whether the person closed it. Under `same-origin` the browser cuts a cross-origin
- * window opened from this page off from it (no opener, and the handle reads as closed at once), so sign-in could
- * never finish. `same-origin-allow-popups` keeps that link for windows this page opens and still isolates the
- * page from any cross-origin page that opens *it*.
+ * Keep GIS's popup opener and closed-state tracking for postMessage; same-origin would sever that
+ * link. This policy preserves windows opened by the app but still isolates a cross-origin page that
+ * opens the app (docs/security.md, "Browser-facing headers").
  */
 export const OPENER_POLICY = 'same-origin-allow-popups';
 
 /**
- * A demo-only instance offers no sign-in, so nothing needs a window of Google's: it sends the strict pair,
- * `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, which makes the page
- * cross-origin isolated (its own browsing context group and process; nothing cross-origin may be embedded). The
- * app loads nothing from another origin there (its CSP allows none), so it needs nothing from them either.
- *
- * With sign-in the opener policy must stay {@link OPENER_POLICY}, and an embedder policy alone isolates nothing:
- * it would only refuse cross-origin subresources without a `Cross-Origin-Resource-Policy`, which the CSP already
- * refuses except for GIS's script (served with `cross-origin-resource-policy: cross-origin`). So that mode sends
- * no embedder policy, and nothing about sign-in depends on one (docs/security.md, "COOP, COEP, CORP").
+ * Demo-only CSP needs no cross-origin resources, so the strict pair can isolate it. With sign-in,
+ * {@link OPENER_POLICY} is required; COEP alone would isolate nothing and would only reject resources
+ * without CORP. CSP already excludes them except GIS's script, which supplies CORP cross-origin
+ * (docs/security.md, "Browser-facing headers").
  */
 export const DEMO_OPENER_POLICY = 'same-origin';
 export const DEMO_EMBEDDER_POLICY = 'require-corp';

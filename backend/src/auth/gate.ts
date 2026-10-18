@@ -1,33 +1,13 @@
 // SPDX-License-Identifier: MIT
 /**
- * The service-account gate (backend/AGENTS.md, The service-account gate; AGENTS.md, Security and privacy, principle 4).
- * Before the backend reads a scope with its own identity, it proves, with the same parsed scope in every call, that
- * the *caller* may see that scope:
+ * Service-account admission, memo and audit (backend/AGENTS.md, The service-account gate;
+ * AGENTS.md, Security and privacy, principle 4). Every check uses the same parsed scope.
  *
- * - **`caller`** (always). Resource Manager v3 `testIamPermissions` on the scope with the caller's own token,
- *    asking for `resourcemanager.{organizations,folders,projects}.get`: the permission must be in the returned set.
- *    A 200 without it (Google answers `{}` for a scope the caller may not see, and for one that does not exist) is
- *    a denial; every other answer refuses too (fail closed). The caller's own `GET` of the scope is not asked: the
- *    gate wants the permission itself, not a document that happened to be readable.
- * - **`credentials`**: the account's token from Application Default Credentials (./identity.ts).
- * - **`exposure`** (only with `SA_MODE_STRICT_EXPOSURE=true`). `GET /v3/{scope}` with the account's token must
- *    answer exactly Resource Manager's IAM denial of that `get` ({@link isExactGetDenial}). A 200 means the scope's
- *    `get` is public, or the account holds more than `roles/cloudasset.viewer` there. Public `get` lets anyone
- *    signed in pass the caller check; the account's 200 cannot distinguish that from an account-specific grant,
- *    so strict mode refuses both. Off by default, because it also refuses service-account mode wherever a
- *    customer granted the account more than `roles/cloudasset.viewer` (a Viewer grant, say).
- *
- * Only then may the account's own CAI call run. The gate cannot be configured away: `SA_MODE_ENABLED` switches
- * service-account mode off as a whole, never the gate, and every route that takes `mode: "sa"` calls
- * {@link ServiceAccountGate.check} before each CAI call it makes as the account.
- *
- * A pass is remembered in memory for at most five minutes, and never past the caller's token's own expiry, keyed by
- * the SHA-256 of the caller's token and the scope: never across tokens or scopes, never on disk, never a refusal;
- * a refusal for the same token and scope (a fresh preflight that now says no) forgets it at once.
- * Every decision writes one audit line (`service-account gate`): the route, the scope, the SHA-256 of the caller's
- * email (from tokeninfo; null when the token carries none), allowed or denied with the step and finding, and
- * whether the memo answered. Never the token, never the email itself. The line is written at `info` even when
- * `LOG_LEVEL` is `warn` or `error` (only `silent` drops it), so quieting the request log keeps the audit trail.
+ * The caller check uses testIamPermissions, not the caller's GET; only a pass may obtain account
+ * credentials, then run the optional exposure check ({@link isExactGetDenial}). Routes call
+ * {@link ServiceAccountGate.check} before each CAI call as the account, including each page.
+ * Memo bounds and audit policy are in the rule; refusal invalidation and audit-level handling are
+ * beside their methods below (backend/README.md, "Service-account mode").
  */
 import { createHash } from 'node:crypto';
 

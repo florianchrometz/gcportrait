@@ -84,7 +84,7 @@ function shortString(bytes: Uint8Array): string | undefined {
 /**
  * The `page` frame of an `assets.list` answer's body, or null when the body is not a page: not UTF-8, not a JSON
  * object, unbalanced, `assets` not an array, or `nextPageToken` or `readTime` not a string. An empty
- * `nextPageToken` or `readTime` counts as absent, as before.
+ * `nextPageToken` or `readTime` counts as absent.
  */
 export function scanListPage(body: Uint8Array): ScannedListPage | null {
   if (!isUtf8(body)) return null;

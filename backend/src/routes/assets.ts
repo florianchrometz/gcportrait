@@ -1,27 +1,10 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/assets/stream` (skill cai-ingestion §1 and §4): a live pull of one scope from Cloud Asset
- * Inventory, streamed to the browser as NDJSON frames (../stream/asset-list.ts) that `@gcportrait/ingest`
- * reads in the app's import worker.
- *
- * Body (schema-validated, nothing else accepted): `{ scope, readTime?, contentType: "RESOURCE", assetTypes?, mode,
- * quotaProject? }`; the pull's fields, mode rule and credentials are ../stream/pull.ts's, shared with the render
- * route.
- * - `mode: "user"`: the caller's bearer token is forwarded, and `quotaProject` is required: it goes into
- *   `x-goog-user-project`, so the user's own project pays (never the instance's project; backend/AGENTS.md, Quota project and the permission check).
- * - `mode: "sa"`: only when the operator enabled service-account mode, and only through the service-account
- *   gate (../auth/gate.ts), which runs before every CAI call (a pass is remembered for at most five minutes
- *   per caller-token hash and scope); the account's own token, no quota header (its own project pays).
- *   Without the instance's identity this build refuses service-account mode: the gate is never skipped.
- *
- * Answers: 400 (body), 401 (no bearer token, or Google did not accept it at the gate), 403 (service-account mode
- * off, or refused by the gate: ../auth/refusal.ts), 429 (the rate limit per token hash, or more than four streams
- * at once for one token), 501 (service-account mode not in this build), 503 (the gate could not finish: try
- * again); otherwise 200 with frames, Google's own errors arriving as `error` frames, and a gate that closes in the
- * middle of a stream as an `error` frame too. Each page's bytes count against the process-wide page budget
- * (../stream/page-budget.ts) until its frame has been written out; a page it cannot hold after the retries ends
- * the stream with `INSTANCE_BUSY`. A client that does not take a piece of up to 1 MiB within 60 s (one that
- * stopped, or reads slower than about 17 KiB/s) has its connection closed (../stream/ndjson.ts).
+ * POST /api/assets/stream: authenticate, validate the pull, take a stream slot and send assetListFrames
+ * through the NDJSON writer. ../stream/pull.ts owns fields, mode validation and credentials shared
+ * with the render route; ../stream/asset-list.ts owns pagination and page claims, ../stream/ndjson.ts
+ * response lifetime and stalls. API: docs/api.md; policy: backend/AGENTS.md, Quota project and the
+ * permission check, and The service-account gate.
  */
 import type { FastifyInstance } from 'fastify';
 import * as z from 'zod';

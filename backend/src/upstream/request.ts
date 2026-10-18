@@ -204,8 +204,7 @@ async function readCapped(response: Response, maxBytes: number, claim?: ByteClai
 /**
  * A redirect is never followed: `manual` hands the 3xx answer back as it is, so it is an answer like any other
  * status (never retried, classified as unexpected by its caller) and nothing goes to where it points. (`error`
- * would refuse it too, but as a rejected fetch indistinguishable from a network failure, which was retried five
- * times as one.)
+ * would refuse it too, but as a rejected fetch indistinguishable from a retryable network failure.)
  */
 function initOf(request: UpstreamRequest, signal: AbortSignal): RequestInit {
   return {

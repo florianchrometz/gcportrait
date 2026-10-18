@@ -1,18 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
- * The caller's Google access token (user mode; AGENTS.md, Security and privacy, Tokens): forwarded upstream
- * verbatim, never stored, never logged (AGENTS.md, Security and privacy, principle 2). The streams' caps and
- * the per-token rate limit key on a SHA-256 of it, which is kept in memory only, so the token itself is never
- * used as a map key or a log field.
- *
- * Where it comes from, in this order:
- *
- * 1. `X-Gcportrait-Token: TOKEN`, the header the SPA sends (frontend/src/auth/fetch.ts). A header of gcportrait's
- *    own, because Identity-Aware Proxy in front of the service (`deploy.sh --iap`) treats `Authorization` as its
- *    own credential and never lets a person's Google token through it; IAP leaves this header alone.
- * 2. `Authorization: Bearer TOKEN`, only when the request has no `X-Gcportrait-Token` at all: the non-IAP path,
- *    for scripts and curl against a public instance. A request that sends `X-Gcportrait-Token` is judged by it
- *    alone, so a malformed one is refused rather than replaced by whatever `Authorization` holds.
+ * Caller-token extraction and SHA-256 keys for in-memory limits. Header precedence and IAP handling
+ * follow AGENTS.md, Security and privacy, Tokens; forwarding and logging follow principles 1 and 2.
+ * The parser below distinguishes an absent preferred header from a malformed one.
  */
 import { createHash } from 'node:crypto';
 

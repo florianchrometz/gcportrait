@@ -1,21 +1,14 @@
 // SPDX-License-Identifier: MIT
 /**
- * Streaming an NDJSON response (the backend streams and forgets; AGENTS.md, Security and privacy, principle
- * 1). The producer is an async generator of lines, and it is asked for its next line only once the response
- * has written the previous one out to the connection: `Readable.from` alone pulls the next line as soon as a
- * line has been queued on the socket, whether or not the client takes it, so a client that stops reading
- * would keep every line queued for it in memory, uncounted (a live-pull page of up to 25 MiB per stream). A
- * producer can therefore keep what a line costs (a page's budget claim, page-budget.ts) until it is asked for
- * more. A line longer than {@link WRITE_PIECE_BYTES} is written in copies of that size, so no piece waiting
- * on the socket keeps the whole line alive. A piece that has to wait must be taken whole within
- * {@link STREAM_STALL_MS}, or the connection is closed: a minimum rate (about 17 KiB/s for 1 MiB pieces),
- * which cuts off a client that reads too slowly as well as one that stopped.
+ * Backpressured response writer (AGENTS.md, Security and privacy, principle 1). Readable.from alone
+ * advances a producer once a line is queued on the socket; this writer waits until it is written out.
+ * The producer can therefore hold a page-budget.ts claim until its next line is requested. Lines are
+ * copied into pieces of at most {@link WRITE_PIECE_BYTES}, so a pending piece cannot retain a whole line.
+ * The per-piece deadline is {@link STREAM_STALL_MS} (docs/security.md, "Timeouts").
  *
- * When the client goes away (or stalls) the stream's signal aborts, which cancels the upstream request in
- * flight and any backoff wait, and the generator is closed; `onEnd` runs exactly once however the response
- * ends (finished, failed, the client gone or stalled, or answered with an error before streaming began).
- *
- * `sendPieces` is the same writer for any content type: the render API sends its images through it.
+ * Disconnect or stall aborts upstream work and backoff, closes the generator, and runs onEnd once,
+ * including when an error is answered before streaming. sendPieces shares this lifetime and writer
+ * with non-NDJSON responses such as render exports.
  */
 import type { ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
@@ -37,12 +30,10 @@ export class ClientStalledError extends Error {
 export const NDJSON_CONTENT_TYPE = 'application/x-ndjson; charset=utf-8';
 
 /**
- * How long a response waits for its client to take a piece that has to wait (one written while the
- * connection's buffers are full; at most {@link WRITE_PIECE_BYTES}) before it closes the connection. The wait
- * is per piece and is not restarted when the client takes part of it, so a client must read at least about
- * 17 KiB/s while a large page streams: one that reads more slowly is cut off like one that stopped
- * (`client-stalled`), and gives back its stream slot and its page's claim. A faster client may stream for as
- * long as Google answers (within Cloud Run's request timeout).
+ * Deadline for a piece waiting on full connection buffers (at most {@link WRITE_PIECE_BYTES}).
+ * Partial reads do not restart it: it enforces a minimum rate, not an idle timeout. Expiry ends the
+ * response as client-stalled and releases its slot and page claim; no timer runs while the producer
+ * waits on Google. The policy and Cloud Run outer deadline are in docs/security.md, "Timeouts".
  */
 export const STREAM_STALL_MS = 60_000;
 

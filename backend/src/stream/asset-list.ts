@@ -1,30 +1,14 @@
 // SPDX-License-Identifier: MIT
 /**
- * The live pull (skill cai-ingestion §1 and §4): Cloud Asset Inventory `assets.list` page by page, as NDJSON
- * frames (frames.ts).
+ * CAI pagination as NDJSON frames (frames.ts; cai-ingestion skill §1/§4). The shared request builder
+ * is upstream/google.ts's assetsListRequest; list-page.ts scans each answer into its frame.
+ * Each page yields a page frame then progress, ending with done or error; credentials are requested
+ * before every page, so the service-account gate may refuse between pages.
  *
- * - The one `assets.list` request (upstream/google.ts, `assetsListRequest`, which the preflight's probe sends
- *   too): `POST https://cloudasset.googleapis.com/v1/{scope}/assets` with `X-HTTP-Method-Override: GET` and a
- *   JSON body: `contentType: RESOURCE`, `pageSize: 500` (the API allows 1000; 500 keeps a page well under the
- *   25 MiB cap), `readTime` and `assetTypes` when asked, and the `pageToken` of the previous page's
- *   `nextPageToken`, until a page has none.
- * - Each page: a `page` frame with its assets as Google sent them (scanned into the frame, not parsed:
- *   list-page.ts), then a `progress` frame with the totals. A page without an `assets` key is an empty page
- *   (skill cai-ingestion §9). At the end a `done` frame with the total and the `readTime` Google reported
- *   (every 200 carries one).
- * - Retries: 429, 5xx, timeouts and transport failures, by the upstream client's policy (500 ms, ×2, ≤ 8 s, 5
- *   attempts; upstream/retry.ts). Every other answer ends the stream with an `error` frame carrying Google's
- *   message verbatim, its status, canonical code and `ErrorInfo` reason: 400 (`assetTypes`, `readTime`), 401,
- *   403, 404 (a `readTime` before the scope existed: `status: 404, code: "NOT_FOUND"`, which the timeline
- *   shows as "did not exist yet").
- * - Caps: 60 s per page attempt, 25 MiB per page, and the process-wide page budget (page-budget.ts): each
- *   page's bytes are claimed as they arrive and given back once the response has written its frame out to the
- *   connection (ndjson.ts asks for the next line only then), or at once when the page ends the stream with an
- *   error frame instead; a page the budget cannot hold is retried like a timeout, then ends the stream with a
- *   retryable `INSTANCE_BUSY` frame. Nothing of a page but its frame is kept while the frame waits for the client.
- *
- * The credentials are asked for before every page: in user mode they are the caller's token and quota
- * project; in service-account mode the service-account gate runs before every CAI call and may refuse.
+ * readPage hands its memory claim to the frame's consumer and releases it on every other exit. Only
+ * the frame remains reachable while the consumer waits (page-budget.ts); ndjson.ts controls when the
+ * producer advances. Limits and retries: docs/security.md, "Timeouts" and "Response caps and memory";
+ * upstream/request.ts and upstream/retry.ts own the exchange policy.
  */
 import { googleErrorOf } from '../upstream/google-error.js';
 import { assetsListRequest, UPSTREAM_MAX_BYTES, type CaiCredentials } from '../upstream/google.js';

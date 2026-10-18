@@ -1,29 +1,18 @@
 // SPDX-License-Identifier: MIT
 /**
- * `POST /api/render` (backend/AGENTS.md, The render API): a view of a scope, an uploaded export or
- * bundle, or a demo organisation, drawn on the server as SVG, PNG or a draw.io file (`"format": "drawio"`,
- * compressed unless `"compressed": false`; the pixel limits are a PNG's only) with the code `pnpm render`
- * runs (`@gcportrait/render`, in a fresh worker per render: ../render/runner.ts), so an instance's users can
- * script exports without the app. Registered only with the routes that call Google (never on a demo-only
- * instance) and only while `RENDER_API` is on.
+ * POST /api/render orchestrates source admission, the render worker and the answer. Policy:
+ * backend/AGENTS.md, The render API; wire format: docs/api.md. Model render options plus source are
+ * the JSON body for scope/demo, or the multipart request field before the file for ndjson/bundle.
  *
- * The request is one JSON document, `RenderOptionsSchema` of `@gcportrait/model` plus `source`: the whole body for
- * the `scope` and `demo` sources, or the `request` field of a `multipart/form-data` body whose `file` part follows
- * it for `ndjson` and `bundle`. Checks, in order: the caller's token and its rate limit (10 renders a minute) →
- * the schema → the source's authority (a pull's mode and gate, as on `/api/assets/stream`; tokeninfo must call the
- * token valid for the others) → one render per instance (`RENDER_BUSY`) → a stream slot for a pull
- * (`STREAMS_BUSY`) → the job. A pull is the stream route's own (`assetListFrames` with the same credentials, page
- * budget and slots): each frame goes to the job, and the next is asked for only once the job has read it, which
- * gives the page's budget claim back. The lock, the slot and the worker are given back however the render ends:
- * done, failed, timed out (`RENDER_TIMEOUT_MS`), the upload late (the server's body deadline: 408) or unreadable
- * (400), or the client gone. Once the client is gone or the time is up, nothing more is handed to the stopped job,
- * and a refusal of the job's that is still under way is handled, so it never becomes an unhandled rejection.
+ * Check order: caller token and rate limit → schema → source authority (pull mode/gate through
+ * ../stream/pull.ts; tokeninfo validity otherwise) → instance render lock → pull stream slot → job.
+ * A pull sends assetListFrames to the job and waits for each acknowledgement before advancing,
+ * returning that page's claim then. The deadline starts at the lock; lock, slot and worker are released
+ * on every exit, including late or unreadable uploads. After cancellation nothing more reaches the
+ * stopped job, and outstanding job refusals remain handled.
  *
- * A 200 answer carries the image in pieces with the streams' stall rule, `content-disposition` with the app's export
- * file name, the view drawn (`x-gcportrait-view`, a hash `pnpm render --hash` takes), and the detail level and scale
- * used. Errors are the server's one error answer with a `code` (../errors.ts; the route's own in
- * ../render/errors.ts), sent before any image byte; a retryable one carries `Retry-After`. One log line per
- * render, of counts only: never the token, the scope or the view.
+ * ../stream/ndjson.ts sends the answer in pieces; ../errors.ts and ../render/errors.ts map refusals
+ * before any image byte. The route records one counts-only outcome line (backend/README.md, "Render API").
  */
 import { Readable } from 'node:stream';
 

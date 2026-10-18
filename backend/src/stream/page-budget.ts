@@ -1,18 +1,12 @@
 // SPDX-License-Identifier: MIT
 /**
- * The process-wide budget of live-pull page bytes held in memory (docs/security.md "Response caps and
- * memory"). A Cloud Asset Inventory page is read whole (up to 25 MiB, `UPSTREAM_MAX_BYTES`) and written out
- * as one `page` frame (scanned, not parsed: list-page.ts). Pages held at once still add up: four at the cap
- * are about 100 MiB of bytes, and the per-token stream cap (slots.ts) does not bound them across tokens.
+ * Process-wide claims for live-pull page bytes (docs/security.md, "Response caps and memory").
+ * Claims grow as bytes arrive and remain held until the frame is written out; an error, cancellation
+ * or closed response releases them. The per-token slot limit cannot bound bytes across tokens.
  *
- * Every page read claims its bytes here as they arrive, and keeps the claim until the response has written its
- * frame out to the connection (ndjson.ts asks the stream for its next line only then), or gives it back at once
- * when the page ends the stream with an error frame. A client that stops reading therefore keeps its page claimed
- * until it reads on, leaves, or is cut off after `STREAM_STALL_MS` (ndjson.ts). A claim that would take the total
- * over the budget is refused at once, never waited for, so no reader can block another: the page attempt fails as
- * `busy`, which the upstream client retries with its backoff like a timeout, and after the last attempt the
- * stream ends with a retryable `INSTANCE_BUSY` error frame. Typical pages are far below a megabyte, so only
- * several near-limit pages at once ever meet the budget. In memory only, per process.
+ * A claim over the budget is refused synchronously, never queued, so readers cannot block one another.
+ * The upstream client retries that busy attempt; asset-list.ts maps exhaustion to INSTANCE_BUSY.
+ * Released claims cannot grow again, and release is idempotent. ndjson.ts owns stalled-client cleanup.
  */
 import type { ByteClaim } from '../upstream/request.js';
 
