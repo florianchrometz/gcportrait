@@ -24,8 +24,9 @@
  *
  * The website's build (website/astro.config.ts) runs this with `--out website/dist/demo` and the website's legal
  * links, or copies a bundle built before when WEBSITE_DEMO_DIST names it (the deploy workflows build it as a step of
- * its own first). After the build the bundle is checked (scripts/lib/static-demo.mjs, `staticDemoProblems`): a
- * problem fails the command. Exit code 0 on success, 1 on a failure, 2 on a usage error.
+ * its own first). `pnpm website:check` validates the hosted bundle after the website is built. This command
+ * builds only; standalone bundles and custom bases are not independently validated here.
+ * Exit code 0 on success, 1 on a failure, 2 on a usage error.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -33,7 +34,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { DEFAULT_BASE, STATIC_DEMO_ROUTES, staticDemoProblems } from './lib/static-demo.mjs';
+import { DEFAULT_BASE, STATIC_DEMO_ROUTES } from './lib/static-demo.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FRONTEND = path.join(ROOT, 'frontend');
@@ -189,16 +190,10 @@ export async function main(argv) {
     logLevel: 'warn',
     build: { outDir: options.out, emptyOutDir: true },
   });
-  const problems = staticDemoProblems(options.out, options.base);
-  if (problems.length > 0) {
-    process.stderr.write(`demo:static: the bundle in ${options.out} is not right:\n`);
-    for (const problem of problems) process.stderr.write(`  - ${problem}\n`);
-    return 1;
-  }
   log(
     `built ${shown(options.out)} for ${options.base} in ${String(Math.round((Date.now() - started) / 1000))} s: ` +
       `version ${env.VITE_APP_VERSION ?? ''}, Impressum ${options.impressumUrl}, privacy notice ${options.privacyUrl}, ` +
-      `index.html and a copy for ${STATIC_DEMO_ROUTES.map((route) => `/${route}`).join(', ')}, the policy <meta> checked.`,
+      `index.html and a copy for ${STATIC_DEMO_ROUTES.map((route) => `/${route}`).join(', ')}, the policy <meta> included.`,
   );
   return 0;
 }

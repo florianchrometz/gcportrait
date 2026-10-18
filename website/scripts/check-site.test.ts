@@ -1250,6 +1250,35 @@ describe('checkDemo (the static demo at /demo/)', () => {
     ]);
   });
 
+  it('refuses an asset referenced by the page but missing from the bundle', () => {
+    expect(checkDemo(files({ 'assets/index-1.css': undefined }), ICON)).toEqual([
+      '/demo/: loads /demo/assets/index-1.css, which the build does not have',
+    ]);
+  });
+
+  it('requires the favicon link to name the bundled favicon', () => {
+    const html = index().replace('/demo/favicon.svg', '/demo/icon.svg');
+    const view = files();
+    expect(
+      checkDemo(
+        { files: view.files, read: (file) => (file.endsWith('.html') ? html : view.read(file)) },
+        ICON,
+      ),
+    ).toEqual([
+      '/demo/: loads /demo/icon.svg, which the build does not have',
+      '/demo/: 1 icon links (one, to /demo/favicon.svg)',
+    ]);
+  });
+
+  it.each(['accounts.google.com', 'oauth2.googleapis.com'])(
+    'refuses the sign-in host %s in a JavaScript file',
+    (host) => {
+      expect(checkDemo(files({ 'assets/gis.js': `fetch("https://${host}/")` }), ICON)).toEqual([
+        `/demo/: assets/gis.js names ${host}`,
+      ]);
+    },
+  );
+
   it('requires the demo-only policy, first, with the inline script’s hash and no host', () => {
     const page = (html: string) => {
       const view = files({ 'index.html': html });

@@ -24,8 +24,6 @@
  * nosniff.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import path from 'node:path';
 
 /** Where the static demo is served by default: the maintainer's site, https://gcportrait.app/demo/. */
 export const DEFAULT_BASE = '/demo/';
@@ -56,9 +54,6 @@ export const META_UNSUPPORTED_DIRECTIVES = Object.freeze([
  * carry: the static demo sends no address of its own along with any request or link.
  */
 export const REFERRER_POLICY = 'no-referrer';
-
-/** Hosts of Google's sign-in (GIS's script, its endpoints, tokeninfo): never in the static demo's bundle or policy. */
-export const SIGN_IN_HOSTS = Object.freeze(['accounts.google.com', 'oauth2.googleapis.com']);
 
 const INLINE_SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
 const SRC_ATTRIBUTE = /(?:^|\s)src\s*=/i;
@@ -115,24 +110,6 @@ export function policyText(directives) {
     .join('; ');
 }
 
-/**
- * The directives of a policy's text (names lower-cased, in order; a repeated directive keeps its first value, as
- * browsers do).
- * @param {string} text
- * @returns {Record<string, string[]>}
- */
-export function parsePolicy(text) {
-  /** @type {Record<string, string[]>} */
-  const directives = {};
-  for (const part of text.split(';')) {
-    const [name, ...values] = part.trim().split(/\s+/);
-    if (name === undefined || name === '') continue;
-    const key = name.toLowerCase();
-    if (!(key in directives)) directives[key] = values;
-  }
-  return directives;
-}
-
 /** The `<meta http-equiv="Content-Security-Policy">` elements of a page, as their content attribute. */
 const CSP_META = /<meta\b[^>]*\bhttp-equiv\s*=\s*["']?Content-Security-Policy["']?[^>]*>/gi;
 
@@ -172,76 +149,4 @@ export function policyMetas(html) {
       /\bcontent\s*=\s*'([^']*)'/i.exec(match[0])?.[1] ??
       '',
   );
-}
-
-/**
- * Every file below a directory, as paths relative to it with forward slashes.
- * @param {string} dir
- * @param {string} [base]
- * @returns {string[]}
- */
-function filesBelow(dir, base = dir) {
-  return readdirSync(dir)
-    .sort()
-    .flatMap((name) => {
-      const file = path.join(dir, name);
-      if (statSync(file).isDirectory()) return filesBelow(file, base);
-      return [path.relative(base, file).split(path.sep).join('/')];
-    });
-}
-
-/**
- * What is wrong with a built static demo in `dir` served at `base` (an empty list when nothing is): index.html and a
- * copy of it, byte for byte, for every route; exactly one policy `<meta>`, before any script or stylesheet, with the
- * static demo's directives and the hashes of the page's own inline scripts; the favicon linked under the base and
- * present; every script and stylesheet of the page under the base and present; no sign-in host in any file.
- * @param {string} dir
- * @param {string} [base]
- * @returns {string[]}
- */
-export function staticDemoProblems(dir, base = DEFAULT_BASE) {
-  const index = path.join(dir, 'index.html');
-  if (!existsSync(index)) return [`${dir}: no index.html`];
-  /** @type {string[]} */
-  const problems = [];
-  const html = readFileSync(index, 'utf8');
-  for (const route of STATIC_DEMO_ROUTES) {
-    const copy = path.join(dir, `${route}.html`);
-    if (!existsSync(copy))
-      problems.push(`${route}.html is missing (the ${route} route's copy of index.html)`);
-    else if (readFileSync(copy, 'utf8') !== html) problems.push(`${route}.html is not a copy of index.html`);
-  }
-  const metas = policyMetas(html);
-  if (metas.length !== 1)
-    problems.push(`index.html has ${String(metas.length)} Content Security Policy <meta> (one)`);
-  else {
-    const expected = policyText(staticDemoDirectives(inlineScriptHashes(html)));
-    if (policyText(parsePolicy(metas[0] ?? '')) !== expected)
-      problems.push(`index.html's policy is "${metas[0] ?? ''}", not "${expected}"`);
-    const first = html.search(CSP_META);
-    const loader = html.search(/<script\b|<link\b/i);
-    if (loader >= 0 && loader < first) problems.push('index.html loads something before its policy <meta>');
-  }
-  const referrers = [...html.matchAll(/<meta\b[^>]*\bname\s*=\s*["']?referrer["']?[^>]*>/gi)];
-  if (referrers.length !== 1 || !referrers[0]?.[0].includes(`content="${REFERRER_POLICY}"`))
-    problems.push(`index.html does not have one <meta name="referrer" content="${REFERRER_POLICY}">`);
-  const references = [...html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*"([^"]+)"/gi)].map(
-    (match) => match[1] ?? '',
-  );
-  for (const reference of references) {
-    if (!reference.startsWith(base)) {
-      problems.push(`index.html loads ${reference}, which is not under ${base}`);
-      continue;
-    }
-    if (!existsSync(path.join(dir, decodeURIComponent(reference.slice(base.length)))))
-      problems.push(`index.html loads ${reference}, which the build does not have`);
-  }
-  if (!references.includes(`${base}favicon.svg`))
-    problems.push(`index.html does not link ${base}favicon.svg`);
-  for (const file of filesBelow(dir)) {
-    if (!/\.(?:html|js|css)$/.test(file)) continue;
-    const text = readFileSync(path.join(dir, file), 'utf8');
-    for (const host of SIGN_IN_HOSTS) if (text.includes(host)) problems.push(`${file} names ${host}`);
-  }
-  return problems;
 }

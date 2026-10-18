@@ -885,13 +885,14 @@ GitHub Pages sends it. HTTPS is enforced by Pages and by `.app`'s HSTS preload. 
 `/demo/assets/` (`worker-src 'self'`); a `<meta>` policy does not reach inside them, and they load only the
 bundle's own files.
 
-**Checks.** The command checks the bundle it wrote (`staticDemoProblems`, `scripts/lib/static-demo.mjs`):
-every route copy, one policy `<meta>` before anything that loads with the page's own hash, the referrer
-`<meta>`, everything the page loads under the base, the favicon, no Google sign-in host in any file. `pnpm
-website:check` checks the demo in the built site the same way and more (`checkDemo` in
-`website/scripts/check-site.ts`: `favicon.svg` is `brand/icon.svg`, the footer's Impressum, privacy notice and
-source link are in the script, the licence files are there; every "Try the demo" link of the site points at
-`/demo/`). `pnpm --filter @gcportrait/website demo` serves the built site as GitHub Pages does and drives the
+**Checks.** `pnpm demo:static` builds only; it does not independently validate standalone bundles or custom
+bases. The hosted `/demo/` bundle is validated by `pnpm website:check` after the website build, in every CI
+path that builds the site. Its `checkDemo` (`website/scripts/check-site.ts`) checks every route copy, one
+policy `<meta>` before anything that loads with the page's own hash, the referrer `<meta>`, everything the
+page loads under `/demo/`, no Google sign-in host or analytics, `favicon.svg` equal to `brand/icon.svg`,
+the footer's Impressum, privacy notice and source link, and the licence files. The site check also requires
+every "Try the demo" link to point at `/demo/`; it is not a validator for arbitrary bases or standalone
+bundles. `pnpm --filter @gcportrait/website demo` serves the built site as GitHub Pages does and drives the
 demo in Chromium at 1440 × 900, in both themes: the Connect page (axe), "Try the demo" with S, M and L, a
 drill-in, a day back on the timeline, a PNG and an SVG export, a reload on that deep link, a direct load of
 every route, `/demo` without its slash, an unknown address (404); it fails on any request that leaves the

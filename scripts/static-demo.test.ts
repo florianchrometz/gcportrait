@@ -2,10 +2,9 @@
 /**
  * The static demo's tooling: scripts/lib/static-demo.mjs and scripts/static-demo.mjs. The policy is the
  * backend's demo-only one without what a `<meta>` cannot carry, the route copies are App.tsx's routes, the website's
- * check and footer agree with both, and the bundle check finds what it must.
+ * check and footer agree with both.
  */
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -15,12 +14,10 @@ import {
   DEFAULT_BASE,
   inlineScriptHashes,
   META_UNSUPPORTED_DIRECTIVES,
-  parsePolicy,
   policyMetas,
   policyText,
   STATIC_DEMO_ROUTES,
   staticDemoDirectives,
-  staticDemoProblems,
   withContentSecurityPolicy,
 } from './lib/static-demo.mjs';
 import {
@@ -83,9 +80,7 @@ describe('the static demo’s Content Security Policy', () => {
     );
     expect(out).toContain('\'" />\n    <meta name="referrer" content="no-referrer" />\n    <title>');
     expect(policyMetas(out)).toHaveLength(1);
-    const policy = parsePolicy(policyMetas(out)[0] ?? '');
-    expect(policy['script-src']).toEqual(["'self'", ...inlineScriptHashes(html)]);
-    expect(policyText(policy)).toBe(policyText(staticDemoDirectives(inlineScriptHashes(html))));
+    expect(policyMetas(out)).toEqual([policyText(staticDemoDirectives(inlineScriptHashes(html)))]);
     expect(() => withContentSecurityPolicy(out)).toThrow(/already has/);
     expect(withContentSecurityPolicy('<html><head><title>x</title></head></html>')).toMatch(
       /^<html><head>\n<meta http-equiv="Content-Security-Policy"[^>]*>\n<meta name="referrer" content="no-referrer" \/><title>/,
@@ -193,56 +188,5 @@ describe('the command', () => {
     const outside = scratchTree('static-demo-version');
     outside.write('package.json', JSON.stringify({ version: '9.8.7' }));
     expect(describeVersion(outside.root)).toBe('9.8.7');
-  });
-});
-
-/** A small built bundle as the build writes it, with `change` applied to its index.html first. */
-function bundle(change: (html: string) => string = (html) => html): string {
-  const tree = scratchTree('static-demo-bundle');
-  tree.write('assets/index-1.js', 'console.log("app")');
-  tree.write('assets/index-1.css', 'body{}');
-  tree.write('favicon.svg', '<svg/>');
-  const html = change(
-    withContentSecurityPolicy(
-      '<html><head>\n<meta charset="UTF-8" />\n<script>var a = 1;</script>\n<script type="module" crossorigin src="/demo/assets/index-1.js"></script>\n<link rel="stylesheet" href="/demo/assets/index-1.css">\n<link rel="icon" href="/demo/favicon.svg" type="image/svg+xml">\n</head><body></body></html>\n',
-    ),
-  );
-  tree.write('index.html', html);
-  for (const route of STATIC_DEMO_ROUTES) tree.write(`${route}.html`, html);
-  return tree.root;
-}
-
-describe('staticDemoProblems (the check after the build)', () => {
-  it('accepts a bundle as the build writes it', () => {
-    expect(staticDemoProblems(bundle())).toEqual([]);
-  });
-
-  it('finds a missing or changed route copy, a wrong policy, a load outside the base, a sign-in host', () => {
-    const dir = bundle();
-    rmSync(path.join(dir, 'settings.html'));
-    writeFileSync(path.join(dir, 'diagram.html'), 'other');
-    writeFileSync(path.join(dir, 'assets', 'gis.js'), 'load("https://accounts.google.com/gsi/client")');
-    expect(staticDemoProblems(dir)).toEqual([
-      'diagram.html is not a copy of index.html',
-      "settings.html is missing (the settings route's copy of index.html)",
-      'assets/gis.js names accounts.google.com',
-    ]);
-    expect(
-      staticDemoProblems(
-        bundle((html) => html.replace("connect-src 'self'", "connect-src 'self' https://x.example.com")),
-      ),
-    ).toEqual([expect.stringMatching(/^index\.html's policy is /)]);
-    expect(
-      staticDemoProblems(bundle((html) => html.replace('/demo/assets/index-1.css', '/assets/index-1.css'))),
-    ).toEqual(['index.html loads /assets/index-1.css, which is not under /demo/']);
-    expect(staticDemoProblems(bundle((html) => html.replace('/demo/favicon.svg', '/demo/icon.svg')))).toEqual(
-      [
-        'index.html loads /demo/icon.svg, which the build does not have',
-        'index.html does not link /demo/favicon.svg',
-      ],
-    );
-    expect(staticDemoProblems(path.join(tmpdir(), 'no-such-static-demo'))).toEqual([
-      `${path.join(tmpdir(), 'no-such-static-demo')}: no index.html`,
-    ]);
   });
 });
