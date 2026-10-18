@@ -400,8 +400,10 @@ When a Tier 0/1 asset type joins the catalog, add it to the demo so the diagram 
    carry `addable` (a table, an export bucket, a build), it calls `b.referenced(name)` and uses the returned
    creation instant as its own `after`; the per-tick test in `src/generate.test.ts` and the graph package's
    demo test fail on any reference that dangles at an earlier tick.
-5. Add its relation paths to `SEED_PATHS` in `src/testing/seed-paths.ts`, which `src/generate.test.ts` checks,
-   and, if it is a feature worth listing, a row to `realismChecklist`.
+5. If it is a feature worth listing, add a row to `realismChecklist`. The graph package
+   (`packages/graph/test/`) automatically checks demo assets against catalog data paths (relations, nests,
+   IPs, templates); if your generator intentionally omits an optional catalog field, record it in its
+   allowlist.
 6. Run `pnpm --filter @gcportrait/demo-data fixtures`, review the `stats.json` diff, update the counts in this
    README (the tests point out every stale number), and run
    `pnpm --filter @gcportrait/demo-data lint typecheck test`.

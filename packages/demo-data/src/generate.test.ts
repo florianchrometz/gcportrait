@@ -23,7 +23,6 @@ import {
   referencesToAbsent,
   valuesAt,
 } from './testing.js';
-import { SEED_PATHS } from './testing/seed-paths.js';
 
 const SIZES: readonly DemoSize[] = ['S', 'M'];
 
@@ -369,21 +368,8 @@ describe.each(SIZES)('demo organisation %s', (size) => {
     expect(buckets.has(uri.replace(/^gs:\/\//, '').split('/')[0] ?? '')).toBe(true);
   });
 
-  it('writes every field the catalog seed reads where the seed says it is', () => {
+  it('writes created-by metadata on compute instances', () => {
     const assets = today(size);
-    const missing = SEED_PATHS.filter(([, , minimum]) => minimum !== 'M' || size !== 'S')
-      .filter(
-        ([type, path]) =>
-          !assets.some(
-            (a) =>
-              a.assetType === type &&
-              valuesAt(a.data, parsePath(path)).some(
-                (v) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
-              ),
-          ),
-      )
-      .map(([type, path]) => `${type} ${path}`);
-    expect(missing).toEqual([]);
     const createdBy = assets.filter(
       (a) =>
         a.assetType === 'compute.googleapis.com/Instance' &&
