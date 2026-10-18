@@ -43,7 +43,8 @@ development or production; calling `assertLayout` explicitly checks a layout in 
 `Point`, `Rect`, `Insets`, `RectRole`, `LayoutRect`, `Side`, `EdgePort`, `EdgeHeads`, `EdgeBundle`,
 `EdgePath`, `StageTimings`, `LayoutCounts`, `RoutingReport`, `LayoutReport`, `Arrangement`, `Arrangements`,
 `GapWidening`, `GutterWidening`, `GutterReservations`, `Layout`, `LayoutStage`, `LayoutProgress` and
-`LayoutResult` are inferred from the model's
+`LayoutResult`, `LayoutInputErrorCode`, `LayoutWorkerErrorCode` and `LayoutWorkerErrorInfo` are inferred
+from the model's
 [layout geometry schemas](../model/README.md#layout-geometry) and re-exported here as types. No runtime
 schema parsing is added to the layout pipeline; worker protocol envelopes and options remain here.
 

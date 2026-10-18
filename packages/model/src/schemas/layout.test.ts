@@ -12,12 +12,15 @@ import {
   GutterWideningSchema,
   InsetsSchema,
   LayoutCountsSchema,
+  LayoutInputErrorCodeSchema,
   LayoutProgressSchema,
   LayoutRectSchema,
   LayoutReportSchema,
   LayoutResultSchema,
   LayoutSchema,
   LayoutStageSchema,
+  LayoutWorkerErrorCodeSchema,
+  LayoutWorkerErrorInfoSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
@@ -37,11 +40,14 @@ import {
   type Insets,
   type Layout,
   type LayoutCounts,
+  type LayoutInputErrorCode,
   type LayoutProgress,
   type LayoutRect,
   type LayoutReport,
   type LayoutResult,
   type LayoutStage,
+  type LayoutWorkerErrorCode,
+  type LayoutWorkerErrorInfo,
   type Point,
   type Rect,
   type RectRole,
@@ -54,6 +60,73 @@ const point = { x: -1.25, y: 0.5 };
 const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
 const gaps = { cardColumns: [-1.5], zoneColumns: [[], [0, 2.25]], stacks: [[[], [-0.5]]], rows: [0] };
 const widening = { horizontal: -1.5, vertical: 0, ring: 2.25, ringSides: { left: -0.5 }, gaps };
+
+describe('layout worker error contracts', () => {
+  const inputCodes = [
+    'duplicate-id',
+    'unknown-endpoint',
+    'cycle',
+    'collapsed-with-children',
+    'too-deep',
+    'invalid-option',
+  ] as const;
+  const workerCodes = [...inputCodes, 'protocol', 'internal'] as const;
+
+  it('has exactly the existing six input codes and eight worker codes', () => {
+    expect(LayoutInputErrorCodeSchema.options).toEqual(inputCodes);
+    expect(LayoutWorkerErrorCodeSchema.options).toEqual(workerCodes);
+    for (const code of inputCodes) expect(LayoutInputErrorCodeSchema.parse(code)).toBe(code);
+    for (const code of ['protocol', 'internal', '', 'unknown', null, 1, undefined]) {
+      expect(LayoutInputErrorCodeSchema.safeParse(code).success).toBe(false);
+    }
+    for (const code of ['', 'unknown', null, 1, undefined]) {
+      expect(LayoutWorkerErrorCodeSchema.safeParse(code).success).toBe(false);
+    }
+  });
+
+  it.each(workerCodes)('preserves %s payloads, empty text and unsorted duplicate ids', (code) => {
+    expect(LayoutWorkerErrorCodeSchema.parse(code)).toBe(code);
+    for (const ids of [[], ['z', '', '__proto__', 'z', 'a']]) {
+      const error = { code, message: '', ids };
+      const parsed = LayoutWorkerErrorInfoSchema.parse(error);
+      expect(parsed).toEqual(error);
+      expect(JSON.stringify(parsed)).toBe(JSON.stringify(error));
+      expect(LayoutWorkerErrorInfoSchema.parse(JSON.parse(JSON.stringify(error)))).toEqual(error);
+      expect(Object.isFrozen(parsed)).toBe(true);
+      expect(Object.isFrozen(parsed.ids)).toBe(true);
+      expect(Object.isFrozen(error)).toBe(false);
+      expect(Object.isFrozen(ids)).toBe(false);
+    }
+  });
+
+  it('requires every field and rejects unknown fields and wrong types with complete paths', () => {
+    const error = { code: 'protocol', message: 'invalid request', ids: ['node'] };
+    for (const key of Object.keys(error)) {
+      const missing = Object.fromEntries(Object.entries(error).filter(([name]) => name !== key));
+      expect(LayoutWorkerErrorInfoSchema.safeParse(missing).success).toBe(false);
+      expect(LayoutWorkerErrorInfoSchema.safeParse({ ...error, [key]: undefined }).success).toBe(false);
+    }
+    for (const invalid of [
+      { ...error, extra: 1 },
+      { ...error, code: 'unknown' },
+      { ...error, message: 1 },
+      { ...error, ids: null },
+    ]) {
+      expect(LayoutWorkerErrorInfoSchema.safeParse(invalid).success).toBe(false);
+    }
+    const parsed = LayoutWorkerErrorInfoSchema.safeParse({ ...error, ids: ['node', 1] });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) expect(parsed.error.issues.map((issue) => issue.path)).toEqual([['ids', 1]]);
+  });
+
+  it('infers the unchanged code unions and readonly payload fields', () => {
+    expectTypeOf<LayoutInputErrorCode>().toEqualTypeOf<(typeof inputCodes)[number]>();
+    expectTypeOf<LayoutWorkerErrorCode>().toEqualTypeOf<(typeof workerCodes)[number]>();
+    expectTypeOf<LayoutWorkerErrorInfo>().toEqualTypeOf<
+      Readonly<{ code: LayoutWorkerErrorCode; message: string; ids: readonly string[] }>
+    >();
+  });
+});
 
 describe('layout progress contracts', () => {
   it.each(['normalise', 'size', 'pack', 'route', 'widen'] as const)('preserves the %s stage', (stage) => {

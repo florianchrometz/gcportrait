@@ -131,6 +131,9 @@ describe('public surface', () => {
         'LayoutStageSchema',
         'LayoutProgressSchema',
         'LayoutResultSchema',
+        'LayoutInputErrorCodeSchema',
+        'LayoutWorkerErrorCodeSchema',
+        'LayoutWorkerErrorInfoSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',

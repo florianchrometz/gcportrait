@@ -309,6 +309,12 @@ worker's scheduling, cancellation checks and progress delivery do not parse or c
 key may be empty. The client and its existing response guards are unchanged; the schema is not the tagged
 worker response envelope and does not run while a request settles.
 
+`LayoutInputErrorCodeSchema` (`LayoutInputErrorCode`) declares the six input refusal codes;
+`LayoutWorkerErrorCodeSchema` (`LayoutWorkerErrorCode`) adds `protocol` and `internal`.
+`LayoutWorkerErrorInfoSchema` (`LayoutWorkerErrorInfo`) holds readonly `code`, `message` and `ids`.
+Messages and ids may be empty; id order and duplicates are preserved. Error classes, classification and
+the worker's response guards stay in the layout package, without production schema parsing.
+
 ### Reports
 
 The same module declares the layout's report contracts. Numeric fields accept finite negative and

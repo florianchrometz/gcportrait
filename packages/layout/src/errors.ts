@@ -4,19 +4,9 @@
  * gcp-diagram-layout §2 rule 5): the UI shows the code and the offending ids.
  */
 
-export type LayoutInputErrorCode =
-  /** Two Scene nodes share an id (or one node object appears twice in the tree). */
-  | 'duplicate-id'
-  /** An edge names a node that is not in the Scene. */
-  | 'unknown-endpoint'
-  /** A node object contains itself: the tree is not a tree. */
-  | 'cycle'
-  /** A collapsed zone (a chip) still has children in the Scene. */
-  | 'collapsed-with-children'
-  /** The Scene nests deeper than `MAX_SCENE_DEPTH` levels. */
-  | 'too-deep'
-  /** A layout option is not a finite, non-negative number, or a range is inverted. */
-  | 'invalid-option';
+import type { LayoutInputErrorCode } from '@gcportrait/model';
+
+export type { LayoutInputErrorCode } from '@gcportrait/model';
 
 export class LayoutInputError extends Error {
   readonly code: LayoutInputErrorCode;

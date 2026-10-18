@@ -23,8 +23,8 @@
  * pure: the only host APIs it touches are the task-queue yield between steps (host.ts) and, if the mount
  * passes one, a clock for `report.timings`.
  */
-import type { Scene } from '@gcportrait/model';
-import { LayoutInputError, type LayoutInputErrorCode } from './errors.js';
+import type { LayoutWorkerErrorInfo, Scene } from '@gcportrait/model';
+import { LayoutInputError } from './errors.js';
 import { layoutKey } from './hash.js';
 import { createHostYield } from './host.js';
 import { layoutSteps } from './layout.js';
@@ -46,18 +46,7 @@ export type LayoutWorkerRequest =
 /** Why a request was cancelled: a later request arrived, or the page cancelled it. */
 export type LayoutCancelReason = 'superseded' | 'cancelled';
 
-/**
- * What went wrong: a `LayoutInputError` code (the Scene or an option was refused; `ids` names the offending
- * nodes or options, skill §2 rule 5), `protocol` (a malformed message) or `internal` (an unexpected exception:
- * a bug).
- */
-export type LayoutWorkerErrorCode = LayoutInputErrorCode | 'protocol' | 'internal';
-
-export interface LayoutWorkerErrorInfo {
-  readonly code: LayoutWorkerErrorCode;
-  readonly message: string;
-  readonly ids: readonly string[];
-}
+export type { LayoutWorkerErrorCode, LayoutWorkerErrorInfo } from '@gcportrait/model';
 
 /** Worker → page. After `result`, `cancelled` or `error` the request is over. */
 export type LayoutWorkerResponse =

@@ -10,10 +10,20 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   LayoutProgressSchema,
+  LayoutWorkerErrorInfoSchema,
+  type LayoutInputErrorCode as ModelLayoutInputErrorCode,
   type LayoutProgress as ModelLayoutProgress,
   type LayoutStage as ModelLayoutStage,
+  type LayoutWorkerErrorCode as ModelLayoutWorkerErrorCode,
+  type LayoutWorkerErrorInfo as ModelLayoutWorkerErrorInfo,
 } from '@gcportrait/model';
-import type { LayoutProgress as PublicLayoutProgress, LayoutStage as PublicLayoutStage } from './index.js';
+import type {
+  LayoutInputErrorCode as PublicLayoutInputErrorCode,
+  LayoutProgress as PublicLayoutProgress,
+  LayoutStage as PublicLayoutStage,
+  LayoutWorkerErrorCode as PublicLayoutWorkerErrorCode,
+  LayoutWorkerErrorInfo as PublicLayoutWorkerErrorInfo,
+} from './index.js';
 import { layoutKey } from './hash.js';
 import { layoutScene } from './layout.js';
 import { manualYield } from './testing/host.js';
@@ -53,6 +63,15 @@ function resultOf(messages: readonly LayoutWorkerResponse[]): Layout {
   const result = messages.find((message) => message.type === 'result');
   if (result?.type !== 'result') throw new Error('no result');
   return result.layout;
+}
+
+function expectErrorPayloads(messages: readonly LayoutWorkerResponse[]): void {
+  const errors = messages.flatMap((message) => (message.type === 'error' ? [message.error] : []));
+  expect(errors.length).toBeGreaterThan(0);
+  for (const error of errors) {
+    expect(LayoutWorkerErrorInfoSchema.parse(error)).toEqual(error);
+    expect(LayoutWorkerErrorInfoSchema.parse(JSON.parse(JSON.stringify(error)))).toEqual(error);
+  }
 }
 
 const SMALL = scene(
@@ -245,6 +264,9 @@ describe('createLayoutWorkerHandler', () => {
   });
 
   it('answers a refused Scene or option with its code and ids', async () => {
+    expectTypeOf<PublicLayoutInputErrorCode>().toEqualTypeOf<ModelLayoutInputErrorCode>();
+    expectTypeOf<PublicLayoutWorkerErrorCode>().toEqualTypeOf<ModelLayoutWorkerErrorCode>();
+    expectTypeOf<PublicLayoutWorkerErrorInfo>().toEqualTypeOf<ModelLayoutWorkerErrorInfo>();
     const worker = harness();
     worker.handle({ type: 'layout', id: 1, scene: scene([card('a'), card('a')]) });
     worker.handle({ type: 'layout', id: 2, scene: SMALL, options: { targetAspect: -1 } });
@@ -271,6 +293,7 @@ describe('createLayoutWorkerHandler', () => {
     worker.handle({ type: 'layout', id: 6, scene: SMALL });
     await worker.settle();
     expect(worker.terminal(6)).toMatchObject([{ type: 'result' }]);
+    expectErrorPayloads(worker.messages);
   });
 
   it('refuses malformed messages with a protocol error', () => {
@@ -298,6 +321,7 @@ describe('createLayoutWorkerHandler', () => {
         error: { code: 'protocol', ids: [] },
       });
     });
+    expectErrorPayloads(worker.messages);
   });
 
   it('reports what it did not expect as an internal error', () => {
@@ -326,6 +350,7 @@ describe('createLayoutWorkerHandler', () => {
     expect(worker.terminal(2)).toEqual([
       { type: 'error', id: 2, error: { code: 'internal', message: 'keys', ids: [] } },
     ]);
+    expectErrorPayloads(worker.messages);
   });
 
   it('ends a request in an error when the host cannot post its result', async () => {
