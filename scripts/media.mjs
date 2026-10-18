@@ -1091,17 +1091,34 @@ function writeOutput(files, file, data, extra = {}) {
 
 /** @param {readonly string[]} argv */
 async function main(argv) {
-  const { values } = parseArgs({
-    args: [...argv],
-    options: {
-      check: { type: 'boolean', default: false },
-      only: { type: 'string', multiple: true, default: [] },
-      theme: { type: 'string', multiple: true, default: [] },
-      'skip-build': { type: 'boolean', default: false },
-      list: { type: 'boolean', default: false },
-      help: { type: 'boolean', default: false },
-    },
-  });
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args: [...argv],
+      options: {
+        check: { type: 'boolean', default: false },
+        only: { type: 'string', multiple: true, default: [] },
+        theme: { type: 'string', multiple: true, default: [] },
+        'skip-build': { type: 'boolean', default: false },
+        list: { type: 'boolean', default: false },
+        help: { type: 'boolean', default: false },
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      [
+        'ERR_PARSE_ARGS_UNKNOWN_OPTION',
+        'ERR_PARSE_ARGS_INVALID_OPTION_VALUE',
+        'ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL',
+      ].includes(String(error.code))
+    ) {
+      throw new UsageError(error.message);
+    }
+    throw error;
+  }
+  const { values } = parsed;
   if (values.help) {
     process.stdout.write(
       'usage: pnpm media [--check] [--only [still:|scene:|card:]ID]... [--theme light|dark]... [--skip-build] [--list]\n',

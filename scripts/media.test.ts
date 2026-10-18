@@ -554,6 +554,17 @@ describe('the command line', () => {
   // One test per refusal, each spawning the tool once: five spawns in one test outran its 5 s under load.
   const NO_SUCH_ITEM = 'no still, scene or card has this id';
   for (const { refused, args, message } of [
+    {
+      refused: 'an unknown option',
+      args: ['--unknown-option'],
+      message: "Unknown option '--unknown-option'",
+    },
+    {
+      refused: 'a missing option value',
+      args: ['--only'],
+      message: "Option '--only <value>' argument missing",
+    },
+    { refused: 'a positional argument', args: ['unexpected'], message: "Unexpected argument 'unexpected'" },
     { refused: 'an id no item has', args: ['--only', 'nope'], message: `--only nope: ${NO_SUCH_ITEM}` },
     {
       refused: 'an id of another kind than it names (card:timeline)',
@@ -580,6 +591,8 @@ describe('the command line', () => {
       const result = runScript('media.mjs', args);
       expect(result.status).toBe(2);
       expect(result.stderr).toContain(message);
+      expect(result.stderr).not.toContain('TypeError');
+      expect(result.stderr).not.toContain('\n    at ');
     });
   }
 });
