@@ -149,25 +149,11 @@ where the landing page's features become two columns, 52rem for the docs layout,
   2.2.2). With reduced motion nothing plays by itself: the poster shows with a Play button. A browser that
   refuses to play by itself (iOS in Low Power Mode) gets the same: the poster and a Play button.
 
-**Checks.** `pnpm website:check` covers what the HTML shows (the viewport tag, tables in scroll boxes, inline
-widths, the media rule; [Building and checking](#building-and-checking)). `pnpm --filter @gcportrait/website
-mobile` (`website/scripts/mobile.ts`) checks the rendered pages in Playwright and fails on any problem:
-
-- **Layout** (Chromium, emulating a touch phone at 2×): every page of the sitemap and the 404 page at 320,
-  375, 390 and 430 pixels, light and dark, with the folding panels closed and then open. It fails when the
-  page scrolls sideways or an element reaches past the viewport outside a scrolling box, when two header items
-  overlap or one leaves the screen, when the header is not at the top of the window once the page is scrolled
-  to its end or an anchor jump to the page's last level-2 heading leaves it under the header, when a link or
-  button that is not inline text is under 44 × 44 pixels, when axe-core (all non-experimental rules, as
-  `e2e/` runs it) finds a violation (panels closed at every width, open at 375), or when the name Chromium
-  gives a link or a button (its accessibility tree, what a screen reader reads, which axe-core does not check;
-  panels open, at the first width) has a space before a punctuation mark, as in "Open SVG , Demo S".
-- **Playback**: the landing page on an iPhone 15 (Playwright's WebKit) and a Pixel 7 (its Chromium) with their
-  device descriptors, light and dark. Each of the five demos is scrolled into view and must play (as WebM, or
-  as the GIF); its button must pause it (the video's time stands still, or the GIF gives way to the poster)
-  and play it again. On each device also: the GIF when `canPlayType` says no, when the WebM requests fail, and
-  when they never answer (a stall); with reduced motion, nothing before the Play button is pressed. Any
-  request to another host fails the run.
+**Checks.** After building the site, `pnpm --filter @gcportrait/website mobile` checks phone layouts,
+accessibility and animated-demo playback in both themes; the header of
+[website/scripts/mobile.ts](../website/scripts/mobile.ts) defines its scenarios and failure conditions.
+Use `--only layout` or `--only playback` to run one part. The static-file check is separate
+([Building and checking](#building-and-checking)); the app's own phone and tablet check covers `/demo/`.
 
 Both parts answer the header's repository widget themselves ([GitHub repository
 widget](#github-repository-widget)), never GitHub: with a 404, as GitHub answers while the repository is

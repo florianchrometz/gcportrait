@@ -23,8 +23,9 @@
  * Chromium, with their device descriptors (viewport, pixel ratio, touch, user agent), both themes. Each demo is
  * scrolled into view and must play, as WebM or as the GIF fallback; its button must pause it (a video stops on its
  * frame, a GIF gives way to the poster) and play it again. Then, on each device: the GIF fallback when the browser
- * says it cannot play WebM, and when the WebM fails to load; with reduced motion, nothing plays until the Play
- * button is pressed. Every request must stay on the site's own host, but for the header's repository widget.
+ * says it cannot play WebM, when the WebM fails to load, or when its requests stall; with reduced motion,
+ * nothing plays until the Play button is pressed. Every request must stay on the site's own host, but for the
+ * header's repository widget.
  *
  * The header's repository widget (docs/website.md, "GitHub repository widget") is answered by the check, never by
  * GitHub: with a 404, as GitHub answers for a private repository, so nothing changes; with `--stars N`, N stars,
