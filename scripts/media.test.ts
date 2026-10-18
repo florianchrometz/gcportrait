@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   GIF_HOLD,
@@ -33,8 +33,15 @@ import {
   type GifEncoderApi,
   type Manifest,
 } from './lib/media-core.mjs';
-import { CAPTURES } from './media.mjs';
-import { SCRIPTS_DIR, createTempTree, runScript, type TempTree } from './testing/temp-tree.js';
+import { CAPTURES, run as runMedia } from './media.mjs';
+import {
+  SCRIPTS_DIR,
+  SPAWN_TIMEOUT,
+  createTempTree,
+  runInProcess,
+  runScript,
+  type TempTree,
+} from './testing/temp-tree.js';
 
 const REPO = path.resolve(SCRIPTS_DIR, '..');
 const gif = createRequire(path.join(REPO, 'website', 'package.json'))('gifenc') as GifEncoderApi;
@@ -537,11 +544,31 @@ describe('frames', () => {
 });
 
 describe('the command line', () => {
-  it('prints its usage and the list of files without a browser', () => {
-    const help = runScript('media.mjs', ['--help']);
+  it('imports a runner without output or an exit-code change', async () => {
+    const argv = process.argv;
+    const exitCode = process.exitCode;
+    process.argv = [process.execPath, path.join(SCRIPTS_DIR, 'media.test.ts')];
+    vi.resetModules();
+    try {
+      const result = await runInProcess(async () => {
+        const imported = await import('./media.mjs');
+        expect(imported).toHaveProperty('run');
+        return 0;
+      });
+      expect(result).toEqual({ status: 0, stdout: '', stderr: '' });
+      expect(process.exitCode).toBe(exitCode);
+    } finally {
+      process.argv = argv;
+      process.exitCode = exitCode;
+      vi.resetModules();
+    }
+  });
+
+  it('prints its usage and the list of files without a browser', async () => {
+    const help = await runInProcess(() => runMedia(['--help']));
     expect(help.status).toBe(0);
     expect(help.stdout).toContain('usage: pnpm media');
-    const list = runScript('media.mjs', ['--list']);
+    const list = await runInProcess(() => runMedia(['--list']));
     expect(list.status).toBe(0);
     // Every file a full run writes for the repository's list, under docs/media/.
     expect(list.stdout.trim().split('\n').sort()).toEqual(
@@ -551,7 +578,49 @@ describe('the command line', () => {
     );
   });
 
-  // One test per refusal, each spawning the tool once: five spawns in one test outran its 5 s under load.
+  it(
+    'matches the real CLI for a usage error and leaves subsequent calls independent',
+    SPAWN_TIMEOUT,
+    async () => {
+      const args = ['--theme', 'sepia'];
+      const result = await runInProcess(() => runMedia(args));
+      expect(result.status).toBe(2);
+      expect(result.stderr).toBe('media: --theme sepia: light or dark\n');
+      expect(runScript('media.mjs', args)).toEqual(result);
+      expect((await runInProcess(() => runMedia(['--help']))).status).toBe(0);
+      expect(await runInProcess(() => runMedia(args))).toEqual(result);
+    },
+  );
+
+  it('reports a non-usage failure with its stack and exit code 1', async () => {
+    vi.doMock('./lib/media-core.mjs', async () => ({
+      ...(await vi.importActual<typeof import('./lib/media-core.mjs')>('./lib/media-core.mjs')),
+      readConfig: () => {
+        throw new Error('synthetic media config failure');
+      },
+    }));
+    vi.resetModules();
+    try {
+      const { run } = await import('./media.mjs');
+      const result = await runInProcess(() => run(['--list']));
+      expect(result.status).toBe(1);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toContain('media: Error: synthetic media config failure');
+      expect(result.stderr).toContain('\n    at ');
+    } finally {
+      vi.doUnmock('./lib/media-core.mjs');
+      vi.resetModules();
+    }
+  });
+
+  it('keeps parser usage errors concise and leaves the next call independent', async () => {
+    const result = await runInProcess(() => runMedia(['--unknown-option']));
+    expect(result.status).toBe(2);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toBe("media: Unknown option '--unknown-option'\n");
+    expect((await runInProcess(() => runMedia(['--list']))).status).toBe(0);
+  });
+
   const NO_SUCH_ITEM = 'no still, scene or card has this id';
   for (const { refused, args, message } of [
     {
@@ -587,8 +656,8 @@ describe('the command line', () => {
       message: '--check compares everything; it takes no --only or --theme',
     },
   ]) {
-    it(`refuses ${refused} with a usage error`, () => {
-      const result = runScript('media.mjs', args);
+    it(`refuses ${refused} with a usage error`, async () => {
+      const result = await runInProcess(() => runMedia(args));
       expect(result.status).toBe(2);
       expect(result.stderr).toContain(message);
       expect(result.stderr).not.toContain('TypeError');

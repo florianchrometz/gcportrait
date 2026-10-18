@@ -1372,21 +1372,22 @@ async function main(argv) {
   return 0;
 }
 
+/** @type {(argv: readonly string[]) => Promise<number>} */
+export const run = async (argv) => {
+  try {
+    return await main(argv);
+  } catch (error) {
+    if (error instanceof UsageError) {
+      process.stderr.write(`media: ${error.message}\n`);
+      return 2;
+    }
+    process.stderr.write(
+      `media: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+    );
+    return 1;
+  }
+};
+
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main(process.argv.slice(2)).then(
-    (code) => {
-      process.exitCode = code;
-    },
-    (/** @type {unknown} */ error) => {
-      if (error instanceof UsageError) {
-        process.stderr.write(`media: ${error.message}\n`);
-        process.exitCode = 2;
-      } else {
-        process.stderr.write(
-          `media: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
-        );
-        process.exitCode = 1;
-      }
-    },
-  );
+  process.exitCode = await run(process.argv.slice(2));
 }
