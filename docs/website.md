@@ -452,87 +452,49 @@ on macOS, regenerate on Linux (or in CI) instead.
 
 ## Sample exports
 
-The site offers real exports to download: SVG, PNG and draw.io files of the synthetic demo organisations,
-the app's renderer's drawing of the views the Export menu offers, each with its title block (the scope, the
-lens with the read time, the gcportrait.app tagline) and the legend. Like every drawing, no file carries the
-non-affiliation line, neither in the title block nor in the SVG's `<desc>`, which holds the scope, the lens,
-the read time and "Drawn with gcportrait." only: the site states it in the footer notice of every page and in
-the long form in the landing page's author section. `node scripts/exports.mjs` makes them with `pnpm render`
-(each view as the app's renderer draws it, rasterised with resvg at 2×, the export's default) and writes them
-to `docs/media/exports/`:
+The site offers SVG, PNG and draw.io exports of the synthetic demo organisations in both themes, with WebP
+previews. [scripts/exports.mjs](../scripts/exports.mjs) draws them with `pnpm render` and writes the files
+and `manifest.json` to `docs/media/exports/`. Its `SAMPLES` list defines the views:
 
-| Sample | View | PNG (light) | Files per theme |
-|---|---|---|---|
-| `S-overview` | demo S, Overview lens, detail `auto` → all | 4794 × 2812 px | PNG, SVG, draw.io, WebP previews at 480 and 960 px |
-| `M-overview` | demo M, Overview lens, detail `auto` → folders | 3726 × 2996 px | the same |
-| `M-shared-vpc` | demo M, Networking lens, focus on the Shared VPC `demo-net-1`, detail `auto` → projects | 4328 × 3060 px | the same |
+| Sample | View |
+|---|---|
+| `S-overview` | Demo S, Overview lens |
+| `M-overview` | Demo M, Overview lens |
+| `M-shared-vpc` | Demo M, Networking lens, focused on the Shared VPC `demo-net-1` |
 
-30 files, 4.6 MiB in all, with `manifest.json`: each file's sample, demo size, lens, theme, width × height (a
-draw.io file's page), bytes, SHA-256 and the command that made it (`pnpm render --fixture S --lens overview
---theme light --png docs/media/exports/S-overview-light.png --svg docs/media/exports/S-overview-light.svg
---drawio docs/media/exports/S-overview-light.drawio --drawio-unversioned`). The draw.io files are compressed
-as diagrams.net saves them, 13 to 33 kB each, and their `agent` is `gcportrait` alone, without `pnpm render`'s
-version (`--drawio-unversioned`, as the render golden is written), so a release, which raises that version,
-leaves them as they are: demo S's light file is the render golden byte for byte. Demo L and XL are left out:
-L's overview alone is an 8172 × 5284 PNG of 1.9 MB per theme, which would take the set past its 6 MiB budget.
+To change the set, edit `SAMPLES`, regenerate, inspect both themes and commit the outputs. The script's
+`renderArgs` and `ENCODER_PAGE` define rendering and preview encoding; `BUDGET_BYTES` caps the whole set.
+L and XL are omitted to keep within that budget. The manifest records each file's dimensions, size,
+SHA-256 and generating command, rather than relying on a second list of those figures here. Install
+Playwright's Chromium before generating previews (`pnpm --filter @gcportrait/e2e install-browsers`).
 
 ```sh
-node scripts/exports.mjs                    # about 30 s; then commit docs/media/exports/
+node scripts/exports.mjs                    # generate, inspect, then commit docs/media/exports/
 node scripts/exports.mjs --check            # the files against the manifest (no browser)
 node scripts/exports.mjs --check --render   # also renders everything again and compares byte for byte
 ```
 
-The exports are kept apart from `pnpm media`: they come from the headless renderer, not from screenshots of
-the demo app, so they do not touch its staleness hash or the animations, and `pnpm media --check` does not
-look at them. `--check` fails when the samples, their previews or the encoder page in `scripts/exports.mjs`
-changed (formatting and comments do not count), when a file's recorded command is not the one the script would
-run now, when resvg or Playwright changed version, when a file is missing, edited, unlisted or not a sample,
-when a draw.io file does not read as diagrams.net reads it, is not compressed, has an `agent` other than
-`gcportrait` (a version there would make every release's samples stale), states an affiliation in a label or
-names an address other than Google Fonts' stylesheet, when an SVG carries an affiliation line
-(`EXPORT_DISCLAIMER` of `website/src/site.ts`, the footer notice's first sentence, or any other "affiliated
-with … Google" sentence) in its title block, its `<title>`, its `<desc>` or anywhere else, or loads anything
-from elsewhere, and when the set is over 6 MiB. The manifest records no affiliation line. A change to the
-renderer, the fonts or the demo data shows only with `--render`, which draws everything again (PNGs are
-byte-stable on one platform; on another, resvg's anti-aliasing may differ while the SVGs agree). Run it after
-a visible change to the diagram, and regenerate when it reports a difference. The previews are encoded by
-Playwright's Chromium (a canvas scaled with high-quality smoothing, then WebP at quality 0.82), as `pnpm
-media` encodes its WebPs.
+These headless exports are independent of the demo screenshots and animations: `pnpm media --check` does
+not check them. The export script's `--check` validates generator inputs, files and manifest; its
+`problemsOf` function is the check reference. After changing the renderer, fonts or demo data, run
+`--check --render` to draw again and compare bytes, then regenerate and inspect any intended differences.
+The pinned WebAssembly rasteriser computes the same PNG pixels on every platform
+([packages/render-cli/README.md](../packages/render-cli/README.md#known-limits), "Platforms"); WebP previews
+are encoded separately by Chromium. The script uses `--drawio-unversioned`, so changing the release version
+alone does not stale the samples.
 
-**On the site.** `website/src/lib/exports.ts` reads the manifest and imports the files from
-`docs/media/exports/`, so the build publishes each under a content-hashed name in `_astro/` and the site loads
-nothing from elsewhere. The landing page's "Sample exports" section has a card for demo S and one for demo M
-(the overviews): the light and the dark preview side by side (stacked on a narrow card), each with "Download
-PNG", "Download SVG" and "Download draw.io" (the `download` attribute names the file
-`gcportrait-demo-<sample>-<theme>.<ext>`, the size is shown), "Open SVG", which opens the vector in the
-browser, and "Open in diagrams.net", which opens the draw.io file in a new tab at
-`https://app.diagrams.net/?url=` with the file's public address on `https://gcportrait.app` (diagrams.net
-loads it from the site; nothing of diagrams.net is loaded by the site), under the line "Editable: open the
-`.drawio` file in draw.io or diagrams.net.". Each link's name is its `aria-label` (`exportLinkName`): the text
-it shows, then the sample and the theme, as "Download PNG (743 kB), Demo S, Overview lens, light theme"; "Open
-in diagrams.net" ends with "(opens in a new tab)". It is not text for assistive technology only
-(`.visually-hidden`): browsers read that absolutely placed span as a block, with a space before it, so a
-hidden part beginning with a comma would read "Download PNG (743 kB) , Demo S". The page `/exports/` (title,
-description, its own link-preview image `social/exports.jpg`, in the sitemap, and in the docs menu and on
-`/docs/` after the Export guide) has all three samples with larger previews, the files' dimensions and the
-commands. The previews are lazy-loaded WebPs (`srcset` of 480 and 960 px). Both say that the SVGs name the
-Roboto font stack without embedding it, as the Export menu writes an SVG unless its "Embed fonts" option is
-ticked, so where Roboto is not installed a viewer draws the labels in another font and they may reflow (the
-PNGs are always drawn with Roboto), and `/exports/` gives the measured reason demo L and XL are left out.
-Neither says the files carry the non-affiliation line; `/exports/` says it is in the footer, not in the
-drawings, and asks that a picture not be presented as Google's. Above the section, the landing page's feature
-"Export to draw.io, edit in diagrams.net" presents the draw.io file as a feature of its own, beside the one of
-the Export menu: what the file holds in diagrams.net, why draw.io is an export only (a link to the FAQ's
-answer), and the `M-shared-vpc` sample, which no other part of the page shows, as its preview in the visitor's
-theme with "Open in diagrams.net" and "Download draw.io" for the file of that theme (the other theme's two
-links are hidden with its picture). `pnpm website:check` checks every export link ([Building and
-checking](#building-and-checking)).
+The landing page offers the overviews and the Shared VPC draw.io feature; `/exports/` offers the full set
+with dimensions and commands. The site's code map is in
+[website/README.md](../website/README.md#where-the-content-comes-from); export-link and file checks are
+specified in [website/scripts/check-site.ts](../website/scripts/check-site.ts). Files follow
+[AGENTS.md](../AGENTS.md), "Exports and the render API" and "Non-affiliation, brand and legal".
 
-**In the README.** The draw.io feature shows the `S-overview` preview and the catalog feature the
-`M-shared-vpc` preview, each at 960 pixels and in the dark theme for a dark colour scheme. Their alt text is
-the sample's title and summary from `SAMPLES` ("Title. Summary"), the words the export card shows above its
-previews and ends their alt texts with; it names no theme, since the picture follows the reader's.
-`scripts/readme.test.ts` fails when a README picture of a sample export says anything else.
+The sample SVGs name Roboto without embedding it: a viewer without Roboto may substitute a font and reflow
+labels. PNGs are drawn with Roboto. "Open in diagrams.net" opens the site's draw.io file in a new tab;
+diagrams.net is a link target, not a resource loaded by the website.
+
+When changing a sample's title or summary in `SAMPLES`, keep any README preview's alt text in step;
+[scripts/readme.test.ts](../scripts/readme.test.ts) checks that it matches the sample.
 
 ## GitHub repository widget
 
