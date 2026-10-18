@@ -8,8 +8,10 @@
 import { useId, type ReactElement } from 'react';
 import { Link } from 'react-router';
 
+import { cx } from '../classNames';
 import { scopeName } from '../snapshots/labels';
 import { useAppState } from '../state';
+import controls from '../ui/controls.module.css';
 import { inertProps } from '../ui/dom';
 import styles from './Import.module.css';
 import { ImportStatus } from './ImportStatus';
@@ -37,7 +39,7 @@ export function PullNow(): ReactElement {
       <div className={styles.row}>
         <button
           type="button"
-          className={styles.primary}
+          className={cx(controls.control, controls.primary)}
           aria-describedby={hintId}
           {...inertProps(blocked)}
           onClick={pull}

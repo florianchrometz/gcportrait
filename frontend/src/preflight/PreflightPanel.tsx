@@ -25,6 +25,7 @@ import {
   STATUS_LABELS,
   upstreamLabel,
 } from './copy';
+import controls from '../ui/controls.module.css';
 import styles from './Preflight.module.css';
 import { usePreflight } from './usePreflight';
 
@@ -207,7 +208,7 @@ export function PreflightPanel({ headingLevel = 3 }: { readonly headingLevel?: 2
       <div className={styles.actions}>
         <button
           type="button"
-          className={styles.primary}
+          className={cx(controls.control, controls.primary)}
           aria-disabled={hint === undefined ? undefined : 'true'}
           aria-describedby={hint === undefined ? undefined : 'preflight-hint'}
           onClick={() => {
@@ -242,7 +243,7 @@ export function PreflightPanel({ headingLevel = 3 }: { readonly headingLevel?: 2
           ) : null}
           {state.answer.outcome === 'sign-in' ? (
             <p className={styles.actions}>
-              <button type="button" className={styles.secondary} onClick={auth.signIn}>
+              <button type="button" className={controls.control} onClick={auth.signIn}>
                 Sign in again
               </button>
             </p>

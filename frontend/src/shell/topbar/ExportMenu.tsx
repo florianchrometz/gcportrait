@@ -27,6 +27,7 @@ import { usePopover } from '../../state';
 import { useTheme } from '../../theme/useTheme';
 import type { MenuItem } from '../../ui/Menu';
 import { MenuButton } from '../../ui/MenuButton';
+import controls from '../../ui/controls.module.css';
 import styles from './ExportMenu.module.css';
 
 /** What the menu does with the outside world; tests replace parts of it. */
@@ -236,7 +237,7 @@ export function ExportMenu({
         label="Export"
         items={items}
         align="end"
-        className={styles.control}
+        className={controls.primary}
         disabled={available ? false : NO_DIAGRAM_HINT}
         open={open}
         onOpenChange={setOpen}

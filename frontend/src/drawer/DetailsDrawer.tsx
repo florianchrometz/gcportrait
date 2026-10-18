@@ -42,6 +42,7 @@ import {
   type ReactElement,
 } from 'react';
 
+import { cx } from '../classNames';
 import { canDrillIn, consoleAction, consoleActionOf, type ConsoleAction } from '../diagram/actions';
 import { canvasOf, parkCanvasFocus } from '../diagram/canvasFocus';
 import { collapseButtonOf } from '../diagram/disclosure/CollapseButton';
@@ -68,6 +69,7 @@ import { DRAWER_WIDTH, usePreference } from '../storage/preferences';
 import { useTheme } from '../theme/useTheme';
 import type { LocateAnswer } from '../search/protocol';
 import { useScreen } from '../ui/screen';
+import controls from '../ui/controls.module.css';
 import { withExtraLabel } from '../timeline/extraTicks';
 import { CopyButton } from './CopyButton';
 import styles from './DetailsDrawer.module.css';
@@ -263,7 +265,7 @@ function RawJson({
         <div className={styles.row}>
           <button
             type="button"
-            className={styles.button}
+            className={controls.control}
             aria-expanded={open}
             aria-controls={codeId}
             onClick={onToggle}
@@ -661,7 +663,7 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
                   </p>
                 )}
               </div>
-              <button type="button" className={styles.button} onClick={close}>
+              <button type="button" className={controls.control} onClick={close}>
                 Close
               </button>
             </div>
@@ -670,7 +672,7 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
                 {drillable ? (
                   <button
                     type="button"
-                    className={styles.primary}
+                    className={cx(controls.control, controls.primary)}
                     onClick={() => {
                       actions.drillIn(selection);
                       // The drawer goes with the selection: focus waits on the canvas and goes to the drilled-in
@@ -684,7 +686,7 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
                 ) : null}
                 {action === undefined ? null : (
                   <a
-                    className={styles.button}
+                    className={controls.control}
                     href={action.href}
                     target="_blank"
                     rel="noopener noreferrer"

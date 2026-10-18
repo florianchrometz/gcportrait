@@ -52,33 +52,7 @@
   display: inline-grid;
   place-items: center;
   width: var(--control-height);
-  height: var(--control-height);
   padding: 0;
-  border: 1px solid var(--color-outline);
-  border-radius: var(--control-radius);
-  background: var(--color-surface);
-  color: var(--color-on-surface);
-  cursor: pointer;
-}
-
-.iconButton:hover {
-  background: var(--color-surface-container);
-}
-
-.iconButton[aria-pressed='true'] {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-/* Inert, as the app's placeholders are: a dashed border and the secondary colour (not colour alone). */
-.iconButton[aria-disabled='true'] {
-  border-style: dashed;
-  color: var(--color-on-surface-variant);
-  cursor: not-allowed;
-}
-
-.iconButton[aria-disabled='true']:hover {
-  background: var(--color-surface);
 }
 
 .glyph {
@@ -252,30 +226,6 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-}
-
-.textButton {
-  height: var(--control-height);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-outline);
-  border-radius: var(--control-radius);
-  background: var(--color-surface);
-  color: var(--color-on-surface);
-  font-size: var(--font-size-control);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.textButton:hover {
-  background: var(--color-surface-container);
-}
-
-/* A pressed toggle ("Play extras"): the primary colour as outline and text, not colour alone (the pressed state is
-   also its `aria-pressed`, and its tooltip says it). */
-.textButton[aria-pressed='true'] {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  font-weight: var(--font-weight-medium);
 }
 
 @media (prefers-reduced-motion: reduce) {

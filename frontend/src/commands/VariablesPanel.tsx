@@ -9,6 +9,7 @@
 import { commandVariable, variableTokens, type CommandVariable } from '@gcportrait/model';
 import { useId, type ReactElement } from 'react';
 
+import controls from '../ui/controls.module.css';
 import styles from './Commands.module.css';
 import { useCommandVariables } from './useCommandVariables';
 
@@ -85,7 +86,7 @@ export function VariablesPanel({
       <div className={styles.actions}>
         <button
           type="button"
-          className={styles.clear}
+          className={controls.control}
           aria-disabled={variables.typed ? undefined : 'true'}
           onClick={() => {
             if (variables.typed) variables.clear();

@@ -9,7 +9,9 @@
 import type { ReactElement } from 'react';
 import { Link } from 'react-router';
 
+import { cx } from '../classNames';
 import { formatCount } from '../snapshots/labels';
+import controls from '../ui/controls.module.css';
 import styles from './Import.module.css';
 import { progressCounters, shareRead, stageText, type ImportProgress } from './progress';
 
@@ -48,7 +50,7 @@ export function ImportStatus({
             <span className={styles.counters} data-testid="import-counters">
               {progressCounters(progress)}
             </span>
-            <button type="button" className={styles.secondary} onClick={onCancel}>
+            <button type="button" className={controls.control} onClick={onCancel}>
               Cancel
             </button>
           </div>
@@ -63,7 +65,7 @@ export function ImportStatus({
           <div className={styles.row}>
             {failure.checkPermissions === true ? <Link to="/permissions">Check permissions</Link> : null}
             {failure.retryable === true && onRetry !== undefined ? (
-              <button type="button" className={styles.secondary} onClick={onRetry}>
+              <button type="button" className={controls.control} onClick={onRetry}>
                 Try again
               </button>
             ) : null}
@@ -79,7 +81,7 @@ export function ImportStatus({
             ))}
           </ul>
           <div className={styles.row}>
-            <button type="button" className={styles.primary} onClick={onOpen}>
+            <button type="button" className={cx(controls.control, controls.primary)} onClick={onOpen}>
               Open the diagram
             </button>
           </div>

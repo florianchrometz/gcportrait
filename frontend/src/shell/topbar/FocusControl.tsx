@@ -2,7 +2,9 @@
 import type { FocusKind } from '@gcportrait/model';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 
+import { cx } from '../../classNames';
 import { useAppState, useDiagramActions, usePopover, useScene } from '../../state';
+import controls from '../../ui/controls.module.css';
 import { Popover } from '../../ui/Popover';
 import { Select } from '../../ui/Select';
 import {
@@ -181,7 +183,7 @@ export function FocusControl(): ReactElement {
             {focus === undefined ? null : (
               <button
                 type="button"
-                className={styles.clear}
+                className={cx(controls.control, styles.clear)}
                 onClick={() => {
                   setFocus(null);
                   close();

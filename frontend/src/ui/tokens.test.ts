@@ -72,7 +72,10 @@ describe('the app chrome uses the chrome tokens only', () => {
   });
 });
 
-describe('the filled primary buttons', () => {
+describe('the filled primary button', () => {
+  const CONTROLS = withoutComments(readSource('ui/controls.module.css'));
+  const COMPONENTS = sourceFiles('', (path) => path.endsWith('.tsx') && !path.endsWith('.test.tsx'));
+
   it.each([
     ['light', LIGHT],
     ['dark', DARK],
@@ -84,15 +87,51 @@ describe('the filled primary buttons', () => {
     expect(ratio, theme).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('the top bar’s Export button is one: the primary fill, on-primary text, and no fill while it is inert', () => {
-    const css = withoutComments(readSource('shell/topbar/ExportMenu.module.css'));
-    const control = block(css, '.control {');
-    expect(control).toContain('background: var(--color-primary);');
-    expect(control).toContain('color: var(--color-on-primary);');
-    expect(control).toContain('border: 1px solid var(--color-primary);');
-    const inert = block(css, ".control[aria-disabled='true'] {");
-    expect(inert).toContain('background: var(--color-surface);');
-    expect(inert).toContain('color: var(--color-on-surface-variant);');
+  it('is a compound selector on the control in the primitive’s sheet, and an inert one keeps the inert look', () => {
+    // `.control.primary` outranks `.control` (and any page's single class), so the variant never depends on the
+    // order the bundler emits the sheets in; `:not([aria-disabled='true'])` leaves the control's inert look alone.
+    const primary = block(CONTROLS, ".control.primary:not([aria-disabled='true']) {");
+    expect(primary).toContain('border-color: var(--color-primary);');
+    expect(primary).toContain('background: var(--color-primary);');
+    expect(primary).toContain('color: var(--color-on-primary);');
+    expect(primary).toContain('font-weight: var(--font-weight-medium);');
+  });
+
+  it.each(SHEETS.filter((path) => path !== 'ui/controls.module.css'))(
+    '%s defines no primary class of its own, which would compete with the control’s rule by emit order',
+    (path) => {
+      expect(withoutComments(readSource(path))).not.toMatch(/\.primary\b/);
+    },
+  );
+
+  it('is named through the primitive’s sheet wherever a component asks for it', () => {
+    // A page sheet's `styles.primary` would be undefined (no sheet but the primitive's has the class) and drop silently.
+    const uses = COMPONENTS.flatMap((path) =>
+      [...readSource(path).matchAll(/\b(\w+)\.primary\b/g)].map((match) => `${path}: ${match[1] ?? ''}`),
+    );
+    expect(uses.length).toBeGreaterThan(0);
+    for (const use of uses) expect(use).toMatch(/: controls$/);
+  });
+});
+
+describe('the pressed toggle control', () => {
+  const CONTROLS = withoutComments(readSource('ui/controls.module.css'));
+
+  it('is a compound selector on the control in the primitive’s sheet, and an inert one keeps the inert look', () => {
+    const pressed = block(CONTROLS, ".control[aria-pressed='true']:not([aria-disabled='true']) {");
+    expect(pressed).toContain('border-color: var(--color-primary);');
+    expect(pressed).toContain('color: var(--color-primary);');
+  });
+
+  it.each([
+    ['light', LIGHT],
+    ['dark', DARK],
+  ] as const)('%s: the primary colour reaches 4.5 : 1 on the control’s fill', (theme, declarations) => {
+    const primary = token(declarations, '--color-primary');
+    expect(
+      contrastRatio(primary, token(declarations, '--color-surface')),
+      `${theme}: on --color-surface`,
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });
 

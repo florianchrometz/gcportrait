@@ -11,7 +11,9 @@
 import type { DemoSize } from '@gcportrait/model';
 import { useEffect, useId, useRef, useState, type ReactElement } from 'react';
 
+import { cx } from '../classNames';
 import { useDiagramActions } from '../state';
+import controls from '../ui/controls.module.css';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { JobStatus, type JobState } from './JobStatus';
 import { DEMO_SIZE_INFO, demoAbout, demoLabel } from './labels';
@@ -95,7 +97,7 @@ export function DemoEntry({ action }: { readonly action: string }): ReactElement
       <div className={styles.row}>
         <button
           type="button"
-          className={styles.primary}
+          className={cx(controls.control, controls.primary)}
           aria-describedby={aboutId}
           aria-disabled={busy ? true : undefined}
           onClick={start}

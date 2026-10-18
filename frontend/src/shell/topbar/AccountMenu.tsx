@@ -16,8 +16,8 @@ import { useAuth } from '../../auth/context';
 import { accountInitial, accountName, clockTime } from '../../auth/labels';
 import type { SessionState } from '../../auth/types';
 import { cx } from '../../classNames';
-import actions from '../../snapshots/Snapshots.module.css';
 import { useAppState, usePopover, useSheet } from '../../state';
+import controls from '../../ui/controls.module.css';
 import { Popover } from '../../ui/Popover';
 import { MORE_SHEET } from './sheets';
 
@@ -89,18 +89,26 @@ export function AccountMenu(): ReactElement | null {
                   </div>
                 </div>
                 {session.problem === null || !(needed || expired) ? null : (
-                  <p role="alert" className={actions.alert}>
+                  <p role="alert" className={styles.alert}>
                     {session.problem.message}
                   </p>
                 )}
                 <div className={styles.row}>
                   {needed ? (
-                    <button type="button" className={actions.primary} onClick={auth.renew}>
+                    <button
+                      type="button"
+                      className={cx(controls.control, controls.primary)}
+                      onClick={auth.renew}
+                    >
                       Stay signed in
                     </button>
                   ) : null}
                   {expired ? (
-                    <button type="button" className={actions.primary} onClick={auth.signIn}>
+                    <button
+                      type="button"
+                      className={cx(controls.control, controls.primary)}
+                      onClick={auth.signIn}
+                    >
                       Sign in again
                     </button>
                   ) : null}

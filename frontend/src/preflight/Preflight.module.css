@@ -24,41 +24,6 @@
   gap: var(--space-3);
 }
 
-/* The primary action, filled (on-primary on primary: light 4.51 : 1, dark 6.12 : 1); inert: dashed. */
-.primary {
-  height: var(--control-height);
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--control-radius);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
-.primary[aria-disabled='true'] {
-  border-style: dashed;
-  border-color: var(--color-outline);
-  background: var(--color-surface-container);
-  color: var(--color-on-surface-variant);
-  cursor: not-allowed;
-}
-
-.secondary {
-  height: var(--control-height);
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-outline);
-  border-radius: var(--control-radius);
-  background: var(--color-surface);
-  color: var(--color-on-surface);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
-.secondary:hover {
-  background: var(--color-surface-container);
-}
-
 .note {
   color: var(--color-on-surface-variant);
   font-size: var(--font-size-control);
@@ -230,21 +195,6 @@
   font-size: var(--font-size-control);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-}
-
-.copy {
-  height: var(--control-height);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-outline);
-  border-radius: var(--control-radius);
-  background: var(--color-surface);
-  color: var(--color-on-surface);
-  font-size: var(--font-size-control);
-  cursor: pointer;
-}
-
-.copy:hover {
-  background: var(--color-surface-container);
 }
 
 /* What the Copy button copies unfilled (or which value is not of its format), under the command; it describes the

@@ -7,9 +7,9 @@
  * open the button still works: a press brings the window back (session.ts), for one lost behind others.
  */
 import { useEffect, useId, useRef, type ReactElement } from 'react';
-
-import actions from '../snapshots/Snapshots.module.css';
+import { cx } from '../classNames';
 import { useAppState } from '../state';
+import controls from '../ui/controls.module.css';
 import { inertProps } from '../ui/dom';
 import styles from './Auth.module.css';
 import { useAuth } from './context';
@@ -45,7 +45,12 @@ export function SignInCard(): ReactElement {
           : 'Google sign-in is not configured on this instance.';
     return (
       <div className={styles.row}>
-        <button type="button" className={actions.primary} {...inertProps(reason)} aria-describedby={noteId}>
+        <button
+          type="button"
+          className={cx(controls.control, controls.primary)}
+          {...inertProps(reason)}
+          aria-describedby={noteId}
+        >
           {SIGN_IN_ACTION}
         </button>
         <span id={noteId} className={styles.note}>
@@ -94,7 +99,7 @@ export function SignInCard(): ReactElement {
         <button
           ref={signInRef}
           type="button"
-          className={actions.primary}
+          className={cx(controls.control, controls.primary)}
           aria-describedby={noteId}
           onClick={auth.signIn}
         >
@@ -105,8 +110,8 @@ export function SignInCard(): ReactElement {
         {busy ? BUSY_NOTE : (session.notice ?? '')}
       </p>
       {session.problem === null ? null : (
-        <div role="alert" className={actions.alert}>
-          <p className={actions.alertTitle}>Not signed in</p>
+        <div role="alert" className={styles.alert}>
+          <p className={styles.alertTitle}>Not signed in</p>
           <p>{session.problem.message}</p>
         </div>
       )}

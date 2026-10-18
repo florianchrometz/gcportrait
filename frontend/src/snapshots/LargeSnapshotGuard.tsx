@@ -45,7 +45,6 @@ import {
 } from './largeSnapshot';
 import styles from './LargeSnapshotGuard.module.css';
 import { useSnapshotListing } from './SnapshotLibraryProvider';
-import snapshotStyles from './Snapshots.module.css';
 
 export interface LargeSnapshotGuard {
   /**
@@ -184,7 +183,7 @@ function LargeSnapshotDialog({ asked }: { readonly asked: Asked }): ReactElement
           </button>
           <button
             type="button"
-            className={cx(snapshotStyles.primary, styles.draw)}
+            className={cx(controls.control, controls.primary, styles.draw)}
             onClick={() => {
               asked.answer(true, silence);
             }}

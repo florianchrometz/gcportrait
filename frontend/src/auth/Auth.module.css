@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /* The sign-in surfaces (src/auth/ and the top bar's AccountMenu). App chrome tokens only (skill
-   gcp-diagram-style §9), so both themes follow. The filled primary button and the alert come from
-   the snapshots' sheet (the Connect page's other primary action, "Try the demo", looks the same). */
+   gcp-diagram-style §9), so both themes follow. */
 
 .stack {
   display: grid;
@@ -124,4 +123,20 @@
   font-family: var(--font-family-mono);
   font-size: var(--font-size-control);
   overflow-wrap: anywhere;
+}
+
+.alert {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-error);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+}
+
+.alertTitle {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
 }

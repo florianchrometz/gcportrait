@@ -36,6 +36,7 @@ import { formatUtc } from '../snapshots/labels';
 import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
 import { useAppState, useDiagramActions } from '../state';
 import { inertProps } from '../ui/dom';
+import controls from '../ui/controls.module.css';
 import { copyCommand, DESCRIBE_COMMAND, exportCommand } from './commands';
 import styles from './Import.module.css';
 import { ImportStatus } from './ImportStatus';
@@ -146,7 +147,7 @@ export function LoadExport(): ReactElement {
             <button
               ref={fileImport.chooseButton}
               type="button"
-              className={styles.secondary}
+              className={controls.control}
               aria-describedby={ids.drop}
               {...inertProps(busy ? 'An import is running' : undefined)}
               onClick={fileImport.openFilePicker}
@@ -184,7 +185,7 @@ export function LoadExport(): ReactElement {
               <div className={styles.row}>
                 <button
                   type="button"
-                  className={styles.primary}
+                  className={cx(controls.control, controls.primary)}
                   onClick={() => {
                     setSnapshot(fileNotes.ref);
                   }}
@@ -218,12 +219,17 @@ export function LoadExport(): ReactElement {
             }}
           />
           <div className={styles.row}>
-            <button type="button" className={styles.primary} {...inertProps(uriBlocked)} onClick={read}>
+            <button
+              type="button"
+              className={cx(controls.control, controls.primary)}
+              {...inertProps(uriBlocked)}
+              onClick={read}
+            >
               {READ_ACTION}
             </button>
             <button
               type="button"
-              className={styles.secondary}
+              className={controls.control}
               aria-describedby={ids.sidecar}
               {...inertProps(busy ? 'An import is running' : undefined)}
               onClick={() => {

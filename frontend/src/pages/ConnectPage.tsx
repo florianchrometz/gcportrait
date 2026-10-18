@@ -14,6 +14,7 @@ import { PullNow } from '../import/PullNow';
 import { ScopeStep } from '../scope/ScopeStep';
 import { DemoEntry } from '../snapshots/DemoEntry';
 import { useAppState } from '../state';
+import controls from '../ui/controls.module.css';
 import { INERT_HINT } from '../ui/dom';
 import { SELF_HOST_GUIDE_URL } from '../projectSite';
 import styles from './ConnectPage.module.css';
@@ -150,7 +151,7 @@ function SelfHost() {
         &ldquo;Open in Cloud Shell&rdquo; button for those without a terminal.
       </p>
       <p>
-        <a className={styles.cta} href={SELF_HOST_GUIDE_URL}>
+        <a className={cx(controls.control, controls.primary, styles.cta)} href={SELF_HOST_GUIDE_URL}>
           Deploy gcportrait to your own Google Cloud project
         </a>
       </p>

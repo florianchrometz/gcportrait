@@ -2,10 +2,11 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { Link } from 'react-router';
 
+import { cx } from '../classNames';
 import { useLegalPages } from '../demoOnly';
-import actions from '../snapshots/Snapshots.module.css';
 import page from '../pages/Page.module.css';
 import { useDocumentTitle } from '../pages/useDocumentTitle';
+import controls from '../ui/controls.module.css';
 import { useAppState } from '../state';
 import { fetchLegalTexts, legalTarget, type LegalPageId, type LegalTexts } from './api';
 import { ExternalLegalLink } from './ExternalLegalLink';
@@ -105,7 +106,7 @@ export function LegalPage({ id }: { readonly id: LegalPageId }): ReactElement {
         <p>
           <button
             type="button"
-            className={actions.primary}
+            className={cx(controls.control, controls.primary)}
             onClick={() => {
               setAttempt((n) => n + 1);
             }}

@@ -85,21 +85,6 @@
   font-size: var(--font-size-footnote);
 }
 
-.reset {
-  height: var(--control-height);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-outline);
-  border-radius: var(--control-radius);
-  background: var(--color-surface);
-  color: var(--color-on-surface);
-  font-size: var(--font-size-control);
-  cursor: pointer;
-}
-
-.reset:hover {
-  background: var(--color-surface-container);
-}
-
 /* The active-filter count on the button: a filled pill in the primary colour, the number in on-primary
    (4.5:1 or better in both themes); the words for it are in the button's name. */
 .badge {

@@ -380,11 +380,13 @@ shows its ring, the inert props, controlled open state) and `typeahead.ts` the t
 with the typed text; a repeated character cycles; forgotten after 500 ms).
 
 `controls.module.css` is the controls' own look: `control` (the trigger and button metrics), its inert state,
-and `danger`, the destructive variant every Delete button takes (`cx(controls.control, controls.danger)`: the
-error colour as text and outline). The variant is a compound rule on `control`, so it outranks the control's
-rule and any page's class whatever order the stylesheets are emitted in, and an inert one keeps the inert
-look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and that no other sheet defines a
-`danger` class, and `e2e/tests/snapshots.spec.ts` reads the colours in a browser in both themes.
+its pressed state (`[aria-pressed='true']`), `primary`, the filled call to action every primary button takes
+(`cx(controls.control, controls.primary)`), and `danger`, the destructive variant every Delete button takes
+(`cx(controls.control, controls.danger)`: the error colour as text and outline). The variants are compound
+rules on `control`, so they outrank the control's rule and any page's class whatever order the stylesheets are
+emitted in, and an inert one keeps the inert look; `ui/tokens.test.ts` holds the rules, their 4.5 : 1 on the
+control's fills and that no other sheet defines a `danger` or `primary` class, and
+`e2e/tests/snapshots.spec.ts` reads the colours in a browser in both themes.
 
 ## Theme and token policy
 

@@ -15,6 +15,7 @@ import { cx } from '../classNames';
 import { useCommandVariables } from '../commands/useCommandVariables';
 import { copiedMessage, resolveCommand, unfilledNote } from '../commands/values';
 import { VariableField } from '../commands/VariableField';
+import controls from '../ui/controls.module.css';
 import styles from './Preflight.module.css';
 
 export interface CommandBlockProps {
@@ -68,7 +69,7 @@ export function CommandBlock({ command, context }: CommandBlockProps): ReactElem
       </pre>
       <button
         type="button"
-        className={styles.copy}
+        className={cx(controls.control, styles.copy)}
         aria-label={`Copy the command that ${purpose}${context === undefined ? '' : ` (${context})`}`}
         aria-describedby={note === '' ? undefined : noteId}
         onClick={() => {

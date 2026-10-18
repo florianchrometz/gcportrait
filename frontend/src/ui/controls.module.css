@@ -37,6 +37,31 @@
   background: var(--color-surface);
 }
 
+/* The highlighted primary action: `cx(controls.control, controls.primary)`, the primary fill and on-primary
+   text (light 4.51 : 1, dark 6.12 : 1; ui/tokens.test.ts). As with danger, the compound selector outranks
+   .control and any page's single class; an inert one keeps the inert look. */
+.control.primary:not([aria-disabled='true']) {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.control.primary:not([aria-disabled='true']):hover,
+.control.primary:not([aria-disabled='true'])[aria-expanded='true'] {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--color-on-surface) 12%, transparent),
+    color-mix(in srgb, var(--color-on-surface) 12%, transparent)
+  );
+}
+
+/* A pressed toggle ("Play extras", playback play): the primary colour as outline and text. */
+.control[aria-pressed='true']:not([aria-disabled='true']) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
 /* A destructive action (every Delete button): `cx(controls.control, controls.danger)`, the error colour as
    text and outline. On the control's fills it reaches, light, 4.77 : 1 on the surface and 4.53 on the
    hover's surface container; dark, 6.90 and 5.44. The compound selector outranks `.control` and any page's

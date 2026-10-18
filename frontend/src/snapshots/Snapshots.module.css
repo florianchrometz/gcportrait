@@ -20,26 +20,6 @@
   font-size: var(--font-size-control);
 }
 
-/* The primary action: filled in the primary colour (text on it: light 4.51 : 1, dark 6.12 : 1). */
-.primary {
-  height: var(--control-height);
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--control-radius);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
-.primary[aria-disabled='true'] {
-  border-style: dashed;
-  border-color: var(--color-outline);
-  background: var(--color-surface-container);
-  color: var(--color-on-surface-variant);
-  cursor: progress;
-}
-
 .status {
   display: grid;
   gap: var(--space-2);

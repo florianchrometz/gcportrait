@@ -23,6 +23,7 @@ import {
 } from '../../views/filterForm';
 import { PickerField, type PickerOption } from '../../views/PickerField';
 import { useViewChoicesState } from '../../views/useViewChoices';
+import controls from '../../ui/controls.module.css';
 import styles from './FiltersControl.module.css';
 
 /**
@@ -218,7 +219,7 @@ function WorkingFilters({ inert }: { readonly inert: string | undefined }): Reac
             </span>
             <button
               type="button"
-              className={styles.reset}
+              className={controls.control}
               onClick={() => {
                 change(() => NO_FILTERS);
               }}

@@ -32,6 +32,7 @@ import { markerTitle, readout, valueText } from '../../timeline/words';
 import { SegmentedControl } from '../../ui/SegmentedControl';
 import { useScreen, type Screen } from '../../ui/screen';
 import { Slider } from '../../ui/Slider';
+import controls from '../../ui/controls.module.css';
 import styles from './TimelineBar.module.css';
 
 /**
@@ -169,7 +170,7 @@ export function TimelineBar(): ReactElement {
       <div key="buttons" className={styles.buttons}>
         <button
           type="button"
-          className={styles.iconButton}
+          className={cx(controls.control, styles.iconButton)}
           aria-label="Previous day"
           title="Previous day ( [ )"
           aria-keyshortcuts="["
@@ -183,7 +184,7 @@ export function TimelineBar(): ReactElement {
         <button
           ref={playback.buttonRef}
           type="button"
-          className={styles.iconButton}
+          className={cx(controls.control, styles.iconButton)}
           aria-label={playback.playing ? 'Pause playback' : 'Play through the days'}
           title={playback.playing ? 'Pause playback' : (playback.unavailable ?? 'Play through the days')}
           aria-pressed={playback.playing}
@@ -196,7 +197,7 @@ export function TimelineBar(): ReactElement {
         </button>
         <button
           type="button"
-          className={styles.iconButton}
+          className={cx(controls.control, styles.iconButton)}
           aria-label="Next day"
           title="Next day ( ] )"
           aria-keyshortcuts="]"
@@ -246,7 +247,7 @@ export function TimelineBar(): ReactElement {
         {said.retry && positionDay !== null ? (
           <button
             type="button"
-            className={styles.textButton}
+            className={controls.control}
             onClick={() => {
               retry(positionDay);
             }}
@@ -261,7 +262,7 @@ export function TimelineBar(): ReactElement {
         {model?.ticks.some((tick) => tick.extra !== undefined) !== true ? null : (
           <button
             type="button"
-            className={styles.textButton}
+            className={controls.control}
             aria-pressed={playExtras}
             title={
               playExtras
