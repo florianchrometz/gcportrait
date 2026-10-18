@@ -14,22 +14,24 @@ import type { DemoHistory } from '@gcportrait/demo-data';
 import { migrateSnapshot, SnapshotFormatError, type Snapshot, type SnapshotRef } from '@gcportrait/model';
 
 import { DataError, loadDemoSnapshot, type SnapshotLoader } from '../diagram/pipeline/dataHandler';
-import { openDatabase, type GcportraitDB, type StoredSnapshot } from '../storage/db';
+import { OPEN_TIMEOUT_MS, openDatabase, type GcportraitDB, type StoredSnapshot } from '../storage/db';
 import { pickExtra, type TimelineOwner } from '../timeline/extraTicks';
 import type { StoredExtra } from '../timeline/worker/source';
 import { decodeJson } from './codec';
 import { parseHistory } from './worker/parse';
 
 let opening: Promise<GcportraitDB | null> | null = null;
+let openTimeoutMs = OPEN_TIMEOUT_MS;
 
 function database(): Promise<GcportraitDB | null> {
-  opening ??= openDatabase();
+  opening ??= openDatabase(openTimeoutMs);
   return opening;
 }
 
-/** Forgets the open connection (tests replace IndexedDB between cases). */
-export function resetStoredSnapshotDatabase(): void {
+/** Forgets the open connection and sets the next opens' timeout (tests replace IndexedDB between cases). */
+export function resetStoredSnapshotDatabase(timeoutMs = OPEN_TIMEOUT_MS): void {
   opening = null;
+  openTimeoutMs = timeoutMs;
 }
 
 async function read(ref: string): Promise<StoredSnapshot | undefined> {

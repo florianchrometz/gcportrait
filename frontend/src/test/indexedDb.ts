@@ -27,9 +27,9 @@ export interface FreshIndexedDb {
  * Forgets the snapshot loader's kept connection. The loader is imported only here, for the files that ask for it: it
  * brings in the diagram's data handler, the graph and the catalog, which the other files' tests never load.
  */
-async function resetSnapshotLoader(): Promise<void> {
+async function resetSnapshotLoader(timeoutMs?: number): Promise<void> {
   const { resetStoredSnapshotDatabase } = await import('../snapshots/load');
-  resetStoredSnapshotDatabase();
+  resetStoredSnapshotDatabase(timeoutMs);
 }
 
 /**
@@ -42,7 +42,7 @@ export function useFreshIndexedDb(options: { readonly resetSnapshots?: boolean }
   const closing: (() => unknown)[] = [];
   beforeEach(async () => {
     globalThis.indexedDB = new IDBFactory();
-    if (options.resetSnapshots === true) await resetSnapshotLoader();
+    if (options.resetSnapshots === true) await resetSnapshotLoader(TEST_OPEN_TIMEOUT_MS);
   });
   afterEach(async () => {
     for (const close of closing.splice(0)) await close();

@@ -1,20 +1,33 @@
 // SPDX-License-Identifier: MIT
-import { render, type RenderResult } from '@testing-library/react';
+import { cleanup, render, type RenderResult } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router';
+import { afterEach } from 'vitest';
 
 import type { PublicConfig } from '../api/config';
 import { App } from '../App';
 import type { DiagramWorkersFactory } from '../diagram/pipeline/workers';
 import type { SnapshotLibrary } from '../snapshots/library';
-import type { DatabaseConnection } from '../storage/connection';
+import { createDatabaseConnection, type DatabaseConnection } from '../storage/connection';
+import { openDatabase, type GcportraitDB } from '../storage/db';
 import { DEFAULT_SOURCE_URL } from '../source';
 import { createMemoryPreferenceStore, type PreferenceStore } from '../storage/preferences';
 import { SavedViewStoreContext, type SavedViewStore } from '../views/savedViewStore';
 import { DRAW_TIMEOUT } from './diagram';
+import { TEST_OPEN_TIMEOUT_MS } from './indexedDb';
 import { currentLocation, hashOf, LocationProbe } from './location';
 
 export { currentLocation } from './location';
+
+const ownedConnections = new Set<() => void>();
+
+afterEach(() => {
+  try {
+    cleanup();
+  } finally {
+    for (const close of ownedConnections) close();
+  }
+});
 
 export type RenderAppOptions = {
   readonly demo?: boolean;
@@ -27,7 +40,7 @@ export type RenderAppOptions = {
   readonly diagramWorkers?: DiagramWorkersFactory;
   /** The snapshot library; by default one that keeps nothing and cannot generate. */
   readonly snapshots?: SnapshotLibrary;
-  /** The page's IndexedDB connection (the tick cache on the Snapshots page); by default the browser's. */
+  /** The page's IndexedDB connection; by default test-owned, with TEST_OPEN_TIMEOUT_MS and automatic cleanup. */
   readonly database?: DatabaseConnection;
   /** The saved views; by default the app's own store over the page's database. */
   readonly savedViews?: SavedViewStore;
@@ -62,6 +75,30 @@ export interface AppRender extends RenderResult {
  * render of the unit tests is (setup.ts).
  */
 export function renderApp(path: string, options: RenderAppOptions = {}): AppRender {
+  const opened = new Map<GcportraitDB, () => void>();
+  const close = (): void => {
+    for (const [db, onClose] of opened) {
+      db.close();
+      onClose();
+    }
+    opened.clear();
+    ownedConnections.delete(close);
+  };
+  const database =
+    options.database ??
+    createDatabaseConnection(async (onClose) => {
+      if (!ownedConnections.has(close)) return null;
+      const db = await openDatabase(TEST_OPEN_TIMEOUT_MS, onClose);
+      if (db !== null) {
+        if (!ownedConnections.has(close)) {
+          db.close();
+          return null;
+        }
+        opened.set(db, onClose);
+      }
+      return db;
+    });
+  if (options.database === undefined) ownedConnections.add(close);
   const app: ReactElement = (
     <MemoryRouter initialEntries={[path]}>
       <App
@@ -73,7 +110,7 @@ export function renderApp(path: string, options: RenderAppOptions = {}): AppRend
         preferences={options.preferences ?? createMemoryPreferenceStore()}
         diagramWorkers={options.diagramWorkers}
         snapshots={options.snapshots}
-        database={options.database}
+        database={database}
       />
       <LocationProbe />
     </MemoryRouter>
@@ -86,5 +123,16 @@ export function renderApp(path: string, options: RenderAppOptions = {}): AppRend
     ),
   );
   const location = (): string => currentLocation(result.container);
-  return { ...result, location, hash: () => hashOf(location()) };
+  return {
+    ...result,
+    unmount() {
+      try {
+        result.unmount();
+      } finally {
+        close();
+      }
+    },
+    location,
+    hash: () => hashOf(location()),
+  };
 }

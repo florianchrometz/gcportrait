@@ -13,7 +13,8 @@ import { dataHarness, TEST_VIEWPORT } from '../diagram/testing/dataHarness';
 import { preparedDemo } from '../diagram/testing/demoData';
 import { demoExportNdjson } from '../import/fixtures';
 import type { GcportraitDB } from '../storage/db';
-import { useFreshIndexedDb } from '../test/indexedDb';
+import * as storage from '../storage/db';
+import { TEST_OPEN_TIMEOUT_MS, useFreshIndexedDb } from '../test/indexedDb';
 import { GZIP_TYPE, decodeJson } from './codec';
 import {
   createSnapshotLibrary,
@@ -67,6 +68,37 @@ function library(
 
 /** A stored export record saved at `savedAt`. */
 const record = (id: string, savedAt: string) => storedRecord(id, { source: 'export', savedAt });
+
+describe('the stored snapshot opener', () => {
+  it('uses the test timeout for persisted reads and a closed-connection retry', async () => {
+    const db = await database();
+    const saved = record(IMPORTED, '2026-10-10T10:00:00Z');
+    await db.put('snapshots', saved);
+    const open = vi.spyOn(storage, 'openDatabase');
+    expect(await storedSnapshotVersion(IMPORTED)).toBe(saved.meta.savedAt);
+    expect(open).toHaveBeenLastCalledWith(TEST_OPEN_TIMEOUT_MS);
+    const first = open.mock.settledResults[0];
+    if (first?.type !== 'fulfilled' || first.value === null) throw new Error('expected IndexedDB to open');
+    first.value.close();
+    expect(await storedSnapshotVersion(IMPORTED)).toBe(saved.meta.savedAt);
+    expect(open).toHaveBeenCalledTimes(2);
+    expect(open).toHaveBeenLastCalledWith(TEST_OPEN_TIMEOUT_MS);
+    const second = open.mock.settledResults[1];
+    if (second?.type !== 'fulfilled' || second.value === null)
+      throw new Error('expected IndexedDB to reopen');
+    second.value.close();
+  });
+
+  it('restores the production timeout when reset without an override', async () => {
+    resetStoredSnapshotDatabase();
+    const open = vi.spyOn(storage, 'openDatabase');
+    expect(await storedSnapshotVersion(IMPORTED)).toBe('missing');
+    expect(open).toHaveBeenCalledExactlyOnceWith(storage.OPEN_TIMEOUT_MS);
+    const opened = open.mock.settledResults[0];
+    if (opened?.type !== 'fulfilled' || opened.value === null) throw new Error('expected IndexedDB to open');
+    opened.value.close();
+  });
+});
 
 describe('the repository', () => {
   it('lists, reads, replaces and deletes records in IndexedDB, the newest first', async () => {
