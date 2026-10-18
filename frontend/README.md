@@ -258,11 +258,8 @@ panel. A disclosure notice appearing or being dismissed fits the drawing to the 
 resting-camera guard. A camera the person moved stays where they put it. Only `data-canvas-overlay` marks
 occupied room; the bar at rest has no such marker and does not change the fit.
 
-Tests: `store.test.ts` (the hash round trip after every action, push and replace, unknown keys, derived
-selection, other slices never touching the hash), `AppStateProvider.test.tsx` (the binding in a router: PUSH
-and REPLACE navigations, Back, links, the query string), `pipeline.test.ts` (in-process workers: results,
-supersede, the measured size, hysteresis, errors), `diagram/autoDetail.test.ts`, `diagram/camera.test.ts` and
-`diagram/DiagramCanvas.camera.test.tsx`.
+Tests: `store.test.ts`, `AppStateProvider.test.tsx`, `pipeline.test.ts`, `diagram/autoDetail.test.ts`,
+`diagram/camera.test.ts` and `diagram/DiagramCanvas.camera.test.tsx`.
 
 ## Top bar (`src/shell/topbar/`)
 
@@ -403,33 +400,9 @@ way). The Snapshots page's tables, whose rows a phone could show only by scrolli
 of cards there, one per row, each column a labelled line of a description list over the row's buttons
 (`snapshots/RowTable.tsx`, by `useScreen()`; the same columns and the same buttons either way).
 
-**Checks.** `shell/parity.test.tsx` renders the diagram page of demo S with a project selected, the Connect
-page of a live instance signed in, the Permissions page and the Snapshots page with two snapshots stored (its
-rows' facts the same in a table and on a card) at 1440, 820 and 375 px (`test/viewport.ts`: a `matchMedia` for
-a width), opens every fold, menu, popover and dialog of the chrome,
-and fails on a control (a button, a link, a field, a menu item, a radio button, a slider or the drawer's
-splitter, by role and accessible name) that the desktop offers and a narrower width does not, on a second copy
-of one, and on any control added but View and More. It sees the DOM and the accessibility tree only: whether a
-control is in sight and can be tapped is the browser check's. `pnpm --filter @gcportrait/frontend mobile` (the
-e2e suite's `mobile` project, `e2e/tests/mobile.spec.ts`) measures the layouts in Chromium at phone and tablet
-widths in both themes and on phones turned sideways (568 × 320 to 844 × 390), with every menu and panel of
-View and More opened, on a live instance signed in and on the Snapshots page with a snapshot stored (a card
-per row on a phone, where no box scrolls sideways, not even a table's; the tables whole on a tablet): sideways
-scrolling, a page laid out wider than the window or scrolling up and down by itself, text squeezed into a
-column a few characters wide, the top bar's items, the timeline bar's parts (none over another), the drawer
-within the canvas, 44-pixel targets, every control one reaches with Tab wholly in sight when focused (its
-whole box inside the window, and inside the canvas when it lies over it) and tappable at its centre and just
-inside each edge, the canvas's room (the share of it an open drawer, View or More sheet
-leaves in view, and View opened over the drawer closing it), the drawer's Close button whole inside the canvas
-as the drawer opens on a phone turned sideways, with the timeline bar on one line meanwhile, and there the
-disclosure bar's row hidden on a phone's canvas under 20.25rem or else clear of each card the drawer is of,
-axe; and a theme picked in More, Sign out from More, a long trail, the sheet's heights, `+` and `0` from an
-external keyboard with the drawer open (the focused card stays above it and the disclosure bar's row riding
-above it, and the drawing is fitted there), View opened, a lens picked in it and View closed by taps (the
-drawing fitted whole below the sheet, the lens's view too, then the whole canvas again) and the canvas's touch
-input by finger. The same project runs
-`e2e/tests/touch.spec.ts` at 390 × 844: the canvas's gestures by finger (a pan, a pinch, taps, double taps, a
-long press) and a mouse's drag and double-click on the same page.
+**Checks.** `shell/parity.test.tsx` (widths through `test/viewport.ts`, a `matchMedia` for a width) and
+`e2e/tests/mobile.spec.ts`, run with `e2e/tests/touch.spec.ts` by `pnpm --filter @gcportrait/frontend mobile`
+(frontend/AGENTS.md, "Phones, tablets and desktops", says what each holds).
 
 ## UI primitives (`src/ui/`)
 
@@ -610,12 +583,9 @@ bundle; [docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
   below); `/impressum` and `/privacy` link to them; the Connect page's privacy note does too. A live instance
   whose backend reports `LEGAL_IMPRESSUM_URL` or `LEGAL_PRIVACY_URL` links them the same way.
 
-`src/api/staticConfig.test.ts`, `src/routes.test.ts`, `src/pages/ConnectPage.staticDemo.test.tsx` (the whole
-app with the static configuration: no request at all, the footer, `/impressum` and `/privacy`, axe; its
-Connect page and the Permissions page's note are a demo-only instance's, which
-`pages/ConnectPage.demoOnly.test.tsx` checks for both sources of the configuration) and
-`scripts/static-demo.test.ts` at the root cover it; `pnpm --filter @gcportrait/website demo` drives the built
-demo in a browser.
+Tests: `src/api/staticConfig.test.ts`, `src/routes.test.ts`, `src/pages/ConnectPage.staticDemo.test.tsx`,
+`src/pages/ConnectPage.demoOnly.test.tsx` and `scripts/static-demo.test.ts` at the root;
+`pnpm --filter @gcportrait/website demo` drives the built demo in a browser.
 
 ## Branding and the non-affiliation notice (`src/branding.ts`)
 
@@ -677,26 +647,23 @@ what the instance publishes, as `legal` in `GET /api/config` (or the static demo
 | neither, or the build-time demo mode (no backend) | nothing; with no page at all the footer has no "Legal" navigation |
 
 The links take the footer's text colour, underlined, with the chrome focus ring, like the footer's other
-links. `legal/LegalPage.test.tsx` and `pages/ConnectPage.staticDemo.test.tsx` cover the three cases with axe;
-`e2e/tests/shell.spec.ts` drives them in a browser (the configuration answered in the page), in both themes,
-and follows a link elsewhere into a new tab, the app's tab staying where it was.
+links. Tests: `legal/LegalPage.test.tsx`, `pages/ConnectPage.staticDemo.test.tsx` and
+`e2e/tests/shell.spec.ts`.
 
 **Favicon.** The app's favicon is gcportrait's mark from its one source, `brand/icon.svg` at the repository
 root ([brand/README.md](../brand/README.md)), as it is: `brandFavicon` in `vite.config.ts` writes it into
-every build as `favicon.svg`, serves it there in development, and adds
-`<link rel="icon" href="BASEfavicon.svg" type="image/svg+xml">` to `index.html` under the build's base path
-(`/favicon.svg` for an instance, whose backend serves it under `img-src 'self'`; `/demo/favicon.svg` in the
-static demo). There is no copy in the tree (no `public/` folder). One file serves both themes: its `<style>`
-carries the dark colours under `prefers-color-scheme: dark`. The top bar shows the same file beside the
-wordmark, as an `<img>` with an empty `alt` from `BASE_URL` (`import.meta.env.BASE_URL` + `favicon.svg`), 24
-pixels square and centred on the wordmark, with the website header's gap (0.6rem) before the name
-(`TopBar.test.tsx` checks the path in an instance's build and in the static demo's, `TopBar.css.test.ts` the
-size and the gap). An image's `prefers-color-scheme` follows the `color-scheme` the theme sets on `<html>`, so
-the mark takes the app's theme even when it differs from the system's (`e2e/tests/shell.spec.ts`). There is no
-PNG fallback: it would be a second, derived file to keep in step with the source, and a PNG cannot follow the
-theme; a browser without SVG favicons shows its default icon. `e2e/tests/shell.spec.ts` checks the link, that
-the served file is `brand/icon.svg` byte for byte, and that the browser draws its light and dark tints by
-colour scheme; `scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
+every build as `favicon.svg`, serves it there in development, and adds `<link rel="icon"
+href="BASEfavicon.svg" type="image/svg+xml">` to `index.html` under the build's base path (`/favicon.svg` for
+an instance, whose backend serves it under `img-src 'self'`; `/demo/favicon.svg` in the static demo). There is
+no copy in the tree (no `public/` folder). One file serves both themes: its `<style>` carries the dark colours
+under `prefers-color-scheme: dark`. The top bar shows the same file beside the wordmark, as an `<img>` with an
+empty `alt` from `BASE_URL` (`import.meta.env.BASE_URL` + `favicon.svg`), 24 pixels square and centred on the
+wordmark, with the website header's gap (0.6rem) before the name. An image's `prefers-color-scheme` follows
+the `color-scheme` the theme sets on `<html>`, so the mark takes the app's theme even when it differs from the
+system's. There is no PNG fallback: it would be a second, derived file to keep in step with the source, and a
+PNG cannot follow the theme; a browser without SVG favicons shows its default icon. Tests: `TopBar.test.tsx`,
+`TopBar.css.test.ts` and `e2e/tests/shell.spec.ts` (the served file is `brand/icon.svg` byte for byte);
+`scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
 
 ## Sign-in (`src/auth/`)
 
@@ -783,19 +750,9 @@ the store (`useAppState((s) => s.connect)`), and make each request with `fetchWi
 init)` inside the event handler or effect that needs it; never keep the token in a variable that outlives the
 request, in the store or in a component's state.
 
-Tests: `session.test.ts` (the lifecycle: sign-in, pressing again with the window open, scope, audience and
-tokeninfo cases, GIS errors, silent renewal, the blocked renewal and "Stay signed in", the guard, expiry by
-timer and by clock, short tokens, rejection, sign-out with and without a confirmed revocation, late answers
-and which of them are revoked, dispose, the address kept through a renewal but not into a new sign-in when
-tokeninfo does not answer, `anotherAccount`), `gis.test.ts` (the loader), `tokeninfo.test.ts`,
-`fetch.test.ts`, `AuthProvider.test.tsx` (the store's `connect` slice; the permission check cleared on a
-sign-out and for another account, also one whose address tokeninfo did not give, and kept through a renewal
-and for the same account), `SignIn.test.tsx` (the whole app in live mode with a fake GIS: sign-in, one
-configuration request per page, the mode selector, sign-out, a blocked window, a press that brings the window
-back, no script without a client, expiry and signing in again, axe), and `e2e/tests/signin.spec.ts` (a stub
-GIS script served for Google's, on Playwright's clock: sign-in, renewal, "Stay signed in", expiry, sign-out
-with revocation, the token never in storage, IndexedDB, cookies, the DOM, any URL or the console, axe in both
-themes).
+Tests: `session.test.ts`, `gis.test.ts`, `tokeninfo.test.ts`, `fetch.test.ts`, `AuthProvider.test.tsx`,
+`SignIn.test.tsx` and `e2e/tests/signin.spec.ts`, which also checks that the token is never in storage,
+IndexedDB, cookies, the DOM, any URL or the console.
 
 ## Scope picker and permission check (`src/scope/`, `src/preflight/`)
 
@@ -857,15 +814,8 @@ gate refuses comes back as a 403 (or 503) whose body carries the checklist as `p
 shows that checklist like any other answer (its outcome is never `ready`), and a 403 without one stays an
 error.
 
-Tests: `scope/scope.test.ts` (the patterns against the model's schemas, names, hints, the recent scopes and
-quota projects, the search answer), `scope/api.test.ts` and `preflight/api.test.ts` (each guard against the
-model's schema), `preflight/preflight.test.ts` (the guard, the request with the token,
-error answers, a sentence for every item and finding, the reference table's commands),
-`pages/PermissionsPage.test.tsx` (the whole app in live mode with a fake GIS and a stubbed backend: sign-in on
-the page, search, a typed name and its hint, the recent scopes, the quota project, the check, the checklist
-and its commands, copying, an out-of-date result, service-account mode, the account and the gate's wording
-from `/api/config`, a refused service-account check shown as its checklist, a failed check, demo mode; axe),
-and `e2e/tests/preflight.spec.ts` in Chromium.
+Tests: `scope/scope.test.ts`, `scope/api.test.ts`, `preflight/api.test.ts`, `preflight/preflight.test.ts`,
+`pages/PermissionsPage.test.tsx` and `e2e/tests/preflight.spec.ts`.
 
 ## Fillable commands (`src/commands/`)
 
@@ -905,13 +855,8 @@ nothing outlives the tab; another tab starts empty. A variable marked secret in 
 reading, and where storage is blocked the values stay in memory. The access token is never a value
 (`e2e/tests/permissions-variables.spec.ts` searches every storage for it).
 
-Tests: `commands/values.test.ts` (the copied text, the notes, the value a variable shows, the facts, what the
-session keeps, and that every command the app shows names only registered variables and no other placeholder),
-`commands/commands.test.tsx` (shared values across commands and the panel, prefilled and editable, the copy
-and its announcement, the note, the format hint, a reload, Clear values, no secret kept, blocked storage,
-axe), and `e2e/tests/permissions-variables.spec.ts` in Chromium (signed out, signed in, demo-only and demo
-mode: fill in one command and the others follow, the clipboard reads the filled command, a reload keeps it and
-another tab does not; axe with filled, unfilled and invalid fields in both themes).
+Tests: `commands/values.test.ts` (which also fails when a command the app shows names an unregistered
+variable or another placeholder), `commands/commands.test.tsx` and `e2e/tests/permissions-variables.spec.ts`.
 
 ## Live pull and export load (`src/import/`)
 
@@ -1001,20 +946,9 @@ region, so a screen reader hears "Reading Cloud Asset Inventory…", not every c
 **The worker** is the fourth role of the diagram's worker script (`WORKER_ROLES.imports`), so the build shares
 ingest, the model and zod with the other roles; its code loads on first use.
 
-Tests: `progress.test.ts` (the reducer), `target.test.ts`, `sidecar.test.ts` (the typed read time, which read
-time wins, the future note), `commands.test.ts` (the gcloud commands with their variables), `errors.test.ts`,
-`run.test.ts` (Node, the in-process worker: the request, the stored snapshot, every failure, cancel while
-reading, cancel while storing for a pull and a Cloud Storage read (nothing stored, the status says so), a
-broken connection, export reads with and without a sidecar, and a 5 000-asset organisation streamed into a
-stored snapshot in under 10 s, printing its time; a typed read time, and the sidecar's over it),
-`store.test.ts` (IndexedDB through fake-indexeddb, read back by the diagram's loader), `sidecarImport.test.ts`
-(the sidecar in the Snapshots page's import; a typed read time, the sidecar's over it, bundles keeping their
-own, the future note), `PullNow.test.tsx` and `LoadExport.test.tsx` (the controls in a harness, the read time
-field, the large-snapshot question for dropped files before anything is stored (Cancel, Escape and leaving the
-page store nothing, "Draw it anyway" stores once, several files ask about the one they open, the session
-setting), Cancel while dropped files are read (by pointer and by keyboard, focus back on "Choose files…") and
-leaving the page then, neither storing anything, a pull and a Cloud Storage read, axe included), and
-`e2e/tests/live-pull.spec.ts` in Chromium.
+Tests: `progress.test.ts`, `target.test.ts`, `sidecar.test.ts`, `commands.test.ts`, `errors.test.ts`,
+`run.test.ts`, `store.test.ts`, `sidecarImport.test.ts`, `PullNow.test.tsx`, `LoadExport.test.tsx` and
+`e2e/tests/live-pull.spec.ts`.
 
 ## Snapshots (`src/snapshots/`)
 
@@ -1214,31 +1148,10 @@ crosses back to the page); the page writes them to IndexedDB.
 organisation XL (extra large)", any other by its row's name, "example.com, read 2026-10-07 18:22 UTC,
 export.json"); the menu (`shell/topbar/SnapshotMenu.tsx`) reads only the store.
 
-Tests: `codec.test.ts`, `labels.test.ts` (names, rows told apart, the demo sizes' facts against the
-generator), `worker/scope.test.ts`, `worker/parse.test.ts` (the bundle round trip and every refusal, a history
-that does not end with its snapshot included), `diagram/pipeline/demo.test.ts` (the demo job against the data
-worker's own snapshot, through the data protocol and client), `worker/handler.test.ts` (imports of one and
-several export files, malformed lines, several roots, bundles under new ids and the copy notes, the check job
-and every damage it refuses, a cancelled import: the client rejects at once and drops the worker's late
-answer, the worker stops reading an 8 MiB export after its first MiB, a queued job never starts),
-`library.test.ts` (IndexedDB through fake-indexeddb: the repository, the library, the export → import round
-trip, imports as copies, an import asked about before it is stored (no stores nothing, yes stores it once),
-an import cancelled while it is read, asked about or stored (nothing stays), a pulled snapshot whose store is
-cancelled before or while it is written (nothing stays), a refused import, damaged records refused at export,
-the data worker's loader, the memory fallback, and the data worker over stored snapshots: a deleted snapshot
-is not drawn from its kept Graph, and S imported after M was deleted draws S),
-`pages/SnapshotsPage.test.tsx` and `pages/ConnectPage.test.tsx` (the pages with a fake library, axe included;
-the read time typed at an import; Cancel while an import's files are read and leaving the page then, neither
-storing anything; a card per stored snapshot on a phone), `scopeEntries.test.ts` and `ScopeTimelines.test.tsx`
-(the timelines by scope in time order, copies, sizes, summaries; deleting an extra tick, a cached day and a
-scope's days, focus and status, over fake-indexeddb; axe), `LargeSnapshotGuard.test.tsx` (the guard's rules,
-and every way in with the fake library: "Try the demo" XL, Load, a link, the Snapshot menu; Cancel, Escape,
-"Draw it anyway", the session setting, no second question; axe), `e2e/tests/large-snapshot.spec.ts` in
-Chromium (demo mode: "Try the demo" XL asked about, cancelled, drawn, silenced for the tab; axe in both
-themes), and `e2e/tests/snapshots.spec.ts` in Chromium (try demo S, switch to M, reload, export M and S,
-import both as copies, load each, delete M's copy, go back to its view and see it is gone, import S again and
-see S drawn, and the same after a reload; a refused import; no IndexedDB, and a reload forgetting; axe on both
-pages in both themes).
+Tests: `codec.test.ts`, `labels.test.ts`, `worker/scope.test.ts`, `worker/parse.test.ts`,
+`diagram/pipeline/demo.test.ts`, `worker/handler.test.ts`, `library.test.ts`, `pages/SnapshotsPage.test.tsx`,
+`pages/ConnectPage.test.tsx`, `scopeEntries.test.ts`, `ScopeTimelines.test.tsx`,
+`LargeSnapshotGuard.test.tsx`, `e2e/tests/large-snapshot.spec.ts` and `e2e/tests/snapshots.spec.ts`.
 
 ## Diagram renderer (`src/diagram/`)
 
@@ -1372,9 +1285,8 @@ as much with Ctrl, which is how a browser sends a touchpad's pinch, so a notch o
 (`wheelZoom`, `wheelTransform`); turns less than 150 ms apart are one gesture, whose turns the canvas keeps
 from the page even where the scale extent leaves them nothing to do, while a turn on its own there is the
 page's (with Ctrl, the browser's zoom). A press, a drag and a turn of the wheel stop a glide on its way.
-Double-click does not zoom: it is kept for drill-in. `camera.test.ts` holds the arithmetic, and
-`DiagramCanvas.test.tsx` the mouse, the pen and the wheel on the canvas, with the events a browser sends for
-them. The canvas moves the same camera for a finger (paragraph "Touch" below). A new view is fitted to the
+Double-click does not zoom: it is kept for drill-in (tests: `camera.test.ts`, `DiagramCanvas.test.tsx`). The
+canvas moves the same camera for a finger (paragraph "Touch" below). A new view is fitted to the
 canvas (never enlarged past 100 %), or on a phone or a tablet to the part of it an open sheet or drawer
 leaves, which a panel opening or closing fits it to again while the camera still rests on that fit (section
 "App state"); a theme change keeps the camera, and so does a selection on a desktop. Level of detail by the
@@ -1409,10 +1321,7 @@ less than 500 ms ago (`TOUCH_MOUSE_MS`); the mouse events a browser makes of a t
 reads a mouse from its pointer events. A pan or a pinch stops a glide on its way, as a mouse's drag does; a
 tap leaves it, so the glide that frames a chip the first tap of a double tap opened goes on. A finger's moves
 and lifts are heard on the window, where they go once the node it pressed is redrawn mid-gesture.
-`touch.test.ts` drives the gestures on a clock the test runs, `camera.test.ts` the arithmetic, and
-`DiagramCanvas.touch.test.tsx` every gesture on the canvas with synthetic pointer events: a pan that never
-selects, a pinch whose midpoint stays put, taps, double taps, a long press, a glide a tap leaves and a pan
-stops, and a mouse's and a pen's own input after a finger.
+Tests: `touch.test.ts`, `camera.test.ts` and `DiagramCanvas.touch.test.tsx`.
 
 **Selection trace and console affordance.** `trace.ts` computes, from the Layout alone (no Graph), the
 trace of a node: the zones on its path to the root, the lines touching it or anything inside it, the
@@ -1600,15 +1509,9 @@ loading stage (kept in the DOM while idle), the drawer's details error (`role="a
 message when they cannot move (a keyed remount, so a repeat is announced), the timeline bar's readout (quiet
 during playback).
 
-The Playwright suite checks the renderer's behaviour in Chromium (`e2e/tests/diagram.spec.ts`), the selection
-trace (`trace.spec.ts`: a VM's path to the root and NIC, subnet and disk lines, a global forwarding rule's
-chain to its instance groups and NEGs, hover preview, persistence across zoom) and the console affordance
-(`console-link.spec.ts`: the card's action and the menu's link with the VM's page, nothing opened without
-activation, a new tab on activation, drill-in, the project fallback for a template stripped from the catalog
-the test serves), the keyboard model (`keyboard.spec.ts`: a tour without the pointer, the Tab order, the skip
-link, every focus indicator at 3 : 1 against its neighbours and, pixel by pixel, against the unfocused screen
-on demo L zoomed out, the zoom keys, `[` on German layouts, focus across drill-in and drill-out, reduced
-motion), and runs axe on every page and on demo S, M and L, in both themes (`e2e/tests/a11y.spec.ts`).
+Browser tests: `e2e/tests/diagram.spec.ts`, `trace.spec.ts`, `console-link.spec.ts`, `keyboard.spec.ts`
+(which also holds every focus indicator to 3 : 1 against its neighbours and against the unfocused screen) and
+`a11y.spec.ts` (axe on every page and on demo S, M and L in both themes).
 
 ## View controls (`src/views/`)
 
@@ -1691,15 +1594,10 @@ one under the other, the Focus and Filters panels as wide as the sheet (Filters 
 breadcrumb is cut from the left, so its current level always shows (section "Layouts"). Every popup is
 keyboard operable: Escape first closes an open list or clears a picker's text, then closes the popover.
 
-Tests: `filterForm.test.ts` (every field both ways, the hash round trip, canonical form, counts),
-`viewRules.test.ts` (the lens rule, focus kinds, the trail, summaries), `choices.test.ts` (demo S and M
-against the scene builder: every offered focus parameter applies, every region keeps something; the worker's
-answer and its cache), `savedViewStore.test.ts` (fake-indexeddb: save, list, rename, delete, a new connection,
-memory fallback), the controls' tests next to each slot file (`ui/tokens.test.ts` guards the views'
-stylesheets with the rest of the chrome: tokens both themes define, no raw colour),
-`SavedViewsDialog.test.tsx` (save, list, apply, rename, delete with its variant, status line and focus, a
-reload, axe; the view is the hash, so no diagram is drawn), `CopyLink.test.tsx` (the URL with its hash to the
-clipboard, the toast, inert away from the diagram) and `e2e/tests/controls.spec.ts` in Chromium on demo M.
+Tests: `filterForm.test.ts`, `viewRules.test.ts`, `choices.test.ts`, `savedViewStore.test.ts`, the
+controls' tests next to each slot file, `SavedViewsDialog.test.tsx`, `CopyLink.test.tsx` and
+`e2e/tests/controls.spec.ts`; `ui/tokens.test.ts` holds the views' stylesheets to tokens both themes define
+and no raw colour, as it does the rest of the chrome.
 
 ## Progressive disclosure (`src/diagram/disclosure/`)
 
@@ -1801,28 +1699,10 @@ src/diagram/disclosure/
   the zone when it is on screen; and when the pipeline drew the same view (scene key) at another `auto` level
   because the canvas changed size.
 
-Tests: `flips.test.ts` (against buildScene on demo M and L: expand then collapse, and collapse then expand,
-give back the level's own Scene, through the store's `flip` and the hash; the depth filter; the level table;
-Expand all from folders to all on demo L keeping what was open; Collapse all keeping what was closed by hand
-and another view's flips; views rooted at and focused on a project at every level, with flips by hand, of
-zones drawn empty or none: each button inert exactly when it would change nothing, Expand all never closing
-and Collapse all never opening, each after the other and until inert; a zone drawn empty, under a lens or
-holding only ghosts, and its flip kept across a lens switch and back; a fast-check property over random views
-of demo M and L, across lenses, focus views, levels, the depth filter and flips: each button inert exactly
-when the view it writes draws the Scene on screen, and a zone drawn empty keeping what its flip means; one
-over demo M's timeline days: each button inert exactly when the view it writes draws the day with the same
-ghosts, Expand all closing no zone or ghost and Collapse all opening none; a ghost's flip under both buttons
-on the reports project's day; a perimeter removed and a project moved between two days, judged by the
-earlier day's zones, and the ghosts of what the earlier day drew only inside a chip (a network of a project
-moved out of its folders, a VM of a bundle demo L bundles anew), judged by the zones the drawn day draws
-around them; the cap; auto changes), `canvas.test.tsx` (chips, a double-click leaving no flip, the
-collapse button, the camera kept and the glide, focus after a keyboard flip, axe), `DisclosureBar.test.tsx`
-(the page in jsdom with in-process workers, axe), `actions.test.ts` (the store's actions, history modes, a
-press while another view is drawn) and `e2e/tests/disclosure.spec.ts` (demo L in Chromium: expand a project
-chip, its networks as chips, expand all, "N of M", reload; the keyboard; the collapse button; both notices;
-axe in both themes; a project's view on demo M: zones closed by hand, a double-click drill-in, a level carried
-in from the organisation, a press while the organisation is still on screen). Specs that need a selection
-select a card or a zone, since a click on a chip expands it (`diagram.spec.ts`, `a11y.spec.ts`).
+Tests: `flips.test.ts` (with fast-check properties over random views and over demo M's timeline days),
+`canvas.test.tsx`, `DisclosureBar.test.tsx`, `actions.test.ts` and `e2e/tests/disclosure.spec.ts`. Specs that
+need a selection select a card or a zone, since a click on a chip expands it (`diagram.spec.ts`,
+`a11y.spec.ts`).
 
 ## Details drawer (`src/drawer/`)
 
@@ -1935,24 +1815,10 @@ day had it), otherwise the status line says the view draws no ghost of it. Witho
 The details are kept per day drawn as well (kept per snapshot and node alone, a step would show the day
 before's details).
 
-Tests: `drawer/fieldDiff.test.ts` (paths, kinds, quoting, the cap, previews, depth, and every field each
-change of demo S's and M's histories touched), `drawer/changes.test.ts` (demo S from 7 to 8 September: a
-changed project's update times and field, an added subscription, a removed bucket, a container's lists, the
-cap, either direction), `drawer/WhatChanged.test.tsx` (in the app with in-process workers: the section after
-`]`, a click on a ghost, the jump links to a removed and an added node, the next step, none without a diff,
-axe), `drawer/console.test.ts` (console URLs for thirteen catalog types from synthetic assets, missing
-variables, types without a template, assets outside any project), `drawer/details.test.ts` (grouping order,
-directions, the children cap, the subnet's network, dangling reasons, labels and tags, and demo M's bastion VM
-and its project), `drawer/ResizeHandle.test.tsx` (the phone sheet's handle: its value, settling, closing,
-the keys; a drag of either handle ending when the primary button comes up while another is held, and following
-its own pointer past a second finger and a hovering mouse), `drawer/DetailsDrawer.test.tsx` (the drawer in the
-app with in-process workers: facts, relations, console link, raw JSON, copy, a jump, a jump into a collapsed
-zone with one locate without offers, Escape and focus, the handle and the preference, Drill in, axe in jsdom),
-`diagram/camera.test.ts` (the reveal pan, `revealTransform`), `diagram/pipeline/dataClient.test.ts` and
-`dataHandler.test.ts` (a jump link's locate and a search's, sent together, neither cancelling nor skipping the
-other), and `e2e/tests/drawer.spec.ts` in Chromium on demo M (the bastion VM's subnet, network and disk
-relations and console page, the reveal pan, a jump to the subnet and one that flips chips open, raw JSON,
-Escape, resizing and its persistence across a reload, drilling into the project, axe in both themes).
+Tests: `drawer/fieldDiff.test.ts`, `drawer/changes.test.ts`, `drawer/WhatChanged.test.tsx`,
+`drawer/console.test.ts`, `drawer/details.test.ts`, `drawer/ResizeHandle.test.tsx`,
+`drawer/DetailsDrawer.test.tsx`, `diagram/camera.test.ts`, `diagram/pipeline/dataClient.test.ts`,
+`dataHandler.test.ts` and `e2e/tests/drawer.spec.ts`.
 
 ## Search (`src/search/`)
 
@@ -2077,25 +1943,9 @@ applying it. The status line's reveal message ("Opened … to show …") is empt
 The details drawer's own pan (`reveal` jumps) never replaces a centring jump to the same node that is still
 waiting for its layout.
 
-Tests: `rank.test.ts` (tiers: an exact name beats a fuzzy label whatever the boost; a project's id and the
-nodes in it; prefix before fuzzy; display names, domains, names above; the container boost and its limit; more
-exact fields first, the default lens's types first; typos in labels, fewer in context fields; path-like
-queries; IPv4 exact, prefix and in a range; word starts; queries of several words; one typo next to a better
-match; limit and total), `reveal.test.ts` (the decision table row by row, and no empty or repeated offer for
-any combination of facts), `locate.test.ts` (demo S and M with the real catalog: shown, expanded and drawn,
-drill-in out of a root and a focus, the lens, hidden by role and by rule, excluded, filtered, unknown nodes;
-a jump link's locate without offers on demo M: the chips around a VM and a Shared VPC subnet opened, a node
-already drawn, one the lens leaves out with no offer tried),
-`service.test.ts` (documents, the e2e suite's four searches on demo M, icons, one index per Graph, parsers),
-`text.test.ts`, `shell/topbar/SearchBox.test.tsx` (the box in the app with in-process workers: `/`, grouped
-results with icons and the count, choosing, flips, the dialog and its offer, a text pasted over earlier
-results with Enter at once lands on the new best result, a full resource name stays in the box, Escape, inert
-away from the diagram and on a snapshot that could not be loaded, axe with the list and with the dialog open),
-`ui/Combobox.test.tsx` (`busy`: greyed and unchoosable, Enter and ↓ kept for the new options;
-`enterChoosesFirst`; a press reopens), `state/store.test.ts` (a reveal keeps a pending centring jump), and
-`e2e/tests/search.spec.ts` (demo M, both themes: an IP, a domain, a project id and a label each land on the
-right card, centred; a new text with Enter at once lands on its best result, never an earlier text's; a click
-on a result lands; the groups and axe with the list open; the dialog's offer).
+Tests: `rank.test.ts`, `reveal.test.ts`, `locate.test.ts`, `service.test.ts`, `text.test.ts`,
+`shell/topbar/SearchBox.test.tsx`, `ui/Combobox.test.tsx`, `state/store.test.ts` and
+`e2e/tests/search.spec.ts`.
 
 **Known limits.** The search text in `highlight` is not painted on the canvas (only the chosen node is
 selected). IPv6 ranges are not matched by containment. On XL a query holds the data worker for up to ~150 ms
@@ -2235,32 +2085,11 @@ naming it says so:
   is never drawn from memory. The Snapshots page lists them per scope and deletes them (section "Snapshots",
   "Timelines by scope").
 
-Tests: `ticks.test.ts` (fixed `today`: 35 ticks, the latest at "now", month, year and leap-day boundaries,
-local labels), `cacheKey.test.ts`, `scheduler.test.ts` (order, the in-flight limit, cancellation),
-`playback.test.ts` (the state machine), `model.test.ts`, `controller.test.ts` (on a real store with a fake
-cache and reader: the debounced read, the idle prefetch in order, two in flight, cancellation, failures,
-cached and stale days, the reasons days cannot be read; with a stand-in channel, a day another tab stored or
-deleted marked read or not read at once and played, another scope's day ignored, a day being read left to its
-read, the latest change winning, listening only while a live timeline is adopted),
-`storage/tickCacheChanges.test.ts` (the message's key fields only, foreign messages ignored, the channel open
-only while something listens, no channel or a failing one, two pages on Node's `BroadcastChannel`),
-`fetchTick.test.ts` (the in-process import worker and a pretend backend; a cancel as the day's write begins
-or while it is written keeps nothing and ends the read as cancelled), `storage/tickCache.test.ts`
-(fake-indexeddb, the version-2 migration; listing and deleting; a write cancelled before or while it is made
-keeps nothing, puts back what it replaced and tells nothing of it; every change told by its key alone),
-`worker/source.test.ts`, `worker/handler.test.ts` (a day through the data handler), `state/pipeline.test.ts`
-(a timeline day drawn without the snapshot going back to loading), `TimelineBar.test.tsx` (the app on demo S:
-markers, keys, buttons, a link's day, playback, axe), and `e2e/tests/timeline.spec.ts` in Chromium on demo M
-(scrubbing to the day a project was deleted, `[` and `]`, a link with a tick and a reload, playback that runs
-and stops, axe in both themes). Extra ticks: `extraTicks.test.ts` (ids, which snapshots are a timeline's,
-duplicates, the merge and its order, the clamp at "now" with its warning, labels, the model, stepping,
-playback with and without them, the words, the store binding and its null), `extraTicks.worker.test.ts`
-(`findStoredExtra` over fake-indexeddb, the tick source, the data handler drawing one and the snapshot itself
-once it is deleted), `extraTicks.bar.test.tsx` (the bar on demo S with a fake library: diamonds, tooltips, `[`
-onto one, a link, "Play extras", axe), and `e2e/tests/extra-ticks.spec.ts` in Chromium on demo M (an export of
-the demo organisation with its operation.json imported on the Snapshots page, selected on the timeline by a
-press and by `[`/`]`, drawn, kept by a reload, deleted on the Snapshots page; an estimated and a typed read
-time; playback with and without "Play extras"; axe in both themes).
+Tests: `ticks.test.ts`, `cacheKey.test.ts`, `scheduler.test.ts`, `playback.test.ts`, `model.test.ts`,
+`controller.test.ts`, `storage/tickCacheChanges.test.ts`, `fetchTick.test.ts`, `storage/tickCache.test.ts`,
+`worker/source.test.ts`, `worker/handler.test.ts`, `state/pipeline.test.ts`, `TimelineBar.test.tsx` and
+`e2e/tests/timeline.spec.ts`; for extra ticks `extraTicks.test.ts`, `extraTicks.worker.test.ts`,
+`extraTicks.bar.test.tsx` and `e2e/tests/extra-ticks.spec.ts`.
 
 ## Timeline diff overlay (`src/diagram/diff/`)
 
@@ -2401,33 +2230,9 @@ onto a day not kept yet takes 113–194 ms on L and the first one from the snaps
 fresh page (197–205 ms after the page has rested two minutes), 0.71–0.75 s on XL, and a step onto a kept day
 30–32 ms on L and 44–80 ms on XL; section "Performance".
 
-Tests: `diff/base.test.ts` (which day), `diff/tickDiff.test.ts` (demo S: the diff, order independence, ghosts
-in their old container laid out without overlap, the deleted project's ghost zone, the zones the ghosts depend
-on, backwards, drill-in, chips' counts; on demo M's perimeter removed, a ghost holds only what is gone; on
-demo M's Payments web (prod) with what it held in us-central1 removed, the region zone's ghost in the open
-project, or the project's chip counting them; with what it held in us-central1-a removed, the zone closed by
-hand as a ghost chip in its open region, or the region's chip counting them; on demo L's bundle whose members
-are bundled anew, closed by hand, its ghost chip counting only the removed member; on demo M's two Batch jobs
-that succeeded, each not drawn now in its region zone's ghost, not drawn now or removed; on demo M's CI runner
-VM removed with empty projects hidden, its project not drawn now in its folder around the ghosts, and with
-empty folders hidden the folder too; on demo L's VM removed from a subnet of a bundle closed by hand and
-bundled anew, its ghost in the subnet; on demo M's partner exchange moved out of its folders with its network
-removed, the network's ghost in the project, a chip at a depth of one and open by hand; on demo S's reporting
-project, a chip the day before and empty now, no ghost; on demo M's Payments web (prod) marked for deletion,
-the Batch job that succeeded not drawn now in the project's ghost (with region zones, in its region zone's),
-and where the day before drew the project as a chip, its ghost chip counting only the job, or nothing with
-the project marked for deletion alone; on demo M's perimeter removed with all the data project held, the
-project not drawn now in the perimeter's ghost with empty projects hidden; on demo M's partner exchange moved
-into another folder, it is no ghost, moved into a chip, drawn there or out of the view),
-`pipeline/dataHandler.test.ts` (the removed perimeter's ghost named by its asset type), `diff/marks.test.ts`
-(the marker painter: which rects, where, the words), `diff/drawing.test.tsx` (the markers in the drawing in
-both themes, paint order, legend rows, description, names, a ghost is no node, a ghost chip's name, an
-overlay's ghost), `diff/handler.test.ts` (the data worker's `scene` with `diffFrom` and `changes`),
-`legend.test.ts`, `theme/theme.test.ts`, the baselines (section "Visual baselines"), the drawer's tests
-(section "Details drawer"), and `e2e/tests/diff.spec.ts` in Chromium on demo M
-(scrubbing from 23 to 24 September in the compute lens at `all`: the new VM outlined, the deleted test VM's
-ghost, the group manager's dot and the legend rows; its drawer's update times and `targetSize`; `[` back,
-"compared with"; another lens keeps the markers; axe in both themes).
+Tests: `diff/base.test.ts`, `diff/tickDiff.test.ts`, `pipeline/dataHandler.test.ts`, `diff/marks.test.ts`,
+`diff/drawing.test.tsx`, `diff/handler.test.ts`, `legend.test.ts`, `theme/theme.test.ts`, the baselines
+(section "Visual baselines"), the drawer's tests (section "Details drawer") and `e2e/tests/diff.spec.ts`.
 
 ## Performance
 
@@ -2592,10 +2397,7 @@ which the render library computes alike with `drawnViewKey`), so the files of se
 keep different page ids when their pages are copied into one diagram. The translator and fflate are a chunk of
 their own, loaded when the draw.io file is asked for, never part of the first paint; the render library draws
 the same file from the static render (`renderDiagramSvg`) through `headless.ts`, and `exportDiagram.test.ts`
-checks the two are byte for byte the same. Tests: `drawio/translate.test.ts` (hand-made drawings: a zone with
-two nodes and a line, nested zones, dashed and dotted lines with their heads, labels, the crop, both forms of
-the file) and `drawio/demo.test.ts` (demo S in both themes: every zone, node, line and text line, the labels
-within half a pixel of their places, two crops with the bands clear of what they keep, the same bytes twice).
+checks the two are byte for byte the same. Tests: `drawio/translate.test.ts` and `drawio/demo.test.ts`.
 
 **Clipboard.** `navigator.clipboard.write` with a `ClipboardItem` created at once around the pending PNG, so
 the click still counts as the user's gesture while the PNG is drawn; a browser without image support gets a
@@ -2611,7 +2413,6 @@ or ↓ opens on the area chosen, ↑ on the last item; ↑ ↓ Home End and type
 closes; Tab leaves. The check marks have empty alternative text, so an item's name is its label and its state
 is `aria-checked`.
 
-Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the
-flow, the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium,
-and `e2e/tests/drawio.spec.ts`, which draws the downloaded draw.io file with maxGraph and holds it to the SVG
-export (within the fidelity limits of frontend/AGENTS.md, Exports, and the gcp-diagram-style skill §8).
+Tests: the unit tests next to each module, `e2e/tests/export.spec.ts`, and `e2e/tests/drawio.spec.ts`, which
+draws the downloaded draw.io file with maxGraph and holds it to the SVG export (within the fidelity limits of
+frontend/AGENTS.md, Exports, and the gcp-diagram-style skill §8).
