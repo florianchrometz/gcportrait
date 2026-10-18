@@ -83,6 +83,41 @@ describe('a demo organisation’s timeline', () => {
     await source.resolve('demo:S', base, '2026-09-21');
     expect(generated).toBe(1);
   });
+
+  it('reads a stored history when present instead of generating it', async () => {
+    let generated = 0;
+    const asked: string[] = [];
+    const source = createTickSource({
+      demoHistory: () => {
+        generated += 1;
+        return Promise.resolve(HISTORY);
+      },
+      storedHistory: (ref) => {
+        asked.push(ref);
+        return Promise.resolve(HISTORY);
+      },
+    });
+    const base = await demoBase();
+    const info = await source.info('demo:S', base);
+    expect(info.kind).toBe('history');
+    expect(asked).toEqual(['demo:S']);
+    expect(generated).toBe(0);
+  });
+
+  it('falls back to generating history when stored history is null or fails', async () => {
+    let generated = 0;
+    const source = createTickSource({
+      demoHistory: () => {
+        generated += 1;
+        return Promise.resolve(HISTORY);
+      },
+      storedHistory: () => Promise.reject(new Error('no storage')),
+    });
+    const base = await demoBase();
+    const info = await source.info('demo:S', base);
+    expect(info.kind).toBe('history');
+    expect(generated).toBe(1);
+  });
 });
 
 describe('a stored snapshot with a history', () => {

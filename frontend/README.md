@@ -911,9 +911,10 @@ src/snapshots/
                         without IndexedDB or when a write fails (the quota); an import never in memory
   codec.ts              a record's documents: JSON in a Blob, gzip-compressed (CompressionStream) where possible
   bundle.ts             the `.gcportrait.json` file: name, recognition, writing (page side, no schemas)
-  load.ts               the data worker's snapshot loader (diagram/pipeline/dataRole.ts): demo organisations
-                        generated on the spot, every other ref read from IndexedDB; `storedSnapshotVersion`, which
-                        the data worker asks before it reuses a kept Graph; a stored history (the timeline)
+  load.ts               the data worker's snapshot loader (diagram/pipeline/dataRole.ts): stored records read
+                        from IndexedDB, falling back to generating demo organisations on the spot;
+                        `storedSnapshotVersion`, which the data worker asks before it reuses a kept Graph; a
+                        stored history (the timeline)
   labels.ts             names and formats (scope, source, UTC times, decimal sizes, the demo sizes), and the
                         rows' names, no two alike, with the copy numbers the rows show (`distinctNames`)
   SnapshotLibraryProvider.tsx  context, listing, and the Snapshot menu's `snapshot.available` in the store
@@ -947,8 +948,9 @@ with its progress, and ends with the job; the library (its `demo` option; `main.
 `createBrowserDemoJob`) stores them as the record `demo:<size>` and the page opens
 `/diagram#snapshot=demo:<size>` through `actions.setSnapshot`. Each stage shows in a live region with a
 progress bar ("Generating demo organisation M and its 35 days of history…", "Compressing for storage…",
-"Storing in this browser…"); a failure shows an alert. The diagram itself still generates demo organisations
-in its data worker, so they need no storage at all.
+"Storing in this browser…"); a failure shows an alert. The diagram reads the stored demo organisation and
+its history from IndexedDB when present, falling back to generating them on the spot when opened directly or
+without IndexedDB, so demo links need no storage at all.
 
 **Large snapshots.** Drawing more than `LARGE_SNAPSHOT_ASSETS` (10 000, `@gcportrait/model`) assets at once is
 slow and heavy on memory, so the app draws such a snapshot only once the person has said so

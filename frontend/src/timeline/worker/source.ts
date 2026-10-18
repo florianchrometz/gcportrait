@@ -4,9 +4,9 @@
  * one of its days. The data handler (diagram/pipeline/dataHandler.ts) asks it for the view's `tick`; the tick's
  * Graph, Scene and Layout then go through the normal pipeline.
  *
- * - A snapshot with a stored history (the demo organisations, generated here; an imported bundle that carries one,
- *   read from IndexedDB) has a `history` timeline: every one of its 35 days is replayed on demand (replay.ts, loaded
- *   on first use); the last day is the snapshot itself.
+ * - A snapshot with a stored history (a demo organisation or an imported bundle that carries one, read from
+ *   IndexedDB, or generated here for a demo) has a `history` timeline: every one of its 35 days is replayed on
+ *   demand (replay.ts, loaded on first use); the last day is the snapshot itself.
  * - Any other snapshot has a `live` timeline: its own day is the snapshot; another day is drawn once the page has
  *   read it from Cloud Asset Inventory into the tick cache (storage/tickCache.ts), under its cache key; until then
  *   the snapshot itself is drawn and the page shows the day as loading.
@@ -95,7 +95,9 @@ export function createTickSource(environment: TickSourceEnvironment = {}): TickS
     const size = demoSizeOfRef(ref);
     const looked: Promise<DemoHistory | null> =
       size !== null
-        ? demoHistory(size)
+        ? (environment.storedHistory?.(ref) ?? Promise.resolve(null))
+            .catch(() => null)
+            .then((stored) => stored ?? demoHistory(size))
         : (environment.storedHistory?.(ref) ?? Promise.resolve(null)).catch(() => null);
     histories.set(base, looked);
     // A failure is not kept: the next request looks again.

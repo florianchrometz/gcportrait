@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * How the diagram's data worker loads the snapshot a view names (diagram/pipeline/dataRole.ts): a demo
- * organisation (`demo:<size>`) is generated as before (`loadDemoSnapshot`), so the demo needs no storage at all;
- * any other ref is a stored snapshot's ULID, read from IndexedDB through storage/db.ts in the worker itself and
- * checked by `migrateSnapshot` (the only way to read a stored snapshot). The stored history of a demo
- * organisation is read the same way (`loadStoredHistory`, for the timeline). The data worker keeps the
- * Graph of the last snapshot it loaded; `storedSnapshotVersion` tells it whether that record is still stored as it
- * was, so a snapshot deleted on the Snapshots page is not drawn from memory until a reload. An extra tick of a
- * timeline (an export or a manual pull of the same scope) is found among the stored records by its read time
- * (`findStoredExtra`), looked up again for every view that names it, so a deleted one is never drawn.
+ * organisation (`demo:<size>`) is read from IndexedDB when stored, or generated on the spot (`loadDemoSnapshot`)
+ * so a link needs no storage at all; any other ref is a stored snapshot's ULID, read from IndexedDB through
+ * storage/db.ts in the worker itself and checked by `migrateSnapshot` (the only way to read a stored snapshot).
+ * The stored history of a demo organisation is read the same way (`loadStoredHistory`, for the timeline). The
+ * data worker keeps the Graph of the last snapshot it loaded; `storedSnapshotVersion` tells it whether that record
+ * is still stored as it was, so a snapshot deleted on the Snapshots page is not drawn from memory until a reload.
+ * An extra tick of a timeline (an export or a manual pull of the same scope) is found among the stored records by
+ * its read time (`findStoredExtra`), looked up again for every view that names it, so a deleted one is never drawn.
  */
 import type { DemoHistory } from '@gcportrait/demo-data';
 import {
@@ -58,6 +58,24 @@ async function storedRecord(ref: string): Promise<StoredSnapshot> {
   return record;
 }
 
+async function optionalStoredRecord(ref: string): Promise<StoredSnapshot | undefined> {
+  let opening: Promise<GcportraitDB | null> | undefined;
+  try {
+    opening = workerDatabase();
+    const db = await opening;
+    if (db === null) return undefined;
+    return await db.get('snapshots', ref);
+  } catch {
+    try {
+      const db = await recoverWorkerDatabase(opening);
+      if (db === null) return undefined;
+      return await db.get('snapshots', ref);
+    } catch {
+      return undefined;
+    }
+  }
+}
+
 /**
  * A stored record's snapshot. A record that does not decompress or parse, or whose snapshot the model cannot read,
  * is a `DataError` with a sentence for people (the canvas shows it), not the parser's message.
@@ -99,9 +117,20 @@ export async function storedSnapshotVersion(ref: SnapshotRef): Promise<string | 
   }
 }
 
-/** The data worker's snapshot loader: demo organisations generated, every other snapshot from IndexedDB. */
+/** The data worker's snapshot loader: stored records from IndexedDB, falling back to generating demo organisations. */
 export const loadAnySnapshot: SnapshotLoader = async (ref: SnapshotRef, onStage) => {
-  if (demoSizeOfRef(ref) !== null) return loadDemoSnapshot(ref, onStage);
+  if (demoSizeOfRef(ref) !== null) {
+    const record = await optionalStoredRecord(ref);
+    if (record !== undefined) {
+      try {
+        onStage('ingest');
+        return await storedSnapshot(ref, record);
+      } catch {
+        return loadDemoSnapshot(ref, onStage);
+      }
+    }
+    return loadDemoSnapshot(ref, onStage);
+  }
   onStage('ingest');
   return storedSnapshot(ref, await storedRecord(ref));
 };
