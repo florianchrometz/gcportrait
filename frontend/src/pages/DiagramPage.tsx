@@ -15,7 +15,6 @@ import { TimelineKeys } from '../keyboard/TimelineKeys';
 import { visibleAreaIn } from '../export/source';
 import { DIAGRAM_PATH } from '../routes';
 import { withExtraLabel } from '../timeline/extraTicks';
-import { useRememberDiagramHash } from '../shell/viewHash';
 import { useLargeSnapshotGate } from '../snapshots/LargeSnapshotGuard';
 import { useAppState, useAppStore, useDiagramActions, useDiagramPipeline, useView } from '../state';
 import { rejectedSnapshotRef } from '../views/snapshotRef';
@@ -42,7 +41,6 @@ const STAGE_TEXT: Readonly<Record<DataStage | 'layout', string>> = {
  */
 export function DiagramPage() {
   useDocumentTitle('Diagram');
-  useRememberDiagramHash();
   const spec = useView();
   const hash = useAppState((state) => state.view.hash);
   // A link whose `snapshot=` the codec rejected says so, rather than "Nothing to draw yet".

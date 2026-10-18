@@ -4,12 +4,10 @@
  * a component re-renders only when what it selected changed; a selector must return something already in the
  * state or a primitive, never a new object) and change the view only through `useDiagramActions()`.
  *
- * The diagram page's hooks: `useScene()`, `useLayout()` and `useSelection()` read what is drawn and what is
- * selected; `useDiagramActions()` is the one way to change the view (lens, focus, detail, filters, drill-in,
- * flips, selection, highlight) or to ask the renderer for a camera glide (`jumpTo`). Feature code never calls the
- * router, the workers or the renderer itself.
+ * The diagram page hooks: `useScene()` reads what is drawn; `useDiagramActions()` is the one way to
+ * change the view (lens, focus, detail, filters, drill-in, flips, selection, highlight) or to ask the
+ * renderer for a camera glide (`jumpTo`). Feature code never calls the router, the workers or the renderer itself.
  */
-import type { Layout } from '@gcportrait/layout';
 import type { ViewSpec } from '@gcportrait/model';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 
@@ -18,7 +16,7 @@ import type { SceneAnswer } from '../diagram/pipeline/protocol';
 import { useDiagramSession } from '../diagram/session';
 import { AppStoreContext } from './context';
 import { createPipelineController } from './pipeline';
-import type { AppState, SelectionSlice, UiSlice } from './slices';
+import type { AppState } from './slices';
 import type { AppStore, ViewActions } from './store';
 import { selectSceneKey } from './viewKey';
 
@@ -43,20 +41,6 @@ export function useView(): ViewSpec {
 /** The Scene on screen with its report, source, lens title, icons and console links; null when none. */
 export function useScene(): SceneAnswer | null {
   return useAppState((state) => state.pipeline.result?.answer ?? null);
-}
-
-/** The Layout on screen; null when none. */
-export function useLayout(): Layout | null {
-  return useAppState((state) => state.pipeline.result?.layout ?? null);
-}
-
-/** Selected and highlighted ids (from the hash) and the hovered one (from the canvas). */
-export function useSelection(): SelectionSlice {
-  return useAppState((state) => state.selection);
-}
-
-export function useUi(): UiSlice {
-  return useAppState((state) => state.ui);
 }
 
 /** What changes the view (and asks for camera jumps); the same object for the life of the app. */

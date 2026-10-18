@@ -161,8 +161,8 @@ describe('pending drawer jumps', DRAWING_APP_TIMEOUT, () => {
             store.actions.select(vm);
             break;
           case 'lens':
-            store.actions.setLens('networking');
-            store.actions.setLens('compute');
+            store.actions.setView((view) => ({ ...view, lens: 'networking' }));
+            store.actions.setView((view) => ({ ...view, lens: 'compute' }));
             break;
           case 'snapshot':
             store.actions.setSnapshot('demo:M');

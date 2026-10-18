@@ -18,7 +18,6 @@ import {
   encodeViewSpec,
   type DetailLevel,
   type Focus,
-  type LensId,
   type SnapshotRef,
   type ViewFilters,
   type ViewSpec,
@@ -69,8 +68,6 @@ export interface WriteOptions {
  * router or the renderer.
  */
 export interface ViewActions {
-  /** Another lens (push). The detail level is kept. */
-  readonly setLens: (lens: LensId, options?: WriteOptions) => void;
   /** A focus view, or none (push). */
   readonly setFocus: (focus: Focus | null, options?: WriteOptions) => void;
   /** A detail level (push). */
@@ -127,8 +124,6 @@ export interface AppStore {
   readonly syncLocation: (location: { readonly pathname: string; readonly hash: string }) => void;
   /** Store → router: how view writes reach the URL (null: they only change the store; tests). */
   readonly connectNavigator: (navigator: HashNavigator | null) => void;
-  /** Writes a view: encodes it, mirrors the hash in the `view` slice and hands it to the navigator. */
-  readonly writeView: (next: ViewSpecInput, mode: HistoryMode) => void;
   /** Changes the pipeline slice (the pipeline controller). */
   readonly updatePipeline: (update: (current: PipelineSlice) => PipelineSlice) => void;
   /** Changes the snapshot slice's loading state (the pipeline controller); `ref` always follows the view. */
@@ -169,10 +164,12 @@ function stripHash(hash: string): string {
   return hash.startsWith('#') ? hash.slice(1) : hash;
 }
 
-function viewOf(pathname: string, hash: string): ViewSlice {
+function viewOf(pathname: string, hash: string, prevLastDiagramHash = '#'): ViewSlice {
   const onDiagram = pathname === DIAGRAM_PATH;
   const raw = onDiagram ? stripHash(hash) : '';
-  return { hash: raw, spec: decodeViewSpec(raw), onDiagram };
+  const lastDiagramHash =
+    onDiagram && raw.length > 1 ? (hash.startsWith('#') ? hash : `#${raw}`) : prevLastDiagramHash;
+  return { hash: raw, spec: decodeViewSpec(raw), onDiagram, lastDiagramHash };
 }
 
 const IDLE_PIPELINE: PipelineSlice = {
@@ -185,7 +182,7 @@ const IDLE_PIPELINE: PipelineSlice = {
   requests: 0,
 };
 
-const INITIAL_UI: UiSlice = { drawerOpen: true, searchOpen: false, popover: null, sheet: null, jump: null };
+const INITIAL_UI: UiSlice = { drawerOpen: true, popover: null, sheet: null, jump: null };
 
 /**
  * The ui slice with a sheet of the top bar and the details drawer kept apart (frontend/AGENTS.md, Phones, tablets and desktops): on a phone or
@@ -291,7 +288,8 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
   const writeView = (next: ViewSpecInput, mode: HistoryMode): void => {
     const hash = encodeViewSpec(next);
     if (state.view.onDiagram && hash === state.view.hash) return;
-    set(withView(state, { hash, spec: decodeViewSpec(hash), onDiagram: true }));
+    const lastDiagramHash = hash.length > 1 ? `#${hash}` : state.view.lastDiagramHash;
+    set(withView(state, { hash, spec: decodeViewSpec(hash), onDiagram: true, lastDiagramHash }));
     navigator?.({ pathname: DIAGRAM_PATH, hash: hash === '' ? '' : `#${hash}` }, mode);
   };
 
@@ -337,9 +335,6 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
   };
 
   const actions: ViewActions = {
-    setLens: (lens, options) => {
-      write((spec) => ({ ...spec, lens }), 'push', options);
-    },
     setFocus: (focus, options) => {
       write(
         (spec) => {
@@ -449,14 +444,19 @@ export function createAppStore(options: StoreOptions = {}): AppStore {
       };
     },
     syncLocation(location) {
-      const next = viewOf(location.pathname, location.hash);
-      if (next.hash === state.view.hash && next.onDiagram === state.view.onDiagram) return;
+      const next = viewOf(location.pathname, location.hash, state.view.lastDiagramHash);
+      if (
+        next.hash === state.view.hash &&
+        next.onDiagram === state.view.onDiagram &&
+        next.lastDiagramHash === state.view.lastDiagramHash
+      ) {
+        return;
+      }
       set(withView(state, next));
     },
     connectNavigator(next) {
       navigator = next;
     },
-    writeView,
     updatePipeline(update) {
       const pipeline = update(state.pipeline);
       if (pipeline === state.pipeline) return;

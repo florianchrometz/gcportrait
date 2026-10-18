@@ -9,7 +9,7 @@
  * | `snapshot` | which snapshot is loaded, loading stage, errors, what can be chosen | the pipeline's answers |
  * | `pipeline` | Scene and Layout of the view, request status, the measured canvas | the two workers |
  * | `selection` | selected, highlighted (both from the hash) and hovered (the canvas) ids | hash; canvas |
- * | `ui` | drawer, search, the open popover and sheet, a pending camera jump | the page only, never the hash |
+ * | `ui` | drawer, the open popover and sheet, a pending camera jump | the page only, never the hash |
  * | `connect` | the backend's public config, the sign-in session (never the token), the access mode | auth/ |
  * | `timeline` | the snapshot's timeline, its live days' reads, playback (the `tick` itself is in the view) | timeline/ |
  */
@@ -35,6 +35,11 @@ export interface ViewSlice {
   readonly spec: ViewSpec;
   /** Whether the location is the diagram route, the only place where the hash is a ViewSpec. */
   readonly onDiagram: boolean;
+  /**
+   * The last non-empty hash on the diagram route (with `#`, or `'#'` before any diagram view);
+   * the Diagram navigation link restores it when away from `/diagram`.
+   */
+  readonly lastDiagramHash: string;
 }
 
 /** A snapshot the person can open: a demo organisation or a snapshot stored in IndexedDB. */
@@ -108,7 +113,6 @@ export interface UiSlice {
    * `apart`): a sheet that opens closes the drawer, and selecting a node opens it again.
    */
   readonly drawerOpen: boolean;
-  readonly searchOpen: boolean;
   /** The one open top-bar popup ('lens', 'snapshot', 'filters', …), if any. */
   readonly popover: string | null;
   /**

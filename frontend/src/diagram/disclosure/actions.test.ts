@@ -151,7 +151,7 @@ describe('pressed while another view is drawn', () => {
     draw();
     store.actions.expandAll();
     store.actions.expandAll();
-    store.actions.setLens('networking');
+    store.actions.setView((spec) => ({ ...spec, lens: 'networking' }));
     draw();
     expect(navigate).toHaveBeenCalledTimes(2);
     expect(store.getState().view.spec).toMatchObject({ lens: 'networking', detail: 'projects' });

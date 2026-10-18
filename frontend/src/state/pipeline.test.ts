@@ -92,10 +92,10 @@ describe('the pipeline controller', () => {
     controller.run(keyOf(store));
     await settled(store);
     const first = store.getState().pipeline.result;
-    store.actions.setLens('networking');
+    store.actions.setView((spec) => ({ ...spec, lens: 'networking' }));
     controller.run(keyOf(store));
     expect(store.getState().pipeline.result).toBe(first);
-    store.actions.setLens('load-balancing');
+    store.actions.setView((spec) => ({ ...spec, lens: 'load-balancing' }));
     controller.run(keyOf(store));
     await settled(store);
     expect(store.getState().pipeline.result?.key).toBe('snapshot=demo:S&lens=load-balancing');

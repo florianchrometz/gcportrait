@@ -13,7 +13,6 @@ import { PermissionsPage } from './pages/PermissionsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { SnapshotsPage } from './pages/SnapshotsPage';
 import { AppShell } from './shell/AppShell';
-import { ViewHashProvider } from './shell/viewHash';
 import { LargeSnapshotGuardProvider } from './snapshots/LargeSnapshotGuard';
 import type { SnapshotLibrary } from './snapshots/library';
 import { SnapshotLibraryProvider } from './snapshots/SnapshotLibraryProvider';
@@ -59,20 +58,18 @@ export function App({ mode, database, preferences, diagramWorkers, snapshots }: 
                 <AuthProvider>
                   <SnapshotLibraryProvider library={snapshots}>
                     <LargeSnapshotGuardProvider>
-                      <ViewHashProvider>
-                        <Routes>
-                          <Route element={<AppShell />}>
-                            <Route index element={<ConnectPage />} />
-                            <Route path="diagram" element={<DiagramPage />} />
-                            <Route path="snapshots" element={<SnapshotsPage />} />
-                            <Route path="permissions" element={<PermissionsPage />} />
-                            <Route path="settings" element={<SettingsPage />} />
-                            <Route path="impressum" element={<LegalPage id="impressum" />} />
-                            <Route path="privacy" element={<LegalPage id="privacy" />} />
-                            <Route path="*" element={<NotFoundPage />} />
-                          </Route>
-                        </Routes>
-                      </ViewHashProvider>
+                      <Routes>
+                        <Route element={<AppShell />}>
+                          <Route index element={<ConnectPage />} />
+                          <Route path="diagram" element={<DiagramPage />} />
+                          <Route path="snapshots" element={<SnapshotsPage />} />
+                          <Route path="permissions" element={<PermissionsPage />} />
+                          <Route path="settings" element={<SettingsPage />} />
+                          <Route path="impressum" element={<LegalPage id="impressum" />} />
+                          <Route path="privacy" element={<LegalPage id="privacy" />} />
+                          <Route path="*" element={<NotFoundPage />} />
+                        </Route>
+                      </Routes>
                     </LargeSnapshotGuardProvider>
                   </SnapshotLibraryProvider>
                 </AuthProvider>

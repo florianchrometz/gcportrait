@@ -55,11 +55,17 @@ describe('the view slice', () => {
       hash: `${BASE}&selection=a`,
       spec: decodeViewSpec(`${BASE}&selection=a`),
       onDiagram: true,
+      lastDiagramHash: `#${BASE}&selection=a`,
     });
     expect(selection).toEqual({ selected: 'a', highlighted: null, hovered: null });
     expect(snapshot.ref).toBe('demo:M');
     const away = createAppStore({ location: { pathname: '/settings', hash: `#${BASE}` } });
-    expect(away.getState().view).toEqual({ hash: '', spec: decodeViewSpec(''), onDiagram: false });
+    expect(away.getState().view).toEqual({
+      hash: '',
+      spec: decodeViewSpec(''),
+      onDiagram: false,
+      lastDiagramHash: '#',
+    });
   });
 
   it('ignores unknown hash keys (and keeps the raw hash until the next write drops them)', () => {
@@ -83,6 +89,18 @@ describe('the view slice', () => {
     store.syncLocation({ pathname: '/settings', hash: '' });
     expect(store.getState().view.onDiagram).toBe(false);
     expect(store.getState().view.spec.snapshot).toBe('');
+    expect(store.getState().view.lastDiagramHash).toBe('#snapshot=demo:S&highlight=10.0.0.2');
+  });
+
+  it('remembers the last diagram hash across navigation away and back', () => {
+    const { store } = storeAt(`#${BASE}`);
+    expect(store.getState().view.lastDiagramHash).toBe(`#${BASE}`);
+    store.syncLocation({ pathname: '/settings', hash: '' });
+    expect(store.getState().view.onDiagram).toBe(false);
+    expect(store.getState().view.lastDiagramHash).toBe(`#${BASE}`);
+    store.actions.setSnapshot('demo:L');
+    expect(store.getState().view.onDiagram).toBe(true);
+    expect(store.getState().view.lastDiagramHash).toBe('#snapshot=demo:L');
   });
 
   it('notifies subscribers on a change, and not on a write of the same hash', () => {
@@ -91,12 +109,12 @@ describe('the view slice', () => {
     const unsubscribe = store.subscribe(() => {
       calls += 1;
     });
-    store.actions.setLens('networking');
+    store.actions.setView((spec) => ({ ...spec, lens: 'networking' }));
     expect(calls).toBe(0);
-    store.actions.setLens('security');
+    store.actions.setView((spec) => ({ ...spec, lens: 'security' }));
     expect(calls).toBe(1);
     unsubscribe();
-    store.actions.setLens('data');
+    store.actions.setView((spec) => ({ ...spec, lens: 'data' }));
     expect(calls).toBe(1);
   });
 });
@@ -108,17 +126,6 @@ describe('the view actions: hash round trip, push or replace', () => {
     readonly mode: HistoryMode;
     readonly expect: (spec: ViewSpec) => void;
   }> = [
-    {
-      name: 'setLens',
-      act: (store) => {
-        store.actions.setLens('load-balancing');
-      },
-      mode: 'push',
-      expect: (spec) => {
-        expect(spec.lens).toBe('load-balancing');
-        expect(spec.detail).toBe('all');
-      },
-    },
     {
       name: 'setFocus',
       act: (store) => {
@@ -286,7 +293,7 @@ describe('the view actions: hash round trip, push or replace', () => {
     store.connectNavigator((target, mode) => {
       written.push({ target, mode });
     });
-    store.actions.setLens('data');
+    store.actions.setView((spec) => ({ ...spec, lens: 'data' }));
     store.actions.setDetail('projects');
     expect(lastHash(written)).toBe('snapshot=demo:M&lens=data&detail=projects');
     // The router renders once, with the last location: the store already holds it.
@@ -316,7 +323,7 @@ describe('the view actions: hash round trip, push or replace', () => {
 
   it('only changes the store when no navigator is connected', () => {
     const store = createAppStore({ location: { pathname: '/diagram', hash: '' } });
-    store.actions.setLens('kubernetes');
+    store.actions.setView((spec) => ({ ...spec, lens: 'kubernetes' }));
     expect(store.getState().view.hash).toBe('lens=kubernetes');
   });
 });
@@ -327,7 +334,7 @@ describe('the other slices never touch the hash', () => {
     const view = store.getState().view;
     store.setHovered('node-9');
     expect(store.getState().selection).toEqual({ selected: 'a', highlighted: null, hovered: 'node-9' });
-    store.updateUi((ui) => ({ ...ui, popover: 'filters', searchOpen: true, drawerOpen: false }));
+    store.updateUi((ui) => ({ ...ui, popover: 'filters', drawerOpen: false }));
     store.updatePipeline((pipeline) => ({ ...pipeline, canvas: { width: 1280, height: 624 } }));
     store.updateSnapshot((snapshot) => ({ ...snapshot, status: 'loading', stage: 'ingest' }));
     store.actions.jumpTo('node-9');
@@ -365,7 +372,7 @@ describe('the other slices never touch the hash', () => {
     const { store } = storeAt(`#${BASE}`);
     store.setHovered('n');
     store.actions.jumpTo('n');
-    store.actions.setLens('data');
+    store.actions.setView((spec) => ({ ...spec, lens: 'data' }));
     expect(store.getState().selection.hovered).toBe('n');
     expect(store.getState().ui.jump).not.toBeNull();
     store.actions.setSnapshot('demo:S');
@@ -408,7 +415,7 @@ describe('the top bar’s sheets and the details drawer', () => {
     // Nothing opens the drawer while the sheet is open, but a node selected.
     store.updateUi((ui) => ({ ...ui, drawerOpen: true }));
     expect(store.getState().ui.drawerOpen).toBe(false);
-    store.actions.setLens('data');
+    store.actions.setView((spec) => ({ ...spec, lens: 'data' }));
     store.actions.highlight('web');
     store.updateUi((ui) => ({ ...ui, sheet: null }));
     expect(store.getState().ui).toMatchObject({ sheet: null, drawerOpen: false });

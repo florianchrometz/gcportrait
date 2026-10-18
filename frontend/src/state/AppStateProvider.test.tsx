@@ -74,7 +74,7 @@ describe('AppStateProvider', () => {
     expect(store.getState().view.spec).toEqual(decodeViewSpec('snapshot=demo:S&lens=networking'));
     expect(text('lens')).toBe('networking');
     act(() => {
-      store.actions.setLens('security');
+      store.actions.setView((spec) => ({ ...spec, lens: 'security' }));
     });
     expect(text('url')).toBe('/diagram?debug=1#snapshot=demo:S&lens=security');
     expect(text('type')).toBe('PUSH');

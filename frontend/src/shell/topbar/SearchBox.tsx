@@ -14,7 +14,7 @@
  * meanwhile apply to the new results when they arrive (type or paste, then Enter, lands on the best result).
  *
  * The text the person searched is the view's `highlight` once a result is chosen (in the hash, so a link
- * carries it); while typing it is the box's own draft, which a choice, a new highlight or another snapshot drops. The list's open state is the store's `ui.searchOpen`.
+ * carries it); while typing it is the box's own draft, which a choice, a new highlight or another snapshot drops.
  * It is shown on the diagram page only (the top bar's view row); with no snapshot or with one that could
  * not be loaded, the box is inert (focusable, announced unavailable, with a hint).
  */
@@ -52,7 +52,7 @@ export function SearchBox(): ReactElement {
   const onDiagram = useAppState((state) => state.view.onDiagram);
   const snapshot = useAppState((state) => state.view.spec.snapshot);
   const highlight = useAppState((state) => state.view.spec.highlight);
-  const open = useAppState((state) => state.ui.searchOpen);
+  const [open, setOpen] = useState(false);
   // The view's snapshot could not be loaded (unknown, unreadable): it has no Graph to search.
   const failed = useAppState(
     (state) => state.snapshot.status === 'error' && state.snapshot.ref === state.view.spec.snapshot,
@@ -188,7 +188,7 @@ export function SearchBox(): ReactElement {
         open={open}
         onOpenChange={(next) => {
           if (next && settled.current) return;
-          store.updateUi((ui) => (ui.searchOpen === next ? ui : { ...ui, searchOpen: next }));
+          setOpen(next);
         }}
         inputRef={inputRef}
         keyShortcuts="/"

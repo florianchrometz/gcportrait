@@ -128,11 +128,12 @@ src/test/               test setup and helpers (StrictMode for every render, ren
 shows a not-found page inside the shell. Below a base path (the static demo's `/demo/`, Vite's `base`), the
 router's basename is that path and every route lives below it; the "Copy link" button writes the link with it
 too. The URL **hash is reserved for the ViewSpec** (`@gcportrait/model`) and the router never writes it. The
-app uses `BrowserRouter`, not a hash router. `shell/viewHash.tsx` remembers the last hash seen on `/diagram`,
-and the Diagram navigation link restores it, so leaving the diagram for Settings and coming back keeps the
-view. On `/diagram` itself the link keeps the current hash. Code changes the view only through the app store's
-actions (`useDiagramActions()`, section "App state" below), which write the hash through the router, so the
-router's location and this memory stay current. The skip link moves focus without touching the hash.
+app uses `BrowserRouter`, not a hash router. The store's `view.lastDiagramHash` remembers the last hash seen
+on `/diagram`, and `shell/viewHash.tsx` (`useDiagramLinkTarget`) restores it on the Diagram navigation link,
+so leaving the diagram for Settings and coming back keeps the view. On `/diagram` itself the link keeps the
+current hash. Code changes the view only through the app store's actions (`useDiagramActions()`, section
+"App state" below), which write the hash through the router, so the router's location and this memory stay
+current. The skip link moves focus without touching the hash.
 
 **A route change** ("Try the demo", a top-bar link, Back, a saved view applied from another page) moves focus
 to `<main>` and announces the new page's title in a polite live region (`AppShell`), as a page load would,
@@ -148,22 +149,23 @@ seven slices (`slices.ts`):
 
 | Slice | Holds | Source of truth | Written by |
 |---|---|---|---|
-| `view` | `hash` (as in the address bar, `''` away from `/diagram`), `spec` (`decodeViewSpec(hash)`), `onDiagram` | the URL hash on `/diagram` | the router (`syncLocation`), the view actions (`writeView`) |
+| `view` | `hash` (as in the address bar, `''` away from `/diagram`), `spec` (`decodeViewSpec(hash)`), `onDiagram`, `lastDiagramHash` (the last non-empty hash on `/diagram`, kept when navigating away) | the URL hash on `/diagram` | the router (`syncLocation`), the view actions (internal `writeView`) |
 | `snapshot` | `ref` (the view's `snapshot`), `status` (`none`, `loading`, `ready`, `error`), the loading `stage` (`generate`, `ingest`, `graph`), `source` (scope, read time, asset count), `error`, `available` (what the Snapshot menu offers: the demo organisations S, M, L, then every stored snapshot, written by `snapshots/SnapshotLibraryProvider.tsx`; any `demo:` size, XL included, opens from the hash) | the data worker's answers | the pipeline controller |
 | `pipeline` | `key` (the view's scene key), `result` (`{ key, answer: SceneAnswer, layout }`), `pending` (`{ ref, stage }`), `error` (message and the node ids a refused layout named), `canvas` (the diagram page's measured size, null off the page), `viewport` (the size the result was asked at), `requests` | the two workers | the pipeline controller |
 | `selection` | `selected` and `highlighted` (the view's `selection` and `highlight`), `hovered` (the node under the pointer) | the hash; the canvas for `hovered` | derived with the view; `setHovered` |
-| `ui` | `drawerOpen`, `searchOpen`, `popover` (the one open top-bar popup: `'lens'`, `'snapshot'`, …), `sheet` (the top bar's open fold on a phone or a tablet, `'view'` or `'more'`; never open with the drawer: opening one sets `drawerOpen` false, `apart`), `jump` (a pending camera glide `{ id, seq, mode? }`) | the page only; **never in the hash** | `updateUi`, `usePopover`, `useSheet`, `actions.jumpTo` |
+| `ui` | `drawerOpen`, `popover` (the one open top-bar popup: `'lens'`, `'snapshot'`, …), `sheet` (the top bar's open fold on a phone or a tablet, `'view'` or `'more'`; never open with the drawer: opening one sets `drawerOpen` false, `apart`), `jump` (a pending camera glide `{ id, seq, mode? }`) | the page only; **never in the hash** | `updateUi`, `usePopover`, `useSheet`, `actions.jumpTo` |
 | `connect` | `backend` (GET /api/config: `demo`, `loading`, `ready` with the config, `unavailable`), `session` (the sign-in: status, account email, expiry, renewal, problem; **never the token**), `mode` (`user` or `sa`); `scope`, `quotaProject` and `preflight` (the last check's request and answer) | `auth/AuthProvider.tsx`, the token session, the mode selector; the scope picker and the permission check | `updateConnect` |
 | `timeline` | `ref` (the view's snapshot), `info` (its timeline from the data worker: a stored `history`, or a `live` scope), `today` and `now` (the timeline's last day; a live scope's from the app's clock), a live scope's day `status` (`loading`, `cached`, `error`) and `failures`, the read's `progress`, `blocked` (why days cannot be read), `playback`, `interval`; `extras` (the extra ticks: the scope's stored exports and pulls, null until known) and `playExtras`; the view's `tick` itself stays in the hash | the data worker's Scene answer; the tick cache; the reads; the snapshot library's listing (`extras`) | the timeline controller (`timeline/controller.ts`) and playback, through `updateTimeline`; `extras` by the snapshot library's binding (`bindExtraTicks`); reset when the snapshot changes (the interval and `playExtras` kept) |
 
 **The hash is the source of truth of the view.** The provider feeds every router location to `syncLocation`
 (in a layout effect, before paint): on `/diagram` the `view` slice becomes the hash and its decoding, so
 unknown keys are ignored and a malformed value falls back to its default field by field; elsewhere it is the
-default view. A view change goes out through `writeView`: the new ViewSpec is encoded with `encodeViewSpec`,
-the slice mirrors that hash at once (two writes in one handler build on each other) and the navigator
-(react-router's `navigate`, keeping the query string on the same route) puts it into the URL; when the router
-reports the same hash back nothing changes. A hash the store only read is never rewritten (unknown keys stay
-in the address bar until the next write drops them). Nothing outside the `view` slice ever reaches the hash.
+default view. A view change goes out through internal `writeView`: the new ViewSpec is encoded with
+`encodeViewSpec`, the slice mirrors that hash at once (two writes in one handler build on each other) and the
+navigator (react-router's `navigate`, keeping the query string on the same route) puts it into the URL; when
+the router reports the same hash back nothing changes. A hash the store only read is never rewritten (unknown
+keys stay in the address bar until the next write drops them). Nothing outside the `view` slice ever reaches
+the hash.
 
 **Actions** (`useDiagramActions()`, one object for the life of the app; `ViewActions` in `store.ts`). Feature
 code changes the view only through them, never through the router, the workers or the renderer. Discrete
@@ -172,7 +174,6 @@ to override (a filter slider being dragged: `replace`):
 
 | Action | History | What it does |
 |---|---|---|
-| `setLens(lens)` | push | another lens; the detail level is kept |
 | `setFocus(focus \| null)` | push | a focus view (`{ kind, params }`) or none |
 | `setDetail(level)` | push | a detail level |
 | `setFilters(patch \| fn)` | push | merges filter fields, or maps the current filters |
@@ -181,7 +182,7 @@ to override (a filter slider being dragged: `replace`):
 | `expandAll()` | push | "Expand all": opens the shallowest collapsed tier of the diagram on screen (section "Progressive disclosure"); pressed while another view's drawing is on screen, it waits for the view's own |
 | `collapseAll()` | push | "Collapse all": closes every zone opened by hand, and goes back to `auto` when the level in use is deeper; never opens anything; waits as `expandAll` does |
 | `setSnapshot(ref)` | push | opens a snapshot on `/diagram`, keeping lens and detail (`snapshotView`) |
-| `setView(fn)` | push | any other change (the timeline's tick, a saved view) |
+| `setView(fn)` | push | any other change (another lens, the timeline's tick, a saved view) |
 | `select(id \| null)` | replace | the selection; selecting opens the drawer (`ui.drawerOpen`) and closes an open sheet (a search result picked in View) |
 | `highlight(id \| null)` | replace | a node id or search text |
 | `jumpTo(id, { mode? })` | none | asks the renderer for a camera glide to the node (`ui.jump`): centred (default), or with `mode: 'reveal'` (the details drawer) only panned into view |
@@ -189,10 +190,9 @@ to override (a filter slider being dragged: `replace`):
 
 **Hooks.** `useAppState(selector)` (a selector returns something already in the state or a primitive, never a
 new object), `useView()`, `useScene()` (the `SceneAnswer` on screen: Scene, report, source, lens title, icons,
-console links), `useLayout()`, `useSelection()`, `useUi()`, `usePopover(id)` (`[open, setOpen]` over
-`ui.popover`, so one top-bar popup is open at a time), `useSheet(id)` (the same over `ui.sheet`, one sheet at
-a time; opening one closes the drawer), `selectScope` (the breadcrumb's scope),
-`useDiagramPipeline(canvasRef)` (the diagram page only).
+console links), `usePopover(id)` (`[open, setOpen]` over `ui.popover`, so one top-bar popup is open at a
+time), `useSheet(id)` (the same over `ui.sheet`, one sheet at a time; opening one closes the drawer),
+`selectScope` (the breadcrumb's scope), `useDiagramPipeline(canvasRef)` (the diagram page only).
 
 **The pipeline** (`pipeline.ts`, run by `useDiagramPipeline` on the diagram page). Whenever the view's scene
 key changes (everything but `selection` and `highlight`, so selecting never asks a worker for anything) the
