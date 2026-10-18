@@ -48,6 +48,7 @@ const ACCOUNT = `serviceAccount:${ACCOUNT_EMAIL}`;
 interface Account {
   readonly identity: ServiceAccountIdentity;
   readonly strictExposure?: boolean;
+  readonly callers?: readonly string[];
 }
 
 const strict = (identity: ServiceAccountIdentity = fakeAccount()): Account => ({
@@ -73,6 +74,7 @@ async function run(
       : new ServiceAccountGate({
           identity: account.identity,
           strictExposure: account.strictExposure ?? false,
+          callers: account.callers ?? ['example.com'],
         });
   const result = await runPreflight(
     {
@@ -720,6 +722,23 @@ describe('service-account mode, exposure check with SA_MODE_STRICT_EXPOSURE (the
     );
     expect(itemOf(checklist(result), 'sa-exposure')).toMatchObject({ status: 'ok' });
     expect(google.callsTo('list')).toHaveLength(1);
+  });
+
+  it('organisation scope is refused when caller is not in SA_MODE_CALLERS', async () => {
+    const { google, result } = await run(
+      {},
+      { mode: 'sa', scope: ORGANIZATION },
+      { identity: fakeAccount(), callers: [] },
+    );
+    if (result.kind !== 'checklist') throw new Error('expected a checklist');
+    expect(result.refusal).toMatchObject({
+      allowed: false,
+      step: 'caller',
+      finding: 'denied',
+      status: 403,
+      code: 'SA_GATE_ORG_CALLER_NOT_ALLOWED',
+    });
+    expect(google.callsTo('list')).toHaveLength(0);
   });
 
   it('a public get is "exposed": missing, with no command that could fix it', async () => {

@@ -10,6 +10,9 @@ These rules add to the root AGENTS.md, which applies here too.
   data.
 - Upstream calls go to four hosts only: `cloudasset.googleapis.com`, `cloudresourcemanager.googleapis.com`,
   `storage.googleapis.com` and `oauth2.googleapis.com`.
+- Tokens: the backend accepts any valid Google token with the required scopes and does not check its
+  audience against `OAUTH_CLIENT_ID` by default, so scripts using `gcloud auth print-access-token` can call
+  the render API; private instances rely on Identity-Aware Proxy.
 - A strict Content Security Policy and the other security headers (`src/security.ts`), rate limits, request
   ids, timeouts, response caps and a process-wide page budget ([docs/security.md](../docs/security.md)).
 - Logs never carry query strings, bodies, client addresses or tokens. The service-account gate's audit line is
@@ -18,10 +21,10 @@ These rules add to the root AGENTS.md, which applies here too.
 
 ## Quota project and the permission check
 
-- In user mode every CAI call sends `x-goog-user-project` with the quota project the permission check found:
-  the request contract and candidate selection are in [AGENTS.md](../AGENTS.md), "Quota project and the
-  permission check". The backend never falls back to sending no header, because that would charge every
-  person's pulls to the instance's project and share its rate quota among them.
+In user mode every CAI call sends `x-goog-user-project` with the quota project the permission check found:
+the request contract and candidate selection are in [AGENTS.md](../AGENTS.md), "Quota project and the
+permission check". The backend never falls back to sending no header, because that would charge every
+person's pulls to the instance's project and share its rate quota among them.
 - Service-account mode and every Resource Manager call send no quota header: the account's own project, the
   instance's, pays for the account's calls, and a person's quota project then needs only the Cloud Asset API.
 - The permission check reads the scope's metadata first; a Resource Manager IAM denial there is a warning, not
@@ -39,8 +42,10 @@ Before every CAI call made as the instance's account, the backend checks the cal
 1. **The caller's permission.** Resource Manager `testIamPermissions` on the scope, with the caller's own
    token and no quota header, must return exactly `resourcemanager.organizations.get`,
    `resourcemanager.folders.get` or `resourcemanager.projects.get`, as the scope's kind says. Every other
-   answer refuses (fail closed). Nothing is asked as the account, and no account token is requested, before
-   this step passes.
+   answer refuses (fail closed). For an organisation scope, the caller's verified email must also match
+   the `SA_MODE_CALLERS` allowlist (exact email or `@domain`), else the gate refuses with
+   `SA_GATE_ORG_CALLER_NOT_ALLOWED`. Folders and projects rely on Resource Manager permissions alone.
+   Nothing is asked as the account, and no account token is requested, before this step passes.
 2. **The exposure check, optional** (`SA_MODE_STRICT_EXPOSURE=true`, off by default): the account's own `GET`
    of the scope must be exactly Resource Manager's IAM denial of that `get`. A permission granted publicly
    counts as the caller's in step 1, so on a scope whose `get` is public step 1 no longer tells a member from
@@ -53,9 +58,9 @@ Before every CAI call made as the instance's account, the backend checks the cal
   check (`/api/preflight`) always checks afresh.
 - Every route that takes `mode: "sa"` runs the gate, before every CAI call as the account, each page of a
   stream included; routes that take no mode refuse a `mode` field. Refusals are 403, 401 or 503 with a `code`.
-- Every decision writes one audit log line (`service-account gate`): the route, the scope, the SHA-256 of the
-  caller's lower-cased email, the outcome with its step, whether the memo answered and whether strict mode is
-  on; never the token, never the email.
+- Every decision writes one audit log line (`service-account gate`): the route, the scope, the SHA-256 (or
+  HMAC-SHA256 when `SA_MODE_AUDIT_KEY` is configured) of the caller's lower-cased email, the outcome with its
+  step, whether the memo answered and whether strict mode is on; never the token, never the email.
 - The account's identity comes from Application Default Credentials (the metadata server on Cloud Run;
   locally an impersonation or key file); a person's own credentials (`authorized_user`) are refused.
 - `SA_MODE_ENABLED` switches service-account mode off, never the gate.

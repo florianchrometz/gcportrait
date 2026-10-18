@@ -20,7 +20,7 @@ Status: **in place** (the control holds and a test keeps it), **open** (section 
 | 2 | [Request bodies: schemas and size](#2-request-bodies-schemas-and-size) | in place |
 | 3 | [Rate limits and the stream cap](#3-rate-limits-and-the-stream-cap) | in place; `TRUST_PROXY_HOPS` behind Cloud Run open (O3) |
 | 4 | [Timeouts](#4-timeouts) | in place |
-| 5 | [Response caps and memory](#5-response-caps-and-memory) | in place; a stalled client can hold budget for a while (open, O11) |
+| 5 | [Response caps and memory](#5-response-caps-and-memory) | in place |
 | 6 | [Browser-facing headers](#6-browser-facing-headers) | in place |
 | 7 | [Logs: no token at any level](#7-logs-no-token-at-any-level) | in place |
 | 8 | [Errors, request ids, shutdown, static files](#8-errors-request-ids-shutdown-static-files) | in place |
@@ -333,17 +333,33 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
 
 | # | Finding | Severity | What would close it |
 |---|---|---|---|
-| O1 | The backend accepts any valid Google token, not only those issued to its own OAuth client. A public instance can therefore be used with a token from any client, `gcloud`'s included. Reading still needs the caller's own permissions, so no data is exposed beyond what the token already reads. | low | The maintainer's decision: checking the audience (tokeninfo, remembered per token hash) would close it and stop scripts that use `gcloud auth print-access-token`. |
 | O2 | Anyone with a Google account can use a public instance's capacity, within the limits of section 3; the limits are per address and per token, in memory, per instance. | medium for a public self-hosted instance; none for a demo-only one (no routes that call Google) | Deploy private instances with `--iap` (self-host-options.md). A shared limit across instances would need state, which the stateless backend avoids ([AGENTS.md](../AGENTS.md), "Security and privacy"). |
 | O3 | `TRUST_PROXY_HOPS=1` behind Cloud Run's front end is not checked on a deployed instance. | low | On a deployed instance, check the address the rate limit keys on (a header-reporting build, or two clients). |
 | O4 | A stream still running 8 s after SIGTERM is cut and the process exits 1. | low | Acceptable: the browser reports the pull as failed and it can be repeated; Cloud Run sends SIGTERM to instances it retires. |
 | O5 | The build account of `deploy.sh --build` holds Storage Admin on its own bucket, which also allows changing that bucket's IAM policy or deleting it. | low | A custom role (Storage Object Admin plus `storage.buckets.get`); needs a real `--build` run to verify. |
 | O6 | Supply chain: dependency updates have no minimum age. | low | Add `cooldown` to `.github/dependabot.yml` and `minimumReleaseAge` to `pnpm-workspace.yaml` ([backlog.md](backlog.md), section 3). |
 | O7 | Dependabot alerts and security updates are repository settings. | maintainer | Turn both on in the repository settings ([backlog.md](backlog.md), "Before the first release"). |
-| O8 | Service-account mode: a scope whose `get` is public passes the gate for everyone signed in unless `SA_MODE_STRICT_EXPOSURE=true` (off by default); the audit line's email hash is a plain SHA-256 (pseudonymous). | decision | The maintainer's ([backlog.md](backlog.md), "Maintainer decisions"). |
 | O9 | The page scanner checks a page's structure, not every literal (`tru` would pass); the browser parses each frame. | informational | None needed: Google's answers come over TLS from fixed hosts, and a malformed frame ends the import in the browser with an error. |
 | O10 | `HOSTED_BY`'s non-affiliation guard (it may not name Google) does not catch look-alikes such as `G00gle`. | informational | None: it catches an honest operator's slip. |
-| O11 | A client that stops reading keeps its page's claim until the stall limit cuts it off (60 s without taking a 1 MiB piece), and one that takes a piece a minute keeps it for as long as Cloud Run's request timeout (900 s). Two such pulls with pages near the cap hold most of the 64 MiB budget, so meanwhile other pulls' large pages end with a retryable `INSTANCE_BUSY` (small pages still fit). Memory stays within the budget. | low (availability) | A share of the budget per token or per address, or a higher minimum transfer rate than the stall limit's (about 17 KiB/s); neither is applied: tokens are cheap to get, and the per-address key behind Cloud Run is not yet checked (O3). `--iap` closes a private instance to strangers. |
+
+### Settled decisions
+
+- **Token audience (formerly O1):** kept without an audience check against `OAUTH_CLIENT_ID` by default.
+  Checking `aud` against `OAUTH_CLIENT_ID` would refuse tokens minted by `gcloud auth print-access-token`,
+  preventing scripts from using `POST /api/render`. A private deployment behind Identity-Aware Proxy already
+  enforces IAP's own audience check. The backend is not an open proxy because it only calls four allowlisted
+  Google hosts using the caller's own permissions.
+- **Service-account strict exposure and audit hash (formerly O8):** strict exposure remains off by default
+  because enabling it by default would refuse scopes where the service account was granted more than
+  `roles/cloudasset.viewer`. The audit line uses plain SHA-256 by default (pseudonymous); operators who
+  require preimage resistance against dictionary-guessing attacks can set `SA_MODE_AUDIT_KEY` to use
+  HMAC-SHA256.
+- **Page budget and stall rate (formerly O11):** kept as is. The 64 MiB process-wide page budget, the
+  minimum transfer rate (~17 KiB/s), and the 60 s stall timeout (`STREAM_STALL_MS`) keep memory within
+  bounded limits. Private instances deployed with `--iap` protect capacity against untrusted clients.
+- **Service-account mode at organisation scope:** resolved by introducing `SA_MODE_CALLERS`, requiring
+  operators to explicitly allowlist caller emails or domains before organisation scopes can be read through
+  the service account.
 
 ## 13. Checking the controls
 

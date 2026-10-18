@@ -27,6 +27,8 @@ describe('parseConfig', () => {
       oauthClientId: null,
       saModeEnabled: false,
       saStrictExposure: false,
+      saAuditKey: null,
+      saCallers: [],
       backendServiceAccount: null,
       hostedBy: null,
       staticDir: DEFAULT_STATIC_DIR,
@@ -60,6 +62,8 @@ describe('parseConfig', () => {
       PORT: '',
       OAUTH_CLIENT_ID: '  ',
       SA_MODE_ENABLED: '',
+      SA_MODE_AUDIT_KEY: '  ',
+      SA_MODE_CALLERS: '  ',
       BACKEND_SA_EMAIL: '',
       SOURCE_URL: ' ',
     });
@@ -67,6 +71,8 @@ describe('parseConfig', () => {
     expect(config.sourceUrl).toBe(DEFAULT_SOURCE_URL);
     expect(config.oauthClientId).toBeNull();
     expect(config.saModeEnabled).toBe(false);
+    expect(config.saAuditKey).toBeNull();
+    expect(config.saCallers).toEqual([]);
     expect(config.backendServiceAccount).toBeNull();
   });
 
@@ -80,6 +86,8 @@ describe('parseConfig', () => {
         OAUTH_CLIENT_ID: '12345678901-abc.apps.googleusercontent.com',
         SA_MODE_ENABLED: 'true',
         SA_MODE_STRICT_EXPOSURE: 'true',
+        SA_MODE_AUDIT_KEY: 'test-audit-key',
+        SA_MODE_CALLERS: 'alice@example.com, @example.org, corp.example.net',
         BACKEND_SA_EMAIL: 'gcportrait-backend@example.com',
         HOSTED_BY: ' Example Ltd IT ',
         STATIC_DIR: 'public',
@@ -102,6 +110,8 @@ describe('parseConfig', () => {
       oauthClientId: '12345678901-abc.apps.googleusercontent.com',
       saModeEnabled: true,
       saStrictExposure: true,
+      saAuditKey: 'test-audit-key',
+      saCallers: ['alice@example.com', '@example.org', 'corp.example.net'],
       backendServiceAccount: 'gcportrait-backend@example.com',
       hostedBy: 'Example Ltd IT',
       staticDir: path.resolve('/srv/app', 'public'),
@@ -164,6 +174,12 @@ describe('parseConfig', () => {
     ['HOSTED_BY', 'two\nlines secretvalue', /HOSTED_BY: must be plain text on one line/],
     ['HOSTED_BY', '<b>secretvalue</b>', /HOSTED_BY: must be plain text on one line/],
     ['HOSTED_BY', `${'x'.repeat(81)}secretvalue`, /HOSTED_BY: must be at most 80 characters/],
+    ['SA_MODE_AUDIT_KEY', 'two\nlines secretvalue', /SA_MODE_AUDIT_KEY: must not contain control characters/],
+    [
+      'SA_MODE_CALLERS',
+      'not-valid-secretvalue',
+      /SA_MODE_CALLERS: must be a comma- or whitespace-separated list/,
+    ],
     // A typo must not leave the strict exposure check off where SA mode is on: start-up stops instead.
     ...['TRUE', 'True', '1', 'yes', 'on', ' true', 'true-secretvalue'].map((value): TextRefusal => [
       'SA_MODE_STRICT_EXPOSURE',
@@ -190,6 +206,15 @@ describe('parseConfig', () => {
     for (const value of ['false', '', '  ', undefined]) {
       expect(parseConfig({ SA_MODE_STRICT_EXPOSURE: value }).saStrictExposure).toBe(false);
     }
+  });
+
+  it('parses and normalizes SA_MODE_CALLERS', () => {
+    expect(parseConfig({}).saCallers).toEqual([]);
+    expect(
+      parseConfig({
+        SA_MODE_CALLERS: 'Alice@Example.com,   @Example.ORG   corp.example.net   ',
+      }).saCallers,
+    ).toEqual(['alice@example.com', '@example.org', 'corp.example.net']);
   });
 
   it('lists every invalid variable by name without echoing values', () => {

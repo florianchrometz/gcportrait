@@ -18,14 +18,12 @@ Humans start with docs/contributing.md; assistants load [Skills](#skills).
 
 ## How this file works
 
-- **AGENTS.md is capitalised on disk and in git.** Rules for several folders or every change live at root,
-  others one folder down, never deeper; folder files open "These rules add to the root AGENTS.md, which
-  applies here too", and each stays at most 20 000 characters, checked by `scripts/rules-files.test.ts`, so
-  the context assistants load stays bounded.
+- **AGENTS.md is capitalised on disk and in git.** Root rules cover multiple folders or all changes;
+  folder rules open "These rules add to the root AGENTS.md, which applies here too", each at most 20 000
+  characters (`scripts/rules-files.test.ts`).
 - **Skills are procedural handbooks** (constants, rule citations), never rule history (.agents/README.md).
 - **State present rules with one-sentence reasons**: no decision-makers, dates or replaced behavior; **cite a
-  rule by file and heading** ("AGENTS.md, Security and privacy, principle 2"), anchors and citations changing
-  together.
+  rule by file and heading** ("AGENTS.md, Security and privacy, principle 2").
 - **Rules, docs and skills change in the code's PR**; scope, hosting, security, privacy, licence and
   non-affiliation are the maintainer's call; open work goes to docs/backlog.md.
 - **No committed tool instructions or user settings** (`CLAUDE.md`, `.cursor/rules/`, `.claude/`): ignored
@@ -105,8 +103,8 @@ Seven principles, numbered so the threat model and security guide
 2. **Tokens are never stored, never logged and never put in URLs.** A token in a file, a log line or a URL
    outlives the session it was given for.
 3. **The backend is not an open proxy**: a host allowlist, schema-validated bodies and rate limits.
-4. **Service-account mode is gated by the caller's own access to the scope**, so the instance's account never
-   reads a scope for someone who could not see it.
+4. **Service-account mode is gated by caller access** (and `SA_MODE_CALLERS` for organisations), so the
+   instance's account never reads a scope for someone who could not see it.
 5. **Exports are downloads the person starts**: gcportrait uploads nothing on its own, and the render API
    draws what its caller sends and keeps nothing.
 6. **The demo data is synthetic**, and the tests fail on a fixture holding anything like a real project
@@ -123,6 +121,8 @@ Seven principles, numbered so the threat model and security guide
 - Neither header is logged (both on pino's redaction list); the token is not a cookie, the browser never
   stores or sends it, there is no CORS answer, and API traffic is `no-store`. In the browser it lives in
   memory only; upstream the backend forwards it to Google as `Authorization: Bearer`.
+- Token audience is not checked against `OAUTH_CLIENT_ID` by default: `gcloud auth print-access-token` works
+  for scripts and render API; private instances rely on IAP.
 
 ### Quota project and the permission check
 
@@ -139,8 +139,8 @@ either is revoked and asked again, and without `userinfo.email` sign-in works wi
 
 ## Modes and hosting
 
-- **Ways in**: own account (default), operator-enabled SA (a team's shared grant), exports, demo; one Cloud
-  Run service and image per installation serves API and SPA (backend/AGENTS.md, "The service-account gate").
+- **Ways in**: own account (default), operator-enabled SA (a team's shared grant; `SA_MODE_CALLERS` for org
+  scopes; optional `SA_MODE_AUDIT_KEY`), exports, demo; one Cloud Run service per installation.
 - **Demo-only** (`DEMO_ONLY`) needs no sign-in: no OAuth client, SA or render API (backend/AGENTS.md,
   "Demo-only mode and legal pages").
 - **Static demo** at `gcportrait.app/demo/`, the demo-only build (`VITE_STATIC_DEMO=1`) the site ships, with

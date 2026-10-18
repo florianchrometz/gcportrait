@@ -297,3 +297,51 @@ describe('GET /api/config in service-account mode', () => {
     });
   });
 });
+
+describe('organisation scope gating over HTTP', () => {
+  const orgScope = 'organizations/30000000001';
+
+  it('refuses 403 SA_GATE_ORG_CALLER_NOT_ALLOWED when SA_MODE_CALLERS is unset', async () => {
+    const { app, google, account } = await start();
+    const response = await post(app, '/api/assets/stream', {
+      scope: orgScope,
+      contentType: 'RESOURCE',
+      mode: 'sa',
+    });
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toMatchObject({
+      code: 'SA_GATE_ORG_CALLER_NOT_ALLOWED',
+    });
+    expectNothingAsTheAccount(google);
+    expect(account.accessToken).not.toHaveBeenCalled();
+  });
+
+  it('allows organisation scope when caller matches SA_MODE_CALLERS', async () => {
+    const { app, account } = await start({}, { SA_MODE_CALLERS: 'example.com' });
+    const response = await post(app, '/api/assets/stream', {
+      scope: orgScope,
+      contentType: 'RESOURCE',
+      mode: 'sa',
+    });
+    expect(response.statusCode).toBe(200);
+    expect(account.accessToken).toHaveBeenCalled();
+  });
+});
+
+describe('SA_MODE_AUDIT_KEY over HTTP', () => {
+  it('hashes caller email with HMAC-SHA256 in audit logs when key is set', async () => {
+    const auditKey = 'my-secret-audit-key';
+    const { app, logs } = await start({}, { SA_MODE_AUDIT_KEY: auditKey });
+    await post(app, '/api/assets/stream', {
+      scope: SCOPE,
+      contentType: 'RESOURCE',
+      mode: 'sa',
+    });
+    const expectedHash = emailHashOf(CALLER_EMAIL, auditKey);
+    const auditLine = logs()
+      .split('\n')
+      .find((line) => line.includes('"event":"sa-gate"'));
+    expect(auditLine).toBeDefined();
+    expect(auditLine).toContain(`"callerEmailHash":"${expectedHash}"`);
+  });
+});

@@ -276,6 +276,7 @@ const app = await buildServer(
   parseConfig({
     SA_MODE_ENABLED: 'true',
     SA_MODE_STRICT_EXPOSURE: strict ? 'true' : 'false',
+    SA_MODE_CALLERS: 'example.com',
     OAUTH_CLIENT_ID: CLIENT_ID,
     HOSTED_BY: 'Example Ltd.',
     SOURCE_URL: 'https://git.example.org/team/gcportrait-fork',

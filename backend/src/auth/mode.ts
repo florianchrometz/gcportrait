@@ -30,9 +30,14 @@ export function withServiceAccount(
 
 /** The gate for a config and an identity, or null when service-account mode is off or has no identity. */
 export function serviceAccountGateFor(
-  config: Pick<ServerConfig, 'saModeEnabled' | 'saStrictExposure'>,
+  config: Pick<ServerConfig, 'saModeEnabled' | 'saStrictExposure' | 'saAuditKey' | 'saCallers'>,
   identity: ServiceAccountIdentity | undefined,
 ): ServiceAccountGate | null {
   if (!config.saModeEnabled || identity === undefined) return null;
-  return new ServiceAccountGate({ identity, strictExposure: config.saStrictExposure });
+  return new ServiceAccountGate({
+    identity,
+    strictExposure: config.saStrictExposure,
+    auditKey: config.saAuditKey,
+    callers: config.saCallers,
+  });
 }

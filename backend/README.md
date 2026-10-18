@@ -60,8 +60,10 @@ holds the route matrix, including JSON refusals of unavailable routes and retain
 `src/demo-only-harness.testing.ts` runs this mode for `e2e/tests/demo-only.spec.ts`.
 
 **The caller's token** is extracted by `src/stream/caller.ts`; header precedence and IAP usage follow
-[API authentication](../docs/api.md#authentication) and AGENTS.md, "Tokens". A malformed preferred header
-never falls back to `Authorization`. API responses carry `cache-control: no-store` and `x-request-id`.
+[API authentication](../docs/api.md#authentication) and AGENTS.md, "Tokens". By default, no audience check
+against `OAUTH_CLIENT_ID` is enforced, allowing scripts to use `gcloud auth print-access-token`. A malformed
+preferred header never falls back to `Authorization`. API responses carry `cache-control: no-store` and
+`x-request-id`.
 
 ## Configuration
 
@@ -225,17 +227,18 @@ can reach them, and the token they hand out is the backend's own. Workload ident
 supported, and the module needs no dependency.
 
 **The gate** (`src/auth/gate.ts`, `ServiceAccountGate`) is built by `buildServer` from the identity and
-configuration. The caller/credentials/exposure checks, per-call enforcement and memo bounds follow
+configuration. The caller/credentials/exposure checks, `SA_MODE_CALLERS` organisation gating, per-call
+enforcement and memo bounds follow
 [backend/AGENTS.md, The service-account gate](AGENTS.md#the-service-account-gate);
 [permissions](../docs/permissions.md#the-gate) explains them to the operator. A refusal at the caller or
 exposure step immediately invalidates a remembered pass for that token and scope. `src/auth/refusal.ts`
 maps failures to the common error response or a stream frame; `src/auth/mode.ts` publishes the resolved
 identity and checks the configured email.
 
-**The audit line** is owned by `ServiceAccountGate`: the fields and privacy exception follow the same rule.
-The line stays at `info` even when `LOG_LEVEL` is `warn`, `error` or `fatal` (a child logger preserves
-it); only `silent` drops it. An absent tokeninfo email is represented by a null hash, never a guessed
-identity.
+**The audit line** is owned by `ServiceAccountGate`: the fields and privacy exception follow the same rule,
+using plain SHA-256 or HMAC-SHA256 when `SA_MODE_AUDIT_KEY` is configured. The line stays at `info` even when
+`LOG_LEVEL` is `warn`, `error` or `fatal` (a child logger preserves it); only `silent` drops it. An absent
+tokeninfo email is represented by a null hash, never a guessed identity.
 
 Tests: `src/auth/gate.test.ts` (allowed, denied for every answer the caller check can get, the memo:
 remembered, expired, capped at five minutes and at the token's expiry, bounded, never across tokens or scopes,

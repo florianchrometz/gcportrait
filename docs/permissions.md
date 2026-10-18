@@ -40,7 +40,7 @@ every command on the page.
 | your account | you | `cloudasset.assets.listResource` | the scope | `roles/cloudasset.viewer` | List the scope’s assets | `gcloud organizations add-iam-policy-binding YOUR_SCOPE_ID --member="user:YOUR_EMAIL" --role="roles/cloudasset.viewer"` |
 | your account | you | `serviceusage.services.use`, and the Cloud Asset API enabled | a *quota project* of yours | `roles/serviceusage.serviceUsageConsumer` | A quota project for Cloud Asset Inventory | `gcloud services enable cloudasset.googleapis.com --project=YOUR_QUOTA_PROJECT` and `gcloud projects add-iam-policy-binding YOUR_QUOTA_PROJECT --member="user:YOUR_EMAIL" --role="roles/serviceusage.serviceUsageConsumer"` |
 | your account | you (optional) | `resourcemanager.{organizations,folders,projects}.get` | the scope | `roles/browser` (or Viewer) | See the scope’s details (a warning only) | `gcloud organizations add-iam-policy-binding YOUR_SCOPE_ID --member="user:YOUR_EMAIL" --role="roles/browser"`, only for the scope's name instead of its id |
-| service account | you, every time (the gate) | `resourcemanager.{organizations,folders,projects}.get` | the scope | `roles/browser` (or Viewer) | You can see the scope yourself | `gcloud organizations add-iam-policy-binding YOUR_SCOPE_ID --member="user:YOUR_EMAIL" --role="roles/browser"` |
+| service account | you, every time (the gate) | `resourcemanager.{organizations,folders,projects}.get` (plus `SA_MODE_CALLERS` on the instance for an organisation scope) | the scope | `roles/browser` (or Viewer) | You can see the scope yourself | `gcloud organizations add-iam-policy-binding YOUR_SCOPE_ID --member="user:YOUR_EMAIL" --role="roles/browser"` |
 | service account | the instance's account (only with the strict exposure check on) | *not* `resourcemanager.*.get` | the scope | none: the account must not see the scope's details | The service account cannot see the scope’s details on its own | — (remove the account's other roles there) |
 | service account | the instance's account `YOUR_SA_EMAIL` | `cloudasset.assets.listResource` | the scope | `roles/cloudasset.viewer`, and nothing more | The service account can list the scope’s assets | `gcloud organizations add-iam-policy-binding YOUR_SCOPE_ID --member="serviceAccount:YOUR_SA_EMAIL" --role="roles/cloudasset.viewer"` |
 | export | you | `cloudasset.assets.exportResource` to make the export | the scope | `roles/cloudasset.viewer` | — | `gcloud asset export --organization=YOUR_SCOPE_ID --content-type=resource --output-path=gs://YOUR_BUCKET/export.json` |
@@ -136,6 +136,10 @@ Before the account reads a scope, the instance proves that **you** may see that 
    `resourcemanager.projects.get`, matching the scope. Only an answer that contains that permission passes;
    Google answers an empty set for a scope you may not see and for one that does not exist, and every other
    answer (an error, a refusal by VPC Service Controls, no answer) refuses too.
+   For an organisation scope, the gate also requires that your account's verified email matches the
+   instance's `SA_MODE_CALLERS` allowlist (an exact email or `@domain`). When unset or unmatched, the gate
+   refuses (`SA_GATE_ORG_CALLER_NOT_ALLOWED`). Folders and projects rely on Resource Manager permissions
+   alone.
 2. **The account's token**, from the instance's own credentials.
 3. **The strict exposure check**, only where the instance's operator turned it on
    (`SA_MODE_STRICT_EXPOSURE=true`; the Permissions page says whether it is on): the account must *not* be
@@ -162,6 +166,7 @@ What the gate's answers mean (the Permissions page words them; the API returns t
 | Answer | Code | Meaning | What to do |
 |---|---|---|---|
 | 403 | `SA_GATE_CALLER_DENIED` | you do not hold the scope's `get` permission (or the scope does not exist) | ask for `roles/browser` on the scope, or read with your own account |
+| 403 | `SA_GATE_ORG_CALLER_NOT_ALLOWED` | organisation scopes in service-account mode require `SA_MODE_CALLERS` to name you or your domain | ask the instance's operator to add you to `SA_MODE_CALLERS`, or read with your own account |
 | 403 | `SA_GATE_EXPOSED` | strict check: the account can see the scope's details itself | remove the account's extra roles there, or keep the scope out of service-account mode |
 | 403 | `SA_GATE_UNEXPECTED`, `SA_GATE_EXPOSURE_UNEXPECTED` | Google answered something the gate does not understand; it refuses rather than guess | Google's status, reason and message come with it |
 | 403 | `ACCESS_TOKEN_SCOPE_INSUFFICIENT` | your sign-in lacks the Google Cloud scope | sign in again and allow it |
@@ -174,11 +179,12 @@ SCOPE" means nobody granted it `roles/cloudasset.viewer` there yet (the grant ab
 ### Who sees what you did
 
 Each decision of the gate writes one line to the instance's log (`service-account gate`): which request asked
-(the permission check or a pull), the scope, the SHA-256 of your email address in lower case, whether it was
-allowed or refused and why, and whether a remembered pass answered. Never your token, never your email itself.
-The line is written whatever log level the operator chose, short of turning logging off (`LOG_LEVEL=silent`).
-An operator who knows an address can find its lines by hashing it: `printf '%s' 'ada@example.com' | shasum -a
-256`. That makes the lines pseudonymous, not anonymous.
+(the permission check or a pull), the scope, the SHA-256 (or HMAC-SHA256 when `SA_MODE_AUDIT_KEY` is set) of
+your email address in lower case, whether it was allowed or refused and why, and whether a remembered pass
+answered. Never your token, never your email itself. The line is written whatever log level the operator
+chose, short of turning logging off (`LOG_LEVEL=silent`). Without an audit key, an operator who knows an
+address can find its lines by hashing it: `printf '%s' 'ada@example.com' | shasum -a 256` (pseudonymous, not
+anonymous). With `SA_MODE_AUDIT_KEY` configured, addresses cannot be reversed by guessing.
 
 ### For the instance's operator
 
@@ -186,6 +192,8 @@ An operator who knows an address can find its lines by hashing it: `printf '%s' 
 |---|---|
 | `SA_MODE_ENABLED=true` | offers service-account mode. The backend resolves its Application Default Credentials at start-up and stops with a message if it cannot (no account, or one that cannot mint a token). On Cloud Run that is the service account the service runs as. |
 | `SA_MODE_STRICT_EXPOSURE=true` | adds the strict exposure check to the gate (default off, above). Any value other than `true` or `false` stops the backend at start-up, so a typo never leaves the check off unnoticed. |
+| `SA_MODE_CALLERS` | comma- or whitespace-separated list of allowed caller emails (`alice@example.com`) or domain labels (`example.com`, `@example.com`) required to read organisation scopes in service-account mode. When unset, organisation scopes are refused for all callers. |
+| `SA_MODE_AUDIT_KEY` | optional secret key for HMAC-SHA256 hashing of caller emails in gate audit log entries instead of plain SHA-256. |
 | `BACKEND_SA_EMAIL` | optional with the mode on: the backend publishes the account its credentials resolve to, and refuses to start if this names another one. |
 | `GOOGLE_APPLICATION_CREDENTIALS` | optional: a credentials file to use instead of the metadata server. For a laptop, `gcloud auth application-default login --impersonate-service-account=YOUR_SA_EMAIL` writes the right kind (your account needs `roles/iam.serviceAccountTokenCreator` on the service account). A person's own credentials are refused: the mode reads as a service account. |
 

@@ -9,7 +9,7 @@
  * Memo bounds and audit policy are in the rule; refusal invalidation and audit-level handling are
  * beside their methods below (backend/README.md, "Service-account mode").
  */
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 
 import type { FastifyBaseLogger } from 'fastify';
 
@@ -61,9 +61,13 @@ export function isExactGetDenial(outcome: GoogleOutcome, scope: ParsedScope): bo
   );
 }
 
-/** The SHA-256 (hex) of an email, lower-cased and trimmed: the audit line's pseudonym for the caller. */
-export function emailHashOf(email: string): string {
-  return createHash('sha256').update(email.trim().toLowerCase(), 'utf8').digest('hex');
+/** The SHA-256 or HMAC-SHA256 (hex) of an email, lower-cased and trimmed: the audit line's pseudonym for the caller. */
+export function emailHashOf(email: string, auditKey?: string | null): string {
+  const normalized = email.trim().toLowerCase();
+  if (typeof auditKey === 'string' && auditKey.length > 0) {
+    return createHmac('sha256', auditKey).update(normalized, 'utf8').digest('hex');
+  }
+  return createHash('sha256').update(normalized, 'utf8').digest('hex');
 }
 
 /** The gate's steps, in order. */
@@ -144,11 +148,15 @@ export interface ServiceAccountGateOptions {
   readonly identity: ServiceAccountIdentity;
   /** `SA_MODE_STRICT_EXPOSURE`: run the `exposure` check. */
   readonly strictExposure: boolean;
+  /** Secret key for HMAC-SHA256 caller email hashing (`SA_MODE_AUDIT_KEY`). */
+  readonly auditKey?: string | null | undefined;
+  /** Allowed callers or domains for organisation scopes (`SA_MODE_CALLERS`). */
+  readonly callers?: readonly string[] | undefined;
   /** How long a pass is remembered; clamped to {@link GATE_MEMO_MAX_MS}. */
-  readonly memoMs?: number;
-  readonly memoMaxEntries?: number;
+  readonly memoMs?: number | undefined;
+  readonly memoMaxEntries?: number | undefined;
   /** The memo's clock (tests). */
-  readonly now?: () => number;
+  readonly now?: (() => number) | undefined;
 }
 
 interface MemoEntry {
@@ -338,9 +346,28 @@ function refusalOf(
   }
 }
 
+/**
+ * Whether the caller matches SA_MODE_CALLERS: exact lower-case email or ending in `@<domain>`.
+ * An empty callers list never matches.
+ */
+export function isCallerAllowed(email: string | undefined, callers: readonly string[]): boolean {
+  if (email === undefined || callers.length === 0) return false;
+  const normalized = email.trim().toLowerCase();
+  return callers.some((entry) => {
+    const item = entry.trim().toLowerCase();
+    if (item.includes('@') && !item.startsWith('@')) {
+      return normalized === item;
+    }
+    const domain = item.replace(/^@/, '');
+    return normalized.endsWith(`@${domain}`);
+  });
+}
+
 /** The service-account gate of one server: the account, strict mode or not, and the memo of passes. */
 export class ServiceAccountGate {
   readonly strictExposure: boolean;
+  readonly auditKey: string | null;
+  readonly callers: readonly string[];
   readonly #identity: ServiceAccountIdentity;
   readonly #memo: GateMemo;
   readonly #memoMs: number;
@@ -349,6 +376,8 @@ export class ServiceAccountGate {
   constructor(options: ServiceAccountGateOptions) {
     this.#identity = options.identity;
     this.strictExposure = options.strictExposure;
+    this.auditKey = options.auditKey ?? null;
+    this.callers = options.callers ?? [];
     this.#memoMs = Math.max(0, Math.min(options.memoMs ?? GATE_MEMO_MAX_MS, GATE_MEMO_MAX_MS));
     this.#memo = new GateMemo(options.memoMaxEntries ?? GATE_MEMO_MAX_ENTRIES);
     this.#now = options.now ?? Date.now;
@@ -388,7 +417,7 @@ export class ServiceAccountGate {
       tokenFacts(context, callerToken),
       testScopePermission(context, scope, callerToken, permission),
     ]);
-    const caller = callerOf(facts);
+    const caller = callerOf(facts, this.auditKey);
     const steps: GateStepResult[] = [];
     const callerFinding: GateFinding =
       facts.kind === 'invalid' ? 'unauthenticated' : classifyCallerCheck(tested, permission);
@@ -399,6 +428,18 @@ export class ServiceAccountGate {
     );
     if (callerFinding !== 'ok')
       return this.#refuse(request, key, caller, steps, 'caller', callerFinding, false);
+
+    if (scope.kind === 'organization' && !isCallerAllowed(caller.email, this.callers)) {
+      steps[steps.length - 1] = { step: 'caller', finding: 'denied' };
+      const message =
+        this.callers.length === 0
+          ? `Service-account mode for ${scope.name} requires SA_MODE_CALLERS to name the callers or domains allowed to read an organisation.`
+          : `Your account is not in SA_MODE_CALLERS for this instance, so gcportrait does not read ${scope.name} with its service account.`;
+      return this.#refuse(request, key, caller, steps, 'caller', 'denied', false, {
+        code: 'SA_GATE_ORG_CALLER_NOT_ALLOWED',
+        message,
+      });
+    }
 
     // Credentials: the account's own token. Nothing has been asked as the account before this point.
     const token = await this.#accountToken(context);
@@ -455,6 +496,7 @@ export class ServiceAccountGate {
     step: GateStep,
     finding: Exclude<GateFinding, 'ok'>,
     cached: boolean,
+    customRefusal?: { readonly code: string; readonly message: string },
   ): GateRefusal {
     if (step !== 'credentials') this.#memo.delete(key);
     const upstream = steps.find((entry) => entry.step === step)?.upstream;
@@ -464,6 +506,7 @@ export class ServiceAccountGate {
       step,
       finding,
       ...refusalOf(step, finding, request.scope, upstream),
+      ...customRefusal,
       ...(upstream === undefined ? {} : { upstream }),
       caller,
       steps,
@@ -497,9 +540,9 @@ export class ServiceAccountGate {
   }
 }
 
-function callerOf(facts: TokenFacts): GateCaller {
+function callerOf(facts: TokenFacts, auditKey?: string | null): GateCaller {
   if (facts.kind !== 'valid' || facts.email === undefined) return { emailHash: null };
-  return { email: facts.email, emailHash: emailHashOf(facts.email) };
+  return { email: facts.email, emailHash: emailHashOf(facts.email, auditKey) };
 }
 
 /** A step's result; Google's answer goes with it only when it was an error, never with a pass or a 200. */

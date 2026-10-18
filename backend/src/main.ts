@@ -65,6 +65,8 @@ async function main(): Promise<void> {
           email: serviceAccount.email,
           source: serviceAccount.source,
           strictExposure: config.saStrictExposure,
+          auditKey: config.saAuditKey !== null ? 'hmac-sha256' : 'sha256',
+          callers: config.saCallers.length,
         },
       },
       'service-account mode on',

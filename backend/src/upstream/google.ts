@@ -311,11 +311,12 @@ export async function tokenFacts(context: GoogleCallContext, token: string): Pro
   if (outcome.kind === 'answer' && outcome.httpStatus === 400) return { kind: 'invalid' };
   if (outcome.kind !== 'answer' || outcome.httpStatus !== 200 || !isRecord(outcome.body))
     return { kind: 'unknown' };
-  const { email, expires_in: expiresIn } = outcome.body;
+  const { email, email_verified, expires_in: expiresIn } = outcome.body;
+  const verified = email_verified !== false && email_verified !== 'false';
   const seconds = typeof expiresIn === 'string' || typeof expiresIn === 'number' ? Number(expiresIn) : NaN;
   return {
     kind: 'valid',
-    ...(typeof email === 'string' ? { email } : {}),
+    ...(typeof email === 'string' && verified ? { email } : {}),
     ...(Number.isFinite(seconds) && seconds >= 0 ? { expiresIn: seconds } : {}),
   };
 }

@@ -43,6 +43,16 @@ export type ServerConfig = {
    */
   readonly saStrictExposure: boolean;
   /**
+   * Secret key for HMAC-SHA256 of the caller email in service-account audit lines (`SA_MODE_AUDIT_KEY`).
+   * When null (the default), plain SHA-256 is used.
+   */
+  readonly saAuditKey: string | null;
+  /**
+   * Allowed callers or domains for organisation scopes in service-account mode (`SA_MODE_CALLERS`).
+   * Entries are normalized lower-case emails or domain names. Empty when unset (organisation scopes refused).
+   */
+  readonly saCallers: readonly string[];
+  /**
    * The backend service account email customers grant `roles/cloudasset.viewer` to, or null. With service-account
    * mode on, it must be the account Application Default Credentials resolve to (auth/mode.ts), which fills it
    * in when `BACKEND_SA_EMAIL` is unset.
@@ -168,6 +178,14 @@ const EnvSchema = z.object({
   SA_MODE_STRICT_EXPOSURE: optional(
     z.enum(['true', 'false'], { error: 'must be "true" or "false" (or unset, which means off)' }),
   ),
+  SA_MODE_AUDIT_KEY: optional(
+    z
+      .string()
+      .trim()
+      .min(1, 'must not be empty')
+      .regex(/^[^\p{Cc}\p{Cf}]+$/u, 'must not contain control characters'),
+  ),
+  SA_MODE_CALLERS: optional(z.string().trim()),
   BACKEND_SA_EMAIL: optional(z.email()),
   // Plain text on one line. Never Google: gcportrait is not affiliated with Google (AGENTS.md,
   // Non-affiliation, brand and legal).
@@ -231,6 +249,10 @@ export const DEFAULT_STATIC_DIR = path.resolve(PACKAGE_ROOT, '..', 'frontend', '
 
 /** The documented values of SA_MODE_ENABLED. */
 const SA_MODE_VALUES: ReadonlySet<string> = new Set(['true', 'false']);
+
+/** Pattern for an email address (user@domain.tld) or domain (@domain.tld or domain.tld). */
+const CALLER_ENTRY_PATTERN =
+  /^(?:[^\s@]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+|@?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+)$/i;
 
 /**
  * Warnings about an environment that parses but is probably not what the operator meant; main.ts logs them
@@ -304,6 +326,20 @@ export function parseConfig(
       `LEGAL_PRIVACY_URL: must be unset while ${source} holds a privacy notice (serve the text or link the page, not both)`,
     );
   }
+  let saCallers: readonly string[] = Object.freeze([]);
+  if (vars.SA_MODE_CALLERS !== undefined) {
+    const tokens = vars.SA_MODE_CALLERS.split(/[\s,]+/)
+      .map((token) => token.trim())
+      .filter((token) => token.length > 0);
+    const invalid = tokens.some((token) => !CALLER_ENTRY_PATTERN.test(token));
+    if (invalid) {
+      problems.push(
+        'SA_MODE_CALLERS: must be a comma- or whitespace-separated list of caller emails (alice@example.com) or domains (example.com or @example.com)',
+      );
+    } else {
+      saCallers = Object.freeze(tokens.map((token) => token.toLowerCase()));
+    }
+  }
   if (problems.length > 0) {
     throw new ConfigError(
       `Invalid backend configuration:\n${problems.map((problem) => `  ${problem}`).join('\n')}`,
@@ -317,6 +353,8 @@ export function parseConfig(
     oauthClientId: vars.OAUTH_CLIENT_ID ?? null,
     saModeEnabled: vars.SA_MODE_ENABLED === 'true',
     saStrictExposure: vars.SA_MODE_STRICT_EXPOSURE === 'true',
+    saAuditKey: vars.SA_MODE_AUDIT_KEY ?? null,
+    saCallers,
     backendServiceAccount: vars.BACKEND_SA_EMAIL ?? null,
     hostedBy: vars.HOSTED_BY ?? null,
     staticDir: vars.STATIC_DIR === undefined ? DEFAULT_STATIC_DIR : path.resolve(cwd, vars.STATIC_DIR),

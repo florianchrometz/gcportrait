@@ -36,6 +36,7 @@ import {
 import {
   emailHashOf,
   GATE_MEMO_MAX_MS,
+  isCallerAllowed,
   ServiceAccountGate,
   type GateDecision,
   type GatePass,
@@ -62,6 +63,8 @@ function setup(
   options: FakeGoogleOptions = {},
   gateOptions: {
     readonly strictExposure?: boolean;
+    readonly auditKey?: string | null;
+    readonly callers?: readonly string[];
     readonly memoMs?: number;
     readonly memoMaxEntries?: number;
     /** The request logger's level, as LOG_LEVEL sets it. */
@@ -77,6 +80,8 @@ function setup(
   const gate = new ServiceAccountGate({
     identity,
     strictExposure: gateOptions.strictExposure ?? false,
+    auditKey: gateOptions.auditKey,
+    callers: gateOptions.callers ?? ['example.com'],
     ...(gateOptions.memoMs === undefined ? {} : { memoMs: gateOptions.memoMs }),
     ...(gateOptions.memoMaxEntries === undefined ? {} : { memoMaxEntries: gateOptions.memoMaxEntries }),
     now: () => clock.now,
@@ -532,6 +537,101 @@ describe('audit line', () => {
   it('hashes the email lower-cased and trimmed (SHA-256, hex)', () => {
     expect(emailHashOf(' Person@Example.com ')).toBe(emailHashOf('person@example.com'));
     expect(emailHashOf('person@example.com')).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('hashes the email with HMAC-SHA256 when an audit key is provided', () => {
+    const plain = emailHashOf('person@example.com');
+    const keyed = emailHashOf('person@example.com', 'secret-audit-key');
+    expect(keyed).toMatch(/^[0-9a-f]{64}$/);
+    expect(keyed).not.toBe(plain);
+    expect(emailHashOf(' Person@Example.com ', 'secret-audit-key')).toBe(keyed);
+    expect(emailHashOf('person@example.com', 'different-key')).not.toBe(keyed);
+  });
+
+  it('uses HMAC-SHA256 for the decision caller and audit line when auditKey is configured', async () => {
+    const auditKey = 'my-audit-salt';
+    const { logs, check } = setup({}, { auditKey });
+    const decision = passed(await check());
+    const expectedHash = emailHashOf(CALLER_EMAIL, auditKey);
+    expect(decision.caller).toEqual({ email: CALLER_EMAIL, emailHash: expectedHash });
+    expect(auditOf(logs())[0]).toMatchObject({ callerEmailHash: expectedHash, decision: 'allowed' });
+  });
+});
+
+describe('isCallerAllowed', () => {
+  it('returns false for undefined email or empty callers', () => {
+    expect(isCallerAllowed(undefined, ['example.com'])).toBe(false);
+    expect(isCallerAllowed('ada@example.com', [])).toBe(false);
+  });
+
+  it('matches exact email case-insensitively', () => {
+    expect(isCallerAllowed('Ada@Example.com', ['ada@example.com'])).toBe(true);
+    expect(isCallerAllowed('ada@example.com', ['ADA@EXAMPLE.COM'])).toBe(true);
+    expect(isCallerAllowed('bob@example.com', ['ada@example.com'])).toBe(false);
+  });
+
+  it('matches domain with or without leading @', () => {
+    expect(isCallerAllowed('ada@example.com', ['example.com'])).toBe(true);
+    expect(isCallerAllowed('ada@example.com', ['@example.com'])).toBe(true);
+    expect(isCallerAllowed('ada@example.org', ['example.com'])).toBe(false);
+  });
+});
+
+describe('organisation scope caller gating', () => {
+  it('refuses when callers is empty', async () => {
+    const { identity, check } = setup({}, { callers: [] });
+    const decision = refused(await check({ scope: ORGANIZATION }));
+    expect(decision).toMatchObject({
+      allowed: false,
+      step: 'caller',
+      finding: 'denied',
+      status: 403,
+      code: 'SA_GATE_ORG_CALLER_NOT_ALLOWED',
+      retryable: false,
+    });
+    expect(decision.message).toContain('requires SA_MODE_CALLERS');
+    expect(identity.accessToken).not.toHaveBeenCalled();
+  });
+
+  it('refuses when callers does not match caller email', async () => {
+    const { identity, check } = setup({}, { callers: ['example.org'] });
+    const decision = refused(await check({ scope: ORGANIZATION }));
+    expect(decision).toMatchObject({
+      allowed: false,
+      step: 'caller',
+      finding: 'denied',
+      status: 403,
+      code: 'SA_GATE_ORG_CALLER_NOT_ALLOWED',
+      retryable: false,
+    });
+    expect(decision.message).toContain('Your account is not in SA_MODE_CALLERS');
+    expect(identity.accessToken).not.toHaveBeenCalled();
+  });
+
+  it('passes when callers matches domain', async () => {
+    const { identity, check } = setup({}, { callers: ['example.com'] });
+    const decision = passed(await check({ scope: ORGANIZATION }));
+    expect(decision.allowed).toBe(true);
+    expect(identity.accessToken).toHaveBeenCalled();
+  });
+
+  it('passes when callers matches exact email', async () => {
+    const { identity, check } = setup({}, { callers: [CALLER_EMAIL] });
+    const decision = passed(await check({ scope: ORGANIZATION }));
+    expect(decision.allowed).toBe(true);
+    expect(identity.accessToken).toHaveBeenCalled();
+  });
+
+  it('allows folders and projects when callers is empty', async () => {
+    const { identity: idFolder, check: checkFolder } = setup({}, { callers: [] });
+    const folderDecision = passed(await checkFolder({ scope: FOLDER }));
+    expect(folderDecision.allowed).toBe(true);
+    expect(idFolder.accessToken).toHaveBeenCalled();
+
+    const { identity: idProj, check: checkProj } = setup({}, { callers: [] });
+    const projDecision = passed(await checkProj({ scope: PROJECT }));
+    expect(projDecision.allowed).toBe(true);
+    expect(idProj.accessToken).toHaveBeenCalled();
   });
 });
 

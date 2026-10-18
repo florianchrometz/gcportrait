@@ -22,14 +22,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 
 ## 1. Maintainer decisions
 
-- **Security defaults** ([security.md](security.md), section 12): accept only the instance's own OAuth
-  client's tokens (O1); steer team instances to `--iap` (O2); the strict exposure check in service-account
-  mode, off by default (O8), and the audit line's plain SHA-256 against an HMAC; a per-token share of the page
-  budget, a higher minimum rate, or a configurable `STREAM_STALL_MS` (O11).
-- **Service-account mode at organisation scope** is open to every member of the customer's domain who can sign
-  in, since Google grants `resourcemanager.organizations.get` domain-wide by default; a stricter rule for
-  organisations ([backend/AGENTS.md](../backend/AGENTS.md), "The service-account gate";
-  [permissions.md](permissions.md)).
+- **Steer team instances to `--iap`** ([security.md](security.md), section 12, O2).
 - **The demo-only Connect page's privacy sentence** ("This demo processes no personal data … stores nothing on
   its server") against the request logs and the in-memory rate limiter of a self-hosted demo-only instance on
   Cloud Run: reword it, add a log exclusion, or both.

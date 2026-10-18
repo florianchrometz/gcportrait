@@ -8,6 +8,7 @@ import {
   isTransientOutcome,
   probeAssets,
   summaryOf,
+  tokenFacts,
   type AssetsListBody,
   type CaiCredentials,
   type GoogleOutcome,
@@ -200,5 +201,69 @@ describe('summaryOf (what the browser is told of an answer)', () => {
       code: 'TOO_LARGE',
       message: 'Too large.',
     });
+  });
+});
+
+describe('tokenFacts (oauth2.tokeninfo caller details)', () => {
+  it('returns valid with email and expiresIn when verified', async () => {
+    const context = testContext(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            email: 'alice@example.com',
+            email_verified: 'true',
+            expires_in: '3599',
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      ),
+    );
+    const facts = await tokenFacts(context, 'valid-token');
+    expect(facts).toEqual({
+      kind: 'valid',
+      email: 'alice@example.com',
+      expiresIn: 3599,
+    });
+  });
+
+  it('omits email when email_verified is false or "false"', async () => {
+    for (const email_verified of [false, 'false']) {
+      const context = testContext(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              email: 'spoofed@example.com',
+              email_verified,
+              expires_in: 120,
+            }),
+            { status: 200, headers: { 'content-type': 'application/json' } },
+          ),
+        ),
+      );
+      const facts = await tokenFacts(context, 'unverified-token');
+      expect(facts).toEqual({
+        kind: 'valid',
+        expiresIn: 120,
+      });
+    }
+  });
+
+  it('returns invalid on HTTP 400', async () => {
+    const context = testContext(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ error_description: 'Invalid Value' }), {
+          status: 400,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    );
+    const facts = await tokenFacts(context, 'bad-token');
+    expect(facts).toEqual({ kind: 'invalid' });
+  });
+
+  it('returns unknown on non-200 / non-400', async () => {
+    const context = testContext(() => Promise.resolve(new Response('server error', { status: 500 })));
+    const facts = await tokenFacts(context, 'token');
+    expect(facts).toEqual({ kind: 'unknown' });
   });
 });
