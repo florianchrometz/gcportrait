@@ -6,7 +6,7 @@
  * Security and privacy, Quota project and the permission check).
  * Until then the button says what is missing. Pure: reads the app store's `connect` slice.
  */
-import { sameRequest } from '../preflight/state';
+import { preflightRequestOf, sameRequest } from '../preflight/state';
 import type { ConnectSlice } from '../state/slices';
 import type { PullTarget } from './run';
 
@@ -18,12 +18,8 @@ export type PullReadiness =
 export function pullTargetOf(connect: ConnectSlice): PullReadiness {
   if (connect.session.status !== 'signed-in') return { blocked: 'Sign in with Google first' };
   const { scope, mode, preflight } = connect;
-  if (scope === null) return { blocked: 'Choose a scope first' };
-  const current = {
-    scope: scope.scope,
-    mode,
-    ...(mode === 'user' && connect.quotaProject !== null ? { quotaProject: connect.quotaProject } : {}),
-  };
+  const current = preflightRequestOf(connect);
+  if (current === null || scope === null) return { blocked: 'Choose a scope first' };
   if (preflight.status === 'idle')
     return { blocked: 'Check the permissions for this scope first', check: true };
   if (!sameRequest(preflight.request, current))

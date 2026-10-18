@@ -9,7 +9,7 @@ import { useCallback, useEffect } from 'react';
 import { useAuth } from '../auth';
 import { useAppState, useAppStore, type AppStore } from '../state';
 import { requestPreflight, type PreflightRequest } from './api';
-import { IDLE_PREFLIGHT, sameRequest, type PreflightState } from './state';
+import { IDLE_PREFLIGHT, preflightRequestOf, sameRequest, type PreflightState } from './state';
 
 export interface PreflightControls {
   /** What a check would ask now, or null while no scope is picked. */
@@ -34,14 +34,7 @@ export function usePreflight(): PreflightControls {
   const state = useAppState((state) => state.connect.preflight);
   const status = useAppState((state) => state.connect.session.status);
 
-  const request: PreflightRequest | null =
-    scope === null
-      ? null
-      : {
-          scope: scope.scope,
-          mode,
-          ...(mode === 'user' && quotaProject !== null ? { quotaProject } : {}),
-        };
+  const request = preflightRequestOf({ scope, mode, quotaProject });
   const signedIn = status === 'signed-in';
 
   useEffect(() => {

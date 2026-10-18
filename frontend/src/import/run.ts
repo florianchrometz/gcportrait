@@ -14,6 +14,7 @@
 import { LARGE_SNAPSHOT_ASSETS, type SnapshotRef, type SnapshotScope } from '@gcportrait/model';
 
 import { fetchWithToken, NotSignedInError, type AccessMode, type AuthControls } from '../auth';
+import { readErrorMessage } from '../api/json';
 import type { SnapshotLibrary } from '../snapshots/library';
 import { scopeName } from '../snapshots/labels';
 import { SnapshotJobCancelled } from '../snapshots/worker/client';
@@ -94,17 +95,6 @@ class Failed extends Error {
   }
 }
 
-async function messageOf(response: Response): Promise<string> {
-  try {
-    const body: unknown = await response.json();
-    if (typeof body === 'object' && body !== null && 'message' in body && typeof body.message === 'string')
-      return body.message;
-  } catch {
-    // Not JSON: say what the status says.
-  }
-  return `The backend answered HTTP ${String(response.status)}.`;
-}
-
 /** Opens the stream; throws {@link Failed} or {@link ImportCancelled}. */
 async function open(
   dependencies: ImportDependencies,
@@ -126,7 +116,11 @@ async function open(
     throw new Failed({ kind: 'network' });
   }
   if (!response.ok)
-    throw new Failed({ kind: 'request', status: response.status, message: await messageOf(response) });
+    throw new Failed({
+      kind: 'request',
+      status: response.status,
+      message: await readErrorMessage(response, `The backend answered HTTP ${String(response.status)}.`),
+    });
   if (response.body === null) throw new Failed({ kind: 'network' });
   return response;
 }

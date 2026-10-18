@@ -13,7 +13,7 @@ import { isPreflightAnswer, readError, requestPreflight, type PreflightItem } fr
 import { purposeOf } from './CommandBlock';
 import { explainCandidate, explainItem, outcomeHeadline, refusal, serviceAccountParagraphs } from './copy';
 import { referenceRows } from './PermissionsGuide';
-import { sameRequest } from './state';
+import { preflightRequestOf, sameRequest } from './state';
 import { BLOCKED_ANSWER } from './testing';
 
 const TOKEN = 'unit-test-token-1';
@@ -285,5 +285,36 @@ describe('sameRequest', () => {
     expect(sameRequest({ scope: 'projects/a', mode: 'user' }, { scope: 'projects/a', mode: 'sa' })).toBe(
       false,
     );
+  });
+});
+
+describe('preflightRequestOf', () => {
+  it('returns null when no scope is picked', () => {
+    expect(preflightRequestOf({ scope: null, mode: 'user', quotaProject: null })).toBeNull();
+  });
+
+  it('builds a request in user mode without a quota project', () => {
+    const scope = { kind: 'project' as const, id: 'p', scope: 'projects/p' };
+    expect(preflightRequestOf({ scope, mode: 'user', quotaProject: null })).toEqual({
+      scope: 'projects/p',
+      mode: 'user',
+    });
+  });
+
+  it('includes quotaProject in user mode when provided', () => {
+    const scope = { kind: 'project' as const, id: 'p', scope: 'projects/p' };
+    expect(preflightRequestOf({ scope, mode: 'user', quotaProject: 'q-proj' })).toEqual({
+      scope: 'projects/p',
+      mode: 'user',
+      quotaProject: 'q-proj',
+    });
+  });
+
+  it('omits quotaProject in sa mode even if present', () => {
+    const scope = { kind: 'project' as const, id: 'p', scope: 'projects/p' };
+    expect(preflightRequestOf({ scope, mode: 'sa', quotaProject: 'q-proj' })).toEqual({
+      scope: 'projects/p',
+      mode: 'sa',
+    });
   });
 });

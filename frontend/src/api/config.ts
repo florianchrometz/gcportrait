@@ -19,6 +19,7 @@ export type { LegalPages, PublicConfig } from '@gcportrait/model';
 import type { LegalPages, PublicConfig, RenderLimits } from '@gcportrait/model';
 
 import { isRecord } from '../guards';
+import { getPublicJson, isNullableString } from './json';
 
 /**
  * Whether a value can be a linked legal page's address: an absolute https URL with a host and no user name or
@@ -32,10 +33,6 @@ export function isLegalUrl(value: unknown): value is string {
   } catch {
     return false;
   }
-}
-
-function isNullableString(value: unknown): value is string | null {
-  return value === null || typeof value === 'string';
 }
 
 /** A linked page's address may be any string here; the footer links only an {@link isLegalUrl} one. */
@@ -78,15 +75,5 @@ export function isPublicConfig(value: unknown): value is PublicConfig {
 
 /** Fetches /api/config. Resolves to null when the backend is unreachable or answers unexpectedly. */
 export async function fetchPublicConfig(signal?: AbortSignal): Promise<PublicConfig | null> {
-  try {
-    const response = await fetch('/api/config', {
-      headers: { accept: 'application/json' },
-      signal: signal ?? null,
-    });
-    if (!response.ok) return null;
-    const body: unknown = await response.json();
-    return isPublicConfig(body) ? body : null;
-  } catch {
-    return null;
-  }
+  return getPublicJson('/api/config', isPublicConfig, signal);
 }

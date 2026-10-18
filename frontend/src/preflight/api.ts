@@ -22,7 +22,8 @@ import {
   type UpstreamSummary,
 } from '@gcportrait/model';
 
-import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';
+import { postJson, readError } from '../api/json';
+import type { AuthControls } from '../auth';
 import { isRecord } from '../guards';
 import { SCOPE_KINDS } from '../scope/scopeName';
 
@@ -119,40 +120,16 @@ export function isPreflightAnswer(value: unknown): value is PreflightAnswer {
   );
 }
 
-/** A sentence for an error answer of this backend (`{ statusCode, error, message, requestId, code }`). */
-export function readError(status: number, body: unknown): string {
-  if (status === 429) return 'Too many requests for this sign-in. Wait a minute, then try again.';
-  const message = isRecord(body) && typeof body.message === 'string' ? body.message : null;
-  if (status >= 500 || message === null)
-    return `The backend could not answer (HTTP ${String(status)}). Try again.`;
-  return message;
-}
+export { readError };
 
 export async function requestPreflight(
   auth: AuthControls,
   request: PreflightRequest,
   signal?: AbortSignal,
 ): Promise<PreflightCallOutcome> {
-  let response: Response;
-  try {
-    response = await fetchWithToken(auth, '/api/preflight', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify(request),
-      ...(signal === undefined ? {} : { signal }),
-    });
-  } catch (error) {
-    if (error instanceof NotSignedInError) return { kind: 'signed-out' };
-    if (signal?.aborted === true) throw error;
-    return { kind: 'error', message: 'The backend did not answer. Check your connection and try again.' };
-  }
-  if (response.status === 401) return { kind: 'signed-out' };
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    body = undefined;
-  }
+  const result = await postJson(auth, '/api/preflight', request, signal);
+  if (result.kind !== 'response') return result;
+  const { response, body } = result;
   // Service-account mode: when the gate refuses (403, or 503 to try again), the backend still sends the checklist
   // as `preflight`, so the page can say which grant is missing (backend/src/routes/preflight.ts).
   if (!response.ok && isRecord(body) && isPreflightAnswer(body.preflight))

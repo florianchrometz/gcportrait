@@ -10,9 +10,10 @@
  */
 import type { ScopeSearchProblem, ScopeSearchResponse, ScopeSearchResult } from '@gcportrait/model';
 
-import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';
+import { postJson, readError } from '../api/json';
+import type { AuthControls } from '../auth';
 import { isRecord } from '../guards';
-import { isUpstreamSummary, readError } from '../preflight/api';
+import { isUpstreamSummary } from '../preflight/api';
 import { parseScopeName, SCOPE_KINDS, type ScopeChoice, type ScopeKind } from './scopeName';
 
 export type { ScopeSearchProblem as SearchProblem } from '@gcportrait/model';
@@ -103,26 +104,9 @@ export async function searchScopes(
   request: ScopeSearchRequest,
   signal?: AbortSignal,
 ): Promise<ScopeSearchOutcome> {
-  let response: Response;
-  try {
-    response = await fetchWithToken(auth, '/api/scopes/search', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify(request),
-      ...(signal === undefined ? {} : { signal }),
-    });
-  } catch (error) {
-    if (error instanceof NotSignedInError) return { kind: 'signed-out' };
-    if (signal?.aborted === true) throw error;
-    return { kind: 'error', message: 'The backend did not answer. Check your connection and try again.' };
-  }
-  if (response.status === 401) return { kind: 'signed-out' };
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    body = undefined;
-  }
+  const result = await postJson(auth, '/api/scopes/search', request, signal);
+  if (result.kind !== 'response') return result;
+  const { response, body } = result;
   if (!response.ok) return { kind: 'error', message: readError(response.status, body) };
   return (
     readSearchAnswer(body) ?? {

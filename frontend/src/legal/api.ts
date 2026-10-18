@@ -2,6 +2,7 @@
 import type { LegalTexts } from '@gcportrait/model';
 
 import { isLegalUrl, type LegalPages } from '../api/config';
+import { getPublicJson, isNullableString } from '../api/json';
 import { isRecord } from '../guards';
 
 export type { LegalTexts } from '@gcportrait/model';
@@ -30,10 +31,6 @@ export function legalTarget(pages: LegalPages, id: LegalPageId): LegalTarget | n
   return isLegalUrl(url) ? { kind: 'linked', url, host: new URL(url).hostname } : null;
 }
 
-function isNullableString(value: unknown): value is string | null {
-  return value === null || typeof value === 'string';
-}
-
 /** The answer's contract is the model's `LegalTextsSchema`; api/config.test.ts holds this guard to it. */
 export function isLegalTexts(value: unknown): value is LegalTexts {
   return isRecord(value) && isNullableString(value.impressum) && isNullableString(value.privacy);
@@ -41,15 +38,5 @@ export function isLegalTexts(value: unknown): value is LegalTexts {
 
 /** Fetches /api/legal. Resolves to null when the backend is unreachable or answers unexpectedly. */
 export async function fetchLegalTexts(signal?: AbortSignal): Promise<LegalTexts | null> {
-  try {
-    const response = await fetch('/api/legal', {
-      headers: { accept: 'application/json' },
-      signal: signal ?? null,
-    });
-    if (!response.ok) return null;
-    const body: unknown = await response.json();
-    return isLegalTexts(body) ? body : null;
-  } catch {
-    return null;
-  }
+  return getPublicJson('/api/legal', isLegalTexts, signal);
 }
