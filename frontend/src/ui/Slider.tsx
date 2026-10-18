@@ -46,8 +46,10 @@ import { inertProps, isInert, type Inert } from './dom';
 import styles from './Slider.module.css';
 
 export interface SliderProps {
-  /** The visible label that names the slider. */
+  /** The label that names the slider, visible unless `hideLabel`. */
   readonly label: string;
+  /** Keeps the label for assistive technology only (`.visually-hidden`), where the context already says it. */
+  readonly hideLabel?: boolean;
   readonly min: number;
   readonly max: number;
   readonly step?: number;
@@ -83,6 +85,7 @@ export function clampToStep(value: number, min: number, max: number, step: numbe
 
 export function Slider({
   label,
+  hideLabel = false,
   min,
   max,
   step = 1,
@@ -138,7 +141,7 @@ export function Slider({
 
   return (
     <span className={cx(controls.field, styles.slider, className)}>
-      <span id={labelId} className={controls.fieldLabel}>
+      <span id={labelId} className={hideLabel ? 'visually-hidden' : controls.fieldLabel}>
         {label}
       </span>
       <div

@@ -214,8 +214,10 @@ export function TimelineBar(): ReactElement {
         <span className={styles.edge} aria-hidden="true">
           {first === undefined ? '' : tickLabel(first)}
         </span>
+        {/* The slider's label names it out of sight: the bar's title says it, the edge dates sit beside the track. */}
         <Slider
           label="Timeline"
+          hideLabel
           className={cx(styles.slider)}
           min={0}
           max={max}

@@ -47,6 +47,32 @@ describe('Slider', () => {
     await expectNoAxeViolations();
   });
 
+  it('keeps its name when its label is hidden from sight, and shows the label otherwise', async () => {
+    const slider = (hideLabel?: boolean): ReactElement => (
+      <Slider
+        label="Timeline"
+        min={0}
+        max={34}
+        value={34}
+        onChange={() => undefined}
+        {...(hideLabel === undefined ? {} : { hideLabel })}
+      />
+    );
+    const labelOf = (): HTMLElement | null =>
+      document.getElementById(
+        screen.getByRole('slider', { name: 'Timeline' }).getAttribute('aria-labelledby') ?? '',
+      );
+    const { unmount } = renderInPage(slider(true));
+    expect(labelOf()?.className).toBe('visually-hidden');
+    await expectNoAxeViolations();
+    unmount();
+    for (const shown of [false, undefined]) {
+      const view = renderInPage(slider(shown));
+      expect(labelOf()?.classList.contains('visually-hidden')).toBe(false);
+      view.unmount();
+    }
+  });
+
   it('moves with the arrows, Page Up/Down, Home and End, within its range', async () => {
     renderInPage(<Timeline />);
     const slider = screen.getByRole('slider', { name: 'Timeline' });
