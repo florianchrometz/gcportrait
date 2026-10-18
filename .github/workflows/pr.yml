@@ -229,27 +229,10 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # The layout's strict performance budgets (gcp-diagram-layout skill §7): S < 10 ms, M < 60 ms, L < 400 ms and XL
-  # collapsed < 2 s through a worker, plus the memo, cancellation and memory checks, run alone
-  # (`pnpm --filter @gcportrait/layout test:budget`), then the bench's table in the job summary.
-  #
-  # Non-blocking on purpose (continue-on-error, and `required` does not wait for it): the budgets are
-  # wall-clock figures for a quiet M1-class machine (a laptop or desktop whose cores are as fast as an M1's, one
-  # core per layout, no other load), and they do not scale with the machine that measures them. A shared
-  # GitHub-hosted runner is slower single-threaded and varies from run to run, so its figures are expected
-  # above the budgets by a margin, and a blocking strict job would fail for reasons outside the change and be
-  # re-run until green. What blocks is the `unit (layout)` leg: the same measurements under `pnpm test` assert
-  # 2 x the budgets, which catches real regressions on any runner. This job shows the runner's CPU and the
-  # strict figures on every pull request, says which machine the budgets describe, and raises a warning when
-  # one is missed; the strict run is part of the layout's local checks (packages/layout/README.md,
-  # "Performance"). To make it blocking (e.g. on a larger or self-hosted runner, once its margin is known),
-  # remove continue-on-error and add it to `required`.
-  #
-  # The job then explores the layout's properties over random Scenes, 1 000 runs each
-  # (`pnpm --filter @gcportrait/layout explore`), under a seed taken from the run id: a re-run draws the same
-  # inputs, a new push others. The blocking `unit (layout)` leg runs them under one fixed seed (CI_PROPERTY_SEED
-  # of @gcportrait/model/testing), so a counterexample the change under test did not bring in is reported here,
-  # with its seed and path, instead of failing an unrelated pull request.
+  # Budgets: gcp-diagram-layout skill §7. Commands and non-blocking CI behavior: docs/contributing.md,
+  # "Continuous integration"; machine, regression ceilings and making this job blocking:
+  # packages/layout/README.md, "Performance". Property seeds and replay: the same README's "Tests".
+  # The exploration seed comes from the run id: a re-run keeps its inputs; a new run may change them.
   layout-budget:
     name: layout-budget
     needs: changes
