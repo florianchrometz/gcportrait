@@ -10,13 +10,12 @@
  * `ErrorInfo` reason, which says what to do about a 403, is read back from the end of the stream, where the frame
  * is: the handler keeps the last bytes it was given, and nothing more.
  */
-import { IngestError, createIngestSession, type IngestProblem, type IngestSession } from '@gcportrait/ingest';
+import { IngestError, createIngestSession, type IngestSession } from '@gcportrait/ingest';
 
 import { isRecord } from '../../guards';
-import { formatUtc, plural, scopeName } from '../../snapshots/labels';
-import { prepareSnapshot } from '../../snapshots/worker/prepare';
+import { describeProblems, exportReadToSnapshot } from '../../snapshots/worker/prepare';
 import { inferScope } from '../../snapshots/worker/scope';
-import { futureReadTimeNote, namedScope } from '../sidecar';
+import { namedScope } from '../sidecar';
 import type { ImportRequest, ImportResponse, StreamFailure, StreamSettings } from './protocol';
 
 /** How much of the stream's end is kept, to read an error frame's reason back. */
@@ -27,9 +26,6 @@ const PROGRESS_EVERY_BYTES = 256 * 1024;
 
 /** A placeholder until the assets name the scope; ingest validates the scope it is given. */
 const PENDING_SCOPE = { kind: 'organization', id: 'pending' } as const;
-
-/** How many malformed lines are listed for the person (the rest are counted). */
-const LISTED_PROBLEMS = 5;
 
 export interface HandlerEnvironment {
   /** Milliseconds since the epoch, for the snapshot id. */
@@ -82,12 +78,6 @@ function concat(chunks: readonly Uint8Array[]): Uint8Array {
   return bytes;
 }
 
-function listed(problems: readonly IngestProblem[]): string[] {
-  return problems
-    .slice(0, LISTED_PROBLEMS)
-    .map((problem) => `Line ${String(problem.line)}: ${problem.message}`);
-}
-
 function failureOf(error: unknown, job: Job | undefined): StreamFailure {
   if (error instanceof JobFailure) return error.failure;
   if (error instanceof IngestError) {
@@ -116,11 +106,11 @@ async function finish(
   const { settings } = job;
   if (settings.requireComplete && report.upstream?.complete !== true)
     throw new JobFailure({ kind: 'cut-short', message: 'The stream ended before its last frame.' });
-  const problems = listed(report.problems);
+  const problems = describeProblems(report.problems);
   if (snapshot.assets.length === 0 && settings.source.kind === 'export')
     throw new JobFailure({ kind: 'empty', message: 'No assets were found in the export.', problems });
   let { scope } = snapshot;
-  const warnings: string[] = [];
+  let roots: number | undefined;
   // A scope given without a name (an export's operation.json names it by id) takes the name its assets give it.
   if (settings.scope !== null && settings.scope.displayName === undefined)
     scope = namedScope(settings.scope, inferScope(snapshot.assets)?.scope);
@@ -132,33 +122,17 @@ async function finish(
         message: 'The assets name no organisation, folder or project among their ancestors.',
       });
     scope = inferred.scope;
-    if (inferred.roots > 1)
-      warnings.push(
-        `The export holds the assets of ${plural(inferred.roots, 'organisation or project', 'organisations or projects')}; ` +
-          `the snapshot takes the scope most of them share, ${scopeName(scope)}.`,
-      );
+    roots = inferred.roots;
   }
-  if (report.malformed > 0)
-    warnings.push(
-      `${plural(report.malformed, 'line', 'lines')} could not be read and were left out.`,
-      ...problems,
-    );
-  if (report.duplicates > 0)
-    warnings.push(
-      `${plural(report.duplicates, 'asset was', 'assets were')} listed twice; the newest copy was kept.`,
-    );
-  if (snapshot.readTimeSource === 'estimated-max-update-time')
-    warnings.push(
-      `The export does not say when it was taken, so its read time is the latest asset change, ${formatUtc(snapshot.readTime)}.`,
-    );
-  // A read time later than this clock: the scope's timeline places the snapshot at the present.
-  const future = futureReadTimeNote(snapshot.readTime, now);
-  if (future !== null) warnings.push(future);
   post({ type: 'encoding', job: id });
-  const prepared = await prepareSnapshot(
+  const { snapshot: prepared, warnings } = await exportReadToSnapshot(
     { ...snapshot, scope },
-    settings.source.detail === undefined ? {} : { detail: settings.source.detail },
-    () => undefined,
+    {
+      report,
+      now,
+      ...(roots === undefined ? {} : { roots }),
+      ...(settings.source.detail === undefined ? {} : { detail: settings.source.detail }),
+    },
   );
   post({ type: 'done', job: id, snapshot: prepared, warnings });
 }

@@ -24,6 +24,7 @@ import {
   mergeTicks,
   ownerOf,
   pickExtra,
+  READ_TIME_SOURCE_NOTE,
   readTimeSourceOf,
   withExtraLabel,
   type ExtraCandidate,
@@ -104,6 +105,12 @@ describe('extra tick ids', () => {
     expect(readTimeSourceOf({ ...older, estimatedReadTime: true })).toBe('estimated');
     expect(readTimeSourceOf(older)).toBe('unknown');
     expect(readTimeSourceOf({ ...older, source: 'api' })).toBe('api');
+  });
+
+  it('formats the read time source note for estimated read times', () => {
+    expect(READ_TIME_SOURCE_NOTE['estimated-max-update-time']?.('2026-10-05T14:30:00Z')).toBe(
+      'The export does not say when it was taken, so its read time is the latest asset change, 2026-10-05 14:30 UTC.',
+    );
   });
 });
 

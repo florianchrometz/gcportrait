@@ -18,13 +18,12 @@
  * - `cancel`: the job it names stops at its next step (before each file, between the chunks of an export's files,
  *   before encoding and before answering) and answers `CANCELLED_JOB`; a job still queued stops before it starts.
  */
-import { IngestError, ingest, ulid, type IngestProblem } from '@gcportrait/ingest';
+import { IngestError, ingest, ulid } from '@gcportrait/ingest';
 import { migrateSnapshot, SnapshotFormatError, type Snapshot } from '@gcportrait/model';
 
 import { isObject } from '../../guards';
 import {
   exportReadTime,
-  futureReadTimeNote,
   looksLikeSidecarName,
   MAX_SIDECAR_BYTES,
   namedScope,
@@ -32,9 +31,8 @@ import {
   type ExportSidecar,
 } from '../../import/sidecar';
 import { isBundle } from '../bundle';
-import { formatUtc, plural, scopeName } from '../labels';
 import { parseBundle, parseHistoryOf, SnapshotFileError } from './parse';
-import { prepareSnapshot as prepare, type Report } from './prepare';
+import { describeProblems, exportReadToSnapshot, prepareSnapshot as prepare, type Report } from './prepare';
 import {
   CANCELLED_JOB,
   DAMAGED_RECORD,
@@ -44,8 +42,7 @@ import {
 } from './protocol';
 import { inferScope } from './scope';
 
-/** How many of a file's problems are listed for the person (the rest are counted). */
-export const LISTED_PROBLEMS = 5;
+export { LISTED_PROBLEMS } from './prepare';
 
 /**
  * How many bytes of an export are read between two pauses that let the worker take its messages (a `cancel`):
@@ -121,12 +118,6 @@ function renamed(
     snapshot: renamedSnapshot,
     note: `The snapshot in ${file} ${where}, so it was stored again as a separate copy.`,
   };
-}
-
-function describeProblems(problems: readonly IngestProblem[], names: readonly string[]): string[] {
-  return problems
-    .slice(0, LISTED_PROBLEMS)
-    .map((problem) => `${names[problem.part] ?? 'file'}, line ${String(problem.line)}: ${problem.message}`);
 }
 
 /** Lets the worker take the messages that came in meanwhile (a `cancel`). */
@@ -238,35 +229,22 @@ async function importExport(
   const { roots } = inferred;
   const scope = sidecar?.scope === undefined ? inferred.scope : namedScope(sidecar.scope, inferred.scope);
   report({ stage: 'check', done: done + files.reduce((sum, file) => sum + file.size, 0), total });
-  const warnings: string[] = [];
-  if (ingestReport.malformed > 0)
-    warnings.push(
-      `${plural(ingestReport.malformed, 'line', 'lines')} could not be read and were left out.`,
-      ...problems,
-    );
-  if (ingestReport.duplicates > 0)
-    warnings.push(
-      `${plural(ingestReport.duplicates, 'asset was', 'assets were')} listed twice; the newest copy was kept.`,
-    );
-  if (roots > 1)
-    warnings.push(
-      `The files hold the assets of ${plural(roots, 'organisation or project', 'different organisations or projects')}, ` +
-        `so they are not one export. The snapshot takes the scope most of them share, ${scopeName(scope)}; ` +
-        'import the files of each export on their own to keep them apart.',
-    );
-  if (snapshot.readTimeSource === 'estimated-max-update-time')
-    warnings.push(
-      `The export does not say when it was taken, so its read time is the latest asset change, ${formatUtc(snapshot.readTime)}.`,
-    );
-  if (chosen.note !== undefined) warnings.push(chosen.note);
-  // A read time later than this clock: the scope's timeline places the snapshot at the present.
-  const future = futureReadTimeNote(snapshot.readTime, ids.now);
-  if (future !== null) warnings.push(future);
   // Ingest made the id just now (this import's clock, random entropy): new unless it collides.
   const id = ids.stored.has(snapshot.id) || ids.given.has(snapshot.id) ? newId(ids) : snapshot.id;
   ids.given.add(id);
   stop();
-  return { snapshot: await prepare({ ...snapshot, scope, id }, { detail }, report), warnings };
+  return exportReadToSnapshot(
+    { ...snapshot, scope, id },
+    {
+      report: ingestReport,
+      now: ids.now,
+      detail,
+      roots,
+      names,
+      extraNote: chosen.note,
+    },
+    report,
+  );
 }
 
 async function importJob(

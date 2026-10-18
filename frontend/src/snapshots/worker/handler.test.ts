@@ -226,9 +226,7 @@ describe('the import job', () => {
     const snapshot = await snapshotOf(only(result).blob);
     expect(snapshot.scope.id).toBe('30000000001');
     expect(result.warnings[0]).toBe(
-      'The files hold the assets of 2 different organisations or projects, so they are not one export. The snapshot ' +
-        'takes the scope most of them share, example.com; import the files of each export on their own to keep ' +
-        'them apart.',
+      'The export holds the assets of 2 organisations or projects; the snapshot takes the scope most of them share, example.com.',
     );
   });
 

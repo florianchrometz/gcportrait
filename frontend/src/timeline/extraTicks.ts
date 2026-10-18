@@ -32,6 +32,7 @@ import { dayReadTime, localMinute, type LabelOptions, type TimelineTick } from '
 import { scopePathOf, type TimelineInfo } from './types';
 
 export { localMinute } from './ticks';
+export { READ_TIME_SOURCE_NOTE } from '../snapshots/worker/prepare';
 
 /** Where an extra tick's snapshot came from: an export (file or Cloud Storage) or a manual API pull. */
 export type ExtraSource = 'export' | 'api';
