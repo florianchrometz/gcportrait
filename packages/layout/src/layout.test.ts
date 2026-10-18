@@ -104,6 +104,36 @@ describe('layoutScene', () => {
     }
   });
 
+  it('carries each chip count line through shared sibling widths without adding it to other rects', () => {
+    const input = scene([
+      zone('full', 'project', [], { collapsed: { networks: 1, subnets: 1, resources: 3 } }),
+      zone('short', 'project', [], {
+        collapsed: {
+          folders: 12,
+          projects: 140,
+          networks: 31,
+          subnets: 412,
+          containers: 96,
+          resources: 4821,
+        },
+      }),
+      zone('nothing', 'project', [], { collapsed: {} }),
+      zone('empty', 'project', [], { label: 'A very wide empty project beside the collapsed projects' }),
+      zone('open', 'project', [card('resource')]),
+    ]);
+    const output = layoutScene(input);
+    expect(output.rects.full?.chipCountLine).toBe('1 network · 1 subnet · 3 resources');
+    expect(output.rects.short?.chipCountLine).toBe('12 fld · 140 prj · 31 net · 412 sub · 96 ctr · 4821 res');
+    expect(output.rects.nothing?.chipCountLine).toBe('');
+    for (const rect of Object.values(output.rects)) {
+      if (rect.role === 'chip') {
+        expect(rect.width).toBe(DEFAULT_SIZING.chipMaxWidth);
+        expect(rect).toHaveProperty('chipCountLine');
+        expect(LayoutRectSchema.parse(JSON.parse(JSON.stringify(rect)))).toEqual(rect);
+      } else expect(rect).not.toHaveProperty('chipCountLine');
+    }
+  });
+
   it('reports each container’s arrangement: the canvas and every open zone, in paint order', () => {
     expect(Object.keys(layout.arrangements.zones)).toEqual(['f', 'p', 'v', 's']);
     expect(layout.arrangements.zones.s).toEqual({ cardColumns: 1, zoneRows: [] }); // 148 × 108, 1.37

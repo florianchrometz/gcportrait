@@ -279,7 +279,11 @@ types so its callers keep the same imports. The schemas describe the existing sh
 | `RectSchema`, `Rect` | `x`, `y`, `width`, `height` |
 | `InsetsSchema`, `Insets` | `top`, `right`, `bottom`, `left` |
 | `RectRoleSchema`, `RectRole` | `zone`, `chip`, `empty`, `card` |
-| `LayoutRectSchema`, `LayoutRect` | a `Rect` with its nullable `parent`, `role`, zone kind or `card`, `depth`, `headerHeight`, `padding`, optional `paddingExtra` and `collapsed` flag |
+| `LayoutRectSchema`, `LayoutRect` | a `Rect` with its nullable `parent`, `role`, zone kind or `card`, `depth`, `headerHeight`, `padding`, optional `paddingExtra` and `chipCountLine`, and `collapsed` flag |
+
+The layout emits `chipCountLine` for every chip, including an empty string when it counts nothing, and
+omits it on other rects. It is the full or short count line chosen during sizing, before the renderer fits
+it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
 tests check emitted rects against the schemas. The complete `Layout`, its other output shapes and the

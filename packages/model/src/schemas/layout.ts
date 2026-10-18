@@ -44,6 +44,7 @@ export const LayoutRectSchema = RectSchema.unwrap()
      * the header is unaffected (a folder's title still starts `padding` from the left).
      */
     paddingExtra: InsetsSchema.exactOptional(),
+    chipCountLine: z.string().exactOptional(),
     /** True for a chip (a collapsed zone). */
     collapsed: z.boolean(),
   })

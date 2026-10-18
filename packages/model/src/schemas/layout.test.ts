@@ -91,5 +91,20 @@ describe('layout geometry contracts', () => {
     expectTypeOf<RectRole>().toEqualTypeOf<'zone' | 'chip' | 'empty' | 'card'>();
     expectTypeOf<Pick<LayoutRect, 'parent'>>().toEqualTypeOf<Readonly<{ parent: string | null }>>();
     expectTypeOf<Pick<LayoutRect, 'paddingExtra'>>().toEqualTypeOf<Readonly<{ paddingExtra?: Insets }>>();
+    expectTypeOf<Pick<LayoutRect, 'chipCountLine'>>().toEqualTypeOf<Readonly<{ chipCountLine?: string }>>();
+  });
+
+  it.each(['', '2 networks · 39 resources', '2 net · 39 res'])(
+    'preserves the optional chosen chip count line %j',
+    (chipCountLine) => {
+      const chip = { ...layoutRect, role: 'chip', chipCountLine };
+      expect(LayoutRectSchema.parse(chip)).toEqual(chip);
+    },
+  );
+
+  it('keeps chip count metadata absent or a string, never explicitly undefined', () => {
+    expect(LayoutRectSchema.parse(layoutRect)).not.toHaveProperty('chipCountLine');
+    expect(LayoutRectSchema.safeParse({ ...layoutRect, chipCountLine: undefined }).success).toBe(false);
+    expect(LayoutRectSchema.safeParse({ ...layoutRect, chipCountLine: 2 }).success).toBe(false);
   });
 });

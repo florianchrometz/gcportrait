@@ -589,14 +589,14 @@ function Solid({ context, id, rect }: { context: Context; id: string; rect: Layo
     const zone = node?.type === 'zone' ? node : undefined;
     const tint = zoneTintOf(rect.kind === 'card' ? 'product-container' : rect.kind, rect.depth);
     const stroke = zoneStroke(tint);
-    const counts = zone?.collapsed ?? {};
     const mark = iconOfNode(model, id, rect);
     const markX = rect.x + SIZING.cardPadding + (CHIP_GLYPH - CHIP_MARK) / 2;
-    const full = chipCountLine(counts);
-    const line =
-      measureText(full, 400, SIZING.cardSubtitleSize) <= chipRoom
-        ? full
-        : fitText(chipCountLine(counts, true), 400, SIZING.cardSubtitleSize, chipRoom);
+    const line = fitText(
+      rect.chipCountLine ?? '',
+      TEXT_WEIGHTS.cardSubtitle,
+      SIZING.cardSubtitleSize,
+      chipRoom,
+    );
     return (
       <g {...nodeAttributes(context, id, rect, 'dg-node dg-chip')}>
         <rect

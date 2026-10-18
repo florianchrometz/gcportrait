@@ -324,6 +324,7 @@ function rectOf(node: LayoutNode): LayoutRect {
     headerHeight: node.role === 'zone' ? node.headerHeight : 0,
     padding: node.role === 'zone' ? node.padding : 0,
     ...(sided ? { paddingExtra: { ...extra } } : {}),
+    ...(node.chipCountLine === undefined ? {} : { chipCountLine: node.chipCountLine }),
     collapsed: node.role === 'chip',
   };
 }

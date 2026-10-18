@@ -36,6 +36,7 @@ export interface LayoutNode {
   readonly children: LayoutNode[];
   width: number;
   height: number;
+  chipCountLine?: string;
   headerHeight: number;
   padding: number;
   /** Narrowest width the header needs (open zones), from stage 2. */

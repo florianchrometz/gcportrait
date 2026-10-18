@@ -206,6 +206,7 @@ export function sizeNodes(order: readonly LayoutNode[], context: SizingContext):
         const chip = chipWidth(node.label, node.counts ?? {}, context);
         node.width = chip.width;
         node.height = sizing.chipHeight;
+        node.chipCountLine = chip.line;
         if (chip.truncated) counts.truncatedLabels += 1;
         break;
       }

@@ -1306,8 +1306,10 @@ a middle dot; badges as `surface` pills; cards 44 px, radius 8, a 24 px icon, a 
 subtitle whose addresses are set in Roboto Mono (the layout's `subtitleRuns`), text cut with an ellipsis by
 the same metrics the layout sized the box with; chips in the zone's tint with the zone's header mark (14 px,
 beside the label, so a chip's kind never rests on its tint alone) above a ⊞ glyph (drawn, not a font
-character) beside the count line, in a short form ("2 net · 39 res") when the full one does not fit the 148 px
-chip. A product container's header shows its catalog type's icon (the Scene carries it: a GKE
+character) beside the count line. The layout chooses the short form ("2 net · 39 res") when the full one
+does not fit the widest chip's text column (220 − 44 = 176 px) and carries it in `LayoutRect.chipCountLine`;
+the renderer only fits that chosen line with an ellipsis, never chooses its form again. Accessible names
+keep the full counts. A product container's header shows its catalog type's icon (the Scene carries it: a GKE
 cluster, a dataset, an instance group). Icons come from `@gcportrait/icons`: the data worker resolves each key
 the Scene names through the package's fallback chain (`resolveIcon`) and sends the icons with the Scene, so
 the 170 kB icon table never loads on the UI thread; the drawing defines each once and places it with `<use>`,

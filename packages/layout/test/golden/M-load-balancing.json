@@ -37,6 +37,7 @@
       "depth": 3,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "1 network · 1 subnet · 3 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000002": {
@@ -50,6 +51,7 @@
       "depth": 3,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "1 net · 4 sub · 2 ctr · 3 res",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000001": {
@@ -63,6 +65,7 @@
       "depth": 3,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "1 net · 17 sub · 6 ctr · 6 res",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000004": {
@@ -102,6 +105,7 @@
       "depth": 3,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000003": {
@@ -128,6 +132,7 @@
       "depth": 3,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "2 containers",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000005": {
@@ -180,6 +185,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000013": {
@@ -206,6 +212,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "2 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000022": {
@@ -219,6 +226,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "3 containers · 13 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000023": {
@@ -232,6 +240,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000021": {
@@ -245,6 +254,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "2 containers · 27 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000009": {
@@ -284,6 +294,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000010": {
@@ -310,6 +321,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "2 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000017": {
@@ -323,6 +335,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "3 containers · 13 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000018": {
@@ -336,6 +349,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000016": {
@@ -349,6 +363,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "2 containers · 27 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000006": {
@@ -388,6 +403,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/folders/20000000007": {
@@ -414,6 +430,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "6 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000013": {
@@ -427,6 +444,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "4 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000014": {
@@ -440,6 +458,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "3 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000010": {
@@ -453,6 +472,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "3 containers · 13 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000011": {
@@ -466,6 +486,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "1 container · 9 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000009": {
@@ -479,6 +500,7 @@
       "depth": 4,
       "headerHeight": 0,
       "padding": 0,
+      "chipCountLine": "5 containers · 36 resources",
       "collapsed": true
     },
     "//cloudresourcemanager.googleapis.com/projects/10000000007": {

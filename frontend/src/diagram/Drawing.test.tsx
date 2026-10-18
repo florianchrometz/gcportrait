@@ -4,7 +4,7 @@
  * title positions and halos, cards, chips, icons (unaltered, plated on dark), edges and their markers per
  * relation kind and theme, dim mode, bundles, overlays, the legend and the title block, accessible names.
  */
-import { DEFAULT_SIZING } from '@gcportrait/layout';
+import { DEFAULT_SIZING, TEXT_WEIGHTS } from '@gcportrait/layout';
 import { iconFor, placeIcon } from '@gcportrait/icons';
 import type { RelationKind, SceneEdge } from '@gcportrait/model';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { TAGLINE } from '../branding';
 import { accessibleName, cardTypeName, DiagramDrawing, planDrawing } from './Drawing';
 import { placeIconMarkup } from './icons';
+import { fitText } from './geometry/text';
 import { buildDiagramModel } from './model';
 import { renderDiagramSvg } from './static';
 import { one, renderDrawing as render } from './testing/drawing';
@@ -167,6 +168,37 @@ describe.each(['light', 'dark'] as const)('zones and nodes, %s theme', (theme) =
     );
     expect(sizes.length).toBeGreaterThan(10);
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(10.5);
+  });
+
+  it.each([
+    '2 networks · 39 resources',
+    '2 net · 39 res',
+    '',
+    undefined,
+    '12 fld · 140 prj · 31 net · 412 sub · 96 ctr · 4821 res',
+  ])('draws the layout-selected count line %j without choosing again', (chipCountLine) => {
+    const id = 'projects/data';
+    const rect = model.input.layout.rects[id];
+    if (rect === undefined) throw new Error('the fixture must contain its collapsed project');
+    const baseRect = { ...rect };
+    delete baseRect.chipCountLine;
+    const chosen = buildDiagramModel({
+      ...model.input,
+      layout: {
+        ...model.input.layout,
+        rects: {
+          ...model.input.layout.rects,
+          [id]: { ...baseRect, width: 220, ...(chipCountLine === undefined ? {} : { chipCountLine }) },
+        },
+      },
+    });
+    const chip = node(render(chosen, { theme, interactive: true }), id);
+    const room =
+      220 - 2 * DEFAULT_SIZING.cardPadding - DEFAULT_SIZING.chipGlyph - DEFAULT_SIZING.chipGlyphGap;
+    expect(chip.querySelector('text.dg-sub')?.textContent).toBe(
+      fitText(chipCountLine ?? '', TEXT_WEIGHTS.cardSubtitle, DEFAULT_SIZING.cardSubtitleSize, room),
+    );
+    expect(chip.getAttribute('aria-label')).toBe('Project: Analytics, collapsed, 2 networks · 39 resources');
   });
 });
 
