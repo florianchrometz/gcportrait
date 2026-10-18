@@ -260,6 +260,13 @@ describe('public surface', () => {
         'PREFLIGHT_OUTCOMES',
         'QUOTA_CANDIDATE_RESULTS',
         'QUOTA_CANDIDATE_SOURCES',
+        // deterministic orderings, zod-free
+        'compareCodePoints',
+        'compareDecimal',
+        'compareSiblings',
+        'compareText',
+        'compareTimestamps',
+        'sortedRecord',
       ].sort(),
     );
   });

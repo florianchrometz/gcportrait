@@ -445,3 +445,13 @@ export {
   type QuotaCandidateResult,
   type QuotaCandidateSource,
 } from './schemas/api-vocabulary.js';
+
+export {
+  compareCodePoints,
+  compareDecimal,
+  compareSiblings,
+  compareText,
+  compareTimestamps,
+  sortedRecord,
+  type Orderable,
+} from './order.js';

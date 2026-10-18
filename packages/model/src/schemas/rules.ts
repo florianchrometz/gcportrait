@@ -15,6 +15,7 @@ import {
   ProjectRefSchema,
   ResourceNameSchema,
 } from './primitives.js';
+import { compareDecimal, compareText } from '../order.js';
 
 type Issue = { path: PropertyKey[]; message: string };
 
@@ -85,16 +86,6 @@ export function projectPairOf(asset: Pick<Asset, 'assetType' | 'name' | 'data'>)
   const validId =
     typeof id === 'string' && PROJECT_REF_PATTERN.test(id) && !NUMERIC_ID_PATTERN.test(id) ? id : undefined;
   return { ...(number === undefined ? {} : { number }), ...(validId === undefined ? {} : { id: validId }) };
-}
-
-/** Strings in code-point order. */
-function compareText(a: string, b: string): number {
-  return Number(a > b) - Number(a < b);
-}
-
-/** Decimal strings in numeric order (no leading zeros: shorter is smaller). */
-function compareDecimal(a: string, b: string): number {
-  return a.length - b.length || compareText(a, b);
 }
 
 /** Builds a project index asset by asset, for callers that see the assets one at a time (ingest). */

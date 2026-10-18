@@ -10,13 +10,12 @@
  */
 import { serviceOf } from '@gcportrait/catalog';
 import {
-  ZONE_KIND_RANK,
+  compareSiblings,
   type Catalog,
   type ConcreteDetailLevel,
   type GraphNode,
   type ZoneKind,
 } from '@gcportrait/model';
-import { compareStrings } from '../order.js';
 import { FOLDER_TYPE, PROJECT_TYPE, isVirtualNode } from '../structure.js';
 import { BUNDLE_ID_PREFIX, BUNDLE_SIZE, BUNDLE_THRESHOLD, GENERIC_ICON } from './constants.js';
 import { zoneOpensAt } from './detail.js';
@@ -69,9 +68,6 @@ export interface SceneTree {
   readonly bundles: ReadonlyMap<string, number>;
 }
 
-/** Cards after every zone kind (`ZONE_KIND_RANK`, declared once in the model and shared with the layout). */
-const CARD_RANK = Math.max(...Object.values(ZONE_KIND_RANK)) + 1;
-
 /**
  * The zone kind of a container node: the hierarchy by identity, virtual region containers by id, every other
  * container by its catalog type's `zoneKind` (`vpc`, `subnet`, …; `product` or none: a product container).
@@ -122,10 +118,6 @@ function cardEntry(catalog: Catalog, node: GraphNode, external = false): CardEnt
   };
 }
 
-function rank(entry: Entry): number {
-  return entry.type === 'card' ? CARD_RANK : ZONE_KIND_RANK[entry.kind];
-}
-
 /** Code points of a label, so prefixes never split a surrogate pair. */
 function codePoints(text: string): string[] {
   return Array.from(text);
@@ -166,12 +158,6 @@ function evenRuns<T>(items: readonly T[], count: number): Run<T>[] {
     start = end;
   }
   return runs;
-}
-
-function compareEntries(left: Entry, right: Entry): number {
-  return (
-    rank(left) - rank(right) || compareStrings(left.label, right.label) || compareStrings(left.id, right.id)
-  );
 }
 
 /**
@@ -245,7 +231,7 @@ export function sceneTree(ctx: ViewContext, catalog: Catalog, visible: Visible):
   const children = new Map<string, readonly string[]>();
   let top: string[] = [];
   for (const [container, list] of lists) {
-    list.sort(compareEntries);
+    list.sort(compareSiblings);
     let ordered = list;
     if (list.length > BUNDLE_THRESHOLD) {
       const runs = evenRuns(list, Math.ceil(list.length / BUNDLE_SIZE));

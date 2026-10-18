@@ -38,9 +38,9 @@ describe('compareTimestamps', () => {
     ['2026-10-07T18:22:41.123Z', '2026-10-07T18:22:41.1234Z', -1],
     ['2026-10-07T18:22:41.123000Z', '2026-10-07T18:22:41.123Z', 0],
     ['2026-10-07T18:22:41.123456789Z', '2026-10-07T18:22:41.123456788Z', 1],
-    ['not a time', '2026-10-07T18:22:41Z', -1],
-    ['2026-10-07T18:22:41Z', 'not a time', 1],
-    ['not a time', 'also not', 0],
+    ['not a time', '2026-10-07T18:22:41Z', 1],
+    ['2026-10-07T18:22:41Z', 'not a time', -1],
+    ['not a time', 'also not', 1],
   ])('%s vs %s → %i', (left, right, expected) => {
     expect(sign(compareTimestamps(left, right))).toBe(expected);
   });

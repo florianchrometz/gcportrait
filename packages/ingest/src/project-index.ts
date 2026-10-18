@@ -19,13 +19,15 @@
  */
 import {
   ProjectRefSchema,
+  compareDecimal,
+  compareText,
   projectIndexBuilder,
+  sortedRecord,
   type Asset,
   type ProjectIndex,
   type ProjectIndexBuilder,
 } from '@gcportrait/model';
 import { isProjectNumber, projectNumberOf } from './normalise.js';
-import { compareDecimal, compareText } from './order.js';
 
 /** What the project index could not pair, for the report (plain data: sorted lists and a sorted record). */
 export interface UnresolvedProjects {
@@ -177,11 +179,4 @@ export function summariseProjects(assets: Iterable<Asset>): ProjectSummary {
 function firstSegment(path: string): string {
   const slash = path.indexOf('/');
   return slash === -1 ? path : path.slice(0, slash);
-}
-
-function sortedRecord(
-  entries: ReadonlyMap<string, string>,
-  compare: (left: string, right: string) => number,
-): Record<string, string> {
-  return Object.fromEntries([...entries].sort(([left], [right]) => compare(left, right)));
 }

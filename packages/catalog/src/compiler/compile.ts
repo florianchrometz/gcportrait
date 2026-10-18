@@ -23,6 +23,7 @@ import {
   LensSchema,
   NonEmptyStringSchema,
   buildProjectIndex,
+  compareText,
   type Asset,
   type Catalog,
   type CatalogEntry,
@@ -136,11 +137,6 @@ function pathText(path: ReadonlyArray<PropertyKey>): string {
       typeof segment === 'number' ? `[${String(segment)}]` : `${index === 0 ? '' : '.'}${String(segment)}`,
     )
     .join('');
-}
-
-function compareText(a: string, b: string): number {
-  if (a < b) return -1;
-  return a > b ? 1 : 0;
 }
 
 function emptyRoles(): RoleCounts {

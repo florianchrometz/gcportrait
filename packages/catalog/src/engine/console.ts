@@ -9,7 +9,7 @@
  * to a broken page is worse than none). The caller then offers the project's console home instead
  * ({@link consoleLinkFor}), and the resource name to copy. Nothing here opens anything: these are strings.
  */
-import type { Asset, Catalog, CatalogType } from '@gcportrait/model';
+import { compareText, type Asset, type Catalog, type CatalogType } from '@gcportrait/model';
 import { assetProject, EMPTY_PROJECT_INDEX } from './project.js';
 import { renderConsoleUrl, type RuleContext } from './rules.js';
 
@@ -69,5 +69,5 @@ export function typesWithoutConsole(catalog: Pick<Catalog, 'types'>): string[] {
   return Object.entries(catalog.types)
     .filter(([, type]) => type.console === undefined)
     .map(([assetType]) => assetType)
-    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    .sort(compareText);
 }
