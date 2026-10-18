@@ -11,6 +11,7 @@ import { FOLDER_TYPE, ORGANIZATION_TYPE, PROJECT_TYPE } from '@gcportrait/graph'
 import { DEFAULT_VIEW_SPEC, type Asset, type Catalog, type Graph, type GraphNode } from '@gcportrait/model';
 
 import { cardTypeName } from '../diagram/names';
+import { isObject } from '../guards';
 import type { SearchKind } from './protocol';
 
 export interface SearchDoc {
@@ -50,13 +51,9 @@ export function searchKindOf(node: GraphNode, catalog: Pick<Catalog, 'types'>): 
   return node.role === 'container' ? 'container' : 'resource';
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 function displayNameOf(asset: Asset | undefined): string {
   const data: unknown = asset?.data;
-  if (!isRecord(data)) return '';
+  if (!isObject(data)) return '';
   const value = data['displayName'];
   return typeof value === 'string' ? value : '';
 }

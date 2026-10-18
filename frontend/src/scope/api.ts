@@ -7,7 +7,8 @@
  * error.
  */
 import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';
-import { isRecord, readError, type UpstreamSummary } from '../preflight/api';
+import { isRecord } from '../guards';
+import { readError, type UpstreamSummary } from '../preflight/api';
 import { parseScopeName, SCOPE_KINDS, type ScopeChoice, type ScopeKind } from './scopeName';
 
 export interface ScopeSearchRequest {

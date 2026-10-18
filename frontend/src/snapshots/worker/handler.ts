@@ -21,6 +21,7 @@
 import { IngestError, ingest, ulid, type IngestProblem } from '@gcportrait/ingest';
 import { migrateSnapshot, SnapshotFormatError, type Snapshot } from '@gcportrait/model';
 
+import { isObject } from '../../guards';
 import {
   exportReadTime,
   futureReadTimeNote,
@@ -354,10 +355,6 @@ async function checkJob(snapshotBlob: Blob, historyBlob: Blob | undefined, repor
   return { snapshots: [], warnings: [] };
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 function isBlob(value: unknown): value is Blob {
   return value instanceof Blob;
 }
@@ -372,8 +369,8 @@ function isString(value: unknown): value is string {
 
 /** Parses a message from the page; anything else is answered with an error. */
 function parseRequest(message: unknown): SnapshotRequest | { readonly job: number; readonly error: string } {
-  const job = isRecord(message) && typeof message['job'] === 'number' ? message['job'] : -1;
-  if (!isRecord(message)) return { job, error: 'a request must be an object' };
+  const job = isObject(message) && typeof message['job'] === 'number' ? message['job'] : -1;
+  if (!isObject(message)) return { job, error: 'a request must be an object' };
   if (message['type'] === 'cancel')
     return job === -1 ? { job, error: 'a cancel names no job' } : { type: 'cancel', job };
   if (message['type'] === 'check') {

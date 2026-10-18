@@ -6,6 +6,7 @@
  * the first `cap` entries with short JSON previews of the values and counts the rest; a value nested deeper than
  * `MAX_FIELD_DEPTH` is compared as a whole.
  */
+import { isRecord } from '../guards';
 import type { FieldChange, FieldSummary } from './types';
 
 /** How many differences the summary lists (the rest are counted). */
@@ -18,10 +19,6 @@ export const MAX_FIELD_DEPTH = 16;
 export const ROOT_PATH = '(data)';
 
 const IDENTIFIER = /^[A-Za-z_$][\w$-]*$/;
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function compareKeys(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -78,7 +75,7 @@ export function fieldDiff(before: unknown, after: unknown, cap: number = FIELD_C
   };
   const walk = (a: unknown, b: unknown, path: string, depth: number): void => {
     if (same(a, b)) return;
-    if (depth < MAX_FIELD_DEPTH && isObject(a) && isObject(b)) {
+    if (depth < MAX_FIELD_DEPTH && isRecord(a) && isRecord(b)) {
       const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])].sort(compareKeys);
       for (const key of keys) {
         const inA = Object.hasOwn(a, key);

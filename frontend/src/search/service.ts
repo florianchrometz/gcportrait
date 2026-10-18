@@ -21,6 +21,7 @@ import {
 } from '@gcportrait/model';
 
 import { parseFollowUpDay } from '../diagram/pipeline/days';
+import { isObject } from '../guards';
 import { searchDocuments } from './documents';
 import { locateNode } from './locate';
 import type { LocateAnswer, LocateQuery, SearchAnswer, SearchHit, SearchQuery } from './protocol';
@@ -76,13 +77,9 @@ export function answerLocate(query: LocateQuery, loaded: LoadedSnapshot, env: Sc
   return locateNode({ graph: loaded.graph, catalog: compiledCatalog, env }, query.spec, query.node, query);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 /** A `search` request's query, checked; null when malformed. */
 export function parseSearchQuery(value: unknown): SearchQuery | null {
-  if (!isRecord(value)) return null;
+  if (!isObject(value)) return null;
   const snapshot = SnapshotRefSchema.safeParse(value['snapshot']);
   const text = value['text'];
   const limit = value['limit'];
@@ -94,13 +91,13 @@ export function parseSearchQuery(value: unknown): SearchQuery | null {
 
 /** A `locate` request's query, checked; null when malformed. */
 export function parseLocateQuery(value: unknown): LocateQuery | null {
-  if (!isRecord(value)) return null;
+  if (!isObject(value)) return null;
   const spec = ViewSpecSchema.safeParse(value['spec']);
   const node = value['node'];
   const viewport = value['viewport'];
   const day = parseFollowUpDay(value['day']);
   const offers = value['offers'];
-  if (!spec.success || typeof node !== 'string' || node === '' || !isRecord(viewport)) return null;
+  if (!spec.success || typeof node !== 'string' || node === '' || !isObject(viewport)) return null;
   if (day === null || typeof offers !== 'boolean') return null;
   const width = viewport['width'];
   const height = viewport['height'];

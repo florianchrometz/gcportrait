@@ -16,6 +16,7 @@
  */
 import type { SnapshotScope } from '@gcportrait/model';
 
+import { isRecord } from '../guards';
 import { formatUtcMinute } from '../utcTime';
 
 /** What a sidecar tells: at least one of the two. */
@@ -33,10 +34,6 @@ export const MAX_SIDECAR_BYTES = 256 * 1024;
 const RFC3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
 const SCOPE = /^(organizations|folders|projects)\/([a-z0-9][a-z0-9.:-]{0,99})$/;
 const KINDS = { organizations: 'organization', folders: 'folder', projects: 'project' } as const;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function timestamp(value: unknown): string | undefined {
   return typeof value === 'string' && RFC3339.test(value) && !Number.isNaN(Date.parse(value))

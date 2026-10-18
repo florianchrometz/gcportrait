@@ -40,6 +40,7 @@ import {
 
 import { nodeChanges, type ChangesDay } from '../../drawer/changes';
 import { nodeDetails } from '../../drawer/details';
+import { isObject } from '../../guards';
 import { answerLocate, answerSearch, parseLocateQuery, parseSearchQuery } from '../../search/service';
 import { viewChoices } from '../../views/choices';
 import { createTickSource, type TickSource } from '../../timeline/worker/source';
@@ -167,12 +168,8 @@ interface Loaded {
   readonly console: ConsoleSource;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 function viewportOf(value: unknown): Viewport {
-  if (!isRecord(value)) return { width: 1280, height: 800 };
+  if (!isObject(value)) return { width: 1280, height: 800 };
   const width = typeof value['width'] === 'number' && value['width'] > 0 ? value['width'] : 1280;
   const height = typeof value['height'] === 'number' && value['height'] > 0 ? value['height'] : 800;
   return { width, height };
@@ -180,8 +177,8 @@ function viewportOf(value: unknown): Viewport {
 
 /** Parses a message from the page; anything else is a protocol error. */
 function parseRequest(message: unknown): DataRequest | { readonly id: number; readonly error: string } {
-  const id = isRecord(message) && typeof message['id'] === 'number' ? message['id'] : -1;
-  if (!isRecord(message)) return { id, error: 'a request must be an object' };
+  const id = isObject(message) && typeof message['id'] === 'number' ? message['id'] : -1;
+  if (!isObject(message)) return { id, error: 'a request must be an object' };
   if (message['type'] === 'lenses') return { type: 'lenses', id };
   if (message['type'] === 'scene') {
     const spec = ViewSpecSchema.safeParse(message['spec']);

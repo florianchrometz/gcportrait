@@ -12,6 +12,7 @@
  */
 import { IngestError, createIngestSession, type IngestProblem, type IngestSession } from '@gcportrait/ingest';
 
+import { isRecord } from '../../guards';
 import { formatUtc, plural, scopeName } from '../../snapshots/labels';
 import { prepareSnapshot } from '../../snapshots/worker/prepare';
 import { inferScope } from '../../snapshots/worker/scope';
@@ -52,10 +53,6 @@ class JobFailure extends Error {
     super(failure.message);
     this.failure = failure;
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** The reason of the error frame at the end of `tail`, if the last line is one. */

@@ -12,16 +12,13 @@
  */
 import { isDemoSize } from '@gcportrait/model';
 
+import { isObject } from '../../guards';
 import type { DataResponse } from './protocol';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 export function startRole(post: (message: DataResponse) => void): (message: unknown) => void {
   return (message) => {
-    const id = isRecord(message) && typeof message['id'] === 'number' ? message['id'] : -1;
-    if (!isRecord(message) || message['type'] !== 'demo') {
+    const id = isObject(message) && typeof message['id'] === 'number' ? message['id'] : -1;
+    if (!isObject(message) || message['type'] !== 'demo') {
       post({
         type: 'error',
         id,

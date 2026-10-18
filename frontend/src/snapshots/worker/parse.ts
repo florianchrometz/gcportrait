@@ -15,6 +15,7 @@ import {
   type Snapshot,
 } from '@gcportrait/model';
 
+import { isRecord } from '../../guards';
 import { BUNDLE_FORMAT, BUNDLE_VERSION } from '../bundle';
 
 /** A file that is not what it claims, or not one gcportrait reads; the message is for the person. */
@@ -23,10 +24,6 @@ export class SnapshotFileError extends Error {
     super(message);
     this.name = 'SnapshotFileError';
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function asset(value: unknown, where: string): Asset {

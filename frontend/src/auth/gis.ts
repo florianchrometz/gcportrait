@@ -68,25 +68,26 @@ export class GisLoadError extends Error {
   override readonly name = 'GisLoadError';
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+/** An object or a function: the global script's namespaces may be either, so both are read for their fields. */
+function hasFields(value: unknown): value is Record<string, unknown> {
   return (typeof value === 'object' || typeof value === 'function') && value !== null;
 }
 
 /** `google.accounts.oauth2` on `scope` (a window), when the script has defined it; otherwise null. */
 export function readGis(scope: unknown): GisOAuth2 | null {
-  if (!isRecord(scope)) return null;
+  if (!hasFields(scope)) return null;
   const google = scope.google;
-  if (!isRecord(google)) return null;
+  if (!hasFields(google)) return null;
   const accounts = google.accounts;
-  if (!isRecord(accounts)) return null;
+  if (!hasFields(accounts)) return null;
   const oauth2 = accounts.oauth2;
-  if (!isRecord(oauth2)) return null;
+  if (!hasFields(oauth2)) return null;
   const { initTokenClient, revoke } = oauth2;
   if (typeof initTokenClient !== 'function' || typeof revoke !== 'function') return null;
   return {
     initTokenClient: (config) => {
       const client: unknown = initTokenClient.call(oauth2, config);
-      const request = isRecord(client) ? client.requestAccessToken : undefined;
+      const request = hasFields(client) ? client.requestAccessToken : undefined;
       if (typeof request !== 'function')
         throw new GisLoadError('Google’s sign-in script returned no token client.');
       return {

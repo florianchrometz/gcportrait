@@ -5,6 +5,7 @@
  * remembered in the preferences). Ids and display names only, never a token or an email. Values are
  * checked on every read, so a stale or hand-edited entry is dropped instead of breaking the picker.
  */
+import { isRecord } from '../guards';
 import { isProjectRef, parseScopeName, type ScopeChoice } from './scopeName';
 
 /** How many recent scopes are kept. */
@@ -14,10 +15,6 @@ export const MAX_RECENT_SCOPES = 8;
 export const MAX_QUOTA_PROJECTS = 50;
 
 const MAX_DISPLAY_NAME = 200;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** One stored entry as a ScopeChoice, or null when it is not one. */
 function recentOf(value: unknown): ScopeChoice | null {

@@ -13,6 +13,8 @@
  * field whose value is `undefined` (an icon's `category`), which JSON leaves out and which reads the same.
  */
 
+import { isObject } from '../../guards';
+
 /** Above how many rects a Scene answer or a Layout travels as transferred JSON bytes. */
 export const TRANSFER_ABOVE_RECTS = 1000;
 
@@ -22,23 +24,19 @@ export interface EncodedMessage {
   readonly bytes: ArrayBuffer;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 /** How many rects an answer carries: a layout `result`'s rects, a `scene` answer's Scene rect count; else 0. */
 export function rectsOf(message: unknown): number {
-  if (!isRecord(message)) return 0;
+  if (!isObject(message)) return 0;
   if (message['type'] === 'result') {
     const layout = message['layout'];
-    const rects = isRecord(layout) ? layout['rects'] : undefined;
-    return isRecord(rects) ? Object.keys(rects).length : 0;
+    const rects = isObject(layout) ? layout['rects'] : undefined;
+    return isObject(rects) ? Object.keys(rects).length : 0;
   }
   if (message['type'] === 'scene') {
     const answer = message['answer'];
-    const scene = isRecord(answer) ? answer['scene'] : undefined;
-    const metadata = isRecord(scene) ? scene['metadata'] : undefined;
-    const count = isRecord(metadata) ? metadata['rectCount'] : undefined;
+    const scene = isObject(answer) ? answer['scene'] : undefined;
+    const metadata = isObject(scene) ? scene['metadata'] : undefined;
+    const count = isObject(metadata) ? metadata['rectCount'] : undefined;
     return typeof count === 'number' ? count : 0;
   }
   return 0;
@@ -55,7 +53,7 @@ export function encodeLarge(message: unknown, above: number = TRANSFER_ABOVE_REC
 
 /** A message from a diagram worker as its client reads it: an encoded one decoded, any other as it is. */
 export function decodeMessage(data: unknown): unknown {
-  if (!isRecord(data) || data['type'] !== 'encoded') return data;
+  if (!isObject(data) || data['type'] !== 'encoded') return data;
   const bytes = data['bytes'];
   if (!(bytes instanceof ArrayBuffer)) return data;
   return JSON.parse(new TextDecoder().decode(bytes)) as unknown;

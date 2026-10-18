@@ -23,6 +23,7 @@ import {
 } from '@gcportrait/model';
 
 import { cardTypeName } from '../diagram/names';
+import { isRecord } from '../guards';
 import type {
   DanglingEntry,
   LabelEntry,
@@ -50,10 +51,6 @@ const DIRECTION_RANK: Readonly<Record<RelationDirection, number>> = { out: 0, bo
 
 function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** A reference to another node of the Graph, or a bare id when the Graph does not hold it. */

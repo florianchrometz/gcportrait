@@ -6,6 +6,7 @@
  * shown. The token goes only to this backend, through `fetchWithToken` (src/auth).
  */
 import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';
+import { isRecord } from '../guards';
 import { SCOPE_KINDS, type ScopeKind } from '../scope/scopeName';
 
 export type AccessMode = 'user' | 'sa';
@@ -112,10 +113,6 @@ const RESULTS: readonly CandidateResult[] = [
   'unexpected',
 ];
 const OUTCOMES: readonly PreflightOutcome[] = ['ready', 'blocked', 'sign-in', 'retry'];
-
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function oneOf<T extends string>(values: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && (values as readonly string[]).includes(value);

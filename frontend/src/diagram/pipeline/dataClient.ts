@@ -9,6 +9,7 @@
 import type { DemoSize, SnapshotRef, ViewSpec } from '@gcportrait/model';
 
 import type { NodeChanges, NodeDetails } from '../../drawer/types';
+import { isObject } from '../../guards';
 import type { LocateAnswer, LocateQuery, SearchAnswer, SearchQuery } from '../../search/protocol';
 import type { JobProgress, PreparedSnapshot } from '../../snapshots/worker/protocol';
 import type { ViewChoices } from '../../views/choices';
@@ -106,10 +107,6 @@ export interface DataClient {
   dispose(): void;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 export function createDataClient(post: (request: DataRequest) => void): DataClient {
   const pending = new Map<number, Pending>();
   let nextId = 1;
@@ -193,7 +190,7 @@ export function createDataClient(post: (request: DataRequest) => void): DataClie
         onProgress === undefined ? {} : { onJobProgress: onProgress },
       ),
     receive(message) {
-      if (!isRecord(message) || typeof message['id'] !== 'number') return;
+      if (!isObject(message) || typeof message['id'] !== 'number') return;
       const id = message['id'];
       const entry = pending.get(id);
       if (entry === undefined) return;
