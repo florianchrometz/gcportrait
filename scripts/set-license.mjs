@@ -24,7 +24,7 @@
  *
  * Exit code 0 on success, 2 on a usage error. Plain ESM, Node built-ins only.
  */
-import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -164,7 +164,7 @@ function rewriteManifest(text, fromId, toId) {
  * @param {readonly string[]} argv
  * @returns {number} exit code
  */
-function main(argv) {
+export function run(argv) {
   /** @type {Options} */
   let options;
   /** @type {string} */
@@ -233,4 +233,6 @@ function main(argv) {
   return 0;
 }
 
-process.exitCode = main(process.argv.slice(2));
+if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exitCode = run(process.argv.slice(2));
+}

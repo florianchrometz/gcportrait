@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: MIT
 import { spawnSync } from 'node:child_process';
+import { Console } from 'node:console';
 import { existsSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { run as setLicense } from './set-license.mjs';
 import {
   FIXTURE_LICENSE,
   SCRIPTS_DIR,
+  SPAWN_TIMEOUT,
   createTempTree,
   manifest,
+  runInProcess,
   runScript,
   type TempTree,
 } from './testing/temp-tree.js';
@@ -62,16 +66,41 @@ describe('set-license', () => {
   beforeEach(() => {
     tree = createTempTree('set-license');
     writeTree(tree);
+    const output = new Console(process.stdout, process.stderr);
+    vi.spyOn(console, 'log').mockImplementation(output.log.bind(output));
+    vi.spyOn(console, 'error').mockImplementation(output.error.bind(output));
   });
 
   afterEach(() => {
     tree.remove();
+    vi.restoreAllMocks();
   });
 
-  const run = (...args: string[]) => runScript('set-license.mjs', ['--root', tree.root, ...args]);
+  const run = (...args: string[]) => runInProcess(() => setLicense(['--root', tree.root, ...args]));
 
-  it('changes nothing in --dry-run mode but reports the counts', () => {
-    const result = run('MIT', '--holder', 'Example Maintainer', '--dry-run');
+  it('imports without running the command or changing the exit code', async () => {
+    const argv = process.argv;
+    const exitCode = process.exitCode;
+    process.argv = [process.execPath, path.join(SCRIPTS_DIR, 'set-license.test.ts')];
+    vi.resetModules();
+    try {
+      const result = await runInProcess(async () => {
+        const imported = await import('./set-license.mjs');
+        expect(imported).toHaveProperty('run');
+        return 0;
+      });
+      expect(result).toEqual({ status: 0, stdout: '', stderr: '' });
+      expect(process.exitCode).toBe(exitCode);
+      expect(tree.read('LICENSE')).toBe('placeholder\n');
+    } finally {
+      process.argv = argv;
+      process.exitCode = exitCode;
+      vi.resetModules();
+    }
+  });
+
+  it('changes nothing in --dry-run mode but reports the counts', async () => {
+    const result = await run('MIT', '--holder', 'Example Maintainer', '--dry-run');
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
       `${FIXTURE_LICENSE} -> MIT: would rewrite ${HEADER_COUNT} SPDX header(s) and 2 package.json licence field(s)`,
@@ -81,8 +110,8 @@ describe('set-license', () => {
     for (const [relPath, content] of FIXTURE_FILES) expect(tree.read(relPath)).toBe(content(FIXTURE_LICENSE));
   });
 
-  it('rewrites headers, package.json licence fields and LICENSE for MIT', () => {
-    const result = run('MIT', '--holder', 'Example Maintainer', '--year', '2030');
+  it('rewrites headers, package.json licence fields and LICENSE for MIT', async () => {
+    const result = await run('MIT', '--holder', 'Example Maintainer', '--year', '2030');
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
@@ -105,8 +134,8 @@ describe('set-license', () => {
     expect(tree.read('.nvmrc')).toBe('22\n');
   });
 
-  it('rewrites the headers of dotfiles and Dockerfiles, which have no file extension', () => {
-    expect(run('Apache-2.0').status).toBe(0);
+  it('rewrites the headers of dotfiles and Dockerfiles, which have no file extension', async () => {
+    expect((await run('Apache-2.0')).status).toBe(0);
     for (const relPath of ['.gitignore', '.npmrc', '.editorconfig', '.prettierignore']) {
       expect(tree.read(relPath).startsWith(`${hash('Apache-2.0')}\n`)).toBe(true);
     }
@@ -115,7 +144,7 @@ describe('set-license', () => {
     );
   });
 
-  it('does not rewrite outside files through a tracked directory replaced by a link', () => {
+  it('does not rewrite outside files through a tracked directory replaced by a link', async () => {
     const outside = createTempTree('outside-license');
     try {
       const original = `${ts(FIXTURE_LICENSE)}\nexport {};\n`;
@@ -127,7 +156,7 @@ describe('set-license', () => {
       expect(spawnSync('git', ['add', 'tracked'], { cwd: tree.root }).status).toBe(0);
       rmSync(path.join(tree.root, 'tracked'), { recursive: true });
       symlinkSync(outside.root, path.join(tree.root, 'tracked'));
-      const result = run('Apache-2.0');
+      const result = await run('Apache-2.0');
       expect(result.status, result.stderr).toBe(0);
       expect(outside.read('file.ts')).toBe(original);
       expect(outside.read('package.json')).toBe(manifest(FIXTURE_LICENSE));
@@ -143,7 +172,7 @@ describe('set-license', () => {
     ),
   )(
     'refuses a root $file link (missing: $missing, dry run: $dryRun) before any writes',
-    ({ file, missing, dryRun }) => {
+    async ({ file, missing, dryRun }) => {
       const outside = createTempTree('outside-root-license');
       const original =
         file === 'package.json' ? manifest(FIXTURE_LICENSE) : 'Outside licence stays intact.\n';
@@ -151,7 +180,7 @@ describe('set-license', () => {
         if (!missing) outside.write(file, original);
         rmSync(path.join(tree.root, file));
         symlinkSync(path.join(outside.root, file), path.join(tree.root, file));
-        const result = run('Apache-2.0', ...(dryRun ? ['--dry-run'] : []));
+        const result = await run('Apache-2.0', ...(dryRun ? ['--dry-run'] : []));
         expect(result.status, result.stderr).toBe(2);
         expect(result.stderr).toContain(`${file} must be a regular file`);
         if (missing) expect(existsSync(path.join(outside.root, file))).toBe(false);
@@ -164,10 +193,10 @@ describe('set-license', () => {
     },
   );
 
-  it('uses the fallback without a root manifest and creates a missing LICENSE', () => {
+  it('uses the fallback without a root manifest and creates a missing LICENSE', async () => {
     rmSync(path.join(tree.root, 'package.json'));
     rmSync(path.join(tree.root, 'LICENSE'));
-    const result = run('Apache-2.0');
+    const result = await run('Apache-2.0');
     expect(result.status, result.stderr).toBe(0);
     expect(tree.read('LICENSE')).toBe(
       readFileSync(path.join(SCRIPTS_DIR, 'licenses', 'Apache-2.0.txt'), 'utf8'),
@@ -175,33 +204,33 @@ describe('set-license', () => {
     expect(tree.read('src/index.ts').startsWith(ts('Apache-2.0'))).toBe(true);
   });
 
-  it('leaves a tree that passes the provenance check with the new identifier', () => {
+  it('leaves a tree that passes the provenance check with the new identifier', async () => {
     tree.write('vendor-note.md', `${md(FIXTURE_LICENSE)}\n\nThird-party note.\n`);
-    expect(run('Apache-2.0').status).toBe(0);
+    expect((await run('Apache-2.0')).status).toBe(0);
     const result = runScript('check-provenance.mjs', ['--root', tree.root]);
     expect(result.stderr).toBe('');
     expect(result.stdout).toContain('(Apache-2.0) verified');
   });
 
-  it('writes the built-in Apache-2.0 text verbatim', () => {
-    expect(run('Apache-2.0').status).toBe(0);
+  it('writes the built-in Apache-2.0 text verbatim', async () => {
+    expect((await run('Apache-2.0')).status).toBe(0);
     expect(tree.read('LICENSE')).toBe(
       readFileSync(path.join(SCRIPTS_DIR, 'licenses', 'Apache-2.0.txt'), 'utf8'),
     );
   });
 
-  it('can be run again to switch from one chosen licence to another', () => {
-    expect(run('Apache-2.0').status).toBe(0);
-    const result = run('MIT', '--holder', 'Example Maintainer', '--year', '2030');
+  it('can be run again to switch from one chosen licence to another', async () => {
+    expect((await run('Apache-2.0')).status).toBe(0);
+    const result = await run('MIT', '--holder', 'Example Maintainer', '--year', '2030');
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(`Apache-2.0 -> MIT: rewrote ${HEADER_COUNT} SPDX header(s)`);
     expect(tree.read('src/index.ts').startsWith(`${ts('MIT')}\n`)).toBe(true);
     expect(tree.read('LICENSE')).toContain('Copyright (c) 2030 Example Maintainer');
   });
 
-  it('takes the text of any other licence from --text', () => {
+  it('takes the text of any other licence from --text', async () => {
     tree.write('my-licence.txt', 'Custom licence text\n');
-    const result = run('LicenseRef-custom', '--text', path.join(tree.root, 'my-licence.txt'));
+    const result = await run('LicenseRef-custom', '--text', path.join(tree.root, 'my-licence.txt'));
     expect(result.status).toBe(0);
     expect(tree.read('LICENSE')).toBe('Custom licence text\n');
     expect(tree.read('config.yaml').startsWith(`${hash('LicenseRef-custom')}\n`)).toBe(true);
@@ -215,11 +244,27 @@ describe('set-license', () => {
     { args: ['MIT OR Apache-2.0'], message: 'is not a single SPDX licence identifier' },
     { args: [], message: 'expected exactly one SPDX licence identifier' },
     { args: ['MIT', '--year', '30'], message: '--year must be a four-digit year' },
-  ])('rejects $args with a usage error and writes nothing', ({ args, message }) => {
-    const result = run(...args);
+  ])('rejects $args with a usage error and writes nothing', async ({ args, message }) => {
+    const result = await run(...args);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain(message);
     expect(tree.read('LICENSE')).toBe('placeholder\n');
     expect(tree.read('src/index.ts')).toBe(FIXTURE_FILES[0]?.[1](FIXTURE_LICENSE));
+  });
+
+  it('matches the real command output and written files', SPAWN_TIMEOUT, async () => {
+    const args = ['MIT', '--holder', 'Example Maintainer', '--year', '2030'];
+    const result = await run(...args);
+    expect(result.status).toBe(0);
+    const paths = [
+      'LICENSE',
+      'package.json',
+      'packages/a/package.json',
+      ...FIXTURE_FILES.map(([file]) => file),
+    ];
+    const written = paths.map((file) => tree.read(file));
+    writeTree(tree);
+    expect(runScript('set-license.mjs', ['--root', tree.root, ...args])).toEqual(result);
+    expect(paths.map((file) => tree.read(file))).toEqual(written);
   });
 });

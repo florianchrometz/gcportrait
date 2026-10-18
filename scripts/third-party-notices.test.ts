@@ -5,19 +5,28 @@
  * licences (`file:` dependencies, installed offline), and its helpers on their own. Every name, author and text is
  * synthetic, except the canonical licence texts of scripts/licenses/.
  */
-import { readFileSync } from 'node:fs';
+import { Console } from 'node:console';
+import { readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { installOffline, json, plant as plantPackage } from './testing/pnpm-fixture.js';
-import { createTempTree, REPO, runScript, SCRIPTS_DIR, type TempTree } from './testing/temp-tree.js';
+import {
+  createTempTree,
+  REPO,
+  runInProcess,
+  runScript,
+  SCRIPTS_DIR,
+  type TempTree,
+} from './testing/temp-tree.js';
 import {
   apacheExtra,
   copyrightLines,
   NON_AFFILIATION_LONG,
   productionPackageDirs,
   renderNotices,
+  run as writeNotices,
 } from './third-party-notices.mjs';
 
 const APACHE = readFileSync(path.join(SCRIPTS_DIR, 'licenses', 'Apache-2.0.txt'), 'utf8');
@@ -145,105 +154,142 @@ function section(notices: string, name: string): string {
 
 describe('third-party-notices', () => {
   let tree: TempTree | undefined;
+  beforeEach(() => {
+    const output = new Console(process.stdout, process.stderr);
+    vi.spyOn(console, 'log').mockImplementation(output.log.bind(output));
+    vi.spyOn(console, 'error').mockImplementation(output.error.bind(output));
+  });
   afterEach(() => {
     tree?.remove();
     tree = undefined;
+    vi.restoreAllMocks();
   });
 
-  it('writes the notices of the production closure of frontend and backend', { timeout: 60_000 }, () => {
-    tree = createTempTree('notices');
-    workspace(tree);
-    const result = runScript('third-party-notices.mjs', [
-      '--root',
-      tree.root,
-      '--out',
-      path.join(tree.root, 'out.txt'),
-    ]);
-    expect(result.stderr).toBe('');
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain('third-party-notices: 6 packages written to');
-    const notices = tree.read('out.txt');
+  it(
+    'writes the notices of the production closure of frontend and backend',
+    { timeout: 60_000 },
+    async () => {
+      tree = createTempTree('notices');
+      workspace(tree);
+      const args = ['--root', tree.root, '--out', path.join(tree.root, 'out.txt')];
+      const result = await runInProcess(() => writeNotices(args));
+      expect(result.stderr).toBe('');
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('third-party-notices: 6 packages written to');
+      const notices = tree.read('out.txt');
+      rmSync(path.join(tree.root, 'out.txt'));
+      expect(runScript('third-party-notices.mjs', args)).toEqual(result);
+      expect(tree.read('out.txt')).toBe(notices);
+      expect((await runInProcess(() => writeNotices(['--nope']))).status).toBe(2);
+      expect(await runInProcess(() => writeNotices(args))).toEqual(result);
+      expect(tree.read('out.txt')).toBe(notices);
 
-    // The non-affiliation long form, exactly, and the project's own licence.
-    expect(notices).toContain(NON_AFFILIATION_LONG);
-    expect(notices).toContain(
-      "gcportrait's own work is licensed under the MIT License, except the gcportrait name",
-    );
-    // Production dependencies, transitive ones and those of workspace packages; never dev dependencies or the
-    // workspace packages themselves.
-    for (const name of ['a-mit', 't-isc', 'a-apache', 'a-mpl', 'f-ofl', 'z-bsd'])
-      expect(notices).toContain(`\n${name}@1.2.3\n`);
-    expect(notices).not.toContain('d-dev');
-    expect(notices).not.toContain('@fx/model@');
-    expect(notices).not.toContain('@fx/render@');
-    // Where each ships: the server only what the backend reaches without the render library, the render worker
-    // the render library's closure.
-    expect(notices).toMatch(/ {2}a-mit@1\.2\.3 +MIT +app, server, worker\n/);
-    expect(notices).toMatch(/ {2}a-apache@1\.2\.3 +Apache-2\.0 +server\n/);
-    expect(notices).toMatch(/ {2}a-mpl@1\.2\.3 +MPL-2\.0 +worker\n/);
-    expect(notices).toMatch(/ {2}f-ofl@1\.2\.3 +OFL-1\.1 +app\n/);
-    expect(section(notices, 'a-mpl')).toContain('In: the render worker (backend/dist/render-worker.mjs)\n');
-    expect(section(notices, 'a-apache')).toContain('In: the server (backend/dist/server.mjs)\n');
+      // The non-affiliation long form, exactly, and the project's own licence.
+      expect(notices).toContain(NON_AFFILIATION_LONG);
+      expect(notices).toContain(
+        "gcportrait's own work is licensed under the MIT License, except the gcportrait name",
+      );
+      // Production dependencies, transitive ones and those of workspace packages; never dev dependencies or the
+      // workspace packages themselves.
+      for (const name of ['a-mit', 't-isc', 'a-apache', 'a-mpl', 'f-ofl', 'z-bsd'])
+        expect(notices).toContain(`\n${name}@1.2.3\n`);
+      expect(notices).not.toContain('d-dev');
+      expect(notices).not.toContain('@fx/model@');
+      expect(notices).not.toContain('@fx/render@');
+      // Where each ships: the server only what the backend reaches without the render library, the render worker
+      // the render library's closure.
+      expect(notices).toMatch(/ {2}a-mit@1\.2\.3 +MIT +app, server, worker\n/);
+      expect(notices).toMatch(/ {2}a-apache@1\.2\.3 +Apache-2\.0 +server\n/);
+      expect(notices).toMatch(/ {2}a-mpl@1\.2\.3 +MPL-2\.0 +worker\n/);
+      expect(notices).toMatch(/ {2}f-ofl@1\.2\.3 +OFL-1\.1 +app\n/);
+      expect(section(notices, 'a-mpl')).toContain('In: the render worker (backend/dist/render-worker.mjs)\n');
+      expect(section(notices, 'a-apache')).toContain('In: the server (backend/dist/server.mjs)\n');
 
-    // A permissive licence: its file verbatim, with the copyright line listed.
-    const mit = section(notices, 'a-mit');
-    expect(mit).toContain('Copyright:\n  Copyright (c) 2024 Example Author');
-    expect(mit).toContain(MIT_TEXT('Example Author').trimEnd());
-    expect(mit).not.toContain(APACHE_TERMS_HEADING);
-    expect(section(notices, 't-isc')).toContain('its package.json names the author: Transitive Author');
+      // A permissive licence: its file verbatim, with the copyright line listed.
+      const mit = section(notices, 'a-mit');
+      expect(mit).toContain('Copyright:\n  Copyright (c) 2024 Example Author');
+      expect(mit).toContain(MIT_TEXT('Example Author').trimEnd());
+      expect(mit).not.toContain(APACHE_TERMS_HEADING);
+      expect(section(notices, 't-isc')).toContain('its package.json names the author: Transitive Author');
 
-    // Apache-2.0: the NOTICE verbatim, the extra terms of its licence file, the licence's full text once at the end.
-    const apache = section(notices, 'a-apache');
-    expect(apache).toContain('NOTICE (verbatim):');
-    expect(apache).toContain('This product includes software made at example.com.');
-    expect(apache).toContain('Copyright 2023 Example Apache Authors');
-    expect(apache).toContain('This product bundles tiny-helper, under these terms: be nice.');
-    expect(notices.split(APACHE_TERMS_HEADING)).toHaveLength(2);
-    expect(notices.trimEnd().endsWith(APACHE.trimEnd())).toBe(true);
+      // Apache-2.0: the NOTICE verbatim, the extra terms of its licence file, the licence's full text once at the end.
+      const apache = section(notices, 'a-apache');
+      expect(apache).toContain('NOTICE (verbatim):');
+      expect(apache).toContain('This product includes software made at example.com.');
+      expect(apache).toContain('Copyright 2023 Example Apache Authors');
+      expect(apache).toContain('This product bundles tiny-helper, under these terms: be nice.');
+      expect(notices.split(APACHE_TERMS_HEADING)).toHaveLength(2);
+      expect(notices.trimEnd().endsWith(APACHE.trimEnd())).toBe(true);
 
-    // MPL-2.0: sections 3.2 and 3.3, where the Source Code Form is, and the licence text.
-    const mpl = section(notices, 'a-mpl');
-    expect(mpl).toContain('MPL-2.0 (sections 3.2 and 3.3)');
-    expect(mpl).toContain('used unmodified as part of a Larger Work, gcportrait (MIT)');
-    expect(mpl).toContain(
-      'https://registry.npmjs.org/a-mpl/-/a-mpl-1.2.3.tgz (project: https://example.com/a-mpl)',
-    );
-    expect(mpl).toContain(MPL_TEXT.trimEnd());
-    expect(mpl).toContain(
-      'The Mozilla Public License 2.0 is at the end of this file (and at https://mozilla.org/MPL/2.0/).',
-    );
-    expect(notices).not.toContain('(No MPL-2.0 package is part of this build.)');
-    // The canonical MPL-2.0 text once, before the Apache-2.0 text, which still ends the file.
-    expect(notices.split(MPL_CANONICAL_LINE)).toHaveLength(2);
-    const mplAt = notices.indexOf('Mozilla Public License, Version 2.0 (full text)');
-    expect(mplAt).toBeGreaterThan(notices.indexOf('\na-mpl@1.2.3\n'));
-    expect(notices.slice(mplAt)).toContain(MPL.trimEnd());
-    expect(mplAt).toBeLessThan(notices.indexOf('Apache License, Version 2.0 (full text)'));
+      // MPL-2.0: sections 3.2 and 3.3, where the Source Code Form is, and the licence text.
+      const mpl = section(notices, 'a-mpl');
+      expect(mpl).toContain('MPL-2.0 (sections 3.2 and 3.3)');
+      expect(mpl).toContain('used unmodified as part of a Larger Work, gcportrait (MIT)');
+      expect(mpl).toContain(
+        'https://registry.npmjs.org/a-mpl/-/a-mpl-1.2.3.tgz (project: https://example.com/a-mpl)',
+      );
+      expect(mpl).toContain(MPL_TEXT.trimEnd());
+      expect(mpl).toContain(
+        'The Mozilla Public License 2.0 is at the end of this file (and at https://mozilla.org/MPL/2.0/).',
+      );
+      expect(notices).not.toContain('(No MPL-2.0 package is part of this build.)');
+      // The canonical MPL-2.0 text once, before the Apache-2.0 text, which still ends the file.
+      expect(notices.split(MPL_CANONICAL_LINE)).toHaveLength(2);
+      const mplAt = notices.indexOf('Mozilla Public License, Version 2.0 (full text)');
+      expect(mplAt).toBeGreaterThan(notices.indexOf('\na-mpl@1.2.3\n'));
+      expect(notices.slice(mplAt)).toContain(MPL.trimEnd());
+      expect(mplAt).toBeLessThan(notices.indexOf('Apache License, Version 2.0 (full text)'));
 
-    // OFL-1.1: the copyright notice and the licence text, verbatim.
-    expect(section(notices, 'f-ofl')).toContain(OFL_TEXT.trimEnd());
+      // OFL-1.1: the copyright notice and the licence text, verbatim.
+      expect(section(notices, 'f-ofl')).toContain(OFL_TEXT.trimEnd());
 
-    // A package whose files the bundle step copies into the render worker's asset directory names them; one
-    // whose code is not in the worker (a font) is not listed for the worker's code.
-    const withAssets = renderNotices({
-      root: tree.root,
-      app: [],
-      server: productionPackageDirs(tree.root, ['backend']),
-      assetFiles: {
-        'a-mpl': { files: 'backend/dist/render-assets/a.wasm', code: true },
-        'a-mit': { files: 'backend/dist/render-assets/fonts/', code: false },
-      },
-    });
-    expect(withAssets).toMatch(/ {2}a-mpl@1\.2\.3 +MPL-2\.0 +worker, assets\n/);
-    expect(section(withAssets, 'a-mpl')).toContain(
-      "In: the render worker (backend/dist/render-worker.mjs), the render worker's assets " +
-        '(backend/dist/render-assets/a.wasm)\n',
-    );
-    expect(withAssets).toMatch(/ {2}a-mit@1\.2\.3 +MIT +server, assets\n/);
+      // A package whose files the bundle step copies into the render worker's asset directory names them; one
+      // whose code is not in the worker (a font) is not listed for the worker's code.
+      const withAssets = renderNotices({
+        root: tree.root,
+        app: [],
+        server: productionPackageDirs(tree.root, ['backend']),
+        assetFiles: {
+          'a-mpl': { files: 'backend/dist/render-assets/a.wasm', code: true },
+          'a-mit': { files: 'backend/dist/render-assets/fonts/', code: false },
+        },
+      });
+      expect(withAssets).toMatch(/ {2}a-mpl@1\.2\.3 +MPL-2\.0 +worker, assets\n/);
+      expect(section(withAssets, 'a-mpl')).toContain(
+        "In: the render worker (backend/dist/render-worker.mjs), the render worker's assets " +
+          '(backend/dist/render-assets/a.wasm)\n',
+      );
+      expect(withAssets).toMatch(/ {2}a-mit@1\.2\.3 +MIT +server, assets\n/);
+    },
+  );
+
+  it('refuses unknown options with exit code 2', async () => {
+    expect((await runInProcess(() => writeNotices(['--nope']))).status).toBe(2);
   });
 
-  it('refuses unknown options with exit code 2', () => {
-    expect(runScript('third-party-notices.mjs', ['--nope']).status).toBe(2);
+  it('reports missing dependencies with exit code 1', async () => {
+    tree = createTempTree('notices-missing-dependencies');
+    const args = ['--root', tree.root];
+    const result = await runInProcess(() => writeNotices(args));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('node_modules is missing');
+  });
+
+  it('imports without running the command or changing the exit code', async () => {
+    const exitCode = process.exitCode;
+    vi.resetModules();
+    try {
+      const result = await runInProcess(async () => {
+        const imported = await import('./third-party-notices.mjs');
+        expect(imported.run).toBeTypeOf('function');
+        return 0;
+      });
+      expect(result).toEqual({ status: 0, stdout: '', stderr: '' });
+      expect(process.exitCode).toBe(exitCode);
+    } finally {
+      process.exitCode = exitCode;
+      vi.resetModules();
+    }
   });
 });
 
