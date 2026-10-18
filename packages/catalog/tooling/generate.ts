@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * The two outputs of `pnpm catalog:build`: `dist/catalog.json` (for anything that wants a file) and
- * `src/generated/compiled-catalog.ts`, the module that `@gcportrait/catalog` exports as `catalog`. Both are
- * git-ignored build artefacts. The module holds the catalog as a constant typed `Catalog`: the compiler writes
+ * The outputs of `pnpm catalog:build`: `dist/catalog.json` (for anything that wants a file),
+ * `src/generated/compiled-catalog.ts`, the module that `@gcportrait/catalog` exports as `catalog`, and
+ * `dist/coverage.json`, the coverage the website reads (src/compiler/coverage-file.ts). All are git-ignored
+ * build artefacts. The module holds the catalog as a constant typed `Catalog`: the compiler writes
  * only data that passed `CatalogSchema`, so the runtime exports it as it is, tsc holds it to the type, and
  * tooling/catalog.test.ts holds it to the schema and to a fresh compile.
  *
@@ -17,6 +18,7 @@
  * ignores src/generated/), since nobody edits its data and tsc already holds it to `Catalog`.
  */
 import type { Catalog } from '@gcportrait/model';
+import type { CatalogCoverage } from '../src/compiler/coverage-file.js';
 
 /** The catalog as two-space indented JSON, the text both outputs hold. */
 function catalogText(catalog: Catalog): string {
@@ -40,4 +42,9 @@ export function renderCatalogModule(catalog: Catalog, licenseId: string): string
 /** `dist/catalog.json`: the compiled catalog, two-space indented. */
 export function renderCatalogJson(catalog: Catalog): string {
   return `${catalogText(catalog)}\n`;
+}
+
+/** `dist/coverage.json`: the coverage the website reads, two-space indented like the catalog. */
+export function renderCoverageJson(coverage: CatalogCoverage): string {
+  return `${JSON.stringify(coverage, null, 2)}\n`;
 }

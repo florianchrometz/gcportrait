@@ -37,6 +37,13 @@ export const KNOWN_UNMAPPED_DIR = 'known-unmapped';
 /** The compiled catalog file, relative to the catalog root (git-ignored). */
 export const DIST_CATALOG = 'dist/catalog.json';
 
+/**
+ * The coverage data the website reads, relative to the catalog root (git-ignored): written by
+ * `pnpm catalog:build` (`src/compiler/coverage-file.ts`), so the site's build reads a file instead of running a
+ * command.
+ */
+export const DIST_COVERAGE = 'dist/coverage.json';
+
 const SNAPSHOT_FILE = /^cai-supported-asset-types\.([0-9]{4}-[0-9]{2}-[0-9]{2})\.txt$/;
 
 function relative(root: string, file: string): string {

@@ -12,6 +12,7 @@ import path from 'node:path';
 import { CatalogSchema, LensIdSchema, type Asset } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { compileCatalog } from '../src/compiler/compile.js';
+import { catalogCoverage } from '../src/compiler/coverage-file.js';
 import { parseGroups } from '../src/compiler/groups.js';
 import type { CoverageReport } from '../src/compiler/types.js';
 import {
@@ -27,6 +28,7 @@ import {
 } from '../src/index.js';
 import {
   CATALOG_ROOT,
+  DIST_COVERAGE,
   GENERATED_MODULE,
   catalogVersion,
   readOfficialList,
@@ -108,6 +110,22 @@ describe('the catalog data', () => {
     expect(CatalogSchema.parse(catalog), 'the runtime catalog passes CatalogSchema as it is').toEqual(
       catalog,
     );
+  });
+
+  // The website renders the coverage page from dist/coverage.json instead of running `pnpm catalog:coverage
+  // --json` during its build (src/compiler/coverage-file.ts), so the file must be the coverage of the catalog
+  // as it is, narrowed to what the page reads and with each group's unmapped types sorted by type.
+  it('writes the coverage the website reads (dist/coverage.json) as a fresh compile has it', () => {
+    const written: unknown = JSON.parse(readFileSync(path.join(CATALOG_ROOT, DIST_COVERAGE), 'utf8'));
+    expect(written, 'stale: run pnpm catalog:build').toEqual(catalogCoverage(report));
+    expect(written).toMatchObject({
+      officialDate: report.officialList.date,
+      officialTotal: official.types.size,
+    });
+    for (const group of catalogCoverage(report).groups) {
+      const types = group.unmapped.map((item) => item.type);
+      expect(types, `${group.group}: the unmapped types are sorted`).toEqual([...types].sort());
+    }
   });
 
   it('keeps every seeded Tier-0 container and the Resource Manager product (the groups add the rest)', () => {

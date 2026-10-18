@@ -58,7 +58,7 @@ the engine cannot reach for Node APIs by accident; `tsconfig.tooling.json` check
 | Every rule's fixture resolution, rule → fixture value → normalised name (and every warning) | `pnpm catalog:check --group compute --verbose` |
 | Fail on icon keys missing from `icon-keys.json` | `pnpm catalog:check --strict-icons` |
 | Per-group coverage: owned official types, mapped by role, unmapped by reason, missing | `pnpm catalog:coverage` (`--group <group>`, `--json`; or `pnpm --filter @gcportrait/catalog coverage`) |
-| Compile: write `src/generated/compiled-catalog.ts` and `dist/catalog.json` (both git-ignored) | `pnpm catalog:build` (`--strict`: write nothing while any violation exists) |
+| Compile: write `src/generated/compiled-catalog.ts`, `dist/catalog.json` and the website's `dist/coverage.json` (all git-ignored) | `pnpm catalog:build` (`--strict`: write nothing while any violation exists) |
 | Fetch the official list into a new dated snapshot and print the drift | `pnpm catalog:fetch-official` |
 | Tests, lint, types (each builds the catalog first) | `pnpm --filter @gcportrait/catalog test` (also `lint`, `typecheck`) |
 
@@ -391,7 +391,8 @@ it, and every new type must be mapped, or owned and listed by a group file (`own
 
 `pnpm catalog:coverage` reports the current totals and per-group figures; `pnpm catalog:check` validates
 rules, fixtures and ownership. The generated [coverage page](https://gcportrait.app/coverage/) publishes
-coverage for the site. Unmapped types and their reasons live in each owner's `known-unmapped/<group>.yaml`.
+coverage for the site from `dist/coverage.json`, which `pnpm catalog:build` writes beside the compiled
+catalog. Unmapped types and their reasons live in each owner's `known-unmapped/<group>.yaml`.
 Coverage stays at or above 95 % of the official list, with no rule without a fixture (skill gcp-asset-catalog
 §8). No hand-maintained table needs updating when a group's coverage changes.
 

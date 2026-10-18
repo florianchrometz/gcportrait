@@ -61,3 +61,12 @@ export {
   type TemplateScope,
 } from './engine/template.js';
 export { CatalogSyntaxError } from './engine/syntax.js';
+
+// The coverage data `pnpm catalog:build` writes into dist/coverage.json for the website (`catalogCoverage`), and
+// its shape, which the site's coverage page and landing page read as a type only (tooling/build.ts).
+export {
+  catalogCoverage,
+  type CatalogCoverage,
+  type CatalogCoverageGroup,
+  type CatalogCoverageUnmapped,
+} from './compiler/coverage-file.js';

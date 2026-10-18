@@ -1,30 +1,33 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm catalog:build` (`pnpm --filter @gcportrait/catalog build`): compiles the catalog and writes
- * dist/catalog.json and src/generated/compiled-catalog.ts, the git-ignored module the package exports (see
- * generate.ts). It writes the catalog even while some file has violations, leaving out every type that has a
- * violation of its own (and every file that does not parse), so that one group's half-finished YAML never stops
- * another group's typecheck and never reaches the graph builder; the left-out types are named on stderr, and
- * `pnpm catalog:check` is the gate. It fails, writing nothing, only when no catalog can be assembled at all (a
- * lens file missing or invalid). `--strict` writes nothing while any violation exists. Unchanged outputs are
- * not rewritten, so watchers and incremental builds stay quiet. `--quiet` (the typecheck, lint and test hooks)
- * prints nothing unless something is wrong, and then only to stderr.
+ * dist/catalog.json, src/generated/compiled-catalog.ts, the git-ignored module the package exports (see
+ * generate.ts), and dist/coverage.json, the coverage data the website renders (see
+ * src/compiler/coverage-file.ts). It writes them even while some file has violations, leaving out every type
+ * that has a violation of its own (and every file that does not parse), so that one group's half-finished YAML
+ * never stops another group's typecheck and never reaches the graph builder; the left-out types are named on
+ * stderr, and `pnpm catalog:check` is the gate. It fails, writing nothing, only when no catalog can be assembled
+ * at all (a lens file missing or invalid). `--strict` writes nothing while any violation exists. Unchanged
+ * outputs are not rewritten, so watchers and incremental builds stay quiet. `--quiet` (the typecheck, lint and
+ * test hooks) prints nothing unless something is wrong, and then only to stderr.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { compileCatalog } from '../src/compiler/compile.js';
+import { catalogCoverage } from '../src/compiler/coverage-file.js';
 import { formatViolations } from '../src/compiler/report.js';
 import {
   CATALOG_ROOT,
   DIST_CATALOG,
+  DIST_COVERAGE,
   GENERATED_MODULE,
   catalogVersion,
   loadSources,
   readOfficialList,
   repositoryLicense,
 } from './files.js';
-import { renderCatalogJson, renderCatalogModule } from './generate.js';
+import { renderCatalogJson, renderCatalogModule, renderCoverageJson } from './generate.js';
 
 const { values } = parseArgs({
   options: {
@@ -54,14 +57,16 @@ function write(file: string, text: string): boolean {
 
 const modulePath = path.join(CATALOG_ROOT, GENERATED_MODULE);
 const jsonPath = path.join(CATALOG_ROOT, DIST_CATALOG);
+const coveragePath = path.join(CATALOG_ROOT, DIST_COVERAGE);
 const changed = [
   write(jsonPath, renderCatalogJson(catalog)) ? DIST_CATALOG : undefined,
   write(modulePath, renderCatalogModule(catalog, repositoryLicense())) ? GENERATED_MODULE : undefined,
+  write(coveragePath, renderCoverageJson(catalogCoverage(report))) ? DIST_COVERAGE : undefined,
 ].filter((file): file is string => file !== undefined);
 if (!values.quiet) {
   console.log(
     `catalog:build: ${String(catalog.products.length)} products, ${String(Object.keys(catalog.types).length)} types, ` +
-      `official list ${catalog.officialListDate}; ${changed.length === 0 ? 'outputs unchanged' : `wrote ${changed.join(' and ')}`}.`,
+      `official list ${catalog.officialListDate}; ${changed.length === 0 ? 'outputs unchanged' : `wrote ${changed.join(', ')}`}.`,
   );
 }
 if (count > 0) {

@@ -2,15 +2,14 @@
 /**
  * The asset catalog's coverage, for the coverage page and the landing page's numbers, from the catalog's compiled
  * data (`catalog` of @gcportrait/catalog: products, types with their roles and console templates, lenses) and its
- * coverage report (`pnpm catalog:coverage --json`: the official list, and per authoring group the types it owns,
- * the mapped ones by role, and the unmapped ones with their reasons). Both are computed at build time, so the page
- * is never out of date with the catalog it is built with.
+ * coverage data (`packages/catalog/dist/coverage.json`, which `pnpm catalog:build` writes next to the compiled
+ * catalog: the official list, and per authoring group the types it owns, the mapped ones by role, and the
+ * unmapped ones with their reasons — the shape is the catalog's, `CatalogCoverage`). Both are computed at build
+ * time, so the page is never out of date with the catalog it is built with, and the site's build runs no command.
  */
-import { execFileSync } from 'node:child_process';
+import { catalog, typesWithoutConsole, type CatalogCoverage } from '@gcportrait/catalog';
 
-import { catalog, typesWithoutConsole } from '@gcportrait/catalog';
-
-import { repoRoot } from './repo.js';
+import { readRepoFile } from './repo.js';
 
 export const ROLES = ['container', 'core', 'leaf', 'hidden'] as const;
 export type Role = (typeof ROLES)[number];
@@ -24,90 +23,46 @@ export const ROLE_DESCRIPTIONS: Readonly<Record<Role, string>> = {
     'read and counted in its parent’s badge but not drawn by default (builds, job runs, versions, settings); a type filter shows it',
 };
 
-export type GroupCoverage = {
-  readonly group: string;
-  readonly title: string;
-  readonly official: number;
-  readonly mapped: Readonly<Record<Role, number>> & { readonly total: number };
-  readonly unmapped: readonly { readonly type: string; readonly reason: string }[];
-  readonly coveragePercent: number;
-};
-
-export type CoverageReport = {
-  readonly officialDate: string;
-  readonly officialTotal: number;
-  readonly groups: readonly GroupCoverage[];
-};
+/** The coverage data `pnpm catalog:build` writes, relative to the repository root (git-ignored). */
+const COVERAGE_FILE = 'packages/catalog/dist/coverage.json';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function num(value: unknown, what: string): number {
-  if (typeof value !== 'number' || !Number.isFinite(value))
-    throw new Error(`catalog:coverage --json: ${what} is not a number`);
-  return value;
+/** Whether the text holds the coverage `pnpm catalog:build` writes (its shape is the catalog's). */
+function isCoverage(value: unknown): value is CatalogCoverage {
+  return (
+    isRecord(value) &&
+    typeof value.officialDate === 'string' &&
+    typeof value.officialTotal === 'number' &&
+    Array.isArray(value.groups)
+  );
 }
 
-function str(value: unknown, what: string): string {
-  if (typeof value !== 'string') throw new Error(`catalog:coverage --json: ${what} is not a string`);
-  return value;
-}
-
-/** Reads the JSON `pnpm catalog:coverage --json` prints (exported for the tests). */
-export function parseCoverageReport(json: string): CoverageReport {
-  const raw: unknown = JSON.parse(json);
-  if (!isRecord(raw) || !isRecord(raw.officialList) || !Array.isArray(raw.groups)) {
-    throw new Error('catalog:coverage --json: unexpected shape');
+/** Reads `dist/coverage.json` (exported for the tests): refuses text that is not what the catalog's build writes. */
+export function parseCoverageJson(text: string): CatalogCoverage {
+  const raw: unknown = JSON.parse(text);
+  if (!isCoverage(raw)) {
+    throw new Error(
+      `${COVERAGE_FILE} is not the coverage \`pnpm catalog:build\` writes: rebuild the catalog.`,
+    );
   }
-  const groups = raw.groups.map((group: unknown, index): GroupCoverage => {
-    if (!isRecord(group) || !isRecord(group.mapped) || !isRecord(group.unmapped)) {
-      throw new Error(`catalog:coverage --json: group ${String(index)} has an unexpected shape`);
-    }
-    const types = isRecord(group.unmapped.types) ? group.unmapped.types : {};
-    return {
-      group: str(group.group, 'group'),
-      title: str(group.title, 'title'),
-      official: num(group.official, 'official'),
-      mapped: {
-        container: num(group.mapped.container, 'mapped.container'),
-        core: num(group.mapped.core, 'mapped.core'),
-        leaf: num(group.mapped.leaf, 'mapped.leaf'),
-        hidden: num(group.mapped.hidden, 'mapped.hidden'),
-        total: num(group.mapped.total, 'mapped.total'),
-      },
-      unmapped: Object.entries(types)
-        .map(([type, reason]) => ({ type, reason: str(reason, `unmapped reason of ${type}`) }))
-        .sort((a, b) => (a.type < b.type ? -1 : 1)),
-      coveragePercent: num(group.coveragePercent, 'coveragePercent'),
-    };
-  });
-  return {
-    officialDate: str(raw.officialList.date, 'officialList.date'),
-    officialTotal: num(raw.officialList.total, 'officialList.total'),
-    groups,
-  };
+  return raw;
 }
 
-let cachedReport: CoverageReport | undefined;
+let cachedReport: CatalogCoverage | undefined;
 
-/** `pnpm catalog:coverage --json`, run once per build. */
-export function coverageReport(): CoverageReport {
+/** The catalog's coverage data, read once per build; `pnpm catalog:build` writes it with the compiled catalog. */
+export function coverageReport(): CatalogCoverage {
   if (cachedReport !== undefined) return cachedReport;
-  const execPath = process.env.npm_execpath;
-  const viaNode = execPath !== undefined && /\.c?js$/.test(execPath);
-  const command = viaNode
-    ? process.execPath
-    : execPath !== undefined && /pnpm/.test(execPath)
-      ? execPath
-      : 'pnpm';
-  const args = [...(viaNode ? [execPath] : []), '--silent', 'catalog:coverage', '--json'];
-  const output = execFileSync(command, args, {
-    cwd: repoRoot(),
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  cachedReport = parseCoverageReport(output);
+  const text = readRepoFile(COVERAGE_FILE);
+  if (text === undefined) {
+    throw new Error(
+      `${COVERAGE_FILE} is missing: run \`pnpm catalog:build\` (it writes it with the catalog).`,
+    );
+  }
+  cachedReport = parseCoverageJson(text);
   return cachedReport;
 }
 
