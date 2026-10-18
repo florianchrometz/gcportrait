@@ -31,6 +31,22 @@
 # the result it gave the tree before the change, which that commit's own run reports. Every job runs when the
 # comparison cannot be made (a new branch, a push whose commit before is not in the history) or finds no file.
 #
+# Three jobs, the longest and the one that only reports, are narrowed further by the code files themselves
+# (.github/AGENTS.md, The e2e, layout-budget and website gates), each by an output of `changes` of its own:
+#
+#   e2e      runs unless every code file is one the suites never read: scripts/, website/, infra/, docs/,
+#            .agents/, .changeset/, .github/ and the root's lint, format, editor, Docker and git settings
+#            (eslint.config.js, .prettierrc, .prettierignore, .editorconfig, .dockerignore, .gitignore, app.json).
+#   layout   (layout-budget) runs when a code file is one it reads: the layout and the packages it is tested
+#            with or that the catalog's build reads (model, catalog, demo-data, graph, ingest, icons),
+#            frontend/package.json (the fonts its metrics come from) or any file at the root.
+#   website  runs unless every changed file is a code file modified in place (not added, deleted or renamed:
+#            the site's checks resolve links to repository paths) under backend/, e2e/, .agents/ or .github/,
+#            or .changeset/config.json; docs and media always run it.
+#
+# For all three, the setup and Playwright actions (.github/actions/setup/, .github/actions/playwright/) and this
+# workflow file count as read, so a change to how the job runs runs it.
+#
 # Pinning: every action is pinned to a commit, with its release as a comment, and the two linters downloaded here
 # are pinned by version and SHA-256. Dependabot (github-actions) proposes new releases of the actions; the linters
 # are bumped by hand.
@@ -51,15 +67,17 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # The kinds of files the change touches (the header): `code`, `docs` and `media`, each `true` or `false`. A push
-  # is compared with the commit before it (github.event.before), a pull request's merge commit with its first
-  # parent, the tip of the branch it merges into, so either way the files are those the change brings to the tree
-  # it starts from. The checkout fetches every commit and tree but file contents only for the checked-out tree (a
-  # blobless partial clone): `git diff --name-only --no-renames` compares trees only, and without rename detection
-  # it never asks for a file's contents; GIT_NO_LAZY_FETCH keeps git from fetching an object that is missing (the
-  # checkout keeps no credentials), so a missing commit ends the comparison instead. Every doubt in the step ends
-  # in `code=true`, and the jobs skip only on `code == 'false'`, so a doubt runs them all; should this job fail,
-  # the jobs that need it are skipped and `required` fails.
+  # The kinds of files the change touches (the header): `code`, `docs` and `media`, and the gates of e2e,
+  # layout-budget and website, `e2e`, `layout` and `website`, each `true` or `false`. A push is compared with the
+  # commit before it (github.event.before), a pull request's merge commit with its first parent, the tip of the
+  # branch it merges into, so either way the files are those the change brings to the tree it starts from. The
+  # checkout fetches every commit and tree but file contents only for the checked-out tree (a blobless partial
+  # clone): `git diff --name-status --no-renames` compares trees only, and without rename detection it never asks
+  # for a file's contents (a rename is a deletion and an addition); GIT_NO_LAZY_FETCH keeps git from fetching an
+  # object that is missing (the checkout keeps no credentials), so a missing commit ends the comparison instead.
+  # Every doubt in the step ends in every output that runs a job being `true`, and the jobs skip only on an output
+  # that is `'false'`, so a doubt runs them all; should this job fail, the jobs that need it are skipped and
+  # `required` fails.
   changes:
     name: changes
     runs-on: ubuntu-latest
@@ -68,13 +86,16 @@ jobs:
       code: ${{ steps.classify.outputs.code }}
       docs: ${{ steps.classify.outputs.docs }}
       media: ${{ steps.classify.outputs.media }}
+      e2e: ${{ steps.classify.outputs.e2e }}
+      layout: ${{ steps.classify.outputs.layout }}
+      website: ${{ steps.classify.outputs.website }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
           filter: blob:none
-      - name: Sort the changed files into docs, media and code
+      - name: Sort the changed files into docs, media and code, and decide the e2e, layout and website gates
         id: classify
         env:
           EVENT: ${{ github.event_name }}
@@ -83,6 +104,12 @@ jobs:
           GIT_TERMINAL_PROMPT: '0'
           MEDIA: '^docs/media/'
           DOCS: '^(docs/.+|\.changeset/[^/]+|[^/]+|([^/]+|packages/[^/]+)/(README|CHANGELOG|AGENTS))\.md$'
+          # How the three gated jobs run: a change here runs each of them.
+          RUNNER: '^\.github/(actions/(setup|playwright)/|workflows/pr\.yml$)'
+          E2E_UNREAD: '^(scripts|website|infra|docs|\.agents|\.changeset|\.github)/'
+          E2E_UNREAD_ROOT: '^(eslint\.config\.js|\.(prettierrc|prettierignore|editorconfig|dockerignore|gitignore)|app\.json)$'
+          LAYOUT_READ: '^(packages/(layout|model|catalog|demo-data|graph|ingest|icons)/|frontend/package\.json$|[^/]+$)'
+          WEBSITE_UNREAD: '^((backend|e2e|\.agents|\.github)/|\.changeset/config\.json$)'
         run: |
           base=''
           if [ "$EVENT" = pull_request ]; then
@@ -94,45 +121,72 @@ jobs:
             base=$BEFORE
           fi
           reason=''
-          files=''
+          changed=''
           if [ -z "$base" ]; then
             reason='no commit to compare with'
           elif ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
             reason="the commit before, ${base}, is not in the history"
-          elif ! files=$(git diff --name-only --no-renames "$base" HEAD); then
+          elif ! changed=$(git diff --name-status --no-renames "$base" HEAD); then
             reason='git diff failed'
-          elif [ -z "$files" ]; then
+          elif [ -z "$changed" ]; then
             reason='no file changed'
           fi
           code=true
           docs=false
           media=false
+          e2e=true
+          layout=true
+          website=true
           if [ -z "$reason" ]; then
             code=false
-            while IFS= read -r file; do
+            e2e=false
+            layout=false
+            website=false
+            # Each line is a status letter (A, D, M or T), a tab and the path.
+            while IFS=$'\t' read -r status file; do
               if [[ $file =~ $MEDIA ]]; then
                 media=true
+                website=true
               elif [[ $file =~ $DOCS ]]; then
                 docs=true
+                website=true
               else
                 code=true
+                if [[ $file =~ $RUNNER ]]; then
+                  e2e=true
+                  layout=true
+                  website=true
+                  continue
+                fi
+                if [[ ! $file =~ $E2E_UNREAD && ! $file =~ $E2E_UNREAD_ROOT ]]; then
+                  e2e=true
+                fi
+                if [[ $file =~ $LAYOUT_READ ]]; then
+                  layout=true
+                fi
+                if [ "$status" != M ] || [[ ! $file =~ $WEBSITE_UNREAD ]]; then
+                  website=true
+                fi
               fi
-            done <<< "$files"
+            done <<< "$changed"
           fi
           {
             echo "code=$code"
             echo "docs=$docs"
             echo "media=$media"
+            echo "e2e=$e2e"
+            echo "layout=$layout"
+            echo "website=$website"
           } >> "$GITHUB_OUTPUT"
           if [ -n "$reason" ]; then
             summary="Every job runs: ${reason}."
           else
-            summary="Compared with ${base::12}, files changed: $(grep -c '' <<< "$files")"
-            summary+="; code ${code}, docs ${docs}, media ${media}."
+            summary="Compared with ${base::12}, files changed: $(grep -c '' <<< "$changed")"
+            summary+="; code ${code}, docs ${docs}, media ${media}; e2e ${e2e}, layout ${layout}, website ${website}."
             if [ "$code" = false ]; then
               summary+=' Only docs and media changed: the jobs that read neither are skipped (the header).'
             fi
-            head -n 100 <<< "$files"
+            head -n 100 <<< "$changed"
           fi
           echo "$summary"
           printf '### Changes\n\n%s\n' "$summary" >> "$GITHUB_STEP_SUMMARY"
@@ -236,7 +290,7 @@ jobs:
   layout-budget:
     name: layout-budget
     needs: changes
-    if: needs.changes.outputs.code != 'false'
+    if: needs.changes.outputs.layout != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     continue-on-error: true
@@ -360,7 +414,7 @@ jobs:
   e2e:
     name: e2e (${{ matrix.leg }})
     needs: changes
-    if: needs.changes.outputs.code != 'false'
+    if: needs.changes.outputs.e2e != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -429,6 +483,8 @@ jobs:
   # not say what the check is for. pages.yml builds and deploys the site; this job is the pull request's gate.
   website:
     name: website
+    needs: changes
+    if: needs.changes.outputs.website != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -566,14 +622,14 @@ jobs:
 
   # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required
   # checks"), on pull requests and on main alike: it succeeds only when `changes` and every blocking job succeeded,
-  # and fails when one failed, was cancelled or was skipped. The one exception is a change of only docs and media,
-  # which `changes` reports as `code=false`: then a skipped job counts as passed, because its `if` skipped it for
-  # files it does not read. On any other change a skipped job fails this check, so a condition that skips a job
-  # wrongly shows here. The jobs are skipped by `if` inside this one workflow, not by leaving the workflow out with
-  # `paths-ignore`, because a workflow that does not run reports no `required` at all, and a pull request waits
-  # for a required check that never reports. Requiring this job alone keeps the protection rule unchanged when
-  # jobs are added, renamed or split into matrix legs here. layout-budget is left out on purpose (non-blocking,
-  # see the job).
+  # and fails when one failed, was cancelled or was skipped. A skip counts as passed only where `changes` planned
+  # it: any job but `changes` on a change of only docs and media (`code=false`), the e2e legs on `e2e=false` and
+  # website on `website=false` (the header), because the job's `if` skipped it for files it does not read. Any
+  # other skip fails this check, so a condition that skips a job wrongly shows here. The jobs are skipped by `if`
+  # inside this one workflow, not by leaving the workflow out with `paths-ignore`, because a workflow that does not
+  # run reports no `required` at all, and a pull request waits for a required check that never reports. Requiring
+  # this job alone keeps the protection rule unchanged when jobs are added, renamed or split into matrix legs here.
+  # layout-budget is left out on purpose (non-blocking, see the job).
   required:
     name: required
     if: always()
@@ -595,15 +651,18 @@ jobs:
     timeout-minutes: 5
     permissions: {}
     steps:
-      - name: Every blocking job succeeded (or was skipped on a change of only docs and media)
+      - name: Every blocking job succeeded (or was skipped where `changes` planned it)
         env:
           NEEDS: ${{ toJSON(needs) }}
           CODE: ${{ needs.changes.outputs.code }}
+          E2E: ${{ needs.changes.outputs.e2e }}
+          WEBSITE: ${{ needs.changes.outputs.website }}
         run: |
           jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
-          failed=$(jq -r --arg code "$CODE" '[to_entries[]
+          failed=$(jq -r --arg code "$CODE" --arg e2e "$E2E" --arg website "$WEBSITE" '[to_entries[]
             | select(.value.result != "success")
-            | select(.key == "changes" or $code != "false" or .value.result != "skipped")
+            | select(.key == "changes" or .value.result != "skipped" or ($code != "false"
+                and (.key != "e2e" or $e2e != "false") and (.key != "website" or $website != "false")))
             | .key] | join(", ")' <<< "$NEEDS")
           if [ -n "$failed" ]; then
             echo "::error title=Required checks::Not successful: ${failed}."
@@ -612,5 +671,5 @@ jobs:
           if [ "$CODE" = false ]; then
             echo "Only docs and media changed: the blocking jobs that read them succeeded, the others were skipped."
           else
-            echo "Every blocking job succeeded."
+            echo "Every blocking job succeeded or was skipped as planned (e2e ${E2E}, website ${WEBSITE})."
           fi

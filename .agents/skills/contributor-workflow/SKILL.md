@@ -97,10 +97,10 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
 
 - The acceptance criteria of the issue or backlog item, and the rules in the skills, met and demonstrated
   (commands + output in the PR).
-- `pnpm check` and `pnpm e2e` green locally; CI green. Follow .github/AGENTS.md, "CI" and "A change of
-  only docs and media". For a failure, find the job's command and artifacts in
-  [Continuous integration](../../../docs/contributing.md#continuous-integration), then reproduce with
-  `TZ=UTC LC_ALL=C.UTF-8 CI=true`.
+- `pnpm check` and `pnpm e2e` green locally; CI green. Follow .github/AGENTS.md, "CI", "A change of only docs
+  and media" and "The e2e, layout-budget and website gates". For a failure, find the job's command and
+  artifacts in [Continuous integration](../../../docs/contributing.md#continuous-integration), then reproduce
+  with `TZ=UTC LC_ALL=C.UTF-8 CI=true`.
 - Both themes verified for visual work; contrast tests green.
 - Docs updated: package README, user docs under `docs/` or `website/` if behaviour changed, `AGENTS.md` and
   the skill if a rule changed.

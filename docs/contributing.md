@@ -148,26 +148,26 @@ jobs side by side; each one installs the dependencies itself from the pnpm store
 keys, so a run takes as long as its slowest job. **Website** (`.github/workflows/pages.yml`) builds and checks
 the site again (and its generated media, as a warning) and deploys it from `main` once the maintainer has
 switched deployment on ([website.md](website.md)). The CI jobs, and what each does on a change of only docs
-and media (below):
+and media; the e2e legs, `layout-budget` and `website` also skip other changes they do not read (both below):
 
 | Job | Runs | Only docs and media changed |
 |---|---|---|
-| `changes` | sorts the changed files into docs, media and code (below); no install | runs |
+| `changes` | sorts the changed files into docs, media and code and decides the `e2e`, `layout` and `website` gates (below); no install | runs |
 | `lint` | `pnpm format:check`, then `pnpm lint` | Prettier only, when media changed (its two manifests are JSON); skipped for docs alone |
 | `typecheck` | `pnpm typecheck` | skipped |
 | `unit (layout)`, `unit (frontend)` | `pnpm test --project layout`; `pnpm test --project frontend` | skipped |
 | `unit (all other projects)` | `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included | runs: the user guides' check, the citation check of the rules files, the README's and the media's tests and the backend's and the website's tests read docs and media |
-| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking | skipped |
+| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking. Runs only when `layout` is true | skipped |
 | `catalog-check` | `pnpm catalog:build`, then `pnpm catalog:check` | skipped |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
-| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode | skipped |
-| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`) | skipped |
-| `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout` | runs |
+| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode. Runs only when `e2e` is true | skipped |
+| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`). Runs only when `e2e` is true | skipped |
+| `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout`. Runs unless `website` is false | runs |
 | `provenance` | `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard | runs |
 | `licenses` | `pnpm run licenses` | runs when docs changed (`THIRD_PARTY.md` is one); skipped for media alone |
 | `audit` | `node scripts/check-audit.mjs` (asks the npm registry) | skipped |
 | `workflows-and-shell` | `actionlint`; `shellcheck -x infra/*.sh`; every other shell script with `shellcheck -x --severity=warning` | skipped |
-| `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded | runs: a job skipped for such a change counts as passed |
+| `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded, or were skipped as `changes` planned (an e2e leg on `e2e=false`, `website` on `website=false`) | runs: a job skipped for such a change counts as passed |
 
 **A change of only docs and media** runs only the jobs that read such files
 ([.github/AGENTS.md](../.github/AGENTS.md), "A change of only docs and media"). `changes` compares a push with
@@ -186,6 +186,22 @@ With code among the changed files every job runs, and so it does when the compar
 branch, a push whose commit before is not in the history) or finds no file. A skipped job's result is that of
 the tree the change starts from, which the run of that commit shows. The job summary of `changes` says what it
 compared and what it found.
+
+**The e2e, layout-budget and website gates** narrow three jobs further by the code files themselves
+([.github/AGENTS.md](../.github/AGENTS.md), "The e2e, layout-budget and website gates"):
+
+- **`e2e`** is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/`,
+  `.changeset/` or `.github/`, or is one of the root's `eslint.config.js`, `.prettierrc`, `.prettierignore`,
+  `.editorconfig`, `.dockerignore`, `.gitignore` and `app.json`: the suites read none of them.
+- **`layout`** is true only for a code file under `packages/layout/` or the packages it is tested with or the
+  catalog's build reads (`model`, `catalog`, `demo-data`, `graph`, `ingest`, `icons`), `frontend/package.json`
+  (the fonts its metrics come from) or any file at the root.
+- **`website`** is false only when every changed file is a code file modified in place (not added, deleted or
+  renamed) under `backend/`, `e2e/`, `.agents/` or `.github/`, or `.changeset/config.json`: the site's checks
+  resolve links to repository paths, so an added or removed file can break them. Docs and media always run it.
+
+A change to `.github/actions/setup/`, `.github/actions/playwright/` or `.github/workflows/pr.yml` sets all
+three true, and so does a comparison that cannot be made.
 
 GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
@@ -236,11 +252,11 @@ golden did not match: the image the runner drew and a picture of the differences
 branch ruleset for the default branch with "Require status checks to pass" and the check `required` (source:
 GitHub Actions); add "Require a pull request before merging" as you see fit. Do not list the other jobs or the
 matrix legs one by one: `required` already waits for them, and the ruleset then needs no change when a job is
-added, renamed or split. The jobs a change of only docs and media leaves out are skipped inside the workflow,
-not by a path filter on it, so `required` reports on every pull request and push and decides itself when a
-skipped job counts as passed. `layout-budget` is left out on purpose. The Website workflow's `website-build`
-may be required too; CI's `website` job already builds and checks the same site. GitHub offers a check in the
-ruleset only after it has run once, so add it after the first push to `main`.
+added, renamed or split. The jobs a change leaves out (only docs and media, or the e2e and website gates) are
+skipped inside the workflow, not by a path filter on it, so `required` reports on every pull request and push
+and decides itself when a skipped job counts as passed. `layout-budget` is left out on purpose. The Website
+workflow's `website-build` may be required too; CI's `website` job already builds and checks the same site.
+GitHub offers a check in the ruleset only after it has run once, so add it after the first push to `main`.
 
 **Runs on GitHub.** What to expect, and what to do:
 

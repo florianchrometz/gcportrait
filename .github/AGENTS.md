@@ -13,8 +13,8 @@ These rules add to the root AGENTS.md, which applies here too.
   a banned file and requires the guard to fail), licences, the dependency audit and workflows-and-shell.
   The e2e leg contract follows [e2e/AGENTS.md](../e2e/AGENTS.md), "CI legs".
 - Its **`required` job is the one check branch protection targets**, green only when every other job but
-  `layout-budget` succeeded or was skipped for a change of only docs and media (below), so the ruleset never
-  changes when a job does.
+  `layout-budget` succeeded or was skipped where `changes` planned it (below), so the ruleset never changes
+  when a job does.
 - **Every action is pinned by commit.**
 
 ## A change of only docs and media
@@ -29,6 +29,19 @@ Prettier for media (its manifests are JSON); typecheck, the layout and frontend 
 `layout-budget`, catalog-check, build, e2e, the audit, workflows-and-shell and ESLint are skipped, because
 none of them reads those files, so each could only repeat the result of the tree the change starts from. A
 comparison that cannot be made runs every job.
+
+## The e2e, layout-budget and website gates
+
+The e2e legs, `layout-budget` and the website run only when a changed file is one they read, because the
+e2e legs are the longest jobs and `layout-budget` only reports. `changes` decides one output for each: `e2e`
+is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/`, `.changeset/`
+or `.github/`, or is a root lint, format, editor, Docker or git setting; `layout` is true only for a code file
+of the layout or a package it is tested with or the catalog's build reads (model, catalog, demo-data, graph,
+ingest, icons), `frontend/package.json` (its fonts) or a root file; `website` is false only when every changed
+file is a code file modified in place under `backend/`, `e2e/`, `.agents/` or `.github/` (or
+`.changeset/config.json`), since the site's checks resolve links to repository paths. A change to the setup
+or Playwright action or to `pr.yml` runs all three. `required` counts a skipped e2e leg or website as passed
+only when its output is false; a comparison that cannot be made sets every output true.
 
 ## Dependabot
 
