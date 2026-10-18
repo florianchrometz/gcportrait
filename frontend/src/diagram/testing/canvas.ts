@@ -151,15 +151,25 @@ export function reduceMotion(): void {
   }));
 }
 
+/** Undoes the frozen clock of `manualFrames`, after each test. */
+let thawClock: (() => void) | undefined;
+
 /**
  * Animation frames run by the test: `requestAnimationFrame` queues, `cancelAnimationFrame` drops, and `run(at)` calls
  * what is queued with the time `at` until nothing is (a glide asks for its next frame from the one before).
+ * `performance.now()` stands still meanwhile and moves only to the `at` of a step, so a glide starts at the time the
+ * test read, however long the rendering before it took on a busy machine.
  */
 export function manualFrames(): {
   readonly pending: () => number;
   readonly step: (at: number) => void;
   readonly run: (at: number) => void;
 } {
+  let clock = performance.now();
+  const now = vi.spyOn(performance, 'now').mockImplementation(() => clock);
+  thawClock = () => {
+    now.mockRestore();
+  };
   const frames = new Map<number, FrameRequestCallback>();
   let next = 0;
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
@@ -171,6 +181,7 @@ export function manualFrames(): {
     frames.delete(handle);
   });
   const step = (at: number): void => {
+    clock = Math.max(clock, at);
     const due = [...frames.entries()];
     frames.clear();
     for (const [, callback] of due) callback(at);
@@ -187,7 +198,9 @@ export function manualFrames(): {
   };
 }
 
-// The stubs above are the test's only: every test starts with jsdom's own globals.
+// The stubs above are the test's only: every test starts with jsdom's own globals and clock.
 afterEach(() => {
   vi.unstubAllGlobals();
+  thawClock?.();
+  thawClock = undefined;
 });

@@ -12,7 +12,7 @@
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, onTestFinished, vi } from 'vitest';
 
-import { focusTransform, REVEAL_MARGIN, REVEAL_MS, ZOOM_STEP } from './camera';
+import { focusTransform, GLIDE_MS, REVEAL_MARGIN, REVEAL_MS, ZOOM_STEP } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
 import {
   cameraOf,
@@ -61,7 +61,7 @@ describe('the camera jump', () => {
     const rect = model.input.layout.rects['run/web'];
     if (rect === undefined) throw new Error('no rect');
     const target = focusTransform(rect, 1280, 800, fitted);
-    frames.step(begin + 225);
+    frames.step(begin + GLIDE_MS / 2);
     const halfway = cameraOf(svg);
     expect(halfway.k).toBeGreaterThan(Math.min(fitted.k, target.k) - 1e-9);
     expect(halfway.k).toBeLessThan(Math.max(fitted.k, target.k) + 1e-9);
