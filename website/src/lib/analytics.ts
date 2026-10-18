@@ -4,11 +4,11 @@
  * a page may, what it sends, and the visitor's session identifier. The page's script is src/lib/analytics-page.ts.
  *
  * - **The build.** `WEBSITE_ANALYTICS=1` switches the analytics on and `WEBSITE_ANALYTICS=0` off; unset, they are on in
- *   a deploying build only (`WEBSITE_STRICT=1`, which the Pages workflow and the release workflow set when they
- *   deploy) and off everywhere else: `pnpm website:dev`, local builds, pull-request builds, the tests. A fork switches
- *   them off with the repository variable `WEBSITE_ANALYTICS` set to 0, which both workflows pass to the build. A build
- *   with them off carries none of the code: astro.config.ts defines `__WEBSITE_ANALYTICS__`, and the layout's script
- *   calls the page module only under it, so the bundler leaves the module and the SDK out.
+ *   a deploying build only (`WEBSITE_STRICT=1`, which the site's build workflow, website.yml, sets when it
+ *   deploys) and off everywhere else: `pnpm website:dev`, local builds, pull-request builds, the tests. A fork
+ *   switches them off with the repository variable `WEBSITE_ANALYTICS` set to 0, which both callers pass to the
+ *   build. A build with them off carries none of the code: astro.config.ts defines `__WEBSITE_ANALYTICS__`, and the
+ *   layout's script calls the page module only under it, so the bundler leaves the module and the SDK out.
  * - **The page.** It sends only from the site's own host (SITE_HOST: never a local preview, a check in a browser or a
  *   fork's host) and never when the browser asks not to be tracked: Do Not Track (`navigator.doNotTrack` "1", or the
  *   older `window.doNotTrack` and `navigator.msDoNotTrack`) or Global Privacy Control (`navigator.globalPrivacyControl`).

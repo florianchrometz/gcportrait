@@ -274,36 +274,15 @@ jobs:
     name: website-build
     needs: build-and-test
     # Tag pushes only (a run by hand publishes a `dev` image and no website), and only once the maintainer has set
-    # up Pages (docs/website.md): until then a release run neither builds nor checks the site.
+    # up Pages (docs/website.md): until then a release run neither builds nor checks the site. The same build as
+    # pages.yml's (website.yml), strict, with the demo's version and refusing stale docs/media.
     if: github.event_name == 'push' && vars.PAGES_DEPLOY == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-        with:
-          cache: 'false'
-      - name: Generated media up to date (docs/media/, `pnpm media --check`)
-        run: pnpm run media --check
-      - name: Build the static demo (dist/demo, for /demo/)
-        env:
-          TAG: ${{ github.ref_name }}
-        run: pnpm run demo:static --app-version "${TAG#v}"
-      - name: Build the website (strict, with the demo at /demo/)
-        env:
-          WEBSITE_STRICT: '1'
-          WEBSITE_DEMO_DIST: dist/demo
-          # The page views (website/src/lib/analytics.ts): on in this deploying build unless the variable says 0.
-          WEBSITE_ANALYTICS: ${{ vars.WEBSITE_ANALYTICS }}
-        run: pnpm run website:build
-      - name: Check the built site
-        run: pnpm run website:check
-      - name: Upload the Pages artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: website/dist
+    uses: ./.github/workflows/website.yml
+    with:
+      deploy: true
+      app-version: ${{ github.ref_name }}
+      require-media: true
+      cache: false
 
   website-deploy:
     name: website-deploy

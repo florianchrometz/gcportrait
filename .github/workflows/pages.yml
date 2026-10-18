@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: MIT
 #
-# Build and check the website and static demo, with optional deployment from main and scheduled refreshes.
-# Setup, DNS, demo, media and analytics operations: docs/website.md. Rules: AGENTS.md, "Modes and hosting",
-# and .github/AGENTS.md, Releases. The jobs below define deployment gates, build modes and staleness handling.
+# Deploy the website and the static demo that website.yml builds and checks, from main and on a daily
+# refresh; a pull request runs CI's `website` job instead (pr.yml). Setup, DNS, demo, media and analytics
+# operations: docs/website.md. Rules: AGENTS.md, "Modes and hosting", and .github/AGENTS.md, Releases.
 name: Website
 
 on:
-  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
@@ -18,74 +17,22 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
 
 jobs:
   build:
     name: website-build
     # A scheduled run only refreshes what is deployed, so it is skipped while the deploy is switched off.
     if: github.event_name != 'schedule' || vars.PAGES_DEPLOY == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    outputs:
-      pages: ${{ steps.mode.outputs.pages }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      - name: Deploy or build only
-        id: mode
-        env:
-          EVENT: ${{ github.event_name }}
-          REF: ${{ github.ref }}
-          PAGES_DEPLOY: ${{ vars.PAGES_DEPLOY }}
-        run: |
-          pages=false
-          if [ "$EVENT" != pull_request ] && [ "$REF" = refs/heads/main ] && [ "$PAGES_DEPLOY" = true ]; then
-            pages=true
-          fi
-          echo "pages=$pages" >>"$GITHUB_OUTPUT"
-          if [ "$pages" = true ]; then
-            echo "WEBSITE_STRICT=1" >>"$GITHUB_ENV"
-            echo "This run deploys the site and the demo to GitHub Pages; the build is strict."
-          else
-            echo "This run builds and checks the site and the demo; it deploys nothing (PAGES_DEPLOY is '${PAGES_DEPLOY}')."
-          fi
-      - name: Build the static demo (dist/demo, for /demo/)
-        run: pnpm run demo:static
-      - name: Build the website (with the demo at /demo/)
-        env:
-          # The demo built in the step before, copied into the site instead of built again (website/astro.config.ts).
-          WEBSITE_DEMO_DIST: dist/demo
-          # The header's repository widget (website/src/lib/github.ts): authenticated only when this run deploys.
-          GITHUB_TOKEN: ${{ steps.mode.outputs.pages == 'true' && github.token || '' }}
-          # The page views (website/src/lib/analytics.ts): unset, on in a deploying build only; 0 off (a fork), 1 on.
-          WEBSITE_ANALYTICS: ${{ vars.WEBSITE_ANALYTICS }}
-        run: pnpm run website:build
-      - name: Check the built site
-        run: pnpm run website:check
-      - name: Generated media up to date (warns, does not fail)
-        id: media
-        continue-on-error: true
-        run: pnpm run media --check
-      - name: Warn about stale media
-        if: steps.media.outcome == 'failure'
-        run: |
-          message="docs/media/ is stale (see the step above): run pnpm media and commit the result before the next release; release.yml's website job refuses stale media."
-          echo "::warning title=Stale media::$message"
-          echo "### Stale media" >>"$GITHUB_STEP_SUMMARY"
-          echo "$message" >>"$GITHUB_STEP_SUMMARY"
-      - name: Upload the Pages artifact
-        if: steps.mode.outputs.pages == 'true'
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: website/dist
+    uses: ./.github/workflows/website.yml
+    with:
+      # A push to main deploys while the deploy is switched on; a run by hand on another branch only builds.
+      deploy: ${{ vars.PAGES_DEPLOY == 'true' && github.ref == 'refs/heads/main' }}
 
   deploy:
     name: website-deploy
     needs: build
-    if: needs.build.outputs.pages == 'true'
+    if: needs.build.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

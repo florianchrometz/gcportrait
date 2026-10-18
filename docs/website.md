@@ -493,10 +493,11 @@ and every resource (script, stylesheet, font, image, video, frame) from another 
 checking](#building-and-checking)).
 
 - **Token.** With `GITHUB_TOKEN` set the build's requests are authenticated (GitHub allows 60 unauthenticated
-  requests an hour per address, shared on CI runners). `pages.yml` passes the workflow's own read-only token
-  to the build only when the run deploys; pull-request and local builds ask without one. The token goes to
-  `api.github.com` only and is never printed, and never reaches a page: the visitor's requests are always
-  anonymous, within the visitor's own 60 an hour.
+  requests an hour per address, shared on CI runners). The build (`website.yml`) receives the workflow's own
+  read-only token only when its caller deploys (`pages.yml` from `main`, `release.yml` for a tag), so a
+  pull-request or local build asks without one. The token goes to `api.github.com` only and is never
+  printed, and never reaches a page: the visitor's requests are always anonymous, within the visitor's own
+  60 an hour.
 - **Daily refresh.** `pages.yml` also runs every day at 04:17 UTC (`schedule`), rebuilding and redeploying
   `main` so the first layer follows. Like the deploys, the scheduled run is skipped entirely while neither
   `PAGES_DEPLOY` nor `FIREBASE_DEPLOY` is `true`. GitHub switches off the schedule of a public repository
@@ -571,13 +572,14 @@ it must never phone home) and never the docs' pictures of the app. The app id is
 `website/src/site.ts`, a public identifier (every page that sends carries it).
 
 **When it is on.** `WEBSITE_ANALYTICS=1` switches it on and `WEBSITE_ANALYTICS=0` off; unset, it is on in a
-deploying build only (`WEBSITE_STRICT=1`, which `pages.yml` sets when it deploys and `release.yml` for a tag)
-and off in `pnpm website:dev`, local and pull-request builds and the tests (`website/src/lib/analytics.ts`,
-`analyticsEnabled`; any other value fails the build). Both workflows pass the repository variable
-`WEBSITE_ANALYTICS` to the build, so a fork that deploys its own site sets it to `0` (Settings > Secrets and
-variables > Actions > Variables) and sends nothing, or changes the app id to its own. The build says which in
-its log (`page views: on` or `off`). A build with it off carries none of its code: `website/astro.config.ts`
-defines `__WEBSITE_ANALYTICS__` for the bundler, and the layout's script (`website/src/layouts/Base.astro`)
+deploying build only (`WEBSITE_STRICT=1`, which `website.yml` sets for every deploying build: `pages.yml` from
+`main`, `release.yml` for a tag) and off in `pnpm website:dev`, local and pull-request builds and the tests
+(`website/src/lib/analytics.ts`, `analyticsEnabled`; any other value fails the build). Both callers pass the
+repository variable `WEBSITE_ANALYTICS` to the build, so a fork that deploys its own site sets it to `0`
+(Settings > Secrets and variables > Actions > Variables) and sends nothing, or changes the app id to its own.
+The build says which in its log (`page views: on` or `off`). A build with it off carries none of its code:
+`website/astro.config.ts` defines `__WEBSITE_ANALYTICS__` for the bundler, and the layout's script
+(`website/src/layouts/Base.astro`)
 loads the page module only under it, so neither the module, the SDK nor the app id is in such a build. With it
 on, the build writes the SDK's licence to `dist/licenses/telemetrydeck-sdk-LICENSE.txt`.
 
@@ -800,15 +802,17 @@ them all.
 
 ## Deploying to GitHub Pages
 
-`.github/workflows/pages.yml` builds and checks the site on every pull request and push: first the demo (`pnpm
-demo:static`), then the site with it (`pnpm website:build` with `WEBSITE_DEMO_DIST=dist/demo`), then `pnpm
-website:check`. On a push to `main` it also deploys the site and the demo together, but only while the
-repository variable `PAGES_DEPLOY` is `true`; until then it is a no-op for GitHub Pages. Once a deploy is
-switched on, it also rebuilds and redeploys `main` every day, for the repository widget's facts ([GitHub
-repository widget](#github-repository-widget)). Under the same condition `release.yml` builds the demo (its
-version the tag's) and the site from each `v*` tag the same way (strict, and refusing stale media) and deploys
-them; until then a release run skips its website jobs (the image and the GitHub release do not depend on
-them). One-time setup, in this order:
+`.github/workflows/website.yml` builds and checks the site, once, for both workflows that deploy it: first the
+demo (`pnpm demo:static`), then the site with it (`pnpm website:build` with `WEBSITE_DEMO_DIST=dist/demo`),
+then `pnpm website:check`. `pages.yml` calls it on every push to `main` and every day, and deploys the site
+together with the demo, but only while the repository variable `PAGES_DEPLOY` is `true`; until then that run
+is a no-op for GitHub Pages. A pull request runs CI's `website` job instead (`pr.yml`), which builds and
+checks the site without the demo and deploys nothing. Once a deploy is switched on, the daily rebuild and
+redeploy of `main` keeps the repository widget's facts fresh ([GitHub repository
+widget](#github-repository-widget)). Under the same condition `release.yml` calls the same build from each
+`v*` tag (the demo's version the tag's, strict, and refusing stale media) and deploys them; until then a
+release run skips its website jobs (the image and the GitHub release do not depend on them). One-time setup,
+in this order:
 
 1. **Legal pages.** The footer of every page, and the demo's, links
    <https://florian-chrometz.de/legal/impressum> and

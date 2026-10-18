@@ -472,7 +472,8 @@ jobs:
   # 430 CSS pixels in both themes, sideways overflow, the sticky header, 44 px touch targets, axe). The phone
   # check's other half, playback of the landing page's animated demos on an iPhone in WebKit, stays a local check:
   # Playwright's WebKit on Linux is not Safari (its media stack is GStreamer, not the iPhone's), so its result would
-  # not say what the check is for. pages.yml builds and deploys the site; this job is the pull request's gate.
+  # not say what the check is for. website.yml, called by pages.yml (main and the daily refresh) and by
+  # release.yml (a tag), builds and deploys the site; this job is the pull request's gate.
   website:
     name: website
     needs: changes

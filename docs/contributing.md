@@ -144,12 +144,17 @@ licenses: OK. 565 installed packages are under allowed licences; the workspace p
 
 ### Continuous integration
 
-Every pull request and every push to `main` runs two workflows. **CI** (`.github/workflows/pr.yml`) runs its
-jobs side by side; each one installs the dependencies itself from the pnpm store cache, which `pnpm-lock.yaml`
-keys, so a run takes as long as its slowest job. **Website** (`.github/workflows/pages.yml`) builds and checks
-the site again (and its generated media, as a warning) and deploys it from `main` once the maintainer has
-switched deployment on ([website.md](website.md)). The CI jobs, and what each does on a change of only docs
-and media; the e2e legs, `layout-budget` and `website` also skip other changes they do not read (both below):
+A pull request runs one workflow, **CI** (`.github/workflows/pr.yml`); a push to `main` runs it too, beside
+**Website** (`.github/workflows/pages.yml`). CI's jobs run side by side; each one installs the dependencies
+itself from the pnpm store cache, which `pnpm-lock.yaml` keys, so a run takes as long as its slowest job. The
+site's build is one definition, `.github/workflows/website.yml`, which `pages.yml` calls on a push to `main`
+and on its daily run, and `release.yml` for a tag: it builds the demo and the site and checks them, warns
+about stale `docs/media/`, and `pages.yml` deploys what it built once the maintainer has switched deployment
+on ([website.md](website.md)). A pull request's site check is CI's `website` job, which builds without the
+demo and deploys nothing, so `pages.yml` does not run there: a second copy of the build drifts from the first
+(`.github/workflows/website.yml`). The CI jobs, and what each does on a change of only
+docs and media; the e2e legs, `layout-budget` and `website` also skip other changes they do not read (both
+below):
 
 | Job | Runs | Only docs and media changed |
 |---|---|---|
@@ -252,9 +257,10 @@ GitHub Actions); add "Require a pull request before merging" as you see fit. Do 
 matrix legs one by one: `required` already waits for them, and the ruleset then needs no change when a job is
 added, renamed or split. The jobs a change leaves out (only docs and media, or the e2e and website gates) are
 skipped inside the workflow, not by a path filter on it, so `required` reports on every pull request and push
-and decides itself when a skipped job counts as passed. `layout-budget` is left out on purpose. The Website
-workflow's `website-build` may be required too; CI's `website` job already builds and checks the same site.
-GitHub offers a check in the ruleset only after it has run once, so add it after the first push to `main`.
+and decides itself when a skipped job counts as passed. `layout-budget` is left out on purpose, and so is
+every job of the Website workflow: it runs on `main` and its daily refresh, never on a pull request, whose
+site check is CI's `website` job. GitHub offers a check in the ruleset only after it has run once, so add
+`required` after the first push to `main`.
 
 **Runs on GitHub.** What to expect, and what to do:
 
