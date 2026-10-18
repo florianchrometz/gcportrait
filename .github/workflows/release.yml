@@ -1,55 +1,9 @@
 # SPDX-License-Identifier: MIT
 #
-# Release pipeline (.github/AGENTS.md, Releases; AGENTS.md, Releases; contributor-workflow skill §7). On a `v*`
-# tag it checks and builds the tag, publishes the container image to GitHub Container Registry and creates the
-# GitHub release. Run by hand (Actions > Release > Run workflow, on any branch) it publishes the same image as
-# `dev` only: no version tags, no `latest`, no GitHub release.
-#
-# Credentials: the workflow's own GITHUB_TOKEN, nothing else. No secret, no repository variable, no cloud account.
-#
-# publish-image: builds infra/Dockerfile for linux/amd64 and linux/arm64 with Buildx (arm64 under QEMU
-# emulation, which makes the arm64 half the slow part), starts each image (amd64 natively, arm64 emulated) and
-# checks /healthz (it must report the version), /api/config and the SPA before anything is pushed, then pushes
-# one multi-platform image to ghcr.io/<owner>/gcportrait with the tags X.Y.Z, X.Y and `latest`. `latest`,
-# which infra/deploy.sh deploys by default, moves only for the newest release: never for a pre-release
-# (v1.2.0-rc.1 gets only its own version tag), and not for a patch of an older line pushed after a newer
-# release (v1.1.5 after v1.2.0). The image carries OCI labels and index annotations: the source repository,
-# the licence (MIT) and, as its description, the long form of the non-affiliation statement (AGENTS.md,
-# Non-affiliation, brand and legal). Build provenance and SBOM attestations are switched off, so the index
-# lists exactly the two platforms; the SBOMs travel with the release instead. The job then checks that the
-# image can be pulled anonymously, as Artifact Registry's remote repository pulls it for infra/deploy.sh: a
-# new package on ghcr.io is private until its owner makes it public once (docs/contributing.md, "9.
-# Releases"), so a tag release fails here, and a `dev` run warns, while it is not. Last, Syft
-# (anchore/sbom-action) writes one SPDX SBOM per platform.
-#
-# github-release (tags only): creates the GitHub release `vX.Y.Z` with notes built by scripts/release-notes.mjs from
-# the version's sections of the CHANGELOG.md files that `pnpm release:version` (changesets) wrote, the long form of
-# the non-affiliation statement, the installer line, the image's tags and digest. Attached: the two SBOMs, the deploy
-# scripts as gcportrait-deploy-vX.Y.Z.tar.gz (infra/deploy.sh, common.sh, uninstall.sh, install.sh and README.md,
-# with the tag in a VERSION file), which infra/install.sh (https://gcportrait.app/install.sh) downloads, and
-# checksums.txt, the SHA-256 of every other asset, against which the installer checks the archive before it unpacks
-# or runs anything; scripts/release-assets.sh writes both. A pre-release tag (with a `-`) becomes a pre-release, and
-# a release that is not the newest is not marked "latest" (the installer's default is GitHub's "latest"). A
-# pre-release without CHANGELOG.md sections of its own takes its version's notes (v1.0.0-rc.1 those of 1.0.0), so
-# it is a trial run of that release (docs/contributing.md, "9. Releases"). It needs the CHANGELOG.md sections: tag
-# only after `pnpm release:version`.
-#
-# Not in the pipeline (docs/backlog.md): signing the image (cosign keyless signing with the workflow's OIDC
-# identity, which needs `id-token: write`, and `cosign verify` documented for self-hosters) and build
-# provenance attestations. A copy in a Google Cloud registry is not needed for deploying: infra/deploy.sh
-# pulls through an Artifact Registry remote repository in the self-hoster's own project. Should a mirror ever
-# be wanted, add a job after publish-image that authenticates with google-github-actions/auth (Workload
-# Identity Federation, no key) and copies the pushed digest with `docker buildx imagetools create --tag
-# REGION-docker.pkg.dev/PROJECT/REPOSITORY/gcportrait:TAG IMAGE@DIGEST`.
-#
-# website-build and website-deploy: tag pushes only, and only while the repository variable PAGES_DEPLOY is
-# `true`, so a release neither waits for nor fails on the website before the maintainer has set up Pages
-# (docs/website.md). Then the static demo (`pnpm demo:static`, the demo at /demo/; its version is the tag's)
-# and the Astro site are built from the tag the way pages.yml builds main, but strict and with the generated
-# media required to be fresh (`pnpm media --check` fails the job when docs/media/ is stale, so stale media are
-# never published), and deployed to GitHub Pages together. Neither job blocks publish-image or github-release.
-# Needs Settings > Pages > Source set to "GitHub Actions" and the `github-pages` environment allowing `v*`
-# tags to deploy; no secret (the site's footer links the legal pages on the maintainer's website).
+# Build, check and publish tagged releases; a manual run publishes a `dev` image only.
+# Rules: AGENTS.md, Releases; .github/AGENTS.md, Releases. Setup, versioning and trial runs:
+# docs/contributing.md, "9. Releases", and contributor-workflow skill §7. Website deployment: docs/website.md.
+# The jobs below define gates, platforms, tags, artifacts and deployment conditions; follow-ups: docs/backlog.md.
 name: Release
 
 on:

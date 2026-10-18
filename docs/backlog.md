@@ -71,8 +71,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - No CI job runs the website's phone check (`pnpm website:mobile`, 80 MB of WebKit per run).
 - `node scripts/exports.mjs --check` as a root script and a CI step.
 - `release.yml`'s strict website build should get `GITHUB_TOKEN` (for the repository widget's facts).
-- Signing the image (cosign with the workflow's OIDC identity) and build provenance attestations, as
-  `release.yml`'s header lists them.
+- Signing the image (cosign with the workflow's OIDC identity) and build provenance attestations.
 
 ## 4. Self-hosting and backend
 

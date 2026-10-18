@@ -573,9 +573,8 @@ tests that pin them (`backend/src/config.test.ts`, `e2e/tests/support.ts`) chang
 and `SOURCE_REPOSITORY` in `infra/common.sh`, `REPOSITORY` in `infra/install.sh`, `website/src/site.ts`, the
 README and the docs name the repository too.
 
-Not done yet, and listed in the workflow's header as follow-ups: signing the image (cosign with the workflow's
-OIDC identity) and build provenance attestations. A copy in a Google Cloud registry is not needed: deploy.sh
-pulls through a remote repository in the self-hoster's own project.
+Release follow-ups are tracked in the [CI backlog](backlog.md#3-ci). A copy in a Google Cloud registry is
+not needed: deploy.sh pulls through a remote repository in the self-hoster's own project.
 
 ## 10. Troubleshooting
 

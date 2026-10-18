@@ -1,40 +1,8 @@
 # SPDX-License-Identifier: MIT
 #
-# The website (docs/website.md; AGENTS.md, Modes and hosting): the Astro site in website/, built on every
-# pull request and every push to main, and deployed to GitHub Pages at https://gcportrait.app from main once the
-# maintainer switches it on. The same Pages site serves the demo at https://gcportrait.app/demo/: a static build of the
-# app in demo-only mode. Everything is hosted on GitHub; there is no other host. docs/website.md is the guide
-# (the one-time setup, DNS, the demo, the legal pages). The site has no legal pages of its own: its footer, and the
-# demo's, link the Impressum and the privacy notice on the maintainer's website (website/src/site.ts), so the workflow
-# needs no secret.
-#
-# build (every run): installs, builds the static demo (`pnpm demo:static`, into dist/demo/: the app below /demo/ with
-# its configuration built in, a copy of index.html per route, its Content Security Policy as a <meta>), then the site
-# (`pnpm website:build` with WEBSITE_DEMO_DIST=dist/demo, which writes website/dist with the CNAME for gcportrait.app
-# and copies the demo to website/dist/demo/), checks it (`pnpm website:check`: metadata, links and anchors, links
-# into the repository that must name a file or folder it has, sitemap, self-hosted resources, the footer notice, the
-# footer's legal links, the favicon and the logo, and the demo's pages, policy and links), and checks the generated
-# media for staleness (`pnpm media --check`). Stale media
-# do not fail a pull request or a push (regenerating them takes a browser and adds megabytes to the history, so it is
-# done deliberately, before a release): the step leaves a warning on the run and in its summary. release.yml's
-# website job (on while PAGES_DEPLOY is `true`) refuses stale media, so a tag never publishes them.
-#
-# deploy (main only, a push or a run by hand): runs only while the repository variable PAGES_DEPLOY is `true`, so
-# the workflow is a no-op until the maintainer has set up Pages and DNS. A deploying build is strict
-# (WEBSITE_STRICT=1): it fails when a guide of the docs menu or a generated medium is missing, or when docs/author.md
-# still holds a placeholder. It publishes the site and the demo together, as one Pages artifact. A deploying build
-# also counts the site's page views with TelemetryDeck (docs/website.md, "Analytics"; never the demo); the repository
-# variable WEBSITE_ANALYTICS, passed to the build, switches that off with 0 (a fork) or on in any build with 1.
-#
-# schedule (daily): rebuilds and redeploys main so the header's repository widget (the latest release, the stars and
-# the forks) stays current. The widget has two layers (docs/website.md, "GitHub repository widget"): the build reads
-# the facts from GitHub's API (website/src/lib/github.ts) and writes them into the pages, and once a page has loaded
-# the visitor's browser asks api.github.com for the current ones itself, anonymously and at most once an hour per tab
-# (website/src/lib/star-count-page.ts), except while the build's own request found the repository not public
-# (GitHub's 404): then the pages tell the browser to ask nothing, and the next build after the repository goes public
-# brings both layers. Gated like the deploy: a scheduled run does nothing at all until PAGES_DEPLOY is `true`. A
-# deploying build passes the workflow's own read-only GITHUB_TOKEN to the build so its requests are not rate-limited;
-# other builds ask without it (and show no facts when GitHub refuses).
+# Build and check the website and static demo, with optional deployment from main and scheduled refreshes.
+# Setup, DNS, demo, media and analytics operations: docs/website.md. Rules: AGENTS.md, "Modes and hosting",
+# and .github/AGENTS.md, Releases. The jobs below define deployment gates, build modes and staleness handling.
 name: Website
 
 on:
