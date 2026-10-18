@@ -467,6 +467,7 @@ export function DiagramCanvas({
   const frameRef = useRef<Rect | null>(null);
   // The last fit (a new view's, `0`'s, a panel's refit), which the camera rests on until the person moves it.
   const fitRef = useRef<Fit | null>(null);
+  const numberedDrawingRef = useRef<ReactElement | null>(null);
   // What a finger's gestures do on the drawing now (the painter effect's), the gestures themselves (a click, a
   // double-click or a right-click while they say a finger is touching is the finger's, which they read already), and
   // what a long press shows by the finger.
@@ -1132,7 +1133,10 @@ export function DiagramCanvas({
     svg.addEventListener('focusout', onFocusOut);
     // Fitted (the layout effects ran first) and now interactive: what the tests and the e2e suite wait for, the
     // drawing's number first, which tells this drawing from the one before it.
-    drawingsShown += 1;
+    if (numberedDrawingRef.current !== drawing) {
+      numberedDrawingRef.current = drawing;
+      drawingsShown += 1;
+    }
     svg.setAttribute('data-drawing', String(drawingsShown));
     svg.setAttribute('data-diagram-ready', 'true');
     // After a flip from the keyboard, focus follows the zone: its collapse button, or its chip.

@@ -71,11 +71,8 @@ export async function copyText(
  * Wording for a clipboard failure, either unavailable (no clipboard API) or refused (permission denied),
  * optionally suggesting an alternative (`instead`: "copy the address bar instead").
  */
-export function copyFailureMessage(
-  outcome: Exclude<CopyTextOutcome, 'copied'>,
-  instead?: string,
-): string {
-  const base = outcome === 'unavailable' ? 'Copying is not available here' : 'The browser did not allow copying';
+export function copyFailureMessage(outcome: Exclude<CopyTextOutcome, 'copied'>, instead?: string): string {
+  const base =
+    outcome === 'unavailable' ? 'Copying is not available here' : 'The browser did not allow copying';
   return instead === undefined ? `${base}.` : `${base}: ${instead}.`;
 }
-

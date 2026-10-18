@@ -96,11 +96,11 @@ describe('DiagramCanvas', () => {
     const other = modelOf(smallScene([['run/web', 'run/api', 'uses']]));
     rerender(<DiagramCanvas {...props({ model: other, selection: 'run/web' })} />);
     const second = drawing();
-    expect(second).toBeGreaterThan(first);
+    expect(second).toBe(first + 1);
     expect(svg.getAttribute('data-diagram-ready')).toBe('true');
     // The same view in the other theme is drawn again too.
     rerender(<DiagramCanvas {...props({ model: other, selection: 'run/web', theme: 'dark' })} />);
-    expect(drawing()).toBeGreaterThan(second);
+    expect(drawing()).toBe(second + 1);
   });
 
   it('numbers the drawings for the page: a canvas mounted again repeats no number', () => {
@@ -108,7 +108,7 @@ describe('DiagramCanvas', () => {
     const first = Number(canvas(before.container).getAttribute('data-drawing'));
     before.unmount();
     const after = render(<DiagramCanvas {...props()} />);
-    expect(Number(canvas(after.container).getAttribute('data-drawing'))).toBeGreaterThan(first);
+    expect(Number(canvas(after.container).getAttribute('data-drawing'))).toBe(first + 1);
   });
 
   it('leaves no hover highlight behind when the theme changes under the pointer', () => {

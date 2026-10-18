@@ -4,13 +4,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  canCopyImages,
-  copyFailureMessage,
-  copyPng,
-  copyText,
-  saveFile,
-} from './deliver';
+import { canCopyImages, copyFailureMessage, copyPng, copyText, saveFile } from './deliver';
 
 describe('copyText', () => {
   it('returns "copied" when clipboard.writeText resolves', async () => {

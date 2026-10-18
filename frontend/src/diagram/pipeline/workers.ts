@@ -55,29 +55,64 @@ function decodingWorker(worker: Worker): LayoutWorkerLike {
 }
 
 /** The real Web Workers, bundled by Vite. */
+export interface RoleClient {
+  receive(message: unknown): void;
+  fail(message: string): void;
+  dispose(): void;
+}
+
+export interface StartedRole<C extends RoleClient> {
+  readonly client: C;
+  dispose(): void;
+}
+
+/**
+ * Starts one role of the worker script (`DiagramWorker`), connects a client to its `postMessage`, `message`,
+ * and `error` events, and returns the client and a `dispose` method that cleans up both.
+ */
+export function startRole<C extends RoleClient>(
+  role: string,
+  createClient: (post: (request: unknown, transfer?: Transferable[]) => void) => C,
+  label: string,
+  decode?: (data: unknown) => unknown,
+): StartedRole<C> {
+  const worker = new DiagramWorker({ name: role });
+  const post = (request: unknown, transfer?: Transferable[]): void => {
+    if (transfer !== undefined) {
+      worker.postMessage(request, transfer);
+    } else {
+      worker.postMessage(request);
+    }
+  };
+  const client = createClient(post);
+  worker.addEventListener('message', (event: MessageEvent) => {
+    client.receive(decode !== undefined ? decode(event.data) : event.data);
+  });
+  worker.addEventListener('error', (event: ErrorEvent) => {
+    client.fail(event.message || `The ${label} worker failed.`);
+  });
+  return {
+    client,
+    dispose() {
+      client.dispose();
+      worker.terminate();
+    },
+  };
+}
+
 export const createBrowserWorkers: DiagramWorkersFactory = () => {
-  const dataWorker = new DiagramWorker({ name: WORKER_ROLES.data });
-  const data = createDataClient((request) => {
-    dataWorker.postMessage(request);
-  });
-  dataWorker.addEventListener('message', (event: MessageEvent) => {
-    data.receive(decodeMessage(event.data));
-  });
-  dataWorker.addEventListener('error', (event: ErrorEvent) => {
-    data.fail(event.message || 'The data worker failed.');
-  });
+  const data = startRole(WORKER_ROLES.data, createDataClient, 'data', decodeMessage);
   const layoutWorker = new DiagramWorker({ name: WORKER_ROLES.layout });
   const layout = layoutClient(decodingWorker(layoutWorker));
   layoutWorker.addEventListener('error', (event: ErrorEvent) => {
     layout.fail(event.message || 'The layout worker failed.');
   });
   return {
-    data,
+    data: data.client,
     layout,
     dispose() {
       data.dispose();
       layout.dispose();
-      dataWorker.terminate();
       layoutWorker.terminate();
     },
   };
@@ -85,20 +120,35 @@ export const createBrowserWorkers: DiagramWorkersFactory = () => {
 
 /**
  * One pair for everyone who asks (main.tsx: the diagram session): the first call creates it, later calls return it,
- * and once it is disposed (the diagram session unmounted, as React's strict mode does once in development) the next
- * call creates a new one.
+ * and once it is disposed (the diagram session unmounted) the next call creates a new one. Under React's StrictMode
+ * in development, synchronous unmount/remount leaves disposal pending on a microtask so the workers are not restarted twice.
  */
 export function sharedWorkers(factory: DiagramWorkersFactory): DiagramWorkersFactory {
   let live: DiagramWorkers | null = null;
+  let cancelDisposal: (() => void) | null = null;
+
   return () => {
+    if (cancelDisposal !== null) {
+      cancelDisposal();
+      cancelDisposal = null;
+    }
     if (live !== null) return live;
     const created = factory();
     const pair: DiagramWorkers = {
       data: created.data,
       layout: created.layout,
       dispose() {
-        if (live === pair) live = null;
-        created.dispose();
+        if (live !== pair || cancelDisposal !== null) return;
+        let cancelled = false;
+        cancelDisposal = () => {
+          cancelled = true;
+        };
+        queueMicrotask(() => {
+          if (cancelled) return;
+          cancelDisposal = null;
+          if (live === pair) live = null;
+          created.dispose();
+        });
       },
     };
     live = pair;
@@ -115,21 +165,11 @@ export function createBrowserDemoJob(
   size: DemoSize,
   onProgress?: (progress: JobProgress) => void,
 ): Promise<PreparedSnapshot> {
-  const worker = new DiagramWorker({ name: WORKER_ROLES.demo });
-  const client = createDataClient((request) => {
-    worker.postMessage(request);
-  });
-  worker.addEventListener('message', (event: MessageEvent) => {
-    client.receive(event.data);
-  });
-  worker.addEventListener('error', (event: ErrorEvent) => {
-    client.fail(event.message || 'The demo worker failed.');
-  });
+  const role = startRole(WORKER_ROLES.demo, createDataClient, 'demo');
   const done = (): void => {
-    client.dispose();
-    worker.terminate();
+    role.dispose();
   };
-  const job = client.demo(size, onProgress);
+  const job = role.client.demo(size, onProgress);
   job.then(done, done);
   return job;
 }
