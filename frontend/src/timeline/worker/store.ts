@@ -12,7 +12,10 @@ export function resetTickStoreDatabase(timeoutMs = OPEN_TIMEOUT_MS): void {
   resetWorkerDatabase(timeoutMs);
 }
 
-/** The cached tick under `key`, or undefined (none, or no IndexedDB, or a read that failed). */
+/**
+ * The cached tick under `key`, or undefined when absent or IndexedDB is unavailable. Opening errors propagate;
+ * a failed read retries once, and a second failure propagates.
+ */
 export async function readCachedTick(key: string): Promise<StoredTick | undefined> {
   const opening = workerDatabase();
   const db = await opening;
