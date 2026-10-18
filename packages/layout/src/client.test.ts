@@ -6,7 +6,9 @@
  * even when its result arrives afterwards; the next request resolves; memo hits resolve at once with the same
  * Layout; worker errors reject with their code and ids.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import { LayoutResultSchema, type LayoutResult as ModelLayoutResult } from '@gcportrait/model';
+import type { LayoutResult as PublicLayoutResult } from './index.js';
 import {
   LayoutCancelledError,
   LayoutWorkerError,
@@ -96,6 +98,10 @@ describe('LayoutClient', () => {
     expect(client.pending).toBe(1);
     await settle();
     expect(outcome.result).toMatchObject({ id: 1, cached: false });
+    expect(LayoutResultSchema.parse(outcome.result)).toEqual(outcome.result);
+    expect(LayoutResultSchema.parse(JSON.parse(JSON.stringify(outcome.result)))).toEqual(outcome.result);
+    expectTypeOf<LayoutResult>().toEqualTypeOf<ModelLayoutResult>();
+    expectTypeOf<PublicLayoutResult>().toEqualTypeOf<ModelLayoutResult>();
     expect(JSON.stringify(outcome.result?.layout)).toBe(JSON.stringify(layoutScene(BUSY)));
     expect(progress[0]?.stage).toBe('normalise');
     expect(progress.at(-1)?.stage).toBe('route');
@@ -143,6 +149,8 @@ describe('LayoutClient', () => {
     const second = track(client.layout(SMALL));
     await flush();
     expect(second.result).toMatchObject({ id: 2, cached: true, key: first.result?.key });
+    expect(LayoutResultSchema.parse(second.result)).toEqual(second.result);
+    expect(LayoutResultSchema.parse(JSON.parse(JSON.stringify(second.result)))).toEqual(second.result);
     expect(JSON.stringify(second.result?.layout)).toBe(JSON.stringify(first.result?.layout));
   });
 

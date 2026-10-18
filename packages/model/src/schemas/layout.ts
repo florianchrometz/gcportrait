@@ -422,3 +422,16 @@ export const LayoutProgressSchema = z
   })
   .readonly();
 export type LayoutProgress = z.infer<typeof LayoutProgressSchema>;
+
+/** What a layout request resolves to. */
+export const LayoutResultSchema = z
+  .strictObject({
+    id: z.number(),
+    /** The request's memo key in the worker (null: none, not memoised). */
+    key: z.string().nullable(),
+    /** Answered from the worker's memo. */
+    cached: z.boolean(),
+    layout: LayoutSchema,
+  })
+  .readonly();
+export type LayoutResult = z.infer<typeof LayoutResultSchema>;

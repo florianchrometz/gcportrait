@@ -15,6 +15,7 @@ import {
   LayoutProgressSchema,
   LayoutRectSchema,
   LayoutReportSchema,
+  LayoutResultSchema,
   LayoutSchema,
   LayoutStageSchema,
   PointSchema,
@@ -39,6 +40,7 @@ import {
   type LayoutProgress,
   type LayoutRect,
   type LayoutReport,
+  type LayoutResult,
   type LayoutStage,
   type Point,
   type Rect,
@@ -813,5 +815,68 @@ describe('complete layout contract', () => {
       parsed.report,
     ])
       expect(Object.isFrozen(value)).toBe(true);
+  });
+});
+
+describe('layout client result contract', () => {
+  it.each([null, '', 'memo-key'])('preserves the nullable memo key %j and both cache states', (key) => {
+    for (const cached of [false, true]) {
+      const result = { id: 1, key, cached, layout: completeLayout };
+      const parsed = LayoutResultSchema.parse(result);
+      expect(parsed).toEqual(result);
+      expect(Object.keys(parsed)).toEqual(['id', 'key', 'cached', 'layout']);
+      expect(LayoutResultSchema.parse(JSON.parse(JSON.stringify(result)))).toEqual(result);
+    }
+  });
+
+  it.each([-1.25, 0, 2.5])('preserves finite id %s without a new range constraint', (id) => {
+    const result = { id, key: null, cached: false, layout: completeLayout };
+    expect(LayoutResultSchema.parse(result)).toEqual(result);
+  });
+
+  it.each([NaN, Infinity, -Infinity, '1', undefined])('refuses an invalid id: %s', (id) => {
+    expect(
+      LayoutResultSchema.safeParse({ id, key: null, cached: false, layout: completeLayout }).success,
+    ).toBe(false);
+  });
+
+  it('requires all four fields and rejects unknown fields and wrong scalar types', () => {
+    const result = { id: 1, key: null, cached: false, layout: completeLayout };
+    for (const key of Object.keys(result)) {
+      const missing = Object.fromEntries(Object.entries(result).filter(([name]) => name !== key));
+      expect(LayoutResultSchema.safeParse(missing).success).toBe(false);
+      expect(LayoutResultSchema.safeParse({ ...result, [key]: undefined }).success).toBe(false);
+    }
+    for (const invalid of [
+      { ...result, key: 1 },
+      { ...result, cached: 1 },
+      { ...result, layout: null },
+      { ...result, type: 'result' },
+    ]) {
+      expect(LayoutResultSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('keeps nested Layout error paths and every readonly field', () => {
+    expectTypeOf<LayoutResult>().toEqualTypeOf<
+      Readonly<{ id: number; key: string | null; cached: boolean; layout: Layout }>
+    >();
+    const result = { id: 1, key: '', cached: true, layout: completeLayout };
+    const parsed = LayoutResultSchema.parse(result);
+    expect(Object.isFrozen(parsed)).toBe(true);
+    expect(Object.isFrozen(parsed.layout)).toBe(true);
+    expect(Object.isFrozen(result)).toBe(false);
+    const invalid = LayoutResultSchema.safeParse({
+      ...result,
+      layout: {
+        ...completeLayout,
+        rects: Object.fromEntries([['__proto__', { ...layoutRect, width: Infinity }]]),
+      },
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success)
+      expect(invalid.error.issues.map((issue) => issue.path)).toEqual([
+        ['layout', 'rects', '__proto__', 'width'],
+      ]);
   });
 });

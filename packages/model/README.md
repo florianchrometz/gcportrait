@@ -304,6 +304,11 @@ report counts to the collections; layout invariants remain the engine's separate
 accept finite negative and fractional values, without stage-dependent count or range refinements. The
 worker's scheduling, cancellation checks and progress delivery do not parse or change these values.
 
+`LayoutResultSchema` (`LayoutResult`) describes the client's resolved value: readonly `id`, nullable
+`key`, `cached` and `layout`. Its id accepts finite numbers without integer or range refinements, and its
+key may be empty. The client and its existing response guards are unchanged; the schema is not the tagged
+worker response envelope and does not run while a request settles.
+
 ### Reports
 
 The same module declares the layout's report contracts. Numeric fields accept finite negative and

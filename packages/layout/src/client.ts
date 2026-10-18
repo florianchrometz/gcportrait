@@ -11,7 +11,7 @@
  * request never resolves, even if its result was already on its way. Use one client per worker: the worker
  * supersedes by arrival, whoever sent the request.
  */
-import type { Scene } from '@gcportrait/model';
+import type { LayoutResult, Scene } from '@gcportrait/model';
 import type { Layout, LayoutProgress, LayoutWorkerOptions } from './types.js';
 import type {
   LayoutCancelReason,
@@ -20,15 +20,7 @@ import type {
   LayoutWorkerRequest,
 } from './worker.js';
 
-/** What a layout request resolves to. */
-export interface LayoutResult {
-  readonly id: number;
-  /** The request's memo key in the worker (null: none, not memoised). */
-  readonly key: string | null;
-  /** Answered from the worker's memo. */
-  readonly cached: boolean;
-  readonly layout: Layout;
-}
+export type { LayoutResult } from '@gcportrait/model';
 
 /** An `AbortSignal`, typed structurally (the package compiles without DOM types). */
 export interface AbortSignalLike {

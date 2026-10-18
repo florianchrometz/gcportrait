@@ -130,6 +130,7 @@ describe('public surface', () => {
         'LayoutSchema',
         'LayoutStageSchema',
         'LayoutProgressSchema',
+        'LayoutResultSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',
