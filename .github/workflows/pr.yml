@@ -9,25 +9,7 @@
 # `catalog-check` compiles it once more as a step of its own, so a catalog that cannot be compiled at all shows up
 # there by name.
 #
-# The jobs and what they run (the same commands as locally; docs/contributing.md has the table of the jobs):
-#
-#   changes         which kinds of files the change touches: docs, media or anything else (below); no install
-#   lint            pnpm format:check, pnpm lint
-#   typecheck       pnpm typecheck (tsc -b, then astro check over the website's .astro files)
-#   unit            pnpm test in three legs: layout and frontend (the `unit` matrix), every other Vitest project
-#                   (`unit-other`, below)
-#   layout-budget   the layout's strict budgets and bench table, and its properties explored; non-blocking (below)
-#   catalog-check   pnpm catalog:build, pnpm catalog:check
-#   build           the app's workspaces (pnpm build:app), then the SPA size budgets (pnpm size)
-#   e2e             Playwright on Chromium in five legs, each a round-robin share of its projects' tests: the desktop
-#                   specs in three, the phone and tablet ones in two
-#   website         the website built and checked (pnpm website:build, website:check), then its phone-width check
-#   provenance      pnpm provenance, then a self-test that the guard still rejects a planted banned file
-#   licenses        pnpm run licenses
-#   audit           node scripts/check-audit.mjs (needs the npm registry)
-#   workflows-and-shell   actionlint over the workflows, shellcheck over every shell script
-#   required        the one check branch protection targets: green only when every job above but layout-budget
-#                   succeeded, or was skipped for a change of only docs and media (below)
+# The job inventory and commands are in docs/contributing.md, "Continuous integration".
 #
 # A change of only docs and media runs only the jobs that read such files (.github/AGENTS.md, A change of only
 # docs and media). `changes` sorts every changed file into one of three kinds:

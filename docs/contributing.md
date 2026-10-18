@@ -190,13 +190,10 @@ compared and what it found.
 GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
 half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
 install from the cache, and the e2e legs and `website` about another minute on Chromium's system libraries.
-The five e2e legs are the longest jobs, which is why the suite is split in five. Each leg deals its
-projects' tests out round-robin: leg N of K runs every K-th test of their listing from the N-th, in the
-order of `playwright test --list --reporter=json` (file after file), through `--test-list`, so that the
-tests of a slow file spread over the legs. The script (`e2e/scripts/leg.ts`) fails the leg when the
-listing names two tests alike, or when the run did not address every test of its share or addressed others
-besides, and writes the share's count and its summed test time to the job's summary, which compares the legs
-apart from their set-up; the run's page shows each job's time.
+The five e2e legs are the longest jobs, which is why the suite is split in five. The header of
+[e2e/scripts/leg.ts](../e2e/scripts/leg.ts) describes selection, exact-share validation and timing summaries.
+The summary compares the legs by their summed test time, apart from their set-up; the run's page shows
+each job's time.
 
 Some of these gates are not part of `pnpm check`; run these three locally when you touch the app:
 
