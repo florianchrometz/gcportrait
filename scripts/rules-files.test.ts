@@ -3,8 +3,9 @@
  * The rules files and the citations of them (AGENTS.md, How this file works): every citation of a rules file
  * in a file git tracks names a heading, a principle or an anchor that exists; every rules file is AGENTS.md in
  * those capitals, at the root or one folder down; every folder file opens with the sentence that names the
- * root, and the root's folder table names each. The parser's own cases build the name of the file at run
- * time, so that this file's fixed strings are not read as citations of the tree.
+ * root, the root's folder table names each, and every rules file stays within the cap this test enforces and
+ * states in the root, so the context an assistant loads stays bounded. The parser's own cases build the name of
+ * the file at run time, so that this file's fixed strings are not read as citations of the tree.
  */
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -33,6 +34,12 @@ import { REPO, createTempTree, type TempTree } from './testing/temp-tree.js';
 
 /** The rules file's name, assembled. */
 const FILE = ['AGENTS', 'md'].join('.');
+
+/** The most bytes any rules file may hold (AGENTS.md, How this file works). */
+const RULES_FILE_CAP = 20_000;
+
+/** The cap as the root states it: digits grouped with spaces, as the repository writes numbers. */
+const CAP_PHRASE = `${String(RULES_FILE_CAP).replace(/\B(?=(\d{3})+(?!\d))/gu, ' ')} characters`;
 
 const ROOT_RULES = [
   '<!-- SPDX-License-Identifier: Apache-2.0 -->',
@@ -405,15 +412,22 @@ describe('the rules files of a checkout', () => {
 });
 
 describe('the repository’s rules files', () => {
-  it('fit within 32 KiB at the root and 16 KiB in each folder, measured in bytes', () => {
+  it('fit within 20 000 characters each, at the root and in every folder, measured in bytes', () => {
     for (const file of rulesFiles(REPO)) {
       const bytes = readFileSync(path.join(REPO, file)).length;
-      const limit = file === RULES_FILE ? 32_768 : 16_384;
       expect(
         bytes,
-        `${file}: ${String(bytes)} bytes exceeds the ${String(limit)}-byte cap`,
-      ).toBeLessThanOrEqual(limit);
+        `${file}: ${String(bytes)} bytes exceeds the ${String(RULES_FILE_CAP)}-byte cap (AGENTS.md, How this file works)`,
+      ).toBeLessThanOrEqual(RULES_FILE_CAP);
     }
+  });
+
+  it('state that cap in the root, the number this test enforces, so the rule and the check cannot drift', () => {
+    const root = readFileSync(path.join(REPO, RULES_FILE), 'utf8').replace(/\s+/gu, ' ');
+    expect(
+      root,
+      `${RULES_FILE}: the root states no "${CAP_PHRASE}" (AGENTS.md, How this file works)`,
+    ).toContain(CAP_PHRASE);
   });
 
   it('are each named AGENTS.md, the name the tools read, in that case on disk and in git, one folder deep at most', () => {
