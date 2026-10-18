@@ -2,22 +2,12 @@
 
 /**
  * Product name, tagline and the non-affiliation statement, defined once (AGENTS.md, Non-affiliation, brand and
- * legal). Change the wording only together with AGENTS.md and every copy listed below.
- *
- * Where each goes:
- * - `TAGLINE`: the third and last line of the diagram's title block, on the canvas and in every export.
- * - `FOOTER_NOTICE`: the app footer on every route, next to the "Source (MIT)" link, the maintainer's name
- *   a link to `MAINTAINER_URL` (named `MAINTAINER_LINK_LABEL`). The one place in the app that names the maintainer.
- * - `NON_AFFILIATION_LONG`: README, website, docs, the icons README, release notes, the image's description label,
- *   the close of the infra scripts' `--help`, the Connect page's About block.
+ * legal). Where each string is shown, and the copies outside the app that are checked against this file:
+ * README.md, "Branding and the non-affiliation notice".
  *
  * The statement goes in footers and long-form texts only: never in a drawing (no title block, no `<desc>`, on the
  * canvas or in an export), and never with anything that travels with one (a snapshot bundle, the render API's answer,
  * a command line's output, the backend's `hostedBy` line).
- *
- * Copies outside the app are checked against this file by scripts/non-affiliation-copies.test.ts (the image label,
- * the release workflow, the release notes, the third-party notices, infra/common.sh, the Cloud Shell
- * tutorial), website/src/site.test.ts (the website's) and packages/icons/scripts/data.test.ts (the icons README).
  */
 
 export const WORDMARK = 'gcportrait';

@@ -2,10 +2,9 @@
 /**
  * What a lens switch does to the detail level (layout skill §6; the catalog lens files' `defaultDetail`).
  *
- * **The ceiling.** A lens's `defaultDetail` is the deepest level `auto` opens it at (the scene builder's rule,
- * `autoDetailLevel` in `@gcportrait/graph`): Networking and Compute open at most at `networks`, Security, Data,
- * Identity, Serverless and Operations at `projects`, so a lens opens readable on any canvas instead of drawing a
- * level the budget cannot fit. An explicit level the person chooses still wins.
+ * **The ceiling.** A lens's `defaultDetail` (from the catalog's lens files) is the deepest level `auto` opens it at
+ * (the scene builder's rule, `autoDetailLevel` in `@gcportrait/graph`), so a lens opens readable on any canvas
+ * instead of drawing a level the budget cannot fit. An explicit level the person chooses still wins.
  *
  * **The rule.** The detail level follows the lens while it is `auto`, or the current lens's own `defaultDetail`
  * (what a link may hold, and what choosing the lens's own level means): a lens switch then sets

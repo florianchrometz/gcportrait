@@ -27,10 +27,9 @@ export const BACKEND_URL = 'http://localhost:8080';
 const FONT_FILE = /\.(?:woff2?|ttf|otf)$/;
 
 /**
- * The self-hosted font packages whose files the build copies into dist/. They are licensed under the SIL
- * Open Font License 1.1, which requires the copyright notice and the licence to accompany every
- * redistributed copy of the fonts, so the build ships each package's own LICENSE file, unmodified, as
- * dist/licenses/<package>-LICENSE.txt. A missing LICENSE fails the build rather than shipping fonts without it.
+ * The self-hosted font packages whose files the build copies into dist/. Each package's own LICENSE travels with
+ * them, unmodified, as dist/licenses/<package>-LICENSE.txt (README.md, "Theme and token policy"); a missing
+ * LICENSE fails the build rather than shipping fonts without it.
  */
 export const BUNDLED_FONT_PACKAGES = ['@fontsource/roboto', '@fontsource/roboto-mono'] as const;
 

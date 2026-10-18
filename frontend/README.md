@@ -444,8 +444,12 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
 - Colours, focus ring and control metrics are the app chrome tokens of
   `.agents/skills/gcp-diagram-style/SKILL.md` §9, and typography is §3, copied value for value into
   `src/styles/tokens.css` as CSS custom properties (`--color-primary`, `--color-surface`, ...,
-  `--font-family-sans`, `--font-size-card-title`, ...). Component CSS modules use these properties only, never
-  raw colour values. A new colour goes into the skill first, then into the tokens, in both themes.
+  `--font-family-sans`, `--font-size-card-title`, ...). A new colour goes into the skill first, then into the
+  tokens, in both themes. Every stylesheet of the chrome is a CSS module beside its component and uses these
+  properties only, never a raw colour value, and asks for a width only with the layouts' media queries, in
+  rem, at its end (section "Layouts"): `ui/tokens.test.ts` fails on a raw colour or a colour token one theme
+  lacks, `ui/screen.test.ts` on any other width or container query. The diagram has a token table of its own
+  (`src/diagram/theme/`, section "Diagram theme and contrast"), which the chrome's tokens never reach.
 - `<html data-theme="light|dark">` selects the palette. The user's preference is `system`, `light` or `dark`;
   `system` follows `prefers-color-scheme` live (a `change` listener) and is resolved to light or dark before
   it reaches the attribute. `useTheme()` gives `{ preference, resolved, setPreference }`.
@@ -485,26 +489,11 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
 - Placeholder controls (the top-bar slots, the Connect page actions, the timeline slider without a snapshot)
   are marked `aria-disabled="true"`, not `disabled`: they stay in the tab order with the focus ring, are
   announced as unavailable, and do nothing when activated (the `ui/` primitives have the same inert state
-  through their `disabled` prop). The Lens picker is a select-only combobox on `ui/Select` (a button with
-  `role="combobox"`; focus stays on the button, options through `aria-activedescendant`); the Snapshot menu
-  and the Theme menu are menu buttons with radio items on `ui/MenuButton`; Detail is a segmented control
-  (`ui/SegmentedControl`); Focus and Filters are popover buttons, inert until a snapshot is open; the view row
-  is shown on the diagram page only.
+  through their `disabled` prop). Section "Top bar" lists the primitive each control is built on.
 - Both themes are checked by axe in the e2e suite (`e2e/tests/a11y.spec.ts`) on every page in demo mode
   (`/`, `/diagram`, `/snapshots`, `/permissions`, `/settings`, a page not found), on the diagram with demo S,
   M and L drawn (at rest, with the keyboard inside a zone, with a node's menu and the drawer open), and on the
   live-mode Connect page.
-
-## Styling
-
-The chrome has one design. Its colours, focus ring, control metrics, spacing and type scale are the tokens of
-`src/styles/tokens.css` (section "Theme and token policy" above), defined for both themes under
-`<html data-theme="light|dark">`; every stylesheet of the chrome is a CSS module beside its component and uses
-those tokens only (`ui/tokens.test.ts`: no raw colour, every colour token in both themes, and the filled
-primary buttons' text at 4.5 : 1 on their fill). A sheet asks for a width only with the layouts' media
-queries, in rem, at the end of the sheet (section "Layouts"; `ui/screen.test.ts`). The text is Roboto and
-Roboto Mono, self-hosted. The diagram has a token table of its own (`src/diagram/theme/`, section "Diagram
-theme and contrast" below), which the chrome's tokens never reach.
 
 ## Storage schema (IndexedDB, database `gcportrait`)
 
@@ -547,7 +536,7 @@ browser without `BroadcastChannel` posts and hears nothing, and nothing else cha
 `VITE_DEMO=1` (what `pnpm dev:demo` sets) shows a "Demo mode" badge in the top bar, makes the Connect page
 offer only "Try the demo" (a size from S to XL, generated, stored and opened; section "Snapshots"), drops the
 `/api` proxy, and makes no backend calls at all: the backend status line on the Connect page exists only in
-normal mode, and the footer's source link uses the build-time `VITE_SOURCE_URL` (section "Source offer"). In
+normal mode, and the footer's source link uses the build-time `VITE_SOURCE_URL` (section "Source link"). In
 both modes the Snapshot menu and the empty diagram canvas offer the demo organisations S, M and L
 (`#snapshot=demo:M`); they are generated in the browser, in the data worker, and never fetched (the worker
 fetches only the build's data tables, below). Demo mode has no sign-in: the account menu is absent and
@@ -613,10 +602,9 @@ notices, the image label, `infra/common.sh`, the icons README) are compared with
 
 ## Source link
 
-gcportrait is licensed under the MIT License, which asks nothing of an instance's operator here. The
-shell footer still links the source on every route, next to the non-affiliation notice, as a courtesy to the
-people who use an instance: a "Source (MIT)" link (`shell/SourceLink.tsx`, the text and default in
-`source.ts`) that says where the source of the version they use is published and under which licence. By
+gcportrait's shell footer links the source on every route, next to the non-affiliation notice
+(frontend/AGENTS.md, "The source link"): a "Source (MIT)" link (`shell/SourceLink.tsx`, the text and default
+in `source.ts`) that says where the source of the version in use is published and under which licence. By
 default it points at the project's repository (AGENTS.md, Product rules). Exports stay as they are.
 
 | Mode | Link target |
@@ -2225,10 +2213,8 @@ four, and a step back to a day still kept builds none; the open view of a day dr
 right after its answer, and every open view is finished from the drawn view's preparation
 (`sharedPreparation`, `prepareView` of `@gcportrait/graph`). A day is read through `@gcportrait/ingest` only
 for the assets no day of its history held before (`pipeline/historyRead.ts`), and its Graph evaluates the
-catalog's rules only for those (`BuildMemo` of `@gcportrait/graph`). In a production demo build a step back
-onto a day not kept yet takes 113–194 ms on L and the first one from the snapshot's own day 163–188 ms on a
-fresh page (197–205 ms after the page has rested two minutes), 0.71–0.75 s on XL, and a step onto a kept day
-30–32 ms on L and 44–80 ms on XL; section "Performance".
+catalog's rules only for those (`BuildMemo` of `@gcportrait/graph`). The timeline step these keep fast is
+measured, against layout skill §7's budget, in section "Performance".
 
 Tests: `diff/base.test.ts`, `diff/tickDiff.test.ts`, `pipeline/dataHandler.test.ts`, `diff/marks.test.ts`,
 `diff/drawing.test.tsx`, `diff/handler.test.ts`, `legend.test.ts`, `theme/theme.test.ts`, the baselines
@@ -2241,9 +2227,10 @@ The app-level targets and how to measure them are in the gcp-diagram-layout skil
 demo build (`VITE_DEMO=1 vite build`) in Chromium through Playwright and CDP at 1280 × 800. Measured that way:
 the first diagram of demo S, M, L and XL at the collapsed default in 0.22, 0.28, 0.62 and 2.6 s (medians;
 targets: L under 3 s, XL under 8 s); on L a lens switch (median 38 ms), a chip expanded (70–98 ms), a search
-hit landed (7–117 ms) and a timeline step each under 300 ms: a step back onto a day not built yet 113–194 ms,
-the first step back from the snapshot's own day 163–188 ms on a fresh page (20 runs, median 182 ms) and
-197–205 ms after the page has rested for two minutes; no long task while panning or zooming the collapsed
+hit landed (7–117 ms) and every timeline step under 300 ms (113–194 ms onto a day not built yet; 163–188 ms on
+the first step back from the snapshot's own day, on a fresh page, and 197–205 ms after the page has rested two
+minutes; 30–32 ms onto a day already kept); on XL a step back onto a day not built yet 0.71–0.75 s, and
+44–80 ms onto one already kept; no long task while panning or zooming the collapsed
 defaults; the heap back within 20 % of a warm baseline after 100 switches on M (+13.9 %, the data worker +7.1
 %) and 60 on L (+4.9 %). What keeps it there:
 
