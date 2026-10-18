@@ -261,33 +261,16 @@ wraps or scrolls as before. What makes it work in every browser:
   in muted small print), the underline, the pencil and the ring at 3 : 1 on the tints and on every background
   code sits on.
 
-**Checks.** `pnpm website:check` fails a page whose code names a `YOUR_…` token the registry does not list; on
-a page with fields, a code block that shows a token as text instead of a field, or a Variables panel that does
-not list exactly the variables of the page's fields; and a docs page or a page with fields without one Copy
-button per code block. `pnpm --filter @gcportrait/website fillable` (`website/scripts/fillable.ts`, about 45
-s) runs the built site, `/docs/self-host/` and `/`, in six profiles: Playwright's Chromium at 1440 and 375
-pixels, Firefox at 1440, Firefox with `plaintext-only` refused as before 136 (the fallback), WebKit at 1440,
-and an iPhone 15 (WebKit) and a Pixel 7 (Chromium) with their device descriptors, each in both themes, the
-phones pressed with taps. In every profile: before any interaction every field shows its edit mark and only
-the page's first block with fields carries the hint, and a hovered field is ringed (a mouse) or a tap just
-beside a field focuses it (a touch screen, its target at least 44 pixels tall); a click or tap on an unfilled
-field selects its token, and a value typed after an arrow key moved the caret into it still replaces it; Enter
-leaves the field; the value shows in the variable's other fields, in other blocks and inline code too, and in
-the panel, and a value typed into the panel in the fields (a page where no variable has fields in two blocks
-checks the fields it has and says so); rich text with a line break, copied and pasted with the keyboard,
-arrives as one plain line; Copy hands the block with the values to the clipboard (Chromium reads it back with
-`navigator.clipboard`; for WebKit and Firefox, which Playwright gives no clipboard permission, the text the
-page passed to the Clipboard API) and the live region says "Copied"; a field is reached with Tab and a value
-of the wrong format is marked and unmarked; the values come back after a reload, a variable marked secret
-excepted, and Clear values empties the fields and the storage. In Chromium also: without JavaScript nothing is
-editable and the code shows its tokens; the script moves no heading, code block, bar, hint or panel row when
-it starts; and axe-core (unfilled, filled, panel open) at 1440 and 375 pixels in both themes. On
-`/docs/getting-started/` Copy copies a block without variables as it is. `--profile` picks profiles, `--page`
-pages, and `--shots DIR` saves the hint's block unedited and edited, the edited block before, while and after
-typing, and the panel. Firefox and WebKit are installed once with `pnpm --filter @gcportrait/website exec
-playwright install webkit firefox`; the check gives Firefox a throwaway application-data directory
-(`MOZ_APP_DATA`), so it never touches a Firefox profile of the user's (where Playwright's Firefox cannot find
-a profile folder of its own, it does not start without one).
+**Checks.** After building the site, `pnpm website:check` checks the registered placeholders, fields, Copy
+bars and Variables panels ([Building and checking](#building-and-checking)).
+`pnpm --filter @gcportrait/website fillable` checks editing, synchronisation, copying, storage and
+accessibility in desktop and touch browser profiles, in both themes. The
+[script header](../website/scripts/fillable.ts) defines the profiles, scenarios and failure conditions.
+Use `--profile` to pick profiles, `--page` to pick pages, and `--shots DIR` to save inspection images of the
+hint, editing states and panel. Firefox and WebKit are installed once with
+`pnpm --filter @gcportrait/website exec playwright install webkit firefox`; the check gives Firefox a
+throwaway application-data directory (`MOZ_APP_DATA`), so it never touches a Firefox profile of the user's
+(where Playwright's Firefox cannot find a profile folder of its own, it does not start without one).
 
 ## Generated media
 
