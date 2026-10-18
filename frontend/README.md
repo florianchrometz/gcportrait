@@ -1472,10 +1472,9 @@ the viewBox. Where the layout ends an edge with a final segment shorter than its
 head, at L detail `projects`), the head's tip lands about 1.5 px deeper than the 2 px the skill asks for; the
 layout's routing owns that segment.
 
-**Bundle.** `pnpm size` budgets the build by thread (frontend/AGENTS.md, Bundle budgets; gzipped, fonts
-and the JSON data tables excluded): the UI thread's initial chunks (the entry, its static imports and the CSS)
-350 kB, and the workers' chunks 400 kB in total; a lazily imported UI chunk counts only when it is part of the
-first paint of `/diagram`. What keeps them well within it: the icons travel with the Scene (above),
+**Bundle.** `pnpm size` checks the build by thread against [Bundle budgets](AGENTS.md#bundle-budgets),
+which defines the limits, exclusions and first-paint classification. What keeps it within those limits:
+the icons travel with the Scene (above),
 so the UI thread does not carry the icon table; the UI thread ships no zod (the model's URL-hash codec and the
 vocabularies it reads import none; importing a `*Schema` here would bring about 25 kB back); one worker script
 serves every worker (`diagram.worker.ts`), so the modules the roles share (the model, zod, ingest) are bundled

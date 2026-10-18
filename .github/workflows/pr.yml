@@ -382,7 +382,7 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Build the app's workspaces
         run: pnpm run build:app
-      - name: SPA size budgets (gzipped; UI thread 350 kB, workers 400 kB; no zod on the UI thread)
+      - name: SPA size budgets
         run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
 
   # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's

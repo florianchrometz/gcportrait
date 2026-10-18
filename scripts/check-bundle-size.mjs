@@ -1,19 +1,10 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * Bundle-size budgets for the SPA (frontend/AGENTS.md, Bundle budgets). The build in frontend/dist is
- * split by thread and each part has its own budget, both gzipped:
- *
- *   UI thread  350 kB  the entry script, every chunk it imports statically, and the CSS index.html links, plus a
- *                      lazily imported chunk only when it is part of the first paint of /diagram
- *                      (`DIAGRAM_FIRST_PAINT` below; none is today);
- *   workers    400 kB  every worker script the UI thread starts and every chunk a worker loads, statically or on
- *                      demand, in total.
- *
- * Fonts and the fetched JSON data tables are excluded by design; other assets (images, source maps) are not
- * counted either. Lazily imported UI chunks outside the first paint of /diagram are listed but count against
- * neither budget. A JavaScript or CSS file that none of these reaches is counted against the UI budget, so a
- * file the classification misses can only make the check stricter.
+ * SPA size gate for frontend/dist, split by thread. Policy, exclusions and first-paint classification:
+ * frontend/AGENTS.md, Bundle budgets. UI_BUDGET_BYTES and WORKER_BUDGET_BYTES below set the limits;
+ * DIAGRAM_FIRST_PAINT names lazy UI chunks counted on first paint. Unreached JavaScript and CSS count
+ * against the UI budget, so a missed classification only makes the check stricter.
  *
  * How files are classified: index.html names the entry script(s) and stylesheet(s); each JavaScript file's own
  * references name the rest: static imports (`import … from "./x.js"`, `import "./x.js"`), dynamic imports
@@ -53,10 +44,10 @@ import { gzipSync } from 'node:zlib';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_DIST = path.join(ROOT, 'frontend', 'dist');
 
-/** The UI thread's budget: 350 kB gzipped. */
+/** The UI thread's gzipped byte budget. */
 const UI_BUDGET_BYTES = 350_000;
 
-/** The workers' budget: 400 kB gzipped, all worker scripts and their chunks together. */
+/** The workers' gzipped byte budget, all worker scripts and their chunks together. */
 const WORKER_BUDGET_BYTES = 400_000;
 
 /**

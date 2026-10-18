@@ -44,7 +44,7 @@ pnpm dev:demo            # SPA in demo mode on :5174, no backend, no GCP
 pnpm dev                 # SPA on :5173 + backend on :8080 (backend/.env optional; OAUTH_CLIENT_ID for sign-in)
 pnpm check               # format:check + lint + typecheck + test + catalog:check + provenance + licenses
 pnpm --filter @gcportrait/<pkg> test   # one package (also lint, typecheck); or `pnpm test --project <name>`
-pnpm build && pnpm size  # production build, then the gzipped budgets: UI thread 350 kB, workers 400 kB
+pnpm build && pnpm size  # production build, then the size gate (frontend/AGENTS.md, Bundle budgets)
 pnpm e2e                 # Playwright: functional + axe in both themes, on demo mode, and the phone and tablet check
                          # (once per machine: pnpm --filter @gcportrait/e2e install-browsers)
 pnpm --filter @gcportrait/frontend mobile   # the phone and tablet check alone (frontend/AGENTS.md, Phones, tablets and desktops)
