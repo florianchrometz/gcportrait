@@ -249,19 +249,12 @@ its text stays the command's text, so a command selected and copied by hand carr
 its layout (an input would be swapped in when the script starts and sized by script), and a long command still
 wraps or scrolls as before. What makes it work in every browser:
 
-- **Plain text where the browser offers it.** The script sets `contenteditable="plaintext-only"` on a probe
-  element and reads it back: Chromium, Safari and Firefox from 136 keep it; Firefox before 136 throws, and
-  then the fields get `contenteditable="true"`, with formatting commands (Ctrl+B) and drops refused and any
-  markup a browser leaves (a `<br>` in an emptied field) turned back into text. In every browser a paste is
-  taken as plain text on one line (line breaks and tabs removed; `plaintext-only` alone would keep a pasted
-  line break, which broke the command's line), and Enter, or a virtual keyboard's line break, leaves the
-  field.
-- **The token is selected, never removed by the script.** Focused while it shows its token, a field selects
-  it, and the first key that edits replaces all of it, even after the caret was moved into the token with an
-  arrow key or a second click (also an edit that comes without a key event, from a virtual keyboard or a
-  menu). Emptied with Backspace, it shows the token as its placeholder (italic). The script never empties a
-  field itself: WebKit (Safari on a Mac, every browser on an iPhone) cannot keep the caret in an inline
-  editable element whose text a script removed, so what the visitor typed would go nowhere.
+- **Plain text where the browser offers it.** The script uses `contenteditable="plaintext-only"` when
+  supported (Chromium, Safari, Firefox from 136) and falls back to `contenteditable="true"` with formatting
+  commands and drag-and-drop markup refused; pastings are sanitised to single-line plain text.
+- **The token is selected, never removed by the script.** Focused while showing its token, a field selects
+  it so the first keystroke replaces it. The script avoids emptying an inline editable element on focus to
+  preserve the caret in WebKit browsers (`website/src/lib/fillable-page.ts`).
 - **A target for a finger.** On a touch screen (`pointer: coarse`) each field has a transparent box 44 pixels
   tall around it (`.var-target`, added by the script, absolutely placed so no line moves), layered over the
   code's text and under every field: a tap a little above or below a field reaches it, a tap on a neighbouring
@@ -450,8 +443,8 @@ not values that wait for a redeploy:
    in the HTML, so nothing moves when the page is shown. It is as fresh as the last build; `pages.yml`
    rebuilds daily.
 2. **The live facts, after the page has loaded.** A small script (`website/src/lib/star-count-page.ts`, which
-   Astro builds into one small file that every page shares) waits for the `load` event and for the browser to
-   be idle (`requestIdleCallback`, or a short timeout where there is none), so it never delays the first
+   the build inlines into each page) waits for the `load` event and for the browser to be idle
+   (`requestIdleCallback`, or a short timeout where there is none), so it never delays the first
    paint. It reads `gcportrait.repository` from the visitor's sessionStorage. If the tab asked GitHub less
    than an hour ago, it does not ask again: it shows the facts it got then, or, if it got none, leaves the
    header as the build made it. Otherwise it first notes in sessionStorage that it is asking
@@ -488,24 +481,13 @@ a pill where the build had none. Where the build had no facts, the pill is in th
 script shows it only where there is room after the link. Change and undoing happen before the next frame is
 painted, so a change taken back is never seen.
 
-**Privacy.** The second layer means that a visitor's browser contacts `api.github.com`, GitHub's server, with
-two requests (the repository, and its latest release): on the first page of a visit, and then at most once an
-hour per tab, whatever GitHub answered (facts, a 404 or any other failure); sessionStorage, and with it the
-note, ends with the tab. Where sessionStorage is blocked it never does, and neither while the build found the
-repository not public (above). GitHub receives what a browser sends with any request: the visitor's IP
-address, the user agent and, in Chromium-based browsers, its client hints (`sec-ch-ua`, `sec-ch-ua-mobile`,
-`sec-ch-ua-platform`: brand, version, mobile or not, platform), the preferred languages (`Accept-Language`)
-and the site's origin (`https://gcportrait.app`, sent with a cross-origin request); but no cookie, no page
-address (no referrer) and nothing the visitor typed. The browser keeps the time of the requests and the facts,
-if it got them (the version, the star count and the fork count), in sessionStorage under
-`gcportrait.repository`. This is row W3 of the [data-processing
-inventory](legal/data-processing-inventory.md), and the privacy notice on the maintainer's website ([Legal
-pages](#legal-pages)) must describe it: a third party contacted by the visitor's browser, what it receives,
-how often (two requests at most once an hour per tab, and not while the repository is not public), the purpose
-(showing the repository's current version, star count and fork count), the legal basis, and the sessionStorage
-key with what it holds and for how long. `pnpm website:check` allows exactly these requests; it refuses any
-other host in a script, and every resource (script, stylesheet, font, image, video, frame) from another host
-([Building and checking](#building-and-checking)).
+**Privacy.** The second layer causes the visitor's browser to make two anonymous requests to `api.github.com`
+at most once an hour per tab, and never when sessionStorage is blocked or while the build found the repository
+not public. Row W3 of the [data-processing inventory](legal/data-processing-inventory.md) specifies the
+transmitted request headers, client hints, sessionStorage keys, and retention rules that the privacy notice on
+the maintainer's website ([Legal pages](#legal-pages)) must describe. `pnpm website:check` allows only these
+requests and refuses any other third-party host in a script or external resource ([Building and
+checking](#building-and-checking)).
 
 - **Token.** With `GITHUB_TOKEN` set the build's requests are authenticated (GitHub allows 60 unauthenticated
   requests an hour per address, shared on CI runners). The build (`website.yml`) receives the workflow's own
@@ -514,9 +496,9 @@ other host in a script, and every resource (script, stylesheet, font, image, vid
   printed, and never reaches a page: the visitor's requests are always anonymous, within the visitor's own
   60 an hour.
 - **Daily refresh.** `pages.yml` also runs every day at 04:17 UTC (`schedule`), rebuilding and redeploying
-  `main` so the first layer follows. Like the deploys, the scheduled run is skipped entirely while neither
-  `PAGES_DEPLOY` nor `FIREBASE_DEPLOY` is `true`. GitHub switches off the schedule of a public repository
-  after 60 days without activity; Actions > Website then offers to switch it on again.
+  `main` so the first layer follows. Like the deploys, the scheduled run is skipped entirely while
+  `PAGES_DEPLOY` is not `true`. GitHub switches off the schedule of a public repository after 60 days without
+  activity; Actions > Website then offers to switch it on again.
 - **Fallback.** Neither layer ever fails the page. The build never fails over the facts: offline, without an
   answer within 3 seconds, on a 404 (the repository is private or not published yet), on an answer saying the
   repository is private (the workflow's token may read it), on a 403 or 429 (rate limit), or on a body without
@@ -547,37 +529,15 @@ share the formatter. The version is the release's tag as it is (`v1.0.0`), read 
 link's name. The mark is GitHub's, unmodified and used only to link to the repository, under GitHub's logo
 guidelines; the tag, the star and the fork are the site's own drawings.
 
-**Check.** `pnpm --filter @gcportrait/website stars` (`website/scripts/stars.ts`) loads the built landing page
-in Playwright's Chromium, light and dark, at 1440, 768, 390 and 320 pixels, answers GitHub's part itself and
-holds the answers until the header has been measured. Always: one request for the repository and one for its
-latest release, after the load event, each with `credentials: 'omit'`, no referrer and the Accept header only;
-no layout shift (every box of the header compared before and after, and no entry from Chromium's layout-shift
-observer once the answers are let through); nothing logged but Chrome's own line for a failed request. With
-facts (`--count N`, `--forks N`, `--release TAG`; by default the build's stars plus 100, its forks plus one
-and its version with the last digit changed, or 1301, 42 and v1.0.0): the facts shown wherever they are as
-long as the build's or the counts are within their room (to 9.9k); the name updated; sessionStorage holding
-them; a reload within the hour asking nothing and showing the kept facts, facts kept for more than an hour
-asked again; at 1440 pixels also a repository without a release, which keeps the build's version. With a
-failure, to both requests (a 404 at every width; a 403 with the rate limit spent, a 429, a 500, a body that is
-not JSON, counts that are not numbers, answers slower than 4 seconds and no network at 1440 and 390 pixels):
-the header's HTML and every box unchanged, the note without facts kept, and a reload within the hour asking
-nothing. Also, at 1440 pixels: a visitor who leaves the page before the answers causes no further request from
-the next page; with sessionStorage blocked, or full, the page asks nothing. axe-core after the facts and after
-the 404. `--real` adds one load (light, 1440 pixels) answered by GitHub itself, with a cookie set for
-`api.github.com` (`SameSite=None`) that must not be sent, and requires that a failure changes nothing and is
-kept (the reload then asks GitHub nothing) and that facts show. With the repository not public to the build
-(`data-repository-not-public` on the link): no request at all after the load event and on a reload, nothing
-written to sessionStorage, the header's HTML and every box unchanged, no layout shift, nothing logged,
-axe-core; on a build that saw GitHub's 404 (any build while the repository is private, without
-`WEBSITE_STAR_COUNT`) that is all the check runs, at every width in both themes, and it says so; on any other
-build it runs this case too, at 1440 and 390 pixels in both themes, with the marker added to the landing page
-it serves. `--shots DIR` saves the header before and after. `pnpm --filter @gcportrait/website mobile` and
-`fillable` answer the requests themselves too (a 404, or `mobile --stars N`), so no browser check spends the
-machine's 60 unauthenticated requests an hour. CI runs `stars` on a build made with `WEBSITE_STAR_COUNT`,
-`WEBSITE_FORK_COUNT` and `WEBSITE_RELEASE`, so it exercises the widget itself and not only the not-public case
-([Building and checking](#building-and-checking)). `pnpm website:lighthouse` does not: on a build where the
-browser asks, each of its runs is a fresh browser that asks GitHub twice, and past the 60 GitHub answers 403,
-which Chrome logs as a failed request; on a build that saw the 404, no run asks.
+**Check.** `pnpm --filter @gcportrait/website stars` validates the repository widget in Playwright's Chromium
+across viewport widths and themes. The header of
+[website/scripts/stars.ts](../website/scripts/stars.ts) defines the full scenario matrix, mock responses,
+layout-shift tolerances, and failure conditions. Use `--count N`, `--forks N` and `--release TAG` to
+customise live values, `--real` to verify unmocked GitHub API requests, and `--shots DIR` to save
+before/after header captures. CI runs `stars` on a build made with `WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT`
+and `WEBSITE_RELEASE` so it exercises widget updates even before the repository is public ([Building and
+checking](#building-and-checking)). The browser checks (`mobile`, `fillable`, `stars`) answer the requests
+themselves, so they do not consume GitHub API rate limits.
 
 ## Analytics
 
@@ -595,19 +555,14 @@ analytics, because there is none.
 
 ## Favicon and logo
 
-gcportrait's mark, the frame with the project, VPC and subnetwork zones, is drawn once, in `brand/icon.svg` at
-the repository root ([brand/README.md](../brand/README.md)): one SVG of rounded rectangles whose `<style>`
-holds the light colours and, under `prefers-color-scheme: dark`, the dark ones. Everything else takes it from
-there:
+gcportrait's mark is drawn once, in `brand/icon.svg` at the repository root
+([brand/README.md](../brand/README.md) defines its geometry and rules). Everything else takes it from there:
 
 - **The favicon** is the file as it is: `website/astro.config.ts` copies it to `dist/favicon.svg` and serves
   it at `/favicon.svg` in development; every page links it (`<link rel="icon" href="/favicon.svg"
   type="image/svg+xml">`). There is no second copy in `website/public/`.
-- **The logo** in the header and the footer (`website/src/components/Logo.astro`) draws the same shapes in the
-  same colours, read from the file at build time by `website/src/lib/brand.ts`: the light colours as the
-  shapes' attributes, the dark ones as custom properties that the component's stylesheet applies in the dark
-  theme. The file must stay that simple (rectangles, class rules setting fill, stroke and stroke width);
-  anything the logo could not follow fails the build.
+- **The logo** in the header and the footer (`website/src/components/Logo.astro`) renders the mark using
+  shapes and colours read from `brand/icon.svg` at build time by `website/src/lib/brand.ts`.
 - **The app's favicon** is the same file: `frontend/vite.config.ts` writes it into every build of the app as
   `favicon.svg` (and serves it in development) and links it from `index.html` under the build's base path, so
   the image, `pnpm dev` and the demo at `/demo/` show the mark too (`/demo/favicon.svg`, which `pnpm
@@ -731,23 +686,14 @@ policy `<meta>` before anything that loads with the page's own hash, the referre
 page loads under `/demo/`, no Google sign-in host, `favicon.svg` equal to `brand/icon.svg`,
 the footer's Impressum, privacy notice and source link, and the licence files. The site check also requires
 every "Try the demo" link to point at `/demo/`; it is not a validator for arbitrary bases or standalone
-bundles. `pnpm --filter @gcportrait/website demo` serves the built site as GitHub Pages does and drives the
-demo in Chromium at 1440 × 900, in both themes: the Connect page (axe), "Try the demo" with S, M and L, a
-drill-in, a day back on the timeline, a PNG and an SVG export, a reload on that deep link, a direct load of
-every route, `/demo` without its slash, an unknown address (404); it fails on any request that leaves the
-site's origin, any policy violation and any uncaught error (`--shots DIR` saves screenshots, `--theme dark`
-one theme). CI's `website` job runs it after the build ([Building and checking](#building-and-checking)).
-Each step waits for the state it needs, never for a time: for the view in the address
-(`page.waitForURL`, as the app writes the hash within the page) and for its drawing. The canvas stays ready
-(`data-diagram-ready`) with the drawing before it while the next view is prepared, so after the drill-in and
-the day back the check waits for the next drawing, a ready canvas whose number (`data-drawing`) differs from
-the one read before the click or the key, and it opens the project it drills into on a page loaded afresh,
-whose first drawing is that view's; the axe run and the screenshots see the view they name. A step that fails
-says why: a wait that runs out (Playwright's `TimeoutError`) names what it waited for, and any other error (a
-closed page, a crashed browser, a failed navigation) is reported with its own message. An export awaits its
-download together with the click on its menu item, the download's wait the longer, as it also covers the
-export, so a menu item that cannot be clicked fails its step under its own name and the check still lists
-every problem.
+bundles.
+
+`pnpm --filter @gcportrait/website demo` serves the built site as GitHub Pages does and drives the demo in
+Playwright's Chromium at 1440 × 900 in both themes. The header of
+[website/scripts/demo.ts](../website/scripts/demo.ts) defines the scenario progression, drawing
+synchronization, export assertions, and failure reporting. CI's `website` job runs it after the build
+([Building and checking](#building-and-checking)). Use `--theme dark` to restrict to a single theme,
+`--shots DIR` to save screenshots, and `--dist DIR` to test an alternative build directory.
 
 **When it changes.** The demo is the app of the commit the site is built from: `main` on every deploy of the
 site, the tag on a release. In `pnpm website:dev`, `/demo/` serves the last `pnpm demo:static` bundle
@@ -862,10 +808,11 @@ W3 of the inventory).
 
 ## Lighthouse
 
-`pnpm website:lighthouse` runs Lighthouse 13.5.0 (with `pnpm dlx`, not a dependency) on every page of the
-built site, in the light and the dark theme, with Lighthouse's desktop and its mobile settings, against
-`website/dist` served the way GitHub Pages serves it, and fails under performance 90 or accessibility, best
-practices or SEO 95.
+`pnpm website:lighthouse` runs Lighthouse on every page of the built site across themes and presets against
+`website/dist` served the way GitHub Pages serves it. The header of
+[website/scripts/lighthouse.ts](../website/scripts/lighthouse.ts) specifies score thresholds (performance 90,
+accessibility, best practices and SEO 95) and execution options (`--theme`, `--preset`, `--page`,
+`--mobile`).
 
 **axe-core.** Lighthouse's accessibility score runs only part of axe-core's rules; it does not include
 `scrollable-region-focusable` (a region that scrolls sideways but cannot be reached by keyboard). `pnpm

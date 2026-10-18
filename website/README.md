@@ -26,13 +26,13 @@ From the repository root:
 | Develop with live reload (<http://localhost:4321>) | `pnpm website:dev` |
 | Build into `website/dist` (also part of `pnpm build`), with the demo in `website/dist/demo/` (below) | `pnpm website:build` (`WEBSITE_DEMO_DIST=dist/demo` to copy a demo built before instead of building it) |
 | Build the static demo alone, into `dist/demo/` at the root | `pnpm demo:static` |
-| Check the demo in the built site in Chromium at 1440 × 900, served as GitHub Pages serves it, both themes: the Connect page, S, M and L, a drill-in, the timeline, PNG and SVG export, a reload on a deep link, every route, the 404; axe, no request elsewhere, no policy violation | `pnpm --filter @gcportrait/website demo` (`--theme dark`, `--shots DIR`, `--dist DIR`) |
+| Check the static demo in the built site in Chromium ([specification](scripts/demo.ts)) | `pnpm --filter @gcportrait/website demo` (`--theme dark`, `--shots DIR`, `--dist DIR`) |
 | Check built pages, resources, links, metadata, installer, demo and exports ([specification](scripts/check-site.ts)) | `pnpm website:check` |
 | Check phone layouts, accessibility and demo playback ([specification](scripts/mobile.ts)) | `pnpm --filter @gcportrait/website mobile` (`--only layout`, `--only playback`, `--page /docs/`, `--theme dark`, `--width 375`, `--stars 12345` with `--forks 678` and `--release v1.2.3` for GitHub's mocked answers, which a page asks for only on a build that did not find the repository not public, such as one with `WEBSITE_STAR_COUNT`) |
 | Check editable command fields, Copy, storage and accessibility across browser and touch profiles ([specification](scripts/fillable.ts)) | `pnpm --filter @gcportrait/website fillable` (`--profile chromium\|firefox\|firefox-fallback\|webkit\|iphone\|pixel`, `--page /docs/permissions/`, `--shots DIR`) |
-| Check the header's repository widget, live, in Chromium on `/` at 1440, 768, 390 and 320 px in both themes, GitHub's answers given by the check: the repository and its latest release asked once each after load, anonymous; the version, stars and forks shown with no layout shift, kept for the hour; a repository without a release keeping the build's version; a 404, 403, 429, 500, bad body, timeout or no network changing nothing and asking nothing more within the hour; no request with storage blocked; no request at all where the build found the repository not public (on such a build, all the check runs; on others, simulated); axe-core; `--real` asks GitHub itself once | `pnpm --filter @gcportrait/website stars` (`--count 1301`, `--forks 42`, `--release v1.0.1`, `--real`, `--shots DIR`) |
+| Check the header's repository widget, live, in Chromium ([specification](scripts/stars.ts)) | `pnpm --filter @gcportrait/website stars` (`--count 1301`, `--forks 42`, `--release v1.0.1`, `--real`, `--shots DIR`) |
 | Serve the built site | `pnpm website:preview` |
-| Lighthouse on every page, light and dark, desktop and mobile (thresholds: performance 90, the rest 95) | `pnpm website:lighthouse` (`--page /docs/`, `--theme dark`, `--preset desktop`, `--mobile`) |
+| Lighthouse on every page, light and dark, desktop and mobile ([specification](scripts/lighthouse.ts)) | `pnpm website:lighthouse` (`--page /docs/`, `--theme dark`, `--preset desktop`, `--mobile`) |
 | Regenerate the screenshots, animated demos and link-preview images (`docs/media/`) | `pnpm media` (`--only scene:ID`, `--theme light`; `pnpm media --check` for staleness) |
 | Regenerate the sample exports (`docs/media/exports/`, SVG, PNG and draw.io files of demo S and M in both themes, from `pnpm render`, with WebP previews; like every export, without an affiliation line) / check them | `node scripts/exports.mjs` / `node scripts/exports.mjs --check` (`--render`: draw again and compare byte for byte) |
 | Unit tests, lint, types | `pnpm --filter @gcportrait/website test` (also `lint`, `typecheck`) |
@@ -105,23 +105,15 @@ sameAs:                             # optional: profile pages; anything that is 
 One or two paragraphs.
 ```
 
-**Legal pages.** The site has none of its own: the maintainer keeps the Impressum and the privacy notice on
-their own website, and the footer of every page links them, <https://florian-chrometz.de/legal/impressum> and
-<https://florian-chrometz.de/legal/privacy-policy> (`IMPRESSUM_URL`, `PRIVACY_URL` and `LEGAL_LINKS` in `src/site.ts`;
-AGENTS.md, Modes and hosting). They are external links in the footer's style, `rel="noopener"`, named
-"… (external site, florian-chrometz.de)" for assistive technology with the part in brackets visually hidden,
-and marked with an arrow; `pnpm website:check` requires both on every page. No secret, no `WEBSITE_LEGAL_DIR`,
-no texts in the repository; `docs/legal/` keeps only the data-processing inventory the maintainer's privacy
-notice is checked against (docs/website.md, "Legal pages").
+**Legal pages.** The site links the maintainer's external Impressum and privacy notice from every page's
+footer (`IMPRESSUM_URL`, `PRIVACY_URL` and `LEGAL_LINKS` in `src/site.ts`; AGENTS.md, Modes and hosting;
+[docs/website.md](../docs/website.md#legal-pages)). The repository holds no legal pages of its own;
+`docs/legal/` maintains the data-processing inventory checked against the privacy notice.
 
-**Favicon and logo.** One drawing, one file: `brand/icon.svg` at the repository root (brand/README.md). The
-build copies it to `dist/favicon.svg` as it is (and the development server serves it there;
-`astro.config.ts`), and `src/components/Logo.astro` draws the same shapes in the same colours, read from it at
-build time (`src/lib/brand.ts`: the light colours as attributes, the dark ones as custom properties its
-stylesheet applies in the dark theme). The app's favicon is the same file (`frontend/vite.config.ts` writes it
-into every build of the app, the demo's included). `src/lib/brand.test.ts` checks that the favicon and the
-logo are the same drawing (and the README's wordmarks and the link-preview images' mark too);
-`pnpm website:check` checks the build.
+**Favicon and logo.** `brand/icon.svg` at the repository root ([brand/README.md](../brand/README.md)) defines
+the mark. `astro.config.ts` copies it to `dist/favicon.svg`, and `src/components/Logo.astro` renders it at
+build time using `src/lib/brand.ts`. `src/lib/brand.test.ts` pins the drawing and checks consistency across
+the site and app ([docs/website.md](../docs/website.md#favicon-and-logo)).
 
 **Placeholders and strict builds.** Write a value still to be filled in as capitals in square brackets
 (`[FULL NAME]`), or in double braces or angle brackets; `TODO`, `TBD` and `PLACEHOLDER` count too
@@ -129,20 +121,11 @@ logo are the same drawing (and the README's wordmarks and the link-preview image
 of the docs menu or a generated medium is missing, or when `docs/author.md` holds a placeholder; a normal
 build warns and goes on.
 
-**The demo.** `/demo/` is the app itself, not an Astro page: a static build in demo-only mode
-(`pnpm demo:static`, `scripts/static-demo.mjs` at the root; docs/website.md, "The demo"). After Astro has
-written the site, `astro.config.ts` (`staticDemo`) runs that command with `--out dist/demo` and the footer's
-legal links (`IMPRESSUM_URL`, `PRIVACY_URL`), or copies the bundle `WEBSITE_DEMO_DIST` names (relative to the
-repository root, built for `/demo/`; the workflows build the demo as a step of its own first), so
-`pnpm website:build` alone gives the whole site. `DEMO_URL` in `src/site.ts` is `/demo/`: every "Try the demo"
-link points there, and the sitemap lists it (but none of the app's other routes). The page checks leave it out
-(it is the app, not a page of the site), and so do the phone and Lighthouse checks; `checkDemo` in
-`scripts/check-site.ts` and `scripts/demo.ts` check it instead, and the app's own phone and tablet check
-(`pnpm --filter @gcportrait/frontend mobile`) its layouts. `pnpm website:dev` serves the last
-`pnpm demo:static` bundle at `/demo/` (its start page and files: Astro's trailing-slash rule answers a reload
-on `/demo/diagram` with a 404 in development; the built site has every route). `scripts/serve.ts` answers
-`/demo/diagram` with `demo/diagram.html` and redirects a folder's address to its trailing slash, as GitHub
-Pages does.
+**The demo.** `/demo/` is the app itself in static demo-only mode (`pnpm demo:static`,
+`scripts/static-demo.mjs`), built or copied into `dist/demo/` by `astro.config.ts` (`WEBSITE_DEMO_DIST`).
+`DEMO_URL` in `src/site.ts` is `/demo/`. Site checks validate its routes and headers
+(`scripts/check-site.ts`), while browser execution is tested by `scripts/demo.ts`
+([docs/website.md](../docs/website.md#the-demo)).
 
 ## How it is built
 
@@ -158,96 +141,41 @@ Pages does.
   that are not inline text are at least 44 × 44 pixels, and wide tables and code scroll inside their own box
   (a table shows a shaded edge where there is more). The pictures' `sizes` name the width they are shown at,
   so a phone takes the 720-pixel WebP at 2× and the 1440 one at 3×.
-- Fillable commands on the docs pages and the landing page (docs/website.md, "Fillable commands"):
-  `src/lib/markdown.ts` renders each registered `YOUR_…` token in a guide's code as `span.var[data-var]`, each
-  code block in a box under a bar with a Copy button, and the page's first block with fields under a hint line
-  ("Edit a highlighted value in any command; every command on this page follows."); the landing page's
-  commands go through the same functions (`renderCommandBlock`, `renderInlineCode`).
-  `src/components/Variables.astro` adds the Variables panel (label, token, description, example and an input
-  per variable of the page; folded below 52rem) and a live region; its script, `src/lib/fillable-page.ts` with
-  the DOM-free parts in `src/lib/fillable.ts` (8.4 kB, 3.1 kB gzipped, its own file loaded only by pages with
-  code), makes the tokens inline text boxes, keeps every field of a variable and its input on one value,
-  copies a block with the values (an unfilled one as its token), marks a value of the wrong format when its
-  field is left, and keeps the values of variables that are not secret in `localStorage`
-  (`gcportrait.docs.variables`, one JSON object, shared by every page with fields; "Clear values" removes it).
-  Without JavaScript the code shows its tokens, and the noscript style hides the bars, the hint, the inputs
-  (`data-var-js`) and the fields' edit mark. The bars and the hint hold their height from the start, so
-  nothing moves when the script runs.
-
-  **Why the fields are the tokens' own spans, made editable, and not `<input>`s:** the field's text stays the
-  command's text, so a command selected and copied by hand carries the values (an input's value is not part of
-  a selection), the code keeps its layout from the first paint (an input would be swapped in and sized by
-  script), and a long command wraps or scrolls as before. To work in every browser the script feature-detects
-  `contenteditable="plaintext-only"` (set on a probe, read back: Chromium, Safari and Firefox from 136) and
-  falls back to `contenteditable="true"` with formatting and drops refused and leftover markup turned back
-  into text; it takes every paste as plain text on one line, and Enter leaves the field. It never empties a
-  focused field: a field that shows its token selects it, and the first key that edits replaces all of it:
-  emptying a field on focus would lose the caret in WebKit, so on a Mac's Safari and on every iPhone typing
-  into a command would do nothing. Before anyone touches them the fields read as editable: tinted, underlined,
-  ending in a pencil (the edit mark, drawn by `global.css` with a mask, the site's own drawing), ringed on
-  hover or press; on a touch screen each has a transparent 44-pixel-tall tap target (`.var-target`), over the
-  code's text and under every field.
-- The header stays at the top of the window while the page scrolls (`position: sticky`; its background reaches
-  under a phone's status bar where the page is drawn there, the safe-area inset). Its height is kept in
-  `--header-block` (`global.css` estimates it per width; the script of `src/layouts/Base.astro` measures it),
-  and the root's `scroll-padding-top` follows it, so an anchor jump, the skip link's target or a focused
-  element never lands under the header; headings keep another 1rem (`scroll-margin-top`). The docs menu sits
-  below it and scrolls on its own where it is taller than the window; the skip link shows above it.
-  `pnpm --filter @gcportrait/website mobile` checks that the header stays at the top when a page is scrolled
-  to its end and that an anchor's heading lands below it.
+- Fillable commands on the docs pages and the landing page
+  ([docs/website.md](../docs/website.md#fillable-commands)): `src/lib/markdown.ts` renders registered
+  `YOUR_…` tokens in code blocks and inline code as editable fields with Copy bars.
+  `src/components/Variables.astro` provides the companion panel and live region. `src/lib/fillable-page.ts`
+  (with DOM-free helpers in `src/lib/fillable.ts`) synchronises field values across the page, manages keyboard
+  interaction, and persists non-secret values in `localStorage` (`gcportrait.docs.variables`).
+  Browser-specific DOM workarounds (including WebKit caret retention and `plaintext-only` detection) are
+  documented in `src/lib/fillable-page.ts`.
+- The header stays at the top of the window while the page scrolls (`position: sticky`;
+  [docs/website.md](../docs/website.md#mobile)). Its height is measured by `src/layouts/Base.astro` and
+  written to `--header-block` and root `scroll-padding-top` so focused targets and anchor jumps never land
+  under the header.
 - Every link to the demo opens it in a new tab (`target="_blank"`, `rel="noopener"`) and says so to assistive
   technology (" (opens in a new tab)", visually hidden): the demo is the app, a page of its own with no way
   back to the site. The pages write it with `src/components/DemoLink.astro`; a guide's link to
   `https://gcportrait.app/demo/…` gets the same from `src/lib/markdown.ts`. `pnpm website:check` refuses any
   link to the demo without both.
-- Small scripts. On every page (`src/layouts/Base.astro`, inlined by Astro, about 0.7 kB): the header's height
-  for the scroll padding (above); the folding buttons flip `aria-expanded`, Escape closes; without JavaScript
-  every panel is shown and the buttons are not (a noscript style). On pages with an animated demo
-  (`src/components/DemoVideo.astro`, about 2.6 kB, 1.2 kB gzipped): the poster in the visitor's theme, its
-  WebM played over it, muted and inline, while it is on screen, one demo's file fetched at a time; where the
-  WebM cannot play (`canPlayType`, an error, or a stall before any data) the GIF of the same scene and theme,
-  fetched only then. Each demo has a pause button in its corner once it plays (WCAG 2.2.2: the demos loop for
-  longer than five seconds; a paused GIF gives way to the poster); a demo the visitor paused stays paused.
-  With reduced motion nothing plays by itself: the poster shows with a Play button. On every page, too, the
-  header's repository widget (below), in a file of its own that every page shares (about 4.1 kB, 1.9 kB
-  gzipped). The site counts no page views and sends nothing to a third party (docs/website.md, "Analytics").
+- Small scripts. On every page (`src/layouts/Base.astro`, inlined by Astro): header height measurement and
+  panel toggle states (`aria-expanded`). On pages with an animated demo (`src/components/DemoVideo.astro`):
+  themed WebM playback with GIF fallback and pause controls. On every page, the header's repository widget
+  (`src/lib/star-count-page.ts`), inlined into each page by the build. The site runs no analytics and sends
+  no data to third parties ([docs/website.md](../docs/website.md#analytics)).
 - Guides are rendered by `src/lib/markdown.ts`: raw HTML is dropped, and a link keeps its target
   only for http, https, mailto or a path (a `javascript:` or `data:` link becomes plain text). What may scroll
   sideways is keyboard-focusable (WCAG 2.1.1): every code block (`tabindex="0"`), and every table through its
   `.table-scroll` box. A code block written in a page itself either has `tabindex="0"` too or wraps its lines
   (`class="wrap"`); `pnpm website:check` refuses any other. An empty header cell becomes a data cell, and a
   table cell holding a command keeps a readable width (`cell-command`).
-- The header's GitHub link (top right, next to "Try the demo") is the repository widget: the GitHub mark,
-  unmodified and used only as a link to the repository under GitHub's logo guidelines, the word "GitHub", and
-  the repository's latest release (its tag, `v1.0.0`), star count and fork count in one pill, each after a
-  drawing of the site's own, in two layers (docs/website.md, "GitHub repository widget"). Its name says them
-  all: "gcportrait on GitHub: version 1.0.0, 12 stars, 3 forks". On a phone it shows the mark and the counts,
-  below 368 pixels the stars only. First, `src/lib/github.ts` reads the facts from GitHub's REST API once per
-  build, the repository (`stargazers_count`, `forks_count`) and `…/releases/latest` (`tag_name`) together
-  (with `GITHUB_TOKEN` when set, 3 s timeout), and the pages carry them as text, so they are there at first
-  paint. Offline, rate-limited, or while the repository is private (a 404), the build prints one warning line
-  and the link shows no facts (the pill is in the page, hidden; after the 404, or an answer marked private,
-  there is no pill and the link carries `data-repository-not-public`, below); a repository without a release
-  gets its counts and no version; it never fails. `WEBSITE_STAR_COUNT=1234` (with `WEBSITE_FORK_COUNT=56` and
-  `WEBSITE_RELEASE=v1.0.0`, else 0 forks and no version) uses fixed facts and `WEBSITE_STAR_COUNT=off` none,
-  both without the build's requests; a `REPOSITORY_URL` (`src/site.ts`) that is not a github.com repository,
-  as in a fork hosted elsewhere, gives no facts, one warning, and no `data-repository`. pages.yml rebuilds
-  daily, but only once a deploy is switched on. Second, once the page has loaded and the browser is idle, the
-  widget's script (`src/lib/star-count-page.ts` via `src/components/Header.astro`) asks GitHub at most once an
-  hour per tab: if sessionStorage (`gcportrait.repository`) says the tab asked less than an hour ago, it uses
-  the facts it got then, or shows nothing new after a failure; otherwise it notes the requests there first (no
-  note possible, storage blocked: no request), asks `https://api.github.com/repos/<owner>/<name>` and
-  `…/releases/latest` itself, together (anonymous: `credentials: 'omit'`, no referrer, Accept only, 4 s
-  timeout; `currentRepositoryFacts` and `liveRepositoryFacts` in `src/lib/star-count.ts`) and keeps the facts
-  in place of the note. It writes them with the build's own formatter into the pill and the link's name (a
-  version GitHub did not give now keeps the build's), but only where nothing else in the header moves (each
-  count keeps room for any count to 9.9k, so where the build had facts such counts always fit, and so does a
-  version of the same length); on any failure nothing changes, and nothing is logged. Where the build's own
-  request found the repository not public (`data-repository-not-public`), the script asks nothing at all: the
-  visitor's browser would only get the same 404 (and send its address to GitHub for nothing), so a site built
-  while the repository is not public shows no live facts until the next build after it is. Otherwise a
-  visitor's browser contacts GitHub: row W3 of docs/legal/data-processing-inventory.md, which the privacy
-  notice on the maintainer's website must cover.
+- The header's GitHub link (top right, next to "Try the demo") is the repository widget
+  (`src/components/Header.astro`), displaying the latest release tag, star count and fork count
+  ([docs/website.md](../docs/website.md#github-repository-widget)). `src/lib/github.ts` fetches build-time
+  facts during `pnpm website:build` (supporting `WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT` and
+  `WEBSITE_RELEASE` overrides); `src/lib/star-count-page.ts` (with formatter and storage keys in
+  `src/lib/star-count.ts`) fetches live facts in the visitor's browser at most once an hour per tab when
+  public, recording requests under row W3 of `docs/legal/data-processing-inventory.md`.
 - Light and dark follow `prefers-color-scheme`, with the app's palette values (`src/styles/global.css`;
   `src/styles/contrast.test.ts` checks every text pair at 4.5 : 1). Roboto and Roboto Mono are self-hosted
   from `@fontsource` (Latin subsets; regular, medium and mono are preloaded, so text does not shift when they
