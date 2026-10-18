@@ -4,14 +4,13 @@
  * The button has `aria-haspopup="dialog"`, `aria-expanded` and, while open, `aria-controls` naming the panel;
  * the panel is `role="dialog"`, named by `title`. Opening moves focus to the panel's first focusable element (or
  * the panel); Tab and Shift+Tab stay inside it (a focus trap); Escape closes it and puts focus back on the
- * button; a press outside closes it and lets focus go where it went. `children` may be a function of `close`
+ * button, unless a control in it has handled that Escape already (`preventDefault`: closed its own list); a press outside closes it and lets focus go where it went. `children` may be a function of `close`
  * (an Apply button). The open state can be the caller's (`open`, `onOpenChange`). Inert (`disabled`): a
  * focusable, announced-unavailable button that opens nothing.
  *
  * A sheet (`sheet`) is a fold of other controls (the top bar's View and More on a phone or a tablet; ui/screen.ts):
  * its content stays mounted while it is closed (hidden), so the controls keep their state and what one of them opened
- * (a modal dialog) stays open; an Escape a control in it has handled already (closing its own list) leaves the sheet
- * open, and so does a press while a modal dialog over it makes it inert. A sheet closed while focus is inside it (a
+ * (a modal dialog) stays open; a press while a modal dialog over it makes it inert leaves the sheet open. A sheet closed while focus is inside it (a
  * pick that closes it, a new layout) gives focus back to its button, as Escape does, rather than letting it drop to
  * the page's body with the hidden panel. An open sheet lies over the page, the diagram's canvas included, and says so
  * (`data-canvas-overlay`): a camera jump keeps its node in the part of the canvas the sheet leaves in view
@@ -109,7 +108,7 @@ export function Popover({
   };
 
   const onPanelKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key === 'Escape' && !(sheet && event.defaultPrevented)) {
+    if (event.key === 'Escape' && !event.defaultPrevented) {
       event.preventDefault();
       event.stopPropagation();
       close();

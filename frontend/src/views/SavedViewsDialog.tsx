@@ -293,7 +293,6 @@ function RenameRow({
             if (event.key !== 'Escape') return;
             // Escape ends the renaming, not the dialog.
             event.preventDefault();
-            event.stopPropagation();
             onDone(null);
           }}
         />

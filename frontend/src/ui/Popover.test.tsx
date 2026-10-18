@@ -67,6 +67,30 @@ describe('Popover', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('leaves an Escape its content handled alone, closes on the next onto its button', async () => {
+    renderInPage(
+      <Popover label="Focus">
+        <input
+          aria-label="Find"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && event.currentTarget.value !== '') {
+              event.preventDefault();
+              event.currentTarget.value = '';
+            }
+          }}
+        />
+      </Popover>,
+    );
+    const button = screen.getByRole('button', { name: 'Focus' });
+    await userEvent.click(button);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Find' }), 'web');
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: 'Focus' })).toBeDefined();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(button);
+  });
+
   it('is inert when disabled', async () => {
     renderInPage(
       <Popover label="Focus" disabled>

@@ -4,7 +4,7 @@
  * with `aria-modal="true"`, named by its title and described by `description`. While open, everything else in
  * `<body>` is `inert` (unreachable by pointer, keyboard and assistive technology), focus moves to the first
  * focusable element of its content (else its Close button), Tab and Shift+Tab stay inside it, Escape and the
- * Close button close it (`onClose('escape' | 'close')`), a press on the backdrop too (`'backdrop'`); on closing,
+ * Close button close it (`onClose('escape' | 'close')`; not an Escape its content handled, `preventDefault`), a press on the backdrop too (`'backdrop'`); on closing,
  * focus goes back to where it was before it opened.
  *
  * An alert dialog (`alert`: the WAI-ARIA alertdialog pattern, `role="alertdialog"`) asks for a decision its own
@@ -107,7 +107,8 @@ function OpenDialog({
         tabIndex={-1}
         className={styles.dialog}
         onKeyDown={(event) => {
-          if (event.key === 'Escape') {
+          // An Escape its content handled already (ended a renaming, closed a list) is not the dialog's.
+          if (event.key === 'Escape' && !event.defaultPrevented) {
             event.preventDefault();
             event.stopPropagation();
             onClose('escape');

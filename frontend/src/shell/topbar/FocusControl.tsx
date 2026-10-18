@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import type { FocusKind } from '@gcportrait/model';
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { useAppState, useDiagramActions, usePopover, useScene } from '../../state';
 import { Popover } from '../../ui/Popover';
@@ -80,11 +80,6 @@ export function FocusControl(): ReactElement {
     }
   };
 
-  // Escape in the open kind list closes the list, not the popover.
-  const onKindKeyDown = (event: KeyboardEvent<HTMLSpanElement>): void => {
-    if (event.key === 'Escape' && kindOpen) event.stopPropagation();
-  };
-
   return (
     <Popover
       label={summary === null ? 'Focus' : 'Focus:'}
@@ -133,7 +128,7 @@ export function FocusControl(): ReactElement {
         };
         return (
           <div ref={panelRef} className={styles.panel}>
-            <span className={styles.kind} onKeyDown={onKindKeyDown}>
+            <span className={styles.kind}>
               <Select
                 label="Show"
                 options={FOCUS_KINDS}

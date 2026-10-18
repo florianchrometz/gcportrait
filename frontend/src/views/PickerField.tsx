@@ -5,10 +5,10 @@
  * choose. `PickerField` keeps a list of chosen values as removable chips (the Filters popover's regions,
  * projects, folders and types); `PickerInput` chooses one value (the Focus control's parameter).
  *
- * Inside a popover, Escape first closes the results, then clears the text, and only then reaches the popover
- * (which closes): the field stops it on the way out while it still has something to undo.
+ * Inside a popover, Escape first closes the results, then clears the text, and only then closes the popover:
+ * the combobox marks an Escape it handled (`preventDefault`), which the popover leaves alone.
  */
-import { useId, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
+import { useId, useRef, useState, type ReactElement } from 'react';
 
 import { Combobox, type ComboboxOption } from '../ui/Combobox';
 import styles from './PickerField.module.css';
@@ -83,13 +83,8 @@ function PickerSearch({
   const loading = options === null && !failed;
   const results = options === null ? [] : searchOptions(options, query, exclude);
 
-  const onKeyDown = (event: KeyboardEvent<HTMLSpanElement>): void => {
-    // The combobox has handled it already (closed its results or cleared its text): keep it from the popover.
-    if (event.key === 'Escape' && (open || query !== '')) event.stopPropagation();
-  };
-
   return (
-    <span className={styles.search} onKeyDown={onKeyDown}>
+    <span className={styles.search}>
       <Combobox
         label={label}
         value={query}

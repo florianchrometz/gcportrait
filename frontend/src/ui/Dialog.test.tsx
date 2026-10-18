@@ -146,4 +146,39 @@ describe('Dialog (modal)', () => {
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(onClose.mock.calls).toEqual([['escape']]);
   });
+
+  it('leaves an Escape its content handled alone, closes on the next', async () => {
+    const onClose = vi.fn();
+    function Renaming(): ReactElement {
+      const [open, setOpen] = useState(true);
+      return (
+        <Dialog
+          open={open}
+          title="Saved views"
+          onClose={(reason) => {
+            onClose(reason);
+            setOpen(false);
+          }}
+        >
+          <input
+            aria-label="Name"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && event.currentTarget.value !== '') {
+                event.preventDefault();
+                event.currentTarget.value = '';
+              }
+            }}
+          />
+        </Dialog>
+      );
+    }
+    renderInPage(<Renaming />);
+    await userEvent.type(screen.getByRole('textbox', { name: 'Name' }), 'Prod');
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: 'Saved views' })).toBeDefined();
+    expect(onClose).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(onClose.mock.calls).toEqual([['escape']]);
+  });
 });
