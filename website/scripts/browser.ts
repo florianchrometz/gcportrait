@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * What the website's browser checks share (scripts/mobile.ts, scripts/fillable.ts, scripts/stars.ts, scripts/demo.ts):
- * the stand-in for tsx's name helper, axe-core read from the e2e package, a wait for the layout to settle, how to tell
+ * the stand-in for tsx's name helper, axe-core via @axe-core/playwright, a wait for the layout to settle, how to tell
  * a wait that ran out from any other failure, and GitHub's answers to the header's repository widget given by the check
  * itself.
  */
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { AxeBuilder } from '@axe-core/playwright';
 import { errors, type BrowserContext, type Page } from 'playwright';
 
 export const WEBSITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,26 +19,9 @@ export const WEBSITE = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  */
 export const KEEP_NAMES_SHIM = 'globalThis.__name ??= (target) => target;';
 
-/** axe-core's browser build, from the e2e package's dependency (@axe-core/playwright): the website adds none. */
-export function axeSource(): string {
-  const fromE2e = createRequire(path.join(WEBSITE, '..', 'e2e', 'package.json'));
-  const builder = fromE2e.resolve('@axe-core/playwright');
-  const axe = createRequire(builder).resolve('axe-core');
-  return readFileSync(path.join(path.dirname(axe), 'axe.min.js'), 'utf8');
-}
-
-type AxeResult = { violations: { id: string; help: string; nodes: { target: unknown[] }[] }[] };
-
 /** axe-core's violations on the page as it is now (all its non-experimental rules, as the e2e tests run it). */
-export async function axeProblems(page: Page, source: string): Promise<string[]> {
-  const loaded = await page.evaluate(() => 'axe' in window);
-  if (!loaded) await page.addScriptTag({ content: source });
-  const result = (await page.evaluate(() =>
-    (window as unknown as { axe: { run: (context: Document, options: object) => Promise<unknown> } }).axe.run(
-      document,
-      { resultTypes: ['violations'] },
-    ),
-  )) as AxeResult;
+export async function axeProblems(page: Page): Promise<string[]> {
+  const result = await new AxeBuilder({ page }).analyze();
   return result.violations.map(
     (violation) =>
       `axe ${violation.id}: ${violation.help} (${violation.nodes

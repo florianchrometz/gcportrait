@@ -11,6 +11,7 @@ packages:
 # Shared tool and dependency versions declared across multiple workspace manifests (issue #130).
 # Referencing these via `catalog:` in package.json keeps versions aligned without duplication.
 catalog:
+  '@axe-core/playwright': ^4.13.0
   '@playwright/test': ^1.64.0
   '@types/node': ^22.20.5
   fast-check: ^4.10.2

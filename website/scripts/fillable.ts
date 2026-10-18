@@ -45,9 +45,9 @@
  * edits before, while and after its field is typed into, and the panel, per profile, page, width and theme. Browsers: Chromium from `pnpm --filter @gcportrait/e2e install-browsers`; WebKit and Firefox once per
  * machine with `pnpm --filter @gcportrait/website exec playwright install webkit firefox`. Firefox runs with a
  * throwaway application-data directory (MOZ_APP_DATA), so it never touches a Firefox profile of the user's (and
- * starts where its own lookup of that directory fails: "Could not find profile folder"). axe-core comes from the e2e
- * package (scripts/browser.ts). The header's repository widget is answered by the check with GitHub's 404 for a
- * private repository (scripts/browser.ts), so the header does not change and GitHub is never asked.
+ * starts where its own lookup of that directory fails: "Could not find profile folder"). axe-core comes from
+ * @axe-core/playwright (scripts/browser.ts). The header's repository widget is answered by the check with GitHub's
+ * 404 for a private repository (scripts/browser.ts), so the header does not change and GitHub is never asked.
  */
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -76,7 +76,6 @@ import {
   WEBSITE,
   answerRepositoryRequests,
   axeProblems,
-  axeSource,
   settle,
   timeoutGives,
 } from './browser.js';
@@ -465,7 +464,7 @@ async function interact(
   pagePath: string,
   check: Check,
   run: Run,
-  axe: string | undefined,
+  auditAxe: boolean,
   shots: string | undefined,
 ) {
   const context = await newContext(browser, base, run);
@@ -482,8 +481,7 @@ async function interact(
       shots ?? '',
       `${name}-${run.profile.id}${pagePath === '/' ? '-landing' : pagePath.replaceAll('/', '-').replace(/-$/, '')}-${run.width === undefined ? 'device' : String(run.width)}-${run.theme}.png`,
     );
-  if (axe !== undefined)
-    for (const problem of await axeProblems(page, axe)) fail(check, `unfilled: ${problem}`);
+  if (auditAxe) for (const problem of await axeProblems(page)) fail(check, `unfilled: ${problem}`);
   await affordance(page, check);
   /** The page's first code block with fields (it carries the hint), from its left edge. */
   const shootHinted = async (name: string): Promise<void> => {
@@ -661,8 +659,7 @@ async function interact(
   if ((await blockLocator.locator('[data-copy-label]').textContent()) !== 'Copied') {
     fail(check, 'the Copy button does not say "Copied"');
   }
-  if (axe !== undefined)
-    for (const problem of await axeProblems(page, axe)) fail(check, `filled: ${problem}`);
+  if (auditAxe) for (const problem of await axeProblems(page)) fail(check, `filled: ${problem}`);
 
   // 6. A value of the wrong format: marked on leaving the field, unmarked once fixed; reached with Tab. A variable
   //    that is not the secret's stand-in where there is one (a page that asks for three values has none other left).
@@ -747,8 +744,7 @@ async function interact(
     if (texts.some((text) => text !== SECRET_STAND_IN)) fail(check, 'after a reload the secret is filled in');
   }
   await unfoldPanel(page, run);
-  if (axe !== undefined)
-    for (const problem of await axeProblems(page, axe)) fail(check, `panel open: ${problem}`);
+  if (auditAxe) for (const problem of await axeProblems(page)) fail(check, `panel open: ${problem}`);
   await press(page.locator('[data-var-clear]'), run);
   for (const name of inBlocks.keys()) {
     const texts = await fieldTexts(page, name);
@@ -820,7 +816,6 @@ async function main(): Promise<number> {
   }
   const shots = values.shots === undefined ? undefined : path.resolve(values.shots);
   if (shots !== undefined) mkdirSync(shots, { recursive: true });
-  const axe = axeSource();
   const profiles = PROFILES.filter(
     (profile) => values.profile.length === 0 || values.profile.includes(profile.id),
   );
@@ -855,7 +850,7 @@ async function main(): Promise<number> {
                 await withoutJavaScript(browser, base, pagePath, check, run);
                 await noShift(browser, base, pagePath, check, run);
               }
-              await interact(browser, base, pagePath, check, run, profile.full ? axe : undefined, shots);
+              await interact(browser, base, pagePath, check, run, profile.full, shots);
               report(check);
               problems.push(...check.problems);
             }

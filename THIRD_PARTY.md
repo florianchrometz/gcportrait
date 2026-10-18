@@ -147,7 +147,7 @@ here but are checked against the same allowlist and deny list on every run.
 | Package | Licence | Used by | As |
 | --- | --- | --- | --- |
 | `@astrojs/check` | MIT | website | dev |
-| `@axe-core/playwright` | MPL-2.0 | e2e | dev |
+| `@axe-core/playwright` | MPL-2.0 | e2e, website | dev |
 | `@eslint/js` | MIT | (root) | dev |
 | `@fastify/helmet` | MIT | backend | runtime |
 | `@fastify/multipart` | MIT | backend | runtime |

@@ -14,7 +14,7 @@
     "install-browsers": "playwright install chromium"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
+    "@axe-core/playwright": "catalog:",
     "@maxgraph/core": "0.25.0",
     "@playwright/test": "catalog:",
     "@resvg/resvg-js": "2.6.2",

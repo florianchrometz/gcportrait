@@ -37,8 +37,7 @@
  *                                            [--dist DIR]   (another build than website/dist)
  *
  * Browsers: Chromium from `pnpm --filter @gcportrait/e2e install-browsers`; WebKit once per machine with
- * `pnpm --filter @gcportrait/website exec playwright install webkit`. axe-core is read from the e2e package's
- * dependency (@axe-core/playwright), so the website adds no dependency for it.
+ * `pnpm --filter @gcportrait/website exec playwright install webkit`.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -53,7 +52,6 @@ import {
   WEBSITE,
   answerRepositoryRequests,
   axeProblems,
-  axeSource,
   isRepositoryRequest,
   settle,
   timeoutGives,
@@ -88,7 +86,10 @@ function sitemapPages(dist: string): string[] {
   ];
 }
 
-/** Overflow, the header's items, touch targets: the problems at the current width, without the page's prefix. */
+/**
+ * Overflow, the header's items, touch targets: the problems at the current width, without the page's prefix.
+ * Keep in step with its twin, e2e/tests/mobile.spec.ts (layoutProblems).
+ */
 function layoutProblems(page: Page, target: number): Promise<string[]> {
   return page.evaluate((minimum) => {
     const problems: string[] = [];
@@ -98,15 +99,25 @@ function layoutProblems(page: Page, target: number): Promise<string[]> {
       const text = element.textContent.trim().replace(/\s+/g, ' ').slice(0, 30);
       return `<${element.tagName.toLowerCase()}${classes.length > 0 ? `.${classes.join('.')}` : ''}>${text === '' ? '' : ` "${text}"`}`;
     };
+    // Laid out, visible, and not in the folded part of a closed <details> (whose content keeps a box, unrendered).
     const shown = (element: Element): boolean => {
       const box = element.getBoundingClientRect();
-      return box.width > 0 && box.height > 0 && getComputedStyle(element).visibility !== 'hidden';
+      return (
+        box.width > 0 &&
+        box.height > 0 &&
+        getComputedStyle(element).visibility !== 'hidden' &&
+        element.checkVisibility()
+      );
     };
     // Text for assistive technology only (.visually-hidden): absolutely placed and clipped to nothing.
     const visuallyHidden = (element: Element): boolean => {
-      const style = getComputedStyle(element);
-      const clip = style.getPropertyValue('clip');
-      return style.position === 'absolute' && ((clip !== '' && clip !== 'auto') || style.clipPath !== 'none');
+      for (let at: Element | null = element; at !== null; at = at.parentElement) {
+        const style = getComputedStyle(at);
+        const clip = style.getPropertyValue('clip');
+        if (style.position === 'absolute' && ((clip !== '' && clip !== 'auto') || style.clipPath !== 'none'))
+          return true;
+      }
+      return false;
     };
     const scrolledOrClipped = (element: Element): boolean => {
       for (
@@ -281,7 +292,6 @@ async function layout(
   widths: readonly number[],
   facts: MockedFacts | undefined,
 ): Promise<string[]> {
-  const source = axeSource();
   const problems: string[] = [];
   for (const theme of themes) {
     const context = await browser.newContext({
@@ -306,7 +316,7 @@ async function layout(
         const where = `${pagePath} ${String(width)} px ${theme}`;
         for (const problem of await layoutProblems(page, TARGET)) found.push(`${where}: ${problem}`);
         for (const problem of await stickyProblems(page)) found.push(`${where}: ${problem}`);
-        for (const problem of await axeProblems(page, source)) found.push(`${where}: ${problem}`);
+        for (const problem of await axeProblems(page)) found.push(`${where}: ${problem}`);
         const unfolded = await setDisclosures(page, true);
         // The names once per page and theme, with every disclosure unfolded, so no link is folded out of the tree.
         if (width === widths[0]) {
@@ -316,8 +326,7 @@ async function layout(
           for (const problem of await layoutProblems(page, TARGET))
             found.push(`${where}, unfolded: ${problem}`);
           if (width === AXE_UNFOLDED_WIDTH) {
-            for (const problem of await axeProblems(page, source))
-              found.push(`${where}, unfolded: ${problem}`);
+            for (const problem of await axeProblems(page)) found.push(`${where}, unfolded: ${problem}`);
           }
           await setDisclosures(page, false);
         }

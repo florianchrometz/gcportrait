@@ -185,7 +185,10 @@ function cacheADay(page: Page): Promise<void> {
   );
 }
 
-/** Overflow, squeezed text, the top bar's items, touch targets: the problems of the page as it is now. */
+/**
+ * Overflow, squeezed text, the top bar's items, touch targets: the problems of the page as it is now.
+ * Keep in step with its twin, website/scripts/mobile.ts (layoutProblems).
+ */
 function layoutProblems(page: Page): Promise<string[]> {
   const size = page.viewportSize();
   if (size === null) throw new Error('no viewport');

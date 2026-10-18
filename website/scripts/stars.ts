@@ -65,7 +65,6 @@ import {
   KEEP_NAMES_SHIM,
   WEBSITE,
   axeProblems,
-  axeSource,
   isReleaseRequest,
   isRepositoryRequest,
   settle,
@@ -529,7 +528,6 @@ async function withFacts(
   answer: { readonly facts: MockedFacts; readonly noRelease?: boolean },
   build: Build,
   shots: string | undefined,
-  axe: string,
 ): Promise<string[]> {
   const noRelease = answer.noRelease === true;
   const mocked = answer.facts;
@@ -620,7 +618,7 @@ async function withFacts(
     const stored = keptValue(await kept(page));
     if (JSON.stringify(stored?.facts) !== JSON.stringify(given) || stored?.dated !== true)
       fail(`sessionStorage holds ${JSON.stringify(stored)}`);
-    for (const problem of await axeProblems(page, axe)) fail(problem);
+    for (const problem of await axeProblems(page)) fail(problem);
 
     // A reload within the hour: no request, the kept facts.
     const asked = hold.requests.length;
@@ -677,7 +675,7 @@ async function failure(
   width: number,
   answer: Failure,
   shots: string | undefined,
-  axe: string | undefined,
+  auditAxe = false,
 ): Promise<string[]> {
   const where = `${FAILURES[answer]}, ${theme}, ${String(width)} px`;
   const problems: string[] = [];
@@ -712,7 +710,7 @@ async function failure(
     const stored = keptValue(await kept(page));
     if (stored?.facts !== null || !stored.dated)
       fail(`sessionStorage holds ${JSON.stringify(stored)}, not the note without facts`);
-    if (axe !== undefined) for (const problem of await axeProblems(page, axe)) fail(problem);
+    if (auditAxe) for (const problem of await axeProblems(page)) fail(problem);
 
     // A reload within the hour: GitHub is not asked again, the header is as the build made it.
     const asked = hold.requests.length;
@@ -747,7 +745,6 @@ async function notPublic(
   width: number,
   simulated: boolean,
   shots: string | undefined,
-  axe: string,
 ): Promise<string[]> {
   const where = `${simulated ? 'not public (marked here)' : 'not public (the build)'}, ${theme}, ${String(width)} px`;
   const problems: string[] = [];
@@ -794,7 +791,7 @@ async function notPublic(
     for (const shift of await shiftProblems(page, since)) fail(shift);
     const stored = await kept(page);
     if (stored !== null) fail(`sessionStorage holds ${stored} (nothing: the page asked nothing)`);
-    for (const problem of await axeProblems(page, axe)) fail(problem);
+    for (const problem of await axeProblems(page)) fail(problem);
     await open(page, `${base}/`);
     await page.waitForTimeout(2500);
     if (hold.requests.length !== 0)
@@ -1041,13 +1038,12 @@ async function main(): Promise<number> {
   const { base, close } = await serve(dist);
   const browser = await chromium.launch();
   const problems: string[] = [];
-  const axe = axeSource();
   const others = (Object.keys(FAILURES) as Failure[]).filter((answer) => answer !== 'not found');
   if (build.notPublic) {
     try {
       for (const theme of THEMES) {
         for (const width of WIDTHS)
-          problems.push(...(await notPublic(browser, base, theme, width, false, shots, axe)));
+          problems.push(...(await notPublic(browser, base, theme, width, false, shots)));
       }
     } finally {
       await browser.close();
@@ -1066,20 +1062,20 @@ async function main(): Promise<number> {
   try {
     for (const theme of THEMES) {
       for (const width of WIDTHS) {
-        problems.push(...(await withFacts(browser, base, theme, width, { facts }, build, shots, axe)));
-        problems.push(...(await failure(browser, base, theme, width, 'not found', shots, axe)));
+        problems.push(...(await withFacts(browser, base, theme, width, { facts }, build, shots)));
+        problems.push(...(await failure(browser, base, theme, width, 'not found', shots, true)));
         if (width === 1440 || width === 390) {
           for (const answer of others)
-            problems.push(...(await failure(browser, base, theme, width, answer, undefined, undefined)));
+            problems.push(...(await failure(browser, base, theme, width, answer, undefined, false)));
         }
       }
     }
     problems.push(
-      ...(await withFacts(browser, base, 'light', 1440, { facts, noRelease: true }, build, shots, axe)),
+      ...(await withFacts(browser, base, 'light', 1440, { facts, noRelease: true }, build, shots)),
     );
     for (const theme of THEMES) {
       for (const width of [1440, 390])
-        problems.push(...(await notPublic(browser, base, theme, width, true, shots, axe)));
+        problems.push(...(await notPublic(browser, base, theme, width, true, shots)));
     }
     problems.push(...(await leftBeforeAnswer(browser, base)));
     problems.push(...(await storageBlocked(browser, base, 'blocked')));

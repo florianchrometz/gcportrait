@@ -24,7 +24,7 @@
  *   pnpm --filter @gcportrait/website demo [--theme light|dark]... [--shots DIR] [--dist DIR]
  *
  * `--shots DIR` saves screenshots of the Connect page and of diagrams there. Chromium from
- * `pnpm --filter @gcportrait/e2e install-browsers`; axe-core is read from the e2e package's dependency.
+ * `pnpm --filter @gcportrait/e2e install-browsers`.
  */
 import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -33,7 +33,7 @@ import { parseArgs } from 'node:util';
 import { chromium, type Browser, type BrowserContext, type Locator, type Page } from 'playwright';
 
 import { DEMO_URL, IMPRESSUM_URL, MAINTAINER_URL, PRIVACY_URL, REPOSITORY_URL } from '../src/site.js';
-import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, axeSource, isTimeout } from './browser.js';
+import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, isTimeout } from './browser.js';
 import { serve } from './serve.js';
 
 const VIEWPORT = { width: 1440, height: 900 };
@@ -169,28 +169,13 @@ async function waitForHash(page: Page, part: string): Promise<void> {
   }
 }
 
-/**
- * axe-core's violations. The demo's policy refuses inline scripts, as it should, so axe is not added as a `<script>`
- * (browser.ts's way) but evaluated through the browser's DevTools protocol, which the page's policy does not govern.
- */
-async function axeOn(page: Page, source: string): Promise<string[]> {
-  if (!(await page.evaluate(() => 'axe' in window))) await page.evaluate(source);
-  return axeProblems(page, source);
-}
-
 async function shot(page: Page, shots: string | undefined, name: string): Promise<void> {
   if (shots === undefined) return;
   await page.screenshot({ path: path.join(shots, `${name}.png`) });
 }
 
 /** The Connect page at /demo/: what it offers, the footer, the favicon, the theme, axe. */
-async function checkConnect(
-  page: Page,
-  base: string,
-  theme: Theme,
-  axe: string,
-  shots?: string,
-): Promise<string[]> {
+async function checkConnect(page: Page, base: string, theme: Theme, shots?: string): Promise<string[]> {
   const problems: string[] = [];
   const response = await page.goto(`${base}${DEMO_URL}`);
   if (response?.status() !== 200) problems.push(`${DEMO_URL} answered ${String(response?.status())}`);
@@ -239,7 +224,7 @@ async function checkConnect(
   if (shown !== theme) problems.push(`the page is in the ${String(shown)} theme, not ${theme}`);
   const title = await page.title();
   if (title !== 'Connect · gcportrait') problems.push(`the title is "${title}"`);
-  problems.push(...(await axeOn(page, axe)).map((problem) => `Connect page: ${problem}`));
+  problems.push(...(await axeProblems(page)).map((problem) => `Connect page: ${problem}`));
   await shot(page, shots, `connect-${theme}`);
   return problems;
 }
@@ -258,13 +243,7 @@ async function tryTheDemo(page: Page, base: string, size: 'S' | 'M' | 'L'): Prom
 }
 
 /** Drill in, a day back, the exports, a reload on the deep link. */
-async function checkDiagram(
-  page: Page,
-  base: string,
-  theme: Theme,
-  axe: string,
-  shots?: string,
-): Promise<string[]> {
+async function checkDiagram(page: Page, base: string, theme: Theme, shots?: string): Promise<string[]> {
   const problems: string[] = [];
   // A page loaded afresh, whose first drawing is this view's: from the diagram of the demo tried last, an address
   // that changes only the hash keeps the page, and that demo's drawing on the canvas until this one replaces it.
@@ -281,7 +260,7 @@ async function checkDiagram(
   await page.keyboard.press('[');
   await waitForHash(page, 'tick=');
   await drawn(page, 'the day before', ownDay);
-  problems.push(...(await axeOn(page, axe)).map((problem) => `diagram: ${problem}`));
+  problems.push(...(await axeProblems(page)).map((problem) => `diagram: ${problem}`));
   await shot(page, shots, `diagram-M-drilled-in-${theme}`);
 
   for (const action of ['Download PNG', 'Download SVG'] as const) {
@@ -366,7 +345,6 @@ async function main(argv: readonly string[]): Promise<number> {
   }
   const shots = values.shots === undefined ? undefined : path.resolve(values.shots);
   if (shots !== undefined) mkdirSync(shots, { recursive: true });
-  const axe = axeSource();
   const { base, close } = await serve(dist);
   const browser = await chromium.launch();
   const problems: string[] = [];
@@ -389,7 +367,7 @@ async function main(argv: readonly string[]): Promise<number> {
         }
         problems.push(...(await violations(page)).map((violation) => `${theme}, ${name}: CSP ${violation}`));
       };
-      await step('Connect page', () => checkConnect(page, base, theme, axe, shots));
+      await step('Connect page', () => checkConnect(page, base, theme, shots));
       const sizes = theme === 'light' ? (['S', 'M', 'L'] as const) : (['M'] as const);
       for (const size of sizes) {
         await step(`Try the demo ${size}`, async () => {
@@ -398,7 +376,7 @@ async function main(argv: readonly string[]): Promise<number> {
           return [];
         });
       }
-      await step('drill in, timeline, export, reload', () => checkDiagram(page, base, theme, axe, shots));
+      await step('drill in, timeline, export, reload', () => checkDiagram(page, base, theme, shots));
       await step('routes', () => checkRoutes(page, base));
       problems.push(...watch.problems.map((problem) => `${theme}: ${problem}`));
       await context.close();
