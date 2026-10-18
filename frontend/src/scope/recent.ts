@@ -25,10 +25,8 @@ function recentOf(value: unknown): ScopeChoice | null {
     typeof value.displayName === 'string' && value.displayName.length <= MAX_DISPLAY_NAME
       ? value.displayName
       : undefined;
-  const parent =
-    typeof value.parent === 'string' && /^(?:organizations|folders)\/[1-9][0-9]*$/.test(value.parent)
-      ? value.parent
-      : undefined;
+  const parentChoice = typeof value.parent === 'string' ? parseScopeName(value.parent) : null;
+  const parent = parentChoice !== null && parentChoice.kind !== 'project' ? parentChoice.scope : undefined;
   return {
     ...parsed,
     ...(displayName === undefined ? {} : { displayName }),

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import type { SnapshotRef, SnapshotSourceKind } from '@gcportrait/model';
+import { demoSizeOfRef, type SnapshotRef, type SnapshotSourceKind } from '@gcportrait/model';
 import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -35,7 +35,7 @@ export function currentSnapshotLine(
     return `${facts.scope} · ${read} · ${SOURCE_WORDS[facts.source]}`;
   }
   if (source !== null && source.ref === ref) {
-    const kind = ref.startsWith('demo:') ? ` · ${SOURCE_WORDS.demo}` : '';
+    const kind = demoSizeOfRef(ref) !== null ? ` · ${SOURCE_WORDS.demo}` : '';
     return `${source.scope} · read ${formatReadTime(source.readTime)}${kind}`;
   }
   return null;

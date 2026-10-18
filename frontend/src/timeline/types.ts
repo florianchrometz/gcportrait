@@ -5,7 +5,7 @@
  */
 import type { SnapshotScope } from '@gcportrait/model';
 
-import { COLLECTION_OF } from '../scope/scopeName';
+export { scopePathOf } from '@gcportrait/model';
 
 export type TimelineInfo =
   /**
@@ -36,8 +36,3 @@ export type TimelineInfo =
       /** The snapshot's own read time. */
       readonly readTime: string;
     };
-
-/** `organizations/123`, `folders/456`, `projects/my-project`: a snapshot scope as Cloud Asset Inventory names it. */
-export function scopePathOf(scope: Pick<SnapshotScope, 'kind' | 'id'>): string {
-  return `${COLLECTION_OF[scope.kind]}/${scope.id}`;
-}

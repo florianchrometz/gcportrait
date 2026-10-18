@@ -18,9 +18,10 @@
  * listed as hints (`inferred`) and never enter the index.
  */
 import {
-  ProjectRefSchema,
+  RESOURCE_MANAGER_PROJECT,
   compareDecimal,
   compareText,
+  isProjectRef,
   projectIndexBuilder,
   sortedRecord,
   type Asset,
@@ -60,7 +61,7 @@ export interface ProjectSummary {
   readonly unresolved: UnresolvedProjects;
 }
 
-const PROJECT_TYPE = 'cloudresourcemanager.googleapis.com/Project';
+const PROJECT_TYPE = RESOURCE_MANAGER_PROJECT;
 const PROJECT_NAME_PREFIX = '//cloudresourcemanager.googleapis.com/projects/';
 const COMPUTE_NAME_PREFIX = '//compute.googleapis.com/projects/';
 /** The project segment of a Compute self-link: `…/compute/v1/projects/<id>/…` (also `beta` and `alpha`). */
@@ -71,7 +72,7 @@ type RefKind = 'number' | 'id' | 'other';
 
 function classifyRef(ref: string): RefKind {
   if (isProjectNumber(ref)) return 'number';
-  return ProjectRefSchema.safeParse(ref).success ? 'id' : 'other';
+  return isProjectRef(ref) ? 'id' : 'other';
 }
 
 /** Collects pairs, numbers and ids asset by asset; {@link Collector.summary} sorts them into the result. */

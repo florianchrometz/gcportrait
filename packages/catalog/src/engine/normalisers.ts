@@ -9,6 +9,9 @@
  * verbatim, because they are part of the canonical name (tag bindings, for instance).
  */
 import {
+  NUMERIC_ID_PATTERN,
+  PROJECT_REF_PATTERN,
+  SERVICE_PATTERN,
   aliasKey,
   isRegion,
   isZone,
@@ -40,10 +43,10 @@ export interface NormaliserContext {
 
 export type Normaliser = (value: unknown, ctx: NormaliserContext) => RelationTarget | undefined;
 
-const SERVICE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/;
+const SERVICE = SERVICE_PATTERN;
 const FULL_NAME = /^\/\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)\/(\S+)$/;
-const NUMBER = /^[1-9][0-9]*$/;
-const PROJECT_REF = /^[a-z0-9][a-z0-9.:-]*$/;
+const NUMBER = NUMERIC_ID_PATTERN;
+const PROJECT_REF = PROJECT_REF_PATTERN;
 const API_VERSION = /^v[0-9]+(?:(?:alpha|beta|p[0-9]+beta)[0-9]*)?$/;
 const COMPUTE_SELF_LINK =
   /^(?:https?:\/\/)?(?:www|compute)\.googleapis\.com\/compute\/(?:v1|beta|alpha|staging_v1)\/(\S+)$/;

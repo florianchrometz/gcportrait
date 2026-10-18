@@ -302,9 +302,12 @@ export {
   DEFAULT_VIEW_SPEC,
   VIEW_SPEC_MAX_DEPTH,
   VIEW_SPEC_MAX_FLIPS,
+  isNumericId,
+  isProjectRef,
   normalizeViewSpec,
 } from './codec/normalize.js';
 export {
+  DAY_MS,
   DEMO_REF_PREFIX,
   DEMO_SIZES,
   DETAIL_LEVEL_IDS,
@@ -321,16 +324,38 @@ export {
   RENDER_PNG_MARGIN,
   RENDER_PNG_LIMITS,
   RENDER_THEMES,
+  RESOURCE_MANAGER_FOLDER,
+  RESOURCE_MANAGER_ORGANIZATION,
+  RESOURCE_MANAGER_PROJECT,
+  SCOPE_COLLECTIONS,
+  SCOPE_KINDS,
+  TIMELINE_DAYS,
+  addDays,
+  dayOfReadTime,
+  dayReadTime,
+  dayStart,
+  demoRefOfSize,
+  demoSizeOfRef,
+  isDay,
   isDemoSize,
   isDetailLevel,
   isFocusKind,
   isLensId,
   isRelationKind,
+  isScopeKind,
   isSnapshotRef,
+  scopePathOf,
+  utcDayOf,
+  type ScopeCollection,
 } from './schemas/vocabulary.js';
 export { RELATION_KINDS } from './schemas/relation-kinds.js';
 export { isRegion, isZone, regionOfZone, zoneRegion } from './schemas/locations.js';
-export { LOCATION_PATTERN } from './schemas/patterns.js';
+export {
+  LOCATION_PATTERN,
+  NUMERIC_ID_PATTERN,
+  PROJECT_REF_PATTERN,
+  SERVICE_PATTERN,
+} from './schemas/patterns.js';
 export {
   COMMAND_VARIABLES,
   VARIABLE_NAME_PATTERN,

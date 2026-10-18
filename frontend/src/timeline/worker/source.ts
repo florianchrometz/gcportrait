@@ -18,8 +18,7 @@
  */
 import type { DemoHistory } from '@gcportrait/demo-data';
 import {
-  DEMO_REF_PREFIX,
-  isDemoSize,
+  demoSizeOfRef,
   migrateSnapshot,
   type DemoSize,
   type Snapshot,
@@ -74,11 +73,6 @@ async function generatedHistory(size: DemoSize): Promise<DemoHistory> {
   return demo.demoHistory(size);
 }
 
-function demoSizeOf(ref: SnapshotRef): DemoSize | null {
-  const size = ref.startsWith(DEMO_REF_PREFIX) ? ref.slice(DEMO_REF_PREFIX.length) : undefined;
-  return isDemoSize(size) ? size : null;
-}
-
 /** A cached live tick's snapshot; a record that cannot be read is said in a sentence (the canvas shows it). */
 async function cachedSnapshot(record: StoredTick): Promise<Snapshot> {
   try {
@@ -98,7 +92,7 @@ export function createTickSource(environment: TickSourceEnvironment = {}): TickS
   const historyOf = (ref: SnapshotRef, base: Snapshot): Promise<DemoHistory | null> => {
     const known = histories.get(base);
     if (known !== undefined) return known;
-    const size = demoSizeOf(ref);
+    const size = demoSizeOfRef(ref);
     const looked: Promise<DemoHistory | null> =
       size !== null
         ? demoHistory(size)

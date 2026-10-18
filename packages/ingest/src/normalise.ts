@@ -12,7 +12,7 @@
  * read; `resource.parent`, `resource.data`, `resource.location`, `name` and `ancestors` are spelled the same
  * in both, and `data` itself is the resource's own API JSON either way.
  */
-import { AssetSchema, type Asset } from '@gcportrait/model';
+import { AssetSchema, isNumericId, type Asset } from '@gcportrait/model';
 
 /** The outcome of {@link normaliseAsset}. */
 export type NormaliseResult =
@@ -116,6 +116,4 @@ export function projectNumberOf(asset: Pick<Asset, 'ancestors'>): string | undef
 }
 
 /** A project number: decimal digits, no sign, no leading zero. Project ids always start with a letter. */
-export function isProjectNumber(value: string): boolean {
-  return /^[1-9][0-9]*$/.test(value);
-}
+export const isProjectNumber = isNumericId;

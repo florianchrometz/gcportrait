@@ -7,7 +7,7 @@
  * the same way it keeps the timeline's extra ticks (the stored exports and pulls of the open snapshot's scope,
  * timeline/extraTicks.ts) in the store's `timeline` slice, whenever the listing or the view's timeline changes.
  */
-import { DEMO_REF_PREFIX, isDemoSize, isSnapshotRef } from '@gcportrait/model';
+import { demoSizeOfRef, isSnapshotRef } from '@gcportrait/model';
 import { createContext, useContext, useEffect, useState, type ReactElement, type ReactNode } from 'react';
 
 import { DEMO_SNAPSHOTS, useAppStore, type SnapshotChoice } from '../state';
@@ -37,10 +37,10 @@ export function snapshotChoices(snapshots: readonly ListedSnapshot[]): readonly 
     const ref = record.id;
     if (!isSnapshotRef(ref) || ref === '' || known.has(ref)) continue;
     known.add(ref);
-    const size = ref.startsWith(DEMO_REF_PREFIX) ? ref.slice(DEMO_REF_PREFIX.length) : null;
+    const size = demoSizeOfRef(ref);
     choices.push({
       ref,
-      label: isDemoSize(size) ? demoLabel(size) : (labels.get(record.id) ?? record.id),
+      label: size !== null ? demoLabel(size) : (labels.get(record.id) ?? record.id),
     });
   }
   return choices;

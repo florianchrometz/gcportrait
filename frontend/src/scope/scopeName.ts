@@ -6,7 +6,16 @@
  * model's schemas, so they cannot drift. The backend validates again (backend/src/upstream/scope.ts).
  */
 
-export type ScopeKind = 'organization' | 'folder' | 'project';
+import {
+  NUMERIC_ID_PATTERN,
+  PROJECT_REF_PATTERN,
+  SCOPE_COLLECTIONS,
+  SCOPE_KINDS,
+  isProjectRef as modelIsProjectRef,
+  type ScopeKind,
+} from '@gcportrait/model';
+
+export type { ScopeKind };
 
 /** A scope the person picked: from the search, from the recent list, or typed. */
 export interface ScopeChoice {
@@ -21,13 +30,9 @@ export interface ScopeChoice {
   readonly parent?: string;
 }
 
-export const SCOPE_KINDS: readonly ScopeKind[] = ['organization', 'folder', 'project'];
+export { SCOPE_KINDS };
 
-export const COLLECTION_OF: Readonly<Record<ScopeKind, string>> = {
-  organization: 'organizations',
-  folder: 'folders',
-  project: 'projects',
-};
+export const COLLECTION_OF = SCOPE_COLLECTIONS;
 
 /** Singular and plural nouns, for labels and group headings. */
 export const KIND_LABELS: Readonly<Record<ScopeKind, { readonly one: string; readonly many: string }>> = {
@@ -37,15 +42,15 @@ export const KIND_LABELS: Readonly<Record<ScopeKind, { readonly one: string; rea
 };
 
 /** `@gcportrait/model`'s NUMERIC_ID_PATTERN: an organisation or folder number. */
-export const NUMBER_PATTERN = /^[1-9][0-9]*$/;
+export const NUMBER_PATTERN = NUMERIC_ID_PATTERN;
 /** `@gcportrait/model`'s PROJECT_REF_PATTERN: a project id, a domain-scoped id or a project number. */
-export const PROJECT_REF_PATTERN = /^[a-z0-9][a-z0-9.:-]*$/;
+export { PROJECT_REF_PATTERN };
 
 const MAX_ID_LENGTH = 100;
 
 /** Whether text is a project id or number the backend accepts as a quota project. */
 export function isProjectRef(text: string): boolean {
-  return text.length > 0 && text.length <= MAX_ID_LENGTH && PROJECT_REF_PATTERN.test(text);
+  return text.length <= MAX_ID_LENGTH && modelIsProjectRef(text);
 }
 
 /** The scope named by `text` (surrounding spaces ignored), or null. */

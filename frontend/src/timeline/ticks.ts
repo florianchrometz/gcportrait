@@ -9,44 +9,18 @@
  * history passes its last day (`DemoHistory.today`), so a demo organisation's timeline is the same on every day.
  */
 
-/** Daily ticks on the timeline: today and the 34 days before it (CAI reads at most 35 days back). */
-export const TIMELINE_DAYS = 35;
+import {
+  DAY_MS,
+  TIMELINE_DAYS,
+  addDays,
+  dayOfReadTime,
+  dayReadTime,
+  dayStart,
+  isDay,
+  utcDayOf,
+} from '@gcportrait/model';
 
-const DAY_MS = 86_400_000;
-const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-/** The UTC calendar day (`YYYY-MM-DD`) of an instant in milliseconds since the epoch. */
-export function utcDayOf(ms: number): string {
-  return new Date(ms).toISOString().slice(0, 10);
-}
-
-/** Whether `value` is a real calendar day written `YYYY-MM-DD` (what a ViewSpec's `tick` holds). */
-export function isDay(value: unknown): value is string {
-  if (typeof value !== 'string' || !DAY_PATTERN.test(value)) return false;
-  const ms = Date.parse(`${value}T00:00:00Z`);
-  return Number.isFinite(ms) && utcDayOf(ms) === value;
-}
-
-/** The start of a day, 00:00 UTC, in milliseconds since the epoch. */
-export function dayStart(day: string): number {
-  return Date.parse(`${day}T00:00:00Z`);
-}
-
-/** The read time of a day's tick: `YYYY-MM-DDT00:00:00Z`. */
-export function dayReadTime(day: string): string {
-  return `${day}T00:00:00Z`;
-}
-
-/** The day `days` days after `day` (before it when negative). */
-export function addDays(day: string, days: number): string {
-  return utcDayOf(dayStart(day) + days * DAY_MS);
-}
-
-/** The UTC day a read time (RFC 3339) falls on; null when it is not a time. */
-export function dayOfReadTime(readTime: string): string | null {
-  const ms = Date.parse(readTime);
-  return Number.isFinite(ms) ? utcDayOf(ms) : null;
-}
+export { DAY_MS, TIMELINE_DAYS, addDays, dayOfReadTime, dayReadTime, dayStart, isDay, utcDayOf };
 
 export interface TimelineTick {
   /** 0 for the oldest tick, `TIMELINE_DAYS - 1` for the latest. */

@@ -67,6 +67,32 @@ export const FOCUS_KIND_IDS = [
   'application',
 ] as const;
 
+/** The three kinds of Cloud Asset Inventory scope. */
+export const SCOPE_KINDS = ['organization', 'folder', 'project'] as const;
+
+/** A Cloud Asset Inventory scope kind. */
+export type ScopeKind = (typeof SCOPE_KINDS)[number];
+
+/** The Cloud Asset Inventory resource collection of each scope kind. */
+export const SCOPE_COLLECTIONS = Object.freeze({
+  organization: 'organizations',
+  folder: 'folders',
+  project: 'projects',
+} as const);
+
+export type ScopeCollection = (typeof SCOPE_COLLECTIONS)[ScopeKind];
+
+/**
+ * A scope's resource path as Cloud Asset Inventory names it: `organizations/<id>`, `folders/<id>`, or `projects/<id>`.
+ */
+export function scopePathOf(scope: { readonly kind: ScopeKind; readonly id: string }): string {
+  return `${SCOPE_COLLECTIONS[scope.kind]}/${scope.id}`;
+}
+
+export const RESOURCE_MANAGER_ORGANIZATION = 'cloudresourcemanager.googleapis.com/Organization';
+export const RESOURCE_MANAGER_FOLDER = 'cloudresourcemanager.googleapis.com/Folder';
+export const RESOURCE_MANAGER_PROJECT = 'cloudresourcemanager.googleapis.com/Project';
+
 /** The synthetic demo organisations, smallest first. */
 export const DEMO_SIZES = ['S', 'M', 'L', 'XL'] as const;
 
@@ -79,6 +105,45 @@ export const DEMO_REF_PREFIX = 'demo:';
  * app, its guide and the tests read this one value.
  */
 export const LARGE_SNAPSHOT_ASSETS = 10_000;
+
+/** Daily ticks on the timeline: today and the 34 days before it (CAI reads at most 35 days back). */
+export const TIMELINE_DAYS = 35;
+
+export const DAY_MS = 86_400_000;
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The UTC calendar day (`YYYY-MM-DD`) of an instant in milliseconds since the epoch. */
+export function utcDayOf(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/** Whether `value` is a real calendar day written `YYYY-MM-DD` (what a ViewSpec's `tick` holds). */
+export function isDay(value: unknown): value is string {
+  if (typeof value !== 'string' || !DAY_PATTERN.test(value)) return false;
+  const ms = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(ms) && utcDayOf(ms) === value;
+}
+
+/** The start of a day, 00:00 UTC, in milliseconds since the epoch. */
+export function dayStart(day: string): number {
+  return Date.parse(`${day}T00:00:00Z`);
+}
+
+/** The read time of a day's tick: `YYYY-MM-DDT00:00:00Z`. */
+export function dayReadTime(day: string): string {
+  return `${day}T00:00:00Z`;
+}
+
+/** The day `days` days after `day` (before it when negative). */
+export function addDays(day: string, days: number): string {
+  return utcDayOf(dayStart(day) + days * DAY_MS);
+}
+
+/** The UTC day a read time (RFC 3339) falls on; null when it is not a time. */
+export function dayOfReadTime(readTime: string): string | null {
+  const ms = Date.parse(readTime);
+  return Number.isFinite(ms) ? utcDayOf(ms) : null;
+}
 
 function member<T extends string>(list: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && (list as readonly string[]).includes(value);
@@ -100,13 +165,29 @@ export function isFocusKind(value: unknown): value is FocusKind {
   return member(FOCUS_KIND_IDS, value);
 }
 
+export function isScopeKind(value: unknown): value is ScopeKind {
+  return member(SCOPE_KINDS, value);
+}
+
 export function isDemoSize(value: unknown): value is DemoSize {
   return member(DEMO_SIZES, value);
+}
+
+/** The demo size of a snapshot ref (`demo:M` → `'M'`), or null when `ref` is not a demo ref. */
+export function demoSizeOfRef(ref: unknown): DemoSize | null {
+  if (typeof ref !== 'string' || !ref.startsWith(DEMO_REF_PREFIX)) return null;
+  const size = ref.slice(DEMO_REF_PREFIX.length);
+  return isDemoSize(size) ? size : null;
+}
+
+/** The snapshot ref of a demo organisation (`demo:<size>`). */
+export function demoRefOfSize(size: DemoSize): SnapshotRef {
+  return `${DEMO_REF_PREFIX}${size}`;
 }
 
 /** A snapshot ref: `''` (none chosen), a stored snapshot's ULID, or `demo:<size>`. */
 export function isSnapshotRef(value: unknown): value is SnapshotRef {
   if (typeof value !== 'string') return false;
   if (value === '' || ULID_PATTERN.test(value)) return true;
-  return value.startsWith(DEMO_REF_PREFIX) && isDemoSize(value.slice(DEMO_REF_PREFIX.length));
+  return demoSizeOfRef(value) !== null;
 }

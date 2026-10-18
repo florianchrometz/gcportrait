@@ -6,6 +6,7 @@
 import type { DemoSize } from '@gcportrait/model';
 
 import { DEMO_CHOICES } from '../diagram/demoChoices';
+import { KIND_LABELS } from '../scope/scopeName';
 import type { SnapshotMeta } from '../storage/db';
 import { formatUtcMinute } from '../utcTime';
 
@@ -51,20 +52,14 @@ export function demoAbout(size: DemoSize): string {
   return `about ${formatCount(info.assets)} assets, ${units}${info.note === undefined ? '' : `; ${info.note}`}`;
 }
 
-const SCOPE_KINDS: Readonly<Record<SnapshotMeta['scope']['kind'], string>> = {
-  organization: 'Organisation',
-  folder: 'Folder',
-  project: 'Project',
-};
-
 /** The scope's name ("example.com"), or its kind and id when it has none ("Organisation 123"). */
 export function scopeName(scope: SnapshotMeta['scope']): string {
-  return scope.displayName ?? `${SCOPE_KINDS[scope.kind]} ${scope.id}`;
+  return scope.displayName ?? `${KIND_LABELS[scope.kind].one} ${scope.id}`;
 }
 
 /** "Organisation 30000000001": the scope's kind and id. */
 export function scopeKindAndId(scope: SnapshotMeta['scope']): string {
-  return `${SCOPE_KINDS[scope.kind]} ${scope.id}`;
+  return `${KIND_LABELS[scope.kind].one} ${scope.id}`;
 }
 
 const SOURCES: Readonly<Record<SnapshotMeta['source'], string>> = {

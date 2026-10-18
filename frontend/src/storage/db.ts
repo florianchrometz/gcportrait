@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import type { SnapshotReadTimeSource } from '@gcportrait/model';
+import type { ScopeKind, SnapshotReadTimeSource } from '@gcportrait/model';
 import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction, type StoreNames } from 'idb';
 
 /**
@@ -17,8 +17,7 @@ import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction, type St
 
 export const DB_NAME = 'gcportrait';
 
-/** Kind of scope a snapshot covers (`@gcportrait/model`'s `SnapshotSchema`). */
-export type ScopeKind = 'organization' | 'folder' | 'project';
+export type { ScopeKind };
 
 /** Listing metadata kept next to a stored snapshot so the snapshot list never has to parse blobs. */
 export type SnapshotMeta = {

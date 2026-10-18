@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 /** Public constants of the demo organisations. */
-import type { DemoSize } from '@gcportrait/model';
+import { DEMO_SIZES, TIMELINE_DAYS, type DemoSize } from '@gcportrait/model';
 
-export const DEMO_SIZES: readonly DemoSize[] = ['S', 'M', 'L', 'XL'];
+export { DEMO_SIZES, TIMELINE_DAYS };
 
 /** The seed the fixtures and the app's demo mode use. */
 export const DEFAULT_SEED = 1;
@@ -11,7 +11,7 @@ export const DEFAULT_SEED = 1;
 export const DEMO_TODAY = '2026-10-08';
 
 /** Today and the 34 days before it. */
-export const HISTORY_TICKS = 35;
+export const HISTORY_TICKS = TIMELINE_DAYS;
 
 /**
  * Each demo organisation's number: one per size, so the timelines of two sizes are two scopes and an export of

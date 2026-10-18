@@ -11,7 +11,7 @@
  * read as the Cancel button does. The count is known only as the stream arrives: no earlier step (the permission
  * check reads one asset) can tell.
  */
-import { LARGE_SNAPSHOT_ASSETS, type SnapshotRef, type SnapshotScope } from '@gcportrait/model';
+import { LARGE_SNAPSHOT_ASSETS, scopePathOf, type SnapshotRef, type SnapshotScope } from '@gcportrait/model';
 
 import { fetchWithToken, NotSignedInError, type AccessMode, type AuthControls } from '../auth';
 import { readErrorMessage } from '../api/json';
@@ -56,12 +56,7 @@ export const EXPORT_PATH = '/api/export/read';
 /** The response header that announces an export's size (backend/src/routes/export.ts). */
 export const EXPORT_BYTES_HEADER = 'x-gcportrait-export-bytes';
 
-const COLLECTIONS = { organization: 'organizations', folder: 'folders', project: 'projects' } as const;
-
-/** `organizations/123`, as Cloud Asset Inventory names a scope. */
-export function scopePathOf(scope: Pick<SnapshotScope, 'kind' | 'id'>): string {
-  return `${COLLECTIONS[scope.kind]}/${scope.id}`;
-}
+export { scopePathOf };
 
 /** The body of `POST /api/assets/stream` for a target. */
 export function streamRequestOf(target: PullTarget): Record<string, unknown> {

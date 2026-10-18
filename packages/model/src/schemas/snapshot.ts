@@ -13,13 +13,14 @@ import {
   TimestampSchema,
   UlidSchema,
 } from './primitives.js';
+import { SCOPE_KINDS, type ScopeKind } from './vocabulary.js';
 
 /** The Snapshot format version this build writes and reads. Bump it only together with a migration. */
 export const SNAPSHOT_SCHEMA_VERSION = 1;
 
 /** The three kinds of Cloud Asset Inventory scope. */
-export const ScopeKindSchema = z.enum(['organization', 'folder', 'project']);
-export type ScopeKind = z.infer<typeof ScopeKindSchema>;
+export const ScopeKindSchema = z.enum(SCOPE_KINDS);
+export type { ScopeKind };
 
 /** The scope a snapshot was read from: `organizations/<id>`, `folders/<id>` or `projects/<id or number>`. */
 export const SnapshotScopeSchema = z.object({

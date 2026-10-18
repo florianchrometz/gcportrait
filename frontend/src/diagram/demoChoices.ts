@@ -4,6 +4,7 @@
  * stored snapshots.
  */
 import {
+  demoRefOfSize,
   encodeViewSpec,
   type DemoSize,
   type SnapshotRef,
@@ -27,5 +28,5 @@ export function snapshotView(ref: SnapshotRef, current: ViewSpec): ViewSpecInput
 
 /** The hash of a view of a demo organisation (without the `#`), as `snapshotView` makes it. */
 export function demoViewHash(size: DemoSize, current: ViewSpec): string {
-  return encodeViewSpec(snapshotView(`demo:${size}`, current));
+  return encodeViewSpec(snapshotView(demoRefOfSize(size), current));
 }

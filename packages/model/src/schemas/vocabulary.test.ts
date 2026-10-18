@@ -10,8 +10,10 @@ import type * as z from 'zod';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';
 import { RelationKindSchema } from './relation.js';
 import { FontFaceKeySchema } from './layout.js';
+import { ScopeKindSchema } from './snapshot.js';
 import { DemoSizeSchema, FocusKindSchema, SnapshotRefSchema } from './view-spec.js';
 import {
+  DAY_MS,
   DEMO_SIZES,
   DETAIL_LEVEL_IDS,
   FOCUS_KIND_IDS,
@@ -19,12 +21,28 @@ import {
   LARGE_SNAPSHOT_ASSETS,
   LENS_IDS,
   RELATION_KIND_IDS,
+  RESOURCE_MANAGER_FOLDER,
+  RESOURCE_MANAGER_ORGANIZATION,
+  RESOURCE_MANAGER_PROJECT,
+  SCOPE_COLLECTIONS,
+  SCOPE_KINDS,
+  TIMELINE_DAYS,
+  addDays,
+  dayOfReadTime,
+  dayReadTime,
+  dayStart,
+  demoRefOfSize,
+  demoSizeOfRef,
+  isDay,
   isDemoSize,
   isDetailLevel,
   isFocusKind,
   isLensId,
   isRelationKind,
+  isScopeKind,
   isSnapshotRef,
+  scopePathOf,
+  utcDayOf,
 } from './vocabulary.js';
 
 /** [what is specified, the tuple, its schema, the literal list in the specified order] */
@@ -80,6 +98,7 @@ const SPEC: [string, readonly string[], { readonly options: readonly string[] },
     ['project', 'shared-vpc', 'standalone-projects', 'perimeter', 'application'],
   ],
   ['the demo organisations, smallest first', DEMO_SIZES, DemoSizeSchema, ['S', 'M', 'L', 'XL']],
+  ['the three scope kinds', SCOPE_KINDS, ScopeKindSchema, ['organization', 'folder', 'project']],
 ];
 
 it.each(SPEC)('lists %s, in the tuple and in its schema', (_name, tuple, schema, expected) => {
@@ -99,6 +118,7 @@ const enums: [string, readonly string[], z.ZodType, (v: unknown) => boolean][] =
   ['relation kinds', RELATION_KIND_IDS, RelationKindSchema, isRelationKind],
   ['focus kinds', FOCUS_KIND_IDS, FocusKindSchema, isFocusKind],
   ['demo sizes', DEMO_SIZES, DemoSizeSchema, isDemoSize],
+  ['scope kinds', SCOPE_KINDS, ScopeKindSchema, isScopeKind],
 ];
 
 function agrees(schema: z.ZodType, guard: (value: unknown) => boolean, value: unknown): void {
@@ -166,5 +186,79 @@ describe('LARGE_SNAPSHOT_ASSETS', () => {
   it('is the 10 000 assets the guide names, a whole positive count', () => {
     expect(LARGE_SNAPSHOT_ASSETS).toBe(10_000);
     expect(Number.isSafeInteger(LARGE_SNAPSHOT_ASSETS)).toBe(true);
+  });
+});
+
+describe('Google Cloud resource manager types', () => {
+  it('defines the three resource manager asset types', () => {
+    expect(RESOURCE_MANAGER_ORGANIZATION).toBe('cloudresourcemanager.googleapis.com/Organization');
+    expect(RESOURCE_MANAGER_FOLDER).toBe('cloudresourcemanager.googleapis.com/Folder');
+    expect(RESOURCE_MANAGER_PROJECT).toBe('cloudresourcemanager.googleapis.com/Project');
+  });
+});
+
+describe('SCOPE_COLLECTIONS and scopePathOf', () => {
+  it('maps each scope kind to its URL path collection segment', () => {
+    expect(SCOPE_COLLECTIONS).toEqual({
+      organization: 'organizations',
+      folder: 'folders',
+      project: 'projects',
+    });
+  });
+
+  it('formats the URL path of a scope', () => {
+    expect(scopePathOf({ kind: 'organization', id: '123456789012' })).toBe('organizations/123456789012');
+    expect(scopePathOf({ kind: 'folder', id: '456' })).toBe('folders/456');
+    expect(scopePathOf({ kind: 'project', id: 'my-proj' })).toBe('projects/my-proj');
+  });
+});
+
+describe('demoSizeOfRef and demoRefOfSize', () => {
+  it('extracts the size from valid demo refs', () => {
+    expect(demoSizeOfRef('demo:S')).toBe('S');
+    expect(demoSizeOfRef('demo:M')).toBe('M');
+    expect(demoSizeOfRef('demo:L')).toBe('L');
+    expect(demoSizeOfRef('demo:XL')).toBe('XL');
+  });
+
+  it('returns null for non-demo or invalid demo refs', () => {
+    expect(demoSizeOfRef('')).toBeNull();
+    expect(demoSizeOfRef('demo:')).toBeNull();
+    expect(demoSizeOfRef('demo:XXL')).toBeNull();
+    expect(demoSizeOfRef('01J9Z3K5Q8XW2V4N6P7R8S9T0A')).toBeNull();
+    expect(demoSizeOfRef(123)).toBeNull();
+    expect(demoSizeOfRef(null)).toBeNull();
+  });
+
+  it('constructs a demo ref from size', () => {
+    for (const size of DEMO_SIZES) {
+      expect(demoRefOfSize(size)).toBe(`demo:${size}`);
+      expect(demoSizeOfRef(demoRefOfSize(size))).toBe(size);
+    }
+  });
+});
+
+describe('timeline days and time helpers', () => {
+  it('specifies the 35 timeline days and 24h millisecond constant', () => {
+    expect(TIMELINE_DAYS).toBe(35);
+    expect(DAY_MS).toBe(86_400_000);
+  });
+
+  it('formats UTC day string and checks isDay', () => {
+    const epoch = Date.UTC(2026, 9, 19, 12, 34, 56);
+    expect(utcDayOf(epoch)).toBe('2026-10-19');
+    expect(isDay('2026-10-19')).toBe(true);
+    expect(isDay('2026-1-1')).toBe(false);
+    expect(isDay('invalid')).toBe(false);
+  });
+
+  it('computes day boundaries and read times', () => {
+    const day = '2026-10-19';
+    const start = dayStart(day);
+    expect(start).toBe(Date.UTC(2026, 9, 19, 0, 0, 0, 0));
+    expect(dayReadTime(day)).toBe('2026-10-19T00:00:00Z');
+    expect(dayOfReadTime('2026-10-19T14:30:00Z')).toBe(day);
+    expect(addDays(day, 1)).toBe('2026-10-20');
+    expect(addDays(day, -1)).toBe('2026-10-18');
   });
 });

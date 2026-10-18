@@ -16,6 +16,7 @@ import {
   ResourceNameSchema,
 } from './primitives.js';
 import { compareDecimal, compareText } from '../order.js';
+import { RESOURCE_MANAGER_PROJECT } from './vocabulary.js';
 
 type Issue = { path: PropertyKey[]; message: string };
 
@@ -54,7 +55,6 @@ export const ProjectIndexSchema = z
   });
 export type ProjectIndex = z.infer<typeof ProjectIndexSchema>;
 
-const RESOURCE_MANAGER_PROJECT = 'cloudresourcemanager.googleapis.com/Project';
 const TRAILING_PROJECT = /\/projects\/([^/]+)$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -11,7 +11,13 @@
  * (`findStoredExtra`), looked up again for every view that names it, so a deleted one is never drawn.
  */
 import type { DemoHistory } from '@gcportrait/demo-data';
-import { migrateSnapshot, SnapshotFormatError, type Snapshot, type SnapshotRef } from '@gcportrait/model';
+import {
+  demoSizeOfRef,
+  migrateSnapshot,
+  SnapshotFormatError,
+  type Snapshot,
+  type SnapshotRef,
+} from '@gcportrait/model';
 
 import { DataError, loadDemoSnapshot, type SnapshotLoader } from '../diagram/pipeline/dataHandler';
 import { OPEN_TIMEOUT_MS, type GcportraitDB, type StoredSnapshot } from '../storage/db';
@@ -85,7 +91,7 @@ async function storedSnapshot(ref: string, record: StoredSnapshot): Promise<Snap
  * this matters when a snapshot is deleted, here or in another tab, while its Graph is kept.
  */
 export async function storedSnapshotVersion(ref: SnapshotRef): Promise<string | null> {
-  if (ref.startsWith('demo:')) return null;
+  if (demoSizeOfRef(ref) !== null) return null;
   try {
     return (await storedRecord(ref)).meta.savedAt;
   } catch {
@@ -95,7 +101,7 @@ export async function storedSnapshotVersion(ref: SnapshotRef): Promise<string | 
 
 /** The data worker's snapshot loader: demo organisations generated, every other snapshot from IndexedDB. */
 export const loadAnySnapshot: SnapshotLoader = async (ref: SnapshotRef, onStage) => {
-  if (ref.startsWith('demo:')) return loadDemoSnapshot(ref, onStage);
+  if (demoSizeOfRef(ref) !== null) return loadDemoSnapshot(ref, onStage);
   onStage('ingest');
   return storedSnapshot(ref, await storedRecord(ref));
 };

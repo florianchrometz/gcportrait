@@ -17,6 +17,7 @@
 import type { SnapshotScope } from '@gcportrait/model';
 
 import { isRecord } from '../guards';
+import { parseScopeName } from '../scope/scopeName';
 import { formatUtcMinute } from '../utcTime';
 
 /** What a sidecar tells: at least one of the two. */
@@ -32,9 +33,6 @@ export const SIDECAR_FILE_NAME = 'operation.json';
 export const MAX_SIDECAR_BYTES = 256 * 1024;
 
 const RFC3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
-const SCOPE = /^(organizations|folders|projects)\/([a-z0-9][a-z0-9.:-]{0,99})$/;
-const KINDS = { organizations: 'organization', folders: 'folder', projects: 'project' } as const;
-
 function timestamp(value: unknown): string | undefined {
   return typeof value === 'string' && RFC3339.test(value) && !Number.isNaN(Date.parse(value))
     ? value
@@ -43,13 +41,8 @@ function timestamp(value: unknown): string | undefined {
 
 function scopeOf(value: unknown): SnapshotScope | undefined {
   if (typeof value !== 'string') return undefined;
-  const match = SCOPE.exec(value);
-  if (match === null) return undefined;
-  const [, collection, id] = match;
-  if (collection === undefined || id === undefined) return undefined;
-  const kind = KINDS[collection as keyof typeof KINDS];
-  if (kind !== 'project' && !/^[1-9]\d*$/.test(id)) return undefined;
-  return { kind, id };
+  const choice = parseScopeName(value);
+  return choice !== null ? { kind: choice.kind, id: choice.id } : undefined;
 }
 
 /** Whether a file's name says it may be the sidecar (the content decides: {@link parseSidecar}). */

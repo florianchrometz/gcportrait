@@ -8,12 +8,11 @@
  * different exports imported together name several roots; `roots` counts them so the import can say so.
  */
 import type { Asset, ScopeKind, SnapshotScope } from '@gcportrait/model';
+import { SCOPE_COLLECTIONS, SCOPE_KINDS } from '@gcportrait/model';
 
-const ROOT_KINDS: ReadonlyArray<readonly [prefix: string, kind: ScopeKind]> = [
-  ['organizations/', 'organization'],
-  ['folders/', 'folder'],
-  ['projects/', 'project'],
-];
+const ROOT_KINDS: ReadonlyArray<readonly [prefix: string, kind: ScopeKind]> = SCOPE_KINDS.map(
+  (kind) => [`${SCOPE_COLLECTIONS[kind]}/`, kind] as const,
+);
 
 const RESOURCE_MANAGER = '//cloudresourcemanager.googleapis.com/';
 

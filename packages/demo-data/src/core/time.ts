@@ -3,11 +3,12 @@
  * Calendar arithmetic and the timestamp formats the Google APIs use. All instants are milliseconds since the
  * epoch (UTC). `Date` is used only to format and parse given instants, never to read the clock.
  */
+import { DAY_MS, utcDayOf } from '@gcportrait/model';
 import { hash32 } from './hash.js';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 3_600_000;
-export const DAY_MS = 86_400_000;
+export { DAY_MS };
 
 const TICK_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -21,9 +22,7 @@ export function parseTick(tick: string): number {
 }
 
 /** The UTC day of an instant as `YYYY-MM-DD`. */
-export function formatTick(ms: number): string {
-  return new Date(ms).toISOString().slice(0, 10);
-}
+export const formatTick = utcDayOf;
 
 /** Day of the week of an instant in UTC, 0 = Sunday. */
 export function weekday(ms: number): number {

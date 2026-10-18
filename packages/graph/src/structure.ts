@@ -15,13 +15,20 @@
  * - A project's Compute settings (`compute.googleapis.com/Project`, not the Resource Manager project) say
  *   whether it is a Shared VPC host (`xpnProjectStatus: HOST`); the Shared VPC derivation needs to know.
  */
-import type { Asset, ProjectIndex } from '@gcportrait/model';
+import {
+  NUMERIC_ID_PATTERN,
+  RESOURCE_MANAGER_FOLDER,
+  RESOURCE_MANAGER_ORGANIZATION,
+  RESOURCE_MANAGER_PROJECT,
+  type Asset,
+  type ProjectIndex,
+} from '@gcportrait/model';
 
 const RESOURCE_MANAGER = '//cloudresourcemanager.googleapis.com/';
 
-export const ORGANIZATION_TYPE = 'cloudresourcemanager.googleapis.com/Organization';
-export const FOLDER_TYPE = 'cloudresourcemanager.googleapis.com/Folder';
-export const PROJECT_TYPE = 'cloudresourcemanager.googleapis.com/Project';
+export const ORGANIZATION_TYPE = RESOURCE_MANAGER_ORGANIZATION;
+export const FOLDER_TYPE = RESOURCE_MANAGER_FOLDER;
+export const PROJECT_TYPE = RESOURCE_MANAGER_PROJECT;
 export const SERVICE_ACCOUNT_TYPE = 'iam.googleapis.com/ServiceAccount';
 
 /** A project's Compute Engine settings; `data.xpnProjectStatus` is `HOST` on a Shared VPC host project. */
@@ -37,7 +44,7 @@ export const REGION_TYPE = `${VIRTUAL_SERVICE}/Region`;
 /** A virtual zone container under a region container. */
 export const ZONE_TYPE = `${VIRTUAL_SERVICE}/Zone`;
 
-const NUMBER = /^[1-9][0-9]*$/;
+const NUMBER = NUMERIC_ID_PATTERN;
 
 /** The node id of a project, by number: `//cloudresourcemanager.googleapis.com/projects/<number>`. */
 export function projectNodeId(projectNumber: string): string {

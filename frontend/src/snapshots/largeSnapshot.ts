@@ -8,7 +8,7 @@
  * the tab's sessionStorage and nowhere else (never localStorage: it ends with the tab). The React side, the
  * dialog and the hooks, is LargeSnapshotGuard.tsx.
  */
-import { DEMO_REF_PREFIX, isDemoSize, LARGE_SNAPSHOT_ASSETS, type SnapshotRef } from '@gcportrait/model';
+import { demoSizeOfRef, LARGE_SNAPSHOT_ASSETS, type SnapshotRef } from '@gcportrait/model';
 
 import { DEMO_SIZE_INFO, formatCount } from './labels';
 import type { ListedSnapshot } from './repository';
@@ -37,8 +37,8 @@ export function sizeOf(
   if (ref === '') return null;
   const stored = listed?.find(({ record }) => record.id === ref)?.record;
   if (stored !== undefined) return { assets: stored.meta.assetCount, approximate: false };
-  const size = ref.startsWith(DEMO_REF_PREFIX) ? ref.slice(DEMO_REF_PREFIX.length) : null;
-  if (isDemoSize(size)) {
+  const size = demoSizeOfRef(ref);
+  if (size !== null) {
     const info = DEMO_SIZE_INFO.find((entry) => entry.size === size);
     return info === undefined ? null : { assets: info.assets, approximate: true };
   }

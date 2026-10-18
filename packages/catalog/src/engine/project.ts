@@ -5,10 +5,7 @@
  * `ProjectIndex` (`@gcportrait/model`, built by its `buildProjectIndex`) maps one to the other; this module
  * answers "which project is this asset in" for templates and normalisers.
  */
-import type { Asset, ProjectIndex } from '@gcportrait/model';
-
-const NUMBER = /^[1-9][0-9]*$/;
-const PROJECT_ID = /^[a-z0-9][a-z0-9.:-]*$/;
+import { isNumericId, isProjectRef, type Asset, type ProjectIndex } from '@gcportrait/model';
 
 /** An index that knows no project. */
 export const EMPTY_PROJECT_INDEX: ProjectIndex = Object.freeze({
@@ -25,11 +22,11 @@ export interface ProjectRef {
 /** Resolves a project id or number (with or without `projects/`) through the index. */
 export function resolveProject(ref: string, index: ProjectIndex): ProjectRef {
   const value = ref.startsWith('projects/') ? ref.slice('projects/'.length) : ref;
-  if (NUMBER.test(value)) {
+  if (isNumericId(value)) {
     const id = Object.hasOwn(index.idByNumber, value) ? index.idByNumber[value] : undefined;
     return id === undefined ? { number: value } : { id, number: value };
   }
-  if (!PROJECT_ID.test(value)) return {};
+  if (!isProjectRef(value)) return {};
   const number = Object.hasOwn(index.numberById, value) ? index.numberById[value] : undefined;
   return number === undefined ? { id: value } : { id: value, number };
 }

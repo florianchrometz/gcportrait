@@ -1,6 +1,5 @@
 // @vitest-environment node
 // SPDX-License-Identifier: Apache-2.0
-import { NumericIdSchema, ProjectRefSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 
 import { readSearchAnswer } from './api';
@@ -13,43 +12,7 @@ import {
   withRecent,
 } from './recent';
 import { typedChoice } from './ScopePicker';
-import {
-  describeScope,
-  isProjectRef,
-  NUMBER_PATTERN,
-  parseScopeName,
-  PROJECT_REF_PATTERN,
-  scopeNameProblem,
-  type ScopeChoice,
-} from './scopeName';
-
-const SAMPLES = [
-  '',
-  '0',
-  '1',
-  '0123',
-  '123',
-  '30000000001',
-  '-1',
-  '1.5',
-  'demo-app-1',
-  'Demo-App',
-  'demo app',
-  'example.com:demo',
-  '-demo',
-  'demo_app',
-  'demo/app',
-  'ä',
-  '1e5',
-  ' 12',
-];
-
-describe('the scope name patterns', () => {
-  it.each(SAMPLES)('agree with @gcportrait/model’s schemas on %j', (sample) => {
-    expect(NUMBER_PATTERN.test(sample)).toBe(NumericIdSchema.safeParse(sample).success);
-    expect(PROJECT_REF_PATTERN.test(sample)).toBe(ProjectRefSchema.safeParse(sample).success);
-  });
-});
+import { describeScope, isProjectRef, parseScopeName, scopeNameProblem, type ScopeChoice } from './scopeName';
 
 describe('parseScopeName', () => {
   it.each([

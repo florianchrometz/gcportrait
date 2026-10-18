@@ -23,7 +23,7 @@ import { catalog, consoleLinkFor, type ConsoleLink, type RuleContext } from '@gc
 import { BuildMemo, buildGraph, viewportBudget } from '@gcportrait/graph';
 import {
   buildProjectIndex,
-  DEMO_REF_PREFIX,
+  demoSizeOfRef,
   isDemoSize,
   isSnapshotRef,
   LENS_IDS,
@@ -86,8 +86,8 @@ function demoModule(): Promise<typeof import('./demo')> {
  * organisation always gives the same snapshot (and so the same diagram); demo.ts does both.
  */
 export const loadDemoSnapshot: SnapshotLoader = async (ref, onStage) => {
-  const size = ref.startsWith(DEMO_REF_PREFIX) ? ref.slice(DEMO_REF_PREFIX.length) : undefined;
-  if (!isDemoSize(size)) throw new DataError('unknown-snapshot', `No snapshot "${ref}" is available yet.`);
+  const size = demoSizeOfRef(ref);
+  if (size === null) throw new DataError('unknown-snapshot', `No snapshot "${ref}" is available yet.`);
   onStage('generate');
   const demo = await demoModule();
   const history = demo.demoHistory(size);
