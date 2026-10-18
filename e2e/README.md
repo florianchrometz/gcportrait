@@ -88,6 +88,8 @@ canvas's selector `DRAWN_CANVAS`, `viewParam` for a value of the view in the add
 demo organisation as a Cloud Asset Inventory export, generated once per worker, and `exportOperation` for an
 export's `operation.json`), `tests/handheldSupport.ts` (for `mobile.spec.ts` and `handheld.spec.ts`: the
 44-pixel target, where the tablet's layout starts, and the top bar's View and More folds),
+`tests/touchSupport.ts` (for `touch.spec.ts` and `mobile.spec.ts`: `Fingers`, drags, pinches and
+presses through the DevTools Protocol, which Playwright's taps cannot do),
 `tests/timelineSupport.ts`, `tests/consoleSupport.ts`, `tests/permissionsSupport.ts`,
 [tests/exportSupport.ts](tests/exportSupport.ts) and [tests/drawioSupport.ts](tests/drawioSupport.ts).
 `stubGoogle` (`fixtures/gis.ts`) hands out a test's tokens for an hour with every scope sign-in asks for

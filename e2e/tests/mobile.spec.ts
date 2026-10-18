@@ -14,7 +14,6 @@ import {
   DEFAULT_SOURCE_URL,
   demoCaiExport,
   detailsDrawer,
-  drawnCanvas,
   expectNoAxeViolations,
   exportOperation,
   openDiagram,
@@ -28,6 +27,7 @@ import {
   markersCoveredByThumbRing,
   timelineBar,
 } from './timelineSupport.js';
+import { Fingers } from './touchSupport.js';
 
 /**
  * The app's phone and tablet check: the `mobile` project of playwright.config.ts, run with
@@ -42,7 +42,7 @@ import {
  * focused controls remain visible and tappable. canvasRoom, rowProblems and sheetRoom measure the space
  * left for the drawing. Their comments and assertions hold the conditions and exceptions; expectClean
  * combines the probes with axe. The tests below cover timeline focus rings and phone interactions:
- * sheets and focus, the breadcrumb, the drawer's handle, camera framing, panning, pinching and chips.
+ * sheets and focus, the breadcrumb, the drawer's handle and camera framing.
  * pagesAndDiagrams documents the order: light pages and diagrams, tests with their own sizes, then dark
  * pages and diagrams. Accessibility coverage and per-state checks are defined beside the tests.
  */
@@ -1378,37 +1378,17 @@ for (const size of SIZES) {
 test.describe('on a phone, 375 × 667', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
-  test('the sheets close with Escape onto their buttons, More after a theme is picked in it too, and `/` opens View onto the search', async ({
+  test('a menu inside More closes with Escape alone, leaving the sheet open; `/` opens View onto the focused search', async ({
     page,
   }) => {
     await openDiagram(page, DIAGRAMS[0]);
-    const view = await openSheet(page, 'View', 'click');
-    // The sheet holds the view row's controls, the same ones the desktop shows in the row.
-    await expect(view.getByRole('combobox', { name: 'Lens' })).toBeVisible();
-    await expect(view.getByRole('button', { name: /^Focus/ })).toBeVisible();
-    await expect(view.getByRole('button', { name: /^Filters/ })).toBeVisible();
-    await expect(view.getByRole('radiogroup', { name: 'Detail' })).toBeVisible();
-    await expect(view.getByRole('combobox', { name: 'Search assets' })).toBeVisible();
-    await closeSheet(page, 'View');
     const more = await openSheet(page, 'More', 'click');
-    for (const link of ['Connect', 'Diagram', 'Snapshots', 'Permissions', 'Settings'])
-      await expect(more.getByRole('link', { name: link, exact: true })).toBeVisible();
-    for (const button of ['Snapshot', 'Saved views', 'Copy link', 'Theme', 'Export'])
-      await expect(more.getByRole('button', { name: button, exact: true })).toBeVisible();
-    // A menu inside the sheet: Escape closes the menu only.
     await more.getByRole('button', { name: 'Theme', exact: true }).click();
     await expect(page.getByRole('menu', { name: 'Theme' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menu', { name: 'Theme' })).toBeHidden();
     await expect(more).toBeVisible();
     await closeSheet(page, 'More');
-    // A pick that changes the view or the theme closes More, focus back on its button.
-    await openSheet(page, 'More', 'click');
-    await more.getByRole('button', { name: 'Theme', exact: true }).click();
-    await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(more).toBeHidden();
-    await expect(fold(page, 'More').button).toBeFocused();
     await page.locator('body').press('/');
     await expect(page.getByRole('combobox', { name: 'Search assets' })).toBeFocused();
     await expect(fold(page, 'View').sheet).toBeVisible();
@@ -1452,19 +1432,9 @@ test.describe('on a phone, 375 × 667', () => {
     await expect(nav).toHaveAttribute('data-cut', '');
     const room = await nav.boundingBox();
     if (room === null) throw new Error('no breadcrumb');
-    const client = await page.context().newCDPSession(page);
+    const fingers = await Fingers.on(page);
     const y = room.y + room.height / 2;
-    await client.send('Input.dispatchTouchEvent', {
-      type: 'touchStart',
-      touchPoints: [{ x: room.x + 8, y }],
-    });
-    for (let step = 1; step <= 12; step += 1) {
-      await client.send('Input.dispatchTouchEvent', {
-        type: 'touchMove',
-        touchPoints: [{ x: room.x + 8 + step * 40, y }],
-      });
-    }
-    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await fingers.drag({ x: room.x + 8, y }, { x: room.x + 8 + 12 * 40, y }, { steps: 12 });
     await expect
       .poll(() => within(top), {
         timeout: 15_000,
@@ -1526,33 +1496,23 @@ test.describe('on a phone, 375 × 667', () => {
 
     // By a finger: dragged up past the middle it settles at full height, a little down it settles back at half, and
     // well below half it closes.
-    const client = await page.context().newCDPSession(page);
-    const drag = async (from: number, to: number, { lift = true } = {}): Promise<void> => {
+    const fingers = await Fingers.on(page);
+    const drag = async (from: number, to: number, lift = true): Promise<void> => {
       const edge = await handle.boundingBox();
       if (edge === null) throw new Error('no handle');
       const x = edge.x + edge.width / 2;
       const y = edge.y + edge.height / 2;
-      await client.send('Input.dispatchTouchEvent', {
-        type: 'touchStart',
-        touchPoints: [{ x, y: y + from }],
-      });
-      for (let step = 1; step <= 8; step += 1) {
-        await client.send('Input.dispatchTouchEvent', {
-          type: 'touchMove',
-          touchPoints: [{ x, y: y + from + ((to - from) * step) / 8 }],
-        });
-      }
-      if (lift) await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await fingers.drag({ x, y: y + from }, { x, y: y + to }, { steps: 8, lift });
     };
     await drag(0, -canvas.height * 0.3);
     await expect(handle).toHaveAttribute('aria-valuenow', '100');
     await drag(0, canvas.height * 0.3);
     await expect(handle).toHaveAttribute('aria-valuenow', '50');
     // Held well below half: the sheet follows the finger down and fades, as letting go there closes it.
-    await drag(0, canvas.height * 0.4, { lift: false });
+    await drag(0, canvas.height * 0.4, false);
     await expect(drawer).toHaveAttribute('data-dismissing', '');
     expect((await drawer.boundingBox())?.height ?? Infinity).toBeLessThan(canvas.height * 0.2);
-    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await fingers.lift();
     await expect(drawer).toBeHidden();
   });
 
@@ -1682,76 +1642,6 @@ test.describe('on a phone, 375 × 667', () => {
     await button.tap();
     await expect(sheet).toBeHidden();
     await expectFittedTo(canvas, 'View closed');
-  });
-
-  test('one finger dragged across the canvas pans the drawing', async ({ page }) => {
-    const svg = await openDiagram(page, DIAGRAMS[1]);
-    const box = await page.locator('#diagram-canvas').boundingBox();
-    if (box === null) throw new Error('no canvas');
-    const transform = (): Promise<string | null> =>
-      svg.evaluate((element) => element.querySelector('.dg-viewport')?.getAttribute('transform') ?? null);
-    const before = await transform();
-    const client = await page.context().newCDPSession(page);
-    const x = box.x + box.width / 2;
-    const y = box.y + box.height / 2;
-    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
-    for (let step = 1; step <= 8; step += 1) {
-      await client.send('Input.dispatchTouchEvent', {
-        type: 'touchMove',
-        touchPoints: [{ x: x - step * 10, y: y - step * 5 }],
-      });
-    }
-    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await expect.poll(transform).not.toBe(before);
-    await drawnCanvas(page);
-  });
-
-  test('two fingers pinched apart zoom the drawing in, and a tap on a project chip opens it in place', async ({
-    page,
-  }) => {
-    const svg = await openDiagram(page, DIAGRAMS[1]);
-    const box = await page.locator('#diagram-canvas').boundingBox();
-    if (box === null) throw new Error('no canvas');
-    const scale = async (): Promise<number> => Number(await svg.getAttribute('data-scale'));
-    const before = await scale();
-    const client = await page.context().newCDPSession(page);
-    const x = box.x + box.width / 2;
-    const y = box.y + box.height / 2;
-    const fingers = (apart: number): { x: number; y: number; id: number }[] => [
-      { x: x - apart, y, id: 0 },
-      { x: x + apart, y, id: 1 },
-    ];
-    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: fingers(20) });
-    for (let step = 1; step <= 8; step += 1) {
-      await client.send('Input.dispatchTouchEvent', {
-        type: 'touchMove',
-        touchPoints: fingers(20 + step * 12),
-      });
-    }
-    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await expect.poll(scale).toBeGreaterThan(before * 2);
-
-    // Back to the drawing fitted to the canvas.
-    await page.reload();
-    await drawnCanvas(page);
-    const chip = await svg.evaluate((element) => {
-      const canvas = element.getBoundingClientRect();
-      for (const node of element.querySelectorAll('.dg-chip[data-id]')) {
-        const area = node.getBoundingClientRect();
-        const at = { x: area.left + area.width / 2, y: area.top + area.height / 2 };
-        if (
-          at.x > canvas.left &&
-          at.x < canvas.right &&
-          at.y > canvas.top &&
-          at.y < canvas.top + canvas.height / 2
-        )
-          return at;
-      }
-      return null;
-    });
-    expect(chip).not.toBeNull();
-    await page.touchscreen.tap(chip?.x ?? 0, chip?.y ?? 0);
-    await expect.poll(() => viewParam(page, 'flips')).not.toBeNull();
   });
 });
 

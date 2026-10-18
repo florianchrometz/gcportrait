@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type CDPSession, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import { cameraSettled, detailsDrawer, drawingOf, openDiagram, redrawnCanvas, viewParam } from './support.js';
+import { Fingers, type Point } from './touchSupport.js';
 
 /**
  * The canvas by finger (frontend/AGENTS.md, Phones, tablets and desktops, the touch model; frontend/src/diagram/touch.ts), run by the `mobile`
@@ -30,68 +31,11 @@ const OVERVIEW = '/diagram#snapshot=demo:M';
 /** Demo M drilled in to one project: thirteen cards, large enough on a phone to land a finger on one. */
 const PROJECT = `/diagram#snapshot=demo:M&root=${encodeURIComponent('//cloudresourcemanager.googleapis.com/projects/10000000025')}`;
 
-/** A point on the screen, in CSS pixels. */
-interface Point {
-  readonly x: number;
-  readonly y: number;
-}
-
 /** The camera: the viewport group's translation and scale. */
 interface Camera {
   readonly x: number;
   readonly y: number;
   readonly k: number;
-}
-
-/** Fingers on the screen through the Chrome DevTools Protocol: drags, pinches and presses Playwright's taps cannot do. */
-class Fingers {
-  private readonly client: CDPSession;
-
-  private constructor(client: CDPSession) {
-    this.client = client;
-  }
-
-  static async on(page: Page): Promise<Fingers> {
-    return new Fingers(await page.context().newCDPSession(page));
-  }
-
-  private send(
-    type: 'touchStart' | 'touchMove' | 'touchEnd',
-    points: ReadonlyArray<Point & { readonly id?: number }>,
-  ): Promise<unknown> {
-    return this.client.send('Input.dispatchTouchEvent', { type, touchPoints: [...points] });
-  }
-
-  /** One finger from `from` to `to`, in `steps` moves. */
-  async drag(from: Point, to: Point, steps = 10): Promise<void> {
-    await this.send('touchStart', [{ x: from.x, y: from.y }]);
-    for (let step = 1; step <= steps; step += 1) {
-      const t = step / steps;
-      await this.send('touchMove', [{ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t }]);
-    }
-    await this.send('touchEnd', []);
-  }
-
-  /** Two fingers either side of `centre`, level with it, from `from` to `to` pixels apart, in `steps` moves. */
-  async pinch(centre: Point, from: number, to: number, steps = 10): Promise<void> {
-    const pair = (apart: number): Array<Point & { id: number }> => [
-      { x: centre.x - apart / 2, y: centre.y, id: 0 },
-      { x: centre.x + apart / 2, y: centre.y, id: 1 },
-    ];
-    await this.send('touchStart', pair(from));
-    for (let step = 1; step <= steps; step += 1)
-      await this.send('touchMove', pair(from + ((to - from) * step) / steps));
-    await this.send('touchEnd', []);
-  }
-
-  /** A finger down at `at`, left there until `lift`. */
-  async hold(at: Point): Promise<void> {
-    await this.send('touchStart', [{ x: at.x, y: at.y }]);
-  }
-
-  async lift(): Promise<void> {
-    await this.send('touchEnd', []);
-  }
 }
 
 /** What a finger lands on: a chip, a card, or nothing drawn. */
