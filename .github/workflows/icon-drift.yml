@@ -5,15 +5,14 @@
 # stated there). `packages/icons/scripts/drift.mjs` reads that page, downloads the icon archives it links into a
 # temporary directory (untrusted data: listed with the package's own ZIP reader, never executed) and compares
 # them with what packages/icons vendored (archive-index.json, mapping.json, manifest.json). Every run puts the
-# report in its job summary. When something drifted (exit code 1) this workflow opens one issue titled "Icon
-# drift: Google Cloud product icons changed", or updates it while it is still open, with new icons (and the
+# report in its job summary. When something drifted (exit code 1), scripts/drift-issue.mjs opens one issue titled
+# "Icon drift: Google Cloud product icons changed", or updates it while it is still open, with new icons (and the
 # catalog product each probably shows), changed, renamed and removed icons, mapped entries gone upstream, and
 # products still on an older symbol although a newer icon exists. It never commits: a contributor vendors the
 # update (`pnpm --filter @gcportrait/icons vendor`) in a pull request that closes the issue. Exit codes above 1
 # (the check could not run) fail the job instead.
 #
-# Built like catalog-drift.yml. The probe step is only a guard: on a branch without the drift script, the job
-# logs that and succeeds instead of failing.
+# Built like catalog-drift.yml.
 name: Icon drift
 
 on:
@@ -46,23 +45,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Look for the drift script
-        id: probe
-        run: |
-          if [ -f "$DRIFT_SCRIPT" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "${DRIFT_SCRIPT}: not on this branch; nothing to check."
-          fi
-
       - name: Set up pnpm and Node
-        if: steps.probe.outputs.available == 'true'
         uses: ./.github/actions/setup
 
       - name: Compare the archives on cloud.google.com/icons with the vendored icons
         id: compare
-        if: steps.probe.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -92,59 +79,13 @@ jobs:
 
       - name: Open or update the drift issue
         if: steps.compare.outputs.changed == 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const fs = require('node:fs');
-            const path = require('node:path');
-
-            const TITLE = 'Icon drift: Google Cloud product icons changed';
-            // GitHub refuses issue bodies above 65 536 characters.
-            const MAX_REPORT_CHARS = 60000;
-
-            const read = (name) => fs.readFileSync(path.join(process.env.RUNNER_TEMP, name), 'utf8');
-            const report = JSON.parse(read('icon-drift.json'));
-            // Identifies this particular drift, so a re-run that finds the same change notifies no one.
-            const digest = String(report.digest);
-            if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error('the drift report carries no digest');
-            let markdown = read('icon-drift.md').trimEnd();
-            if (markdown.length > MAX_REPORT_CHARS) {
-              markdown =
-                `${markdown.slice(0, MAX_REPORT_CHARS)}\n\n` +
-                '… (truncated; run `pnpm --filter @gcportrait/icons drift` locally)';
-            }
-            const { owner, repo } = context.repo;
-            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
-
-            const body = [
-              `<!-- icon-drift digest: ${digest} -->`,
-              markdown,
-              '',
-              `_Last checked by [workflow run ${context.runId}](${runUrl})._`,
-            ].join('\n');
-
-            const open = await github.paginate(github.rest.issues.listForRepo, {
-              owner,
-              repo,
-              state: 'open',
-              per_page: 100,
-            });
-            const existing = open.find((issue) => !issue.pull_request && issue.title === TITLE);
-            if (existing === undefined) {
-              const created = await github.rest.issues.create({ owner, repo, title: TITLE, body });
-              core.notice(`Opened issue #${created.data.number}: ${report.summary}`);
-              return;
-            }
-            const sameDrift = (existing.body ?? '').includes(`icon-drift digest: ${digest}`);
-            await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
-            if (sameDrift) {
-              core.info(`Issue #${existing.number} already describes this drift; refreshed its last line.`);
-              return;
-            }
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: existing.number,
-              body: `The icons on cloud.google.com/icons changed again: ${report.summary} ([run](${runUrl}))`,
-            });
-            core.notice(`Updated issue #${existing.number}: ${report.summary}`);
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/drift-issue.mjs
+          --title 'Icon drift: Google Cloud product icons changed'
+          --marker icon-drift
+          --report "$RUNNER_TEMP/icon-drift.json"
+          --markdown "$RUNNER_TEMP/icon-drift.md"
+          --again 'The icons on cloud.google.com/icons changed again'
+          --rerun 'pnpm --filter @gcportrait/icons drift'

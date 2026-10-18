@@ -12,21 +12,27 @@
  *       the product sections: which product lists which types, with each type's API reference link.
  *
  * It then prints the identifiers added and removed since the newest snapshot that existed before the run (a
- * snapshot of the same date is compared as it was, then replaced). It never commits.
+ * snapshot of the same date is compared as it was, then replaced), and with --json and --markdown writes that
+ * drift report too: the weekly catalog-drift workflow puts the Markdown in its job summary and, through
+ * scripts/drift-issue.mjs, in its drift issue. It never commits.
  *
  * The English original is requested (`hl=en`) and anything else refused: the site sometimes serves a
  * machine-translated copy of the page whose list is months behind.
  *
  * Usage: node scripts/catalog-fetch-official.mjs [--from <saved.html>] [--url <url>] [--out-dir <dir>]
  *                                                [--date <YYYY-MM-DD>] [--force]
+ *                                                [--json <file>] [--markdown <file>]
  *   --from     parse a saved copy of the page instead of downloading it (tests use a trimmed sample)
  *   --out-dir  where the snapshots live (default: the skill's references directory)
  *   --date     the snapshot date (default: today, UTC)
  *   --force    write even when the page yields fewer than half the identifiers of the previous snapshot
  *              (without it, that is treated as a page-layout change and nothing is written)
+ *   --json     also write the drift report as JSON (`drift`, `snapshot`, `added`, `removed`, `digest`, `summary`)
+ *   --markdown also write the drift report as Markdown (the drift issue's body)
  *
  * Plain ESM, Node built-ins only (Prettier, a root dev dependency, formats the JSON when it is installed).
  */
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,6 +55,18 @@ const SECTIONS = /** @type {const} */ ([
 /** @typedef {'resource' | 'policy' | 'runtime'} SectionKind */
 /** @typedef {{ type: string, reference?: string }} OfficialType */
 /** @typedef {{ product: string, section: SectionKind, types: OfficialType[] }} OfficialProduct */
+/**
+ * @typedef {object} DriftReport
+ * @property {boolean} drift whether any identifier was added or removed
+ * @property {string | null} snapshot the file name of the snapshot compared with; null when there was none
+ * @property {string[]} added in byte order
+ * @property {string[]} removed in byte order
+ * @property {string} digest identifies this drift (the same change found again carries the same digest)
+ * @property {string} summary one line
+ */
+
+/** The most identifiers of each kind the Markdown report lists; the diff below the lists holds them all. */
+const MAX_LISTED = 200;
 
 /** @type {Record<string, string>} */
 const NAMED_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
@@ -166,6 +184,88 @@ export function diffLists(before, after) {
   return { added: after.filter((id) => !old.has(id)), removed: before.filter((id) => !now.has(id)) };
 }
 
+/** @param {string} a @param {string} b */
+const byteOrder = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * The drift between the newest committed snapshot and the fetched list.
+ * @param {string | null} snapshot the file name of the snapshot compared with; null when there was none
+ * @param {readonly string[]} before its identifiers
+ * @param {readonly string[]} after the fetched identifiers
+ * @returns {DriftReport}
+ */
+export function driftReport(snapshot, before, after) {
+  const diff = diffLists(before, after);
+  const added = [...new Set(diff.added)].sort(byteOrder);
+  const removed = [...new Set(diff.removed)].sort(byteOrder);
+  const drift = added.length + removed.length > 0;
+  return {
+    drift,
+    snapshot,
+    added,
+    removed,
+    digest: createHash('sha256')
+      .update(`${added.join('\n')}\n--\n${removed.join('\n')}`)
+      .digest('hex'),
+    summary: drift
+      ? `catalog drift: ${String(added.length)} added, ${String(removed.length)} removed asset types.`
+      : 'catalog drift: none.',
+  };
+}
+
+/**
+ * The drift report as Markdown: the drift issue's body and the workflow's job summary.
+ * @param {DriftReport} report
+ * @returns {string}
+ */
+export function driftMarkdown(report) {
+  const official = `[official list of supported asset types](${OFFICIAL_URL})`;
+  const snapshot = report.snapshot === null ? '(none)' : `\`${report.snapshot}\``;
+  if (!report.drift) return `The ${official} matches the newest committed snapshot, ${snapshot}.\n`;
+  /** @param {readonly string[]} items */
+  const list = (items) => {
+    if (items.length === 0) return '_none_';
+    const shown = items.slice(0, MAX_LISTED).map((type) => `- \`${type}\``);
+    if (items.length > MAX_LISTED)
+      shown.push(`- … and ${String(items.length - MAX_LISTED)} more (see the diff)`);
+    return shown.join('\n');
+  };
+  const diff = [
+    ...report.removed.map((type) => ({ type, line: `-${type}` })),
+    ...report.added.map((type) => ({ type, line: `+${type}` })),
+  ]
+    .sort((a, b) => byteOrder(a.type, b.type))
+    .map((entry) => entry.line);
+  return [
+    `The ${official} no longer matches the newest committed snapshot, ${snapshot}.`,
+    '',
+    `### Added (${String(report.added.length)})`,
+    '',
+    list(report.added),
+    '',
+    `### Removed (${String(report.removed.length)})`,
+    '',
+    list(report.removed),
+    '',
+    '<details><summary>Diff of the identifier lists</summary>',
+    '',
+    '```diff',
+    ...diff,
+    '```',
+    '',
+    '</details>',
+    '',
+    '### To resolve',
+    '',
+    '1. Run `pnpm catalog:fetch-official` and commit the new dated snapshot.',
+    '2. For each added type, add a catalog entry, or add it to the `owns` and `types` (with a reason) of the ' +
+      'group file `packages/catalog/known-unmapped/<group>.yaml` that owns its service; for each removed type, ' +
+      'remove its entry or mark it deprecated (skill `gcp-asset-catalog`).',
+    '3. Run `pnpm catalog:check` and open a pull request that closes this issue.',
+    '',
+  ].join('\n');
+}
+
 /**
  * The JSON text, formatted like the rest of the repository when Prettier is available.
  * @param {unknown} value
@@ -248,6 +348,8 @@ async function main() {
       'out-dir': { type: 'string', default: DEFAULT_OUT_DIR },
       date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
       force: { type: 'boolean', default: false },
+      json: { type: 'string' },
+      markdown: { type: 'string' },
     },
   });
   const { url, date, force } = values;
@@ -301,17 +403,25 @@ async function main() {
     `catalog:fetch-official: ${String(identifiers.length)} asset types in ${String(products.length)} product ` +
       `sections; wrote ${shown(textFile)} and ${shown(productsFile)}.`,
   );
+  const report = driftReport(previous ?? null, before, identifiers);
+  if (values.json !== undefined) {
+    mkdirSync(path.dirname(path.resolve(values.json)), { recursive: true });
+    writeFileSync(values.json, `${JSON.stringify(report, null, 2)}\n`);
+  }
+  if (values.markdown !== undefined) {
+    mkdirSync(path.dirname(path.resolve(values.markdown)), { recursive: true });
+    writeFileSync(values.markdown, driftMarkdown(report));
+  }
   if (previous === undefined) {
     console.log('No earlier snapshot to compare with.');
     return;
   }
-  const { added, removed } = diffLists(before, identifiers);
   const replaced = previous === target ? ' (its content before this run, which this run replaced)' : '';
   console.log(
-    `Compared with ${previous}${replaced}: ${String(added.length)} added, ${String(removed.length)} removed.`,
+    `Compared with ${previous}${replaced}: ${String(report.added.length)} added, ${String(report.removed.length)} removed.`,
   );
-  for (const id of added) console.log(`+ ${id}`);
-  for (const id of removed) console.log(`- ${id}`);
+  for (const id of report.added) console.log(`+ ${id}`);
+  for (const id of report.removed) console.log(`- ${id}`);
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

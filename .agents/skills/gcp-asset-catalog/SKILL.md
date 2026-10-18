@@ -243,9 +243,9 @@ AGENTS.md, Product rules).
   violation of its own and names them.
 - `pnpm catalog:coverage [--group <group>] [--json]`: per group, the official types it owns, mapped by role,
   unmapped by reason, and missing (neither mapped nor listed).
-- `catalog-drift.yml` (weekly) runs `pnpm catalog:fetch-official` and opens or updates one issue listing
-  additions and removals; a new type goes into the owning group's `owns` and `types`, or straight into the
-  catalog.
+- `catalog-drift.yml` (weekly) runs `pnpm catalog:fetch-official --json … --markdown …` and, through
+  `scripts/drift-issue.mjs`, opens or updates one issue listing additions and removals; a new type goes into
+  the owning group's `owns` and `types`, or straight into the catalog.
 - Icon maintenance: the Google Cloud product icons are Google Cloud's, provided at
   <https://cloud.google.com/icons> (which still offers the older symbols, the legacy console icons, for the
   products not updated yet) and used as provided under the terms stated there; gcportrait does not license

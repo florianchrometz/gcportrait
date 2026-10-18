@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -8,6 +9,8 @@ import {
   OFFICIAL_URL,
   decodeEntities,
   diffLists,
+  driftMarkdown,
+  driftReport,
   identifiersOf,
   isEnglishOriginal,
   pageLanguage,
@@ -104,6 +107,64 @@ describe('helpers', () => {
   });
 });
 
+describe('the drift report', () => {
+  const before = ['a.googleapis.com/A', 'b.googleapis.com/B'];
+  const after = ['a.googleapis.com/A', 'c.googleapis.com/C', 'd.googleapis.com/D'];
+  const report = driftReport('cai-supported-asset-types.2026-01-01.txt', before, after);
+
+  it('lists the added and removed identifiers under a digest of exactly them', () => {
+    expect(report).toEqual({
+      drift: true,
+      snapshot: 'cai-supported-asset-types.2026-01-01.txt',
+      added: ['c.googleapis.com/C', 'd.googleapis.com/D'],
+      removed: ['b.googleapis.com/B'],
+      // The digest the open issue's marker carries: the same change found again notifies no one.
+      digest: createHash('sha256')
+        .update('c.googleapis.com/C\nd.googleapis.com/D\n--\nb.googleapis.com/B')
+        .digest('hex'),
+      summary: 'catalog drift: 2 added, 1 removed asset types.',
+    });
+    expect(driftReport(null, [], ['x.googleapis.com/X'])).toMatchObject({
+      drift: true,
+      snapshot: null,
+      added: ['x.googleapis.com/X'],
+    });
+  });
+
+  it('reports no drift between equal lists', () => {
+    const same = driftReport('s.txt', before, before);
+    expect(same).toMatchObject({ drift: false, added: [], removed: [], summary: 'catalog drift: none.' });
+    expect(driftMarkdown(same)).toBe(
+      `The [official list of supported asset types](${OFFICIAL_URL}) matches the newest committed snapshot, ` +
+        '`s.txt`.\n',
+    );
+  });
+
+  it('writes the issue body: both lists, the diff and the steps that resolve it', () => {
+    const markdown = driftMarkdown(report);
+    expect(markdown).toContain(
+      `The [official list of supported asset types](${OFFICIAL_URL}) no longer matches the newest committed ` +
+        'snapshot, `cai-supported-asset-types.2026-01-01.txt`.',
+    );
+    expect(markdown).toContain(
+      '### Added (2)\n\n- `c.googleapis.com/C`\n- `d.googleapis.com/D`\n\n### Removed (1)\n\n- `b.googleapis.com/B`\n',
+    );
+    expect(markdown).toContain('```diff\n-b.googleapis.com/B\n+c.googleapis.com/C\n+d.googleapis.com/D\n```');
+    expect(markdown).toContain('1. Run `pnpm catalog:fetch-official` and commit the new dated snapshot.');
+    expect(driftMarkdown(driftReport(null, [], ['x.googleapis.com/X']))).toContain(
+      'no longer matches the newest committed snapshot, (none).',
+    );
+  });
+
+  it('lists at most 200 identifiers of each kind and points at the diff for the rest', () => {
+    const many = Array.from({ length: 205 }, (_, i) => `x.googleapis.com/T${String(i).padStart(3, '0')}`);
+    const markdown = driftMarkdown(driftReport('s.txt', [], many));
+    expect(markdown).toContain('- `x.googleapis.com/T199`\n- … and 5 more (see the diff)');
+    expect(markdown).not.toContain('- `x.googleapis.com/T200`');
+    expect(markdown).toContain('+x.googleapis.com/T204');
+  });
+});
+
 describe('catalog-fetch-official', () => {
   let tree: TempTree;
 
@@ -166,6 +227,40 @@ describe('catalog-fetch-official', () => {
     expect(products.source).toBe(OFFICIAL_URL);
     expect(products.pageUpdated).toBe('2026-01-01');
     expect(products.products.map((product) => product.product)).toContain('OS inventory');
+  });
+
+  it('writes the drift report as JSON and Markdown when asked, with or without drift', () => {
+    tree.write(
+      'refs/cai-supported-asset-types.2026-01-01.txt',
+      snapshotText('2026-01-01', [...SAMPLE_IDS.slice(1), 'compute.googleapis.com/Route']),
+    );
+    const result = fetchOfficial(
+      {},
+      '--json',
+      path.join(tree.root, 'out', 'drift.json'),
+      '--markdown',
+      path.join(tree.root, 'out', 'drift.md'),
+    );
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    const report = JSON.parse(tree.read('out/drift.json')) as ReturnType<typeof driftReport>;
+    expect(report).toEqual(
+      driftReport(
+        'cai-supported-asset-types.2026-01-01.txt',
+        [...SAMPLE_IDS.slice(1), 'compute.googleapis.com/Route'].sort(),
+        SAMPLE_IDS,
+      ),
+    );
+    expect(report.added).toEqual(['apps.k8s.io/Deployment']);
+    expect(report.removed).toEqual(['compute.googleapis.com/Route']);
+    expect(tree.read('out/drift.md')).toBe(driftMarkdown(report));
+
+    const again = fetchOfficial({}, '--json', path.join(tree.root, 'out', 'again.json'));
+    expect(again.status).toBe(0);
+    expect(JSON.parse(tree.read('out/again.json'))).toMatchObject({
+      drift: false,
+      summary: 'catalog drift: none.',
+    });
   });
 
   it('compares a same-day snapshot as it was before replacing it', () => {

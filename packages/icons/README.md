@@ -235,9 +235,9 @@ pnpm --filter @gcportrait/icons drift --keep-temp  # the same, keeping the downl
 directory (https, Google hosts only, size-capped), lists their SVG entries with the package's own ZIP reader
 (bounded entry sizes, no path escapes; nothing from the download is executed), and compares entry names and
 SHA-256 hashes with `archive-index.json`, `mapping.json` and `manifest.json`. It never writes to the
-repository. The weekly workflow `.github/workflows/icon-drift.yml` runs it on Thursdays and opens one issue
-titled "Icon drift: Google Cloud product icons changed" (or updates it while it is open), with the same report
-as Markdown; every run also puts the report in its job summary.
+repository. The weekly workflow `.github/workflows/icon-drift.yml` runs it on Thursdays and, through
+`scripts/drift-issue.mjs`, opens one issue titled "Icon drift: Google Cloud product icons changed" (or updates
+it while it is open), with the same report as Markdown; every run also puts the report in its job summary.
 
 What the report means:
 

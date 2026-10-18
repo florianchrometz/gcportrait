@@ -279,6 +279,11 @@ GitHub offers a check in the ruleset only after it has run once, so add it after
 - **The layout's budgets.** They describe a quiet M1-class machine, not a shared runner. `unit (layout)` holds
   the layout to twice its budgets on whatever runner it gets; `layout-budget`'s summary shows the runner's CPU
   and its strict figures, which are expected above the budgets by a margin.
+- **The weekly drift checks.** `catalog-drift.yml` (Mondays, `pnpm catalog:fetch-official --json … --markdown
+  …`) and `icon-drift.yml` (Thursdays, `pnpm --filter @gcportrait/icons drift`) put their report in the job
+  summary and, when something drifted, hand it to `scripts/drift-issue.mjs`, which opens or updates one issue
+  per check with `gh` and the workflow's token, commenting only when the drift differs from the one the issue
+  describes. Its unit tests run it against a stand-in `gh`; locally, run the check itself and read its report.
 
 For a visual change (layout, renderer, icons, palette), also render the M fixture in both themes and look at
 the PNGs (`pnpm render --fixture M --lens networking --png out.png`, then `--theme dark`), walk the checklists

@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: MIT
 #
 # Weekly drift check of the official Cloud Asset Inventory asset-type list (skill gcp-asset-catalog §8).
-# `pnpm catalog:fetch-official` (scripts/catalog-fetch-official.mjs) downloads the official list and writes a dated
-# snapshot under .agents/skills/gcp-asset-catalog/references/. When its identifiers differ from the newest committed
-# snapshot, this workflow opens one issue titled "Catalog drift: official asset-type list changed", or updates it
-# while it is still open, with the added and removed types and the diff. It never commits: a contributor commits the
-# new snapshot and the catalog changes in a pull request that closes the issue.
-#
-# The probe step is only a guard: on a branch whose root package.json has no `catalog:fetch-official`
-# script, the job logs that and succeeds instead of failing.
+# `pnpm catalog:fetch-official` (scripts/catalog-fetch-official.mjs) downloads the official list, writes a dated
+# snapshot under .agents/skills/gcp-asset-catalog/references/ and reports the identifiers added and removed since
+# the newest committed snapshot, as JSON and Markdown; every run puts the Markdown in its job summary. When the
+# lists differ, scripts/drift-issue.mjs opens one issue titled "Catalog drift: official asset-type list changed",
+# or updates it while it is still open, with that report. It never commits: a contributor commits the new snapshot
+# and the catalog changes in a pull request that closes the issue.
 name: Catalog drift
 
 on:
@@ -32,170 +30,38 @@ jobs:
     permissions:
       contents: read
       issues: write
-    env:
-      SNAPSHOT_DIR: .agents/skills/gcp-asset-catalog/references
-      LC_ALL: C
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Look for the fetch script
-        id: probe
-        run: |
-          script=$(node -p "require('./package.json').scripts?.['catalog:fetch-official'] ?? ''")
-          if [ -n "$script" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "catalog:fetch-official: no such script in the root package.json; nothing to check."
-          fi
-
       - name: Set up pnpm and Node
-        if: steps.probe.outputs.available == 'true'
         uses: ./.github/actions/setup
 
       - name: Fetch the official list and compare it with the newest committed snapshot
         id: compare
-        if: steps.probe.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          newest() {
-            find "$SNAPSHOT_DIR" -maxdepth 1 -name 'cai-supported-asset-types.*.txt' | sort | tail -n 1
-          }
-          # Identifiers only: comment lines (the dated header) and blank lines are not part of the list.
-          identifiers() {
-            if [ -n "$1" ]; then
-              { grep -v '^[[:space:]]*#' "$1" || true; } | sed '/^[[:space:]]*$/d' | sort -u
-            fi
-          }
-          count() { echo $(( $(wc -l < "$1") )); }
-          before=$(newest)
-          identifiers "$before" > "$RUNNER_TEMP/before.txt"
-          pnpm run catalog:fetch-official
-          after=$(newest)
-          identifiers "$after" > "$RUNNER_TEMP/after.txt"
-          echo "Snapshot files changed by the fetch:"
-          git status --short -- "$SNAPSHOT_DIR"
-          comm -13 "$RUNNER_TEMP/before.txt" "$RUNNER_TEMP/after.txt" > "$RUNNER_TEMP/added.txt"
-          comm -23 "$RUNNER_TEMP/before.txt" "$RUNNER_TEMP/after.txt" > "$RUNNER_TEMP/removed.txt"
-          diff -u --label "${before:-no committed snapshot}" --label "$after" \
-            "$RUNNER_TEMP/before.txt" "$RUNNER_TEMP/after.txt" > "$RUNNER_TEMP/drift.diff" || true
-          echo "before=${before}" >> "$GITHUB_OUTPUT"
-          echo "after=${after}" >> "$GITHUB_OUTPUT"
-          if [ -s "$RUNNER_TEMP/added.txt" ] || [ -s "$RUNNER_TEMP/removed.txt" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            added=$(count "$RUNNER_TEMP/added.txt")
-            removed=$(count "$RUNNER_TEMP/removed.txt")
-            echo "Drift: ${added} added, ${removed} removed."
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No drift: the official list matches ${before:-the (missing) committed snapshot}."
-          fi
+          pnpm run catalog:fetch-official \
+            --json "$RUNNER_TEMP/catalog-drift.json" \
+            --markdown "$RUNNER_TEMP/catalog-drift.md"
+          {
+            echo '## Catalog drift'
+            echo
+            cat "$RUNNER_TEMP/catalog-drift.md"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "changed=$(jq -r .drift "$RUNNER_TEMP/catalog-drift.json")" >> "$GITHUB_OUTPUT"
 
       - name: Open or update the drift issue
         if: steps.compare.outputs.changed == 'true'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          BEFORE: ${{ steps.compare.outputs.before }}
-          AFTER: ${{ steps.compare.outputs.after }}
-        with:
-          script: |
-            const fs = require('node:fs');
-            const path = require('node:path');
-            const crypto = require('node:crypto');
-
-            const TITLE = 'Catalog drift: official asset-type list changed';
-            const OFFICIAL_LIST = 'https://docs.cloud.google.com/asset-inventory/docs/supported-asset-types';
-            const MAX_LISTED = 200;
-            const MAX_DIFF_CHARS = 30000;
-
-            const read = (name) => fs.readFileSync(path.join(process.env.RUNNER_TEMP, name), 'utf8');
-            const lines = (name) => read(name).split('\n').filter((line) => line !== '');
-            const added = lines('added.txt');
-            const removed = lines('removed.txt');
-            const diff = read('drift.diff');
-
-            const list = (items) => {
-              if (items.length === 0) return '_none_';
-              const shown = items.slice(0, MAX_LISTED).map((type) => `- \`${type}\``);
-              if (items.length > MAX_LISTED) {
-                shown.push(`- … and ${items.length - MAX_LISTED} more (see the diff)`);
-              }
-              return shown.join('\n');
-            };
-            const shownDiff =
-              diff.length > MAX_DIFF_CHARS
-                ? `${diff.slice(0, MAX_DIFF_CHARS)}\n… (truncated; run pnpm catalog:fetch-official locally)`
-                : diff;
-            // Identifies this particular drift, so a re-run that finds the same change notifies no one.
-            const digest = crypto
-              .createHash('sha256')
-              .update(`${added.join('\n')}\n--\n${removed.join('\n')}`)
-              .digest('hex');
-            const { owner, repo } = context.repo;
-            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
-            const snapshot = process.env.BEFORE || '(none)';
-
-            const body = [
-              `<!-- catalog-drift digest: ${digest} -->`,
-              `The weekly check found that the [official list of supported asset types](${OFFICIAL_LIST}) ` +
-                `no longer matches the newest committed snapshot, \`${snapshot}\`.`,
-              '',
-              `### Added (${added.length})`,
-              '',
-              list(added),
-              '',
-              `### Removed (${removed.length})`,
-              '',
-              list(removed),
-              '',
-              '<details><summary>Diff of the identifier lists</summary>',
-              '',
-              '```diff',
-              shownDiff.trimEnd(),
-              '```',
-              '',
-              '</details>',
-              '',
-              '### To resolve',
-              '',
-              '1. Run `pnpm catalog:fetch-official` and commit the new dated snapshot.',
-              '2. For each added type, add a catalog entry, or add it to the `owns` and `types` (with a ' +
-                'reason) of the group file `packages/catalog/known-unmapped/<group>.yaml` that owns its ' +
-                'service; for each removed type, remove its entry or mark it deprecated (skill ' +
-                '`gcp-asset-catalog`).',
-              '3. Run `pnpm catalog:check` and open a pull request that closes this issue.',
-              '',
-              `_Last checked by [workflow run ${context.runId}](${runUrl})._`,
-            ].join('\n');
-
-            const open = await github.paginate(github.rest.issues.listForRepo, {
-              owner,
-              repo,
-              state: 'open',
-              per_page: 100,
-            });
-            const existing = open.find((issue) => !issue.pull_request && issue.title === TITLE);
-            const counts = `+${added.length} / -${removed.length} asset types`;
-            if (existing === undefined) {
-              const created = await github.rest.issues.create({ owner, repo, title: TITLE, body });
-              core.notice(`Opened issue #${created.data.number}: ${counts}.`);
-              return;
-            }
-            const sameDrift = (existing.body ?? '').includes(`catalog-drift digest: ${digest}`);
-            await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
-            if (sameDrift) {
-              core.info(`Issue #${existing.number} already describes this drift; refreshed its last line.`);
-              return;
-            }
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: existing.number,
-              body:
-                `The official list changed again: the description now lists ${added.length} added and ` +
-                `${removed.length} removed types ([run](${runUrl})).`,
-            });
-            core.notice(`Updated issue #${existing.number}: ${counts}.`);
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/drift-issue.mjs
+          --title 'Catalog drift: official asset-type list changed'
+          --marker catalog-drift
+          --report "$RUNNER_TEMP/catalog-drift.json"
+          --markdown "$RUNNER_TEMP/catalog-drift.md"
+          --again 'The official asset-type list changed again'
+          --rerun 'pnpm catalog:fetch-official'

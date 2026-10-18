@@ -46,6 +46,13 @@ file is a code file modified in place under `backend/`, `e2e/`, `.agents/` or `.
 or Playwright action or to `pr.yml` runs all three. `required` counts a skipped e2e leg or website as passed
 only when its output is false; a comparison that cannot be made sets every output true.
 
+## Drift checks
+
+- **`catalog-drift.yml` and `icon-drift.yml` keep no logic of their own beyond a few shell lines**: the check
+  script writes its report as JSON (`drift`, `digest`, `summary`) and Markdown, and `scripts/drift-issue.mjs`
+  opens or updates the issue through `gh`, because a script has unit tests and inline workflow code has none.
+- **They carry no guard for a branch without the scripts**: their schedule runs on `main`, where both exist.
+
 ## Dependabot
 
 The dependency audit and the handling of Dependabot's pull requests follow
