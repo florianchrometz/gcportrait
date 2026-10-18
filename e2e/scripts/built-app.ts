@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: MIT
 /**
- * The app as it ships, one of the two servers playwright.config.ts starts on CI (fixtures/servers.ts): `vite build`
- * of the frontend into a new temporary directory, then `vite preview` of that build until Playwright stops it.
+ * One of the two servers playwright.config.ts starts (fixtures/servers.ts): on CI, `vite build` of the frontend
+ * into a new temporary directory, then `vite preview`; locally, `--dev` runs Vite with a private temporary cache.
  *
  *   node scripts/built-app.ts --mode demo --port 50123     # VITE_DEMO=1: demo mode, http://localhost:50123, no proxy
  *   node scripts/built-app.ts --mode normal --port 50124   # normal mode, http://localhost:50124, /api proxied to 8080
+ *   node scripts/built-app.ts --mode demo --dev --port 50123
  *
  * The preview listens on `--port`, the free port the run picked, and takes the rest from frontend/vite.config.ts
  * (`preview`), which gives it the settings of the dev server of the same mode: its `strictPort`, so a port taken
  * meanwhile fails the start, its `/api` proxy, and without `--port` its port. The build logs its errors
  * only: its warnings are the `build` job's (`pnpm build`). Playwright stops the server with SIGTERM (the
  * `gracefulShutdown` of its webServer), and the directory is removed once the preview has exited, or at once when
- * the build fails. Node runs this file as it is (it strips the types): it imports only Node's modules.
+ * the build fails. A dev cache follows the same lifetime. Node runs this file as it is (it strips the types):
+ * it imports only Node's modules.
  */
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -28,20 +30,27 @@ const VITE = path.join(
   'vite.js',
 );
 
-const USAGE = `Usage: node scripts/built-app.ts --mode demo|normal [--port PORT]
+const USAGE = `Usage: node scripts/built-app.ts --mode demo|normal [--port PORT] [--dev]
 
 Builds the frontend in demo mode (VITE_DEMO=1) or normal mode into a new temporary directory and serves the build
 with vite preview on PORT (without it, on that mode's port in frontend/vite.config.ts), until stopped; then removes
-the directory.`;
+the directory. With --dev, runs the dev server instead, using a private temporary dependency cache removed
+after the server exits.`;
 
-const { values } = parseArgs({ options: { mode: { type: 'string' }, port: { type: 'string' } } });
-const { mode, port } = values;
+const { values } = parseArgs({
+  options: { mode: { type: 'string' }, port: { type: 'string' }, dev: { type: 'boolean' } },
+});
+const { mode, port, dev } = values;
 if ((mode !== 'demo' && mode !== 'normal') || (port !== undefined && !/^[1-9]\d{0,4}$/.test(port))) {
   console.error(USAGE);
   process.exit(2);
 }
-const env = mode === 'demo' ? { ...process.env, VITE_DEMO: '1' } : process.env;
 const dir = mkdtempSync(path.join(tmpdir(), `gcportrait-e2e-${mode}-`));
+const env = {
+  ...process.env,
+  ...(mode === 'demo' ? { VITE_DEMO: '1' } : {}),
+  ...(dev ? { GCPORTRAIT_VITE_CACHE_DIR: dir } : {}),
+};
 
 /** Aborted once Playwright (SIGTERM) or a person (SIGINT) stops the server. */
 const stopped = new AbortController();
@@ -73,8 +82,10 @@ function stop(): void {
 process.once('SIGTERM', stop);
 process.once('SIGINT', stop);
 
-let code = await vite(['build', '--outDir', dir, '--emptyOutDir', '--logLevel', 'error']);
-if (code === 0 && !stopped.signal.aborted) {
+let code = dev
+  ? await vite(port === undefined ? [] : ['--port', port])
+  : await vite(['build', '--outDir', dir, '--emptyOutDir', '--logLevel', 'error']);
+if (!dev && code === 0 && !stopped.signal.aborted) {
   code = await vite(['preview', '--outDir', dir, ...(port === undefined ? [] : ['--port', port])]);
 }
 rmSync(dir, { recursive: true, force: true });

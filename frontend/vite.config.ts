@@ -383,13 +383,15 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> => {
       brandFavicon(),
       ...(tools === undefined ? [] : [staticDemoPages(tools)]),
     ],
-    // One dependency cache per mode, so a demo and a normal dev server running side by side (as in the
-    // e2e suite) never re-optimise into the same directory.
-    cacheDir: demo
-      ? 'node_modules/.vite-demo'
-      : staticDemo
-        ? 'node_modules/.vite-static-demo'
-        : 'node_modules/.vite',
+    // One dependency cache per mode for ordinary dev servers; e2e's server wrapper supplies its own
+    // temporary directory so simultaneous runs never re-optimise into the same cache.
+    cacheDir:
+      process.env.GCPORTRAIT_VITE_CACHE_DIR ||
+      (demo
+        ? 'node_modules/.vite-demo'
+        : staticDemo
+          ? 'node_modules/.vite-static-demo'
+          : 'node_modules/.vite'),
     server: { port: demo ? DEMO_PORT : DEV_PORT, strictPort: true, proxy },
     preview: { port: demo ? DEMO_PORT : DEV_PORT, strictPort: true, proxy },
     // The diagram's worker script (src/diagram/pipeline/diagram.worker.ts) loads each role's code with a dynamic

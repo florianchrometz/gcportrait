@@ -84,8 +84,9 @@ const REPORTERS: ReporterDescription[] = [
 function server(mode: 'demo' | 'normal', url: string, named: boolean) {
   const port = new URL(url).port;
   const local = {
-    command: `pnpm --filter @gcportrait/frontend run ${mode === 'demo' ? 'dev:demo' : 'dev'} --port ${port}`,
+    command: `node scripts/built-app.ts --mode ${mode} --port ${port} --dev`,
     timeout: 60_000,
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
   } as const;
   const built = {
     command: `node scripts/built-app.ts --mode ${mode} --port ${port}`,

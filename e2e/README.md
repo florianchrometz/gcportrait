@@ -42,7 +42,12 @@ and the layout skill's checks (gcp-diagram-layout §8).
 | `chromium-phone` | demo mode, as `chromium` | the tests tagged `@phone` (`handheld.spec.ts`), in Chromium emulating a touch device at 390 × 844, 3× (an iPhone 13's window, the phone's layout) |
 | `chromium-tablet` | demo mode, as `chromium` | the tests tagged `@tablet` (`handheld.spec.ts`), in Chromium emulating a touch device at 820 × 1180, 2× (an iPad Air's window, the tablet's layout) |
 
-Locally the two servers are the Vite dev servers, `pnpm dev:demo` and the Vite server of `pnpm dev`. On CI
+Locally the two servers are Vite dev servers, started by `scripts/built-app.ts --dev`. Each server gets a
+private temporary dependency cache through `GCPORTRAIT_VITE_CACHE_DIR`: simultaneous runs of one checkout
+do not share it, at the cost of cold dependency optimisation on each start. The wrapper removes only its
+own directory after Vite exits, including a failed start or SIGTERM/SIGINT shutdown; SIGKILL or a host crash
+can leave temporary files behind. A server reused by URL keeps its own cache, and ordinary `pnpm dev` and
+`pnpm dev:demo` keep their per-mode caches. On CI
 (`CI` set) they are the app as it ships: `scripts/built-app.ts` builds the frontend in its mode (`VITE_DEMO=1`
 for demo mode) into a new temporary directory and serves the build with `vite preview`, which takes the dev
 server's `/api` proxy from `frontend/vite.config.ts`, until Playwright stops it and the directory is removed.
@@ -62,6 +67,11 @@ checkout or of two, therefore never meet, and a dev server another checkout left
 that answers on a port the run picked fails the run ("is already used"). To run specs against a dev server of
 your own, with its hot reload, name its URL: a local run then reuses the server that answers there, whichever
 checkout started it, and starts the mode's server on that port when nothing does. CI never reuses a server.
+If a picked port becomes occupied, rerun to pick new ports or stop the conflicting server. Playwright's
+"set reuseExistingServer:true" advice does not apply to picked ports or CI: their refusal protects the
+checkout being tested. A free-port probe cannot reserve a port until Vite starts; `strictPort` still refuses
+a later collision. Playwright checks an already-used URL before starting either the server command or global
+setup, so a check in either would not replace that message.
 
 ```sh
 E2E_DEMO_URL=http://localhost:5174 pnpm e2e tests/keyboard.spec.ts --project chromium   # your pnpm dev:demo
