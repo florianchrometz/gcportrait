@@ -3,8 +3,8 @@ import { defineConfig } from 'vitest/config';
 
 /**
  * The `model` test project. The root run (`pnpm test`) loads it as one of its projects and ignores the
- * coverage block below (coverage is a root-level option there); running Vitest in this package uses it and
- * fails below the thresholds. That is why this file uses defineConfig rather than defineProject, whose type
+ * coverage block below (coverage is a root-level option there); running Vitest in this package with
+ * `--coverage` uses it and fails below the thresholds, as `pnpm test:coverage` (CI's `unit (coverage)`) does. That is why this file uses defineConfig rather than defineProject, whose type
  * has no coverage options.
  *
  * `pnpm --filter @gcportrait/model test -- --coverage` forwards the `--` to Vitest, which then stops reading

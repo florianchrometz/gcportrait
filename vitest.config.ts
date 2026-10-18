@@ -6,7 +6,9 @@ import { defineConfig } from 'vitest/config';
  * own vitest.config.ts (environment, includes), so `pnpm --filter <pkg> test` behaves the same as the root run.
  * e2e/ is not a Vitest project; it runs under Playwright.
  *
- * Coverage (V8) is configured but not enforced yet: `pnpm test --coverage` writes reports to coverage/.
+ * Coverage (V8): `pnpm test --coverage` writes a report of every project to coverage/, without thresholds; the
+ * packages that hold thresholds declare them in their own vitest.config.ts, which `pnpm test:coverage` (CI's
+ * `unit (coverage)` leg) runs.
  * Most of the scripts/*.mjs command-line tools are tested end to end in child processes, which V8 coverage does
  * not follow, so their coverage figure reads far lower than what the tooling tests actually exercise.
  */

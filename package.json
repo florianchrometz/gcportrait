@@ -25,6 +25,7 @@
     "pretest": "pnpm run catalog:build --quiet",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "pnpm --filter @gcportrait/model --filter @gcportrait/ingest --filter @gcportrait/graph --filter @gcportrait/layout --workspace-concurrency=1 exec vitest run --coverage",
     "test:infra": "vitest run --project tooling scripts/infra",
     "catalog:build": "pnpm --silent --filter @gcportrait/catalog run build",
     "catalog:check": "pnpm --silent --filter @gcportrait/catalog run check",

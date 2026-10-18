@@ -8,7 +8,7 @@ import { defineConfig } from 'vitest/config';
  *
  * Like the model and graph packages it uses defineConfig, whose type has the coverage options, so that
  * `pnpm --filter @gcportrait/demo-data exec vitest run --coverage` reports coverage; the root run ignores the
- * coverage block. No thresholds yet. The spawned `generate` command runs in a child process, which V8 coverage
+ * coverage block. It holds no thresholds, so `pnpm test:coverage` leaves it out. The spawned `generate` command runs in a child process, which V8 coverage
  * does not follow.
  */
 export default defineConfig({

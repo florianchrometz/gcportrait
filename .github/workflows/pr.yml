@@ -27,8 +27,8 @@
 # With no code among the changed files, the run keeps unit (all other projects) (the user guides' check, the
 # README's and the media's tests, the backend's and the website's tests read these files), website, repo-checks'
 # provenance steps and required, with docs repo-checks' licenses step too (THIRD_PARTY.md) and with media lint's
-# Prettier step (the media's two manifests are JSON). It skips typecheck, unit (layout), unit (frontend),
-# layout-budget, build, e2e, lint's ESLint step and repo-checks' catalog-check, audit and workflows-and-shell
+# Prettier step (the media's two manifests are JSON). It skips typecheck, unit (layout), unit (frontend), unit
+# (coverage), layout-budget, build, e2e, lint's ESLint step and repo-checks' catalog-check, audit and workflows-and-shell
 # steps: none of them reads a changed file, so each would give the result it gave the tree before the change,
 # which that commit's own run reports. Every job runs when the
 # comparison cannot be made (a new branch, a push whose commit before is not in the history) or finds no file.
@@ -235,7 +235,10 @@ jobs:
   # on the same runner would eat into; the frontend is the largest project. These two are the `unit` matrix, which
   # a change of only docs and media skips; the third leg, `unit-other`, runs every project but those two, by
   # negation, on every change, so a new project is never left out, and a misspelt name in the first two legs fails
-  # the leg ("No projects matched the filter") instead of skipping a project.
+  # the leg ("No projects matched the filter") instead of skipping a project. The matrix's `coverage` leg runs
+  # `pnpm test:coverage`: the packages with coverage thresholds in their own vitest.config.ts (model, ingest,
+  # graph, layout), each under V8 coverage, failing below a threshold. It is a leg of its own because
+  # instrumentation slows the tests and the layout's skips its time budgets under it, which `unit (layout)` keeps.
   unit:
     name: unit (${{ matrix.leg }})
     needs: changes
@@ -250,12 +253,17 @@ jobs:
             projects: layout
           - leg: frontend
             projects: frontend
+          - leg: coverage
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      - name: Vitest under coverage, with the packages' thresholds (model, ingest, graph, layout)
+        if: matrix.leg == 'coverage'
+        run: pnpm run test:coverage
       - name: Vitest (${{ matrix.projects }})
+        if: matrix.leg != 'coverage'
         env:
           PROJECTS: ${{ matrix.projects }}
         run: |

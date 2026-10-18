@@ -7,10 +7,11 @@ These rules add to the root AGENTS.md, which applies here too.
 ## CI
 
 - **CI** (`.github/workflows/pr.yml`) runs its jobs side by side on each pull request and push to `main`:
-  lint, typecheck, the unit tests in three legs, `layout-budget` (reports only), build with the size budgets,
-  e2e in five Chromium legs (three of the desktop specs, two of the phone and tablet check and the
-  `chromium-phone` and `chromium-tablet` projects), the website and `repo-checks`. The e2e leg contract
-  follows [e2e/AGENTS.md](../e2e/AGENTS.md), "CI legs".
+  lint, typecheck, the unit tests in three legs plus a coverage leg (the packages' thresholds),
+  `layout-budget` (reports only), build with the size budgets, e2e in five Chromium legs (three of the
+  desktop specs, two of the phone and tablet check and the `chromium-phone` and `chromium-tablet`
+  projects), the website and `repo-checks`. The e2e leg contract follows [e2e/AGENTS.md](../e2e/AGENTS.md),
+  "CI legs".
 - **Checks that take seconds are steps of `repo-checks`**, not jobs, because each job spends its set-up
   again: catalog-check, provenance (with a self-test that plants a banned file and requires the guard to
   fail), licences, the dependency audit and workflows-and-shell. Each step runs after a failed one
@@ -28,10 +29,10 @@ docs (`docs/**/*.md`, `.changeset/*.md`, the root's Markdown files, each top-lev
 `README.md` and `CHANGELOG.md`, and each folder's `AGENTS.md`), media (`docs/media/**`) or code (everything
 else, the skills included). With no code among them, the unit tests of every project but the layout and the
 frontend, the website and provenance run, licences too for docs (`THIRD_PARTY.md`) and Prettier for media (its
-manifests are JSON); typecheck, the layout and frontend unit legs, `layout-budget`, build, e2e, ESLint and the
-catalog-check, audit and workflows-and-shell steps are skipped, because none of them reads those files, so
-each could only repeat the result of the tree the change starts from. A comparison that cannot be made runs
-every job.
+manifests are JSON); typecheck, the layout, frontend and coverage unit legs, `layout-budget`, build, e2e,
+ESLint and the catalog-check, audit and workflows-and-shell steps are skipped, because none of them reads
+those files, so each could only repeat the result of the tree the change starts from. A comparison that
+cannot be made runs every job.
 
 ## The e2e, layout-budget and website gates
 

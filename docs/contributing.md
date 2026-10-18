@@ -121,10 +121,11 @@ licenses: OK. 565 installed packages are under allowed licences; the workspace p
 - **One test project from the root:** `pnpm test --project <name>`, where the name is `model`, `demo-data`,
   `ingest`, `catalog`, `graph`, `layout`, `icons`, `render`, `render-cli`, `frontend`, `backend`, `website` or
   `tooling`. `pnpm test:watch` re-runs tests as you edit.
-- **Coverage:** `pnpm test --coverage` writes a report to `coverage/`; it is not enforced repository-wide yet.
-  Some packages enforce their own thresholds when run with coverage: `@gcportrait/model` 100 % of its schemas
-  and codec, `@gcportrait/ingest` and `@gcportrait/graph` near 100 % (see their `vitest.config.ts`), for
-  example `pnpm --filter @gcportrait/model test -- --coverage`.
+- **Coverage:** `pnpm test:coverage`, which CI's `unit (coverage)` leg runs, holds four packages to the
+  thresholds in their own `vitest.config.ts`: `@gcportrait/model` 100 % of its schemas and codec,
+  `@gcportrait/ingest`, `@gcportrait/graph` and `@gcportrait/layout` near 100 %. One package alone:
+  `pnpm --filter @gcportrait/model test -- --coverage`. `pnpm test --coverage` writes a report of every
+  project to `coverage/` without thresholds.
 - **The asset catalog:** the compiled catalog (`packages/catalog/src/generated/`) is a git-ignored build
   artefact that `pnpm install`, `lint`, `typecheck` and `test` rebuild; after editing YAML under
   `packages/catalog/`, run `pnpm catalog:check` (`--group <group>` for one authoring group's files only). The
@@ -156,6 +157,7 @@ and media; the e2e legs, `layout-budget` and `website` also skip other changes t
 | `lint` | `pnpm format:check`, then `pnpm lint` | Prettier only, when media changed (its two manifests are JSON); skipped for docs alone |
 | `typecheck` | `pnpm typecheck` | skipped |
 | `unit (layout)`, `unit (frontend)` | `pnpm test --project layout`; `pnpm test --project frontend` | skipped |
+| `unit (coverage)` | `pnpm test:coverage`: model, ingest, graph and layout, each under V8 coverage with the thresholds of its own `vitest.config.ts`; fails below one | skipped |
 | `unit (all other projects)` | `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included | runs: the user guides' check, the citation check of the rules files, the README's and the media's tests and the backend's and the website's tests read docs and media |
 | `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking. Runs only when `layout` is true | skipped |
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
