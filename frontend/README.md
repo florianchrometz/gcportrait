@@ -321,84 +321,26 @@ is CSS.
 | Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel; while the drawer is open, the camera keeps the drawing clear of it too | a compact row across the canvas's foot, above the drawer's sheet while it is open (the camera then keeps the drawing in the band above it), or hidden while it is open on a canvas under 20.25rem tall (a phone turned sideways, the smallest phones upright); hidden while View or More is open |
 | Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
-**Folds.** View and More are `ui/Popover` sheets (`sheet`). On a desktop they are `inline`: no button, the
-anchor and the panel `display: contents`, so the controls are the rows' own flex items and the desktop's
-layout and tab order are what they were. On a phone or a tablet each is a button and a non-modal dialog
-hanging from the bar's lower edge, never taller than most of the window, and on `/diagram` at most two thirds
-of the canvas's height: the bar carries the canvas's measured height as `--canvas-height`
-(`TopBar.module.css`, `.overCanvas`), so the canvas's lower third shows the drawing change below the sheet
-while a lens or a filter is chosen in it (the disclosure bar's row steps aside meanwhile on a phone); what
-does not fit scrolls inside the sheet, and focus scrolls a control into view there. The panel is the same
-element either way, so a control keeps its state when the window crosses the desktop's breakpoint; crossing
-the phone's moves the view controls between the rows, which mounts them again (their state is the store's). A
-sheet's content stays mounted while it is closed (hidden), so the Saved views dialog opened from More stays
-open, and a press in it, while it makes the sheet inert, does not close the sheet. One sheet at a time
-(`ui.sheet`, `useSheet`), kept apart from the one popup at a time (`ui.popover`): a menu, a list or a popover
-opens inside the sheet without closing it, in the flow under its control (`popup.module.css`, `.sheet`), its
-column the sheet's width whatever it holds: a menu item longer than that (the Snapshot menu's "Open: …" line)
-wraps, as does a control's label in the sheet (the account's address), and the account panel is as wide as the
-sheet, so a sheet never scrolls sideways. Escape closes that popup first (a popup that handled the key leaves
-the sheet open), then the sheet, with focus back on View or More; a new page or another layout closes the
-sheet, and so does Sign out in the account panel (focus then starts at the page); `/` opens View onto the
-search box. A pick in More that changes the view or the theme (a snapshot in the Snapshot menu, a saved view
-applied, a theme in the Theme menu) closes it too, focus back on More (`ui/Popover` puts focus back on a
-sheet's button when the sheet closes with focus inside it or dropped to the body). A snapshot or a saved view
-picked away from the diagram opens the diagram page, a new page, which closes the sheet by itself and starts
-focus at the page. Copy link and Export's own menu keep the sheet open. No control has a second copy: a fold
-moves the one there is. A sheet and the details drawer are never open together (`apart` in `state/store.ts`):
-opening View or More, by its button or by `/`, closes the drawer, so on `/diagram` the sheet is alone over the
-canvas and leaves at least a third of it in view. The selection stays, its ring and its trace with it, and the
-drawer stays closed whatever a pick in the sheet changes of the view (a lens, a filter, a saved view); a tap
-or a key on the selected node opens it again, and so does another node selected once the sheet is closed (a
-link, Back). A search result picked in View closes the sheet onto its button and opens the drawer on the
-result, in the part of the canvas the drawer leaves in view. The open sheet is marked `data-canvas-overlay`,
-as the drawer is, so a camera jump made while it is open keeps the node in the part of the canvas below or
-beside it, and a fit shows the whole drawing there: `0`, a view drawn while it is open (a lens or a filter
-picked in it), and the sheet's opening itself while the camera still rests on the drawing's fit, which the
-sheet's closing then makes again for the whole canvas (section "App state", `clearRoom`, `fitRoom` and
-`panels`). On a desktop no sheet opens, and the drawer stays as it is.
+**Folds.** View and More are `ui/Popover` sheets (`sheet`), `inline` on a desktop: no button, the anchor and
+the panel `display: contents`, so the controls are the rows' own flex items and the desktop's layout and tab
+order are what they were. On `/diagram` the bar carries the canvas's measured height as `--canvas-height`
+(`TopBar.module.css`, `.overCanvas`), so a lens or a filter chosen in the sheet shows its drawing in the part
+below it. One sheet at a time (`ui.sheet`, `useSheet`) and one popup at a time (`ui.popover`), a popup opening
+inside its sheet (`popup.module.css`, `.sheet`), its column the sheet's width whatever it holds, so a sheet
+never scrolls sideways; a control the sheet scrolls into view by focus stops below the handle's inner half
+(`scroll-padding-top`). A sheet and the details drawer are never open together (`apart` in `state/store.ts`).
+Which controls fold where, what closes what, and the room the canvas keeps are frontend/AGENTS.md, "Phones,
+tablets and desktops"; the camera's `clearRoom`, `fitRoom` and `panels` are section "App state".
 
-**Touch.** On a phone and a tablet every target is at least 44 × 44 CSS pixels: `--control-height` grows to
-`--touch-target` (44 px) under `(max-width: 79.99rem)`, and the rest (the crumbs, the drawer's copy buttons,
-jump links and handle, the pickers' chips, the Filters' and Settings' choices, the segments, the slider's
-thumb, the footer's links) have their own rules for it. The bars and the drawer keep clear of a phone's notch,
-rounded corners and home indicator with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`). The
-canvas reads a finger itself (section "Diagram renderer", paragraph "Touch"): one finger pans, two pinch, a
-tap selects (and opens the drawer) or opens a chip, a double tap zooms in, a long press shows what hover shows
-a mouse. A node's menu (a right-click or Shift+F10 on a desktop) and drill-in have no touch gesture: their
-actions are in the drawer (Details drills in, "Open in Cloud Console ↗", Copy). The browser's own gestures
-stay off the canvas alone (`touch-action: none`), so every page pinch-zooms as the browser does
-(`index.html`'s viewport sets no `maximum-scale` or `user-scalable`).
-
-**Out of sight, out of reach.** The chrome over the canvas never hides a control that can take focus: the
-drawer's content scrolls inside it and never reaches past its edge (onto the timeline bar), the disclosure bar
-moves clear of the drawer (to the bottom left on a tablet, above the sheet on a phone, by the sheet's
-`data-sheet`; hidden while the sheet is open on a canvas too short for it and a band of the drawing above it,
-`CONTAINER.shortCanvas` on the bar's frame; marked `data-canvas-overlay` while the drawer is open, so a camera
-jump and a fit keep the drawing clear of both, section "App state", `clearRoom`), the canvas's content is
-hidden (`visibility`) while the phone's sheet covers it at full height, and the skip links show over the top
-bar. A control scrolled into view in the sheet by focus stops
-below the handle's inner half, which lies over the top of the sheet's content (`scroll-padding-top`). On a
-phone turned sideways, whose workspace is too short for the whole timeline bar and a canvas whose half-height
-sheet holds its header (`CONTAINER.shortWorkspace` on the workspace), the timeline bar keeps one line while
-the sheet is open, the slider and the step and play buttons, and hides its readout and playback options until
-the sheet closes: the canvas then holds the sheet's Close button whole above the bar (and every other 44-pixel
-control of the sheet below the handle), and a canvas that short has the smallest `auto` budget either way, so
-the fold never lays the diagram out again. A control is either wholly in sight when it has focus and tappable
-there, or not focusable at all.
-
-**Tables and hidden text.** A table too wide for its page scrolls sideways in its own box (`tableWrap` in
-`snapshots/` and `preflight/`), and that box is positioned, as is the permission check's panel (`panel` in
-`preflight/`). Text for assistive technology only (`.visually-hidden`: a caption, the words of an Actions
-header, a live region) is absolutely placed; without a positioned box around it, it is placed against the
-window instead, outside the table's box and the page's own scroll box (`<main>`), where it makes the whole
-document scroll sideways and down, a phone lays the page out wider than its screen, and a swipe slides the top
-bar and the footer off it. On a phone, the Permissions page's reference (what each mode needs, with its
-commands) is a list under a heading per mode rather than a three-column table, which would leave a command a
-few characters' width (`preflight/PermissionsGuide.tsx`, by `useScreen()`; the same command blocks either
-way). The Snapshots page's tables, whose rows a phone could show only by scrolling them sideways, are a list
-of cards there, one per row, each column a labelled line of a description list over the row's buttons
-(`snapshots/RowTable.tsx`, by `useScreen()`; the same columns and the same buttons either way).
+**Touch, reach and tables.** `--control-height` grows to `--touch-target` under `(max-width: 79.99rem)`, and
+the bars and the drawer pad with `env(safe-area-inset-*)` (`viewport-fit=cover` in `index.html`); the canvas
+reads a finger itself (section "Diagram renderer", "Touch"). A table too wide for its page scrolls sideways in
+a box of its own that is positioned (`tableWrap` in `snapshots/` and `preflight/`), as the permission check's
+panel is, since `.visually-hidden` text without a positioned box around it is placed against the window,
+outside the page's own scroll box, and makes the document scroll. On a phone the Permissions page's reference
+is a list of commands under a heading per mode and the Snapshots page's tables a list of cards, one per row
+(`preflight/PermissionsGuide.tsx`, `snapshots/RowTable.tsx`, by `useScreen()`; the same commands, columns and
+buttons either way).
 
 **Checks.** `shell/parity.test.tsx` (widths through `test/viewport.ts`, a `matchMedia` for a width) and
 `e2e/tests/mobile.spec.ts`, run with `e2e/tests/touch.spec.ts` by `pnpm --filter @gcportrait/frontend mobile`
@@ -1638,48 +1580,11 @@ src/diagram/disclosure/
   centred at the current scale. Any other new drawing, a level change included, is fitted as before. After a
   flip from the keyboard focus follows the zone: onto its collapse button after expanding, back onto its chip
   after collapsing.
-- **Expand all** opens the shallowest collapsed tier: the next detail level at which a chip on screen opens
-  (of the chips its level closes, not those closed by hand or by the `depth` filter), written as an explicit
-  level. Flips whose zone is a chip on screen go (they keep a zone closed), and so do flips that open a zone
-  the new level opens anyway; a flip that opens a zone the new level still closes stays, so nothing open
-  closes. Flips naming no zone on screen stay. With no deeper level to open only the closing flips go; chips
-  the `depth` filter makes stay. Flips cannot do this job alone: demo L's folder level has 117 project chips.
-  On a timeline day the flip of a zone drawn only as a ghost goes or stays by the same rules, judged by the
-  state the earlier day drew the zone in, so no ghost closes either (demo M's day 2026-09-17 under the
-  networking lens at `folders`, the reports project's ghost opened by hand: the projects level opens it
-  anyway, and its flip goes).
-- **Collapse all** closes every zone opened by hand and, when the level in use is deeper than the one `auto`
-  picks for this view at the canvas's size, goes back to `auto`. It never opens anything: a level chosen by
-  hand that is not deeper than `auto`'s stays (demo S at `folders` stays at `folders`; a project's view, where
-  `auto` opens everything, keeps its level), and a flip that keeps a zone on screen closed stays while the
-  level still opens that zone. Flips that name no zone of the view (the report's `unknownFlips`: another
-  root's or focus's) stay; the view's other flips go, those inside chips included. On a timeline day the
-  flip of a zone drawn only as a ghost, among the `unknownFlips` since the drawn day's view holds no such
-  zone, goes or stays as the view's do, judged by the state the earlier day drew the zone in, so no ghost
-  chip opens either (the reports project's ghost closed by hand at the projects level: back at `auto`'s
-  folder level it stays a chip without its flip, which would open it there).
-- **Zones drawn empty.** A zone with nothing inside under the view's lens and filters, or only a timeline
-  day's ghosts, is never a chip and the scene builder ignores its flip. That flip is the person's choice for
-  when the zone holds something again (a lens switch back): both buttons leave it as it is, unless the level
-  they write gives the zone that state by default (Expand all to a level that opens it, Collapse all back to
-  an `auto` that closes it), where it goes as any zone's flip would. Either way the zone keeps the state the
-  person gave it.
-- **Available when they change the drawing.** Each button is inert (`aria-disabled`, still focusable, the
-  reason in its tooltip) when the view it would write draws what is on screen: Expand all when no chip would
-  open or reopen, Collapse all when no open zone would close, so a flip of a zone drawn empty alone leaves
-  both inert. On a timeline day the ghosts count: the diff builds the earlier day at the level in use with the
-  view's flips, so a press back to `auto` that leaves every zone of the view as it is can still turn an open
-  ghost into a ghost chip or empty a zone that holds only ghosts (demo M's day 2026-09-17, the reports project
-  marked for deletion, every other project closed by hand at the projects level: Collapse all is live). So
-  every zone the ghosts depend on, each ghost zone and each zone around a ghost up to the canvas, must keep
-  the state the earlier day drew it in, judged by what it was that day: the diff carries these zones
-  (`TickDiff.earlier`: kind, container, whether it was the view's overlay, state), since the drawn day may
-  hold a zone elsewhere (a project moved out of its folders, deeper or shallower for the `depth` filter) or
-  not hold the perimeter whose overlay, open at every level, a ghost was. Both are worked out on the
-  drawing on screen with the view it draws (its scene key, decoded), never on one view's hash with another
-  view's drawing; a press while a newer view is being drawn (a drill-in, a level just written) waits in the
-  store until that view's own drawing arrives and is worked out on it, and is dropped if the view moves on
-  first.
+- **Expand all, Collapse all and the zones drawn empty** are `flips.ts`'s header (the level each writes, the
+  flips it drops, what it leaves as it is, and a timeline day's ghosts judged by the state the earlier day
+  drew a zone in): `expandAllTarget` and `collapseAllTarget` are the views a press writes. A button is inert
+  when the view it would write draws what is on screen (`selectCanExpandAll`, `selectCanCollapseAll`):
+  `aria-disabled`, still focusable, the reason in its tooltip.
 - **"N of M shown"**: the rects drawn (zones, chips and cards; a chip once) of the rects the view holds at
   `all` (the report's count without flips, never less than N), with thousands separators, in a status region.
 - **Notices** (a live region kept in the DOM, until dismissed or replaced): when a view change dropped flips
@@ -1842,44 +1747,16 @@ it, plus its kind (folder, project, network, container, resource), role, hidden 
 draws its type, and its icon key. Answers carry the icons of their results, resolved in the worker like a
 Scene's.
 
-**Ranking** (`rank.ts`). A node matches in the best of four tiers, and tiers never mix, so an exact id, IP,
-domain or project id always beats a fuzzy label:
-
-| Tier | When | Score inside the tier (lower first) |
-|---|---|---|
-| exact | the query (trimmed, any case) equals the label, display name, last name segment, full name, an IP, a domain, or a project's id | 0.1 (0.15 for display name and name segment), less 0.01 per further field it equals |
-| prefix | one of those fields starts with the query, or a word inside the label, display name, name segment or a project's id does ("web" in "Retail web (prod)" and in `demo-web-1`) | 0.2 + 0.5 × the share of the field left over, + 0.1 for a word inside the field (`WORD_START_PENALTY`) |
-| range | the query is an IPv4 address inside one of the node's IPv4 ranges (a subnet's CIDR, a route) | 0.5 × (1 − prefix length / 32): the narrowest first |
-| fuzzy | Fuse.js finds the query in one of the fields below (location ignored); a query with a `/` also matches inside full resource names; a query of several words matches a node that holds every word in some field of the table, in any order ("compute instance", "web retail") | Fuse's score + (3 − weight) / 10, the node's best field; for several words 0.1 (`WORDS_SCORE`) + the mean (3 − weight) / 10 of the weightiest field holding each word |
-
-| Fuzzy field | Weight | Fuse threshold |
-|---|---|---|
-| label | 3 | 0.3 |
-| display name, last name segment | 2.5 | 0.3 |
-| IPs | 2.5 | 0 (substrings only: a near-miss address is another address) |
-| domains | 2.5 | 0.25 |
-| project id | 2 | 0.2 |
-| type name | 1 | 0.2 |
-| asset type | 0.5 | 0 (substrings only: "kms" finds `cloudkms.googleapis.com/…`) |
-| product, names of the project and folders above | 0.5 | 0.2 |
-
-Each field has its own Fuse index (built once; a searcher per query is cheap), because Fuse's own score over
-several keys multiplies them: a node that half-matches many fields would rank above one whose label holds the
-query exactly. Each index holds the field's distinct values, each mapped to the nodes that have it (a type
-name, a product, a project id or a folder name is shared by many nodes and searched once); a name segment or
-display name that repeats the label is left out (the label's match ranks higher), and the substring-only
-fields (threshold 0) are matched with `includes`, not Fuse. **Typos**: a field's threshold is capped at 2
-typos for the whole query (`MAX_TYPOS`), so a pasted domain stays as fast and as strict as a short word, and
-at 1 (`STRONG_TYPOS`) once the query has matched some node exactly, by a prefix or in a range: a two-typo
-guess inside a longer label ("bastion" in "notifications") is noise next to the real match, while a misspelt
-name ("bastoin") that matches nothing better still finds its node. Fuzzy matching starts at 2 characters.
-**Containers** (folders, projects, networks, clusters, instance groups, …) are boosted in every tier: their
-score × 0.6 (`CONTAINER_BOOST`), so "web" lists the instance groups and the projects named "… web (…)" before
-the VMs and addresses that start with it, and "compute instance" the instance groups before the instances.
-Ties go to nodes drawn by default, then to the types the default lens (overview) draws, so a VM comes before
-its disk of the same name, then `core` before `leaf`, then label and id. Indexing and queries run off the UI
-thread; each query holds the data worker's queue (Scene requests wait behind it). The 120 ms debounce keeps
-typing from queueing several. [docs/modes.md](../docs/modes.md#4-the-demo) lists the demo sizes.
+**Ranking** (`rank.ts`, whose header is the specification: the four tiers and their scores, `FUZZY_FIELDS`'
+weights and thresholds, the typo caps, the boost and the tie-break order). Tiers never mix, so an exact id,
+address, domain or project id always beats a fuzzy label; each field has its own Fuse index over its distinct
+values, so a node ranks by its best field rather than by the product of several. Containers (folders,
+projects, networks, clusters, instance groups, …) are boosted inside every tier, so "web" lists the instance
+groups and the projects named "… web (…)" before the VMs and addresses that start with it. Ties go to nodes
+drawn by default, then to the types the default lens (overview) draws, so a VM comes before its disk of the
+same name, then `core` before `leaf`, then label and id. Indexing and queries run off the UI thread; each
+query holds the data worker's queue (Scene requests wait behind it). The 120 ms debounce keeps typing from
+queueing several. [docs/modes.md](../docs/modes.md#4-the-demo) lists the demo sizes.
 
 **The box** (`SearchBox.tsx`, on `ui/Combobox`). `/` focuses it from anywhere but a text field (and not while
 a modal dialog has made it inert); `aria-keyshortcuts="/"`. Typing lists at most 20 results, grouped by kind
@@ -2112,50 +1989,15 @@ independent of either's order, `updateTime` compared as an instant), worked out 
 drawn day's Scene, where both days' Graphs are kept, and sent with it (`SceneAnswer.diff`). A day the timeline
 no longer has is not compared.
 
-**Ghosts are put into the Scene and placed by the layout (decision).** A removed node is drawn as a ghost card
-at its last position. It could be overlaid at the rect the previous Layout gave it, but the new Layout packs
-its container without it, so that rect may hold something else now, and the UI thread would need the previous
-Layout and a rule for containers that moved. Instead the data worker builds the view on the earlier day too
-(at the detail level the drawn Scene uses, with the same flips), takes every node drawn there that the drawn
-Scene does not draw and that was removed, or that is still there and the drawn day's view leaves out where it
-stood: changed (a project marked for deletion has changed and the view hides it: "not drawn now"), or an asset
-zone unchanged itself holding something that comes back (demo M's Platform management with its CI runner VM
-removed, no longer drawn once empty projects are hidden: not drawn now, around the VM's ghost). With what it
-held that is gone now, it puts it back into its old container in the drawn Scene. A zone that is no asset (a
-region, a bundle) not drawn now comes back the same way when it held something that comes back, as `removed`
-when something removed does, else not drawn now (everything demo M's Payments web (prod) held in us-central1
-removed: the region zone's ghost in the open project, around their ghosts; the one Batch job a region held
-succeeded: the region zone not drawn now, around the job's). Any zone the earlier day drew as a chip, an asset
-or not, comes back as that chip, counting only what comes back of what the earlier day's view with every zone
-open draws in it; an asset's chip of which nothing comes back counts nothing, and a region zone's or a
-bundle's does not come back at all (a bundle of demo L whose members are bundled anew counts its one removed
-member, not those the new bundles draw; demo M's Payments web (prod), marked for deletion and a chip at the
-folder level, counts the Batch job that succeeded in it, not what its folder draws now). A node
-still there that the drawn day's Graph holds in another container (it moved: drawn there, in a
-chip there, or out of the view now) or inside a chip of the drawn Scene is no ghost: it is drawn once, where
-the drawn day has it, and the chip that holds it counts what changed of it (demo M's partner exchange moved
-into a folder drawn as a chip: the chip's dot only). The layout's deterministic sibling order (zones before
-cards, then by label: `@gcportrait/layout` `order.ts`) places a ghost where it stood among its siblings,
-nothing overlaps it, and lines route around it; for that day the diagram makes room for it. A ghost needs its
-container: one whose container is not drawn open now (gone, or collapsed into a chip) gets none of its own,
-and comes back inside its container's ghost or the chip counts it instead; a drill-in whose root moved draws
-none. What the earlier day drew only inside a chip is judged on that day's view with every zone open: it comes
-back in the zone it lies in there when the drawn day draws that zone open, each zone of its ghost open or
-closed as the drawn day's view draws a zone there (a VM of demo L removed from a subnet of a bundle closed by
-hand, the subnet drawn in a new bundle once the members are bundled anew, comes back in the subnet; a network
-removed from a project that moved out of a folder drawn as a chip comes back in the project, a chip at a depth
-of one), but not in a zone the earlier day drew as a chip itself that the drawn day draws open only because it
-holds nothing now (the reporting project on 17 September in the everything lens at the folder level).
-Inside the ghost of an asset what of it would come back in a container drawn open comes back, each with its
-own reason (a Batch job that succeeded in a project marked for deletion: not drawn now, in the project's
-ghost), with the zones that are no asset around it (a region, a bundle), which take the ghost's reason; an
-asset still there that the drawn day draws (a project being deleted is hidden, and what it holds is drawn in
-its folder) or holds in a chip never does: a removed perimeter takes none of the projects it secured that are
-still drawn, but one that Hide › Empty projects no longer draws once its contents are removed comes back in
-it, not drawn now, around their ghosts. Inside a zone gone for what it held (a zone that is no asset, or an
-asset zone unchanged itself) what changed or was removed comes back, each with its own reason, as it would in
-a container drawn open. Ghost ids are the nodes' ids: a removed asset is in no Graph of the drawn day, one
-still there or a zone that is no asset in no node of its Scene.
+**Ghosts.** A removed node is drawn as a ghost card at its last position for one tick, and with it a node
+still there that the view no longer draws where it stood ("not drawn now"). The data worker builds the view on
+the earlier day too and puts back into the drawn Scene what it drew and the drawn Scene does not, in its old
+container, so the layout's deterministic sibling order (`@gcportrait/layout` `order.ts`) places each ghost
+where it stood, nothing overlaps it, and lines route around it. What comes back, in which zone, what a ghost
+holds and what a chip counts instead are `diff/tickDiff.ts`'s header, the one place those rules are written:
+they are the worker's and change with it. A ghost is put into the Scene rather than overlaid at the rect the
+previous Layout gave it, because the new Layout packs its container without it (that rect may hold something
+else now) and the UI thread would else need the previous Layout and a rule for containers that moved.
 
 **A ghost is no node.** The model keeps the ghosts apart (`DiagramModel.ghosts`), so nothing walks, focuses or
 selects them: no `data-id`, no tab stop, no trace, no drill-in, no flip (`zonesByFlip`), not counted in "N of
@@ -2172,13 +2014,10 @@ The ghost of a zone the earlier day drew as the view's overlay (a perimeter arou
 `earlier`) is drawn as an overlay: untinted, with its header mark and the overlay's dashed outline 4 px inside
 the red one, and the legend's `secures` row names it.
 
-**Chips.** What a collapsed zone holds is not drawn, so a chip holding something the view would draw that was
-added, removed or changed gets the changed dot, and its accessible name says how many of each (", changes
-inside since 2026-09-07: 2 removed, 1 changed"). "Would draw" is the view built with every zone open (detail
-`all`, no flips, no `depth` filter) on the drawn day (added, changed) and on the earlier one (removed); these
-builds happen only when the Scene has a chip, the earlier day's alone also when that day's Scene has a chip
-(what it drew only inside one comes back by that view, and a ghost chip counts what comes back of what it
-held).
+**Chips.** What a collapsed zone holds is not drawn, so a chip counts the added, removed and changed nodes the
+view would draw inside it, and a chip holding a change gets the changed dot, its accessible name saying how
+many of each (", changes inside since 2026-09-07: 2 removed, 1 changed"). Which views those counts build is
+`diff/tickDiff.ts`'s header, "Inside chips".
 
 **Drawing** (`Drawing.tsx` with `marks.ts`; the sizes in `theme/styles.ts`): the ghosts after the nodes; then,
 under the overlays and the lines, the added outlines (2 px `accent.peer` centred 8 px outside the node's

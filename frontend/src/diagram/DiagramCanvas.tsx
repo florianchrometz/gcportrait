@@ -1,78 +1,23 @@
 // SPDX-License-Identifier: MIT
 /**
- * The interactive diagram (frontend/AGENTS.md, Code; style skill §13): the drawing inside an `<svg>` that the
- * canvas pans and zooms itself (`scaleExtent [0.05, 200]`; a mouse's or a pen's drag and the wheel, read from their
- * pointer and wheel events; a press that moved at most `CLICK_DISTANCE`, 4 px, is a click and moves nothing;
- * double-click is reserved for drill-in and does not zoom), level of detail by the effective scale, and hover,
- * selection (with its trace) and keyboard focus painted by the highlight painter. The drawing renders once per model,
- * theme and settings; zooming, hovering and selecting only set attributes and classes on it, and never ask for a new
- * layout. `data-diagram-ready="true"` on the `<svg>` says the drawing is fitted and interactive: it is set once the
- * painter and its listeners are attached, and stays set while the next view is prepared, as the drawing before it stays
- * on the canvas until then. `data-drawing`, set in the same step, numbers the drawing: every drawing the canvas puts up
- * (a new view, or the same view in another theme or with other settings) takes the page's next number, so a new number
- * tells the next drawing from the last.
+ * The interactive canvas: the drawing inside an `<svg>` that this file pans and zooms itself, and the pointer,
+ * wheel, finger and keyboard events that move it and that hover, select or flip what it draws (README, "Diagram
+ * renderer"; frontend/AGENTS.md, "Code"; style skill §13). Level of detail follows the effective scale (lod.ts), and
+ * hover, selection (with its trace), keyboard focus and the console action are painted by the painter (painter.ts).
  *
- * A node's menu ("Open in Cloud Console", "Copy resource name", "Drill in") opens on a right-click, on
- * Shift+F10 or the context-menu key on a focused node, and on Enter on the selected node; it selects the node
- * too. The selected node's "Open in Cloud Console ↗" action sits inside the node and is a tab stop
- * after it; Escape there clears the selection and puts focus back on the node. Nothing opens a console page by
- * itself: only activating the card's action or the menu's link does, in a new tab.
+ * It draws once per model, theme and settings: zooming, hovering and selecting only set attributes and classes on
+ * that drawing, never asking for another layout. `data-diagram-ready="true"` on the `<svg>` says the drawing is
+ * fitted and interactive, set once the painter and its listeners are attached and kept while the next view is
+ * prepared; `data-drawing`, set with it, numbers each drawing the canvas puts up, so a test tells the next drawing
+ * from the last.
  *
- * The app store reaches the camera through two props only: `jump`, a pending `jumpTo(id)`, which the
- * canvas makes as a glide (camera.ts; at once with reduced motion) as soon as the node is drawn and then reports
- * with `onJumpDone` (a centring glide, or for the details drawer, a short pan that keeps the node and its
- * trace in view); and `onHover`, which tells the store which node is under the pointer. A jump, the pan that
- * follows keyboard focus and a zoom key's step keep the node in the part of the canvas the panels lying over it leave
- * in view (`clearRoom`): the drawer of a phone or a tablet with the disclosure bar's row in the part it leaves, or the
- * top bar's View or More sheet with the disclosure bar on a tablet.
+ * The props it takes from the page: `jump` (a pending `jumpTo(id)`, made as a glide and reported with `onJumpDone`),
+ * `onHover`, `onFlip` (without it a chip selects like any node) and `panels` (the sheets and the drawer lying over
+ * the canvas, in whose room it keeps the camera: `clearRoom` and `fitRoom`, section "App state" of the README).
  *
- * A fit shows the whole drawing in that part too (`fitRoom`), so none of it lies under a panel: the fit a new view
- * opens with (whatever draws a new frame: a drill-in, a lens or a filter picked in the View sheet, a day whose drawing
- * is another size, a resize that picks another level of detail) and `0`'s. Where the panels leave no room to fit into
- * (the phone's drawer at full height, which hides the drawing) it takes the whole canvas, ready for when the drawer
- * comes down. A panel opening or closing over the canvas (`panels`) fits the drawing again to the part the panels
- * leave now, and so does the drawer's reveal after the drawer changed its height or width (its own state, which
- * `panels` does not carry), so long as the camera still rests on the last fit: the person has not panned, pinched,
- * zoomed or jumped since (`sameCamera`; a glide on its way to the fit counts as resting on it). So a lens picked in
- * the View sheet shows its whole drawing below the sheet, and the drawing fills the canvas again once the sheet
- * closes, while a camera the person moved stays where they put it. The refit is the zoom keys' short glide (at once
- * with reduced motion), never a new layout; while the camera rests on a fit to the part the drawer leaves, the
- * drawer's reveal has nothing more to do, as the whole drawing is in view there. The canvas learns of a panel through
- * `panels`, a value the diagram page derives from the store (the open sheet, the drawer's open state):
- * the prop changes in the same commit as the panel's `hidden` (and as
- * the disclosure bar's marker, which the bar takes from the same state), so the refit (a layout effect) measures the
- * panel as it now is, before the browser paints and before the drawer's reveal asks for its pan, where a mutation or
- * resize observer would answer after both. A ResizeObserver on the marked overlays catches later size changes, such
- * as a disclosure notice appearing or being dismissed, and refits under the same resting-camera guard. The canvas
- * still knows nothing of the store. On a desktop nothing lies
- * over the canvas: every fit fills it, and a panel changes nothing.
- *
- * Progressive disclosure, with `onFlip`: a click on a chip, or Enter or Space on a focused one, expands
- * it, and an open zone's collapse button (over its header icon; disclosure/CollapseButton.tsx) collapses it,
- * both by the zone's flip. The drawing with the flip keeps the camera where it was (no fit) and glides 200 ms to
- * frame the zone (disclosure/flipCamera.ts); after a flip from the keyboard, focus follows the zone (its collapse
- * button, or its chip). Without `onFlip` a chip is selected like any node.
- *
- * Fingers (touch.ts; frontend/AGENTS.md, Phones, tablets and desktops, the touch model) come as pointer events of `pointerType` `touch`, read
- * here into gestures: one finger pans, two pinch about their midpoint and pan, a tap does what a click does (selects,
- * clears, or flips a chip), a double tap zooms in about its point (on a chip or a collapse button the first tap's flip
- * stands instead, as a double-click's second click does not flip it back), and a long press (500 ms, without moving)
- * shows what hover shows a mouse, the trace's preview and the tooltip there, until the next finger touches; a long
- * press on the selected node's console action also shows its label, and leaves the browser's own menu for its link. The
- * browser's click, double-click, right-click and mouse events made from a finger are the finger's, already read; a
- * mouse and a pen keep everything above exactly as it is.
- *
- * The keyboard (style skill §13; keyboard/navigation.ts): the drawing is one tab stop (roving `tabindex`; at first
- * its top-left solid node); the arrow keys move between the items of a zone (cards, chips, card-sized zones and the
- * open zones inside it, which take focus on their collapse button), ↓ on an open zone goes inside it, an arrow with
- * nothing that way in the zone carries on among the zone's neighbours (↑ reaches the zone's header), Home and End
- * go to the zone's first and last item; the camera pans just enough to show the item, zooming in first to the
- * scale at which labels are drawn when it is further out (camera.ts, `keyboardTransform`; at once with reduced
- * motion). `+` and `-` zoom about the focused item, which stays in the part of the canvas left in view (about that
- * part's centre from the canvas itself), and `0` fits the drawing to that part (keyboard/zoom.ts). Enter or Space
- * selects (the details drawer opens), Escape clears the selection and, with nothing selected, returns to the zone
- * around the item. The focus ring keeps its screen size at any scale (the painter's `setScale`). After "Drill in"
- * focus waits on the `<svg>` and goes to the new drawing's tab stop (canvasFocus.ts).
+ * What a press, a click, a finger, a key or a panel does, and every threshold it reads (the click distance, the tap
+ * slop, the long press), is README, "Diagram renderer" with its "Touch" and "Keyboard" paragraphs, and
+ * frontend/AGENTS.md, "Phones, tablets and desktops", the touch model.
  */
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 

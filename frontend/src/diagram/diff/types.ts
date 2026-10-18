@@ -31,19 +31,9 @@ export interface DiffCounts {
 }
 
 /**
- * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden`: it is still there
- * and the view no longer draws it where it stood, like a project marked for deletion, which changed, or a project
- * that `hideEmptyProjects` no longer draws since what it held was removed, which did not (one the drawn day holds
- * in another container, or inside a chip, is no ghost: it is drawn there, or the chip counts it). Inside the ghost
- * of an asset what was removed or changed in it comes back as in a container drawn open, each with its own reason
- * (a Batch job that succeeded in a project marked for deletion is `hidden` in the project's), and the zones that
- * are no asset around it (a region of a removed project) take the reason of the ghost around them; an asset still
- * there that the drawn day draws, or holds in a chip, is never a ghost inside it. A zone gone for what it held (a
- * zone that is no asset, or an asset zone that did not change) holds what changed or was removed in it, each with
- * its own reason: such an asset zone is `hidden`, and a zone that is no asset (a region zone whose contents were
- * all removed, or whose one job succeeded) is `removed` when something removed comes back in it, else `hidden`.
- * What the earlier day drew only inside a chip comes back by the same reasons, in the zone it lies in on that day's
- * view with every zone open, when the drawn day draws that zone open.
+ * Why a node is drawn as a ghost: it was `removed` (absent from the drawn day), or it is `hidden` (still there, and
+ * the view no longer draws it where it stood). What comes back as which, and what a ghost of a zone or a chip holds,
+ * is tickDiff.ts's header, the one place those rules are written.
  */
 export type GhostReason = 'removed' | 'hidden';
 
