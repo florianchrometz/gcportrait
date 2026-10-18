@@ -266,8 +266,8 @@ export async function drawnCanvas(page: Page): Promise<Locator> {
 
 /**
  * The number of the drawing on the canvas (`data-drawing`), once one is drawn: every drawing the canvas puts up (a
- * new view, or the same view in another theme) takes the page's next number. Read before a view change, for
- * `redrawnCanvas`.
+ * new view, or the same view in another theme) takes the page's next number. A selection, a hover or a pan leaves
+ * it unchanged. Read before a view change, for `redrawnCanvas`.
  */
 export async function drawingOf(page: Page): Promise<string> {
   const drawing = await (await drawnCanvas(page)).getAttribute('data-drawing');
@@ -289,7 +289,9 @@ export async function redrawnCanvas(page: Page, previous: string): Promise<Locat
 
 /**
  * Opens a diagram view and waits until both workers have answered and the SVG is drawn, and the web fonts
- * have loaded. Returns the canvas `<svg>`.
+ * have loaded. Returns the canvas `<svg>`. A page loaded afresh needs no previous drawing number, as its first
+ * drawing is its view's. A spec that opens another view of the diagram it is on loads `about:blank` first,
+ * since an address that changes only the hash keeps the page and its drawing.
  */
 export async function openDiagram(page: Page, address: string = DEMO_M_DIAGRAM): Promise<Locator> {
   await page.goto(address);
@@ -313,6 +315,7 @@ export function viewParam(page: Page, name: string): string | null {
 /**
  * Waits until the camera stands still (a glide of 200 ms has ended): two reads of the viewport's transform and the
  * canvas's scale, at least 100 ms apart, agree. Answers the scale (`data-scale`).
+ * A panel's refit, a flip's framing or a jump can glide the camera without drawing anything new.
  */
 export async function cameraSettled(svg: Locator): Promise<number> {
   const read = (): Promise<string> =>

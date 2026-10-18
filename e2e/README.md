@@ -125,20 +125,10 @@ pnpm --filter @gcportrait/e2e leg --projects "chromium-phone chromium-tablet" --
 title`, which is what `--test-list` reads, and fails unless Playwright reads that list as exactly the share,
 as no run follows to check it; the arguments after `--` go to the run.
 
-The diagram's helpers in `tests/support.ts` wait for the state a step needs, never for a time. `openDiagram`
-opens a view and waits for its drawing, and `drawnCanvas` for a drawing on the canvas (`data-diagram-ready`),
-which stays set while the next view is prepared, as the drawing before it stays on the canvas until then. A
-spec that changes the view (a lens, a focus, a filter, a flip, a drill-in, a snapshot, a day of the timeline,
-Back) and needs the drawing after it reads the drawing's number with `drawingOf` before the change and waits
-with `redrawnCanvas` for another (`data-drawing`: every drawing the canvas puts up takes a new number, while a
-selection, a hover or a pan leaves it). The timeline's `expectDrawn` (`tests/timelineSupport.ts`) waits for a
-day's marker to turn current and then the same way, given the number read before the day moved (a scrub, a
-key, a step button, a marker, playback); `pipelineIdle` in `tests/controls.spec.ts` waits for a drawing after
-the number read before a series of changes and for the loading line to go, so that the drawing of an earlier
-change in the series does not count. A page loaded afresh needs no number, as its first drawing is its view's;
-a spec that opens another view of the diagram it is on loads `about:blank` first, since an address that
-changes only the hash keeps the page and its drawing. `cameraSettled` waits until the camera stands still
-after a glide (a panel's refit, a flip's framing, a jump), which draws nothing new.
+Wait for the state a step needs, never for a time. The helper JSDoc explains which wait to use:
+[tests/support.ts](tests/support.ts) for `openDiagram`, `drawnCanvas`, `drawingOf`, `redrawnCanvas` and
+`cameraSettled`; [tests/timelineSupport.ts](tests/timelineSupport.ts) for `expectDrawn`; and
+[tests/controls.spec.ts](tests/controls.spec.ts) for `pipelineIdle` after a series of view changes.
 
 ## Specs
 
