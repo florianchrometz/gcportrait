@@ -3,13 +3,21 @@
  * scripts/check-licenses.mjs end to end, on throw-away projects with saved pnpm reports. One real offline install
  * proves that pnpm's reports still parse; the policy cases use saved reports without installing dependencies.
  */
-import { spawnSync } from 'node:child_process';
+import { Console } from 'node:console';
 import { chmodSync, existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { run as checkLicenses } from './check-licenses.mjs';
 import { installOffline, json, plant } from './testing/pnpm-fixture.js';
-import { createTempTree, runScript, SCRIPTS_DIR, type TempTree } from './testing/temp-tree.js';
+import {
+  createTempTree,
+  runInProcess,
+  runScript,
+  SCRIPTS_DIR,
+  SPAWN_TIMEOUT,
+  type TempTree,
+} from './testing/temp-tree.js';
 
 const PROJECT_LICENSE = 'MIT';
 const DENIED = "would impose obligations on gcportrait's combined work or is unverifiable";
@@ -70,7 +78,7 @@ function savedReports(
 }
 
 const run = (tree: TempTree, ...args: string[]) =>
-  runScript('check-licenses.mjs', ['--root', tree.root, ...args]);
+  runInProcess(() => checkLicenses(['--root', tree.root, ...args]));
 
 const runSaved = (tree: TempTree, ...args: string[]) =>
   run(
@@ -85,12 +93,40 @@ const runSaved = (tree: TempTree, ...args: string[]) =>
 describe('check-licenses', () => {
   let tree: TempTree | undefined;
 
+  beforeEach(() => {
+    const output = new Console(process.stdout, process.stderr);
+    vi.spyOn(console, 'log').mockImplementation(output.log.bind(output));
+    vi.spyOn(console, 'error').mockImplementation(output.error.bind(output));
+  });
+
   afterEach(() => {
     tree?.remove();
     tree = undefined;
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
-  it('denies every family on the list and accepts allowed alternatives', () => {
+  it('imports without running the command or changing the exit code', async () => {
+    const argv = process.argv;
+    const exitCode = process.exitCode;
+    process.argv = [process.execPath, path.join(SCRIPTS_DIR, 'check-licenses.test.ts')];
+    vi.resetModules();
+    try {
+      const result = await runInProcess(async () => {
+        const imported = await import('./check-licenses.mjs');
+        expect(imported).toHaveProperty('run');
+        return 0;
+      });
+      expect(result).toEqual({ status: 0, stdout: '', stderr: '' });
+      expect(process.exitCode).toBe(exitCode);
+    } finally {
+      process.argv = argv;
+      process.exitCode = exitCode;
+      vi.resetModules();
+    }
+  });
+
+  it('denies every family on the list and accepts allowed alternatives', async () => {
     tree = createTempTree('licenses-families');
     const denied: ReadonlyArray<readonly [string, string | undefined, string]> = [
       ['planted-gpl', 'GPL-3.0-only', 'GPL-*'],
@@ -124,7 +160,7 @@ describe('check-licenses', () => {
       ...accepted,
       ['n-bsd4', 'BSD-4-Clause'],
     ]);
-    const result = runSaved(tree, '--write');
+    const result = await runSaved(tree, '--write');
     expect(result.status).toBe(1);
     expect(result.stdout).toContain(`licenses: project licence ${PROJECT_LICENSE}`);
     expect(result.stdout).not.toContain('licenses: OK.');
@@ -145,7 +181,7 @@ describe('check-licenses', () => {
     expect(result.stderr).toContain(`licenses: FAILED with ${String(denied.length + 1)} problem(s):`);
   });
 
-  it('tells a workspace project from a third-party package by path, not by name', () => {
+  it('tells a workspace project from a third-party package by path, not by name', async () => {
     tree = createTempTree('licenses-impostor');
     tree.write(
       'package.json',
@@ -195,7 +231,7 @@ describe('check-licenses', () => {
         { name: '@fx/web', path: path.join(root, 'pkgs/web') },
       ],
     );
-    const result = runSaved(tree, '--write');
+    const result = await runSaved(tree, '--write');
     expect(result.status).toBe(1);
     // The impostor is checked although a workspace project has its name; the project itself is not.
     expect(result.stderr).toContain('licenses: FAILED with 1 problem(s):');
@@ -205,7 +241,7 @@ describe('check-licenses', () => {
     expect(tree.read('THIRD_PARTY.md')).toContain('| `@fx/app` | GPL-3.0-only | (root) | runtime |');
   });
 
-  it('passes a tree of allowed licences and states the compatibility', { timeout: 60_000 }, () => {
+  it('passes a tree of allowed licences and states the compatibility', { timeout: 60_000 }, async () => {
     tree = createTempTree('licenses-clean');
     plantedProject(
       tree,
@@ -215,9 +251,9 @@ describe('check-licenses', () => {
       ],
       true,
     );
-    expect(run(tree, '--write').status).toBe(0);
+    expect((await run(tree, '--write')).status).toBe(0);
     expect(tree.read('THIRD_PARTY.md')).toContain('| `a-apache` | Apache-2.0 | (root) | runtime |');
-    const result = run(tree);
+    const result = await run(tree);
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(`licenses: project licence ${PROJECT_LICENSE}`);
     expect(result.stdout).toContain(
@@ -233,12 +269,12 @@ describe('check-licenses', () => {
   it(
     "checks a tree without a single third-party package instead of crashing on pnpm's message",
     { timeout: 60_000 },
-    () => {
+    async () => {
       tree = createTempTree('licenses-empty');
       plantedProject(tree, []);
       tree.write('licenses-report.json', 'No licenses in packages found\n');
-      expect(runSaved(tree, '--write').status).toBe(0);
-      const result = runSaved(tree);
+      expect((await runSaved(tree, '--write')).status).toBe(0);
+      const result = await runSaved(tree);
       expect(result.stderr).toBe('');
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('licenses: OK. 0 installed packages are under allowed licences');
@@ -248,7 +284,7 @@ describe('check-licenses', () => {
   it(
     "requires every workspace package to declare the root package.json's licence",
     { timeout: 60_000 },
-    () => {
+    async () => {
       tree = createTempTree('licenses-workspace');
       tree.write(
         'package.json',
@@ -273,7 +309,7 @@ describe('check-licenses', () => {
           path: path.join(root, 'pkgs', name),
         })),
       ]);
-      const result = runSaved(tree, '--write');
+      const result = await runSaved(tree, '--write');
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('licenses: FAILED with 2 problem(s):');
       expect(result.stderr).toContain(
@@ -286,8 +322,8 @@ describe('check-licenses', () => {
     },
   );
 
-  it('lists the deny list with a reason for every family', () => {
-    const result = runScript('check-licenses.mjs', ['--list-rules']);
+  it('lists the deny list with a reason for every family', async () => {
+    const result = await runInProcess(() => checkLicenses(['--list-rules']));
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(`Denied (${DENIED}):`);
     for (const family of [
@@ -322,42 +358,69 @@ describe('check-licenses', () => {
     expect(result.stdout.match(/^ {2}\S+: OFL-1\.1\b/gm)).toHaveLength(2);
   });
 
-  it('refuses unknown options with exit code 2', () => {
-    expect(runScript('check-licenses.mjs', ['--nope']).status).toBe(2);
+  it('matches the real CLI output, exit code and generated dependency table', SPAWN_TIMEOUT, async () => {
+    tree = createTempTree('licenses-cli');
+    plantedProject(tree, [
+      ['planted-gpl', 'GPL-3.0-only'],
+      ['a-mit', 'MIT'],
+    ]);
+    const args = [
+      '--root',
+      tree.root,
+      '--licenses-report',
+      path.join(tree.root, 'licenses-report.json'),
+      '--projects-report',
+      path.join(tree.root, 'projects-report.json'),
+      '--write',
+    ];
+    const inProcess = await runInProcess(() => checkLicenses(args));
+    const document = tree.read('THIRD_PARTY.md');
+    expect(inProcess.status).toBe(1);
+    expect(inProcess.stderr).toContain('is denied');
+    expect(document).not.toBe(THIRD_PARTY);
+    tree.write('THIRD_PARTY.md', THIRD_PARTY);
+    expect(runScript('check-licenses.mjs', args)).toEqual(inProcess);
+    expect(tree.read('THIRD_PARTY.md')).toBe(document);
+    expect((await runInProcess(() => checkLicenses(['--nope']))).status).toBe(2);
+    expect(await runInProcess(() => checkLicenses(args))).toEqual(inProcess);
   });
 
-  it('checks saved reports without an install and still rejects a stale dependency table', () => {
+  it('refuses unknown options with exit code 2', async () => {
+    expect((await runInProcess(() => checkLicenses(['--nope']))).status).toBe(2);
+  });
+
+  it('checks saved reports without an install and still rejects a stale dependency table', async () => {
     tree = createTempTree('licenses-saved');
     plantedProject(tree, [['a-mit', 'MIT']]);
     expect(existsSync(path.join(tree.root, 'node_modules'))).toBe(false);
-    expect(runSaved(tree).stderr).toContain('THIRD_PARTY.md is stale');
-    expect(runSaved(tree, '--write').status).toBe(0);
-    expect(runSaved(tree).status).toBe(0);
+    expect((await runSaved(tree)).stderr).toContain('THIRD_PARTY.md is stale');
+    expect((await runSaved(tree, '--write')).status).toBe(0);
+    expect((await runSaved(tree)).status).toBe(0);
   });
 
-  it.each(['licenses', 'projects'] as const)('refuses invalid saved %s reports', (kind) => {
+  it.each(['licenses', 'projects'] as const)('refuses invalid saved %s reports', async (kind) => {
     tree = createTempTree('licenses-invalid');
     plantedProject(tree, []);
     for (const content of ['not JSON', 'null', kind === 'licenses' ? '[]' : '{}']) {
       tree.write(`${kind}-report.json`, content);
-      const result = runSaved(tree, '--write');
+      const result = await runSaved(tree, '--write');
       expect(result.status, result.stderr).toBe(2);
       expect(result.stderr).toContain('unexpected output');
       expect(tree.read('THIRD_PARTY.md')).toBe(THIRD_PARTY);
     }
   });
 
-  it.each(['licenses', 'projects'] as const)('reports a missing %s report and option value', (kind) => {
+  it.each(['licenses', 'projects'] as const)('reports a missing %s report and option value', async (kind) => {
     tree = createTempTree('licenses-missing-report');
     plantedProject(tree, []);
     const missing = path.join(tree.root, 'missing.json');
-    const result = runSaved(tree, `--${kind}-report`, missing);
+    const result = await runSaved(tree, `--${kind}-report`, missing);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain(missing);
-    expect(run(tree, `--${kind}-report`).status).toBe(2);
+    expect((await run(tree, `--${kind}-report`)).status).toBe(2);
   });
 
-  it('requires an install whenever either report remains live', () => {
+  it('requires an install whenever either report remains live', async () => {
     tree = createTempTree('licenses-live');
     plantedProject(tree, []);
     for (const args of [
@@ -365,7 +428,7 @@ describe('check-licenses', () => {
       ['--licenses-report', path.join(tree.root, 'licenses-report.json')],
       ['--projects-report', path.join(tree.root, 'projects-report.json')],
     ]) {
-      const result = run(tree, ...args);
+      const result = await run(tree, ...args);
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('node_modules is missing');
     }
@@ -383,12 +446,12 @@ describe('check-licenses', () => {
     ['versions object', { MIT: [{ name: 'hidden-dependency', versions: {} }] }],
     ['versions mixed', { MIT: [{ name: 'hidden-dependency', versions: ['1.0.0', 7] }] }],
     ['versions blank', { MIT: [{ name: 'hidden-dependency', versions: [''] }] }],
-  ])('rejects malformed dependency %s before writing the table', (_label, report) => {
+  ])('rejects malformed dependency %s before writing the table', async (_label, report) => {
     tree = createTempTree('licenses-invalid-entry');
     plantedProject(tree, []);
     tree.write('licenses-report.json', json(report));
     for (const args of [[], ['--write']]) {
-      const result = runSaved(tree, ...args);
+      const result = await runSaved(tree, ...args);
       expect(result.status, result.stderr).toBe(2);
       expect(result.stderr).toContain('unexpected output from `pnpm licenses list --json`');
       expect(result.stdout).not.toContain('licenses: OK');
@@ -404,13 +467,13 @@ describe('check-licenses', () => {
     { name: '', path: '/valid' },
     { name: '@fixture/bad', path: '' },
     { name: '@fixture/bad', path: 'relative' },
-  ])('rejects malformed workspace record %j before writing the table', (project) => {
+  ])('rejects malformed workspace record %j before writing the table', async (project) => {
     tree = createTempTree('licenses-invalid-project');
     plantedProject(tree, []);
     tree.write('pkgs/bad/package.json', json({ name: '@fixture/bad', license: 'GPL-3.0-only' }));
     tree.write('projects-report.json', json([{ name: 'fixture', path: realpathSync(tree.root) }, project]));
     for (const args of [[], ['--write']]) {
-      const result = runSaved(tree, ...args);
+      const result = await runSaved(tree, ...args);
       expect(result.status, result.stderr).toBe(2);
       expect(result.stderr).toContain('unexpected output from `pnpm ls -r --json`');
       expect(result.stdout).not.toContain('licenses: OK');
@@ -418,7 +481,7 @@ describe('check-licenses', () => {
     }
   });
 
-  it('keeps unknown and absent licence enforcement and local versions', () => {
+  it('keeps unknown and absent licence enforcement and local versions', async () => {
     tree = createTempTree('licenses-unknown');
     plantedProject(tree, []);
     savedReports(tree, {
@@ -426,7 +489,7 @@ describe('check-licenses', () => {
       '': [{ name: 'empty-license' }],
       MIT: [{ name: 'local-allowed', license: null, versions: [null] }],
     });
-    const result = runSaved(tree, '--write');
+    const result = await runSaved(tree, '--write');
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('FAILED with 2 problem(s)');
     expect(result.stderr).toContain('absent-license (local, no version)');
@@ -436,7 +499,7 @@ describe('check-licenses', () => {
 
   it.each(['licenses', 'projects'] as const)(
     'rejects malformed live %s output with the same validation',
-    (kind) => {
+    async (kind) => {
       tree = createTempTree('licenses-live-malformed');
       plantedProject(tree, []);
       tree.write('node_modules/.keep', '');
@@ -448,17 +511,8 @@ describe('check-licenses', () => {
       if (process.platform === 'win32')
         tree.write('bin/pnpm.cmd', `@"${process.execPath}" "%~dp0pnpm" %*\r\n`);
       chmodSync(path.join(tree.root, 'bin/pnpm'), 0o755);
-      const result = spawnSync(
-        process.execPath,
-        [path.join(SCRIPTS_DIR, 'check-licenses.mjs'), '--root', tree.root, '--write'],
-        {
-          encoding: 'utf8',
-          env: {
-            ...process.env,
-            PATH: `${path.join(tree.root, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`,
-          },
-        },
-      );
+      vi.stubEnv('PATH', `${path.join(tree.root, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`);
+      const result = await run(tree, '--write');
       expect(result.status, result.stderr).toBe(2);
       expect(result.stderr).toContain('unexpected output');
       expect(tree.read('THIRD_PARTY.md')).toBe(THIRD_PARTY);

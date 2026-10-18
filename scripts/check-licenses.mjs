@@ -254,7 +254,7 @@ function isRecord(value) {
 /** What `pnpm licenses list` prints, instead of JSON, for a tree with no third-party package at all. */
 const NO_LICENSES_MESSAGE = /^No licenses in packages found\b/;
 
-/** The output of a pnpm command that cannot be read; main() reports it as a usage problem, never a stack trace. */
+/** The output of a pnpm command that cannot be read; run() reports it as a usage problem, never a stack trace. */
 class PnpmOutputError extends Error {
   /** @override */
   name = 'PnpmOutputError';
@@ -585,7 +585,7 @@ function packageLabel(pkg) {
  * @param {readonly string[]} argv
  * @returns {number} exit code
  */
-function main(argv) {
+export function run(argv) {
   /** @type {{ write: boolean, listRules: boolean, root: string, licensesReport: string | undefined, projectsReport: string | undefined }} */
   let options;
   try {
@@ -708,5 +708,5 @@ function main(argv) {
 
 // Run as a script only, so that the tests can import the helpers above.
 if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  process.exitCode = main(process.argv.slice(2));
+  process.exitCode = run(process.argv.slice(2));
 }
