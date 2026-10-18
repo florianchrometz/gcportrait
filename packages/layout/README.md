@@ -127,339 +127,42 @@ synchronously with the stored Layout, byte-identical to the first answer. The wo
 clones on the page; in-process (a test, or a host without workers) the handler hands out the stored object
 itself, which the caller must not mutate.
 
-**Mounting it in the frontend.** The worker module is a few lines; Vite bundles it, with
-`@gcportrait/layout` and the metrics table, through its `?worker` import:
-
-```ts
-// frontend/src/diagram/layout.worker.ts
-/// <reference lib="webworker" />
-import { createLayoutWorkerHandler } from '@gcportrait/layout';
-
-const scope = self as unknown as DedicatedWorkerGlobalScope;
-const handle = createLayoutWorkerHandler((message) => scope.postMessage(message), {
-  clock: () => performance.now(), // optional: report.timings for diagnostics
-});
-scope.addEventListener('message', (event) => handle(event.data));
-```
-
-```ts
-// frontend/src/diagram/useLayout.ts (sketch)
-import LayoutWorker from './layout.worker.ts?worker';
-import { isLayoutCancelled, layoutClient } from '@gcportrait/layout';
-
-const client = layoutClient(new LayoutWorker()); // one client per worker, created once
-
-useEffect(() => {
-  const controller = new AbortController();
-  client
-    .layout(scene, undefined, { signal: controller.signal, onProgress: setProgress })
-    .then(({ layout }) => setLayout(layout))
-    .catch((error: unknown) => {
-      if (!isLayoutCancelled(error)) setError(error); // LayoutWorkerError: code and ids
-    });
-  return () => controller.abort();
-}, [scene]);
-```
-
-Each request supersedes the one before it (the client rejects the older promise at once with
-`LayoutCancelledError`, `reason: 'superseded'`), so the abort in the cleanup matters on unmount; under React's
-development double effects the aborted request and its repeat share one layout (above). `client.dispose()`
-cancels the pending request and detaches the listener; terminating the worker is the caller's
-(`client.fail(message)` rejects what is pending if it dies). One client per worker: the worker supersedes by
-arrival, whoever posted. The frontend's tsconfig references `packages/layout`.
+**Mounting it in the frontend.** The app mounts the layout handler as a role of a shared worker script
+(`frontend/src/diagram/pipeline/layoutRole.ts`, `workers.ts`), bundled by Vite, and decodes large Layouts from
+transferred bytes through `layoutClient`. Each request supersedes the one before it (the client rejects the
+older promise at once with `LayoutCancelledError`, `reason: 'superseded'`), so aborting on unmount cleans up
+in-flight work. `client.dispose()` cancels the pending request and detaches the listener; terminating the
+worker is the caller's (`client.fail(message)` rejects what is pending if it dies). One client per worker:
+the worker supersedes by arrival, whoever posted. The frontend's tsconfig references `packages/layout`.
 
 ## Pipeline
 
-1. **Forest normalisation** (`src/normalise.ts`). The Scene is validated first, so a refused Scene is refused
-   before any work (skill §2 rule 5: an error with the offending ids, never a half-drawn diagram): unique ids,
-   every edge end present, a real tree (a node object that contains itself is a `cycle`), chips without
-   children, and at most `MAX_SCENE_DEPTH` (256) levels of nesting (`too-deep`, naming the top-level node and
-   the node past the limit: a real Scene is about a dozen levels deep, and the limit keeps every recursive
-   stage far from the call stack). A Resource Manager organisation zone at the top level is unwrapped, because
-   the canvas is the organisation (the Scene normally omits it; edges that end at one are counted in a
-   warning; the dropped ids are sorted, so the report does not depend on the Scene's order). Each node gets
-   its depth from the canvas (the canvas, the organisation, is 0: root folders and loose projects are 1;
-   header height, title size and the renderer's nested tint at depth ≥ 3 follow from it) and its role: an open
-   `zone`, a `chip` (a collapsed zone), an `empty` zone (no children in the Scene, drawn card-sized with its
-   icon, skill §2 rule
-   4) or a `card`. Every child list is sorted: zones before cards; zones by kind rank (folder, project, VPC,
-   subnet, region, product container, bundle), so folders rank before projects at the root; then by label in
-   code-point order (locale-independent); then by id.
-2. **Sizing** (`src/size.ts`). Cards and empty zones: height 44; width = 10 + icon 24 + 10 + the wider of the
-   title (13 px, 700) and the subtitle (10.5 px, 400) + 10, rounded up to whole px and clamped to 148–220
-   (longer text is ellipsised by the renderer and counted in `truncatedLabels`). Subtitles are measured run by
-   run (`subtitleRuns`): the subtitle's facts are joined by `' · '`, and a fact that is an address (an IPv4 or
-   IPv6 address or CIDR range in its standard text form, or a comma-separated list of them) is set in Roboto
-   Mono, everything else in Roboto (style §3); versions (`3.1.2`), times (`12:30`) and `host:port` are not
-   addresses. Chips (`src/chips.ts`): height 44; width = 10 + the 16 px ⊞ glyph + 8 + the wider of
-   the label (13 px, 700) and the count line (10.5 px, 400) + 10, rounded up and clamped to 148–220; the count
-   line is measured in its full form ("1 network · 4 subnets · 2 containers") when that fits a 220 px chip,
-   else in its short form ("1 net · 4 sub · 2 ctr"), as the renderer draws it (`chipCountLine`). Sibling chips
-   and empty zones then share the widest of their widths, as the cards of a column do, so rows of them line up
-   and the packer never prefers a ragged grid for a few pixels. Open zones: header 40 up to depth 2 and 32
-   below, padding 24 for projects at the top level and 16 otherwise (plus any reserved ring), and the
-   narrowest width the header needs: icon, title (15 px at depth 1, 13 px deeper, 500), then `' · '` and the
-   zone's subtitle (same size, 400, in runs like a card's), the two together counted at most
-   `zoneTitleMaxWidth` (660 px, three card widths: the renderer ellipsises a longer title, the full label
-   stays in the Scene for its tooltip and accessible name, and `counts.cappedTitles` counts them), and the
-   badge pills (10.5 px, 400, 6 px padding, 4 px apart, 12 px after the title). Folder titles sit at the left;
-   every other title is centred, so the badge block is reserved on both sides.
-3. **Packing** (`src/pack.ts`), bottom-up: every zone is packed after its children, then the canvas. A
-   container's children form two blocks, each in sibling order: the **card block** on top, a grid of
-   `cardColumns` columns where each column is as wide as its widest card and every card in it takes that width
-   (cards in a row share a baseline); and the **zone block** below it, open zones, chips and empty zones in
-   rows (`zoneRows[i]` zones in row `i`), each row left-aligned and as tall as its tallest cell, the cells
-   sharing its top edge. A cell is one zone, or a **stack**: consecutive zones one above the other,
-   left-aligned, beside a single zone at least as tall in its row (`zoneStacks[i]`). The candidates are every
-   card column count combined with every way to break the cells into rows (k per row, and rows filled up to a
-   width budget at every width a run of consecutive cells, a card grid or the widest zone takes), the cells
-   being the zones themselves, or, for 3 to 24 zones, the greedy stacks under every distinct zone height. One
-   of the plain candidates is chosen by four rules:
-   1. **Full rows** (skill §1, "a tidy grid"): no row but the last of its block has room for the next child
-      within the children box's width. This rules out a wide card strip above a narrow stack of zones and a
-      narrow card column above wide zone rows (skill §9, "huge empty zones").
-   2. **Wider than tall** (skill §1): only candidates on the target's side of 1 compete, unless none is.
-   3. **Smallest frame**: a children box within `aspectTolerance` (20 %) of the target counts as on target and
-      is its own frame; any other box is framed to the target's aspect, so it pays for the empty strip that
-      would make it look like the target. The smallest frame area wins: inside the band the most compact
-      arrangement, outside it the closest to the target measured in area. For grids of equal boxes this is
-      skill §4's rule (the column count whose grid is closest to the target).
+The layout pipeline executes in five sequential stages, specified in
+[skill gcp-diagram-layout](../../.agents/skills/gcp-diagram-layout/SKILL.md):
 
-   4. **Near ties**: among the candidates whose frame is within 2 % (`NEAR_TIE`) of the
-      smallest, one whose rows do not hold more zones further down ranks first (no inverted, ragged grid:
-      `[2, 1]` over `[1, 2]`), then one with fewer rows (a loose project shares the folders' row instead of a
-      row of its own under a blank band).
-
-   Ties go to the closer aspect, then fewer rows (skill §4), then fewer card columns. Then **stacks**: an
-   arrangement with stacked zones replaces the chosen one only when its box fits inside it (no wider, no
-   taller) with a smaller frame, so a stack fills the height a tall sibling gives its row and never makes its
-   own container larger (the parent, choosing by frame, may then take a larger box: S everything's canvas
-   grows 5.5 %). A zone is as wide as its packed children plus padding, or as its header needs if that is
-   wider (children stay left-aligned); its height is header + padding + children + padding. Positions are then
-   made absolute top-down, the canvas content starting at the canvas margin (24).
-
-   These are skill §4's rules; `pnpm --filter @gcportrait/layout measure --packing` measures each of them on
-   15 demo views.
-
-All sizes are whole px with the default sizing, so every rect's position and size and every gutter line and
-lane are integers. Ports lie on the half-pixel grid (`PORT_STEP`) by design: a side's slots are centred on it,
-and on the top or bottom of a rect of odd width (a card's or a chip's width follows its text, a zone's its
-children or its header, each rounded up to whole px) the middle lies on a half pixel, which keeps the port
-exactly central instead of half a pixel to one side; positions spread over a crowded side are rounded to the
-same grid. The points on the straight run of a route through a port (its end or the arrowhead's tip, and the
-point where it turns) share the port's coordinate and so its half pixel; every other point of a route lies on
-a lane, a whole px.
-
-**The gutter hook.** Routing widens gutters and re-packs through `LayoutOptions.gutters` instead of
-re-implementing packing: per container, `horizontal` and `vertical` add lane space to every column and row gap
-(and to the gap between the card and zone blocks), `ring` widens the padding ring on all four sides (for the
-canvas, its margin), `ringSides` single sides of it, and `gaps` single gaps (`cardColumns[c]` after card
-column c, `zoneColumns[r][i]` after cell i of zone row r, `rows[k]` below row k, counting card rows then zone
-rows, `stacks[r][c][k]` below zone k of the stack in cell c of zone row r). Wider gaps change every
-candidate's size, so a re-pack could choose another arrangement and move gutters between passes; to keep every
-row and column (and so every gutter's identity), pass the first pass's `Layout.arrangements` as
-`LayoutOptions.arrangements`. A pinned arrangement is used as given (it must fit its container's children, or
-`LayoutInputError` `invalid-option`); pinning a layout's own arrangements reproduces it byte for byte. The
-packer's choice of arrangement does not look at `gaps` (they are positional).
-
-4. **Gutters** (`src/gutters.ts`). After packing, every container (the canvas and every open zone) has an
-   inner ring, the centre-line of its padding below its header (for the canvas, of its margin), and gutters on
-   the centre-lines of the gaps between its rows (each from ring side to ring side), between the zones of a
-   stack (across the stack, running on out like a row gap where the stack is the first or last cell of its
-   row) and between its columns (card columns from the ring top down to the gap below the card block;
-   neighbouring cells of a zone row from the gap above the row to the gap below it). A zone's horizontal
-   gutters run on out through its padding and its border to its parent's gutter on either side of it, and its
-   vertical gutters that reach its ring bottom run on down out of it; never up, because above a zone is its
-   header. Where nothing stands beside the zone (first or last of its row), the line goes straight on through
-   the parent's padding and border as far as the parent's own lines reach, and the same downwards from a
-   parent's last row: a route leaves a deeply nested zone in one straight run, not a staircase of two bends
-   per level. Every line runs through free space (property-tested over random Scenes). Each line keeps its
-   strip (the width of the gap or padding it is the centre-line of) and its container and gap; collinear lines
-   that touch merge, keeping their pieces. Each piece also records its **hugging stretches** (`hugSpans`): a
-   ring side between its zone's corners (inside the padding band; beyond them the line is an extension,
-   crossing a gap or running through free space) and the whole canvas ring (`margin`). A route along a ring
-   side reads as a doubled border or an underline, so the router charges its length 1.5 times (`hugFactor`),
-   but at most 320 px more than its length over the whole side (`hugCap`: a side longer than 640 px pays less
-   per px), and the margin twice (`marginFactor`). A gap costs its length whether a child borders it on both
-   sides, one or none: below a short zone beside a tall one, the gap runs through the same free space as the
-   short zone's ring sides running on down, and a dearer gap would send routes down past their target into the
-   canvas margin and back up those parallel lines. Without the cap, 9 000 px along a ring top would cost
-   4 500 px extra, and routes there would drop to a far row gap and climb back to avoid it.
+1. **Forest normalisation** (`src/normalise.ts`, skill §2): validates Scene tree structure (unique ids, cycle
+   detection, depth limit `MAX_SCENE_DEPTH`), unwraps root organisation zones onto the canvas, assigns depths
+   and node roles (`zone`, `chip`, `empty`, `card`), and sorts sibling lists by kind rank, label, and id.
+2. **Sizing** (`src/size.ts`, `src/chips.ts`, skill §3): measures cards, empty zones, chips, and zone headers
+   from font metrics (`metrics/roboto.json`), formatting subtitle runs (Roboto Mono for network addresses,
+   Roboto for other facts) and clamping box widths to standard bounds (148–220 px).
+3. **Packing** (`src/pack.ts`, skill §4): arranges container children bottom-up into card grids and zone rows
+   or stacks, selecting candidate arrangements that optimize frame area against target aspect ratios
+   (`TARGET_ASPECT`, `ROOT_ASPECT`) with near-tie ranking (`NEAR_TIE`) and stacking.
+4. **Gutters** (`src/gutters.ts`, skill §5): extracts container padding rings and inter-cell gutter
+   centre-lines, free-space extensions, and hugging spans to form the orthogonal routing network.
 5. **Routing** (`src/edges.ts`, `src/ports.ts`, `src/portlines.ts`, `src/network.ts`, `src/occupancy.ts`,
-   `src/route.ts`, `src/fallback.ts`; skill §5).
-   - *Merging.* Scene edges are resolved to the rects they are drawn between: an end inside a collapsed zone
-     goes to its (outermost) chip, as the Scene builder already does; an edge with an end at a dropped
-     organisation zone, or with both ends at one rect, is dropped and counted. A symmetric kind
-     (`direction: 'both'` in the model's `RELATION_KINDS`: `peers`) has its ends ordered, so reciprocal
-     peerings become one double-headed edge; edges with the same (from, to, kind) collapse, their counts
-     summed. Arrowheads come from the kind's default style: `both` for `dashed-double-headed`, `none` for
-     `solid-round-caps` (`connects`), `end` otherwise.
-   - *Bundles (hubs).* A rect that many edges of one kind meet at the same end (a Shared VPC host project that
-     a hundred service projects share from and attach to; a load balancer that thirty backends use) cannot
-     give each its own port 12 px apart (a 148 px chip's side holds 28) nor its gutters a lane per edge. So
-     the edges of one kind meeting one rect at one end (all as targets, or all as sources) are bundled from
-     `bundleMin` (3) on: they share one port, on the side most of them face, and the router lets them share
-     lanes, so they join into one trunk towards it (a tree, drawn with one head). On a side that more ports
-     face than it holds, the edges of one kind facing it are bundled from two on. An edge belongs to at most
-     one bundle (the larger group of its two ends). `Layout.edges[…].bundle` names the bundle; `checkEdges`
-     checks that its members share the port. One bundle per kind: a Shared VPC host with `shares` and
-     `attaches` edges has two trunks. Their styles differ (`shares` dashed, `attaches` solid), so sharing
-     one trunk would hide the dashed line; a mixed trunk would need a style decision.
-   - *Ports.* An end leaves its rect on the side facing the other end (the axis on which the rects are further
-     apart); never on an open zone's top (its header): left or right instead, below the header by the greatest
-     of half the zone's padding, half `portClearance` and the half pixel ports are rounded to (`PORT_STEP`),
-     so that none sits on the header's lower edge whatever the constants. A side too short for its corner
-     clearance (`portClearance`, `zonePortClearance`) keeps one slot, its middle: on an open zone's left or
-     right side, the middle of the stretch below the header. When an open zone contains the other end, its
-     port is on the inside of its border, on the side nearest that end, and the inner end leaves on the same
-     side. Ports on a side are `portSpacing` (12 px) apart (a bundle's port counts once), nearest the middle,
-     ordered by where their other ends lie, clear of the corners; on a top or left side the slot grid is
-     shifted by half a spacing, so two rects facing each other across a gutter never put ports at the same
-     coordinate. On an open zone, ports keep out of the band of every gutter that passes through that side of
-     its border (its own and its descendants'), so a stub never runs along a gutter's lanes. Ports that do not
-     fit a side move to the neighbouring sides, then to the opposite side; only when every side is full do
-     they share a side more closely. From the port a stub runs straight out to the gutter on that side (or,
-     facing inwards, to the zone's own ring). An edge with both ends at one rect (inside one chip) is not
-     drawn and counts in `dropped`; the Scene never holds an edge from a node to itself.
-   - *Port lines*. Where a port faces a side nothing stands beside (the rect is the last or first
-     of its row, or in the last row for a bottom port), the stub's gutter is its container's padding ring, and
-     the space beyond it is free up to the container's border and on through every zone the rect's zone is the
-     last of. A port line runs straight through that space, from the stub's gutter to the first gap beside one
-     (or the canvas margin), one piece per container crossed. Only its edge (or, at a hub's shared port, the
-     bundle's members) may run along it, on lane 0, the port's own coordinate, so a route leaves a nested chip
-     in one straight run instead of turning along its zones' rings; other routes may cross it. A route may
-     start along its source's port line (no turn onto the ring, so starting along the ring costs a bend there)
-     and end along its target's. None on a top side, none for an inward port, none where a gutter line
-     runs alongside it (within its lanes' reach and a pitch), another port's stub runs on it, or another port
-     line meets it at nearly the same coordinate, and none of no length: without padding a zone's ring lies on
-     its border, and without a gap beside the zone so does the gutter the line would end at, so the stub's own
-     gutter is the way out (a single point leads nowhere). The router knows a port run by its line, whose
-     pieces name the holder it belongs to, not by the segments the run covers, so a run along a port line is
-     held on lane 0 even where it covers none (`runEnds` in `src/route.ts`).
-   - *Graph.* Gutter lines are the segments, their intersections and the stubs' attach points the nodes
-     (typed arrays). A segment's lane cost is `laneCost` spread over the gutter it belongs to, in proportion
-     to length, so running the length of one gutter costs 50 per lane already in it, however many other
-     gutters cross or join it. Each segment records its strip (the narrowest gutter width covering it) and the
-     stable keys of its gutter pieces (container and gap).
-   - *Search.* Each edge is an A* shortest path from its source's attach point to its target's, cost = length
-     (1.5 × along a ring side, at most 320 more over the side; 2 × in the canvas margin) + 40 per bend + 50
-     per other holder's lane already used in each gutter (pressure); a bundle's member pays no pressure for
-     its own bundle's lanes and 0.9 of the length where its bundle already runs, so it joins the trunk. A
-     state is a node and the axis the route arrived along; a step runs along either line through the node (the
-     other one costing a bend) to the next intersection. The heuristic (distance, scaled by the cheapest
-     length factor, plus the bends still needed) is consistent; ties go to the state nearer the goal, then the
-     lower state number. A route uses only the gutters of the containers it has to cross (those holding either
-     end, up to the innermost container holding both), so it never cuts through an unrelated zone and its
-     search stays small; failing that (never seen), every gutter; failing that, the fallback. Edges are routed
-     shortest first, then in id order.
-   - *Lanes.* A route is a sequence of runs along gutter lines. A run takes a lane that is free (or its own
-     holder's) in every segment it covers, preferring its bundle's lane there, and that keeps the drawing
-     clear: the run itself, the elbow's reach into the gutter it turns onto (an elbow sits on that gutter's
-     lane, past the end of the run's own line when the lane lies beyond the centre-line, the T-junction case)
-     and the stub at either end must not run alongside another holder's segment closer than the lane pitch (8
-     px; two stubs from facing ports: half the port spacing, 6 px, as close as the shifted slot grids put
-     them). The first run is checked from its source port's coordinate along the run's own line and the last
-     up to its target port's, where the route's points turn into the stubs. An index of every segment drawn so
-     far, in absolute coordinates, answers those questions (`src/occupancy.ts`). Whether a lane keeps clear
-     depends on the neighbouring runs' lanes, so a route's lanes are found together, lowest first, by a
-     depth-first search over its runs (at most 200 candidates; then lane by lane, and a run that finds no
-     clear lane is counted in `overlaps`). Lane k sits `laneSlot(k)` pitches from the line's centre-line,
-     alternately either side (0, +1, −1, +2, …), so the busiest stretch of a line does not push its quiet
-     stretches' lanes aside: n lanes need n × 8 + 8 px of gutter (one pitch more for an even n, keeping the
-     outer lanes 8 px from the boxes).
-   - *Passes.* Route (search every edge); widen every gutter whose lanes do not fit (its own gap, or its side
-     of its container's ring, through the gutter hook) and re-pack with the arrangements pinned; re-route: the
-     three passes. A laid route whose old lanes are all still free, fitting and clear keeps them without
-     preparing its other preferences (what the lane search would find first). The re-route lays each route
-     onto the widened gutters: every edge keeps its ports' sides, its bundle and its place in the order, and
-     its route keeps its gutter pieces (keyed by container and gap, which the pinned re-pack keeps), its turns
-     and its lanes, which is exactly what the widening made room for. Only an edge whose gutters no longer
-     line up (a line it ran straight along has come apart, or two lines it turned between no longer meet,
-     because the re-pack moved them) is searched again, keeping to its old corridor (1.5 × the length outside
-     it) and lanes; in the re-route a full gutter is closed to the search and a lane must fit its gutter, and
-     a route that does not fit is searched again avoiding the segments that did not (twice at most). Where the
-     re-pack made two gutters meet that did not before, a few lanes can still not fit; further rounds
-     (`wideningRounds`, 3 in all; 2 above `lateRoundsUpTo`, 500 lane holders, where a round costs too much of
-     the budget) widen those and lay the routes once more. **Single-pass mode is decided by the first pass's
-     search work**: the first pass searches exactly and counts the A* states it settles
-     (`report.routing.work`; deterministic, and most of the routing time); once it has settled
-     `singlePassWork` (420 000) it searches the rest of its edges weighted (the estimate ×
-     `SINGLE_PASS_WEIGHT`, 1.5: each route costs at most 1.5 × the cheapest) and its route is final (no
-     widening; lanes that do not fit are squeezed closer, `report.routing.squeezed`, with a warning). Above
-     `oneRoundWork` (340 000) and below that, one widening round at most (the band: a view whose work grows
-     loses a round before it loses the widening, and stays within its budget). A count of lane holders does
-     not measure the search cost.
-   - *Geometry.* Points: source port (or the head's tip, for `both`), stub end on the first run's lane, one
-     elbow per change of run, stub start on the last run's lane, target port or the head's tip `arrowInset`
-     (2 px) inside the border (at most the zone's padding deep in an open zone; at the border for a port on
-     the inside of a containing zone). `elbowRadius` (6) tells the renderer to round each elbow, to at most
-     half the shorter adjacent segment and, next to a head, to at most what the end segment leaves beside the
-     head: a lane can be 8 px from the box, so an end segment can be 10 px, shorter than a 9 px head plus the
-     radius, and the head must sit on a straight stretch (the debug renderer does this). A bundle's members
-     coincide along their trunk: draw each from the bundle's end so that dashes coincide, and the shared head
-     once.
-   - *Fallback.* When no gutter path exists, A* over a coarse grid (`fallbackGrid`, 8 px, plus the ports' own
-     coordinates) avoiding every card, chip, empty zone and header; counted in `report.routing.fallbacks` with
-     a warning. If even that fails (only possible with gaps under 8 px), a plain orthogonal line, counted in
-     `failed` with a warning. The demo organisations and every property test need neither.
+   `src/route.ts`, `src/fallback.ts`, skill §5): merges symmetric/duplicate edges, groups bundles
+   (`bundleMin`), allocates ports and stubs, searches A* shortest paths along gutter segments with bend and
+   lane pressure costs, assigns collision-free lanes, and executes widening/re-pack/re-route passes (with
+   single-pass search under heavy search work above `singlePassWork`).
 
-**Interpretations** (where the skill's text left a choice; each is the reading the tests and renders support):
-"a cost per lane already used in a segment" charges a lane once per gutter run end to end, not once per piece
-a crossing splits off (that reading made long detours cheaper than any busy corridor), and counts holders (a
-bundle's members share a lane), at 50 (lanes widen their gutter, so a busy corridor between two folders is
-cheaper than a detour around one); the "three passes" are route, widen and re-pack, re-route, where the
-re-route lays the routes onto the widened gutters, and a second widen-and-lay round runs only where lanes
-still do not fit (so up to three routing passes, only the first a full search); "parallel arrows in the same
-gap are spaced in lanes, never overlapping" holds for the drawn geometry, elbows and stubs included, and a
-hub's edges of one kind are not parallel arrows but one trunk (a bundle); per-gap and per-side widening extend
-the packer's uniform hook, so one busy gap does not widen every gap of its container; lane slots alternate
-around the centre-line (a gutter with an even number of lanes is one pitch wider than lanes × 8 + 8); a route
-stays within the containers it has to cross; `secures` edges are routed as lines like every other kind (the
-style skill draws them as an overlay; the renderer decides); the first pass's search work decides single-pass
-mode (420 000 settled states, with a one-round band above 340 000), because neither the number of edges nor
-the number of lane holders says what routing costs.
+## Constants
 
-## Constants (scale 1)
-
-The defaults of `DEFAULT_SIZING` and the other constants; they match skill gcp-diagram-layout §3 and skill
-gcp-diagram-style §3–§4, and `LayoutOptions.sizing` may override any of them.
-
-| Thing | Value | Constant |
-|---|---|---|
-| Card | height 44; width 148–220 from metrics; icon 24; inner padding 10 | `cardHeight`, `cardMinWidth`, `cardMaxWidth`, `cardIcon`, `cardPadding` |
-| Chip | height 44; width 148–220 from its label and count line after a 16 px glyph and an 8 px gap; sibling chips and empty zones share the widest width | `chipHeight`, `chipMinWidth`, `chipMaxWidth`, `chipGlyph`, `chipGlyphGap` |
-| Empty zone | card-sized: height 44, width 148–220 from its label and subtitle | (card constants) |
-| Zone header | 40 (depth ≤ 2), 32 (depth ≥ 3) | `headerHeight`, `deepHeaderHeight`, `shallowHeaderMaxDepth` |
-| Zone padding | 24 at root projects, 16 otherwise | `rootProjectPadding`, `zonePadding` |
-| Gap between siblings | 24 horizontal, 20 vertical, plus lane space (`gutters`) | `gapHorizontal`, `gapVertical` |
-| Canvas margin | 24 | `canvasMargin` |
-| Packing target | 1.6; 1.75 at the root; on target within 20 %; near ties within 2 %; stacks for 3–24 zones | `TARGET_ASPECT`, `ROOT_ASPECT`, `ASPECT_TOLERANCE`, `NEAR_TIE`, `STACK_LIMIT` (`src/pack.ts`) |
-| Card title / subtitle | 13 px 700 / 10.5 px 400 (addresses in Roboto Mono) | `cardTitleSize`, `cardSubtitleSize`, `TEXT_WEIGHTS` |
-| Zone title | 15 px (depth 1) / 13 px (deeper), 500; subtitle after `' · '` at 400; at most 660 px counts towards the zone's width | `zoneTitleSize`, `deepZoneTitleSize`, `largeTitleMaxDepth`, `ZONE_TITLE_SEPARATOR`, `zoneTitleMaxWidth` |
-| Zone header icon | 24, 8 px before the title | `headerIcon`, `headerIconGap` |
-| Badges | 10.5 px 400 pills, 6 px text padding, 4 px apart, 12 px after the title | `badgeTextSize`, `badgePaddingX`, `badgeSpacing`, `headerBadgeGap` |
-
-Routing (`DEFAULT_ROUTING`, `LayoutOptions.routing`; skill §3 and §5, style §5):
-
-| Thing | Value | Constant |
-|---|---|---|
-| Lane pitch; gutter base (n lanes need n × 8 + 8) | 8; 8 | `lanePitch`, `gutterBase` |
-| Cost per bend; per lane already used in a gutter; length factor along a ring side inside its padding band, and the most it adds over one side; in the canvas margin | 40; 50; 1.5, 320; 2 | `bendCost`, `laneCost`, `hugFactor`, `hugCap`, `marginFactor` |
-| Port spacing; clear of a card's corners; of a zone's lower corners | 12; 8; 12 | `portSpacing`, `portClearance`, `zonePortClearance` |
-| Arrowhead tip inside the border; elbow radius | 2; 6 | `arrowInset`, `elbowRadius` |
-| First-pass search work (A* states settled) at which the rest of the pass is searched weighted and final (single-pass mode); above which one widening round at most; widening rounds at most; two at most above this many lane holders | 420 000; 340 000; 3; 500 | `singlePassWork`, `oneRoundWork`, `wideningRounds`, `lateRoundsUpTo` |
-| Edges of one kind at one rect's end bundled from | 3 | `bundleMin` |
-| Fallback grid cell | 8 | `fallbackGrid` |
-
-Worker (`src/steps.ts`, `src/memo.ts`, `src/hash.ts`): a routing pass stops every `ROUTE_STEP` (128) edges;
-the memo keeps `MEMO_CAPACITY` (8) Layouts; a memo key walks at most `MAX_KEY_DEPTH` (528) levels and
-`MAX_KEY_UNITS` (2^27) code units.
-
-Internal tuning (`src/route.ts`): a bundle's member pays 0.9 of the length where its bundle runs
-(`BUNDLE_LENGTH`), a re-searched edge 1.5 × outside its old corridor (`STRAY`), a route that does not fit is
-searched again twice at most (`RETRIES`), a route's lanes are searched over 200 candidates at most
-(`LANE_SEARCH`), single-pass mode weights the search estimate by 1.5 (`SINGLE_PASS_WEIGHT`). The arrowhead's
-size (9 × 7, 7 × 5 by kind) is the renderer's: the layout only ends the path at the tip.
+All layout sizing, packing, and routing constants are defined in [`src/constants.ts`](src/constants.ts)
+(`DEFAULT_SIZING`, `DEFAULT_ROUTING`) and specified in
+[skill gcp-diagram-layout](../../.agents/skills/gcp-diagram-layout/SKILL.md) §3 and §5. They are tested
+against drift in `test/skill.test.ts`.
 
 ## Text metrics
 

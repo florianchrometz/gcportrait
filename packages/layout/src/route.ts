@@ -2,65 +2,35 @@
 /**
  * Stage 5: orthogonal routing over the gutter network (skill gcp-diagram-layout §5).
  *
- * Holders. Lanes are held per holder: an edge of its own, or a bundle (ports.ts: the edges of one kind that
- * meet a hub at the same end and from the same side share one port there). A bundle's members share their
- * lanes, so towards the hub they merge into one trunk instead of running side by side.
+ * Holders. Lanes are held per holder: an edge of its own, or a bundle (ports.ts: edges of one kind
+ * meeting a hub at the same end from the same side share a port). Bundle members share lanes and merge
+ * towards the hub.
  *
- * Search. Each edge is a shortest path (A*) over the routing graph from the node where its source port's stub
- * meets a gutter to the node where its target port's stub does. Cost = length + `bendCost` (40) per bend +
- * `laneCost` (50) for every other holder's lane already in each gutter segment it runs along (pressure; a
- * gutter's cost is spread over its length, see network.ts). A bundle's member pays no pressure for its own
- * bundle's lanes and only `BUNDLE_LENGTH` of the length where its bundle already runs, so it joins the trunk.
- * A search state is a node plus the axis the route arrived along, so a bend is a change of axis at a node;
- * the route starts along its source's gutter (its stub turns onto it) and ends along its target's, or along
- * its source's and its target's port line (portlines.ts: a straight way out of a rect nothing stands beside,
- * which only that port's edge or bundle may use). A stretch along a zone's border inside its padding band (a
- * ring side between the zone's corners, `hugSpans` in gutters.ts) costs `hugFactor` (1.5) × its length, but
- * at most `hugCap` (320) more than its length over the whole side (`hugFactors`), and one in the canvas
- * margin `marginFactor` (2) ×; every gap and every line through free space costs its length. So no line is
- * cheaper per px than another running parallel to it through the same free space (which would pay a route to
- * go round through the margin to reach it), and avoiding a long border is worth no more than a short way
- * round (without the cap 9 000 px along a ring top would cost 4 500 px extra, and routes would drop 2 000 px
- * to a row gap and climb back to avoid it). A step runs along either line through the node (the other one
- * costing a bend) to the next intersection, passing the other edges' attach points, which only split the
- * line. The heuristic (Manhattan distance, scaled by the cheapest length factor, plus the bends the remaining
- * path needs at least) is consistent, so the first time the goal is taken from the queue its cost is minimal;
- * in single-pass mode it is weighted by `SINGLE_PASS_WEIGHT` (weighted A*: at most that factor above the
- * cheapest). Ties go to the state nearer the goal, then to the lower state number, so the search is
- * deterministic. Every state the search settles counts as work (`Pass.work`); the first pass switches to the
- * weighted estimate for its remaining edges once its work reaches `Routing.singlePassWork` (single-pass
- * mode).
+ * Search. Shortest path (A*) over the routing graph from source port stub to target port stub. Cost =
+ * length + `Routing.bendCost` per bend + `Routing.laneCost` for every other holder's lane already in each
+ * gutter segment (pressure spread over gutter length, network.ts). Bundle members pay no pressure for bundle
+ * lanes and only `BUNDLE_LENGTH` of length where their bundle runs. Search states are a node plus arrival
+ * axis. Stretches along a zone's border inside its padding band (`hugSpans` in gutters.ts) cost
+ * `Routing.hugFactor` × length up to `Routing.hugCap` above length over the whole side (`hugFactors`), and
+ * canvas margin stretches cost `Routing.marginFactor` × length. The consistent heuristic (Manhattan
+ * distance + minimum bends) is weighted by `SINGLE_PASS_WEIGHT` once work reaches `Routing.singlePassWork`
+ * (single-pass mode). Ties prefer nearer states to the goal, then lower state id.
  *
- * Re-route. After a widening re-pack (`previous`), every edge keeps its ports' sides and bundle and its place in
- * the routing order, and its route is laid onto the widened gutters: the same gutter pieces (keyed by container
- * and gap, which the re-pack keeps: the arrangements are pinned), the same turns and the same lanes, which is
- * what the widening made room for. Only an edge whose gutters no longer line up (a line it ran straight along
- * has come apart, or two lines it turned between no longer meet) is searched again, at `STRAY` times the
- * length outside its old corridor so that it keeps to it, and preferring its old lanes there.
+ * Re-route. After a widening re-pack (`previous`), edges keep port sides, bundle and routing order, laid
+ * onto widened gutters. Only edges whose gutters no longer line up are searched again, at `STRAY` times
+ * length outside their old corridor.
  *
- * Capacity. In the re-route, a segment whose gutter holds no lane for another holder is closed to the search,
- * and a lane must fit its gutter; a route whose lanes do not fit is taken back and searched again avoiding the
- * segments that did not fit (`RETRIES`); failing that it keeps its lanes, which are squeezed, and the next
- * widening round (if any) widens those gutters.
+ * Capacity. Segments with no lane for another holder are closed; lanes must fit gutters. Routes that do not
+ * fit are re-searched avoiding failing segments (`RETRIES`), otherwise squeezed for the next widening round.
  *
- * Scope. A route uses only the gutters of the containers it has to cross: those that hold either end, from the
- * end's own container up to the innermost container holding both (an end that is an open zone containing the
- * other end is that container). It never runs through the inside of an unrelated zone, and its search stays
- * small. When that finds nothing (it should not) the search is repeated over every gutter, and after that the
- * coarse-grid fallback takes over.
+ * Scope. A route uses only gutters of containers it crosses, between endpoints up to their lowest common
+ * ancestor, never entering unrelated zones. Falls back to all gutters, then coarse-grid fallback.
  *
- * Order. Edges are routed shortest first (Manhattan distance between their ports), then in id order, so the
- * result does not depend on the order of the Scene's edges.
+ * Order. Shortest Manhattan distance first, then id order for deterministic results.
  *
- * Lanes. A route is a sequence of runs, each along one gutter line. A run takes the lowest lane that is free
- * (or its own holder's) in every segment it covers, preferring a lane its bundle already holds there, and that
- * keeps the drawing clear: the run itself, the elbow's reach into the gutter it turns onto (an elbow sits on
- * that gutter's lane, past the end of the run's own line when the lane lies beyond the centre-line) and the
- * port's stub at either end must not run alongside another holder's segment closer than `lanePitch`
- * (occupancy.ts). In the capacity-aware pass the lane must also fit every segment's gutter. Lane k sits
- * `laneSlot(k)` pitches (`lanePitch`, 8 px) from the line's centre-line, alternately on either side, so the
- * busiest stretch of a line does not push the lanes of its quiet stretches aside; lanes move closer together
- * only where a gutter is narrower than its lanes need (the widening pass exists to prevent that).
+ * Lanes. A route is a sequence of runs along gutter lines, taking the lowest free lane that maintains
+ * `Routing.lanePitch` clearance from other holders (occupancy.ts) and fits the gutter. Lane k sits
+ * `laneSlot(k)` pitches (`Routing.lanePitch`) from the line centre, alternating sides.
  */
 import type { Routing } from './constants.js';
 import type { DrawnEdge } from './edges.js';

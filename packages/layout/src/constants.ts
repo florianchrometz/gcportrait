@@ -2,7 +2,7 @@
 /**
  * Sizing constants at scale 1 (skill gcp-diagram-layout §3, skill gcp-diagram-style §3 and §4). They are
  * theme-independent: both themes draw the same geometry. `LayoutOptions.sizing` may override any of them; the
- * defaults below are the specification and the README's constants table must match them.
+ * defaults below are the specification, verified against the layout skill by test/skill.test.ts.
  */
 
 import type { Routing, Sizing } from '@gcportrait/model';

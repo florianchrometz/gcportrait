@@ -275,25 +275,16 @@ Kubernetes clusters page), so they fall back to their project (`docs/catalog-fol
 
 Each turns one value into a `RelationTarget` (`@gcportrait/model`): a full resource name, an alias the graph
 builder looks up (service-account emails), or nothing (then the value is kept as a dangling reference). All of
-them trim, ignore trailing slashes and decode a value that is a wholly URL-encoded full name
-(`%2F%2F…`); encoded segments inside a name stay verbatim.
+them trim, ignore trailing slashes and decode a value that is a wholly URL-encoded full name (`%2F%2F…`);
+encoded segments inside a name stay verbatim.
 
-| Normaliser | Accepts | Yields |
-|---|---|---|
-| `name` | full names; `https://<x>.googleapis.com/<version>/<path>`; `<x>.googleapis.com/<path>`; relative names | the full name; relative names get the rule's `service` (default: the asset's) |
-| `computeSelfLink`, `computeRelative` | self-links (`v1`, `beta`, `alpha`, with or without scheme), Compute full names, `projects/…`, and `global/…`, `regions/…`, `zones/…` (in the asset's project) | `//compute.googleapis.com/projects/<id>/…`; a project number becomes its id through the index |
-| `serviceAccountEmail` | `sa@…`, `serviceAccount:sa@…`, `…/serviceAccounts/sa@…`; `default` (the project's Compute default account) | alias: the email's `aliasKey` (lower case); a full name with a numeric id is kept as a name |
-| `gcsUri` | `gs://b/…`, `b`, `projects/_/buckets/b/…`, storage URLs | `//storage.googleapis.com/b` |
-| `bigqueryUri` | resource paths, `bq://p.d[.t]`, `p.d[.t]`, `p:d[.t]`, domain-scoped projects, `{ projectId?, datasetId, tableId? }` | `//bigquery.googleapis.com/projects/p/datasets/d[/tables/t]` |
-| `pubsubUri` | topics, subscriptions, schemas, snapshots, with or without the service | `//pubsub.googleapis.com/projects/p/…` |
-| `kmsKey` | key or key-version paths, full names, `//cloudkms.googleapis.com/v1/…` | the key; the version with `versionLevel: true` |
-| `cloudSqlConnectionName` | `p:region:i`, `p:i`, domain-scoped projects, `projects/p/instances/i`, `cloudsql` or `sqladmin` full names | `//cloudsql.googleapis.com/projects/p/instances/i`, the name CAI gives `sqladmin.googleapis.com/Instance` assets |
-| `artifactImage` | `<loc>-<format>.pkg.dev/<p>/<repo>/…` (tags, digests), `[us.\|eu.\|asia.]gcr.io/<p>/…` | the Artifact Registry repository; other registries yield nothing |
-| `projectNumberOrId` | numbers (also as JSON numbers), ids, `projects/…`, Resource Manager full names | `//cloudresourcemanager.googleapis.com/projects/<number>`; an id the index does not know stays an id |
-| `k8sOwner` | an `ownerReferences[*]` object `{ apiVersion, kind, name }` | the owner in the same cluster (and namespace unless cluster-scoped): `…/k8s/namespaces/n/<group>/<plural>/<name>`; a group Kubernetes does not serve itself is `apis/<group>` (Gateway API) |
-| `logSinkDestination` | `storage…/b`, `bigquery…/projects/p/datasets/d`, `pubsub…/projects/p/topics/t`, `logging…/<parent>/locations/l/buckets/b`, `logging…/projects/p` | the bucket, dataset, topic, log bucket or project |
-| `siblingName` | a bare id (`staging`), a path (`projects/…/instanceGroupManagers/m`, full names and self-links too), or an object (`{ service, region }`, `{ name, projectId }`) | the rule's `pattern` filled in, in the rule's `service`: placeholders `{id}`, `{parent}`, `{project}`, `{projectId}`, `{projectNumber}`, `{location}`, `{region}`, `{zone}`, `{.key}` (below) |
-| `k8sRef` | a bare name of the rule's `k8sKind`, or `{ name, kind?, group? \| apiGroup? \| apiVersion?, namespace? }` | the object in the asset's cluster, in its namespace unless named or cluster-scoped, group as for `k8sOwner` |
+The supported normalisers, their accepted input formats and outputs are specified in the catalog skill
+([gcp-asset-catalog §5](../../.agents/skills/gcp-asset-catalog/SKILL.md)) and implemented in `NORMALISERS`
+(`src/engine/normalisers.ts`), verified by `tooling/skill.test.ts`: `name`, `computeSelfLink`,
+`computeRelative`, `serviceAccountEmail`, `gcsUri`, `bigqueryUri`, `pubsubUri`, `kmsKey`,
+`cloudSqlConnectionName`, `artifactImage`, `projectNumberOrId`, `k8sOwner`, `logSinkDestination`,
+`siblingName`, and `k8sRef`.
+
 
 **`siblingName` resolution.** Each placeholder takes its value from the reference first, then from the asset
 that holds it: `{id}` is a bare value, a path's last segment or an object's `name`; `{parent}` is a path
