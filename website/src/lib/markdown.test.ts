@@ -192,10 +192,6 @@ describe('renderMarkdown', () => {
     '',
     '# Self-hosting gcportrait',
     '',
-    'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is',
-    'not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are',
-    "trademarks of Google and are used under Google's icon usage terms.",
-    '',
     'A gcportrait instance is one Cloud Run service. See [permissions](permissions.md#the-grant).',
     '',
     '<details><summary>raw</summary><script>alert(1)</script></details>',
@@ -223,7 +219,7 @@ describe('renderMarkdown', () => {
     expect(rendered.html).not.toContain('<h1');
   });
 
-  it('skips the non-affiliation statement for the lead and collects the headings with GitHub’s ids', () => {
+  it('takes the first paragraph for the lead and collects the headings with GitHub’s ids', () => {
     expect(rendered.lead).toBe('A gcportrait instance is one Cloud Run service. See permissions.');
     expect(rendered.headings).toEqual([
       { depth: 2, id: 'quick-start', text: 'Quick start' },

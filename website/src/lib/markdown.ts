@@ -36,7 +36,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 
-import { NEW_TAB_NOTE, NON_AFFILIATION_LONG, isDemoHref, repositoryFileUrl } from '../site.js';
+import { NEW_TAB_NOTE, isDemoHref, repositoryFileUrl } from '../site.js';
 import { unfilledNote } from './fillable.js';
 
 export type Heading = { readonly depth: 2 | 3; readonly id: string; readonly text: string };
@@ -318,11 +318,10 @@ function siteRewrites(options: RenderOptions, collected: Collected) {
         collected.title = normalisedText(textOf(titleNode));
         if (options.dropTitle === true) tree.children.splice(titleIndex, 1);
       }
-      const longForm = normalisedText(NON_AFFILIATION_LONG);
       for (const node of tree.children) {
         if (!isElement(node, 'p')) continue;
         const lead = normalisedText(textOf(node));
-        if (lead === '' || lead === longForm) continue;
+        if (lead === '') continue;
         collected.lead = lead;
         break;
       }

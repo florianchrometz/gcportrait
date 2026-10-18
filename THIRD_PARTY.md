@@ -92,8 +92,7 @@ and stay under their own terms (categories 2 and 3).
    a code licence). They are outside the Apache License 2.0, and neither gcportrait nor its maintainer
    licenses them.
    See [Google Cloud product icons](#google-cloud-product-icons) below and `packages/icons/README.md`. Google
-   Cloud and the Google Cloud product icons are trademarks of Google; gcportrait is an independent open-source
-   project and is not affiliated with, endorsed by, or sponsored by Google.
+   Cloud and the Google Cloud product icons are trademarks of Google.
 3. **Licence texts** in `scripts/licenses/`: byte-identical copies of the canonical texts of Apache-2.0
    (apache.org), MIT (the SPDX licence list) and MPL-2.0 (mozilla.org). `LICENSE` is the Apache-2.0 text with
    its copyright line filled in and its closing note (`scripts/set-license.mjs` writes the bare text; the line

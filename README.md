@@ -405,13 +405,12 @@ and `pnpm provenance` checks every one.
   build) at your source.
 - **The name and the icon are reserved.** The gcportrait name and the gcportrait icon are not covered by the
   Apache License 2.0. They identify this project and may not be used to present other software or services as
-  gcportrait or as endorsed by it; forks must use their own name and icon
-  ([brand/LICENSE.md](brand/LICENSE.md)).
+  gcportrait or as endorsed by it; forks must use their own name and icon. See
+  [brand/LICENSE.md](brand/LICENSE.md).
 - **Third-party material keeps its own licences.** The npm dependencies, the self-hosted Roboto fonts (SIL
   Open Font License 1.1) and the licence texts under `scripts/licenses/` are listed in
   [THIRD_PARTY.md](THIRD_PARTY.md); `pnpm run licenses` allows only licences that do not reach gcportrait's
   own combined work.
 - **Google trademarks.** Google Cloud and the Google Cloud product icons are trademarks of Google, used
   unmodified under Google's icon usage terms ([packages/icons/README.md](packages/icons/README.md)); they are
-  not covered by the Apache License 2.0. gcportrait is not affiliated with, endorsed by, or sponsored by
-  Google ([above](#not-affiliated-with-google)).
+  not covered by the Apache License 2.0 ([Not affiliated with Google](#not-affiliated-with-google)).

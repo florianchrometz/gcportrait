@@ -80,8 +80,8 @@ export const TAGLINE = 'A portrait of your Google Cloud environment.';
 
 /**
  * The non-affiliation statement's long form (AGENTS.md, Non-affiliation, brand and legal): the README, the website's
- * long-form texts (the landing page's author section, from docs/author.md, the licence page, the guides), the docs, the
- * icons README, the release notes.
+ * long-form texts (the landing page's author section, from docs/author.md, the licence page), the docs, the
+ * package READMEs, the release notes.
  */
 export const NON_AFFILIATION_LONG =
   'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and ' +

@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
-import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { REPO } from './temp-tree.js';
 
+const require = createRequire(import.meta.url);
+const branding = require(path.join(REPO, 'frontend', 'src', 'branding.ts')) as Record<string, string>;
+
 /**
- * A string constant of frontend/src/branding.ts, the one source of the non-affiliation wording, read from
- * the file (the tooling does not import the app): `export const NAME = ...;` with its string literals joined. Throws
- * when the file declares no such constant, so a renamed constant fails the test instead of comparing with ''.
+ * A string constant of frontend/src/branding.ts, the one source of the non-affiliation wording,
+ * loaded directly from the source file.
  */
 export function brandingConstant(name: string): string {
-  const source = readFileSync(path.join(REPO, 'frontend', 'src', 'branding.ts'), 'utf8');
-  const declaration = new RegExp(`export const ${name}\\s*=([^;]+);`).exec(source)?.[1];
-  if (declaration === undefined) throw new Error(`frontend/src/branding.ts declares no ${name}`);
-  return [...declaration.matchAll(/'([^']*)'|"([^"]*)"/g)].map((m) => m[1] ?? m[2] ?? '').join('');
+  const value = branding[name];
+  if (value === undefined) throw new Error(`frontend/src/branding.ts declares no ${name}`);
+  return value;
 }

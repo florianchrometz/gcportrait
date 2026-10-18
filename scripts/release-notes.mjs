@@ -29,18 +29,30 @@
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+const require = createRequire(import.meta.url);
+/** @type {unknown} */
+const branding = require(
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../frontend/src/branding.ts'),
+);
+const brandingRecord =
+  typeof branding === 'object' && branding !== null ? /** @type {Record<string, unknown>} */ (branding) : {};
+
 /**
- * The long-form non-affiliation statement (AGENTS.md, Non-affiliation, brand and legal);
- * scripts/release-notes.test.ts keeps it equal to the app's.
+ * The long-form non-affiliation statement (AGENTS.md, Non-affiliation, brand and legal),
+ * loaded directly from frontend/src/branding.ts.
+ * @type {string}
  */
 export const NON_AFFILIATION_LONG =
-  'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is ' +
-  'not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are ' +
-  "trademarks of Google and are used under Google's icon usage terms.";
+  typeof brandingRecord.NON_AFFILIATION_LONG === 'string'
+    ? brandingRecord.NON_AFFILIATION_LONG
+    : (() => {
+        throw new Error('frontend/src/branding.ts exports no NON_AFFILIATION_LONG string.');
+      })();
 
 /** A release tag: v, then a semantic version (a pre-release suffix allowed). */
 const TAG = /^v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$/;

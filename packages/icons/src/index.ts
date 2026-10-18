@@ -5,10 +5,8 @@
  * asset catalog uses (README.md). Pure data and lookups: no DOM, no Node APIs, safe in the app, its workers and
  * the headless renderer. This file is the package's only public surface.
  *
- * gcportrait is not affiliated with, endorsed by, or sponsored by Google. The Google Cloud product icons are
- * Google Cloud's, used as provided under the terms stated on that page; they are not covered by gcportrait's
- * licence, and neither gcportrait nor its maintainer licenses them. Google Cloud and the Google Cloud product
- * icons are trademarks of Google.
+ * The Google Cloud product icons are Google Cloud's trademarks, used under Google's icon usage terms; see
+ * README.md ("Trademark, usage terms and copyright") and AGENTS.md ("Non-affiliation, brand and legal").
  */
 import { ARTWORK, GENERIC_KEY, RECORDS } from './generated/icons.js';
 import type { Icon } from './types.js';

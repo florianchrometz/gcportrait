@@ -165,9 +165,9 @@ the wording, and a test compares every copy with them.
   > Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by
   > Florian Chrometz
 
-- **Long form**, once per long-form text (README box, docs index, Cloud Shell tutorial, release notes, image
-  label, infra and installer `--help`, Connect page, the site's author and licence pages; guides in their
-  footer):
+- **Long form**, once per long-form text (root and package READMEs, docs index, docs, Cloud Shell tutorial,
+  release notes, image label, infra and installer `--help`, Connect page, site author and licence pages;
+  guides in their footer):
 
   > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and
   > is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product
@@ -253,7 +253,7 @@ docs/contributing.md §9.
 ## Documentation
 
 - **User guides are indexed in docs/README.md; each package's README is its reference**: guides say what to
-  do and link the explanations, and open with the long form (docs/AGENTS.md, "User guides").
+  do and link the explanations (docs/AGENTS.md, "User guides").
 - **What is, never history**: no run, timing, review or verification records, decision or change dates or
   replaced behavior (user-docs and provenance enforce it).
 - **Markdown: 110 columns**, hand-wrapped, not Prettier, with SPDX, except tables, URL lines, fences,

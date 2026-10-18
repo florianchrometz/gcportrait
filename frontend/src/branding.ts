@@ -28,8 +28,13 @@ export const FOOTER_NOTICE =
 /** `FOOTER_NOTICE` up to the maintainer's name (the footer's plain text before the link). */
 export const FOOTER_NOTICE_LEAD = FOOTER_NOTICE.slice(0, FOOTER_NOTICE.lastIndexOf(MAINTAINER_NAME));
 
-/** Long form: README, website, docs, icons README, release notes, image description label, infra `--help`. */
+/** Long form: README, website, docs, package READMEs, release notes, image description label, infra `--help`. */
 export const NON_AFFILIATION_LONG =
   'gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and ' +
   'is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons ' +
   "are trademarks of Google and are used under Google's icon usage terms.";
+
+/** Aliases for naming conventions across workspaces and rules. */
+export const NON_AFFILIATION_STATEMENT = NON_AFFILIATION_LONG;
+export const NON_AFFILIATION_FOOTER = FOOTER_NOTICE;
+export const DIAGRAM_TAGLINE = TAGLINE;
