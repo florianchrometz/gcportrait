@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `consoleUrlFor` and `consoleLinkFor` over the real compiled catalog and the real fixtures: one
  * Cloud Console link per type for 15 types (the first asset of each type's fixture file), the k8s Namespace's

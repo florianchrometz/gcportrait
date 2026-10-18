@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `[` and `]` move the timeline one day back and forward (style skill §13), from anywhere on the diagram page
  * but a text field, a popup or a dialog, on any keyboard layout: the key is matched by the character it typed,

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Networking fabric. `owns` lists the official asset types this group owns, mapped or not (exact types, or
 # <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not mapped

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { expect, test, type Locator } from '@playwright/test';
 
 import { hashOf, openDiagram } from './support.js';

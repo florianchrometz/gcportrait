@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Saved views (IndexedDB for snapshots, saved views and preferences; frontend/AGENTS.md, Code): a name and
  * the view's URL hash, kept in the `savedViews` store of the browser database (storage/db.ts, `StoredView`), so a

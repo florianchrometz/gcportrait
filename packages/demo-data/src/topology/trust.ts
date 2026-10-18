@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Security and identity beyond keys and the perimeter (feature `security`), in the security project and at
  * the organisation: two asymmetric signing keys (for the root CA and the build attestor), Certificate

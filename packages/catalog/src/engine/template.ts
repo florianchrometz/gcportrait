@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Label, subtitle and console-URL templates (skill gcp-asset-catalog §2): literal text with
  * `{{variable | filter | …}}` expressions. The grammar is `TemplateSchema` in `@gcportrait/model`; this module

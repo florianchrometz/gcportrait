@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # The gcportrait production image (docs/self-host-options.md, "Run the image locally"): the built SPA and the backend bundled into one ESM file,
 # on a distroless Node 22 base that runs as a non-root user. Build from the repository root:
@@ -56,21 +56,22 @@ FROM gcr.io/distroless/nodejs22-debian12:nonroot@sha256:13593b7570658e8477de39e2
 ARG APP_VERSION=dev
 
 # The description is the long form of the non-affiliation statement; the licence is
-# gcportrait's own (MIT). Third-party material in the image keeps its own terms (/app/THIRD_PARTY.md): every
-# package's notices in /app/frontend/dist/licenses/THIRD_PARTY_NOTICES.txt (served at
+# gcportrait's own (Apache-2.0), with its attribution in /app/NOTICE. Third-party material in the image keeps its
+# own terms (/app/THIRD_PARTY.md): every package's notices in
+# /app/frontend/dist/licenses/THIRD_PARTY_NOTICES.txt (served at
 # /licenses/THIRD_PARTY_NOTICES.txt and linked from the app's Settings page), the SPA's licences next to it, the
 # server's in /app/backend/dist/licenses/. The label app.gcportrait.third-party-notices names that file's path in
 # the image, so `docker inspect` points at it without starting a container.
 LABEL org.opencontainers.image.title="gcportrait" \
       org.opencontainers.image.description="gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks of Google and are used under Google's icon usage terms." \
-      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.version="${APP_VERSION}" \
       app.gcportrait.third-party-notices="/app/frontend/dist/licenses/THIRD_PARTY_NOTICES.txt"
 
 WORKDIR /app
 # The same layout as the repository, so the backend finds frontend/dist and its package.json where it looks by
 # default (backend/src/config.ts); STATIC_DIR below says so explicitly.
-COPY --from=build /src/LICENSE /src/THIRD_PARTY.md /app/
+COPY --from=build /src/LICENSE /src/NOTICE /src/THIRD_PARTY.md /app/
 COPY --from=build /src/brand/LICENSE.md /app/brand/LICENSE.md
 COPY --from=build /src/backend/package.json /app/backend/package.json
 COPY --from=build /src/backend/dist/server.mjs /src/backend/dist/server.mjs.map /app/backend/dist/

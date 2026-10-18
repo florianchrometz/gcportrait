@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `layoutScene(scene, options)`: Scene → Layout, stages 1–5 of the package README's "Pipeline" (forest
  * normalisation, sizing, packing, gutters, routing). Pure and deterministic: no DOM, no randomness, no clock

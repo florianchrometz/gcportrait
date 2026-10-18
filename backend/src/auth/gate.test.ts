@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The service-account gate (backend/AGENTS.md, The service-account gate) against a pretend
  * Google: allowed, denied, the memo (a pass remembered, an expired one checked again, never across tokens or

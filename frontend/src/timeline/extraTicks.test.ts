@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Extra ticks (extraTicks.ts): their ids; which stored snapshots are extra ticks of a timeline (exports
  * and pulls of its scope, never the snapshot itself or a copy at its own read time, never another scope's or a demo);

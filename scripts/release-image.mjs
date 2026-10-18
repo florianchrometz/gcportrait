@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The names, tags, labels and annotations of the image that .github/workflows/release.yml (job publish-image)

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The backend is not an open proxy (AGENTS.md, Security and privacy, principle 3): attempts to make it call
  * anything but the four Google API hosts, directly through the allowlist and through the bodies of the routes

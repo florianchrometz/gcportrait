@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline's tick cache (skill cai-ingestion §5): the ticks of live scopes read from Cloud Asset Inventory, in
  * IndexedDB's `tickCache` store (storage/db.ts), keyed by the tick's cache key (timeline/cacheKey.ts) so an entry

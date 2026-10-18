@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Compute Engine, networking fabric: VPC networks and subnetworks (the Tier-0 containers of the catalog seed),
 # routes, Cloud Routers with Cloud NAT, addresses, VPC firewall rules and firewall policies, Private Service

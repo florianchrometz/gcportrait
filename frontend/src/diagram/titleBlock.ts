@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The title block (skill gcp-diagram-style §7): top-left inside the SVG, so exports carry it. It names the scope
  * and the lens, gives the data's read time in ISO-8601 with the viewer's UTC offset, and ends with the tagline

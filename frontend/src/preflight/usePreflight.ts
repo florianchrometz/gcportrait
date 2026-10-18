@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Runs the permission check for the scope, mode and quota project in the app store (`connect`), and keeps its
  * result there (`connect.preflight`), so the Connect page and the Permissions page show the same one. One check at

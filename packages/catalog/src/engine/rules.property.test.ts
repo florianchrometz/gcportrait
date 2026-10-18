@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The rule engine runs on whatever Cloud Asset Inventory returns, so it must never throw and must keep its
  * output contract for asset data of any shape (fast-check over arbitrary JSON).

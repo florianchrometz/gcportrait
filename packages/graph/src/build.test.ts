@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { GraphSchema, zoneRegion, type Asset } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { buildGraph, buildGraphWithReport } from './build.js';

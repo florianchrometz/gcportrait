@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A pretend Google for the preflight, scope-search and service-account gate tests (never imported by the app,
  * so neither bundle carries it): Resource Manager v3 `get`, `search` and `testIamPermissions`, Cloud Asset

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
@@ -13,7 +13,7 @@ describe('the Settings page’s licences', () => {
     expect(href('licence')).toBe('/licenses/gcportrait-LICENSE.txt');
 
     expect(href('third-party notices')).toBe('/licenses/THIRD_PARTY_NOTICES.txt');
-    expect(section.textContent).toContain('gcportrait is open source under the MIT License');
+    expect(section.textContent).toContain('gcportrait is open source under the Apache License 2.0');
     expect(section.textContent).toContain('The gcportrait name and icon are not covered by it.');
     expect(within(section).queryByRole('link', { name: 'notice' })).toBeNull();
   });

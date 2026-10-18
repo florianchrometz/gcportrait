@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Saved views in IndexedDB: saved under a name with the view's hash, listed newest first, renamed,
  * deleted, kept across a new connection (a reload), a taken name updated rather than doubled, and kept in memory

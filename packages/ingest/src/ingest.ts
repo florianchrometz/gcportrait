@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The asynchronous entry points: read sources into a Snapshot, or just into lines. */
 import { IngestError, type IngestProblem } from './errors.js';
 import { LineSplitter, type LineProblemCode } from './lines.js';

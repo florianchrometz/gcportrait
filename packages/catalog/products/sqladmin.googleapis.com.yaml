@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud SQL. The asset types are named after the Cloud
 # SQL Admin API (sqladmin.googleapis.com), but Cloud Asset Inventory names the assets in the cloudsql family:

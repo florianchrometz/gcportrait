@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The script for fillable commands (src/components/Variables.astro includes it on the docs pages with code and on the
  * landing page; src/lib/fillable.ts has the parts without a DOM). It runs in the visitor's browser and talks to

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A demo organisation's 35-day history (packages/demo-data): what the app stores in IndexedDB and writes into a
  * `.gcportrait.json` bundle, and what the render API's headless entry replays. It crosses three package

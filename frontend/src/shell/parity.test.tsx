@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Feature parity across the layouts (AGENTS.md, Product rules; frontend/AGENTS.md, Phones, tablets and desktops; ui/screen.ts): the diagram page, drawn from demo S with
  * a project selected (so the details drawer, the disclosure bar and the timeline bar are there), the Connect page

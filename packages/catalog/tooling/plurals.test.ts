@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Counting subtitles go through `plural(…)`: a template that writes a value straight before a
  * plural noun ("{{data.shardCount}} shards") reads "1 shards" for a single one. A range ("{{min}}–{{max}}

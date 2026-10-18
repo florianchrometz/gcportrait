@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Golden layouts (skill gcp-diagram-layout §8): the demo organisations S and M × the overview, networking and
  * load-balancing lenses at detail `auto`, and M × the same lenses at detail `all`, built through

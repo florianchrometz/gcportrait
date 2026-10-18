@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How a request to the data worker names a day of a snapshot (protocol.ts): `{ tick }`, a timeline tick (a day
  * `YYYY-MM-DD` or an extra tick's read time) or `null` for the snapshot's own day. A Scene request's `diffFrom`,

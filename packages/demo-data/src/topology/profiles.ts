@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The four demo sizes as data. Every size contains every topology feature at least once; the numbers below
  * only scale how many business units, environments, workload projects and resources per project there are.

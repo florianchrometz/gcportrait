@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tick math (skill cai-ingestion §5) with a fixed `today`: 35 ticks ending today at 00:00 UTC, the latest of a
  * live scope at "now", across month, year and leap-day boundaries; days and read times; labels in the viewer's local

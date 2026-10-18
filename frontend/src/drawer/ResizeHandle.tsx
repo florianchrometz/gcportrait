@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The drawer's resize handle: a focusable window splitter (WAI-ARIA `separator` with a value). Beside the canvas (a
  * desktop) and over its right side (a tablet) it is the drawer's left edge and its value the drawer's width: dragging

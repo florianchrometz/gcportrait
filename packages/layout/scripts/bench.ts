@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/layout bench`: the layout's performance harness. Lays out the demo
  * organisations S, M and L (overview, networking, load-balancing at `auto` and `all`) and XL (the same lenses

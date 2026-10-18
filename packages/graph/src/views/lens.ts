@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Lens rules (docs/lenses-and-filters.md, skill gcp-asset-catalog §7): which nodes are candidates and which
  * edge kinds are drawn. The catalog's lens decides through its type patterns and relation kinds; the view's

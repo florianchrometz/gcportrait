@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Highlight painting (skill gcp-diagram-style §6: highlight changes mutate attributes only, never re-layout;
  * frontend/AGENTS.md, Diagram and themes). The selection trace (trace.ts) of the selected node stays painted until the

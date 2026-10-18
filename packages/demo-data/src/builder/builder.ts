@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Collects the assets that the topology templates produce, assigns deterministic creation and update
  * instants, and keeps the side tables the history planner needs (traits, ephemeral factories, special

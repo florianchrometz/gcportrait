@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { expect, type Page } from '@playwright/test';
 
 import { FORK_SOURCE_URL as CONFIGURED_SOURCE_URL, stubConfig, test } from '../fixtures/live.js';

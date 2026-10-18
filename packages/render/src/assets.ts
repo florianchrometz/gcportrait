@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the rasteriser needs besides code: resvg's WebAssembly module (`@resvg/resvg-wasm`, used unmodified) and the
  * Roboto faces in their loading order (fonts.ts). In development and tests they come from the installed packages

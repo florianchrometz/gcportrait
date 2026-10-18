@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The asset catalog's coverage, for the coverage page and the landing page's numbers, from the catalog's compiled
  * data (`catalog` of @gcportrait/catalog: products, types with their roles and console templates, lenses) and its

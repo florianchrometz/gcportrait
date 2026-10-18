@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Small hand-built Scenes for the renderer's unit tests: synthetic ids under example.com, laid out by the real
  * layout engine so every rect and route is what the renderer meets in the app; and walkers over a Scene's nodes.

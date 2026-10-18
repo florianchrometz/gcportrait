@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Text measurement from the generated font metrics table (`metrics/roboto.json`, written by
  * `scripts/generate-metrics.ts` from the Roboto and Roboto Mono font files). Text is never measured from the

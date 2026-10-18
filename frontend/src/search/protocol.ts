@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the search asks the data worker and what it answers (the worker's `search` and `locate` requests,
  * diagram/pipeline/protocol.ts); the details drawer's jump links ask `locate` too, without offers. Plain data

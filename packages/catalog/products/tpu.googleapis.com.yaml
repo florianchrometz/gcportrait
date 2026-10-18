@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud TPU. Paths follow the TPU v2 Node resource (networkConfig/networkConfigs, serviceAccount
 # object); the deprecated v1 shape (a plain `network`, `serviceAccount` as the TPU service agent's address) is

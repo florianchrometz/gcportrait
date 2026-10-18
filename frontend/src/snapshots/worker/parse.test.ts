@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { SnapshotFormatError } from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
 

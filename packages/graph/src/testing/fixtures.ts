@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers: synthetic assets (organisation 30000000001, folders 2000000000x, projects demo-<role>-<n> with
  * numbers 1000000000x, example.com addresses, private and documentation IP ranges) and catalogs built from

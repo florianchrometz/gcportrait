@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Google Cloud NetApp Volumes: storage pools on a consumer VPC network (private services access),
 # the volumes carved out of them, cross-region replications, Active Directory and CMEK settings, backup vaults

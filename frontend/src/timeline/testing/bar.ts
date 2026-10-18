@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline bar (pages/diagram/TimelineBar.tsx) in the app, with the data and layout handlers in-process: the page
  * opened on a hash once the diagram is drawn and the bar knows its days, and the day the bar shows on screen.

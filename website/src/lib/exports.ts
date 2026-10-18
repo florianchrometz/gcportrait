@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The sample exports the site offers (docs/media/exports/, written by `node scripts/exports.mjs`; docs/website.md,
  * "Sample exports"): real SVG, PNG and draw.io files of the synthetic demo organisations as `pnpm render` draws them,

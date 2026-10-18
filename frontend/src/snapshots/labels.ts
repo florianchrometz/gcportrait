@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How the snapshot pages name and format what they list (page side, also used by the snapshot worker for its
  * notes; plain functions, no React).

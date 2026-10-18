@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A plain SVG of a Layout for looking at the packing and the routing: tinted zone rects with their header
  * text, chips, empty zones and cards with their labels, the routed edges in ink with their arrowheads and

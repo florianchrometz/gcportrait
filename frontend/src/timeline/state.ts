@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app store's `timeline` slice (state/slices.ts): what the timeline knows about the open snapshot
  * besides the view's `tick`, which lives in the URL hash like the rest of the view. Plain data: the store resets it

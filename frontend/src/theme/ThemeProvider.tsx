@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, type ReactNode } from 'react';
 
 import { usePreferenceStore } from '../storage/preferences';

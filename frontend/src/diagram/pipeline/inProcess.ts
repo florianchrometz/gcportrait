@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram's workers run in-process: the same handlers and clients, connected through microtasks instead
  * of `postMessage`. For tests (jsdom has no Web Workers); the app never imports it.

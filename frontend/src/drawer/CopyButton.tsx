@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small "Copy" button: writes `value` to the clipboard when activated and reports the outcome in words, which
  * the drawer shows in its status line (a live region). Its accessible name says what it copies ("Copy resource

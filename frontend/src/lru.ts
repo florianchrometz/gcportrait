@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * Keeps `key` → `value` as the newest entry of `kept`, dropping the least recently used entries beyond

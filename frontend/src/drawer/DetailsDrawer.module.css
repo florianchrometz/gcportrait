@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The details drawer: the second column of the diagram workspace (pages/DiagramPage.module.css), 360–420 px wide
    (its inline width follows the resize handle). App chrome tokens only (skill gcp-diagram-style §9), so both

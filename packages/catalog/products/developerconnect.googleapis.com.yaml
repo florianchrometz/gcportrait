@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Developer Connect: connections to Git providers (with their linked repositories nested inside) and the
 # insights configurations that tie an App Hub application or a set of projects to its artifacts. Cloud Asset

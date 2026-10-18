@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The bench command (scripts/bench.ts) on a small run: the non-affiliation banner, the machine the figures come
  * from, one line per case with its budget, the memo line, the verdict; its help and its argument errors. The

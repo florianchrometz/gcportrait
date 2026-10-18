@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /** A non-null object that is not an array: a JSON object read from a file, a response body or storage. */
 export function isRecord(value: unknown): value is Record<string, unknown> {

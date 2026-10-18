@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The top bar composes one control group per file: the order below is its tab order, the Export menu last; the
  * working popups (Snapshot, Lens) share the store's one-open-popup state; axe finds nothing with either open. The

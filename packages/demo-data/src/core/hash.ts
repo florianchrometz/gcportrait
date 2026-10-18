@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Small, fast, deterministic string hashing (FNV-1a with a final avalanche). Not cryptographic. */
 
 const FNV_OFFSET = 0x811c9dc5;

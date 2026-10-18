@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The generator's internal asset representation and the hooks templates register for the history. */
 import type { JsonObject } from '../core/json.js';
 import type { Rng } from '../core/rng.js';

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Opening the collapsed zones around a node until it is drawn as itself (flips, layout skill §6): the one loop behind
  * a search hit's "auto-expand ancestors" and the details drawer's jump links that "flip collapsed targets open", both

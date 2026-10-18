@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `@gcportrait/model/testing`: helpers for tests and data tooling that the app must not ship, kept out of the
  * main entry point: the "synthetic only" guard every package runs over its fixtures and generated data

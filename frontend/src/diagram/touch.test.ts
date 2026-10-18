@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The fingers' gestures on their own (touch.ts), on a clock the test runs: a pan that never taps, a pinch, a tap, a
  * double tap (timed from the first tap's lift) and when two taps are not one, a long press, a lifted finger of two, a

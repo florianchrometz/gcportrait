@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tuning constants the rules files, the skills and the README state as numbers, pinned in one place so
  * a change is deliberate and lands with its documentation. The behaviour tests use the constants by name;

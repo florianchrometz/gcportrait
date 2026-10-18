@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the Snapshots page shows of each scope's timeline (scopeEntries.ts): everything kept of a scope,
  * grouped by scope and in time order (snapshots with a history, exports and pulls as extra ticks, cached days, the

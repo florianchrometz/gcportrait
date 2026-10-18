@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One variable of a copy-ready command: a value the reader fills in where the documentation or the app shows
  * a command (`gcloud projects add-iam-policy-binding YOUR_PROJECT_ID …`). The registry itself is data in a

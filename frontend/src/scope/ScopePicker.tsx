@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scope picker (a search box over organisations, folders and projects): an editable combobox (`ui/Combobox`)
  * over

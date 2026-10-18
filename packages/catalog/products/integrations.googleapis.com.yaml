@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Application Integration: an integration
 # holds its versions, executions and suspensions (hidden operational records that nest in it by name); auth

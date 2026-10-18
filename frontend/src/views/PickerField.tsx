@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Pickers over the snapshot's choices, on the editable combobox of ui/Combobox: type to search (every
  * word must appear in the value, its label or its second line; case ignored), ↓ to list, Enter or a click to

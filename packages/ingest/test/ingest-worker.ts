@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The ingest worker of the budget test: a `worker_threads` worker that reads each input it is posted with
  * `ingest()` and posts the result back, as the app's snapshot worker reads a dropped export file. Started

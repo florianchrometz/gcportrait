@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Large worker answers as transferred JSON bytes (transfer.ts): which answers are encoded (more than 1 000
  * rects by default, a Layout's or a Scene answer's), and that the page decodes what the structured clone would have

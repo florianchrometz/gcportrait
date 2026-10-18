@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tick cache in IndexedDB (fake-indexeddb): one entry per cache key, never shared across scopes; days before
  * the 35-day window dropped when a tick of the scope is stored; every scope's ticks listed and deleted one by one or

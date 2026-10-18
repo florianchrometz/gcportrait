@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The rules files and the citations of them (AGENTS.md, How this file works): every citation of a rules file
  * in a file git tracks names a heading, a principle or an anchor that exists; every rules file is AGENTS.md in
@@ -35,7 +35,7 @@ import { REPO, createTempTree, type TempTree } from './testing/temp-tree.js';
 const FILE = ['AGENTS', 'md'].join('.');
 
 const ROOT_RULES = [
-  '<!-- SPDX-License-Identifier: MIT -->',
+  '<!-- SPDX-License-Identifier: Apache-2.0 -->',
   '',
   '# The rules',
   '',
@@ -73,7 +73,7 @@ const ROOT_RULES = [
 ].join('\n');
 
 const FOLDER_RULES = [
-  '<!-- SPDX-License-Identifier: MIT -->',
+  '<!-- SPDX-License-Identifier: Apache-2.0 -->',
   '',
   '# The frontend',
   '',

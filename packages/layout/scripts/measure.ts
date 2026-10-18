@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/layout measure`: how the routes of a set of demo views read (total length,
  * bends, border-hugging length, detours, crossings, the canvas margin and how far routes run past both of

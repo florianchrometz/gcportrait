@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Asset Inventory feeds: a feed
 # publishes asset changes to a Pub/Sub topic. Feeds live on projects (named with the project number), folders

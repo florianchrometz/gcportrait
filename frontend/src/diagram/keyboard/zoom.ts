@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The canvas's zoom keys (style skill §13), so that zooming, which the pointer does with the wheel, is the
  * keyboard's too: `+` (or `=`, the same key unshifted on a US layout) zooms in and `-` (or `_`) zooms out by one

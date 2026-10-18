@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What "Pull now" pulls: the scope picked on the Connect page, read in the mode chosen, once the
  * permission check (the preflight) says it is ready for exactly that scope, mode and quota project. In user

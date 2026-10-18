@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/layout metrics`: regenerates `metrics/roboto.json`, the per-code-point advance
  * widths of Roboto 400/500/700 and Roboto Mono 400 that the layout measures text with (skill

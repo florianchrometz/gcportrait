@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The router's location for the tests: a hidden probe a test harness mounts inside its router, and the readers a test
  * asserts with (path, query string and hash as one text; the hash alone, decoded). One probe for every harness

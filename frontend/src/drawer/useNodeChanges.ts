@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What changed about the selected node between the day compared with and the day drawn (the drawer's "What
  * changed" section), asked of the data worker (its `changes` request, drawer/changes.ts) only while the diagram on

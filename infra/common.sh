@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # shellcheck shell=bash
 # shellcheck disable=SC2034 # the variables set here are read by the scripts that source this file
 #

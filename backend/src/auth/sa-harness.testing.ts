@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The backend in service-account mode against a pretend Google, for e2e/tests/sa-mode.spec.ts (never imported
  * by the app, so neither bundle carries it). The spec starts it as a process and sends the browser's `/api`

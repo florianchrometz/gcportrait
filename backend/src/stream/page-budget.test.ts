@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The process-wide page budget (page-budget.ts): a claim grows with a page's bytes, is refused beyond the
  * budget without waiting, and is given back once the response has written the page's frame out (ndjson.ts asks

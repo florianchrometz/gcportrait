@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The snapshot library in React (App.tsx puts it inside the app store's provider): the library itself
  * (`useSnapshotLibrary`), its listing, re-read after every change (`useSnapshotListing`), and the Snapshot menu's

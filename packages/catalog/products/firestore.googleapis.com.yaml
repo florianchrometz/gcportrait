@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Firestore, in Native and Datastore mode. Cloud Asset Inventory names databases and backups by project
 # number (`//firestore.googleapis.com/projects/<number>/databases/<db>`, the default database being

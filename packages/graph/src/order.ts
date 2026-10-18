@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Deterministic ordering. Every list the builder emits is sorted with these helpers, so the output never
  * depends on the order of the input, on the runtime's locale, or on Map/Set iteration order.

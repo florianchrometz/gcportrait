@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/user-docs.mjs: the user guides' generated lens blocks and the staleness checks that keep
  * docs/configuration.md and every command in the guides true to the tree, the rasteriser's version named once
@@ -662,7 +662,7 @@ describe('the width of a Markdown document', () => {
       '---',
       `description: ${prose(130)}`,
       '---',
-      '<!-- SPDX-License-Identifier: MIT -->',
+      '<!-- SPDX-License-Identifier: Apache-2.0 -->',
       '',
       `| ${prose(126)} |`,
       `  | ${prose(124)} |`,
@@ -721,7 +721,7 @@ describe('the width of the Markdown files of a tree', () => {
     tree.write(
       'docs/guide.md',
       [
-        '<!-- SPDX-License-Identifier: MIT -->',
+        '<!-- SPDX-License-Identifier: Apache-2.0 -->',
         '',
         prose(111),
         '',

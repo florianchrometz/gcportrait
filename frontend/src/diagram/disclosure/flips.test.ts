@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Progressive disclosure against the scene builder, on the demo organisations with the real catalog: a flip
  * (the store's `flip`, through the URL hash) XORs the level default, so expanding a chip and collapsing it again

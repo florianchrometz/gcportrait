@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Containment (skill gcp-diagram-layout §2): every node gets at most one parent,
  * and the result is a forest by construction.

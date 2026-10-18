@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The rate limit per token hash (docs/security.md §3): a fixed window per key, in memory
  * only, keyed by the SHA-256 of the caller's token (`tokenKeyOf`), never by the token itself.

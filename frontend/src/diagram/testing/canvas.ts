@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The interactive canvas (DiagramCanvas.tsx) in jsdom: its props with defaults, the elements the tests look up, its
  * camera (read, and moved as a person's pan or zoom does), a mouse's click and drag as a browser sends them, and the two

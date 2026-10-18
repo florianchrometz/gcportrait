@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Words and small formats of the sign-in surfaces (the Connect page's card, the account menu). */
 import type { PublicConfig } from '../api/config';
 import type { SessionAccount } from './types';

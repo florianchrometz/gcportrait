@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # App Lifecycle Manager (SaaS Runtime): a SaaS offering, its tenants, unit kinds and units (deployments of a
 # blueprint), releases and rollouts. All are hidden by default: they describe how a producer manages the

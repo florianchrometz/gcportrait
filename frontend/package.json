@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "gcportrait single-page app (React + Vite; phones, tablets and desktops).",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "exports": {
     ".": {

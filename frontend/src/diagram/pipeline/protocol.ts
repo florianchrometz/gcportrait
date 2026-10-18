@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's protocol (ingest and graph build off the UI thread). The page asks for
  * the lens list or for the Scene of a view; the worker loads the view's snapshot (a demo organisation, generated

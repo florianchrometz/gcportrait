@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The JSONPath subset the catalog uses to read asset fields (`to`, `ips`, `domains`, `contains`, predicates).
  * Implemented here rather than taken from a library so that every path is validated when the catalog is

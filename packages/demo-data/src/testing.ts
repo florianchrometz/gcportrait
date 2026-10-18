@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Helpers shared by this package's tests. Not part of the public API. */
 import type { Asset } from '@gcportrait/model';
 

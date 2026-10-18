@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** What every topology template receives: the builder, the size profile and the organisation-wide state. */
 import type { OrgBuilder } from '../builder/builder.js';
 import type { JsonObject } from '../core/json.js';

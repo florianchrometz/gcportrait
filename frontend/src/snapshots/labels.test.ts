@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { generateOrganization } from '@gcportrait/demo-data';
 import { SnapshotSchema, TimestampSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { IncomingHttpHeaders } from 'node:http';
 import { pino, type DestinationStream, type LoggerOptions } from 'pino';

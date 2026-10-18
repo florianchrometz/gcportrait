@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline markers in the drawing (Drawing.tsx with diff/marks.ts; skill gcp-diagram-style §6, §7),
  * on demo S from 7 to 8 September in both themes: the added outline in `accent.peer` between canvas gaps, the 6 px

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helper (not part of the public API): an independent oracle for the packing, used by the golden tests
  * (test/golden.test.ts) and the packer's brute-force property (src/pack.test.ts). For one container it

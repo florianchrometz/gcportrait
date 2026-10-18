@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
@@ -188,7 +188,7 @@ describe('a guide’s link to the demo', () => {
 
 describe('renderMarkdown', () => {
   const source = [
-    '<!-- SPDX-License-Identifier: MIT -->',
+    '<!-- SPDX-License-Identifier: Apache-2.0 -->',
     '',
     '# Self-hosting gcportrait',
     '',

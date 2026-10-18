@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SIZING, TEXT_WEIGHTS, ZONE_TITLE_SEPARATOR } from './constants.js';
 import { defaultFontMetrics, measureText } from './metrics.js';

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Google calls of the scope picker, the preflight and the service-account gate (docs/permissions.md;
  * backend/AGENTS.md, Quota project and the permission check; skill cai-ingestion §1), and the

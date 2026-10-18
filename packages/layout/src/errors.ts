@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Typed errors. The layout refuses a Scene it cannot draw correctly instead of drawing half of it (skill
  * gcp-diagram-layout §2 rule 5): the UI shows the code and the offending ids.

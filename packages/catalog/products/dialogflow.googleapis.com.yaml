@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Dialogflow CX, now presented as Conversational Agents: the agent and the per-location settings. Asset
 # names carry the project id (projects/<id>/locations/<l>/agents/<uuid>). The Dialogflow ES types the

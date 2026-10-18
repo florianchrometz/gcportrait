@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Intrusion Detection System: IDS endpoints. Each endpoint is attached to a VPC network and
 # receives mirrored traffic through an internal load balancer forwarding rule that Google creates in a tenant

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The property tests' seed and number of runs, one rule for every package whose test setup applies it to
  * fast-check (`fast-check-seed.ts` in the catalog, ingest, this package, the graph, the layout and the

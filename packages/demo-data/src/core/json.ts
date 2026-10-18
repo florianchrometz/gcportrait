@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** JSON value types and structural-sharing updates for the generated `resource.data` objects. */
 
 export type JsonPrimitive = string | number | boolean | null;

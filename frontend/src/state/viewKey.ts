@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scene key the pipeline draws for the store's view (`selectSceneKey`): the view's own scene key, with the
  * timeline day that can be drawn now (`tickToDraw`). The pipeline asks for it, and the actions that are worked

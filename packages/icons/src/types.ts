@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The shapes of the icon table. They stay inside this package and the app that renders icons, so they are
  * plain TypeScript types rather than `@gcportrait/model` schemas (nothing else crosses a boundary with them).

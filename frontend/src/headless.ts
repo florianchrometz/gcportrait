@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The frontend's only entry point for other workspaces (`@gcportrait/frontend`): what the render library
  * (`@gcportrait/render`, used by `pnpm render` and the backend's `POST /api/render`) needs to read data and

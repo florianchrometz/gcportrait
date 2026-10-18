@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Both themes through tokens: every stylesheet of the app chrome (each `*.module.css` under src/ outside the
  * diagram, which has its own token table and theme tests) uses no raw colour, and every colour token it uses is

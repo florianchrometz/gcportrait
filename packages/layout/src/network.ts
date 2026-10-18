@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The routing graph (skill gcp-diagram-layout §5): the gutter lines are its segments, their intersections its
  * nodes. Every point where a port's stub meets a line becomes a node too, so a route starts and ends at a node.

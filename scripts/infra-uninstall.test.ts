@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * infra/uninstall.sh, against the stand-ins of scripts/testing/infra-stub.ts: it deletes only what carries
  * deploy.sh's mark, and with --disable-apis disables only the APIs deploy.sh enabled that nothing else in the project

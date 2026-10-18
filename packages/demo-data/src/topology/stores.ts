@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Data stores beyond Cloud Storage, BigQuery tables and Cloud SQL (feature `data`): Memorystore for Redis on
  * private services access and Memorystore for Valkey over Private Service Connect next to the web tiers,

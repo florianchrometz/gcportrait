@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Requests to Google on the caller's behalf (docs/security.md §1, §4 and §5): only to the
  * allowlisted hosts (allowlist.ts), each attempt bounded by the upstream timeout (60 s) and each answer's body by

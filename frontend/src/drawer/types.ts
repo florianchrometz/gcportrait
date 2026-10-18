@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the details drawer shows about one node, as the data worker
  * answers it: the worker holds the Graph, the snapshot's assets and the catalog, so it works the details out

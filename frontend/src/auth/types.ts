@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The sign-in session as the rest of the app sees it: plain data in the app store's `connect` slice
  * (state/slices.ts), never the access token itself. The token lives only inside the session controller

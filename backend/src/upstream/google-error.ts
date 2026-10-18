@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Google's error answers, read once for every route (backend/AGENTS.md, Quota project and the
  * permission check; skill cai-ingestion §9). Google APIs answer an error with the envelope `{"error":

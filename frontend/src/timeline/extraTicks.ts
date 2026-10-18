@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Extra ticks (docs/timeline.md): the exports (a file or a `gs://` object) and the manual API pulls of a scope
  * that are stored in this browser appear on the timeline of every other snapshot of that scope, beside its daily

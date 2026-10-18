@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # App Design Center: application templates (composed of components wired by connections), shared templates
 # and the applications deployed from them, all inside a space (…/locations/<l>/spaces/<s>/…). They describe

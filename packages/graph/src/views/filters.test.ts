@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Steps (c) and (d) on the views scenario: lens rules, scope filters, hide filters, virtual regions. */
 import type { Catalog, SceneBuild, ViewSpecInput } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';

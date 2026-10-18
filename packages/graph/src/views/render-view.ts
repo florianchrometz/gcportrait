@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The ViewSpec of a render's view (`RenderView` of `@gcportrait/model`): the view `POST /api/render`,
  * `pnpm render` and `pnpm render-scene` take, as an app link's hash or as explicit fields. One resolution for

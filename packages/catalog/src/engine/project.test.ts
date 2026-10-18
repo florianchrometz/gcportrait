@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { Asset } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { asset, PROJECTS, RUN_SERVICE } from '../testing/assets.js';

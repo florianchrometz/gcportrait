@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The third-party notices of what a gcportrait build conveys (docs/security.md, 11. Licence compliance):
@@ -18,7 +18,7 @@
  * - Apache-2.0 (section 4): the licence's full text once, at the end, and every NOTICE file of an Apache-2.0
  *   package, verbatim (4(d)); a package's licence file is reproduced as well when it holds more than the licence;
  * - MPL-2.0 (sections 3.2 and 3.3): where the Source Code Form of each MPL-covered package is, the notice that it is
- *   used unmodified in a Larger Work (gcportrait, MIT) and stays under the MPL, its own licence file when
+ *   used unmodified in a Larger Work (gcportrait, Apache-2.0) and stays under the MPL, its own licence file when
  *   it ships one, and the licence's full text once, at the end (scripts/licenses/MPL-2.0.txt, the canonical text of
  *   https://mozilla.org/MPL/2.0/; `@resvg/resvg-wasm` ships no licence file of its own);
  * - OFL-1.1 (the self-hosted Roboto fonts): the copyright notice and the licence text, verbatim;
@@ -344,7 +344,7 @@ function packageSection(pkg, where) {
     lines.push(
       '',
       'MPL-2.0 (sections 3.2 and 3.3): this package is Covered Software under the Mozilla Public License 2.0. It is',
-      'used unmodified as part of a Larger Work, gcportrait (MIT), and stays under the MPL-2.0; its',
+      'used unmodified as part of a Larger Work, gcportrait (Apache-2.0), and stays under the MPL-2.0; its',
       `Source Code Form is available at ${sourceOf(pkg)}.`,
       `The Mozilla Public License 2.0 is at the end of this file (and at ${MPL_URL}).`,
     );
@@ -448,10 +448,10 @@ export function renderNotices({ root, app, server, assetFiles = RENDER_ASSET_FIL
     '',
     NON_AFFILIATION_LONG,
     '',
-    "gcportrait's own work is licensed under the MIT License, except the gcportrait name and icon, which identify the",
+    "gcportrait's own work is licensed under the Apache License 2.0, except the gcportrait name and icon, which identify the",
     'project (licenses/gcportrait-LICENSE.txt next to this file). This file lists the third-party software this',
     "build conveys, in the app's JavaScript, in the server and in its render worker, with the notices its licences",
-    'ask to accompany it. None of it is covered by the MIT License of gcportrait; each package keeps its own',
+    'ask to accompany it. None of it is covered by the Apache License 2.0 of gcportrait; each package keeps its own',
     "licence. The Google Cloud product icons in the app are Google's trademarks, used under Google's icon usage",
     'terms (a trademark permission, not a software licence); THIRD_PARTY.md in the source tree describes them.',
     '',

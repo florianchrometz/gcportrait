@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Database Migration Service: migration jobs between a source and a destination connection profile,
 # private connections into a VPC network, and conversion workspaces for heterogeneous migrations.

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Eventarc Standard (triggers and channels) and Eventarc Advanced (message buses, enrollments, pipelines and
 # Google API sources). Event flow is drawn as triggers edges from the source towards the destination.

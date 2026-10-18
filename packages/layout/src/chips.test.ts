@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { CHIP_COUNT_NAMES, chipCountLine, chipWidth } from './chips.js';
 import { DEFAULT_SIZING, TEXT_WEIGHTS } from './constants.js';

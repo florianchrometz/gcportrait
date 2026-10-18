@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * SPA size gate for frontend/dist, split by thread. Policy, exclusions and first-paint classification:

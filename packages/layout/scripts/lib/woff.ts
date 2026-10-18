@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * WOFF 1.0 → TrueType (sfnt) for the debug renderer: the rasteriser loads TrueType files, the fontsource
  * packages ship WOFF. A WOFF file is the sfnt's tables, each zlib-compressed when that saves space, behind a

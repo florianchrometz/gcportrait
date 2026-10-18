@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * infra/install.sh, the one-line installer the website serves, end to end with bash: the release's deploy scripts as
  * scripts/release-assets.sh writes them (the files .github/workflows/release.yml attaches to a release), served by a

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Where the selected node's console action goes: inside the node, in its top-right corner, so it never
  * covers another card. The first pill hung 9 px under the card and was 20 px tall, while two rows of cards are

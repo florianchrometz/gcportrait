@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Generate the website's synthetic sample exports with `pnpm render`, plus WebP previews and the manifest

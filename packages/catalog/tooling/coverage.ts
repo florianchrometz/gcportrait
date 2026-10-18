@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/catalog coverage` (also `pnpm catalog:coverage`): per authoring group, the
  * official types it owns, how many the catalog maps (by role), which are listed as unmapped (by reason) and

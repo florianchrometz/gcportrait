@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 
 import { NON_AFFILIATION_LONG } from '../site.js';
@@ -35,10 +35,10 @@ describe('page metadata', () => {
     expect(JSON.parse(text)).toEqual({ description: '</script><!-- & -->' });
   });
 
-  it('describes the software as MIT with its repository, its author a Person, never an Organization', () => {
+  it('describes the software as Apache-2.0 with its repository, its author a Person, never an Organization', () => {
     const app = softwareApplicationLd({ author: AUTHOR });
     expect(app['@type']).toBe('SoftwareApplication');
-    expect(app.license).toBe('https://opensource.org/licenses/MIT');
+    expect(app.license).toBe('https://www.apache.org/licenses/LICENSE-2.0');
     expect(app.sameAs).toEqual(['https://github.com/florianchrometz/gcportrait']);
     // The statement is in the footer and the author section, never in metadata.
     expect(app.description).toEqual(

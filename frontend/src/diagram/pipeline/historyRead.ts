@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One day of a history (a demo organisation's, or a stored one's) read as any export is read: its assets as CAI
  * NDJSON through `@gcportrait/ingest`. demo.ts reads a demo organisation's last day this way, and

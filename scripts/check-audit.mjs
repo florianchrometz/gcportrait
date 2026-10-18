@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Dependency audit gate (AGENTS.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):

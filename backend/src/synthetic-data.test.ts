@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * No real organisation data in the backend's tests (AGENTS.md, Security and privacy, principle 6): every test
  * and test helper under src/, found by name so a new one is checked without being listed, and the two files

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline bar (pages/diagram/TimelineBar.tsx) in the app with in-process workers, on demo organisation S and
  * its history: 35 markers, the view's day on the slider and in the readout, the three playback speeds (1 s by

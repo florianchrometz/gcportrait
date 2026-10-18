@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Hybrid connectivity of the production host: an HA VPN gateway with two tunnels to an external (on-premises)
  * gateway, and a Dedicated Interconnect with one VLAN attachment. Both terminate BGP sessions on the region's

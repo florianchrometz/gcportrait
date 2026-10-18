@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `renderView` against the command line's own outputs: the renderer's SVG baselines (e2e/baselines/diagram/,
  * which `pnpm render` reproduces) and the committed golden PNG (e2e/baselines/render/), byte for byte; the

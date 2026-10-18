@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** IPv4 arithmetic and the address plan's allocators. */
 
 export interface Cidr {

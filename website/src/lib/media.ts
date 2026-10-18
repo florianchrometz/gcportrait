@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The generated media the website shows (docs/media/, written by `pnpm media`, scripts/media.mjs): stills as WebP
  * in two widths per theme, the animated demos as WebM with a WebP poster per theme (and the GIF of the same scene,

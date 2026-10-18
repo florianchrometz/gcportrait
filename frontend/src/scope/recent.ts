@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the scope picker remembers in this browser's preferences (IndexedDB, `storage/preferences.ts`): the scopes
  * picked most recently, and the quota project last picked for each scope (the last pick per scope is

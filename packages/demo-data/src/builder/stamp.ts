@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Writes an asset's creation and update instants into the timestamp fields of its `data`. */
 import { setPath, type JsonObject } from '../core/json.js';
 import { computeTimestamp, epochMillis, rfc3339Micros, rfc3339Millis, rfc3339Seconds } from '../core/time.js';

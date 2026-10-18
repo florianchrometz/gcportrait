@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Gemini for Google Cloud: Gemini Code Assist code customization. A code repository index is a zone
 # that holds its repository groups, nested by name

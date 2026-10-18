@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/icons — the Google Cloud product icons as Google Cloud provides them at
  * https://cloud.google.com/icons, vendored unmodified, plus gcportrait's own drawings, keyed by the icon keys the

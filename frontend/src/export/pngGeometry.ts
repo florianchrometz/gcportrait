@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import {
   RENDER_DEFAULT_SCALE,
   RENDER_PNG_LIMITS,

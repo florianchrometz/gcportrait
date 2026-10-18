@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Connect page's import controls in a test harness: a memory router, the app store with a given `connect`
  * slice, a stand-in sign-in, a snapshot library with the large-snapshot guard, and the in-process import worker.

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { generateOrganization, toCaiAsset, toCaiNdjson } from '@gcportrait/demo-data';
 import { LARGE_SNAPSHOT_ASSETS, migrateSnapshot, type Snapshot } from '@gcportrait/model';
 import { afterEach, describe, expect, it, vi } from 'vitest';

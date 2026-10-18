@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A stand-in for Google Identity Services in the unit tests: records what the app asks for and lets the test
  * answer as Google would (a token, an OAuth error, a blocked or closed window); the page's `window.google` for the

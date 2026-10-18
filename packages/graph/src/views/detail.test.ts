@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Step (e) and the emitted scene: detail levels, depth, flips, chips, bundles, edges, pointers, order. */
 import {
   FlipIdSchema,

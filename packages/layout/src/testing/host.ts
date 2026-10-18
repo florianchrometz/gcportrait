@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers (not part of the public API) for the code that yields to its host between layout steps (host.ts,
  * worker.ts, client.ts): a flush that lets every pending promise settle, and a yield that resumes only when the

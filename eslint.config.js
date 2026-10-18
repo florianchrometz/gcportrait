@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * ESLint flat config for the whole monorepo. `pnpm lint` runs it from the root; each package's own `lint`

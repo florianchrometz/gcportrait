@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small seedable pseudo-random generator (mulberry32). Every random choice in this package goes through it,
  * so a seed fully determines the output. `fork(label)` derives an independent stream from the seed and a label

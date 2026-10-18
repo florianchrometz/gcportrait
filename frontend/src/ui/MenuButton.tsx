@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A menu button (WAI-ARIA menu button pattern): a button with `aria-haspopup="menu"`, `aria-expanded` and, while
  * open, `aria-controls` naming its Menu, anchored under it. Enter, Space or ↓ open the menu on its checked radio

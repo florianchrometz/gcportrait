@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The drawer's jump link: a link-styled button that selects a node, its id as the tooltip. */
 import type { ReactElement } from 'react';
 

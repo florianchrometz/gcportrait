@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The static demo (`pnpm demo:static`): the app as a demo build with its configuration built in
  * (api/demoConfig.ts), on a host with no backend. It asks nothing of anyone: the footer links the Impressum and the
@@ -39,7 +39,7 @@ describe('the static demo', () => {
         .map((link) => [link.getAttribute('aria-label') ?? link.textContent, link.getAttribute('href')]),
     ).toEqual([
       ['Florian Chrometz (personal website)', 'https://florian-chrometz.de'],
-      ['Source (MIT)', STATIC_DEMO.source],
+      ['Source (Apache-2.0)', STATIC_DEMO.source],
       ['Impressum (opens operator.example.com in a new tab)', STATIC_DEMO.impressum],
       ['Privacy (opens operator.example.com in a new tab)', STATIC_DEMO.privacy],
     ]);

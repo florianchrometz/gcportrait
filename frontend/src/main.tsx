@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // Self-hosted fonts (gcp-diagram-style §3): bundled by Vite, never fetched from a font CDN.
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';

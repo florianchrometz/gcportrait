@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The stored snapshots as a table (a card per snapshot on a phone, RowTable.tsx): scope, read time, source, asset
  * count, size and when it was stored, with three actions per row: Load (the snapshot's ref into the hash, on the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A clipboard for the tests: jsdom's navigator has none of its own. Put on the real navigator (axe reads it too) and
  * taken away again after the test. Imported by tests only.

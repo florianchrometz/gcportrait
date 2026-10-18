@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Client for `POST /api/scopes/search` (backend/src/routes/scopes.ts; docs/api.md): the
  * organisations, folders and projects the signed-in person can see, matching what they typed. The token goes only

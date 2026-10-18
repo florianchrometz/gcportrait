@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The ingest budget: the demo organisation XL (@gcportrait/demo-data, default seed, the demo's day), written as
  * an `exportAssets` file (snake_case envelope keys), is read inside a worker in under 1.5 s. The worker is a

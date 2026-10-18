@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Writes the notes of a GitHub release (.github/workflows/release.yml, job github-release) to standard

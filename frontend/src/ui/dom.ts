@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the primitives share: closing on a press outside, keeping Tab inside a popup, moving focus in, telling
  * focus from the keyboard from a pointer's, telling an inert control's hint from a working one, holding a drag's

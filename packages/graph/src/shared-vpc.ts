@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Shared VPC derivation (the `shares` relation; skill gcp-diagram-layout §2, rule 2). Containment already
  * keeps every resource in its own project; here a resolved `attaches` edge from one project into another

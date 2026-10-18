@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/scopes/search` (the scope picker of docs/permissions.md; skill cai-ingestion §1): the
  * organisations, folders and projects the caller can see whose name or id matches what the person typed, for

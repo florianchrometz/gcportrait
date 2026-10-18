@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app store on its own (no React, no router): the view slice mirrors the hash (decodeViewSpec), every view
  * action writes a hash that decodes to exactly the view the store then holds, discrete changes push and

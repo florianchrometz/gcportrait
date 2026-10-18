@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The interactive canvas: the drawing inside an `<svg>` that this file pans and zooms itself, and the pointer,
  * wheel, finger and keyboard events that move it and that hover, select or flip what it draws (README, "Diagram

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline diff (skill cai-ingestion §5): what changed between the previously
  * displayed snapshot and the displayed one. Pure, and independent of the order of either snapshot's assets.

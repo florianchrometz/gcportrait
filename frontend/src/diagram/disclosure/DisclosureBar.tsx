@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram's progressive-disclosure bar (skill gcp-diagram-layout §6), floating at the
  * bottom right of the canvas (on a tablet the bottom left, on a phone a row above the details sheet, hidden while the

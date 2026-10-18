@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Export menu in the top bar (docs/export.md): the app's MenuButton and Menu (ui/), whose menu holds the options
  * (area, theme, PNG resolution, embedded fonts) as radio and checkbox items in labelled groups and the four actions

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The asset catalog's data shapes (skill gcp-asset-catalog §2 and §7): one YAML
  * entry per product, one YAML file per lens, and the compiled `catalog.json` the app loads. Entries and

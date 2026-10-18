@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Vertex AI, documented since 2026 as Gemini Enterprise Agent Platform, whose console pages live under
 # /agent-platform/. Asset names carry the project number (projects/<number>/locations/<l>/<collection>/<id>),

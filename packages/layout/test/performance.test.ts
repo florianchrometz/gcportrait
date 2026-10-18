@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Performance budgets in-process (skill gcp-diagram-layout §7), end to end (all
  * stages: normalise, size, pack, gutters, routing with its widening passes): the demo S fixture < 10 ms,

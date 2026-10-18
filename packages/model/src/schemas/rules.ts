@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The contract of the asset catalog's rule engine (`@gcportrait/catalog`, skill gcp-asset-catalog §5): the
  * project index it reads next to an asset, and the relations it hands to the graph builder. Plain records

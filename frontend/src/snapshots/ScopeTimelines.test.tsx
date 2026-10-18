@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Snapshots page's "Timelines by scope" (ScopeTimelines.tsx), with a fake snapshot library and the
  * real tick cache over fake-indexeddb: each scope this browser keeps something of, its snapshots, its exports and

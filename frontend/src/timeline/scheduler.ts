@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Which ticks of a live scope are read from Cloud Asset Inventory, and when (skill cai-ingestion §5):
  * never all 35, only the tick the person stops on and, at idle, its two neighbours; at most two reads in flight;

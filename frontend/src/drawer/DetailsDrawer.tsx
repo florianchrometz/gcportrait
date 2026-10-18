@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The details drawer: beside the canvas while a node is selected (and
  * `ui.drawerOpen`). Its header names the node (icon, type, display name, product) and offers "Drill in" for a

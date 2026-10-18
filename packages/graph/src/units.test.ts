@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Unit tests of the builder's steps, for the edge cases the end-to-end tests do not reach. */
 import type { Asset, EvaluatedRelation, GraphNode } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';

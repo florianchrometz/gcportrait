@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A segmented control (WAI-ARIA radio group): `role="radiogroup"` named by its visible label, one `role="radio"`
  * button per option with `aria-checked`; the checked one is the group's only tab stop. ← → (and ↑ ↓) move to the

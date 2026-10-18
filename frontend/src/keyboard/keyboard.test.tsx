@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app's keyboard shortcuts and the skip link to the diagram (style skill §13), in the app with in-process
  * workers: `[` and `]` call the store's timeline action, and when it cannot move (here: no workers, so the

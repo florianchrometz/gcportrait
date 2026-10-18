@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scope and quota project the person picked (`connect.scope`, `connect.quotaProject` in the app store), shared
  * by the Connect page, the Permissions page and the live pull. Picking a scope also remembers it among the recent

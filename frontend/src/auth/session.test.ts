@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The token lifecycle with a fake GIS and fake timers: sign-in, the scope and account checks, silent
  * renewal before expiry and its fallback, expiry as a clear state, rejection, sign-out with revocation, and that

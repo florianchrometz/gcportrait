@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The non-affiliation statement outside the app (AGENTS.md, Non-affiliation, brand and legal): every copy the
  * tooling, the image, the release, the infra scripts and the docs keep of the long form is

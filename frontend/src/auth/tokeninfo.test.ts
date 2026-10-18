@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** tokeninfo gets the token in a form body, never in its URL, with no cookie and no referrer. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

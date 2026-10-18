@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One render (packages/AGENTS.md, The render library): a snapshot and the render options
  * (`RenderOptionsSchema` of `@gcportrait/model`) to the bytes of an SVG, a PNG or a draw.io file, with the

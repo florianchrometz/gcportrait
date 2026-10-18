@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Lens picker: the catalog's eleven lenses with title and description; a switch writes the hash,
  * applying the new lens's default detail level while the level follows the lens, and keeping a level the person

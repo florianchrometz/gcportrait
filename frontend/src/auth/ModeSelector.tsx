@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Connect page's mode selector: read with the person's own account (user mode, the default) or, when the
  * backend offers it, through this instance's service account, with the gate explained (backend/AGENTS.md, The service-account gate). The choice is the store's `connect.mode`; the scope picker,

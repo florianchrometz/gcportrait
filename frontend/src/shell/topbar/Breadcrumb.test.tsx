@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scope breadcrumb with the drill-in trail on demo S: the scope alone at the organisation; the
  * containers above a drill-in root down to the root (`aria-current="location"`), each a button that drills out

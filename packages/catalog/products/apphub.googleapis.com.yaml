@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # App Hub: an application groups the
 # services and workloads registered in it (they nest in it by name), and each registration uses the resource

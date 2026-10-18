@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Build, check and publish tagged releases; a manual run publishes a `dev` image only.
 # Rules: AGENTS.md, Releases; .github/AGENTS.md, Releases. Setup, versioning and trial runs:

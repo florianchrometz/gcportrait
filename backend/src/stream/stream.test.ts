@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What every stream shares: its slots per token (slots.ts) and the caller's token it keys them on
  * (caller.ts). The frames are frames.test.ts's.

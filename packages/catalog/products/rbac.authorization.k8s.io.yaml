@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Kubernetes RBAC objects of GKE clusters with the asset inventory feature on: numerous and policy-like, so all
 # start hidden. Roles and role bindings nest in their namespace, cluster roles and cluster role bindings in

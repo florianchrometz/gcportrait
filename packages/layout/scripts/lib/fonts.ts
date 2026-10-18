@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Builds the font metrics table (`metrics/roboto.json`) from the Roboto and Roboto Mono font files the
  * frontend self-hosts (`@fontsource/roboto`, `@fontsource/roboto-mono`, installed in frontend/). Shared by

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The key of the view a diagram draws: its app link's hash without the selection and the highlight, which change
  * neither the Scene nor an export. The pipeline keys its results by it (pipeline.ts); a draw.io file names its page by

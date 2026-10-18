@@ -25,7 +25,7 @@ const pieces = (text: string): { text: string; flag: boolean }[] =>
   text.split(/(--[a-z][a-z-]*)/).map((piece, index) => ({ text: piece, flag: index % 2 === 1 }));
 ---
 
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 {
   variables.length > 0 && (
     <section class="variables" aria-labelledby="variables-title">

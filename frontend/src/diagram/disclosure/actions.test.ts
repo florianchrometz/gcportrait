@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The store's "Expand all" and "Collapse all": they work on the diagram on screen (the pipeline's
  * result), write the URL hash as a new history entry (Back undoes them; `history` overrides), and do nothing

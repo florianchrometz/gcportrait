@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The Lens picker's list (LensSelect.tsx): wide enough for a lens's description on one line, which is cut with
    an ellipsis beyond it (the option's title and its accessible name carry all of it). */

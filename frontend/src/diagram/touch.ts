@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The canvas's touch input (frontend/AGENTS.md, Phones, tablets and desktops, the touch model): the pointer events of fingers
  * (`pointerType` `touch`) read as gestures. A mouse and a pen never come here: the canvas reads their drag and the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Placeholders in texts that the maintainer fills in (docs/author.md): a word or phrase in capitals in
  * square brackets ("[FULL NAME]", "[STREET AND NUMBER]"), in double braces ("{{EMAIL}}") or in angle brackets

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline bar's words: what the slider says for a day (its `aria-valuetext`), what a marker's
  * tooltip says, and the readout beside the slider (the state of the view's day: on screen, loading with the read's

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The token goes only to this backend's /api/ paths, in X-Gcportrait-Token (Identity-Aware Proxy takes
  * `Authorization` for its own), never in `Authorization`, a URL or a cookie; a 401 expires the session.

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Google Kubernetes Engine: the cluster container (from the catalog seed) and its node pools. Kubernetes objects
 # of the cluster live in the products/<k8s group>.yaml files; they nest here by their name path.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Normalisers (skill gcp-asset-catalog §5): each turns one value read from an asset into a full resource name,
  * or into an alias the graph builder looks up (service-account emails), or into nothing when the value is not

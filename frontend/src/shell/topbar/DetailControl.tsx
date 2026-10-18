@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { ConcreteDetailLevel, DetailLevel, SceneDetail } from '@gcportrait/model';
 import type { ReactElement } from 'react';
 

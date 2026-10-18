@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The app state module: the store, its React bindings and the diagram page's hooks (frontend/README.md). */
 export { AppStateProvider } from './AppStateProvider';
 export {

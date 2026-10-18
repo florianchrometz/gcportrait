@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Google sign-in for user mode (frontend/README.md, section "Sign-in"). The session's state is in
  * the app store (`useAppState((s) => s.connect)`); the controls and the token come from `useAuth()`; requests

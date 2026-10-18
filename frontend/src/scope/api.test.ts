@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * POST /api/scopes/search's guard (scope/api.ts) against the contract it checks by hand,
  * `ScopeSearchResponseSchema` in @gcportrait/model, which the backend answers with: every answer one accepts the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The asset directory the backend's bundle ships: written and read back by the same module, it holds the
  * packages' own bytes in the loading order of the fonts, so the bundle draws with what `pnpm render` draws with.

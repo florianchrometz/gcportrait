@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { Buffer } from 'node:buffer';
 import { describe, expect, it } from 'vitest';
 

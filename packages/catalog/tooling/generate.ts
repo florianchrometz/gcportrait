@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The two outputs of `pnpm catalog:build`: `dist/catalog.json` (for anything that wants a file) and
  * `src/generated/compiled-catalog.ts`, the module that `@gcportrait/catalog` exports as `catalog`. Both are

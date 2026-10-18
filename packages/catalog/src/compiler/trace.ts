@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Rule traces for reviewers (`pnpm catalog:check --verbose`): for every rule of a type, every value it reads
  * from each fixture and what the rule engine made of it (rule → fixture value → normalised name), plus each

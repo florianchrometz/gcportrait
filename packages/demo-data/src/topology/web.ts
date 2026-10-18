@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A web workload in a Shared VPC service project: a managed instance group behind a global external
  * Application Load Balancer (address → forwarding rule → target HTTPS proxy with a managed certificate →

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render job (backend/AGENTS.md, The render API): a plain function of `post`, so the same code runs
  * in a render worker (worker.ts) and in process (in-process.ts, the tests). It reads the source with the

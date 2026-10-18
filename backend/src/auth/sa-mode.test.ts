@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Service-account mode over HTTP (Fastify `inject`, a pretend Google behind the allowlisted client): every route
  * that takes `mode: "sa"` goes through the gate, and without a passing gate answers 403 (401 for a token Google

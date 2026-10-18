@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Deploy the website and the static demo that website.yml builds and checks, from main and on a daily
 # refresh; a pull request runs CI's `website` job instead (pr.yml). Setup, DNS, demo and media

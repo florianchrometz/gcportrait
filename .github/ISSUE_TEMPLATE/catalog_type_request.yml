@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 name: Asset type request
 description: Ask for an asset type to be drawn with its own icon, label and relations.
 title: '[Catalog]: '

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # GKE on GDC (Google Distributed Cloud connected) clusters as Cloud Asset Inventory reports them: one asset per
 # fleet membership, named //gkehub.googleapis.com/projects/<number>/locations/<l>/memberships/<m>/cluster.

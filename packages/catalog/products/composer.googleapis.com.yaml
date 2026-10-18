@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Composer, listed on the official page as Managed Service for Apache Airflow. An environment
 # runs Airflow on a GKE cluster (Composer 1 and 2: a cluster in the customer project; Composer 3: a

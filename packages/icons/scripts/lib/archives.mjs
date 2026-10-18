@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Getting Google Cloud's official icon archives, shared by vendor.mjs and drift.mjs: the library page that

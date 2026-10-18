@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Serverless beyond Cloud Run services and Pub/Sub-triggered functions (feature `serverless`): the bucket
  * Cloud Run functions keeps its sources in (hidden), a Cloud Run job with its latest execution and the

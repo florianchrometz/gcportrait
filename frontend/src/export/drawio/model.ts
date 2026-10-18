@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The draw.io side of the export: cells with absolute geometry while the translator builds them, then the file
  * draw.io reads (an `mxfile` with one `diagram` holding an `mxGraphModel`), plain or compressed as draw.io itself

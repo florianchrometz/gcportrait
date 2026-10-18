@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Access Context Manager, authorized organisations descriptions: the one type of this service; the
 # access policy, levels and perimeters are typed identity.accesscontextmanager.googleapis.com (in that file).

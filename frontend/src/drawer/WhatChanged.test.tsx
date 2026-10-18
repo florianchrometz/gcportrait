@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The drawer's "What changed" section in the app, in jsdom with the real data and layout handlers
  * in-process, on demo organisation S stepped from 7 to 8 September with `]`: the markers and their legend rows are

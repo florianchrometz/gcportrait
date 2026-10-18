@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The repository the website is built from. The site renders files from it at build time (docs/, the catalog's
  * coverage), so the build needs its root: the nearest directory above the working directory (the

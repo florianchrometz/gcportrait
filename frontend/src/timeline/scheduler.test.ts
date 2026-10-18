@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Which ticks are read, and when (skill cai-ingestion §5): the order (the view's day, then its neighbours, the one in
  * the direction of travel first), at most two reads in flight, the next wanted one starting when one ends, and a

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Looker (Google Cloud core): Looker instances and their backups. An instance with a private IP
 # attaches to a consumer VPC network through private services access; with Private Service Connect it is

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Kubernetes storage classes of GKE clusters with the asset inventory feature on. Cluster-scoped: they nest in
 # their cluster by name path.

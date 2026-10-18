@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import fc from 'fast-check';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LineSplitter, utf8ByteLength, type LineProblemCode } from './lines.js';

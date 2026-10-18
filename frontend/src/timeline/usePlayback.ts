@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Playback in the timeline bar (playback.ts holds the rules): the play button starts it (from the first available
  * day when the view is on the last one), each step waits for the day's diagram and then the interval, moving the

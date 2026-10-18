@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Fingers on the interactive canvas (touch.ts, AGENTS.md's touch model), as synthetic pointer events of `pointerType`
  * `touch` in jsdom (whose boxes are all at 0, 0, so a client point is the canvas's point): one finger pans and never

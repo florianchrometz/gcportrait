@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Deterministic synthetic Google Cloud organisations (S, M, L, XL) with a 35-day history for gcportrait's demo mode and tests.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
   "exports": {

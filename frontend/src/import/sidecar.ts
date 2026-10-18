@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The optional `operation.json` sidecar of an export (skill cai-ingestion §1 "Export facts"): an
  * export file does not say when it was taken; the long-running operation of `exportAssets` does. Saved next to the

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Batch. Jobs are operational records; the ones still queued or running are drawn, finished ones
 # start hidden.

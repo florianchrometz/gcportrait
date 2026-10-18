@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Identity and Access Management v3: principal access boundary policies (organisation level) and the
 # policy bindings that apply them to a principal set (a workforce or workload identity pool, the organisation,

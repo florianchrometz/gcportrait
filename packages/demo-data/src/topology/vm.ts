@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A plain virtual-machine workload in a Shared VPC service project: standalone VMs on a host subnet with
  * CMEK boot disks; the organisation's first one also gets a bastion with an external address. Test VMs come

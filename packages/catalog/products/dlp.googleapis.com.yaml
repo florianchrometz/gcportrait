@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Sensitive Data Protection: inspection job triggers and their runs, discovery (data profiling)
 # configurations, inspect and de-identify templates and stored info types. Names are

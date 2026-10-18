@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The import worker for the page's live pulls and export reads (worker/): started on first use, one per page, as
  * the fourth role of the app's worker script (WORKER_ROLES.imports). Its code, and the worker itself, load only

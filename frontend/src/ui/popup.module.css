@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* Popup surfaces of the primitives: menus, listboxes and popover panels. Anchored under their trigger
    (absolute) or, for a context menu, fixed at a viewport point. Items have the control metrics; the current

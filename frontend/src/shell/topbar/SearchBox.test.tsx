@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search box in the whole app (jsdom, the real data and layout handlers in-process, demo S): `/` focuses it;
  * typing lists results grouped by kind with icon, type and project and a result count; choosing one selects it

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Blockchain Node Engine: a managed
 # blockchain node with public JSON-RPC and WebSockets endpoints, or a Private Service Connect service

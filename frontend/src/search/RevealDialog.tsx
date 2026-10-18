@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The reveal dialog (useReveal.ts): a chosen search result is not in the view. It says why (reveal.ts's facts,
  * in words) and offers the view changes the data worker found to show it ("Drill in to demo-web-1", "Switch to the

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Removes a gcportrait instance that infra/deploy.sh created (docs/self-host.md, "Uninstall").
 # Run with --help for usage and the limits of --disable-apis (usage below).

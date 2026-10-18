@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "gcportrait asset catalog: product and lens data, the relation-rule engine, the compiler and the coverage check.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
   "exports": {

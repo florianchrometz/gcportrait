@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The draw.io export (docs/api.md; frontend/AGENTS.md, Exports): the diagram's SVG document turned into a
  * `.drawio` file that diagrams.net opens as an editable diagram that looks like the picture (translate.ts says how).

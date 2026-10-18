@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A view of a snapshot, prepared the way the app prepares it (the data flow in docs/packages.md): the Graph
  * with the compiled catalog, the Scene for the ViewSpec at the viewport's rect budget, the layout with its

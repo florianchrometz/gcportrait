@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 <!--
   Thanks for contributing to gcportrait. Fill in every section and write "n/a" where one does not apply.
   The sections follow the PR checklist in .agents/skills/contributor-workflow/SKILL.md §5.
@@ -55,7 +55,7 @@ pnpm e2e     →
 
 - [ ] **Provenance:** Original work; nothing copied from other projects.
 - [ ] `pnpm check` passes locally (format, lint, typecheck, unit, catalog, provenance, licences).
-- [ ] New text files start with the `SPDX-License-Identifier: MIT` line in their comment form
+- [ ] New text files start with the `SPDX-License-Identifier: Apache-2.0` line in their comment form
       (AGENTS.md, Licence and dependencies); a new dependency passes `pnpm run licenses`.
 - [ ] `pnpm e2e` passes locally, or the description says that I rely on CI for it.
 - [ ] Anything visible was checked in light and dark themes; contrast tests pass.

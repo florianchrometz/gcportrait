@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Stage 5, before routing: which edges to draw (skill gcp-diagram-layout §5 "Merging"). Every Scene edge is
  * resolved to the rects it is drawn between and merged:

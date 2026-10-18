@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The numbers of progressive disclosure (skill gcp-diagram-layout §4 and §6) and
  * the scene builder's few fixed keys.

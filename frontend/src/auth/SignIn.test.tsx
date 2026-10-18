@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Sign-in in the whole app, live mode, with GIS and Google's tokeninfo stood in for: the Connect page's
  * card, the top bar's account menu, the mode selector, expiry, sign-out, a press that brings a lost Google window

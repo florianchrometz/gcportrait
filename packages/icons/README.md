@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # @gcportrait/icons
 
@@ -54,10 +54,11 @@ links Google's Site terms (<https://policies.google.com/terms>) and Google Cloud
 (<https://about.google/brand-resource-center/>). These are the "Google's icon usage terms" the non-affiliation
 statement names. Google Cloud and the Google Cloud product icons are trademarks of Google.
 
-The icons are third-party material. They are not covered by gcportrait's own licence (`MIT`), and neither
-gcportrait nor its maintainer licenses them: anyone who uses or passes them on does so under the terms Google
-Cloud states at <https://cloud.google.com/icons>, not under gcportrait's licence. `THIRD_PARTY.md` lists them
-as third-party material. The own drawings below are gcportrait's code and artwork, under `MIT`.
+The icons are third-party material. They are not covered by gcportrait's own licence (`Apache-2.0`), and
+neither gcportrait nor its maintainer licenses them: anyone who uses or passes them on does so under the
+terms Google Cloud states at <https://cloud.google.com/icons>, not under gcportrait's licence.
+`THIRD_PARTY.md` lists them as third-party material. The own drawings below are gcportrait's code and
+artwork, under `Apache-2.0`.
 
 gcportrait uses the icons to label the Google Cloud products in diagrams of the user's own environment, and:
 

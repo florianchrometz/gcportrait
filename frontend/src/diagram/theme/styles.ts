@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Theme-independent drawing rules (skill gcp-diagram-style §2, §4, §5): stroke widths and dashes
  * per zone tint, edge strokes, dashes and heads per relation style, zone kind names and marks. Colours come

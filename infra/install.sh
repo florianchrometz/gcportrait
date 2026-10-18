@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Install a gcportrait release without a checkout; served unchanged at https://gcportrait.app/install.sh.
 # Run with --help for standalone or piped usage, prerequisites and exit behavior (usage below).

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The wall-clock limits of the tests, one rule for every package that times its own work (the layout's
  * budgets, the ingest budget, the graph build's budget, the demo organisations' generation):

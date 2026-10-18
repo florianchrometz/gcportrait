@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm website:check`: checks the built site (website/dist) for what every page must have and what no page may do
  * (docs/website.md). Run after `pnpm website:build`. Exit code 0 when clean, 1 with every problem listed.
@@ -770,7 +770,7 @@ export function checkDemo(demo: DemoFiles, brandSource: string | undefined): str
     if (!scripts.some((script) => script.includes(href)))
       where(`no script of the demo carries ${href} for its footer`);
   }
-  for (const licence of ['gcportrait-LICENSE.txt', 'THIRD_PARTY_NOTICES.txt']) {
+  for (const licence of ['gcportrait-LICENSE.txt', 'gcportrait-NOTICE.txt', 'THIRD_PARTY_NOTICES.txt']) {
     if (demo.read(`licenses/${licence}`) === undefined) where(`licenses/${licence} is missing`);
   }
   return problems;
@@ -1428,7 +1428,12 @@ export function checkSite(dist: string, brandSource = BRAND_SOURCE): string[] {
       sitemap,
     ),
   );
-  for (const licence of ['roboto-LICENSE.txt', 'roboto-mono-LICENSE.txt', 'gcportrait-LICENSE.txt']) {
+  for (const licence of [
+    'roboto-LICENSE.txt',
+    'roboto-mono-LICENSE.txt',
+    'gcportrait-LICENSE.txt',
+    'gcportrait-NOTICE.txt',
+  ]) {
     if (!existsSync(path.join(dist, 'licenses', licence))) problems.push(`licenses/${licence} is missing`);
   }
   // The site's scripts; the demo's are the app's, under its own policy (checkDemo).
@@ -1493,7 +1498,7 @@ export function checkSite(dist: string, brandSource = BRAND_SOURCE): string[] {
       (match) => match[1] ?? '',
     );
     if (!jsonLd.some((text) => text.includes('"SoftwareApplication"') && text.includes(LICENSE_URL))) {
-      problems.push(`/: no SoftwareApplication JSON-LD with the MIT licence (${LICENSE_URL})`);
+      problems.push(`/: no SoftwareApplication JSON-LD with the Apache-2.0 licence (${LICENSE_URL})`);
     }
     if (!jsonLd.some((text) => text.includes('"Person"')))
       problems.push('/: no Person JSON-LD (docs/author.md)');

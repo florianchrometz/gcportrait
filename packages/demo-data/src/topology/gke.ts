@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A GKE workload in a Shared VPC service project: a regional private cluster on a host subnet with secondary
  * ranges, node pools (and, where the profile asks for it, the managed instance groups, templates and VMs GKE

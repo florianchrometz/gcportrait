@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The details of one node for the drawer, worked out where the Graph, the snapshot's
  * assets and the catalog are: the data worker (diagram/pipeline/dataHandler.ts answers `details` requests with

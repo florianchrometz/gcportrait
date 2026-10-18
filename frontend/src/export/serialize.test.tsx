@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The export serialiser: the standalone drawing it starts from (no custom property, no `style`, no interactive
  * scaffolding, in either theme), `<title>` and `<desc>`, the title block (the canvas's three lines, no affiliation

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Apigee: the organization container (from the catalog seed), environments, instances and proxies (skill
 # gcp-diagram-layout §2: Apigee Organization › Environment/Instance). Every Apigee asset is named under its

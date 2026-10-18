@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Workflows. The workflow definition (sourceContents) calls other services by URL inside its own language,
 # which the catalog does not parse; the identity and the CMEK key are fields.

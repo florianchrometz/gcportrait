@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Chrome Enterprise Premium (formerly BeyondCorp Enterprise), app connectors: an app connection
 # publishes a remote application endpoint through an app gateway, served by one or more app connectors that

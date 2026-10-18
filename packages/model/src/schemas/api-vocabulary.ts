@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The closed vocabularies of the backend's preflight answer (POST /api/preflight, docs/permissions.md) as plain
  * tuples, in a module that imports no zod: the schemas in api.ts are built from them (`z.enum(PREFLIGHT_FINDINGS)`),

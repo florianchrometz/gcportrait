@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Writes a demo organisation to a file, or regenerates the committed fixtures.
  *

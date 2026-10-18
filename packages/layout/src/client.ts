@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page side of the layout worker protocol (worker.ts): one promise per layout request.
  *

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 
 import { EMBEDDED_FACES, fontFaceCss } from './fonts';

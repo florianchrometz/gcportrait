@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the top bar's view controls offer to choose from: the loaded snapshot's facts, its
  * projects, Shared VPC hosts, perimeters, applications, folders and locations, the containers above a drill-in

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helper (not part of the public API): how well a Layout's edges keep apart (skill gcp-diagram-layout §1,
  * "parallel arrows in the same gap are spaced in lanes, never overlapping"; §8 "lanes spaced"), and how well

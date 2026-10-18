@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The selected node's details, asked of the data worker (its `details` request, protocol.ts) whenever the
  * selection, the snapshot or the day drawn changes: a lookup in the Graph the worker keeps for the day the request

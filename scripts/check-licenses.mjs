@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Licence guard for npm dependencies (AGENTS.md, Licence and dependencies; Security and privacy,
@@ -10,10 +10,11 @@
  *   node scripts/check-licenses.mjs --root <dir>  check another tree (used by the tests)
  *   node scripts/check-licenses.mjs --licenses-report F --projects-report G  read saved pnpm output (tests)
  *
- * gcportrait's own code is MIT (the "license" field of the root package.json), and whoever receives it may rely on
- * the MIT License alone. A dependency may therefore only carry a licence that does not force gcportrait to publish
- * its code or to relicense its combined work under other terms: an MIT project cannot carry copyleft code whose
- * reach goes beyond the dependency's own files (MPL-2.0, file-scoped, is the one weak copyleft allowed). Exit code 0
+ * gcportrait's own code is Apache-2.0 (the "license" field of the root package.json), and whoever receives it may
+ * rely on the Apache License 2.0 alone. A dependency may therefore only carry a licence that does not force
+ * gcportrait to publish its code or to relicense its combined work under other terms: an Apache-2.0 project cannot
+ * carry copyleft code whose reach goes beyond the dependency's own files (MPL-2.0, file-scoped, is the one weak
+ * copyleft allowed). Exit code 0
  * when clean, 1 on a licence or staleness problem, 2 on a usage error. Verify mode fails when
  *   - any installed package (the full tree, direct and transitive, production and dev) declares a licence
  *     expression that cannot be satisfied from ALLOWED_LICENSES (or, for a package named in
@@ -22,7 +23,8 @@
  *   - the generated section of THIRD_PARTY.md differs from what --write would produce (stale file).
  *   - a workspace project's package.json declares a `license` other than the root package.json's (every workspace
  *     package is gcportrait's own code, under the one project licence), or none, or
- * An expression with an allowed alternative ("MIT OR GPL-3.0-only") passes: gcportrait uses it under MIT.
+ * An expression with an allowed alternative ("MIT OR GPL-3.0-only") passes: gcportrait uses it under the allowed
+ * licence.
  * A tree without a single third-party package (pnpm then prints "No licenses in packages found" instead of JSON) is
  * checked like any other: nothing to allow or deny.
  *
@@ -52,8 +54,8 @@ const DENIED_MESSAGE = "would impose obligations on gcportrait's combined work o
  * Licences a dependency may be used under. All are permissive except MPL-2.0, which is allowed because its
  * copyleft is file-scoped: it binds only the MPL-licensed files themselves, which we consume unmodified from
  * node_modules (for example the accessibility engine used by the e2e tests), and its section 3.3 lets them be part
- * of a Larger Work under other terms, such as gcportrait's MIT License. MIT-0 is MIT without the attribution clause,
- * strictly more permissive than MIT; jsdom's CSS colour stack uses it.
+ * of a Larger Work under other terms, such as gcportrait's Apache License 2.0. MIT-0 is MIT without the
+ * attribution clause, strictly more permissive than MIT; jsdom's CSS colour stack uses it.
  */
 const ALLOWED_LICENSES = Object.freeze([
   'MIT',
@@ -126,7 +128,7 @@ const DENIED_LICENSE_FAMILIES = Object.freeze([
     matchesId: (id) => /^GPL(?:-|$)/i.test(id),
     reason:
       'strong copyleft: a work that bundles or links GPL code must be distributed as a whole under the GPL, so ' +
-      "gcportrait's combined work could no longer be offered under the MIT License",
+      "gcportrait's combined work could no longer be offered under the Apache License 2.0",
   },
   {
     family: 'LGPL-*',
@@ -141,7 +143,7 @@ const DENIED_LICENSE_FAMILIES = Object.freeze([
     reason:
       'network copyleft: a work that includes AGPL code must be distributed as a whole under the AGPL, and its ' +
       "source offered to everyone who uses it over a network, so gcportrait's combined work could no longer be " +
-      'offered under the MIT License',
+      'offered under the Apache License 2.0',
   },
   {
     family: 'SSPL-*',
@@ -172,28 +174,28 @@ const DENIED_LICENSE_FAMILIES = Object.freeze([
     matchesId: (id) => /^OSL(?:-|$)/i.test(id),
     reason:
       'network copyleft ("external deployment"): derivative works must stay under the OSL, so the combined work ' +
-      'could not be distributed under the MIT License',
+      'could not be distributed under the Apache License 2.0',
   },
   {
     family: 'CPAL-*',
     matchesId: (id) => /^CPAL(?:-|$)/i.test(id),
     reason:
       'network copyleft with attribution required in the user interface: modifications must stay under the CPAL, ' +
-      'so the combined work could not be distributed under the MIT License alone',
+      'so the combined work could not be distributed under the Apache License 2.0 alone',
   },
   {
     family: 'EPL-*',
     matchesId: (id) => /^EPL(?:-|$)/i.test(id),
     reason:
       'module-level copyleft: modified EPL modules must stay under the EPL with their source available, an ' +
-      'obligation the MIT License does not carry on to recipients of the combined work',
+      'obligation the Apache License 2.0 does not carry on to recipients of the combined work',
   },
   {
     family: 'CDDL-*',
     matchesId: (id) => /^CDDL(?:-|$)/i.test(id),
     reason:
       'file-level copyleft: CDDL files must stay under the CDDL with their source available, an obligation the ' +
-      'MIT License does not carry on to recipients of the combined work',
+      'Apache License 2.0 does not carry on to recipients of the combined work',
   },
   {
     family: 'SEE LICENSE IN …',

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline diff overlay's data (docs/timeline.md; style skill §6), as it crosses `postMessage`: what the page
  * asks the data worker to compare the day it draws with (`DiffFrom`, with a Scene request), and what the worker

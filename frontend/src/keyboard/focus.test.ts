@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Focus indicators meet 3 : 1 (WCAG 2.2 1.4.11 / 2.4.13; skill gcp-diagram-style §9, §13). The app
  * chrome's ring (global.css: 2 px `primary` outside a 2 px `surface` gap, or inset in popups) against every colour

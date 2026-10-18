@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Where an export goes: a file the browser saves, or the clipboard (PNG only, skill gcp-diagram-style §8).
  */

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Project ids and numbers. Cloud Asset Inventory puts project numbers into `parent` and `ancestors`, Compute
  * names and self-links use project ids, and newer APIs mostly use numbers in their names. The snapshot's

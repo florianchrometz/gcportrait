@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What a snapshot job is doing, for the person: a polite live region with the stage (always in the DOM, so a
  * screen reader hears every change), a progress bar while the job runs (with its share of the bytes when files

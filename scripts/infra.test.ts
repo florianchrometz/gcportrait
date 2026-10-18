@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * infra/: what the image says about itself, what deploy.sh uploads, and how deploy.sh behaves, run with bash
  * against stand-ins for `gcloud`, `curl` and `sleep` that answer from a rule list and log every call
@@ -702,7 +702,7 @@ describe.skipIf(!BASH_AVAILABLE)(
       expect(lines[0]).toMatch(/^# \S/);
       expect(lines.filter((line) => /^# /.test(line))).toHaveLength(1);
       expect(lines[2]).toBe('<walkthrough-tutorial-duration duration="10"></walkthrough-tutorial-duration>');
-      expect(lines.slice(0, 10)).toContain('<!-- SPDX-License-Identifier: MIT -->');
+      expect(lines.slice(0, 10)).toContain('<!-- SPDX-License-Identifier: Apache-2.0 -->');
       expect(lines.filter((line) => /^## /.test(line)).length).toBeGreaterThanOrEqual(5);
       const directives = new Set([...tutorial.matchAll(/<(walkthrough-[a-z-]+)/g)].map((m) => m[1]));
       expect([...directives].sort()).toEqual([

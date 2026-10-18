@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The camera glide behind `jumpTo(id)` (the app store's action; the canvas carries it out): where the camera
  * ends, and the transforms in between. Pure.

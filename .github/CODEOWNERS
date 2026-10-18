@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Code owners (docs/contributing.md §7, "Opening a pull request"). GitHub requests a review from the owners
 # of every path a pull request touches, and the last matching line wins. The maintainer owns everything

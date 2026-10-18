@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Identity and Access Management, v1 resources: service accounts and their keys, custom roles,
 # workload identity pools (project level) and workforce pools (organisation level) with their providers,

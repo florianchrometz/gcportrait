@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Bundles the backend into ESM files for the production image (infra/Dockerfile): `pnpm --filter
  * @gcportrait/backend bundle` writes
@@ -121,7 +121,7 @@ function mplStatement(pkg: PackageInfo): string {
   const tarball = `https://registry.npmjs.org/${pkg.name}/-/${pkg.name.replace(/^@[^/]+\//, '')}-${pkg.version}.tgz`;
   return [
     'MPL-2.0 (sections 3.2 and 3.3): this package is Covered Software under the Mozilla Public License 2.0. It is',
-    'used unmodified as part of a Larger Work, gcportrait (MIT), and stays under the MPL-2.0; its Source',
+    'used unmodified as part of a Larger Work, gcportrait (Apache-2.0), and stays under the MPL-2.0; its Source',
     `Code Form is available at ${tarball}.`,
     `The licence's full text is at the end of this file (and at ${MPL_URL}).`,
   ].join('\n');
@@ -135,7 +135,7 @@ function licenceReport(packages: readonly PackageInfo[], shippedIn: ShippedIn): 
     'unmodified into render-assets/ next to them (resvg-wasm, MPL-2.0: its Source Code Form is the npm package of',
     'that version, used unmodified in a Larger Work; the Roboto fonts, OFL-1.1). Each line names the files the',
     'package ships in.',
-    'Each package keeps its own licence; none of it is covered by the MIT License of gcportrait itself',
+    'Each package keeps its own licence; none of it is covered by the Apache License 2.0 of gcportrait itself',
     '(frontend/dist/licenses/gcportrait-LICENSE.txt).',
     ...(mpl ? ["The Mozilla Public License 2.0's full text is at the end of this file."] : []),
     '',

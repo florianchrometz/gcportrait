@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* A modal dialog over a backdrop (Dialog.tsx). The backdrop is the on-surface colour at 32 %, so it darkens the
    light theme and lightens nothing in the dark one. */

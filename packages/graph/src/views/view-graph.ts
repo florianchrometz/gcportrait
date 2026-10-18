@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scene builder's working copy of a Graph: the nodes and the containment forest as Maps, with the virtual
  * region and zone containers (skill gcp-diagram-layout §2, rule 3) present exactly when the view asks for

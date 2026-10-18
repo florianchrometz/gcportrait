@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { Link } from 'react-router';
 
 import page from './Page.module.css';

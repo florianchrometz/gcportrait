@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Canonical name matching (packages/AGENTS.md, Catalog and graph semantics). Cloud Asset Inventory names some services'
  * assets with the project id and others with the project number, and references are written in whichever

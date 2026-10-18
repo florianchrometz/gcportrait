@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { expect, test } from '@playwright/test';
 
 import { cameraSettled, detailsDrawer, hashOf, openDiagram, TAGLINE } from './support.js';

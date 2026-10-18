@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Google Cloud Managed Service for Apache Kafka: Kafka clusters and Kafka Connect clusters. The
 # brokers run in a Google-managed project; clients reach them through Private Service Connect endpoints

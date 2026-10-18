@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers to read a Graph: a node's parent and containers, the edges between two nodes. They read the
  * Graph's records only and share no code with the builder, so the oracles that use them stay independent of

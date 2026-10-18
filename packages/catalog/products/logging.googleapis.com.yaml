@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Logging: log sinks route log
 # entries to their destination (a bucket, a BigQuery dataset, a Pub/Sub topic, a log bucket or another

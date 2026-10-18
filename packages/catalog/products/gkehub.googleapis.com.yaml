@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Fleet management (GKE Hub): fleets, memberships of GKE, multi-cloud and on-premises clusters, fleet scopes
 # with their namespaces and role bindings, and fleet features. Cluster assets point at their membership

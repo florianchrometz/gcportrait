@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Which day a new diagram is compared with (base.ts): the day on screen when the view moves to another day,
  * the day the diagram on screen was compared with when only the view changed (so the markers stay for the day),

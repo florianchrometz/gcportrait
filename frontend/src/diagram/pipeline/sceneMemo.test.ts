@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's Scene memo (sceneMemo.ts): a view on a Graph is built once; the key leaves the snapshot and
  * the timeline tick out (the Graph is the day) but keeps the builder's environment; a view built at `auto` is also

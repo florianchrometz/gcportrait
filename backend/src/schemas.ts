@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { UpstreamSummarySchema } from '@gcportrait/model';
 import * as z from 'zod';
 

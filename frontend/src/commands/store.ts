@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The values typed into command fields, for this tab (commands/values.ts has the rules): one entry per variable, so
  * every field of a variable, in every command on a page, shows one value; kept in sessionStorage under one key

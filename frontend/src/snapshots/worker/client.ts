@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page side of the snapshot protocol (protocol.ts): one promise per job, with its progress reported as it
  * comes. An import's signal cancels it: the promise rejects at once with {@link SnapshotJobCancelled}, the worker

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The options of a rendered export (backend/AGENTS.md, The render API): which view of a snapshot to draw,
  * in which theme, as SVG, PNG or a draw.io file, at which PNG scale or width, the draw.io file compressed or

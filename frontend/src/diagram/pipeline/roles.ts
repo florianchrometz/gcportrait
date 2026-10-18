@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The roles of the app's worker script (diagram.worker.ts): the page starts it once per role, and names each
  * instance after its role (`new Worker(url, { name })`), which the script reads as `self.name`.

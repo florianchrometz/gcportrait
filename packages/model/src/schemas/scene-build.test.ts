@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { FOLDER, INSTANCE, NETWORK, PROJECT, sampleScene } from '../testing/fixtures.js';
 import { issuePaths, withChange } from '../testing/issues.js';

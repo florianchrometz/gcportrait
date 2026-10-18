@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Build and check the website and the static demo that sits at /demo/, once for both workflows that deploy
 # them: pages.yml (a push to main and the daily refresh) and release.yml (a tag). A pull request runs CI's

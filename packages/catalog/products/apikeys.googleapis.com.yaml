@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # API keys: projects/<number>/locations/global/keys/<uid>. Restrictions limit a key to APIs, to
 # browser referrers, server addresses or mobile apps; a key may be bound to a service account.

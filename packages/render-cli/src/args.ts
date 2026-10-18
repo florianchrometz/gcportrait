@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The command line of `pnpm render`, parsed into a command. Pure apart from reading `argv`. The view, the theme,
  * the viewport and the PNG's size are read by the model's `readRenderFlags` and checked by `RenderOptionsSchema`

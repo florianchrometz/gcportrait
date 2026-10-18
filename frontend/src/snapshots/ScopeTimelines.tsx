@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Snapshots page's "Timelines by scope" (docs/timeline.md): for each scope this browser keeps something
  * of, its timeline as stored here, in time order (scopeEntries.ts): its snapshots with a history, its exports and

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The drawer's deep diff of `resource.data` (fieldDiff.ts): leaves that differ with their dotted paths,
  * deterministic, capped with a count, short previews; and on demo S and M's histories it finds every field the

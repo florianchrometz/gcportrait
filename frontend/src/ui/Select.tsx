@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A select-only combobox (WAI-ARIA APG pattern), the top bar's pickers (Lens): a button with
  * `role="combobox"` named by its visible label and showing the current value; its listbox stays in the DOM

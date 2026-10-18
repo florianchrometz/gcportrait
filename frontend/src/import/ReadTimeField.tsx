@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * "When the export was taken" (an export's read time is its operation.json's, or set by the person): an
  * optional text field for an export that came without its operation.json, on the Connect page's export

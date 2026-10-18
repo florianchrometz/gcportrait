@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `normalizeViewSpec` and the view constants, without zod (AGENTS.md, Architecture and code). The URL-hash
  * codec (view-hash.ts) runs on the app's UI thread for every hash it reads and writes, so its parse path is

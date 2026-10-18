@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The backend's own identity for service-account mode (backend/AGENTS.md, The service-account
  * gate): Application Default Credentials (ADC), resolved once at start-up by main.ts when

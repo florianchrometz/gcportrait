@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Reading snapshot files in the worker (worker/handler.ts): the `.gcportrait.json` bundle of ../bundle.ts and the
  * history document it may carry. Everything is checked before anything is stored; a problem is a

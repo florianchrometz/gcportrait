@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline's model (model.ts): the day the pipeline draws for a view (`tickToDraw`), the bar's positions and
  * marker states for a stored history and a live scope, the steps of `[` and `]` with their refusals, and the hash

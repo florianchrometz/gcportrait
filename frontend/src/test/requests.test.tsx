@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The unit tests mount under StrictMode (setup.ts), as development does: on mount an effect runs, cleans up and
  * runs again, also in `renderApp`. The request log (requests.ts) counts what the app kept of what it asked for: the

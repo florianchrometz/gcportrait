@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The requests a test counts, each with whether the app called it off. The unit tests mount under StrictMode
  * (src/test/setup.ts), as development does: on mount every effect runs, cleans up and runs again, so a request an

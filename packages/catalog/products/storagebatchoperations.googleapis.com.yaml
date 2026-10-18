@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Storage Batch Operations API: one-off jobs that apply one transformation (delete, hold, metadata,
 # rewrite with a new key, ACLs, contexts) to many objects of a bucket. A Cloud Storage feature, it shares the

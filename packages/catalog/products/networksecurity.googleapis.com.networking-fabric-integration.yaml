@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Network Security Integration (networking fabric): out-of-band mirroring and in-band interception of VPC
 # traffic to third-party appliances. A producer runs the appliances behind an internal load balancer in a

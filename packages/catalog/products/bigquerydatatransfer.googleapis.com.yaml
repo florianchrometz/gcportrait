@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # BigQuery Data Transfer Service: scheduled loads into BigQuery (Cloud Storage, SaaS and other cloud
 # sources), scheduled queries and dataset copies. Cloud Asset Inventory names transfer configurations by

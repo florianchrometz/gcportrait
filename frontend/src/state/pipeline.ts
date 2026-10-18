@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram pipeline for the view in the store (docs/packages.md): the data worker turns the view into a Scene
  * (loading and building the snapshot's Graph the first time), the layout worker lays the Scene out, and the

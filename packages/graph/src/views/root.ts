@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Step (a) of the scene builder: the drill-in root (the ViewSpec's `root`). The
  * canvas is the organisation, so its zone is dropped and its children become the top level. A drill-in root

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Which day a new diagram is compared with: the tick displayed before (docs/timeline.md). The
  * store's pipeline asks it before each Scene request and sends the answer with it; the data worker then compares

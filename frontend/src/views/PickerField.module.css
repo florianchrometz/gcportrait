@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The pickers of the Filters and Focus popovers (PickerField.tsx): a label, the chosen values as chips and the
    search combobox, whose results list is given a width and a scroll height here (ui/Listbox keeps the active

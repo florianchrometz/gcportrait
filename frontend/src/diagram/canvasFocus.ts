@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Keyboard focus across a new view. "Drill in" (a node's menu, the details drawer) replaces the
  * drawing, and the element that had focus goes with it; focus would fall to the page's body. Instead it is parked

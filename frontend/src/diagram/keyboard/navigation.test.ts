@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Arrow-key navigation (style skill §13): a hand-made drawing whose geometry is known, and the demo
  * organisations as the app lays them out, where every item must be reachable from the first by the keys alone and

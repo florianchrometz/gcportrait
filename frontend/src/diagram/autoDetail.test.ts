@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Detail `auto` against the measured canvas: the page applies the scene builder's own rule (`autoDetailLevel`, whose
  * cases @gcportrait/graph tests in views/detail.test.ts) to a report's rect counts and ceiling, so it agrees with the

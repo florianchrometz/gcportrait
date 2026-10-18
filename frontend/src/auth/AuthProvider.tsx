@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Live mode's sign-in, mounted once inside the app store (App.tsx). On start it asks the backend for
  * its public configuration (GET /api/config) and puts the answer into the store's `connect.backend`; when the

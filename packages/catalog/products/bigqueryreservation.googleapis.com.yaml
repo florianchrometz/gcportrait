@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # BigQuery Reservation API: slot reservations, the assignments that point projects, folders or the
 # organisation at a reservation, capacity commitments, BI Engine reservations and reservation groups. Cloud

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The action area of the Connect page's "Your Google Cloud environment" card: "Sign in with Google" when
  * the backend names an OAuth client, the signed-in account with "Sign out", or "Sign in again" after an expiry.

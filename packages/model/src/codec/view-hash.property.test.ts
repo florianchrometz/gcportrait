@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Property tests for the URL-hash codec. The arbitraries are built from the schemas themselves: enum options
  * come from the zod enums, constrained strings from the same patterns the schemas use, so a schema change

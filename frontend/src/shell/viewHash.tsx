@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocation, type To } from 'react-router';
 

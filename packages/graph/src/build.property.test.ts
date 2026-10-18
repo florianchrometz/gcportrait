@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Property tests (fast-check): random organisations (folder trees, projects, some of them Shared VPC hosts,
  * resources that nest by name, by parent and by declaration, across projects too) built with random catalog

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Relation edges. The catalog's rule engine evaluates an asset's rules (`evaluateRelations`); this module
  * resolves each produced target to a node (names also with their project segment swapped, `names.ts`), turns

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Pull-request and main-branch checks (docs/contributing.md §4, "Continuous integration"). The jobs run side by side,
 # those a change of only docs and media skips after a first small job, `changes`, has sorted the changed files

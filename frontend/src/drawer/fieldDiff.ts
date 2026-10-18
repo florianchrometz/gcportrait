@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small deep diff of two `resource.data` values (the drawer's "What changed" summary of a changed asset).
  * Pure and deterministic: objects are walked key by key in code-point order, arrays index by index, and every leaf

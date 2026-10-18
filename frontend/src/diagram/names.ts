@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Human type names for accessible names (style skill §13: every card has an accessible name, type + label). Pure;
  * the renderer names cards with it, and the data worker names product-container zones with it from the Graph,

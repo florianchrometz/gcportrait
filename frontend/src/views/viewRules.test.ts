@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The view controls' small rules: the lens switch's detail rule (lensDetail.ts), the focus kinds and
  * their parameter (focusForm.ts), the breadcrumb's trail (trail.ts) and the saved-view summaries

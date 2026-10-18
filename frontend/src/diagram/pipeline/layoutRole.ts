@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout role of the diagram worker (diagram.worker.ts): `@gcportrait/layout`'s handler with its
  * memo and cancellation, and a clock for the report's timings.

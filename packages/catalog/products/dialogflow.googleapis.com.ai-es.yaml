@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Dialogflow ES: the v2 conversation profiles that wire Agent Assist and contact-center integrations
 # to an automated agent, knowledge bases, speech and Pub/Sub, and the knowledge bases themselves. Asset

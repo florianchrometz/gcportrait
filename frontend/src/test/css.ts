@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Reading the app's stylesheets for the CSS guards (tokens, focus). Those tests run in Node
  * (`// @vitest-environment node`), but the frontend's types are the browser's (no `@types/node`), and Vitest stubs

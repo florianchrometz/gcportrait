@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* A thin slider (Slider.tsx): a 4 px track, the filled part in the primary colour, a 16 px thumb with the
    global focus ring. The track's outline colour and the thumb's primary fill keep 3 : 1 against the surface in

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Backpressured response writer (AGENTS.md, Security and privacy, principle 1). Readable.from alone
  * advances a producer once a line is queued on the socket; this writer waits until it is written out.

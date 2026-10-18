@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Arrow-key navigation on the interactive canvas (style skill §13). Pure: the drawing's rects and nesting
  * in, the next item to focus out; the canvas moves focus and the camera (DiagramCanvas.tsx).

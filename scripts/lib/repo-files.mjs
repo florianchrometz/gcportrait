@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * File-walking and SPDX-header rules shared by the repository tooling (scripts/check-provenance.mjs and
@@ -11,7 +11,7 @@ import path from 'node:path';
 
 /**
  * The SPDX identifier the tools assume for a tree whose root package.json names no licence (the tools' tests
- * build such trees). gcportrait's own package.json names `MIT`.
+ * build such trees). gcportrait's own package.json names `Apache-2.0`.
  */
 export const FALLBACK_LICENSE_ID = 'LicenseRef-gcportrait-unset';
 
@@ -211,11 +211,11 @@ export const HEADER_FREE_EXTENSIONS = Object.freeze(
 
 /**
  * File names that carry no SPDX header, see HEADER_FREE_EXTENSIONS. `.prettierrc` holds JSON; GitHub Pages
- * requires `CNAME` (website/public/CNAME) to hold nothing but the domain; `LICENSE` is the licence text,
- * which states the licence in its own words.
+ * requires `CNAME` (website/public/CNAME) to hold nothing but the domain; `LICENSE` and `NOTICE` are the licence
+ * and attribution texts, which state their terms in their own words.
  */
 export const HEADER_FREE_FILENAMES = Object.freeze(
-  new Set(['LICENSE', '.nvmrc', '.prettierrc', '.gitkeep', 'CNAME']),
+  new Set(['LICENSE', 'NOTICE', '.nvmrc', '.prettierrc', '.gitkeep', 'CNAME']),
 );
 
 /** Extensions whose header is searched after a leading `---` frontmatter block, if there is one. */
@@ -516,7 +516,7 @@ export function listRepoFiles(root) {
 }
 
 /**
- * The project's licence identifier: the `license` field of the root package.json (`MIT`), which
+ * The project's licence identifier: the `license` field of the root package.json (`Apache-2.0`), which
  * scripts/set-license.mjs rewrites together with every header. Falls back to FALLBACK_LICENSE_ID when the
  * field is missing.
  * @param {string} root absolute path of the repository root

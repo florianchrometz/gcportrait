@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Permissions page in the whole app, live mode, with Google Identity Services, tokeninfo and the
  * backend's /api routes stood in for: sign-in on the page, the scope picker (search, a typed name, the recent

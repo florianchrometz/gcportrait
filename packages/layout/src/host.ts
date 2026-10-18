@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How the layout worker pauses between steps. A layout runs in steps (steps.ts); between two
  * steps the worker yields to its host's task queue, so that a message posted meanwhile (a newer request, a

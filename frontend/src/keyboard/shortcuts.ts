@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app's single-key shortcuts (style skill §13): `/` focuses the search box (shell/topbar/SearchBox.tsx),
  * `[` and `]` move the timeline (TimelineKeys.tsx), and on the canvas `+`, `-` and `0` zoom

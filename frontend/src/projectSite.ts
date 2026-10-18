@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * The project's website (`gcportrait.app`, an Astro site on GitHub Pages; AGENTS.md, Modes and hosting) and the page

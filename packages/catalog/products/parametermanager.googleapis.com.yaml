@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Parameter Manager: parameters (configuration documents, optionally CMEK-encrypted) and their
 # versions. CAI names them with the project id (projects/<id>/locations/<l>/parameters/<p>), unlike Secret

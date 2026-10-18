@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** A demo organisation as a `Snapshot` of `@gcportrait/model`, and the per-type statistics. */
 import { SNAPSHOT_SCHEMA_VERSION, type Asset, type Snapshot } from '@gcportrait/model';
 import { hash32 } from '../core/hash.js';

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The worker side of the import protocol (protocol.ts): a plain function of `postMessage`, so the same code runs
  * in the Web Worker (role.ts) and in-process in tests. Each job is one `@gcportrait/ingest` session fed chunk by

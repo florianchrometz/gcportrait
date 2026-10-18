@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { DiffSchema, type Asset } from '@gcportrait/model';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';

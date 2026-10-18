@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # DNS Armor (networking fabric): DNS threat detection for the VPC networks of a project, served by
 # networksecurity.googleapis.com. Cloud Asset Inventory names detectors with the project number.

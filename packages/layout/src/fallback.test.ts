@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { directRoute, gridRoute } from './fallback.js';
 import { ObstacleIndex } from './geometry.js';

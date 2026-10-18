@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Secure Web Proxy, the Network Security part: gateway security policies, their rules and URL lists. The proxy
 # itself is a Network Services gateway (`networkservices.googleapis.com/Gateway`, type SECURE_WEB_GATEWAY)

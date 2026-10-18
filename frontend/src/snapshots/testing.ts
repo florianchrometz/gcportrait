@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A snapshot library for the page tests: records in memory, every call logged, and the jobs answered by the
  * test (`answer`) so it can look at the page while one runs; an import's answer is stored once its `confirm`, if

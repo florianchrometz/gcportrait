@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Dataplex, listed on the official page as Knowledge Catalog: the lake and zone containers (from the catalog
 # seed), assets, tasks and scans, the catalog's own metadata objects (entry groups, entry and aspect types,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Opens or updates the one issue a weekly drift workflow keeps (.github/workflows/catalog-drift.yml and

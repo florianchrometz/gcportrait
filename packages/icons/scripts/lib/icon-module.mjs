@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Compiles mapping.json, manifest.json, vendored/*.svg and own/*.svg into the TypeScript module

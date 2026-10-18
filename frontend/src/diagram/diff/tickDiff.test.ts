@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline diff of a drawn day (tickDiff.ts) on demo organisation S's history, worked out as the data
  * worker does: the diff is `diffSnapshots` of the two days, by name and order-independent; what the view drew the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The identifier and timestamp patterns of the schemas in primitives.ts, in a module of their own that imports
  * nothing (no zod), so code that only needs to test a string against one (the URL-hash codec's zod-free

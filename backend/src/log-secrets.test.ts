@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * No token and no email in any log line, at the most verbose level (AGENTS.md, Security and privacy,
  * principle 2; docs/security.md §7). The server runs at `LOG_LEVEL=trace` against a pretend Google, and every

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline controller: runs while the diagram page shows the timeline bar and keeps the store's
  * `timeline` slice in step with the view.

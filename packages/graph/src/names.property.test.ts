@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Property tests (fast-check) of canonical name matching and reverse rules: random projects whose assets are
  * named with the project id or the project number, and references that spell the project either way, or name

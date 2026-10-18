@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search's words on screen: group headings, a result's second line, the result count, and why a node is
  * not in the view and what each offer does (the reveal dialog). Pure.

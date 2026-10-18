@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A pulled snapshot stored through the snapshot library (`storePrepared`) lands in IndexedDB as any import
  * does, and the diagram's data worker reads it back.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Gives fast-check the property tests' seed and number of runs by the rule of `@gcportrait/model/testing`
  * (`propertySeed`, `propertyRuns`; `FC_RUNS`, when set, is the number of runs of a property that names none):

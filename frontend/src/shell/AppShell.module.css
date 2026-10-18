@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The frame of every page, from a phone to a desktop (frontend/AGENTS.md, Phones, tablets and desktops; ui/screen.ts): the top bar, the page
    (the only part that scrolls) and the footer, as tall as the window. */
@@ -32,7 +32,8 @@
 }
 
 /*
- * The footer's links: the maintainer's name in the non-affiliation notice and the "Source (MIT)" link next to it.
+ * The footer's links: the maintainer's name in the non-affiliation notice and the "Source (Apache-2.0)" link next
+ * to it.
  * The footer's own text colour, underlined: primary blue on the light footer is 4.3 : 1, short of the 4.5 : 1 small
  * text needs, and the underline marks a link without relying on colour. Focus shows the global ring (style skill §9:
  * 2 px primary with a 2 px surface gap).
@@ -70,7 +71,7 @@
  * the canvas and the drawer; TopBar.module.css), clear of a phone's notch, 44 pixels tall. The footer's notice wraps
  * beside its links while it keeps 16 rem of the line (so the footer stays one 44-pixel line on a phone turned
  * sideways, where the canvas needs the height), and above them when narrower, its lines clear of a phone's rounded
- * corners and home indicator (the safe-area insets); the links that stand on their own ("Source (MIT)", the legal
+ * corners and home indicator (the safe-area insets); the links that stand on their own ("Source (Apache-2.0)", the legal
  * pages) are 44-pixel targets; the maintainer's name stays a link inside the sentence.
  */
 @media (max-width: 79.99rem) {

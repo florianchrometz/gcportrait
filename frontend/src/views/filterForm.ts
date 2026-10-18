@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Filters popover's form and the ViewSpec's `filters` (`@gcportrait/model`), both ways. The form is never
  * state of its own: the popover shows `formOf(view.filters)` and every edit writes `filtersOf(edited form)`

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { spawnSync } from 'node:child_process';
 import { Console } from 'node:console';
 import { readFileSync, rmSync, symlinkSync } from 'node:fs';
@@ -503,7 +503,7 @@ describe('check-provenance', () => {
         ].join('\n'),
       },
       lines: [
-        `src/footer.ts:2  [licence-name] mentions "${LICENCE_SHORT}"; gcportrait is MIT (AGENTS.md, Licence and dependencies)`,
+        `src/footer.ts:2  [licence-name] mentions "${LICENCE_SHORT}"; gcportrait is Apache-2.0 (AGENTS.md, Licence and dependencies)`,
         `docs/licence.md:3  [licence-name] mentions "${LICENCE_LONG}"`,
         `scripts/licenses/${LICENCE_SHORT}-3.0-only.txt  [licence-name] path mentions "${LICENCE_SHORT}"`,
         `CHANGELOG.md:5  [licence-name] mentions "${LICENCE_SHORT}"`,
@@ -646,7 +646,7 @@ describe('check-provenance', () => {
     },
     {
       // Header-free formats and names next to them: JSON family, plain text, SVG, files that cannot carry a
-      // comment; a NOTICE file is none of them.
+      // comment, and the licence and attribution texts.
       name: 'a text file type that has no header rule, and accepts the header-free formats',
       files: {
         'config/settings.toml': 'key = "value"\n',
@@ -660,10 +660,10 @@ describe('check-provenance', () => {
         'website/public/CNAME': 'diagrams.example.com\n',
         NOTICE: 'fixture\nCopyright (C) 2026  Example Maintainer\n',
       },
-      lines: ['config/settings.toml', 'website/src/pages/intro.mdx', 'infra/Dockerfile.dev', 'NOTICE'].map(
+      lines: ['config/settings.toml', 'website/src/pages/intro.mdx', 'infra/Dockerfile.dev'].map(
         (file) => `${file}  [spdx-header] no SPDX header form is defined for this file type`,
       ),
-      summary: [4, 4],
+      summary: [3, 3],
     },
   ];
 
@@ -781,7 +781,7 @@ describe('check-provenance', () => {
     for (const file of ['scripts/check-provenance.mjs', 'scripts/check-provenance.test.ts'])
       tree.write(file, readFileSync(path.join(REPO, file), 'utf8'));
     const result = await check();
-    // Their headers name MIT, not the fixture's identifier; nothing else may be reported.
+    // Their headers name Apache-2.0, not the fixture's identifier; nothing else may be reported.
     const reported = result.stderr
       .split('\n')
       .filter((line) => line.startsWith('  scripts/check-provenance'));
@@ -792,7 +792,7 @@ describe('check-provenance', () => {
   });
 
   it('requires the identifier named in the root package.json', async () => {
-    tree.write('package.json', manifest('MIT'));
+    tree.write('package.json', manifest('Apache-2.0'));
     const result = await check();
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(`[spdx-header] SPDX header names "${FIXTURE_LICENSE}"`);

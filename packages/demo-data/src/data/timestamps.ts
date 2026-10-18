@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Where each generated asset type keeps its own timestamps inside `resource.data`, and in which format. The
  * builder writes these from an asset's creation and update instants, so re-timing an asset (the history

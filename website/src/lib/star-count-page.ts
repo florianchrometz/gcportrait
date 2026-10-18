@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The header's repository widget, live, in the visitor's browser (src/components/Header.astro runs it on every page;
  * the parts without a DOM are in src/lib/star-count.ts). The build has written its facts (the latest release's

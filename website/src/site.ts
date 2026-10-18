@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The website's fixed facts: where it and the demo live, the repository, the image, and the non-affiliation
  * wording (AGENTS.md, Modes and hosting, and Non-affiliation, brand and legal).
@@ -40,7 +40,7 @@ export function isDemoHref(href: string, base: string = SITE_URL): boolean {
 }
 
 /**
- * The project's repository, as the app's default "Source (MIT)" link names it (frontend/src/source.ts,
+ * The project's repository, as the app's default "Source (Apache-2.0)" link names it (frontend/src/source.ts,
  * DEFAULT_SOURCE_URL); a fork changes it (docs/contributing.md, Releases).
  */
 export const REPOSITORY_URL = 'https://github.com/florianchrometz/gcportrait';
@@ -142,11 +142,11 @@ export const LEGAL_LINKS: readonly {
 export const RELEASES_URL = 'https://github.com/florianchrometz/gcportrait/releases';
 
 /**
- * The licence of gcportrait's own work (AGENTS.md, Licence and dependencies), as SPDX names it, and its page at the
- * Open Source Initiative.
+ * The licence of gcportrait's own work (AGENTS.md, Licence and dependencies), as SPDX names it, and its canonical
+ * page at the Apache Software Foundation.
  */
-export const LICENSE_ID = 'MIT';
-export const LICENSE_URL = 'https://opensource.org/licenses/MIT';
+export const LICENSE_ID = 'Apache-2.0';
+export const LICENSE_URL = 'https://www.apache.org/licenses/LICENSE-2.0';
 
 /** An absolute URL on the site for a path ("/docs/" → "https://gcportrait.app/docs/"). */
 export function siteUrl(pathname: string): string {

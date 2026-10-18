@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/e2e leg`: one of CI's e2e legs (.github/workflows/pr.yml), a round-robin share of
  * its projects' tests (e2e/AGENTS.md, CI legs).

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A search result's icon: the artwork the canvas draws the node with (resolved in the data worker, sent with
  * the answer), 16 px inside a 20 px box, decorative. On the dark theme Google's colour and grey marks sit on the

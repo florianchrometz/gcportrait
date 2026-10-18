@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # App Engine: one application per project (its id is the project id), holding services, which hold versions.
 # Asset names nest (//appengine.googleapis.com/apps/<app>/services/<s>/versions/<v>), which is what contains

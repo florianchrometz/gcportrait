@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Tasks queues. Asset names use the project number. A queue with an HTTP target override names the host
 # it calls and the identity whose token it attaches.

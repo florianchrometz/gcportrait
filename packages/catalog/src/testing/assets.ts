@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Synthetic assets for the unit tests (not part of the public API). */
 import type { Asset, ProjectIndex } from '@gcportrait/model';
 

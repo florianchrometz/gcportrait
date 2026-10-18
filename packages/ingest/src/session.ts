@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The push-based ingest core. A session takes chunks of one or more input parts (files), splits them into
  * lines, recognises the dialect of each line, normalises assets, and on `finish()` assembles the Snapshot

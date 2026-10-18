@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/demo-data — deterministic synthetic Google Cloud organisations in four sizes, with a 35-day
  * history, as Cloud Asset Inventory records or as `@gcportrait/model` Snapshots. The guard that keeps real

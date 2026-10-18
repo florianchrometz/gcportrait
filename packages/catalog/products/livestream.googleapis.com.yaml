@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Live Stream API: a channel transcodes
 # its attached inputs into a Cloud Storage bucket; a pool peers the service's network with a VPC; media assets

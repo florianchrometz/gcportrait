@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The coverage gate: every package whose vitest.config.ts sets coverage thresholds is run by the root
  * `test:coverage` script, and CI runs that script in a blocking leg, so a threshold never holds only when

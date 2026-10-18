@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's read of the tick cache (storage/tickCache.ts): a cached live tick by its key, through a
  * connection shared with its snapshot reader (storage/workerDatabase.ts, never the page's), opened on first use

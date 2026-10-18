@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { FastifyInstance } from 'fastify';
 
 import type { ServerConfig } from '../config.js';

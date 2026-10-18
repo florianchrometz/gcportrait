@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Where a node is in a view, and what would show it: the facts of reveal.ts's decision table, worked out with
  * the scene builder itself, and the offers, each checked by building the view it proposes. Pure; runs in the

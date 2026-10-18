@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The last step of the scene builder: the model `Scene` from the tree and the chips. A collapsed zone keeps
  * no children and carries the counts of what it holds (`{ networks: 2, resources: 39 }`; the renderer writes

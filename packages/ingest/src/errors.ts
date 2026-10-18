@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What can go wrong while ingesting. Bad input lines are not errors: they become {@link IngestProblem}s in the
  * report and the rest of the input is still read. {@link IngestError} is thrown only for problems that stop

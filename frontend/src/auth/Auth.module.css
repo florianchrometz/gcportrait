@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The sign-in surfaces (src/auth/ and the top bar's AccountMenu). App chrome tokens only (skill
    gcp-diagram-style §9), so both themes follow. The filled primary button and the alert come from

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Integration Connectors: connections run
 # in a Google-managed tenant project and reach private backends through endpoint attachments (Private Service

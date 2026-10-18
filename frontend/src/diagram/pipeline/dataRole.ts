@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data role of the diagram worker (diagram.worker.ts): the data handler of protocol.ts, loading demo
  * organisations and the snapshots stored in IndexedDB (snapshots/load.ts), whose kept Graph it reuses only

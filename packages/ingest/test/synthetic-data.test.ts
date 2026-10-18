@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * No real organisation data (AGENTS.md, Data and graph semantics; skill cai-ingestion §7): every fixture and the
  * package's own source and test files pass the one "synthetic only" guard of `@gcportrait/model/testing`

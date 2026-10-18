@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The root README's order (AGENTS.md, Documentation): what gcportrait is and does first, then the quick
  * starts, the features with their images, the contributing sections, and the non-affiliation statement and the

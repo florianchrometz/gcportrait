@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline readout's words (words.ts) for its harder cases: a read's progress names
  * the day short so its size and time fit; a snapshot read after the timeline's last day says so (not "before"); an

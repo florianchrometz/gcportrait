@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The drawer's details, worked out in the data worker: relations grouped by kind in the model's order
  * (outgoing, then `peers`, then incoming, each by label; a container's children capped), a subnet target naming

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The drawer's "Open in Cloud Console" link: the catalog's `console` template of the node's
  * type, rendered by the catalog engine (`consoleLinkFor`, reached through `nodeDetails`, the data worker's

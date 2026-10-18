@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The top bar's account slot, before the Export menu that ends the app row: once someone has signed in with Google,
  * the account's avatar (its letter) and a button named by its email that opens a small panel (ui/Popover) with the

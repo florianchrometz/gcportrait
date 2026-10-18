@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { usePreference } from '../storage/preferences';
 import { THEME_PREFERENCE_LABELS, THEME_PREFERENCES, type ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
@@ -91,8 +91,8 @@ export function SettingsPage() {
           Licences
         </h2>
         <p className={page.note}>
-          gcportrait is open source under the MIT License: its <a href={LICENCE_LINKS.licence}>licence</a>.
-          The gcportrait name and icon are not covered by it.
+          gcportrait is open source under the Apache License 2.0: its{' '}
+          <a href={LICENCE_LINKS.licence}>licence</a>. The gcportrait name and icon are not covered by it.
         </p>
         <p className={page.note}>
           The app and its server include third-party software under its own licences; the{' '}

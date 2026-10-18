@@ -15,7 +15,7 @@ const { size = 32 } = Astro.props;
 const drawing = brandDrawing();
 ---
 
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 <svg class="logo" width={size} height={size} viewBox={drawing.viewBox} aria-hidden="true" focusable="false">
   {drawing.shapes.map((shape) => <rect class="logo-shape" {...logoShapeAttributes(shape)} />)}
 </svg>

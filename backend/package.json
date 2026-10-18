@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "gcportrait stateless Fastify service for Cloud Run.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "HOST=localhost LOG_FORMAT=pretty tsx watch --tsconfig ../frontend/tsconfig.json --env-file-if-exists=.env src/main.ts",

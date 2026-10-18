@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The committed goldens of demo S, overview lens, detail auto, light theme: the PNG exactly as
  * `pnpm render --fixture S --lens overview` writes it (2×), tolerance-free (the same size and the same RGBA bytes),

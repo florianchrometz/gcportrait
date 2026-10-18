@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Compute Engine, load balancing and edge: forwarding rules, target proxies and pools, URL maps, backend
 # services and buckets, network endpoint groups, health checks, classic SSL certificates and policies, and

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * ULIDs for snapshot ids, from a caller-supplied clock and entropy source. The package never reads the time
  * or a random source itself (pure core).

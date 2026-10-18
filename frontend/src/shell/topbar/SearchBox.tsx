@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search box (style skill §13): an editable combobox (ui/Combobox) over the Graph of the
  * view's snapshot, searched in the data worker (search/service.ts, ranking in search/rank.ts). Press `/`

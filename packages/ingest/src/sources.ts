@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The inputs ingest reads, and how each becomes a sequence of chunks. One *source* is one part (one file):
  * line numbers restart and a missing final newline is forgiven at its end. Several sources are passed as an

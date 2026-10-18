@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline bar below the canvas (docs/timeline.md): the open snapshot's 35 daily ticks, oldest left, each
  * with a marker for its state (on screen, loading, ready, failed, not read yet: shapes, not colour alone), a slider

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The docs pages, rendered from docs/ at build time (src/data/docs.ts lists them). A guide whose file does not
  * exist is left out with a warning, or fails a strict build. Their commands are fillable (src/lib/fillable.ts): the

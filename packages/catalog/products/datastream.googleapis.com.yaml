@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Datastream: change-data-capture streams. A stream reads a source connection profile and writes to a
 # destination one; a profile reaches a private database through a private connection, which peers with a VPC

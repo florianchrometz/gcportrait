@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Type-ahead for menus and listboxes (WAI-ARIA APG): typed characters move to the next item whose label starts
  * with them; typing the same character again cycles through the items starting with it; the typed text is

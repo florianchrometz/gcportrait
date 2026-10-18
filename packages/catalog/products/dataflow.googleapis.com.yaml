@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Dataflow: pipeline jobs. Streaming jobs run for months and are part of the architecture; batch jobs
 # come and go, so a job is drawn while it is active and starts hidden once it reached a terminal state.

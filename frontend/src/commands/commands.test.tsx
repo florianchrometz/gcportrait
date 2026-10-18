@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Fillable commands in React: the fields of a variable share one value across every command and the Variables panel,
  * prefilled from what the app store knows and editable; Copy copies the command with the values (an unfilled one as

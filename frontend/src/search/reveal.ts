@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What choosing a search result does (skill gcp-diagram-style §6 "Search hit"): the decision table.
  * Pure: the facts about the node in the current view come in (locate.ts works them out in the data worker,

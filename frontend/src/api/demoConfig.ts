@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { readSourceUrl } from '../source';
 import { isLegalUrl, type PublicConfig } from './config';
 
@@ -12,7 +12,7 @@ import { isLegalUrl, type PublicConfig } from './config';
  * variables (frontend/package.json's `dev:demo` and the root scripts/static-demo.mjs set them):
  *
  * - `VITE_APP_VERSION`: the version shown where an instance shows its backend's (`git describe` by default);
- * - `VITE_SOURCE_URL`: the footer's "Source (MIT)" link (source.ts);
+ * - `VITE_SOURCE_URL`: the footer's "Source (Apache-2.0)" link (source.ts);
  * - `VITE_LEGAL_IMPRESSUM_URL`, `VITE_LEGAL_PRIVACY_URL`: the Impressum and the privacy notice the footer links, as a
  *   demo-only instance links its LEGAL_IMPRESSUM_URL and LEGAL_PRIVACY_URL (https only; anything else links nothing).
  *

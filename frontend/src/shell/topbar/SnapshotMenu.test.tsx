@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Snapshot menu: which snapshot is open (scope, read time, source), switching to another loaded
  * snapshot through the hash (lens and detail kept), and the Snapshots page; axe finds nothing in the top bar with

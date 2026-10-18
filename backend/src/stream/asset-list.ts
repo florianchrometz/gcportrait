@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * CAI pagination as NDJSON frames (frames.ts; cai-ingestion skill §1/§4). The shared request builder
  * is upstream/google.ts's assetsListRequest; list-page.ts scans each answer into its frame.

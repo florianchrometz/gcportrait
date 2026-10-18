@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The builder's memo: an asset object built before with the same catalog and project index is not evaluated
  * again (its node is the very object built before), a changed asset is, and another catalog object or another

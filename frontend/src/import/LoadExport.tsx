@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * "Load export" on the Connect page: a Cloud Asset Inventory export, from files dropped here
  * (or chosen with "Choose files…", the keyboard's way in), read in this browser through the Snapshots page's import

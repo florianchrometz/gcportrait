@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/website fillable`: the fillable commands (docs/website.md, "Fillable commands") in real
  * browsers, on the built site (website/dist). Run after `pnpm website:build`. Exit code 0 when clean, 1 with every

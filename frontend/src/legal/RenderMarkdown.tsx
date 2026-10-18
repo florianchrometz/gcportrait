@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { ReactElement, ReactNode } from 'react';
 import { Link } from 'react-router';
 

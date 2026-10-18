@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The docs section of the website: which guides under docs/ are pages, in the order of the docs menu. Each page is
  * rendered from its Markdown file at build time (src/pages/docs/[slug].astro), so the guide in the repository is

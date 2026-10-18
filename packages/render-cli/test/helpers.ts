@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers of the render command line's tests: fresh temporary directories, removed after the file's
  * tests.

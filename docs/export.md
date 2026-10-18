@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Exporting a diagram: SVG, PNG and draw.io
 
@@ -196,8 +196,8 @@ line ([website.md](website.md#sample-exports)).
 - **Fonts.** With "Embed fonts" the SVG carries the Roboto faces (a PNG is always drawn with them); a draw.io
   file names them and diagrams.net loads them from Google Fonts. Roboto is licensed under the SIL Open Font
   License 1.1 ([THIRD_PARTY.md](../THIRD_PARTY.md)).
-- **The source link is in the app, not in the files.** gcportrait is licensed under the MIT License. The
-  running app links its source on every page with the footer's "Source (MIT)" link (the backend's
+- **The source link is in the app, not in the files.** gcportrait is licensed under the Apache License 2.0.
+  The running app links its source on every page with the footer's "Source (Apache-2.0)" link (the backend's
   `SOURCE_URL`, or `VITE_SOURCE_URL` in a demo build), a courtesy the licence does not ask for. An exported
   SVG, PNG or draw.io file is a drawing of your diagram and carries no such link. If you run a modified
   version of gcportrait for other people and publish its source, you can point `SOURCE_URL` there

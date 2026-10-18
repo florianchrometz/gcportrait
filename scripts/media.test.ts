@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/media.mjs and scripts/lib/media-core.mjs: the media list, the files a run writes, the
  * staleness inputs and check, the frame resampling and the GIF assembly, without a browser; and the command line's

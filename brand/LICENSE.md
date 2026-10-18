@@ -1,12 +1,12 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # The gcportrait name and icon
 
-The gcportrait name and the gcportrait icon are not covered by the MIT License. They identify this project and
-may not be used to present other software or services as gcportrait or as endorsed by it; forks must use their
-own name and icon.
+The gcportrait name and the gcportrait icon are not covered by the Apache License 2.0. They identify this
+project and may not be used to present other software or services as gcportrait or as endorsed by it; forks
+must use their own name and icon.
 
-Copyright (c) 2026 Florian Chrometz.
+Copyright 2026 Florian Chrometz.
 
 ## What this covers
 
@@ -21,10 +21,10 @@ that is gcportrait itself, not other software presented as gcportrait.
 
 ## What it does not cover
 
-- **Everything else of gcportrait's own work**, its code, its texts and its images, is licensed under the MIT
-  License ([LICENSE](../LICENSE)). That includes the code that copies or draws the icon
+- **Everything else of gcportrait's own work**, its code, its texts and its images, is licensed under the
+  Apache License 2.0 ([LICENSE](../LICENSE)). That includes the code that copies or draws the icon
   (`website/src/lib/brand.ts`, `website/src/components/Logo.astro`, `scripts/media.mjs`): the code is under
-  the MIT License, the icon it draws is not.
+  the Apache License 2.0, the icon it draws is not.
 - **Third-party material** keeps its own terms: the typefaces under the SIL Open Font License 1.1, the Google
   Cloud product icons under Google's icon usage terms, and the dependencies under their own licences
   ([THIRD_PARTY.md](../THIRD_PARTY.md)).

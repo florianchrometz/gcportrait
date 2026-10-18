@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * SVG text as draw.io labels. A drawing's `<text>` is one line at a baseline; the translator gives draw.io one text
  * cell for the lines that belong together (a card's title and subtitle, the title block's three lines) as an HTML

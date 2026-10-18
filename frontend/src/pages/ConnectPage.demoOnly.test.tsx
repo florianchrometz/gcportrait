@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Connect page of a demo-only instance (the backend's DEMO_ONLY) and of a demo build, whether the configuration
  * comes from /api/config or is built in (`pnpm dev:demo`, the static demo): only "Try the demo" with its four sizes,

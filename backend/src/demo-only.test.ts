@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Demo-only mode (DEMO_ONLY=true; backend/AGENTS.md, Demo-only mode and legal pages): the route matrix against the normal mode,
  * the configuration it reports and refuses, the legal pages, the CSP, the rate limit and the SPA. Fastify

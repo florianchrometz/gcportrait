@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The worker side of the data protocol (protocol.ts): a plain function of `postMessage`, so the same code
  * runs in the Web Worker (data.worker.ts) and in-process in tests. Requests are handled one at a time, in

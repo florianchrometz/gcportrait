@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The sibling order of zone kinds (skill gcp-diagram-layout §4: zones before cards, then by kind rank with the
  * VPC before other containers, then by label, then by id), declared once for the two packages that sort

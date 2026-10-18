@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The permission preflight (docs/permissions.md; backend/AGENTS.md, Quota project and the
  * permission check; skill cai-ingestion §3): which of the grants a pull of one scope needs are in place,

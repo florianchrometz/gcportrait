@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Extra ticks in the data worker, over IndexedDB through fake-indexeddb: `findStoredExtra`
  * (snapshots/load.ts) finds the stored snapshot an extra tick shows, the copy the bar lists (an export or a pull of

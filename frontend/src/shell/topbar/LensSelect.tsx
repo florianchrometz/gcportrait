@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { LENS_IDS, type LensId } from '@gcportrait/model';
 import { useEffect, useMemo, type ReactElement } from 'react';
 

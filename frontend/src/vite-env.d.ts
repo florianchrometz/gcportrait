@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /** Build-time environment the SPA reads (Vite exposes only VITE_-prefixed variables). */
 declare global {
@@ -6,7 +6,7 @@ declare global {
     /** "1" serves the app as a demo build (pnpm dev:demo): demo-only, with the configuration built in. */
     readonly VITE_DEMO?: string;
     /**
-     * Where the source of this build is published: the footer's "Source (MIT)" link in a demo build, and live
+     * Where the source of this build is published: the footer's "Source (Apache-2.0)" link in a demo build, and live
      * mode's fallback. Default: https://github.com/florianchrometz/gcportrait (source.ts).
      */
     readonly VITE_SOURCE_URL?: string;

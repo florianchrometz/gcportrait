@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # GKE Multi-Cloud: GKE clusters on AWS and Azure and attached clusters (EKS, AKS, other conformant Kubernetes)
 # managed from a Google Cloud project. Asset names use the project number. Each cluster is a fleet member

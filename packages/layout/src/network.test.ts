@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import type { GutterLine } from './gutters.js';
 import { HUG_MARGIN, HUG_NONE, HUG_RING, PieceIds, buildNetwork, pieceKey } from './network.js';

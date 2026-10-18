@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scene tree before progressive disclosure: every visible node and external stub as a zone or a card,
  * nested in its nearest visible container, children in a fixed order, and large flat sets bundled into

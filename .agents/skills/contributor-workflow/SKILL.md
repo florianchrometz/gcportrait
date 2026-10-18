@@ -2,7 +2,7 @@
 name: contributor-workflow
 description: The way work gets done on gcportrait — provenance rules, local loop, tests and visual baselines, self-hosting for real-scope testing, PR and review checklists, releases and versioning. Load at the start of any task and before opening or reviewing a PR.
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Contributor workflow
 
@@ -22,10 +22,10 @@ procedure and the checklists.
   them.
 - Check provenance and licensing against AGENTS.md, "Licence and dependencies" and "Names that never
   appear". For a new text source, add the header line for its type:
-  `// SPDX-License-Identifier: MIT` (TypeScript and JavaScript),
-  `# SPDX-License-Identifier: MIT` (YAML, shell and the `#`-comment dotfiles),
-  `/* SPDX-License-Identifier: MIT */` (CSS),
-  `<!-- SPDX-License-Identifier: MIT -->` (Markdown, HTML, Astro).
+  `// SPDX-License-Identifier: Apache-2.0` (TypeScript and JavaScript),
+  `# SPDX-License-Identifier: Apache-2.0` (YAML, shell and the `#`-comment dotfiles),
+  `/* SPDX-License-Identifier: Apache-2.0 */` (CSS),
+  `<!-- SPDX-License-Identifier: Apache-2.0 -->` (Markdown, HTML, Astro).
   [The SPDX header](../../../docs/contributing.md#the-spdx-header) explains placement, exemptions and
   registering an unknown type; `node scripts/check-provenance.mjs --list-exempt` prints the check's rules
   and exemptions. Run `pnpm provenance` to check the tree.
@@ -140,8 +140,8 @@ first, then made in small steps (AGENTS.md, "How to work a task").
 
 1. Does it do exactly the task, no more? Scope creep goes to a new issue.
 2. Provenance and licence: does any part read like a translation of someone else's code? Ask for a rewrite.
-   New files carry the `MIT` header, a new dependency passes `pnpm run licenses`, and the footer's "Source
-   (MIT)" link is still on every route.
+   New files carry the `Apache-2.0` header, a new dependency passes `pnpm run licenses`, and the footer's
+   "Source (Apache-2.0)" link is still on every route.
 3. Data over code: any new hard-coded map that belongs in the catalog?
 4. Tests: do new rules have fixtures? Do layout changes keep invariants and update goldens deliberately?
 5. Both themes, contrast, accessibility (axe) for UI changes.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render job (job.ts) on its own messages: every chunk acknowledged once read, progress, exactly one
  * result or error, the asset limit as soon as it is passed, the app's messages for files it cannot read, and

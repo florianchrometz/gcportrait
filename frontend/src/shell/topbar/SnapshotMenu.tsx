@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { SnapshotRef, SnapshotSourceKind } from '@gcportrait/model';
 import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router';

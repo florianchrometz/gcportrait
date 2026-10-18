@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # The resource hierarchy (skill gcp-diagram-layout §2). Cloud Asset Inventory serves
 # Organization and Project in their Resource Manager v1 shape (display name in data.displayName and data.name

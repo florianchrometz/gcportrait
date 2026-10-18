@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Progressive disclosure on the interactive canvas: a click on a chip, or Enter or Space on a
  * focused one, flips it open instead of selecting it; every open zone has a named collapse button over its

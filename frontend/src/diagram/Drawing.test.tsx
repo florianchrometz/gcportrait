@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The SVG scene graph against the style skill (gcp-diagram-style §2–§7, §11): tints and strokes per zone kind,
  * title positions and halos, cards, chips, icons (unaltered, plated on dark), edges and their markers per

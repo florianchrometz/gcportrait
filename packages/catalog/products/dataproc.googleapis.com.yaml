@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Dataproc, listed on the official page as Managed Service for Apache Spark: clusters on Compute Engine
 # or GKE, their jobs, serverless batches and interactive sessions, workflow templates and autoscaling

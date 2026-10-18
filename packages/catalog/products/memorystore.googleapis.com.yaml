@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Memorystore: the Memorystore API's instances (Memorystore for Valkey; Redis Cluster is
 # redis.googleapis.com/Cluster), reached

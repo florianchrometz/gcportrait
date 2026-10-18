@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What every pretend Google of the backend's tests shares (never imported by the app, so neither bundle
  * carries it): the synthetic credentials, the recorded call, Google's answer shapes (JSON, the error envelope

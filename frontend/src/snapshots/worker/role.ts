@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The snapshots role of the app's worker script (diagram/pipeline/diagram.worker.ts, started with the name
  * `WORKER_ROLES.snapshots`): file import and the check before an export (handler.ts). It shares the script with

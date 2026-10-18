@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <h1 align="center">
   <picture>
@@ -10,7 +10,7 @@
 <p align="center"><strong>A portrait of your Google Cloud environment.</strong></p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-blue"></a>
+  <a href="LICENSE"><img alt="Licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-blue"></a>
   <a href="https://github.com/florianchrometz/gcportrait/actions/workflows/pr.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/florianchrometz/gcportrait/pr.yml?branch=main&amp;label=CI"></a>
   <a href="https://github.com/florianchrometz/gcportrait/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/florianchrometz/gcportrait?label=release&amp;sort=semver&amp;display_name=tag"></a>
   <a href="#self-host-in-10-minutes"><img alt="Self-host in 10 minutes" src="https://img.shields.io/badge/self--host-in%2010%20minutes-2ea44f"></a>
@@ -351,9 +351,9 @@ its own, for people and AI assistants alike.
 Every pull request states that the change is original work. Bugs, ideas and asset-type requests go in an
 [issue](https://github.com/florianchrometz/gcportrait/issues/new/choose).
 
-Contributions are accepted under the MIT License, the project's licence (inbound = outbound): by opening a
-pull request you offer your change under it, and you keep the copyright in what you write. There is no
-contributor licence agreement (CLA).
+Contributions are accepted under the Apache License 2.0, the project's licence (inbound = outbound): by
+opening a pull request you offer your change under it, and you keep the copyright in what you write. There is
+no contributor licence agreement (CLA).
 
 ## Learn more
 
@@ -391,18 +391,20 @@ website](https://gcportrait.app/#author).
 
 ## Licence
 
-gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`),
-copyright (c) 2026 Florian Chrometz: [LICENSE](LICENSE) holds the text. Source files carry the line
-`SPDX-License-Identifier: MIT` within their first ten lines, and `pnpm provenance` checks every one.
+gcportrait's own work, its code, its texts and its images, is licensed under the Apache License 2.0
+(`Apache-2.0`), copyright 2026 Florian Chrometz: [LICENSE](LICENSE) holds the text and [NOTICE](NOTICE) the
+attribution. Source files carry the line `SPDX-License-Identifier: Apache-2.0` within their first ten lines,
+and `pnpm provenance` checks every one.
 
 - **What you may do.** Use, copy, modify, merge, publish, distribute, sublicense and sell gcportrait, run it
   for yourself or for others, on its own or as part of your own software or services, as long as the copyright
-  notice and the permission notice travel with it. The licence asks nothing of an instance you run; the app
-  still links its source in its footer on every page, "Source (MIT)", as a courtesy to the people who use it.
+  notice, the licence text and the `NOTICE` travel with it and modified files say that you changed them. The
+  licence asks nothing of an instance you run; the app still links its source in its footer on every page,
+  "Source (Apache-2.0)", as a courtesy to the people who use it.
   For a modified version, you can point the backend's `SOURCE_URL` (and `VITE_SOURCE_URL` for a demo-mode
   build) at your source.
 - **The name and the icon are reserved.** The gcportrait name and the gcportrait icon are not covered by the
-  MIT License. They identify this project and may not be used to present other software or services as
+  Apache License 2.0. They identify this project and may not be used to present other software or services as
   gcportrait or as endorsed by it; forks must use their own name and icon
   ([brand/LICENSE.md](brand/LICENSE.md)).
 - **Third-party material keeps its own licences.** The npm dependencies, the self-hosted Roboto fonts (SIL
@@ -411,5 +413,5 @@ copyright (c) 2026 Florian Chrometz: [LICENSE](LICENSE) holds the text. Source f
   own combined work.
 - **Google trademarks.** Google Cloud and the Google Cloud product icons are trademarks of Google, used
   unmodified under Google's icon usage terms ([packages/icons/README.md](packages/icons/README.md)); they are
-  not covered by the MIT License. gcportrait is not affiliated with, endorsed by, or sponsored by Google
-  ([above](#not-affiliated-with-google)).
+  not covered by the Apache License 2.0. gcportrait is not affiliated with, endorsed by, or sponsored by
+  Google ([above](#not-affiliated-with-google)).

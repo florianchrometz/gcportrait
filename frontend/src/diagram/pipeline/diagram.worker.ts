@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram's worker script (ingest, graph build and layout off the UI thread; AGENTS.md, Architecture and code).
  * The page starts it twice, as two dedicated workers: the data worker (ingest, graph and Scene; dataRole.ts) and the

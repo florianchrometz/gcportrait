@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Billing: billing accounts owned by
 # the organisation, and each project's link to its billing account (hidden, drawn as a project badge).

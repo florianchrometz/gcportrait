@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tests' rule for a wall-clock limit (budget.ts): a case over its limit measured again in batches within
  * the test's timeout (`measureBatches`), each batch stopped at the deadline (`measureRuns`), and a limit still

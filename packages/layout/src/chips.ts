@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A collapsed zone's chip (skill gcp-diagram-style §4): the ⊞ glyph, the zone's label and
  * a count line ("2 networks · 39 resources"). Its width comes from the text metrics like a card's, within

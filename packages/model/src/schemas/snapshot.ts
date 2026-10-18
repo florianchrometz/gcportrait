@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Snapshot: every asset of one scope at one read time, plus the versioned entry point that turns stored or
  * imported JSON into the current Snapshot shape (the README's "Migration policy").

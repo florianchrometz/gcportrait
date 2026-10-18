@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Service Mesh, the Network Security part: authorization policies and client and server TLS policies.
 # Endpoint policies, gateways and HTTPS proxies point at them. The second file of the load-balancing-edge

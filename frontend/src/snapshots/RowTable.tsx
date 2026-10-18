@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The rows of the Snapshots page's tables (SnapshotTable.tsx, ScopeTimelines.tsx), drawn from one list of columns
  * (frontend/AGENTS.md, Phones, tablets and desktops): a table on a tablet and a desktop; on a phone, where a row of five or seven columns

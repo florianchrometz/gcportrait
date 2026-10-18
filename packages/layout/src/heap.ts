@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A binary min-heap of search states for the routers' A* searches, on typed arrays that grow by doubling (the
  * searches push millions of entries on a large layout, so nothing is allocated per entry). Entries are ordered

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Relation kinds and their metadata (skill gcp-asset-catalog §4). The renderer and the legend read styles and
  * default visibility from {@link RELATION_KINDS}; nothing else keeps a second copy of this table.

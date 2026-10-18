@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # API Gateway: an API, its immutable configs (OpenAPI or gRPC definitions plus the identity the
 # gateway calls backends as) and the regional gateways that serve one config each.

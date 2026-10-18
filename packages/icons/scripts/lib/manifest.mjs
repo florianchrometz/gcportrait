@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `manifest.json`, written by vendor.mjs: the record of what was vendored from Google's icon sets, from where,

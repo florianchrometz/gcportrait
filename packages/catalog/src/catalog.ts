@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The compiled asset catalog (`catalog.json`), as a typed object. `pnpm catalog:build` writes the data into
  * `generated/compiled-catalog.ts` from the YAML under products/ and lenses/: a git-ignored build artefact that

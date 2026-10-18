@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * "Pull now" on the Connect page (skill cai-ingestion §1): reads the scope picked, in the mode chosen, from Cloud
  * Asset Inventory through the backend's stream, into a snapshot stored in this browser (source `api`, read time as

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers: a minimal ZIP writer (local headers, data, central directory, end record) for synthetic icon
  * archives, so that the zip reader and the drift check are tested without the network.

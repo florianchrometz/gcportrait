@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One of the two servers playwright.config.ts starts (fixtures/servers.ts): on CI, `vite build` of the frontend
  * into a new temporary directory, then `vite preview`; locally, `--dev` runs Vite with a private temporary cache.

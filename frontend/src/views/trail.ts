@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The breadcrumb's drill-in trail (the scope breadcrumb with the drill-in trail): from the scope
  * (the organisation, or whatever the snapshot covers) through the containers above the view's root down to the

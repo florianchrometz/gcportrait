@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Saved views dialog: save the view on screen under a name (into IndexedDB, here fake-indexeddb),
  * list, apply (the hash), rename and delete; saved views survive a new app (a reload); the dialog passes axe. The

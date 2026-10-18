@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Secure Source Manager: a managed Git hosting instance per region. A private instance is reached through
 # Private Service Connect service attachments in a Google-managed tenant project (so those edges usually

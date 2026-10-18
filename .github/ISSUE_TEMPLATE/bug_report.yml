@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 name: Bug report
 description: Something breaks, renders wrong, or behaves differently from the documentation.
 title: '[Bug]: '

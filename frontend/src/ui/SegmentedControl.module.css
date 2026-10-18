@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* A segmented control (SegmentedControl.tsx): §9 control metrics, one outline around the segments. The checked
    segment is filled in the surface container and marked with a check (colour never carries the state alone). */

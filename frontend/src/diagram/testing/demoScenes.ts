@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Demo diagrams for the tests, built the way the app builds them: the data worker's demo loader (demo-data →
  * CAI NDJSON → ingest), the graph and Scene builders with the compiled catalog at the default 1280×800 rect

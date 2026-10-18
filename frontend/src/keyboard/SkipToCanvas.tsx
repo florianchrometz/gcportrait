@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The second skip link (style skill §13): on the diagram page, "Skip to the diagram" moves focus straight to
  * the drawing's tab stop (its roving node), past the top bar's controls; while nothing is drawn, to the canvas

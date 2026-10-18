@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Load Balancing, the Network Security part: authorization policies on load balancer forwarding rules
 # and Secure Web Proxy gateways. The third file of the load-balancing-edge group for

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/layout debug-svg`: lays out a demo organisation's Scene and writes a plain SVG
  * (and a PNG) of the rects so the packing can be looked at. A development aid for the layout, not the

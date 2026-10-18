@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * PNG comparison for the render goldens and for agents' before/after checks. `samePixels` is the
  * tolerance-free check (same size, same RGBA bytes); `comparePng` counts differing pixels with pixelmatch

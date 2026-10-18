@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The application state (the URL hash holds everything that defines a view; AGENTS.md, Product rules), in exactly
  * seven slices. Plain data, no behaviour: `store.ts` changes it, `hooks.ts` reads it in React.

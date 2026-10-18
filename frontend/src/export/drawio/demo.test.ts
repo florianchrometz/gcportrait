@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The draw.io translator on demo S's overview in both themes, the drawing the render golden is made of: every zone,
  * node and line of the layout is a cell (zones as containers, nodes as groups, lines between their nodes), every

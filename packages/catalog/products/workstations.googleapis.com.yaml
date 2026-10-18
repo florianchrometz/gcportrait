@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Workstations: cluster › configuration › workstation, nested by name
 # (`…/workstationClusters/c/workstationConfigs/w/workstations/x`).

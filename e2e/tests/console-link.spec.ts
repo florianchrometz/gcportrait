@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import { COMPUTE_ALL, selectVm, stubConsole, VM, VM_PAGE } from './consoleSupport.js';

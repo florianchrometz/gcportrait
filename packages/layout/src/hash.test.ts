@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The memo key (hash.ts): deterministic (pinned values), independent of object key order (in every object of
  * a Scene, and over random JSON with shuffled keys), sensitive to everything else (array order, every field,

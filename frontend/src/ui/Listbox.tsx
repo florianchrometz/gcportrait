@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The listbox popup of a combobox (Select.tsx, Combobox.tsx): `role="listbox"` with `option`s whose ids the
  * combobox names in `aria-activedescendant`, since focus stays on the combobox. Presentational: the combobox owns

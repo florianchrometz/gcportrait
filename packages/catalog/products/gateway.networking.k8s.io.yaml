@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Kubernetes Gateway API objects of GKE clusters with the asset inventory feature on. Their names carry an
 # apis/gateway.networking.k8s.io segment (…/k8s/namespaces/N/apis/gateway.networking.k8s.io/gateways/G); they

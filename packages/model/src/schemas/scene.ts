@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Scene: what `packages/graph` hands to `packages/layout` (docs/packages.md; skill gcp-diagram-layout). A
  * tree of zones and cards plus the edges to route. It lives here, not in the graph package, because layout

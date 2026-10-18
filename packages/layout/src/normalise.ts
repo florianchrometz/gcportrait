@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Stage 1: forest normalisation (the package README's "Pipeline"). Turns the Scene tree into the layout's own
  * mutable node tree: drops an organisation zone (the canvas is the organisation), computes each node's depth

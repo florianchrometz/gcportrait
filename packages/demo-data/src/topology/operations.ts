@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The CI and operations project. It holds only hidden-tier assets (Cloud Build builds and enabled-service
  * records), so the diagram shows it as an empty project with a hidden-asset badge. Builds arrive during the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import * as z from 'zod';
 import { RelationKindSchema } from './relation.js';
 import { ZoneKindSchema } from './scene.js';

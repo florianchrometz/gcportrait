@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The snapshot worker as a real Web Worker: the app's one worker script in its snapshots role (role.ts). */
 import DiagramWorker from '../../diagram/pipeline/diagram.worker?worker';
 import { WORKER_ROLES } from '../../diagram/pipeline/roles';

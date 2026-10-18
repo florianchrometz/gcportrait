@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Hybrid connectivity beyond the HA VPN and the Dedicated Interconnect of `hybrid.ts`:
  *

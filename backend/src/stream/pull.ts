@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What a live pull takes and how it is authorised, shared by the routes that pull a scope: `POST
  * /api/assets/stream` (the app's pull, streamed as frames) and `POST /api/render` with a `scope` source,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/scopes/search` over HTTP against a pretend Resource Manager: the queries sent for what the person
  * typed, the mapping of the three kinds, pagination across them, partial and total failures, and the refusals.

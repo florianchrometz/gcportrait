@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { createDatabaseConnection, type DatabaseOpener } from './databaseConnection';
 import { OPEN_TIMEOUT_MS, openDatabase, type GcportraitDB } from './db';
 

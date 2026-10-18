@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Workspace layout (docs/packages.md). Entries that do not exist yet are ignored by pnpm.
 packages:

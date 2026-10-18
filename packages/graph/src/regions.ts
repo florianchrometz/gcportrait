@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Virtual region and zone containers (skill gcp-diagram-layout §2, rule 3).
  * Only built when the view asks for them (`showRegions`). They group a project's direct children by

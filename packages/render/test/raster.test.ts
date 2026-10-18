@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { defaultFontMetrics, measureText } from '@gcportrait/layout';

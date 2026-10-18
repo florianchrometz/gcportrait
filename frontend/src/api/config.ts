@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * Client for the backend's public configuration (GET /api/config, docs/api.md). Never

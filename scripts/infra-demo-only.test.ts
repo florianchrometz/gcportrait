@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Demo-only instances, custom domains and legal pages (infra/AGENTS.md, Self-hosting; AGENTS.md, Modes and hosting):
  * deploy.sh's --demo-only, --domain, --legal-dir, --impressum-url and --privacy-url, uninstall.sh's domain mappings and

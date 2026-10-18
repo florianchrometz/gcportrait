@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # @gcportrait/frontend
 
@@ -85,7 +85,7 @@ src/storage/            db.ts (schema, migrations, guarded open), connection.ts 
                         tickCache.ts (the timeline's live days), tickCacheChanges.ts (the tick cache's change
                         signal between the tabs)
 src/shell/              AppShell (skip links, top bar, main, the route announcer, the footer with the non-affiliation notice
-                        and SourceLink, "Source (MIT)"), viewHash (the Diagram link's memory of the last
+                        and SourceLink, "Source (Apache-2.0)"), viewHash (the Diagram link's memory of the last
                         view), parity.test.tsx (every control at every width; section "Layouts")
 src/shell/topbar/       TopBar (composes only) and one file per control group (section "Top bar" below)
 src/ui/                 headless accessible primitives: Menu, MenuButton, Select, Combobox, Listbox, Popover,
@@ -416,10 +416,11 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
   `gcportrait:font-licences` plugin in `vite.config.ts`; the build fails if a `LICENSE` is missing). The
   backend serves them like any other file. Add a package to `BUNDLED_FONT_PACKAGES` when you bundle another
   font.
-- Own licence: the build also copies gcportrait's own `LICENSE` (the MIT License, with a closing note on what
-  it does not cover: the gcportrait name and icon, and the third-party material) from the repository root,
-  byte for byte, to `dist/licenses/gcportrait-LICENSE.txt` (the `gcportrait:own-licence` plugin), so the built
-  app and the image that ships it carry it.
+- Own licence: the build also copies gcportrait's own `LICENSE` (the Apache License 2.0, with a closing note
+  on what it does not cover: the gcportrait name and icon, and the third-party material) and `NOTICE`, from
+  the repository root, byte for byte, to `dist/licenses/gcportrait-LICENSE.txt` and
+  `dist/licenses/gcportrait-NOTICE.txt` (the `gcportrait:own-licence` plugin), so the built app and the image
+  that ships it carry them.
 - Inlined packages' licences: a bundle drops the `LICENSE` files of the npm packages it inlines (React,
   fuse.js, zod, ...), while their licences ask for the notice to travel with every copy. The
   `gcportrait:inlined-licences` plugin collects the modules of every chunk, of the app and of each worker, and
@@ -537,7 +538,7 @@ brand and legal), every string defined once in `src/branding.ts`:
 | Constant | Text | Where |
 |---|---|---|
 | `TAGLINE` | gcportrait.app - Visualize your Google Cloud Infrastructure | the title block's third and last line (muted, 10.5 px), on the canvas and in every export |
-| `FOOTER_NOTICE` | Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz | the shell footer on every route, next to "Source (MIT)"; the name (`MAINTAINER_NAME`) is a link to `MAINTAINER_URL`, <https://florian-chrometz.de>, in a new tab (`rel="noopener"`), named `MAINTAINER_LINK_LABEL`, "Florian Chrometz (personal website)" |
+| `FOOTER_NOTICE` | Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by Florian Chrometz | the shell footer on every route, next to "Source (Apache-2.0)"; the name (`MAINTAINER_NAME`) is a link to `MAINTAINER_URL`, <https://florian-chrometz.de>, in a new tab (`rel="noopener"`), named `MAINTAINER_LINK_LABEL`, "Florian Chrometz (personal website)" |
 | `NON_AFFILIATION_LONG` | the long form: "gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. …" | the Connect page's About block (and the README, website, docs, release notes, image label and the infra scripts' `--help`, which carry it as text) |
 
 The footer notice's first sentence appears nowhere else: not in a drawing (no title block, no `<desc>`, on the
@@ -556,9 +557,9 @@ notices, the image label, `infra/common.sh`, the icons README) are compared with
 ## Source link
 
 gcportrait's shell footer links the source on every route, next to the non-affiliation notice
-(frontend/AGENTS.md, "The source link"): a "Source (MIT)" link (`shell/SourceLink.tsx`, the text and default
-in `source.ts`) that says where the source of the version in use is published and under which licence. By
-default it points at the project's repository (AGENTS.md, Product rules). Exports stay as they are.
+(frontend/AGENTS.md, "The source link"): a "Source (Apache-2.0)" link (`shell/SourceLink.tsx`, the text and
+default in `source.ts`) that says where the source of the version in use is published and under which licence.
+By default it points at the project's repository (AGENTS.md, Product rules). Exports stay as they are.
 
 | Mode | Link target |
 |---|---|
@@ -577,9 +578,9 @@ short of what 11 px text needs.
 
 ## Legal links and the favicon
 
-The footer's "Impressum · Privacy" (`legal/LegalLinks.tsx`) sits after "Source (MIT)" on every route and links
-what the instance publishes, as `legal` in `GET /api/config` (or a demo build's built-in configuration,
-`api/demoConfig.ts`) says, page by page:
+The footer's "Impressum · Privacy" (`legal/LegalLinks.tsx`) sits after "Source (Apache-2.0)" on every route
+and links what the instance publishes, as `legal` in `GET /api/config` (or a demo build's built-in
+configuration, `api/demoConfig.ts`) says, page by page:
 
 | The page is | The footer's link |
 |---|---|

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Service-account admission, memo and audit (backend/AGENTS.md, The service-account gate;
  * AGENTS.md, Security and privacy, principle 4). Every check uses the same parsed scope.

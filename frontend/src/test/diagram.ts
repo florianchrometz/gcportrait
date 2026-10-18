@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Waits for the app's diagram in the whole-app tests (in-process workers): a drawn, interactive canvas, optionally
  * holding a given element, and the timeline bar once the snapshot's timeline is known.

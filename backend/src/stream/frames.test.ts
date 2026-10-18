@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The NDJSON frames of a stream (frames.ts): one line each, and Google's errors as the app reads them. */
 import { describe, expect, it } from 'vitest';
 

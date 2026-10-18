@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Variables panel of a page's commands (as the website's docs pages have it): each registered variable of the
  * commands given, in the order they first appear, with its label, token, description and a synthetic example, and a

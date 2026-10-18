@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Scoped checks (`pnpm catalog:check --group <group>` and `--file <path>`): the full catalog is still compiled,
  * because rules prove themselves against fixtures of other types and duplicates only show across files, but

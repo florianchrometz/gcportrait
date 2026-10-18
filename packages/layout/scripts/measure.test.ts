@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The measure command (scripts/measure.ts) on S: the non-affiliation banner, the routing figures per view,
  * the packing figures per rule with --packing, JSON output, its help and its argument errors. The figures

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A standalone reporting project that is shut down during the history window: the "project deletion" event
  * removes every asset in it and moves the project to `DELETE_REQUESTED`, the state Resource Manager keeps a

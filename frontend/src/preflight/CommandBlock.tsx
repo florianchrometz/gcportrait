@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A copy-ready command (docs/permissions.md): the text in a code block,
  * each registered variable in it (`YOUR_ORG_ID`, COMMAND_VARIABLES in `@gcportrait/model`) a labelled field filled in

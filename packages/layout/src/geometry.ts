@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Geometry shared by the router's fallback and the invariant checker: axis-parallel segments against the
  * interiors of rects, through a uniform grid index so that a check costs the rects near the segment, not every

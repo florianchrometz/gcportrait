@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The draw.io translator on small drawings written by hand in the markup the diagram's components write: a zone
  * with two nodes and a line, nested zones, a dashed line with elbows and heads at both ends, a dotted line with

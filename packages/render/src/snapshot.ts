@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Snapshots to draw, read by the app's own code, so a render shows what the app would show for the same
  * data:

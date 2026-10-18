@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * WCAG 2.2 contrast (skill gcp-diagram-style §10): relative luminance of an sRGB colour and the ratio
  * (L1 + 0.05) / (L2 + 0.05) of the lighter to the darker. Pure; used by the theme tests and by the one rendering

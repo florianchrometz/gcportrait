@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * An accessible menu (WAI-ARIA menu pattern): a context menu opened at a point (the diagram's node menu),
  * or a menu button's menu anchored under its trigger (MenuButton.tsx).

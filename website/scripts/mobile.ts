@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/website mobile`: the built site (website/dist) on phones, in a real browser. Run after
  * `pnpm website:build`. Exit code 0 when clean, 1 with every problem listed, 2 on a usage error.

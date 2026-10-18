@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Table-driven tests over the recorded-shape fixtures in fixtures/ (synthetic data), then the same fixtures
  * transformed (BOM, CRLF, chunking, gluing files together) and read through real Node and web sources.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The axe helper (axe.ts): an audit started while another is under way, as a test that timed out leaves one,
  * waits for it rather than failing with "Axe is already running", and an audit after a failed one runs.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The text form of the coverage report, asserted here once, line by line: the command-line tests check exit
  * codes, JSON and one phrase each, so a change of padding or wording is made in one place.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One line that says what a view shows, for the saved-view list and a new saved view's suggested name: its
  * snapshot, lens, detail level, focus, drill-in root and how many filters are on. Pure.

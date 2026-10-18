@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The demo role of the diagram worker (diagram.worker.ts): "Try the demo" in a worker of its own, started for
  * one job and ended with it (workers.ts, `createBrowserDemoJob`). Preparing demo XL (its 35-day history generated,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { isThemePreference, THEME_MIRROR_KEY, type ResolvedTheme, type ThemePreference } from './theme';
 
 /**

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Replaying a history (the base and the daily mutations) to the organisation at one tick. Kept apart from the
  * generator (generate.ts, builder/, topology/, history/plan.ts) and importing none of it, so a caller that only

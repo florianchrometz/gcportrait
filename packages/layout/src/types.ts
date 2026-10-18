@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout's output and options. Plain, serialisable data (no Map, Set or class instance) so a Layout
  * survives `postMessage` from the layout worker and JSON unchanged. Every coordinate is in px at scale 1 in

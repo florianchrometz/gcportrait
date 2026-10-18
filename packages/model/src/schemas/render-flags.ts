@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render flags of the command lines (`pnpm render`, `pnpm render-scene`) read into the render options: one
  * reader for both, checked by `RenderOptionsSchema`, so a command line takes exactly what `POST /api/render`

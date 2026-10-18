@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/lib/dependency-versions.mjs: a dependency as a workspace package declares it and as it is installed
  * for that package, and the check that the declaration pins exactly the version installed, on fixture trees

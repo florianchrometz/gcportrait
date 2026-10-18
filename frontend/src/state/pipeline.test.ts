@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The pipeline controller with the real data and layout handlers in-process: a view's Scene and Layout land in
  * the pipeline slice and its snapshot in the snapshot slice; a newer request supersedes the older; a timeline day

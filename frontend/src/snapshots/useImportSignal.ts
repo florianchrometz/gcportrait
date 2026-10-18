@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The abort signal of a file import on a card (the Connect page's export card, import/LoadExport.tsx, and the
  * Snapshots page's import, ImportPanel.tsx): a fresh one for each import, aborted by the card's Cancel and when the

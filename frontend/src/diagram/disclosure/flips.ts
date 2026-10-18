@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Progressive disclosure on the page (skill gcp-diagram-layout §6): what "Expand all",
  * "Collapse all", the "N of M shown" indicator and the two notices need, worked out from the view (the URL

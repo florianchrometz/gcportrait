@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The legal pages in the whole app: the footer's "Impressum · Privacy" shown only for what the backend
  * publishes, /impressum and /privacy rendering its Markdown without any HTML, and the states without a text.
@@ -121,7 +121,7 @@ describe('the footer', () => {
       }
       // The visible text is the name's beginning (WCAG 2.5.3), the same words for a served page and one elsewhere.
       expect(nav.textContent).toBe('Impressum·Privacy');
-      expect(footer().textContent).toMatch(/Florian ChrometzSource \(MIT\)Impressum·Privacy$/);
+      expect(footer().textContent).toMatch(/Florian ChrometzSource \(Apache-2\.0\)Impressum·Privacy$/);
       // The texts themselves are fetched only on the pages.
       expect(fetch.keptUrls()).toEqual(['/api/config']);
       await expectNoAxeViolations();

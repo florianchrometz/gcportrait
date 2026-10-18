@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The repository's facts for the header's repository widget (the latest release's version, the star count and the
  * fork count), read from GitHub's REST API when the site is built and written into the pages as text: the first layer

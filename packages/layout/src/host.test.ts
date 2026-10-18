@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The yield between layout steps (host.ts): each host mechanism resumes after the host's queued tasks, the
  * channel yield resumes its waiters in order, and the default picks `setImmediate` where it exists (Node).

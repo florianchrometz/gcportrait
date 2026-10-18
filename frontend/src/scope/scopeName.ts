@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Scope names as the person types them and as the backend takes them (skill cai-ingestion §1): `organizations/ID`,
  * `folders/ID`, `projects/ID_OR_NUMBER`. Zod-free (the UI thread ships no zod): the two patterns repeat

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /** The diagram route: the only place where the URL hash is a ViewSpec (`@gcportrait/model`). */
 export const DIAGRAM_PATH = '/diagram';

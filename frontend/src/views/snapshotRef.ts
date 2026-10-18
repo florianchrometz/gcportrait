@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A `snapshot=` value the URL hash holds but the codec rejected: the codec turns any malformed value into
  * "no snapshot" (`@gcportrait/model`, decodeViewSpec never throws), so the diagram page asks here whether the

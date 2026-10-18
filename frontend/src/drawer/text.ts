@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The drawer's words: direction arrows and what they say to assistive technology, the short explanation of
  * each kind of dangling reference, and the "What changed" section's lines. The relation kinds' own

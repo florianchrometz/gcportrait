@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Load balancing and edge (feature `edge`, Secure Web Proxy with `large`): Certificate Manager behind a
  * storefront's HTTPS proxy, Cloud Armor edge policies for backend buckets and a hierarchical policy on the

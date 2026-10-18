@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The property tests' seed and number of runs (seed.ts): `FC_SEED` when set, the fixed seed on CI, else none
  * (fast-check draws one); `FC_RUNS` in place of a property's own runs.

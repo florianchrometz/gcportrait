@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The `pnpm render` entry point (run through tsx with the frontend's tsconfig, so the frontend's components
  * compile with its JSX settings). See run.ts and the package README.

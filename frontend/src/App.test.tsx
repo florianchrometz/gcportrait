@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -119,7 +119,7 @@ describe('the footer’s source link', () => {
     within(screen.getByRole('contentinfo')).getByRole<HTMLAnchorElement>('link', { name: SOURCE_LINK_TEXT });
 
   it('links to the canonical text', () => {
-    expect(SOURCE_LINK_TEXT).toBe('Source (MIT)');
+    expect(SOURCE_LINK_TEXT).toBe('Source (Apache-2.0)');
     expect(DEFAULT_SOURCE_URL).toBe('https://github.com/florianchrometz/gcportrait');
   });
 

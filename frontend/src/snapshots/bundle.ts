@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The snapshot file gcportrait exports and imports: a `.gcportrait.json` bundle (frontend/README.md, "Snapshots").
  * One JSON object whose `format` key comes first, so a reader can recognise it from its first bytes:

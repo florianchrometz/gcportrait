@@ -1,22 +1,24 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Third-party material
 
-gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`, Copyright
-(c) 2026 Florian Chrometz; see `LICENSE`), except the gcportrait name and the gcportrait icon
+gcportrait's own work, its code, its texts and its images, is licensed under the Apache License 2.0
+(`Apache-2.0`, Copyright 2026 Florian Chrometz; see `LICENSE`, with the attribution in `NOTICE`), except the
+gcportrait name and the gcportrait icon
 ([below](#the-gcportrait-name-and-icon)). It contains no third-party source code. Third-party material is
 limited to the three categories below ([AGENTS.md](AGENTS.md), "Licence and dependencies"); each keeps its own
-licence or terms, and none of it is covered by the MIT License.
+licence or terms, and none of it is covered by the Apache License 2.0.
 
 ## The gcportrait name and icon
 
-The gcportrait name and the gcportrait icon are not covered by the MIT License. They identify this project and
-may not be used to present other software or services as gcportrait or as endorsed by it; forks must use their
-own name and icon. The icon is `brand/icon.svg` and every rendering of it: the favicons, the website's logo
-and the app's mark, the wordmarks under `docs/media/brand/` and the mark on the link-preview images.
+The gcportrait name and the gcportrait icon are not covered by the Apache License 2.0. They identify this
+project and may not be used to present other software or services as gcportrait or as endorsed by it; forks
+must use their own name and icon. The icon is `brand/icon.svg` and every rendering of it: the favicons, the
+website's logo and the app's mark, the wordmarks under `docs/media/brand/` and the mark on the link-preview
+images.
 [brand/LICENSE.md](brand/LICENSE.md) has the details. Both are the maintainer's own, not third-party material;
-they are named here because this file travels with every copy of the image and says what the MIT License
-leaves out.
+they are named here because this file travels with every copy of the image and says what the Apache License
+2.0 leaves out.
 
 gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is
 not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are
@@ -24,20 +26,21 @@ trademarks of Google and are used under Google's icon usage terms.
 
 ## Why the dependency licences are compatible
 
-gcportrait is offered under the MIT License, and whoever receives it may rely on that licence alone. A
+gcportrait is offered under the Apache License 2.0, and whoever receives it may rely on that licence alone. A
 dependency may therefore only carry a licence that does not force gcportrait to publish its code or to
-relicense its combined work under other terms: an MIT project cannot carry copyleft code whose reach goes
-beyond the dependency's own files. `scripts/check-licenses.mjs` enforces that on every run of
+relicense its combined work under other terms: an Apache-2.0 project cannot carry copyleft code whose reach
+goes beyond the dependency's own files. `scripts/check-licenses.mjs` enforces that on every run of
 `pnpm run licenses` (part of `pnpm check` and CI):
 
 - **Allowed:** MIT, MIT-0, ISC, 0BSD, BSD-2-Clause, BSD-3-Clause, Apache-2.0, CC0-1.0, Unlicense,
   BlueOak-1.0.0, Python-2.0 and MPL-2.0, plus OFL-1.1 for the self-hosted font packages only (below). Every
   one is permissive or file-scoped weak copyleft, and none changes the licence of the combined work, which
-  stays MIT: the permissive licences ask only for their notices to be kept; Apache-2.0 also asks for its
-  licence text and any `NOTICE` file to travel with a copy (below); MPL-2.0 binds only its own files, which
-  are used unmodified, and its section 3.3 lets them be part of a Larger Work under other terms, such as
-  gcportrait's MIT License; the OFL-1.1 covers the font files alone and imposes nothing on the software that
-  uses them. None requires gcportrait to publish its code or to relicense its combined work.
+  stays Apache-2.0: the permissive licences ask only for their notices to be kept; Apache-2.0 also asks for
+  its licence text and any `NOTICE` file to travel with a copy (below), as gcportrait's own licence does;
+  MPL-2.0 binds only its own files, which are used unmodified, and its section 3.3 lets them be part of a
+  Larger Work under other terms, such as gcportrait's Apache License 2.0; the OFL-1.1 covers the font files
+  alone and imposes nothing on the software that uses them. None requires gcportrait to publish its code or to
+  relicense its combined work.
 - **Denied, with the message "would impose obligations on gcportrait's combined work or is unverifiable":**
   GPL, LGPL, AGPL (network copyleft: a work that includes it must be offered as a whole under the AGPL, to its
   network users too), SSPL, CC-BY-SA, CC-BY-NC, EUPL, OSL, CPAL, EPL and CDDL in any version, custom terms
@@ -86,13 +89,15 @@ and stay under their own terms (categories 2 and 3).
 2. **Google Cloud product icons**: Google Cloud's icons, as Google Cloud provides them at
    <https://cloud.google.com/icons> (which also still offers the older symbols for the products not updated
    yet), vendored unmodified and used as provided under the terms stated there (Google's icon usage terms, not
-   a code licence). They are outside the MIT License, and neither gcportrait nor its maintainer licenses them.
+   a code licence). They are outside the Apache License 2.0, and neither gcportrait nor its maintainer
+   licenses them.
    See [Google Cloud product icons](#google-cloud-product-icons) below and `packages/icons/README.md`. Google
    Cloud and the Google Cloud product icons are trademarks of Google; gcportrait is an independent open-source
    project and is not affiliated with, endorsed by, or sponsored by Google.
 3. **Licence texts** in `scripts/licenses/`: byte-identical copies of the canonical texts of Apache-2.0
-   (apache.org), MIT (the SPDX licence list) and MPL-2.0 (mozilla.org). `LICENSE` is the MIT text with its
-   copyright line filled in (`scripts/set-license.mjs` writes it), and `scripts/third-party-notices.mjs`
+   (apache.org), MIT (the SPDX licence list) and MPL-2.0 (mozilla.org). `LICENSE` is the Apache-2.0 text with
+   its copyright line filled in and its closing note (`scripts/set-license.mjs` writes the bare text; the line
+   and the note are put back by hand), `NOTICE` holds the attribution, and `scripts/third-party-notices.mjs`
    reproduces the Apache-2.0 and the MPL-2.0 texts once each in the notices file, as the packages under those
    licences require. They are kept verbatim, as licence texts are meant to
    be distributed, and must stay unmodified.
@@ -109,8 +114,8 @@ conveyed. The obligations of the licences of what is conveyed, and where each is
 | Licence | What a copy must carry | Where |
 |---|---|---|
 | MIT, ISC, BSD-2/3-Clause, 0BSD, BlueOak-1.0.0 and the other permissive licences | the copyright notice and the permission notice (the licence text) | each package's own licence file, verbatim, in `THIRD_PARTY_NOTICES.txt` (and in `server-dependencies.txt`) |
-| Apache-2.0, section 4 | (a) a copy of the licence for every recipient; (b) modified files say so; (c) the source form keeps the work's copyright, patent, trademark and attribution notices; (d) when the work has a `NOTICE` file, a readable copy of its attribution notices in a `NOTICE` text file distributed with the work, in its documentation, or in a display of the work | (a) the full Apache-2.0 text once, at the end of `THIRD_PARTY_NOTICES.txt`; (b) and (c) the packages are used unmodified, as published; (d) every `NOTICE` file of every Apache-2.0 package, verbatim, in that package's section of the notices file. Today the one Apache-2.0 package conveyed is `fuse.js` (in the app), which ships no `NOTICE` file; the script reproduces one as soon as a package has it, and a package's licence file is reproduced too when it holds terms beyond the licence |
-| MPL-2.0, sections 3.2 and 3.3 | 3.2: a copy in executable form (here, inside a bundle) must say how to obtain the Covered Software's source code form, and its licence may not be narrowed; 3.3: it may be part of a Larger Work under other terms (gcportrait's MIT License) provided the MPL's requirements for the Covered Software are still met, and the Covered Software stays under the MPL-2.0; 3.4: its notices stay intact | One MPL-2.0 package is conveyed: `@resvg/resvg-wasm`, used unmodified in the server's render worker (`backend/dist/render-worker.mjs`, its JavaScript glue) and copied as `backend/dist/render-assets/resvg.wasm`. `THIRD_PARTY_NOTICES.txt` gives, in its section, where its source code form is (the npm tarball of that version and the project) and the section 3.3 statement that it is used unmodified in a Larger Work and stays under the MPL-2.0; the package ships no licence file of its own, so its section names the licence and its source. `server-dependencies.txt` lists it with the same statement. `axe-core`, `@axe-core/playwright`, `@resvg/resvg-js` and `mediabunny` remain development and tooling dependencies (e2e, the layout's debug renders, the website's media). The notices files (`THIRD_PARTY_NOTICES.txt` in the app bundle, `server-dependencies.txt` in the server bundle) end with the full MPL-2.0 text and name the files each MPL package ships in. |
+| Apache-2.0, section 4 | (a) a copy of the licence for every recipient; (b) modified files say so; (c) the source form keeps the work's copyright, patent, trademark and attribution notices; (d) when the work has a `NOTICE` file, a readable copy of its attribution notices in a `NOTICE` text file distributed with the work, in its documentation, or in a display of the work | (a) the full Apache-2.0 text once, at the end of `THIRD_PARTY_NOTICES.txt`; (b) and (c) the packages are used unmodified, as published; (d) every `NOTICE` file of every Apache-2.0 package, verbatim, in that package's section of the notices file. Today the one Apache-2.0 package conveyed is `fuse.js` (in the app), which ships no `NOTICE` file; the script reproduces one as soon as a package has it, and a package's licence file is reproduced too when it holds terms beyond the licence. gcportrait's own work is under Apache-2.0 too: `LICENSE` and `NOTICE` travel at `/app/` in the image, and the app's build copies them to `frontend/dist/licenses/gcportrait-LICENSE.txt` and `gcportrait-NOTICE.txt`, next to this file |
+| MPL-2.0, sections 3.2 and 3.3 | 3.2: a copy in executable form (here, inside a bundle) must say how to obtain the Covered Software's source code form, and its licence may not be narrowed; 3.3: it may be part of a Larger Work under other terms (gcportrait's Apache License 2.0) provided the MPL's requirements for the Covered Software are still met, and the Covered Software stays under the MPL-2.0; 3.4: its notices stay intact | One MPL-2.0 package is conveyed: `@resvg/resvg-wasm`, used unmodified in the server's render worker (`backend/dist/render-worker.mjs`, its JavaScript glue) and copied as `backend/dist/render-assets/resvg.wasm`. `THIRD_PARTY_NOTICES.txt` gives, in its section, where its source code form is (the npm tarball of that version and the project) and the section 3.3 statement that it is used unmodified in a Larger Work and stays under the MPL-2.0; the package ships no licence file of its own, so its section names the licence and its source. `server-dependencies.txt` lists it with the same statement. `axe-core`, `@axe-core/playwright`, `@resvg/resvg-js` and `mediabunny` remain development and tooling dependencies (e2e, the layout's debug renders, the website's media). The notices files (`THIRD_PARTY_NOTICES.txt` in the app bundle, `server-dependencies.txt` in the server bundle) end with the full MPL-2.0 text and name the files each MPL package ships in. |
 | OFL-1.1 (the font packages: the two Roboto packages, in the app and on the website), section 2 | each copy of the fonts carries their copyright notice and the licence | each package's own `LICENSE` in `frontend/dist/licenses/` and in `THIRD_PARTY_NOTICES.txt`; the faces the render worker draws with are copied a second time into `backend/dist/render-assets/fonts/`, with the same licences in `backend/dist/render-assets/licenses/`; the website's copies in `website/dist/licenses/` (not part of the image) |
 
 `node scripts/third-party-notices.mjs` writes the same file from the production dependency closure of
@@ -123,13 +128,13 @@ Google Cloud's, used under the terms Google Cloud states for them; the notices f
 | | |
 |---|---|
 | What | 110 SVG files under `packages/icons/vendored/`: 14 core product colour marks, 74 legacy two-tone console icons and 22 product category marks, the ones the asset catalog's icon keys need. Listed with their source entries and hashes in `packages/icons/manifest.json`; every SVG entry of the three archives, with its hash, in `packages/icons/archive-index.json`. |
-| Owner | Google Cloud. Google Cloud and the Google Cloud product icons are trademarks of Google. Neither gcportrait nor its maintainer licenses the icons; they are outside the MIT License. |
+| Owner | Google Cloud. Google Cloud and the Google Cloud product icons are trademarks of Google. Neither gcportrait nor its maintainer licenses the icons; they are outside the Apache License 2.0. |
 | Source | Google Cloud's icon library, <https://cloud.google.com/icons> (which also still offers the older symbols, the legacy console icons, for the products not updated yet): <https://services.google.com/fh/files/misc/core-products-icons.zip>, <https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip>, <https://services.google.com/fh/files/misc/category-icons.zip>; product-to-category assignments from the product icons overview, <https://services.google.com/fh/files/misc/google-cloud-product-icons.pdf> (updated May 2026). |
 | Vendored | By `packages/icons/scripts/vendor.mjs` (re-runnable and deterministic); `packages/icons/manifest.json` records each file's source entry and hash. |
 | Terms | Used as provided, under the terms Google Cloud states at <https://cloud.google.com/icons> (Google's icon usage terms): the library page offers the icons for diagrams and technical documentation and links Google's Site terms (<https://policies.google.com/terms>) and Google Cloud terms (<https://cloud.google.com/product-terms>); Google's trademark rules are in its Brand Resource Center (<https://about.google/brand-resource-center/>). Not a code licence, and not one gcportrait or its maintainer grants: whoever uses or passes on the icons does so under those terms. It places no condition on gcportrait's own licence. |
 | Kept current | `pnpm --filter @gcportrait/icons drift` and the weekly workflow `.github/workflows/icon-drift.yml` compare the archives that page links with `packages/icons/archive-index.json` and report new, changed, renamed and removed icons and the products still on an older symbol (`packages/icons/README.md`, "Keeping the icons current"). |
 | Changes | Mechanical only, never the artwork: XML prolog, editor comments, `<title>`, `<desc>` and `<metadata>` removed; CSS class rules and inline styles turned into presentation attributes; unreferenced ids removed and referenced ones renamed; editor attributes and the root's size attributes removed; empty `<defs>` removed; viewBox written at the set's native size (24 or 512); whitespace between tags dropped. Checked by hash, colour and element-count tests and by a pixel-identical render comparison. None of the source files carried a notice, so none was removed. |
-| Not Google's | `packages/icons/own/` holds gcportrait's own drawings (organization, folder, service account, generic resource), marked as such; they are original work under the project licence, `MIT`. |
+| Not Google's | `packages/icons/own/` holds gcportrait's own drawings (organization, folder, service account, generic resource), marked as such; they are original work under the project licence, `Apache-2.0`. |
 
 ## npm dependencies
 

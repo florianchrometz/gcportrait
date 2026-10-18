@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The NDJSON frames of `POST /api/assets/stream` (skill cai-ingestion §4), one JSON
  * object per line, exactly as `@gcportrait/ingest` reads them in the browser (packages/ingest/README.md,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The relation-kind table (skill gcp-asset-catalog §4) as data, in a module that imports no zod (types only),
  * so the renderer and the legend on the app's UI thread read it without the schema library.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The icon drift check's comparison logic (lib/drift.mjs) and archive helpers (lib/archives.mjs), fed small
  * synthetic archives built in memory (test-zip.ts) and read back through the same safe reader drift.mjs uses:

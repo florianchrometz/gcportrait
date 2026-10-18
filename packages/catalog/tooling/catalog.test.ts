@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The real catalog data, compiled and run through the rule engine. Catalog groups add types, rules and fixtures
  * to this data while these tests stay as they are, so every assertion is an invariant that holds whatever a

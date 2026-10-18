@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Ring geometry for the highlight marks (skill gcp-diagram-style §6): a node's outline moved `distance` outside
  * its border (the selection, reach and focus rings sit outside a canvas gap; the path-to-root rings sit on the

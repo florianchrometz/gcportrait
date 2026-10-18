@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Storage Transfer Service: transfer jobs that copy objects into Cloud Storage buckets from other
 # buckets, other clouds, HTTP lists or on-premises file systems, once, on a schedule or on events. Asset

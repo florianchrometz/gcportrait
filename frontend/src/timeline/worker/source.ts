@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's side of the timeline (skill cai-ingestion §5): what a snapshot's timeline is, and the snapshot of
  * one of its days. The data handler (diagram/pipeline/dataHandler.ts) asks it for the view's `tick`; the tick's

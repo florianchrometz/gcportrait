@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Backup for GKE: backup plans protect a GKE cluster, restore plans restore a backup plan's backups into a
 # cluster. Backups, restores and their per-volume records are operational and start hidden.

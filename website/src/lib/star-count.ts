@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The header's repository widget, the parts the build and the visitor's browser share (docs/website.md, "GitHub
  * repository widget"). The widget is the header's link to the repository on GitHub, and it shows three facts of it:

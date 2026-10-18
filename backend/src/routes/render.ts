@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * POST /api/render orchestrates source admission, the render worker and the answer. Policy:
  * backend/AGENTS.md, The render API; wire format: docs/api.md. Model render options plus source are

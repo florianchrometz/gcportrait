@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The preflight's client side: the answer's guard, the request (path, method, body, token), the error answers,
  * and the words for every item and finding (docs/permissions.md).

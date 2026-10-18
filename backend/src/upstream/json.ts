@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The one reader of the JSON that Google answers with (and of the identity's answers and credential files,
  * ../auth/identity.ts): a body that is not well-formed UTF-8 or not JSON reads as `undefined`, never as an

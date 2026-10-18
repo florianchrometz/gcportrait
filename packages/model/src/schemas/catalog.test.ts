@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { sampleCatalog, sampleCatalogEntry } from '../testing/fixtures.js';
 import { issueMessages, issuePaths, present, withChange } from '../testing/issues.js';

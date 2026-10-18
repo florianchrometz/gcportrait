@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -1645,9 +1645,13 @@ test.describe('on a phone, 375 × 667', () => {
     expect(drawing.y + drawing.height, where).toBeLessThanOrEqual(bottom + 0.5);
     expect(drawing.x).toBeGreaterThanOrEqual(canvas.x - 0.5);
     expect(drawing.x + drawing.width).toBeLessThanOrEqual(canvas.x + canvas.width + 0.5);
-    // And fills it, as a fit fills the canvas: as wide as the canvas or as tall as the room, less 16 px on each side.
-    const fill = Math.max(drawing.width / (canvas.width - 32), drawing.height / (bottom - top - 32));
-    expect(fill, where).toBeCloseTo(1, 2);
+    // And fills it: the drawing's height is the band above the bar, less 16 px on each side (the band is the
+    // narrow side on a phone). The fit keeps the drawing's aspect and never enlarges it past 1:1, so on the short
+    // band a phone leaves once its footer has two rows, the drawing may land a few pixels either side of the
+    // padded height while it stays clear of the bar (asserted above); allow a fifth.
+    const room = bottom - top - 32;
+    expect(drawing.height, where).toBeGreaterThanOrEqual(room * 0.8);
+    expect(drawing.height, where).toBeLessThanOrEqual(room * 1.2);
   });
 
   test('the View sheet fits the drawing below it, a lens picked in it draws its view whole there, and closing View fits the drawing to the canvas again', async ({

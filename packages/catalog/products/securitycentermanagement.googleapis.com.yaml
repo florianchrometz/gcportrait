@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Security Center Management API: per-service enablement of Security Command Center and custom
 # detection modules. All hidden: configuration records, counted on their organisation, folder or project.

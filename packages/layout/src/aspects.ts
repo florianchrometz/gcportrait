@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Packing aspect and fill per container, measured from a Layout's rects alone: the bounding box of a
  * container's children (its children grid) against the target the packer aimed for (1.6 for zones, 1.75 for

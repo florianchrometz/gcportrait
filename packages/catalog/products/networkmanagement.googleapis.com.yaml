@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Network Management API (Network Intelligence Center): Connectivity Tests and VPC Flow Logs configurations
 # (networking fabric). Both are operational records, hidden by default and counted in their project;

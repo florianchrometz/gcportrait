@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Playback (the Play button animates through cached ticks; docs/timeline.md): from the tick on screen to each later
  * tick that is available without reading Google Cloud (every day of a stored history; a live scope's cached ticks

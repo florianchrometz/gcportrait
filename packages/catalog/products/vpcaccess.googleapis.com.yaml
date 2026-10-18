@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Serverless VPC Access: connectors that let Cloud Run, Cloud Run functions and App Engine reach a VPC
 # network. The serverless resources attach to the connector with their own rules; the connector names its

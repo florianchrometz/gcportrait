@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The legend (skill gcp-diagram-style §7): inside the SVG, bottom-left, a `surface` panel with a
  * `border` stroke, with rows only for what is on screen: the zone tints present, a "Resource" card sample when

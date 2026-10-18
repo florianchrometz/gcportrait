@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Shared job setup for the workflows in .github/workflows: pnpm at the version pinned by the packageManager
 # field of the root package.json, Node at the version in .nvmrc, the pnpm store cache, and a frozen-lockfile

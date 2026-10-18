@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Reads the icon keys the asset catalog uses straight from its data files: the `icon` of every product file

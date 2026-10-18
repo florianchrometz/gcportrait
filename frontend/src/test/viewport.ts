@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A window of a given width for jsdom, which lays nothing out and has no matchMedia: `window.innerWidth` and a
  * `window.matchMedia` that answers width queries (`(min-width: …rem|px)`, `(max-width: …)`, joined by `and`, listed

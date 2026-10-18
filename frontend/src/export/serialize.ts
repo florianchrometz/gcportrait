@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The SVG serialiser of the export (skill gcp-diagram-style §7–§8). It clones the standalone drawing of
  * `DiagramSvg` (export/render.tsx draws it off-screen in the export's theme) and turns the clone into a file.

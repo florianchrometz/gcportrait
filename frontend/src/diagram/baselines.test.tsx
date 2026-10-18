@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Visual baselines as deterministic SVG text, not screenshots: CI runs on Linux and pixels from
  * another platform would never match, but the SVG the renderer writes is the same everywhere. Each case is a

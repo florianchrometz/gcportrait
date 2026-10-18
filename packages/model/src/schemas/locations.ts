@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The shape of Google Cloud's location names, and the one rule that turns a zone into its region (AGENTS.md,
  * Data and graph semantics: one source of truth per concept). The catalog's templates and `siblingName`

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Sensitive Data Protection in the data platform (feature `security`): an inspection template for personal
  * data, a weekly job trigger that inspects the data lake bucket with it, and a discovery configuration that

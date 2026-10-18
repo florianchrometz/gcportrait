@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The catalog compiler (skill gcp-asset-catalog §2, §3 and §8): validates the product,
  * lens, fixture, known-unmapped and icon-key files, proves every rule against its fixtures with the rule

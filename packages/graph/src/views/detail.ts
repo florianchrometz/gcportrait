@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Step (e) of the scene builder: progressive disclosure (skill gcp-diagram-layout §6). A detail level decides
  * which zones start collapsed:

@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Frequently asked questions
 
@@ -200,8 +200,8 @@ it up in about ten minutes ([self-host.md](self-host.md)). The project hosts onl
 
 No. gcportrait draws *Google Cloud-style* diagrams with Google's product icons, used under Google's icon usage
 terms, but it is an independent open-source project, not affiliated with, endorsed by, or sponsored by Google.
-Its code is licensed under the MIT License ([../LICENSE](../LICENSE)); the gcportrait name and icon are not
-covered by it.
+Its code is licensed under the Apache License 2.0 ([../LICENSE](../LICENSE)) and its attribution is in
+[../NOTICE](../NOTICE); the gcportrait name and icon are not covered by it.
 
 ### Does it work on a phone or a tablet?
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The test setup (vitest.config.ts) that gives fast-check the property tests' seed and number of runs by the
  * rule of `@gcportrait/model/testing` (`propertySeed`, `propertyRuns`): `FC_SEED` when set, so that a failure

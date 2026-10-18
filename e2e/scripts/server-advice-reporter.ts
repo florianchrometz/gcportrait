@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { Reporter, TestError } from '@playwright/test/reporter';
 
 interface Options {

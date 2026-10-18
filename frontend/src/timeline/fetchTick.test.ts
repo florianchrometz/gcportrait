@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Reading a live day into the tick cache (fetchTick.ts) through the live pull, with the in-process import worker and
  * a pretend backend: the request names the scope, the day's read time (none for the latest day, "now"), the mode

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small synthetic organisation and catalog that exercise every containment decision of skill
  * gcp-diagram-layout §2: a Shared VPC host and a service project, a local VPC, instances with one subnet,

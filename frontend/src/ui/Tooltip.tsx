@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A tooltip (WAI-ARIA tooltip pattern, WCAG 2.2 1.4.13): a short description of its trigger, shown after a
  * pointer rests on the trigger (`delay`) or at once when the trigger takes keyboard focus; it stays while the

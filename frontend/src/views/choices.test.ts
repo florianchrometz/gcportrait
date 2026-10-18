@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The view choices of the demo organisations, built from the same Graph the data worker builds, and
  * checked against the scene builder: every project, host, perimeter and application the pickers offer is one

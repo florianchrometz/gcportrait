@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The public shape of a demo organisation's 35-day history. Its schemas are in `@gcportrait/model`, so the
  * history is declared once; `DemoOrganization` is the shape of one replayed day.

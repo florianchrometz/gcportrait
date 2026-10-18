@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm --filter @gcportrait/website stars`: the header's repository widget, live (docs/website.md, "GitHub repository
  * widget"), in Playwright's Chromium, on the built site's landing page (website/dist), light and dark, at 1440, 768,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What a lens switch does to the detail level (layout skill §6; the catalog lens files' `defaultDetail`).
  *

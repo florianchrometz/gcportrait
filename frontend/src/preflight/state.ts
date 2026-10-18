@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The last permission check, as the app store keeps it (`connect.preflight`, state/slices.ts): plain data, never a
  * token. A result belongs to the request it answered (scope, mode, quota project); when the person changes any of

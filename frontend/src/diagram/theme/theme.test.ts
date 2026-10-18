@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram palettes against the style skill (gcp-diagram-style §2, §9, §10), in both themes:
  *

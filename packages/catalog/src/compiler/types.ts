@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Inputs and outputs of the catalog compiler. The compiler itself is pure: the Node tooling reads the files
  * (YAML, JSON, the official snapshot) and hands their parsed content in, so tests can compile planted

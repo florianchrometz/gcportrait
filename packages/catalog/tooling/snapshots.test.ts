@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The committed official snapshots are well-formed, and each products companion matches its list. */
 import { existsSync, readFileSync } from 'node:fs';
 import { AssetTypeSchema } from '@gcportrait/model';

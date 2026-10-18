@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render API's own error answers (backend/AGENTS.md, The render API), always sent before any byte of an
  * image, in the server's one shape (../errors.ts, `sendError`) with the code the route names for each: a pull's

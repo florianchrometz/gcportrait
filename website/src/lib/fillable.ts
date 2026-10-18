@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Fillable commands on the docs pages, the parts without a DOM: what the build writes next to a code block and what
  * the page's script (src/components/Variables.astro) computes. Each `YOUR_…` token in a guide's code is a variable

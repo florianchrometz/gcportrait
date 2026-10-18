@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { AssetSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { isProjectNumber, normaliseAsset, projectNumberOf } from './normalise.js';

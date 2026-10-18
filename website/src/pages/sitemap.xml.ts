@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { APIRoute } from 'astro';
 
 import { sitemapPaths, sitemapXml } from '../lib/sitemap.js';

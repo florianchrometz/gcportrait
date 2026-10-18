@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helper (not part of the public API): a `LayoutNode` built by hand, for the stage tests that feed the
  * packer, the port planner or the edge merger nodes no valid Scene would produce (a rect inside a chip) or that

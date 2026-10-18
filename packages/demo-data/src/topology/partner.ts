@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A standalone project with its own VPC (a partner exchange) that the history peers with the production
  * Shared VPC: the "peering added" event appends a peering entry to both networks.

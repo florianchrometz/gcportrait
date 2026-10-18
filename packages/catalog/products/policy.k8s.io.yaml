@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Kubernetes pod disruption budgets of GKE clusters with the asset inventory feature on. An operational
 # setting of a workload, so hidden by default; they nest in their namespace by name path.

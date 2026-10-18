@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A modal dialog (WAI-ARIA dialog pattern): rendered over a backdrop at the end of `<body>`, `role="dialog"`
  * with `aria-modal="true"`, named by its title and described by `description`. While open, everything else in

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/third-party-notices.mjs: the notices file for a throw-away pnpm workspace whose frontend,
  * backend and render library (the backend's render worker) depend on planted packages under chosen
@@ -187,7 +187,7 @@ describe('third-party-notices', () => {
       // The non-affiliation long form, exactly, and the project's own licence.
       expect(notices).toContain(NON_AFFILIATION_LONG);
       expect(notices).toContain(
-        "gcportrait's own work is licensed under the MIT License, except the gcportrait name",
+        "gcportrait's own work is licensed under the Apache License 2.0, except the gcportrait name",
       );
       // Production dependencies, transitive ones and those of workspace packages; never dev dependencies or the
       // workspace packages themselves.
@@ -224,7 +224,7 @@ describe('third-party-notices', () => {
       // MPL-2.0: sections 3.2 and 3.3, where the Source Code Form is, and the licence text.
       const mpl = section(notices, 'a-mpl');
       expect(mpl).toContain('MPL-2.0 (sections 3.2 and 3.3)');
-      expect(mpl).toContain('used unmodified as part of a Larger Work, gcportrait (MIT)');
+      expect(mpl).toContain('used unmodified as part of a Larger Work, gcportrait (Apache-2.0)');
       expect(mpl).toContain(
         'https://registry.npmjs.org/a-mpl/-/a-mpl-1.2.3.tgz (project: https://example.com/a-mpl)',
       );
@@ -341,10 +341,15 @@ describe('the third-party statements about the Google Cloud product icons', () =
     expect(text).toContain('neither gcportrait nor its maintainer licenses them');
   });
 
-  it('LICENSE leaves them, and the gcportrait name and icon, out of the MIT License', () => {
+  it('LICENSE leaves them, and the gcportrait name and icon, out of the Apache License 2.0', () => {
     const text = read('LICENSE');
-    expect(text.startsWith('MIT License Copyright (c) 2026 Florian Chrometz ')).toBe(true);
-    expect(text).toContain('Not covered by the MIT License above:');
+    expect(
+      text
+        .trimStart()
+        .startsWith('Apache License Version 2.0, January 2004 http://www.apache.org/licenses/ '),
+    ).toBe(true);
+    expect(text).toContain('Copyright 2026 Florian Chrometz');
+    expect(text).toContain('Not covered by the Apache License 2.0 above:');
     expect(text).toContain(
       "the Google Cloud product icons under Google's icon usage terms. See THIRD_PARTY.md.",
     );

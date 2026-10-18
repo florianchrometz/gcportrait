@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The composition table: lens × focus × filters × root × detail on the demo organisations S and M.
  *

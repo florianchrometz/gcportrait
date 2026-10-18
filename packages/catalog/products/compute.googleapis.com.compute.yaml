@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Compute Engine, compute: virtual machines and what they are made of. compute.googleapis.com is shared
 # by four catalog groups (see compute.googleapis.com.networking-fabric.yaml), so this file holds this group's

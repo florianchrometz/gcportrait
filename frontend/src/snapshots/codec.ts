@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How a stored snapshot's documents sit in IndexedDB (storage/db.ts, `StoredSnapshot.blob` and `.history`): JSON
  * text in a Blob, gzip-compressed with the platform's `CompressionStream` where there is one (every browser the

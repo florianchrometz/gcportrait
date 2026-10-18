@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The concurrent stream cap (skill cai-ingestion §4; docs/security.md §3): at most four streams at once
  * per token hash, across both streaming routes and the render route's pulls. In memory only; a slot is given back

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diff overlay through the data worker's handler (diagram/pipeline/dataHandler.ts), on demo S's
  * history: a Scene request naming the day to compare with answers with the diff of the two days and the Scene with

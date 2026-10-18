@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * A small evaluator for SPDX licence expressions (SPDX specification, annex D): decides whether a package

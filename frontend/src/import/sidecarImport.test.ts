@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Dropped export files with their operation.json go through the Snapshots page's import, which reads the
  * sidecar (sidecar.ts) for the read time and the scope. Without it, a read time the person typed is the

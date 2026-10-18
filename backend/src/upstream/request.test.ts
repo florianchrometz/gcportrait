@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { chunkedBody, googleError, jsonResponse, recordingSleep, untilAborted } from './google.testing.js';

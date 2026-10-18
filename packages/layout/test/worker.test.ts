@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout through a real worker: a Node `worker_threads` worker running the package's handler
  * (scripts/lib/layout-worker.ts, mounted as the app's Web Worker mounts it) and the page-side client.

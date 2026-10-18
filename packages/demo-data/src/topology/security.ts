@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The security project: Cloud KMS key rings and keys (customer-managed encryption keys for disks, buckets,
  * Cloud SQL, GKE secrets and Pub/Sub), with the key rotation the history replays; and the organisation's

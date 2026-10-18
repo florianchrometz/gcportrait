@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -34,7 +34,7 @@ export const WORDMARK = 'gcportrait';
  * The footer's link to the app's source and its licence, next to the non-affiliation notice on every
  * route.
  */
-export const SOURCE_LINK_TEXT = 'Source (MIT)';
+export const SOURCE_LINK_TEXT = 'Source (Apache-2.0)';
 
 /**
  * Where the footer's source link points when nothing configures it: the default of VITE_SOURCE_URL (the e2e
@@ -44,7 +44,7 @@ export const DEFAULT_SOURCE_URL = 'https://github.com/florianchrometz/gcportrait
 
 /**
  * Checks the shell footer: the non-affiliation notice with the maintainer's name linked to their website (a new tab,
- * named "Florian Chrometz (personal website)"), and next to it the "Source (MIT)" link to `sourceUrl`.
+ * named "Florian Chrometz (personal website)"), and next to it the "Source (Apache-2.0)" link to `sourceUrl`.
  */
 export async function expectShellFooter(page: Page, sourceUrl: string): Promise<void> {
   const footer = page.getByRole('contentinfo');

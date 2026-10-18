@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { parseQuotaProjects, parseRecentScopes } from '../scope/recent';

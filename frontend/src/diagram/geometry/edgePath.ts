@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * SVG path data for a routed edge (skill gcp-diagram-style §5: orthogonal, 6 px rounded elbows; the layout's
  * `EdgePath`): every elbow becomes a quarter circle of the edge's `elbowRadius`, clamped so that two elbows

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Transcoder API: jobs are
 # high-cardinality records (hidden) that read from and write to Cloud Storage; job templates are leaves.

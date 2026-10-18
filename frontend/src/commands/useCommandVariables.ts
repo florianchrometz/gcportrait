@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The variables of the commands on screen, in React: every field and every Copy button reads them here, so one
  * value per variable shows everywhere at once (commands/store.ts keeps what was typed, for the tab's session), over

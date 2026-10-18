@@ -2,7 +2,7 @@
 name: gcp-asset-catalog
 description: How gcportrait's asset catalog works and how to extend it — entry schema, tiers, relation kinds, normalisers, label/console templates, fixtures, the coverage tool and the official-list drift workflow. Includes the official Cloud Asset Inventory type list snapshot and a per-product relation seed.
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # gcportrait asset catalog
 

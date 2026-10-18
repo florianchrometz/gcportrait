@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The parts of `pnpm media` (scripts/media.mjs) that need no browser: the media list read from

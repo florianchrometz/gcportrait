@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A Shared VPC host project: the VPC network (emitted last, because it lists its subnets and peerings), the
  * subnets workloads ask for, firewall rules, routes, Cloud Routers with Cloud NAT, private services access

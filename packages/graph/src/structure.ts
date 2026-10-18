@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The few asset types the builder knows by identity. They are the spine of the containment model (skill
  * gcp-diagram-layout §2) and of alias resolution, not catalog data: labels, roles, relations and

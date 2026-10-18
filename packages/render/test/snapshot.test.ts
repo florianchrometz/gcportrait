@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The snapshot readers against the app's own import: a demo organisation's assets as a Cloud Asset
  * Inventory export and as a live pull's frames, and as a `.gcportrait.json` bundle, give back the snapshot the demo

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout worker's memo key: a structural hash of a Scene's tree (not its metadata, which the layout
  * does not read) and the layout options. Two values that are equal as data hash alike, whatever the

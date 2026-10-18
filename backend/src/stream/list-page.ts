@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A Cloud Asset Inventory `assets.list` page turned into a `page` frame without parsing it (docs/security.md
  * "Response caps and memory").

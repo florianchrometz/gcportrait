@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Google's script is loaded on demand, once, from exactly GIS_SCRIPT_URL; a failure leaves nothing behind so the
  * next press tries again; an API already on the page (a second click, a test's stand-in) is used as it is.

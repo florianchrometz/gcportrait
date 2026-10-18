@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline markers of a drawn day (skill gcp-diagram-style §6): which rects get which
  * marker, and where each goes. Pure: the layout and the day's diff (what the data worker sent with the Scene) in,

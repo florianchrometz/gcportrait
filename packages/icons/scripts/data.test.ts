@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Guards on the committed icon data: every icon key the real catalog uses resolves; no icon file exceeds
  * 8 kB; the vendored files are exactly what the manifest recorded after the mechanical transforms (hash,
@@ -264,7 +264,7 @@ describe('README.md', () => {
     expect(prose).toContain('also still offers the older symbols');
     expect(prose).toContain('uses the icons as provided there, under the terms stated on that page');
     expect(prose).toContain('neither gcportrait nor its maintainer licenses them');
-    expect(prose).toContain("They are not covered by gcportrait's own licence (`MIT`");
+    expect(prose).toContain("They are not covered by gcportrait's own licence (`Apache-2.0`");
   });
 
   it('documents keeping the icons current with the drift check', () => {

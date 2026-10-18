@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The rules the single-key shortcuts follow (shortcuts.ts, style skill §13), on their own: a key press counts by
  * the character it produced, whatever Shift, Option or AltGr it took, but not as someone else's Cmd or Ctrl shortcut;

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # AI assistants: the AGENTS.md files and .agents/skills/ are the one source of instructions (AGENTS.md,
 # "Assistants"). A tool's own instruction file, at any depth, and its per-user settings stay local;
 # `pnpm agents:setup` writes the pointer files, at the root and beside each folder's AGENTS.md.

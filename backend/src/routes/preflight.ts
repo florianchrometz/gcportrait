@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/preflight` (docs/permissions.md; backend/AGENTS.md, Quota project and the
  * permission check): checks, with the caller's own token, what a pull of one scope needs, and answers the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The whole app for the view controls' tests: the real data and layout handlers in-process, a
  * memory saved-view store (or the test's own), and the router's location, so a test can drive a control and read

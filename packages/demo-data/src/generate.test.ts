@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { AssetSchema, migrateSnapshot, type Asset, type DemoSize } from '@gcportrait/model';
 import { findNonSyntheticData } from '@gcportrait/model/testing';
 import { describe, expect, it } from 'vitest';

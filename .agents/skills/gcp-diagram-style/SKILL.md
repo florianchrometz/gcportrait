@@ -2,7 +2,7 @@
 name: gcp-diagram-style
 description: Visual rules for gcportrait diagrams and app chrome — zone tints, stroke widths, typography, official icons, edge styles, legend, light and dark themes, WCAG 2.2 contrast checks, export rules, accessibility (keyboard, names, focus, axe) — and a fact-check list to review any render.
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # gcportrait diagram style
 

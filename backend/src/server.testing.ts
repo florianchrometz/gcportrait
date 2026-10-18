@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The backend's server as the route tests start it (never imported by the app, so neither bundle carries it):
  * the real `buildServer` with a test configuration (no SPA build, version 9.9.9-test), a pretend Google

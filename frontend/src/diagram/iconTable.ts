@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Resolves the icons of a Scene with `@gcportrait/icons` (the type's key, then the category mark, then the
  * generic mark: the fallback chain of packages/icons/README.md). It runs where the icon table is loaded anyway: in

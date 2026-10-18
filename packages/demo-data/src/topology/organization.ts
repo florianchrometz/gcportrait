@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Composes one organisation from the templates as the size profile prescribes: the folder tree, one Shared
  * VPC host per environment, hybrid connectivity, the peered partner VPC, the security, operations, sandbox

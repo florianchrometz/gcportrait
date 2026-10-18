@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A popover: a button that opens a small non-modal dialog under it (the top bar's Focus parameters and Filters).
  * The button has `aria-haspopup="dialog"`, `aria-expanded` and, while open, `aria-controls` naming the panel;

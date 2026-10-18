@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Process-wide claims for live-pull page bytes (docs/security.md, "Response caps and memory").
  * Claims grow as bytes arrive and remain held until the frame is written out; an error, cancellation

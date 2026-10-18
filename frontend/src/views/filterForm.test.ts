@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Filters popover's form ↔ the ViewSpec's filters: every filter field both ways, the canonical
  * form the hash codec writes, the round trip through the URL hash, the active-filter count and reset.

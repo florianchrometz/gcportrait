@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline's ticks (AGENTS.md, Product rules; skill cai-ingestion §5): `today` at 00:00 UTC and the 34
  * days before it, oldest first. A tick's read time is `YYYY-MM-DDT00:00:00Z`; the latest tick of a live scope uses

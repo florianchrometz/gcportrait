@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Pub/Sub: topics, subscriptions, schemas and snapshots. Messages flow topic → subscription → push
 # endpoint, BigQuery table or Cloud Storage bucket; subscriptions point at their topic (uses), the

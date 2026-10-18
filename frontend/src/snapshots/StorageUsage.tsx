@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Storage usage: what the stored snapshots take (the sizes the table lists, summed; those kept in memory
  * apart), the browser's own estimate of what the whole site takes against what it allows

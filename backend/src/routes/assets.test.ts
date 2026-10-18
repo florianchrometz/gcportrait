@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { request } from 'node:http';
 
 import { IngestError, ingest } from '@gcportrait/ingest';

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Monitoring: alert policies trigger
 # their notification channels, Pub/Sub channels trigger their topic, uptime checks probe a host or a Cloud Run

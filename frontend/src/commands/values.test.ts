@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Fillable commands without React: the value each variable shows, the text Copy copies, the notes, the facts the
  * app knows, what the session keeps; and that every command the app shows names only registered variables.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render worker's entry: one render job (job.ts) on this thread's messages. The bundle writes it as
  * `dist/render-worker.mjs`; `workerData.assetDir` names the rasteriser's asset directory next to it, or is

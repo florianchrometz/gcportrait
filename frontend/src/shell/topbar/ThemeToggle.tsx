@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { ReactElement } from 'react';
 
 import { usePopover } from '../../state';

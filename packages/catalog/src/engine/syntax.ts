@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Shared lexical helpers of the catalog's small languages (JSONPath subset, predicates, templates). */
 
 /** A malformed path, template or predicate in the catalog. */

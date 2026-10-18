@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render job's messages, between the route on the main thread and the job in a render worker (worker.ts)
  * or in process (in-process.ts, the tests): `start` names the source and the options, `chunk` hands over the

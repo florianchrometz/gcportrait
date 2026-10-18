@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm catalog:check` (`pnpm --filter @gcportrait/catalog check`): validates the catalog and prints the
  * coverage report of skill gcp-asset-catalog §8, per authoring group too. Exits 1 on any violation.

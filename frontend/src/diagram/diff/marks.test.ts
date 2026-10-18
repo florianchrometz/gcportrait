@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline markers' painter (marks.ts; skill gcp-diagram-style §6): which rects get the added outline
  * (the outermost of an added subtree), the changed dot (changed nodes, and chips with changes inside) or are ghosts,

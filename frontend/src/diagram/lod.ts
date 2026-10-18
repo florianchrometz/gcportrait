@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Level of detail by effective scale (skill gcp-diagram-style §3 and §5): subtitles hide below 0.55,
  * labels below 0.35 (icons stay), and edge strokes thin to 1.5 px past 2×. The canvas applies a level by

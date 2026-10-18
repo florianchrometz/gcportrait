@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Google Cloud VMware Engine: the private cloud container (from the catalog seed), its clusters and external
 # addresses (nested by name), the VMware Engine network (a VPC-like zone that private clouds and network

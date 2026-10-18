@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Build-time budget: the M demo organisation builds in under 150 ms, the median of 10 builds after two
  * warm-up builds. L is measured for information, and so is a day of L's history built after the next day with

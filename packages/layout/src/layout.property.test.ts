@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Property tests (fast-check) over random Scene trees: depth up to 8, up to 300 nodes, random kinds, chips,
  * empty zones, badges, odd labels and ids, random edges of every head style (between any two nodes: siblings,

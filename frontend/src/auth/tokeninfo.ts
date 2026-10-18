@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Google's tokeninfo endpoint, asked once per new token: whose token it is (the `email` scope makes Google say),
  * and whether it was issued to this instance's OAuth client. The token travels in a form body, never in the URL

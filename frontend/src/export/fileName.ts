@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The export's file name (skill gcp-diagram-style §8): `gcportrait_<scope>_<lens>_<readTime>.<ext>`. Every part
  * is reduced to characters that are safe in a file name on every desktop system (no `:` from the read time,

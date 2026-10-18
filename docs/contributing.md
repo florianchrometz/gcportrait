@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Contributing to gcportrait
 
@@ -107,10 +107,10 @@ A green run ends like this (the counts change as the project grows):
 
 ```text
 catalog:check: OK.
-provenance: OK. 2483 files scanned, 1373 SPDX headers (MIT) verified; no forbidden names, banned terms or banned files.
-licenses: project licence MIT (the "license" field of the root package.json).
-licenses: compatibility: every accepted dependency licence is permissive, file-scoped weak copyleft (MPL-2.0) or, for the self-hosted font packages only, OFL-1.1; all are compatible with MIT, and none requires gcportrait to publish its code or relicense its combined work.
-licenses: OK. 565 installed packages are under allowed licences; the workspace packages (14) declare MIT; THIRD_PARTY.md is up to date.
+provenance: OK. 2483 files scanned, 1373 SPDX headers (Apache-2.0) verified; no forbidden names, banned terms or banned files.
+licenses: project licence Apache-2.0 (the "license" field of the root package.json).
+licenses: compatibility: every accepted dependency licence is permissive, file-scoped weak copyleft (MPL-2.0) or, for the self-hosted font packages only, OFL-1.1; all are compatible with Apache-2.0, and none requires gcportrait to publish its code or relicense its combined work.
+licenses: OK. 565 installed packages are under allowed licences; the workspace packages (14) declare Apache-2.0; THIRD_PARTY.md is up to date.
 ```
 
 ### Fixing a failing step
@@ -135,7 +135,7 @@ licenses: OK. 565 installed packages are under allowed licences; the workspace p
   the dependency table in `THIRD_PARTY.md`, and commit it. `--write` cannot fix a licence on the deny list or
   outside the allowlist: choose another package, or propose a change to the licence rules
   ([AGENTS.md](../AGENTS.md), "Licence and dependencies"). The report names the project licence
-  (`MIT`) and why every allowed licence is compatible with it; `THIRD_PARTY.md` has the reasoning.
+  (`Apache-2.0`) and why every allowed licence is compatible with it; `THIRD_PARTY.md` has the reasoning.
   Always type `pnpm run licenses`; plain `pnpm licenses` is pnpm's own built-in command.
 - **Provenance:** every problem is printed as `path:line  [rule] message` (the rule is one of
   `forbidden-name`, `banned-term`, `banned-file`, `symlink`, `spdx-header`, `plan-id`, `licence-name`,
@@ -310,9 +310,10 @@ the checks enforce or that reviewers most often catch.
 
 ### Provenance
 
-gcportrait is original work, licensed under the MIT License (`MIT`; [AGENTS.md](../AGENTS.md), "Licence and
-dependencies"), and whoever receives it may rely on that licence alone, so nothing may bring in someone else's
-licence or an obligation that would force the project to publish its code or relicense its combined work.
+gcportrait is original work, licensed under the Apache License 2.0 (`Apache-2.0`; [AGENTS.md](../AGENTS.md),
+"Licence and dependencies"), and whoever receives it may rely on that licence alone, so nothing may bring in
+someone else's licence or an obligation that would force the project to publish its code or relicense its
+combined work.
 
 - Never copy, port or paraphrase another licensed project. If your solution reads like a translation of
   someone else's code, start over.
@@ -337,35 +338,36 @@ licence or an obligation that would force the project to publish its code or rel
 
 ### The SPDX header
 
-Every new text source file starts with the SPDX licence line for `MIT`, within its first 10 lines
+Every new text source file starts with the SPDX licence line for `Apache-2.0`, within its first 10 lines
 (a shebang or a Dockerfile `# syntax=` line may come first; in Markdown with YAML frontmatter, the header goes
 on the first line after the closing `---`). Add the line for the file's type:
 
 | Files | Header line |
 |---|---|
-| `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs` | `// SPDX-License-Identifier: MIT` |
-| `.yaml` `.yml` `.sh`, and by name `.editorconfig` `.gitignore` `.gitattributes` `.npmrc` `.prettierignore` `.dockerignore` `.env.example` `Dockerfile` `CODEOWNERS` | `# SPDX-License-Identifier: MIT` |
-| `.css` | `/* SPDX-License-Identifier: MIT */` |
-| `.md` `.html` `.astro` | `<!-- SPDX-License-Identifier: MIT -->` |
+| `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs` | `// SPDX-License-Identifier: Apache-2.0` |
+| `.yaml` `.yml` `.sh`, and by name `.editorconfig` `.gitignore` `.gitattributes` `.npmrc` `.prettierignore` `.dockerignore` `.env.example` `Dockerfile` `CODEOWNERS` | `# SPDX-License-Identifier: Apache-2.0` |
+| `.css` | `/* SPDX-License-Identifier: Apache-2.0 */` |
+| `.md` `.html` `.astro` | `<!-- SPDX-License-Identifier: Apache-2.0 -->` |
 
 `pnpm provenance` checks every header against the `license` field of the root `package.json`, so a header
 with any other identifier fails, and a new workspace package's `package.json` declares
-`"license": "MIT"` too. Files that cannot hold a comment or are data or licence texts need no
-header: `.json` (and `.jsonl`, `.ndjson`, `.prettierrc`), `.txt`, `.svg`, `.drawio`, `LICENSE`, `.nvmrc`,
-`.gitkeep`, `CNAME`, lockfiles, images, fonts and other binary files; so do changeset entries and generated
-`CHANGELOG.md` files. A text file of any other type fails the check until `scripts/lib/repo-files.mjs` gives
-its type a header form or lists it as header-free, in the same change. Should the project licence ever
-change, `scripts/set-license.mjs` rewrites every header; it is not needed otherwise.
+`"license": "Apache-2.0"` too. Files that cannot hold a comment or are data or licence texts need no
+header: `.json` (and `.jsonl`, `.ndjson`, `.prettierrc`), `.txt`, `.svg`, `.drawio`, `LICENSE`, `NOTICE`,
+`.nvmrc`, `.gitkeep`, `CNAME`, lockfiles, images, fonts and other binary files; so do changeset entries and
+generated `CHANGELOG.md` files. A text file of any other type fails the check until
+`scripts/lib/repo-files.mjs` gives its type a header form or lists it as header-free, in the same change.
+Should the project licence ever change, `scripts/set-license.mjs` rewrites every header; it is not needed
+otherwise.
 
 ### Contributions and licensing
 
-Contributions are accepted under the MIT License, the project's licence (inbound = outbound): by opening a
-pull request you offer your change under it, and the provenance statement in the template confirms that it is
-your own work. You keep the copyright in what you write. There is no contributor licence agreement, and none
-is planned: with a permissive licence, nobody needs more rights than the MIT License gives. The gcportrait
-name and icon are not covered by the MIT License ([brand/LICENSE.md](../brand/LICENSE.md)): a fork uses its
-own. Third-party material keeps its own licences and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new
-dependency must pass `pnpm run licenses`.
+Contributions are accepted under the Apache License 2.0, the project's licence (inbound = outbound): by
+opening a pull request you offer your change under it, and the provenance statement in the template confirms
+that it is your own work. You keep the copyright in what you write. There is no contributor licence agreement,
+and none is planned: with a permissive licence, nobody needs more rights than the Apache License 2.0 gives.
+The gcportrait name and icon are not covered by the Apache License 2.0
+([brand/LICENSE.md](../brand/LICENSE.md)): a fork uses its own. Third-party material keeps its own licences
+and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new dependency must pass `pnpm run licenses`.
 
 ### Code
 
@@ -409,9 +411,9 @@ dependency must pass `pnpm run licenses`.
   footer of every route of the app and every page of the website and, as the long form above, in
   documentation, READMEs and release notes; never in a drawing or an export. Never call the project official
   or Google's, and never name Google with its company suffix.
-- The app links its source on every route, a courtesy to the people who use an instance (the MIT License does
-  not ask for it): the footer's "Source (MIT)" link, next to the non-affiliation notice, points at the
-  backend's `SOURCE_URL` (`sourceUrl` in `/api/config`) or, in a demo build, at the build-time
+- The app links its source on every route, a courtesy to the people who use an instance (the Apache License
+  2.0 does not ask for it): the footer's "Source (Apache-2.0)" link, next to the non-affiliation notice,
+  points at the backend's `SOURCE_URL` (`sourceUrl` in `/api/config`) or, in a demo build, at the build-time
   `VITE_SOURCE_URL`.
   Do not remove it or move it off a route.
 - A value the reader fills in, in a guide's code or a command the app shows, is written `YOUR_` and capitals
@@ -504,7 +506,7 @@ workflow's own `GITHUB_TOKEN`: no secret, no repository variable, no Google Clou
    `X.Y.Z`, `X.Y` and `latest`. `latest` moves only for the newest release: never for a pre-release
    (`v1.2.0-rc.1` gets only its own tag), and not for a patch of an older line tagged after a newer release.
    The image carries the OCI labels and index annotations `org.opencontainers.image.source` (the repository),
-   `.licenses` (`MIT`) and `.description` (the long non-affiliation statement), the last two from
+   `.licenses` (`Apache-2.0`) and `.description` (the long non-affiliation statement), the last two from
    `infra/Dockerfile`'s `LABEL`; `scripts/release-image.mjs` computes the tags, labels and annotations. Then
    it checks that anyone can pull the image, as the remote repository of deploy.sh does, and writes one SPDX
    SBOM per platform with Syft, a release pinned by version and checked by its SHA-256 before it runs.
@@ -590,9 +592,10 @@ with its reason in [backlog.md](backlog.md), never closed unread ([AGENTS.md](..
 testing and CI").
 
 **A fork** publishes to its own `ghcr.io/OWNER/gcportrait` and changes the repository it names: the app's
-"Source (MIT)" link falls back to `DEFAULT_SOURCE_URL` in `frontend/src/source.ts` and to `SOURCE_URL`'s
-default in `backend/src/config.ts` when an instance sets neither `SOURCE_URL` nor `VITE_SOURCE_URL`, and the
-tests that pin them (`backend/src/config.test.ts`, `e2e/tests/support.ts`) change with them; `PUBLISHED_IMAGE`
+"Source (Apache-2.0)" link falls back to `DEFAULT_SOURCE_URL` in `frontend/src/source.ts` and to
+`SOURCE_URL`'s default in `backend/src/config.ts` when an instance sets neither `SOURCE_URL` nor
+`VITE_SOURCE_URL`, and the tests that pin them (`backend/src/config.test.ts`, `e2e/tests/support.ts`) change
+with them; `PUBLISHED_IMAGE`
 and `SOURCE_REPOSITORY` in `infra/common.sh`, `REPOSITORY` in `infra/install.sh`, `website/src/site.ts`, the
 README and the docs name the repository too.
 

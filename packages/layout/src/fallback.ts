@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The fallback router (skill gcp-diagram-layout §5 "Fallback"): when no gutter path joins an edge's ports,
  * which the gutter construction rules out, the edge is routed by A* over a coarse grid (`fallbackGrid`, 8 px)

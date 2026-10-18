@@ -1,15 +1,15 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * The app's link to its own source (AGENTS.md, Product rules; frontend/AGENTS.md, The source link): where the
- * source of the version in use is published, and under which licence, as the shell footer's "Source (MIT)" link
- * on every route (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the backend's
- * SOURCE_URL) in live mode, and the build-time VITE_SOURCE_URL in a demo build, where there is no backend; both fall
- * back to DEFAULT_SOURCE_URL, so an unmodified copy links to the project's repository.
+ * source of the version in use is published, and under which licence, as the shell footer's "Source
+ * (Apache-2.0)" link on every route (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the
+ * backend's SOURCE_URL) in live mode, and the build-time VITE_SOURCE_URL in a demo build, where there is no
+ * backend; both fall back to DEFAULT_SOURCE_URL, so an unmodified copy links to the project's repository.
  */
 
 /** The footer link's text, naming the licence. */
-export const SOURCE_LINK_TEXT = 'Source (MIT)';
+export const SOURCE_LINK_TEXT = 'Source (Apache-2.0)';
 
 /**
  * The project's repository: the same default as SOURCE_URL in backend/src/config.ts. A fork changes both, and the

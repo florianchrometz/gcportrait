@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Fillable commands in the app, the parts without React: which value each variable of a command shows, the text a
  * Copy button copies, what the session keeps, and the facts the app already knows. The variables themselves (name,

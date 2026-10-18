@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Filters popover on demo S: every ViewSpec filter written into the hash by its control (hide
  * switches, the region, project, folder and type pickers over the snapshot's choices, the depth slider, the

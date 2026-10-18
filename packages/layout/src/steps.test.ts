@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The stepped layout (steps.ts, `layoutSteps`): driven to completion it is `layoutScene`, byte for byte; it
  * yields after normalisation, sizing and packing, every `ROUTE_STEP` edges of a routing pass and after each

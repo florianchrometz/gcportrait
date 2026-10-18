@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search ranking (a Fuse.js index over the Graph's nodes). Pure; runs in the data worker.
  *

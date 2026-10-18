@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the app store asks of the canvas: a pending `jumpTo` becomes a camera glide to the node as soon as
  * it is drawn (at once with reduced motion), into the part of the canvas the panels lying over it leave in view (a

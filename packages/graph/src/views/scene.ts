@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scene builder (docs/packages.md, docs/lenses-and-filters.md): Graph + ViewSpec → Scene. Pure and
  * deterministic: the same graph, view and catalog always give a deep-equal scene, whatever the order of the

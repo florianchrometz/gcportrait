@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The view choices (choices.ts) of the snapshot on screen, on the day on screen, for the top bar's controls. They
  * are asked from the data worker once per snapshot, day and data client (a small cache every control shares), and

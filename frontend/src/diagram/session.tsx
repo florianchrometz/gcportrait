@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the diagram page and the top bar share outside the app store (src/state): the workers (created on first
  * use, once per app), the catalog's lens list for the lens picker, and the drawn diagram for the Export menu.

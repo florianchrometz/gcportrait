@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tick cache key (skill cai-ingestion §5): `(scope, readTime, contentType, assetTypes?)`, never reused across
  * scopes, read times, content types or type filters; the type patterns are a set; no separator makes two keys alike.

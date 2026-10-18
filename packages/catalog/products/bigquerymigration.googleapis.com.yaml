@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # BigQuery Migration Service: SQL translation and migration workflows, operational records named by
 # project number (`//bigquerymigration.googleapis.com/projects/<number>/locations/<l>/workflows/<id>`).

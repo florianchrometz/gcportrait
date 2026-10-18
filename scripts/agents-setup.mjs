@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `pnpm agents:setup`: writes the local pointer files that lead an AI assistant to the repository's one source of

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Colour helpers for the icon checks: parsing the colour values icon files use, WCAG relative luminance and

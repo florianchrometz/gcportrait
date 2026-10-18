@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Vendors the Google Cloud product icons, as Google Cloud provides them at https://cloud.google.com/icons, into

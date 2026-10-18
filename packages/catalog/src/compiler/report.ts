@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The human-readable form of the coverage report (skill gcp-asset-catalog §8). */
 import type { CoverageReport, GroupCoverage, TypeTrace, Violation } from './types.js';
 

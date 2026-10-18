@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A machine-learning workload in a Shared VPC service project (archetype `ml`, run by the first business
  * unit from M up): a Vertex AI Workbench instance (and the Compute Engine VM it is), a Cloud TPU node, a GPU

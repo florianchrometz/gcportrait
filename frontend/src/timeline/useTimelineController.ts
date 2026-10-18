@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Runs the timeline controller (controller.ts) while the component that calls it is mounted (the diagram page's
  * timeline bar), over the page's IndexedDB connection (the tick cache), the page's change signal of the tick cache

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Dataform: the repository container (from the catalog seed), workspaces, release and workflow configurations,
 # their compilation results and invocations, and the BigQuery Studio folders repositories can sit in.

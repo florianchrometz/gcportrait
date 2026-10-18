@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/layout — the pure, deterministic layout engine (skill gcp-diagram-layout): a `Scene`
  * from `@gcportrait/model` becomes a `Layout` of absolute rects and routed edges. Stages 1–3 (forest

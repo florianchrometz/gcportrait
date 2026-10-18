@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram's SVG as draw.io cells (frontend/AGENTS.md, Exports). One drawing, three files: the
  * translator walks the markup the diagram's components drew (the same markup the SVG export and the PNG come from)

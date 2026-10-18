@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helper (not part of the public API): the error a call throws, for assertions on its fields. Fails the
  * test when the call throws nothing, so the assertions that follow always run; rethrows an error of another

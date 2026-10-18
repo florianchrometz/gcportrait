@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A snapshot made ready to store (`PreparedSnapshot`, protocol.ts): its documents encoded for IndexedDB (../codec.ts)
  * and its listing metadata. Shared by the snapshot worker's imports (handler.ts) and the demo job

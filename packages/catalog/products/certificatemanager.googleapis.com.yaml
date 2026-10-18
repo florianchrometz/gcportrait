@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Certificate Manager: certificates, certificate maps and their entries, DNS authorizations, issuance
 # configs (certificates from a private CA pool) and trust configs (mTLS client validation). Proxies point at a

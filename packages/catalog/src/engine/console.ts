@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Cloud Console links (the console action of skill gcp-diagram-style §6; skill gcp-asset-catalog §2): the one
  * place that turns an asset into a link to its Cloud Console page. The selected card's action, the card's

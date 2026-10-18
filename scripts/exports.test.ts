@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/exports.mjs: the sample exports' file list, the render command each manifest entry records, the PNG
  * and SVG sizes, the non-affiliation rule for an exported SVG (no affiliation line in its title block,

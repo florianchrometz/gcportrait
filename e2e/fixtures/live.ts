@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { expect, test as base, type Locator, type Page, type Request } from '@playwright/test';
 
 import { storedEverywhere, type GoogleStubs } from './gis.js';

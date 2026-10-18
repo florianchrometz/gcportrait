@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Compute Engine, hybrid connectivity: Cloud VPN (HA and Classic), Cloud Interconnect (connections and
 # VLAN attachments) and Cross-Site Interconnect (cross-site networks and wire groups). compute.googleapis.com

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Graph: the output of `packages/graph`'s builder (Snapshot + catalog → Graph; docs/packages.md).
  * Plain records and arrays only, so it crosses worker boundaries and JSON unchanged; the graph package may

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { useAppMode } from '../mode';
 import { isSourceUrl, SOURCE_LINK_TEXT } from '../source';
 import { useAppState } from '../state';

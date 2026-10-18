@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router';
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Search and link-preview metadata of every page: the title, the description, the canonical URL on
  * https://gcportrait.app, OpenGraph and Twitter card tags with the page's 1200×630 social image, and JSON-LD.
@@ -80,8 +80,8 @@ export const FEATURE_LIST = [
 ] as const;
 
 /**
- * The landing page's SoftwareApplication: free, MIT, its source on GitHub, its author a Person. Its description says what
- * gcportrait does, the three ways, and nothing else.
+ * The landing page's SoftwareApplication: free, Apache-2.0, its source on GitHub, its author a Person. Its
+ * description says what gcportrait does, the three ways, and nothing else.
  */
 export function softwareApplicationLd(options: {
   readonly author: Author | undefined;

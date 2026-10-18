@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 export interface ByteReader {
   read(): Promise<
     { readonly done: true; readonly value?: undefined } | { readonly done: false; readonly value: Uint8Array }

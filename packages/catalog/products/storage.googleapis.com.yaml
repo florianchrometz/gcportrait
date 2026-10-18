@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Storage. Cloud Asset Inventory names a bucket
 # `//storage.googleapis.com/<bucket>` (no project segment) and returns the JSON API v1 bucket resource, whose

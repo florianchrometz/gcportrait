@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The ViewSpec of a render's view: a hash decoded as the app decodes it, or explicit fields normalised. */
 import { encodeViewSpec, normalizeViewSpec } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';

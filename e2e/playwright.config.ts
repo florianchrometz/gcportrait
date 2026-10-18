@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
 
 import { DEMO_URL, LIVE_URL, NAMED } from './fixtures/servers.js';

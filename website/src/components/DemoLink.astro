@@ -13,5 +13,5 @@ type Props = Omit<HTMLAttributes<'a'>, 'href' | 'target' | 'rel'>;
 const attributes = Astro.props;
 ---
 
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 <a {...attributes} href={DEMO_URL} target="_blank" rel="noopener"><slot /><span class="visually-hidden">{NEW_TAB_NOTE}</span></a>

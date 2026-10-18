@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type { CDPSession, Page } from '@playwright/test';
 
 /** A point on the screen, in CSS pixels. */

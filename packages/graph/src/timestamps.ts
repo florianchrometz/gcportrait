@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * RFC 3339 timestamps compared as instants. Cloud Asset Inventory writes `updateTime` with microseconds and a
  * `Z`, but other sources may use another precision or an offset; `2026-10-07T18:22:41.5Z` and

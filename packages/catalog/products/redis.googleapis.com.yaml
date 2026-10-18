@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Memorystore for Redis: standalone Redis instances, reached over VPC peering or private services
 # access, and Redis Cluster, reached through Private Service Connect endpoints in the consumer network. Cloud

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The platform management project `demo-mgmt-1` (feature `management`): what a platform team runs for every
  * workload, in one project of the Operations folder.

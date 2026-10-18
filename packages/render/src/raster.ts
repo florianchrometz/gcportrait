@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * SVG → PNG with resvg, by the export rules of skill gcp-diagram-style §8: 2× by default (`scale` up to 3, or a
  * target `width` in pixels), on the theme's canvas colour, with a 24 px margin (drawing units) around the drawing.

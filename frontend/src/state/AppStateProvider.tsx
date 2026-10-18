@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Binds the app store (store.ts) to the router, both ways: the store starts from the router's first location
  * and follows every later one (`syncLocation`, in a layout effect, so the view is current before the browser

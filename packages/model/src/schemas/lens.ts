@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Lens ids and detail levels: the vocabulary shared by views, catalog lenses and the URL hash. */
 import * as z from 'zod';
 import { DETAIL_LEVEL_IDS, LENS_IDS } from './vocabulary.js';

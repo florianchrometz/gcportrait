@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's handler (pipeline/dataHandler.ts) in a test: requests sent under numbered ids, and each answer
  * awaited by its id as it is posted. Nothing here counts ticks or sleeps: an answer resolves the moment the handler

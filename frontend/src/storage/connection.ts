@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One IndexedDB connection for the whole page: the preferences, the saved views and the snapshot library
  * (the Snapshots page, the Snapshot menu, "Try the demo") all read the database through it, so a connection that

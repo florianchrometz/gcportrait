@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Synthetic sample documents for the tests: example.com domains, documentation IP ranges, project numbers
  * below 100000000000. Each builder returns a fresh object, so a test can mutate it.

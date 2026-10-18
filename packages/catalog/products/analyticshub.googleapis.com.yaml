@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # BigQuery sharing (formerly Analytics Hub): data exchanges and the listings published in them. A
 # listing shares one BigQuery dataset (or selected tables and routines of it, in a data clean room) or one

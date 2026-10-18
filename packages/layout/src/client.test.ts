@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page side of the layout protocol (client.ts) against the real handler, in-process, on a host whose
  * task queue the test drives: a request resolves with its Layout and reports progress; a newer request, an

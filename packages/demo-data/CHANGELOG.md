@@ -174,16 +174,19 @@
   
   ### Licence
   
-  gcportrait's own work, its code, its texts and its images, is licensed under the MIT License (`MIT`),
-  copyright (c) 2026 Florian Chrometz
-  ([LICENSE](https://github.com/florianchrometz/gcportrait/blob/main/LICENSE)). The gcportrait name and the
-  gcportrait icon are not covered by the MIT License: they identify this project and may not be used to present
-  other software or services as gcportrait or as endorsed by it; forks must use their own name and icon
-  ([brand/LICENSE.md](https://github.com/florianchrometz/gcportrait/blob/main/brand/LICENSE.md)). The app links
-  its source with the "Source (MIT)" link on every page (`SOURCE_URL`, `VITE_SOURCE_URL`), a courtesy the
-  licence does not ask for. Contributions are accepted under the MIT License, with no contributor licence
-  agreement. Third-party material keeps its own licences and is not covered by the MIT License: the npm
-  dependencies, the self-hosted Roboto fonts (SIL Open Font License 1.1) and the licence texts are listed in
+  gcportrait's own work, its code, its texts and its images, is licensed under the Apache License 2.0,
+  copyright 2026 Florian Chrometz
+  ([LICENSE](https://github.com/florianchrometz/gcportrait/blob/main/LICENSE),
+  [NOTICE](https://github.com/florianchrometz/gcportrait/blob/main/NOTICE)). The gcportrait name and the
+  gcportrait icon are not covered by the Apache License 2.0: they identify this project and may not be
+  used to present other software or services as gcportrait or as endorsed by it; forks must use their own
+  name and icon
+  ([brand/LICENSE.md](https://github.com/florianchrometz/gcportrait/blob/main/brand/LICENSE.md)). The app links its
+  source with the "Source (Apache-2.0)" link on every page (`SOURCE_URL`, `VITE_SOURCE_URL`), a courtesy
+  the licence does not ask for. Contributions are accepted under the Apache License 2.0, with no
+  contributor licence agreement. Third-party material keeps its own licences and is not covered by the
+  Apache License 2.0: the npm dependencies, the self-hosted Roboto fonts (SIL Open Font License 1.1) and
+  the licence texts are listed in
   [THIRD_PARTY.md](https://github.com/florianchrometz/gcportrait/blob/main/THIRD_PARTY.md), and the Google Cloud
   product icons are Google Cloud's, provided at
   <https://cloud.google.com/icons> and used as provided

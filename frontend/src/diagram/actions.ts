@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What a node offers (style skill §6, the selection trace and the console action): the one helper behind the selected
  * card's "Open in Cloud Console ↗" action, the card's context menu and the details drawer's header, so they always

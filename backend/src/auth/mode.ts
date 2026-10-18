@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Service-account mode as one server runs it (backend/AGENTS.md, The service-account gate): the
  * config the server publishes, reconciled with the identity Application Default Credentials resolved to

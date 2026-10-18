@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The provider's part of the sign-in: it fills the store's `connect` slice from the backend and the
  * session, and it clears the permission check (`connect.preflight`) that answered for one account on a

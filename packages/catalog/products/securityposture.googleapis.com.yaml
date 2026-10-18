@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Security Posture API: postures (sets of organisation policies and Security Health Analytics
 # detectors) and their deployments onto an organisation, folder or project. Both are organisation-level

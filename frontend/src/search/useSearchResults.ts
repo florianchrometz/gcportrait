@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search box's results: the text, once typing pauses (`SEARCH_DEBOUNCE_MS`), goes to the data worker, which
  * searches the index of the view's snapshot on the day on screen (service.ts; the request names the day, so a search

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/release-image.mjs: the image name, version, tags, labels and annotations of release.yml's publish-image
  * job (AGENTS.md, Releases), on synthetic tags and Dockerfiles, on the repository's own infra/Dockerfile, once as a
@@ -20,7 +20,7 @@ const DOCKERFILE = `FROM scratch
 ARG APP_VERSION=dev
 LABEL org.opencontainers.image.title="gcportrait" \\
       org.opencontainers.image.description="A description, with commas and Google's apostrophe." \\
-      org.opencontainers.image.licenses="MIT" \\
+      org.opencontainers.image.licenses="Apache-2.0" \\
       org.opencontainers.image.version="\${APP_VERSION}"
 `;
 
@@ -56,7 +56,7 @@ describe('dockerfileLabels', () => {
     expect(labels.get('org.opencontainers.image.description')).toBe(
       "A description, with commas and Google's apostrophe.",
     );
-    expect(labels.get('org.opencontainers.image.licenses')).toBe('MIT');
+    expect(labels.get('org.opencontainers.image.licenses')).toBe('Apache-2.0');
   });
 });
 
@@ -124,7 +124,7 @@ describe('imageMeta', () => {
         expect.arrayContaining([
           `${level}:org.opencontainers.image.title=gcportrait`,
           `${level}:org.opencontainers.image.description=A description, with commas and Google's apostrophe.`,
-          `${level}:org.opencontainers.image.licenses=MIT`,
+          `${level}:org.opencontainers.image.licenses=Apache-2.0`,
           ...labels.map((label) => `${level}:${label}`),
         ]),
       );

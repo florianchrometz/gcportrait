@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { ProjectIndexSchema, type Asset } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 import { summariseProjects, type ProjectSummary, type UnresolvedProjects } from './project-index.js';

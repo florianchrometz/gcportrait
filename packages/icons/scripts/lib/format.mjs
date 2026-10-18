@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Formats the files the icon scripts write with the repository's Prettier settings, so that `pnpm format:check`

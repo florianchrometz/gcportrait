@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "gcportrait layout engine: Scene → absolute rectangles and routed edges (forest normalisation, sizing from a generated Roboto metrics table, grid packing, gutters, orthogonal lane routing with hub bundles), pure and deterministic.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
   "exports": {

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Builders and fakes the website's tests share (no page or build code imports this): a variable's field as the docs
  * pages write it, the logo as src/components/Logo.astro writes it, and a fetch that answers from the test.

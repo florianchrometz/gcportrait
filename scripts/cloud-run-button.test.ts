@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The "Run on Google Cloud" and "Open in Cloud Shell" buttons: app.json against the Cloud Run Button's
  * file format, and the two buttons where the docs show them. The button itself runs only in Cloud Shell; its

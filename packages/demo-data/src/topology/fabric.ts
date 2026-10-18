@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The networking fabric around each Shared VPC host (feature `fabric`): the subnet routes Compute Engine
  * creates for every subnet, a global network firewall policy, a Cloud DNS server policy and response policy,

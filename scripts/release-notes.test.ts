@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/release-notes.mjs: the GitHub release's notes from the CHANGELOG.md sections changesets
  * writes, its command line run in this process on synthetic workspaces (`run`), and once as a command of its own.

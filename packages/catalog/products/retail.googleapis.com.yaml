@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # AI Commerce Search, the Retail API: one catalog per project (default_catalog), named with the project
 # id (projects/<id>/locations/global/catalogs/default_catalog).

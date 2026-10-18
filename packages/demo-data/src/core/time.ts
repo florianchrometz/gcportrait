@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Calendar arithmetic and the timestamp formats the Google APIs use. All instants are milliseconds since the
  * epoch (UTC). `Date` is used only to format and parse given instants, never to read the clock.

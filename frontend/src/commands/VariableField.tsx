@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One variable of a command, filled in place (commands/useCommandVariables.ts): a labelled text box inside the
  * command's text, as wide as what it shows, its token as the placeholder while it is empty. Its description and a

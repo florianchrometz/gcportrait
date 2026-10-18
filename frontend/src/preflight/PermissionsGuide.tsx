@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Permissions page's standing guidance (docs/permissions.md; skill cai-ingestion §3):
  * - `PermissionsReference`: what each way of reading needs, as a table, its commands in the command group of

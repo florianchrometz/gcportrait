@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Compute Engine building blocks shared by several templates: a VM with its boot disk, an instance template,
  * and a zonal managed instance group (manager + group + instances carrying the `created-by` metadata item).

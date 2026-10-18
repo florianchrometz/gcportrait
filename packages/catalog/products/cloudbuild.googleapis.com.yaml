@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Build: triggers, private worker pools, host connections (2nd-gen repositories) and the 1st-gen
 # GitHub Enterprise and Bitbucket Data Center configs. Builds are operational records: hidden, counted on

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers (not part of the public API): small hand-built Scenes and a fast-check arbitrary of random
  * Scene trees (depth ≤ 8, up to 300 nodes) with edges, chips, empty zones, badges and odd labels. Every Scene

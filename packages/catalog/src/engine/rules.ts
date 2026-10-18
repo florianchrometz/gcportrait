@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The catalog's rule engine: what one catalog type entry says about one asset. This is the single
  * implementation of the rule semantics; the compiler's fixture runner and the graph builder both call it.

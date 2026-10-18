@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Identity and Access Management v2: IAM deny policies. A separate official product from the v1
 # resources (iam.googleapis.com.yaml), hence its own file of the same service.

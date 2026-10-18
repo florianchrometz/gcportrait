@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A synthetic organisation for the scene builder's unit tests: the builder's scenario (a Shared VPC host and a
  * service project with VMs, a local VPC, a connector, Cloud Run, a service account, an unmapped gadget) plus

@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Threat model
 
@@ -41,8 +41,8 @@ maintainer's reads anyone's Google Cloud.
 6. **Availability** of an instance and of the demo.
 7. **The supply chain**: the source, the npm dependencies, the base images, the CI workflows and the image on
    ghcr.io; and the licence obligations that travel with what is conveyed.
-8. **The project's standing**: no implied affiliation with Google, the gcportrait name and icon, which the MIT
-   License does not cover ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal").
+8. **The project's standing**: no implied affiliation with Google, the gcportrait name and icon, which the
+   Apache License 2.0 does not cover ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal").
 
 ## 3. Actors
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helpers, not part of the public API. Synthetic values only: organisation 30000000001, folders
  * 2000000000x, project numbers 1000000000x, `example.com` addresses, private IP ranges.

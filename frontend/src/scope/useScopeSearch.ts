@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scope picker's search: asks `/api/scopes/search` for what the person typed, 250 ms after they stop typing,
  * cancelling the request a newer text supersedes. Answers are kept per text for the life of the picker, so going

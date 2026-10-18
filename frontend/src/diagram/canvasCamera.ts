@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The camera of a canvas on the page: the transform the canvas (DiagramCanvas.tsx) shows its drawing through, which it
  * keeps itself and publishes here, by its `<svg>`, for as long as it is mounted. The export's "current viewport" reads

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Service Directory: the namespace and service containers (from the catalog seed) and endpoints, which nest
 # in their service by name.

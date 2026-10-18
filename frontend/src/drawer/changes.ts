@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What changed about one node between the day on screen before and the drawn day (the details drawer's
  * "What changed" section), worked out in the data worker, where both days' Graphs and assets are

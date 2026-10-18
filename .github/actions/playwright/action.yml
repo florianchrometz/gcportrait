@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Playwright's browsers for a job that has already run ./.github/actions/setup: the browser builds of the Playwright
 # version the workspace resolves, cached in ~/.cache/ms-playwright under that version, and their system libraries

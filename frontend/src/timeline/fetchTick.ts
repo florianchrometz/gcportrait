@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Reads one day of a live scope from Cloud Asset Inventory into the tick cache (skill cai-ingestion §5): the live
  * pull of import/run.ts (`POST /api/assets/stream` with the day's `readTime`, or none for the latest tick, which

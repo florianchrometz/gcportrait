@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The store bound to a router (AppStateProvider): writes reach the location as PUSH or REPLACE navigations, the
  * query string is kept, the router's own navigations (a link, Back) reach the store, and the view a component

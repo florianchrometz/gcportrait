@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Turns normalised assets back into Cloud Asset Inventory records: `resource.{version, discoveryDocumentUri,
  * discoveryName, parent, data, location}` around the data, as `assets.list` returns them (camelCase keys) or

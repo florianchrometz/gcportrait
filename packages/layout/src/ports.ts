@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Ports (skill gcp-diagram-layout §5): where an edge leaves and enters its rects.
  *

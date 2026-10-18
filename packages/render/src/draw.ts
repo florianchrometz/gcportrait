@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One prepared view drawn as the app's standalone SVG document (the frontend's `renderDiagramSvg`: the same React
  * components as the canvas, rendered with `react-dom/server`, colours as attributes of the theme, icons inline,

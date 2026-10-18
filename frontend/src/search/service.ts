@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search in the data worker (diagram/pipeline/dataHandler.ts routes the `search` and `locate` requests
  * here; the details drawer's jump links ask `locate` too). The index is built from the Graph the worker keeps for

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # AlloyDB for PostgreSQL: the cluster container (from the catalog seed), instances, backups and cross-region
 # replication. Cloud Asset Inventory names the three types by project id, instances under their cluster

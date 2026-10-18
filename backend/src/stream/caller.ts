@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Caller-token extraction and SHA-256 keys for in-memory limits. Header precedence and IAP handling
  * follow AGENTS.md, Security and privacy, Tokens; forwarding and logging follow principles 1 and 2.

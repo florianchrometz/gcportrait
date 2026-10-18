@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Helpers for the draw.io fidelity spec (drawio.spec.ts): reading a `.drawio` file as draw.io opens it, the cell id the
  * translator gives a zone or a node, the fonts both renderings use, maxGraph as one script for the test page, and the

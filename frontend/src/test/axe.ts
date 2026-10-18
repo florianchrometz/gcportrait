@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * axe-core in jsdom, for the primitives' unit tests (the e2e suite runs it in Chromium on whole pages). jsdom
  * does no layout, so the rules that need rendered pixels (colour contrast) cannot decide there; the contrast of

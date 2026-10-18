@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What went wrong with a live pull or an export read, in words a person can act on (docs/permissions.md).
  * Google's message is always shown as it came (skill cai-ingestion §4); the title and the advice come from the

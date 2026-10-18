@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A serverless workload in a Shared VPC service project: Cloud Run services that reach a Cloud SQL instance
  * on its private services access address through the host's Serverless VPC Access connector (or, for a

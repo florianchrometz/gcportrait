@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Kubernetes workload controllers (apps/v1) of GKE clusters with the asset inventory feature on. They nest in
 # their namespace by name path. Ownership (deployment → replica set → pod) comes from ownerReferences; images

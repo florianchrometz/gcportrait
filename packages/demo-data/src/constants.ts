@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Public constants of the demo organisations. */
 import type { DemoSize } from '@gcportrait/model';
 

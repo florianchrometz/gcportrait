@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The graph's lookup indexes: by type, project, address and host name. */
 import type { GraphIndexes, GraphNode } from '@gcportrait/model';
 import { compareStrings, sortedRecord } from './order.js';

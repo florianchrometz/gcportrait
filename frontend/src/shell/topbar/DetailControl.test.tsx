@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The detail control: a radio group of auto / folders / projects / networks / all; Auto names the
  * level it picked for the canvas; a click or the arrow keys write the level into the hash, and the URL restores

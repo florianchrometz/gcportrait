@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The worker side of the layout protocol (worker.ts), run in-process with a host whose task queue the test
  * drives by hand: every request ends in exactly one result, cancelled or error; a superseded or cancelled

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Identity Platform: the project's authentication configuration, its tenants and identity provider
 # configurations. All hidden (configuration records); the host names of authorised domains and identity

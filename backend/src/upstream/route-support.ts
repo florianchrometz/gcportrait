@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the routes that call Google on the caller's behalf share: the caller's token and its rate limit, a stream
  * slot for the token, the schema's first problem as a message, and the request's lifetime as an abort signal.

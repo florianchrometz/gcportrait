@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * A controllable window.matchMedia for jsdom (which has none): answers prefers-color-scheme queries and

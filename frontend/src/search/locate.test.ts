@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Locating a search hit in a view (locate.ts) on the demo organisations with the real catalog and scene
  * builder: drawn as itself, inside chips (the flips open them, and the view with them draws the node), outside

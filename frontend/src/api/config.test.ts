@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * GET /api/config's guard (api/config.ts) against the contract it checks by hand, `PublicConfigSchema` in
  * @gcportrait/model, which the backend answers with: every answer one accepts the other does too. zod is loaded

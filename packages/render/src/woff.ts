@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * WOFF 1.0 → OpenType (sfnt). The rasteriser loads OpenType files from disk; the `@fontsource` packages ship
  * the faces as WOFF, which is the same sfnt tables, each zlib-compressed when that is smaller, behind a WOFF

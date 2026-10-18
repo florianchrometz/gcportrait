@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search ranking (rank.ts) on hand-made documents: tiers never mix (an exact id beats a fuzzy label), the
  * container boost, IP matches (exact, prefix, inside a range), shown before hidden, word starts, queries of

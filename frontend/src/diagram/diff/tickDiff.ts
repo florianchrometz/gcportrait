@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline diff of a drawn day (skill cai-ingestion §5, gcp-diagram-style §6; docs/timeline.md), worked
  * out in the data worker with the drawn day's Scene. Pure: Graphs, snapshots, the view and the Scene in; a Scene

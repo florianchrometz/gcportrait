@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Export menu: inert while nothing is drawn; a WAI-ARIA menu button whose menu holds the options
  * as radio and checkbox items and the four actions; keyboard operable; each action reports its outcome in the

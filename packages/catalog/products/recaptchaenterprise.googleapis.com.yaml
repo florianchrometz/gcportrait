@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # reCAPTCHA: site keys and reCAPTCHA firewall policies (WAF integration with Cloud Armor and CDNs).
 product: reCAPTCHA

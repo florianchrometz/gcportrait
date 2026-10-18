@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { decodeViewSpec, type LensId, type SnapshotRef } from '@gcportrait/model';
 import { useId, useLayoutEffect, useRef, useState, type SyntheticEvent, type ReactElement } from 'react';
 

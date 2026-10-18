@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The large-snapshot guard on every way the app draws a snapshot, in jsdom with the fake snapshot library: the
  * rules (largeSnapshot.ts: the threshold, what is known of a snapshot's size, the words, the session setting);

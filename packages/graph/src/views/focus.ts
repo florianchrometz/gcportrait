@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Step (b) of the scene builder: focus views (docs/lenses-and-filters.md). A focus picks a part of the
  * universe below the root; the lens and the filters then apply to that part exactly as they apply to the whole

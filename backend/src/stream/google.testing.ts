@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A pretend Google for the stream tests (never imported by the app, so neither bundle carries it): Cloud
  * Asset Inventory's `assets.list` and Cloud Storage's JSON API as an `UpstreamFetch`, recording every call,

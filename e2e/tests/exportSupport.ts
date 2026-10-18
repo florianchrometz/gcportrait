@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Helpers for the export spec: where downloaded exports go, rendering an SVG with native resvg on the app's
  * own Roboto files, decoding and comparing PNGs. The headless renderer uses resvg's WebAssembly build instead;

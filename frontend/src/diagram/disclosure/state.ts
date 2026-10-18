@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Progressive disclosure through the app store: selectors over the store's state for the
  * "N of M shown" indicator and whether "Expand all" and "Collapse all" would change anything (the actions

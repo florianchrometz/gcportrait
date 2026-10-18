@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The versions the render package's tests hold resvg to: a dependency as packages/render/package.json declares
  * it and as it is installed for the package, read from the installed package's own package.json, so a bump

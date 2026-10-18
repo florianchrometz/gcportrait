@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { run } from './generate-metrics.js';
 

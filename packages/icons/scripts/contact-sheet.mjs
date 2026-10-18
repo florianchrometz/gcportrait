@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Writes a contact sheet of every icon the package resolves: each key at 24 px and at 16 px, on a light card

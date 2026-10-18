@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The render job in process: the same job as the worker's (job.ts), with its messages delivered on the next
  * microtask as a worker would deliver them. For the tests, which compare its bytes with the library's and the

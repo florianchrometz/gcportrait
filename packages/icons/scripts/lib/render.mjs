@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Rasterising SVG in headless Chromium through playwright-core: the contact sheet's PNG, and the vendoring

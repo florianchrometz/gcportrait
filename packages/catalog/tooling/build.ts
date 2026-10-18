@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm catalog:build` (`pnpm --filter @gcportrait/catalog build`): compiles the catalog and writes
  * dist/catalog.json and src/generated/compiled-catalog.ts, the git-ignored module the package exports (see

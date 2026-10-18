@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Plans the 35-day history of a generated organisation and replays it into per-tick mutation lists.
  *

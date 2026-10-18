@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Cloud Asset Inventory scopes as request bodies name them (skill cai-ingestion §1): `organizations/ID`,
  * `folders/ID` or `projects/ID_OR_NUMBER`. A scope is validated here, with the identifier schemas of

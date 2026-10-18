@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `pnpm demo:static`: build the app's self-contained demo-only bundle for a static host. Rules: AGENTS.md,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Identifier formats of the Google APIs and Kubernetes, drawn from a seeded generator. */
 import type { Rng } from './rng.js';
 

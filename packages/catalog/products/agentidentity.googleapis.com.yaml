@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Agent Identity: auth providers that let agents call third-party APIs with OAuth or API-key
 # credentials. Asset names carry the project id (projects/<id>/locations/<l>/authProviders/<a>).

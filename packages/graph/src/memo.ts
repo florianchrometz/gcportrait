@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The builder's memo: what the builder works out for one asset on its own — its node, and the
  * relations, `nestsIn` containers and `contains` children its type's rules produce — kept by the asset object. A

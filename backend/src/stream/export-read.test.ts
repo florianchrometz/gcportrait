@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The `gs://` URIs the export read takes (export-read.ts): a bucket and an object or prefix, and everything else
  * refused before anything is asked of Cloud Storage. The route and the read's caps are routes/export.test.ts's.

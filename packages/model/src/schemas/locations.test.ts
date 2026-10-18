@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { isRegion, isZone, regionOfZone, zoneRegion } from './locations.js';
 import { LOCATION_PATTERN } from './patterns.js';

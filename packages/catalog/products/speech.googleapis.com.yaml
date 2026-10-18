@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Speech-to-Text, v2 resources: recognizers are cards; phrase sets, custom classes, the location config
 # singleton, custom models and endpoints are hidden. Asset names carry the project number

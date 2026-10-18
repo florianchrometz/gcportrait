@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Where the highlight marks go (skill gcp-diagram-style §6): the geometry the highlight painter sets on the
  * interactive canvas and the static drawing writes for a selected-state baseline, so both draw the same marks.

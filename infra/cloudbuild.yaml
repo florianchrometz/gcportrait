@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Build configuration for `infra/deploy.sh --build`: builds infra/Dockerfile from the uploaded checkout and
 # pushes the image to the instance's own Artifact Registry repository. deploy.sh submits it as a regional build

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The demo organisations in the workers (the demo generator runs in workers only):
  * "Try the demo" prepares demo S as the data worker draws it, with its 35-day history, through the data protocol's

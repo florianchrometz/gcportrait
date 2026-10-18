@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The collapse affordance of an open zone, drawn by the interactive canvas only, inside the zone's
  * group and over its header icon: a button (`role="button"`, named "Collapse <zone>") whose face, a ⊟ glyph on

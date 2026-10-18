@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Predicates: `hiddenWhen` on a type, and the body of a JSONPath filter `[?(…)]`.
  *

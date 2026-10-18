@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The zod-free vocabularies: each tuple and its schema list the specified values, in their order
  * (consumers such as the render CLI's help text read the schema's options), and each guard accepts exactly what

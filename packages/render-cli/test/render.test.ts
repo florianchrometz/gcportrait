@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Byte stability (PNG and SVG byte-stable for a fixed fixture across two runs; across two processes:
  * cli.test.ts), from scratch and from the cache `--all` reuses, and sameness with the app: the SVG is

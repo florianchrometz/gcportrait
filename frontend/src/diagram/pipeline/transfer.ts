@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Large answers of the diagram workers cross to the page as transferred bytes. A worker's answer is
  * structured-cloned on `postMessage` and deserialised on the UI thread when the page reads it; for a large Layout

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** A normalised Cloud Asset Inventory asset (skill cai-ingestion §2). */
 import * as z from 'zod';
 import {

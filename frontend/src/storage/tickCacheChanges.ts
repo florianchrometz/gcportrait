@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tick cache's change signal between the tabs of this browser (storage/tickCache.ts): a `BroadcastChannel` named
  * after the database (`gcportrait.tickCache`), so that the timeline of every tab on the same scope marks a day read

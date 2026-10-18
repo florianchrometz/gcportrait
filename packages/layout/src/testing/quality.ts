@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test and measurement helper (not part of the public API): how a Layout's routes read, from its points and
  * rects alone (independent of the router). Used by the golden test of skill §8's check view and by

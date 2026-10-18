@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Service Networking: private services access, the peering between a consumer VPC network and the
 # Google-managed producer network that Cloud SQL, Memorystore, AlloyDB and other services use for private IPs.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The import worker in-process: the same handler and client, connected through microtasks instead of
  * `postMessage`. For tests (jsdom has no Web Workers); the app never imports it.

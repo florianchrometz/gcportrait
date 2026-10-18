@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The demo Scenes the golden tests, the performance test and the debug renderer lay out: a demo organisation
  * (`@gcportrait/demo-data`, development only) through the graph builder and the scene builder

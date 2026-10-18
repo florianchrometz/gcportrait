@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # BigQuery: the dataset container (from the catalog seed), tables, models, routines and row access policies.
 # Cloud Asset Inventory names everything by project id and nests it by name under its dataset

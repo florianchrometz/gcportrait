@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The token lifecycle of user mode (AGENTS.md, Security and privacy, principle 2): Google Identity Services' token
  * client, an access token held in this closure only (never in the store, storage, a URL or a log), renewed

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Serves a built site (website/dist) on a free port of 127.0.0.1 the way GitHub Pages serves it: a directory's
  * index.html (a directory's address without its trailing slash is redirected to it, 301), `x.html` for the address `x`

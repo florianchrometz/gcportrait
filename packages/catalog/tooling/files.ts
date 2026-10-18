@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Reads the catalog's data files and the official asset-type snapshot from disk for the compiler
  * (`src/compiler/compile.ts`), which is pure. YAML is parsed with line tracking, so violations point at lines.

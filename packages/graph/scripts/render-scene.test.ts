@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The render-scene command: argument parsing, the summary, JSON output, errors, and the entry point. */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';

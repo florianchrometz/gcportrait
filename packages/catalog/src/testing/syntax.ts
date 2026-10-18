@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** An assertion for the parsers of the catalog's small languages, for the unit tests (not part of the public API). */
 import { expect } from 'vitest';
 import { CatalogSyntaxError } from '../engine/syntax.js';

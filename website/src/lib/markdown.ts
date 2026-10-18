@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Markdown to HTML for the website, at build time: the guides under docs/ and the author section are rendered from
  * their one source in the repository, never copied.

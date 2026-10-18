@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { expect, type Locator, type Page, type Route } from '@playwright/test';
 
 import { stubGoogle, TEST_CLIENT_ID, TEST_EMAIL } from '../fixtures/gis.js';

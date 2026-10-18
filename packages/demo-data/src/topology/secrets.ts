@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Secret Manager secrets with their first version. Cloud Asset Inventory names secrets with the project
  * number, as `data.name` does. With the `security` cases a secret is replicated with a customer-managed key in

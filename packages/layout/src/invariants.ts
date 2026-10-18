@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Layout invariants (stage 6; skill gcp-diagram-layout §5), checked from the Scene
  * and the Layout alone, independently of how the layout was computed. Used by the tests (unit, property and

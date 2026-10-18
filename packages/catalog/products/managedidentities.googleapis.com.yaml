@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Managed Service for Microsoft Active Directory: managed AD domains. The domain controllers run in
 # a Google tenant project and are reached over VPC peering from the authorised networks.

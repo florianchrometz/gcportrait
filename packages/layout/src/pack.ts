@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Stage 3: packing (skill gcp-diagram-layout §1, §4 and §9).
  * Bottom-up: the children of a zone are already sized when the zone is packed, and the zone's size follows

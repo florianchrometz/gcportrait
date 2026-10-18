@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { appPath, DIAGRAM_PATH } from '../routes';

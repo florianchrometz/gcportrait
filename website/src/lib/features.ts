@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The features' copy: what each feature of gcportrait is called and what it does, in src/data/features.json.
  *

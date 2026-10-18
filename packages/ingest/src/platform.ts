@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The few host APIs this package touches, typed structurally. The package compiles without the DOM and Node
  * type libraries (a pure core may not reach for either), so the WHATWG stream, Blob and TextDecoder shapes it

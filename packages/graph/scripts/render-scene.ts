@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm render-scene`: builds the Scene of a view of a demo organisation and prints a summary (or the whole
  * scene and report as JSON). The same path as the app: CAI NDJSON → ingest → graph builder → scene builder,

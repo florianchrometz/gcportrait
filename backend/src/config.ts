@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -60,8 +60,9 @@ export type ServerConfig = {
   /** Version reported by /healthz and /api/config. */
   readonly version: string;
   /**
-   * Where the source of the running version is published: the app's footer links to it as "Source (MIT)" on every
-   * route, a courtesy to the people who use the instance (the MIT License does not ask for it). An http(s) URL.
+   * Where the source of the running version is published: the app's footer links to it as "Source (Apache-2.0)"
+   * on every route, a courtesy to the people who use the instance (the Apache License 2.0 does not ask for it).
+   * An http(s) URL.
    */
   readonly sourceUrl: string;
   /**

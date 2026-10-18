@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The fallback decision table of a chosen search result (reveal.ts): every row, and the order of the offers.
  */

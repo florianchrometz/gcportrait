@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The search documents of a Graph (a Fuse.js index over the Graph's node index): one per node, except
  * the organisation, which is the canvas and never a node of the drawing. Each carries the fields the index

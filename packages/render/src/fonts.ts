@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The fonts the rasteriser draws with: the Roboto and Roboto Mono faces the app self-hosts (`@fontsource`, the
  * same package versions the layout's metrics table was generated from, so text drawn here has the advances the

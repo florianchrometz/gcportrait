@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud DNS. Cloud Asset Inventory returns the five DNS types in the shape of the Cloud DNS v1 REST API, whose
 # enum values are lower case (`private`, `default`, `on`, `bypassResponsePolicy`). Managed zones and response

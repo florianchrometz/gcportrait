@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Demo organisation data for the tests, without building a Scene (demoScenes.ts does that): the ids of demo S that
  * its history's days add, remove and change, a day of demo S read as any export is read (ingest with a fixed

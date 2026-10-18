@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # probe-google-apis.sh: runs a matrix of calls against Cloud Asset Inventory and Resource Manager with access
 # tokens you supply, and prints one summary line per call. The answers are the ones the backend's

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The export flow on a laid-out Scene: file names, the SVG file, the "current viewport" crop from the canvas's
  * visible area, the PNG's source (margin, pixel size, embedded fonts, sentinels) handed to the rasteriser, and the

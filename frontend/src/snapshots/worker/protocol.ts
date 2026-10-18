@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The snapshot worker's protocol (ingest off the UI thread). The page hands over files to import; the
  * worker reads, checks and encodes them and answers with records ready to store (`PreparedSnapshot`: Blobs and

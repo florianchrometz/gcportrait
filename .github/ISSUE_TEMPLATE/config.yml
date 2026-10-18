@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Issue chooser: every issue starts from one of the forms in this directory. The links below send questions
 # that are not issues elsewhere: the user guides, the sign-in-free demo (to reproduce a problem on synthetic

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Property tests (fast-check) of the scene builder on the demo organisations: random views — any lens, focus
  * (valid or not), drill-in root (any container, or junk), filters (any combination, drawn from the ids, types

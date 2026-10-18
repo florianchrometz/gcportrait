@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/render — the render library (packages/AGENTS.md, The render library): a snapshot and a view
  * drawn as the app's renderer draws them (the frontend's SVG components rendered without a browser),

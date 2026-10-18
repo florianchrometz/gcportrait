@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Client for `POST /api/preflight` (docs/api.md, docs/permissions.md). The answer's contract is declared once, in
  * @gcportrait/model (`PreflightResponseSchema`, the backend's response contract): the types come from it erased

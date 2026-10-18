@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Shared building blocks for the topology templates: the resource hierarchy contexts, and helpers that turn a
  * resource description into an asset with the naming conventions of its API (full resource names, Compute

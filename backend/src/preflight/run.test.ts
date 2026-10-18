@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The preflight's matrix (every checklist row of docs/permissions.md × ok/403/404/429/5xx, and the
  * service-account gate), run against a pretend Google whose answers are shaped like Google's (skill

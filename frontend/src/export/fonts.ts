@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The "embed fonts" option (skill gcp-diagram-style §8): the Roboto faces the diagram uses (Roboto 400, 500 and
  * 700, Roboto Mono 400), latin subset, as `@font-face` rules with `data:` URIs. Off by default for SVG files

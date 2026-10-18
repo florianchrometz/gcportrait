@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The command-line tools, run as subprocesses. They check a small synthetic catalog written to a temporary
  * directory (`--root`) against its own official list (`--official`), so they test the tooling and stay green

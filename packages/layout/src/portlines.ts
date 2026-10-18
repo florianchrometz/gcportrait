@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Port lines (skill §5): a straight way out of a rect that nothing stands beside. A port's stub meets the
  * gutter line of its container on that side (ports.ts); when that line is the container's padding ring (the

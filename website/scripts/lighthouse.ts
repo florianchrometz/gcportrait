@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm website:lighthouse`: Lighthouse on every page of the built site (the sitemap's pages but the demo at /demo/,
  * which is the app), in the light and the dark theme, with Lighthouse's desktop and mobile settings, against website/dist

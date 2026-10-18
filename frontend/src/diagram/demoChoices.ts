@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The demo organisations the app offers: the snapshot menu and the empty canvas list them, beside the
  * stored snapshots.

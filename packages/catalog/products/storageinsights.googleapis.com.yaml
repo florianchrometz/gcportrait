@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Storage Insights: inventory report configurations, which list a source bucket's object metadata
 # into a destination bucket on a schedule, and the per-run report details. Storage Insights is a Cloud

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Detail level `auto` against the measured canvas (layout skill §6): the scene builder picks the deepest level whose
  * rect count fits the viewport's budget (`viewportBudget`: px² / 14 000, clamped 24–250), never collapses a

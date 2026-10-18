@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * An independent check of a built scene against the view that asked for it: the composition semantics of the
  * ViewSpec (docs/lenses-and-filters.md, skill gcp-diagram-layout §6), re-derived from the Graph, the ViewSpec

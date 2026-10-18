@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Copy link button (views/CopyLink.tsx): the diagram's URL with its hash to the clipboard, and a toast;
  * a refusal said in words; inert away from the diagram page.

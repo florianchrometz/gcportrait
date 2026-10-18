@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Artifact Registry repositories (feature `registries`). Instead of every template declaring the repositories
  * its images come from, one pass at the end reads every image path the organisation's assets name

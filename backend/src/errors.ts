@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The server's one error answer (docs/api.md, Errors), for every route, the error handler, the handler of
  * unknown paths and the rate limiter: `{ statusCode, error, message, requestId, code, retryable?, reason?,

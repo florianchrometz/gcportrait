@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/graph — Snapshot + asset catalog → Graph (docs/packages.md): the containment forest, relation
  * edges with dangling references, aliases, indexes, Shared VPC derivation, and the timeline diff; and Graph +

@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # gcportrait documentation
 
@@ -59,8 +59,8 @@ the author" section from [author.md](author.md).
   structure and conventions.
 - [CHANGELOG.md](../CHANGELOG.md): the release notes, 1.0.0 first; each workspace package's own `CHANGELOG.md`
   is written by `pnpm release:version` from the changesets in `.changeset/`.
-- [LICENSE](../LICENSE): gcportrait's own work is licensed under the MIT License, except the gcportrait
-  name and icon ([brand/LICENSE.md](../brand/LICENSE.md)); the root README's "Licence" section says what that
-  means.
+- [LICENSE](../LICENSE): gcportrait's own work is licensed under the Apache License 2.0, with its attribution
+  in [NOTICE](../NOTICE), except the gcportrait name and icon ([brand/LICENSE.md](../brand/LICENSE.md)); the
+  root README's "Licence" section says what that means.
 - [THIRD_PARTY.md](../THIRD_PARTY.md): every category of third-party material, why the dependency licences
   are compatible with the project licence, and the dependency licence table.

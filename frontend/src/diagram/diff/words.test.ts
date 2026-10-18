@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline markers' words (words.ts): the day compared with at the viewer's offset, "since" or
  * "compared with", an extra tick by its label, and the wording of the legend rows, the accessible names, the ghosts

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, useLayoutEffect, useRef, type ReactElement, type RefObject } from 'react';
 
 import { selectScope, useAppState, useDiagramActions, useScene } from '../../state';

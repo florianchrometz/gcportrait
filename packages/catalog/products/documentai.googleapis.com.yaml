@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Document AI. A processor is a zone that holds its processor versions and its human review config,
 # nested by name (projects/<number>/locations/<us|eu>/processors/<p>/processorVersions/<v>, …/humanReviewConfig);

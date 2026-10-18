@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The details drawer's "What changed" section (docs/timeline.md): while the diagram on screen is a timeline
  * day compared with the day on screen before it, what changed about the selected node between the two days, as the

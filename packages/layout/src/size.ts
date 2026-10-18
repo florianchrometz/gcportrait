@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Stage 2: sizing (skill gcp-diagram-layout §3, skill gcp-diagram-style §3–§4).
  *

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The copy-ready `gcloud` commands of the permissions checklist (docs/permissions.md; skill cai-ingestion
  * §3). Every value placed into a command has been validated before: the scope and the quota project by their

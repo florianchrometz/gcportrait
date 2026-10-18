@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The upstream host allowlist (AGENTS.md, Security and privacy, principle 3; docs/security.md §1): the
  * backend calls Google on the caller's behalf only at these four hosts, over HTTPS, on the default port, so

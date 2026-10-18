@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small XML reader and writer for the draw.io export: the diagram's own SVG markup in (the static render of
  * `renderDiagramSvg`, or the export's live drawing serialised by the browser), draw.io's file format out. No DOM, so

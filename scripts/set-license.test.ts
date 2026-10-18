@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { spawnSync } from 'node:child_process';
 import { Console } from 'node:console';
 import { existsSync, readFileSync, rmSync, symlinkSync } from 'node:fs';

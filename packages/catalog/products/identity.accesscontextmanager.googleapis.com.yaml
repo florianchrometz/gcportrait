@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Access Context Manager: the organisation's access policies, their access levels and VPC Service
 # Controls perimeters. Note the two service names: the asset types are identity.accesscontextmanager…, but the

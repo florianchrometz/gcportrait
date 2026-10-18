@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * A minimal reader for the ZIP archives Google publishes its icon sets in: the central directory, stored and

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Flip ids: the per-zone expand/collapse overrides of the URL hash (the ViewSpec's `flips`, skill
  * gcp-diagram-layout §6). A zone id is a long resource name, so the hash stores a short token derived from it:

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline controller (controller.ts) on a real app store, with a fake cache, a fake reader and hand-run timers:
  * it learns the timeline from the Scene on screen; a history reads nothing; a live scope's cached days (its own

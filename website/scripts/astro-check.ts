@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The type check of the .astro files (`pnpm --filter @gcportrait/website typecheck:astro`, run by the package's
  * typecheck and the root `pnpm typecheck`; docs/website.md, "Building and checking"): @astrojs/check, the checker

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The keyboard on the interactive canvas (style skill §13): the arrow keys, Home and End move focus between
  * the items of a zone (navigation.ts decides where; the canvas moves focus, keeps one tab stop, draws the focus

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the renderer derives from a Scene and its Layout before drawing: the Scene nodes by id, the rects in
  * paint order with their parents and children, the edges split into lines and `secures` overlays, dim mode, and

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * WCAG 2.2 AA for the website's colours (AGENTS.md, Style and accessibility): every text colour on every background
  * it is used on reaches 4.5 : 1, and the focus ring 3 : 1, in the light and the dark theme, read from global.css

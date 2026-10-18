@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A live pull or an export read (skill cai-ingestion §1), from the button press to the stored snapshot: ask the
  * backend for the stream with the session's token (`POST /api/assets/stream` or `POST /api/export/read`), hand the

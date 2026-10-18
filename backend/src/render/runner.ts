@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How the render route runs a render job (backend/AGENTS.md, The render API). The default runner starts a
  * fresh `worker_threads` worker per render and terminates it when the render ends, times out or loses its

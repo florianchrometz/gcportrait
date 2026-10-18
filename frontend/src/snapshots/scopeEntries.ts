@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the Snapshots page shows of each scope's timeline (docs/timeline.md): everything this browser keeps of
  * one scope, in time order. Its snapshots with a history (a demo organisation, a bundle that carries one), whose

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app store: a tiny hand-written external store (no library), read in React through
  * `useSyncExternalStore` (hooks.ts). It holds the seven slices of slices.ts.

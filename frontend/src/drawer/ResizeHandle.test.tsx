@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The resize handle as the phone's sheet uses it (`axis="height"`; the drawer's width: DetailsDrawer.test.tsx): a
  * horizontal splitter named as on a desktop, its value the sheet's height in percent of the canvas's, half or full;

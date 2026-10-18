@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Next Generation Firewall Enterprise (networking fabric): zonal firewall endpoints, their
 # associations with VPC networks, security profiles and profile groups (applied by firewall policy rules), address

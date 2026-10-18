@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -51,12 +51,12 @@ function fontLicences(): Plugin {
 }
 
 /**
- * gcportrait's own licence (MIT; its closing note names what it does not cover, the gcportrait name and
- * icon and the third-party material), copied byte for byte from the repository root to
- * dist/licenses/gcportrait-LICENSE.txt, so the built app (and the image that ships it) carries it next to the code
+ * gcportrait's own licence (Apache-2.0; its closing note names what it does not cover, the gcportrait name and
+ * icon and the third-party material) and its NOTICE, copied byte for byte from the repository root to
+ * dist/licenses/gcportrait-<file>.txt, so the built app (and the image that ships it) carries them next to the code
  * it conveys, as the font licences travel with the fonts.
  */
-export const OWN_LICENCE_FILES = ['LICENSE'] as const;
+export const OWN_LICENCE_FILES = ['LICENSE', 'NOTICE'] as const;
 
 function ownLicence(): Plugin {
   const root = path.resolve(import.meta.dirname, '..');

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram as a standalone `<svg>` document (skill gcp-diagram-style §8): sized to the whole drawing, with
  * `<title>` and `<desc>` naming the scope, the lens and the read time, the legend and the title block (the

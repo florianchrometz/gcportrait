@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The key a fetched tick is cached under in IndexedDB (storage/tickCache.ts): `(scope, readTime, contentType,
  * assetTypes?)`, as skill cai-ingestion §5 binds it. Two reads share an entry only when all four agree, so a tick is

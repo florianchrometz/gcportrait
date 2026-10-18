@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Compute Engine beyond VMs and groups (feature `compute`): custom image families (the current image baked
  * on the previous, deprecated one), regional snapshot schedules, manual and scheduled snapshots (scheduled

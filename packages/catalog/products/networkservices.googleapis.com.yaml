@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Network Services API: Cloud Service Mesh (meshes, gateways, routes, endpoint policies, service
 # bindings, service load-balancing policies), Secure Web Proxy gateways, Media CDN (edge cache services,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout worker's memo: the most recently used Layouts by request key (hash.ts), at most
  * `capacity` of them. A `Map` keeps its keys in insertion order, so moving a key to the end on every use makes

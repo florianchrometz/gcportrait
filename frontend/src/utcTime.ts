@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 export function formatUtcMinute(instant: number): string {
   const iso = new Date(instant).toISOString();
   const separator = iso.indexOf('T');

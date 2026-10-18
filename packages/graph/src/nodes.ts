@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** One graph node per asset: what the catalog says about it, or a generic card for a type it does not map. */
 import {
   assetProject,

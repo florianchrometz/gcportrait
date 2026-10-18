@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The `snapshots` store of IndexedDB (storage/db.ts), on the page: list, read, save, delete. When IndexedDB is
  * unavailable (the page's connection, storage/connection.ts, has none: a private window, a blocked or broken

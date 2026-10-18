@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/check-licenses.mjs end to end, on throw-away projects with saved pnpm reports. One real offline install
  * proves that pnpm's reports still parse; the policy cases use saved reports without installing dependencies.
@@ -19,7 +19,7 @@ import {
   type TempTree,
 } from './testing/temp-tree.js';
 
-const PROJECT_LICENSE = 'MIT';
+const PROJECT_LICENSE = 'Apache-2.0';
 const DENIED = "would impose obligations on gcportrait's combined work or is unverifiable";
 const THIRD_PARTY = [
   '# Third-party material',
@@ -296,15 +296,12 @@ describe('check-licenses', () => {
         'pkgs/same/package.json',
         json({ name: '@fx/same', version: '0.0.0', license: PROJECT_LICENSE }),
       );
-      tree.write(
-        'pkgs/apache/package.json',
-        json({ name: '@fx/apache', version: '0.0.0', license: 'Apache-2.0' }),
-      );
+      tree.write('pkgs/mit/package.json', json({ name: '@fx/mit', version: '0.0.0', license: 'MIT' }));
       tree.write('pkgs/none/package.json', json({ name: '@fx/none', version: '0.0.0' }));
       const root = realpathSync(tree.root);
       savedReports(tree, {}, [
         { name: 'fixture', path: root },
-        ...['same', 'apache', 'none'].map((name) => ({
+        ...['same', 'mit', 'none'].map((name) => ({
           name: `@fx/${name}`,
           path: path.join(root, 'pkgs', name),
         })),
@@ -313,7 +310,7 @@ describe('check-licenses', () => {
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('licenses: FAILED with 2 problem(s):');
       expect(result.stderr).toContain(
-        `  @fx/apache (pkgs/apache/package.json): license "Apache-2.0" differs from the project licence "${PROJECT_LICENSE}" of the root package.json`,
+        `  @fx/mit (pkgs/mit/package.json): license "MIT" differs from the project licence "${PROJECT_LICENSE}" of the root package.json`,
       );
       expect(result.stderr).toContain(
         `  @fx/none (pkgs/none/package.json): no license field; every workspace package declares the project licence "${PROJECT_LICENSE}"`,
@@ -347,10 +344,12 @@ describe('check-licenses', () => {
         new RegExp(`^ {2}${family.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: \\S`, 'm'),
       );
     }
-    // gcportrait is MIT: copyleft that reaches the combined work stays denied, the network kind included.
-    expect(result.stdout).toMatch(/^ {2}GPL-\*: .*could no longer be offered under the MIT License$/m);
+    // gcportrait is Apache-2.0: copyleft that reaches the combined work stays denied, the network kind included.
     expect(result.stdout).toMatch(
-      /^ {2}AGPL-\*: network copyleft: .*could no longer be offered under the MIT License$/m,
+      /^ {2}GPL-\*: .*could no longer be offered under the Apache License 2\.0$/m,
+    );
+    expect(result.stdout).toMatch(
+      /^ {2}AGPL-\*: network copyleft: .*could no longer be offered under the Apache License 2\.0$/m,
     );
     expect(result.stdout).toContain('@fontsource/roboto: OFL-1.1');
     expect(result.stdout).toContain('@fontsource/roboto-mono: OFL-1.1');

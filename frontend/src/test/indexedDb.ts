@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A fresh, empty IndexedDB (fake-indexeddb) for every test of a file, and the app's database opened in it, closed
  * again after the test. The test file itself imports `fake-indexeddb/auto` first, so the IndexedDB globals exist

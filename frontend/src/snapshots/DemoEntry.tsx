@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Connect page's "Try the demo": choose a size, S to XL; a demo worker started for the job (the demo
  * generator runs in workers only; AGENTS.md, Architecture and code) generates that demo organisation

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/render` over HTTP (Fastify `inject`, a pretend Google behind the allowlisted client, the render
  * job in process): every source and both formats with the bytes the command line and the library write, the

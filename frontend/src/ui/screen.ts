@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app's three layouts and the widths between them (AGENTS.md, Product rules): the phone up to 47.99rem (portrait
  * and landscape), the tablet from 48rem to 79.99rem, the desktop from 80rem. Media queries cannot read custom

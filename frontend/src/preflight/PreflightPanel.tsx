@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The preflight panel (docs/permissions.md): the "Check permissions" action for the
  * scope, mode and quota project in the app store, and the checklist it answers: one row per need, its status in

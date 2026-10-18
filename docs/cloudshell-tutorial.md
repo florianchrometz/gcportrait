@@ -2,7 +2,7 @@
 
 <walkthrough-tutorial-duration duration="10"></walkthrough-tutorial-duration>
 
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <!--
   The guided path of docs/self-host.md, as a Cloud Shell tutorial: the "Open in Cloud Shell" button in

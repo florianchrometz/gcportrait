@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The static demo's tooling: scripts/lib/static-demo.mjs and scripts/static-demo.mjs. The policy is the
  * backend's demo-only one without what a `<meta>` cannot carry, the route copies are App.tsx's routes, the website's

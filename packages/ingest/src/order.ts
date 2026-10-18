@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Deterministic orderings used across the package (never locale-dependent). */
 
 /** Code-unit order, the same everywhere. */

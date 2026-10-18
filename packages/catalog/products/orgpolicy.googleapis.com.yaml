@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Organization Policy Service: organisation policies set on an organisation, folder or project, and
 # custom constraints. The official list names Policy under both "Organization Policy Service" and

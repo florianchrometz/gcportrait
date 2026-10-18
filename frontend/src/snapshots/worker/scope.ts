@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scope of an imported Cloud Asset Inventory export. An export file does not say which organisation, folder
  * or project it was taken from, but every asset's `ancestors` end at the root of its hierarchy (closest first,

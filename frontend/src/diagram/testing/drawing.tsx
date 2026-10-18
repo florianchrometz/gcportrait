@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A diagram drawn as static markup and parsed back into an XML document, for the tests that read the SVG the
  * drawing writes (attributes, order, text) without a canvas around it.

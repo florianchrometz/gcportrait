@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's side of the search (service.ts, documents.ts) on the demo organisations with the real
  * catalog: the documents (kinds, the organisation left out, the names above a node, icon keys), the answers to

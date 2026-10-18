@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Self-hosting options
 
@@ -539,12 +539,12 @@ infra/deploy.sh --project YOUR_PROJECT --build
 prints deploys the image just built with `--image`, without building again. [contributing.md](contributing.md)
 sets up a clone for working on gcportrait.
 
-**The source link of a modified version.** gcportrait is licensed under the MIT License, which asks nothing of
-an instance you run, modified or not. The app's footer still links its source as "Source (MIT)", to this
-project's repository by default; if you publish the source of your version, pass `--source-url` (default: this
-repository) with where it is, so the link leads there. A modified version you present to others needs its own
-name and icon: the gcportrait name and icon are not covered by the MIT License
-([brand/LICENSE.md](../brand/LICENSE.md)).
+**The source link of a modified version.** gcportrait is licensed under the Apache License 2.0, which asks
+nothing of an instance you run, modified or not. The app's footer still links its source as
+"Source (Apache-2.0)", to this project's repository by default; if you publish the source of your version,
+pass `--source-url` (default: this repository) with where it is, so the link leads there. A modified version
+you present to others needs its own name and icon: the gcportrait name and icon are not covered by the Apache
+License 2.0 ([brand/LICENSE.md](../brand/LICENSE.md)).
 
 ### Run the image locally
 

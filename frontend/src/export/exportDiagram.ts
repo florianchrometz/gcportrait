@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The export (skill gcp-diagram-style §8, docs/export.md): the diagram on screen as an SVG, PNG or draw.io file, or a
  * PNG on the clipboard; the whole diagram or the part the canvas shows; in the light or the dark theme, whichever the

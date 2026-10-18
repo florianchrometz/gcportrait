@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Stepped execution. The layout's stages are generators that yield a `LayoutProgress` between
  * stages and every `ROUTE_STEP` edges of a routing pass, so a host can pause there: the layout worker lets

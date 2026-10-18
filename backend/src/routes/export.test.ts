@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/export/read` over HTTP against a pretend Cloud Storage, and the export read's caps
  * (docs/security.md §5). The URI's syntax is stream/export-read.test.ts's.

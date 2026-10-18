@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout's performance harness, shared by `pnpm --filter @gcportrait/layout bench`
  * (scripts/bench.ts) and the budget tests (test/performance.test.ts in-process, test/worker.test.ts through a

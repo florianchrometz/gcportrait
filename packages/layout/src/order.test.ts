@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { compareCodePoints, compareSiblings, type Orderable } from './order.js';

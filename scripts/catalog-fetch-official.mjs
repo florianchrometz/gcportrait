@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `pnpm catalog:fetch-official`: downloads Google's list of asset types supported by Cloud Asset Inventory,

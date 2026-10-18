@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Migrate to Virtual Machines. Migration records are operational, so every type starts hidden (skill
 # gcp-asset-catalog §3); `includeTypes` reveals them. A source's connectors, migrating VMs, their clone and

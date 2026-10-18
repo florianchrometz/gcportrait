@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * scripts/check-audit.mjs: the audit gate on saved `pnpm audit --json` reports (synthetic advisories,
  * no network) and its allowlist with expiry dates.

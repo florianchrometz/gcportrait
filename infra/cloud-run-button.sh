@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # The Cloud Run Button's postcreate hook (app.json at the repository root; docs/self-host-options.md, "Run on
 # Google Cloud"). The button builds infra/Dockerfile in Cloud Shell, deploys the service with the two

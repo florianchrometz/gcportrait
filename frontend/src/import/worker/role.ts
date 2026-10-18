@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The imports role of the app's worker script (diagram/pipeline/diagram.worker.ts, started with the name
  * `WORKER_ROLES.imports`): live pulls and export reads streamed from the backend (handler.ts). It shares the script

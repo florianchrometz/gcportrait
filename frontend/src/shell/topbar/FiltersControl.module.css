@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The Filters popover (FiltersControl.tsx): switches on the left, the pickers on the right, sized to fit under
    the top bar of a desktop window (from 1280 × 800). Tokens only (both themes). On a phone or a tablet it opens in

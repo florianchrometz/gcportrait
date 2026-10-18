@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Playback's state machine (playback.ts): play, stop with a reason, a new interval while playing; where it starts;
  * each timer tick waits for the day on screen, moves to the next available day, and stops at the last one, on a

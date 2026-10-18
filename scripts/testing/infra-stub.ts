@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The stand-ins the infra tests (scripts/infra*.test.ts) run deploy.sh, uninstall.sh, cloud-run-button.sh and, with a
  * stand-in for GitHub's downloads of its own, install.sh against: `gcloud`, `curl` and `sleep` answer from a rule list

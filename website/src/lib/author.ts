@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The landing page's "About the author" section and its Person structured data, from docs/author.md: YAML front
  * matter for the facts, Markdown for the text. The page puts the name line above the text, "NAME & contributors",
@@ -12,7 +12,7 @@
  * sameAs:                             # optional: profile pages (https only; anything else is left out)
  *   - https://github.com/florianchrometz
  * ---
- * <!-- SPDX-License-Identifier: MIT -->
+ * <!-- SPDX-License-Identifier: Apache-2.0 -->
  *
  * # About the author
  *

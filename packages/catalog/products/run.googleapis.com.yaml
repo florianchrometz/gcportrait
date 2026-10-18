@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Run services, jobs and worker pools, with their revisions and executions hidden. The rules read both
 # API shapes an inventory may carry: the v2 resource (template.*, serviceAccount, vpcAccess, volumes) and the

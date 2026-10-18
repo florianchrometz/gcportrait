@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page's one IndexedDB connection: opened once for every store, and opened again after another tab's
  * schema upgrade closed it, so the preferences, the saved views and the snapshot library never stay on a closed

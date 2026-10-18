@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The large-snapshot guard's rules (docs/modes.md, "At a glance"), as plain functions: a snapshot with more
  * than `LARGE_SNAPSHOT_ASSETS` assets (`@gcportrait/model`) is drawn only once the person has confirmed it, since

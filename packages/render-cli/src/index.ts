@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/render-cli — the headless renderer's command line (export rules: skill gcp-diagram-style §8):
  * `pnpm render` draws a demo view as the app's renderer draws it, as a standalone SVG, a PNG and a draw.io

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * ViewSpec: everything that defines a view. It serialises into the URL hash
  * (`codec/view-hash.ts`); `snapshot` and `tick` make timeline positions shareable.

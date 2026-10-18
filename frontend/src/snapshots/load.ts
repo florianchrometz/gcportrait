@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How the diagram's data worker loads the snapshot a view names (diagram/pipeline/dataRole.ts): a demo
  * organisation (`demo:<size>`) is generated as before (`loadDemoSnapshot`), so the demo needs no storage at all;

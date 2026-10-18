@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The progress of a live pull or an export read (skill cai-ingestion §1, §4), as one pure reducer: what the page
  * shows while the stream runs (pages, assets, bytes, elapsed time), then how it ended. The page feeds it the bytes it

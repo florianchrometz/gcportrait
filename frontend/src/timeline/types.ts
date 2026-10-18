@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the data worker tells the page about a snapshot's timeline (with each Scene: `SceneSource.timeline`), and
  * the scope name both sides build cache keys with.

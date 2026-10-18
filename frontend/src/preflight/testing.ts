@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Preflight answers as the backend writes them (backend/src/preflight/schemas.ts), and the app store's `connect`
  * slice once a check found a scope ready, for the tests. Synthetic only (AGENTS.md, Data and graph semantics):

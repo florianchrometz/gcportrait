@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Steps (c) and (d) of the scene builder: the lens and the cross-cutting filters (docs/lenses-and-filters.md)
  * turn the focus's part of the universe into the set of visible nodes and the edges drawn between them.

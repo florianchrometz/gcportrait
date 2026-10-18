@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Stage 4: gutters (skill gcp-diagram-layout §5). After packing, every container
  * (the canvas and every open zone) has

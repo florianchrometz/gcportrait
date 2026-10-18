@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Certificate Authority Service: CA pools (containers), certificate authorities and their revocation
 # lists, issued certificates and certificate templates. The chain: a subordinate CA names its issuer, an issued

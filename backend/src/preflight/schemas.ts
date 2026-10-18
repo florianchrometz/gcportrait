@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The contract of `POST /api/preflight` (docs/permissions.md), written once as zod schemas: the route
  * validates the body with the request schema and Fastify serialises the answer through the response schema

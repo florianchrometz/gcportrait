@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Identifier and timestamp formats shared by every schema in this package. The patterns live in patterns.ts
  * (no zod) and are re-exported here for the package's own modules and tests (the tests build their fast-check

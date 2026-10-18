@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The import worker's protocol (ingest off the UI thread): the page reads a stream from the backend
  * (a live pull's frames, or an export's lines) and hands its bytes over chunk by chunk; the worker reads them with

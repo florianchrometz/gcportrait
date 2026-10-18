@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One day of a stored history as a snapshot, in the data worker (docs/timeline.md): `snapshotAt` of
  * `@gcportrait/demo-data` (the generator-free replay) applies the daily mutations up to the day, and the

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * An editable combobox with a listbox popup (WAI-ARIA APG "list autocomplete"), for search results: a text input
  * with `role="combobox"`, `aria-autocomplete="list"`, `aria-expanded` and `aria-controls`; the results listbox

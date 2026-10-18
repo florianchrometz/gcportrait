@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * Product name, tagline and the non-affiliation statement, defined once (AGENTS.md, Non-affiliation, brand and

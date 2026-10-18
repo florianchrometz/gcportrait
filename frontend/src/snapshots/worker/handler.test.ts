@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { generateOrganization, historyFor } from '@gcportrait/demo-data';
 import { migrateSnapshot, type Snapshot } from '@gcportrait/model';
 import { describe, expect, it, vi } from 'vitest';

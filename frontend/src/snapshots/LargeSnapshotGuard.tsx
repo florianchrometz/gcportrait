@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The large-snapshot guard in React (largeSnapshot.ts has its rules): before the app draws a snapshot of more than
  * `LARGE_SNAPSHOT_ASSETS` assets it asks, in an alert dialog, "Draw it anyway" or "Cancel", with "Do not ask again

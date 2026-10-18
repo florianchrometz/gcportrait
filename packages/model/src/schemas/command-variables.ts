@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The variables of copy-ready commands, as data: every value a reader fills in where the documentation under docs/
  * or the app shows a command, with its label, description, synthetic example, format and whether it is a secret.

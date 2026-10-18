@@ -7,45 +7,50 @@ import { NON_AFFILIATION_LONG, REPOSITORY_URL, repositoryFileUrl } from '../site
 const meta = {
   title: 'Licence',
   description:
-    'gcportrait is open source under the MIT License: what you may do with it, what stays reserved (its name and icon), third-party material and Google’s trademarks.',
+    'gcportrait is open source under the Apache License 2.0: what you may do with it, what stays reserved, third-party material and Google’s trademarks.',
   path: '/licence/',
-  socialImage: socialImage('licence', 'gcportrait’s licence: MIT'),
+  socialImage: socialImage('licence', 'gcportrait’s licence: Apache-2.0'),
   jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Licence', path: '/licence/' }])],
 };
 ---
 
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 <Base meta={meta}>
   <div class="container prose licence">
     <h1>Licence</h1>
     <p class="lead">
-      gcportrait’s own work, its code, its texts and its images, is licensed under the MIT License
-      (<code>MIT</code>). Copyright © 2026 Florian Chrometz.
+      gcportrait’s own work, its code, its texts and its images, is licensed under the Apache License 2.0
+      (<code>Apache-2.0</code>). Copyright 2026 Florian Chrometz.
     </p>
     <p>
       The licence text is <a href={repositoryFileUrl('LICENSE')}>LICENSE</a> in the repository (also at
-      <a href="/licenses/gcportrait-LICENSE.txt">gcportrait-LICENSE.txt</a> on this site). Every source file names the
-      licence in its first lines with the line <code class="code-long">SPDX-License-Identifier: MIT</code>.
+      <a href="/licenses/gcportrait-LICENSE.txt">gcportrait-LICENSE.txt</a> on this site), with the attribution of
+      <a href={repositoryFileUrl('NOTICE')}>NOTICE</a> (<a href="/licenses/gcportrait-NOTICE.txt">gcportrait-NOTICE.txt</a>
+      here). Every source file names the licence in its first lines with the line
+      <code class="code-long">SPDX-License-Identifier: Apache-2.0</code>.
     </p>
 
     <h2>What you may do</h2>
     <p>
       Use, copy, modify, merge, publish, distribute, sublicense and sell gcportrait, run it for yourself or for others,
-      on its own or as part of your own software or services, commercially or not. The one condition: the copyright
-      notice and the permission notice stay with every copy or substantial portion of it. It comes without warranty.
+      on its own or as part of your own software or services, commercially or not, with a patent licence from the
+      contributors for the parts they wrote. The conditions: the copyright notice and the licence text stay with every
+      copy, modified files say that you changed them, the notices of the work stay in place, and a <code>NOTICE</code>
+      file that comes with it travels with your copy. It comes without warranty.
     </p>
     <p>
-      The licence asks nothing of an instance you run, modified or not. The app still links its source in its footer on
-      every page, “Source (MIT)”, as a courtesy to the people who use an instance: it points at this project’s
+      The licence asks nothing of an instance you run, modified or not: it has no network condition that would make you
+      publish your changes. The app still links its source in its footer on
+      every page, “Source (Apache-2.0)”, as a courtesy to the people who use an instance: it points at this project’s
       repository by default, and an instance that runs a modified version can point it at its own source (the backend’s
       <code>SOURCE_URL</code>, <a href="/docs/configuration/">configuration reference</a>).
     </p>
 
     <h2>The gcportrait name and icon</h2>
     <p>
-      The gcportrait name and the gcportrait icon are not covered by the MIT License. They identify this project and may
-      not be used to present other software or services as gcportrait or as endorsed by it; forks must use their own
-      name and icon.
+      The gcportrait name and the gcportrait icon are not covered by the Apache License 2.0. They identify this project
+      and may not be used to present other software or services as gcportrait or as endorsed by it; forks must use
+      their own name and icon. The licence grants no trademark rights.
     </p>
     <p>
       The icon is <code>brand/icon.svg</code> and every rendering of it: the favicons, this website’s logo and the app’s
@@ -54,7 +59,7 @@ const meta = {
     </p>
 
     <h2>Third-party material</h2>
-    <p>Third-party material keeps its own licences and terms and is not covered by the MIT License:</p>
+    <p>Third-party material keeps its own licences and terms and is not covered by the Apache License 2.0:</p>
     <ul>
       <li>
         <strong>npm dependencies</strong>, each under its own licence. Only licences that do not reach gcportrait’s own
@@ -68,16 +73,16 @@ const meta = {
       <li>
         <strong>Google Cloud product icons</strong>, vendored unmodified and used under Google’s icon usage terms
         (<a href={repositoryFileUrl('packages/icons/README.md')}>packages/icons</a>). They are trademarks, not code, and
-        the MIT License does not cover them.
+        the Apache License 2.0 does not cover them.
       </li>
       <li><strong>Licence texts</strong> under <code>scripts/licenses/</code>, kept verbatim.</li>
     </ul>
 
     <h2>Contributions</h2>
     <p>
-      Contributions are accepted under the MIT License, the licence gcportrait is offered under (inbound = outbound);
-      there is no contributor licence agreement. The <a href="/contributing/">contributing page</a> has the rest. The
-      source is on <a href={REPOSITORY_URL}>GitHub</a>.
+      Contributions are accepted under the Apache License 2.0, the licence gcportrait is offered under (inbound =
+      outbound); there is no contributor licence agreement. The <a href="/contributing/">contributing page</a> has the
+      rest. The source is on <a href={REPOSITORY_URL}>GitHub</a>.
     </p>
 
     <h2>Google trademarks</h2>

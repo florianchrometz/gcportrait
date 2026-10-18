@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/model — the single definition of every shared type (AGENTS.md, Data and graph semantics). Types
  * are inferred from the zod schemas; this file is the package's only public surface. The values the app's UI

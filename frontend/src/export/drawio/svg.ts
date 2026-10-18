@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the draw.io translator reads from SVG markup: presentation attributes with their inheritance, colours,
  * lengths, transforms and path data. Only what the diagram's components write is needed, but every reader takes the

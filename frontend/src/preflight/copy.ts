@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The words of the permission check (docs/permissions.md): a title per
  * checklist item, a sentence per finding, a sentence per quota-project result and the overall outcome. The backend

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram as an SVG string, without a browser: the snapshot baselines (`baselines.test.tsx`) and the
  * headless renderer use it. Not imported by the app, so `react-dom/server` stays out of the bundle.

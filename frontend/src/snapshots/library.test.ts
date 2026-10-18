@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import 'fake-indexeddb/auto';
 
 import { generateOrganization, historyFor, toCaiNdjson } from '@gcportrait/demo-data';

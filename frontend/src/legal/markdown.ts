@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small Markdown reader for the instance's legal pages (legal/LegalPage.tsx). It turns text into a
  * tree of plain data that RenderMarkdown.tsx renders as React elements, so there is no HTML anywhere on the way: raw HTML

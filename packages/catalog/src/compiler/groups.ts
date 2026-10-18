@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Authoring groups (README, "Authoring a group"): `known-unmapped/<group>.yaml` says which official
  * types a group owns (`owns`: exact types or `<service>/*` globs) and which of them it has not mapped yet

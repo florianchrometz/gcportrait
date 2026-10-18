@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Diagram colour tokens (skill gcp-diagram-style §2) in both themes. This table is what the renderer writes into
  * the SVG as presentation attributes (so a serialised SVG carries its theme's colours, for the snapshot

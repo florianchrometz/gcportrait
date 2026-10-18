@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Export fixtures for the tests, without React (testing.tsx holds the page harness and the backend's stream frames,
  * test/backend.ts the stand-in backend): an export's operation.json and a demo organisation's export NDJSON.

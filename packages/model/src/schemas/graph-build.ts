@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the graph builder (`@gcportrait/graph`; containment: skill gcp-diagram-layout §2) reports next to the
  * Graph it builds: the Shared VPC pairs behind its derived `shares` edges, the "shared with N projects" count

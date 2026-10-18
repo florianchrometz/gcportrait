@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm render` end to end: in process through `run` (every mode, exit codes, where output and the report go)
  * and once as the real command in two child processes, whose files must be byte-identical to each other and to

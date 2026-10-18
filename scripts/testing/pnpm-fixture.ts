@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Throw-away pnpm projects for the dependency tooling's tests (check-licenses, third-party-notices): packages planted
  * under vendor/ as `file:` dependencies, installed offline, so no test needs the network.

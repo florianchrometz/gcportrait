@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { createInterface } from 'node:readline';

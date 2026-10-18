@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The demo organisations S and M (@gcportrait/demo-data, default seed, DEMO_TODAY) for the tests on the demo:
  * each size's Snapshot and its graph build with the real compiled catalog, generated and built once per test

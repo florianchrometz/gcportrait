@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * An analytics project: a data-lake bucket (CMEK, versioned), export buckets, BigQuery datasets with native
  * tables, a view and external tables over the lake bucket. Native tables and export buckets may have been

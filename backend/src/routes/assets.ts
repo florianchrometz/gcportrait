@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * POST /api/assets/stream: authenticate, validate the pull, take a stream slot and send assetListFrames
  * through the NDJSON writer. ../stream/pull.ts owns fields, mode validation and credentials shared

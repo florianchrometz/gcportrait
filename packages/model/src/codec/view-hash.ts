@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The URL-hash codec for ViewSpec. The grammar, the keys and examples are in the package README. In short:
  * `key=value` fields joined by `&` in a fixed key order, list values joined by `,`, every value item

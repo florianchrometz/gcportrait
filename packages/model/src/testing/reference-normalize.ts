@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * For tests only (codec/view-hash.property.test.ts; not part of the `./testing` export): `normalizeViewSpec`
  * written with zod, every field judged by its zod schema's `safeParse`. The zod-free normaliser

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The layout worker for Node: mounts the package's `createLayoutWorkerHandler` on a `worker_threads` port the
  * way the app's Web Worker mounts it on `self` (README, "Worker"), with the worker's own clock for

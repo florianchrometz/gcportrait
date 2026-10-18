@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The backend as the tests stand it in: GET /api/config's answer (`publicConfig`), and a `fetch` that answers the
  * routes a test names, records every call with its parsed JSON body, and fails any other request as a dropped

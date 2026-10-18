@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `pnpm render`: one demo view as PNG, SVG and/or a draw.io file, every fixture × lens × theme (`--all`), or the list of demo
  * organisations. Every run starts with the command's name on standard error; neither the output nor the drawings

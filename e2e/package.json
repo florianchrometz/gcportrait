@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "gcportrait end-to-end, visual and accessibility tests (Playwright).",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "lint": "eslint . --max-warnings=0",

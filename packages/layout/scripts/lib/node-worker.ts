@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A real layout worker for the bench and the worker tests: a Node `worker_threads` worker running
  * scripts/lib/layout-worker.ts (through tsx, so it runs the TypeScript sources), with the package's page-side

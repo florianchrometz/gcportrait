@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The selection trace (skill gcp-diagram-style §6): what a
  * selected (or hovered) node lights up so that its place and its connections stay traceable.

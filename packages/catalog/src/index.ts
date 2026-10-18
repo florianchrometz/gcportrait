@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/catalog — the asset catalog as data, and the one rule engine that reads it (packages/AGENTS.md, Catalog and
  * graph semantics; skill gcp-asset-catalog). The graph builder (`@gcportrait/graph`) evaluates relations,

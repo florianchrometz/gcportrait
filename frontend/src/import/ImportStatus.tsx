@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A live pull's or export read's progress (the stream's progress frames, cai-ingestion skill §4): the stage in a
  * polite live region (it changes only with the stage, so a screen reader is not flooded), the counters (pages,

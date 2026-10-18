@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A view's timeline tick through the data worker's handler (diagram/pipeline/dataHandler.ts): the day is
  * drawn (its read time and assets, `source.tick`), the snapshot's timeline comes with every Scene, the last day is

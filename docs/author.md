@@ -10,7 +10,7 @@ sameAs: # Person.sameAs, and the links under the section: profile pages, https o
   - 'https://www.linkedin.com/in/florian-chrometz/'
   - 'https://github.com/florianchrometz'
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # About the author
 

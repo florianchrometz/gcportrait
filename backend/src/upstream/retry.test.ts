@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_RETRY_POLICY, backoffDelay, isRetryableStatus, sleep } from './retry.js';

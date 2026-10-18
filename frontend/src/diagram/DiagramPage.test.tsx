@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram page end to end in jsdom, with the real data and layout handlers running in-process: the demo
  * organisation S is loaded, laid out and drawn from the URL hash; hover and selection only paint (the layout

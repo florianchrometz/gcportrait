@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Types the official page lists only under its policy and runtime sections (IAM policy, access policy,
 # organisation policy, OS inventory content), never as RESOURCE content: v1 ingestion reads RESOURCE content

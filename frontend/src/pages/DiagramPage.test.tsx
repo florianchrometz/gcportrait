@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram page (pages/DiagramPage.tsx) in the app with in-process workers, on demo organisation S: its live
  * regions, so that each loading stage and then the drawn diagram's "N of M shown" are announced.

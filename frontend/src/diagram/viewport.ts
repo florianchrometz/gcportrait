@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Camera arithmetic for the canvas (zoom and pan, `scaleExtent [0.05, 200]`, which the canvas carries out itself for
  * every pointer; frontend/AGENTS.md, Code). Pure.

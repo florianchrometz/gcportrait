@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # KRM API Hosting: the Config Controller
 # instance, a managed GKE control plane in a VPC of the customer's choice.

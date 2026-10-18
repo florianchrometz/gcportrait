@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * How a refusal of the service-account gate (./gate.ts) reaches the caller, the same on every route that takes
  * `mode: "sa"`: before anything is streamed, as an HTTP error in the server's one shape (../errors.ts) with the

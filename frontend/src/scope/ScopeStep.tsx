@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The scope step of reading a live environment: the scope picker and, in user mode, the
  * quota project picker, both writing the app store's `connect` slice (useScopeTarget.ts). The Permissions page

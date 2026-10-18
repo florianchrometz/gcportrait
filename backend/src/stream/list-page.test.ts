@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page scanner (list-page.ts): a page's frame built from its bytes must mean exactly what
  * `JSON.parse` of the page means (the same assets, count, `nextPageToken` and `readTime`), be one line, and refuse

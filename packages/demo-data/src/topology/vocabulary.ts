@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The words the generator builds names from. Everything here is invented; nothing names a real organisation.
  * Lists are long enough for the XL organisation; a template that runs past the end of a list appends a serial.

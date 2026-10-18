@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import type * as z from 'zod';
 
 /** The dotted paths of the issues a schema reports for a value; empty when the value is valid. */

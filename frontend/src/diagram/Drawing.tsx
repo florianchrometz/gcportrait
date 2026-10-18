@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The diagram as an SVG scene graph (skill gcp-diagram-style §2–§7): tinted zones with their
  * headers and badges, cards, chips and card-sized empty zones with their icons, `secures` overlays inside their

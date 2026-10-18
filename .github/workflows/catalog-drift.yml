@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Weekly drift check of the official Cloud Asset Inventory asset-type list (skill gcp-asset-catalog §8).
 # `pnpm catalog:fetch-official` (scripts/catalog-fetch-official.mjs) downloads the official list, writes a dated

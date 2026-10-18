@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data platform of a data project (feature `data`, first data project of each environment): a subnet on
  * the Shared VPC for the processing services, Dataproc Metastore, a Dataproc cluster with its master and

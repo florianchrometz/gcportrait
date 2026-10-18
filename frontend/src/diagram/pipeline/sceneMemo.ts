@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's memo of built Scenes, per Graph: a timeline step builds the drawn day's view and, for its
  * diff (diff/tickDiff.ts), the earlier day's view at the level the drawn Scene uses and the view with every zone open

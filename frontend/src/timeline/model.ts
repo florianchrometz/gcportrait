@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the timeline shows and where it moves, worked out from the view (its `tick`, in the URL hash),
  * the `timeline` slice and the Scene on screen. Pure: the bar, the store's `stepTick`, the `[` and `]` keys and the

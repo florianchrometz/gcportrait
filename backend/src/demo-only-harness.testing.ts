@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The real backend in demo-only mode (DEMO_ONLY=true), for e2e/tests/demo-only.spec.ts (never imported by the
  * app, so neither bundle carries it). The spec starts it as a process and sends the browser's `/api` requests

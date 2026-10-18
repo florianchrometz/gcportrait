@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { useEffect, type CSSProperties, type ReactElement } from 'react';
 import { Link, NavLink, useLocation, type To } from 'react-router';
 

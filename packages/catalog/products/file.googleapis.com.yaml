@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Filestore: managed NFS instances on a consumer VPC network (direct peering, private services access or
 # Private Service Connect), their backups and snapshots. Cloud Asset Inventory names instances and snapshots

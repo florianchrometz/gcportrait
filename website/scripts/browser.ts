@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the website's browser checks share (scripts/mobile.ts, scripts/fillable.ts, scripts/stars.ts, scripts/demo.ts):
  * the stand-in for tsx's name helper, axe-core read from the e2e package, a wait for the layout to settle, how to tell

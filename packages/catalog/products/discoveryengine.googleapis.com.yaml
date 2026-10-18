@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Discovery Engine: the API behind Agent Search (formerly Vertex AI Search) and Gemini Enterprise apps.
 # Collection › data store and Collection › engine (app) › assistant nest by name

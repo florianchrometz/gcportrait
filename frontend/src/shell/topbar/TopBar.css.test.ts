@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The top bar's brand mark as its stylesheet sizes it (jsdom lays nothing out; e2e/tests/shell.spec.ts measures it in a
  * browser): a 24-pixel square, centred on the wordmark, with the website header's gap between the mark and the name.

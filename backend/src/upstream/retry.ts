@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Retries of transient upstream answers (skill cai-ingestion §4): 429 and 5xx statuses, timeouts and broken
  * connections are tried again with exponential backoff and jitter (base 500 ms, doubling, at most 8 s, 5

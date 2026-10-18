@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The details drawer in the app, in jsdom with the real data and layout handlers in-process, on demo
  * organisation S: selecting a VM opens it with the VM's facts, relations grouped by kind, the console link and

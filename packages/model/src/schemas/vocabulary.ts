@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The closed vocabularies of the model as plain tuples, and a type guard for each, in a module that imports no
  * zod: the lens ids, the detail levels, the relation kinds, the focus kinds, the demo sizes and the snapshot ref,

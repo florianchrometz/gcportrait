@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The assets of a snapshot, one per name, in name order. */
 import type { Asset } from '@gcportrait/model';
 import { compareStrings } from './order.js';

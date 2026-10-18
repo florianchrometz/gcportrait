@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The camera after a chip was expanded or a zone collapsed on the canvas (skill gcp-diagram-layout §6:
  * "Expanding a zone keeps the viewBox fixed and glides the camera 200 ms to frame the zone; changing the level

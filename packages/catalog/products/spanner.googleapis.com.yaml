@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Spanner: the instance container (from the catalog seed), databases, backups, instance partitions and
 # configurations. Cloud Asset Inventory names everything by project id, databases, backups and partitions

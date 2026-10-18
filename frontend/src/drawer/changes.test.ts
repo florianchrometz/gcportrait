@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What changed about one node between two days (changes.ts), on demo organisation S's history from
  * 7 to 8 September: a changed project with its update times and the field that differs, an added subscription, a

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The three layouts (ui/screen.ts; frontend/AGENTS.md, Phones, tablets and desktops): the queries name the breakpoints in rem, tokens.css
  * names the same widths, every stylesheet of the app asks for a width only with one of those queries (or for

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import * as z from 'zod';
 
 import {
@@ -49,7 +49,7 @@ export const PublicConfigSchema = z.object({
   saStrictExposure: z.boolean(),
   backendServiceAccount: z.string().nullable(),
   version: z.string(),
-  /** Where the source of the running version is published (the footer's "Source (MIT)" link; SOURCE_URL). */
+  /** Where the source of the running version is published (the footer's "Source (Apache-2.0)" link; SOURCE_URL). */
   sourceUrl: z.string(),
   /** Who runs this instance, "Hosted by NAME.", or null when HOSTED_BY names nobody. */
   hostedBy: z.string().nullable(),

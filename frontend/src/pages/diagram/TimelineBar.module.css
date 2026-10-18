@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The timeline bar (TimelineBar.tsx): the second row of the diagram workspace, across both columns
    (DiagramPage.module.css), 48 px tall on a desktop so the canvas keeps its size, two lines on a tablet and three on a

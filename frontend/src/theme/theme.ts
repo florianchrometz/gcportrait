@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * Theme state, pure: no DOM, no storage. The ThemeProvider wires it to the browser.

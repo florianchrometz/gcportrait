@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';

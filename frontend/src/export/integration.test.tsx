@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Export menu in the app: the diagram page publishes what it draws, the top bar's menu exports
  * it through the browser's download link. Demo S, drawn by the real data and layout handlers in-process: the SVG, and

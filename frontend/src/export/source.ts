@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the export menu exports (docs/export.md): the diagram on screen, published by the diagram page through the
  * diagram session, and the part of it the canvas shows (for "current viewport"). The menu lives in the top bar

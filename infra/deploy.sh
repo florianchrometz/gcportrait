@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Deploys gcportrait to Cloud Run in a Google Cloud project you own.
 # Run with --help for usage and prerequisites (usage below); docs/self-host.md is the guide and
@@ -89,7 +89,7 @@ Operations:
                           10 bytes per PNG pixel: RENDER_MAX_PIXELS=134217728 wants 4Gi.
   --log-level LEVEL       fatal, error, warn, info (default), debug, trace or silent (LOG_LEVEL).
   --source-url URL        Where the source of the version you run is published (SOURCE_URL): the target of
-                          the footer's "Source (MIT)" link, a courtesy to the people who use the instance.
+                          the footer's "Source (Apache-2.0)" link, a courtesy to the people who use the instance.
   --max-instances N       Upper bound of Cloud Run instances (default: 10).
   --dry-run               Print every change instead of making it (read-only queries still run).
   --verbose               Also print what the check of the running instance saw (the revision, the answers of

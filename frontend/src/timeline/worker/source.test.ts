@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The data worker's tick source (source.ts): a demo organisation's timeline is its history (the last day the
  * snapshot itself, every other day replayed and read as any export is, the same snapshot every time); a stored

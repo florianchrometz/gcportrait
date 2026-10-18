@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/preflight` over HTTP (Fastify `inject`, a pretend Google behind the allowlisted client): the body's
  * schema, the rate limit per token hash, the gate before the account's probe, the answer's contract, and what

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The pages the sitemap lists: every page of the site except the 404 page, in menu order, and the demo's entry page
  * (/demo/, src/site.ts DEMO_URL; the static demo the build places there), but none of the demo's other routes

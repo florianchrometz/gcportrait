@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Healthcare API: datasets holding FHIR, DICOM, HL7v2 and consent stores. Asset names use the
 # project number (//healthcare.googleapis.com/projects/<number>/locations/<l>/datasets/<d>/…), and the stores

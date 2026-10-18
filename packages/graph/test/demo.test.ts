@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The builder on the demo organisations S and M (@gcportrait/demo-data, default seed, DEMO_TODAY): Shared
  * VPC pairs, the load-balancer chains, private services access, Kubernetes nesting and dangling references,

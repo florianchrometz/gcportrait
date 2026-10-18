@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Application Default Credentials without a library (./identity.ts): the metadata server, an impersonation file, a
  * key file, the refusals (a person's credentials, other types and universes, endpoints that are not Google's), the

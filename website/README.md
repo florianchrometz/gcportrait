@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # @gcportrait/website
 
@@ -92,7 +92,7 @@ jobTitle: …                         # optional
 sameAs:                             # optional: profile pages; anything that is not an https URL is left out
   - https://github.com/florianchrometz
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # About the author
 

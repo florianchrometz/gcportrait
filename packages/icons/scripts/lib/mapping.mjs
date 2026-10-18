@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `mapping.json`, the hand-maintained part of the icon data: which artwork each icon key gets. Loaded and

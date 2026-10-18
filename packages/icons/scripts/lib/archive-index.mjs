@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `archive-index.json`, written by vendor.mjs next to manifest.json: every SVG entry of each official archive

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One Cloud Asset Inventory asset (content type RESOURCE), turned into a model {@link Asset}
  * (the model's `AssetSchema`): `name`, `assetType`, `ancestors` and `updateTime` are kept as they are,

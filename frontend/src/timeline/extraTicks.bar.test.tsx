@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Extra ticks in the timeline bar (pages/diagram/TimelineBar.tsx), in the app with in-process workers on
  * demo organisation S and a snapshot library holding an export and an estimated pull of its scope (and one of

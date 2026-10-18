@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Steps (a) and (b) on the views scenario: drill-in roots and the five focus views, errors included. */
 import type { FocusKind, SceneBuild, SceneEnv, ViewSpecInput } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';

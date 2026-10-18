@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The rules files of the repository and the citations of them (AGENTS.md, How this file works): the root

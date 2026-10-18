@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Where the routed edges already run, in absolute coordinates (skill gcp-diagram-layout §1: "parallel arrows in
  * the same gap are spaced in lanes, never overlapping"; §8 "lanes spaced"). Lanes are numbered per gutter line,

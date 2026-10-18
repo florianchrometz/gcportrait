@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { decodeJson, decodeText, encodeJson, GZIP_TYPE, JSON_TYPE, plainBlob } from './codec';

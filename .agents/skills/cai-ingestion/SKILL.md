@@ -2,7 +2,7 @@
 name: cai-ingestion
 description: Facts and rules for getting data into gcportrait from Google Cloud Asset Inventory — list and export APIs, limits, asset JSON shape, roles and permissions, quota project, timeline readTime math, retries, gotchas — plus the realism rules for synthetic demo data and the official documentation links.
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Cloud Asset Inventory ingestion
 

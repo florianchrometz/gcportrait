@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Generate the guides' lens blocks and check documentation against the tree (checkUserDocs and its helpers).

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A history's day read as any export is read, its unchanged assets shared with the days read before: whether
  * read whole or from its difference to the day read before, the snapshot is the one ingest reads from the day's whole

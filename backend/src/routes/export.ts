@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * `POST /api/export/read` (skill cai-ingestion §1): reads a Cloud Asset Inventory export from Cloud
  * Storage with the caller's own token (`storage.objects.get` on the bucket, docs/permissions.md) and streams its

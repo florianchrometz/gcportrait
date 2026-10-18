@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Focus control on demo S: the Focus button and its popover, with the kind select and pickers
  * over the snapshot's projects (id and display name), Shared VPC hosts and perimeters; standalone projects

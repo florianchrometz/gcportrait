@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Permissions page (docs/permissions.md): the preflight checklist with commands, and the
  * service-account mode explanation with the account's email:

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Test data: the data paths the catalog seed reads, per asset type. Not part of the public API. */
 
 /**

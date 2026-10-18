@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Cloud Run functions: Function is the v2 resource that lists 1st and 2nd gen functions, CloudFunction the v1
 # resource of 1st gen functions. A 2nd gen function is built into a Cloud Run service and triggered through an

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The icons a diagram draws (style skill §4). The data worker resolves them with `@gcportrait/icons`
  * (iconTable.ts) and sends them with the Scene, so the icon table (170 kB of artwork) never loads on the UI

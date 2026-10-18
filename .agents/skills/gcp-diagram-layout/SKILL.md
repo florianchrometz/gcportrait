@@ -2,7 +2,7 @@
 name: gcp-diagram-layout
 description: Layout rules for gcportrait diagrams — nesting order, containment decisions (unknown types included), zone/card sizing, grid packing, gutters, orthogonal routing invariants, progressive disclosure, the layout budgets and the app's performance targets — and how to verify a layout is correct.
 ---
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # gcportrait diagram layout
 

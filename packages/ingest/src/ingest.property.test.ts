@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Property tests: however an NDJSON document is cut into chunks (bytes at any offset, so also inside a
  * multi-byte sequence or between CR and LF; or text at any code unit), ingest sees the same document.

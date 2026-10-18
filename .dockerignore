@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Build context of infra/Dockerfile (docker build -f infra/Dockerfile ., Cloud Build, release.yml). The image
 # needs the workspace manifests, the lockfile, the sources of frontend/, backend/ and packages/, LICENSE (the SPA

@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The tick cache's change signal between tabs (tickCacheChanges.ts): a message is the entry's key fields and the kind
  * of change, nothing else, and anything else that arrives is ignored; the channel is open only while something

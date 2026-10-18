@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Timeline fixtures for the tests (no DOM, no workers): a stored history's and a live scope's timeline, the store's
  * `timeline` slice and the bar's model built from them, a day kept in the tick cache, and a turn of the event loop

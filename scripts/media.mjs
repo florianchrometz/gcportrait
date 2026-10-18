@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * `pnpm media`: the website's and the README's screenshots, animated demos and link-preview images, generated from
@@ -137,7 +137,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, MEDIA_DIR);
 const APP_DIR = path.join(ROOT, 'out', 'media', 'app');
 const FRONTEND = path.join(ROOT, 'frontend');
-/** The source link the demo build carries (its footer's "Source (MIT)"), fixed so the bundle hash is stable. */
+/** The source link the demo build carries (its footer's "Source (Apache-2.0)"), fixed so the bundle hash is stable. */
 const SOURCE_URL = 'https://github.com/florianchrometz/gcportrait';
 /** The origin the encoder page is served from (answered by a Playwright route, nothing listens there). */
 const ENCODER_ORIGIN = 'http://localhost:9';

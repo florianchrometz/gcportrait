@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The static demo (AGENTS.md, Modes and hosting): the app built in demo-only mode for a static host, the

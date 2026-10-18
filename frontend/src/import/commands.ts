@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The `gcloud` commands the Load export panel shows (skill cai-ingestion §1, §3): how to make an export
  * gcportrait can read, and how to keep its operation next to it for the read time (sidecar.ts). Their variables are

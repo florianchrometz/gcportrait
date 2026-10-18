@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Importing snapshot files: a drop zone and a file picker ("Choose files…", the keyboard's way in)
  * for `.gcportrait.json` bundles and Cloud Asset Inventory exports (newline-delimited JSON, one or more files of one

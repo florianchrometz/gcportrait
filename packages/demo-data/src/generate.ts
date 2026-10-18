@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Entry points: an organisation's 35-day history and today's organisation. The state at any tick
  * (`snapshotAt`) is history/replay.ts's, which imports none of the generator, so code that only replays a stored

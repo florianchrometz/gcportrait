@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Progressive disclosure on the page (frontend/README.md "Progressive disclosure"): the flip and
  * level logic behind "Expand all" and "Collapse all" (flips.ts, used by the store's actions), the selectors and

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The timeline markers' words: the legend's rows, the accessible names' additions, the ghosts' tooltips and
  * the drawing's description, all naming the day compared with as the title block names a read time (ISO-8601 at

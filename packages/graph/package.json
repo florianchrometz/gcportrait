@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "gcportrait graph core: Snapshot + asset catalog → Graph (containment, relation edges, indexes, dangling references, Shared VPC), the timeline diff, and Graph + ViewSpec → Scene (lenses, focus views, filters, drill-in, detail levels).",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
   "exports": {

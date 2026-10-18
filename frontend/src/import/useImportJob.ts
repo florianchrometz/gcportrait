@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One live pull or export read at a time, for a Connect page control: its progress (progress.ts, ticking each
  * second while it runs, for the elapsed time), Cancel, and what follows success: the diagram opens on the new

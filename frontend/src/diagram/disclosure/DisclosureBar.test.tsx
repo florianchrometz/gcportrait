@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The disclosure bar on the diagram page, end to end in jsdom with the real data and layout handlers in-process
  * (demo M at the 1280 × 800 fallback canvas: the folder level): "N of M shown" follows the drawing, a chip opens

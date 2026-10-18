@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What the scene builder (`@gcportrait/graph`; docs/packages.md, docs/lenses-and-filters.md) reads next to the
  * Graph and the ViewSpec, and what it reports next to the Scene it builds. The Scene itself stays the layout's

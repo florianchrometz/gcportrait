@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -15,7 +15,7 @@ export const REPO = path.resolve(SCRIPTS_DIR, '..');
 
 /**
  * The licence identifier the fixture trees declare (their package.json and SPDX headers): the tools' fallback
- * (FALLBACK_LICENSE_ID in scripts/lib/repo-files.mjs), not the project's MIT, so the tests show that the
+ * (FALLBACK_LICENSE_ID in scripts/lib/repo-files.mjs), not the project's Apache-2.0, so the tests show that the
  * tools take the identifier from the tree they check.
  */
 export const FIXTURE_LICENSE = 'LicenseRef-gcportrait-unset';

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 import { ZoneKindSchema } from './scene.js';
 import { ZONE_KIND_RANK } from './zone-order.js';

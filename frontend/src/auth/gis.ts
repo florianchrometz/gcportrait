@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Google Identity Services (GIS), the token model: the few calls gcportrait makes, typed, and the loader of
  * Google's client script. The script is loaded only when a person presses "Sign in with Google" on an instance

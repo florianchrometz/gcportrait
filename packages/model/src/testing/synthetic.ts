@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The "synthetic only" guard (AGENTS.md, Data and graph semantics; skill cai-ingestion §7): one sweep
  * over text (a fixture file, an NDJSON export, a JSON document, a source file) that reports anything that looks

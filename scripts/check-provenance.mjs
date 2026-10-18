@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * Provenance guard (AGENTS.md, Licence and dependencies, and Names that never appear). Fails when a file of
@@ -561,7 +561,7 @@ const PLAN_IDS = Object.freeze([
 ]);
 
 /**
- * Rule (g): the denied network-copyleft licence family. gcportrait is MIT, and the dependency deny list
+ * Rule (g): the denied network-copyleft licence family. gcportrait is Apache-2.0, and the dependency deny list
  * refuses copyleft that reaches beyond its own files (AGENTS.md, Licence and dependencies); this family's
  * names appear only where the deny list and verbatim licence texts need them, so that they cannot creep into
  * a header, a manifest, a footer or a document. Matched case-insensitively per line, in contents and in
@@ -672,7 +672,7 @@ function checkPath(relPath, problems, bannedTerms) {
       relPath,
       line: undefined,
       rule: 'licence-name',
-      message: `path mentions "${term.label}"; gcportrait is MIT (AGENTS.md, Licence and dependencies), and this family has no file here`,
+      message: `path mentions "${term.label}"; gcportrait is Apache-2.0 (AGENTS.md, Licence and dependencies), and this family has no file here`,
     });
   }
   /** @type {Set<string>} */
@@ -856,7 +856,7 @@ function checkLicenceNames(relPath, lines, problems) {
         line: index + 1,
         rule: 'licence-name',
         message:
-          `mentions "${term.label}"; gcportrait is MIT (AGENTS.md, Licence and dependencies): this name belongs ` +
+          `mentions "${term.label}"; gcportrait is Apache-2.0 (AGENTS.md, Licence and dependencies): this name belongs ` +
           'to the dependency deny list and the verbatim licence texts only',
       });
     }
@@ -1069,7 +1069,7 @@ function checkBinary(relPath, content, problems, bannedTerms) {
       relPath,
       line: undefined,
       rule: 'licence-name',
-      message: `mentions "${term.label}" in its binary contents; gcportrait is MIT (AGENTS.md, Licence and dependencies)`,
+      message: `mentions "${term.label}" in its binary contents; gcportrait is Apache-2.0 (AGENTS.md, Licence and dependencies)`,
     });
   }
 }
@@ -1280,7 +1280,7 @@ function describeRules(bannedTerms) {
     `    ${GIZMO_DESCRIPTION} (anywhere on a line)`,
     `(c) spdx-header: the exact line below within the first ${String(HEADER_WINDOW)} lines (Markdown/Astro: the first`,
     `    ${String(HEADER_WINDOW)} lines after a leading --- frontmatter block). <id> is the "license" field of the root`,
-    '    package.json (MIT; scripts/set-license.mjs rewrites every header if it changes).',
+    '    package.json (Apache-2.0; scripts/set-license.mjs rewrites every header if it changes).',
     '    Files are matched by exact base name first (dotfiles, Dockerfile, CODEOWNERS), then by extension:',
     ...[...headerForms].map(([line, extensions]) => `      ${line}   ${extensions.join(' ')}`),
     '    header-exempt:',

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The server's one error answer (./errors.ts): each status's default code, a named code kept, the headers that go
  * with an answer, and the body's fields in the shape `ErrorResponseSchema` declares.

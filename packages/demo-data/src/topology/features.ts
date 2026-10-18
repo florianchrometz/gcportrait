@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The optional generator cases of the catalog groups, switched on per size in `profiles.ts`. S stays the small,
  * focused organisation and turns none of them on; M and L turn on everything a reader expects in a

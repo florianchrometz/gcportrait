@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Released images from GitHub Container Registry (AGENTS.md, Releases): deploy.sh deploys them through an
  * Artifact Registry remote repository of ghcr.io that it creates once, and uninstall.sh removes that

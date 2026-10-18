@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The realism checklist: what a demo organisation models, counted from the generated assets themselves (not
  * from the profile), so the README table and the tests describe the data that actually ships.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helper for the package's commands (scripts/measure.test.ts, scripts/bench.test.ts): runs a command's
  * `run(argv, write)` with its output collected instead of written to standard output.

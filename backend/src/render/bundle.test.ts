@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The production bundles (bundle.ts): written into a temporary directory, the render worker draws a demo view
  * to the committed goldens' bytes (the PNG and the `.drawio` file) from its own asset directory, with no

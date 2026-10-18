@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Deterministic sibling order (skill gcp-diagram-layout §4): zones before cards; zones by kind rank (folder,
  * project, VPC, subnet, region, product container, bundle); then by label in code-point order

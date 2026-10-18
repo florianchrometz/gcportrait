@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The export's drawing: `DiagramSvg` (the same component the snapshot baselines and the headless renderer
  * draw) rendered by React into a detached element, in the export's theme and always with the legend and the

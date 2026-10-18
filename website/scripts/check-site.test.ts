@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -1136,7 +1136,8 @@ describe('checkDemo (the static demo at /demo/)', () => {
       'assets/index-1.js': APP,
       'assets/index-1.css': 'body{}',
       'favicon.svg': ICON,
-      'licenses/gcportrait-LICENSE.txt': 'MIT License',
+      'licenses/gcportrait-LICENSE.txt': 'Apache License 2.0',
+      'licenses/gcportrait-NOTICE.txt': 'gcportrait',
       'licenses/THIRD_PARTY_NOTICES.txt': 'notices',
       ...overrides,
     };

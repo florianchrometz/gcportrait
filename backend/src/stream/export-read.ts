@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Reading a Cloud Asset Inventory export from Cloud Storage with the caller's token (AGENTS.md, Data and
  * graph semantics; the cai-ingestion skill §1): the export's own NDJSON lines, streamed through as they

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The interactive canvas on its own: it says it is ready (`data-diagram-ready`) only once it can be used, numbers
  * each drawing (`data-drawing`) so that the next one can be told from the last, a theme change, which re-renders

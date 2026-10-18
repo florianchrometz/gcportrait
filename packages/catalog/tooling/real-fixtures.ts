@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The real catalog's data files and its fixture assets, for the tests that run the real data (not a command-line
  * tool): the sources as the loader reads them, every fixture asset parsed, and the project index they make.

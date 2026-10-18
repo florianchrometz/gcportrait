@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The app store in React. Components read slices through `useAppState(selector)` (`useSyncExternalStore`, so
  * a component re-renders only when what it selected changed; a selector must return something already in the

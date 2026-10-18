@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The snapshot library: everything the app does with snapshots, behind one object the pages use
  * (SnapshotLibraryProvider). Importing files runs in the snapshot worker (worker/, created on first use);

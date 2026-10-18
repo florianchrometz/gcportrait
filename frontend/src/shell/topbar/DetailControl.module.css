@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /* The detail control (DetailControl.tsx): ui/SegmentedControl with narrower segments, so the view row of a desktop
    window keeps within 1280 px with Auto's picked level in its label. In the View sheet of a phone or a tablet each

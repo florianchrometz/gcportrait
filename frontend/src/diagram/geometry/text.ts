@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Text that fits its box. Widths come from the layout's generated Roboto metrics table (`measureText`), never
  * from the DOM, so a label is cut with an ellipsis in exactly the place the layout expects, the same in a test,

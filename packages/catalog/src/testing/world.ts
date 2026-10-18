@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * A small synthetic catalog for the compiler's unit tests (not part of the public API): one Compute Engine product
  * file mapping Network and Subnetwork, a fixture of each, every lens, the group net (which owns

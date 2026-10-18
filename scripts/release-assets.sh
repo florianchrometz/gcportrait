@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # Write the release's deploy archive and checksums (AGENTS.md, Releases); FILES below lists archive contents.
 # Run with --help for usage. Needs bash, tar, and sha256sum or shasum.

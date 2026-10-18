@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The metrics generator's font helpers: unicode-range parsing (scripts/lib/fonts.ts) and WOFF unwrapping for the
  * debug renderer (scripts/lib/woff.ts). Whether the committed table is current is test/metrics.test.ts.

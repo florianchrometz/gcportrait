@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page side of the import protocol (protocol.ts): reads a response body from the backend and hands each chunk
  * to the worker as it arrives (moved, not copied, when the chunk owns its buffer), reporting the bytes received;

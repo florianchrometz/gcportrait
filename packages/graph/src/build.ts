@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The graph builder (containment: skill gcp-diagram-layout §2): Snapshot + catalog → Graph. Pure and
  * deterministic: no clock, no randomness, no I/O, and the output does not depend on the order of the assets.

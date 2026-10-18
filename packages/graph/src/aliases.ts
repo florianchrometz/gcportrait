@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The alias index: names an asset is referenced by besides its full resource name. Relation rules hand the
  * builder an alias when the referenced value names no asset by itself (`RelationTarget` `{ by: 'alias' }`).

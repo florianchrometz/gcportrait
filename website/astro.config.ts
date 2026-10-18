@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import { spawnSync } from 'node:child_process';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createRequire } from 'node:module';
@@ -33,8 +33,9 @@ const FONT_PACKAGES = ['@fontsource/roboto', '@fontsource/roboto-mono'] as const
 /**
  * The self-hosted Roboto fonts are licensed under the SIL Open Font License 1.1, which requires the copyright notice
  * and the licence to accompany every copy: the build writes each package's own LICENSE, unmodified, to
- * dist/licenses/<name>-LICENSE.txt (as the app does, frontend/vite.config.ts), and gcportrait's own LICENSE (MIT,
- * with its closing note on the gcportrait name and icon and the third-party material) next to them.
+ * dist/licenses/<name>-LICENSE.txt (as the app does, frontend/vite.config.ts), and gcportrait's own LICENSE
+ * (Apache-2.0, with its closing note on the gcportrait name and icon and the third-party material) and NOTICE
+ * next to them.
  */
 function licenceFiles(): AstroIntegration {
   return {
@@ -52,6 +53,7 @@ function licenceFiles(): AstroIntegration {
         }
         const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
         copyFileSync(path.join(repo, 'LICENSE'), path.join(out, 'gcportrait-LICENSE.txt'));
+        copyFileSync(path.join(repo, 'NOTICE'), path.join(out, 'gcportrait-NOTICE.txt'));
       },
     },
   };

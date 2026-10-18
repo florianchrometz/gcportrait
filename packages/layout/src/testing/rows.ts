@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Test helper (not part of the public API): checks, from a Layout's rects alone, that every container's rows
  * are full (packing rule 1 in src/pack.ts): no zone row but the last has room for the next zone within the

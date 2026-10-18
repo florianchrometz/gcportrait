@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The everyday changes the history applies: one plausible field change per asset type (a disk resize, a new
  * Cloud Run revision, a firewall rule that gains a source range, …). `forward` receives the asset's data and

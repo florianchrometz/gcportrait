@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The two workers the diagram uses (AGENTS.md, Architecture and code): the data worker (ingest, graph and Scene;
  * it draws the demo organisations too) and the layout worker, two dedicated instances of one worker script

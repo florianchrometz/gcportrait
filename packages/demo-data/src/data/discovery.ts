@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The `resource.version`, `resource.discoveryDocumentUri` and `resource.discoveryName` that Cloud Asset
  * Inventory reports for each asset type this package generates. They describe the API resource shape inside

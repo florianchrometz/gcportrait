@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The demo organisations in the workers, the only places the demo generator runs (never on the UI thread, never in
  * the snapshot worker; AGENTS.md, Architecture and code). The data worker's handler (dataHandler.ts)

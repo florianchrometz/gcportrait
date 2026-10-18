@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The Focus control's kinds and their one parameter each (the model's `FocusSchema` convention:
  * `project` → `{ project }`, `shared-vpc` → `{ host }`, `perimeter` → `{ perimeter }`, `application` →

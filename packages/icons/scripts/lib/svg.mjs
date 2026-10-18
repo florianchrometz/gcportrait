@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The mechanical transforms applied to Google's icon SVGs (README "Mechanical transforms"), and the helpers the

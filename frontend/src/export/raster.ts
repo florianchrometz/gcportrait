@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * PNG export (skill gcp-diagram-style §8): the export SVG drawn on a canvas at 2× (3× on request), on the
  * theme's canvas colour, with a 24 px margin (drawing units, so 48 px at 2×). Browsers cap a canvas's side and

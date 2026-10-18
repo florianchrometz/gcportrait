@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 #
 # GKE on-premises clusters (Google Distributed Cloud software for VMware and for bare metal) enrolled in the
 # GKE On-Prem API. User clusters hold their node pools and are managed by an admin cluster; every cluster is a

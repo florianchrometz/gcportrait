@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Sizing constants at scale 1 (skill gcp-diagram-layout §3, skill gcp-diagram-style §3 and §4). They are
  * theme-independent: both themes draw the same geometry. `LayoutOptions.sizing` may override any of them; the

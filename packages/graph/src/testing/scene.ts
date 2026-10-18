@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Test helpers to read a Scene: every node with its zone and depth, children, edges. Not part of the public API. */
 import type { Scene, SceneCard, SceneEdge, SceneNode, SceneZone } from '@gcportrait/model';
 

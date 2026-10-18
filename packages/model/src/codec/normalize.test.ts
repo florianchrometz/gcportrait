@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The zod-free normaliser's predicates against the schemas they stand in for: for valid values, near
  * misses and anything at all, each accepts exactly what its schema accepts. view-spec.test.ts covers

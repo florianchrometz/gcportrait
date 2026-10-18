@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @gcportrait/ingest — Cloud Asset Inventory NDJSON (exports and the backend's frame stream) into a model
  * Snapshot (the model's `SnapshotSchema`; the CAI facts in skill cai-ingestion). Pure and worker-safe: no

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The line splitter at the bottom of the reader. It takes chunks of bytes or text in any size, cut anywhere
  * (inside a line, between a CR and its LF, inside a multi-byte UTF-8 sequence), and hands complete lines to

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * Golden PNG checks are tolerance-free: same size, same RGBA bytes, as the committed
  * S × overview × light golden under e2e/baselines/render/ is checked.

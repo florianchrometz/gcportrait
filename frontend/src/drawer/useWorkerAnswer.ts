@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * One answer of the data worker for the drawer, asked whenever its key changes: a newer key aborts the older request,
  * and the last few answers are kept by key, so going back and forth between nodes (or days) is instant. An error is

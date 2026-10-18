@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 // @ts-check
 /**
  * The icon drift check's logic, pure and synchronous so the tests can feed it synthetic archives: compare the

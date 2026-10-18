@@ -1,5 +1,5 @@
 // @vitest-environment node
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** The gcloud commands the Load export panel shows (commands.ts), with variables for what only the person knows. */
 import { describe, expect, it } from 'vitest';
 

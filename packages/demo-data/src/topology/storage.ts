@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /** Cloud Storage buckets, shared by the data, web, serverless and retired-project templates. */
 import type { AddInput, OrgBuilder } from '../builder/builder.js';
 import type { GenAsset, Traits } from '../builder/types.js';

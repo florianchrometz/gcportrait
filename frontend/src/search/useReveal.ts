@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * What choosing a search result does (reveal.ts's decision table, carried out). The data worker locates the
  * node in the view in the hash on the day on screen (locate.ts); then, through the app

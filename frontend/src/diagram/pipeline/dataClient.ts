@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The page side of the data worker (protocol.ts): one promise per request. A Scene request supersedes the one
  * before it (the older promise rejects at once with a `DataCancelledError`), a search the search before it, and a

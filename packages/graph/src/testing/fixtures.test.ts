@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The catalog fixture: `catalogWith` validates only the entries a test adds and takes the base as valid, so
  * these tests hold what it builds to `CatalogSchema` (a catalog the schema returns unchanged, key order

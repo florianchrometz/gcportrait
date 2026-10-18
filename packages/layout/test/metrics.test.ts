@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * The committed metrics table is what the generator builds from the installed font files today (staleness) and
  * names the font package versions it came from. That the file is byte for byte what the generator writes is

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 /**
  * compileCatalog on a small synthetic world (src/testing/world.ts): what it builds, every violation it finds
  * and which file it blames. The report's text form is tested in report.test.ts, `--group`/`--file` in
