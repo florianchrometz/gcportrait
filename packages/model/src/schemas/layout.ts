@@ -472,3 +472,37 @@ export const LayoutWorkerErrorInfoSchema = z
   })
   .readonly();
 export type LayoutWorkerErrorInfo = z.infer<typeof LayoutWorkerErrorInfoSchema>;
+
+/** Why a request was cancelled: a later request arrived, or the page cancelled it. */
+export const LayoutCancelReasonSchema = z.enum(['superseded', 'cancelled']);
+export type LayoutCancelReason = z.infer<typeof LayoutCancelReasonSchema>;
+
+/** Why a request did not resolve: a newer request, the worker or `cancel()`, or the caller's signal. */
+export const LayoutCancelledReasonSchema = z.enum([...LayoutCancelReasonSchema.options, 'aborted']);
+export type LayoutCancelledReason = z.infer<typeof LayoutCancelledReasonSchema>;
+
+const layoutResultShape = LayoutResultSchema.unwrap().shape;
+
+/** Worker → page. After `result`, `cancelled` or `error` the request is over. */
+export const LayoutWorkerResponseSchema = z
+  .discriminatedUnion('type', [
+    z.strictObject({ type: z.literal('progress'), id: z.number(), progress: LayoutProgressSchema }),
+    z.strictObject({
+      type: z.literal('result'),
+      id: layoutResultShape.id,
+      /** The request's memo key (null: the request had none and was not memoised). */
+      key: layoutResultShape.key,
+      /** Answered from the memo, without laying out. */
+      cached: layoutResultShape.cached,
+      layout: layoutResultShape.layout,
+    }),
+    z.strictObject({ type: z.literal('cancelled'), id: z.number(), reason: LayoutCancelReasonSchema }),
+    /** `id` is null when the message did not carry a usable id. */
+    z.strictObject({
+      type: z.literal('error'),
+      id: z.number().nullable(),
+      error: LayoutWorkerErrorInfoSchema,
+    }),
+  ])
+  .readonly();
+export type LayoutWorkerResponse = z.infer<typeof LayoutWorkerResponseSchema>;

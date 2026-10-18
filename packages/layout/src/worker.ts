@@ -23,7 +23,7 @@
  * pure: the only host APIs it touches are the task-queue yield between steps (host.ts) and, if the mount
  * passes one, a clock for `report.timings`.
  */
-import type { LayoutWorkerErrorInfo, Scene } from '@gcportrait/model';
+import type { LayoutWorkerErrorInfo, LayoutWorkerResponse, Scene } from '@gcportrait/model';
 import { LayoutInputError } from './errors.js';
 import { layoutKey } from './hash.js';
 import { createHostYield } from './host.js';
@@ -43,26 +43,12 @@ export type LayoutWorkerRequest =
   /** Abandons a request: the worker answers `cancelled` (nothing, if it was already answered). */
   | { readonly type: 'cancel'; readonly id: number };
 
-/** Why a request was cancelled: a later request arrived, or the page cancelled it. */
-export type LayoutCancelReason = 'superseded' | 'cancelled';
-
-export type { LayoutWorkerErrorCode, LayoutWorkerErrorInfo } from '@gcportrait/model';
-
-/** Worker → page. After `result`, `cancelled` or `error` the request is over. */
-export type LayoutWorkerResponse =
-  | { readonly type: 'progress'; readonly id: number; readonly progress: LayoutProgress }
-  | {
-      readonly type: 'result';
-      readonly id: number;
-      /** The request's memo key (null: the request had none and was not memoised). */
-      readonly key: string | null;
-      /** Answered from the memo, without laying out. */
-      readonly cached: boolean;
-      readonly layout: Layout;
-    }
-  | { readonly type: 'cancelled'; readonly id: number; readonly reason: LayoutCancelReason }
-  /** `id` is null when the message did not carry a usable id. */
-  | { readonly type: 'error'; readonly id: number | null; readonly error: LayoutWorkerErrorInfo };
+export type {
+  LayoutCancelReason,
+  LayoutWorkerErrorCode,
+  LayoutWorkerErrorInfo,
+  LayoutWorkerResponse,
+} from '@gcportrait/model';
 
 /** What the mount may give the handler; everything is optional. */
 export interface LayoutWorkerEnvironment {

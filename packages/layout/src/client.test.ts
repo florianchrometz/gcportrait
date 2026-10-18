@@ -7,8 +7,16 @@
  * Layout; worker errors reject with their code and ids.
  */
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { LayoutResultSchema, type LayoutResult as ModelLayoutResult } from '@gcportrait/model';
-import type { LayoutResult as PublicLayoutResult } from './index.js';
+import {
+  LayoutCancelledReasonSchema,
+  LayoutResultSchema,
+  type LayoutCancelledReason as ModelLayoutCancelledReason,
+  type LayoutResult as ModelLayoutResult,
+} from '@gcportrait/model';
+import type {
+  LayoutCancelledReason as PublicLayoutCancelledReason,
+  LayoutResult as PublicLayoutResult,
+} from './index.js';
 import {
   LayoutCancelledError,
   LayoutWorkerError,
@@ -102,6 +110,7 @@ describe('LayoutClient', () => {
     expect(LayoutResultSchema.parse(JSON.parse(JSON.stringify(outcome.result)))).toEqual(outcome.result);
     expectTypeOf<LayoutResult>().toEqualTypeOf<ModelLayoutResult>();
     expectTypeOf<PublicLayoutResult>().toEqualTypeOf<ModelLayoutResult>();
+    expectTypeOf<PublicLayoutCancelledReason>().toEqualTypeOf<ModelLayoutCancelledReason>();
     expect(JSON.stringify(outcome.result?.layout)).toBe(JSON.stringify(layoutScene(BUSY)));
     expect(progress[0]?.stage).toBe('normalise');
     expect(progress.at(-1)?.stage).toBe('route');
@@ -119,6 +128,8 @@ describe('LayoutClient', () => {
     expect(first.error).toBeInstanceOf(LayoutCancelledError);
     expect(first.error).toMatchObject({ id: 1, reason: 'superseded', name: 'LayoutCancelledError' });
     expect(isLayoutCancelled(first.error)).toBe(true);
+    if (isLayoutCancelled(first.error))
+      expect(LayoutCancelledReasonSchema.parse(first.error.reason)).toBe('superseded');
     await settle();
     expect(first.result).toBeUndefined();
     expect(second.result).toMatchObject({ id: 2, cached: false });
@@ -136,6 +147,8 @@ describe('LayoutClient', () => {
     client.cancel();
     await flush();
     expect(outcome.error).toMatchObject({ reason: 'cancelled', id: 1 });
+    if (isLayoutCancelled(outcome.error))
+      expect(LayoutCancelledReasonSchema.parse(outcome.error.reason)).toBe('cancelled');
     expect(posted.at(-1)).toEqual({ type: 'cancel', id: 1 });
     client.receive({ type: 'result', id: 1, key: 'k', cached: false, layout: layoutScene(SMALL) });
     await flush();
@@ -162,6 +175,8 @@ describe('LayoutClient', () => {
     abort();
     await flush();
     expect(aborted.error).toMatchObject({ reason: 'aborted', id: 1 });
+    if (isLayoutCancelled(aborted.error))
+      expect(LayoutCancelledReasonSchema.parse(aborted.error.reason)).toBe('aborted');
     expect(sent.at(-1)).toEqual({ type: 'cancel', id: 1 });
     expect(signal.listeners).toBe(0);
     await settle();

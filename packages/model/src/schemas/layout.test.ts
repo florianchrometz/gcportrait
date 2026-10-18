@@ -11,6 +11,8 @@ import {
   GutterReservationsSchema,
   GutterWideningSchema,
   InsetsSchema,
+  LayoutCancelReasonSchema,
+  LayoutCancelledReasonSchema,
   LayoutCountsSchema,
   LayoutInputErrorCodeSchema,
   LayoutProgressSchema,
@@ -21,6 +23,7 @@ import {
   LayoutStageSchema,
   LayoutWorkerErrorCodeSchema,
   LayoutWorkerErrorInfoSchema,
+  LayoutWorkerResponseSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
@@ -39,6 +42,8 @@ import {
   type GutterWidening,
   type Insets,
   type Layout,
+  type LayoutCancelReason,
+  type LayoutCancelledReason,
   type LayoutCounts,
   type LayoutInputErrorCode,
   type LayoutProgress,
@@ -48,6 +53,7 @@ import {
   type LayoutStage,
   type LayoutWorkerErrorCode,
   type LayoutWorkerErrorInfo,
+  type LayoutWorkerResponse,
   type Point,
   type Rect,
   type RectRole,
@@ -951,5 +957,114 @@ describe('layout client result contract', () => {
       expect(invalid.error.issues.map((issue) => issue.path)).toEqual([
         ['layout', 'rects', '__proto__', 'width'],
       ]);
+  });
+});
+
+describe('layout worker response contract', () => {
+  const progress = { stage: 'route', pass: -0.5, routed: 1.25, edges: 2 } as const;
+  const error = { code: 'protocol', message: '', ids: ['', '__proto__', ''] } as const;
+  const responses = [
+    { type: 'progress', id: 1, progress },
+    { type: 'result', id: 1, key: null, cached: false, layout: completeLayout },
+    { type: 'cancelled', id: 1, reason: 'superseded' },
+    { type: 'error', id: null, error },
+  ] as const;
+
+  it('keeps two worker reasons and derives the third client reason', () => {
+    expect(LayoutCancelReasonSchema.options).toEqual(['superseded', 'cancelled']);
+    expect(LayoutCancelledReasonSchema.options).toEqual(['superseded', 'cancelled', 'aborted']);
+    for (const reason of LayoutCancelledReasonSchema.options) {
+      expect(LayoutCancelledReasonSchema.parse(reason)).toBe(reason);
+      expect(LayoutCancelReasonSchema.safeParse(reason).success).toBe(reason !== 'aborted');
+    }
+    for (const reason of ['', 'unknown', null, undefined, 1]) {
+      expect(LayoutCancelReasonSchema.safeParse(reason).success).toBe(false);
+      expect(LayoutCancelledReasonSchema.safeParse(reason).success).toBe(false);
+    }
+    expectTypeOf<LayoutCancelReason>().toEqualTypeOf<'superseded' | 'cancelled'>();
+    expectTypeOf<LayoutCancelledReason>().toEqualTypeOf<LayoutCancelReason | 'aborted'>();
+  });
+
+  it.each(responses)('preserves the $type arm, its field order and JSON roundtrip', (response) => {
+    const parsed = LayoutWorkerResponseSchema.parse(response);
+    expect(parsed).toEqual(response);
+    expect(Object.keys(parsed)).toEqual(Object.keys(response));
+    expect(Object.isFrozen(parsed)).toBe(true);
+    expect(LayoutWorkerResponseSchema.parse(JSON.parse(JSON.stringify(response)))).toEqual(response);
+  });
+
+  it.each(responses)('keeps finite ids without new ranges in $type', (response) => {
+    for (const id of [-1.25, 0, 2.5]) {
+      expect(LayoutWorkerResponseSchema.parse({ ...response, id })).toEqual({ ...response, id });
+    }
+    expect(LayoutWorkerResponseSchema.safeParse({ ...response, id: null }).success).toBe(
+      response.type === 'error',
+    );
+    for (const id of [NaN, Infinity, -Infinity, '1', undefined]) {
+      expect(LayoutWorkerResponseSchema.safeParse({ ...response, id }).success).toBe(false);
+    }
+  });
+
+  it.each(responses)('requires exactly the $type fields', (response) => {
+    for (const key of Object.keys(response)) {
+      const missing = Object.fromEntries(Object.entries(response).filter(([name]) => name !== key));
+      expect(LayoutWorkerResponseSchema.safeParse(missing).success).toBe(false);
+      expect(LayoutWorkerResponseSchema.safeParse({ ...response, [key]: undefined }).success).toBe(false);
+    }
+    expect(LayoutWorkerResponseSchema.safeParse({ ...response, extra: true }).success).toBe(false);
+    expect(LayoutWorkerResponseSchema.safeParse({ ...response, type: 'unknown' }).success).toBe(false);
+  });
+
+  it('composes the existing result, progress and error payload contracts', () => {
+    for (const key of [null, '', 'memo-key']) {
+      for (const cached of [false, true]) {
+        const response = { type: 'result', id: 1, key, cached, layout: completeLayout };
+        expect(LayoutWorkerResponseSchema.parse(response)).toEqual(response);
+      }
+    }
+    for (const reason of LayoutCancelReasonSchema.options) {
+      const response = { type: 'cancelled', id: 1, reason };
+      expect(LayoutWorkerResponseSchema.parse(response)).toEqual(response);
+    }
+    for (const invalid of [
+      { ...responses[0], progress: { ...progress, pass: Infinity } },
+      { ...responses[1], key: 1 },
+      { ...responses[1], cached: 1 },
+      { ...responses[1], layout: null },
+      { ...responses[2], reason: 'aborted' },
+      { ...responses[3], error: { ...error, code: 'unknown' } },
+    ]) {
+      expect(LayoutWorkerResponseSchema.safeParse(invalid).success).toBe(false);
+    }
+    const invalid = LayoutWorkerResponseSchema.safeParse({
+      ...responses[1],
+      layout: {
+        ...completeLayout,
+        rects: Object.fromEntries([['__proto__', { ...layoutRect, width: Infinity }]]),
+      },
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success)
+      expect(invalid.error.issues.map((issue) => issue.path)).toEqual([
+        ['layout', 'rects', '__proto__', 'width'],
+      ]);
+  });
+
+  it('infers the existing readonly discriminated union', () => {
+    expectTypeOf<LayoutWorkerResponse>().toEqualTypeOf<
+      | Readonly<{ type: 'progress'; id: number; progress: LayoutProgress }>
+      | Readonly<{ type: 'result'; id: number; key: string | null; cached: boolean; layout: Layout }>
+      | Readonly<{ type: 'cancelled'; id: number; reason: LayoutCancelReason }>
+      | Readonly<{ type: 'error'; id: number | null; error: LayoutWorkerErrorInfo }>
+    >();
+    for (const response of responses) {
+      const parsed = LayoutWorkerResponseSchema.parse(response);
+      if (parsed.type === 'progress') expect(Object.isFrozen(parsed.progress)).toBe(true);
+      if (parsed.type === 'result') expect(Object.isFrozen(parsed.layout)).toBe(true);
+      if (parsed.type === 'error') {
+        expect(Object.isFrozen(parsed.error)).toBe(true);
+        expect(Object.isFrozen(parsed.error.ids)).toBe(true);
+      }
+    }
   });
 });

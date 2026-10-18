@@ -11,16 +11,11 @@
  * request never resolves, even if its result was already on its way. Use one client per worker: the worker
  * supersedes by arrival, whoever sent the request.
  */
-import type { LayoutResult, Scene } from '@gcportrait/model';
+import type { LayoutCancelledReason, LayoutResult, Scene } from '@gcportrait/model';
 import type { Layout, LayoutProgress, LayoutWorkerOptions } from './types.js';
-import type {
-  LayoutCancelReason,
-  LayoutWorkerErrorCode,
-  LayoutWorkerErrorInfo,
-  LayoutWorkerRequest,
-} from './worker.js';
+import type { LayoutWorkerErrorCode, LayoutWorkerErrorInfo, LayoutWorkerRequest } from './worker.js';
 
-export type { LayoutResult } from '@gcportrait/model';
+export type { LayoutCancelledReason, LayoutResult } from '@gcportrait/model';
 
 /** An `AbortSignal`, typed structurally (the package compiles without DOM types). */
 export interface AbortSignalLike {
@@ -35,9 +30,6 @@ export interface LayoutRequestOptions {
   /** Called with each progress message of the request (stages, routing passes). */
   readonly onProgress?: (progress: LayoutProgress) => void;
 }
-
-/** Why a request did not resolve: a newer request, the worker or `cancel()`, or the caller's signal. */
-export type LayoutCancelledReason = LayoutCancelReason | 'aborted';
 
 /** The rejection of a request that was cancelled; never a failure, so a caller usually ignores it. */
 export class LayoutCancelledError extends Error {

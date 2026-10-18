@@ -11,6 +11,9 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   LayoutProgressSchema,
   LayoutWorkerErrorInfoSchema,
+  LayoutWorkerResponseSchema,
+  type LayoutCancelReason as ModelLayoutCancelReason,
+  type LayoutWorkerResponse as ModelLayoutWorkerResponse,
   type LayoutInputErrorCode as ModelLayoutInputErrorCode,
   type LayoutProgress as ModelLayoutProgress,
   type LayoutStage as ModelLayoutStage,
@@ -18,6 +21,8 @@ import {
   type LayoutWorkerErrorInfo as ModelLayoutWorkerErrorInfo,
 } from '@gcportrait/model';
 import type {
+  LayoutCancelReason as PublicLayoutCancelReason,
+  LayoutWorkerResponse as PublicLayoutWorkerResponse,
   LayoutInputErrorCode as PublicLayoutInputErrorCode,
   LayoutProgress as PublicLayoutProgress,
   LayoutStage as PublicLayoutStage,
@@ -66,11 +71,20 @@ function resultOf(messages: readonly LayoutWorkerResponse[]): Layout {
 }
 
 function expectErrorPayloads(messages: readonly LayoutWorkerResponse[]): void {
+  expectResponses(messages);
   const errors = messages.flatMap((message) => (message.type === 'error' ? [message.error] : []));
   expect(errors.length).toBeGreaterThan(0);
   for (const error of errors) {
     expect(LayoutWorkerErrorInfoSchema.parse(error)).toEqual(error);
     expect(LayoutWorkerErrorInfoSchema.parse(JSON.parse(JSON.stringify(error)))).toEqual(error);
+  }
+}
+
+function expectResponses(messages: readonly LayoutWorkerResponse[]): void {
+  expect(messages.length).toBeGreaterThan(0);
+  for (const message of messages) {
+    expect(LayoutWorkerResponseSchema.parse(message)).toEqual(message);
+    expect(LayoutWorkerResponseSchema.parse(JSON.parse(JSON.stringify(message)))).toEqual(message);
   }
 }
 
@@ -91,6 +105,9 @@ describe('createLayoutWorkerHandler', () => {
     expect(worker.messages).toEqual([]); // nothing runs before the host yields
     await worker.settle();
     const messages = worker.of(1);
+    expectResponses(messages);
+    expectTypeOf<PublicLayoutCancelReason>().toEqualTypeOf<ModelLayoutCancelReason>();
+    expectTypeOf<PublicLayoutWorkerResponse>().toEqualTypeOf<ModelLayoutWorkerResponse>();
     const progress = messages.flatMap((message) => (message.type === 'progress' ? [message.progress] : []));
     for (const step of progress) {
       expect(LayoutProgressSchema.parse(step)).toEqual(step);
@@ -155,6 +172,7 @@ describe('createLayoutWorkerHandler', () => {
     expect(worker.terminal(1)).toEqual([{ type: 'cancelled', id: 1, reason: 'superseded' }]);
     expect(worker.terminal(2)).toHaveLength(1);
     expect(JSON.stringify(resultOf(worker.of(2)))).toBe(JSON.stringify(layoutScene(OTHER)));
+    expectResponses(worker.messages);
   });
 
   it('lays out only the last of a burst of requests', async () => {
@@ -188,6 +206,7 @@ describe('createLayoutWorkerHandler', () => {
     expect(worker.terminal(2)).toMatchObject([{ type: 'result', id: 2 }]);
     expect(worker.terminal(1)).toHaveLength(1);
     expect(worker.of(99)).toEqual([]);
+    expectResponses(worker.messages);
   });
 
   it('lets a request with the same key take the running layout over instead of starting again', async () => {

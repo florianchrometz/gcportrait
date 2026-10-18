@@ -291,7 +291,7 @@ omits it on other rects. It is the full or short count line chosen during sizing
 it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
-tests check emitted layouts, worker results and progress against the schemas. Worker protocol envelopes
+tests check emitted layouts, worker responses and client results against the schemas. Worker requests
 and options remain declared in `@gcportrait/layout`.
 
 `LayoutSchema` composes the complete `Layout`: readonly `rects` and `edges` records, readonly `chips`,
@@ -314,6 +314,13 @@ worker response envelope and does not run while a request settles.
 `LayoutWorkerErrorInfoSchema` (`LayoutWorkerErrorInfo`) holds readonly `code`, `message` and `ids`.
 Messages and ids may be empty; id order and duplicates are preserved. Error classes, classification and
 the worker's response guards stay in the layout package, without production schema parsing.
+
+`LayoutCancelReasonSchema` (`LayoutCancelReason`) has `superseded` and `cancelled`;
+`LayoutCancelledReasonSchema` (`LayoutCancelledReason`) adds the client's `aborted` reason.
+`LayoutWorkerResponseSchema` (`LayoutWorkerResponse`) composes four strict readonly tagged arms:
+`progress`, `result`, `cancelled` and `error`. Only the error arm accepts a null id; other ids accept
+finite numbers without integer or range refinements. Existing worker and client guards, cancellation
+classes and response coercion remain unchanged and do not parse these schemas.
 
 ### Reports
 
