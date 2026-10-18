@@ -10,7 +10,7 @@ export default defineProject({
     name: 'catalog',
     environment: 'node',
     include: ['src/**/*.test.ts', 'tooling/**/*.test.ts'],
-    // The property tests' seed (src/testing/fast-check-seed.ts): FC_SEED, a fixed one on CI, else fresh.
-    setupFiles: ['src/testing/fast-check-seed.ts'],
+    // The property tests' seed (@gcportrait/model/testing/fast-check-seed): FC_SEED, a fixed one on CI, else fresh.
+    setupFiles: ['@gcportrait/model/testing/fast-check-seed'],
   },
 });

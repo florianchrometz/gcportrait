@@ -446,7 +446,8 @@ catalog and a stale one would silently change them.
   `SceneSchema`. The routing constants' sizing draws 0 for half of its gaps and paddings, the corner where a
   zone's ring, its border and the gap beside it coincide.
   `src/gutters.test.ts` checks over random Scenes that every gutter line runs through free space.
-  Seeds (`test/fast-check-seed.ts`, by the rule of `@gcportrait/model/testing`): each run draws a fresh one,
+  Seeds (`@gcportrait/model/testing/fast-check-seed`, by the rule of `@gcportrait/model/testing`): each
+  run draws a fresh one,
   but on CI (`CI` set) every property runs under the fixed `CI_PROPERTY_SEED`, so the blocking `unit (layout)`
   leg draws the same inputs on every push, and `FC_SEED=<n>` replays the seed fast-check prints with a
   failure. `explore` runs every property of these two files 1 000 times (`FC_RUNS`); CI's non-blocking

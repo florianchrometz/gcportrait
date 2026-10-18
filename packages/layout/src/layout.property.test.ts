@@ -12,8 +12,8 @@
  * its next child.
  *
  * Every run draws a fresh seed except on CI, where the seed is fixed, and under `FC_SEED`, which replays a
- * failure (test/fast-check-seed.ts); `pnpm --filter @gcportrait/layout explore` runs every property here
- * 1 000 times (`FC_RUNS`).
+ * failure (@gcportrait/model/testing/fast-check-seed); `pnpm --filter @gcportrait/layout explore`
+ * runs every property here 1 000 times (`FC_RUNS`).
  */
 import { SceneSchema, type Scene, type SceneEdge, type SceneNode } from '@gcportrait/model';
 import { propertyRuns } from '@gcportrait/model/testing';

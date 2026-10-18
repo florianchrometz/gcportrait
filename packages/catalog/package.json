@@ -25,12 +25,12 @@
   },
   "dependencies": {
     "@gcportrait/model": "workspace:*",
-    "zod": "^4.6.5"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.20.5",
-    "fast-check": "^4.10.2",
-    "tsx": "^4.23.15",
+    "@types/node": "catalog:",
+    "fast-check": "catalog:",
+    "tsx": "catalog:",
     "yaml": "^2.9.1"
   }
 }

@@ -262,6 +262,7 @@ export {
   TemplateSchema,
   type Catalog,
   type CatalogEntry,
+  type CatalogEntryInput,
   type CatalogProduct,
   type CatalogRelationKind,
   type CatalogType,

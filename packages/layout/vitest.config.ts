@@ -12,8 +12,8 @@ export default defineConfig({
     name: 'layout',
     environment: 'node',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts', 'scripts/**/*.test.ts'],
-    // The property tests' seed (test/fast-check-seed.ts): FC_SEED when set, a fixed one on CI, else fresh.
-    setupFiles: ['test/fast-check-seed.ts'],
+    // The property tests' seed (@gcportrait/model/testing/fast-check-seed): FC_SEED when set, a fixed one on CI, else fresh.
+    setupFiles: ['@gcportrait/model/testing/fast-check-seed'],
     testTimeout: 60_000,
     // The performance test skips its budgets under coverage instrumentation (test/performance.test.ts).
     env: { LAYOUT_COVERAGE: process.argv.includes('--coverage') ? '1' : '' },

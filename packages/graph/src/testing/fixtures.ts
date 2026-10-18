@@ -10,10 +10,10 @@ import {
   CatalogTypeSchema,
   type Asset,
   type Catalog,
+  type CatalogEntryInput,
   type CatalogType,
   type GraphNode,
 } from '@gcportrait/model';
-import type * as z from 'zod';
 
 export const ORG_NUMBER = '30000000001';
 export const ORG = `//cloudresourcemanager.googleapis.com/organizations/${ORG_NUMBER}`;
@@ -177,7 +177,7 @@ export function subnetwork(
 }
 
 /** A product entry as written in YAML (defaults not applied yet). */
-export type CatalogEntryInput = z.input<typeof CatalogEntrySchema>;
+export type { CatalogEntryInput };
 
 /** A deep copy of JSON-shaped data in which every object and array is frozen. */
 function frozenCopy(value: unknown): unknown {

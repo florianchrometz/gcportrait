@@ -4,6 +4,33 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@playwright/test':
+      specifier: ^1.64.0
+      version: 1.64.0
+    '@types/node':
+      specifier: ^22.20.5
+      version: 22.20.5
+    fast-check:
+      specifier: ^4.10.2
+      version: 4.10.2
+    playwright:
+      specifier: ^1.64.0
+      version: 1.64.0
+    playwright-core:
+      specifier: ^1.64.0
+      version: 1.64.0
+    prettier:
+      specifier: ^3.9.9
+      version: 3.9.9
+    tsx:
+      specifier: ^4.23.15
+      version: 4.23.15
+    zod:
+      specifier: ^4.6.5
+      version: 4.6.5
+
 importers:
 
   .:
@@ -12,7 +39,7 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.12.0)
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       '@vitest/coverage-v8':
         specifier: ^5.0.3
@@ -30,7 +57,7 @@ importers:
         specifier: ^17.13.0
         version: 17.13.0
       prettier:
-        specifier: ^3.9.9
+        specifier: 'catalog:'
         version: 3.9.9
       typescript:
         specifier: ~6.0.3
@@ -72,14 +99,14 @@ importers:
         specifier: ^10.4.0
         version: 10.4.0
       zod:
-        specifier: ^4.6.5
+        specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
       '@gcportrait/ingest':
         specifier: workspace:*
         version: link:../packages/ingest
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       esbuild:
         specifier: ^0.28.2
@@ -88,7 +115,7 @@ importers:
         specifier: ^13.2.0
         version: 13.2.0
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
 
   e2e:
@@ -100,13 +127,13 @@ importers:
         specifier: 0.25.0
         version: 0.25.0
       '@playwright/test':
-        specifier: ^1.64.0
+        specifier: 'catalog:'
         version: 1.64.0
       '@resvg/resvg-js':
         specifier: 2.6.2
         version: 2.6.2
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       '@types/pngjs':
         specifier: ^6.0.5
@@ -194,7 +221,7 @@ importers:
         specifier: ^6.2.5
         version: 6.2.5
       fast-check:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
       jsdom:
         specifier: ^30.1.2
@@ -209,17 +236,17 @@ importers:
         specifier: workspace:*
         version: link:../model
       zod:
-        specifier: ^4.6.5
+        specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       fast-check:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
       yaml:
         specifier: ^2.9.1
@@ -232,10 +259,10 @@ importers:
         version: link:../model
     devDependencies:
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
 
   packages/graph:
@@ -254,25 +281,22 @@ importers:
         specifier: workspace:*
         version: link:../ingest
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       fast-check:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
 
   packages/icons:
     devDependencies:
       playwright-core:
-        specifier: 1.64.0
+        specifier: 'catalog:'
         version: 1.64.0
       prettier:
-        specifier: ^3.9.9
+        specifier: 'catalog:'
         version: 3.9.9
       yaml:
         specifier: ^2.9.1
@@ -288,13 +312,13 @@ importers:
         specifier: workspace:*
         version: link:../demo-data
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       fast-check:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
 
   packages/layout:
@@ -316,32 +340,32 @@ importers:
         specifier: 2.6.2
         version: 2.6.2
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       '@types/opentype.js':
         specifier: 1.3.10
         version: 1.3.10
       fast-check:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
       opentype.js:
         specifier: 1.3.4
         version: 1.3.4
       prettier:
-        specifier: ^3.9.9
+        specifier: 'catalog:'
         version: 3.9.9
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
 
   packages/model:
     dependencies:
       zod:
-        specifier: ^4.6.5
+        specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
       fast-check:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
 
   packages/render:
@@ -375,7 +399,7 @@ importers:
         version: 2.6.2
     devDependencies:
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       '@types/pngjs':
         specifier: 6.0.5
@@ -406,13 +430,13 @@ importers:
         specifier: workspace:*
         version: link:../graph
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       '@types/pngjs':
         specifier: 6.0.5
         version: 6.0.5
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
 
   website:
@@ -461,7 +485,7 @@ importers:
         specifier: ^3.0.5
         version: 3.0.5
       '@types/node':
-        specifier: ^22.20.5
+        specifier: 'catalog:'
         version: 22.20.5
       gifenc:
         specifier: 1.0.3
@@ -470,13 +494,13 @@ importers:
         specifier: 1.60.0
         version: 1.60.0
       playwright:
-        specifier: 1.64.0
+        specifier: 'catalog:'
         version: 1.64.0
       pngjs:
         specifier: ^7.0.0
         version: 7.0.0
       tsx:
-        specifier: ^4.23.15
+        specifier: 'catalog:'
         version: 4.23.15
       typescript:
         specifier: ~6.0.3

@@ -623,10 +623,9 @@ run. This package has no Node types, so the helpers reach the process, its clock
 never skip.
 
 And the property tests' seed and number of runs, which the test setup of every package with fast-check
-properties gives fast-check (`fast-check-seed.ts`: the catalog's, ingest's, this package's, the graph's, the
-layout's and the frontend's): `propertySeed()` is `FC_SEED` when set (an integer); else, on CI (`onCi`), the
-fixed `CI_PROPERTY_SEED` (42), so that a blocking run draws the same inputs on every push; else undefined, so
-that fast-check draws a fresh seed for every property. `propertyRuns(runs)` is `FC_RUNS` when set (a positive
-integer), else `runs`, for an exploration such as `pnpm --filter @gcportrait/layout explore` (1 000 runs
-each); the setups of the catalog, ingest, this package and the frontend make it the number of runs of every
-property that names none of its own.
+properties gives fast-check (`@gcportrait/model/testing/fast-check-seed`): `propertySeed()` is `FC_SEED` when
+set (an integer); else, on CI (`onCi`), the fixed `CI_PROPERTY_SEED` (42), so that a blocking run draws the
+same inputs on every push; else undefined, so that fast-check draws a fresh seed for every property.
+`propertyRuns(runs)` is `FC_RUNS` when set (a positive integer), else `runs`, for an exploration such as
+`pnpm --filter @gcportrait/layout explore` (1 000 runs each); the shared setup makes it the number of runs
+of every property that names none of its own.

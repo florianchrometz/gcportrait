@@ -365,7 +365,7 @@ pnpm --filter @gcportrait/graph test test/views      # the scene composition tab
 
 The property tests draw a fresh seed on every run except on CI, where they run under the fixed
 `CI_PROPERTY_SEED` of `@gcportrait/model/testing`, and under `FC_SEED=<n>`, which replays the seed
-fast-check prints with a failure (`test/fast-check-seed.ts`).
+fast-check prints with a failure (`@gcportrait/model/testing/fast-check-seed`).
 
 - `src/*.test.ts` — example tests on a small synthetic organisation (`src/testing/scenario.ts`: a Shared VPC
   host and service project, a local VPC, VMs with one subnet, only a network, two subnets, a host subnet, a

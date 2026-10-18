@@ -14,8 +14,8 @@ export default defineProject({
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
     // Testing Library's cleanup (src/test/setup.ts) and the property tests' seed
-    // (src/test/fast-check-seed.ts: FC_SEED when set, a fixed one on CI, else fresh).
-    setupFiles: ['./src/test/setup.ts', './src/test/fast-check-seed.ts'],
+    // (@gcportrait/model/testing/fast-check-seed: FC_SEED when set, a fixed one on CI, else fresh).
+    setupFiles: ['./src/test/setup.ts', '@gcportrait/model/testing/fast-check-seed'],
     // CSS is stubbed in tests, except the diagram's token file, which theme.test.ts reads (`?raw`) to check it
     // against the token table.
     css: { include: [/diagram\/theme\/tokens\.css/] },

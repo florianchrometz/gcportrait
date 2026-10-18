@@ -240,8 +240,8 @@ pnpm --filter @gcportrait/ingest typecheck            # src/ without DOM or Node
   (fast-check) proves that any cut of a document into byte chunks or text chunks yields the same snapshot and
   report, and exactly the generated assets (each generated asset in either key style). These properties and
   the line reader's (`src/lines.test.ts`) run under the seed rule of `@gcportrait/model/testing`
-  (`test/fast-check-seed.ts`): a fresh seed on every local run, the fixed `CI_PROPERTY_SEED` on CI, and
-  `FC_SEED=<n>` replays the seed fast-check prints with a failure.
+  (`@gcportrait/model/testing/fast-check-seed`): a fresh seed on every local run, the fixed
+  `CI_PROPERTY_SEED` on CI, and `FC_SEED=<n>` replays the seed fast-check prints with a failure.
 - `test/fixtures.test.ts`: the recorded-shape samples in `fixtures/`: an organisation export in the
   `exportAssets` key style (`cai-export`) and the same organisation as `assets.list` results (`cai-list`),
   which must give the same snapshot; backend frame streams (complete, with an error frame, cut short); a

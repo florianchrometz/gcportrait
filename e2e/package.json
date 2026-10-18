@@ -16,9 +16,9 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@maxgraph/core": "0.25.0",
-    "@playwright/test": "^1.64.0",
+    "@playwright/test": "catalog:",
     "@resvg/resvg-js": "2.6.2",
-    "@types/node": "^22.20.5",
+    "@types/node": "catalog:",
     "@types/pngjs": "^6.0.5",
     "esbuild": "^0.28.2",
     "pixelmatch": "^7.2.0",

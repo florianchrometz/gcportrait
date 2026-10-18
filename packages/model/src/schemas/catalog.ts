@@ -295,6 +295,7 @@ export const CatalogEntrySchema = z.strictObject({
   types: z.record(AssetTypeSchema, CatalogTypeEntrySchema),
 });
 export type CatalogEntry = z.infer<typeof CatalogEntrySchema>;
+export type CatalogEntryInput = z.input<typeof CatalogEntrySchema>;
 
 /** One lens file: `packages/catalog/lenses/<lens id>.yaml` (skill gcp-asset-catalog §7). */
 export const LensSchema = z.strictObject({

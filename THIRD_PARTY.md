@@ -209,6 +209,6 @@ here but are checked against the same allowlist and deny list on every run.
 | `vite` | MIT | (root), frontend | dev |
 | `vitest` | MIT | (root) | dev |
 | `yaml` | ISC | packages/catalog, packages/icons, website | dev, runtime |
-| `zod` | MIT | backend, packages/catalog, packages/graph, packages/model | dev, runtime |
+| `zod` | MIT | backend, packages/catalog, packages/model | runtime |
 
 <!-- END GENERATED: npm-dependencies -->

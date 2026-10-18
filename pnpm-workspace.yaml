@@ -8,6 +8,18 @@ packages:
   - website
   - e2e
 
+# Shared tool and dependency versions declared across multiple workspace manifests (issue #130).
+# Referencing these via `catalog:` in package.json keeps versions aligned without duplication.
+catalog:
+  '@playwright/test': ^1.64.0
+  '@types/node': ^22.20.5
+  fast-check: ^4.10.2
+  playwright: ^1.64.0
+  playwright-core: ^1.64.0
+  prettier: ^3.9.9
+  tsx: ^4.23.15
+  zod: ^4.6.5
+
 # pnpm 10 runs no dependency install scripts unless they are listed in onlyBuiltDependencies. The scripts of
 # the packages below only verify (or, as a fallback, download) a native platform binary that pnpm already
 # installs as an optional dependency, so they stay skipped. Listing them makes that decision explicit and

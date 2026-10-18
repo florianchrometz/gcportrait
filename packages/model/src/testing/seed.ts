@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * The property tests' seed and number of runs, one rule for every package whose test setup applies it to
- * fast-check (`fast-check-seed.ts` in the catalog, ingest, this package, the graph, the layout and the
- * frontend):
+ * fast-check (`@gcportrait/model/testing/fast-check-seed`):
  *
  * - **`FC_SEED`, when set, is the seed** of every property (an integer), so a reported failure replays.
  * - **On CI it is `CI_PROPERTY_SEED` otherwise** (`onCi`): the blocking runs draw the same inputs on every push,
