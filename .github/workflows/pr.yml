@@ -350,23 +350,13 @@ jobs:
       - name: SPA size budgets
         run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
 
-  # Playwright on Chromium (e2e/playwright.config.ts): the functional flows in demo and normal mode, the export's
-  # faithfulness checks, which compare the PNG Chromium draws with resvg's drawing of the same view on this runner,
-  # axe in both themes, the app's phone and tablet check (the `mobile` project, e2e/tests/mobile.spec.ts and the
-  # canvas's touch gestures in touch.spec.ts; alone: `pnpm --filter @gcportrait/frontend mobile`) and the flows by
-  # finger on a phone and a tablet (the `chromium-phone` and `chromium-tablet` projects, e2e/tests/handheld.spec.ts).
-  # Five legs, each with its own two servers: the app built in demo mode and in normal mode and served by `vite
-  # preview` (with `CI` set, e2e/playwright.config.ts runs e2e/scripts/built-app.ts in place of the Vite dev
-  # servers, so that every cold page load fetches the build's chunks, not every module, and the suite tests the
-  # bundle that ships). The desktop window's projects (chromium-live and chromium) run in three legs, and every
-  # other project (chromium-phone, chromium-tablet and mobile, named by negation so that a new project is never
-  # left out) in two. Each leg runs a round-robin share of its projects' tests, every k-th of
-  # their JSON listing, through `--test-list` (`pnpm --filter @gcportrait/e2e leg`, e2e/scripts/leg.ts), so that
-  # the slow files spread over the legs; the script fails the leg when the run did not address every test of its
-  # share, and writes the share's count and summed test time to the job summary. There are no screenshot
-  # baselines: the committed visual baselines are SVG text (e2e/baselines/diagram/, compared by the frontend's unit
-  # tests) and the render golden PNG (drawn by resvg's WebAssembly build, compared by the unit tests), so nothing
-  # here depends on the operating system that wrote a baseline.
+  # Playwright on Chromium: e2e/playwright.config.ts owns the projects and servers; e2e/README.md, Running,
+  # describes operations. Phone/tablet coverage is in e2e/tests/{mobile,touch,handheld}.spec.ts.
+  # Leg selection, validation and timing: e2e/scripts/leg.ts's header; counts: the matrix below.
+  # Each leg serves its own demo and normal builds with vite preview, testing shipped chunks, not dev modules.
+  # Export fidelity compares Chromium's PNG with resvg's drawing of the same view on this runner.
+  # No Playwright screenshot baselines: frontend unit tests compare e2e/baselines/diagram/ SVG text, and
+  # render unit tests compare the WASM-drawn PNG goldens, independent of the OS that wrote the baseline.
   e2e:
     name: e2e (${{ matrix.leg }})
     needs: changes
