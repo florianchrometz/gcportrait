@@ -498,8 +498,9 @@ look; `ui/tokens.test.ts` holds the rule, its 4.5 : 1 on the control's fills and
 - Inlined packages' licences: a bundle drops the `LICENSE` files of the npm packages it inlines (React,
   fuse.js, zod, ...), while their licences ask for the notice to travel with every copy. The
   `gcportrait:inlined-licences` plugin collects the modules of every chunk, of the app and of each worker, and
-  writes name, version, declared licence and licence text of each package they came from to
-  `dist/licenses/third-party-LICENSES.txt`. `backend/bundle.ts` does the same for the server.
+  passes their package directories to `scripts/third-party-notices.mjs`. The build writes its combined app,
+  server and render-worker notices to `dist/licenses/THIRD_PARTY_NOTICES.txt`, linked from Settings.
+  [THIRD_PARTY.md](../THIRD_PARTY.md#what-the-licences-ask-of-a-copy) describes the notices it carries.
 - Focus ring: 2 px primary with a 2 px surface gap on `:focus-visible`, drawn as box shadows plus a
   transparent outline so forced-colours mode still shows it. A slider's thumb that a press focused shows it
   from the first key pressed on it, as a native range input does, and on a phone or a tablet the ring goes

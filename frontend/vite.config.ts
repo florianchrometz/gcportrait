@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -77,15 +77,8 @@ function ownLicence(): Plugin {
 }
 
 /**
- * The licences of the npm packages inlined into the app's JavaScript, written to
- * dist/licenses/third-party-LICENSES.txt: name, version, declared licence and licence text of each. A bundle
- * drops the LICENSE files the packages carry, while MIT, ISC, BSD and Apache-2.0 ask for their notices to travel
- * with every copy (the image and the hosted instance convey the app). The module ids of every chunk, of the app
- * and of each worker, name the package each module came from; workspace packages are gcportrait's own code.
- * backend/bundle.ts does the same for the server.
- *
- * The same packages, with the backend's production dependencies (what the image's server bundle may hold), also go
- * into dist/licenses/THIRD_PARTY_NOTICES.txt (scripts/third-party-notices.mjs): copyright lines, every
+ * The npm packages inlined into the app and its workers, with the backend's production dependencies, go into
+ * dist/licenses/THIRD_PARTY_NOTICES.txt (scripts/third-party-notices.mjs): copyright lines, every
  * NOTICE file, the Apache-2.0 text once, the MPL-2.0 sections 3.2 and 3.3 notice, the font licences. Every instance
  * serves it at /licenses/THIRD_PARTY_NOTICES.txt, and the app's Settings page links to it.
  */
@@ -126,40 +119,6 @@ function inlinedPackageLicences(): { app: Plugin; worker: () => Plugin } {
       }
     }
   };
-  const report = (): string => {
-    const packages = [...packageDirs]
-      .map((dir) => {
-        const manifest = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8')) as {
-          name?: unknown;
-          version?: unknown;
-          license?: unknown;
-        };
-        const text = (value: unknown): string => (typeof value === 'string' ? value : 'unknown');
-        const files = readdirSync(dir).filter((file) =>
-          /^(licen[cs]e|copying)(\.(md|txt|markdown))?$/i.test(file),
-        );
-        const licence = files
-          .map((file) => readFileSync(path.join(dir, file), 'utf8').trimEnd())
-          .join('\n\n');
-        return {
-          title: `${text(manifest.name)}@${text(manifest.version)} (${text(manifest.license)})`,
-          licence:
-            licence || '(The package ships no licence file; its package.json declares the licence above.)',
-        };
-      })
-      .sort((a, b) => a.title.localeCompare(b.title));
-    const rule = '='.repeat(78);
-    return `${[
-      [
-        "Third-party software inlined into the gcportrait app's JavaScript (dist/assets/).",
-        'Each package keeps its own licence; none of it is covered by the MIT License of gcportrait itself',
-        '(gcportrait-LICENSE.txt).',
-        '',
-        ...packages.map((pkg) => `- ${pkg.title}`),
-      ].join('\n'),
-      ...packages.map((pkg) => `${rule}\n${pkg.title}\n${rule}\n\n${pkg.licence}`),
-    ].join('\n\n')}\n`;
-  };
   return {
     // Vite bundles the workers while it transforms the app, so their chunks are known when the app's are written.
     app: {
@@ -167,7 +126,6 @@ function inlinedPackageLicences(): { app: Plugin; worker: () => Plugin } {
       apply: 'build',
       async generateBundle(_options, bundle) {
         collect(bundle);
-        this.emitFile({ type: 'asset', fileName: 'licenses/third-party-LICENSES.txt', source: report() });
         this.emitFile({
           type: 'asset',
           fileName: NOTICES_FILE,
@@ -189,8 +147,7 @@ function inlinedPackageLicences(): { app: Plugin; worker: () => Plugin } {
  * The licence files the Settings page links (gcportrait's licence, the font licences, the third-party
  * notices) under `pnpm dev` and `pnpm dev:demo` too, where nothing is built: read from the same sources as the
  * build's. With no bundle to inspect, the third-party notices cover the frontend's whole production dependency
- * closure (as `node scripts/third-party-notices.mjs` does), a superset of what a build inlines; the build's
- * `third-party-LICENSES.txt` exists only in builds.
+ * closure (as `node scripts/third-party-notices.mjs` does), a superset of what a build inlines.
  */
 function devLicences(): Plugin {
   const root = path.resolve(import.meta.dirname, '..');
