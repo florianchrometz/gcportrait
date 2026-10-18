@@ -6,8 +6,9 @@
  */
 import type {
   Arrangement,
+  Arrangements,
   EdgePath,
-  GutterWidening,
+  GutterReservations,
   LayoutRect,
   LayoutReport,
   Rect,
@@ -17,11 +18,13 @@ import type { FontMetricsTable } from './metrics.js';
 
 export type {
   Arrangement,
+  Arrangements,
   EdgeBundle,
   EdgeHeads,
   EdgePath,
   EdgePort,
   GapWidening,
+  GutterReservations,
   GutterWidening,
   Insets,
   LayoutCounts,
@@ -34,12 +37,6 @@ export type {
   Side,
   StageTimings,
 } from '@gcportrait/model';
-
-/** One arrangement per container: the canvas, and every open zone by id (in paint order). */
-export interface Arrangements {
-  readonly canvas: Arrangement;
-  readonly zones: Readonly<Record<string, Arrangement>>;
-}
 
 export interface Layout {
   /**
@@ -64,18 +61,6 @@ export interface Layout {
    */
   readonly gutters: GutterReservations;
   readonly report: LayoutReport;
-}
-
-/**
- * The hook through which gutter routing widens gutters and re-packs without re-implementing packing:
- * per container, extra lane space on top of the base gaps and padding: uniform (every column gap, every row
- * gap, the whole ring) or per gap (`gaps`). Wider gaps change the candidates' sizes, so a re-pack may
- * choose another arrangement; pass the first pass's `Layout.arrangements` as `LayoutOptions.arrangements` to
- * keep every row and column (and so every gutter's identity) across passes.
- */
-export interface GutterReservations {
-  readonly canvas?: GutterWidening;
-  readonly zones?: Readonly<Record<string, GutterWidening>>;
 }
 
 export interface LayoutOptions {

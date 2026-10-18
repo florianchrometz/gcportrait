@@ -3,6 +3,41 @@ import * as z from 'zod';
 import { RelationKindSchema } from './relation.js';
 import { ZoneKindSchema } from './scene.js';
 
+function stringRecord<Value extends z.ZodType>(valueSchema: Value) {
+  return z
+    .transform((input, context): Record<string, z.output<Value>> => {
+      if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+        context.addIssue({ code: 'custom', message: 'Expected a plain string-keyed record' });
+        return z.NEVER;
+      }
+      const prototype: unknown = Object.getPrototypeOf(input);
+      if (prototype !== null && prototype !== Object.prototype) {
+        context.addIssue({ code: 'custom', message: 'Expected a plain string-keyed record' });
+        return z.NEVER;
+      }
+      const entries: [string, z.output<Value>][] = [];
+      let invalid = false;
+      for (const key of Reflect.ownKeys(input)) {
+        if (!Object.prototype.propertyIsEnumerable.call(input, key)) continue;
+        if (typeof key !== 'string') {
+          context.addIssue({ code: 'custom', message: 'Expected a string record key' });
+          invalid = true;
+          continue;
+        }
+        const result = valueSchema.safeParse((input as Record<string, unknown>)[key]);
+        if (result.success) entries.push([key, result.data]);
+        else {
+          invalid = true;
+          for (const issue of result.error.issues) {
+            context.addIssue({ ...issue, path: [key, ...issue.path] });
+          }
+        }
+      }
+      return invalid ? z.NEVER : Object.fromEntries(entries);
+    })
+    .readonly();
+}
+
 export const PointSchema = z.strictObject({ x: z.number(), y: z.number() }).readonly();
 export type Point = z.infer<typeof PointSchema>;
 
@@ -269,6 +304,12 @@ export const ArrangementSchema = z
   .readonly();
 export type Arrangement = z.infer<typeof ArrangementSchema>;
 
+/** One arrangement per container: the canvas, and every open zone by id (in paint order). */
+export const ArrangementsSchema = z
+  .strictObject({ canvas: ArrangementSchema, zones: stringRecord(ArrangementSchema) })
+  .readonly();
+export type Arrangements = z.infer<typeof ArrangementsSchema>;
+
 /** Extra width of single gaps of one container. */
 export const GapWideningSchema = z
   .strictObject({
@@ -313,3 +354,18 @@ export const GutterWideningSchema = z
   })
   .readonly();
 export type GutterWidening = z.infer<typeof GutterWideningSchema>;
+
+/**
+ * The hook through which gutter routing widens gutters and re-packs without re-implementing packing:
+ * per container, extra lane space on top of the base gaps and padding: uniform (every column gap, every row
+ * gap, the whole ring) or per gap (`gaps`). Wider gaps change the candidates' sizes, so a re-pack may
+ * choose another arrangement; pass the first pass's `Layout.arrangements` as `LayoutOptions.arrangements` to
+ * keep every row and column (and so every gutter's identity) across passes.
+ */
+export const GutterReservationsSchema = z
+  .strictObject({
+    canvas: GutterWideningSchema.exactOptional(),
+    zones: stringRecord(GutterWideningSchema).exactOptional(),
+  })
+  .readonly();
+export type GutterReservations = z.infer<typeof GutterReservationsSchema>;

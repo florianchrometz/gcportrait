@@ -2,11 +2,15 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   ArrangementSchema,
+  ArrangementsSchema,
+  GutterReservationsSchema,
   GutterWideningSchema,
   LayoutRectSchema,
   LayoutReportSchema,
   type Arrangement,
+  type Arrangements,
   type GapWidening,
+  type GutterReservations,
   type GutterWidening,
   type LayoutCounts,
   type LayoutReport,
@@ -16,7 +20,9 @@ import {
 } from '@gcportrait/model';
 import type {
   Arrangement as PublicArrangement,
+  Arrangements as PublicArrangements,
   GapWidening as PublicGapWidening,
+  GutterReservations as PublicGutterReservations,
   GutterWidening as PublicGutterWidening,
   LayoutCounts as PublicLayoutCounts,
   LayoutReport as PublicLayoutReport,
@@ -318,11 +324,22 @@ describe('layoutScene', () => {
 
   it('treats ids like __proto__ as ordinary keys', () => {
     const odd = scene([zone('__proto__', 'project', [card('constructor')])]);
-    const result = layoutScene(odd);
+    const gutters = { zones: Object.fromEntries([['__proto__', { ring: 4 }]]) };
+    const result = layoutScene(odd, { gutters });
     expect(Object.keys(result.rects)).toEqual(['__proto__', 'constructor']);
     expect(JSON.stringify(result.rects)).toMatch(/^\{"__proto__":\{"x":24,/);
     expect(Object.entries(result.rects).find(([id]) => id === 'constructor')?.[1].parent).toBe('__proto__');
-    assertLayout(odd, result);
+    expect(Object.hasOwn(result.arrangements.zones, '__proto__')).toBe(true);
+    expect(Object.hasOwn(result.gutters.zones ?? {}, '__proto__')).toBe(true);
+    expect(ArrangementsSchema.parse(result.arrangements)).toEqual(result.arrangements);
+    expect(GutterReservationsSchema.parse(result.gutters)).toEqual(result.gutters);
+    expect(ArrangementsSchema.parse(JSON.parse(JSON.stringify(result.arrangements)))).toEqual(
+      result.arrangements,
+    );
+    expect(GutterReservationsSchema.parse(JSON.parse(JSON.stringify(result.gutters)))).toEqual(
+      result.gutters,
+    );
+    assertLayout(odd, result, { gutters });
   });
 
   it('never reads the Scene’s metadata, so the memo key may leave it out (hash.ts)', () => {
@@ -575,6 +592,8 @@ describe('options', () => {
 
   it('keeps public packing types compatible with their model contracts', () => {
     expectTypeOf<PublicArrangement>().toEqualTypeOf<Arrangement>();
+    expectTypeOf<PublicArrangements>().toEqualTypeOf<Arrangements>();
+    expectTypeOf<PublicGutterReservations>().toEqualTypeOf<GutterReservations>();
     expectTypeOf<PublicGapWidening>().toEqualTypeOf<GapWidening>();
     expectTypeOf<PublicGutterWidening>().toEqualTypeOf<GutterWidening>();
   });

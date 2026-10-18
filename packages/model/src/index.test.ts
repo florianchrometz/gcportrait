@@ -123,8 +123,10 @@ describe('public surface', () => {
         'RoutingReportSchema',
         'LayoutReportSchema',
         'ArrangementSchema',
+        'ArrangementsSchema',
         'GapWideningSchema',
         'GutterWideningSchema',
+        'GutterReservationsSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',

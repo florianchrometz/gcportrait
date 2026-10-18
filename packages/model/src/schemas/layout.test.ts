@@ -2,11 +2,13 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   ArrangementSchema,
+  ArrangementsSchema,
   EdgeBundleSchema,
   EdgeHeadsSchema,
   EdgePathSchema,
   EdgePortSchema,
   GapWideningSchema,
+  GutterReservationsSchema,
   GutterWideningSchema,
   InsetsSchema,
   LayoutCountsSchema,
@@ -20,11 +22,13 @@ import {
   SideSchema,
   StageTimingsSchema,
   type Arrangement,
+  type Arrangements,
   type EdgeBundle,
   type EdgeHeads,
   type EdgePath,
   type EdgePort,
   type GapWidening,
+  type GutterReservations,
   type GutterWidening,
   type Insets,
   type LayoutCounts,
@@ -42,6 +46,156 @@ const point = { x: -1.25, y: 0.5 };
 const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
 const gaps = { cardColumns: [-1.5], zoneColumns: [[], [0, 2.25]], stacks: [[[], [-0.5]]], rows: [0] };
 const widening = { horizontal: -1.5, vertical: 0, ring: 2.25, ringSides: { left: -0.5 }, gaps };
+
+describe('layout container records', () => {
+  it.each(['plain', 'null prototype'] as const)('preserves every own string key in a %s map', (kind) => {
+    const keys = ['2', '10', 'zone', '__proto__', 'constructor', ''];
+    const entries = keys.map((key) => [key, arrangement] as const);
+    const zones: Record<string, Arrangement> =
+      kind === 'plain'
+        ? Object.fromEntries(entries)
+        : Object.assign(Object.create(null) as Record<string, Arrangement>, Object.fromEntries(entries));
+    const parsed = ArrangementsSchema.parse({ canvas: arrangement, zones });
+    expect(Object.keys(parsed.zones)).toEqual(keys);
+    for (const key of keys) {
+      expect(Object.hasOwn(parsed.zones, key)).toBe(true);
+      expect(parsed.zones[key]).toEqual(arrangement);
+    }
+    expect(Object.getPrototypeOf(parsed.zones)).toBe(Object.prototype);
+    expect(Object.isFrozen(zones)).toBe(false);
+    expect(Object.isFrozen(arrangement)).toBe(false);
+    expect(JSON.stringify(parsed.zones)).toBe(JSON.stringify(zones));
+    expect(ArrangementsSchema.parse(JSON.parse(JSON.stringify(parsed)))).toEqual(parsed);
+    const gutterEntries = Object.fromEntries(keys.map((key) => [key, widening]));
+    const gutterZones =
+      kind === 'plain'
+        ? gutterEntries
+        : Object.assign(Object.create(null) as Record<string, GutterWidening>, gutterEntries);
+    const reservations = GutterReservationsSchema.parse({ zones: gutterZones });
+    expect(Object.keys(reservations.zones ?? {})).toEqual(keys);
+    expect(GutterReservationsSchema.parse(JSON.parse(JSON.stringify(reservations)))).toEqual(reservations);
+  });
+
+  it('keeps empty maps and exact optional fields without adding defaults', () => {
+    expect(ArrangementsSchema.parse({ canvas: arrangement, zones: {} })).toEqual({
+      canvas: arrangement,
+      zones: {},
+    });
+    expect(GutterReservationsSchema.parse({})).toEqual({});
+    expect(GutterReservationsSchema.parse({ canvas: {}, zones: {} })).toEqual({ canvas: {}, zones: {} });
+    for (const key of ['canvas', 'zones']) {
+      expect(GutterReservationsSchema.safeParse({ [key]: undefined }).success).toBe(false);
+      expect(ArrangementsSchema.safeParse({ canvas: arrangement, zones: {}, [key]: undefined }).success).toBe(
+        false,
+      );
+    }
+    expect(ArrangementsSchema.safeParse({ canvas: arrangement }).success).toBe(false);
+    expect(ArrangementsSchema.safeParse({ zones: {} }).success).toBe(false);
+    expect(ArrangementsSchema.safeParse({ canvas: arrangement, zones: {}, extra: 1 }).success).toBe(false);
+    expect(GutterReservationsSchema.safeParse({ extra: 1 }).success).toBe(false);
+  });
+
+  it.each(['__proto__', 'constructor', ''])(
+    'rejects invalid values under %j with their complete paths',
+    (key) => {
+      const parsed = ArrangementsSchema.safeParse({
+        canvas: arrangement,
+        zones: Object.fromEntries<unknown>([
+          ['valid', arrangement],
+          [key, { ...arrangement, zoneRows: [Infinity] }],
+        ]),
+      });
+      expect(parsed.success).toBe(false);
+      if (!parsed.success)
+        expect(parsed.error.issues.map((issue) => issue.path)).toEqual([['zones', key, 'zoneRows', 0]]);
+      const reservations = GutterReservationsSchema.safeParse({
+        zones: Object.fromEntries<unknown>([
+          ['valid', widening],
+          [key, { ringSides: { left: undefined } }],
+        ]),
+      });
+      expect(reservations.success).toBe(false);
+      if (!reservations.success)
+        expect(reservations.error.issues.map((issue) => issue.path)).toEqual([
+          ['zones', key, 'ringSides', 'left'],
+        ]);
+    },
+  );
+
+  it('reports all invalid record entries rather than returning a partial map', () => {
+    const parsed = ArrangementsSchema.safeParse({
+      canvas: arrangement,
+      zones: Object.fromEntries<unknown>([
+        ['__proto__', { ...arrangement, cardColumns: NaN }],
+        ['constructor', { ...arrangement, cardColumns: undefined }],
+      ]),
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success)
+      expect(parsed.error.issues.map((issue) => issue.path)).toEqual([
+        ['zones', '__proto__', 'cardColumns'],
+        ['zones', 'constructor', 'cardColumns'],
+      ]);
+  });
+
+  it.each([
+    null,
+    undefined,
+    [],
+    [arrangement],
+    Object.setPrototypeOf([], null) as unknown,
+    'record',
+    1,
+    true,
+    () => ({}),
+    new Map(),
+    new Set(),
+    new Date(0),
+    new (class {
+      readonly value = arrangement;
+    })(),
+    Object.create({ inherited: arrangement }) as unknown,
+  ])('refuses a non-record input: %s', (zones) => {
+    expect(ArrangementsSchema.safeParse({ canvas: arrangement, zones }).success).toBe(false);
+    expect(GutterReservationsSchema.safeParse({ zones }).success).toBe(false);
+  });
+
+  it('refuses enumerable symbol keys and ignores nonenumerable properties', () => {
+    expect(
+      ArrangementsSchema.safeParse({ canvas: arrangement, zones: { [Symbol('zone')]: arrangement } }).success,
+    ).toBe(false);
+    const zones = Object.defineProperty({ zone: arrangement }, 'hidden', { value: null, enumerable: false });
+    const parsed = ArrangementsSchema.parse({ canvas: arrangement, zones });
+    expect(Object.keys(parsed.zones)).toEqual(['zone']);
+    expect(Object.hasOwn(parsed.zones, 'toString')).toBe(false);
+    expect(Object.hasOwn(parsed.zones, 'hidden')).toBe(false);
+  });
+
+  it('preserves readonly nested records and exact optionality in the inferred types', () => {
+    expectTypeOf<Arrangements>().toEqualTypeOf<
+      Readonly<{ canvas: Arrangement; zones: Readonly<Record<string, Arrangement>> }>
+    >();
+    expectTypeOf<GutterReservations>().toEqualTypeOf<
+      Readonly<{ canvas?: GutterWidening; zones?: Readonly<Record<string, GutterWidening>> }>
+    >();
+    const parsed = ArrangementsSchema.parse({ canvas: arrangement, zones: { zone: arrangement } });
+    const reservations = GutterReservationsSchema.parse({ canvas: widening, zones: { zone: widening } });
+    for (const value of [
+      parsed,
+      parsed.canvas,
+      parsed.zones,
+      parsed.zones.zone,
+      parsed.zones.zone?.zoneRows,
+      reservations,
+      reservations.canvas,
+      reservations.zones,
+      reservations.zones?.zone,
+      reservations.zones?.zone?.gaps?.stacks?.[0]?.[1],
+    ]) {
+      expect(Object.isFrozen(value)).toBe(true);
+    }
+  });
+});
 
 describe('layout packing contracts', () => {
   it('preserves finite negative and fractional values without packing refinements', () => {

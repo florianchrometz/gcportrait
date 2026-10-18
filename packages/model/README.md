@@ -312,7 +312,7 @@ engine: this schema declaration does not normalise its results or change how the
 
 ### Packing and widening
 
-The same module declares the record-free packing and gutter-widening shapes. Fields are readonly, arrays
+The same module declares the packing and gutter-widening shapes. Fields are readonly, arrays
 are readonly at every nesting level, and optional fields may be absent but not explicitly `undefined`.
 Partial `ringSides` reuses `InsetsSchema` with exact optional sides. Finite negative and fractional numbers
 remain representable; the layout's existing input validation and packing checks are separate and unchanged.
@@ -320,11 +320,16 @@ remain representable; the layout's existing input validation and packing checks 
 | Export | What |
 |---|---|
 | `ArrangementSchema`, `Arrangement` | `cardColumns`, readonly `zoneRows` and optional nested `zoneStacks` |
+| `ArrangementsSchema`, `Arrangements` | required `canvas` arrangement and readonly `zones` record |
 | `GapWideningSchema`, `GapWidening` | optional numeric arrays `cardColumns` and `rows`, nested `zoneColumns`, and three-level `stacks` |
 | `GutterWideningSchema`, `GutterWidening` | optional `horizontal`, `vertical`, `ring`, partial `ringSides` and `gaps` |
+| `GutterReservationsSchema`, `GutterReservations` | optional `canvas` widening and readonly `zones` record |
 
-`Arrangements`, `GutterReservations` and the complete `Layout` remain in `@gcportrait/layout`; their
-record-valued schemas must preserve every supported node id, including `__proto__`.
+The `zones` records accept plain and null-prototype objects, preserving their own enumerable string keys
+and order, including `__proto__`, `constructor` and the empty string. Every value is validated; an invalid
+value rejects the whole record with its key in the error path. Enumerable symbol keys and non-record
+inputs are refused. Parsed records and their values are readonly; no schema parsing is added to the layout
+pipeline. The complete `Layout` remains in `@gcportrait/layout`.
 
 ## Scene builder environment and report
 
