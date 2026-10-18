@@ -9,7 +9,7 @@
  * no camera, while a mouse keeps its hover, click, double-click and drag, and a pen is read as a mouse is.
  */
 import { act, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DOUBLE_TAP_ZOOM, focusTransform } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
@@ -69,6 +69,13 @@ function advance(ms: number): void {
     vi.advanceTimersByTime(ms);
   });
 }
+
+// Every test runs on a faked clock: the gestures read `Date.now()` (a double tap's interval, the browser's mouse events
+// of a finger's tap) and set a long press's timer, so their time stands still unless a test moves it, however long the
+// rendering between two events takes on a busy machine.
+beforeEach(() => {
+  vi.useFakeTimers();
+});
 
 afterEach(() => {
   vi.useRealTimers();
@@ -150,7 +157,6 @@ describe('a double tap', () => {
   });
 
   it('is two taps when the second comes too late', () => {
-    vi.useFakeTimers();
     reduceMotion();
     const onSelect = vi.fn();
     const { container } = render(<DiagramCanvas {...props({ onSelect })} />);
@@ -258,7 +264,6 @@ describe('two fingers', () => {
 
 describe('a long press', () => {
   it('shows what hover shows a mouse, and its name by the finger, until the next finger touches', () => {
-    vi.useFakeTimers();
     const onHover = vi.fn();
     const onSelect = vi.fn();
     const { container } = render(<DiagramCanvas {...props({ onHover, onSelect })} />);
@@ -291,7 +296,6 @@ describe('a long press', () => {
   });
 
   it('names what a resting mouse’s tooltip names, and shows the console action’s label; never the node’s menu', () => {
-    vi.useFakeTimers();
     const onSelect = vi.fn();
     const { container } = render(
       <DiagramCanvas {...props({ model: withConsoleLinks(model), selection: 'run/api', onSelect })} />,
@@ -323,7 +327,6 @@ describe('a long press', () => {
 
 describe('a mouse', () => {
   it('keeps its hover, its click and its right-click after a finger was on the canvas', () => {
-    vi.useFakeTimers();
     const onHover = vi.fn();
     const onSelect = vi.fn();
     const { container } = render(<DiagramCanvas {...props({ onHover, onSelect })} />);
@@ -342,7 +345,6 @@ describe('a mouse', () => {
   });
 
   it('drills in with a double-click after a finger was on the canvas, and a pen’s pointer events are no finger’s', () => {
-    vi.useFakeTimers();
     const onFlip = vi.fn();
     const onDrillIn = vi.fn();
     const onSelect = vi.fn();
@@ -379,7 +381,6 @@ describe('a mouse', () => {
   });
 
   it('drags the camera, while the mouse events a browser makes of a finger’s tap do not', () => {
-    vi.useFakeTimers();
     const { container } = render(<DiagramCanvas {...props()} />);
     const svg = canvasOf(container);
     const before = cameraOf(svg);
