@@ -137,6 +137,31 @@ describe('a read time typed for an export without its operation.json', () => {
 describe('the read time an export is read with', () => {
   const sidecar = parseSidecar(operation());
 
+  it.each([
+    ['0000-01-01T00:00:00+01:00', '-000001-12-31 23:00 UTC'],
+    ['9999-12-31T23:30:00-01:00', '+010000-01-01 00:30 UTC'],
+  ])('formats accepted sidecar time %s across the UTC year boundary', (readTime, expected) => {
+    const accepted = parseSidecar(operation({ response: { readTime } }));
+    expect(accepted?.readTime).toBe(readTime);
+    expect(exportReadTime(accepted, '2026-10-05T14:30:00Z').note).toBe(
+      `The export's operation.json names its read time, ${expected}, so the time typed, ` +
+        '2026-10-05 14:30 UTC, was not used.',
+    );
+    expect(exportReadTime(sidecar, readTime).note).toBe(
+      "The export's operation.json names its read time, 2026-10-08 06:00 UTC, so the time typed, " +
+        `${expected}, was not used.`,
+    );
+    expect(futureReadTimeNote(readTime, Date.parse(readTime) - 1)).toBe(
+      `Its read time, ${expected}, is later than this computer's clock; its scope's timeline shows it at ` +
+        'the present until then.',
+    );
+  });
+
+  it('still rejects invalid direct formatting inputs rather than treating them as display text', () => {
+    expect(() => exportReadTime({ readTime: 'soon' }, '2026-10-05T14:30:00Z')).toThrow(RangeError);
+    expect(() => exportReadTime(sidecar, 'soon')).toThrow(RangeError);
+  });
+
   it('is the operation.json’s, else the one typed, else none (the estimate)', () => {
     expect(exportReadTime(sidecar, undefined)).toEqual({
       readTime: '2026-10-08T06:00:01.123456Z',

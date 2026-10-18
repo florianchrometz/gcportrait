@@ -1,6 +1,7 @@
 // @vitest-environment node
 // SPDX-License-Identifier: MIT
 import { generateOrganization } from '@gcportrait/demo-data';
+import { SnapshotSchema, TimestampSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 
 import { DEMO_CHOICES } from '../diagram/demoChoices';
@@ -11,6 +12,7 @@ import {
   demoLabel,
   distinctLabels,
   distinctNames,
+  formatUtc,
   scopeName,
   snapshotLabel,
 } from './labels';
@@ -20,6 +22,37 @@ import { storedRecord } from './testing';
 const meta = (change: Partial<SnapshotMeta> = {}): SnapshotMeta => storedRecord('x', change).meta;
 
 describe('snapshot labels', () => {
+  it.each([
+    ['0000-01-01T00:00:00+01:00', '-000001-12-31 23:00 UTC'],
+    ['9999-12-31T23:30:00-01:00', '+010000-01-01 00:30 UTC'],
+  ])('formats model-accepted read time %s across the UTC year boundary', (readTime, expected) => {
+    expect(TimestampSchema.safeParse(readTime).success).toBe(true);
+    expect(
+      SnapshotSchema.safeParse({
+        id: '01J0000000000000000000000A',
+        schemaVersion: 1,
+        scope: { kind: 'project', id: 'demo-app-1' },
+        readTime,
+        source: { kind: 'export' },
+        contentType: 'RESOURCE',
+        assets: [],
+        stats: { count: 0, byType: {}, bytes: 0 },
+      }).success,
+    ).toBe(true);
+    expect(formatUtc(readTime)).toBe(expected);
+    expect(snapshotLabel(meta({ readTime }))).toBe(`example.com, read ${expected}`);
+  });
+
+  it.each([
+    ['2026-10-08T00:00:00Z', '2026-10-08 00:00 UTC'],
+    ['2026-10-08T02:30:45.987654+02:00', '2026-10-08 00:30 UTC'],
+    ['0000-01-01T00:00:00Z', '0000-01-01 00:00 UTC'],
+    ['soon', 'soon'],
+    ['', ''],
+  ])('keeps the UTC display and invalid-string policy for %s', (readTime, expected) => {
+    expect(formatUtc(readTime)).toBe(expected);
+  });
+
   it('name a snapshot by its scope, read time and source detail', () => {
     expect(snapshotLabel(meta({ detail: 'demo:M' }))).toBe('example.com, read 2026-10-08 00:00 UTC, demo:M');
     expect(snapshotLabel(meta())).toBe('example.com, read 2026-10-08 00:00 UTC');

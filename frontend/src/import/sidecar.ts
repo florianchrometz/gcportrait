@@ -16,6 +16,8 @@
  */
 import type { SnapshotScope } from '@gcportrait/model';
 
+import { formatUtcMinute } from '../utcTime';
+
 /** What a sidecar tells: at least one of the two. */
 export interface ExportSidecar {
   readonly readTime?: string;
@@ -106,11 +108,6 @@ export const TYPED_READ_TIME_EXAMPLE = '2026-10-05 14:30';
 const TYPED_READ_TIME =
   /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d{1,9})?\s*(Z|UTC|[+-]\d{2}:\d{2})?$/i;
 
-/** "2026-10-05 14:30 UTC": a read time to the minute, at UTC (as the Snapshots page lists them). */
-function utcMinute(readTime: string): string {
-  return `${new Date(Date.parse(readTime)).toISOString().slice(0, 16).replace('T', ' ')} UTC`;
-}
-
 /**
  * The read time the person typed for an export that came without its operation.json: `2026-10-05 14:30` (UTC, as the
  * field says), with or without seconds, a `T`, `Z`, `UTC` or an offset (`+02:00`). Null for an empty field; a
@@ -151,7 +148,7 @@ export function parseTypedReadTime(
   const ms = wall.getTime() - offsetMinutes * 60_000;
   if (ms > now)
     return {
-      problem: `${utcMinute(new Date(ms).toISOString())} is later than this computer's clock: type when the export was taken.`,
+      problem: `${formatUtcMinute(ms)} is later than this computer's clock: type when the export was taken.`,
     };
   return { readTime: `${new Date(ms).toISOString().slice(0, 19)}Z` };
 }
@@ -175,8 +172,8 @@ export function exportReadTime(sidecar: ExportSidecar | null, typed: string | un
       ...(differs
         ? {
             note:
-              `The export's operation.json names its read time, ${utcMinute(fromSidecar)}, so the time typed, ` +
-              `${utcMinute(typed)}, was not used.`,
+              `The export's operation.json names its read time, ${formatUtcMinute(Date.parse(fromSidecar))}, so the time typed, ` +
+              `${formatUtcMinute(Date.parse(typed))}, was not used.`,
           }
         : {}),
     };
@@ -189,7 +186,7 @@ export function futureReadTimeNote(readTime: string, now: number): string | null
   const ms = Date.parse(readTime);
   if (!Number.isFinite(ms) || ms <= now) return null;
   return (
-    `Its read time, ${utcMinute(readTime)}, is later than this computer's clock; its scope's timeline shows it at ` +
+    `Its read time, ${formatUtcMinute(ms)}, is later than this computer's clock; its scope's timeline shows it at ` +
     'the present until then.'
   );
 }

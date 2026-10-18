@@ -8,12 +8,35 @@ import { screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import { formatUtc } from '../../snapshots/labels';
 import { expectNoAxeViolations } from '../../test/axe';
 import { DRAWING_APP_TIMEOUT, WHOLE_APP_TIMEOUT } from '../../test/renderApp';
 import { drawn, inTopBar, renderControls, topBar } from '../../views/testing/controls';
 import { currentSnapshotLine, formatReadTime } from './SnapshotMenu';
 
 describe('the Snapshot menu', () => {
+  it.each([
+    ['0000-01-01T00:00:00+01:00', '-000001-12-31 23:00 UTC'],
+    ['9999-12-31T23:30:00-01:00', '+010000-01-01 00:30 UTC'],
+  ])('formats both current snapshot sources at the UTC year boundary %s', (readTime, expected) => {
+    expect(formatReadTime(readTime)).toBe(expected);
+    const source = { ref: 'demo:M', scope: 'example.com', readTime, assets: 0 } as const;
+    const facts = {
+      ...source,
+      scopeKind: 'organization',
+      readTimeEstimated: false,
+      source: 'export',
+    } as const;
+    expect(currentSnapshotLine('demo:M', facts, null)).toBe(`example.com · read ${expected} · export file`);
+    expect(currentSnapshotLine('demo:M', null, source)).toBe(
+      `example.com · read ${expected} · demo organisation`,
+    );
+  });
+
+  it('keeps the canonical UTC formatter available under its existing export', () => {
+    expect(formatReadTime).toBe(formatUtc);
+  });
+
   it('words the open snapshot from its facts, or from the drawn diagram until they arrive', () => {
     expect(formatReadTime('2026-10-08T02:30:00+02:00')).toBe('2026-10-08 00:30 UTC');
     expect(formatReadTime('soon')).toBe('soon');

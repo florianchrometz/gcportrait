@@ -4,25 +4,20 @@ import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router';
 
 import type { SceneSource } from '../../diagram/pipeline/protocol';
+import { formatUtc as formatReadTime } from '../../snapshots/labels';
 import { useAppState, useDiagramActions, usePopover } from '../../state';
 import type { MenuItem } from '../../ui/Menu';
 import { MenuButton } from '../../ui/MenuButton';
 import type { SnapshotFacts } from '../../views/choices';
 import { useViewChoices } from '../../views/useViewChoices';
 
+export { formatUtc as formatReadTime } from '../../snapshots/labels';
+
 const SOURCE_WORDS: Readonly<Record<SnapshotSourceKind, string>> = {
   demo: 'demo organisation',
   api: 'API pull',
   export: 'export file',
 };
-
-/** A read time as the menu shows it: the instant in UTC, to the minute ("2026-10-08 00:00 UTC"). */
-export function formatReadTime(readTime: string): string {
-  const time = Date.parse(readTime);
-  if (Number.isNaN(time)) return readTime;
-  const iso = new Date(time).toISOString();
-  return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
-}
 
 /**
  * The line that says which snapshot is open: its scope, read time and source ("example.com · read 2026-10-08

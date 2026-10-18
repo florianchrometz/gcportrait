@@ -7,6 +7,7 @@ import type { DemoSize } from '@gcportrait/model';
 
 import { DEMO_CHOICES } from '../diagram/demoChoices';
 import type { SnapshotMeta } from '../storage/db';
+import { formatUtcMinute } from '../utcTime';
 
 /**
  * The demo sizes the demo entry offers, smallest first, with what each one is like. The numbers restate the
@@ -80,7 +81,7 @@ export function sourceLabel(source: SnapshotMeta['source']): string {
 export function formatUtc(timestamp: string): string {
   const instant = Date.parse(timestamp);
   if (Number.isNaN(instant)) return timestamp;
-  return `${new Date(instant).toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+  return formatUtcMinute(instant);
 }
 
 /** "1.2 MB": bytes in decimal units (1 kB = 1000 bytes, as `pnpm size` counts). */
