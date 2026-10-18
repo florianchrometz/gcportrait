@@ -405,8 +405,11 @@ alone does not stale the samples.
 The landing page offers the overviews and the Shared VPC draw.io feature; `/exports/` offers the full set
 with dimensions and commands. The site's code map is in
 [website/README.md](../website/README.md#where-the-content-comes-from); export-link and file checks are
-specified in [website/scripts/check-site.ts](../website/scripts/check-site.ts). Files follow
-[AGENTS.md](../AGENTS.md), "Exports and the render API" and "Non-affiliation, brand and legal".
+specified in [website/scripts/check-site.ts](../website/scripts/check-site.ts), which verifies served sample
+exports byte-identical to `docs/media/exports/manifest.json` by SHA-256 digest and byte size. Generator
+inputs, files and manifest are validated by `scripts/exports.mjs --check` for non-affiliation, external
+hosts, scripts, title block tagline and compression. Files follow [AGENTS.md](../AGENTS.md), "Exports and
+the render API" and "Non-affiliation, brand and legal".
 
 The sample SVGs name Roboto without embedding it: a viewer without Roboto may substitute a font and reflow
 labels. PNGs are drawn with Roboto. "Open in diagrams.net" opens the site's draw.io file in a new tab;

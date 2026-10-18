@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from 'vitest';
 
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
@@ -41,11 +42,12 @@ import {
   diagramsNetFile,
   INSTALLER_SOURCE,
   INSTALLER_TYPES,
-  exportDrawioProblems,
-  exportSvgProblems,
   keepsMediaInBox,
   linkName,
+  loadExportsManifest,
+  type SampleExportManifest,
   scriptConnectionProblems,
+  statesAffiliation,
   timelineShorthands,
   urlPathOf,
 } from './check-site.js';
@@ -813,6 +815,46 @@ describe('checkExports', () => {
     '/_astro/S-dark.svg': good,
     '/_astro/S-dark.drawio': goodDrawio,
   };
+  const manifest: SampleExportManifest = {
+    files: [
+      {
+        file: 'S-light.png',
+        sha256: createHash('sha256').update(png).digest('hex'),
+        bytes: png.length,
+        format: 'png',
+      },
+      {
+        file: 'S-light.svg',
+        sha256: createHash('sha256').update(good).digest('hex'),
+        bytes: good.length,
+        format: 'svg',
+      },
+      {
+        file: 'S-light.drawio',
+        sha256: createHash('sha256').update(goodDrawio).digest('hex'),
+        bytes: goodDrawio.length,
+        format: 'drawio',
+      },
+      {
+        file: 'S-dark.png',
+        sha256: createHash('sha256').update(png).digest('hex'),
+        bytes: png.length,
+        format: 'png',
+      },
+      {
+        file: 'S-dark.svg',
+        sha256: createHash('sha256').update(good).digest('hex'),
+        bytes: good.length,
+        format: 'svg',
+      },
+      {
+        file: 'S-dark.drawio',
+        sha256: createHash('sha256').update(goodDrawio).digest('hex'),
+        bytes: goodDrawio.length,
+        format: 'drawio',
+      },
+    ],
+  };
   const open = (file: string): string =>
     `https://app.diagrams.net/?url=${encodeURIComponent(`https://gcportrait.app${file}`)}`;
   const links = (theme: string): string =>
@@ -826,14 +868,12 @@ describe('checkExports', () => {
   const exportsPage = { path: '/exports/', html: `${links('light')}${links('dark')}` };
 
   it('accepts links to the build’s own PNGs, SVGs and draw.io files, and diagrams.net opening them', () => {
-    expect(exportSvgProblems(good.toString())).toEqual([]);
-    expect(exportDrawioProblems(goodDrawio.toString())).toEqual([]);
-    expect(checkExports([exportsPage, { path: '/', html: links('light') }], (file) => files[file])).toEqual(
-      [],
-    );
+    expect(
+      checkExports([exportsPage, { path: '/', html: links('light') }], (file) => files[file], manifest),
+    ).toEqual([]);
   });
 
-  it('refuses another host, a missing file, a download without its name, an SVG with an affiliation line', () => {
+  it('refuses another host, a missing file, a download without its name, and a file differing from the manifest', () => {
     const page = {
       path: '/',
       html: [
@@ -849,46 +889,37 @@ describe('checkExports', () => {
       '<image href="https://example.org/i.png"/>',
     );
     expect(
-      checkExports([exportsPage, page], (file) => (file === '/_astro/bare.svg' ? bare : files[file])),
+      checkExports(
+        [exportsPage, page],
+        (file) => (file === '/_astro/bare.svg' ? bare : files[file]),
+        manifest,
+      ),
     ).toEqual([
       '/: export link https://example.org/S.png (png): not a file of the site itself',
       '/: export link /_astro/gone.png (png): not in the build',
       '/: export link /_astro/S-light.svg (svg): has no download name ending in .svg',
       '/: export link /_astro/bare.svg (svg-open): downloads the SVG instead of opening it',
-      `/: export link /_astro/bare.svg (svg-open): its title block carries the affiliation line "${EXPORT_DISCLAIMER}"`,
-      '/: export link /_astro/bare.svg (svg-open): its <desc> states an affiliation',
-      '/: export link /_astro/bare.svg (svg-open): it loads something from another host',
+      '/: export link /_astro/bare.svg (svg-open): differs from docs/media/exports/manifest.json',
     ]);
   });
 
-  it('finds the line in the <title>, as an entity, elsewhere in the file, and any other affiliation sentence, the long form included', () => {
-    const problems = (lines: readonly string[], text: string, extra = ''): string[] =>
-      exportSvgProblems(svg(lines, text, extra).toString());
-    expect(problems(titleBlock, desc)).toEqual([]);
-    expect(
-      exportSvgProblems(
-        good.toString().replace('Overview lens</title>', `Overview lens. ${EXPORT_DISCLAIMER}</title>`),
-      ),
-    ).toEqual(['its <title> states an affiliation']);
-    expect(problems([...titleBlock, 'Not affiliated with Google &#x2F; Google Cloud.'], desc)).toEqual([
-      `its title block carries the affiliation line "${EXPORT_DISCLAIMER}"`,
-    ]);
-    expect(problems(titleBlock, desc, `<!-- ${EXPORT_DISCLAIMER} -->`)).toEqual([
-      'it states an affiliation outside its title block, <title> and <desc>',
-    ]);
-    expect(problems(titleBlock, `${desc} Not affiliated with Google in any way.`)).toEqual([
-      'its <desc> states an affiliation',
-    ]);
-    expect(problems(titleBlock, `${desc} ${NON_AFFILIATION_LONG.replace(/'/g, '&#39;')}`)).toEqual([
-      'its <desc> states an affiliation',
-    ]);
+  it('statesAffiliation recognizes the short line, long form, and variations', () => {
+    expect(statesAffiliation(EXPORT_DISCLAIMER)).toBe(true);
+    expect(statesAffiliation(NON_AFFILIATION_LONG)).toBe(true);
+    expect(statesAffiliation('Not affiliated with Google in any way.')).toBe(true);
+    expect(statesAffiliation('Not affiliated with Google / Google Cloud.')).toBe(true);
+    expect(statesAffiliation('Not affiliated with Google &#x2F; Google Cloud.')).toBe(true);
+    expect(statesAffiliation('Affiliated with neither Google nor Google Cloud.')).toBe(true);
+    expect(statesAffiliation('A normal description of the organisation.')).toBe(false);
   });
 
   it('requires the /exports/ page with a PNG, an SVG, a draw.io file and a diagrams.net link of each theme', () => {
-    expect(checkExports([], (file) => files[file])).toEqual([
+    expect(checkExports([], (file) => files[file], manifest)).toEqual([
       '/exports/: the sample exports page was not built',
     ]);
-    expect(checkExports([{ path: '/exports/', html: links('light') }], (file) => files[file])).toEqual([
+    expect(
+      checkExports([{ path: '/exports/', html: links('light') }], (file) => files[file], manifest),
+    ).toEqual([
       '/exports/: no PNG of the dark theme to download',
       '/exports/: no SVG of the dark theme to download',
       '/exports/: no draw.io file of the dark theme to download',
@@ -896,22 +927,44 @@ describe('checkExports', () => {
     ]);
   });
 
-  it('wants a draw.io file compressed, readable, without an affiliation line, naming only the fonts’ stylesheet', () => {
-    expect(exportDrawioProblems(drawio(titleBlock, true).toString())).toEqual([
-      'its diagram is plain XML, not compressed as diagrams.net saves it',
-    ]);
-    expect(exportDrawioProblems(drawio([...titleBlock, EXPORT_DISCLAIMER]).toString())).toEqual([
-      'a label states an affiliation',
-    ]);
+  it('verifies served export files against the manifest by digest, size and format', () => {
+    const wrongFormatFiles: Record<string, Buffer> = {
+      ...files,
+      '/_astro/S-light.png': good,
+    };
     expect(
-      exportDrawioProblems(
-        drawio(titleBlock, false, 'shape=image;image=https://example.org/i.png;').toString(),
+      checkExports(
+        [exportsPage, { path: '/', html: links('light') }],
+        (file) => wrongFormatFiles[file],
+        manifest,
       ),
-    ).toEqual(['it names another address: https://example.org/i.png']);
-    expect(exportDrawioProblems('<svg/>')).toEqual(['not a draw.io file with one diagram']);
-    expect(exportDrawioProblems('<mxfile><diagram>%%%</diagram></mxfile>')).toEqual([
-      'its diagram does not inflate as diagrams.net reads it',
+    ).toEqual([
+      '/exports/: export link /_astro/S-light.png (png): not a PNG',
+      '/: export link /_astro/S-light.png (png): not a PNG',
     ]);
+
+    expect(
+      checkExports(
+        [
+          {
+            path: '/',
+            html: '<a data-export="png" href="/_astro/S-light.png" download="gcportrait-demo-S-light.png">PNG</a>',
+          },
+        ],
+        (file) => files[file],
+        null,
+      ),
+    ).toEqual([
+      '/: export link /_astro/S-light.png (png): docs/media/exports/manifest.json is missing',
+      '/exports/: the sample exports page was not built',
+    ]);
+  });
+
+  it('loads the repository exports manifest', () => {
+    const loaded = loadExportsManifest();
+    expect(loaded).toBeDefined();
+    expect(loaded?.files.length).toBeGreaterThan(0);
+    expect(loadExportsManifest('/nonexistent/path/manifest.json')).toBeUndefined();
   });
 
   it('opens in diagrams.net only a draw.io file of the site, in a new tab that says so; links the host freely', () => {
@@ -933,7 +986,7 @@ describe('checkExports', () => {
         '<a href="https://app.diagrams.net/?url=https%3A%2F%2Fexample.org%2Fx.drawio">a file</a>',
       ].join(''),
     };
-    expect(checkExports([exportsPage, page], (file) => files[file])).toEqual([
+    expect(checkExports([exportsPage, page], (file) => files[file], manifest)).toEqual([
       '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): does not open a new tab (target="_blank")',
       '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): has no rel="noopener"',
       '/: export link https://app.diagrams.net/?url=https%3A%2F%2Fgcportrait.app%2F_astro%2FS-light.drawio (drawio-open): does not say in its name that it opens a new tab ("(opens in a new tab)")',
@@ -962,7 +1015,7 @@ describe('checkExports', () => {
         '<a data-export="svg-open" href="/_astro/S-light.svg" aria-label="Open SVG , S, light theme">Open SVG</a>',
       ].join(''),
     };
-    expect(checkExports([exportsPage, page], (file) => files[file])).toEqual([
+    expect(checkExports([exportsPage, page], (file) => files[file], manifest)).toEqual([
       '/: export link /_astro/S-light.svg (svg-open): its name "Open SVG , S, light theme" has a space before ","',
       '/: export link /_astro/S-light.svg (svg-open): its name "SVG, S, light theme" does not begin with the text it shows, "Open SVG"',
       '/: export link /_astro/S-light.svg (svg-open): its name "Open SVG , S, light theme" has a space before ","',

@@ -218,12 +218,23 @@ function decodeXml(text) {
   );
 }
 
+/** The first sentence of the footer notice (frontend/src/branding.ts), which no export may carry. */
+export const DISCLAIMER = 'Not affiliated with Google / Google Cloud.';
+
+/** The tagline placed in an export's title block and diagram. */
+export const TAGLINE = 'gcportrait.app - Visualize your Google Cloud Infrastructure';
+
 /**
- * Whether a text states an affiliation: any sentence that says "affiliated with … Google" (the long form, the
- * footer's first sentence, or any shorter line). @param {string} text
+ * Whether a text states an affiliation: the disclaimer, or any sentence that says "not affiliated" or
+ * "affiliated with … Google".
+ * @param {string} text
  */
 export function statesAffiliation(text) {
-  return /\baffiliated with\b[^.]*\bGoogle\b/i.test(text);
+  return (
+    text.includes(DISCLAIMER) ||
+    /\bnot affiliated\b/i.test(text) ||
+    /\baffiliated with\b[^.]*\bGoogle\b/i.test(text)
+  );
 }
 
 /**
@@ -238,6 +249,7 @@ export function svgProblems(text) {
   /** @type {string[]} */
   const problems = [];
   const lines = [...text.matchAll(/<text\b[^>]*>([^<]*)<\/text>/g)].map((match) => decodeXml(match[1] ?? ''));
+  if (!lines.includes(TAGLINE)) problems.push(`its title block lacks the tagline "${TAGLINE}"`);
   for (const line of lines.filter((value) => statesAffiliation(value)))
     problems.push(`its title block carries the affiliation line "${line}"`);
   const title = decodeXml(/<title>([^<]*)<\/title>/.exec(text)?.[1] ?? '');
@@ -304,6 +316,7 @@ export function drawioProblems(text) {
     problems.push(
       `its agent is ${agent === undefined ? 'missing' : `"${agent}"`}, not "gcportrait" (no version)`,
     );
+  if (!file.model.includes(TAGLINE)) problems.push(`its diagram lacks the tagline "${TAGLINE}"`);
   const decoded = decodeXml(file.model);
   if (statesAffiliation(decoded.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')))
     problems.push('a label states an affiliation');

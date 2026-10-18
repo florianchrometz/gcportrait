@@ -45,18 +45,16 @@
  *
  * Sample exports (docs/website.md, "Sample exports"): every link of the exports section (`a[data-export]`, on the
  * landing page and /exports/) points at a file of the build itself, a PNG, an SVG or a draw.io file; a download link
- * has its `download` name; no SVG it offers carries an affiliation line, in its title block, its <title>, its <desc> or
- * anywhere else (the statement is in the footer and the long form, never in a drawing: AGENTS.md, Non-affiliation,
- * brand and legal), and none loads anything from elsewhere; every draw.io file reads as diagrams.net reads it
- * (compressed), with no affiliation line in its labels and no address but Google Fonts' stylesheet its labels name for
- * the user's diagrams.net; every "Open in diagrams.net" link (`drawio-open`) is `https://app.diagrams.net/?url=` with
- * the public address of a draw.io file of the build on https://gcportrait.app, opens a new tab (`rel="noopener"`) and
- * says so in its name; every export link's name (its `aria-label`, or else its text, a visually hidden span read as the
- * browsers read it, as a block with a space before it) begins with the text the link shows (WCAG 2.5.3) and has no
- * space before a punctuation mark ("Open SVG , Demo S"); and /exports/ offers at least one PNG, one SVG, one draw.io
- * file and one diagrams.net link of each theme. diagrams.net's host is a link target only: like every other host, the
- * page rules refuse it as a resource; a link to it may go anywhere there, but one that opens a file (`?url=`) is an
- * export's checked "Open in diagrams.net" link.
+ * has its `download` name; every served sample file matches docs/media/exports/manifest.json by SHA-256 digest and byte
+ * size (which scripts/exports.mjs --check validates for non-affiliation, external hosts, scripts, title block and
+ * compression); every "Open in diagrams.net" link (`drawio-open`) is `https://app.diagrams.net/?url=` with the public
+ * address of a draw.io file of the build on https://gcportrait.app, opens a new tab (`rel="noopener"`) and says so in
+ * its name; every export link's name (its `aria-label`, or else its text, a visually hidden span read as the browsers
+ * read it, as a block with a space before it) begins with the text the link shows (WCAG 2.5.3) and has no space before
+ * a punctuation mark ("Open SVG , Demo S"); and /exports/ offers at least one PNG, one SVG, one draw.io file and one
+ * diagrams.net link of each theme. diagrams.net's host is a link target only: like every other host, the page rules
+ * refuse it as a resource; a link to it may go anywhere there, but one that opens a file (`?url=`) is an export's
+ * checked "Open in diagrams.net" link.
  *
  * The installer (docs/website.md, "The installer"): /install.sh is infra/install.sh byte for byte (the build copies it;
  * website/public/ holds no copy), the content type it is served with is one `curl … | bash` and a browser both take
@@ -97,7 +95,6 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { inflateRawSync } from 'node:zlib';
 
 import { commandVariable, variableTokens } from '@gcportrait/model';
 
@@ -949,77 +946,52 @@ export function checkPage(page: Page): string[] {
 
 /**
  * Whether a text states an affiliation: the short line (EXPORT_DISCLAIMER) itself, or any sentence that says
- * "affiliated with … Google" (the long form, or any other wording of it).
+ * "not affiliated" or "affiliated with … Google" (the long form, or any other wording of it).
  */
 export function statesAffiliation(text: string): boolean {
-  return text.includes(EXPORT_DISCLAIMER) || /\baffiliated with\b[^.]*\bGoogle\b/i.test(text);
+  return (
+    text.includes(EXPORT_DISCLAIMER) ||
+    /\bnot affiliated\b/i.test(text) ||
+    /\baffiliated with\b[^.]*\bGoogle\b/i.test(text)
+  );
 }
 
-/**
- * What an exported SVG the site offers must not say or do: no affiliation line in its title block (any <text> of the
- * drawing), its <title>, its <desc> or anywhere else in the file (the <desc> keeps neutral metadata only; AGENTS.md,
- * Non-affiliation, brand and legal), and nothing loaded from elsewhere.
- */
-export function exportSvgProblems(text: string): string[] {
-  const problems: string[] = [];
-  const lines = [...text.matchAll(/<text\b[^>]*>([^<]*)<\/text>/g)].map((match) => decode(match[1] ?? ''));
-  for (const line of lines.filter(statesAffiliation))
-    problems.push(`its title block carries the affiliation line "${line}"`);
-  if (statesAffiliation(decode(/<title>([^<]*)<\/title>/.exec(text)?.[1] ?? '')))
-    problems.push('its <title> states an affiliation');
-  if (statesAffiliation(decode(/<desc>([^<]*)<\/desc>/.exec(text)?.[1] ?? '')))
-    problems.push('its <desc> states an affiliation');
-  if (problems.length === 0 && statesAffiliation(decode(text)))
-    problems.push('it states an affiliation outside its title block, <title> and <desc>');
-  if (/(?:href|src)\s*=\s*"(?:https?:)?\/\//i.test(text) || /url\(\s*['"]?(?:https?:)?\/\//i.test(text))
-    problems.push('it loads something from another host');
-  return problems;
+/** The repository's root, above this package. */
+const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+/** docs/media/exports/manifest.json at the repository root. */
+export const EXPORTS_MANIFEST = path.join(REPOSITORY_ROOT, 'docs', 'media', 'exports', 'manifest.json');
+
+export type SampleExportManifest = {
+  readonly files: readonly {
+    readonly file: string;
+    readonly sha256: string;
+    readonly bytes: number;
+    readonly format: string;
+  }[];
+};
+
+function sha256(data: Buffer | string): string {
+  return createHash('sha256').update(data).digest('hex');
 }
 
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+/** Reads docs/media/exports/manifest.json, undefined when missing or invalid. */
+export function loadExportsManifest(file = EXPORTS_MANIFEST): SampleExportManifest | undefined {
+  if (!existsSync(file)) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'));
+    if (typeof parsed === 'object' && parsed !== null && 'files' in parsed && Array.isArray(parsed.files)) {
+      return parsed as SampleExportManifest;
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
 
 /** diagrams.net: a sample's draw.io file opens there from its public address (`?url=`); a link target, never a resource. */
 export const DIAGRAMS_NET_OPEN = 'https://app.diagrams.net/?url=';
 const DIAGRAMS_NET_HOST = 'app.diagrams.net';
-/** The stylesheet a draw.io file's labels name in `fontSource`, which the user's diagrams.net loads. */
-const FONT_SOURCE_PREFIX = 'https://fonts.googleapis.com/css2?';
-
-/**
- * What a draw.io file the site offers must not be or say: unreadable as diagrams.net reads it (one diagram, its model
- * compressed: base64 of the raw-deflated, URI-encoded XML), an affiliation line in a label, a script, or an
- * address other than the fonts' stylesheet (its icons are embedded).
- */
-export function exportDrawioProblems(text: string): string[] {
-  const diagrams = [...text.matchAll(/<diagram\b[^>]*>([\s\S]*?)<\/diagram>/g)];
-  if (!text.startsWith('<mxfile') || diagrams.length !== 1) return ['not a draw.io file with one diagram'];
-  const body = (diagrams[0]?.[1] ?? '').trim();
-  if (body.startsWith('<')) return ['its diagram is plain XML, not compressed as diagrams.net saves it'];
-  let model: string;
-  try {
-    model = decodeURIComponent(inflateRawSync(Buffer.from(body, 'base64')).toString('latin1'));
-  } catch {
-    return ['its diagram does not inflate as diagrams.net reads it'];
-  }
-  if (!model.startsWith('<mxGraphModel')) return ['its diagram holds no <mxGraphModel>'];
-  const problems: string[] = [];
-  const decoded = decode(model);
-  if (statesAffiliation(decoded.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')))
-    problems.push('a label states an affiliation');
-  if (/<script\b/i.test(decoded)) problems.push('it holds a script');
-  const styles = [...model.matchAll(/\sstyle="([^"]*)"/g)].map((match) => {
-    const style = decode(match[1] ?? '');
-    try {
-      return decodeURIComponent(style);
-    } catch {
-      return style;
-    }
-  });
-  const other = [...`${decoded}\n${styles.join('\n')}`.matchAll(/https?:\/\/[^\s"';)<>]+/gi)]
-    .map((match) => match[0])
-    .find((address) => !address.startsWith(FONT_SOURCE_PREFIX));
-  if (other !== undefined) problems.push(`it names another address: ${other.slice(0, 80)}`);
-  return problems;
-}
 
 /**
  * The path on this site of the draw.io file a diagrams.net link opens (`https://app.diagrams.net/?url=` and the file's
@@ -1041,11 +1013,13 @@ export function diagramsNetFile(href: string): string | null {
 
 /**
  * The sample exports' links across the pages (see the module comment). `readFile` gives a built file's bytes by its
- * URL path, undefined when the build has no such file.
+ * URL path, undefined when the build has no such file. `manifest` gives the committed samples' manifest
+ * (docs/media/exports/manifest.json) to compare served files against.
  */
 export function checkExports(
   pages: readonly Page[],
   readFile: (urlPath: string) => Buffer | undefined,
+  manifest: SampleExportManifest | null | undefined = loadExportsManifest(),
 ): string[] {
   const problems: string[] = [];
   const checked = new Map<string, string[]>();
@@ -1053,16 +1027,24 @@ export function checkExports(
     let found = checked.get(file);
     if (found === undefined) {
       const data = readFile(file);
-      found =
-        data === undefined
-          ? ['not in the build']
-          : extension === '.png'
-            ? data.subarray(0, 8).equals(PNG_SIGNATURE)
-              ? []
-              : ['not a PNG']
-            : extension === '.drawio'
-              ? exportDrawioProblems(data.toString('utf8'))
-              : exportSvgProblems(data.toString('utf8'));
+      if (data === undefined) {
+        found = ['not in the build'];
+      } else if (manifest == null) {
+        found = ['docs/media/exports/manifest.json is missing'];
+      } else {
+        const digest = sha256(data);
+        const entry = manifest.files.find((item) => item.sha256 === digest && item.bytes === data.length);
+        if (entry === undefined) {
+          found = ['differs from docs/media/exports/manifest.json'];
+        } else {
+          const format = extension.replace(/^\./, '');
+          if (entry.format !== format) {
+            found = [format === 'png' ? 'not a PNG' : `not a ${format}`];
+          } else {
+            found = [];
+          }
+        }
+      }
       checked.set(file, found);
     }
     return found;
@@ -1335,9 +1317,6 @@ export function checkRepositoryLinks(
   }
   return problems;
 }
-
-/** The repository's root, above this package. */
-const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /** brand/icon.svg, the mark's one source, at the repository root. */
 const BRAND_SOURCE = path.join(REPOSITORY_ROOT, BRAND_ICON);

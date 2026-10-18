@@ -6,24 +6,23 @@
  * staleness check against the manifest, the committed samples themselves, and the command line's paths that
  * need no browser, run in this process (`run`) and once as a command of its own.
  */
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   BUDGET_BYTES,
+  DISCLAIMER,
   EXPORTS_DIR,
   FONT_SOURCE_PREFIX,
   SAMPLES,
+  TAGLINE,
   drawioProblems,
   expectedFiles,
   generatorHash,
   pngSize,
   problemsOf,
   readDrawio,
-  readManifest,
   renderCommand,
   run,
   sha256,
@@ -33,7 +32,6 @@ import {
   type ExportManifest,
 } from './exports.mjs';
 import {
-  SCRIPTS_DIR,
   SPAWN_TIMEOUT,
   createTempTree,
   runInProcess,
@@ -41,10 +39,6 @@ import {
   type TempTree,
 } from './testing/temp-tree.js';
 
-const REPO = path.resolve(SCRIPTS_DIR, '..');
-/** The first sentence of the footer notice (frontend/src/branding.ts), which no export may carry. */
-const DISCLAIMER = 'Not affiliated with Google / Google Cloud.';
-const TAGLINE = 'gcportrait.app - Visualize your Google Cloud Infrastructure';
 /** The title block's three lines and the <desc> of an export (frontend/src/diagram/titleBlock.ts). */
 const TITLE_BLOCK = ['example.com', 'Overview lens · read 2026-10-08T00:00:00+00:00', TAGLINE];
 const DESC = 'example.com, Overview lens, read 2026-10-08T00:00:00+00:00. Drawn with gcportrait.';
@@ -133,9 +127,12 @@ describe('the samples', () => {
       expect(statesAffiliation(neutral), neutral).toBe(false);
   });
 
-  it('wants an exported SVG without an affiliation line in its title block, <title> or <desc>, loading nothing', () => {
+  it('wants an exported SVG with its tagline, without an affiliation line in its title block, <title> or <desc>, loading nothing', () => {
     const good = svg(TITLE_BLOCK, DESC);
     expect(svgProblems(good)).toEqual([]);
+    expect(svgProblems(svg(TITLE_BLOCK.slice(0, -1), DESC))).toEqual([
+      `its title block lacks the tagline "${TAGLINE}"`,
+    ]);
     expect(svgProblems(svg([...TITLE_BLOCK, DISCLAIMER], `${DESC} ${DISCLAIMER}`))).toEqual([
       `its title block carries the affiliation line "${DISCLAIMER}"`,
       'its <desc> states an affiliation',
@@ -144,7 +141,12 @@ describe('the samples', () => {
       'its <title> states an affiliation',
     ]);
     // Entities are read as text, and the line anywhere else in the file counts as well.
-    expect(svgProblems(svg(['Not affiliated with Google &#x2F; Google Cloud.'], DESC))).toEqual([
+    expect(
+      svgProblems(
+        svg([...TITLE_BLOCK.slice(0, -1), 'Not affiliated with Google &#x2F; Google Cloud.'], DESC),
+      ),
+    ).toEqual([
+      `its title block lacks the tagline "${TAGLINE}"`,
       `its title block carries the affiliation line "${DISCLAIMER}"`,
     ]);
     expect(svgProblems(good.replace('</svg>', `<!-- ${DISCLAIMER} --></svg>`))).toEqual([
@@ -157,16 +159,19 @@ describe('the samples', () => {
     expect(svgProblems(remote)).toEqual(['it loads something from another host', 'it holds a script']);
   });
 
-  it('reads a draw.io file as diagrams.net does, and wants it compressed, without an affiliation line, naming no other address', () => {
+  it('reads a draw.io file as diagrams.net does, and wants it compressed, with its tagline, without an affiliation line, naming no other address', () => {
     const good = drawio(TITLE_BLOCK);
     expect(readDrawio(good)).toMatchObject({ compressed: true, width: 400, height: 300 });
     expect(readDrawio(good).model).toContain(TAGLINE);
     expect(drawioProblems(good)).toEqual([]);
+    expect(drawioProblems(drawio(TITLE_BLOCK.slice(0, -1)))).toEqual([
+      `its diagram lacks the tagline "${TAGLINE}"`,
+    ]);
     expect(drawioProblems(drawio(TITLE_BLOCK, true))).toEqual([
       'its diagram is plain XML, not compressed as diagrams.net saves it',
     ]);
     expect(drawioProblems(drawio([...TITLE_BLOCK, DISCLAIMER]))).toEqual(['a label states an affiliation']);
-    expect(drawioProblems(drawio(['<a href="https://example.org/x">x</a>']))).toEqual([
+    expect(drawioProblems(drawio([...TITLE_BLOCK, '<a href="https://example.org/x">x</a>']))).toEqual([
       'it names another address: https://example.org/x',
     ]);
     expect(drawioProblems('<svg/>')).toEqual([
@@ -307,44 +312,6 @@ describe('the staleness check', () => {
     files['S-overview-dark-960.webp'] = big;
     tree.write('S-overview-dark-960.webp', big);
     expect(check(manifest()).at(-1)).toMatch(/over the budget of 6291456/);
-  });
-});
-
-describe('the committed samples (docs/media/exports)', () => {
-  it('are listed in the manifest with their sizes, carry no affiliation line, load nothing and keep to the budget', () => {
-    const dir = path.join(REPO, EXPORTS_DIR);
-    const value = readManifest(dir);
-    expect(value).toBeDefined();
-    if (value === undefined) return;
-    expect(value.files.map((entry) => entry.file).sort()).toEqual(expectedFiles());
-    expect(value).not.toHaveProperty('disclaimer');
-    let total = 0;
-    for (const entry of value.files) {
-      const data = readFileSync(path.join(dir, entry.file));
-      total += data.length;
-      expect(sha256(data), entry.file).toBe(entry.sha256);
-      if (entry.format === 'svg') {
-        const text = data.toString('utf8');
-        expect(svgProblems(text), entry.file).toEqual([]);
-        expect(text, entry.file).not.toContain('Not affiliated');
-        expect(text, entry.file).toContain(`>${TAGLINE}</text>`);
-      }
-      if (entry.format === 'png') {
-        expect(pngSize(data)).toEqual({ width: entry.width, height: entry.height });
-        expect(entry.command).toMatch(/^pnpm render --fixture [SM] --lens /);
-      }
-      if (entry.format === 'drawio') {
-        const text = data.toString('utf8');
-        expect(drawioProblems(text), entry.file).toEqual([]);
-        const file = readDrawio(text);
-        expect({ width: file.width, height: file.height }).toEqual({
-          width: entry.width,
-          height: entry.height,
-        });
-        expect(file.model, entry.file).toContain(TAGLINE);
-      }
-    }
-    expect(total).toBeLessThanOrEqual(BUDGET_BYTES);
   });
 });
 
