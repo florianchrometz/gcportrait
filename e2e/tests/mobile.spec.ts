@@ -30,75 +30,21 @@ import {
 } from './timelineSupport.js';
 
 /**
- * The app's phone and tablet check (the `mobile` project of playwright.config.ts; `pnpm --filter
- * @gcportrait/frontend mobile`): Chromium emulating a touch device at 2×, at 320, 375, 390 and 430 CSS pixels (the
- * phone layout) and 820 (the tablet layout), each at its device's height, in the light and the dark theme, plus phones
- * turned sideways (568 × 320, 640 × 360 and 667 × 375, a phone's layout; 844 × 390, a tablet's). On the Connect,
- * Permissions, Snapshots and Settings pages; the Snapshots page again with a snapshot stored (an export of demo
- * organisation S imported, so both of its tables have a row) and a day of its scope cached: a card per row on a phone,
- * where no box scrolls sideways, not even a table's, and tables that fit the page on a tablet; a live instance's
- * Connect page signed out and signed in (Google's sign-in stood in for, fixtures/gis.ts, with a long work address, and
- * the backend's configuration and scope search answered in the browser, fixtures/live.ts), its Permissions page and the
- * Account panel inside More (also at 1024 × 768), and its Impressum and Privacy pages; and on
- * the diagram of demo S and of demo M at rest, with the View sheet open (and in it the Lens list, the Focus and Filters
- * panels and the search's results), with the More sheet open (and from it the Snapshot, Theme and Export menus and the
- * Saved views dialog) and with the details drawer open, it fails when
- * - the page scrolls sideways, is laid out wider than the window (which a phone shows zoomed out, or lets slide
- *   sideways under a finger), scrolls up and down by itself (the page's own box does that, between the top bar and the
- *   footer), an element reaches past the viewport's edge without a box that scrolls or clips it, or a box scrolls
- *   sideways (a code block or a table may, and the breadcrumb, which rests at its end): a sheet whose menu or panel
- *   holds a line longer than the sheet is wide (the Snapshot menu's "Open: …", an account's address), or text for
- *   assistive technology only that escapes the box scrolling its table;
- * - text is squeezed into a column a few characters wide (broken inside its words onto more lines than it has words,
- *   in a box narrower than 6 em: a command in a table's third column);
- * - two items of the top bar overlap, or one leaves the viewport;
- * - two parts of the timeline bar overlap (the slider's thumb, its day markers and end dates; each line of the
- *   readout; each button and radio button), or one leaves the bar;
- * - the details drawer, or anything in it that no box inside it scrolls, reaches past the canvas it lies over (onto the
- *   top bar, the timeline bar or the footer);
- * - a segmented control's segment that starts a row (the Detail control wrapped in the View sheet) draws a border at its
- *   left, a stray divider beside the group's outline;
- * - a target (a link or button that is not inline text, a field that is not in a line of code, a slider thumb, a menu
- *   item, an option, a radio button, a splitter, a <summary>; a checkbox or radio input by its label) is smaller than
- *   44 × 44 CSS pixels;
- * - a control one reaches with Tab (in the open sheet or dialog when there is one, as their focus stays inside; not in
- *   the folded part of a closed <details>) is out of sight when it has focus or cannot be tapped: focused, which
- *   scrolls the box it is in to it, its box reaches past the window's edge or, over the canvas (in it, the drawer, a
- *   View or More sheet), past the canvas's, by more than a screen pixel, or the point at its centre or one just inside
- *   the middle of an edge is not the control but something over it or past the edge of a box that clips it (WCAG
- *   2.2's 2.4.11 and target size);
- * - the canvas is shorter than a quarter of the window, or the drawer, open at its first height, leaves less than a
- *   third of the canvas in view; on a phone turned sideways, Expand all is neither above the sheet inside the canvas
- *   nor (a canvas under 20.25 rem) hidden until the sheet closes, the drawer's Close button, as the drawer opens, is
- *   not whole inside the canvas or something lies over a point of it, or the timeline bar keeps its readout or speed
- *   on a phone's layout (or loses its slider or a step or play button) while the drawer is open, or does not get them
- *   back once it closes; and with the drawer open there on demo S, the disclosure bar's row is hidden other than on a
- *   phone's canvas under 20.25 rem, or it shows and the card the drawer is of (one a tap opened it on, then each of
- *   the drawing's cards in turn) lies under it once the camera has revealed it, or the drawer and the row leave less
- *   than a third of the canvas in view;
- * - an open View or More sheet, with the disclosure bar's row while it shows, leaves less than a third of the canvas in
- *   view, or the sheet reaches below three quarters of the canvas's height, or View opened while the drawer is open
- *   leaves the drawer open, or it opens again once View is closed (at every size, the sideways ones too);
- * - axe-core finds a violation (all its non-experimental rules, as the rest of the suite runs it).
- * At each of the five sizes, the timeline thumb's focus ring that a key shows, at the last day and at the first,
- * covers neither date at the track's ends nor the readout, the thumb still a 44-pixel target; and on those days and one
- * between them it covers no day marker, the current day's under the thumb included.
- * And on a phone: a sheet closes with Escape and gives focus back to its button, and so does More after a theme is
- * picked in it; Sign out in the Account panel closes More and starts focus again at the page; `/` opens the View sheet
- * onto the search; a tap on the timeline's thumb focuses it without the focus ring, which a key on an external
- * keyboard then shows; a long drill-in trail rests at its current level, and a swipe brings its first crumb into view,
- * which a tap drills out to; a tap on a node opens the drawer as a sheet over the lower half of the canvas, the
- * disclosure bar above it, which its handle takes to the canvas's full height (hiding the canvas's content) and back,
- * by key and by a finger, and which follows a finger down below half, fades once letting go would close it, and closes
- * when let go there; with the drawer open from an external keyboard (Enter on the drawing's tab stop), the zoom key `+`
- * keeps the focused card in the part of the canvas above the drawer and the disclosure bar's row riding above it,
- * inside it while the card fits and centred in it once the card is taller, and `0` fits the whole drawing to that
- * part, none of it under the row or the drawer; the View sheet
- * opened by a tap fits the drawing whole into the part of the canvas below it, a lens picked in it by a tap draws its
- * view whole there, and View closed by a tap fits the drawing to the whole canvas again; one finger dragged across
- * the canvas pans the drawing, two pinched apart zoom it in, and a tap on a project chip opens it in place.
- * The pages and diagrams at each size in the light theme come first, the tests that set their own sizes next, and the
- * same pages and diagrams in the dark theme last (pagesAndDiagrams).
+ * The app's phone and tablet check: the `mobile` project of playwright.config.ts, run with
+ * `pnpm --filter @gcportrait/frontend mobile`. Chromium emulates touch at 2×; SIZES and SIDEWAYS name the
+ * portrait and landscape viewports. Pages and diagrams run in light and dark, with demo S and M.
+ * Normal-mode pages use fixtures/live.ts and fixtures/gis.ts to stand in for the backend and Google:
+ * Connect signed out and in, Permissions, legal pages and the Account panel with a long work address.
+ * Snapshots is also checked with an imported snapshot and a cached day, so its tables contain rows.
+ * Diagram states include View and More, their menus and dialogs, search results and the details drawer.
+ *
+ * layoutProblems checks overflow, squeezed text, chrome geometry and touch targets; hiddenControls checks
+ * focused controls remain visible and tappable. canvasRoom, rowProblems and sheetRoom measure the space
+ * left for the drawing. Their comments and assertions hold the conditions and exceptions; expectClean
+ * combines the probes with axe. The tests below cover timeline focus rings and phone interactions:
+ * sheets and focus, the breadcrumb, the drawer's handle, camera framing, panning, pinching and chips.
+ * pagesAndDiagrams documents the order: light pages and diagrams, tests with their own sizes, then dark
+ * pages and diagrams. Accessibility coverage and per-state checks are defined beside the tests.
  */
 
 const SIZES = [
