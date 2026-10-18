@@ -44,9 +44,14 @@ development or production; calling `assertLayout` explicitly checks a layout in 
 `EdgePath`, `StageTimings`, `LayoutCounts`, `RoutingReport`, `LayoutReport`, `Arrangement`, `Arrangements`,
 `GapWidening`, `GutterWidening`, `GutterReservations`, `Layout`, `LayoutStage`, `LayoutProgress`,
 `LayoutResult`, `LayoutInputErrorCode`, `LayoutWorkerErrorCode`, `LayoutWorkerErrorInfo`,
-`LayoutCancelReason`, `LayoutCancelledReason` and `LayoutWorkerResponse` are inferred from the model's
+`LayoutCancelReason`, `LayoutCancelledReason`, `LayoutWorkerResponse`, `Sizing` and `Routing` are inferred
+from the model's
 [layout geometry schemas](../model/README.md#layout-geometry) and re-exported here as types. No runtime
 schema parsing is added to the layout pipeline; worker requests and options remain here.
+
+`Sizing` and `Routing` retain their defaults in `constants.ts` and their operational validation in
+`resolveOptions`. Their model schemas describe finite-number shapes, not the positivity and width-range
+checks that `resolveOptions` applies to overrides.
 
 | Export | What |
 |---|---|

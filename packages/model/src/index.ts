@@ -184,7 +184,9 @@ export {
   RectRoleSchema,
   RectSchema,
   RoutingReportSchema,
+  RoutingSchema,
   SideSchema,
+  SizingSchema,
   StageTimingsSchema,
   type Arrangement,
   type Arrangements,
@@ -213,7 +215,9 @@ export {
   type Rect,
   type RectRole,
   type RoutingReport,
+  type Routing,
   type Side,
+  type Sizing,
   type StageTimings,
 } from './schemas/layout.js';
 

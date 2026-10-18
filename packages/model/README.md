@@ -322,6 +322,12 @@ the worker's response guards stay in the layout package, without production sche
 finite numbers without integer or range refinements. Existing worker and client guards, cancellation
 classes and response coercion remain unchanged and do not parse these schemas.
 
+`SizingSchema` (`Sizing`) and `RoutingSchema` (`Routing`) describe the complete readonly numeric
+constant sets, with every field required. The schemas accept finite negative and fractional values and
+do not check width-range relationships. Defaults and operational checks remain in `@gcportrait/layout`:
+`resolveOptions` merges overrides, requires non-negative values (strictly positive for selected fields)
+and checks the card and chip width ranges. It does not parse these schemas.
+
 ### Reports
 
 The same module declares the layout's report contracts. Numeric fields accept finite negative and

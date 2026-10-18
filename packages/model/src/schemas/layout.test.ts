@@ -29,7 +29,9 @@ import {
   RectSchema,
   RelationKindSchema,
   RoutingReportSchema,
+  RoutingSchema,
   SideSchema,
+  SizingSchema,
   StageTimingsSchema,
   type Arrangement,
   type Arrangements,
@@ -58,7 +60,9 @@ import {
   type Rect,
   type RectRole,
   type RoutingReport,
+  type Routing,
   type Side,
+  type Sizing,
   type StageTimings,
 } from '../index.js';
 
@@ -66,6 +70,113 @@ const point = { x: -1.25, y: 0.5 };
 const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
 const gaps = { cardColumns: [-1.5], zoneColumns: [[], [0, 2.25]], stacks: [[[], [-0.5]]], rows: [0] };
 const widening = { horizontal: -1.5, vertical: 0, ring: 2.25, ringSides: { left: -0.5 }, gaps };
+
+describe('layout sizing and routing contracts', () => {
+  const sizingKeys = [
+    'cardHeight',
+    'cardMinWidth',
+    'cardMaxWidth',
+    'cardIcon',
+    'cardPadding',
+    'chipHeight',
+    'chipMinWidth',
+    'chipMaxWidth',
+    'chipGlyph',
+    'chipGlyphGap',
+    'headerHeight',
+    'deepHeaderHeight',
+    'shallowHeaderMaxDepth',
+    'zonePadding',
+    'rootProjectPadding',
+    'gapHorizontal',
+    'gapVertical',
+    'canvasMargin',
+    'headerIcon',
+    'headerIconGap',
+    'headerBadgeGap',
+    'badgePaddingX',
+    'badgeSpacing',
+    'cardTitleSize',
+    'cardSubtitleSize',
+    'zoneTitleSize',
+    'deepZoneTitleSize',
+    'largeTitleMaxDepth',
+    'zoneTitleMaxWidth',
+    'badgeTextSize',
+  ] as const;
+  const routingKeys = [
+    'lanePitch',
+    'gutterBase',
+    'bendCost',
+    'laneCost',
+    'portSpacing',
+    'portClearance',
+    'zonePortClearance',
+    'arrowInset',
+    'elbowRadius',
+    'singlePassWork',
+    'oneRoundWork',
+    'wideningRounds',
+    'lateRoundsUpTo',
+    'bundleMin',
+    'fallbackGrid',
+    'hugFactor',
+    'hugCap',
+    'marginFactor',
+  ] as const;
+
+  it('infers exactly the existing readonly numeric fields', () => {
+    expectTypeOf<Sizing>().toEqualTypeOf<Readonly<Record<(typeof sizingKeys)[number], number>>>();
+    expectTypeOf<Routing>().toEqualTypeOf<Readonly<Record<(typeof routingKeys)[number], number>>>();
+  });
+
+  describe.each([
+    ['sizing', () => SizingSchema, sizingKeys],
+    ['routing', () => RoutingSchema, routingKeys],
+  ] as const)('%s', (_name, schemaOf, keys) => {
+    it('preserves every field and its order through JSON without adding ranges', () => {
+      const schema = schemaOf();
+      expect(Object.keys(schema.unwrap().shape)).toEqual(keys);
+      for (const value of [-1.25, 0, 0.5, 2.75]) {
+        const input = Object.fromEntries(keys.map((key) => [key, value]));
+        const parsed = schema.parse(input);
+        expect(parsed).toEqual(input);
+        expect(Object.keys(parsed)).toEqual(keys);
+        expect(JSON.stringify(parsed)).toBe(JSON.stringify(input));
+        expect(schema.parse(JSON.parse(JSON.stringify(input)))).toEqual(input);
+        expect(Object.isFrozen(parsed)).toBe(true);
+        expect(Object.isFrozen(input)).toBe(false);
+      }
+    });
+
+    it('requires every field, rejects unknown fields and reports invalid numbers by key', () => {
+      const schema = schemaOf();
+      const input = Object.fromEntries(keys.map((key) => [key, 1]));
+      for (const key of keys) {
+        const missing = Object.fromEntries(Object.entries(input).filter(([name]) => name !== key));
+        expect(schema.safeParse(missing).success).toBe(false);
+        for (const value of [NaN, Infinity, -Infinity, undefined, null, '1', false]) {
+          const invalid = schema.safeParse({ ...input, [key]: value });
+          expect(invalid.success).toBe(false);
+          if (!invalid.success) expect(invalid.error.issues.map((issue) => issue.path)).toEqual([[key]]);
+        }
+      }
+      expect(schema.safeParse({ ...input, extra: 1 }).success).toBe(false);
+      for (const invalid of [null, [], 'sizing', 1]) expect(schema.safeParse(invalid).success).toBe(false);
+    });
+  });
+
+  it('does not make operational range relationships part of the shape', () => {
+    const sizing = {
+      ...Object.fromEntries(sizingKeys.map((key) => [key, 1])),
+      cardMinWidth: 3,
+      chipMinWidth: 4,
+    };
+    expect(SizingSchema.parse(sizing)).toEqual(sizing);
+    const routing = { ...Object.fromEntries(routingKeys.map((key) => [key, 1])), oneRoundWork: 3 };
+    expect(RoutingSchema.parse(routing)).toEqual(routing);
+  });
+});
 
 describe('layout worker error contracts', () => {
   const inputCodes = [

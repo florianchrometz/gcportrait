@@ -121,6 +121,8 @@ describe('public surface', () => {
         'StageTimingsSchema',
         'LayoutCountsSchema',
         'RoutingReportSchema',
+        'RoutingSchema',
+        'SizingSchema',
         'LayoutReportSchema',
         'ArrangementSchema',
         'ArrangementsSchema',

@@ -506,3 +506,148 @@ export const LayoutWorkerResponseSchema = z
   ])
   .readonly();
 export type LayoutWorkerResponse = z.infer<typeof LayoutWorkerResponseSchema>;
+
+export const SizingSchema = z
+  .strictObject({
+    /** Card height; cards in a row share a baseline because they share this height. */
+    cardHeight: z.number(),
+    /** Card width range: the width comes from the label and subtitle metrics within these bounds. */
+    cardMinWidth: z.number(),
+    cardMaxWidth: z.number(),
+    /** The card's icon (square) and the inner padding around icon and text (left, between, right). */
+    cardIcon: z.number(),
+    cardPadding: z.number(),
+    /**
+     * A collapsed zone's chip: height, and the width range its width comes from (its label and count line from
+     * the metrics table, like a card's: `chipWidth`), and its ⊞ glyph and the gap after it, which take the place
+     * of a card's icon.
+     */
+    chipHeight: z.number(),
+    chipMinWidth: z.number(),
+    chipMaxWidth: z.number(),
+    chipGlyph: z.number(),
+    chipGlyphGap: z.number(),
+    /** Zone header height: `headerHeight` up to `shallowHeaderMaxDepth`, `deepHeaderHeight` below. */
+    headerHeight: z.number(),
+    deepHeaderHeight: z.number(),
+    shallowHeaderMaxDepth: z.number(),
+    /** Zone padding (the inner ring between a zone's border or header and its children). */
+    zonePadding: z.number(),
+    /** Padding of a project zone at the top level of the canvas. */
+    rootProjectPadding: z.number(),
+    /** Gap between horizontally adjacent siblings (column gap) and between rows (row gap), before lanes. */
+    gapHorizontal: z.number(),
+    gapVertical: z.number(),
+    /** Margin between the canvas edge and the top-level children. */
+    canvasMargin: z.number(),
+    /** Zone header: the header icon, the space between icon and title, between title and the badges. */
+    headerIcon: z.number(),
+    headerIconGap: z.number(),
+    headerBadgeGap: z.number(),
+    /** A badge pill: horizontal text padding inside the pill and the space between two pills. */
+    badgePaddingX: z.number(),
+    badgeSpacing: z.number(),
+    /** Text sizes (px at scale 1). */
+    cardTitleSize: z.number(),
+    cardSubtitleSize: z.number(),
+    /**
+     * Zone titles: `zoneTitleSize` up to `largeTitleMaxDepth`, `deepZoneTitleSize` below (depth counts from the
+     * canvas, the organisation, at 0: root folders and loose projects are depth 1).
+     */
+    zoneTitleSize: z.number(),
+    deepZoneTitleSize: z.number(),
+    largeTitleMaxDepth: z.number(),
+    /**
+     * The widest a zone's title (its label and, after the middle dot, its subtitle) may make the zone: a longer
+     * title is ellipsised by the renderer (the full label stays in the Scene for tooltips and the accessible
+     * name), so a pathological label cannot widen a zone without bound. Three card widths (3 × 220).
+     */
+    zoneTitleMaxWidth: z.number(),
+    badgeTextSize: z.number(),
+  })
+  .readonly();
+export type Sizing = z.infer<typeof SizingSchema>;
+
+/**
+ * Routing constants at scale 1 (skill gcp-diagram-layout §3 and §5, skill gcp-diagram-style §5). Like the
+ * sizing they are theme-independent; `LayoutOptions.routing` may override any of them.
+ */
+export const RoutingSchema = z
+  .strictObject({
+    /** Distance between two neighbouring lanes in a gutter. */
+    lanePitch: z.number(),
+    /** A gutter holding n lanes needs n × lanePitch + gutterBase px: half the base on each side of the lanes. */
+    gutterBase: z.number(),
+    /** Cost of one bend of a route, in px of length. */
+    bendCost: z.number(),
+    /** Cost of every lane already used in a gutter segment a route runs along (pressure), per segment. */
+    laneCost: z.number(),
+    /** Distance between two ports on one side of a rect. */
+    portSpacing: z.number(),
+    /** How far ports stay from the corners of a card, chip or empty zone (their corner radius). */
+    portClearance: z.number(),
+    /** How far ports stay from the lower corners of an open zone (its corner radius plus a little). */
+    zonePortClearance: z.number(),
+    /** How far an arrowhead's tip reaches inside its target's border. */
+    arrowInset: z.number(),
+    /** Radius of a route's rounded elbows (the renderer draws them). */
+    elbowRadius: z.number(),
+    /**
+     * The first routing pass's search budget, in A* states settled (`RoutingReport.work`, a deterministic measure
+     * of routing time): once the first pass has settled this many, it searches the rest of its edges weighted
+     * and is final, without widening gutters (single-pass mode). A view whose exact first pass stays within it
+     * routes in three passes (skill §5).
+     */
+    singlePassWork: z.number(),
+    /**
+     * Above this much first-pass work (and up to `singlePassWork`), at most one widening round runs: the band
+     * between the two keeps a growing view in three-pass mode with its gutters widened, at the cost of one round
+     * instead of two, so that it loses a round before it loses the widening.
+     */
+    oneRoundWork: z.number(),
+    /**
+     * At most this many rounds of widening the gutters whose lanes do not fit, re-packing and re-routing (a round
+     * runs only while some gutter is too narrow). The re-route lays the previous routes onto the widened gutters
+     * (the same gutters, turns and lanes, which the widening made room for) and searches again only an edge whose
+     * gutters no longer line up; it keeps every lane inside its gutter where it can. One round is the
+     * three passes (route, widen and re-pack, re-route); the second and third widen what the re-route before
+     * still needed where the re-pack made two gutters meet that did not before (a third because port lines and
+     * stacks move more gutters in a re-pack). Large layouts stop after two (`lateRoundsUpTo`).
+     */
+    wideningRounds: z.number(),
+    /**
+     * Above this many lane holders, at most two widening rounds run whatever `wideningRounds` says: a round lays
+     * every route again, which on a very large layout costs a large share of its budget.
+     */
+    lateRoundsUpTo: z.number(),
+    /**
+     * Edges of one kind that meet one rect at the same end (all as targets, or all as sources) are bundled from
+     * this many on: those facing one side share a port there and lanes towards it (a hub's trunk).
+     */
+    bundleMin: z.number(),
+    /** Cell size of the coarse grid the fallback router searches when no gutter path exists. */
+    fallbackGrid: z.number(),
+    /**
+     * What a route pays per px along a zone's border inside its padding band (a ring side between the zone's
+     * corners), relative to 1 for every gap and every line through free space: such a stretch reads as a doubled
+     * border or an underline, so routes take the gaps between the zones where they can (skill §5). A gap with a
+     * child on one side only is not charged more: it runs through the same free space as the lines parallel to it
+     * there, and a dearer gap would send routes the long way round to reach them.
+     */
+    hugFactor: z.number(),
+    /**
+     * The most a route pays above its length for running along the whole of one ring side (px): on a side longer
+     * than `hugCap / (hugFactor − 1)` the surcharge per px falls in proportion, so no route goes more than about
+     * `hugCap / 2` out of its way and back to avoid a long border. Without the cap 9 000 px along a ring top
+     * would cost 4 500 px extra, and routes would drop 2 000 px to a row gap and climb back to avoid it.
+     */
+    hugCap: z.number(),
+    /**
+     * What a route pays per px in the canvas margin (the canvas's ring), relative to 1: the margin is the gutter
+     * beside the outermost zones, needed only to reach a side of one that faces the canvas edge, so routes do
+     * not run round the diagram through it.
+     */
+    marginFactor: z.number(),
+  })
+  .readonly();
+export type Routing = z.infer<typeof RoutingSchema>;
