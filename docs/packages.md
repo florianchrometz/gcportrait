@@ -66,25 +66,8 @@ NDJSON like an export file; the demo entry then stores the Snapshot and its hist
 ## 2. Dependency direction
 
 Imports go strictly downward and always through a package's name and its `src/index.ts`, never a deep or
-relative path. `eslint.config.js` (`WORKSPACE_DEPENDENCIES`) enforces this table; `pnpm lint` fails on
-anything else.
-
-| Files | May import |
-|---|---|
-| `packages/model/**` | no other `@gcportrait` package |
-| `packages/*/**` (demo-data, ingest, catalog, layout, icons) | `model` (`icons` imports none) |
-| `packages/graph/**` | `model`, `catalog` (the catalog owns rule semantics; packages/AGENTS.md, "Catalog and graph semantics") |
-| `packages/graph/test/**` | `model`, `catalog`, `demo-data` (a dev dependency: the demo and view tests build the demo organisations) |
-| `packages/graph/scripts/**` | `model`, `catalog`, `demo-data`, `ingest` (the `render-scene` command) |
-| `packages/layout/test/**`, `packages/layout/scripts/**` | `model`, `graph`, `catalog`, `demo-data` (dev dependencies: the golden, performance and debug-render Scenes are built from the demo organisations) |
-| `packages/ingest/test/**` | `model`, `demo-data` (a dev dependency: the budget test reads the demo organisation XL, written as an export) |
-| `packages/render/**` | `model`, `catalog`, `graph`, `layout`, `demo-data`, `frontend` (the render library: Node code on top of the app that reads data and draws with the frontend's own readers and components through `@gcportrait/frontend`, the headless entry point `frontend/src/headless.ts`; the one package that may import the frontend, which may not import it) |
-| `packages/render-cli/**` | `model`, `demo-data`, `render` (`pnpm render`, the command line around the render library; nothing imports it) |
-| `packages/render-cli/test/**` | `model`, `graph`, `demo-data`, `render` (a dev dependency: the tests check the `auto` budget against the graph's) |
-| `frontend/**` | `model`, `catalog`, `graph`, `layout`, `icons`, `ingest`, `demo-data` |
-| `backend/**` | `model`, `catalog`, `ingest`, `render` (the render library only in the render job, `src/render/job.ts` and `worker.ts`, which the bundle turns into `dist/render-worker.mjs`; `dist/server.mjs` never holds it, `src/render/bundle.test.ts`) |
-| `website/**` | `model`, `catalog`, `demo-data` |
-| `e2e/**` | `model`, `demo-data` |
+relative path. `WORKSPACE_DEPENDENCIES` in [eslint.config.js](../eslint.config.js) defines the allowed
+imports; `pnpm lint` enforces them.
 
 ```
             frontend ──► graph ──► catalog ──► model
@@ -100,7 +83,7 @@ anything else.
             ingest ┄┄┄► demo-data (tests)                            development only
 ```
 
-The sketch leaves out direct imports that the table allows anyway (the frontend may also import `catalog` and
+The sketch leaves out direct imports the configuration allows (the frontend may also import `catalog` and
 `model` itself). The dotted edges are development dependencies: nothing under `packages/graph/src/` imports
 `demo-data` or `ingest`, and nothing under `packages/layout/src/` or `packages/ingest/src/` imports anything
 but `model`. `render` is the one edge that points up, from `packages/` to the app: it exists so the picture
@@ -405,27 +388,9 @@ ended with it, to prepare one. [frontend/README.md](../frontend/README.md) is th
 
 ## 4. Command-line entry points
 
-| Command | Package | What it does |
-|---|---|---|
-| `pnpm render-scene --fixture M --lens networking` | graph | ingests a demo fixture (S, M or L), builds the graph and the scene with the real catalog, and prints a summary; `--focus`, `--root`, `--detail`, `--filter`, `--json`, `--help` |
-| `pnpm catalog:check` | catalog | validates the catalog and prints the coverage report; exit 1 on any violation (`--group <group>`, `--file <path>`, `--verbose`; `pnpm -s catalog:check --json` for JSON) |
-| `pnpm catalog:coverage` | catalog | per-group coverage: owned official types, mapped by role, unmapped by reason, missing (`--group`, `--json`) |
-| `pnpm catalog:build` | catalog | compiles the YAML into `src/generated/compiled-catalog.ts` and `dist/catalog.json` (both git-ignored; also run by install, lint, typecheck and test) |
-| `pnpm catalog:fetch-official` | repository script | fetches the official supported-types page into a dated snapshot under `.agents/skills/gcp-asset-catalog/references/` and prints the drift |
-| `pnpm --filter @gcportrait/demo-data generate` | demo-data | writes an organisation as CAI NDJSON (`cai`, `cai-export`), a Snapshot, its history, stats or checklist |
-| `pnpm --filter @gcportrait/demo-data fixtures` | demo-data | regenerates `fixtures/S.ndjson`, `M.ndjson` and `stats.json` |
-| `pnpm --filter @gcportrait/ingest test:budget` | ingest | the strict XL ingest budget (1.5 s in a worker), alone |
-| `pnpm --filter @gcportrait/graph test:budget` | graph | the M build budget (150 ms), alone, printing its figures |
-| `pnpm render --fixture M --lens networking --png out.png` | render-cli | draws a demo view as the app's renderer draws it, as PNG, SVG and/or draw.io (`--theme`, `--detail`, `--focus`, `--root`, `--filter`, `--flip`, `--hash`, `--viewport`, `--scale`/`--width`, `--svg`, `--drawio`, `--strict`, `--compare`, `--all`, `--list-fixtures`, `--help`); without `--png`/`--svg`/`--drawio` it writes `out/render/<fixture>-<lens>-<detail>-<theme>.png` |
-| `pnpm --filter @gcportrait/render-cli test:golden:update` | render-cli | rewrites the render golden `e2e/baselines/render/S-overview-auto-light.png`; look at it and say why in the pull request |
-| `pnpm --filter @gcportrait/frontend test src/diagram/baselines.test.tsx -u` | frontend | rewrites the SVG baselines under `e2e/baselines/diagram/` (the file before `-u`) |
-| `pnpm --filter @gcportrait/layout test:budget` | layout | the strict layout budgets through a worker (S 10 ms, M 60 ms, L 400 ms, XL at `folders` 2 s), the memo hit, cancellation and memory, alone, printing their figures |
-| `pnpm --filter @gcportrait/layout bench` | layout | the whole benchmark table (medians of 10 runs per view, memo, cancellation, memory); exit 1 on a missed budget |
-| `pnpm --filter @gcportrait/layout debug-svg --fixture M --lens overview` | layout | writes an SVG and a PNG of a demo layout's rects, labels and routed edges to `out/layout/` to look at the packing and the routing (`--detail`, `--theme light\|dark\|both`, `--aspects`, `--no-png`, `--out`); not the renderer: no icons, legend or dim mode |
-| `pnpm --filter @gcportrait/layout test:golden:update` | layout | rewrites the golden layout JSON under `packages/layout/test/golden/`; review the diff |
-| `pnpm --filter @gcportrait/layout metrics` | layout | regenerates `packages/layout/metrics/roboto.json` from the self-hosted font files (`--check` only reports) |
-| `pnpm --filter @gcportrait/icons vendor` | icons | downloads Google's three icon ZIPs and re-vendors `vendored/` and `manifest.json` (`--check`, `--verify-render` compares the pixels in headless Chromium) |
-| `pnpm --filter @gcportrait/icons build` / `contact-sheet` | icons | regenerates `src/generated/icons.ts` / writes the contact sheet and the 16 px legibility sheet to `out/` |
+Commands and their options are listed in [AGENTS.md, "Commands"](../AGENTS.md#commands),
+[packages/AGENTS.md, "Commands"](../packages/AGENTS.md#commands) and
+[frontend/AGENTS.md, "Commands"](../frontend/AGENTS.md#commands).
 
 `pnpm render-scene --fixture M --lens networking` prints the summary of a view: the fixture and its read time,
 the lens and the detail level `auto` chose with its rect budget, the rects drawn and the count per level, the
