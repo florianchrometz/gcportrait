@@ -2,20 +2,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Removes a gcportrait instance that infra/deploy.sh created (docs/self-host.md, "Uninstall").
-#
-#   infra/uninstall.sh --project PROJECT_ID [--region REGION] [--service NAME] [--disable-apis] [--yes]
-#
-# It deletes exactly what deploy.sh creates, and only where deploy.sh's marker is on it: the Cloud Run service
-# (labelled managed-by=gcportrait-deploy; its IAM and Identity-Aware Proxy bindings go with it, and so do the
-# domain mappings of --domain that route to it, which would serve nothing without it), the build repository and
-# bucket of --build (same label), and the two service accounts (whose description deploy.sh wrote). The remote
-# repository through which deploy.sh pulls released images from GitHub Container Registry (same label) is shared
-# by the instances of a region and goes with the last one: only when no other Cloud Run service or job of the
-# project deploys from it. Anything of the same name without the marker is reported and kept. The
-# APIs deploy.sh had to enable stay enabled unless you pass --disable-apis, because other workloads in the project
-# may use them by now; even then, an API that another Cloud Run service, job or worker pool of the project still
-# needs is kept. Workloads outside Cloud Run (GKE, Compute Engine, App Engine, first-generation Cloud Functions,
-# IAP on a load balancer) are not looked at.
+# Run with --help for usage and the limits of --disable-apis (usage below).
+# Resource ownership and removal rules: infra/AGENTS.md, Self-hosting.
 
 set -Eeuo pipefail
 

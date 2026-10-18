@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 #
-# release-assets.sh: the files a GitHub release of gcportrait carries next to its notes (.github/workflows/release.yml,
-# job github-release), written into one directory:
-#
-#   gcportrait-deploy-TAG.tar.gz  the deploy scripts infra/install.sh downloads: VERSION (the tag) and infra/ with
-#                                 deploy.sh, common.sh, uninstall.sh, install.sh and README.md; never the image's
-#                                 build context (a release deploys its published image, never builds one)
-#   checksums.txt                 the SHA-256 of every other file of the directory (the SBOMs the workflow put there
-#                                 first included), one "HASH  NAME" line each, as sha256sum writes them
-#
-#   scripts/release-assets.sh --tag vX.Y.Z --out DIR
-#
-# Exit status 0 when both files are written, 2 on a usage error. Needs bash, tar, and sha256sum or shasum.
+# Write the release's deploy archive and checksums (AGENTS.md, Releases); FILES below lists archive contents.
+# Run with --help for usage. Needs bash, tar, and sha256sum or shasum.
+# Exit status 0 on success, 2 on refused input or prerequisites; other command failures propagate.
 
 set -euo pipefail
 

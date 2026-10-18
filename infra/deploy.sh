@@ -2,26 +2,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Deploys gcportrait to Cloud Run in a Google Cloud project you own.
-# docs/self-host.md walks through it; docs/configuration.md lists every flag and environment variable. People who
-# run gcportrait get this script from a release through infra/install.sh (the one-line installer), which runs it with
-# --image set to that release; a clone of the repository has it too, and only a clone can --build.
-#
-#   infra/deploy.sh --project PROJECT_ID [--region REGION] [--image TAG|IMAGE | --build] [--iap ...] ...
-#   infra/deploy.sh --project PROJECT_ID --demo-only [--domain HOST] [--impressum-url URL --privacy-url URL] ...
-#
-# --demo-only deploys a sign-in-free demo (the backend's DEMO_ONLY: the demo organisations only, no route that calls
-# Google), --domain maps a host name of yours to the service with a Cloud Run domain mapping and prints the
-# DNS records to create, and the legal pages come either as links to your own pages (--impressum-url, --privacy-url)
-# or as texts the instance serves (--legal-dir), one way per page.
-#
-# Idempotent and declarative: every run brings the instance to what its flags say (a flag you leave out gets
-# its default), so re-running with one more flag changes only that. It enables the APIs the instance needs,
-# creates the backend service account with no roles at all, builds the image with Cloud Build (--build) or
-# pulls the published one from GitHub Container Registry through an Artifact Registry remote repository
-# (infra/AGENTS.md, Self-hosting; AGENTS.md, Modes and hosting), deploys the Cloud Run service, optionally puts
-# Identity-Aware Proxy in front, then prints the next steps (open the address, create the OAuth client, redeploy with
-# its id), then the address, the account and the rest. It never grants anything on an organisation, folder or other project,
-# never creates a key, and never stores a credential. infra/uninstall.sh removes what it made.
+# Run with --help for usage and prerequisites (usage below); docs/self-host.md is the guide and
+# docs/configuration.md the flag reference. Rules: infra/AGENTS.md, Self-hosting; AGENTS.md, Modes and hosting.
 
 set -Eeuo pipefail
 

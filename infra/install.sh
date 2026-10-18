@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 #
-# The installer of gcportrait, served as https://gcportrait.app/install.sh: the website's build copies this file there
-# as it is, and website/scripts/check-site.ts checks that the two are equal. The whole quick start is one line:
-#
-#   curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT
-#
-# It downloads the deploy scripts of a gcportrait release (the release asset gcportrait-deploy-TAG.tar.gz, which
-# scripts/release-assets.sh writes) and the release's checksums.txt, checks the archive's SHA-256 against it before
-# it unpacks anything, keeps the scripts in a directory of their own (printed), and runs that release's
-# infra/deploy.sh --image TAG with every other argument, so the instance runs the release the scripts came from. The
-# newest release unless --version names one. Nothing it downloads runs unless its checksum matched; its exit status
-# is deploy.sh's, and 1 when it refuses on its own. Plain bash 3.2 (the macOS default); needs curl, tar, sha256sum or
-# shasum, and the Google Cloud CLI.
+# Install a gcportrait release without a checkout; served unchanged at https://gcportrait.app/install.sh.
+# Run with --help for standalone or piped usage, prerequisites and exit behavior (usage below).
+# Rules: infra/AGENTS.md, Self-hosting. Requires bash 3.2 or newer.
 #
 # Everything below is defined first and run by the last line, so bash has read the whole file before it runs any of
 # it: a download cut short runs nothing.
