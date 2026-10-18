@@ -17,29 +17,15 @@ import {
 } from './support.js';
 
 /**
- * The keyboard model (the gcp-diagram-style skill's accessibility rules) in Chromium, without the mouse:
- *
- * - a keyboard-only walkthrough (no pointer event reaches the page): open demo M from the Connect page, Tab on to
- *   the drawing, move between the items of a zone with the arrow keys, out to the zone with Escape and back in
- *   with ↓, expand a chip, change the lens, search with `/`, open the drawer for a card with Enter, drill in from a
- *   project's menu, export an SVG, and press `[` (the timeline moves one day back);
- * - the Tab order through the header controls, then the canvas's one tab stop;
- * - "Skip to the diagram" lands on the drawing's tab stop;
- * - every focus indicator met while tabbing through the diagram page (the chrome ring, the drawing's focus ring,
- *   the collapse button's plate on a project and the console action's pill) and through the other pages reaches
- *   3 : 1 against the colours next to it, in both themes;
- * - the focus indicator as rendered, pixel by pixel (WCAG 2.4.13's measure: the focused and the unfocused screen
- *   differ by 3 : 1 over at least a 2 px ring), on demo L zoomed out to fit (scale 0.07: a card is 10 × 3 px), in
- *   both themes: after the skip link, after an arrow (which zooms in to the label scale), on an open zone (Escape)
- *   and on a card in a project, the light tint where the chrome's primary alone reaches only 2.62 : 1;
- * - the zoom keys `+`, `-` and `0`, from the keyboard only;
- * - `[` and `]` as German layouts type them (Option+5 on a Mac, AltGr+8 on a PC): the timeline moves, and says
- *   why when it cannot;
- * - focus after a drill-in from the details drawer (the new view's tab stop) and after a drill-out from the
- *   breadcrumb (the crumb that is now current, its ring unclipped);
- * - reduced motion: no pulse and no glide (and without it, both).
- *
- * axe with the keyboard inside a zone: a11y.spec.ts.
+ * The keyboard model in Chromium (gcp-diagram-style skill §13). The demo M walkthrough uses no mouse;
+ * recordPointer verifies no device pointer events, with its documented synthetic-hover exception.
+ * Named tests below define Tab/skip-link order, navigation, zoom, timeline, drill focus and reduced motion.
+ * German-layout timeline keys include Option+5 on Mac and AltGr+8 on PC.
+ * Both-theme focus checks use tabThrough for adjacent-colour contrast and renderedFocusContrast for
+ * pixel differences (WCAG 2.4.13: 3 : 1 over a 2 px ring). The regression contexts include demo L fitted
+ * tiny (scale 0.07, a 10 × 3 px card) and the light project tint where primary alone reaches 2.62 : 1.
+ * The probes and per-state assertions below specify the exact measures and exceptions. shot and closeUp
+ * write optional inspection images only with E2E_SHOTS=1. Zone keyboard axe coverage is in a11y.spec.ts.
  */
 const DEMO_S = '/diagram#snapshot=demo:S';
 

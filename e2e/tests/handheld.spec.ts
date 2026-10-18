@@ -28,32 +28,16 @@ import {
 } from './timelineSupport.js';
 
 /**
- * The app's flows by finger on a phone and on a tablet (AGENTS.md, Product rules: every control at every width;
- * frontend/AGENTS.md, Phones, tablets and desktops: the touch model). The `chromium-phone` and `chromium-tablet` projects of playwright.config.ts run every test here,
- * each tagged `@phone` and `@tablet`, in Chromium emulating a touch device at 390 × 844 (the phone's layout) and
- * 820 × 1180 (the tablet's), against demo mode; the desktop's `chromium` project leaves them out. Every step is a tap
- * (Playwright's touchscreen) on the app's own controls, under the accessible names the desktop's specs use, with View
- * or More opened first where the desktop shows the control in its rows:
- *
- * - the top bar: View and More hold the controls of the desktop's two rows, each a target of 44 × 44 CSS pixels; a
- *   lens picked from the Lens list, the Filters panel opened and closed inside View, a theme picked in More's Theme
- *   menu (which closes More), the Saved views dialog opened and closed;
- * - the Connect and Snapshots pages through More: a demo opened on Connect, loaded again from Snapshots (a card per
- *   snapshot on a phone, a table row on a tablet);
- * - the details: a tap on a folder opens them over the canvas (a sheet over its lower half on a phone, a panel over at
- *   most half its width at its right on a tablet) with the folder's name and resource name, and their Details button
- *   drills in, as a double-click does with a mouse;
- * - search from the View sheet: a result tapped is selected, View closes onto its button, and the node is in the
- *   details and in the part of the canvas they leave in view;
- * - the disclosure bar's Expand all and Collapse all;
- * - the timeline: Previous day and Next day, and playback to the last day (on Playwright's clock);
- * - Export through More: the Export menu and an SVG download;
- * - axe in both themes, on the diagram at rest, with View open and with the details open, and on the Connect and
- *   Snapshots pages.
- *
- * The canvas's own gestures (one finger's pan, a pinch, taps, double taps, a long press) are touch.spec.ts's, and the
- * layouts' measures (overflow, targets, focus in sight, the canvas's room) mobile.spec.ts's, both in the `mobile`
- * project. Nothing here saves or compares a screenshot.
+ * Flows by finger on phones and tablets (AGENTS.md, Product rules; frontend/AGENTS.md, Phones, tablets and
+ * desktops). playwright.config.ts runs the @phone/@tablet tests in chromium-phone and chromium-tablet:
+ * Chromium touch at 390 × 844 and 820 × 1180, against demo mode; desktop chromium leaves them out.
+ * Playwright's touchscreen taps the app's controls under the desktop specs' accessible names, opening
+ * View or More where desktop controls are in place. The named tests below define navigation, selection,
+ * disclosure, export and both-theme axe coverage; timeline playback uses Playwright's clock.
+ * expectTarget checks touch targets, folderSpot finds a safe tap, and uncovered measures the canvas left
+ * beside the details. Their comments and assertions hold the conditions, not a second coverage list here.
+ * Canvas gestures belong to touch.spec.ts; layout measurements belong to mobile.spec.ts, both in the
+ * mobile project. Nothing here saves or compares a screenshot.
  */
 
 /** Demo M's Retail web (prod) project, as search.spec.ts finds it by its id `demo-web-1`. */
