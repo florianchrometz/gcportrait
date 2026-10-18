@@ -128,6 +128,8 @@ describe('public surface', () => {
         'GutterWideningSchema',
         'GutterReservationsSchema',
         'LayoutSchema',
+        'LayoutStageSchema',
+        'LayoutProgressSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',

@@ -12,9 +12,11 @@ import {
   GutterWideningSchema,
   InsetsSchema,
   LayoutCountsSchema,
+  LayoutProgressSchema,
   LayoutRectSchema,
   LayoutReportSchema,
   LayoutSchema,
+  LayoutStageSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
@@ -34,8 +36,10 @@ import {
   type Insets,
   type Layout,
   type LayoutCounts,
+  type LayoutProgress,
   type LayoutRect,
   type LayoutReport,
+  type LayoutStage,
   type Point,
   type Rect,
   type RectRole,
@@ -48,6 +52,59 @@ const point = { x: -1.25, y: 0.5 };
 const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
 const gaps = { cardColumns: [-1.5], zoneColumns: [[], [0, 2.25]], stacks: [[[], [-0.5]]], rows: [0] };
 const widening = { horizontal: -1.5, vertical: 0, ring: 2.25, ringSides: { left: -0.5 }, gaps };
+
+describe('layout progress contracts', () => {
+  it.each(['normalise', 'size', 'pack', 'route', 'widen'] as const)('preserves the %s stage', (stage) => {
+    const progress = { stage, pass: -1.25, routed: 2.5, edges: 0 };
+    expect(LayoutStageSchema.parse(stage)).toBe(stage);
+    expect(LayoutProgressSchema.parse(progress)).toEqual(progress);
+    expect(LayoutProgressSchema.parse(JSON.parse(JSON.stringify(progress)))).toEqual(progress);
+  });
+
+  it('has exactly the five existing stage values', () => {
+    expect(LayoutStageSchema.options).toEqual(['normalise', 'size', 'pack', 'route', 'widen']);
+    for (const stage of ['', 'done', 1, null, undefined]) {
+      expect(LayoutStageSchema.safeParse(stage).success).toBe(false);
+      expect(LayoutProgressSchema.safeParse({ stage, pass: 0, routed: 0, edges: 0 }).success).toBe(false);
+    }
+  });
+
+  it.each([NaN, Infinity, -Infinity, '1', undefined])('rejects invalid progress numbers: %s', (value) => {
+    for (const key of ['pass', 'routed', 'edges']) {
+      const parsed = LayoutProgressSchema.safeParse({
+        stage: 'route',
+        pass: 0,
+        routed: 0,
+        edges: 0,
+        [key]: value,
+      });
+      expect(parsed.success).toBe(false);
+      if (!parsed.success) expect(parsed.error.issues.map((issue) => issue.path)).toEqual([[key]]);
+    }
+  });
+
+  it('requires every field and refuses unknown fields', () => {
+    const progress = { stage: 'route', pass: 0, routed: 0, edges: 0 };
+    for (const key of Object.keys(progress)) {
+      const missing = Object.fromEntries(Object.entries(progress).filter(([name]) => name !== key));
+      expect(LayoutProgressSchema.safeParse(missing).success).toBe(false);
+    }
+    expect(LayoutProgressSchema.safeParse({ ...progress, extra: 1 }).success).toBe(false);
+  });
+
+  it('preserves the readonly inferred fields without timing or stage-dependent constraints', () => {
+    expectTypeOf<LayoutStage>().toEqualTypeOf<'normalise' | 'size' | 'pack' | 'route' | 'widen'>();
+    expectTypeOf<LayoutProgress>().toEqualTypeOf<
+      Readonly<{ stage: LayoutStage; pass: number; routed: number; edges: number }>
+    >();
+    const progress = { stage: 'normalise', pass: -0.5, routed: 4.25, edges: -1 };
+    const parsed = LayoutProgressSchema.parse(progress);
+    expect(parsed).toEqual(progress);
+    expect(Object.keys(parsed)).toEqual(['stage', 'pass', 'routed', 'edges']);
+    expect(Object.isFrozen(parsed)).toBe(true);
+    expect(Object.isFrozen(progress)).toBe(false);
+  });
+});
 
 describe('layout container records', () => {
   it.each(['plain', 'null prototype'] as const)('preserves every own string key in a %s map', (kind) => {

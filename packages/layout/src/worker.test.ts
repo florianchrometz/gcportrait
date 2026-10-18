@@ -7,7 +7,13 @@
  * errors name their ids; malformed messages are refused. The real-worker tests and the budgets are in
  * test/worker.test.ts.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import {
+  LayoutProgressSchema,
+  type LayoutProgress as ModelLayoutProgress,
+  type LayoutStage as ModelLayoutStage,
+} from '@gcportrait/model';
+import type { LayoutProgress as PublicLayoutProgress, LayoutStage as PublicLayoutStage } from './index.js';
 import { layoutKey } from './hash.js';
 import { layoutScene } from './layout.js';
 import { manualYield } from './testing/host.js';
@@ -67,6 +73,12 @@ describe('createLayoutWorkerHandler', () => {
     await worker.settle();
     const messages = worker.of(1);
     const progress = messages.flatMap((message) => (message.type === 'progress' ? [message.progress] : []));
+    for (const step of progress) {
+      expect(LayoutProgressSchema.parse(step)).toEqual(step);
+      expect(LayoutProgressSchema.parse(JSON.parse(JSON.stringify(step)))).toEqual(step);
+    }
+    expectTypeOf<PublicLayoutProgress>().toEqualTypeOf<ModelLayoutProgress>();
+    expectTypeOf<PublicLayoutStage>().toEqualTypeOf<ModelLayoutStage>();
     expect(progress.slice(0, 3).map((step: LayoutProgress) => step.stage)).toEqual([
       'normalise',
       'size',

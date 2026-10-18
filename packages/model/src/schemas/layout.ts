@@ -397,3 +397,28 @@ export const LayoutSchema = z
   })
   .readonly();
 export type Layout = z.infer<typeof LayoutSchema>;
+
+/**
+ * The stage a layout has just completed: `normalise` (stage 1), `size` and `pack` (stages 2–3 of
+ * the first placement), `route` (a stretch of a routing pass: `routed` of `edges` so far), `widen` (a widening
+ * re-pack between two routing passes, before the pass it is numbered for).
+ */
+export const LayoutStageSchema = z.enum(['normalise', 'size', 'pack', 'route', 'widen']);
+export type LayoutStage = z.infer<typeof LayoutStageSchema>;
+
+/**
+ * How far a layout has got: what `layoutSteps` yields between its stages and what the layout worker posts as
+ * `progress`. The worker checks for cancellation at every step.
+ */
+export const LayoutProgressSchema = z
+  .strictObject({
+    stage: LayoutStageSchema,
+    /** The routing pass (1 to 3) for `route` and `widen`; 0 before routing. */
+    pass: z.number(),
+    /** Edges routed so far in this pass (`route`); 0 otherwise. */
+    routed: z.number(),
+    /** Edges to route after merging; 0 before routing. */
+    edges: z.number(),
+  })
+  .readonly();
+export type LayoutProgress = z.infer<typeof LayoutProgressSchema>;

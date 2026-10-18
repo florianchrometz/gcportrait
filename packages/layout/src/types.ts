@@ -21,8 +21,10 @@ export type {
   Insets,
   Layout,
   LayoutCounts,
+  LayoutProgress,
   LayoutRect,
   LayoutReport,
+  LayoutStage,
   Point,
   Rect,
   RectRole,
@@ -65,27 +67,6 @@ export interface LayoutOptions {
    * without one the output is byte-identical across runs.
    */
   readonly clock?: () => number;
-}
-
-/**
- * The stage a layout has just completed: `normalise` (stage 1), `size` and `pack` (stages 2–3 of
- * the first placement), `route` (a stretch of a routing pass: `routed` of `edges` so far), `widen` (a widening
- * re-pack between two routing passes, before the pass it is numbered for).
- */
-export type LayoutStage = 'normalise' | 'size' | 'pack' | 'route' | 'widen';
-
-/**
- * How far a layout has got: what `layoutSteps` yields between its stages and what the layout worker posts as
- * `progress`. The worker checks for cancellation at every step.
- */
-export interface LayoutProgress {
-  readonly stage: LayoutStage;
-  /** The routing pass (1 to 3) for `route` and `widen`; 0 before routing. */
-  readonly pass: number;
-  /** Edges routed so far in this pass (`route`); 0 otherwise. */
-  readonly routed: number;
-  /** Edges to route after merging; 0 before routing. */
-  readonly edges: number;
 }
 
 /**

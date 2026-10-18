@@ -291,13 +291,18 @@ omits it on other rects. It is the full or short count line chosen during sizing
 it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
-tests check emitted layouts and worker results against the schemas. Worker protocol envelopes, progress
+tests check emitted layouts, worker results and progress against the schemas. Worker protocol envelopes
 and options remain declared in `@gcportrait/layout`.
 
 `LayoutSchema` composes the complete `Layout`: readonly `rects` and `edges` records, readonly `chips`,
 `bounds`, `arrangements`, `gutters` and `report`, all required. The records preserve special string keys
 as the packing records below do. No cross-field refinements tie a key to an endpoint, a chip to a rect or
 report counts to the collections; layout invariants remain the engine's separate checks.
+
+`LayoutStageSchema` (`LayoutStage`) has the five stages `normalise`, `size`, `pack`, `route` and `widen`.
+`LayoutProgressSchema` (`LayoutProgress`) holds readonly `stage`, `pass`, `routed` and `edges`. Its numbers
+accept finite negative and fractional values, without stage-dependent count or range refinements. The
+worker's scheduling, cancellation checks and progress delivery do not parse or change these values.
 
 ### Reports
 
