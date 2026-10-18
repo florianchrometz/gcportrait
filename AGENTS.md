@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # AGENTS.md: the rules of gcportrait
 
@@ -63,8 +63,8 @@ now, and what changed in the last five weeks?
   storing snapshots on a server, and real-time feeds. Features wanted but not scheduled are under "Later" in
   [docs/backlog.md](docs/backlog.md).
 - **An independent open-source project**, not affiliated with Google ([Non-affiliation, brand and
-  legal](#non-affiliation-brand-and-legal)), licensed under the MIT License with its name and icon reserved
-  ([Licence and dependencies](#licence-and-dependencies)).
+  legal](#non-affiliation-brand-and-legal)), licensed under the Apache License 2.0 with its name and icon
+  reserved ([Licence and dependencies](#licence-and-dependencies)).
 
 ## Product rules
 
@@ -213,10 +213,9 @@ is asked again; without `userinfo.email` sign-in still works, without the addres
   static demo: no sign-in instance, no accounts, no service and so no terms of use. The project has no
   revenue, so the maintainer runs nothing that holds accounts, tokens or anyone's data. Self-hosters who
   enable sign-in run their own instance with their own OAuth client.
-- **No telemetry, except the website's page views.** The app, the static demo and every self-hosted instance
-  send no usage data, error reports or page views anywhere: an instance runs in someone else's project and
-  must never phone home. The website's analytics follow
-  [website/AGENTS.md](website/AGENTS.md), "Analytics".
+- **No telemetry, anywhere.** The app, the static demo, the website and every self-hosted instance send no
+  usage data, error reports or page views: an instance runs in someone else's project and must never phone
+  home, and the site's only cross-host request is its repository widget.
 - **Legal pages.** The Impressum and the privacy notice are on the maintainer's website, and the website, the
   static demo and the app's footer link them. An instance's links or served pages follow
   [backend/AGENTS.md](backend/AGENTS.md), "Demo-only mode and legal pages". Legal texts never live in the
@@ -253,7 +252,7 @@ the website) is compared with it by a test.
 
 Where each goes:
 
-- **The footer notice** is in the app's footer on every route (next to the "Source (MIT)" link) and the
+- **The footer notice** is in the app's footer on every route (next to the "Source (Apache-2.0)" link) and the
   website's footer on every page.
 - **The long form** is in every long-form text: the root README (the box under "Not affiliated with Google"),
   the docs index, the Cloud Shell
@@ -279,19 +278,19 @@ Rules that go with it:
   "Author", [docs/author.md](docs/author.md) and the website's author section) and copyright notices
   (`LICENSE`, the licence sections that quote it, the package metadata's `author`) and the structured data
   that names a page's author for search engines, and never by any programme membership.
-- The gcportrait name and the gcportrait icon are not covered by the MIT License: "They identify this project
-  and may not be used to present other software or services as gcportrait or as endorsed by it; forks must use
-  their own name and icon." [brand/LICENSE.md](brand/LICENSE.md) holds the text; `brand/icon.svg` is the one
-  source of the mark (the favicons, the website's logo, the app's mark, the wordmarks;
+- The gcportrait name and the gcportrait icon are not covered by the Apache License 2.0: "They identify this
+  project and may not be used to present other software or services as gcportrait or as endorsed by it; forks
+  must use their own name and icon." [brand/LICENSE.md](brand/LICENSE.md) holds the text; `brand/icon.svg` is
+  the one source of the mark (the favicons, the website's logo, the app's mark, the wordmarks;
   [brand/README.md](brand/README.md)).
 
 ## Licence and dependencies
 
-- **gcportrait's own work, its code, its texts and its images, is licensed under the MIT License**, `MIT`,
-  "Copyright (c) 2026 Florian Chrometz" ([LICENSE](LICENSE)), so that anyone can use, study, change, embed and
-  run it, hosted or not, commercially or not. The name and the icon are reserved
+- **gcportrait's own work, its code, its texts and its images, is licensed under the Apache License 2.0**,
+  "Copyright (c) 2026 Florian Chrometz" ([LICENSE](LICENSE)), so anyone can use, study, change, embed and run
+  it, hosted or not; its attribution travels in [NOTICE](NOTICE). The name and the icon are reserved
   ([Non-affiliation, brand and legal](#non-affiliation-brand-and-legal)).
-- **Every new text source file starts with the SPDX line for `MIT`** within its first 10 lines, in the
+- **Every new text source file starts with the SPDX line for `Apache-2.0`** within its first 10 lines, in the
   comment form of its type, so the licence of every file is machine-readable: use the forms, placement and
   exemptions in docs/contributing.md, "The SPDX header". `.nvmrc` is exempt because not every Node version
   manager accepts comments. Should the project licence change, scripts/set-license.mjs rewrites every
@@ -304,8 +303,8 @@ Rules that go with it:
   BSD-3-Clause, Apache-2.0, CC0-1.0, Unlicense, BlueOak-1.0.0, Python-2.0 and MPL-2.0 (its copyleft is
   file-scoped), and denies, each with its reason, the GPL family in every variant (the library and the network
   forms included), SSPL, CC-BY-SA, CC-BY-NC, EUPL, OSL, CPAL, EPL, CDDL, "SEE LICENSE IN", UNLICENSED,
-  proprietary, unknown and absent licences: an MIT project cannot carry copyleft that reaches beyond the
-  dependency's own files, or its combined work could no longer be offered under the MIT License.
+  proprietary, unknown and absent licences: an Apache-2.0 project cannot carry copyleft that reaches beyond
+  the dependency's own files, or its combined work could no longer be offered under the Apache License 2.0.
   `node scripts/check-licenses.mjs --list-rules` prints the rules with their reasons.
 - **The one exception is the font licence**: OFL-1.1 is accepted for `@fontsource/roboto` and
   `@fontsource/roboto-mono` only, whose font files are copied into the build; each package's own `LICENSE`
@@ -314,14 +313,13 @@ Rules that go with it:
 - **The names of denied licences** appear only in the deny list (`THIRD_PARTY.md`,
   `scripts/check-licenses.mjs` and its test) and in the verbatim licence texts, so the project's own licence
   is never in doubt.
-- **Contributions** are accepted under the MIT License, inbound = outbound, with the pull-request template's
-  provenance statement; there is no contributor licence agreement, and with a permissive licence none is
-  needed. Contributors keep the copyright in what they write.
-- **Original work only.** Nothing is copied, ported or paraphrased from another licensed project; a solution
-  that reads like a translation of someone else's code is rejected and started over, because whoever receives
-  gcportrait must be able to rely on its own licence alone. Every pull request states "Original work; nothing
-  copied from other projects."
-- **No Go files, no Graphviz files (`.dot`, `.gv`), no Gizmo queries and no symbolic links**; the provenance
+- **Contributions** are accepted under the Apache License 2.0, inbound = outbound, with the pull-request
+  template's provenance statement; there is no contributor licence agreement, and with a permissive licence
+  none is needed. Contributors keep the copyright in what they write. - **Original work only.** Nothing is
+  copied, ported or paraphrased from another licensed project; a solution that reads like a translation of
+  someone else's code is rejected and started over, because whoever receives gcportrait must be able to rely
+  on its own licence alone. Every pull request states "Original work; nothing copied from other projects." -
+  **No Go files, no Graphviz files (`.dot`, `.gv`), no Gizmo queries and no symbolic links**; the provenance
   check refuses them.
 
 ## Architecture and code

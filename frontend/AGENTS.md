@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # AGENTS.md: the frontend
 
@@ -25,7 +25,9 @@ These rules add to the root AGENTS.md, which applies here too.
     sheet and opens the drawer) and leaves at least a third of the canvas in view, its content scrolling
     inside it; on a tablet the drawer is a panel over at most half the canvas's right side, on a phone a sheet
     over its lower half that its handle takes to the whole height (then the canvas's content is hidden until
-    it comes down) and back, and a camera jump keeps the node in the part left in view; what floats over the
+    it comes down) and back, and a directed camera move keeps its node clear of everything floating over the
+    canvas (the drawer, a sheet, the disclosure bar, its notice), while the overview fit at rest frames the
+    whole canvas; what floats over the
     canvas moves clear of the drawer (the disclosure bar to the bottom left on a tablet, above the sheet on a
     phone, or, on a canvas too short for it there, hidden while the sheet is open; on a phone it is hidden
     while View or More is open too), and the drawer's content scrolls inside it, never past its edge; the
@@ -136,9 +138,10 @@ gestures. The widths and feature-parity contract are in [AGENTS.md](../AGENTS.md
 
 ## The source link
 
-- **The running app links its source.** The shell footer's "Source (MIT)" link stays on every route, next to
-  the non-affiliation notice, so the people who use an instance can see where its source is and under which
-  licence; the MIT License does not ask for it. Its URL follows [AGENTS.md](../AGENTS.md), "Product rules".
+- **The running app links its source.** The shell footer's "Source (Apache-2.0)" link stays on every route,
+  next to the non-affiliation notice, so the people who use an instance can see where its source is and under
+  which licence; Apache's licence asks for no such link either, but a reader should find the source. Its URL
+  follows [AGENTS.md](../AGENTS.md), "Product rules".
 
 ## Code
 

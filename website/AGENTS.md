@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MIT -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # AGENTS.md: the website
 
@@ -34,15 +34,9 @@ The shared static-demo build, configuration, route copies and policies follow [A
 
 ## Analytics
 
-Page views are counted with TelemetryDeck, through its npm SDK
-bundled into the site (no script from a CDN): only in a deploying build (the repository variable
-`WEBSITE_ANALYTICS`, which a fork sets to `0`), only when served from `gcportrait.app` itself, never when
-the browser sends Do Not Track or Global Privacy Control, without a cookie and without query strings or
-fragments. A count of visits is all the maintainer needs, and the privacy notice describes exactly that
-([docs/website.md](../docs/website.md), "Analytics").
-
-The permission to count the website's page views, and the app's and demo's no-telemetry contract, are in
-[AGENTS.md](../AGENTS.md), "Modes and hosting".
+The site counts nothing and loads no analytics: its only cross-host request is the repository widget, so
+what a visitor reads is all it ever needs to know ([docs/website.md](../docs/website.md), "Analytics"). The
+no-telemetry contract for the site, the app and the demo is in [AGENTS.md](../AGENTS.md), "Modes and hosting".
 
 ## Commands
 
