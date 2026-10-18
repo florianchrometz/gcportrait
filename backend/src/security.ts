@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 
 /**
- * Browser-facing header values and CSP construction, installed by server.ts through @fastify/helmet.
+ * Browser-facing header values and CSP construction, installed by server.ts directly.
  * Policy: backend/AGENTS.md, Hardening; docs/security.md, "Browser-facing headers". Inline-script
  * hashes come from the exact served index.html so the theme bootstrap needs no unsafe-inline source.
  */
@@ -120,4 +120,45 @@ export function cspDirectives(
     'frame-ancestors': ["'none'"],
     'form-action': ["'self'"],
   };
+}
+
+/** Serialises CSP directives into a Content-Security-Policy header value. */
+export function serializeCsp(directives: CspDirectives): string {
+  return Object.entries(directives)
+    .map(([name, sources]) => (sources.length > 0 ? `${name} ${sources.join(' ')}` : name))
+    .join('; ');
+}
+
+/**
+ * All browser hardening headers for an instance: CSP, cross-origin policies, HSTS,
+ * referrer policy, frameguard, permissions policy, and browser defaults.
+ */
+export function securityHeaders(
+  config: { readonly demoOnly: boolean },
+  spa?: { readonly scriptHashes: readonly string[] } | null,
+): Record<string, string> {
+  const crossOrigin = crossOriginPolicies(config.demoOnly);
+  const directives = cspDirectives(spa?.scriptHashes ?? [], { google: !config.demoOnly });
+
+  const headers: Record<string, string> = {
+    'content-security-policy': serializeCsp(directives),
+    'cross-origin-opener-policy': crossOrigin.opener,
+    'cross-origin-resource-policy': 'same-origin',
+    'origin-agent-cluster': '?1',
+    'referrer-policy': 'no-referrer',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains',
+    'x-content-type-options': 'nosniff',
+    'x-dns-prefetch-control': 'off',
+    'x-download-options': 'noopen',
+    'x-frame-options': 'DENY',
+    'x-permitted-cross-domain-policies': 'none',
+    'x-xss-protection': '0',
+    'permissions-policy': PERMISSIONS_POLICY,
+  };
+
+  if (crossOrigin.embedder !== null) {
+    headers['cross-origin-embedder-policy'] = crossOrigin.embedder;
+  }
+
+  return headers;
 }

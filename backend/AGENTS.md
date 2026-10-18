@@ -10,7 +10,7 @@ These rules add to the root AGENTS.md, which applies here too.
   data.
 - Upstream calls go to four hosts only: `cloudasset.googleapis.com`, `cloudresourcemanager.googleapis.com`,
   `storage.googleapis.com` and `oauth2.googleapis.com`.
-- A strict Content Security Policy and the other security headers (`@fastify/helmet`), rate limits, request
+- A strict Content Security Policy and the other security headers (`src/security.ts`), rate limits, request
   ids, timeouts, response caps and a process-wide page budget ([docs/security.md](../docs/security.md)).
 - Logs never carry query strings, bodies, client addresses or tokens. The service-account gate's audit line is
   the one log line that names a scope, on purpose.
@@ -102,11 +102,11 @@ Before every CAI call made as the instance's account, the backend checks the cal
 ## Code
 
 - **The backend** is Fastify 5: response contracts written once as zod schemas and handed to Fastify as JSON
-  Schema; `@fastify/helmet` with a strict CSP, rate limits, request ids and pino JSON logs with a header
-  allowlist; two esbuild bundles (`server.mjs` and `render-worker.mjs`); a distroless image without
-  `node_modules`. zod is imported as a namespace everywhere (`import * as z from 'zod'`), which lets esbuild
-  leave zod's locales out of both bundles; ESLint refuses the named form, and the bundle test checks that no
-  locale but the English one is bundled.
+  Schema; strict CSP and security headers (`src/security.ts`), rate limits, request ids and pino JSON logs
+  with a header allowlist; two esbuild bundles (`server.mjs` and `render-worker.mjs`); a distroless image
+  without `node_modules`. zod is imported as a namespace everywhere (`import * as z from 'zod'`), which lets
+  esbuild leave zod's locales out of both bundles; ESLint refuses the named form, and the bundle test checks
+  that no locale but the English one is bundled.
 
 ## Commands
 

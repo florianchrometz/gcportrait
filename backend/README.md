@@ -77,10 +77,11 @@ settings follow AGENTS.md, "Product rules"; service-account credentials are reso
 The policy is in backend/AGENTS.md, "Hardening"; [docs/security.md](../docs/security.md) describes each
 control, its limits and the tests that hold it. Implementation owners:
 
-- **Headers**: `src/security.ts`, installed by `src/server.ts` through `@fastify/helmet`
+- **Headers**: `src/security.ts`, set by `src/server.ts` in an `onRequest` hook
   ([browser-facing headers](../docs/security.md#6-browser-facing-headers)); this includes the served
   `index.html`'s theme-script hash and the sign-in versus demo-only cross-origin policies.
-- **Static files**: `src/server.ts` owns build-directory confinement, dotfile exclusion and SPA fallback
+- **Static files**: `src/spa.ts` pre-loads the SPA bundle into memory, excludes dotfiles and `/api` paths,
+  and answers GET/HEAD with ETags; `src/server.ts` falls back to `index.html` on SPA client routes
   ([static files](../docs/security.md#8-errors-request-ids-shutdown-static-files)).
 - **Request limits**: `src/server.ts` owns body size and the separate header/body deadlines; the comments
   beside `REQUEST_TIMEOUT_MS` explain the Node/Fastify interaction

@@ -1,15 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import { randomUUID } from 'node:crypto';
 
-import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
-import fastifyStatic from '@fastify/static';
-import Fastify, {
-  LogController,
-  type FastifyInstance,
-  type FastifyReply,
-  type FastifyRequest,
-} from 'fastify';
+import Fastify, { LogController, type FastifyInstance, type FastifyRequest } from 'fastify';
 import type { DestinationStream } from 'pino';
 
 import type { ServiceAccountIdentity } from './auth/identity.js';
@@ -26,15 +19,8 @@ import { createRenderLock, registerRenderRoute } from './routes/render.js';
 import { registerScopeSearchRoute } from './routes/scopes.js';
 import { workerRunner, type RenderRunner } from './render/runner.js';
 import { HealthResponseSchema, toFastifySchema, type HealthResponse } from './schemas.js';
-import { crossOriginPolicies, cspDirectives, PERMISSIONS_POLICY } from './security.js';
-import {
-  CACHE_HASHED_ASSET,
-  CACHE_REVALIDATE,
-  isApiPath,
-  isHashedAsset,
-  isSpaRoute,
-  loadSpaBundle,
-} from './spa.js';
+import { securityHeaders } from './security.js';
+import { isApiPath, isSpaRoute, loadSpaBundle, pathnameOf, registerSpa, sendAsset } from './spa.js';
 import { PageBudget } from './stream/page-budget.js';
 import { StreamSlots } from './stream/slots.js';
 import { createUpstreamClient, type UpstreamOptions } from './upstream/request.js';
@@ -125,15 +111,6 @@ function requestIdFor(header: string | string[] | undefined): string {
   return typeof header === 'string' && REQUEST_ID_PATTERN.test(header) ? header : randomUUID();
 }
 
-function pathnameOf(request: FastifyRequest): string {
-  const queryStart = request.url.indexOf('?');
-  return queryStart < 0 ? request.url : request.url.slice(0, queryStart);
-}
-
-function sendIndex(reply: FastifyReply, indexHtml: string): FastifyReply {
-  return reply.code(200).type('text/html; charset=utf-8').header('cache-control', 'no-cache').send(indexHtml);
-}
-
 /**
  * Trust the forwarding headers of the nearest `hops` proxies. Fastify 5 accepts a bare hop count for
  * `trustProxy` but deliberately fails closed with it (it trusts no address), because a hop count alone cannot
@@ -202,29 +179,13 @@ export async function buildServer(
     done(null, payload);
   });
 
+  const secHeaderEntries = Object.entries(securityHeaders(config, spa));
   app.addHook('onRequest', (request, reply, done) => {
     reply.header('x-request-id', request.id);
-    // Not part of helmet: no device, sensor or media feature for the page or anything it embeds (security.ts).
-    reply.header('permissions-policy', PERMISSIONS_POLICY);
+    for (const [name, value] of secHeaderEntries) reply.header(name, value);
     const pathname = pathnameOf(request);
     if (isApiPath(pathname) || pathname === '/healthz') reply.header('cache-control', 'no-store');
     done();
-  });
-
-  // Google's sign-in window must reach its opener; a demo-only instance has none and is cross-origin isolated
-  // instead (security.ts, crossOriginPolicies).
-  const crossOrigin = crossOriginPolicies(config.demoOnly);
-  await app.register(helmet, {
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: cspDirectives(spa?.scriptHashes ?? [], { google: !config.demoOnly }),
-    },
-    // X-Frame-Options for browsers without CSP frame-ancestors; DENY matches frame-ancestors 'none'.
-    frameguard: { action: 'deny' },
-    crossOriginOpenerPolicy: { policy: crossOrigin.opener },
-    crossOriginEmbedderPolicy: crossOrigin.embedder === null ? false : { policy: crossOrigin.embedder },
-    crossOriginResourcePolicy: { policy: 'same-origin' },
-    referrerPolicy: { policy: 'no-referrer' },
   });
 
   await app.register(rateLimit, {
@@ -272,31 +233,15 @@ export async function buildServer(
   // of them: no upstream client, no gate, no route.
   if (!config.demoOnly) await registerGoogleRoutes(app, config, options);
 
-  if (spa !== null) {
-    // index.html always comes from memory (sendIndex) so that the CSP hashes match what is sent.
-    app.get('/', async (_request, reply) => sendIndex(reply, spa.indexHtml));
-    await app.register(fastifyStatic, {
-      root: spa.root,
-      prefix: '/',
-      index: false,
-      wildcard: true,
-      // A file or folder whose name starts with a dot is never served (@fastify/static's default serves them).
-      dotfiles: 'ignore',
-      // Static files never answer for the API, even if the build output happened to contain an api/ folder.
-      allowedPath: (pathname) => !isApiPath(pathname),
-      setHeaders: (reply, filePath) => {
-        reply.header(
-          'cache-control',
-          isHashedAsset(spa.root, filePath) ? CACHE_HASHED_ASSET : CACHE_REVALIDATE,
-        );
-      },
-    });
-  }
+  if (spa !== null) registerSpa(app, spa);
 
   app.setNotFoundHandler({ preHandler: app.rateLimit() }, async (request, reply) => {
     const pathname = pathnameOf(request);
     const isPageRequest = request.method === 'GET' || request.method === 'HEAD';
-    if (spa !== null && isPageRequest && isSpaRoute(pathname)) return sendIndex(reply, spa.indexHtml);
+    if (spa !== null && isPageRequest && isSpaRoute(pathname)) {
+      sendAsset(request, reply, spa.indexAsset);
+      return;
+    }
     const hint =
       spa === null && !isApiPath(pathname)
         ? ' No SPA build is present; in development the Vite dev server serves the app.'

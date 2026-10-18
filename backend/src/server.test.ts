@@ -93,7 +93,7 @@ describe('security headers', () => {
   it('sets a strict CSP and the usual hardening headers on API responses', async () => {
     const app = await start();
     const response = await app.inject({ method: 'GET', url: '/api/config' });
-    // Exactly cspDirectives' policy: nothing added, dropped or overridden on the way to helmet.
+    // Exactly cspDirectives' policy: nothing added, dropped or overridden on the wire.
     expect(sentCsp(response.headers['content-security-policy'])).toEqual(cspDirectives([]));
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['strict-transport-security']).toMatch(/max-age=\d+/);
@@ -246,6 +246,45 @@ describe('with a SPA build (production image)', () => {
     const app = await start({ env: { STATIC_DIR: distDir } });
     const response = await app.inject({ method: 'POST', url: '/diagram', payload: {} });
     expect(response.statusCode).toBe(404);
+  });
+
+  it('answers If-None-Match with 304 Not Modified when ETag matches', async () => {
+    const app = await start({ env: { STATIC_DIR: distDir } });
+    const initial = await app.inject({ method: 'GET', url: '/favicon.svg' });
+    expect(initial.statusCode).toBe(200);
+    const etag = String(initial.headers['etag']);
+    expect(etag).toMatch(/^"[0-9a-f]{64}"$/);
+
+    const cached = await app.inject({
+      method: 'GET',
+      url: '/favicon.svg',
+      headers: { 'if-none-match': etag },
+    });
+    expect(cached.statusCode).toBe(304);
+    expect(cached.body).toBe('');
+
+    const pageInitial = await app.inject({ method: 'GET', url: '/diagram' });
+    expect(pageInitial.statusCode).toBe(200);
+    const pageEtag = String(pageInitial.headers['etag']);
+    const pageCached = await app.inject({
+      method: 'GET',
+      url: '/diagram',
+      headers: { 'if-none-match': pageEtag },
+    });
+    expect(pageCached.statusCode).toBe(304);
+  });
+
+  it('serves HEAD requests for static assets and SPA routes without body', async () => {
+    const app = await start({ env: { STATIC_DIR: distDir } });
+    const assetHead = await app.inject({ method: 'HEAD', url: '/assets/index-abc123.js' });
+    expect(assetHead.statusCode).toBe(200);
+    expect(assetHead.headers['content-type']).toMatch(/javascript/);
+    expect(assetHead.headers['etag']).toMatch(/^"[0-9a-f]{64}"$/);
+
+    const spaHead = await app.inject({ method: 'HEAD', url: '/diagram' });
+    expect(spaHead.statusCode).toBe(200);
+    expect(spaHead.headers['content-type']).toMatch(/^text\/html/);
+    expect(spaHead.headers['etag']).toMatch(/^"[0-9a-f]{64}"$/);
   });
 
   it('never serves a dotfile or anything in a dot folder', async () => {

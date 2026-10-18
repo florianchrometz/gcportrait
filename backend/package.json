@@ -15,10 +15,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fastify/helmet": "^13.1.2",
     "@fastify/multipart": "10.1.2",
     "@fastify/rate-limit": "^11.2.0",
-    "@fastify/static": "^10.1.5",
     "@gcportrait/model": "workspace:*",
     "@gcportrait/render": "workspace:*",
     "fastify": "^5.12.5",
