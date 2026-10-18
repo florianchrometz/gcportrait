@@ -57,30 +57,21 @@ jobs:
           persist-credentials: false
           # All tags, to tell whether this one is the newest release (below).
           fetch-depth: 0
-      - name: Image name, version and `latest`
+      # The image name, its version, `latest`, the tags, labels and annotations: scripts/release-image.mjs (its
+      # tests: scripts/release-image.test.ts), run on the runner's own Node; it reads the tags and infra/Dockerfile.
+      - name: Image name, version, `latest`, tags, labels and annotations
         id: names
         env:
-          OWNER: ${{ github.repository_owner }}
           EVENT: ${{ github.event_name }}
           TAG: ${{ github.ref_name }}
           SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
         run: |
-          # ghcr.io package names are lowercase.
-          image="ghcr.io/${OWNER,,}/gcportrait"
-          if [ "$EVENT" = workflow_dispatch ]; then
-            app_version="dev-${SHA::7}"
-            latest=false
-          else
-            app_version="$TAG"
-            newest="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n 1p || true)"
-            echo "Newest release tag: ${newest:-none}; this tag: $TAG"
-            if [ "$TAG" = "$newest" ]; then latest=true; else latest=false; fi
-          fi
-          {
-            echo "image=$image"
-            echo "app_version=$app_version"
-            echo "latest=$latest"
-          } >>"$GITHUB_OUTPUT"
+          node scripts/release-image.mjs --event "$EVENT" --tag "$TAG" --sha "$SHA" --repository "$REPOSITORY" \
+            --server-url "$SERVER_URL" >"$RUNNER_TEMP/image.txt"
+          cat "$RUNNER_TEMP/image.txt"
+          cat "$RUNNER_TEMP/image.txt" >>"$GITHUB_OUTPUT"
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
         with:
           platforms: arm64
@@ -130,39 +121,13 @@ jobs:
             grep -q '<div id="root">' "/tmp/index-$arch.html"
             docker rm --force "check-$arch"
           done
+      # The workflow's own token, through standard input so it never reaches the command line; Syft reads the
+      # image with the same token below, and the last step logs out again.
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Image tags, labels and annotations
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         env:
-          # The annotations on the index too: ghcr.io shows a multi-platform package's description from there.
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ${{ steps.names.outputs.image }}
-          # A tag push: X.Y.Z and X.Y (the semver patterns skip pre-releases for X.Y); by hand: dev.
-          tags: |
-            type=semver,pattern={{version}},enable=${{ github.event_name == 'push' }}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'push' }}
-            type=raw,value=dev,enable=${{ github.event_name == 'workflow_dispatch' }}
-          flavor: |
-            latest=${{ steps.names.outputs.latest }}
-          # The action adds the source repository, revision, version and creation time by itself. The
-          # description is the long-form non-affiliation statement; without it the action would take the
-          # repository's description. The licence is gcportrait's own (MIT); the image also holds third-party
-          # material under its own terms (THIRD_PARTY.md).
-          labels: |
-            org.opencontainers.image.title=gcportrait
-            org.opencontainers.image.licenses=MIT
-            org.opencontainers.image.description=gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks of Google and are used under Google's icon usage terms.
-          annotations: |
-            org.opencontainers.image.title=gcportrait
-            org.opencontainers.image.licenses=MIT
-            org.opencontainers.image.description=gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are trademarks of Google and are used under Google's icon usage terms.
+          ACTOR: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$TOKEN" | docker login ghcr.io --username "$ACTOR" --password-stdin
       - name: Build and push linux/amd64 and linux/arm64
         id: push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -174,9 +139,12 @@ jobs:
           push: true
           provenance: false
           sbom: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          annotations: ${{ steps.meta.outputs.annotations }}
+          # The Dockerfile's labels (title, description, licence) and these (source, revision, version...); the
+          # annotations go on every platform manifest and on the index, where ghcr.io reads a multi-platform
+          # package's description.
+          tags: ${{ steps.names.outputs.tags }}
+          labels: ${{ steps.names.outputs.labels }}
+          annotations: ${{ steps.names.outputs.annotations }}
       - name: Anonymous pull check (as Artifact Registry's remote repository pulls)
         env:
           IMAGE: ${{ steps.names.outputs.image }}
@@ -212,38 +180,44 @@ jobs:
             if [ -z "$digest" ]; then echo "::error::the index has no linux/$arch image"; exit 1; fi
             echo "$arch=$digest" >>"$GITHUB_OUTPUT"
           done
-      # anchore/sbom-action writes output-file as it is given and does not create its folder.
-      - name: Folder for the SBOMs
-        run: mkdir -p sbom
-      # A third-party action that receives a token with `packages: write` (to read the image while the package
-      # is still private). Like every action here it is pinned to a commit with its release as a comment, not
-      # to its moving major tag. Dependabot proposes newer releases as new commits (.github/dependabot.yml).
-      - name: SBOM of linux/amd64 (Syft, SPDX JSON)
-        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
-        with:
-          image: ${{ steps.names.outputs.image }}@${{ steps.platforms.outputs.amd64 }}
-          registry-username: ${{ github.actor }}
-          registry-password: ${{ secrets.GITHUB_TOKEN }}
-          format: spdx-json
-          output-file: sbom/gcportrait-${{ steps.names.outputs.app_version }}-linux-amd64.spdx.json
-          upload-artifact: false
-          upload-release-assets: false
-      - name: SBOM of linux/arm64 (Syft, SPDX JSON)
-        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
-        with:
-          image: ${{ steps.names.outputs.image }}@${{ steps.platforms.outputs.arm64 }}
-          registry-username: ${{ github.actor }}
-          registry-password: ${{ secrets.GITHUB_TOKEN }}
-          format: spdx-json
-          output-file: sbom/gcportrait-${{ steps.names.outputs.app_version }}-linux-arm64.spdx.json
-          upload-artifact: false
-          upload-release-assets: false
+      # Syft, pinned by version and by the SHA-256 that its release's syft_VERSION_checksums.txt gives for
+      # syft_VERSION_linux_amd64.tar.gz, checked before it runs (as pr.yml pins actionlint); a newer Syft changes
+      # both lines together. It reads each platform's image from the registry with the workflow's token (the
+      # package may still be private) and writes its SPDX JSON SBOM.
+      - name: SBOMs of linux/amd64 and linux/arm64 (Syft, SPDX JSON)
+        env:
+          SYFT_VERSION: 1.54.1
+          SYFT_SHA256: c069905b391cc4c20a5ba65ad5c10be2a7ba074f8ea6ad203e24d14e303dad47
+          IMAGE: ${{ steps.names.outputs.image }}
+          VERSION: ${{ steps.names.outputs.app_version }}
+          AMD64: ${{ steps.platforms.outputs.amd64 }}
+          ARM64: ${{ steps.platforms.outputs.arm64 }}
+          SYFT_REGISTRY_AUTH_AUTHORITY: ghcr.io
+          SYFT_REGISTRY_AUTH_USERNAME: ${{ github.actor }}
+          SYFT_REGISTRY_AUTH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          SYFT_CHECK_FOR_APP_UPDATE: 'false'
+        run: |
+          archive="syft_${SYFT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/$archive"
+          echo "$SYFT_SHA256  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/syft"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/syft" syft
+          "$RUNNER_TEMP/syft/syft" version
+          mkdir -p sbom
+          "$RUNNER_TEMP/syft/syft" scan "registry:$IMAGE@$AMD64" \
+            -o "spdx-json=sbom/gcportrait-${VERSION}-linux-amd64.spdx.json"
+          "$RUNNER_TEMP/syft/syft" scan "registry:$IMAGE@$ARM64" \
+            -o "spdx-json=sbom/gcportrait-${VERSION}-linux-arm64.spdx.json"
       - name: Keep the SBOMs for the release
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sbom
           path: sbom/
           if-no-files-found: error
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io
 
   github-release:
     name: github-release

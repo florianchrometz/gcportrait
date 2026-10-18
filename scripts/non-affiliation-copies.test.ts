@@ -38,11 +38,6 @@ const LONG_FORM_COPIES: readonly Copy[] = [
     copy: 'the image description label in infra/Dockerfile',
     text: () => /org\.opencontainers\.image\.description="([^"]+)"/.exec(read('infra/Dockerfile'))?.[1],
   },
-  {
-    copy: 'the image description label of the release workflow',
-    text: () =>
-      /org\.opencontainers\.image\.description=(.+)$/m.exec(read('.github/workflows/release.yml'))?.[1],
-  },
   { copy: 'the release notes (scripts/release-notes.mjs)', text: () => RELEASE_NOTES_LONG_FORM },
   {
     copy: 'the close of the infra scripts’ --help (infra/common.sh)',
