@@ -9,11 +9,13 @@ import { describe, expect, it } from 'vitest';
 import type * as z from 'zod';
 import { DetailLevelSchema, LensIdSchema } from './lens.js';
 import { RelationKindSchema } from './relation.js';
+import { FontFaceKeySchema } from './layout.js';
 import { DemoSizeSchema, FocusKindSchema, SnapshotRefSchema } from './view-spec.js';
 import {
   DEMO_SIZES,
   DETAIL_LEVEL_IDS,
   FOCUS_KIND_IDS,
+  FONT_FACE_KEYS,
   LARGE_SNAPSHOT_ASSETS,
   LENS_IDS,
   RELATION_KIND_IDS,
@@ -83,6 +85,12 @@ const SPEC: [string, readonly string[], { readonly options: readonly string[] },
 it.each(SPEC)('lists %s, in the tuple and in its schema', (_name, tuple, schema, expected) => {
   expect(tuple).toEqual(expected);
   expect(schema.options).toEqual(expected);
+});
+
+it('freezes the four font face keys shared by metrics and their schema', () => {
+  expect(FONT_FACE_KEYS).toEqual(['sans-400', 'sans-500', 'sans-700', 'mono-400']);
+  expect(FontFaceKeySchema.options).toEqual(FONT_FACE_KEYS);
+  expect(Object.isFrozen(FONT_FACE_KEYS)).toBe(true);
 });
 
 const enums: [string, readonly string[], z.ZodType, (v: unknown) => boolean][] = [

@@ -9,44 +9,19 @@
  * and fullwidth characters, which Roboto does not cover) or as the face's average Latin advance (anything
  * else).
  */
+import {
+  FONT_FACE_KEYS as MODEL_FONT_FACE_KEYS,
+  type FontFaceKey,
+  type FontFaceMetrics,
+  type FontMetricsTable,
+} from '@gcportrait/model';
 import robotoMetrics from '../metrics/roboto.json' with { type: 'json' };
 
 export type FontFamily = 'sans' | 'mono';
 export type FontWeight = 400 | 500 | 700;
-export type FontFaceKey = 'sans-400' | 'sans-500' | 'sans-700' | 'mono-400';
+export type { FontFaceKey, FontFaceMetrics, FontMetricsTable } from '@gcportrait/model';
 
-export const FONT_FACE_KEYS: readonly FontFaceKey[] = Object.freeze([
-  'sans-400',
-  'sans-500',
-  'sans-700',
-  'mono-400',
-]);
-
-export interface FontFaceMetrics {
-  /** The font family name the renderer uses ("Roboto", "Roboto Mono"). */
-  readonly family: string;
-  readonly weight: number;
-  /** Font units per em: an advance of `unitsPerEm` units is 1 px wide at a font size of 1 px. */
-  readonly unitsPerEm: number;
-  /** Ascent and descent (both positive) and line gap from the font's horizontal header, in font units. */
-  readonly ascent: number;
-  readonly descent: number;
-  readonly lineGap: number;
-  /** The kerning-free average advance of printable ASCII, used for code points the table does not list. */
-  readonly fallback: number;
-  /**
-   * Advance widths in font units, as runs of consecutive code points: `[first, advance(first),
-   * advance(first + 1), …]`, sorted by `first`, never overlapping.
-   */
-  readonly runs: readonly (readonly number[])[];
-}
-
-export interface FontMetricsTable {
-  readonly format: 1;
-  /** Font package name → version the table was generated from. */
-  readonly sources: Readonly<Record<string, string>>;
-  readonly faces: Readonly<Record<FontFaceKey, FontFaceMetrics>>;
-}
+export const FONT_FACE_KEYS: readonly FontFaceKey[] = MODEL_FONT_FACE_KEYS;
 
 export interface MeasureOptions {
   /** `sans` (Roboto, default) or `mono` (Roboto Mono, which has one weight: 400 is used for any weight). */

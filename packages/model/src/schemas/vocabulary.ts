@@ -21,6 +21,8 @@ export const RENDER_PNG_LIMITS = Object.freeze({ side: RENDER_MAX_SIDE, area: RE
 export const RENDER_DEFAULT_VIEWPORT = Object.freeze({ width: 1280, height: 800 });
 export const RENDER_THEMES = ['light', 'dark'] as const;
 
+export const FONT_FACE_KEYS = Object.freeze(['sans-400', 'sans-500', 'sans-700', 'mono-400'] as const);
+
 /** The lenses, in menu order (`packages/catalog/lenses/<id>.yaml`). */
 export const LENS_IDS = [
   'overview',

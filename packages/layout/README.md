@@ -44,8 +44,8 @@ development or production; calling `assertLayout` explicitly checks a layout in 
 `EdgePath`, `StageTimings`, `LayoutCounts`, `RoutingReport`, `LayoutReport`, `Arrangement`, `Arrangements`,
 `GapWidening`, `GutterWidening`, `GutterReservations`, `Layout`, `LayoutStage`, `LayoutProgress`,
 `LayoutResult`, `LayoutInputErrorCode`, `LayoutWorkerErrorCode`, `LayoutWorkerErrorInfo`,
-`LayoutCancelReason`, `LayoutCancelledReason`, `LayoutWorkerResponse`, `Sizing` and `Routing` are inferred
-from the model's
+`LayoutCancelReason`, `LayoutCancelledReason`, `LayoutWorkerResponse`, `Sizing`, `Routing`, `FontFaceKey`,
+`FontFaceMetrics` and `FontMetricsTable` are inferred from the model's
 [layout geometry schemas](../model/README.md#layout-geometry) and re-exported here as types. No runtime
 schema parsing is added to the layout pipeline; worker requests and options remain here.
 
@@ -460,6 +460,12 @@ searched again twice at most (`RETRIES`), a route's lanes are searched over 200 
 size (9 × 7, 7 × 5 by kind) is the renderer's: the layout only ends the path at the tip.
 
 ## Text metrics
+
+The model owns the font-metrics shapes and the frozen, Zod-free `FONT_FACE_KEYS` vocabulary. The layout
+re-exports the inferred types and the same key array. Its handwritten `parseFontMetricsTable` retains
+its operational validation and returns the original table; model schema parsing is test-only here.
+The schemas describe strict JSON shapes, not the parser's permissive extras and non-JSON inputs, and
+do not enforce its integer metrics, positive units per em or ordered, non-overlapping runs.
 
 `metrics/roboto.json` holds, for Roboto 400, 500 and 700 and Roboto Mono 400, the advance width of every code
 point the self-hosted font files cover (897 for Roboto, 832 for Roboto Mono), in font units at 1 px

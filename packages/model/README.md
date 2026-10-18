@@ -328,6 +328,15 @@ do not check width-range relationships. Defaults and operational checks remain i
 `resolveOptions` merges overrides, requires non-negative values (strictly positive for selected fields)
 and checks the card and chip width ranges. It does not parse these schemas.
 
+`FontFaceKeySchema` (`FontFaceKey`) uses the frozen, Zod-free `FONT_FACE_KEYS` vocabulary: `sans-400`,
+`sans-500`, `sans-700` and `mono-400`. `FontFaceMetricsSchema` (`FontFaceMetrics`) holds readonly
+`family`, numeric metrics and nested readonly `runs`. `FontMetricsTableSchema` (`FontMetricsTable`)
+holds format `1`, a readonly `sources` record preserving every own string key, and all four `faces`.
+These strict JSON shapes accept finite numbers without font-unit, weight, range or run-order refinements.
+The layout's handwritten parser remains separate: it returns the original object, enforces operational
+font constraints and accepts extras and some non-JSON inputs that the schemas reject. No schema runs in
+text measurement or replaces that parser.
+
 ### Reports
 
 The same module declares the layout's report contracts. Numeric fields accept finite negative and

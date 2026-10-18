@@ -7,6 +7,10 @@ import {
   EdgeHeadsSchema,
   EdgePathSchema,
   EdgePortSchema,
+  FONT_FACE_KEYS,
+  FontFaceKeySchema,
+  FontFaceMetricsSchema,
+  FontMetricsTableSchema,
   GapWideningSchema,
   GutterReservationsSchema,
   GutterWideningSchema,
@@ -39,6 +43,9 @@ import {
   type EdgeHeads,
   type EdgePath,
   type EdgePort,
+  type FontFaceKey,
+  type FontFaceMetrics,
+  type FontMetricsTable,
   type GapWidening,
   type GutterReservations,
   type GutterWidening,
@@ -70,6 +77,151 @@ const point = { x: -1.25, y: 0.5 };
 const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
 const gaps = { cardColumns: [-1.5], zoneColumns: [[], [0, 2.25]], stacks: [[[], [-0.5]]], rows: [0] };
 const widening = { horizontal: -1.5, vertical: 0, ring: 2.25, ringSides: { left: -0.5 }, gaps };
+
+describe('layout font metrics contracts', () => {
+  const keys = ['sans-400', 'sans-500', 'sans-700', 'mono-400'] as const;
+  const face = {
+    family: '',
+    weight: -0.5,
+    unitsPerEm: 0,
+    ascent: -1.25,
+    descent: 2.5,
+    lineGap: -3,
+    fallback: 0.25,
+    runs: [[], [100], [2, -0.5], [1, 2.25]],
+  };
+  const faces = Object.fromEntries(keys.map((key) => [key, face]));
+  const sources = Object.fromEntries([
+    ['__proto__', ''],
+    ['constructor', 'v1'],
+    ['', 'v2'],
+  ]);
+  const input = { format: 1, sources, faces };
+
+  it('uses exactly the shared four face keys', () => {
+    expect(FontFaceKeySchema.options).toEqual(keys);
+    expect(FONT_FACE_KEYS).toEqual(keys);
+    for (const key of keys) expect(FontFaceKeySchema.parse(key)).toBe(key);
+    for (const key of ['mono-500', 'sans-900', '', '__proto__', null, 400, undefined]) {
+      expect(FontFaceKeySchema.safeParse(key).success).toBe(false);
+    }
+    expectTypeOf<FontFaceKey>().toEqualTypeOf<(typeof keys)[number]>();
+  });
+
+  it('preserves the readonly shape without operational font or run refinements', () => {
+    const parsed = FontMetricsTableSchema.parse(input);
+    expect(parsed).toEqual(input);
+    expect(Object.keys(parsed)).toEqual(['format', 'sources', 'faces']);
+    expect(Object.keys(parsed.faces)).toEqual(keys);
+    expect(Object.keys(parsed.faces['sans-400'])).toEqual(Object.keys(face));
+    expect(FontMetricsTableSchema.parse(JSON.parse(JSON.stringify(input)))).toEqual(input);
+    expectTypeOf<FontFaceMetrics>().toEqualTypeOf<
+      Readonly<{
+        family: string;
+        weight: number;
+        unitsPerEm: number;
+        ascent: number;
+        descent: number;
+        lineGap: number;
+        fallback: number;
+        runs: readonly (readonly number[])[];
+      }>
+    >();
+    expectTypeOf<FontMetricsTable>().toEqualTypeOf<
+      Readonly<{
+        format: 1;
+        sources: Readonly<Record<string, string>>;
+        faces: Readonly<Record<FontFaceKey, FontFaceMetrics>>;
+      }>
+    >();
+    for (const value of [
+      parsed,
+      parsed.sources,
+      parsed.faces,
+      parsed.faces['sans-400'],
+      parsed.faces['sans-400'].runs,
+      ...parsed.faces['sans-400'].runs,
+    ]) {
+      expect(Object.isFrozen(value)).toBe(true);
+    }
+    expect(Object.isFrozen(input)).toBe(false);
+  });
+
+  it('preserves every own source key in plain and null-prototype maps', () => {
+    const nullPrototype = Object.assign(Object.create(null) as Record<string, string>, sources);
+    for (const sourceMap of [sources, nullPrototype, {}]) {
+      const parsed = FontMetricsTableSchema.parse({ ...input, sources: sourceMap });
+      expect(Object.keys(parsed.sources)).toEqual(Object.keys(sourceMap));
+      expect(JSON.stringify(parsed.sources)).toBe(JSON.stringify(sourceMap));
+      for (const key of Object.keys(sourceMap)) {
+        expect(Object.hasOwn(parsed.sources, key)).toBe(true);
+        expect(parsed.sources[key]).toBe(sourceMap[key]);
+      }
+    }
+    for (const key of Object.keys(sources)) {
+      const invalidSources: unknown = Object.fromEntries([...Object.entries(sources), [key, 1]]);
+      const invalid = FontMetricsTableSchema.safeParse({
+        ...input,
+        sources: invalidSources,
+      });
+      expect(invalid.success).toBe(false);
+      if (!invalid.success)
+        expect(invalid.error.issues.map((issue) => issue.path)).toEqual([['sources', key]]);
+    }
+    for (const sourceMap of [null, [], new Date(0), { [Symbol('source')]: 'v1' }]) {
+      expect(FontMetricsTableSchema.safeParse({ ...input, sources: sourceMap }).success).toBe(false);
+    }
+  });
+
+  it('requires every declared field and face and rejects extra keys', () => {
+    for (const key of Object.keys(face)) {
+      const missing = Object.fromEntries(Object.entries(face).filter(([name]) => name !== key));
+      expect(FontFaceMetricsSchema.safeParse(missing).success).toBe(false);
+      expect(FontFaceMetricsSchema.safeParse({ ...face, [key]: undefined }).success).toBe(false);
+    }
+    for (const key of Object.keys(input)) {
+      const missing = Object.fromEntries(Object.entries(input).filter(([name]) => name !== key));
+      expect(FontMetricsTableSchema.safeParse(missing).success).toBe(false);
+    }
+    for (const key of keys) {
+      const missing = Object.fromEntries(Object.entries(faces).filter(([name]) => name !== key));
+      expect(FontMetricsTableSchema.safeParse({ ...input, faces: missing }).success).toBe(false);
+    }
+    expect(FontFaceMetricsSchema.safeParse({ ...face, extra: true }).success).toBe(false);
+    for (const invalid of [
+      { ...input, extra: true },
+      { ...input, format: 2 },
+      { ...input, faces: { ...faces, 'mono-500': face } },
+      { ...input, faces: Object.fromEntries([...Object.entries(faces), ['__proto__', face]]) },
+    ]) {
+      expect(FontMetricsTableSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('rejects nonfinite metrics and run entries without losing nested paths', () => {
+    for (const key of ['weight', 'unitsPerEm', 'ascent', 'descent', 'lineGap', 'fallback']) {
+      for (const value of [Infinity, -Infinity, NaN, '1', null]) {
+        const invalid = FontFaceMetricsSchema.safeParse({ ...face, [key]: value });
+        expect(invalid.success).toBe(false);
+        if (!invalid.success) expect(invalid.error.issues.map((issue) => issue.path)).toEqual([[key]]);
+      }
+    }
+    for (const invalid of [
+      { ...face, family: 1 },
+      { ...face, runs: null },
+      { ...face, runs: [1] },
+    ]) {
+      expect(FontFaceMetricsSchema.safeParse(invalid).success).toBe(false);
+    }
+    const invalid = FontMetricsTableSchema.safeParse({
+      ...input,
+      faces: { ...faces, 'sans-400': { ...face, runs: [[1, Infinity]] } },
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success)
+      expect(invalid.error.issues.map((issue) => issue.path)).toEqual([['faces', 'sans-400', 'runs', 0, 1]]);
+  });
+});
 
 describe('layout sizing and routing contracts', () => {
   const sizingKeys = [

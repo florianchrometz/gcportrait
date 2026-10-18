@@ -2,6 +2,7 @@
 import * as z from 'zod';
 import { RelationKindSchema } from './relation.js';
 import { ZoneKindSchema } from './scene.js';
+import { FONT_FACE_KEYS } from './vocabulary.js';
 
 function stringRecord<Value extends z.ZodType>(valueSchema: Value) {
   return z
@@ -651,3 +652,38 @@ export const RoutingSchema = z
   })
   .readonly();
 export type Routing = z.infer<typeof RoutingSchema>;
+
+export const FontFaceKeySchema = z.enum(FONT_FACE_KEYS);
+export type FontFaceKey = z.infer<typeof FontFaceKeySchema>;
+
+export const FontFaceMetricsSchema = z
+  .strictObject({
+    /** The font family name the renderer uses ("Roboto", "Roboto Mono"). */
+    family: z.string(),
+    weight: z.number(),
+    /** Font units per em: an advance of `unitsPerEm` units is 1 px wide at a font size of 1 px. */
+    unitsPerEm: z.number(),
+    /** Ascent and descent (both positive) and line gap from the font's horizontal header, in font units. */
+    ascent: z.number(),
+    descent: z.number(),
+    lineGap: z.number(),
+    /** The kerning-free average advance of printable ASCII, used for code points the table does not list. */
+    fallback: z.number(),
+    /**
+     * Advance widths in font units, as runs of consecutive code points: `[first, advance(first),
+     * advance(first + 1), …]`, sorted by `first`, never overlapping.
+     */
+    runs: z.array(z.array(z.number()).readonly()).readonly(),
+  })
+  .readonly();
+export type FontFaceMetrics = z.infer<typeof FontFaceMetricsSchema>;
+
+export const FontMetricsTableSchema = z
+  .strictObject({
+    format: z.literal(1),
+    /** Font package name → version the table was generated from. */
+    sources: stringRecord(z.string()),
+    faces: z.record(FontFaceKeySchema, FontFaceMetricsSchema).readonly(),
+  })
+  .readonly();
+export type FontMetricsTable = z.infer<typeof FontMetricsTableSchema>;

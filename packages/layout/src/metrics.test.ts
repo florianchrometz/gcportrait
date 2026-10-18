@@ -1,5 +1,17 @@
 // SPDX-License-Identifier: MIT
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import {
+  FONT_FACE_KEYS as MODEL_FONT_FACE_KEYS,
+  FontMetricsTableSchema,
+  type FontFaceKey as ModelFontFaceKey,
+  type FontFaceMetrics as ModelFontFaceMetrics,
+  type FontMetricsTable as ModelFontMetricsTable,
+} from '@gcportrait/model';
+import type {
+  FontFaceKey as PublicFontFaceKey,
+  FontFaceMetrics as PublicFontFaceMetrics,
+  FontMetricsTable as PublicFontMetricsTable,
+} from './index.js';
 import {
   FONT_FACE_KEYS,
   defaultFontMetrics,
@@ -38,6 +50,17 @@ describe('the generated Roboto table', () => {
 
   it('is validated once and returned as the same object', () => {
     expect(defaultFontMetrics()).toBe(table);
+  });
+
+  it('preserves the shared key array and public model types', () => {
+    expect(FONT_FACE_KEYS).toBe(MODEL_FONT_FACE_KEYS);
+    expect(Object.isFrozen(FONT_FACE_KEYS)).toBe(true);
+    expectTypeOf<typeof FONT_FACE_KEYS>().toEqualTypeOf<readonly ModelFontFaceKey[]>();
+    expectTypeOf<PublicFontFaceKey>().toEqualTypeOf<ModelFontFaceKey>();
+    expectTypeOf<PublicFontFaceMetrics>().toEqualTypeOf<ModelFontFaceMetrics>();
+    expectTypeOf<PublicFontMetricsTable>().toEqualTypeOf<ModelFontMetricsTable>();
+    expect(FontMetricsTableSchema.parse(table)).toEqual(table);
+    expect(FontMetricsTableSchema.parse(JSON.parse(JSON.stringify(table)))).toEqual(table);
   });
 
   it('has a monospace face where every printable ASCII glyph has the same advance', () => {
@@ -141,6 +164,74 @@ describe('parseFontMetricsTable', () => {
 
   it('accepts a well-formed table', () => {
     expect(parseFontMetricsTable(valid)).toBe(valid);
+    expect(FontMetricsTableSchema.parse(valid)).toEqual(valid);
+    expect(FontMetricsTableSchema.parse(JSON.parse(JSON.stringify(valid)))).toEqual(valid);
+  });
+
+  it('keeps parser identity and permissive extras separate from the strict JSON shape', () => {
+    const extra = {
+      ...valid,
+      extra: true,
+      faces: { ...valid.faces, extra: face, 'sans-400': { ...face, extra: true } },
+    };
+    expect(parseFontMetricsTable(extra)).toBe(extra);
+    expect(FontMetricsTableSchema.safeParse(extra).success).toBe(false);
+    const inherited = Object.create(valid) as unknown;
+    expect(parseFontMetricsTable(inherited)).toBe(inherited);
+    const inheritedFaces = { ...valid, faces: Object.create(valid.faces) as unknown };
+    expect(parseFontMetricsTable(inheritedFaces)).toBe(inheritedFaces);
+    const nonplainSources = { ...valid, sources: new Date(0) };
+    expect(parseFontMetricsTable(nonplainSources)).toBe(nonplainSources);
+    expect(FontMetricsTableSchema.safeParse(nonplainSources).success).toBe(false);
+  });
+
+  it('keeps special own source keys and permissive integer metrics', () => {
+    const permissive = {
+      ...valid,
+      sources: Object.fromEntries([
+        ['__proto__', ''],
+        ['constructor', 'v1'],
+        ['', 'v2'],
+      ]),
+      faces: Object.fromEntries(
+        FONT_FACE_KEYS.map((key) => [key, { ...face, weight: 999, runs: [[0x110000, 1]] }]),
+      ),
+    };
+    expect(parseFontMetricsTable(permissive)).toBe(permissive);
+    expect(FontMetricsTableSchema.parse(permissive)).toEqual(permissive);
+    const empty = withFace({ runs: [] });
+    expect(parseFontMetricsTable(empty)).toBe(empty);
+    expect(FontMetricsTableSchema.parse(empty)).toEqual(empty);
+  });
+
+  it('keeps sparse-run acceptance in the handwritten parser only', () => {
+    const run: number[] = [];
+    run[0] = 65;
+    run[2] = 2;
+    const sparse = withFace({ runs: [run] });
+    expect(parseFontMetricsTable(sparse)).toBe(sparse);
+    expect(FontMetricsTableSchema.safeParse(sparse).success).toBe(false);
+  });
+
+  it('leaves operational font and run validation outside the schema', () => {
+    for (const patch of [
+      { family: '' },
+      { weight: 400.5 },
+      { unitsPerEm: 0 },
+      { ascent: -1 },
+      { runs: [[65]] },
+      { runs: [[65, -1]] },
+      {
+        runs: [
+          [70, 1],
+          [65, 3],
+        ],
+      },
+    ]) {
+      const value = withFace(patch);
+      expect(FontMetricsTableSchema.parse(value)).toEqual(value);
+      expect(() => parseFontMetricsTable(value)).toThrow(/^font metrics: face sans-500:/);
+    }
   });
 
   it.each([
