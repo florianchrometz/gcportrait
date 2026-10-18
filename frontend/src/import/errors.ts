@@ -17,6 +17,7 @@ export type ImportError =
       readonly status?: number;
       readonly code?: string;
       readonly reason?: string;
+      readonly retryable?: boolean;
     }
   /** A pull's stream ended without its `done` frame. */
   | { readonly kind: 'cut-short' }
@@ -53,7 +54,7 @@ function upstreamFailure(
   error: Extract<ImportError, { kind: 'upstream' }>,
   context: FailureContext,
 ): ImportFailure {
-  const { message, status, code, reason } = error;
+  const { message, status, code, reason, retryable } = error;
   const scope = context.scope ?? 'the scope';
   const quota = context.quotaProject ?? 'the quota project';
   const pull = context.kind === 'pull';
@@ -93,7 +94,7 @@ function upstreamFailure(
         ? 'Read an export of the scope instead (below), or pull a folder or a project.'
         : 'Export a folder or a project instead of the whole organisation.',
     };
-  if (isTransient(status, code))
+  if (retryable === true || isTransient(status, code))
     return {
       title: 'Google did not answer in time, or was busy.',
       message,

@@ -47,7 +47,7 @@ const { snapshot, report } = session.finish();
 | `normaliseAsset(raw): NormaliseResult` | One raw CAI asset → `{ ok: true, asset }` or `{ ok: false, message }`. |
 | `projectNumberOf(asset)` | The asset's project number: its first `projects/<number>` ancestor. |
 | `ulid(time, entropy)` | A canonical ULID from a time in milliseconds and an entropy source, as the snapshot's `id` is made. The app uses it to give an imported copy a new id. |
-| `IngestError` | `code` (`invalid-options`, `invalid-source`, `malformed`, `upstream`, `unsupported-platform`, `closed`), `problem` (for `malformed`), `upstream` (`status`, `code`, for `upstream`). |
+| `IngestError` | `code` (`invalid-options`, `invalid-source`, `malformed`, `upstream`, `unsupported-platform`, `closed`), `problem` (for `malformed`), `upstream` (`status`, `code`, `reason`, `retryable`, for `upstream`). |
 | `DEFAULT_MAX_LINE_BYTES` | 64 MiB. |
 | `DEFAULT_PROGRESS_EVERY_BYTES` | 4 MiB. |
 | `MAX_REPORTED_PROBLEMS` | 20. |
@@ -107,7 +107,7 @@ dropped (no asset is ever dropped: AGENTS.md, Product rules).
 | `{"t":"page","assets":[…]}` | backend frame | each item normalised; a bad item is a problem with its `item` index |
 | `{"t":"progress","pages":n,"assets":m}` | backend frame | `upstream-progress` event |
 | `{"t":"done","assets":m,"readTime":"…"}` | backend frame | `upstream-done` event; `readTime` (optional) becomes the snapshot's read time; `report.upstream.complete` |
-| `{"t":"error","message":"…","status":403,"code":"PERMISSION_DENIED"}` | backend frame | the ingest rejects with `IngestError('upstream')`, the message verbatim, `status` and `code` when present |
+| `{"t":"error","message":"…","status":403,"code":"PERMISSION_DENIED"}` | backend frame | the ingest rejects with `IngestError('upstream')`, the message verbatim, `status`, `code`, `reason` and `retryable` when present |
 | any other `t` | | `unknown-frame` problem |
 
 A frame stream without a `done` frame was cut short: `report.upstream.complete` is `false`.

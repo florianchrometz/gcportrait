@@ -6,9 +6,8 @@
  * share, as for an imported export: ../../snapshots/worker/scope.ts), is checked (a pull must have ended with its
  * `done` frame) and is prepared for storage (../../snapshots/worker/prepare.ts).
  *
- * An `error` frame stops the session (`IngestError('upstream')` with the message, status and code). Its
- * `ErrorInfo` reason, which says what to do about a 403, is read back from the end of the stream, where the frame
- * is: the handler keeps the last bytes it was given, and nothing more.
+ * An `error` frame stops the session (`IngestError('upstream')` with the message, status, code, reason, and
+ * retryable flag).
  */
 import { IngestError, createIngestSession, type IngestSession } from '@gcportrait/ingest';
 
@@ -17,9 +16,6 @@ import { describeProblems, exportReadToSnapshot } from '../../snapshots/worker/p
 import { inferScope } from '../../snapshots/worker/scope';
 import { namedScope } from '../sidecar';
 import type { ImportRequest, ImportResponse, StreamFailure, StreamSettings } from './protocol';
-
-/** How much of the stream's end is kept, to read an error frame's reason back. */
-const TAIL_BYTES = 64 * 1024;
 
 /** How often the worker reports the bytes it has read (pages and assets are reported as frames arrive). */
 const PROGRESS_EVERY_BYTES = 256 * 1024;
@@ -37,9 +33,6 @@ export interface HandlerEnvironment {
 interface Job {
   readonly settings: StreamSettings;
   readonly session: IngestSession;
-  /** The last chunks received, at most about {@link TAIL_BYTES}. */
-  readonly tail: Uint8Array[];
-  tailBytes: number;
 }
 
 class JobFailure extends Error {
@@ -51,44 +44,17 @@ class JobFailure extends Error {
   }
 }
 
-/** The reason of the error frame at the end of `tail`, if the last line is one. */
-export function errorReasonOf(tail: readonly Uint8Array[]): string | undefined {
-  const text = new TextDecoder().decode(concat(tail));
-  const lines = text.split('\n').filter((line) => line.trim() !== '');
-  const last = lines.at(-1);
-  if (last === undefined) return undefined;
-  try {
-    const frame: unknown = JSON.parse(last);
-    if (!isRecord(frame) || frame['t'] !== 'error') return undefined;
-    const reason = frame['reason'];
-    return typeof reason === 'string' && /^[A-Z][A-Z_]{1,63}$/.test(reason) ? reason : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function concat(chunks: readonly Uint8Array[]): Uint8Array {
-  const total = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
-  const bytes = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return bytes;
-}
-
-function failureOf(error: unknown, job: Job | undefined): StreamFailure {
+function failureOf(error: unknown): StreamFailure {
   if (error instanceof JobFailure) return error.failure;
   if (error instanceof IngestError) {
     if (error.code === 'upstream') {
-      const reason = job === undefined ? undefined : errorReasonOf(job.tail);
       return {
         kind: 'upstream',
         message: error.message,
         ...(error.upstream?.status === undefined ? {} : { status: error.upstream.status }),
         ...(error.upstream?.code === undefined ? {} : { code: error.upstream.code }),
-        ...(reason === undefined ? {} : { reason }),
+        ...(error.upstream?.reason === undefined ? {} : { reason: error.upstream.reason }),
+        ...(error.upstream?.retryable === undefined ? {} : { retryable: error.upstream.retryable }),
       };
     }
     return { kind: 'invalid', message: error.message };
@@ -170,9 +136,8 @@ export function createImportHandler(
   const jobs = new Map<number, Job>();
 
   const fail = (id: number, error: unknown): void => {
-    const job = jobs.get(id);
     jobs.delete(id);
-    post({ type: 'error', job: id, failure: failureOf(error, job) });
+    post({ type: 'error', job: id, failure: failureOf(error) });
   };
 
   return (message: unknown): void => {
@@ -201,17 +166,12 @@ export function createImportHandler(
               post({ type: 'progress', job: id, counts: { ...counts } });
             },
           });
-          jobs.set(id, { settings, session, tail: [], tailBytes: 0 });
+          jobs.set(id, { settings, session });
           return;
         }
         case 'chunk': {
           const job = jobs.get(id);
           if (job === undefined) return;
-          job.tail.push(request.data);
-          job.tailBytes += request.data.byteLength;
-          while (job.tail.length > 1 && job.tailBytes - (job.tail[0]?.byteLength ?? 0) >= TAIL_BYTES) {
-            job.tailBytes -= job.tail.shift()?.byteLength ?? 0;
-          }
           job.session.push(request.data);
           return;
         }
@@ -220,7 +180,7 @@ export function createImportHandler(
           if (job === undefined) return;
           jobs.delete(id);
           finish(job, post, id, clock()).catch((error: unknown) => {
-            post({ type: 'error', job: id, failure: failureOf(error, job) });
+            post({ type: 'error', job: id, failure: failureOf(error) });
           });
           return;
         }

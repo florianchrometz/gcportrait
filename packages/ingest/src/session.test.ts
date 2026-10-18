@@ -268,7 +268,7 @@ describe('backend frames', () => {
     expect(report).toMatchObject({ assetLines: 2, frameLines: 1 });
   });
 
-  it('stops with the upstream message, status and code on an error frame', () => {
+  it('stops with the upstream message, status, code, reason and retryable on an error frame', () => {
     const session = createIngestSession(testOptions());
     const error = caught(() => {
       session.push(
@@ -278,6 +278,8 @@ describe('backend frames', () => {
             t: 'error',
             status: 403,
             code: 'PERMISSION_DENIED',
+            reason: 'SERVICE_DISABLED',
+            retryable: true,
             message: 'The caller does not have permission',
           },
         ]),
@@ -285,15 +287,22 @@ describe('backend frames', () => {
     });
     expect(error.code).toBe('upstream');
     expect(error.message).toBe('The caller does not have permission');
-    expect(error.upstream).toEqual({ status: 403, code: 'PERMISSION_DENIED' });
+    expect(error.upstream).toEqual({
+      status: 403,
+      code: 'PERMISSION_DENIED',
+      reason: 'SERVICE_DISABLED',
+      retryable: true,
+    });
     // The session is dead from now on, and says why.
     expect(() => {
       session.finish();
     }).toThrow(error);
   });
 
-  it('stops on an error frame even without a message', () => {
-    const error = caught(() => run([ndjson([{ t: 'error', status: 'x', code: 7 }])]));
+  it('stops on an error frame even without a message, omitting invalid fields', () => {
+    const error = caught(() =>
+      run([ndjson([{ t: 'error', status: 'x', code: 7, reason: 42, retryable: 'yes' }])]),
+    );
     expect(error.message).toBe('The asset stream reported an error without a message.');
     expect(error.upstream).toEqual({});
   });

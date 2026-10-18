@@ -573,6 +573,8 @@ function upstreamError(frame: Record<string, unknown>): IngestError {
   const message = frame['message'];
   const status = frame['status'];
   const code = frame['code'];
+  const reason = frame['reason'];
+  const retryable = frame['retryable'];
   return new IngestError(
     'upstream',
     typeof message === 'string' && message !== ''
@@ -582,6 +584,8 @@ function upstreamError(frame: Record<string, unknown>): IngestError {
       upstream: {
         ...(typeof status === 'number' && Number.isInteger(status) ? { status } : {}),
         ...(typeof code === 'string' && code !== '' ? { code } : {}),
+        ...(typeof reason === 'string' && reason !== '' ? { reason } : {}),
+        ...(typeof retryable === 'boolean' ? { retryable } : {}),
       },
     },
   );

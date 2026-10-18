@@ -42,6 +42,7 @@ export interface StreamFailure {
   readonly status?: number;
   readonly code?: string;
   readonly reason?: string;
+  readonly retryable?: boolean;
   readonly problems?: readonly string[];
 }
 

@@ -132,6 +132,11 @@ describe('describeFailure', () => {
       PULL,
       { title: 'Google refused the request (409 ABORTED SOMETHING_NEW).', message: 'Odd.' },
     ],
+    [
+      upstream({ status: 409, code: 'ABORTED', message: 'Conflict.', retryable: true }),
+      PULL,
+      { title: 'Google did not answer in time, or was busy.', message: 'Conflict.', retryable: true },
+    ],
     [{ kind: 'request', status: 401, message: 'Sign in first.' }, PULL, { title: 'Your sign-in has ended.' }],
     [
       { kind: 'request', status: 429, message: 'Four asset streams are already running.' },

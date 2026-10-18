@@ -60,6 +60,10 @@ export interface UpstreamFailure {
   readonly status?: number;
   /** The upstream status code, e.g. `PERMISSION_DENIED`, when the frame carries one. */
   readonly code?: string;
+  /** The ErrorInfo reason string when the frame carries one. */
+  readonly reason?: string;
+  /** Whether trying again later may help. */
+  readonly retryable?: boolean;
 }
 
 /** Details attached to an {@link IngestError}. */

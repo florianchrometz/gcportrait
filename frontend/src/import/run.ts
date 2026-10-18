@@ -236,6 +236,7 @@ function importErrorOf(error: unknown): ImportError {
           ...(failure.status === undefined ? {} : { status: failure.status }),
           ...(failure.code === undefined ? {} : { code: failure.code }),
           ...(failure.reason === undefined ? {} : { reason: failure.reason }),
+          ...(failure.retryable === undefined ? {} : { retryable: failure.retryable }),
         };
       case 'cut-short':
         return { kind: 'cut-short' };

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { demoExportNdjson } from '../fixtures';
 import { streamBody } from '../testing';
 import { inProcessImportWorker } from './inProcess';
+import { ImportJobFailed } from './client';
 import type { StreamSettings } from './protocol';
 
 const S_EXPORT = demoExportNdjson('S');
@@ -67,5 +68,38 @@ describe('the import worker handler', () => {
     expect(result.warnings[0]).toBe(
       'The export holds the assets of 2 organisations or projects; the snapshot takes the scope most of them share, example.com.',
     );
+  });
+
+  it('propagates upstream error reason and retryable directly from ingest across large streams', async () => {
+    const worker = inProcessImportWorker()();
+    const assetLine = `${JSON.stringify({
+      name: '//storage.googleapis.com/projects/_/buckets/demo-bucket',
+      asset_type: 'storage.googleapis.com/Bucket',
+      resource: { data: { name: 'demo-bucket' } },
+      ancestors: ['projects/10000000099', 'organizations/30000000002'],
+      update_time: '2026-10-01T00:00:00Z',
+    })}\n`;
+    const largeBody = assetLine.repeat(500);
+    const errorLine = `${JSON.stringify({
+      t: 'error',
+      message: 'Service disabled.',
+      status: 403,
+      code: 'PERMISSION_DENIED',
+      reason: 'SERVICE_DISABLED',
+      retryable: true,
+    })}\n`;
+    const { stream } = streamBody(largeBody + errorLine);
+    const promise = worker.client.run(SETTINGS, stream, { signal: new AbortController().signal });
+    await expect(promise).rejects.toThrow(ImportJobFailed);
+    await expect(promise).rejects.toMatchObject({
+      failure: {
+        kind: 'upstream',
+        message: 'Service disabled.',
+        status: 403,
+        code: 'PERMISSION_DENIED',
+        reason: 'SERVICE_DISABLED',
+        retryable: true,
+      },
+    });
   });
 });
