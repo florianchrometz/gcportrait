@@ -39,7 +39,6 @@ packages/catalog/src/generated
 
 # Not part of the product: docs, release notes, deployment scripts
 docs
-.changeset
 infra/*
 !infra/Dockerfile
 **/*.md

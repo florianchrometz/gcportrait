@@ -291,7 +291,7 @@ Releases"](contributing.md#9-releases) has the one-time step (making the package
 | Tags | `X.Y.Z`, `X.Y`, and `latest` when the tag is the newest release (the highest `vX.Y.Z` tag; never a pre-release); a pre-release such as `v1.0.0-rc.1` gets its own version tag only (`1.0.0-rc.1`); `dev` when run by hand |
 | Checks before the push | each platform's image is started: `/healthz` reports the version (the tag, or `dev-SHA`), `/api/config` and the SPA answer |
 | After the push | an anonymous pull check (fails a tag release while the package is not public), one SPDX SBOM per platform (Syft, pinned by version and SHA-256 in the workflow) |
-| GitHub release | `vX.Y.Z` with notes from `scripts/release-notes.mjs` (the version's `CHANGELOG.md` sections, the long non-affiliation statement, the installer line, the image's tags and digest); tags only. A pre-release tag makes a GitHub pre-release, not marked latest, and takes the sections of `X.Y.Z` when it has none of its own |
+| GitHub release | `vX.Y.Z` with notes from `scripts/release-notes.mjs` (the version's `## X.Y.Z` section of `CHANGELOG.md`, else the commits since the previous release tag, with the long non-affiliation statement, the installer line, the image's tags and digest); tags only. A pre-release tag makes a GitHub pre-release, not marked latest, and takes the section of `X.Y.Z` when it has none of its own |
 | Release assets | the SBOMs; `gcportrait-deploy-vX.Y.Z.tar.gz`, the deploy scripts `infra/install.sh` downloads (`VERSION` and `infra/` with `deploy.sh`, `common.sh`, `uninstall.sh`, `install.sh`, `README.md`); `checksums.txt`, the SHA-256 of every other asset (`scripts/release-assets.sh` writes the last two) |
 
 ## SPA build

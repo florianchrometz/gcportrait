@@ -59,7 +59,8 @@ pnpm e2e     →
       (AGENTS.md, Licence and dependencies); a new dependency passes `pnpm run licenses`.
 - [ ] `pnpm e2e` passes locally, or the description says that I rely on CI for it.
 - [ ] Anything visible was checked in light and dark themes; contrast tests pass.
-- [ ] A changeset is included (`pnpm changeset`), or this change does not affect users.
+- [ ] The commit subject reads as the change should read in the next release's notes (its `Area: …` prefix
+      groups it there).
 - [ ] Package READMEs, docs, skills and the AGENTS.md that holds a changed rule are updated where behaviour
       or a rule changed.
 - [ ] No real organisation data, tokens or secrets in code, fixtures, screenshots or logs.

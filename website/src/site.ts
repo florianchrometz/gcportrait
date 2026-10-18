@@ -135,7 +135,7 @@ export const LEGAL_LINKS: readonly {
 ];
 
 /**
- * The releases page on GitHub: what changed in each version, as the release workflow writes it from the changesets at
+ * The releases page on GitHub: what changed in each version, as the release workflow writes it from the commits at
  * every tag (scripts/release-notes.mjs). The site keeps no changelog of its own; its "Changelog" links go here.
  * REPOSITORY_URL's /releases, written out (see INSTALLER_URL).
  */

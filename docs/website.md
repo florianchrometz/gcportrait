@@ -20,8 +20,8 @@ Astro build for GitHub Pages; [website/README.md](../website/README.md) describe
 the maintainer: building it, its generated media, the demo, deploying it, the DNS records and the legal pages.
 What changed in each version is not a page of the site: its "Changelog" links, in the header's menu and the
 footer, go to the repository's [releases page](https://github.com/florianchrometz/gcportrait/releases), which
-the release workflow writes from the changesets at every tag (`scripts/release-notes.mjs`); the repository's
-`CHANGELOG.md` files stay where changesets write them.
+the release workflow writes from the commits since the previous release tag (`scripts/release-notes.mjs`);
+the repository's `CHANGELOG.md` stays the hand-written summary of a release.
 
 | Section | For |
 |---|---|

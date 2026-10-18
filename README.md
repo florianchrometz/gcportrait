@@ -314,8 +314,8 @@ draws it. [docs/packages.md](docs/packages.md) maps every package and function o
 - [resvg-js](https://github.com/thx/resvg-js)'s WebAssembly build, `@resvg/resvg-wasm`: the byte-stable PNGs
   of `pnpm render` and the render API, the same on every platform
 - [Astro](https://astro.build/): the website, on GitHub Pages
-- [Changesets](https://github.com/changesets/changesets) and GitHub Actions: releases as a distroless
-  container image on GitHub Container Registry
+- [GitHub Actions](https://github.com/features/actions): releases as a distroless container image on GitHub
+  Container Registry
 
 ## Roadmap
 

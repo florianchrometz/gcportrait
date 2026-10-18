@@ -57,8 +57,8 @@ the author" section from [author.md](author.md).
   website's logo).
 - Each workspace package's `README.md` (`frontend/`, `backend/`, `e2e/`, `packages/*/`): its scripts,
   structure and conventions.
-- [CHANGELOG.md](../CHANGELOG.md): the release notes, 1.0.0 first; each workspace package's own `CHANGELOG.md`
-  is written by `pnpm release:version` from the changesets in `.changeset/`.
+- [CHANGELOG.md](../CHANGELOG.md): gcportrait's release notes, newest first, one section per release; a
+  version without a section takes its notes from the commits since the previous release tag.
 - [LICENSE](../LICENSE): gcportrait's own work is licensed under the Apache License 2.0, with its attribution
   in [NOTICE](../NOTICE), except the gcportrait name and icon ([brand/LICENSE.md](../brand/LICENSE.md)); the
   root README's "Licence" section says what that means.

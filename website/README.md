@@ -8,7 +8,7 @@ project, as a web app and through an API that returns any view as SVG, PNG or a 
 proof; shows the features with generated screenshots and animated demos; renders the user guides from `docs/`;
 publishes the asset catalog's coverage; and presents the author. Its "Changelog" links go to the repository's
 releases page on GitHub (`RELEASES_URL` in `src/site.ts`), which the release workflow writes from the
-changesets at every tag; the site keeps no copy. It serves the sign-in-free demo itself,
+commits since the previous release tag; the site keeps no copy. It serves the sign-in-free demo itself,
 at <https://gcportrait.app/demo/>: a static build of the app in demo-only mode that its build places there
 (below), and links to the self-hosting guide. [docs/website.md](../docs/website.md) is the maintainer's guide:
 the demo, deploying, DNS, the legal pages.

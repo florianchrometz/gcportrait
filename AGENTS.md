@@ -14,7 +14,7 @@ Humans start with docs/contributing.md; assistants load [Skills](#skills).
 | `.github/` | workflows/templates | `.github/AGENTS.md` |
 | `e2e/` | browser tests/baselines | `e2e/AGENTS.md` |
 | `docs/` | guides/media | `docs/AGENTS.md` |
-| `scripts/`, `brand/`, `.agents/`, `.changeset/` | tooling, the mark, skills, releases | this file |
+| `scripts/`, `brand/`, `.agents/` | tooling, the mark, skills, releases | this file |
 
 ## How this file works
 
@@ -239,8 +239,8 @@ legs".
 
 ## Releases
 
-- **Fixed semver through changesets**, packages private, never npm; behavioural PRs add one, version and tag
-  follow contributor-workflow skill §7.
+- **Fixed semver across the workspace** (`pnpm release:version X.Y.Z`), packages private, never npm; version,
+  notes and tag follow contributor-workflow skill §7.
 - **Tagged releases pass check, build and size**, smoke-test one image per architecture and publish
   `ghcr.io/florianchrometz/gcportrait` as `X.Y.Z`, `X.Y`, `latest` (newest only); manual runs publish `dev`.
 - **Artifacts**: per-platform SPDX SBOM, CHANGELOG notes, installer scripts, checksums.txt; a prerelease takes
@@ -266,7 +266,7 @@ docs/contributing.md §9.
 1. Start from an issue or backlog item; read the skills, the affected folders' rules and the package READMEs.
 2. Work on a topic-named branch or worktree and follow [Quality gates, testing and
    CI](#quality-gates-testing-and-ci).
-3. Use the PR template (what, why, commands and results, screenshots, changeset, provenance), remove the
+3. Use the PR template (what, why, commands and results, screenshots, provenance), remove the
    completed backlog item, one small feature or function per PR.
 4. Report changes, checks, failures and exclusions honestly; a human or agent reviews acceptance, skills and
    rules before merge.

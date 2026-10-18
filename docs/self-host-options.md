@@ -472,7 +472,7 @@ Proxy](#private-instance-identity-aware-proxy) in front.
 
 The releases and what changed in each are on the [releases
 page](https://github.com/florianchrometz/gcportrait/releases), which the release workflow writes from the
-changesets at every tag.
+commits since the previous release tag at every tag.
 
 ## Building from source
 

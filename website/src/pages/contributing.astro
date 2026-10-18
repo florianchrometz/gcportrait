@@ -14,7 +14,7 @@ const meta = {
 };
 const loop = ['corepack enable', 'pnpm install', 'pnpm dev:demo     # the app in demo mode on http://localhost:5174', 'pnpm check        # format, lint, types, tests, catalog, provenance, licences'].join('\n');
 const guides = [
-  { href: repositoryFileUrl('docs/contributing.md'), title: 'Contributing guide', text: 'From a fork to a green check and a pull request: setup, the local loop, the checks, changesets.' },
+  { href: repositoryFileUrl('docs/contributing.md'), title: 'Contributing guide', text: 'From a fork to a green check and a pull request: setup, the local loop, the checks, releases.' },
   { href: repositoryFileUrl('AGENTS.md'), title: 'AGENTS.md', text: 'The rules of the project, the root file and one per folder that has rules of its own, with the layout and every command, for people and AI assistants alike.' },
   { href: repositoryFileUrl('docs/packages.md'), title: 'Packages and data flow', text: 'The workspace packages and how a Cloud Asset Inventory source becomes a drawn diagram.' },
   { href: repositoryFileUrl('.agents/skills/gcp-asset-catalog/SKILL.md'), title: 'Asset catalog guide', text: 'Add or change an asset type, a relation rule, a lens or a console link, with a fixture for each rule.' },
@@ -56,7 +56,7 @@ const guides = [
       <li>Write the code yourself: nothing may be copied from other projects (the repository runs a provenance check).</li>
       <li>Add tests, and a fixture for every catalog rule; run <code>pnpm check</code>, and <code>pnpm e2e</code> for app changes.</li>
       <li>Check visual changes in the light and the dark theme.</li>
-      <li>Add a changeset (<code>pnpm changeset</code>) for a change users will notice.</li>
+      <li>Write the commit subject as the change should read in the next release’s notes.</li>
     </ul>
     <p>
       Contributions are accepted under the project’s licence, the Apache License 2.0 (inbound = outbound), with no

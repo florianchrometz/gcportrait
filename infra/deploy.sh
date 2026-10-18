@@ -666,7 +666,7 @@ POLICY
   # keeps the two lists together). The list is written for this run only, so that gcloud never drops a
   # .gcloudignore into the checkout.
   {
-    printf '%s\n' '.git/' '.github/' '.claude/' 'docs/' '.changeset/' 'node_modules/' \
+    printf '%s\n' '.git/' '.github/' '.claude/' 'docs/' 'node_modules/' \
       '.env' '.env.*' '*.local.*' '*.pem' '*.key' '*-key.json' 'application_default_credentials.json' '*.log' \
       '/e2e/*' '!/e2e/package.json'
     [ ! -f "$REPO_ROOT/.gitignore" ] || cat "$REPO_ROOT/.gitignore"

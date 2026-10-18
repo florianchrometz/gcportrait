@@ -740,17 +740,13 @@ describe('the width of the Markdown files of a tree', () => {
     ]);
   });
 
-  it('skips the generated CHANGELOGs, the changesets, what the walk skips and files other than Markdown', () => {
+  it('skips CHANGELOG.md, what the walk skips and files other than Markdown', () => {
     tree.write('CHANGELOG.md', `${prose(130)}\n`);
-    tree.write('packages/x/CHANGELOG.md', `${prose(130)}\n`);
-    tree.write('.changeset/a-change.md', `---\n'x': patch\n---\n\n${prose(130)}\n`);
     tree.write('node_modules/y/README.md', `${prose(130)}\n`);
     tree.write('notes.txt', `${prose(130)}\n`);
     expect(markdownWidthProblems(tree.root)).toEqual([]);
-    tree.write('.changeset/README.md', `${prose(111)}\n`);
-    expect(markdownWidthProblems(tree.root)).toEqual([
-      '.changeset/README.md:1: 111 columns, the limit is 110',
-    ]);
+    tree.write('docs/wide.md', `${prose(111)}\n`);
+    expect(markdownWidthProblems(tree.root)).toEqual(['docs/wide.md:1: 111 columns, the limit is 110']);
   });
 });
 

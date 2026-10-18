@@ -140,7 +140,7 @@ Google Cloud's, used under the terms Google Cloud states for them; the notices f
 
 <!-- BEGIN GENERATED: npm-dependencies (scripts/check-licenses.mjs --write) -->
 
-65 direct dependencies across 14 workspace projects. "runtime" means
+64 direct dependencies across 14 workspace projects. "runtime" means
 `dependencies`/`optionalDependencies`, "dev" means `devDependencies`. Transitive dependencies are not listed
 here but are checked against the same allowlist and deny list on every run.
 
@@ -148,7 +148,6 @@ here but are checked against the same allowlist and deny list on every run.
 | --- | --- | --- | --- |
 | `@astrojs/check` | MIT | website | dev |
 | `@axe-core/playwright` | MPL-2.0 | e2e | dev |
-| `@changesets/cli` | MIT | (root) | dev |
 | `@eslint/js` | MIT | (root) | dev |
 | `@fastify/helmet` | MIT | backend | runtime |
 | `@fastify/multipart` | MIT | backend | runtime |

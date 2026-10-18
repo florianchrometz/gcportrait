@@ -177,11 +177,11 @@ below):
 the commit before it and a pull request (its merge commit) with the branch it merges into, and sorts every
 changed file:
 
-- **docs**: `docs/**/*.md`, `.changeset/*.md`, the Markdown files at the root (`AGENTS.md`, `README.md`,
-  `THIRD_PARTY.md`, `CHANGELOG.md`), the `README.md` and `CHANGELOG.md` of each top-level folder and each
-  package, and the `AGENTS.md` of each top-level folder. The skills (`.agents/skills/`) are code: the
-  frontend's theme test reads the style skill's palette. So is any other Markdown file, a `README.md` in the
-  catalog's fixture folders for one, which `catalog:check` refuses.
+- **docs**: `docs/**/*.md`, the Markdown files at the root (`AGENTS.md`, `README.md`, `THIRD_PARTY.md`,
+  `CHANGELOG.md`), the `README.md` of each top-level folder and each package, and the `AGENTS.md` of each
+  top-level folder. The skills (`.agents/skills/`) are code: the frontend's theme test reads the style
+  skill's palette. So is any other Markdown file, a `README.md` in the catalog's fixture folders for one,
+  which `catalog:check` refuses.
 - **media**: `docs/media/**`, what `pnpm media` and `node scripts/exports.mjs` write.
 - **code**: every other file.
 
@@ -193,15 +193,15 @@ compared and what it found.
 **The e2e, layout-budget and website gates** narrow three jobs further by the code files themselves
 ([.github/AGENTS.md](../.github/AGENTS.md), "The e2e, layout-budget and website gates"):
 
-- **`e2e`** is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/`,
-  `.changeset/` or `.github/`, or is one of the root's `eslint.config.js`, `.prettierrc`, `.prettierignore`,
-  `.editorconfig`, `.dockerignore`, `.gitignore` and `app.json`: the suites read none of them.
+- **`e2e`** is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/` or
+  `.github/`, or is one of the root's `eslint.config.js`, `.prettierrc`, `.prettierignore`, `.editorconfig`,
+  `.dockerignore`, `.gitignore` and `app.json`: the suites read none of them.
 - **`layout`** is true only for a code file under `packages/layout/` or the packages it is tested with or the
   catalog's build reads (`model`, `catalog`, `demo-data`, `graph`, `ingest`, `icons`), `frontend/package.json`
   (the fonts its metrics come from) or any file at the root.
 - **`website`** is false only when every changed file is a code file modified in place (not added, deleted or
-  renamed) under `backend/`, `e2e/`, `.agents/` or `.github/`, or `.changeset/config.json`: the site's checks
-  resolve links to repository paths, so an added or removed file can break them. Docs and media always run it.
+  renamed) under `backend/`, `e2e/`, `.agents/` or `.github/`: the site's checks resolve links to repository
+  paths, so an added or removed file can break them. Docs and media always run it.
 
 A change to `.github/actions/setup/`, `.github/actions/playwright/` or `.github/workflows/pr.yml` sets all
 three true, and so does a comparison that cannot be made.
@@ -353,8 +353,8 @@ on the first line after the closing `---`). Add the line for the file's type:
 with any other identifier fails, and a new workspace package's `package.json` declares
 `"license": "Apache-2.0"` too. Files that cannot hold a comment or are data or licence texts need no
 header: `.json` (and `.jsonl`, `.ndjson`, `.prettierrc`), `.txt`, `.svg`, `.drawio`, `LICENSE`, `NOTICE`,
-`.nvmrc`, `.gitkeep`, `CNAME`, lockfiles, images, fonts and other binary files; so do changeset entries and
-generated `CHANGELOG.md` files. A text file of any other type fails the check until
+`.nvmrc`, `.gitkeep`, `CNAME`, lockfiles, images, fonts and other binary files; so does `CHANGELOG.md`, which
+holds release notes rather than source. A text file of any other type fails the check until
 `scripts/lib/repo-files.mjs` gives its type a header form or lists it as header-free, in the same change.
 Should the project licence ever change, `scripts/set-license.mjs` rewrites every header; it is not needed
 otherwise.
@@ -440,33 +440,22 @@ and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new dependency must pass
    wider than 110 columns outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation", or while the
    render goldens' README names another version of `@resvg/resvg-wasm` than the one installed or another
    document names a version of resvg.
-5. **Add a changeset** (below) if users will notice the change.
-6. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
-7. **Open the pull request** (section 7).
+5. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
+6. **Open the pull request** (section 7).
 
-### Changesets
+### Release notes
 
-Release notes and version numbers come from [Changesets](https://changesets.dev). Every pull request that
-changes behaviour adds one changeset file:
-
-```sh
-pnpm changeset                     # interactive: pick the packages, the semver bump and write a summary
-pnpm changeset add --minor @gcportrait/frontend -m "Theme toggle remembers the choice across reloads."
-pnpm changeset status              # lists pending changesets; exits 1 if packages changed without one
-```
-
-Either form writes a Markdown file under `.changeset/`; commit it with your change. Write the summary for
-users, in one or two sentences. All `@gcportrait/*` packages are private, are never published to npm, and
-share one version number (a `fixed` group), so pick the bump for the product as a whole. A change that does
-not affect users (documentation, tests, tooling) needs no changeset; `pnpm changeset add --empty` records that
-explicitly if you want `pnpm changeset status` to pass. Changeset files need no SPDX header.
+A pull request adds no file for the release notes: a version's notes are the `## X.Y.Z` section of
+[CHANGELOG.md](../CHANGELOG.md) when the maintainer writes one for that release, and the commits since the
+previous release tag otherwise, one group per area of their `Area: …` subject ([section 9](#9-releases)). The
+subject line is therefore what people read in the notes of the release a change lands in, so write it as the
+change reads to a user.
 
 ## 7. Opening a pull request
 
 Pull requests are highly welcome, preferably small ones about one feature or one function rather than full
 rewrites: a focused change is quick to review and to merge, while a rewrite of a whole part is hard to review
-and is better proposed in an issue first, then made in small steps. Open one pull request per change, with its
-changeset ([Changesets](#changesets)).
+and is better proposed in an issue first, then made in small steps. Open one pull request per change.
 
 Push your branch and open a pull request against `main`. The template asks for:
 
@@ -476,7 +465,7 @@ Push your branch and open a pull request against `main`. The template asks for:
 - screenshots in light and dark for any visual change, with every visual baseline update called out;
 - for asset catalog changes, the `catalog` label and a table of the types, roles and relation targets;
 - a risk and rollback note for backend and infrastructure changes;
-- the checklist, including the provenance statement and the changeset.
+- the checklist, including the provenance statement.
 
 CI must be green. A reviewer, human or AI assistant, then checks the acceptance criteria of the issue or
 backlog item and the rules in the skills, the provenance rules, and the review checklist in the
@@ -511,8 +500,9 @@ workflow's own `GITHUB_TOKEN`: no secret, no repository variable, no Google Clou
    it checks that anyone can pull the image, as the remote repository of deploy.sh does, and writes one SPDX
    SBOM per platform with Syft, a release pinned by version and checked by its SHA-256 before it runs.
 3. **github-release**: the GitHub release `vX.Y.Z`, its notes built by `scripts/release-notes.mjs` from the
-   version's sections of the `CHANGELOG.md` files, with the long non-affiliation statement, the installer
-   line, the image's tags and digest. Attached: both SBOMs, the deploy scripts the installer downloads
+   `## X.Y.Z` section of `CHANGELOG.md` when it has one, else from the subjects of the commits since the
+   previous release tag, with the long non-affiliation statement, the installer line, the image's tags and
+   digest. Attached: both SBOMs, the deploy scripts the installer downloads
    (`gcportrait-deploy-vX.Y.Z.tar.gz`) and `checksums.txt` with the SHA-256 of every other asset, both written
    by `scripts/release-assets.sh`. The installer needs both: a release without them installs nothing.
 
@@ -543,8 +533,9 @@ git push origin v1.0.0-rc.1
 ```
 
 It publishes the image as `1.0.0-rc.1` and creates the GitHub release `v1.0.0-rc.1`, marked as a pre-release,
-with 1.0.0's notes (a pre-release without `CHANGELOG.md` sections of its own takes those of its version, and
-its notes say so in one sentence), the deploy archive and `checksums.txt`. It moves neither `latest` nor
+with the notes of the release it precedes (its `## 1.0.0` section of `CHANGELOG.md`, or the commits since the
+previous release tag; one sentence says which release's notes they are), the deploy archive and
+`checksums.txt`. It moves neither `latest` nor
 `1.0`, and the release is not marked latest, so the installer's default (GitHub's latest release) and
 `infra/deploy.sh`'s default image (`latest`) stay as they are. While `PAGES_DEPLOY` is `true` the tag also
 deploys the website and the static demo, whose version then reads `1.0.0-rc.1`; the next push to `main`, or
@@ -561,15 +552,17 @@ To take it down afterwards, if wanted: `gh release delete v1.0.0-rc.1 --yes --cl
 and its tag on GitHub (`git tag -d v1.0.0-rc.1` the local one), and the image version `1.0.0-rc.1` is deleted
 on the package's page on GitHub, from its list of versions.
 
-Then, per release: `pnpm release:version` (consumes the changesets, writes the `CHANGELOG.md` files and the
-versions), commit, and tag `vX.Y.Z` on `main`. The release job needs the version's `CHANGELOG.md` sections: a
-tag without them fails at the release notes, after the image is published. Once the release is out, `curl
--fsSL https://gcportrait.app/install.sh | bash -s -- --version vX.Y.Z --project YOUR_PROJECT --dry-run`
-downloads and checks its deploy scripts and prints what they would deploy.
+Then, per release: read `git log` since the last tag (`git log --oneline vX.Y.0..main`), choose the bump that
+matches it, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs`: one fixed version in the root's and
+every workspace package's `package.json`), commit, and tag `vX.Y.Z` on `main`. Optionally write the version's
+`## X.Y.Z` section in [CHANGELOG.md](../CHANGELOG.md) before tagging, for the releases whose commits alone say
+too little; otherwise the notes list the commits since the previous release tag. Once the release is out,
+`curl -fsSL https://gcportrait.app/install.sh | bash -s -- --version vX.Y.Z --project YOUR_PROJECT
+--dry-run` downloads and checks its deploy scripts and prints what they would deploy.
 
-**The first release, 1.0.0, is already versioned**: every `@gcportrait/*` package is at 1.0.0 and its notes
-are in the `CHANGELOG.md` files, so its tag needs no versioning step. After the `dev` run of the one-time
-setup:
+**The first release, 1.0.0, is already versioned**: every `@gcportrait/*` package is at 1.0.0 and
+[CHANGELOG.md](../CHANGELOG.md) holds its section, so its tag needs no versioning step and its notes are that
+section. After the `dev` run of the one-time setup:
 
 ```sh
 git tag v1.0.0

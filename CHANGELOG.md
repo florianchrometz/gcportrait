@@ -2,10 +2,10 @@
 
 # Changelog
 
-gcportrait's release notes, newest first. The version and the notes of each GitHub release come from the
-changesets in [.changeset/](.changeset/README.md): `pnpm release:version` turns them into the `CHANGELOG.md`
-of every workspace package, and the release workflow builds the GitHub release from those
-(`scripts/release-notes.mjs`). This file is the summary written by hand for people, one section per release.
+gcportrait's release notes, newest first, one section per release. A section is the summary written by hand
+for people, and the release workflow publishes it as the GitHub release's notes (`scripts/release-notes.mjs`);
+a version without a section takes its notes from the commits since the previous release tag, one group per
+area of their `Area: …` subject.
 
 ## 1.0.0 (2026-10-12)
 

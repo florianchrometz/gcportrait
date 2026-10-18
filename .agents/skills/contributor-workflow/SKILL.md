@@ -104,8 +104,8 @@ reference. Without a real scope, backend work is verified with `pnpm --filter @g
 - Both themes verified for visual work; contrast tests green.
 - Docs updated: package README, user docs under `docs/` or `website/` if behaviour changed, `AGENTS.md` and
   the skill if a rule changed.
-- Changeset added (`pnpm changeset`, or `pnpm changeset add --minor <pkg> -m "..."`) with a user-facing
-  summary, unless the change does not affect users.
+- The commit subject reads as the change should read in the next release's notes: git records it, and a
+  release's notes list the commits since the last tag (`Area: …` groups them).
 - No TODOs without an issue link; no commented-out code; no `any`.
 
 What each layer tests (the tests a change adds belong in the layer it touches):
@@ -126,7 +126,7 @@ What each layer tests (the tests a change adds belong in the layer it touches):
 ## 5. PR checklist (template)
 
 Pull requests are highly welcome, preferably small ones about one feature or one function rather than full
-rewrites: one change per pull request, with its changeset. A rewrite of a whole part is proposed in an issue
+rewrites: one change per pull request. A rewrite of a whole part is proposed in an issue
 first, then made in small steps (AGENTS.md, "How to work a task").
 
 - What changed and why (link the issue or the `docs/backlog.md` item).
@@ -149,14 +149,21 @@ first, then made in small steps (AGENTS.md, "How to work a task").
 7. Non-affiliation (AGENTS.md, "Non-affiliation, brand and legal"): the footers and long-form texts carry the
    statement, no drawing, export or page metadata does; nothing calls the project official or Google's, and no
    text names Google with its company suffix; Google's icons are unmodified.
-8. Docs and changeset present.
+8. Docs present: the guide, the package README, the `AGENTS.md` rule and the skill that applies it.
 
 ## 7. Releases
 
 For the maintainer, follow [docs/contributing.md §9](../../../docs/contributing.md#9-releases): one-time
 registry setup, a pre-release trial, then version, commit and tag; the already-versioned first release has
 its own steps there. The release rules are AGENTS.md, "Releases"; workflow execution follows
-.github/AGENTS.md, "Releases". Self-hosters install or pin a release through
+.github/AGENTS.md, "Releases".
+
+Versioning is fixed semver with one version for every package: read `git log` since the last tag, choose the
+bump, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs` writes the root's and every workspace
+package's `package.json`), commit, and tag. The notes of a release come from the tree: a `## X.Y.Z` section of
+the root `CHANGELOG.md` when the maintainer wrote one, else the subjects of the commits since the previous
+release tag, one group per `Area: …` prefix (`scripts/release-notes.mjs`, which the release workflow runs on
+the tag). No pull request adds a release-note file. Self-hosters install or pin a release through
 [docs/self-host.md](../../../docs/self-host.md).
 
 For catalog version fields, follow packages/AGENTS.md, "Catalog and graph semantics". For a snapshot format

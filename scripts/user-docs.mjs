@@ -24,7 +24,7 @@ import { parseArgs } from 'node:util';
 import { dependencyVersions, exactPinProblem } from './lib/dependency-versions.mjs';
 import { isHeaderExempt, listRepoFiles } from './lib/repo-files.mjs';
 import { rulesFiles } from './lib/rules-files.mjs';
-import { workspaceDirs } from './release-notes.mjs';
+import { workspaceDirs } from './lib/workspace-packages.mjs';
 
 /** The user guides: the commands in their code must exist, and they keep no verification log. */
 export const GUIDES = Object.freeze([
@@ -51,7 +51,7 @@ const COMMAND_DOCS = Object.freeze([
  * Other documents, checked for verification logs only (their commands are not all the scripts'), besides the
  * rules files and the skills that logFreeDocs adds: the README, the skills' README, the contributor references
  * and the package READMEs. Every document says what is, never how it came to be (AGENTS.md, Documentation).
- * Not listed: the generated THIRD_PARTY.md and CHANGELOGs, the changesets, docs/contributing.md (its
+ * Not listed: the generated THIRD_PARTY.md, CHANGELOG.md (release notes), docs/contributing.md (its
  * troubleshooting table names Node versions), and the catalog's and the icons' READMEs (dates of Google's own
  * retirements and of the icon download are data there).
  */
@@ -1023,8 +1023,7 @@ export function overlongLines(markdown) {
 /**
  * The Markdown files the width rule holds, relative to `root`: every `.md` file of the tree as
  * scripts/lib/repo-files.mjs walks it (what git tracks, and every other file outside the ignored directories),
- * but those the provenance check exempts from the header as generated or consumed (the CHANGELOGs that
- * `changeset version` writes, the changeset entries).
+ * but those the provenance check exempts from the header as release notes rather than source (CHANGELOG.md).
  * @param {string} root
  * @returns {string[]}
  */

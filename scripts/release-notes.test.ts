@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * scripts/release-notes.mjs: the GitHub release's notes from the CHANGELOG.md sections changesets
- * writes, its command line run in this process on synthetic workspaces (`run`), and once as a command of its own.
+ * scripts/release-notes.mjs: the GitHub release's notes from the commits since the previous release tag, or
+ * from a version's section of CHANGELOG.md, its command line run in this process on synthetic git trees (`run`),
+ * and once as a command of its own.
  */
+import { execFileSync } from 'node:child_process';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { NON_AFFILIATION_LONG, releaseNotes, run } from './release-notes.mjs';
+import { NON_AFFILIATION_LONG, changelogSection, releaseNotes, run } from './release-notes.mjs';
 import {
   REPO,
   SPAWN_TIMEOUT,
@@ -15,52 +18,25 @@ import {
   type TempTree,
 } from './testing/temp-tree.js';
 
-/** A changelog the way `changeset version` writes it (@changesets/cli/changelog). */
-const BACKEND = `# @gcportrait/backend
+/** Runs git in `tree`, as the tooling's own quiet identity (no global git config is read). */
+const git = (tree: TempTree, ...args: string[]): string =>
+  execFileSync('git', ['-c', 'user.name=gcportrait test', '-c', 'user.email=test@example.com', ...args], {
+    cwd: tree.root,
+    encoding: 'utf8',
+  });
 
-## 1.2.0
-
-### Minor Changes
-
-- 1a2b3c4: Service-account mode reads folders too.
-  A second line of the same entry.
-- 5d6e7f8: Shared change, listed by every package it names.
-
-### Patch Changes
-
-- 9a8b7c6: A fix in the backend.
-- Updated dependencies [1a2b3c4]
-  - @gcportrait/model@1.2.0
-
-## 1.1.0
-
-### Minor Changes
-
-- 0f0f0f0: An older change.
-`;
-
-const FRONTEND = `# @gcportrait/frontend
-
-## 1.2.0
-
-### Major Changes
-
-- abcdef1: The export menu moved.
-
-### Minor Changes
-
-- 5d6e7f8: Shared change, listed by every package it names.
-
-### Patch Changes
-
-- Updated dependencies [5d6e7f8]
-  - @gcportrait/model@1.2.0
-`;
-
-const WORKSPACE = "packages:\n  - frontend\n  - backend\n  - 'packages/*'\n  - website\n";
+/** A commit on the tree's only branch, and the tag of a release at that commit. */
+const commit = (tree: TempTree, subject: string): void => {
+  git(tree, 'commit', '--allow-empty', '--quiet', '--message', subject);
+};
+const tag = (tree: TempTree, name: string): void => {
+  git(tree, 'tag', name);
+};
 
 /** The notes' "Changes" section, between its heading and the next one. */
 const changesOf = (text: string) => /\n## Changes\n\n([\s\S]*?)\n+## Deploy\n/.exec(text)?.[1];
+
+const WORKSPACE = 'packages:\n  - app\n';
 
 describe('release-notes.mjs', () => {
   let tree: TempTree;
@@ -68,14 +44,14 @@ describe('release-notes.mjs', () => {
   beforeEach(() => {
     tree = createTempTree('release-notes');
     tree.write('pnpm-workspace.yaml', WORKSPACE);
-    tree.write('backend/CHANGELOG.md', BACKEND);
-    tree.write('frontend/CHANGELOG.md', FRONTEND);
-    // A package without a section for the version, and one without a changelog.
-    tree.write(
-      'packages/model/CHANGELOG.md',
-      '# @gcportrait/model\n\n## 1.1.0\n\n### Minor Changes\n\n- 0f0f0f0: Old.\n',
-    );
-    tree.write('packages/layout/package.json', '{}\n');
+    tree.write('app/package.json', '{ "name": "@gcportrait/app", "version": "1.1.0" }\n');
+    git(tree, 'init', '--quiet', '--initial-branch', 'main');
+    commit(tree, 'First commit');
+    tag(tree, 'v1.1.0');
+    commit(tree, 'App: collapse all follows the drawing');
+    commit(tree, 'Docs: the guide names the flag');
+    commit(tree, 'Other work without an area marker');
+    tag(tree, 'v1.2.0');
   });
 
   afterEach(() => {
@@ -84,7 +60,15 @@ describe('release-notes.mjs', () => {
 
   const notes = (...args: string[]) => runInProcess(() => run(['--root', tree.root, ...args]));
 
-  it('lists each change of the version once, by kind, without hashes and dependency bookkeeping', async () => {
+  it('lists the commits since the previous release, one group per area, without merge commits', async () => {
+    // A side branch merged back before the tag: its commit is listed once, the merge commit itself not at all.
+    git(tree, 'tag', '--delete', 'v1.2.0');
+    git(tree, 'checkout', '--quiet', '-b', 'side');
+    commit(tree, 'Backend: read folders too');
+    git(tree, 'checkout', '--quiet', 'main');
+    commit(tree, 'Tests: cover the folders');
+    git(tree, 'merge', '--quiet', '--no-ff', '--message', 'Merge branch side', 'side');
+    tag(tree, 'v1.2.0');
     const result = await notes(
       '--tag',
       'v1.2.0',
@@ -102,19 +86,27 @@ describe('release-notes.mjs', () => {
         '',
         '## Changes',
         '',
-        '### Major changes',
+        'The commits since `v1.1.0`, oldest first, one group per area:',
         '',
-        '- The export menu moved.',
+        '### App',
         '',
-        '### Minor changes',
+        '- collapse all follows the drawing',
         '',
-        '- Service-account mode reads folders too.',
-        '  A second line of the same entry.',
-        '- Shared change, listed by every package it names.',
+        '### Docs',
         '',
-        '### Patch changes',
+        '- the guide names the flag',
         '',
-        '- A fix in the backend.',
+        '### Other',
+        '',
+        '- Other work without an area marker',
+        '',
+        '### Backend',
+        '',
+        '- read folders too',
+        '',
+        '### Tests',
+        '',
+        '- cover the folders',
         '',
         '## Deploy',
         '',
@@ -146,125 +138,112 @@ describe('release-notes.mjs', () => {
     );
   });
 
+  it('counts from the last final release, so a release after a pre-release lists every commit since it', async () => {
+    commit(tree, 'App: a change the pre-release carried');
+    tag(tree, 'v1.3.0-rc.1');
+    commit(tree, 'App: a fix the pre-release did not have');
+    tag(tree, 'v1.3.0');
+    const release = await notes('--tag', 'v1.3.0');
+    expect(release.status, release.stderr).toBe(0);
+    expect(changesOf(release.stdout)).toContain('- a change the pre-release carried');
+    expect(changesOf(release.stdout)).toContain('- a fix the pre-release did not have');
+    expect(changesOf(release.stdout)).toContain('since `v1.2.0`');
+  });
+
   it('names only the tags the image gets: no X.Y for a pre-release, latest only for the newest release', async () => {
-    tree.write('backend/CHANGELOG.md', BACKEND.replace('## 1.2.0', '## 1.3.0-rc.1'));
-    const pre = await notes('--tag', 'v1.3.0-rc.1', '--image', 'ghcr.io/example/gcportrait');
+    commit(tree, 'App: a pre-release candidate');
+    tag(tree, 'v1.4.0-rc.1');
+    const pre = await notes('--tag', 'v1.4.0-rc.1', '--image', 'ghcr.io/example/gcportrait');
     expect(pre.status, pre.stderr).toBe(0);
-    expect(pre.stdout).toContain('tagged `1.3.0-rc.1`.');
-    const older = await notes(
+    expect(pre.stdout).toContain('tagged `1.4.0-rc.1`.');
+    const patch = await notes(
       '--tag',
-      'v1.1.0',
+      'v1.2.0',
       '--image',
       'ghcr.io/example/gcportrait',
       '--latest',
       'false',
     );
-    expect(older.status, older.stderr).toBe(0);
-    expect(older.stdout).toContain('tagged `1.1.0`, `1.1`.');
-    expect(older.stdout).toContain('- An older change.');
-    expect(older.stdout).not.toContain('Shared change');
+    expect(patch.status, patch.stderr).toBe(0);
+    expect(patch.stdout).toContain('tagged `1.2.0`, `1.2`.');
+    expect(changesOf(patch.stdout)).toContain('- collapse all follows the drawing');
   });
 
-  it('takes the notes of the release a pre-release precedes when it has no section of its own', async () => {
-    const release = await notes('--tag', 'v1.2.0');
-    const pre = await notes(
-      '--tag',
-      'v1.2.0-rc.1',
-      '--image',
-      'ghcr.io/example/gcportrait',
-      '--latest',
-      'false',
-    );
-    expect(pre.status, pre.stderr).toBe(0);
-    expect(
-      pre.stdout.startsWith(
-        `${NON_AFFILIATION_LONG}\n\n` +
-          "A pre-release of 1.2.0, published for checking; its notes are 1.2.0's.\n\n" +
-          '## Changes\n\n### Major changes\n\n- The export menu moved.\n',
-      ),
-    ).toBe(true);
-    expect(changesOf(release.stdout)).toContain('- A fix in the backend.');
-    expect(changesOf(pre.stdout)).toBe(changesOf(release.stdout));
-    expect(pre.stdout).toContain('bash -s -- --version v1.2.0-rc.1 --project YOUR_PROJECT');
-    expect(pre.stdout).toContain('tagged `1.2.0-rc.1`.');
-    expect(pre.stdout).toContain('ghcr.io/example/gcportrait:1.2.0-rc.1');
-    expect(release.stdout).not.toContain('A pre-release of');
-  });
-
-  it('takes a pre-release’s own sections when a changelog has them, not those of its release', async () => {
+  it('lists the version’s section of CHANGELOG.md when the maintainer wrote one', async () => {
     tree.write(
-      'backend/CHANGELOG.md',
-      BACKEND.replace(
+      'CHANGELOG.md',
+      [
+        '# Changelog',
+        '',
+        '## 1.2.0 (2026-10-12)',
+        '',
+        'The drawings keep their contrast in both themes.',
+        '',
+        '### Highlights',
+        '',
+        '- A highlight.',
+        '',
+        NON_AFFILIATION_LONG,
+        '',
         '## 1.1.0',
-        '## 1.2.0-rc.1\n\n### Minor Changes\n\n- 2b3c4d5: Only in the pre-release.\n\n## 1.1.0',
+        '',
+        'The first release.',
+        '',
+      ].join('\n'),
+    );
+    const release = await notes('--tag', 'v1.2.0');
+    expect(release.status, release.stderr).toBe(0);
+    expect(changesOf(release.stdout)).toBe(
+      ['The drawings keep their contrast in both themes.', '', '### Highlights', '', '- A highlight.'].join(
+        '\n',
       ),
     );
+    expect(release.stdout.split(NON_AFFILIATION_LONG).length - 1).toBe(1);
+    // A pre-release tag without a section of its own takes the section of the release it precedes.
+    tag(tree, 'v1.2.0-rc.1');
     const pre = await notes('--tag', 'v1.2.0-rc.1');
     expect(pre.status, pre.stderr).toBe(0);
-    expect(changesOf(pre.stdout)).toBe('### Minor changes\n\n- Only in the pre-release.');
-    expect(pre.stdout).not.toContain('A pre-release of');
-    expect(pre.stdout).not.toContain('The export menu moved.');
+    expect(pre.stdout).toContain("A pre-release of 1.2.0, published for checking; its notes are 1.2.0's.");
+    expect(changesOf(pre.stdout)).toBe(changesOf(release.stdout));
+    expect(pre.stdout).toContain('bash -s -- --version v1.2.0-rc.1 --project YOUR_PROJECT');
   });
 
-  it('finds no notes for a pre-release of a version no changelog has', async () => {
-    expect(releaseNotes({ root: tree.root, tag: 'v9.9.9-rc.1' })).toBeNull();
-    const missing = await notes('--tag', 'v9.9.9-rc.1');
-    expect(missing.status).toBe(1);
-    expect(missing.stdout).toBe('');
-    expect(missing.stderr).toContain('no CHANGELOG.md has a section "## 9.9.9-rc.1" or "## 9.9.9".');
+  it('lists every commit of the repository for the first release', async () => {
+    const first = createTempTree('release-notes-first');
+    try {
+      first.write('pnpm-workspace.yaml', WORKSPACE);
+      git(first, 'init', '--quiet', '--initial-branch', 'main');
+      commit(first, 'gcportrait: initial commit');
+      commit(first, 'App: the first feature');
+      tag(first, 'v1.0.0');
+      const result = await runInProcess(() => run(['--root', first.root, '--tag', 'v1.0.0']));
+      expect(result.status, result.stderr).toBe(0);
+      expect(changesOf(result.stdout)).toContain('Every commit of the repository, oldest first');
+      expect(changesOf(result.stdout)).toContain('- initial commit');
+      expect(changesOf(result.stdout)).toContain('- the first feature');
+    } finally {
+      first.remove();
+    }
   });
 
-  it('keeps the long form once when an entry repeats it, wrapped as the hand-written notes wrap it', async () => {
-    const wrapped = NON_AFFILIATION_LONG.replace('project and is ', 'project and is\n  ').replace(
-      'Google Cloud product icons are ',
-      'Google Cloud product icons are\n  ',
-    );
-    tree.write(
-      'backend/CHANGELOG.md',
-      `# @gcportrait/backend\n\n## 2.0.0\n\n### Major Changes\n\n- The first release.\n  \n  ${wrapped}\n  \n  ### Highlights\n  \n  - A highlight.\n`,
-    );
-    const result = await notes('--tag', 'v2.0.0');
-    expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout.split('is not affiliated with').length - 1).toBe(1);
-    expect(result.stdout).toContain(
-      ['- The first release.', '', '  ### Highlights', '', '  - A highlight.'].join('\n'),
-    );
-  });
-
-  it('writes the notes of the repository’s own 1.0.0 release: one major change, the long form once', () => {
+  it('reads a version’s section of the repository’s own CHANGELOG.md, the long form once', () => {
     const own = releaseNotes({ root: REPO, tag: 'v1.0.0' });
-    expect(own).not.toBeNull();
-    const text = own ?? '';
-    expect(
-      text.startsWith(
-        `${NON_AFFILIATION_LONG}\n\n## Changes\n\n### Major changes\n\n- The first release of gcportrait.\n`,
-      ),
-    ).toBe(true);
-    expect(text.split(NON_AFFILIATION_LONG).length - 1).toBe(1);
-    expect(text.split('\n- ').length - 1).toBe(1);
-    for (const heading of [
-      'Highlights',
-      'Diagrams',
-      'Timeline',
-      'Self-hosting',
-      'Known limitations',
-      'Licence',
-    ])
-      expect(text).toContain(`  ### ${heading}\n`);
-    expect(text).not.toContain('Patch changes');
-    expect(text).not.toContain('Updated dependencies');
-    // A pre-release of it, v1.0.0-rc.1, has no section of its own and carries the same changes.
-    const pre = releaseNotes({ root: REPO, tag: 'v1.0.0-rc.1' }) ?? '';
-    expect(pre).toContain("A pre-release of 1.0.0, published for checking; its notes are 1.0.0's.");
-    expect(changesOf(text)).toContain('- The first release of gcportrait.');
-    expect(changesOf(pre)).toBe(changesOf(text));
+    expect(own.startsWith(`${NON_AFFILIATION_LONG}\n\n## Changes\n\n`)).toBe(true);
+    expect(own.split(NON_AFFILIATION_LONG).length - 1).toBe(1);
+    for (const heading of ['Highlights', 'Diagrams', 'Timeline', 'Self-hosting', 'Known limitations']) {
+      expect(own).toContain(`### ${heading}\n`);
+    }
+    // The 1.0.0 heading names its date, which the section still matches.
+    expect(changelogSection('## 1.0.0 (2026-10-12)\n\nThe first release.\n', '1.0.0')).toBe(
+      'The first release.',
+    );
   });
 
-  it('refuses a version that no changelog has, and bad arguments', async () => {
+  it('refuses a tag the tree does not have, and bad arguments', async () => {
     const missing = await notes('--tag', 'v9.9.9');
-    expect(missing.status).toBe(1);
-    expect(missing.stderr).toContain('no CHANGELOG.md has a section "## 9.9.9"');
-    expect(missing.stderr).toContain('pnpm release:version');
+    expect(missing.status).toBe(2);
+    expect(missing.stdout).toBe('');
+    expect(missing.stderr).toContain('release-notes: the tree has no tag v9.9.9');
     expect((await notes('--tag', '1.2.0')).status).toBe(2);
     expect((await notes('--tag', 'v1.2.0', '--latest', 'yes')).status).toBe(2);
     expect((await notes('--tag', 'v1.2.0', '--unknown')).status).toBe(2);
@@ -277,7 +256,7 @@ describe('release-notes.mjs', () => {
     async () => {
       const args = ['--root', tree.root, '--tag', 'v9.9.9'];
       const command = runScript('release-notes.mjs', args);
-      expect(command.status).toBe(1);
+      expect(command.status).toBe(2);
       expect(command).toEqual(await runInProcess(() => run(args)));
     },
   );

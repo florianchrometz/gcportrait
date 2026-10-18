@@ -25,27 +25,26 @@ These rules add to the root AGENTS.md, which applies here too.
 
 A change of only docs and media runs only the jobs that read them. A first job, `changes`, compares a push
 with the commit before it and a pull request with the branch it merges into, and sorts every changed file as
-docs (`docs/**/*.md`, `.changeset/*.md`, the root's Markdown files, each top-level folder's and package's
-`README.md` and `CHANGELOG.md`, and each folder's `AGENTS.md`), media (`docs/media/**`) or code (everything
-else, the skills included). With no code among them, the unit tests of every project but the layout and the
-frontend, the website and provenance run, licences too for docs (`THIRD_PARTY.md`) and Prettier for media (its
-manifests are JSON); typecheck, the layout, frontend and coverage unit legs, `layout-budget`, build, e2e,
-ESLint and the catalog-check, audit and workflows-and-shell steps are skipped, because none of them reads
-those files, so each could only repeat the result of the tree the change starts from. A comparison that
-cannot be made runs every job.
+docs (`docs/**/*.md`, the root's Markdown files, each top-level folder's and package's `README.md`, and each
+folder's `AGENTS.md`), media (`docs/media/**`) or code (everything else, the skills included). With no code
+among them, the unit tests of every project but the layout and the frontend, the website and provenance run,
+licences too for docs (`THIRD_PARTY.md`) and Prettier for media (its manifests are JSON); typecheck, the
+layout, frontend and coverage unit legs, `layout-budget`, build, e2e, ESLint and the catalog-check, audit and
+workflows-and-shell steps are skipped, because none of them reads those files, so each could only repeat the
+result of the tree the change starts from. A comparison that cannot be made runs every job.
 
 ## The e2e, layout-budget and website gates
 
 The e2e legs, `layout-budget` and the website run only when a changed file is one they read, because the
 e2e legs are the longest jobs and `layout-budget` only reports. `changes` decides one output for each: `e2e`
-is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/`, `.changeset/`
-or `.github/`, or is a root lint, format, editor, Docker or git setting; `layout` is true only for a code file
-of the layout or a package it is tested with or the catalog's build reads (model, catalog, demo-data, graph,
-ingest, icons), `frontend/package.json` (its fonts) or a root file; `website` is false only when every changed
-file is a code file modified in place under `backend/`, `e2e/`, `.agents/` or `.github/` (or
-`.changeset/config.json`), since the site's checks resolve links to repository paths. A change to the setup
-or Playwright action or to `pr.yml` runs all three. `required` counts a skipped e2e leg or website as passed
-only when its output is false; a comparison that cannot be made sets every output true.
+is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/` or `.github/`,
+or is a root lint, format, editor, Docker or git setting; `layout` is true only for a code file of the layout
+or a package it is tested with or the catalog's build reads (model, catalog, demo-data, graph, ingest, icons),
+`frontend/package.json` (its fonts) or a root file; `website` is false only when every changed file is a code
+file modified in place under `backend/`, `e2e/`, `.agents/` or `.github/`, since the site's checks resolve
+links to repository paths. A change to the setup or Playwright action or to `pr.yml` runs all three.
+`required` counts a skipped e2e leg or website as passed only when its output is false; a comparison that
+cannot be made sets every output true.
 
 ## Drift checks
 

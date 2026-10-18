@@ -2,32 +2,33 @@
 // @ts-check
 /**
  * Writes the notes of a GitHub release (.github/workflows/release.yml, job github-release) to standard
- * output, in Markdown: the long-form non-affiliation statement, the changes of the version, read
- * from the `## X.Y.Z` sections of the workspace packages' CHANGELOG.md files that `pnpm release:version`
- * (changesets) wrote, the installer line that deploys the release (infra/install.sh, served by the website, with the
- * release's deploy scripts and checksums.txt that scripts/release-assets.sh attaches), and the container image with
- * its tags, digest and the command that runs it locally.
+ * output, in Markdown: the long-form non-affiliation statement, the changes of the version, the installer
+ * line that deploys the release (infra/install.sh, served by the website, with the release's deploy scripts
+ * and checksums.txt that scripts/release-assets.sh attaches), and the container image with its tags, digest
+ * and the command that runs it locally.
  *
- * A pre-release tag (vX.Y.Z-SUFFIX, such as v1.0.0-rc.1) takes its own `## X.Y.Z-SUFFIX` sections when any
- * CHANGELOG.md has one (changesets' pre mode writes them), and otherwise the `## X.Y.Z` sections of the release
- * it precedes, with one sentence after the statement saying so. Its image is tagged with its own version only:
- * no `X.Y`, and `latest` only when --latest says so (release.yml never does for a pre-release).
+ * The changes of a version come from the tree, not from a file a pull request had to add: a `## X.Y.Z`
+ * section of the root CHANGELOG.md when the maintainer wrote one for that version — the release's summary for
+ * people — and otherwise the subject of every commit since the previous release tag, oldest first, one group
+ * per area of the subject's `Area: …` prefix (a subject without one is listed under "Other"), merge commits
+ * left out. A pre-release tag (vX.Y.Z-SUFFIX, such as v1.0.0-rc.1) takes the `## X.Y.Z` section when the
+ * changelog has no section of its own, under one sentence saying so, and otherwise the commits since the
+ * previous release tag, which are the ones its release will carry.
  *
- * All `@gcportrait/*` packages form one fixed changesets group, so every package that changed carries the same
- * version; a change listed by several packages appears once. "Updated dependencies" entries (the changesets
- * bookkeeping between the workspace's own packages) and the short commit hash changesets puts in front of each
- * entry are left out, and so is a paragraph of an entry that repeats the long form, which the notes open with
- * already (the 1.0.0 entry is the whole of CHANGELOG.md's 1.0.0 section, the long form included).
+ * The previous release tag is the highest final tag (vX.Y.Z, no suffix) among the tag's ancestors, so a
+ * release after a pre-release still lists everything since the last release. The first release has no earlier
+ * tag and lists every commit of the repository. A paragraph of a CHANGELOG.md section that repeats the
+ * long-form statement is left out, since the notes open with it.
  *
  * Usage:
  *   node scripts/release-notes.mjs --tag vX.Y.Z[-SUFFIX] [--image ghcr.io/OWNER/gcportrait]
  *                                  [--digest sha256:...] [--latest true|false] [--root DIR]
  *
- * Exit code 0 with the notes on standard output; 1 when no CHANGELOG.md has a section for the version, nor for a
- * pre-release one for X.Y.Z (tag only after `pnpm release:version`); 2 on a usage error. Plain ESM, Node
- * built-ins only.
+ * Exit code 0 with the notes on standard output; 2 on a usage error — an unknown option, a tag that is not a
+ * release tag, a root that is not a git work tree with that tag. Plain ESM, Node built-ins only.
  */
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -41,109 +42,93 @@ export const NON_AFFILIATION_LONG =
   'not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product icons are ' +
   "trademarks of Google and are used under Google's icon usage terms.";
 
-/** The kinds of change changesets writes, in the order the notes list them. */
-const KINDS = Object.freeze(['Major', 'Minor', 'Patch']);
-
 /** A release tag: v, then a semantic version (a pre-release suffix allowed). */
 const TAG = /^v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$/;
+
+/** A final release tag: vX.Y.Z, the tags a release's commits are counted from. */
+const FINAL_TAG = /^v\d+\.\d+\.\d+$/;
 
 /** Where the website serves infra/install.sh (website/astro.config.ts). */
 export const INSTALLER_URL = 'https://gcportrait.app/install.sh';
 
+/**
+ * The heading of a version's section in CHANGELOG.md, which may name the release date after the version.
+ * @param {string} version
+ * @returns {RegExp}
+ */
+const sectionPattern = (version) => new RegExp(`^## ${version.replace(/\./g, '\\.')}(?:\\s|$)`);
+
+/** A commit subject's area prefix: `App: collapse all …` groups the commit under "App". */
+const SUBJECT_AREA = /^([^:]{1,40}):\s+(\S.*)$/;
+
 class UsageError extends Error {}
 
 /**
- * The workspace package directories of pnpm-workspace.yaml (its `packages:` list; `dir/*` expanded one level),
- * relative to root and sorted, the ones that exist only.
+ * What `git` prints for `args`, run in `root`, without its trailing newline.
  * @param {string} root
- * @returns {string[]}
- */
-export function workspaceDirs(root) {
-  const manifest = readFileSync(path.join(root, 'pnpm-workspace.yaml'), 'utf8');
-  const list = /^packages:\s*\n((?:[ \t]+-[^\n]*\n?)+)/m.exec(manifest)?.[1] ?? '';
-  /** @type {string[]} */
-  const dirs = [];
-  for (const line of list.split('\n')) {
-    const entry = /^\s+-\s*['"]?([^'"#\s]+)['"]?/.exec(line)?.[1];
-    if (entry === undefined) continue;
-    if (entry.endsWith('/*')) {
-      const parent = entry.slice(0, -2);
-      if (!existsSync(path.join(root, parent))) continue;
-      for (const child of readdirSync(path.join(root, parent)).sort()) {
-        if (statSync(path.join(root, parent, child)).isDirectory()) dirs.push(path.join(parent, child));
-      }
-    } else if (existsSync(path.join(root, entry))) {
-      dirs.push(entry);
-    }
-  }
-  return dirs.sort();
-}
-
-/**
- * The entries of one version's section of a changesets CHANGELOG.md, by kind: each entry is a top-level bullet
- * with its indented continuation lines, without the commit hash prefix; "Updated dependencies" entries are dropped.
- * Null when the file has no `## version` section.
- * @param {string} changelog
- * @param {string} version
- * @returns {Map<string, string[]> | null}
- */
-export function sectionEntries(changelog, version) {
-  /** @type {Map<string, string[]>} */
-  const entries = new Map();
-  const lines = changelog.replace(/\r\n?/g, '\n').split('\n');
-  const start = lines.findIndex((line) => line.trim() === `## ${version}`);
-  if (start === -1) return null;
-  let kind = '';
-  /** @type {string[] | undefined} */
-  let current;
-  const finish = () => {
-    if (current === undefined) return;
-    const text = current.join('\n').trimEnd();
-    if (kind !== '' && !/^- Updated dependencies\b/.test(text)) {
-      const list = entries.get(kind) ?? [];
-      list.push(text.replace(/^- [0-9a-f]{7,40}: /, '- '));
-      entries.set(kind, list);
-    }
-    current = undefined;
-  };
-  for (const line of lines.slice(start + 1)) {
-    if (/^## /.test(line)) break;
-    const heading = /^### (\w+) Changes\s*$/.exec(line);
-    if (heading !== null) {
-      finish();
-      kind = heading[1] ?? '';
-      continue;
-    }
-    if (line.startsWith('- ')) {
-      finish();
-      current = [line];
-    } else if (current !== undefined && (line.startsWith('  ') || line.trim() === '')) {
-      current.push(line);
-    } else if (line.trim() !== '') {
-      finish();
-    }
-  }
-  finish();
-  return entries;
-}
-
-/**
- * An entry without the paragraphs that repeat the long-form statement (whitespace and line breaks aside), which the
- * notes carry once at the top. The entry's first paragraph, its bullet, is always kept.
- * @param {string} entry a top-level bullet with its indented continuation lines
+ * @param {readonly string[]} args
  * @returns {string}
  */
-export function withoutLongForm(entry) {
-  const paragraphs = entry.split(/\n[ \t]*\n/);
-  const kept = paragraphs.filter(
-    (paragraph, index) => index === 0 || paragraph.replace(/\s+/g, ' ').trim() !== NON_AFFILIATION_LONG,
-  );
-  return kept.join('\n\n');
+function git(root, args) {
+  try {
+    return execFileSync('git', [...args], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trimEnd();
+  } catch (error) {
+    const stderr = /** @type {{ stderr?: unknown }} */ (error).stderr;
+    const detail =
+      typeof stderr === 'string'
+        ? (stderr.trim().split('\n')[0] ?? '')
+        : error instanceof Error
+          ? error.message
+          : '';
+    throw new UsageError(`\`git ${args.join(' ')}\` failed in ${root}: ${detail}`.trim());
+  }
 }
 
 /**
- * The versions whose CHANGELOG.md sections the notes of `version` are read from, in order of preference: the
- * version itself and, for a pre-release (X.Y.Z-SUFFIX), then X.Y.Z, whose notes a pre-release without sections of
+ * The body of a version's `## X.Y.Z` section of a changelog — up to the next `## ` heading, without the
+ * paragraphs that repeat the long-form statement — or null when the changelog has no such section.
+ * @param {string} changelog
+ * @param {string} version
+ * @returns {string | null}
+ */
+export function changelogSection(changelog, version) {
+  const lines = changelog.replace(/\r\n?/g, '\n').split('\n');
+  const pattern = sectionPattern(version);
+  const start = lines.findIndex((line) => pattern.test(line));
+  if (start === -1) return null;
+  let end = lines.findIndex((line, index) => index > start && /^## /.test(line));
+  if (end === -1) end = lines.length;
+  const paragraphs = lines
+    .slice(start + 1, end)
+    .join('\n')
+    .trim()
+    .split(/\n[ \t]*\n/);
+  const kept = paragraphs.filter(
+    (paragraph) => paragraph.replace(/\s+/g, ' ').trim() !== NON_AFFILIATION_LONG,
+  );
+  const body = kept.join('\n\n').trim();
+  return body === '' ? null : body;
+}
+
+/**
+ * The version's `## X.Y.Z` section of the root CHANGELOG.md, or null when the tree has none for it.
+ * @param {string} root
+ * @param {string} version
+ * @returns {string | null}
+ */
+function sectionOfTree(root, version) {
+  const file = path.join(root, 'CHANGELOG.md');
+  if (!existsSync(file)) return null;
+  return changelogSection(readFileSync(file, 'utf8'), version);
+}
+
+/**
+ * The versions whose CHANGELOG.md section the notes of `version` may be read from, in order of preference: the
+ * version itself and, for a pre-release (X.Y.Z-SUFFIX), then X.Y.Z, whose summary a pre-release without one of
  * its own takes.
  * @param {string} version
  * @returns {string[]}
@@ -154,68 +139,112 @@ export function sectionVersions(version) {
 }
 
 /**
- * The changes of one version across the workspace packages' CHANGELOG.md files, by kind, each entry once and
- * without the paragraphs that repeat the long form; null when no CHANGELOG.md has a `## version` section.
+ * The highest final release tag among `tag`'s ancestors, or undefined for the first release.
  * @param {string} root
- * @param {string} version
- * @returns {Map<string, string[]> | null}
+ * @param {string} tag
+ * @returns {string | undefined}
  */
-function changes(root, version) {
-  /** @type {Map<string, string[]>} */
-  const byKind = new Map();
-  const seen = new Set();
-  let sections = 0;
-  for (const dir of workspaceDirs(root)) {
-    const file = path.join(root, dir, 'CHANGELOG.md');
-    if (!existsSync(file)) continue;
-    const entries = sectionEntries(readFileSync(file, 'utf8'), version);
-    if (entries === null) continue;
-    sections += 1;
-    for (const [kind, list] of entries) {
-      for (const raw of list) {
-        const entry = withoutLongForm(raw);
-        if (seen.has(entry)) continue;
-        seen.add(entry);
-        byKind.set(kind, [...(byKind.get(kind) ?? []), entry]);
-      }
-    }
-  }
-  return sections === 0 ? null : byKind;
+export function previousReleaseTag(root, tag) {
+  return git(root, ['tag', '--merged', tag, '--sort=-v:refname'])
+    .split('\n')
+    .map((line) => line.trim())
+    .find((candidate) => candidate !== tag && FINAL_TAG.test(candidate));
 }
 
 /**
- * The notes of the release `tag`, or null when no CHANGELOG.md has a section for its version, nor for a
- * pre-release one for the release it precedes (sectionVersions).
+ * The subjects of the commits between the previous release tag and `tag`, oldest first (every commit of the
+ * repository for the first release), with the tag they are counted from.
+ * @param {string} root
+ * @param {string} tag
+ * @returns {{ previous: string | undefined, subjects: string[] }}
+ */
+export function commitsSince(root, tag) {
+  if (!/^v/.test(tag) || !tagExists(root, tag)) {
+    throw new UsageError(`the tree has no tag ${tag}; tag the release commit before writing its notes`);
+  }
+  const previous = previousReleaseTag(root, tag);
+  const range = previous === undefined ? tag : `${previous}..${tag}`;
+  const subjects = git(root, ['log', '--no-merges', '--reverse', '--format=%s', range])
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+  return { previous, subjects };
+}
+
+/**
+ * Whether `tag` is a tag of the tree.
+ * @param {string} root
+ * @param {string} tag
+ * @returns {boolean}
+ */
+function tagExists(root, tag) {
+  try {
+    git(root, ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Commit subjects by the area of their prefix, in the order the areas first appear: each group's bullets (the
+ * subject without its prefix, or the whole subject when it has none) in the order the commits were made.
+ * @param {readonly string[]} subjects
+ * @returns {Map<string, string[]>}
+ */
+export function areaGroups(subjects) {
+  /** @type {Map<string, string[]>} */
+  const groups = new Map();
+  for (const subject of subjects) {
+    const match = SUBJECT_AREA.exec(subject);
+    const area = match?.[1] ?? 'Other';
+    const bullet = `- ${match?.[2] ?? subject}`;
+    groups.set(area, [...(groups.get(area) ?? []), bullet]);
+  }
+  return groups;
+}
+
+/**
+ * The "Changes" section of the notes of `tag`: the version's section of CHANGELOG.md when it has one, else the
+ * commits since the previous release tag, grouped by area.
+ * @param {string} root
+ * @param {string} tag
+ * @param {string} version
+ * @returns {{ notesOf: string, lines: string[] }}
+ */
+function changesOf(root, tag, version) {
+  for (const candidate of sectionVersions(version)) {
+    const section = sectionOfTree(root, candidate);
+    if (section !== null) return { notesOf: candidate, lines: [section, ''] };
+  }
+  const { previous, subjects } = commitsSince(root, tag);
+  const groups = areaGroups(subjects);
+  const lines = [
+    previous === undefined
+      ? 'Every commit of the repository, oldest first, one group per area:'
+      : `The commits since \`${previous}\`, oldest first, one group per area:`,
+    '',
+  ];
+  for (const [area, bullets] of groups) lines.push(`### ${area}`, '', ...bullets, '');
+  if (groups.size === 0) lines.push('No commits since the previous release.', '');
+  return { notesOf: version, lines };
+}
+
+/**
+ * The notes of the release `tag`.
  * @param {{ root: string, tag: string, image?: string | undefined, digest?: string | undefined, latest?: boolean }} options
- * @returns {string | null}
+ * @returns {string}
  */
 export function releaseNotes({ root, tag, image, digest, latest = false }) {
   const version = TAG.exec(tag)?.[1];
   if (version === undefined) throw new UsageError(`--tag must be a release tag such as v1.2.3, not "${tag}"`);
-  /** @type {Map<string, string[]> | null} */
-  let byKind = null;
-  let notesOf = version;
-  for (const candidate of sectionVersions(version)) {
-    byKind = changes(root, candidate);
-    notesOf = candidate;
-    if (byKind !== null) break;
-  }
-  if (byKind === null) return null;
+  const { notesOf, lines } = changesOf(root, tag, version);
 
   const out = [NON_AFFILIATION_LONG, ''];
   if (notesOf !== version) {
     out.push(`A pre-release of ${notesOf}, published for checking; its notes are ${notesOf}'s.`, '');
   }
-  out.push('## Changes', '');
-  const kinds = [...KINDS, ...[...byKind.keys()].filter((kind) => !KINDS.includes(kind))];
-  let listed = 0;
-  for (const kind of kinds) {
-    const list = byKind.get(kind);
-    if (list === undefined || list.length === 0) continue;
-    out.push(`### ${kind} changes`, '', ...list, '');
-    listed += list.length;
-  }
-  if (listed === 0) out.push('No user-facing changes are recorded for this version.', '');
+  out.push('## Changes', '', ...lines);
 
   out.push(
     '## Deploy',
@@ -262,8 +291,8 @@ export function releaseNotes({ root, tag, image, digest, latest = false }) {
 }
 
 /**
- * The command line on `argv`: the notes on standard output and 0, or the reason on standard error and 1 when no
- * CHANGELOG.md has a section for the version, or 2 on a usage error.
+ * The command line on `argv`: the notes on standard output and 0, or the reason on standard error and 2 on a
+ * usage error.
  * @param {readonly string[]} argv
  * @returns {number}
  */
@@ -297,24 +326,15 @@ function main(argv) {
   if (values.latest !== 'true' && values.latest !== 'false')
     throw new UsageError('--latest must be true or false');
   const root = values.root ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const notes = releaseNotes({
-    root,
-    tag: values.tag,
-    image: values.image,
-    digest: values.digest,
-    latest: values.latest === 'true',
-  });
-  if (notes === null) {
-    const sections = sectionVersions(values.tag.slice(1))
-      .map((version) => `"## ${version}"`)
-      .join(' or ');
-    process.stderr.write(
-      `release-notes: no CHANGELOG.md has a section ${sections}. Run \`pnpm release:version\` ` +
-        'and commit its changes before tagging the release.\n',
-    );
-    return 1;
-  }
-  process.stdout.write(notes);
+  process.stdout.write(
+    releaseNotes({
+      root,
+      tag: values.tag,
+      image: values.image,
+      digest: values.digest,
+      latest: values.latest === 'true',
+    }),
+  );
   return 0;
 }
 

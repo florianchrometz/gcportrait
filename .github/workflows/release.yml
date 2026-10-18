@@ -232,6 +232,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The whole history and every tag: the notes list the commits since the previous release tag.
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
@@ -240,7 +242,7 @@ jobs:
         with:
           name: sbom
           path: sbom
-      - name: Release notes from the CHANGELOG.md files
+      - name: Release notes from the commits since the previous release tag
         env:
           TAG: ${{ github.ref_name }}
           IMAGE: ${{ needs.publish-image.outputs.image }}

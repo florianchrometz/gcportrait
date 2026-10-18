@@ -16,8 +16,8 @@
 # docs and media). `changes` sorts every changed file into one of three kinds:
 #
 #   docs    Markdown that people read and, of the checks, only unit (all other projects), website, provenance and
-#           licenses: docs/**/*.md, .changeset/*.md, the root's *.md files, each top-level folder's and each
-#           package's README.md and CHANGELOG.md, and each top-level folder's AGENTS.md (a rules file, whose
+#           licenses: docs/**/*.md, the root's *.md files, each top-level folder's and each package's
+#           README.md, and each top-level folder's AGENTS.md (a rules file, whose
 #           citations the tooling tests in unit (all other projects) check). Not the skills' files
 #           (.agents/skills/: the frontend's theme test reads the style skill's palette) and no other Markdown
 #           (catalog-check, for one, refuses a file in the catalog's data folders that is not YAML or JSON).
@@ -37,14 +37,14 @@
 # (.github/AGENTS.md, The e2e, layout-budget and website gates), each by an output of `changes` of its own:
 #
 #   e2e      runs unless every code file is one the suites never read: scripts/, website/, infra/, docs/,
-#            .agents/, .changeset/, .github/ and the root's lint, format, editor, Docker and git settings
+#            .agents/, .github/ and the root's lint, format, editor, Docker and git settings
 #            (eslint.config.js, .prettierrc, .prettierignore, .editorconfig, .dockerignore, .gitignore, app.json).
 #   layout   (layout-budget) runs when a code file is one it reads: the layout and the packages it is tested
 #            with or that the catalog's build reads (model, catalog, demo-data, graph, ingest, icons),
 #            frontend/package.json (the fonts its metrics come from) or any file at the root.
 #   website  runs unless every changed file is a code file modified in place (not added, deleted or renamed:
-#            the site's checks resolve links to repository paths) under backend/, e2e/, .agents/ or .github/,
-#            or .changeset/config.json; docs and media always run it.
+#            the site's checks resolve links to repository paths) under backend/, e2e/, .agents/ or .github/;
+#            docs and media always run it.
 #
 # For all three, the setup and Playwright actions (.github/actions/setup/, .github/actions/playwright/) and this
 # workflow file count as read, so a change to how the job runs runs it.
@@ -105,13 +105,13 @@ jobs:
           GIT_NO_LAZY_FETCH: '1'
           GIT_TERMINAL_PROMPT: '0'
           MEDIA: '^docs/media/'
-          DOCS: '^(docs/.+|\.changeset/[^/]+|[^/]+|([^/]+|packages/[^/]+)/(README|CHANGELOG|AGENTS))\.md$'
+          DOCS: '^(docs/.+|[^/]+|([^/]+|packages/[^/]+)/(README|AGENTS))\.md$'
           # How the three gated jobs run: a change here runs each of them.
           RUNNER: '^\.github/(actions/(setup|playwright)/|workflows/pr\.yml$)'
-          E2E_UNREAD: '^(scripts|website|infra|docs|\.agents|\.changeset|\.github)/'
+          E2E_UNREAD: '^(scripts|website|infra|docs|\.agents|\.github)/'
           E2E_UNREAD_ROOT: '^(eslint\.config\.js|\.(prettierrc|prettierignore|editorconfig|dockerignore|gitignore)|app\.json)$'
           LAYOUT_READ: '^(packages/(layout|model|catalog|demo-data|graph|ingest|icons)/|frontend/package\.json$|[^/]+$)'
-          WEBSITE_UNREAD: '^((backend|e2e|\.agents|\.github)/|\.changeset/config\.json$)'
+          WEBSITE_UNREAD: '^(backend|e2e|\.agents|\.github)/'
         run: |
           base=''
           if [ "$EVENT" = pull_request ]; then
