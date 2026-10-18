@@ -67,12 +67,22 @@ const TABLET = {
 const isCI = process.env.CI !== undefined && process.env.CI !== '';
 /**
  * The list on the terminal, the HTML report on CI, and Playwright's JSON report when PLAYWRIGHT_JSON_OUTPUT_FILE names
- * its file, as scripts/leg.ts does to read which tests a run addressed and how long they took.
+ * its file, as scripts/leg.ts does to read which tests a run addressed and how long they took; additional
+ * advice on stderr when Playwright refuses an occupied server URL.
  */
 const REPORTERS: ReporterDescription[] = [
   ['list'],
   ...(isCI ? [['html', { open: 'never', outputFolder: 'playwright-report' }] as const] : []),
   ...(process.env.PLAYWRIGHT_JSON_OUTPUT_FILE ? [['json'] as const] : []),
+  [
+    './scripts/server-advice-reporter.ts',
+    {
+      servers: [
+        { url: DEMO_URL, picked: !NAMED.demo },
+        { url: LIVE_URL, picked: !NAMED.live },
+      ].filter(({ picked }) => isCI || picked),
+    },
+  ],
 ];
 
 /**

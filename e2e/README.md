@@ -72,6 +72,9 @@ If a picked port becomes occupied, rerun to pick new ports or stop the conflicti
 checkout being tested. A free-port probe cannot reserve a port until Vite starts; `strictPort` still refuses
 a later collision. Playwright checks an already-used URL before starting either the server command or global
 setup, so a check in either would not replace that message.
+The suite's `scripts/server-advice-reporter.ts` adds the applicable advice on stderr for that refusal, leaving
+Playwright's error, reports and failed exit status unchanged. An explicit `--reporter` replaces the config's
+reporters and therefore omits this extra advice (`leg --list-only` uses JSON listings that start no servers).
 
 ```sh
 E2E_DEMO_URL=http://localhost:5174 pnpm e2e tests/keyboard.spec.ts --project chromium   # your pnpm dev:demo
