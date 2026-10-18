@@ -10,6 +10,9 @@ export { layoutScene, layoutSteps, resolveOptions, type ResolvedOptions } from '
 export {
   createLayoutWorkerHandler,
   type LayoutCancelReason,
+  type LayoutCancelRequest,
+  type LayoutComputeRequest,
+  type LayoutRequest,
   type LayoutWorkerEnvironment,
   type LayoutWorkerErrorCode,
   type LayoutWorkerErrorInfo,

@@ -9,10 +9,18 @@
  */
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  LayoutCancelRequestSchema,
+  LayoutComputeRequestSchema,
   LayoutProgressSchema,
+  LayoutRequestSchema,
   LayoutWorkerErrorInfoSchema,
+  LayoutWorkerRequestSchema,
   LayoutWorkerResponseSchema,
   type LayoutCancelReason as ModelLayoutCancelReason,
+  type LayoutCancelRequest as ModelLayoutCancelRequest,
+  type LayoutComputeRequest as ModelLayoutComputeRequest,
+  type LayoutRequest as ModelLayoutRequest,
+  type LayoutWorkerRequest as ModelLayoutWorkerRequest,
   type LayoutWorkerResponse as ModelLayoutWorkerResponse,
   type LayoutInputErrorCode as ModelLayoutInputErrorCode,
   type LayoutProgress as ModelLayoutProgress,
@@ -22,6 +30,10 @@ import {
 } from '@gcportrait/model';
 import type {
   LayoutCancelReason as PublicLayoutCancelReason,
+  LayoutCancelRequest as PublicLayoutCancelRequest,
+  LayoutComputeRequest as PublicLayoutComputeRequest,
+  LayoutRequest as PublicLayoutRequest,
+  LayoutWorkerRequest as PublicLayoutWorkerRequest,
   LayoutWorkerResponse as PublicLayoutWorkerResponse,
   LayoutInputErrorCode as PublicLayoutInputErrorCode,
   LayoutProgress as PublicLayoutProgress,
@@ -108,6 +120,18 @@ describe('createLayoutWorkerHandler', () => {
     expectResponses(messages);
     expectTypeOf<PublicLayoutCancelReason>().toEqualTypeOf<ModelLayoutCancelReason>();
     expectTypeOf<PublicLayoutWorkerResponse>().toEqualTypeOf<ModelLayoutWorkerResponse>();
+    expectTypeOf<PublicLayoutCancelRequest>().toEqualTypeOf<ModelLayoutCancelRequest>();
+    expectTypeOf<PublicLayoutComputeRequest>().toEqualTypeOf<ModelLayoutComputeRequest>();
+    expectTypeOf<PublicLayoutRequest>().toEqualTypeOf<ModelLayoutRequest>();
+    expectTypeOf<PublicLayoutWorkerRequest>().toEqualTypeOf<ModelLayoutWorkerRequest>();
+    const request = { type: 'layout', id: 1, scene: BUSY } as const;
+    expect(LayoutComputeRequestSchema.parse(request)).toEqual(request);
+    expect(LayoutRequestSchema.parse(request)).toEqual(request);
+    expect(LayoutWorkerRequestSchema.parse(request)).toEqual(request);
+    const cancelReq = { type: 'cancel', id: 1 } as const;
+    expect(LayoutCancelRequestSchema.parse(cancelReq)).toEqual(cancelReq);
+    expect(LayoutRequestSchema.parse(cancelReq)).toEqual(cancelReq);
+    expect(LayoutWorkerRequestSchema.parse(cancelReq)).toEqual(cancelReq);
     const progress = messages.flatMap((message) => (message.type === 'progress' ? [message.progress] : []));
     for (const step of progress) {
       expect(LayoutProgressSchema.parse(step)).toEqual(step);

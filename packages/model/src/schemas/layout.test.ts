@@ -10,25 +10,34 @@ import {
   FONT_FACE_KEYS,
   FontFaceKeySchema,
   FontFaceMetricsSchema,
+  FontFamilySchema,
   FontMetricsTableSchema,
+  FontWeightSchema,
   GapWideningSchema,
   GutterReservationsSchema,
   GutterWideningSchema,
   InsetsSchema,
+  InvariantCodeSchema,
+  InvariantViolationSchema,
   LayoutCancelReasonSchema,
+  LayoutCancelRequestSchema,
   LayoutCancelledReasonSchema,
+  LayoutComputeRequestSchema,
   LayoutCountsSchema,
   LayoutInputErrorCodeSchema,
   LayoutProgressSchema,
   LayoutRectSchema,
   LayoutReportSchema,
+  LayoutRequestSchema,
   LayoutResultSchema,
   LayoutSchema,
   LayoutStageSchema,
   LayoutWorkerErrorCodeSchema,
   LayoutWorkerErrorInfoSchema,
   LayoutWorkerOptionsSchema,
+  LayoutWorkerRequestSchema,
   LayoutWorkerResponseSchema,
+  MeasureOptionsSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
@@ -38,6 +47,7 @@ import {
   SideSchema,
   SizingSchema,
   StageTimingsSchema,
+  TextRunSchema,
   type Arrangement,
   type Arrangements,
   type EdgeBundle,
@@ -46,25 +56,34 @@ import {
   type EdgePort,
   type FontFaceKey,
   type FontFaceMetrics,
+  type FontFamily,
   type FontMetricsTable,
+  type FontWeight,
   type GapWidening,
   type GutterReservations,
   type GutterWidening,
   type Insets,
+  type InvariantCode,
+  type InvariantViolation,
   type Layout,
   type LayoutCancelReason,
+  type LayoutCancelRequest,
   type LayoutCancelledReason,
+  type LayoutComputeRequest,
   type LayoutCounts,
   type LayoutInputErrorCode,
   type LayoutProgress,
   type LayoutRect,
   type LayoutReport,
+  type LayoutRequest,
   type LayoutResult,
   type LayoutStage,
   type LayoutWorkerErrorCode,
   type LayoutWorkerErrorInfo,
   type LayoutWorkerOptions,
+  type LayoutWorkerRequest,
   type LayoutWorkerResponse,
+  type MeasureOptions,
   type Point,
   type Rect,
   type RectRole,
@@ -73,7 +92,9 @@ import {
   type Side,
   type Sizing,
   type StageTimings,
+  type TextRun,
 } from '../index.js';
+import { sampleScene } from '../testing/fixtures.js';
 
 const point = { x: -1.25, y: 0.5 };
 const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
@@ -1464,5 +1485,243 @@ describe('layout worker options contract', () => {
       expect(invalid.error.issues.map((issue) => issue.path)).toEqual([
         ['arrangements', 'zones', '__proto__', 'cardColumns'],
       ]);
+  });
+});
+
+describe('layout font and measurement contracts', () => {
+  it('accepts valid font families and weights, rejecting invalid values', () => {
+    expectTypeOf<FontFamily>().toEqualTypeOf<'sans' | 'mono'>();
+    expectTypeOf<FontWeight>().toEqualTypeOf<400 | 500 | 700>();
+    for (const family of ['sans', 'mono'] as const) {
+      expect(FontFamilySchema.parse(family)).toBe(family);
+    }
+    for (const invalid of ['roboto', 'serif', '', 400, null, undefined]) {
+      expect(FontFamilySchema.safeParse(invalid).success).toBe(false);
+    }
+    for (const weight of [400, 500, 700] as const) {
+      expect(FontWeightSchema.parse(weight)).toBe(weight);
+    }
+    for (const invalid of [300, 600, '400', 0, -400, NaN, null, undefined]) {
+      expect(FontWeightSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('validates TextRun strict shape and readonly frozen type', () => {
+    expectTypeOf<TextRun>().toEqualTypeOf<Readonly<{ text: string; family: FontFamily }>>();
+    const run = { text: '10.10.0.2', family: 'mono' as const };
+    const parsed = TextRunSchema.parse(run);
+    expect(parsed).toEqual(run);
+    expect(Object.isFrozen(parsed)).toBe(true);
+    for (const invalid of [
+      null,
+      undefined,
+      '10.10.0.2',
+      { text: 'test' },
+      { family: 'sans' },
+      { text: 123, family: 'sans' },
+      { text: 'test', family: 'serif' },
+      { text: 'test', family: 'sans', extra: true },
+    ]) {
+      expect(TextRunSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('validates MeasureOptions exact-optional shape, rejecting undefined or unknown fields', () => {
+    expectTypeOf<MeasureOptions>().toEqualTypeOf<
+      Readonly<{
+        family?: FontFamily;
+        metrics?: FontMetricsTable;
+      }>
+    >();
+    expect(MeasureOptionsSchema.parse({})).toEqual({});
+    expect(MeasureOptionsSchema.parse({ family: 'sans' })).toEqual({ family: 'sans' });
+    const parsed = MeasureOptionsSchema.parse({ family: 'mono' });
+    expect(Object.isFrozen(parsed)).toBe(true);
+
+    for (const invalid of [
+      null,
+      undefined,
+      'sans',
+      { family: undefined },
+      { metrics: undefined },
+      { unknown: 1 },
+      { family: 'roboto' },
+      { metrics: null },
+      { metrics: {} },
+    ]) {
+      expect(MeasureOptionsSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+});
+
+describe('layout invariant contracts', () => {
+  const codes: readonly InvariantCode[] = [
+    'missing-rect',
+    'unexpected-rect',
+    'non-finite',
+    'wrong-parent',
+    'wrong-depth',
+    'wrong-role',
+    'wrong-size',
+    'outside-parent',
+    'overlap',
+    'outside-bounds',
+    'chips',
+    'arrangement',
+    'not-deterministic',
+    'edge-missing',
+    'edge-unexpected',
+    'edge-shape',
+    'edge-port',
+    'edge-tip',
+    'edge-crossing',
+  ];
+
+  it('validates all 19 InvariantCode literals and rejects unknown codes', () => {
+    expectTypeOf<InvariantCode>().toEqualTypeOf<
+      | 'missing-rect'
+      | 'unexpected-rect'
+      | 'non-finite'
+      | 'wrong-parent'
+      | 'wrong-depth'
+      | 'wrong-role'
+      | 'wrong-size'
+      | 'outside-parent'
+      | 'overlap'
+      | 'outside-bounds'
+      | 'chips'
+      | 'arrangement'
+      | 'not-deterministic'
+      | 'edge-missing'
+      | 'edge-unexpected'
+      | 'edge-shape'
+      | 'edge-port'
+      | 'edge-tip'
+      | 'edge-crossing'
+    >();
+    expect(InvariantCodeSchema.options).toEqual(codes);
+    for (const code of codes) {
+      expect(InvariantCodeSchema.parse(code)).toBe(code);
+    }
+    for (const invalid of ['', 'unknown', 'missing_rect', 1, null, undefined]) {
+      expect(InvariantCodeSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('validates InvariantViolation strict readonly shape', () => {
+    expectTypeOf<InvariantViolation>().toEqualTypeOf<
+      Readonly<{
+        code: InvariantCode;
+        ids: readonly string[];
+        message: string;
+      }>
+    >();
+    const violation = {
+      code: 'overlap' as const,
+      ids: ['node-1', 'node-2'],
+      message: 'node-1 overlaps node-2',
+    };
+    const parsed = InvariantViolationSchema.parse(violation);
+    expect(parsed).toEqual(violation);
+    expect(Object.isFrozen(parsed)).toBe(true);
+    expect(Object.isFrozen(parsed.ids)).toBe(true);
+
+    for (const invalid of [
+      null,
+      undefined,
+      { code: 'overlap', ids: ['a'] },
+      { code: 'overlap', message: 'msg' },
+      { ids: ['a'], message: 'msg' },
+      { code: 'other', ids: ['a'], message: 'msg' },
+      { code: 'overlap', ids: [1], message: 'msg' },
+      { code: 'overlap', ids: ['a'], message: 123 },
+      { code: 'overlap', ids: ['a'], message: 'msg', extra: true },
+    ]) {
+      expect(InvariantViolationSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+});
+
+describe('layout request envelope contracts', () => {
+  const scene = sampleScene();
+
+  it('validates LayoutComputeRequest strict readonly shape with exact-optional options', () => {
+    expectTypeOf<LayoutComputeRequest>().toEqualTypeOf<
+      Readonly<{
+        type: 'layout';
+        id: number;
+        scene: typeof scene;
+        options?: LayoutWorkerOptions;
+      }>
+    >();
+    const withoutOptions = { type: 'layout' as const, id: 1, scene };
+    const parsedWithout = LayoutComputeRequestSchema.parse(withoutOptions);
+    expect(parsedWithout).toEqual(withoutOptions);
+    expect(Object.isFrozen(parsedWithout)).toBe(true);
+
+    const withOptions = { type: 'layout' as const, id: 2, scene, options: { route: false } };
+    const parsedWith = LayoutComputeRequestSchema.parse(withOptions);
+    expect(parsedWith).toEqual(withOptions);
+    expect(Object.isFrozen(parsedWith)).toBe(true);
+
+    for (const invalid of [
+      null,
+      undefined,
+      { type: 'cancel', id: 1 },
+      { type: 'layout', id: 1 },
+      { type: 'layout', scene },
+      { id: 1, scene },
+      { type: 'layout', id: '1', scene },
+      { type: 'layout', id: 1, scene: null },
+      { type: 'layout', id: 1, scene, options: undefined },
+      { type: 'layout', id: 1, scene, options: { unknown: true } },
+      { type: 'layout', id: 1, scene, extra: true },
+    ]) {
+      expect(LayoutComputeRequestSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('validates LayoutCancelRequest strict readonly shape', () => {
+    expectTypeOf<LayoutCancelRequest>().toEqualTypeOf<Readonly<{ type: 'cancel'; id: number }>>();
+    const cancel = { type: 'cancel' as const, id: 42 };
+    const parsed = LayoutCancelRequestSchema.parse(cancel);
+    expect(parsed).toEqual(cancel);
+    expect(Object.isFrozen(parsed)).toBe(true);
+
+    for (const invalid of [
+      null,
+      undefined,
+      { type: 'cancel' },
+      { id: 42 },
+      { type: 'layout', id: 42 },
+      { type: 'cancel', id: '42' },
+      { type: 'cancel', id: 42, extra: true },
+    ]) {
+      expect(LayoutCancelRequestSchema.safeParse(invalid).success).toBe(false);
+    }
+  });
+
+  it('validates LayoutRequest discriminated union and LayoutWorkerRequest alias', () => {
+    expectTypeOf<LayoutRequest>().toEqualTypeOf<LayoutComputeRequest | LayoutCancelRequest>();
+    expectTypeOf<LayoutWorkerRequest>().toEqualTypeOf<LayoutRequest>();
+    expect(LayoutWorkerRequestSchema).toBe(LayoutRequestSchema);
+
+    const computeReq = { type: 'layout' as const, id: 1, scene };
+    const cancelReq = { type: 'cancel' as const, id: 2 };
+    expect(LayoutRequestSchema.parse(computeReq)).toEqual(computeReq);
+    expect(LayoutRequestSchema.parse(cancelReq)).toEqual(cancelReq);
+    expect(Object.isFrozen(LayoutRequestSchema.parse(computeReq))).toBe(true);
+    expect(Object.isFrozen(LayoutRequestSchema.parse(cancelReq))).toBe(true);
+
+    for (const invalid of [
+      null,
+      undefined,
+      { type: 'unknown', id: 1 },
+      { id: 1 },
+      { type: 'layout' },
+      { type: 'cancel' },
+    ]) {
+      expect(LayoutRequestSchema.safeParse(invalid).success).toBe(false);
+    }
   });
 });

@@ -15,6 +15,7 @@
  *   run like a card's) and badges, the title capped at `zoneTitleMaxWidth` (the renderer ellipsises a longer
  *   one). Their final size comes from packing (stage 3).
  */
+import type { TextRun } from '@gcportrait/model';
 import { TEXT_WEIGHTS, ZONE_TITLE_SEPARATOR, type Sizing } from './constants.js';
 import { chipWidth } from './chips.js';
 import { measureText, type FontFamily, type FontMetricsTable, type FontWeight } from './metrics.js';
@@ -35,11 +36,7 @@ export interface SizingCounts {
   cappedTitles: number;
 }
 
-/** One stretch of a subtitle and the face it is set in. */
-export interface TextRun {
-  readonly text: string;
-  readonly family: FontFamily;
-}
+export type { TextRun } from '@gcportrait/model';
 
 const OCTET = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
 /** A dotted-quad IPv4 address. */

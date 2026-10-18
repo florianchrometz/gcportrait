@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-import { describe, expect, it } from 'vitest';
+import { TextRunSchema, type TextRun as ModelTextRun } from '@gcportrait/model';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { DEFAULT_SIZING, TEXT_WEIGHTS, ZONE_TITLE_SEPARATOR } from './constants.js';
 import { defaultFontMetrics, measureText } from './metrics.js';
 import { chipWidth } from './chips.js';
@@ -14,6 +15,7 @@ import {
   zoneTitleSizeAt,
   zoneTitleWidth,
   type SizingContext,
+  type TextRun,
 } from './size.js';
 import { ORGANISATION_ID, card, scene, zone } from './testing/scenes.js';
 
@@ -58,6 +60,15 @@ describe('cardWidth', () => {
 });
 
 describe('subtitleRuns', () => {
+  it('preserves public model types and validates runs against schema', () => {
+    expectTypeOf<TextRun>().toEqualTypeOf<ModelTextRun>();
+    const runs = subtitleRuns('10.248.0.0/28 · e2-micro · europe-west3');
+    for (const run of runs) {
+      expect(TextRunSchema.parse(run)).toEqual(run);
+      expect(TextRunSchema.parse(JSON.parse(JSON.stringify(run)))).toEqual(run);
+    }
+  });
+
   it('sets addresses in Roboto Mono and every other fact in Roboto', () => {
     expect(subtitleRuns('10.248.0.0/28 · e2-micro · europe-west3')).toEqual([
       { text: '10.248.0.0/28', family: 'mono' },

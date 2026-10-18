@@ -13,22 +13,23 @@ import {
   FONT_FACE_KEYS as MODEL_FONT_FACE_KEYS,
   type FontFaceKey,
   type FontFaceMetrics,
+  type FontFamily,
   type FontMetricsTable,
+  type FontWeight,
+  type MeasureOptions,
 } from '@gcportrait/model';
 import robotoMetrics from '../metrics/roboto.json' with { type: 'json' };
 
-export type FontFamily = 'sans' | 'mono';
-export type FontWeight = 400 | 500 | 700;
-export type { FontFaceKey, FontFaceMetrics, FontMetricsTable } from '@gcportrait/model';
+export type {
+  FontFaceKey,
+  FontFaceMetrics,
+  FontFamily,
+  FontMetricsTable,
+  FontWeight,
+  MeasureOptions,
+} from '@gcportrait/model';
 
 export const FONT_FACE_KEYS: readonly FontFaceKey[] = MODEL_FONT_FACE_KEYS;
-
-export interface MeasureOptions {
-  /** `sans` (Roboto, default) or `mono` (Roboto Mono, which has one weight: 400 is used for any weight). */
-  readonly family?: FontFamily;
-  /** The table to measure with; default: the generated Roboto table. */
-  readonly metrics?: FontMetricsTable;
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

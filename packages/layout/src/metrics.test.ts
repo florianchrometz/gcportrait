@@ -5,12 +5,18 @@ import {
   FontMetricsTableSchema,
   type FontFaceKey as ModelFontFaceKey,
   type FontFaceMetrics as ModelFontFaceMetrics,
+  type FontFamily as ModelFontFamily,
   type FontMetricsTable as ModelFontMetricsTable,
+  type FontWeight as ModelFontWeight,
+  type MeasureOptions as ModelMeasureOptions,
 } from '@gcportrait/model';
 import type {
   FontFaceKey as PublicFontFaceKey,
   FontFaceMetrics as PublicFontFaceMetrics,
+  FontFamily as PublicFontFamily,
   FontMetricsTable as PublicFontMetricsTable,
+  FontWeight as PublicFontWeight,
+  MeasureOptions as PublicMeasureOptions,
 } from './index.js';
 import {
   FONT_FACE_KEYS,
@@ -59,6 +65,9 @@ describe('the generated Roboto table', () => {
     expectTypeOf<PublicFontFaceKey>().toEqualTypeOf<ModelFontFaceKey>();
     expectTypeOf<PublicFontFaceMetrics>().toEqualTypeOf<ModelFontFaceMetrics>();
     expectTypeOf<PublicFontMetricsTable>().toEqualTypeOf<ModelFontMetricsTable>();
+    expectTypeOf<PublicFontFamily>().toEqualTypeOf<ModelFontFamily>();
+    expectTypeOf<PublicFontWeight>().toEqualTypeOf<ModelFontWeight>();
+    expectTypeOf<PublicMeasureOptions>().toEqualTypeOf<ModelMeasureOptions>();
     expect(FontMetricsTableSchema.parse(table)).toEqual(table);
     expect(FontMetricsTableSchema.parse(JSON.parse(JSON.stringify(table)))).toEqual(table);
   });

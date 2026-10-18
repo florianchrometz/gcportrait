@@ -28,7 +28,13 @@
  * The geometry of the rects is checked against the gutter reservations the layout reports it was packed with
  * (`Layout.gutters`: the caller's plus the router's widening).
  */
-import { RELATION_KINDS, type Scene, type SceneNode } from '@gcportrait/model';
+import {
+  RELATION_KINDS,
+  type InvariantCode,
+  type InvariantViolation,
+  type Scene,
+  type SceneNode,
+} from '@gcportrait/model';
 import { EPSILON as GEOMETRY_EPSILON, ObstacleIndex, normalOf, type Obstacle } from './geometry.js';
 import { layoutScene, resolveOptions } from './layout.js';
 import { compareCodePoints } from './order.js';
@@ -47,32 +53,7 @@ import type {
   RectRole,
 } from './types.js';
 
-export type InvariantCode =
-  | 'missing-rect'
-  | 'unexpected-rect'
-  | 'non-finite'
-  | 'wrong-parent'
-  | 'wrong-depth'
-  | 'wrong-role'
-  | 'wrong-size'
-  | 'outside-parent'
-  | 'overlap'
-  | 'outside-bounds'
-  | 'chips'
-  | 'arrangement'
-  | 'not-deterministic'
-  | 'edge-missing'
-  | 'edge-unexpected'
-  | 'edge-shape'
-  | 'edge-port'
-  | 'edge-tip'
-  | 'edge-crossing';
-
-export interface InvariantViolation {
-  readonly code: InvariantCode;
-  readonly ids: readonly string[];
-  readonly message: string;
-}
+export type { InvariantCode, InvariantViolation } from '@gcportrait/model';
 
 export class LayoutInvariantError extends Error {
   readonly violations: readonly InvariantViolation[];

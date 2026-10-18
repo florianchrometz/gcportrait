@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-import type { Scene } from '@gcportrait/model';
-import { describe, expect, it } from 'vitest';
+import {
+  InvariantViolationSchema,
+  type InvariantCode as ModelInvariantCode,
+  type InvariantViolation as ModelInvariantViolation,
+  type Scene,
+} from '@gcportrait/model';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { packingAspects } from './aspects.js';
 import {
   LayoutInvariantError,
@@ -10,6 +15,7 @@ import {
   checkLayout,
   contentBox,
   type InvariantCode,
+  type InvariantViolation,
 } from './invariants.js';
 import { layoutScene } from './layout.js';
 import { thrownBy } from './testing/errors.js';
@@ -47,6 +53,17 @@ const codes = (l: Layout): InvariantCode[] => codesOf(input, l);
 const patched = (id: string, patch: Partial<LayoutRect>): Layout => withRect(layout, id, patch);
 
 describe('checkLayout', () => {
+  it('preserves public model types and validates reported violations against schema', () => {
+    expectTypeOf<InvariantCode>().toEqualTypeOf<ModelInvariantCode>();
+    expectTypeOf<InvariantViolation>().toEqualTypeOf<ModelInvariantViolation>();
+    const violations = checkLayout(input, patched('a', { x: Number.NaN }));
+    expect(violations.length).toBeGreaterThan(0);
+    for (const v of violations) {
+      expect(InvariantViolationSchema.parse(v)).toEqual(v);
+      expect(InvariantViolationSchema.parse(JSON.parse(JSON.stringify(v)))).toEqual(v);
+    }
+  });
+
   it('finds nothing wrong with a real layout', () => {
     expect(checkLayout(input, layout)).toEqual([]);
     expect(() => {

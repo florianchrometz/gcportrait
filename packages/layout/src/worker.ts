@@ -23,30 +23,28 @@
  * pure: the only host APIs it touches are the task-queue yield between steps (host.ts) and, if the mount
  * passes one, a clock for `report.timings`.
  */
-import type { LayoutWorkerErrorInfo, LayoutWorkerResponse, Scene } from '@gcportrait/model';
+import type {
+  LayoutWorkerErrorInfo,
+  LayoutWorkerOptions,
+  LayoutWorkerRequest,
+  LayoutWorkerResponse,
+  Scene,
+} from '@gcportrait/model';
 import { LayoutInputError } from './errors.js';
 import { layoutKey } from './hash.js';
 import { createHostYield } from './host.js';
 import { layoutSteps } from './layout.js';
 import { LayoutMemo, MEMO_CAPACITY } from './memo.js';
-import type { Layout, LayoutProgress, LayoutWorkerOptions } from './types.js';
-
-/** Page → worker. Ids are the page's own (`createLayoutClient` counts up from 1); they only pair answers. */
-export type LayoutWorkerRequest =
-  /** Lays out a Scene; supersedes every earlier request. */
-  | {
-      readonly type: 'layout';
-      readonly id: number;
-      readonly scene: Scene;
-      readonly options?: LayoutWorkerOptions;
-    }
-  /** Abandons a request: the worker answers `cancelled` (nothing, if it was already answered). */
-  | { readonly type: 'cancel'; readonly id: number };
+import type { Layout, LayoutProgress } from './types.js';
 
 export type {
   LayoutCancelReason,
+  LayoutCancelRequest,
+  LayoutComputeRequest,
+  LayoutRequest,
   LayoutWorkerErrorCode,
   LayoutWorkerErrorInfo,
+  LayoutWorkerRequest,
   LayoutWorkerResponse,
 } from '@gcportrait/model';
 

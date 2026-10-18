@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as z from 'zod';
 import { RelationKindSchema } from './relation.js';
-import { ZoneKindSchema } from './scene.js';
+import { SceneSchema, ZoneKindSchema } from './scene.js';
 import { FONT_FACE_KEYS } from './vocabulary.js';
 
 function stringRecord<Value extends z.ZodType>(valueSchema: Value) {
@@ -688,6 +688,63 @@ export const FontMetricsTableSchema = z
   .readonly();
 export type FontMetricsTable = z.infer<typeof FontMetricsTableSchema>;
 
+export const FontFamilySchema = z.enum(['sans', 'mono']);
+export type FontFamily = z.infer<typeof FontFamilySchema>;
+
+export const FontWeightSchema = z.union([z.literal(400), z.literal(500), z.literal(700)]);
+export type FontWeight = z.infer<typeof FontWeightSchema>;
+
+export const MeasureOptionsSchema = z
+  .strictObject({
+    /** `sans` (Roboto, default) or `mono` (Roboto Mono, which has one weight: 400 is used for any weight). */
+    family: FontFamilySchema.exactOptional(),
+    /** The table to measure with; default: the generated Roboto table. */
+    metrics: FontMetricsTableSchema.exactOptional(),
+  })
+  .readonly();
+export type MeasureOptions = z.infer<typeof MeasureOptionsSchema>;
+
+/** One stretch of a subtitle and the face it is set in. */
+export const TextRunSchema = z
+  .strictObject({
+    text: z.string(),
+    family: FontFamilySchema,
+  })
+  .readonly();
+export type TextRun = z.infer<typeof TextRunSchema>;
+
+export const InvariantCodeSchema = z.enum([
+  'missing-rect',
+  'unexpected-rect',
+  'non-finite',
+  'wrong-parent',
+  'wrong-depth',
+  'wrong-role',
+  'wrong-size',
+  'outside-parent',
+  'overlap',
+  'outside-bounds',
+  'chips',
+  'arrangement',
+  'not-deterministic',
+  'edge-missing',
+  'edge-unexpected',
+  'edge-shape',
+  'edge-port',
+  'edge-tip',
+  'edge-crossing',
+]);
+export type InvariantCode = z.infer<typeof InvariantCodeSchema>;
+
+export const InvariantViolationSchema = z
+  .strictObject({
+    code: InvariantCodeSchema,
+    ids: z.array(z.string()).readonly(),
+    message: z.string(),
+  })
+  .readonly();
+export type InvariantViolation = z.infer<typeof InvariantViolationSchema>;
+
 /**
  * The options a layout worker request carries: every `LayoutOptions` field but `clock`, which as a
  * function cannot cross `postMessage` (the worker's own clock, if its host gives it one, fills
@@ -723,3 +780,32 @@ export const LayoutWorkerOptionsSchema = z
   })
   .readonly();
 export type LayoutWorkerOptions = z.infer<typeof LayoutWorkerOptionsSchema>;
+
+/** Lays out a Scene; supersedes every earlier request. */
+export const LayoutComputeRequestSchema = z
+  .strictObject({
+    type: z.literal('layout'),
+    id: z.number(),
+    scene: SceneSchema,
+    options: LayoutWorkerOptionsSchema.exactOptional(),
+  })
+  .readonly();
+export type LayoutComputeRequest = z.infer<typeof LayoutComputeRequestSchema>;
+
+/** Abandons a request: the worker answers `cancelled` (nothing, if it was already answered). */
+export const LayoutCancelRequestSchema = z
+  .strictObject({
+    type: z.literal('cancel'),
+    id: z.number(),
+  })
+  .readonly();
+export type LayoutCancelRequest = z.infer<typeof LayoutCancelRequestSchema>;
+
+/** Page → worker request union. Ids are the page's own; they only pair answers. */
+export const LayoutRequestSchema = z
+  .discriminatedUnion('type', [LayoutComputeRequestSchema.unwrap(), LayoutCancelRequestSchema.unwrap()])
+  .readonly();
+export type LayoutRequest = z.infer<typeof LayoutRequestSchema>;
+
+export const LayoutWorkerRequestSchema = LayoutRequestSchema;
+export type LayoutWorkerRequest = LayoutRequest;
