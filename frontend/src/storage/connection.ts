@@ -10,7 +10,10 @@
  */
 import { createContext, useContext } from 'react';
 
-import { openDatabase, type GcportraitDB } from './db';
+import { createDatabaseConnection, type DatabaseConnection } from './databaseConnection';
+import type { GcportraitDB } from './db';
+
+export { createDatabaseConnection, type DatabaseConnection, type DatabaseOpener } from './databaseConnection';
 
 /** What a store reads the database from: the connection's getter, or one fixed promise (tests). */
 export type DatabaseSource = Promise<GcportraitDB | null> | (() => Promise<GcportraitDB | null>);
@@ -18,32 +21,6 @@ export type DatabaseSource = Promise<GcportraitDB | null> | (() => Promise<Gcpor
 /** The database getter of a source. */
 export function databaseOf(source: DatabaseSource): () => Promise<GcportraitDB | null> {
   return typeof source === 'function' ? source : () => source;
-}
-
-export interface DatabaseConnection {
-  /**
-   * The open database: opened on the first call, and again on the call after it was closed; null when the browser
-   * gives the page no IndexedDB (then every store keeps its data in memory for the session).
-   */
-  readonly database: () => Promise<GcportraitDB | null>;
-}
-
-/** Opens the database: `onClose` is called once when the connection it gives is closed. */
-export type DatabaseOpener = (onClose: () => void) => Promise<GcportraitDB | null>;
-
-export function createDatabaseConnection(
-  open: DatabaseOpener = (onClose) => openDatabase(undefined, onClose),
-): DatabaseConnection {
-  let current: Promise<GcportraitDB | null> | null = null;
-  const database = (): Promise<GcportraitDB | null> => {
-    if (current !== null) return current;
-    const opening = open(() => {
-      if (current === opening) current = null;
-    });
-    current = opening;
-    return opening;
-  };
-  return { database };
 }
 
 let browser: DatabaseConnection | null = null;

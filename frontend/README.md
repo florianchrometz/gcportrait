@@ -552,7 +552,8 @@ provides it (`DatabaseContext`); the preferences, the saved views and the snapsh
 through its `database()` getter for every operation. A connection that blocks a newer schema in another tab
 closes itself (or the browser terminates it), and the next read opens it again for all three at once, so none
 is left on a closed connection (with an older schema than another tab's, the reopening fails and they fall
-back to memory). The data worker opens its own (`snapshots/load.ts`).
+back to memory). The React-free factory is `storage/databaseConnection.ts`; `storage/connection.ts`
+re-exports it alongside the page's React context. The data worker opens its own (`snapshots/load.ts`).
 
 **Changes between tabs** (`storage/tickCacheChanges.ts`). Every change of the `tickCache` store, a day
 stored (once its write stands; a write taken back tells nothing) or deleted (on the Snapshots page, or as
