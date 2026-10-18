@@ -373,3 +373,14 @@ export {
 } from './schemas/scene-build.js';
 
 export { ZONE_KIND_RANK } from './schemas/zone-order.js';
+
+export {
+  LegalPagesSchema,
+  LegalTextsSchema,
+  PublicConfigSchema,
+  RenderLimitsSchema,
+  type LegalPages,
+  type LegalTexts,
+  type PublicConfig,
+  type RenderLimits,
+} from './schemas/api.js';

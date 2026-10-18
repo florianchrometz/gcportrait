@@ -29,7 +29,7 @@ const DEMO_ONLY: PublicConfig = publicConfig({
   version: '0.0.0-demo',
   hostedBy: null,
   demoOnly: true,
-  legal: { impressum: true, privacy: true },
+  legal: { impressum: true, privacy: true, impressumUrl: null, privacyUrl: null },
 });
 
 /** Where a demo-only instance's configuration comes from, and what differs between the two. */
@@ -139,7 +139,12 @@ describe('the Connect page of a demo-only instance', () => {
   );
 
   it('leaves the privacy link out when the instance publishes no privacy notice', async () => {
-    stubBackend({ config: { ...DEMO_ONLY, legal: { impressum: false, privacy: false } } });
+    stubBackend({
+      config: {
+        ...DEMO_ONLY,
+        legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null },
+      },
+    });
     renderApp('/', { demo: false, snapshots: fakeLibrary() });
     const privacy = await screen.findByRole('region', { name: 'No personal data' });
     expect(within(privacy).queryByRole('link')).toBeNull();
@@ -165,7 +170,11 @@ describe('the Connect page of a demo-only instance', () => {
 describe('the Connect page of a live instance', () => {
   it('shows the demo while the backend is asked, then every source', async () => {
     const backend = stubBackend({
-      config: { ...DEMO_ONLY, demoOnly: false, legal: { impressum: false, privacy: false } },
+      config: {
+        ...DEMO_ONLY,
+        demoOnly: false,
+        legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null },
+      },
       held: true,
     });
     renderApp('/', { demo: false, snapshots: fakeLibrary() });

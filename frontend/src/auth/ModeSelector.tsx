@@ -63,7 +63,7 @@ export function ModeSelector({ disabled }: { readonly disabled?: string | undefi
             , not by a person’s account, and the requests count against this instance’s project. You must
             still be able to see the scope yourself: before every read the backend checks that with your own
             sign-in
-            {config.saStrictExposure === true
+            {config.saStrictExposure
               ? ', and it refuses a scope whose details the service account can see on its own.'
               : '.'}
           </p>

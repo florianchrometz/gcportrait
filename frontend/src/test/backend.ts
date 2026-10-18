@@ -16,10 +16,15 @@ export function publicConfig(overrides: Partial<PublicConfig> = {}): PublicConfi
   return {
     oauthClientId: null,
     saMode: false,
+    saStrictExposure: false,
     backendServiceAccount: null,
     version: '0.0.0-test',
     sourceUrl: 'https://git.example.org/gcportrait',
+    hostedBy: null,
     demo: false,
+    demoOnly: false,
+    legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null },
+    render: null,
     ...overrides,
   };
 }

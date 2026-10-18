@@ -11,11 +11,11 @@ import { useAppState } from './state';
  */
 export function useDemoOnly(): boolean {
   return useAppState(
-    (state) => state.connect.backend.status === 'ready' && state.connect.backend.config.demoOnly === true,
+    (state) => state.connect.backend.status === 'ready' && state.connect.backend.config.demoOnly,
   );
 }
 
-const NO_LEGAL_PAGES: LegalPages = { impressum: false, privacy: false };
+const NO_LEGAL_PAGES: LegalPages = { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null };
 
 /**
  * Which legal pages the instance publishes (`legal` in /api/config): none in the build-time demo mode, before the
@@ -23,8 +23,6 @@ const NO_LEGAL_PAGES: LegalPages = { impressum: false, privacy: false };
  */
 export function useLegalPages(): LegalPages {
   return useAppState((state) =>
-    state.connect.backend.status === 'ready'
-      ? (state.connect.backend.config.legal ?? NO_LEGAL_PAGES)
-      : NO_LEGAL_PAGES,
+    state.connect.backend.status === 'ready' ? state.connect.backend.config.legal : NO_LEGAL_PAGES,
   );
 }

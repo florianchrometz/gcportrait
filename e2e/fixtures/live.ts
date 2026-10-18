@@ -65,10 +65,15 @@ export function liveConfig(overrides: Record<string, unknown> = {}): Record<stri
   return {
     oauthClientId: null,
     saMode: false,
+    saStrictExposure: false,
     backendServiceAccount: null,
     version: '0.0.0-e2e',
     sourceUrl: FORK_SOURCE_URL,
+    hostedBy: null,
     demo: false,
+    demoOnly: false,
+    legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null },
+    render: null,
     ...overrides,
   };
 }

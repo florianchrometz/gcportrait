@@ -528,6 +528,19 @@ the UI thread; the repository's `.mjs` tooling loads it by Node's type stripping
 | `commandVariable(name)`, `isCommandVariableValue(variable, value)` | a row by its name; whether a value has its format (for a hint, never to refuse it) |
 | `splitVariableTokens(text)`, `variableTokens(text)`, `VARIABLE_NAME_PATTERN` | a command cut into text and `{ token }` parts (whole words only: `gs://YOUR_BUCKET/x` holds one, `YOUR_Xs` none), its distinct tokens, a name's form |
 
+## The backend's public answers
+
+The answers of GET /api/config and GET /api/legal (docs/api.md), in `src/schemas/api.ts`: the backend hands
+them to Fastify as its response contracts, and the app takes the inferred types with `import type` (no zod on
+its UI thread) and holds its hand-written guard to the schema in a test (`frontend/src/api/config.test.ts`).
+
+| Export | What |
+|---|---|
+| `PublicConfigSchema`, `PublicConfig` | GET /api/config: the OAuth client, service-account mode and its strict exposure check, the account, the version, the source link, the hosting line, `demo` (always false), demo-only mode, the legal pages and the render API's limits (null where it is off); every field always sent |
+| `LegalPagesSchema`, `LegalPages` | which legal pages the instance serves, and the addresses of those it links elsewhere (or null) |
+| `RenderLimitsSchema`, `RenderLimits` | the render API's limits: assets, pixels, body bytes, timeout |
+| `LegalTextsSchema`, `LegalTexts` | GET /api/legal: each page's Markdown, or null |
+
 ## Tests
 
 ```sh

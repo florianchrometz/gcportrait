@@ -106,7 +106,8 @@ src/views/              the view controls' support: the snapshot's choices (data
                         and Copy link (section "View controls" below)
 src/api/config.ts       GET /api/config client (live mode only: auth/AuthProvider.tsx asks once per page and puts
                         the answer into the store, where the footer's source link reads `sourceUrl` and its legal
-                        links `legal`)
+                        links `legal`); the contract is the model's `PublicConfigSchema`, which config.test.ts
+                        holds the zod-free guard to
 src/api/staticConfig.ts the static demo's configuration, built in from VITE_STATIC_DEMO and its variables: what a
                         demo-only instance's /api/config answers (section "Static demo" below)
 src/demoOnly.ts         useDemoOnly() (the backend's DEMO_ONLY; the Connect page's demo-only variant, the
@@ -846,7 +847,7 @@ your environment" section can show for its scope step.
 
 **Service-account mode.** The "Service-account mode" section names the account from `/api/config`
 (`backendServiceAccount`, the identity the backend resolved) and words the gate as the instance runs it:
-`saStrictExposure` (optional in `api/config.ts`; absent counts as off) decides whether `copy.ts` and
+`saStrictExposure` (the model's `PublicConfigSchema`, always sent) decides whether `copy.ts` and
 `PermissionsGuide.tsx` say that a scope the account can see on its own is refused, or that a scope whose
 details are public is open to everyone signed in; the mode selector's note follows the same field. A check the
 gate refuses comes back as a 403 (or 503) whose body carries the checklist as `preflight`; `preflight/api.ts`

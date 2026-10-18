@@ -8,49 +8,17 @@
  * `sourceUrl` and legal pages.
  */
 
-export type PublicConfig = {
-  readonly oauthClientId: string | null;
-  readonly saMode: boolean;
-  /**
-   * Whether service-account mode's gate also refuses a scope the account can see on its own (the backend's
-   * SA_MODE_STRICT_EXPOSURE). Absent, it counts as off.
-   */
-  readonly saStrictExposure?: boolean;
-  readonly backendServiceAccount: string | null;
-  readonly version: string;
-  /** Where the source of the running version is published (the footer's "Source (MIT)" link; the backend's SOURCE_URL). */
-  readonly sourceUrl: string;
-  /**
-   * Who runs this instance, "Hosted by NAME." (the backend's HOSTED_BY), or null when it names nobody. The Connect
-   * page shows it next to "Sign in with Google" (`hostedByLine`); absent, it shows nothing.
-   */
-  readonly hostedBy?: string | null;
-  readonly demo: boolean;
-  /**
-   * Demo-only mode (the backend's DEMO_ONLY): no sign-in, nothing read from Google Cloud; the Connect page
-   * offers the demo organisations only (demoOnly.ts). Absent, it counts as off.
-   */
-  readonly demoOnly?: boolean;
-  /**
-   * Which legal pages the instance publishes: the booleans say which texts it serves (the backend's LEGAL_DIR or
-   * LEGAL_BUNDLE), which /impressum and /privacy read from GET /api/legal (legal/); `impressumUrl` and `privacyUrl` the
-   * addresses of pages it links instead (the backend's LEGAL_IMPRESSUM_URL and LEGAL_PRIVACY_URL; the static demo's
-   * build settings, api/staticConfig.ts). The footer links either kind. Absent: none.
-   */
-  readonly legal?: LegalPages;
-};
-
 /**
- * Whether the instance publishes an Impressum and a privacy notice as texts of its own, and where it links pages
- * published elsewhere (null or absent: it links none). A page is one or the
- * other (the backend refuses both).
+ * The answer's contract is declared once, in @gcportrait/model (`PublicConfigSchema`, every field always sent);
+ * the types come from it erased, so no zod reaches the UI thread, and `isPublicConfig` below checks an answer by
+ * hand, held to the schema by config.test.ts. `legal` says which legal pages the instance serves (/impressum and
+ * /privacy read their text from GET /api/legal, legal/) and which it links elsewhere (`impressumUrl`,
+ * `privacyUrl`; the static demo's build settings, api/staticConfig.ts); the footer links either kind.
  */
-export type LegalPages = {
-  readonly impressum: boolean;
-  readonly privacy: boolean;
-  readonly impressumUrl?: string | null;
-  readonly privacyUrl?: string | null;
-};
+export type { LegalPages, PublicConfig } from '@gcportrait/model';
+import type { LegalPages, PublicConfig, RenderLimits } from '@gcportrait/model';
+
+import { isRecord } from '../guards';
 
 /**
  * Whether a value can be a linked legal page's address: an absolute https URL with a host and no user name or
@@ -66,40 +34,45 @@ export function isLegalUrl(value: unknown): value is string {
   }
 }
 
-/** A linked page's address as the configuration may carry it; the footer links only an {@link isLegalUrl} one. */
-function isOptionalString(value: unknown): boolean {
-  return value === undefined || value === null || typeof value === 'string';
-}
-
-function isLegalPages(value: unknown): value is LegalPages {
-  if (typeof value !== 'object' || value === null) return false;
-  const record = value as Record<string, unknown>;
-  return (
-    typeof record.impressum === 'boolean' &&
-    typeof record.privacy === 'boolean' &&
-    isOptionalString(record.impressumUrl) &&
-    isOptionalString(record.privacyUrl)
-  );
-}
-
 function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
 }
 
-export function isPublicConfig(value: unknown): value is PublicConfig {
-  if (typeof value !== 'object' || value === null) return false;
-  const record = value as Record<string, unknown>;
+/** A linked page's address may be any string here; the footer links only an {@link isLegalUrl} one. */
+function isLegalPages(value: unknown): value is LegalPages {
   return (
-    isNullableString(record.oauthClientId) &&
-    typeof record.saMode === 'boolean' &&
-    (record.saStrictExposure === undefined || typeof record.saStrictExposure === 'boolean') &&
-    isNullableString(record.backendServiceAccount) &&
-    typeof record.version === 'string' &&
-    typeof record.sourceUrl === 'string' &&
-    (record.hostedBy === undefined || isNullableString(record.hostedBy)) &&
-    typeof record.demo === 'boolean' &&
-    (record.demoOnly === undefined || typeof record.demoOnly === 'boolean') &&
-    (record.legal === undefined || isLegalPages(record.legal))
+    isRecord(value) &&
+    typeof value.impressum === 'boolean' &&
+    typeof value.privacy === 'boolean' &&
+    isNullableString(value.impressumUrl) &&
+    isNullableString(value.privacyUrl)
+  );
+}
+
+function isRenderLimits(value: unknown): value is RenderLimits {
+  return (
+    isRecord(value) &&
+    Number.isInteger(value.maxAssets) &&
+    Number.isInteger(value.maxPixels) &&
+    Number.isInteger(value.maxBodyBytes) &&
+    Number.isInteger(value.timeoutMs)
+  );
+}
+
+export function isPublicConfig(value: unknown): value is PublicConfig {
+  return (
+    isRecord(value) &&
+    isNullableString(value.oauthClientId) &&
+    typeof value.saMode === 'boolean' &&
+    typeof value.saStrictExposure === 'boolean' &&
+    isNullableString(value.backendServiceAccount) &&
+    typeof value.version === 'string' &&
+    typeof value.sourceUrl === 'string' &&
+    isNullableString(value.hostedBy) &&
+    value.demo === false &&
+    typeof value.demoOnly === 'boolean' &&
+    isLegalPages(value.legal) &&
+    (value.render === null || isRenderLimits(value.render))
   );
 }
 

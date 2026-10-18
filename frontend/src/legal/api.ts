@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
+import type { LegalTexts } from '@gcportrait/model';
+
 import { isLegalUrl, type LegalPages } from '../api/config';
+import { isRecord } from '../guards';
+
+export type { LegalTexts } from '@gcportrait/model';
 
 /**
  * Client for GET /api/legal: the Markdown of the instance's Impressum and privacy notice, as the backend
@@ -25,16 +30,13 @@ export function legalTarget(pages: LegalPages, id: LegalPageId): LegalTarget | n
   return isLegalUrl(url) ? { kind: 'linked', url, host: new URL(url).hostname } : null;
 }
 
-export type LegalTexts = Readonly<Record<LegalPageId, string | null>>;
-
 function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
 }
 
+/** The answer's contract is the model's `LegalTextsSchema`; api/config.test.ts holds this guard to it. */
 export function isLegalTexts(value: unknown): value is LegalTexts {
-  if (typeof value !== 'object' || value === null) return false;
-  const record = value as Record<string, unknown>;
-  return isNullableString(record.impressum) && isNullableString(record.privacy);
+  return isRecord(value) && isNullableString(value.impressum) && isNullableString(value.privacy);
 }
 
 /** Fetches /api/legal. Resolves to null when the backend is unreachable or answers unexpectedly. */

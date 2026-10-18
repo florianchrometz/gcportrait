@@ -32,9 +32,11 @@ describe('readStaticConfig (the static demo)', () => {
       backendServiceAccount: null,
       version: '1.2.0-3-gabc1234',
       sourceUrl: 'https://git.example.org/me/gcportrait',
+      hostedBy: null,
       demo: false,
       demoOnly: true,
       legal: { impressum: false, privacy: false, impressumUrl: IMPRESSUM, privacyUrl: PRIVACY },
+      render: null,
     });
     expect(isPublicConfig(config)).toBe(true);
     expect(readAppMode({ VITE_STATIC_DEMO: '1' })).toEqual({
@@ -74,27 +76,6 @@ describe('readStaticConfig (the static demo)', () => {
 });
 
 describe('the legal pages in /api/config', () => {
-  it('accepts the linked addresses next to the booleans, and the booleans alone', () => {
-    const base = {
-      oauthClientId: null,
-      saMode: false,
-      backendServiceAccount: null,
-      version: '0.0.0',
-      sourceUrl: DEFAULT_SOURCE_URL,
-      demo: false,
-    };
-    expect(isPublicConfig({ ...base, legal: { impressum: false, privacy: true } })).toBe(true);
-    expect(
-      isPublicConfig({
-        ...base,
-        legal: { impressum: false, privacy: false, impressumUrl: IMPRESSUM, privacyUrl: null },
-      }),
-    ).toBe(true);
-    expect(isPublicConfig({ ...base, legal: { impressum: false, privacy: false, impressumUrl: 1 } })).toBe(
-      false,
-    );
-  });
-
   it('takes only an https address with a host and no credentials as a page to link', () => {
     expect(isLegalUrl(IMPRESSUM)).toBe(true);
     for (const value of [

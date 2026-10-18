@@ -226,6 +226,11 @@ describe('public surface', () => {
         'ScenePointerSchema',
         'SceneReportSchema',
         'SceneRootSchema',
+        // the backend's public answers
+        'LegalPagesSchema',
+        'LegalTextsSchema',
+        'PublicConfigSchema',
+        'RenderLimitsSchema',
       ].sort(),
     );
   });

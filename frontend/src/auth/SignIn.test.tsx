@@ -67,13 +67,8 @@ afterEach(() => {
 describe('who runs the instance (hostedByLine)', () => {
   it('is the backend’s "Hosted by" line alone, or nothing; a statement at its end is cut off', () => {
     const config = (hostedBy: string | null): PublicConfig => ({ ...CONFIG, hostedBy });
-    // A configuration without `hostedBy` at all.
-    const bare: PublicConfig = Object.fromEntries(
-      Object.entries(CONFIG).filter(([key]) => key !== 'hostedBy'),
-    ) as PublicConfig;
     expect(hostedByLine(config('Hosted by Example Ltd.'))).toBe('Hosted by Example Ltd.');
     expect(hostedByLine(config(null))).toBeNull();
-    expect(hostedByLine(bare)).toBeNull();
     expect(hostedByLine(null)).toBeNull();
     // Only the footers carry the statement.
     expect(hostedByLine(config('Hosted by Example Ltd. Not affiliated with Google / Google Cloud.'))).toBe(

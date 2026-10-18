@@ -30,8 +30,12 @@ const IMPRESSUM = [
 ].join('\n');
 const PRIVACY = 'This demo stores nothing about you.\n\n# Hosting\n\nSee the [Impressum](/impressum).';
 
-function config(legal: PublicConfig['legal'], demoOnly = false): PublicConfig {
-  return publicConfig({ demoOnly, ...(legal === undefined ? {} : { legal }) });
+/** An instance publishing `legal`'s pages (a page's address not given links nothing). */
+function config(legal: Partial<LegalPages>, demoOnly = false): PublicConfig {
+  return publicConfig({
+    demoOnly,
+    legal: { impressum: false, privacy: false, impressumUrl: null, privacyUrl: null, ...legal },
+  });
 }
 
 /** A live instance answering `answer` on /api/config and `texts` on /api/legal (`'down'`: no answer). */
@@ -62,7 +66,7 @@ describe('the footer', () => {
   type Link = readonly [name: string, href: string, external: boolean];
   const ELSEWHERE = 'https://operator.example.com/legal/';
 
-  it.each<[string, LegalPages, readonly Link[]]>([
+  it.each<[string, Partial<LegalPages>, readonly Link[]]>([
     [
       'the pages the instance serves, when both are published',
       { impressum: true, privacy: true },
@@ -124,7 +128,7 @@ describe('the footer', () => {
     },
   );
 
-  it('links only the page that exists, and nothing without texts or `legal`, for an address that is not https, or with the backend down', async () => {
+  it('links only the page that exists, and nothing without texts, for an address that is not https, or with the backend down', async () => {
     backend(config({ impressum: false, privacy: true }));
     const first = renderApp('/', { demo: false, snapshots: fakeLibrary() });
     const legal = await within(footer()).findByRole('navigation', { name: 'Legal' });
@@ -137,7 +141,6 @@ describe('the footer', () => {
 
     for (const answer of [
       config({ impressum: false, privacy: false }),
-      config(undefined),
       config({
         impressum: false,
         privacy: false,

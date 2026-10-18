@@ -101,7 +101,7 @@ export function PermissionsPage() {
           offered={config?.saMode === true}
           serviceAccount={serviceAccount}
           scope={scope?.scope ?? null}
-          strictExposure={config?.saMode === true && config.saStrictExposure === true}
+          strictExposure={config?.saMode === true && config.saStrictExposure}
         />
       </section>
     </div>

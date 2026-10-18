@@ -49,6 +49,7 @@ export function readStaticConfig(env: StaticDemoEnv): PublicConfig | null {
     backendServiceAccount: null,
     version: env.VITE_APP_VERSION?.trim() || UNKNOWN_VERSION,
     sourceUrl: readSourceUrl(env.VITE_SOURCE_URL),
+    hostedBy: null,
     demo: false,
     demoOnly: true,
     legal: {
@@ -57,5 +58,6 @@ export function readStaticConfig(env: StaticDemoEnv): PublicConfig | null {
       impressumUrl: legalUrl(env.VITE_LEGAL_IMPRESSUM_URL),
       privacyUrl: legalUrl(env.VITE_LEGAL_PRIVACY_URL),
     },
+    render: null,
   };
 }
