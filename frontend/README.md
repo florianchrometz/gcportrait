@@ -2597,14 +2597,15 @@ within half a pixel of their places, two crops with the bands clear of what they
 the click still counts as the user's gesture while the PNG is drawn; a browser without image support gets a
 plain message ("Use Download PNG instead"), a refusal says so.
 
-**The menu.** A WAI-ARIA menu button: options as `menuitemradio` / `menuitemcheckbox` items in labelled groups
-(Area, Theme, PNG resolution, SVG file), then the four `menuitem` actions (Download SVG, Download PNG,
-Download draw.io (.drawio), Copy PNG; the area and the theme apply to the three files, and the draw.io file's
-`agent` carries the instance's version, which the top bar passes from GET /api/config). Options keep the menu
-open; an action closes it, returns focus to the button and reports in a status line (a live region kept in the
-DOM while empty). Keyboard: Enter, Space or ↓ opens on the first item, ↑ on the last; ↑ ↓ Home End move
-(roving tab index); Escape closes; Tab leaves. The check marks have empty alternative text, so an item's name
-is its label and its state is `aria-checked`.
+**The menu.** The app's MenuButton and Menu (`src/ui/`), its open state the store's one popup at a time:
+options as `menuitemradio` / `menuitemcheckbox` items in labelled groups (Area, Theme, PNG resolution, SVG
+file), then the four `menuitem` actions (Download SVG, Download PNG, Download draw.io (.drawio), Copy PNG; the
+area and the theme apply to the three files, and the draw.io file's `agent` carries the instance's version,
+which the top bar passes from GET /api/config). Options keep the menu open; an action closes it, returns focus
+to the button and reports in a status line (a live region kept in the DOM while empty). Keyboard: Enter, Space
+or ↓ opens on the area chosen, ↑ on the last item; ↑ ↓ Home End and type-ahead move (roving tab index); Escape
+closes; Tab leaves. The check marks have empty alternative text, so an item's name is its label and its state
+is `aria-checked`.
 
 Tests: the unit tests next to each module (serialiser, file name, raster geometry and sentinels, fonts, the
 flow, the menu, the visible area, and the app end to end in jsdom), `e2e/tests/export.spec.ts` in Chromium,
