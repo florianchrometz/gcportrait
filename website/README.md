@@ -30,7 +30,6 @@ From the repository root:
 | Check built pages, resources, links, metadata, installer, demo and exports ([specification](scripts/check-site.ts)) | `pnpm website:check` |
 | Check phone layouts, accessibility and demo playback ([specification](scripts/mobile.ts)) | `pnpm --filter @gcportrait/website mobile` (`--only layout`, `--only playback`, `--page /docs/`, `--theme dark`, `--width 375`, `--stars 12345` with `--forks 678` and `--release v1.2.3` for GitHub's mocked answers, which a page asks for only on a build that did not find the repository not public, such as one with `WEBSITE_STAR_COUNT`) |
 | Check editable command fields, Copy, storage and accessibility across browser and touch profiles ([specification](scripts/fillable.ts)) | `pnpm --filter @gcportrait/website fillable` (`--profile chromium\|firefox\|firefox-fallback\|webkit\|iphone\|pixel`, `--page /docs/permissions/`, `--shots DIR`) |
-| Check the page views in Chromium on a build with `WEBSITE_ANALYTICS=1`, the site shown at its own address and TelemetryDeck answered or refused by the check: one POST per page load after the load event, the path without query or fragment, a hashed user and the tab's session, no cookie sent, sessionStorage only; the demo and repository clicks, nothing from the demo; with TelemetryDeck refused the pages load and nothing throws; nothing at all under Do Not Track, Global Privacy Control or on another host | `pnpm --filter @gcportrait/website analytics` (`--dist DIR`) |
 | Check the header's repository widget, live, in Chromium on `/` at 1440, 768, 390 and 320 px in both themes, GitHub's answers given by the check: the repository and its latest release asked once each after load, anonymous; the version, stars and forks shown with no layout shift, kept for the hour; a repository without a release keeping the build's version; a 404, 403, 429, 500, bad body, timeout or no network changing nothing and asking nothing more within the hour; no request with storage blocked; no request at all where the build found the repository not public (on such a build, all the check runs; on others, simulated); axe-core; `--real` asks GitHub itself once | `pnpm --filter @gcportrait/website stars` (`--count 1301`, `--forks 42`, `--release v1.0.1`, `--real`, `--shots DIR`) |
 | Serve the built site | `pnpm website:preview` |
 | Lighthouse on every page, light and dark, desktop and mobile (thresholds: performance 90, the rest 95) | `pnpm website:lighthouse` (`--page /docs/`, `--theme dark`, `--preset desktop`, `--mobile`) |
@@ -205,14 +204,7 @@ Pages does.
   longer than five seconds; a paused GIF gives way to the poster); a demo the visitor paused stays paused.
   With reduced motion nothing plays by itself: the poster shows with a Play button. On every page, too, the
   header's repository widget (below), in a file of its own that every page shares (about 4.1 kB, 1.9 kB
-  gzipped). In a build with analytics on (`WEBSITE_ANALYTICS`, on by default in a deploying build only;
-  docs/website.md, "Analytics"), the page views: `src/lib/analytics-page.ts` (the parts without a DOM in
-  `src/lib/analytics.ts`), which the layout loads after the `load` event and which, on `gcportrait.app` only
-  and without Do Not Track or Global Privacy Control, loads TelemetryDeck's SDK (`@telemetrydeck/sdk`, bundled
-  into a file of the site's own) and sends one `pageView` with the page's path, and a signal for a click on a
-  link to the demo or the repository; its two random identifiers are kept in sessionStorage
-  (`gcportrait.analytics`). A build with analytics off carries none of it (`__WEBSITE_ANALYTICS__`,
-  `astro.config.ts`). The demo never has it.
+  gzipped). The site counts no page views and sends nothing to a third party (docs/website.md, "Analytics").
 - Guides are rendered by `src/lib/markdown.ts`: raw HTML is dropped, and a link keeps its target
   only for http, https, mailto or a path (a `javascript:` or `data:` link becomes plain text). What may scroll
   sideways is keyboard-focusable (WCAG 2.1.1): every code block (`tabindex="0"`), and every table through its
@@ -280,13 +272,13 @@ Pages does.
 
 ```
 astro.config.ts        site, output, the licence files, the favicon (brand/icon.svg, copied), the installer
-                       (infra/install.sh, copied to /install.sh), the page views' build flag, the SPDX-comment
+                       (infra/install.sh, copied to /install.sh), the SPDX-comment
                        clean-up after the build, and the demo at /demo/ (built by pnpm demo:static, or copied)
 public/                CNAME (the favicon and the installer are copied by the build from brand/ and infra/)
 scripts/               check-site.ts (pnpm website:check), lighthouse.ts (pnpm website:lighthouse), mobile.ts (the
                        phone check), fillable.ts (the fillable-commands check in three engines and on two phones),
                        stars.ts (the repository widget's live check), demo.ts (the demo's check in a browser),
-                       analytics.ts (the page views' check in a browser), astro-check.ts (the .astro files'
+                       astro-check.ts (the .astro files'
                        type check, over tsconfig.astro.json), browser.ts (axe-core, GitHub's mocked answers and
                        other helpers the browser checks share), serve.ts (the built site served as GitHub Pages
                        serves it: byte ranges, `x.html` for `x`, the trailing-slash redirect)
@@ -299,8 +291,7 @@ src/lib/               markdown, docs, coverage, author, placeholders, brand (th
                        exports), seo, sitemap, github (the build's repository facts), star-count and star-count-page
                        (the formatter and the name both layers share, and the live facts in the visitor's browser),
                        fillable and
-                       fillable-page (the fillable commands of the docs pages and the landing page), analytics and
-                       analytics-page (the page views, counted with TelemetryDeck)
+                       fillable-page (the fillable commands of the docs pages and the landing page)
 src/components/        Header (sticky, with the repository widget), Footer, Logo, DemoLink (a link to the demo, in a
                        new tab), StartLink (the "Open in Cloud Shell" and "Run on Google Cloud" buttons, in a new
                        tab), ThemedPicture, DemoVideo, Variables, ExportCard (a sample export: both themes'

@@ -2,7 +2,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { existsSync, readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 
@@ -21,11 +20,8 @@ import {
   NON_AFFILIATION_LONG,
   PRIVACY_URL,
   REPOSITORY_URL,
-  TELEMETRYDECK_APP_ID,
-  TELEMETRYDECK_TARGET,
 } from '../src/site.js';
 import {
-  ANALYTICS_PREFIX,
   checkBrand,
   checkDemo,
   checkDemoLinks,
@@ -519,80 +515,6 @@ describe('scriptConnectionProblems', () => {
     );
     if (taken) expect(found).toBe('');
     else expect(found).toContain("without credentials: 'omit'");
-  });
-
-  describe('the page views sent to TelemetryDeck (docs/website.md, "Analytics")', () => {
-    /** The SDK's request as the build minifies it (@telemetrydeck/sdk, `_post`), in the file that names its target. */
-    const SDK_POST =
-      'var i=class{target=`https://nom.telemetrydeck.com/v2/`;_post(e){let{target:t}=this;return fetch(t,{method:`POST`,mode:`cors`,headers:{"Content-Type":`application/json`},body:JSON.stringify(e)})}};export{i as default};';
-
-    it('allows TelemetryDeck’s ingestion host by name, and nothing that only looks like it', () => {
-      expect(ANALYTICS_PREFIX).toBe('https://nom.telemetrydeck.com/');
-      expect(TELEMETRYDECK_TARGET.startsWith(ANALYTICS_PREFIX)).toBe(true);
-      expect(
-        scriptConnectionProblems(`var r=\`${TELEMETRYDECK_APP_ID}\`,i=\`${TELEMETRYDECK_TARGET}\`;`),
-      ).toEqual([]);
-      for (const host of [
-        'https://nom.telemetrydeck.com.example.net/v2/',
-        'https://telemetrydeck.com/v2/',
-        'http://nom.telemetrydeck.com/v2/',
-        'https://cdn.telemetrydeck.com/websdk/telemetrydeck.min.js',
-      ]) {
-        expect(scriptConnectionProblems(`var i=\`${host}\`;`).join('\n')).toContain(
-          'a script names another host',
-        );
-      }
-    });
-
-    it('accepts the SDK’s own request, the one fetch whose address is a variable, as the build writes it', () => {
-      expect(scriptConnectionProblems(SDK_POST)).toEqual([]);
-      // A POST written out to the ingestion address is the same request.
-      expect(
-        scriptConnectionProblems(
-          'fetch(`https://nom.telemetrydeck.com/v2/`,{method:`POST`,credentials:`omit`,body:b})',
-        ),
-      ).toEqual([]);
-    });
-
-    it('accepts the SDK as it is installed (its published file, without its comments, as the build writes it)', () => {
-      const sdk = createRequire(import.meta.url).resolve('@telemetrydeck/sdk');
-      const source = readFileSync(path.join(path.dirname(sdk), 'telemetrydeck.js'), 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/^\s*\/\/.*$/gm, '');
-      expect(source).toContain(TELEMETRYDECK_TARGET);
-      expect(scriptConnectionProblems(source)).toEqual([]);
-    });
-
-    it.each([
-      [
-        'in a script that does not name the ingestion address',
-        SDK_POST.replace('nom.telemetrydeck.com/v2/', ''),
-      ],
-      ['twice in one script', SDK_POST.replace('_post(e){', '_post(e){fetch(u,{method:`POST`});')],
-      ['with credentials', SDK_POST.replace('mode:`cors`', 'credentials:`include`')],
-      ['as a GET', SDK_POST.replace('method:`POST`', 'method:`GET`')],
-      ['with options it does not write out', 'var i=`https://nom.telemetrydeck.com/v2/`;fetch(t,o)'],
-      ['with an address it computes', 'var i=`https://nom.telemetrydeck.com/v2/`;fetch(i+e,{method:`POST`})'],
-    ])('refuses a fetch with a variable for its address %s', (_case, source) => {
-      expect(scriptConnectionProblems(source).join('\n')).toContain(
-        'a script fetches an address it does not write out',
-      );
-    });
-
-    it('refuses the ingestion address fetched other than as a POST without credentials', () => {
-      expect(scriptConnectionProblems('fetch(`https://nom.telemetrydeck.com/v2/`)').join('\n')).toContain(
-        'other than as a POST without credentials',
-      );
-      expect(
-        scriptConnectionProblems(
-          'fetch(`https://nom.telemetrydeck.com/v2/`,{method:`POST`,credentials:`include`})',
-        ).join('\n'),
-      ).toContain('other than as a POST without credentials');
-      // sendBeacon stays refused, to this host too.
-      expect(
-        scriptConnectionProblems('navigator.sendBeacon(`https://nom.telemetrydeck.com/v2/`,b)').join('\n'),
-      ).toContain('a script uses sendBeacon');
-    });
   });
 
   it('refuses another host named anywhere in a script, and every other way to send a request', () => {
@@ -1336,19 +1258,6 @@ describe('checkDemo (the static demo at /demo/)', () => {
       `/demo/: no script of the demo carries ${IMPRESSUM_URL} for its footer`,
       `/demo/: no script of the demo carries ${PRIVACY_URL} for its footer`,
       `/demo/: no script of the demo carries ${REPOSITORY_URL} for its footer`,
-    ]);
-  });
-
-  it('refuses the site’s analytics anywhere in the demo: the app never sends any', () => {
-    const view = files({
-      'assets/index-1.js': `${APP}import("./telemetrydeck.js")`,
-      'assets/chunk.js': `var r="${TELEMETRYDECK_APP_ID}";`,
-      'licenses/THIRD_PARTY_NOTICES.txt': '@telemetrydeck/sdk 2.0.4 MIT',
-    });
-    expect(checkDemo(view, ICON)).toEqual([
-      '/demo/: assets/index-1.js names TelemetryDeck (the demo is the app, which sends no analytics)',
-      '/demo/: licenses/THIRD_PARTY_NOTICES.txt names TelemetryDeck (the demo is the app, which sends no analytics)',
-      '/demo/: assets/chunk.js names TelemetryDeck (the demo is the app, which sends no analytics)',
     ]);
   });
 });

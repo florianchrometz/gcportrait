@@ -19,7 +19,6 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, passthroughImageService } from 'astro/config';
 import type { AstroIntegration } from 'astro';
 
-import { analyticsEnabled } from './src/lib/analytics.js';
 import { DEMO_URL, IMPRESSUM_URL, PRIVACY_URL } from './src/site.js';
 
 /**
@@ -53,38 +52,6 @@ function licenceFiles(): AstroIntegration {
         }
         const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
         copyFileSync(path.join(repo, 'LICENSE'), path.join(out, 'gcportrait-LICENSE.txt'));
-      },
-    },
-  };
-}
-
-/**
- * Whether this build sends the website's page views to TelemetryDeck (src/lib/analytics.ts: `WEBSITE_ANALYTICS`, on by
- * default in a deploying build only; docs/website.md, "Analytics"). The bundler sees it as `__WEBSITE_ANALYTICS__`
- * (src/env.d.ts), so a build with analytics off carries none of their code and no copy of the SDK. With them on, the
- * SDK's licence is written next to the fonts' (dist/licenses/telemetrydeck-sdk-LICENSE.txt). The build says which.
- */
-const ANALYTICS = analyticsEnabled(process.env);
-
-function analytics(): AstroIntegration {
-  return {
-    name: 'gcportrait:analytics',
-    hooks: {
-      'astro:build:start': ({ logger }) => {
-        logger.info(
-          ANALYTICS
-            ? "page views: on (TelemetryDeck, from the site's own host only; WEBSITE_ANALYTICS=0 switches them off)"
-            : 'page views: off (WEBSITE_ANALYTICS=1, or a deploying build, switches them on)',
-        );
-      },
-      'astro:build:done': ({ dir }) => {
-        if (!ANALYTICS) return;
-        const out = path.join(fileURLToPath(dir), 'licenses');
-        mkdirSync(out, { recursive: true });
-        copyFileSync(
-          createRequire(import.meta.url).resolve('@telemetrydeck/sdk/LICENSE'),
-          path.join(out, 'telemetrydeck-sdk-LICENSE.txt'),
-        );
       },
     },
   };
@@ -297,20 +264,12 @@ export default defineConfig({
   trailingSlash: 'always',
   build: { format: 'directory', assets: '_astro' },
   image: { service: passthroughImageService() },
-  integrations: [
-    licenceFiles(),
-    brandFavicon(),
-    installer(),
-    analytics(),
-    withoutSourceHeaders(),
-    staticDemo(),
-  ],
+  integrations: [licenceFiles(), brandFavicon(), installer(), withoutSourceHeaders(), staticDemo()],
   devToolbar: { enabled: false },
   compressHTML: false,
   prefetch: false,
   vite: {
     // The site reads docs/ and docs/media/ from the repository root at build time.
     server: { fs: { allow: ['..'] } },
-    define: { __WEBSITE_ANALYTICS__: JSON.stringify(ANALYTICS) },
   },
 });

@@ -577,13 +577,12 @@ git push origin v1.0.0
 The tag runs `release.yml`: it checks and builds the tag, publishes the image as `1.0.0`, `1.0` and `latest`,
 creates the GitHub release and, while `PAGES_DEPLOY` is `true`, deploys the website.
 
-**Repository settings.** The workflows read two repository variables (Settings > Secrets and variables >
-Actions), and nothing else besides GitHub's own `GITHUB_TOKEN`:
+**Repository settings.** The workflows read one repository variable (Settings > Secrets and variables >
+Actions), beside GitHub's own `GITHUB_TOKEN`:
 
 | Name | For |
 |---|---|
 | `PAGES_DEPLOY` | `true` switches on the website's deployment to GitHub Pages from `main` and from each `v*` tag. Set it after the Pages source ("GitHub Actions"), the `github-pages` environment allowing `main` and `v*`, the verified domain, the DNS records and the custom domain with HTTPS enforced ([website.md, "Deploying to GitHub Pages"](website.md#deploying-to-github-pages)). |
-| `WEBSITE_ANALYTICS` | Optional. Unset, a deploying build counts the website's page views with TelemetryDeck (never the demo's), so the privacy notice must mention it ([website.md, "Analytics"](website.md#analytics)). `0` switches that off (what a fork sets), `1` on in every build. |
 
 Under Settings > Advanced Security, Dependabot alerts and Dependabot security updates are on
 ([security.md](security.md), finding O7). Every pull request Dependabot opens is adopted on `main` or declined

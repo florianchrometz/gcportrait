@@ -17,8 +17,6 @@ import {
   RELEASES_URL,
   REPOSITORY_URL,
   SITE_URL,
-  TELEMETRYDECK_APP_ID,
-  TELEMETRYDECK_TARGET,
   repositoryFileUrl,
   siteUrl,
 } from './site.js';
@@ -82,11 +80,6 @@ describe('the non-affiliation wording and the repository', () => {
     expect(INSTALLER_URL).toBe(`${SITE_URL}/install.sh`);
     expect(INSTALL_COMMAND).toBe(`curl -fsSL ${SITE_URL}/install.sh | bash -s -- --project YOUR_PROJECT`);
     expect(RELEASES_URL).toBe(`${REPOSITORY_URL}/releases`);
-  });
-
-  it('names TelemetryDeck’s app and its ingestion address, the one other host the pages send to', () => {
-    expect(TELEMETRYDECK_APP_ID).toBe('935EC0BB-BC12-4EE3-82C3-7F73D73116DD');
-    expect(TELEMETRYDECK_TARGET).toBe('https://nom.telemetrydeck.com/v2/');
   });
 
   it('keeps website/public/CNAME on the canonical host', () => {

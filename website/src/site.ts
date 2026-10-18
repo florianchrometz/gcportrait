@@ -142,16 +142,6 @@ export const LEGAL_LINKS: readonly {
 export const RELEASES_URL = 'https://github.com/florianchrometz/gcportrait/releases';
 
 /**
- * The website's page views, counted with TelemetryDeck (docs/website.md, "Analytics"): its npm SDK
- * (@telemetrydeck/sdk), bundled by the build into the site's own pages only, never into the app or the demo at /demo/.
- * The app id is a public identifier (every page that sends carries it). A page sends only from SITE_HOST, in a build
- * with analytics on (src/lib/analytics.ts, WEBSITE_ANALYTICS), and never when the browser asks not to be tracked.
- */
-export const TELEMETRYDECK_APP_ID = '935EC0BB-BC12-4EE3-82C3-7F73D73116DD';
-/** TelemetryDeck's ingestion address (the SDK's own default, passed explicitly): the one host the pages send to. */
-export const TELEMETRYDECK_TARGET = 'https://nom.telemetrydeck.com/v2/';
-
-/**
  * The licence of gcportrait's own work (AGENTS.md, Licence and dependencies), as SPDX names it, and its page at the
  * Open Source Initiative.
  */

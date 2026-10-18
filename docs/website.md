@@ -31,7 +31,7 @@ the release workflow writes from the changesets at every tag (`scripts/release-n
 | [Generated media](#generated-media) | The screenshots, animated demos and link-preview images in `docs/media/`, and when to regenerate them. |
 | [Sample exports](#sample-exports) | Real SVG, PNG and draw.io exports of the demo organisations to download or open in diagrams.net: making them, checking them, the page. |
 | [GitHub repository widget](#github-repository-widget) | The header's link to the repository: the build's facts (version, stars, forks), the live refresh in the visitor's browser and what it means for privacy, the fallback. |
-| [Analytics](#analytics) | The site's page views, counted with TelemetryDeck: on in the deploying build only, never in the app or the demo, Do Not Track and Global Privacy Control respected, what is sent and what is not, the switch for forks, the checks. |
+| [Analytics](#analytics) | The site counts nothing: no page views, no third party, no measurement cookie; its only request elsewhere is the repository widget. |
 | [Favicon and logo](#favicon-and-logo) | One drawing from one file, `brand/icon.svg`, for the favicon, the header's and footer's logo and the app's favicon. |
 | [The installer](#the-installer) | `/install.sh`, the one-line installer: `infra/install.sh` copied by the build, its content type, kept out of search. |
 | [The landing page's start buttons](#the-landing-pages-start-buttons) | "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host": where they go, the new tab, the marks. |
@@ -53,7 +53,6 @@ pnpm website:lighthouse   # Lighthouse on every page, light and dark, desktop an
 pnpm --filter @gcportrait/website mobile   # every page on phones in a browser, the sticky header, and the demos' playback (Mobile)
 pnpm --filter @gcportrait/website fillable # the fillable commands in Chromium, Firefox, WebKit and on phones (Fillable commands)
 pnpm --filter @gcportrait/website stars    # the header's repository widget, live, in a browser (GitHub repository widget)
-pnpm --filter @gcportrait/website analytics  # the page views in a browser, on a build with WEBSITE_ANALYTICS=1 (Analytics)
 pnpm --filter @gcportrait/website typecheck  # the site's TypeScript: tsc -b over the .ts files, then astro check over the .astro files
 ```
 
@@ -62,9 +61,8 @@ The build reads everything from the repository at build time: the guides listed 
 `docs/author.md`, the compiled catalog and `pnpm catalog:coverage --json`, the features' copy in
 `website/src/data/features.json` (the README's feature cells repeat it, and `scripts/readme.test.ts` compares
 them), and the media in `docs/media/`; the one thing it asks outside the repository is the repository widget's
-facts on GitHub ([GitHub repository widget](#github-repository-widget)). A deploying build also counts the
-site's page views
-([Analytics](#analytics)); `WEBSITE_ANALYTICS=0` switches that off, `WEBSITE_ANALYTICS=1` on in any build. A
+facts on GitHub ([GitHub repository widget](#github-repository-widget)), and it counts no page views and
+sends nothing to another host ([Analytics](#analytics)). A
 guide or a medium that is missing is left out with a warning; a **strict** build (`WEBSITE_STRICT=1`, set by
 the deploy jobs) fails instead, and also fails while `docs/author.md` still holds a placeholder (`[IN
 CAPITALS]`, `{{…}}`, `<…>`, `TODO`). The site has no legal pages of its own ([Legal pages](#legal-pages)). The
@@ -487,10 +485,9 @@ inventory](legal/data-processing-inventory.md), and the privacy notice on the ma
 pages](#legal-pages)) must describe it: a third party contacted by the visitor's browser, what it receives,
 how often (two requests at most once an hour per tab, and not while the repository is not public), the purpose
 (showing the repository's current version, star count and fork count), the legal basis, and the sessionStorage
-key with what it holds and for how long. `pnpm website:check` allows exactly these requests and, besides them,
-only the page views' POST to TelemetryDeck ([Analytics](#analytics)); it refuses any other host in a script,
-and every resource (script, stylesheet, font, image, video, frame) from another host ([Building and
-checking](#building-and-checking)).
+key with what it holds and for how long. `pnpm website:check` allows exactly these requests; it refuses any
+other host in a script, and every resource (script, stylesheet, font, image, video, frame) from another host
+([Building and checking](#building-and-checking)).
 
 - **Token.** With `GITHUB_TOKEN` set the build's requests are authenticated (GitHub allows 60 unauthenticated
   requests an hour per address, shared on CI runners). The build (`website.yml`) receives the workflow's own
@@ -564,81 +561,17 @@ which Chrome logs as a failed request; on a build that saw the 404, no run asks.
 
 ## Analytics
 
-The site counts its page views with [TelemetryDeck](https://telemetrydeck.com), through its npm SDK
-(`@telemetrydeck/sdk`, MIT, pinned), which the build bundles into a file of the site's own: no script comes
-from TelemetryDeck's CDN, so the rule that every resource is self-hosted holds. Only the website's own pages
-count: never the app, never the demo at `/demo/` (the app's own build, which a self-hosted instance runs too:
-it must never phone home) and never the docs' pictures of the app. The app id is `TELEMETRYDECK_APP_ID` in
-`website/src/site.ts`, a public identifier (every page that sends carries it).
+The website counts nothing and sends nothing to a third party: no page views, no error reports, no
+measurement cookie. The header's repository widget is the only request a page of the site makes to another
+host ([GitHub repository widget](#github-repository-widget); row W3 of the [data-processing
+inventory](legal/data-processing-inventory.md)). The demo at `/demo/` and every self-hosted instance send
+nothing anywhere either, because they are the app ([AGENTS.md](../AGENTS.md), "Modes and hosting").
 
-**When it is on.** `WEBSITE_ANALYTICS=1` switches it on and `WEBSITE_ANALYTICS=0` off; unset, it is on in a
-deploying build only (`WEBSITE_STRICT=1`, which `website.yml` sets for every deploying build: `pages.yml` from
-`main`, `release.yml` for a tag) and off in `pnpm website:dev`, local and pull-request builds and the tests
-(`website/src/lib/analytics.ts`, `analyticsEnabled`; any other value fails the build). Both callers pass the
-repository variable `WEBSITE_ANALYTICS` to the build, so a fork that deploys its own site sets it to `0`
-(Settings > Secrets and variables > Actions > Variables) and sends nothing, or changes the app id to its own.
-The build says which in its log (`page views: on` or `off`). A build with it off carries none of its code:
-`website/astro.config.ts` defines `__WEBSITE_ANALYTICS__` for the bundler, and the layout's script
-(`website/src/layouts/Base.astro`)
-loads the page module only under it, so neither the module, the SDK nor the app id is in such a build. With it
-on, the build writes the SDK's licence to `dist/licenses/telemetrydeck-sdk-LICENSE.txt`.
 
-**When a page sends.** Only when all of these hold (`website/src/lib/analytics-page.ts`): the build has it on;
-the page is served from `gcportrait.app` itself (a local preview, a browser check, a fork's host or a mirror
-sends nothing); and the browser does not ask not to be tracked: Do Not Track (`navigator.doNotTrack` "1", or
-the older `window.doNotTrack` and `navigator.msDoNotTrack`) and Global Privacy Control
-(`navigator.globalPrivacyControl`) each stop it before anything is fetched. Then, once the page has loaded
-(the module itself is fetched only after the `load` event) and the browser is idle (`requestIdleCallback`, or
-a short timeout where there is none), it loads the SDK's file from the site and sends one signal. It never
-delays the page and never throws: a failure (the SDK's file not loading, no network, TelemetryDeck refusing or
-not answering, storage blocked) sends nothing more, and nothing is logged (Chrome logs a refused request
-itself, as for any failed request).
-
-**What is sent**, in one POST to `https://nom.telemetrydeck.com/v2/` per page load: the signal `pageView`, the
-app id, the path the page declares for itself without query or fragment (`/docs/self-host/`, never `?…` or
-`#…`; the 404 page reports `/404.html`, never the address typed), the SDK's name and version (`JavaScriptSDK
-2.0.4`), a user identifier, which the SDK hashes with SHA-256 before it is sent, and a session identifier.
-And, once the page view is on its way, a click on a link to the demo or to the repository (the header's GitHub
-link and any address below it, such as the releases page or a file) sends `Outbound.demo` or
-`Outbound.repository` with the same fields and the path of the page it was on; the demo opens in a new tab,
-while a link to the repository leaves the page in the same tab, which can end that request before it is out.
-Nothing else: no other page's address, no query string or fragment, nothing typed into the commands' fields,
-no cookie. Unlike TelemetryDeck's script for websites (served from its CDN, so not usable here), the npm SDK
-adds no locale, screen, browser or referrer fields of its own. TelemetryDeck receives with each request what
-any server does: the IP address, the user agent (and, in Chromium-based browsers, the client hints), the
-preferred languages and the site's origin as the referrer (the browser's default policy sends no path to
-another host). Its privacy FAQ says it stores no IP address, uses no cookies, and estimates a country from the
-first three parts of the address of its script's requests; the maintainer receives the counts, not the
-requests.
-
-**The identifiers.** The site has no accounts, and the SDK needs a user identifier and a session identifier,
-so both are random values (16 bytes from `crypto.getRandomValues`, 32 hexadecimal digits each) made for the
-browser tab's session and kept in its sessionStorage under `gcportrait.analytics`
-(`{"user":"…","session":"…"}`), so that the pages of one visit count as one session and one visitor;
-sessionStorage ends with the tab. Where sessionStorage is blocked, each page load makes new ones. Nothing is
-written to localStorage and no cookie is set.
-
-**Privacy.** This is row W4 of the [data-processing inventory](legal/data-processing-inventory.md), and the
-privacy notice on the maintainer's website must describe it before a deploy with it on ([Legal
-pages](#legal-pages)): the provider (TelemetryDeck), what the page sends and what TelemetryDeck receives with
-the request, the purpose (counting the site's page views and which pages lead to the demo and the repository),
-the legal basis, the sessionStorage key with what it holds and for how long, that Do Not Track and Global
-Privacy Control stop it, and that the demo and self-hosted instances send nothing.
-
-**Checks.** `pnpm website:check` allows TelemetryDeck's ingestion host by name (`ANALYTICS_PREFIX` in
-`website/scripts/check-site.ts`) and nothing that only looks like it, requires the SDK's licence when a script
-carries it, and refuses any file of the demo naming TelemetryDeck or the app id ([Building and
-checking](#building-and-checking)). The unit tests hold the module's decisions (the build flag, the host, Do
-Not Track, Global Privacy Control, the path without query and fragment, one page view per load, the
-identifiers, the clicks, no throw on any failure) with a fake SDK, and the check's rules against the SDK's
-published file. `pnpm --filter @gcportrait/website analytics` (`website/scripts/analytics.ts`) runs a build
-made with `WEBSITE_ANALYTICS=1` in Chromium at its own address, `https://gcportrait.app` (the check answers
-every request there from the build), and answers or refuses TelemetryDeck's host itself: one POST per page
-load, after the load event, with the fields above and nothing else, no cookie sent although one is set for
-that host, the same identifiers on the tab's next page, sessionStorage only; a signal for "Try the demo" and
-for the header's GitHub link, none from the demo's tab; with TelemetryDeck refused, every page loads and
-nothing throws; under Do Not Track, Global Privacy Control or at the build's local address, no request and the
-SDK's file not even fetched.
+**Checks.** `pnpm website:check` refuses any script that names or fetches any host but the site itself and
+`api.github.com` for the repository widget, and every file of the demo naming a Google sign-in host
+([Building and checking](#building-and-checking)). No build flag, variable or licence file exists for
+analytics, because there is none.
 
 ## Favicon and logo
 
@@ -774,7 +707,7 @@ bundle's own files.
 bases. The hosted `/demo/` bundle is validated by `pnpm website:check` after the website build, in every CI
 path that builds the site. Its `checkDemo` (`website/scripts/check-site.ts`) checks every route copy, one
 policy `<meta>` before anything that loads with the page's own hash, the referrer `<meta>`, everything the
-page loads under `/demo/`, no Google sign-in host or analytics, `favicon.svg` equal to `brand/icon.svg`,
+page loads under `/demo/`, no Google sign-in host, `favicon.svg` equal to `brand/icon.svg`,
 the footer's Impressum, privacy notice and source link, and the licence files. The site check also requires
 every "Try the demo" link to point at `/demo/`; it is not a validator for arbitrary bases or standalone
 bundles. `pnpm --filter @gcportrait/website demo` serves the built site as GitHub Pages does and drives the
@@ -817,9 +750,7 @@ in this order:
 1. **Legal pages.** The footer of every page, and the demo's, links
    <https://florian-chrometz.de/legal/impressum> and
    <https://florian-chrometz.de/legal/privacy-policy> ([Legal pages](#legal-pages)); have both online before the first
-   deploy, the privacy notice mentioning TelemetryDeck: a deploy counts the site's page views
-   ([Analytics](#analytics); the repository variable `WEBSITE_ANALYTICS` set to `0` switches that off). The
-   workflows need no secret.
+   deploy. The workflows need no secret.
 2. **Pages source.** Repository Settings > Pages > Build and deployment > Source: "GitHub Actions".
 3. **Environment.** Settings > Environments > `github-pages` (created by step 2): under "Deployment branches
    and tags", allow `main` and the tag pattern `v*`.
@@ -904,8 +835,8 @@ twice, without `rel="noopener"` or without the external-site name, and fails the
 (…)" for assistive technology), and from `/demo/impressum` and `/demo/privacy` (built in by `pnpm
 demo:static`, whose defaults a test keeps equal to `src/site.ts`'s; a self-hosted instance links its own with
 `infra/deploy.sh --impressum-url` and `--privacy-url`), and [docs/legal/README.md](legal/README.md) lists what
-the privacy notice must cover, among it the GitHub Pages logs, the header's repository widget and the page
-views counted with TelemetryDeck (rows W1 to W4 of the inventory).
+the privacy notice must cover, among it the GitHub Pages logs and the header's repository widget (rows W1 to
+W3 of the inventory).
 
 ## Lighthouse
 

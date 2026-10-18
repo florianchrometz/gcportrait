@@ -13,10 +13,9 @@ The maintainer runs no service: no sign-in instance, no accounts, nothing to agr
 ([AGENTS.md](../../AGENTS.md), "Modes and hosting"). The hosted surfaces are the website `gcportrait.app` and
 its sign-in-free demo at `gcportrait.app/demo/`, a static build of the app in demo-only mode, both served by
 one GitHub Pages site, and neither processes personal data by design: no sign-in, no cookies, no server of its
-own, no server-side storage, and no analytics but the website's own page views. What remains are the hosting
-provider's request logs, the header's repository widget, the website's page views counted with TelemetryDeck
-(never the demo's) and what the pages keep in the visitor's own browser. The site still needs an Impressum,
-and a privacy notice for those.
+own, no server-side storage, and no analytics. What remains are the hosting provider's request logs, the
+header's repository widget and what the pages keep in the visitor's own browser. The site still needs an
+Impressum, and a privacy notice for those.
 
 ## Where the legal texts live
 
@@ -51,23 +50,17 @@ code in the [data-processing inventory](data-processing-inventory.md) (row IDs i
   GitHub receives the IP address, the user agent and the site's origin with each. The browser keeps the time
   and the facts in session storage for the hour. While the repository is not public the browser does not ask
   at all (W3).
-- **The website counts its page views with TelemetryDeck.** On the website's own pages only (never the demo,
-  never a self-hosted instance), and not where the browser sends Do Not Track or Global Privacy Control: once
-  a page has loaded, the visitor's browser sends TelemetryDeck (`nom.telemetrydeck.com`) one request with the
-  page's path (no query, no fragment), the site's app id, a random user identifier hashed with SHA-256 and a
-  random session identifier; a click on a link to the demo or to the repository sends one more. TelemetryDeck
-  receives the IP address, the user agent and the site's origin with each request (it says it stores no IP
-  address); no cookie, nothing typed. The two random identifiers are kept in session storage
-  (`gcportrait.analytics`) until the tab is closed, so that the pages of one visit count as one session (W4).
+- **The website counts no page views and sends nothing to a third party.** It loads nothing from another host
+  but the repository facts above (W3), sets no measurement cookie, and keeps no identifier for analytics. The
+  demo and self-hosted instances send nothing either.
 - **The demo has no server.** It is files GitHub Pages delivers (W1); it runs in the visitor's browser, reads
   no Google Cloud data and asks no other host.
-- **No cookies, no tracking, no sign-in.** Neither site sets a cookie or loads anything from another host; the
-  website's only analytics are its page views above (W4), with TelemetryDeck's SDK served by the site itself;
-  there is no tracking across sites, no advertising and no profile; the demo has no sign-in, reads no Google
-  Cloud data and sends no analytics.
+- **No cookies, no tracking, no sign-in.** Neither site sets a cookie or loads anything from another host;
+  there is no analytics, no tracking across sites, no advertising and no profile; the demo has no sign-in,
+  reads no Google Cloud data and sends no analytics.
 - **What stays in the visitor's browser.** The values typed into the website's commands (local storage,
-  `gcportrait.docs.variables`, W2); the repository widget's facts and the page views' random identifiers
-  (session storage, `gcportrait.repository` and `gcportrait.analytics`, W3 and W4); the demo's theme (local
+  `gcportrait.docs.variables`, W2); the repository widget's facts (session storage, `gcportrait.repository`,
+  W3); the demo's theme (local
   storage, `gcportrait.theme`) and its generated demo organisations, saved views and imported files
   (IndexedDB); nothing of it reaches the maintainer (DS1).
 - **Email**, if the page names an address: what is sent, kept until the conversation is over (C1).
