@@ -8,6 +8,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useEffect, type ReactElement } from 'react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TAGLINE } from '../../branding';
@@ -21,6 +22,7 @@ import type { ExportSource } from '../../export/source';
 import { createMemoryPreferenceStore, PreferenceStoreContext } from '../../storage/preferences';
 import { installMatchMedia, type SystemSchemeControl } from '../../test/matchMedia';
 import { expectInertButFocusable } from '../../test/inert';
+import { AppStateProvider } from '../../state';
 import { ThemeProvider } from '../../theme/ThemeProvider';
 import {
   COPY_UNSUPPORTED,
@@ -82,14 +84,18 @@ function renderMenu(
   version?: string,
 ): ReactElement {
   const element = (
-    <PreferenceStoreContext value={createMemoryPreferenceStore()}>
-      <ThemeProvider>
-        <DiagramSessionProvider>
-          <Publish source={source} />
-          <ExportMenu services={io} version={version} />
-        </DiagramSessionProvider>
-      </ThemeProvider>
-    </PreferenceStoreContext>
+    <MemoryRouter initialEntries={['/diagram']}>
+      <AppStateProvider>
+        <PreferenceStoreContext value={createMemoryPreferenceStore()}>
+          <ThemeProvider>
+            <DiagramSessionProvider>
+              <Publish source={source} />
+              <ExportMenu services={io} version={version} />
+            </DiagramSessionProvider>
+          </ThemeProvider>
+        </PreferenceStoreContext>
+      </AppStateProvider>
+    </MemoryRouter>
   );
   render(element);
   return element;

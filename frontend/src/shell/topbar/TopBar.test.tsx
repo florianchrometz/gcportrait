@@ -88,10 +88,32 @@ describe('TopBar', WHOLE_APP_TIMEOUT, () => {
     renderApp('/diagram#snapshot=demo:S');
     const banner = screen.getByRole('banner');
     const exportButton = within(banner).getByRole('button', { name: 'Export' });
-    // The menu's anchor is the last of the app row's actions, and the actions end the row.
-    const actions = exportButton.closest('div')?.parentElement;
-    expect(actions?.lastElementChild?.contains(exportButton)).toBe(true);
+    // The menu's anchor (around the menu button's own) is the last of the app row's actions, and the actions end
+    // the row.
+    const anchor = exportButton.parentElement?.parentElement;
+    const actions = anchor?.parentElement;
+    expect(actions?.lastElementChild).toBe(anchor);
     expect(actions?.parentElement?.lastElementChild).toBe(actions);
+  });
+
+  it('counts the Export menu among the one popup open at a time', DRAWING_APP_TIMEOUT, async () => {
+    const { container } = renderApp('/diagram#snapshot=demo:S', { diagramWorkers: createInProcessWorkers });
+    await drawn(container);
+    const banner = screen.getByRole('banner');
+    const exportButton = within(banner).getByRole('button', { name: 'Export' });
+    expect(exportButton.getAttribute('aria-disabled')).toBeNull();
+    await userEvent.click(within(banner).getByRole('button', { name: 'Snapshot' }));
+    expect(screen.getByRole('menu', { name: 'Snapshot' })).toBeDefined();
+    // Opened from the keyboard, so no press outside the Snapshot menu closes it: only the store's rule does.
+    act(() => {
+      exportButton.focus();
+    });
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menu', { name: 'Export' })).toBeDefined();
+    expect(screen.queryByRole('menu', { name: 'Snapshot' })).toBeNull();
+    await userEvent.click(within(banner).getByRole('button', { name: 'Snapshot' }));
+    expect(screen.queryByRole('menu', { name: 'Export' })).toBeNull();
+    expect(exportButton.getAttribute('aria-expanded')).toBe('false');
   });
 
   it.each(['/diagram', '/settings'])('passes axe at rest on %s', async (path) => {

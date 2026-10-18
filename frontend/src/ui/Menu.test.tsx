@@ -163,4 +163,34 @@ describe('Menu (item kinds, type-ahead, anchoring)', () => {
     setup();
     await expectNoAxeViolations();
   });
+
+  it('puts runs of one group in a labelled group, a separator between runs, and moves across them', async () => {
+    const onSelect = vi.fn();
+    setup([
+      { id: 'whole', label: 'Whole diagram', kind: 'radio', checked: true, group: 'Area' },
+      { id: 'viewport', label: 'Current viewport', kind: 'radio', checked: false, group: 'Area' },
+      { id: 'light', label: 'Light', kind: 'radio', checked: true, group: 'Theme' },
+      { id: 'svg', label: 'Download SVG', onSelect },
+      { id: 'png', label: 'Download PNG' },
+    ]);
+    const menu = screen.getByRole('menu', { name: 'Actions for web-1' });
+    const groups = screen.getAllByRole('group');
+    expect(groups.map((group) => group.getAttribute('aria-labelledby') === null)).toEqual([false, false]);
+    expect(screen.getByRole('group', { name: 'Area' }).textContent).toBe('AreaWhole diagramCurrent viewport');
+    expect(screen.getByRole('group', { name: 'Theme' }).textContent).toBe('ThemeLight');
+    expect(screen.getAllByRole('separator')).toHaveLength(2);
+    // The captions are not items: the arrows go from item to item across the groups.
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
+    expect(document.activeElement?.textContent).toBe('Download SVG');
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(menu.isConnected).toBe(true);
+    await expectNoAxeViolations();
+  });
+
+  it('draws no group and no separator for a menu without groups', () => {
+    setup();
+    expect(screen.queryByRole('group')).toBeNull();
+    expect(screen.queryByRole('separator')).toBeNull();
+  });
 });

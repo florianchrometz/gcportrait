@@ -26,7 +26,8 @@ Exporting a picture is not the same as exporting the data: the Snapshots page sa
 ## 1. The Export menu
 
 The menu opens from the **Export** button, the last control at the right end of the top bar, filled in the
-accent colour (Enter, Space or ↓ opens it on its first item, ↑ on its last; ↑ ↓ Home End move; Escape closes).
+accent colour (Enter, Space or ↓ opens it on the area chosen, ↑ on its last item; ↑ ↓ Home End and typed
+letters move; Escape closes).
 While nothing is drawn the button stays inert. The options keep the menu open; an action closes it and reports
 in a status line next to the button.
 

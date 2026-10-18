@@ -13,9 +13,12 @@
  * - A link item opens its page in a new tab only when activated (`target="_blank"`,
  *   `rel="noopener noreferrer"`): nothing here ever opens a page by itself.
  * - At a point it is positioned `fixed` there, moved back inside the viewport when it would overflow.
+ * - Items that share a `group` in a row sit in a `group` named by that caption, shown above them; a separator
+ *   divides each run of items from the next (the Export menu's options and actions).
  */
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -43,6 +46,8 @@ export interface MenuItem {
   readonly keepOpen?: boolean;
   /** Announced as unavailable (`aria-disabled`); focusable, activates nothing. */
   readonly disabled?: boolean;
+  /** The caption of the labelled group the item belongs to, with the items next to it that share it. */
+  readonly group?: string;
 }
 
 export type MenuCloseReason = 'escape' | 'tab' | 'outside' | 'select';
@@ -63,6 +68,23 @@ export interface MenuProps {
   readonly onClose: (reason: MenuCloseReason) => void;
 }
 
+interface Run {
+  readonly group: string | undefined;
+  readonly start: number;
+  readonly items: readonly MenuItem[];
+}
+
+/** The items in runs of one `group` each (an ungrouped run too), in order, with each run's first index. */
+function runsOf(items: readonly MenuItem[]): readonly Run[] {
+  const runs: Array<{ group: string | undefined; start: number; items: MenuItem[] }> = [];
+  items.forEach((item, index) => {
+    const last = runs.at(-1);
+    if (last !== undefined && last.group === item.group) last.items.push(item);
+    else runs.push({ group: item.group, start: index, items: [item] });
+  });
+  return runs;
+}
+
 const ROLES = { action: 'menuitem', radio: 'menuitemradio', checkbox: 'menuitemcheckbox' } as const;
 
 export function Menu({
@@ -75,6 +97,7 @@ export function Menu({
   insideRef,
   onClose,
 }: MenuProps): ReactElement {
+  const menuId = useId();
   const listRef = useRef<HTMLUListElement>(null);
   const itemRefs = useRef<Array<HTMLAnchorElement | HTMLButtonElement | null>>([]);
   const start = Math.min(Math.max(0, initialIndex), Math.max(0, items.length - 1));
@@ -172,6 +195,54 @@ export function Menu({
     }
   };
 
+  const renderItem = (item: MenuItem, index: number): ReactElement => {
+    const kind = item.kind ?? 'action';
+    const common = {
+      role: ROLES[kind],
+      tabIndex: index === active ? 0 : -1,
+      className: styles.item,
+      'aria-disabled': item.disabled === true ? true : undefined,
+      onFocus: () => {
+        setActive(index);
+      },
+    };
+    return (
+      <li key={item.id} role="none">
+        {item.href === undefined ? (
+          <button
+            ref={(element) => {
+              itemRefs.current[index] = element;
+            }}
+            type="button"
+            {...common}
+            aria-checked={kind === 'action' ? undefined : item.checked === true}
+            onClick={() => {
+              activate(item);
+            }}
+          >
+            {item.label}
+          </button>
+        ) : (
+          <a
+            ref={(element) => {
+              itemRefs.current[index] = element;
+            }}
+            {...common}
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => {
+              if (item.disabled === true) event.preventDefault();
+              activate(item);
+            }}
+          >
+            {item.label}
+          </a>
+        )}
+      </li>
+    );
+  };
+
   return (
     <ul
       ref={listRef}
@@ -190,52 +261,25 @@ export function Menu({
       }
       onKeyDown={onKeyDown}
     >
-      {items.map((item, index) => {
-        const kind = item.kind ?? 'action';
-        const common = {
-          role: ROLES[kind],
-          tabIndex: index === active ? 0 : -1,
-          className: styles.item,
-          'aria-disabled': item.disabled === true ? true : undefined,
-          onFocus: () => {
-            setActive(index);
-          },
-        };
-        return (
-          <li key={item.id} role="none">
-            {item.href === undefined ? (
-              <button
-                ref={(element) => {
-                  itemRefs.current[index] = element;
-                }}
-                type="button"
-                {...common}
-                aria-checked={kind === 'action' ? undefined : item.checked === true}
-                onClick={() => {
-                  activate(item);
-                }}
-              >
-                {item.label}
-              </button>
-            ) : (
-              <a
-                ref={(element) => {
-                  itemRefs.current[index] = element;
-                }}
-                {...common}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(event) => {
-                  if (item.disabled === true) event.preventDefault();
-                  activate(item);
-                }}
-              >
-                {item.label}
-              </a>
-            )}
-          </li>
-        );
+      {runsOf(items).map((run, runIndex) => {
+        const separator =
+          runIndex === 0 ? null : (
+            <li role="separator" className={styles.separator} key={`separator-${String(runIndex)}`} />
+          );
+        const entries = run.items.map((item, offset) => renderItem(item, run.start + offset));
+        if (run.group === undefined) return [separator, ...entries];
+        const captionId = `${menuId}-group-${String(runIndex)}`;
+        return [
+          separator,
+          <li key={`group-${String(runIndex)}`} role="none">
+            <ul role="group" aria-labelledby={captionId} className={styles.group}>
+              <li id={captionId} role="presentation" className={styles.groupLabel}>
+                {run.group}
+              </li>
+              {entries}
+            </ul>
+          </li>,
+        ];
       })}
     </ul>
   );

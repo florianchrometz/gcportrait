@@ -5,7 +5,8 @@
  * item (else the first), ↑ on the last; a click toggles it. Escape and choosing an item close it and put focus
  * back on the button; Tab and a press elsewhere close it and let focus go. The open state can be the caller's
  * (`open`, `onOpenChange`: the app store's one-popup-at-a-time `ui.popover`). Inert (`disabled`) it stays a
- * focusable, announced-unavailable button that opens nothing.
+ * focusable, announced-unavailable button that opens nothing. `className` replaces the control's look (the Export
+ * menu's filled primary button).
  */
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
 
@@ -23,6 +24,7 @@ export interface MenuButtonProps {
   readonly disabled?: Inert;
   readonly open?: boolean;
   readonly onOpenChange?: (open: boolean) => void;
+  readonly className?: string | undefined;
 }
 
 export function MenuButton({
@@ -33,6 +35,7 @@ export function MenuButton({
   disabled,
   open: controlled,
   onOpenChange,
+  className,
 }: MenuButtonProps): ReactElement {
   const [open, setOpen] = useOpenState(controlled, onOpenChange);
   const [initial, setInitial] = useState(0);
@@ -74,7 +77,7 @@ export function MenuButton({
       <button
         ref={buttonRef}
         type="button"
-        className={styles.control}
+        className={className ?? styles.control}
         aria-haspopup="menu"
         aria-expanded={open && !inert}
         aria-controls={open && !inert ? menuId : undefined}

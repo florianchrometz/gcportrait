@@ -1,25 +1,14 @@
 // SPDX-License-Identifier: MIT
 /**
- * The Export menu in the top bar (docs/export.md): a WAI-ARIA menu button whose menu holds the options
- * (area, theme, PNG resolution, embedded fonts) as radio and checkbox items and the four actions (download SVG,
- * download PNG, download the draw.io file, copy PNG). The area and the theme apply to all three files; the draw.io
- * file is translated by a module loaded on its first use. Options keep the menu open; an action closes it,
- * returns focus to the button and reports its outcome in a status line (a live region). Keyboard: Enter, Space or ↓
- * opens on the first item, ↑ on the last; ↑ ↓ Home End move; Escape closes; Tab leaves. Inert (`aria-disabled`,
- * still focusable) while no diagram is drawn; the status line (named "Export status") exists only while there is a
- * diagram to export.
+ * The Export menu in the top bar (docs/export.md): the app's MenuButton and Menu (ui/), whose menu holds the options
+ * (area, theme, PNG resolution, embedded fonts) as radio and checkbox items in labelled groups and the four actions
+ * (download SVG, download PNG, download the draw.io file, copy PNG). The area and the theme apply to all three files;
+ * the draw.io file is translated by a module loaded on its first use. Options keep the menu open; an action closes
+ * it, returns focus to the button and reports its outcome in a status line (a live region). Its open state is the
+ * store's one popup at a time (`usePopover`). Inert (`aria-disabled`, still focusable) while no diagram is drawn; the
+ * status line (named "Export status") exists only while there is a diagram to export.
  */
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactElement,
-} from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 
 import { useDiagramSession } from '../../diagram/session';
 import type { DiagramTheme } from '../../diagram/theme/tokens';
@@ -34,7 +23,10 @@ import {
 } from '../../export/exportDiagram';
 import { sessionFontFaceCss } from '../../export/fonts';
 import { rasterizeSvg, scaleLabel, type PngGeometry, type PngScale } from '../../export/raster';
+import { usePopover } from '../../state';
 import { useTheme } from '../../theme/useTheme';
+import type { MenuItem } from '../../ui/Menu';
+import { MenuButton } from '../../ui/MenuButton';
 import styles from './ExportMenu.module.css';
 
 /** What the menu does with the outside world; tests replace parts of it. */
@@ -70,23 +62,6 @@ export const COPY_UNSUPPORTED = 'This browser cannot copy images to the clipboar
 /** The draw.io action's name: the format and its file extension, as diagrams.net and draw.io call it. */
 export const DRAWIO_ACTION = 'Download draw.io (.drawio)';
 
-type Entry =
-  | {
-      readonly kind: 'radio' | 'checkbox';
-      readonly key: string;
-      readonly label: string;
-      readonly checked: boolean;
-      readonly select: () => void;
-    }
-  | { readonly kind: 'action'; readonly key: string; readonly label: string; readonly run: () => void };
-
-interface Section {
-  readonly key: string;
-  /** The group's visible caption and accessible name; the actions have none. */
-  readonly caption?: string;
-  readonly entries: readonly Entry[];
-}
-
 function pixels(geometry: PngGeometry): string {
   const reduced = geometry.reduced
     ? `, at ${scaleLabel(geometry.scale)}: the browser cannot draw this diagram larger`
@@ -113,25 +88,15 @@ export function ExportMenu({
   const { exportSource: source } = useDiagramSession();
   const { resolved } = useTheme();
   const io = useMemo<ExportServices>(() => ({ ...BROWSER_SERVICES, ...services }), [services]);
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(0);
+  const [open, setPopover] = usePopover('export');
   const [area, setArea] = useState<ExportArea>('whole');
   const [themeChoice, setThemeChoice] = useState<DiagramTheme | null>(null);
   const [scale, setScale] = useState<PngScale>(2);
   const [embedFonts, setEmbedFonts] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const menuId = useId();
   const theme = themeChoice ?? resolved;
   const available = source !== null;
-
-  const close = useCallback((refocus: boolean): void => {
-    setOpen(false);
-    if (refocus) buttonRef.current?.focus();
-  }, []);
 
   // The status line clears itself after a while, unless an export is still running.
   useEffect(() => {
@@ -144,32 +109,16 @@ export function ExportMenu({
     };
   }, [status, busy]);
 
-  // A pointer pressed anywhere outside closes the menu.
-  useEffect(() => {
-    if (!open) return undefined;
-    const onPointerDown = (event: PointerEvent): void => {
-      if (event.target instanceof Node && anchorRef.current?.contains(event.target) !== true) close(false);
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-    };
-  }, [open, close]);
-
-  // The diagram went away (another page, a new view loading): nothing to export any more.
-  useEffect(() => {
-    if (!available) setOpen(false);
-  }, [available]);
-
-  useEffect(() => {
-    if (open) itemRefs.current[active]?.focus();
-  }, [open, active]);
+  // Opening the menu clears the last outcome, unless an export is still running.
+  const setOpen = (next: boolean): void => {
+    if (next) setStatus((current) => (busy ? current : ''));
+    setPopover(next);
+  };
 
   const settings: ExportSettings = { area, theme };
 
   const runExport = (action: 'svg' | 'png' | 'drawio' | 'copy'): void => {
     if (source === null || busy) return;
-    close(true);
     if (action === 'copy' && !io.canCopy()) {
       setStatus(COPY_UNSUPPORTED);
       return;
@@ -232,227 +181,66 @@ export function ExportMenu({
       });
   };
 
-  const radio = (key: string, label: string, checked: boolean, select: () => void): Entry => ({
-    kind: 'radio',
-    key,
+  const option = (
+    group: string,
+    id: string,
+    label: string,
+    checked: boolean,
+    onSelect: () => void,
+    kind: 'radio' | 'checkbox' = 'radio',
+  ): MenuItem => ({ id, label, kind, checked, group, keepOpen: true, onSelect });
+  const action = (id: string, label: string, run: 'svg' | 'png' | 'drawio' | 'copy'): MenuItem => ({
+    id,
     label,
-    checked,
-    select,
+    disabled: busy,
+    onSelect: () => {
+      runExport(run);
+    },
   });
-  const sections: readonly Section[] = [
-    {
-      key: 'area',
-      caption: 'Area',
-      entries: [
-        radio('whole', 'Whole diagram', area === 'whole', () => {
-          setArea('whole');
-        }),
-        radio('viewport', 'Current viewport', area === 'viewport', () => {
-          setArea('viewport');
-        }),
-      ],
-    },
-    {
-      key: 'theme',
-      caption: 'Theme',
-      entries: (['light', 'dark'] as const).map((value) =>
-        radio(value, value === 'light' ? 'Light' : 'Dark', theme === value, () => {
-          setThemeChoice(value);
-        }),
-      ),
-    },
-    {
-      key: 'scale',
-      caption: 'PNG resolution',
-      entries: ([2, 3] as const).map((value) =>
-        radio(`scale-${String(value)}`, scaleLabel(value), scale === value, () => {
-          setScale(value);
-        }),
-      ),
-    },
-    {
-      key: 'fonts',
-      caption: 'SVG file',
-      entries: [
-        {
-          kind: 'checkbox',
-          key: 'embed-fonts',
-          label: 'Embed fonts',
-          checked: embedFonts,
-          select: () => {
-            setEmbedFonts((value) => !value);
-          },
-        },
-      ],
-    },
-    {
-      key: 'actions',
-      entries: [
-        {
-          kind: 'action',
-          key: 'svg',
-          label: 'Download SVG',
-          run: () => {
-            runExport('svg');
-          },
-        },
-        {
-          kind: 'action',
-          key: 'png',
-          label: 'Download PNG',
-          run: () => {
-            runExport('png');
-          },
-        },
-        {
-          kind: 'action',
-          key: 'drawio',
-          label: DRAWIO_ACTION,
-          run: () => {
-            runExport('drawio');
-          },
-        },
-        {
-          kind: 'action',
-          key: 'copy',
-          label: 'Copy PNG',
-          run: () => {
-            runExport('copy');
-          },
-        },
-      ],
-    },
+  const items: readonly MenuItem[] = [
+    option('Area', 'whole', 'Whole diagram', area === 'whole', () => {
+      setArea('whole');
+    }),
+    option('Area', 'viewport', 'Current viewport', area === 'viewport', () => {
+      setArea('viewport');
+    }),
+    ...(['light', 'dark'] as const).map((value) =>
+      option('Theme', value, value === 'light' ? 'Light' : 'Dark', theme === value, () => {
+        setThemeChoice(value);
+      }),
+    ),
+    ...([2, 3] as const).map((value) =>
+      option('PNG resolution', `scale-${String(value)}`, scaleLabel(value), scale === value, () => {
+        setScale(value);
+      }),
+    ),
+    option(
+      'SVG file',
+      'embed-fonts',
+      'Embed fonts',
+      embedFonts,
+      () => {
+        setEmbedFonts((value) => !value);
+      },
+      'checkbox',
+    ),
+    action('svg', 'Download SVG', 'svg'),
+    action('png', 'Download PNG', 'png'),
+    action('drawio', DRAWIO_ACTION, 'drawio'),
+    action('copy', 'Copy PNG', 'copy'),
   ];
-  const entries = sections.flatMap((section) => section.entries);
-  const count = entries.length;
-
-  const openAt = (index: number): void => {
-    if (!available) return;
-    setStatus((current) => (busy ? current : ''));
-    setActive((index + count) % count);
-    setOpen(true);
-  };
-
-  const onButtonKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      openAt(0);
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      openAt(count - 1);
-    }
-  };
-
-  const onMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    const moves: Record<string, () => number> = {
-      ArrowDown: () => (active + 1) % count,
-      ArrowUp: () => (active - 1 + count) % count,
-      Home: () => 0,
-      End: () => count - 1,
-    };
-    const move = moves[event.key];
-    if (move !== undefined) {
-      event.preventDefault();
-      setActive(move());
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      close(true);
-    } else if (event.key === 'Tab') {
-      close(false);
-    }
-  };
-
-  let index = -1;
-  const item = (entry: Entry): ReactElement => {
-    index += 1;
-    const at = index;
-    const common = {
-      ref: (element: HTMLButtonElement | null) => {
-        itemRefs.current[at] = element;
-      },
-      type: 'button' as const,
-      className: styles.item,
-      tabIndex: at === active ? 0 : -1,
-      onFocus: () => {
-        setActive(at);
-      },
-    };
-    if (entry.kind === 'action') {
-      return (
-        <button
-          key={entry.key}
-          {...common}
-          role="menuitem"
-          aria-disabled={busy ? true : undefined}
-          onClick={entry.run}
-        >
-          {entry.label}
-        </button>
-      );
-    }
-    return (
-      <button
-        key={entry.key}
-        {...common}
-        role={entry.kind === 'radio' ? 'menuitemradio' : 'menuitemcheckbox'}
-        aria-checked={entry.checked}
-        onClick={entry.select}
-      >
-        {entry.label}
-      </button>
-    );
-  };
 
   return (
-    <div ref={anchorRef} className={styles.anchor}>
-      <button
-        ref={buttonRef}
-        type="button"
+    <div className={styles.anchor}>
+      <MenuButton
+        label="Export"
+        items={items}
+        align="end"
         className={styles.control}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        aria-disabled={available ? undefined : true}
-        title={available ? undefined : NO_DIAGRAM_HINT}
-        onClick={() => {
-          if (open) close(false);
-          else openAt(0);
-        }}
-        onKeyDown={onButtonKeyDown}
-      >
-        Export
-        <span className={styles.caret} aria-hidden="true">
-          ▾
-        </span>
-      </button>
-      {open ? (
-        <div id={menuId} role="menu" aria-label="Export" className={styles.menu} onKeyDown={onMenuKeyDown}>
-          {sections.map((section, sectionIndex) => {
-            const separator =
-              sectionIndex === 0 ? null : <div role="separator" className={styles.separator} />;
-            if (section.caption === undefined) {
-              return (
-                <Fragment key={section.key}>
-                  {separator}
-                  {section.entries.map(item)}
-                </Fragment>
-              );
-            }
-            const captionId = `${menuId}-${section.key}`;
-            return (
-              <Fragment key={section.key}>
-                {separator}
-                <div role="group" aria-labelledby={captionId} className={styles.group}>
-                  <div id={captionId} className={styles.caption}>
-                    {section.caption}
-                  </div>
-                  {section.entries.map(item)}
-                </div>
-              </Fragment>
-            );
-          })}
-        </div>
-      ) : null}
+        disabled={available ? false : NO_DIAGRAM_HINT}
+        open={open}
+        onOpenChange={setOpen}
+      />
       {available ? (
         <p role="status" aria-label={STATUS_NAME} className={styles.status}>
           {status}
