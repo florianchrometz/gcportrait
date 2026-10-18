@@ -168,7 +168,7 @@ below):
 | `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
 | `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode. Runs only when `e2e` is true | skipped |
 | `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`). Runs only when `e2e` is true | skipped |
-| `website` | `pnpm website:build` and `pnpm website:check`, then `pnpm --filter @gcportrait/website mobile --only layout`. Runs unless `website` is false | runs |
+| `website` | `pnpm website:build` and `pnpm website:check`, then in Chromium `mobile --only layout`, `demo`, `fillable --profile chromium` and `stars` (on a build made with the widget's facts, `WEBSITE_STAR_COUNT` and the other two). Runs unless `website` is false | runs |
 | `repo-checks` | the checks that take seconds, as steps named after them, each run after a failed one: **provenance**, `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard; **catalog-check**, `pnpm catalog:check` on the catalog the install compiled; **licenses**, `pnpm run licenses`; **audit**, `node scripts/check-audit.mjs` (asks the npm registry); **workflows-and-shell**, `actionlint`, `shellcheck -x infra/*.sh` and every other shell script with `shellcheck -x --severity=warning`. Installs the dependencies unless only media changed | provenance runs; licenses runs when docs changed (`THIRD_PARTY.md` is one); the other steps are skipped |
 | `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded, or were skipped as `changes` planned (an e2e leg on `e2e=false`, `website` on `website=false`; `repo-checks` skips steps, never itself) | runs: a job skipped for such a change counts as passed |
 
@@ -228,7 +228,8 @@ overflow, the header, 44 px touch targets, axe). Its playback half, the landing 
 iPhone in WebKit, stays a local check before a release: Playwright's WebKit on Linux plays media through
 GStreamer, not through the iPhone's media stack, so a pass or a failure there would not say what the check is
 for (`pnpm website:mobile`, once per machine `pnpm --filter @gcportrait/website exec playwright install
-webkit`).
+webkit`). The fillable-commands check's Firefox, WebKit and phone profiles and `pnpm website:lighthouse` stay
+local too, before a release ([docs/website.md](website.md), "Building and checking").
 
 **Running a job as the runner does.** Each job's commands are in the table. The runner's time zone is UTC, its
 locale is `C.UTF-8` (Node formats dates and numbers as `en-US` then) and `CI` is set, which changes three

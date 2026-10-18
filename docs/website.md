@@ -72,6 +72,18 @@ for `/demo/`), which is what the workflows do after building the demo as a step 
 the demo is built (or found) after Astro has written the site's pages, so `pnpm website:build` alone gives the
 whole site.
 
+**What CI runs.** CI's `website` job ([pr.yml](../.github/workflows/pr.yml), docs/contributing.md) runs the
+build and `website:check`, then `mobile --only layout`, `demo`, `fillable --profile chromium` and `stars`: the
+checks that need nothing but the Chromium the job installs. The widget's check runs on a build made with
+`WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT` and `WEBSITE_RELEASE`, because a pull request's build asks GitHub
+anonymously and, while the repository is private, is answered with its 404
+([GitHub repository widget](#github-repository-widget)). Three parts stay local, run before a release:
+`mobile --only playback`'s iPhone in WebKit (Playwright's WebKit on Linux plays media through GStreamer, not
+the iPhone's stack, so its result would not say what the check is for), `fillable`'s Firefox, WebKit and phone
+profiles (three more browsers to install and drive, and no pull request would wait for them), and
+`website:lighthouse` (Lighthouse 13.5.0 through `pnpm dlx`, and 72 runs: 18 pages in both themes at the
+desktop and the phone setting, about 15 minutes).
+
 The site's TypeScript is checked without a build: `pnpm --filter @gcportrait/website typecheck` runs `tsc -b`
 over the `.ts` files (`website/tsconfig.json`), then `typecheck:astro`, which checks the `.astro` files'
 frontmatter, expressions and scripts with `@astrojs/check`, the checker of `astro check`
@@ -152,7 +164,9 @@ where the landing page's features become two columns, 52rem for the docs layout,
 **Checks.** After building the site, `pnpm --filter @gcportrait/website mobile` checks phone layouts,
 accessibility and animated-demo playback in both themes; the header of
 [website/scripts/mobile.ts](../website/scripts/mobile.ts) defines its scenarios and failure conditions.
-Use `--only layout` or `--only playback` to run one part. The static-file check is separate
+Use `--only layout` or `--only playback` to run one part. CI runs the layout part
+([Building and checking](#building-and-checking)); playback stays a local check before a release, since
+WebKit on Linux is not Safari's media stack. The static-file check is separate
 ([Building and checking](#building-and-checking)); the app's own phone and tablet check covers `/demo/`.
 
 Both parts answer the header's repository widget themselves ([GitHub repository
@@ -266,6 +280,7 @@ bars and Variables panels ([Building and checking](#building-and-checking)).
 `pnpm --filter @gcportrait/website fillable` checks editing, synchronisation, copying, storage and
 accessibility in desktop and touch browser profiles, in both themes. The
 [script header](../website/scripts/fillable.ts) defines the profiles, scenarios and failure conditions.
+CI runs the Chromium profile ([Building and checking](#building-and-checking)).
 Use `--profile` to pick profiles, `--page` to pick pages, and `--shots DIR` to save inspection images of the
 hint, editing states and panel. Firefox and WebKit are installed once with
 `pnpm --filter @gcportrait/website exec playwright install webkit firefox`; the check gives Firefox a
@@ -558,7 +573,9 @@ axe-core; on a build that saw GitHub's 404 (any build while the repository is pr
 build it runs this case too, at 1440 and 390 pixels in both themes, with the marker added to the landing page
 it serves. `--shots DIR` saves the header before and after. `pnpm --filter @gcportrait/website mobile` and
 `fillable` answer the requests themselves too (a 404, or `mobile --stars N`), so no browser check spends the
-machine's 60 unauthenticated requests an hour. `pnpm website:lighthouse` does not: on a build where the
+machine's 60 unauthenticated requests an hour. CI runs `stars` on a build made with `WEBSITE_STAR_COUNT`,
+`WEBSITE_FORK_COUNT` and `WEBSITE_RELEASE`, so it exercises the widget itself and not only the not-public case
+([Building and checking](#building-and-checking)). `pnpm website:lighthouse` does not: on a build where the
 browser asks, each of its runs is a fresh browser that asks GitHub twice, and past the 60 GitHub answers 403,
 which Chrome logs as a failed request; on a build that saw the 404, no run asks.
 
@@ -719,7 +736,8 @@ demo in Chromium at 1440 × 900, in both themes: the Connect page (axe), "Try th
 drill-in, a day back on the timeline, a PNG and an SVG export, a reload on that deep link, a direct load of
 every route, `/demo` without its slash, an unknown address (404); it fails on any request that leaves the
 site's origin, any policy violation and any uncaught error (`--shots DIR` saves screenshots, `--theme dark`
-one theme). Each step waits for the state it needs, never for a time: for the view in the address
+one theme). CI's `website` job runs it after the build ([Building and checking](#building-and-checking)).
+Each step waits for the state it needs, never for a time: for the view in the address
 (`page.waitForURL`, as the app writes the hash within the page) and for its drawing. The canvas stays ready
 (`data-diagram-ready`) with the drawing before it while the next view is prepared, so after the drill-in and
 the day back the check waits for the next drawing, a ready canvas whose number (`data-drawing`) differs from
@@ -854,3 +872,8 @@ practices or SEO 95.
 website:check` guards that rule (every code block focusable or wrapping), and `pnpm --filter
 @gcportrait/website mobile` runs axe-core with all its non-experimental rules on every page at 320, 375, 390
 and 430 pixels in both themes ([Mobile](#mobile)), reading axe-core from `e2e/`'s dependency.
+
+**Local, not in CI.** The run is 72 Lighthouse reports (18 pages, both themes, the desktop and the phone
+setting) and downloads Lighthouse through `pnpm dlx`: about 15 minutes, more than a pull request should wait
+for, and its performance score belongs on a quiet machine rather than a shared runner
+([Building and checking](#building-and-checking)).

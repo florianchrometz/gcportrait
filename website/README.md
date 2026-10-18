@@ -38,6 +38,12 @@ From the repository root:
 | Unit tests, lint, types | `pnpm --filter @gcportrait/website test` (also `lint`, `typecheck`) |
 | Type-check the `.astro` files alone: `@astrojs/check` over `tsconfig.astro.json`, failing on any diagnostic, hints such as an unused import included (`typecheck` runs it after `tsc -b`, and so does the root `pnpm typecheck`) | `pnpm --filter @gcportrait/website typecheck:astro` |
 
+**What CI runs.** CI's `website` job (`pr.yml`, docs/contributing.md) runs `pnpm website:build` and
+`pnpm website:check`, then `demo`, `mobile --only layout`, `fillable --profile chromium` and `stars`, the last
+on a build made with `WEBSITE_STAR_COUNT`, `WEBSITE_FORK_COUNT` and `WEBSITE_RELEASE`. `mobile --only
+playback`, the other fillable profiles and `website:lighthouse` stay local, run before a release
+(docs/website.md, "Building and checking").
+
 **Values to fill in.** In a guide's code a value the reader fills in is written `YOUR_` and capitals as one
 word (`YOUR_PROJECT`, `YOUR_ORG_ID`), a variable of `COMMAND_VARIABLES` in `@gcportrait/model`; capitals
 without `YOUR_` stay text (an environment variable, a usage line, a name pattern). The docs pages and the

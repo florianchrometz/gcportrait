@@ -468,18 +468,24 @@ jobs:
 
   # The website (docs/website.md): built with its static demo at /demo/ and checked (`website:check`:
   # metadata, links, sitemap, self-hosted resources, the footer's non-affiliation notice, the demo's pages and
-  # policy, every demo link opening a new tab), then at phone widths in Chromium (`mobile --only layout`: 320 to
-  # 430 CSS pixels in both themes, sideways overflow, the sticky header, 44 px touch targets, axe). The phone
-  # check's other half, playback of the landing page's animated demos on an iPhone in WebKit, stays a local check:
-  # Playwright's WebKit on Linux is not Safari (its media stack is GStreamer, not the iPhone's), so its result would
-  # not say what the check is for. website.yml, called by pages.yml (main and the daily refresh) and by
-  # release.yml (a tag), builds and deploys the site; this job is the pull request's gate.
+  # policy, every demo link opening a new tab), then in Chromium: at phone widths (`mobile --only layout`: 320 to
+  # 430 CSS pixels in both themes, sideways overflow, the sticky header, 44 px touch targets, axe), the demo in a
+  # browser (`demo`: the built /demo/ served as GitHub Pages serves it, S to L, a drill-in, the timeline, exports,
+  # a reload on a deep link, every route, the 404, the policy), the fillable commands (`fillable --profile
+  # chromium`) and the header's repository widget (`stars`). The widget's check needs a build that knows the
+  # facts, which a pull request's build only has where GitHub answers it, so the last step builds the site with
+  # them (WEBSITE_STAR_COUNT and the other two). Three parts stay local: playback of the landing page's animated
+  # demos on an iPhone in WebKit (Playwright's WebKit on Linux is not Safari: its media stack is GStreamer, not
+  # the iPhone's, so its result would not say what the check is for), `fillable`'s Firefox, WebKit and phone
+  # profiles, and `website:lighthouse` (docs/website.md, "Building and checking"). website.yml, called by
+  # pages.yml (main and the daily refresh) and by release.yml (a tag), builds and deploys the site; this job is
+  # the pull request's gate.
   website:
     name: website
     needs: changes
     if: needs.changes.outputs.website != 'false'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -495,6 +501,17 @@ jobs:
           working-directory: website
       - name: The site at phone widths (layout and axe, Chromium)
         run: pnpm --filter @gcportrait/website run mobile --only layout
+      - name: The static demo in a browser (Chromium)
+        run: pnpm --filter @gcportrait/website run demo
+      - name: The fillable commands (Chromium)
+        run: pnpm --filter @gcportrait/website run fillable --profile chromium
+      # A pull request's build asked GitHub for the repository's facts anonymously and, while the repository is
+      # private, got its 404: the header then tells the page's script to ask nothing, and `stars` could only
+      # check that. The facts make it check the widget itself (docs/website.md, "GitHub repository widget").
+      - name: Build the site with the repository's facts (the widget's check needs them)
+        run: WEBSITE_STAR_COUNT=1234 WEBSITE_FORK_COUNT=56 WEBSITE_RELEASE=v1.0.0 pnpm run website:build
+      - name: The header's repository widget (Chromium)
+        run: pnpm --filter @gcportrait/website run stars
 
   # The checks that take seconds each, as steps of one job so that their set-up is spent once. Each step runs
   # whether or not the one before it failed (`success() || failure()`), so every check reports by name, and each
