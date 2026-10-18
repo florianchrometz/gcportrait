@@ -3,7 +3,7 @@
 import { NumericIdSchema, ProjectRefSchema } from '@gcportrait/model';
 import { describe, expect, it } from 'vitest';
 
-import { choiceOf, readSearchAnswer } from './api';
+import { readSearchAnswer } from './api';
 import {
   MAX_QUOTA_PROJECTS,
   MAX_RECENT_SCOPES,
@@ -178,7 +178,7 @@ describe('recent scopes and quota projects (preferences)', () => {
 });
 
 describe('the search answer', () => {
-  it('reads the backend’s answer and drops entries that do not fit', () => {
+  it('reads the backend’s answer and drops results whose scope name it does not read', () => {
     expect(
       readSearchAnswer({
         scopes: [
@@ -194,13 +194,13 @@ describe('the search answer', () => {
             id: 'demo-web-1',
             displayName: 'Web',
             parent: 'folders/20000000001',
+            projectNumber: '10000000001',
           },
           { kind: 'project', scope: 'folders/20000000001', id: 'x', displayName: 'kind mismatch' },
           { kind: 'project', scope: 'projects/Bad', id: 'Bad', displayName: 'bad id' },
-          'nonsense',
         ],
         nextPageToken: 'abc',
-        problems: [{ kind: 'folder', upstream: { status: 503, code: 'UNAVAILABLE' } }, { kind: 'x' }],
+        problems: [{ kind: 'folder', upstream: { status: 503, code: 'UNAVAILABLE' } }],
       }),
     ).toEqual({
       kind: 'ok',
@@ -222,7 +222,13 @@ describe('the search answer', () => {
       nextPageToken: 'abc',
       problems: [{ kind: 'folder', upstream: { status: 503, code: 'UNAVAILABLE' } }],
     });
+  });
+
+  it('refuses an answer that does not fit the contract', () => {
+    const answer = { scopes: [], problems: [] };
+    expect(readSearchAnswer(answer)).toEqual({ kind: 'ok', scopes: [], problems: [] });
     expect(readSearchAnswer({ scopes: 'x' })).toBeNull();
-    expect(choiceOf(null)).toBeNull();
+    expect(readSearchAnswer({ ...answer, scopes: ['nonsense'] })).toBeNull();
+    expect(readSearchAnswer({ ...answer, problems: [{ kind: 'x' }] })).toBeNull();
   });
 });

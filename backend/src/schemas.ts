@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { UpstreamSummarySchema } from '@gcportrait/model';
 import * as z from 'zod';
 
 /**
@@ -22,14 +23,8 @@ export {
   type PublicConfig as PublicConfigResponse,
 } from '@gcportrait/model';
 
-/** What Google answered, when its answer led to this one: a preflight item, a search problem, an error answer. */
-export const UpstreamSummarySchema = z.object({
-  /** Google's HTTP status; 0 when no answer arrived (timeout, transport failure). */
-  status: z.number().int(),
-  code: z.string().optional(),
-  reason: z.string().optional(),
-  message: z.string().optional(),
-});
+/** What Google answered, when its answer led to this one: declared once in @gcportrait/model. */
+export { UpstreamSummarySchema };
 
 /**
  * Every error answer of the server, whatever the route (docs/api.md, Errors), built in one place (./errors.ts):

@@ -1,7 +1,27 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
 
-import { LegalPagesSchema, LegalTextsSchema, PublicConfigSchema, type PublicConfig } from './api.js';
+import {
+  LegalPagesSchema,
+  LegalTextsSchema,
+  PreflightItemSchema,
+  PreflightResponseSchema,
+  PublicConfigSchema,
+  QuotaCandidateSchema,
+  ScopeSearchResponseSchema,
+  type PreflightResponse,
+  type PublicConfig,
+  type ScopeSearchResponse,
+} from './api.js';
+import {
+  PREFLIGHT_FINDINGS,
+  PREFLIGHT_ITEM_IDS,
+  PREFLIGHT_ITEM_STATUSES,
+  PREFLIGHT_MODES,
+  PREFLIGHT_OUTCOMES,
+  QUOTA_CANDIDATE_RESULTS,
+  QUOTA_CANDIDATE_SOURCES,
+} from './api-vocabulary.js';
 
 const CONFIG: PublicConfig = {
   oauthClientId: 'client-1.apps.example.com',
@@ -64,5 +84,72 @@ describe('GET /api/legal', () => {
       privacy: null,
     });
     expect(LegalTextsSchema.safeParse({ impressum: '# Impressum' }).success).toBe(false);
+  });
+});
+
+describe('POST /api/preflight', () => {
+  const ANSWER: PreflightResponse = {
+    scope: 'projects/demo-app-1',
+    kind: 'project',
+    mode: 'user',
+    outcome: 'blocked',
+    displayName: 'Demo app 1',
+    member: 'user:ada@example.com',
+    items: [
+      {
+        id: 'cai-access',
+        status: 'missing',
+        finding: 'denied',
+        blocking: true,
+        permission: 'cloudasset.assets.listResource',
+        role: 'roles/cloudasset.viewer',
+        member: 'user:ada@example.com',
+        resource: 'projects/demo-app-1',
+        commands: ['gcloud projects add-iam-policy-binding demo-app-1 --member="user:ada@example.com"'],
+        upstream: { status: 403, code: 'PERMISSION_DENIED' },
+      },
+    ],
+    candidates: [{ project: 'demo-app-1', source: 'scope', result: 'usable', commands: [] }],
+  };
+
+  it('accepts what the backend answers, and refuses an unknown finding', () => {
+    expect(PreflightResponseSchema.parse(ANSWER)).toEqual(ANSWER);
+    const [item] = ANSWER.items;
+    expect(
+      PreflightResponseSchema.safeParse({ ...ANSWER, items: [{ ...item, finding: 'nope' }] }).success,
+    ).toBe(false);
+  });
+
+  it('builds its closed lists from the zod-free tuples', () => {
+    expect(PreflightItemSchema.shape.id.options).toEqual([...PREFLIGHT_ITEM_IDS]);
+    expect(PreflightItemSchema.shape.status.options).toEqual([...PREFLIGHT_ITEM_STATUSES]);
+    expect(PreflightItemSchema.shape.finding.options).toEqual([...PREFLIGHT_FINDINGS]);
+    expect(QuotaCandidateSchema.shape.source.options).toEqual([...QUOTA_CANDIDATE_SOURCES]);
+    expect(QuotaCandidateSchema.shape.result.options).toEqual([...QUOTA_CANDIDATE_RESULTS]);
+    expect(PreflightResponseSchema.shape.mode.options).toEqual([...PREFLIGHT_MODES]);
+    expect(PreflightResponseSchema.shape.outcome.options).toEqual([...PREFLIGHT_OUTCOMES]);
+  });
+});
+
+describe('POST /api/scopes/search', () => {
+  it('accepts a page of results with a failed kind, and refuses a problem without Google’s answer', () => {
+    const answer: ScopeSearchResponse = {
+      scopes: [
+        {
+          kind: 'project',
+          scope: 'projects/demo-web-1',
+          id: 'demo-web-1',
+          displayName: 'Web',
+          parent: 'folders/20000000001',
+          projectNumber: '10000000001',
+        },
+      ],
+      nextPageToken: 'eyJmb2xkZXIiOiJhYmMifQ',
+      problems: [{ kind: 'folder', upstream: { status: 0 } }],
+    };
+    expect(ScopeSearchResponseSchema.parse(answer)).toEqual(answer);
+    expect(ScopeSearchResponseSchema.safeParse({ ...answer, problems: [{ kind: 'folder' }] }).success).toBe(
+      false,
+    );
   });
 });

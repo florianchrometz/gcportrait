@@ -121,16 +121,19 @@ as `state:ACTIVE AND displayName:*TERM*`, projects as `state:ACTIVE AND (name:*T
 syntax). Organisations accept only `domain:` and `directoryCustomerId:` queries, so they are listed and
 matched here, as is text the terms do not cover. `nextPageToken` carries the three kinds' own page tokens; one
 kind failing is listed in `problems`, every kind failing is a 403 (the token lacks the OAuth scope) or 502.
+The answer's schema, `ScopeSearchResponseSchema`, is in `@gcportrait/model`, which the app reads too.
 
-**`POST /api/preflight`** delegates to `src/preflight/run.ts`; `src/preflight/schemas.ts` defines the
-checklist. [Checking a scope](../docs/permissions.md#6-checking-a-scope) describes the items and commands;
-backend/AGENTS.md, "Quota project and the permission check" and "The service-account gate", defines the
-checks. Service-account preflight runs the gate afresh and includes the checklist in a refusal, rather than
-returning a successful HTTP answer for a failed gate.
+**`POST /api/preflight`** delegates to `src/preflight/run.ts`; `src/preflight/schemas.ts` holds the request
+and re-exports the checklist's answer from `@gcportrait/model`, which the app reads too. [Checking a
+scope](../docs/permissions.md#6-checking-a-scope) describes the items and commands; backend/AGENTS.md, "Quota
+project and the permission check" and "The service-account gate", defines the checks. Service-account
+preflight runs the gate afresh and includes the checklist in a refusal, rather than returning a successful
+HTTP answer for a failed gate.
 
 Tokeninfo runs beside the first check: its email fills `--member` (`YOUR_EMAIL` if absent or unsafe for a
 shell command), and an invalid token ends preflight with 401. Account items are `no-credentials` when its
-token cannot be obtained. The status/finding/outcome vocabulary is in `src/preflight/schemas.ts`.
+token cannot be obtained. The status/finding/outcome vocabulary is in `@gcportrait/model`
+(`src/schemas/api-vocabulary.ts`, zod-free so the app can list it).
 
 Tests: `src/preflight/run.test.ts` (every checklist row × 200/403/404/429/5xx, the answer table, the 15
 synthetic answers to the gate's caller check plus a 404, the commands, the email),

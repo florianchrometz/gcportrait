@@ -530,9 +530,11 @@ the UI thread; the repository's `.mjs` tooling loads it by Node's type stripping
 
 ## The backend's public answers
 
-The answers of GET /api/config and GET /api/legal (docs/api.md), in `src/schemas/api.ts`: the backend hands
-them to Fastify as its response contracts, and the app takes the inferred types with `import type` (no zod on
-its UI thread) and holds its hand-written guard to the schema in a test (`frontend/src/api/config.test.ts`).
+The answers of GET /api/config, GET /api/legal, POST /api/preflight and POST /api/scopes/search (docs/api.md),
+in `src/schemas/api.ts`: the backend hands them to Fastify as its response contracts, and the app takes the
+inferred types with `import type` (no zod on its UI thread) and holds its hand-written guards to the schemas
+in tests (`frontend/src/api/config.test.ts`, `frontend/src/preflight/api.test.ts`,
+`frontend/src/scope/api.test.ts`).
 
 | Export | What |
 |---|---|
@@ -540,6 +542,26 @@ its UI thread) and holds its hand-written guard to the schema in a test (`fronte
 | `LegalPagesSchema`, `LegalPages` | which legal pages the instance serves, and the addresses of those it links elsewhere (or null) |
 | `RenderLimitsSchema`, `RenderLimits` | the render API's limits: assets, pixels, body bytes, timeout |
 | `LegalTextsSchema`, `LegalTexts` | GET /api/legal: each page's Markdown, or null |
+| `UpstreamSummarySchema`, `UpstreamSummary` | what Google answered, when it led to the backend's answer: status (0: none), code, reason, message |
+| `PreflightResponseSchema`, `PreflightResponse` | POST /api/preflight: the scope, its kind, the mode, the outcome, the display name, quota project, caller and account when known, the checklist and the quota projects tried |
+| `PreflightItemSchema`, `PreflightItem` | a checklist row: id, status, finding, whether a pull needs it, the permission, role, member and resource, the fixing commands, Google's answer |
+| `QuotaCandidateSchema`, `QuotaCandidate` | a quota project tried in user mode: where it came from, the result, the commands, Google's answer |
+| `ScopeSearchResponseSchema`, `ScopeSearchResponse` | POST /api/scopes/search: the results, the next page's token, the kinds whose search failed |
+| `ScopeSearchResultSchema`, `ScopeSearchResult` | an organisation, folder or project found: kind, scope name, id, display name, parent, project number |
+| `ScopeSearchProblemSchema`, `ScopeSearchProblem` | a kind whose search failed, with Google's answer |
+
+The preflight's closed lists are plain tuples in `src/schemas/api-vocabulary.ts`, which imports no zod; the
+schemas are built from them and the app imports them to check and word an answer.
+
+| Export | What |
+|---|---|
+| `PREFLIGHT_MODES`, `PreflightMode` | `user`, `sa` |
+| `PREFLIGHT_ITEM_STATUSES`, `PreflightItemStatus` | `ok`, `missing`, `unknown` |
+| `PREFLIGHT_ITEM_IDS`, `PreflightItemId` | `scope-details`, `quota-project`, `cai-access`, `sa-caller`, `sa-exposure`, `sa-access` |
+| `PREFLIGHT_FINDINGS`, `PreflightFinding` | why an item has its status: `ok`, `denied`, `exposed`, `no-candidate`, `unusable`, `not-checked`, `no-credentials`, `sign-in`, `transient`, `unexpected` |
+| `QUOTA_CANDIDATE_SOURCES`, `QuotaCandidateSource` | `scope`, `chosen` |
+| `QUOTA_CANDIDATE_RESULTS`, `QuotaCandidateResult` | `usable`, `not-found`, `no-permission`, `api-disabled`, `sign-in`, `transient`, `unexpected` |
+| `PREFLIGHT_OUTCOMES`, `PreflightOutcome` | `ready`, `blocked`, `sign-in`, `retry` |
 
 ## Tests
 

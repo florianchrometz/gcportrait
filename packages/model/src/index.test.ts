@@ -229,8 +229,23 @@ describe('public surface', () => {
         // the backend's public answers
         'LegalPagesSchema',
         'LegalTextsSchema',
+        'PreflightItemSchema',
+        'PreflightResponseSchema',
         'PublicConfigSchema',
+        'QuotaCandidateSchema',
         'RenderLimitsSchema',
+        'ScopeSearchProblemSchema',
+        'ScopeSearchResponseSchema',
+        'ScopeSearchResultSchema',
+        'UpstreamSummarySchema',
+        // the preflight's vocabularies, zod-free
+        'PREFLIGHT_FINDINGS',
+        'PREFLIGHT_ITEM_IDS',
+        'PREFLIGHT_ITEM_STATUSES',
+        'PREFLIGHT_MODES',
+        'PREFLIGHT_OUTCOMES',
+        'QUOTA_CANDIDATE_RESULTS',
+        'QUOTA_CANDIDATE_SOURCES',
       ].sort(),
     );
   });

@@ -20,12 +20,20 @@
  * not accept it); 403 (the token lacks the OAuth scope Resource Manager needs); 429 (the rate limit per token
  * hash); 502 (no kind answered).
  */
-import { NumericIdSchema, ProjectRefSchema, ScopeKindSchema, type ScopeKind } from '@gcportrait/model';
+import {
+  NumericIdSchema,
+  ProjectRefSchema,
+  ScopeKindSchema,
+  ScopeSearchResponseSchema,
+  type ScopeKind,
+  type ScopeSearchResponse,
+  type ScopeSearchResult,
+} from '@gcportrait/model';
 import type { FastifyInstance } from 'fastify';
 import * as z from 'zod';
 
 import { sendError } from '../errors.js';
-import { toFastifySchema, UpstreamSummarySchema } from '../schemas.js';
+import { toFastifySchema } from '../schemas.js';
 import {
   callGoogle,
   isScopeInsufficient,
@@ -69,27 +77,13 @@ export const ScopeSearchRequestSchema = z.strictObject({
   pageToken: z.string().max(8192).optional(),
 });
 
-export const ScopeSearchResultSchema = z.object({
-  kind: ScopeKindSchema,
-  /** The scope as the preflight and the stream take it: `organizations/123`, `folders/456`, `projects/my-id`. */
-  scope: z.string(),
-  /** The organisation or folder number, or the project id. */
-  id: z.string(),
-  displayName: z.string(),
-  /** `organizations/…` or `folders/…`, when Google names a parent. */
-  parent: z.string().optional(),
-  /** A project's number. */
-  projectNumber: z.string().optional(),
-});
-export type ScopeSearchResult = z.infer<typeof ScopeSearchResultSchema>;
-
-export const ScopeSearchResponseSchema = z.object({
-  scopes: z.array(ScopeSearchResultSchema),
-  nextPageToken: z.string().optional(),
-  /** Kinds whose search failed, with what Google answered; the other kinds' results are still listed. */
-  problems: z.array(z.object({ kind: ScopeKindSchema, upstream: UpstreamSummarySchema })),
-});
-export type ScopeSearchResponse = z.infer<typeof ScopeSearchResponseSchema>;
+/** The answer, declared once in @gcportrait/model, which the app reads too. */
+export {
+  ScopeSearchResponseSchema,
+  ScopeSearchResultSchema,
+  type ScopeSearchResponse,
+  type ScopeSearchResult,
+} from '@gcportrait/model';
 
 type PageTokens = Partial<Record<ScopeKind, string>>;
 

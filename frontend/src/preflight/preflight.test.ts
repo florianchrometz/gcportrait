@@ -4,18 +4,12 @@
  * The preflight's client side: the answer's guard, the request (path, method, body, token), the error answers,
  * and the words for every item and finding (docs/permissions.md).
  */
+import { PREFLIGHT_FINDINGS, PREFLIGHT_ITEM_IDS } from '@gcportrait/model';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { testAuth } from '../auth/testing';
 import { stubBackend } from '../test/backend';
-import {
-  isPreflightAnswer,
-  readError,
-  requestPreflight,
-  type Finding,
-  type PreflightItem,
-  type PreflightItemId,
-} from './api';
+import { isPreflightAnswer, readError, requestPreflight, type PreflightItem } from './api';
 import { purposeOf } from './CommandBlock';
 import { explainCandidate, explainItem, outcomeHeadline, refusal, serviceAccountParagraphs } from './copy';
 import { referenceRows } from './PermissionsGuide';
@@ -137,27 +131,6 @@ describe('requestPreflight', () => {
   });
 });
 
-const ITEM_IDS: readonly PreflightItemId[] = [
-  'scope-details',
-  'quota-project',
-  'cai-access',
-  'sa-caller',
-  'sa-exposure',
-  'sa-access',
-];
-const FINDINGS: readonly Finding[] = [
-  'ok',
-  'denied',
-  'exposed',
-  'no-candidate',
-  'unusable',
-  'not-checked',
-  'no-credentials',
-  'sign-in',
-  'transient',
-  'unexpected',
-];
-
 describe('the words', () => {
   const base: PreflightItem = {
     id: 'cai-access',
@@ -170,8 +143,8 @@ describe('the words', () => {
   };
 
   it('has a sentence for every item and finding', () => {
-    for (const id of ITEM_IDS) {
-      for (const finding of FINDINGS) {
+    for (const id of PREFLIGHT_ITEM_IDS) {
+      for (const finding of PREFLIGHT_FINDINGS) {
         const text = explainItem(
           { ...base, id, finding },
           { scope: 'projects/demo-app-1', quotaProject: 'demo-quota-1' },

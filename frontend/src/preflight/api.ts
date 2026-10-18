@@ -1,74 +1,43 @@
 // SPDX-License-Identifier: MIT
 /**
- * Client for `POST /api/preflight` (docs/api.md, docs/permissions.md). The answer's shape is the
- * backend's `PreflightResponseSchema` (backend/src/preflight/schemas.ts), read here with plain guards because the UI
- * thread ships no zod: every field is checked, and an answer that does not fit is an error, never half
- * shown. The token goes only to this backend, through `fetchWithToken` (src/auth).
+ * Client for `POST /api/preflight` (docs/api.md, docs/permissions.md). The answer's contract is declared once, in
+ * @gcportrait/model (`PreflightResponseSchema`, the backend's response contract): the types come from it erased
+ * and the closed lists (findings, item ids, outcomes, …) from its zod-free vocabulary, so no zod reaches the UI
+ * thread, and `isPreflightAnswer` checks every field by hand, held to the schema by api.test.ts. An answer that
+ * does not fit is an error, never half shown. The token goes only to this backend, through `fetchWithToken`
+ * (src/auth).
  */
+import {
+  PREFLIGHT_FINDINGS,
+  PREFLIGHT_ITEM_IDS,
+  PREFLIGHT_ITEM_STATUSES,
+  PREFLIGHT_MODES,
+  PREFLIGHT_OUTCOMES,
+  QUOTA_CANDIDATE_RESULTS,
+  QUOTA_CANDIDATE_SOURCES,
+  type PreflightItem,
+  type PreflightMode,
+  type PreflightResponse,
+  type QuotaCandidate,
+  type UpstreamSummary,
+} from '@gcportrait/model';
+
 import { fetchWithToken, NotSignedInError, type AuthControls } from '../auth';
 import { isRecord } from '../guards';
-import { SCOPE_KINDS, type ScopeKind } from '../scope/scopeName';
+import { SCOPE_KINDS } from '../scope/scopeName';
 
-export type AccessMode = 'user' | 'sa';
-export type ItemStatus = 'ok' | 'missing' | 'unknown';
-export type PreflightItemId =
-  'scope-details' | 'quota-project' | 'cai-access' | 'sa-caller' | 'sa-exposure' | 'sa-access';
-export type Finding =
-  | 'ok'
-  | 'denied'
-  | 'exposed'
-  | 'no-candidate'
-  | 'unusable'
-  | 'not-checked'
-  | 'no-credentials'
-  | 'sign-in'
-  | 'transient'
-  | 'unexpected';
-export type CandidateResult =
-  'usable' | 'not-found' | 'no-permission' | 'api-disabled' | 'sign-in' | 'transient' | 'unexpected';
-export type PreflightOutcome = 'ready' | 'blocked' | 'sign-in' | 'retry';
-
-/** What Google answered, as the backend passes it on: status (0: no answer), canonical code, reason, message. */
-export interface UpstreamSummary {
-  readonly status: number;
-  readonly code?: string;
-  readonly reason?: string;
-  readonly message?: string;
-}
-
-export interface PreflightItem {
-  readonly id: PreflightItemId;
-  readonly status: ItemStatus;
-  readonly finding: Finding;
-  readonly blocking: boolean;
-  readonly permission: string;
-  readonly role?: string;
-  readonly member?: string;
-  readonly resource: string;
-  readonly commands: readonly string[];
-  readonly upstream?: UpstreamSummary;
-}
-
-export interface QuotaCandidate {
-  readonly project: string;
-  readonly source: 'scope' | 'chosen';
-  readonly result: CandidateResult;
-  readonly commands: readonly string[];
-  readonly upstream?: UpstreamSummary;
-}
-
-export interface PreflightAnswer {
-  readonly scope: string;
-  readonly kind: ScopeKind;
-  readonly mode: AccessMode;
-  readonly outcome: PreflightOutcome;
-  readonly displayName?: string;
-  readonly quotaProject?: string;
-  readonly member?: string;
-  readonly serviceAccount?: string;
-  readonly items: readonly PreflightItem[];
-  readonly candidates: readonly QuotaCandidate[];
-}
+export type {
+  PreflightFinding as Finding,
+  PreflightItem,
+  PreflightItemId,
+  PreflightItemStatus as ItemStatus,
+  PreflightOutcome,
+  QuotaCandidate,
+  QuotaCandidateResult as CandidateResult,
+  UpstreamSummary,
+} from '@gcportrait/model';
+export type AccessMode = PreflightMode;
+export type PreflightAnswer = PreflightResponse;
 
 export interface PreflightRequest {
   readonly scope: string;
@@ -81,38 +50,6 @@ export type PreflightCallOutcome =
   /** No usable token, or the backend answered 401 (the session then expires: fetchWithToken). */
   | { readonly kind: 'signed-out' }
   | { readonly kind: 'error'; readonly message: string };
-
-const ITEM_IDS: readonly PreflightItemId[] = [
-  'scope-details',
-  'quota-project',
-  'cai-access',
-  'sa-caller',
-  'sa-exposure',
-  'sa-access',
-];
-const STATUSES: readonly ItemStatus[] = ['ok', 'missing', 'unknown'];
-const FINDINGS: readonly Finding[] = [
-  'ok',
-  'denied',
-  'exposed',
-  'no-candidate',
-  'unusable',
-  'not-checked',
-  'no-credentials',
-  'sign-in',
-  'transient',
-  'unexpected',
-];
-const RESULTS: readonly CandidateResult[] = [
-  'usable',
-  'not-found',
-  'no-permission',
-  'api-disabled',
-  'sign-in',
-  'transient',
-  'unexpected',
-];
-const OUTCOMES: readonly PreflightOutcome[] = ['ready', 'blocked', 'sign-in', 'retry'];
 
 function oneOf<T extends string>(values: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && (values as readonly string[]).includes(value);
@@ -129,7 +66,6 @@ function isStringArray(value: unknown): value is readonly string[] {
 export function isUpstreamSummary(value: unknown): value is UpstreamSummary {
   return (
     isRecord(value) &&
-    typeof value.status === 'number' &&
     Number.isInteger(value.status) &&
     optionalString(value.code) &&
     optionalString(value.reason) &&
@@ -140,9 +76,9 @@ export function isUpstreamSummary(value: unknown): value is UpstreamSummary {
 function isItem(value: unknown): value is PreflightItem {
   return (
     isRecord(value) &&
-    oneOf(ITEM_IDS, value.id) &&
-    oneOf(STATUSES, value.status) &&
-    oneOf(FINDINGS, value.finding) &&
+    oneOf(PREFLIGHT_ITEM_IDS, value.id) &&
+    oneOf(PREFLIGHT_ITEM_STATUSES, value.status) &&
+    oneOf(PREFLIGHT_FINDINGS, value.finding) &&
     typeof value.blocking === 'boolean' &&
     typeof value.permission === 'string' &&
     optionalString(value.role) &&
@@ -157,8 +93,8 @@ function isCandidate(value: unknown): value is QuotaCandidate {
   return (
     isRecord(value) &&
     typeof value.project === 'string' &&
-    (value.source === 'scope' || value.source === 'chosen') &&
-    oneOf(RESULTS, value.result) &&
+    oneOf(QUOTA_CANDIDATE_SOURCES, value.source) &&
+    oneOf(QUOTA_CANDIDATE_RESULTS, value.result) &&
     isStringArray(value.commands) &&
     (value.upstream === undefined || isUpstreamSummary(value.upstream))
   );
@@ -170,8 +106,8 @@ export function isPreflightAnswer(value: unknown): value is PreflightAnswer {
     isRecord(value) &&
     typeof value.scope === 'string' &&
     oneOf(SCOPE_KINDS, value.kind) &&
-    (value.mode === 'user' || value.mode === 'sa') &&
-    oneOf(OUTCOMES, value.outcome) &&
+    oneOf(PREFLIGHT_MODES, value.mode) &&
+    oneOf(PREFLIGHT_OUTCOMES, value.outcome) &&
     optionalString(value.displayName) &&
     optionalString(value.quotaProject) &&
     optionalString(value.member) &&

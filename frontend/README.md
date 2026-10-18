@@ -811,7 +811,8 @@ src/scope/
   scopeName.ts        `organizations/ID`, `folders/ID`, `projects/ID`: parse, hints for a mistyped name; the two
                       patterns repeat @gcportrait/model's (scope.test.ts checks them against its schemas; no zod
                       on the UI thread)
-  api.ts              POST /api/scopes/search through fetchWithToken; the answer checked by hand
+  api.ts              POST /api/scopes/search through fetchWithToken; the contract is the model's
+                      `ScopeSearchResponseSchema`, which api.test.ts holds the zod-free guard to
   useScopeSearch.ts   250 ms after typing stops, the older request cancelled, answers kept per text
   ScopePicker.tsx     ui/Combobox over the typed name ("Use …"), the recent scopes, the search results by kind
   recent.ts           the `recentScopes` and `quotaProjects` preferences, checked on read
@@ -819,7 +820,9 @@ src/scope/
   ScopeStep.tsx       the scope picker and, in user mode, the quota project picker (projects only; a bare id
                       works)
 src/preflight/
-  api.ts              POST /api/preflight through fetchWithToken; the backend's contract as zod-free guards
+  api.ts              POST /api/preflight through fetchWithToken; the contract is the model's
+                      `PreflightResponseSchema` and its zod-free lists (findings, items, outcomes), which
+                      api.test.ts holds the guard to
   state.ts            `connect.preflight`: idle, checking, done (with the request it answers), failed
   usePreflight.ts     runs the check for the store's scope, mode and quota project; one at a time; forgotten
                       at sign-out
@@ -855,7 +858,8 @@ shows that checklist like any other answer (its outcome is never `ready`), and a
 error.
 
 Tests: `scope/scope.test.ts` (the patterns against the model's schemas, names, hints, the recent scopes and
-quota projects, the search answer), `preflight/preflight.test.ts` (the guard, the request with the token,
+quota projects, the search answer), `scope/api.test.ts` and `preflight/api.test.ts` (each guard against the
+model's schema), `preflight/preflight.test.ts` (the guard, the request with the token,
 error answers, a sentence for every item and finding, the reference table's commands),
 `pages/PermissionsPage.test.tsx` (the whole app in live mode with a fake GIS and a stubbed backend: sign-in on
 the page, search, a typed name and its hint, the recent scopes, the quota project, the check, the checklist
