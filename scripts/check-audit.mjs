@@ -5,7 +5,7 @@
  * `pnpm audit` over the production dependencies and over the whole tree (development dependencies included),
  * failing on any high or critical advisory that is not accepted in scripts/audit-allowlist.json.
  *
- *   node scripts/check-audit.mjs                       audit (CI: the `audit` job of .github/workflows/pr.yml)
+ *   node scripts/check-audit.mjs                       audit (CI: a step of `repo-checks`, .github/workflows/pr.yml)
  *   node scripts/check-audit.mjs --today 2026-10-11    judge expiry dates against that day (tests)
  *   node scripts/check-audit.mjs --prod-report F --all-report G    read saved `pnpm audit --json` output (tests)
  *

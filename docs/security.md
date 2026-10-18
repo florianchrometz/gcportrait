@@ -292,8 +292,9 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
   later; after its expiry it fails the gate again, and an entry that no longer matches is reported for
   removal; an entry whose `added` day is after the day of the run fails too (it would run for more than 90
   days from that day), and every message names the allowlist file read (`--allowlist`). A registry that cannot
-  be reached is exit code 2, never a pass. The CI job `audit` in `.github/workflows/pr.yml` runs it on every
-  pull request and push to `main` (it is not part of `pnpm check`, whose result must not depend on the day).
+  be reached is exit code 2, never a pass. The `audit` step of the CI job `repo-checks` in
+  `.github/workflows/pr.yml` runs it on every pull request and push to `main` (it is not part of `pnpm check`,
+  whose result must not depend on the day).
   Tests: `scripts/check-audit.test.ts`.
 - **Dependabot** (`.github/dependabot.yml`): npm (the whole workspace from the root, weekly, minor and patch
   grouped, at most five open pull requests; TypeScript held to 6.0.x and `@types/node` to Node 22 on purpose),

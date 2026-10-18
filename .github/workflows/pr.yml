@@ -5,16 +5,17 @@
 # (below), so the run takes as long as its slowest job, not the sum of its jobs. Each job that needs the dependencies
 # installs them itself from the pnpm store cache (.github/actions/setup), which pnpm-lock.yaml keys: a lockfile that
 # is out of date fails every such job at its install step, with pnpm's ERR_PNPM_OUTDATED_LOCKFILE. The install's
-# `prepare` script compiles the asset catalog (packages/catalog/src/generated/, a git-ignored build artefact);
-# `catalog-check` compiles it once more as a step of its own, so a catalog that cannot be compiled at all shows up
-# there by name.
+# `prepare` script compiles the asset catalog (packages/catalog/src/generated/, a git-ignored build artefact), so a
+# catalog that cannot be compiled at all fails every install. The checks that take seconds each (catalog-check,
+# provenance, licenses, audit, workflows-and-shell) are steps of one job, `repo-checks`, which spends its set-up
+# once; each step runs whether or not the one before it failed, so every check still reports by name.
 #
 # The job inventory and commands are in docs/contributing.md, "Continuous integration".
 #
 # A change of only docs and media runs only the jobs that read such files (.github/AGENTS.md, A change of only
 # docs and media). `changes` sorts every changed file into one of three kinds:
 #
-#   docs    Markdown that people read and, of the jobs, only unit (all other projects), website, provenance and
+#   docs    Markdown that people read and, of the checks, only unit (all other projects), website, provenance and
 #           licenses: docs/**/*.md, .changeset/*.md, the root's *.md files, each top-level folder's and each
 #           package's README.md and CHANGELOG.md, and each top-level folder's AGENTS.md (a rules file, whose
 #           citations the tooling tests in unit (all other projects) check). Not the skills' files
@@ -24,11 +25,12 @@
 #   code    every other file.
 #
 # With no code among the changed files, the run keeps unit (all other projects) (the user guides' check, the
-# README's and the media's tests, the backend's and the website's tests read these files), website, provenance
-# and required, with docs licenses too (THIRD_PARTY.md) and with media lint's Prettier step (the media's two
-# manifests are JSON). It skips typecheck, unit (layout), unit (frontend), layout-budget, catalog-check, build,
-# e2e, audit, workflows-and-shell and lint's ESLint step: none of them reads a changed file, so each would give
-# the result it gave the tree before the change, which that commit's own run reports. Every job runs when the
+# README's and the media's tests, the backend's and the website's tests read these files), website, repo-checks'
+# provenance steps and required, with docs repo-checks' licenses step too (THIRD_PARTY.md) and with media lint's
+# Prettier step (the media's two manifests are JSON). It skips typecheck, unit (layout), unit (frontend),
+# layout-budget, build, e2e, lint's ESLint step and repo-checks' catalog-check, audit and workflows-and-shell
+# steps: none of them reads a changed file, so each would give the result it gave the tree before the change,
+# which that commit's own run reports. Every job runs when the
 # comparison cannot be made (a new branch, a push whose commit before is not in the history) or finds no file.
 #
 # Three jobs, the longest and the one that only reports, are narrowed further by the code files themselves
@@ -367,24 +369,6 @@ jobs:
         if: failure() && steps.explore.outcome == 'failure'
         run: echo "::warning title=Layout property::A layout property failed in the exploration (1 000 runs each, a seed from the run id). The job summary names the seed, the path and the counterexample; the blocking unit (layout) leg runs the properties under a fixed seed."
 
-  catalog-check:
-    name: catalog-check
-    needs: changes
-    if: needs.changes.outputs.code != 'false'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      # Already run by the install's `prepare` script; repeated here so a catalog that cannot be compiled is a
-      # failed step of its own.
-      - name: Compile the asset catalog (git-ignored build artefact)
-        run: pnpm run catalog:build
-      - name: Asset catalog validation and coverage
-        run: pnpm run catalog:check
-
   # The app's workspaces (frontend, backend, catalog, icons; `pnpm build:app`, which leaves out the website that
   # the `website` job builds), then the SPA's size budgets on frontend/dist. Each e2e leg builds the SPA itself
   # (e2e/scripts/built-app.ts), so nothing waits for this build.
@@ -503,24 +487,42 @@ jobs:
       - name: The site at phone widths (layout and axe, Chromium)
         run: pnpm --filter @gcportrait/website run mobile --only layout
 
-  provenance:
-    name: provenance
+  # The checks that take seconds each, as steps of one job so that their set-up is spent once. Each step runs
+  # whether or not the one before it failed (`success() || failure()`), so every check reports by name, and each
+  # check runs on the changes it ran on as a job of its own: provenance on every change, licenses on code and docs
+  # (THIRD_PARTY.md, which the check compares with what it would write, is one of the docs), the others on code.
+  # The job itself runs even when `changes` failed (its outputs are then empty, which runs every step), and skips
+  # only when the run is cancelled; `required` never counts it skipped as passed. The install is left out for a
+  # change of only media, which runs provenance alone: the guard is a Node script without dependencies.
+  repo-checks:
+    name: repo-checks
+    needs: changes
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      CODE: ${{ needs.changes.outputs.code }}
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+      SHELLCHECK_VERSION: 0.11.0
+      SHELLCHECK_SHA256: b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The guard is a Node script without dependencies; it walks the checkout, which has no node_modules here.
       - uses: ./.github/actions/setup
         with:
-          install: 'false'
-      - name: Provenance guard (forbidden names, banned terms and files, SPDX headers)
+          install: >-
+            ${{ (needs.changes.outputs.code != 'false' || needs.changes.outputs.docs == 'true') && 'true' || 'false' }}
+      - name: 'provenance: the guard (forbidden names, banned terms and files, SPDX headers)'
+        if: success() || failure()
         run: pnpm run provenance
       # Proves on every run that the guard still bites: a planted Go file must fail the check, and fail it for
-      # that reason. The planted file exists only in this job's checkout.
-      - name: 'Self-test: the guard rejects a planted banned file'
+      # that reason. The planted file exists only in this job's checkout, and is removed however the step ends.
+      - name: 'provenance: self-test, the guard rejects a planted banned file'
+        if: success() || failure()
         run: |
+          trap 'rm -rf provenance-canary' EXIT
           mkdir provenance-canary
           printf '%s\n' 'package main' > provenance-canary/planted.go
           if output=$(node scripts/check-provenance.mjs 2>&1); then
@@ -533,71 +535,34 @@ jobs:
             echo "::error::The provenance guard failed, but not on the planted banned file."
             exit 1
           fi
-          rm -r provenance-canary
           echo "Self-test passed: the planted banned file was rejected."
-
-  # THIRD_PARTY.md, which the check compares with what it would write, is one of the docs.
-  licenses:
-    name: licenses
-    needs: changes
-    if: needs.changes.outputs.code != 'false' || needs.changes.outputs.docs == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      - name: Dependency licence allow-list and THIRD_PARTY.md staleness
+      # The install's `prepare` script has compiled the catalog this step validates.
+      - name: 'catalog-check: asset catalog validation and coverage'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: pnpm run catalog:check
+      - name: 'licenses: dependency licence allow-list and THIRD_PARTY.md staleness'
+        if: (success() || failure()) && (needs.changes.outputs.code != 'false' || needs.changes.outputs.docs == 'true')
         run: pnpm run licenses
-
-  # The dependency audit (AGENTS.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
-  # `pnpm audit` over the production dependencies and over the whole tree, read from the lockfile (no
-  # install). A high or critical advisory fails the job unless scripts/audit-allowlist.json accepts it, with a
-  # reason and an expiry date at most 90 days out; moderate and low ones are listed. It asks the npm
-  # registry's advisory service, so it can fail for a registry outage too (exit code 2, "could not run");
-  # re-run it then. Between pull requests, GitHub's Dependabot alerts report new advisories (a repository
-  # setting, docs/security.md).
-  audit:
-    name: audit
-    needs: changes
-    if: needs.changes.outputs.code != 'false'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-        with:
-          install: 'false'
-      - name: Dependency audit (production and development; high and critical fail unless accepted)
+      # The dependency audit (AGENTS.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
+      # `pnpm audit` over the production dependencies and over the whole tree, read from the lockfile. A high or
+      # critical advisory fails the step unless scripts/audit-allowlist.json accepts it, with a reason and an
+      # expiry date at most 90 days out; moderate and low ones are listed. It asks the npm registry's advisory
+      # service, so it can fail for a registry outage too (exit code 2, "could not run"); re-run the job then.
+      # Between pull requests, GitHub's Dependabot alerts report new advisories (a repository setting,
+      # docs/security.md).
+      - name: 'audit: dependency audit (production and development; high and critical fail unless accepted)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
         run: node scripts/check-audit.mjs
-
-  # The workflows and the shell scripts, with two linters pinned by version and SHA-256 (actionlint's from its
-  # release's checksums file, shellcheck's taken from its release archive when pinned). actionlint
-  # (rhysd/actionlint) checks every workflow: syntax, expressions, job dependencies, the inputs of local
-  # actions and, through the pinned shellcheck, the shell of every `run:` step in the workflow files (not
-  # those of the composite actions, which only install). shellcheck then checks every shell script: the
-  # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, infra/AGENTS.md, Commands),
-  # the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit (all other
-  # projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
-  workflows-and-shell:
-    name: workflows-and-shell
-    needs: changes
-    if: needs.changes.outputs.code != 'false'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      ACTIONLINT_VERSION: 1.7.12
-      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
-      SHELLCHECK_VERSION: 0.11.0
-      SHELLCHECK_SHA256: b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Download actionlint and shellcheck
+      # The workflows and the shell scripts, with two linters pinned by version and SHA-256 (actionlint's from its
+      # release's checksums file, shellcheck's taken from its release archive when pinned). actionlint
+      # (rhysd/actionlint) checks every workflow: syntax, expressions, job dependencies, the inputs of local
+      # actions and, through the pinned shellcheck, the shell of every `run:` step in the workflow files (not
+      # those of the composite actions, which only install). shellcheck then checks every shell script: the
+      # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, infra/AGENTS.md,
+      # Commands), the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit
+      # (all other projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
+      - name: 'workflows-and-shell: download actionlint and shellcheck'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
         run: |
           fetch() {
             curl -fsSL --retry 3 -o "$RUNNER_TEMP/$2" "$1/$2"
@@ -611,25 +576,29 @@ jobs:
           mkdir -p "$RUNNER_TEMP/bin"
           mv "$RUNNER_TEMP/actionlint" "$RUNNER_TEMP/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" "$RUNNER_TEMP/bin/"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-      - name: actionlint (the workflows, their run scripts through shellcheck)
+      - name: 'workflows-and-shell: actionlint (the workflows, their run scripts through shellcheck)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
         run: actionlint -version && actionlint -color -shellcheck="$RUNNER_TEMP/bin/shellcheck"
-      - name: shellcheck (the deployment scripts, default severity)
+      - name: 'workflows-and-shell: shellcheck (the deployment scripts, default severity)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
         run: shellcheck --version && shellcheck -x infra/*.sh
-      - name: shellcheck (every other shell script, warnings and errors)
+      - name: 'workflows-and-shell: shellcheck (every other shell script, warnings and errors)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
         run: |
           git ls-files -z -- '*.sh' ':!:infra/' \
             | xargs -0 --no-run-if-empty shellcheck -x --severity=warning
 
-  # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required
-  # checks"), on pull requests and on main alike: it succeeds only when `changes` and every blocking job succeeded,
-  # and fails when one failed, was cancelled or was skipped. A skip counts as passed only where `changes` planned
-  # it: any job but `changes` on a change of only docs and media (`code=false`), the e2e legs on `e2e=false` and
-  # website on `website=false` (the header), because the job's `if` skipped it for files it does not read. Any
-  # other skip fails this check, so a condition that skips a job wrongly shows here. The jobs are skipped by `if`
-  # inside this one workflow, not by leaving the workflow out with `paths-ignore`, because a workflow that does not
-  # run reports no `required` at all, and a pull request waits for a required check that never reports. Requiring
-  # this job alone keeps the protection rule unchanged when jobs are added, renamed or split into matrix legs here.
-  # layout-budget is left out on purpose (non-blocking, see the job).
+  # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required checks"), on
+  # pull requests and on main alike: it succeeds only when `changes` and every blocking job succeeded, and fails when
+  # one failed, was cancelled or was skipped. A skip counts as passed only where `changes` planned it: any job but
+  # `changes` and `repo-checks` on a change of only docs and media (`code=false`), the e2e legs on `e2e=false` and
+  # website on `website=false` (the header), because the job's `if` skipped it for files it does not read; repo-checks
+  # skips its steps for such files, never itself. Any other skip fails this check, so a condition that skips a job
+  # wrongly shows here. The jobs are skipped by `if` inside this one workflow, not by leaving the workflow out with
+  # `paths-ignore`, because a workflow that does not run reports no `required` at all, and a pull request waits for a
+  # required check that never reports. Requiring this job alone keeps the protection rule unchanged when jobs are added,
+  # renamed, split into matrix legs or folded into steps here. layout-budget is left out on purpose (non-blocking, see
+  # the job).
   required:
     name: required
     if: always()
@@ -639,14 +608,10 @@ jobs:
       - typecheck
       - unit
       - unit-other
-      - catalog-check
       - build
       - e2e
       - website
-      - provenance
-      - licenses
-      - audit
-      - workflows-and-shell
+      - repo-checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
@@ -661,7 +626,7 @@ jobs:
           jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
           failed=$(jq -r --arg code "$CODE" --arg e2e "$E2E" --arg website "$WEBSITE" '[to_entries[]
             | select(.value.result != "success")
-            | select(.key == "changes" or .value.result != "skipped" or ($code != "false"
+            | select(.key == "changes" or .key == "repo-checks" or .value.result != "skipped" or ($code != "false"
                 and (.key != "e2e" or $e2e != "false") and (.key != "website" or $website != "false")))
             | .key] | join(", ")' <<< "$NEEDS")
           if [ -n "$failed" ]; then
