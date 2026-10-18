@@ -1,9 +1,31 @@
 // SPDX-License-Identifier: MIT
 /**
  * What the primitives share: closing on a press outside, keeping Tab inside a popup, moving focus in, telling
- * focus from the keyboard from a pointer's, and telling an inert control's hint from a working one.
+ * focus from the keyboard from a pointer's, telling an inert control's hint from a working one, holding a drag's
+ * pointer, and asking for reduced motion.
  */
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+
+/** Keeps a drag's pointer events on `element` (where the browser supports pointer capture; jsdom does not). */
+export function capturePointer(element: Element, pointerId: number): void {
+  const capturable: Partial<Pick<Element, 'setPointerCapture'>> = element;
+  if (typeof capturable.setPointerCapture === 'function') element.setPointerCapture(pointerId);
+}
+
+/** Lets a drag's pointer go before its `pointerup` (where the browser supports pointer capture; jsdom does not). */
+export function releasePointer(element: Element, pointerId: number): void {
+  const capturable: Partial<Pick<Element, 'hasPointerCapture' | 'releasePointerCapture'>> = element;
+  if (capturable.hasPointerCapture?.(pointerId) === true) element.releasePointerCapture(pointerId);
+}
+
+/** Whether the viewer asked `view` (the page's window by default) for reduced motion; no matchMedia, as in jsdom: no. */
+export function prefersReducedMotion(
+  view: Partial<Pick<Window, 'matchMedia'>> | null | undefined = globalThis,
+): boolean {
+  return (
+    typeof view?.matchMedia === 'function' && view.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), ' +

@@ -81,7 +81,7 @@ import './diagram.css';
 import './disclosure/disclosure.css';
 import type { Rect } from '@gcportrait/layout';
 
-import { focusVisible } from '../ui/dom';
+import { focusVisible, prefersReducedMotion } from '../ui/dom';
 import { Menu, type MenuCloseReason, type MenuItem } from '../ui/Menu';
 import { canDrillIn, nodeMenuItems } from './actions';
 import {
@@ -316,14 +316,6 @@ interface Fit {
   readonly insets: Insets;
 }
 
-/** Whether the viewer asked for reduced motion (no matchMedia, as in jsdom: no). */
-function prefersReducedMotion(element: Element): boolean {
-  const view = element.ownerDocument.defaultView;
-  return (
-    typeof view?.matchMedia === 'function' && view.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-}
-
 /** A glide on its way: what it heads for, and how to stop it. */
 interface Glide {
   readonly id: string;
@@ -361,7 +353,7 @@ function glideTo(
 ): Pick<Glide, 'to' | 'stop' | 'running'> {
   const size = canvasSize(svg);
   const view = svg.ownerDocument.defaultView;
-  if (prefersReducedMotion(svg) || typeof view?.requestAnimationFrame !== 'function') {
+  if (prefersReducedMotion(view) || typeof view?.requestAnimationFrame !== 'function') {
     place(to);
     return { to, stop: () => undefined, running: () => false };
   }

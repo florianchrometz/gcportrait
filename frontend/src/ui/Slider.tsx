@@ -42,7 +42,7 @@ import {
 
 import { cx } from '../classNames';
 import controls from './controls.module.css';
-import { inertProps, isInert, type Inert } from './dom';
+import { capturePointer, inertProps, isInert, releasePointer, type Inert } from './dom';
 import styles from './Slider.module.css';
 
 export interface SliderProps {
@@ -63,18 +63,6 @@ export interface SliderProps {
   readonly className?: string;
   /** Drawn inside the track, before the thumb (positioned by the caller along the track's width). */
   readonly marks?: ReactNode;
-}
-
-/** Keeps a drag's pointer events on the track (where the browser supports pointer capture; jsdom does not). */
-function capturePointer(element: Element, pointerId: number): void {
-  const capturable: Partial<Pick<Element, 'setPointerCapture'>> = element;
-  if (typeof capturable.setPointerCapture === 'function') element.setPointerCapture(pointerId);
-}
-
-/** Lets a drag's pointer go before its `pointerup` (where the browser supports pointer capture; jsdom does not). */
-function releasePointer(element: Element, pointerId: number): void {
-  const capturable: Partial<Pick<Element, 'hasPointerCapture' | 'releasePointerCapture'>> = element;
-  if (capturable.hasPointerCapture?.(pointerId) === true) element.releasePointerCapture(pointerId);
 }
 
 /** `value` on the step grid from `min`, within [min, max]. */

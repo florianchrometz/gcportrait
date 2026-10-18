@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
 
 import { useAppState, useAppStore, useDiagramActions } from '../state';
+import { prefersReducedMotion } from '../ui/dom';
 import { dayAt, withTick, type TimelineModel } from './model';
 import {
   effectiveInterval,
@@ -28,10 +29,6 @@ export interface PlaybackControls {
   readonly setInterval: (interval: PlaybackInterval) => void;
   /** The play button: a press on it, or Enter or Space, is the toggle, not an interaction that stops playback. */
   readonly buttonRef: RefObject<HTMLButtonElement | null>;
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 /** The events that stop playback when they happen anywhere but on the play button. */

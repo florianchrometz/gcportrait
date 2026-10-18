@@ -25,6 +25,7 @@ import { useRef, type KeyboardEvent, type PointerEvent, type ReactElement } from
 
 import { cx } from '../classNames';
 import { DRAWER_WIDTH } from '../storage/preferences';
+import { capturePointer, releasePointer } from '../ui/dom';
 import styles from './DetailsDrawer.module.css';
 
 /** How far one arrow key moves the edge (CSS px). */
@@ -35,12 +36,6 @@ export const SHEET_HEIGHT = { min: 50, max: 100 } as const;
 
 /** A drag of the sheet's edge let go this far below half (percent of the canvas's height) closes the sheet. */
 export const DISMISS_BELOW = 20;
-
-/** Lets a drag's pointer go before its `pointerup` (where the browser supports pointer capture; jsdom does not). */
-function releasePointer(element: Element, pointerId: number): void {
-  const capturable: Partial<Pick<Element, 'hasPointerCapture' | 'releasePointerCapture'>> = element;
-  if (capturable.hasPointerCapture?.(pointerId) === true) element.releasePointerCapture(pointerId);
-}
 
 /** Whether `element` still holds `pointerId`'s capture (assumed where the browser has no pointer capture: jsdom). */
 function holdsPointer(element: Element, pointerId: number): boolean {
@@ -148,7 +143,7 @@ export function ResizeHandle({
       unit: unit > 0 ? unit : 1,
       last: value,
     };
-    if (typeof target.setPointerCapture === 'function') target.setPointerCapture(event.pointerId);
+    capturePointer(target, event.pointerId);
     target.focus();
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>): void => {
