@@ -14,6 +14,7 @@ import {
   LayoutCountsSchema,
   LayoutRectSchema,
   LayoutReportSchema,
+  LayoutSchema,
   PointSchema,
   RectRoleSchema,
   RectSchema,
@@ -31,6 +32,7 @@ import {
   type GutterReservations,
   type GutterWidening,
   type Insets,
+  type Layout,
   type LayoutCounts,
   type LayoutRect,
   type LayoutReport,
@@ -637,5 +639,122 @@ describe('layout edge contracts', () => {
     ]) {
       expect(Object.isFrozen(value)).toBe(true);
     }
+  });
+});
+
+const completeLayout = {
+  rects: Object.fromEntries([
+    ['__proto__', layoutRect],
+    ['constructor', layoutRect],
+    ['', layoutRect],
+  ]),
+  edges: Object.fromEntries([
+    ['__proto__', edgePath],
+    ['constructor', edgePath],
+    ['', edgePath],
+  ]),
+  chips: ['constructor', '', 'constructor'],
+  bounds: rect,
+  arrangements: { canvas: arrangement, zones: { zone: arrangement } },
+  gutters: { canvas: widening, zones: { zone: widening } },
+  report,
+};
+
+describe('complete layout contract', () => {
+  it('composes the seven fields without cross-field refinements or reordered record keys', () => {
+    const parsed = LayoutSchema.parse(completeLayout);
+    expect(parsed).toEqual(completeLayout);
+    expect(Object.keys(parsed)).toEqual([
+      'rects',
+      'edges',
+      'chips',
+      'bounds',
+      'arrangements',
+      'gutters',
+      'report',
+    ]);
+    expect(Object.keys(parsed.rects)).toEqual(['__proto__', 'constructor', '']);
+    expect(Object.keys(parsed.edges)).toEqual(['__proto__', 'constructor', '']);
+    expect(JSON.stringify(parsed.rects)).toBe(JSON.stringify(completeLayout.rects));
+    expect(JSON.stringify(parsed.edges)).toBe(JSON.stringify(completeLayout.edges));
+    expect(LayoutSchema.parse(JSON.parse(JSON.stringify(parsed)))).toEqual(parsed);
+    expect(Object.isFrozen(completeLayout)).toBe(false);
+  });
+
+  it('accepts empty records and chip lists without adding optional data', () => {
+    const empty = {
+      ...completeLayout,
+      rects: {},
+      edges: {},
+      chips: [],
+      arrangements: { canvas: { cardColumns: 0, zoneRows: [] }, zones: {} },
+      gutters: {},
+    };
+    const parsed = LayoutSchema.parse(empty);
+    expect(parsed).toEqual(empty);
+    expect(parsed.report).not.toHaveProperty('timings');
+    expect(parsed.arrangements.canvas).not.toHaveProperty('zoneStacks');
+  });
+
+  it.each(Object.keys(completeLayout))('requires the %s field', (key) => {
+    const missing = Object.fromEntries(Object.entries(completeLayout).filter(([name]) => name !== key));
+    expect(LayoutSchema.safeParse(missing).success).toBe(false);
+    expect(LayoutSchema.safeParse({ ...completeLayout, [key]: undefined }).success).toBe(false);
+  });
+
+  it('rejects unknown fields, wrong collection shapes and explicitly undefined nested options', () => {
+    for (const invalid of [
+      { ...completeLayout, extra: 1 },
+      { ...completeLayout, rects: [] },
+      { ...completeLayout, edges: null },
+      { ...completeLayout, chips: [1] },
+      { ...completeLayout, gutters: { zones: undefined } },
+      { ...completeLayout, report: { ...report, timings: undefined } },
+      { ...completeLayout, rects: { node: { ...layoutRect, chipCountLine: undefined } } },
+    ])
+      expect(LayoutSchema.safeParse(invalid).success).toBe(false);
+  });
+
+  it('keeps nested record validation errors rooted at the complete field path', () => {
+    const parsed = LayoutSchema.safeParse({
+      ...completeLayout,
+      rects: Object.fromEntries([['__proto__', { ...layoutRect, width: Infinity }]]),
+      edges: Object.fromEntries([['', { ...edgePath, points: [{ x: NaN, y: 0 }] }]]),
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success)
+      expect(parsed.error.issues.map((issue) => issue.path)).toEqual([
+        ['rects', '__proto__', 'width'],
+        ['edges', '', 'points', 0, 'x'],
+      ]);
+  });
+
+  it('preserves readonly fields and each nested contract in the inferred type', () => {
+    expectTypeOf<Layout>().toEqualTypeOf<
+      Readonly<{
+        rects: Readonly<Record<string, LayoutRect>>;
+        edges: Readonly<Record<string, EdgePath>>;
+        chips: readonly string[];
+        bounds: Rect;
+        arrangements: Arrangements;
+        gutters: GutterReservations;
+        report: LayoutReport;
+      }>
+    >();
+    const parsed = LayoutSchema.parse(completeLayout);
+    for (const value of [
+      parsed,
+      parsed.rects,
+      parsed.rects['__proto__'],
+      parsed.edges,
+      parsed.edges[''],
+      parsed.edges['']?.points,
+      parsed.chips,
+      parsed.bounds,
+      parsed.arrangements,
+      parsed.gutters,
+      parsed.report,
+    ])
+      expect(Object.isFrozen(value)).toBe(true);
   });
 });

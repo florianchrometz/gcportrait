@@ -369,3 +369,31 @@ export const GutterReservationsSchema = z
   })
   .readonly();
 export type GutterReservations = z.infer<typeof GutterReservationsSchema>;
+
+export const LayoutSchema = z
+  .strictObject({
+    /**
+     * One rect per Scene node, keyed by node id, in paint order: pre-order over the sorted tree, so a parent
+     * always comes before its children.
+     */
+    rects: stringRecord(LayoutRectSchema),
+    /**
+     * Routed edges keyed by edge id (`<from> -<kind>-> <to>`), sorted by from, to and kind in code-point order.
+     * One per distinct (from, to, kind) after merging; a symmetric kind's ends are ordered (`from` < `to`).
+     */
+    edges: stringRecord(EdgePathSchema),
+    /** Ids of the zones drawn as chips (their rects are in `rects`), in paint order. */
+    chips: z.array(z.string()).readonly(),
+    /** The canvas: every rect lies inside it, `canvasMargin` (plus any reserved ring) from its edge. */
+    bounds: RectSchema,
+    /** How each container's children were packed. */
+    arrangements: ArrangementsSchema,
+    /**
+     * The gutter reservations the rects were packed with: the caller's (`LayoutOptions.gutters`) plus the lane
+     * space the widening pass added, per container with any (zones in paint order).
+     */
+    gutters: GutterReservationsSchema,
+    report: LayoutReportSchema,
+  })
+  .readonly();
+export type Layout = z.infer<typeof LayoutSchema>;

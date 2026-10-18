@@ -7,11 +7,13 @@ import {
   GutterWideningSchema,
   LayoutRectSchema,
   LayoutReportSchema,
+  LayoutSchema,
   type Arrangement,
   type Arrangements,
   type GapWidening,
   type GutterReservations,
   type GutterWidening,
+  type Layout,
   type LayoutCounts,
   type LayoutReport,
   type RoutingReport,
@@ -24,6 +26,7 @@ import type {
   GapWidening as PublicGapWidening,
   GutterReservations as PublicGutterReservations,
   GutterWidening as PublicGutterWidening,
+  Layout as PublicLayout,
   LayoutCounts as PublicLayoutCounts,
   LayoutReport as PublicLayoutReport,
   RoutingReport as PublicRoutingReport,
@@ -61,6 +64,13 @@ const small = scene(
 
 describe('layoutScene', () => {
   const layout = layoutScene(small);
+
+  it('emits the complete model contract unchanged through JSON', () => {
+    expect(LayoutSchema.parse(layout)).toEqual(layout);
+    expect(LayoutSchema.parse(JSON.parse(JSON.stringify(layout)))).toEqual(layout);
+    expect(JSON.stringify(LayoutSchema.parse(layout))).toBe(JSON.stringify(layout));
+    expectTypeOf<PublicLayout>().toEqualTypeOf<Layout>();
+  });
 
   it('places every node, parents before children, with integer coordinates', () => {
     expect(Object.keys(layout.rects)).toEqual([
@@ -333,6 +343,8 @@ describe('layoutScene', () => {
     expect(Object.hasOwn(result.gutters.zones ?? {}, '__proto__')).toBe(true);
     expect(ArrangementsSchema.parse(result.arrangements)).toEqual(result.arrangements);
     expect(GutterReservationsSchema.parse(result.gutters)).toEqual(result.gutters);
+    expect(LayoutSchema.parse(result)).toEqual(result);
+    expect(LayoutSchema.parse(JSON.parse(JSON.stringify(result)))).toEqual(result);
     expect(ArrangementsSchema.parse(JSON.parse(JSON.stringify(result.arrangements)))).toEqual(
       result.arrangements,
     );

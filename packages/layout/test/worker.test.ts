@@ -21,6 +21,7 @@
  *   `pnpm test`), each a memo miss: the worker must not accumulate (growth under 16 MiB).
  */
 import { performance } from 'node:perf_hooks';
+import { LayoutSchema } from '@gcportrait/model';
 import { cutNote, measureBatches, skipIfOverloaded } from '@gcportrait/model/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createLayoutClient, createLayoutWorkerHandler, type LayoutResult } from '../src/index.js';
@@ -63,6 +64,13 @@ beforeAll(async () => {
 afterAll(async () => {
   await measuring.terminate();
   await memoised.terminate();
+});
+
+it('returns a complete model-valid Layout through a real worker and JSON', async () => {
+  const result = await memoised.client.layout(demoScene('S', 'overview'));
+  expect(LayoutSchema.parse(result.layout)).toEqual(result.layout);
+  expect(LayoutSchema.parse(JSON.parse(JSON.stringify(result.layout)))).toEqual(result.layout);
+  expect(JSON.stringify(LayoutSchema.parse(result.layout))).toBe(JSON.stringify(result.layout));
 });
 
 describe('budgets through a worker', () => {

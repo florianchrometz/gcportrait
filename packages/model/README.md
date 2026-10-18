@@ -291,8 +291,13 @@ omits it on other rects. It is the full or short count line chosen during sizing
 it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
-tests check emitted rects, routes and reports against the schemas. The complete `Layout`, its other output
-shapes and the worker protocol remain declared in `@gcportrait/layout`.
+tests check emitted layouts and worker results against the schemas. Worker protocol envelopes, progress
+and options remain declared in `@gcportrait/layout`.
+
+`LayoutSchema` composes the complete `Layout`: readonly `rects` and `edges` records, readonly `chips`,
+`bounds`, `arrangements`, `gutters` and `report`, all required. The records preserve special string keys
+as the packing records below do. No cross-field refinements tie a key to an endpoint, a chip to a rect or
+report counts to the collections; layout invariants remain the engine's separate checks.
 
 ### Reports
 
@@ -329,7 +334,7 @@ The `zones` records accept plain and null-prototype objects, preserving their ow
 and order, including `__proto__`, `constructor` and the empty string. Every value is validated; an invalid
 value rejects the whole record with its key in the error path. Enumerable symbol keys and non-record
 inputs are refused. Parsed records and their values are readonly; no schema parsing is added to the layout
-pipeline. The complete `Layout` remains in `@gcportrait/layout`.
+pipeline.
 
 ## Scene builder environment and report
 

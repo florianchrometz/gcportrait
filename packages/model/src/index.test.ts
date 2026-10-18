@@ -127,6 +127,7 @@ describe('public surface', () => {
         'GapWideningSchema',
         'GutterWideningSchema',
         'GutterReservationsSchema',
+        'LayoutSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',

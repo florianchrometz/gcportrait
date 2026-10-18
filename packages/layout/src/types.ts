@@ -4,15 +4,7 @@
  * survives `postMessage` from the layout worker and JSON unchanged. Every coordinate is in px at scale 1 in
  * the canvas's coordinate system: the canvas (the organisation, or the drill-in root) spans `bounds`.
  */
-import type {
-  Arrangement,
-  Arrangements,
-  EdgePath,
-  GutterReservations,
-  LayoutRect,
-  LayoutReport,
-  Rect,
-} from '@gcportrait/model';
+import type { Arrangement, GutterReservations } from '@gcportrait/model';
 import type { Routing, Sizing } from './constants.js';
 import type { FontMetricsTable } from './metrics.js';
 
@@ -27,6 +19,7 @@ export type {
   GutterReservations,
   GutterWidening,
   Insets,
+  Layout,
   LayoutCounts,
   LayoutRect,
   LayoutReport,
@@ -37,31 +30,6 @@ export type {
   Side,
   StageTimings,
 } from '@gcportrait/model';
-
-export interface Layout {
-  /**
-   * One rect per Scene node, keyed by node id, in paint order: pre-order over the sorted tree, so a parent
-   * always comes before its children.
-   */
-  readonly rects: Readonly<Record<string, LayoutRect>>;
-  /**
-   * Routed edges keyed by edge id (`<from> -<kind>-> <to>`), sorted by from, to and kind in code-point order.
-   * One per distinct (from, to, kind) after merging; a symmetric kind's ends are ordered (`from` < `to`).
-   */
-  readonly edges: Readonly<Record<string, EdgePath>>;
-  /** Ids of the zones drawn as chips (their rects are in `rects`), in paint order. */
-  readonly chips: readonly string[];
-  /** The canvas: every rect lies inside it, `canvasMargin` (plus any reserved ring) from its edge. */
-  readonly bounds: Rect;
-  /** How each container's children were packed. */
-  readonly arrangements: Arrangements;
-  /**
-   * The gutter reservations the rects were packed with: the caller's (`LayoutOptions.gutters`) plus the lane
-   * space the widening pass added, per container with any (zones in paint order).
-   */
-  readonly gutters: GutterReservations;
-  readonly report: LayoutReport;
-}
 
 export interface LayoutOptions {
   /** Theme-independent sizing overrides (defaults: `DEFAULT_SIZING`, the skill's constants). */
