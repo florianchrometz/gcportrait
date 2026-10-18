@@ -1201,6 +1201,58 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
+for (const theme of ['light', 'dark'] as const) {
+  test(`at rest on a phone and a tablet, \`+\` keeps the focused card clear of the disclosure bar, whose fit stays the whole canvas (${theme})`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    for (const size of [SIZES[0], { width: 820, height: 1180 }] as const) {
+      await page.setViewportSize(size);
+      // A fresh document per size: a camera the previous size's keys moved does not carry over.
+      await page.goto('about:blank');
+      const where = `${String(size.width)} × ${String(size.height)}, ${theme} theme`;
+      const svg = await openDiagram(page, DIAGRAMS[0]);
+      await cameraSettled(svg);
+      const bar = page.getByRole('group', { name: 'Expand and collapse' });
+      await expect(bar, where).toBeVisible();
+      // The bar at rest floats over the canvas's foot: no panel marker, so the fit still fills the whole canvas.
+      const marker = page.locator('#diagram-canvas [data-canvas-jump]');
+      await expect(marker, where).toHaveCount(1);
+      await expect(marker, where).not.toHaveAttribute('data-canvas-overlay');
+      const canvas = await boxOf(svg);
+      const drawing = await boxOf(svg.locator('.dg-background'));
+      expect(drawing.y, where).toBeGreaterThanOrEqual(canvas.y - 0.5);
+      expect(drawing.y + drawing.height, where).toBeLessThanOrEqual(canvas.y + canvas.height + 0.5);
+      // The skip link puts focus on the drawing's tab stop: `+` zooms about that card, the row at rest counted as room.
+      await page.getByRole('link', { name: 'Skip to the diagram' }).focus();
+      await page.keyboard.press('Enter');
+      const focused = svg.locator('.dg-node:focus');
+      await expect(focused, where).toHaveCount(1);
+      const id = await focused.getAttribute('data-id');
+      if (id === null) throw new Error('no focused card');
+      const card = svg.locator(`.dg-node[data-id="${id}"]`);
+      const top = canvas.y;
+      for (let step = 1; step <= 6; step += 1) {
+        await page.keyboard.press('+');
+        await cameraSettled(svg);
+        await expect(card, where).toBeFocused();
+        const body = await boxOf(card.locator('.dg-body').first());
+        // The marker's box is what the directed moves keep clear of: the row and its notice above it.
+        const row = await boxOf(marker);
+        const at = `${where}, after ${String(step)} × +: the card from ${body.y.toFixed(1)} to ${(body.y + body.height).toFixed(1)}, the row from ${row.y.toFixed(1)}`;
+        if (body.height <= row.y - top) {
+          // It fits the band above the row: it lies inside it, none of it under the bar.
+          expect(body.y, at).toBeGreaterThanOrEqual(top - 1);
+          expect(body.y + body.height, at).toBeLessThanOrEqual(row.y + 1);
+        } else {
+          // Taller than the band: centred in it.
+          expect(Math.abs(body.y + body.height / 2 - (top + row.y) / 2), at).toBeLessThan(1);
+        }
+      }
+    }
+  });
+}
+
 test('the Snapshots page with a snapshot stored and a day cached: a card per row on a phone, its tables whole on a tablet, nothing scrolling sideways, at every size and in both themes', async ({
   page,
 }, testInfo) => {

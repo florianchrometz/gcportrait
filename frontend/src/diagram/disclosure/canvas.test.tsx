@@ -215,6 +215,33 @@ describe('the camera and focus after a flip', () => {
     expect((rect.x + rect.width / 2) * now.k + now.x).toBeCloseTo(320);
   });
 
+  it('frames the zone clear of the disclosure bar at rest, which only the directed moves keep clear of', () => {
+    reduceMotion();
+    // The bar floats over the canvas's foot at rest: marked for the moves, not as a panel a fit clears.
+    const bar = document.createElement('div');
+    bar.setAttribute('data-canvas-jump', '');
+    bar.getBoundingClientRect = () => DOMRect.fromRect({ x: 836, y: 734, width: 432, height: 54 });
+    document.body.append(bar);
+    onTestFinished(() => {
+      bar.remove();
+    });
+    const { container, rerender } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    svg.getBoundingClientRect = () => DOMRect.fromRect({ x: 0, y: 0, width: 1280, height: 800 });
+    const before = cameraOf(svg);
+    fireEvent.click(chipOf(svg, 'projects/data'));
+    rerender(<DiagramCanvas {...props({ model: expanded })} />);
+    const rect = expanded.input.layout.rects['projects/data'];
+    if (rect === undefined) throw new Error('no rect');
+    // The canvas above the bar, 1280 × 734, is the part it leaves: framed there as on a canvas that size.
+    const expected = flipTransform(rect, 1280, 734, before, true);
+    const now = cameraOf(svg);
+    expect(now.k).toBeCloseTo(expected.k);
+    expect(now.x).toBeCloseTo(expected.x);
+    expect(now.y).toBeCloseTo(expected.y);
+    expect((rect.y + rect.height / 2) * now.k + now.y).toBeCloseTo(734 / 2);
+  });
+
   it('keeps the viewBox while the glide has not stepped yet, and fits a drawing nobody flipped', () => {
     const frames = manualFrames();
     const { container, rerender } = render(<DiagramCanvas {...props()} />);

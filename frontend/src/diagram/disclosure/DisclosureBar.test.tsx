@@ -134,6 +134,25 @@ describe('the disclosure bar', () => {
     }
   }, 60_000);
 
+  it('marks the bar for the directed moves at rest, and as a panel over the canvas while it is one', async () => {
+    const viewport = installViewport(1280);
+    try {
+      const { container } = renderApp('/diagram#snapshot=demo:S', {
+        diagramWorkers: createInProcessWorkers,
+      });
+      await drawn(container);
+      await shows(' shown');
+      // At rest the bar floats over the canvas's foot: a jump and the keyboard focus keep clear of it, a fit does not.
+      const panel = bar().parentElement;
+      if (panel === null) throw new Error('no bar');
+      expect(panel.hasAttribute('data-canvas-jump')).toBe(true);
+      expect(panel.hasAttribute('data-canvas-overlay')).toBe(false);
+      expect(panel.hasAttribute('data-canvas-resize')).toBe(true);
+    } finally {
+      viewport.uninstall();
+    }
+  }, 60_000);
+
   it('writes the count with thousands separators', () => {
     expect(shownText(164, 2497)).toBe('164 of 2,497 shown');
   });

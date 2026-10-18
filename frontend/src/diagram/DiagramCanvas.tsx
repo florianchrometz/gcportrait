@@ -13,7 +13,8 @@
  *
  * The props it takes from the page: `jump` (a pending `jumpTo(id)`, made as a glide and reported with `onJumpDone`),
  * `onHover`, `onFlip` (without it a chip selects like any node) and `panels` (the sheets and the drawer lying over
- * the canvas, in whose room it keeps the camera: `clearRoom` and `fitRoom`, section "App state" of the README).
+ * the canvas, in whose room it keeps the camera: `clearRoom`, `jumpRoom` and `fitRoom`, section "App state" of the
+ * README).
  *
  * What a press, a click, a finger, a key or a panel does, and every threshold it reads (the click distance, the tap
  * slop, the long press), is README, "Diagram renderer" with its "Touch" and "Keyboard" paragraphs, and
@@ -171,22 +172,22 @@ function lyingOpen(element: Element): boolean {
 }
 
 /**
- * The part of the canvas a camera jump, the keyboard's pan and a zoom key's step keep a node in, and `0` fits the
- * drawing to (`fitRoom`; camera.ts, `inRoom`): the largest part of the canvas that no panel lying over it covers
- * (`data-canvas-overlay`, frontend/AGENTS.md, "Phones, tablets and desktops": on a phone or a tablet the details drawer along the canvas's right
- * or lower edge, and with it the disclosure bar's row in the part it leaves, above a phone's sheet or beside a tablet's
- * panel; the top bar's View or More sheet hanging over it from its top edge). One panel leaves the largest part of the
- * canvas it keeps free, to its left or right, above or below it; with the drawer and the row, the largest part clear of
- * both (`largestFree`). A closed panel (`hidden`) or one out of sight (`visibility: hidden`: the row under the phone's
- * sheet at full height, or on a canvas too short for it) covers nothing, and nor does one beside the canvas: on a
- * desktop the drawer stands beside it and no sheet opens, and the room is the canvas.
+ * The part of the canvas a camera move keeps a node in: the largest part of the canvas that none of the elements
+ * matching `marker` that lie open over it covers (`data-canvas-overlay`, frontend/AGENTS.md, "Phones, tablets and
+ * desktops": on a phone or a tablet the details drawer along the canvas's right or lower edge, and with it the
+ * disclosure bar's row in the part it leaves, above a phone's sheet or beside a tablet's panel; the top bar's View or
+ * More sheet hanging over it from its top edge). One panel leaves the largest part of the canvas it keeps free, to its
+ * left or right, above or below it; with the drawer and the row, the largest part clear of both (`largestFree`). A
+ * closed panel (`hidden`) or one out of sight (`visibility: hidden`: the row under the phone's sheet at full height, or
+ * on a canvas too short for it) covers nothing, and nor does one beside the canvas: on a desktop the drawer stands
+ * beside it and no sheet opens, and the room is the canvas.
  */
-function clearRoom(svg: SVGSVGElement): CanvasRoom {
+function freeRoom(svg: SVGSVGElement, marker: string): CanvasRoom {
   const size = canvasSize(svg);
   const box = svg.getBoundingClientRect();
   if (box.width <= 0 || box.height <= 0) return { x: 0, y: 0, ...size };
   const panels: Edges[] = [];
-  for (const overlay of svg.ownerDocument.querySelectorAll('[data-canvas-overlay]')) {
+  for (const overlay of svg.ownerDocument.querySelectorAll(marker)) {
     if (!lyingOpen(overlay)) continue;
     const over = overlay.getBoundingClientRect();
     panels.push({
@@ -206,10 +207,29 @@ function clearRoom(svg: SVGSVGElement): CanvasRoom {
 }
 
 /**
+ * The part of the canvas the panels lying over it leave (`freeRoom`, `data-canvas-overlay`): the room a fit fills, and
+ * the one a directed move keeps a node in where a panel covers the canvas.
+ */
+function clearRoom(svg: SVGSVGElement): CanvasRoom {
+  return freeRoom(svg, '[data-canvas-overlay]');
+}
+
+/**
+ * The part of the canvas a jump, the keyboard's pan and a zoom key's step keep a node in (`data-canvas-overlay` and
+ * `data-canvas-jump`): the panels lying over the canvas, and the disclosure bar, which floats over the canvas's foot at
+ * rest (`data-canvas-jump`, DisclosureBar) and is no fit obstacle there, so that a node a directed move brings into
+ * view never lies under it while the overview fit stays the whole canvas.
+ */
+function jumpRoom(svg: SVGSVGElement): CanvasRoom {
+  return freeRoom(svg, '[data-canvas-overlay], [data-canvas-jump]');
+}
+
+/**
  * The part of the canvas `0` fits the drawing to: the room the panels lying over the canvas leave (`clearRoom`), so
  * that none of the drawing lies under them; or the whole canvas when that room has nothing inside the fit's margins
  * (`FIT_PADDING` on each side), as when the phone's drawer at full height leaves only the strip its handle stands in
- * and hides the drawing until it comes down.
+ * and hides the drawing until it comes down. The disclosure bar at rest is not a panel here: it keeps the overview fit
+ * the whole canvas (jumpRoom's row for the moves it does keep clear).
  */
 function fitRoom(svg: SVGSVGElement): CanvasRoom {
   const room = clearRoom(svg);
@@ -749,8 +769,8 @@ export function DiagramCanvas({
 
   // A chip expanded or a zone collapsed here: the drawing with that flip keeps the camera where it was
   // (the fit below leaves it) and glides 200 ms to frame the zone in the part of the canvas the panels lying over
-  // it leave (`clearRoom`, as a jump); after a flip from the keyboard, focus follows the zone (the painter effect).
-  // Before the fit, which it tells to keep the camera.
+  // it leave, short of the disclosure bar (`jumpRoom`, as a jump); after a flip from the keyboard, focus follows the
+  // zone (the painter effect). Before the fit, which it tells to keep the camera.
   useLayoutEffect(() => {
     const pending = flipRef.current;
     if (pending === null || pending.model === model) return;
@@ -761,7 +781,7 @@ export function DiagramCanvas({
     if (svg === null || place === null || rect === undefined || !isFlipDrawn(pending, rect)) return;
     keepCameraRef.current = model;
     if (pending.keyboard) focusAfterRef.current = pending.id;
-    const to = inRoom(clearRoom(svg), cameraRef.current, (width, height, camera) =>
+    const to = inRoom(jumpRoom(svg), cameraRef.current, (width, height, camera) =>
       flipTransform(rect, width, height, camera, pending.wasChip),
     );
     glideRef.current?.stop();
@@ -891,7 +911,7 @@ export function DiagramCanvas({
       // The person moved on: a glide still on its way (a search hit's) stops where it is, and the camera pans
       // from there.
       glideRef.current?.stop();
-      const to = inRoom(clearRoom(svg), cameraRef.current, (width, height, camera) =>
+      const to = inRoom(jumpRoom(svg), cameraRef.current, (width, height, camera) =>
         keyboardTransform(revealBox(rect), width, height, camera),
       );
       if (to === null) return;
@@ -899,8 +919,9 @@ export function DiagramCanvas({
     };
     // The zoom keys: one step in or out about the focused item (from the canvas itself, about the centre of the
     // part of the canvas a panel lying over it leaves in view), keeping the item in that part, as a jump and the
-    // keyboard's pan do (`clearRoom`); `0` fits the whole drawing to that part (`fitRoom`), a fit the camera then rests
-    // on as on a new view's, so a panel closed afterwards fits the drawing to the canvas again.
+    // keyboard's pan do (`jumpRoom`, the disclosure bar at rest counted too); `0` fits the whole drawing to the part
+    // the panels leave (`fitRoom`), a fit the camera then rests on as on a new view's, so a panel closed afterwards
+    // fits the drawing to the canvas again.
     const zoomBy = (key: ZoomKey, focusedId: string | null): void => {
       const place = placeRef.current;
       const drawn = frameRef.current;
@@ -919,7 +940,7 @@ export function DiagramCanvas({
         const rect = focusedId === null ? undefined : model.input.layout.rects[focusedId];
         const box = rect === undefined ? null : revealBox(rect);
         const direction = key === 'in' ? 1 : -1;
-        to = inRoom(clearRoom(svg), current, (width, height, camera) =>
+        to = inRoom(jumpRoom(svg), current, (width, height, camera) =>
           zoomStepTransform(camera, direction, box, width, height),
         );
       }
@@ -1179,7 +1200,9 @@ export function DiagramCanvas({
     const rect = model.input.layout.rects[jump.id];
     if (svg === null || place === null || rect === undefined) return;
     const mode = jump.mode ?? 'centre';
-    const room = clearRoom(svg);
+    // A centring jump is a directed move: it keeps clear of the disclosure bar at rest too. A reveal (the details
+    // drawer's) only makes up what the panels over the canvas took, and the bar at rest is no panel there.
+    const room = mode === 'centre' ? jumpRoom(svg) : clearRoom(svg);
     const fit = mode === 'reveal' ? refit() : null;
     if (
       fit !== null &&

@@ -5,7 +5,9 @@
  * top bar's View or More sheet is open; clear of the drawer either way, DisclosureBar.module.css). While the details
  * drawer lies over the canvas (a phone's sheet, a tablet's panel), or a tablet's View or More sheet is open, the bar
  * is marked as a panel over the canvas (`data-canvas-overlay`), so a camera jump and a fit keep the drawing
- * clear of it too (diagram/DiagramCanvas, `clearRoom`). It holds "N of M shown" (the
+ * clear of it too (diagram/DiagramCanvas, `clearRoom`). At rest it carries `data-canvas-jump` alone: the directed moves
+ * (a jump, the keyboard's focus and pan, a zoom key's step, a flip's glide) keep a node clear of it, while a fit still
+ * fills the whole canvas. It holds "N of M shown" (the
  * rects drawn, of those the view holds at detail `all`), "Expand all" (opens the shallowest collapsed tier and reopens
  * zones closed by hand) and "Collapse all" (closes every zone opened by hand, keeps those closed by hand, and returns
  * to Auto when the level in use is deeper),
@@ -68,7 +70,12 @@ export function DisclosureBar(): ReactElement | null {
   // otherwise.
   return (
     <div className={styles.frame} data-top-sheet={underSheet ? '' : undefined}>
-      <div className={styles.bar} data-canvas-overlay={overlay ? '' : undefined} data-canvas-resize="">
+      <div
+        className={styles.bar}
+        data-canvas-overlay={overlay ? '' : undefined}
+        data-canvas-jump=""
+        data-canvas-resize=""
+      >
         {/* A live region kept in the DOM while empty, so a new notice is announced. */}
         <div role="status" className={styles.live}>
           {notice === null ? null : (

@@ -14,6 +14,7 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { focusTransform, GLIDE_MS, REVEAL_MARGIN, REVEAL_MS, ZOOM_STEP } from './camera';
 import { DiagramCanvas, type DiagramCanvasProps } from './DiagramCanvas';
+import { keyboardMap, navigate } from './keyboard/navigation';
 import {
   cameraOf,
   canvasOf as canvas,
@@ -109,6 +110,20 @@ const panel = (box: Box, closed: boolean): HTMLElement => {
   });
   return element;
 };
+
+/**
+ * A stand-in for the disclosure bar at rest at `box`: it floats over the canvas and is marked for the directed moves
+ * alone (`data-canvas-jump`), not as a panel a fit clears (`data-canvas-overlay`).
+ */
+const restingBar = (box: Box): HTMLElement => {
+  const element = panel(box, false);
+  element.removeAttribute('data-canvas-overlay');
+  element.setAttribute('data-canvas-jump', '');
+  return element;
+};
+
+/** The disclosure bar at rest at a desktop canvas's foot, right: 432 × 54 px in its corner. */
+const REST_BAR: Box = { x: 836, y: 734, width: 432, height: 54 };
 
 function panelResizes() {
   const observers: { readonly notify: () => void; readonly targets: Set<Element> }[] = [];
@@ -296,6 +311,48 @@ describe('the room a jump keeps the node in', () => {
     expect(node.x).toBeCloseTo(640);
     expect(node.y).toBeCloseTo(400);
   });
+
+  /**
+   * The canvas at the window's top-left corner, 1280 × 800, the disclosure bar at rest at `bar`, fitted to the whole
+   * canvas, after a jump to `id` (at once: reduced motion).
+   */
+  const jumpPastTheBar = (id: string, bar: Box): SVGSVGElement => {
+    reduceMotion();
+    restingBar(bar);
+    const { container, rerender } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    // The bar at rest is no fit obstacle: the fit is the whole canvas, as with no bar at all.
+    expectFittedTo(svg, WHOLE);
+    rerender(<DiagramCanvas {...props({ jump: { id, seq: 1 } })} />);
+    return svg;
+  };
+
+  it('keeps a jump clear of the disclosure bar at rest, at a desktop’s foot right', () => {
+    // The canvas above the bar, 1280 × 734, is the part it leaves: the most.
+    const node = onScreen(jumpPastTheBar('run/api', REST_BAR), 'run/api');
+    expect(node.x).toBeCloseTo(640);
+    expect(node.y).toBeCloseTo(734 / 2);
+    expect(node.bottom).toBeLessThan(734);
+  });
+
+  it('and above a phone’s row across the canvas’s foot at rest', () => {
+    const node = onScreen(jumpPastTheBar('run/web', { x: 8, y: 734, width: 1264, height: 54 }), 'run/web');
+    expect(node.x).toBeCloseTo(640);
+    expect(node.y).toBeCloseTo(734 / 2);
+    expect(node.bottom).toBeLessThan(734);
+  });
+
+  it('counts a bar at rest that is out of sight (`visibility: hidden`) for nothing', () => {
+    reduceMotion();
+    const bar = restingBar(REST_BAR);
+    bar.style.visibility = 'hidden';
+    const { container, rerender } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    rerender(<DiagramCanvas {...props({ jump: { id: 'run/api', seq: 1 } })} />);
+    expect(onScreen(svg, 'run/api').y).toBeCloseTo(400);
+  });
 });
 
 describe('the room a zoom key keeps the focused item in', () => {
@@ -367,6 +424,67 @@ describe('the room a zoom key keeps the focused item in', () => {
     svg.focus();
     fireEvent.keyDown(svg, { key: '0' });
     expectFittedTo(svg, { x: 0, y: 0, width: 1280, height: 800 });
+  });
+});
+
+describe('the room keyboard focus keeps the item in', () => {
+  /**
+   * The canvas at the window's top-left corner, 1280 × 800, the disclosure bar at rest across its foot, `run/api` 120
+   * px tall with its centre at (640, 660): 14 px above the room's margin at 710, its bottom 720. Reduced motion, so a
+   * step lands at once.
+   */
+  const aboveTheBar = (): SVGSVGElement => {
+    reduceMotion();
+    restingBar({ x: 8, y: 734, width: 1264, height: 54 });
+    const { container } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    const rect = model.input.layout.rects['run/api'];
+    if (rect === undefined) throw new Error('no rect');
+    const k = 120 / rect.height;
+    const cx = rect.x + rect.width / 2;
+    const cy = rect.y + rect.height / 2;
+    moveCamera(svg, { k, x: 640 - cx * k, y: 660 - cy * k });
+    return svg;
+  };
+
+  it('keeps the focused item above the bar at rest on a step in', () => {
+    const svg = aboveTheBar();
+    const before = cameraOf(svg).k;
+    const api = nodeOf(svg, 'run/api');
+    api.focus();
+    fireEvent.keyDown(api, { key: '+' });
+    expect(cameraOf(svg).k).toBeCloseTo(before * ZOOM_STEP);
+    // 180 px tall now: about its centre it would reach 40 px under the bar; it moves up, inside the room's margin.
+    const node = onScreen(svg, 'run/api');
+    expect(node.bottom).toBeCloseTo(734 - REVEAL_MARGIN);
+    expect(node.x).toBeCloseTo(640);
+  });
+
+  it('pans the item the arrow keys reach clear of the bar at rest', () => {
+    reduceMotion();
+    restingBar({ x: 836, y: 734, width: 432, height: 54 });
+    const { container } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    atTopLeft(svg);
+    const map = keyboardMap(model.rects, false);
+    const key = (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'] as const).find(
+      (candidate) => navigate(map, 'run/web', candidate) !== null,
+    );
+    if (key === undefined) throw new Error('no key moves from run/web');
+    const to = navigate(map, 'run/web', key);
+    const rect = to === null ? undefined : model.input.layout.rects[to];
+    if (to === null || rect === undefined) throw new Error('no item to move to');
+    // Zoomed in with the item's centre at (640, 780), its box under the bar's row.
+    const k = 2;
+    moveCamera(svg, { k, x: 640 - (rect.x + rect.width / 2) * k, y: 780 - (rect.y + rect.height / 2) * k });
+    expect(onScreen(svg, to).bottom).toBeGreaterThan(734);
+    const web = nodeOf(svg, 'run/web');
+    web.focus();
+    fireEvent.keyDown(web, { key });
+    expect(document.activeElement?.closest('[data-id]')?.getAttribute('data-id')).toBe(to);
+    // The canvas above the bar, 1280 × 734, is the part it leaves: the item ends above it.
+    expect(onScreen(svg, to).bottom).toBeCloseTo(734 - REVEAL_MARGIN);
   });
 });
 

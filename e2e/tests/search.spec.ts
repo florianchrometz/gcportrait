@@ -13,11 +13,12 @@ import {
 /**
  * Search on demo organisation M: `/` focuses the box, the results are grouped by kind with a count, and
  * choosing the first result lands on the right card — selected (the hash, the ring, the drawer) and glided to the
- * centre of the canvas, its collapsed ancestors flipped open first — for an IP, a domain, a project id and a label.
- * Only the current text's results can be chosen: a new text typed over earlier results and Enter pressed at once
- * lands on the new text's best result (by keyboard), and a click on a result lands too. These run once, in the light
- * theme: the theme changes none of it. A node the lens leaves out opens the reveal dialog, whose offer switches to the
- * Everything lens and lands on it; axe finds nothing with the results or the dialog open: both in both themes.
+ * centre of the room the disclosure bar leaves, its collapsed ancestors flipped open first — for an IP, a domain, a
+ * project id and a label. Only the current text's results can be chosen: a new text typed over earlier results and
+ * Enter pressed at once lands on the new text's best result (by keyboard), and a click on a result lands too. These
+ * run once, in the light theme: the theme changes none of it. A node the lens leaves out opens the reveal dialog,
+ * whose offer switches to the Everything lens and lands on it; axe finds nothing with the results or the dialog open:
+ * both in both themes.
  */
 
 const BASTION = '//compute.googleapis.com/projects/demo-vm-1/zones/europe-west3-a/instances/bastion';
@@ -59,20 +60,29 @@ async function search(page: Page, query: string): Promise<Locator> {
   return list;
 }
 
-/** The node is selected and the camera has glided it to the centre of the canvas. */
+/**
+ * The node is selected and the camera has glided it to the centre of the room the disclosure bar leaves, the canvas
+ * above its row at rest (the bar floats over the canvas's foot and the directed moves keep clear of it).
+ */
 async function expectLanded(page: Page, svg: Locator, id: string): Promise<void> {
   await expect.poll(() => hashOf(page)).toContain(`selection=${id}`);
   const node = svg.locator(`[data-id="${id}"]`).first();
   await expect(node).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
   await expect(svg.locator('.dg-select-ring')).not.toHaveAttribute('display', 'none');
   await expect(detailsDrawer(page)).toBeVisible();
+  const bar = page.locator('#diagram-canvas [data-canvas-jump]');
   await expect
     .poll(
       async () => {
-        const [canvas, box] = await Promise.all([svg.boundingBox(), node.boundingBox()]);
-        if (canvas === null || box === null) return Number.POSITIVE_INFINITY;
+        const [canvas, box, row] = await Promise.all([
+          svg.boundingBox(),
+          node.boundingBox(),
+          bar.boundingBox(),
+        ]);
+        if (canvas === null || box === null || row === null) return Number.POSITIVE_INFINITY;
+        const bottom = Math.min(canvas.y + canvas.height, row.y);
         const dx = box.x + box.width / 2 - (canvas.x + canvas.width / 2);
-        const dy = box.y + box.height / 2 - (canvas.y + canvas.height / 2);
+        const dy = box.y + box.height / 2 - (canvas.y + bottom) / 2;
         return Math.hypot(dx, dy);
       },
       { timeout: 5_000 },
