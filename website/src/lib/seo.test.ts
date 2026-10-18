@@ -42,11 +42,12 @@ describe('page metadata', () => {
     expect(app.sameAs).toEqual(['https://github.com/florianchrometz/gcportrait']);
     // The statement is in the footer and the author section, never in metadata.
     expect(app.description).toEqual(
-      expect.stringMatching(/^gcportrait renders the actual state of a Google Cloud/),
+      expect.stringMatching(/^gcportrait creates a Google Cloud architecture diagram/),
     );
     expect(JSON.stringify(app)).not.toContain('affiliated');
     expect(JSON.stringify(app)).not.toContain(NON_AFFILIATION_LONG);
     expect(app.applicationCategory).toBe('DeveloperApplication');
+    expect(app.applicationSubCategory).toBe('Google Cloud architecture diagrams');
     expect(app.featureList).toEqual([...FEATURE_LIST]);
     expect(FEATURE_LIST.map((feature) => feature.split(':')[0])).toEqual(['Self-hosted', 'Web app', 'API']);
     expect(sourceCodeLd().codeRepository).toBe('https://github.com/florianchrometz/gcportrait');

@@ -94,15 +94,15 @@ export function softwareApplicationLd(options: {
     name: PRODUCT_NAME,
     alternateName: TAGLINE,
     description:
-      'gcportrait renders the actual state of a Google Cloud organisation, folder or project as a Google Cloud-style ' +
-      'architecture diagram from Cloud Asset Inventory data, three ways: self-hosted, as one Cloud Run service in your ' +
+      'gcportrait creates a Google Cloud architecture diagram from Cloud Asset Inventory data to render the actual state ' +
+      'of a Google Cloud organisation, folder or project, three ways: self-hosted, as one Cloud Run service in your ' +
       'own Google Cloud project; as a web app with lenses, search, a 35-day timeline, SVG, PNG and draw.io export, ' +
       'light and dark themes and a demo mode; and through an API that returns any view as SVG, PNG or draw.io ' +
       'without the web app.',
     featureList: [...FEATURE_LIST],
     url: `${SITE_URL}/`,
     applicationCategory: 'DeveloperApplication',
-    applicationSubCategory: 'Cloud architecture diagrams',
+    applicationSubCategory: 'Google Cloud architecture diagrams',
     operatingSystem: 'Any (web browser); self-hosted on Google Cloud Run',
     license: LICENSE_URL,
     isAccessibleForFree: true,
