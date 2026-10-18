@@ -310,6 +310,22 @@ by the schema. `LayoutReport.timings` is absent or a complete `StageTimings`, ne
 These schemas describe JSON-safe reports. The caller's optional clock remains unchecked by the layout
 engine: this schema declaration does not normalise its results or change how the engine uses it.
 
+### Packing and widening
+
+The same module declares the record-free packing and gutter-widening shapes. Fields are readonly, arrays
+are readonly at every nesting level, and optional fields may be absent but not explicitly `undefined`.
+Partial `ringSides` reuses `InsetsSchema` with exact optional sides. Finite negative and fractional numbers
+remain representable; the layout's existing input validation and packing checks are separate and unchanged.
+
+| Export | What |
+|---|---|
+| `ArrangementSchema`, `Arrangement` | `cardColumns`, readonly `zoneRows` and optional nested `zoneStacks` |
+| `GapWideningSchema`, `GapWidening` | optional numeric arrays `cardColumns` and `rows`, nested `zoneColumns`, and three-level `stacks` |
+| `GutterWideningSchema`, `GutterWidening` | optional `horizontal`, `vertical`, `ring`, partial `ringSides` and `gaps` |
+
+`Arrangements`, `GutterReservations` and the complete `Layout` remain in `@gcportrait/layout`; their
+record-valued schemas must preserve every supported node id, including `__proto__`.
+
 ## Scene builder environment and report
 
 What `@gcportrait/graph`'s scene builder (`buildScene`, `buildSceneWithReport`) reads next to the

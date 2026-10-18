@@ -157,10 +157,13 @@ export {
 } from './schemas/scene.js';
 
 export {
+  ArrangementSchema,
   EdgeBundleSchema,
   EdgeHeadsSchema,
   EdgePathSchema,
   EdgePortSchema,
+  GapWideningSchema,
+  GutterWideningSchema,
   InsetsSchema,
   LayoutCountsSchema,
   LayoutRectSchema,
@@ -171,10 +174,13 @@ export {
   RoutingReportSchema,
   SideSchema,
   StageTimingsSchema,
+  type Arrangement,
   type EdgeBundle,
   type EdgeHeads,
   type EdgePath,
   type EdgePort,
+  type GapWidening,
+  type GutterWidening,
   type Insets,
   type LayoutCounts,
   type LayoutRect,

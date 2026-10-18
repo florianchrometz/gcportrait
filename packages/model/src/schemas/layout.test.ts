@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  ArrangementSchema,
   EdgeBundleSchema,
   EdgeHeadsSchema,
   EdgePathSchema,
   EdgePortSchema,
+  GapWideningSchema,
+  GutterWideningSchema,
   InsetsSchema,
   LayoutCountsSchema,
   LayoutRectSchema,
@@ -16,10 +19,13 @@ import {
   RoutingReportSchema,
   SideSchema,
   StageTimingsSchema,
+  type Arrangement,
   type EdgeBundle,
   type EdgeHeads,
   type EdgePath,
   type EdgePort,
+  type GapWidening,
+  type GutterWidening,
   type Insets,
   type LayoutCounts,
   type LayoutRect,
@@ -33,6 +39,120 @@ import {
 } from '../index.js';
 
 const point = { x: -1.25, y: 0.5 };
+const arrangement = { cardColumns: -1.5, zoneRows: [0, 2.25], zoneStacks: [[], [-0.5, 0]] };
+const gaps = { cardColumns: [-1.5], zoneColumns: [[], [0, 2.25]], stacks: [[[], [-0.5]]], rows: [0] };
+const widening = { horizontal: -1.5, vertical: 0, ring: 2.25, ringSides: { left: -0.5 }, gaps };
+
+describe('layout packing contracts', () => {
+  it('preserves finite negative and fractional values without packing refinements', () => {
+    expect(ArrangementSchema.parse(arrangement)).toEqual(arrangement);
+    expect(GapWideningSchema.parse(gaps)).toEqual(gaps);
+    expect(GutterWideningSchema.parse(widening)).toEqual(widening);
+    expect(GutterWideningSchema.parse(JSON.parse(JSON.stringify(widening)))).toEqual(widening);
+  });
+
+  it('keeps absent options absent, and accepts empty arrays and partial padding', () => {
+    expect(ArrangementSchema.parse({ cardColumns: 0, zoneRows: [] })).not.toHaveProperty('zoneStacks');
+    expect(GapWideningSchema.parse({})).toEqual({});
+    expect(GutterWideningSchema.parse({})).toEqual({});
+    expect(ArrangementSchema.parse({ cardColumns: 0, zoneRows: [], zoneStacks: [] }).zoneStacks).toEqual([]);
+    const emptyGaps = { cardColumns: [], zoneColumns: [], stacks: [], rows: [] };
+    expect(GapWideningSchema.parse(emptyGaps)).toEqual(emptyGaps);
+    for (const ringSides of [{}, { top: 0 }, { right: 2.25, bottom: -0.5 }]) {
+      expect(GutterWideningSchema.parse({ ringSides })).toEqual({ ringSides });
+    }
+  });
+
+  it('refuses explicitly undefined optional fields at every level', () => {
+    expect(ArrangementSchema.safeParse({ ...arrangement, zoneStacks: undefined }).success).toBe(false);
+    for (const key of Object.keys(gaps)) {
+      expect(GapWideningSchema.safeParse({ [key]: undefined }).success).toBe(false);
+    }
+    for (const key of Object.keys(widening)) {
+      expect(GutterWideningSchema.safeParse({ [key]: undefined }).success).toBe(false);
+    }
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      expect(GutterWideningSchema.safeParse({ ringSides: { [side]: undefined } }).success).toBe(false);
+    }
+  });
+
+  it.each([Number.NaN, Infinity, -Infinity, '1', undefined])(
+    'refuses invalid numeric values: %s',
+    (value) => {
+      expect(ArrangementSchema.safeParse({ ...arrangement, cardColumns: value }).success).toBe(false);
+      expect(ArrangementSchema.safeParse({ ...arrangement, zoneRows: [value] }).success).toBe(false);
+      expect(ArrangementSchema.safeParse({ ...arrangement, zoneStacks: [[value]] }).success).toBe(false);
+      for (const key of ['cardColumns', 'rows']) {
+        expect(GapWideningSchema.safeParse({ [key]: [value] }).success).toBe(false);
+      }
+      expect(GapWideningSchema.safeParse({ zoneColumns: [[value]] }).success).toBe(false);
+      expect(GapWideningSchema.safeParse({ stacks: [[[value]]] }).success).toBe(false);
+      for (const key of ['horizontal', 'vertical', 'ring']) {
+        expect(GutterWideningSchema.safeParse({ [key]: value }).success).toBe(false);
+      }
+      expect(GutterWideningSchema.safeParse({ ringSides: { left: value } }).success).toBe(false);
+    },
+  );
+
+  it('refuses missing fields, malformed nested arrays and unknown fields', () => {
+    expect(ArrangementSchema.safeParse({ zoneRows: [] }).success).toBe(false);
+    expect(ArrangementSchema.safeParse({ ...arrangement, extra: 1 }).success).toBe(false);
+    expect(GapWideningSchema.safeParse({ zoneColumns: [1] }).success).toBe(false);
+    expect(GapWideningSchema.safeParse({ stacks: [[1]] }).success).toBe(false);
+    expect(GapWideningSchema.safeParse({ extra: 1 }).success).toBe(false);
+    expect(GutterWideningSchema.safeParse({ ringSides: { extra: 1 } }).success).toBe(false);
+    expect(GutterWideningSchema.safeParse({ gaps: null }).success).toBe(false);
+    expect(GutterWideningSchema.safeParse({ extra: 1 }).success).toBe(false);
+  });
+
+  it('preserves readonly nested arrays and exact optional partial Insets', () => {
+    expectTypeOf<Arrangement>().toEqualTypeOf<
+      Readonly<{
+        cardColumns: number;
+        zoneRows: readonly number[];
+        zoneStacks?: readonly (readonly number[])[];
+      }>
+    >();
+    expectTypeOf<GapWidening>().toEqualTypeOf<
+      Readonly<{
+        cardColumns?: readonly number[];
+        zoneColumns?: readonly (readonly number[])[];
+        stacks?: readonly (readonly (readonly number[])[])[];
+        rows?: readonly number[];
+      }>
+    >();
+    expectTypeOf<GutterWidening>().toEqualTypeOf<
+      Readonly<{
+        horizontal?: number;
+        vertical?: number;
+        ring?: number;
+        ringSides?: Partial<Insets>;
+        gaps?: GapWidening;
+      }>
+    >();
+    const parsed = GutterWideningSchema.parse(widening);
+    const packed = ArrangementSchema.parse(arrangement);
+    for (const value of [
+      parsed,
+      parsed.ringSides,
+      parsed.gaps,
+      parsed.gaps?.cardColumns,
+      parsed.gaps?.zoneColumns,
+      parsed.gaps?.zoneColumns?.[1],
+      parsed.gaps?.stacks,
+      parsed.gaps?.stacks?.[0],
+      parsed.gaps?.stacks?.[0]?.[1],
+      parsed.gaps?.rows,
+      packed,
+      packed.zoneRows,
+      packed.zoneStacks,
+      packed.zoneStacks?.[1],
+    ]) {
+      expect(Object.isFrozen(value)).toBe(true);
+    }
+  });
+});
+
 const timings = { normalise: -1.25, size: 0, pack: 2.5, route: -0.5, total: 0.75 };
 const counts = {
   rects: 1,

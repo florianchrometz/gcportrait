@@ -247,3 +247,69 @@ export const LayoutReportSchema = z
   })
   .readonly();
 export type LayoutReport = z.infer<typeof LayoutReportSchema>;
+
+/**
+ * How a container's children are packed (stage 3): the card grid on top and the zone rows below it. A Layout
+ * reports every container's arrangement, and `LayoutOptions.arrangements` can pin one (gutter routing's
+ * re-pack).
+ */
+export const ArrangementSchema = z
+  .strictObject({
+    /** Columns of the card grid; 0 when the container holds no cards. */
+    cardColumns: z.number(),
+    /** How many zones (open zones, chips, empty zones) each zone row holds, top to bottom; [] without zones. */
+    zoneRows: z.array(z.number()).readonly(),
+    /**
+     * The stacks of each zone row (skill §4): `zoneStacks[r]` lists, left to right, how many consecutive zones
+     * each cell of row r sets one above the other (summing to `zoneRows[r]`). Absent when every cell holds one
+     * zone (plain rows).
+     */
+    zoneStacks: z.array(z.array(z.number()).readonly()).readonly().exactOptional(),
+  })
+  .readonly();
+export type Arrangement = z.infer<typeof ArrangementSchema>;
+
+/** Extra width of single gaps of one container. */
+export const GapWideningSchema = z
+  .strictObject({
+    /** `cardColumns[c]`: the gap between card columns c and c + 1. */
+    cardColumns: z.array(z.number()).readonly().exactOptional(),
+    /**
+     * `zoneColumns[r][i]`: the gap between cells i and i + 1 of zone row r (a cell is one zone, or a stack of
+     * zones: `Arrangement.zoneStacks`).
+     */
+    zoneColumns: z.array(z.array(z.number()).readonly()).readonly().exactOptional(),
+    /** `stacks[r][c][k]`: the gap below zone k of the stack in cell c of zone row r. */
+    stacks: z
+      .array(z.array(z.array(z.number()).readonly()).readonly())
+      .readonly()
+      .exactOptional(),
+    /**
+     * `rows[k]`: the gap below row k, counting the card rows first and then the zone rows (so with R card rows,
+     * `rows[R − 1]` is the gap between the card block and the zone block).
+     */
+    rows: z.array(z.number()).readonly().exactOptional(),
+  })
+  .readonly();
+export type GapWidening = z.infer<typeof GapWideningSchema>;
+
+/** Extra space the router reserves for edge lanes in one container, added to the base sizes. */
+export const GutterWideningSchema = z
+  .strictObject({
+    /** Added to every column gap of the container's children. */
+    horizontal: z.number().exactOptional(),
+    /** Added to every row gap of the container's children (and to the gap between cards and zones). */
+    vertical: z.number().exactOptional(),
+    /** Added to the container's padding ring on all four sides (for the canvas: to its margin). */
+    ring: z.number().exactOptional(),
+    /** Added to single sides of the padding ring (for the canvas: of its margin), on top of `ring`. */
+    ringSides: InsetsSchema.unwrap().exactPartial().readonly().exactOptional(),
+    /**
+     * Added to single gaps, on top of `horizontal` and `vertical` (the router widens only the gaps whose lanes do
+     * not fit). Positional, so meant with a pinned arrangement; extras beyond the arrangement's gaps are
+     * ignored, and the packer's choice of arrangement does not look at them.
+     */
+    gaps: GapWideningSchema.exactOptional(),
+  })
+  .readonly();
+export type GutterWidening = z.infer<typeof GutterWideningSchema>;

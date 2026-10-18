@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  ArrangementSchema,
+  GutterWideningSchema,
   LayoutRectSchema,
   LayoutReportSchema,
+  type Arrangement,
+  type GapWidening,
+  type GutterWidening,
   type LayoutCounts,
   type LayoutReport,
   type RoutingReport,
@@ -10,6 +15,9 @@ import {
   type StageTimings,
 } from '@gcportrait/model';
 import type {
+  Arrangement as PublicArrangement,
+  GapWidening as PublicGapWidening,
+  GutterWidening as PublicGutterWidening,
   LayoutCounts as PublicLayoutCounts,
   LayoutReport as PublicLayoutReport,
   RoutingReport as PublicRoutingReport,
@@ -534,6 +542,11 @@ describe('options', () => {
     expect(at(wide, 'z2').x - at(wide, 'z1').x).toBe(at(plain, 'z2').x - at(plain, 'z1').x + 16);
     expect(p1.height).toBe(p0.height + 4 + 12 + 6);
     expect(wide.gutters.zones?.p).toEqual(gutters.zones.p);
+    expect(GutterWideningSchema.parse(wide.gutters.zones?.p)).toEqual(wide.gutters.zones?.p);
+    expect(GutterWideningSchema.parse(JSON.parse(JSON.stringify(wide.gutters.zones?.p)))).toEqual(
+      wide.gutters.zones?.p,
+    );
+    expect(ArrangementSchema.parse(wide.arrangements.zones.p)).toEqual(wide.arrangements.zones.p);
     expect(first.arrangements.zones.p).toBeDefined();
     // The canvas's margin, side by side.
     const canvas = layoutScene(grid, {
@@ -542,6 +555,28 @@ describe('options', () => {
     });
     expect(canvas.rects.p?.y).toBe(24 + 5);
     expect(canvas.bounds.width).toBe(first.bounds.width + 7);
+    expect(GutterWideningSchema.parse(canvas.gutters.canvas)).toEqual(canvas.gutters.canvas);
+  });
+
+  it('preserves emitted stacked arrangements and deeply nested widening gaps', () => {
+    const input = scene([zone('a', 'project', []), zone('b', 'project', []), zone('c', 'project', [])]);
+    const stacked = { cardColumns: 0, zoneRows: [3], zoneStacks: [[1, 2]] };
+    const gutters = { canvas: { gaps: { stacks: [[[], [6]]], zoneColumns: [[4]] } } };
+    const output = layoutScene(input, { route: false, arrangements: { canvas: stacked }, gutters });
+    expect(output.arrangements.canvas).toEqual(stacked);
+    expect(output.gutters.canvas).toEqual(gutters.canvas);
+    expect(ArrangementSchema.parse(output.arrangements.canvas)).toEqual(stacked);
+    expect(ArrangementSchema.parse(JSON.parse(JSON.stringify(output.arrangements.canvas)))).toEqual(stacked);
+    expect(GutterWideningSchema.parse(output.gutters.canvas)).toEqual(gutters.canvas);
+    expect(GutterWideningSchema.parse(JSON.parse(JSON.stringify(output.gutters.canvas)))).toEqual(
+      gutters.canvas,
+    );
+  });
+
+  it('keeps public packing types compatible with their model contracts', () => {
+    expectTypeOf<PublicArrangement>().toEqualTypeOf<Arrangement>();
+    expectTypeOf<PublicGapWidening>().toEqualTypeOf<GapWidening>();
+    expectTypeOf<PublicGutterWidening>().toEqualTypeOf<GutterWidening>();
   });
 
   it('resolves the defaults', () => {

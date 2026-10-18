@@ -122,6 +122,9 @@ describe('public surface', () => {
         'LayoutCountsSchema',
         'RoutingReportSchema',
         'LayoutReportSchema',
+        'ArrangementSchema',
+        'GapWideningSchema',
+        'GutterWideningSchema',
         // catalog
         'CatalogEntrySchema',
         'CatalogProductSchema',
