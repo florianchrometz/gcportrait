@@ -86,6 +86,10 @@ beforeAll(async () => {
   await import('../pipeline/demo');
 });
 
+let removedRegionPair: ReturnType<typeof regionRemoved> | undefined;
+let retiredPaymentsPair: ReturnType<typeof paymentsWebRetired> | undefined;
+let movedProjectPair: ReturnType<typeof projectMoved> | undefined;
+
 const {
   scratchBucket: SCRATCH_BUCKET,
   debugSubscription: DEBUG_SUBSCRIPTION,
@@ -448,7 +452,7 @@ describe('a region zone whose contents were removed', () => {
   }
 
   it('is a ghost in its project, open, holding the ghosts of what it held, and counted by no chip', async () => {
-    const [before, after] = await regionRemoved();
+    const [before, after] = await (removedRegionPair ??= regionRemoved());
     const input = pairInput(before, after, view);
     // The earlier day drew the region zone open in the project; the drawn day draws the project open without it.
     const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
@@ -491,7 +495,7 @@ describe('a region zone whose contents were removed', () => {
   });
 
   it('is no ghost when its project is a chip: the chip counts what was removed in it', async () => {
-    const [before, after] = await regionRemoved();
+    const [before, after] = await (removedRegionPair ??= regionRemoved());
     const input = pairInput(before, after, { ...view, flips: [flipIdOf(PROJECT)] });
     expect(zoneOf(input.scene, PROJECT)?.collapsed).toBeDefined();
     const assets = [...heldByRegion(pairInput(before, after, view)).keys()].filter(
@@ -569,7 +573,7 @@ describe('a zone that is no asset, drawn as a chip, whose contents were removed'
   });
 
   it('is a ghost chip in its open project when it is a region zone that is gone', async () => {
-    const [before, after] = await regionRemoved();
+    const [before, after] = await (removedRegionPair ??= regionRemoved());
     const input = pairInput(before, after, { ...view, flips: [flipIdOf(REGION)] });
     const earlier = buildSceneWithReport(before.graph, input.spec, catalog, input.envBefore);
     const chip = zoneOf(earlier.scene, REGION);
@@ -866,7 +870,7 @@ describe('a changed asset inside the ghost of a changed asset', () => {
   const view = { snapshot: 'demo:M', lens: 'overview', detail: 'all' } as const;
 
   it('comes back not drawn now where it stood, as in a container drawn open: a job that succeeded in a project marked for deletion', async () => {
-    const [before, after] = await paymentsWebRetired();
+    const [before, after] = await (retiredPaymentsPair ??= paymentsWebRetired());
     // The earlier day drew the running job in the project; the drawn day draws neither: a project being deleted is
     // hidden (what else it holds is drawn in its folder), and a finished job starts hidden.
     const input = pairInput(before, after, view);
@@ -923,7 +927,7 @@ describe('the ghost of an asset the earlier day drew as a chip', () => {
   }
 
   it('counts only what of it comes back, not what is drawn elsewhere now: a project marked for deletion counts the Batch job that succeeded in it', async () => {
-    const [before, after] = await paymentsWebRetired();
+    const [before, after] = await (retiredPaymentsPair ??= paymentsWebRetired());
     // Every zone open (the earlier day's view with every zone open), the project's ghost holds what of it comes back:
     // the job's, not drawn now.
     const open = tickDiff(pairInput(before, after, { ...overview, detail: 'all' }));
@@ -1071,7 +1075,7 @@ describe('a changed asset the drawn day still holds', () => {
   const view = { snapshot: 'demo:M', lens: 'overview', detail: 'folders' } as const;
 
   it('is no ghost when it moved into a chip: the chip that holds it counts it, and nothing is drawn twice', async () => {
-    const [before, after] = await projectMoved();
+    const [before, after] = await (movedProjectPair ??= projectMoved());
     // Two levels of folders open: the day before, Platform / Networking drew the project as a chip; the drawn day,
     // Logistics / Production, a level deeper, is a chip itself, and holds it.
     const input = pairInput(before, after, { ...view, filters: { depth: 2 } });
@@ -1092,7 +1096,7 @@ describe('a changed asset the drawn day still holds', () => {
   });
 
   it('is no ghost when it moved where the view draws it, or out of the view', async () => {
-    const [before, after] = await projectMoved();
+    const [before, after] = await (movedProjectPair ??= projectMoved());
     // Every folder open: the drawn day draws it in its new folder (with the changed dot).
     const drawn = pairInput(before, after, view);
     expect(parents(drawn.scene).get(PARTNER)).toBe(LOGISTICS_PRODUCTION);

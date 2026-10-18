@@ -317,9 +317,7 @@ describe('the More sheet on a phone', WHOLE_APP_TIMEOUT, () => {
       await drawn(container);
       const { button, sheet } = await openMore();
       const exportButton = within(sheet).getByRole('button', { name: 'Export' });
-      await waitFor(() => {
-        expect(exportButton.getAttribute('aria-disabled')).toBeNull();
-      });
+      expect(exportButton.getAttribute('aria-disabled')).toBeNull();
       await userEvent.click(exportButton);
       expect(within(sheet).getByRole('menu', { name: 'Export' })).toBeDefined();
       expect(button.getAttribute('aria-expanded')).toBe('true');
