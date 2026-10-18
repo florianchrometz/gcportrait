@@ -3,10 +3,11 @@
  * scripts/check-audit.mjs: the audit gate on saved `pnpm audit --json` reports (synthetic advisories,
  * no network) and its allowlist with expiry dates.
  */
+import { Console } from 'node:console';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ALLOWLIST_PATH,
@@ -14,8 +15,16 @@ import {
   AuditInputError,
   evaluateAudit,
   parseAllowlist,
+  run as runAudit,
 } from './check-audit.mjs';
-import { createTempTree, REPO, runScript, type TempTree } from './testing/temp-tree.js';
+import {
+  createTempTree,
+  REPO,
+  runInProcess,
+  runScript,
+  SPAWN_TIMEOUT,
+  type TempTree,
+} from './testing/temp-tree.js';
 
 const GHSA_HIGH = 'GHSA-2222-3333-4444';
 const GHSA_CRITICAL = 'GHSA-5555-6666-7777';
@@ -201,9 +210,15 @@ describe('advisoriesOf', () => {
 
 describe('check-audit.mjs on saved reports', () => {
   let tree: TempTree | undefined;
+  beforeEach(() => {
+    const output = new Console(process.stdout, process.stderr);
+    vi.spyOn(console, 'log').mockImplementation(output.log.bind(output));
+    vi.spyOn(console, 'error').mockImplementation(output.error.bind(output));
+  });
   afterEach(() => {
     tree?.remove();
     tree = undefined;
+    vi.restoreAllMocks();
   });
 
   function run(prod: unknown, all: unknown, allowlist: unknown, today = '2026-10-11') {
@@ -212,7 +227,7 @@ describe('check-audit.mjs on saved reports', () => {
     tree.write('prod.json', JSON.stringify(prod));
     tree.write('all.json', JSON.stringify(all));
     tree.write('allowlist.json', JSON.stringify(allowlist));
-    return runScript('check-audit.mjs', [
+    const args = [
       '--prod-report',
       `${tree.root}/prod.json`,
       '--all-report',
@@ -221,37 +236,77 @@ describe('check-audit.mjs on saved reports', () => {
       `${tree.root}/allowlist.json`,
       '--today',
       today,
-    ]);
+    ];
+    return runInProcess(() => runAudit(args));
   }
 
-  it('exits 0 on a clean tree', () => {
-    const result = run(report(), report(), { advisories: [] });
+  it('exits 0 on a clean tree', async () => {
+    const result = await run(report(), report(), { advisories: [] });
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('audit: OK on 2026-10-11.');
   });
 
-  it('exits 1 on an open high advisory and names it', () => {
-    const result = run(report(), report(advisory(9, GHSA_HIGH, 'd-dev', 'high')), { advisories: [] });
+  it('exits 1 on an open high advisory and names it', async () => {
+    const result = await run(report(), report(advisory(9, GHSA_HIGH, 'd-dev', 'high')), { advisories: [] });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('audit: FAILED with 1 problem(s) (high and critical fail):');
     expect(result.stderr).toContain(GHSA_HIGH);
   });
 
-  it('exits 2 on a malformed report or an unknown option', () => {
-    expect(run({ error: { summary: 'offline' } }, report(), { advisories: [] }).status).toBe(2);
-    expect(runScript('check-audit.mjs', ['--nope']).status).toBe(2);
+  it('exits 2 on a malformed report or an unknown option', async () => {
+    expect((await run({ error: { summary: 'offline' } }, report(), { advisories: [] })).status).toBe(2);
+    expect((await runInProcess(() => runAudit(['--nope']))).status).toBe(2);
   });
 
-  it('names the allowlist it read, not the default one, and exits 2 when it is malformed', () => {
-    const open = run(report(), report(advisory(9, GHSA_HIGH, 'd-dev', 'high')), { advisories: [] });
+  it('names the allowlist it read, not the default one, and exits 2 when it is malformed', async () => {
+    const open = await run(report(), report(advisory(9, GHSA_HIGH, 'd-dev', 'high')), { advisories: [] });
     expect(open.stderr).toContain(`not in ${tree?.root ?? ''}/allowlist.json`);
     expect(open.stderr).not.toContain('scripts/audit-allowlist.json');
-    const malformed = run(report(), report(), { advisories: 'none' });
+    const malformed = await run(report(), report(), { advisories: 'none' });
     expect(malformed.status).toBe(2);
     expect(malformed.stderr).toContain(`${tree?.root ?? ''}/allowlist.json: expected an object`);
-    expect(run(report(), report(), { advisories: [] }).stdout).toContain(
+    expect((await run(report(), report(), { advisories: [] })).stdout).toContain(
       `0 accepted in ${tree?.root ?? ''}/allowlist.json`,
     );
+  });
+
+  it('imports without running an audit or changing the exit code', async () => {
+    const exitCode = process.exitCode;
+    const spawn = vi.fn(() => {
+      throw new Error('import must not start pnpm');
+    });
+    vi.doMock('node:child_process', () => ({ spawnSync: spawn }));
+    vi.resetModules();
+    try {
+      const imported = await runInProcess(async () => {
+        const module = await import('./check-audit.mjs');
+        expect(module.run).toBeTypeOf('function');
+        return 0;
+      });
+      expect(imported).toEqual({ status: 0, stdout: '', stderr: '' });
+      expect(spawn).not.toHaveBeenCalled();
+      expect(process.exitCode).toBe(exitCode);
+    } finally {
+      vi.doUnmock('node:child_process');
+      vi.resetModules();
+      process.exitCode = exitCode;
+    }
+  });
+
+  it('matches the real command output and nonzero exit code', SPAWN_TIMEOUT, async () => {
+    const expected = await run(report(), report(advisory(9, GHSA_HIGH, 'd-dev', 'high')), { advisories: [] });
+    expect(expected.status).toBe(1);
+    const args = [
+      '--prod-report',
+      `${tree?.root ?? ''}/prod.json`,
+      '--all-report',
+      `${tree?.root ?? ''}/all.json`,
+      '--allowlist',
+      `${tree?.root ?? ''}/allowlist.json`,
+      '--today',
+      '2026-10-11',
+    ];
+    expect(runScript('check-audit.mjs', args)).toEqual(expected);
   });
 
   it('keeps the repository allowlist valid', () => {

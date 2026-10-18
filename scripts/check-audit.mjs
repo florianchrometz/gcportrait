@@ -245,7 +245,7 @@ function readJson(file) {
  * @param {readonly string[]} argv
  * @returns {number}
  */
-function main(argv) {
+export function run(argv) {
   try {
     const { values } = parseArgs({
       args: [...argv],
@@ -300,5 +300,5 @@ function main(argv) {
 }
 
 if (process.argv[1] !== undefined && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  process.exitCode = main(process.argv.slice(2));
+  process.exitCode = run(process.argv.slice(2));
 }
