@@ -687,3 +687,39 @@ export const FontMetricsTableSchema = z
   })
   .readonly();
 export type FontMetricsTable = z.infer<typeof FontMetricsTableSchema>;
+
+/**
+ * The options a layout worker request carries: every `LayoutOptions` field but `clock`, which as a
+ * function cannot cross `postMessage` (the worker's own clock, if its host gives it one, fills
+ * `report.timings`).
+ */
+export const LayoutWorkerOptionsSchema = z
+  .strictObject({
+    /** Theme-independent sizing overrides (defaults: `DEFAULT_SIZING`, the skill's constants). */
+    sizing: SizingSchema.unwrap().exactPartial().readonly().exactOptional(),
+    /** Target aspect (width / height) of a zone's children grid. Default 1.6. */
+    targetAspect: z.number().exactOptional(),
+    /** Target aspect of the canvas's top-level grid. Default 1.75. */
+    rootAspect: z.number().exactOptional(),
+    /**
+     * The band around the target, as a relative deviation, inside which every aspect counts as on target (and
+     * the tightest arrangement in it wins). Default 0.2; at least 0, below 1.
+     */
+    aspectTolerance: z.number().exactOptional(),
+    /**
+     * Arrangements to keep instead of choosing them, per container (typically a previous Layout's
+     * `arrangements`, so a re-pack with wider gutters keeps every row and column). Each must fit its container's
+     * children: `LayoutInputError` `invalid-option` otherwise. Containers not listed are chosen as usual.
+     */
+    arrangements: ArrangementsSchema.unwrap().exactPartial().readonly().exactOptional(),
+    /** Text metrics; default: the generated Roboto table (`metrics/roboto.json`). */
+    fontMetrics: FontMetricsTableSchema.exactOptional(),
+    /** Lane space reserved on top of the base gaps and padding; routing's widening adds to it. */
+    gutters: GutterReservationsSchema.exactOptional(),
+    /** Whether to route the edges (stages 4–5). Default true; false stops after packing (`edges` empty). */
+    route: z.boolean().exactOptional(),
+    /** Routing constant overrides (defaults: `DEFAULT_ROUTING`, the skill's constants). */
+    routing: RoutingSchema.unwrap().exactPartial().readonly().exactOptional(),
+  })
+  .readonly();
+export type LayoutWorkerOptions = z.infer<typeof LayoutWorkerOptionsSchema>;

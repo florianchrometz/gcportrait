@@ -45,9 +45,11 @@ development or production; calling `assertLayout` explicitly checks a layout in 
 `GapWidening`, `GutterWidening`, `GutterReservations`, `Layout`, `LayoutStage`, `LayoutProgress`,
 `LayoutResult`, `LayoutInputErrorCode`, `LayoutWorkerErrorCode`, `LayoutWorkerErrorInfo`,
 `LayoutCancelReason`, `LayoutCancelledReason`, `LayoutWorkerResponse`, `Sizing`, `Routing`, `FontFaceKey`,
-`FontFaceMetrics` and `FontMetricsTable` are inferred from the model's
+`FontFaceMetrics`, `FontMetricsTable` and `LayoutWorkerOptions` are inferred from the model's
 [layout geometry schemas](../model/README.md#layout-geometry) and re-exported here as types. No runtime
-schema parsing is added to the layout pipeline; worker requests and options remain here.
+schema parsing is added to the layout pipeline; worker request envelopes remain here. `LayoutOptions`
+extends the worker's data options with its local clock callback. Optional overrides stay absent until
+the existing `resolveOptions` applies defaults and operational checks; the schema inserts no defaults.
 
 `Sizing` and `Routing` retain their defaults in `constants.ts` and their operational validation in
 `resolveOptions`. Their model schemas describe finite-number shapes, not the positivity and width-range

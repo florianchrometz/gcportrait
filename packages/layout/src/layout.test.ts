@@ -8,6 +8,7 @@ import {
   LayoutRectSchema,
   LayoutReportSchema,
   LayoutSchema,
+  LayoutWorkerOptionsSchema,
   type Arrangement,
   type Arrangements,
   type GapWidening,
@@ -16,6 +17,7 @@ import {
   type Layout,
   type LayoutCounts,
   type LayoutReport,
+  type LayoutWorkerOptions,
   type RoutingReport,
   type Scene,
   type StageTimings,
@@ -29,6 +31,8 @@ import type {
   Layout as PublicLayout,
   LayoutCounts as PublicLayoutCounts,
   LayoutReport as PublicLayoutReport,
+  LayoutOptions,
+  LayoutWorkerOptions as PublicLayoutWorkerOptions,
   RoutingReport as PublicRoutingReport,
   StageTimings as PublicStageTimings,
 } from './index.js';
@@ -37,7 +41,7 @@ import { LayoutInputError } from './errors.js';
 import { packingAspects } from './aspects.js';
 import { assertLayout } from './invariants.js';
 import { layoutScene, resolveOptions } from './layout.js';
-import { FONT_FACE_KEYS, type FontMetricsTable } from './metrics.js';
+import { FONT_FACE_KEYS, defaultFontMetrics, type FontMetricsTable } from './metrics.js';
 import { thrownBy } from './testing/errors.js';
 import { fullRowViolations } from './testing/rows.js';
 import { ORGANISATION_ID, card, nestedChain, scene, zone } from './testing/scenes.js';
@@ -621,5 +625,49 @@ describe('options', () => {
       route: true,
       routing: DEFAULT_ROUTING,
     });
+  });
+
+  it('keeps worker options compatible with local clock options and actual layout output', () => {
+    expectTypeOf<PublicLayoutWorkerOptions>().toEqualTypeOf<LayoutWorkerOptions>();
+    expectTypeOf<Omit<LayoutOptions, 'clock'>>().toEqualTypeOf<LayoutWorkerOptions>();
+    expectTypeOf<LayoutOptions['clock']>().toEqualTypeOf<(() => number) | undefined>();
+    const previous = layoutScene(small, { route: false });
+    const options: LayoutWorkerOptions = {
+      sizing: { cardHeight: 44.5 },
+      targetAspect: 1.6,
+      rootAspect: 1.75,
+      aspectTolerance: 0.2,
+      arrangements: previous.arrangements,
+      fontMetrics: defaultFontMetrics(),
+      gutters: previous.gutters,
+      route: false,
+      routing: { lanePitch: 8.5 },
+    };
+    const parsed = LayoutWorkerOptionsSchema.parse(options);
+    expect(parsed).toEqual(options);
+    const roundtrip = LayoutWorkerOptionsSchema.parse(JSON.parse(JSON.stringify(options)));
+    expect(roundtrip).toEqual(options);
+    const expected = JSON.stringify(layoutScene(small, options));
+    expect(JSON.stringify(layoutScene(small, parsed))).toBe(expected);
+    expect(JSON.stringify(layoutScene(small, roundtrip))).toBe(expected);
+    expect(resolveOptions(LayoutWorkerOptionsSchema.parse({}))).toEqual(resolveOptions());
+    const clock = () => 1;
+    const local: LayoutOptions = { ...options, clock };
+    expect(layoutScene(small, local).report.timings).toBeDefined();
+    expect(LayoutWorkerOptionsSchema.safeParse(local).success).toBe(false);
+  });
+
+  it.each([
+    [{ targetAspect: -0.5 }, 'targetAspect'],
+    [{ rootAspect: 0 }, 'rootAspect'],
+    [{ aspectTolerance: 1.5 }, 'aspectTolerance'],
+    [{ sizing: { cardMinWidth: 300 } }, 'sizing.cardMinWidth'],
+    [{ routing: { lanePitch: 0 } }, 'routing.lanePitch'],
+    [{ gutters: { canvas: { ring: -1 } } }, 'gutters.canvas.ring'],
+  ] as const)('leaves operational refusal to resolveOptions for %j', (options, field) => {
+    expect(LayoutWorkerOptionsSchema.parse(options)).toEqual(options);
+    const error = thrownBy(() => resolveOptions(options), LayoutInputError);
+    expect(error.code).toBe('invalid-option');
+    expect(error.ids).toContain(field);
   });
 });

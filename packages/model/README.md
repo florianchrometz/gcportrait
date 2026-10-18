@@ -291,8 +291,8 @@ omits it on other rects. It is the full or short count line chosen during sizing
 it with an ellipsis if necessary. The Scene's counts still supply the full accessible name.
 
 These schemas do not run in the layout pipeline or the renderer. Their consumers import only the types;
-tests check emitted layouts, worker responses and client results against the schemas. Worker requests
-and options remain declared in `@gcportrait/layout`.
+tests check emitted layouts, worker responses, options and client results against the schemas. Worker
+request envelopes remain declared in `@gcportrait/layout`.
 
 `LayoutSchema` composes the complete `Layout`: readonly `rects` and `edges` records, readonly `chips`,
 `bounds`, `arrangements`, `gutters` and `report`, all required. The records preserve special string keys
@@ -336,6 +336,14 @@ These strict JSON shapes accept finite numbers without font-unit, weight, range 
 The layout's handwritten parser remains separate: it returns the original object, enforces operational
 font constraints and accepts extras and some non-JSON inputs that the schemas reject. No schema runs in
 text measurement or replaces that parser.
+
+`LayoutWorkerOptionsSchema` (`LayoutWorkerOptions`) composes nine readonly, exact-optional fields:
+`sizing`, `targetAspect`, `rootAspect`, `aspectTolerance`, `arrangements`, `fontMetrics`, `gutters`,
+`route` and `routing`. Sizing, routing and arrangements accept partial overrides; empty options stay
+empty, with no defaults inserted. Explicit `undefined` is rejected for every optional field. Numeric
+shapes remain finite-only; operational ranges and defaults are still applied by `resolveOptions`.
+The local `LayoutOptions` adds only its clock callback, which cannot cross the worker boundary and is
+not part of this schema. Hashing, font-table validation and worker scheduling do not parse the schema.
 
 ### Reports
 

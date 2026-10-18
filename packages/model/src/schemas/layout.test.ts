@@ -27,6 +27,7 @@ import {
   LayoutStageSchema,
   LayoutWorkerErrorCodeSchema,
   LayoutWorkerErrorInfoSchema,
+  LayoutWorkerOptionsSchema,
   LayoutWorkerResponseSchema,
   PointSchema,
   RectRoleSchema,
@@ -62,6 +63,7 @@ import {
   type LayoutStage,
   type LayoutWorkerErrorCode,
   type LayoutWorkerErrorInfo,
+  type LayoutWorkerOptions,
   type LayoutWorkerResponse,
   type Point,
   type Rect,
@@ -1329,5 +1331,138 @@ describe('layout worker response contract', () => {
         expect(Object.isFrozen(parsed.error.ids)).toBe(true);
       }
     }
+  });
+});
+
+describe('layout worker options contract', () => {
+  const face = {
+    family: '',
+    weight: -0.5,
+    unitsPerEm: 0,
+    ascent: 1,
+    descent: 1,
+    lineGap: 0,
+    fallback: 0,
+    runs: [[]],
+  };
+  const options = {
+    sizing: { cardHeight: -0.5 },
+    targetAspect: -1.25,
+    rootAspect: 0,
+    aspectTolerance: 2.5,
+    arrangements: completeLayout.arrangements,
+    fontMetrics: {
+      format: 1,
+      sources: Object.fromEntries([
+        ['__proto__', ''],
+        ['constructor', 'v1'],
+        ['', 'v2'],
+      ]),
+      faces: Object.fromEntries(FONT_FACE_KEYS.map((key) => [key, face])),
+    },
+    gutters: completeLayout.gutters,
+    route: false,
+    routing: { lanePitch: -0.25 },
+  };
+
+  it('preserves the nine readonly exact-optional fields without defaults or operational refinements', () => {
+    expectTypeOf<LayoutWorkerOptions>().toEqualTypeOf<
+      Readonly<{
+        sizing?: Partial<Sizing>;
+        targetAspect?: number;
+        rootAspect?: number;
+        aspectTolerance?: number;
+        arrangements?: Readonly<{ canvas?: Arrangement; zones?: Readonly<Record<string, Arrangement>> }>;
+        fontMetrics?: FontMetricsTable;
+        gutters?: GutterReservations;
+        route?: boolean;
+        routing?: Partial<Routing>;
+      }>
+    >();
+    const parsed = LayoutWorkerOptionsSchema.parse(options);
+    expect(parsed).toEqual(options);
+    expect(Object.keys(parsed)).toEqual(Object.keys(options));
+    expect(LayoutWorkerOptionsSchema.parse(JSON.parse(JSON.stringify(options)))).toEqual(options);
+    expect(LayoutWorkerOptionsSchema.parse({})).toEqual({});
+    expect(Object.isFrozen(parsed)).toBe(true);
+    for (const value of [
+      parsed.sizing,
+      parsed.routing,
+      parsed.arrangements,
+      parsed.arrangements?.zones,
+      parsed.fontMetrics,
+      parsed.gutters,
+    ])
+      expect(Object.isFrozen(value)).toBe(true);
+    expect(Object.isFrozen(options)).toBe(false);
+  });
+
+  it('accepts each absent or partial override without filling missing fields', () => {
+    for (const [key, value] of Object.entries(options)) {
+      const partial = { [key]: value };
+      expect(LayoutWorkerOptionsSchema.parse(partial)).toEqual(partial);
+      const missing = Object.fromEntries(Object.entries(options).filter(([name]) => name !== key));
+      expect(LayoutWorkerOptionsSchema.parse(missing)).toEqual(missing);
+      expect(LayoutWorkerOptionsSchema.safeParse({ [key]: undefined }).success).toBe(false);
+    }
+    for (const partial of [
+      { sizing: {} },
+      { routing: {} },
+      { arrangements: {} },
+      { gutters: {} },
+      { arrangements: { canvas: arrangement } },
+      { arrangements: { zones: {} } },
+      { sizing: { cardMinWidth: 300 } },
+      { routing: { wideningRounds: 0.5 } },
+    ])
+      expect(LayoutWorkerOptionsSchema.parse(partial)).toEqual(partial);
+  });
+
+  it('rejects explicit undefined and unknown fields inside partial overrides', () => {
+    for (const [name, keys] of [
+      ['sizing', Object.keys(SizingSchema.unwrap().shape)],
+      ['routing', Object.keys(RoutingSchema.unwrap().shape)],
+      ['arrangements', ['canvas', 'zones']],
+    ] as const) {
+      for (const key of keys) {
+        const invalid = LayoutWorkerOptionsSchema.safeParse({ [name]: { [key]: undefined } });
+        expect(invalid.success).toBe(false);
+        if (!invalid.success) expect(invalid.error.issues.map((issue) => issue.path)).toEqual([[name, key]]);
+      }
+      expect(LayoutWorkerOptionsSchema.safeParse({ [name]: { unknown: 1 } }).success).toBe(false);
+    }
+    for (const invalid of [
+      null,
+      [],
+      { unknown: true },
+      { clock: () => 1 },
+      { clock: undefined },
+      { route: 1 },
+      { route: null },
+      { fontMetrics: {} },
+      { gutters: null },
+    ]) {
+      expect(LayoutWorkerOptionsSchema.safeParse(invalid).success).toBe(false);
+    }
+    for (const name of ['targetAspect', 'rootAspect', 'aspectTolerance']) {
+      for (const value of [NaN, Infinity, -Infinity, '1', null]) {
+        expect(LayoutWorkerOptionsSchema.safeParse({ [name]: value }).success).toBe(false);
+      }
+    }
+  });
+
+  it('preserves special record keys and full nested error paths', () => {
+    const parsed = LayoutWorkerOptionsSchema.parse(options);
+    expect(Object.keys(parsed.arrangements?.zones ?? {})).toEqual(Object.keys(options.arrangements.zones));
+    expect(JSON.stringify(parsed.arrangements?.zones)).toBe(JSON.stringify(options.arrangements.zones));
+    expect(JSON.stringify(parsed.fontMetrics?.sources)).toBe(JSON.stringify(options.fontMetrics.sources));
+    const invalid = LayoutWorkerOptionsSchema.safeParse({
+      arrangements: { zones: Object.fromEntries([['__proto__', { ...arrangement, cardColumns: Infinity }]]) },
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success)
+      expect(invalid.error.issues.map((issue) => issue.path)).toEqual([
+        ['arrangements', 'zones', '__proto__', 'cardColumns'],
+      ]);
   });
 });

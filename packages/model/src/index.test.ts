@@ -140,6 +140,7 @@ describe('public surface', () => {
         'LayoutCancelReasonSchema',
         'LayoutCancelledReasonSchema',
         'LayoutWorkerResponseSchema',
+        'LayoutWorkerOptionsSchema',
         'LayoutInputErrorCodeSchema',
         'LayoutWorkerErrorCodeSchema',
         'LayoutWorkerErrorInfoSchema',
