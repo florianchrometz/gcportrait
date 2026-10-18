@@ -10,155 +10,52 @@
  * timeline. While the files are read, Cancel stops the import and stores nothing, and so does leaving the page
  * (useImportSignal.ts).
  */
-import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement } from 'react';
+import { useId, type ReactElement } from 'react';
 
 import { cx } from '../classNames';
-import { ReadTimeField, useTypedReadTime } from '../import/ReadTimeField';
+import { ReadTimeField } from '../import/ReadTimeField';
+import { useFileImport } from '../import/useFileImport';
 import controls from '../ui/controls.module.css';
 import { inertProps } from '../ui/dom';
-import { CANCELLED_MESSAGE, JobStatus, type JobState } from './JobStatus';
-import { formatCount, snapshotLabel } from './labels';
-import { useSnapshotLibrary } from './SnapshotLibraryProvider';
+import { JobStatus } from './JobStatus';
 import styles from './Snapshots.module.css';
-import { useImportSignal } from './useImportSignal';
-import { SnapshotJobCancelled, SnapshotJobError } from './worker/client';
 
 export function ImportPanel({ available }: { readonly available: boolean }): ReactElement {
-  const library = useSnapshotLibrary();
-  const [state, setState] = useState<JobState>({ kind: 'idle' });
-  const [warnings, setWarnings] = useState<readonly string[]>([]);
-  const [dropping, setDropping] = useState(false);
-  const [subject, setSubject] = useState('the files');
-  const typedTime = useTypedReadTime();
-  const input = useRef<HTMLInputElement>(null);
-  const chooseButton = useRef<HTMLButtonElement>(null);
-  const mounted = useRef(true);
-  // The import's own signal: aborted by its Cancel and when the page is left.
-  const importSignal = useImportSignal();
+  const fileImport = useFileImport({ usable: available });
   const hintId = useId();
-  const busy = state.kind === 'busy';
-  const usable = available && library.canWork;
+  const usable = fileImport.usable;
+  const busy = fileImport.busy;
   const unavailable = usable
     ? undefined
     : available
       ? 'Importing is not available here'
       : 'Importing needs browser storage, which this browser does not allow here';
 
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  const start = (files: readonly File[]): void => {
-    if (!usable || busy || files.length === 0) return;
-    const names = files.map((file) => file.name).join(', ');
-    setSubject(names);
-    setWarnings([]);
-    if (typedTime.problem !== null) {
-      setState({
-        kind: 'failed',
-        title: `Nothing was imported from ${names}.`,
-        message: typedTime.problem,
-        problems: [],
-      });
-      return;
-    }
-    setState({ kind: 'busy', progress: null });
-    const signal = importSignal.begin();
-    library
-      .importFiles(
-        files,
-        (progress) => {
-          if (mounted.current && !signal.aborted) setState({ kind: 'busy', progress });
-        },
-        typedTime.readTime === undefined ? { signal } : { readTime: typedTime.readTime, signal },
-      )
-      .then(
-        ({ records, warnings: notes }) => {
-          if (!mounted.current) return;
-          const what = records
-            .map((record) => `${snapshotLabel(record.meta)} (${formatCount(record.meta.assetCount)} assets)`)
-            .join('; ');
-          setState({ kind: 'idle', message: `Imported ${what}.` });
-          setWarnings(notes);
-        },
-        (error: unknown) => {
-          if (!mounted.current) return;
-          if (error instanceof SnapshotJobCancelled) {
-            setState({ kind: 'idle', message: CANCELLED_MESSAGE });
-            return;
-          }
-          setState({
-            kind: 'failed',
-            title: `Nothing was imported from ${names}.`,
-            message: error instanceof Error ? error.message : String(error),
-            problems: error instanceof SnapshotJobError ? error.problems : [],
-          });
-        },
-      );
-  };
-
-  /** Cancel while the files are read: nothing is stored, and focus goes back to "Choose files…". */
-  const cancel = (): void => {
-    importSignal.cancel();
-    chooseButton.current?.focus();
-  };
-
-  // Files dragged over the zone are always taken from the browser, which would otherwise open a dropped file in the
-  // tab and lose what is kept in memory; they are refused ("none") while importing is unavailable or running.
-  const onDragOver = (event: DragEvent<HTMLDivElement>): void => {
-    if (!event.dataTransfer.types.includes('Files')) return;
-    event.preventDefault();
-    const accepted = usable && !busy;
-    event.dataTransfer.dropEffect = accepted ? 'copy' : 'none';
-    setDropping(accepted);
-  };
-
-  const onDrop = (event: DragEvent<HTMLDivElement>): void => {
-    setDropping(false);
-    if (!event.dataTransfer.types.includes('Files')) return;
-    event.preventDefault();
-    start([...event.dataTransfer.files]);
-  };
-
   return (
     <div className={styles.stack}>
       <div
-        className={cx(styles.dropZone, dropping && styles.dropping)}
+        className={cx(styles.dropZone, fileImport.dropping && styles.dropping)}
         data-testid="snapshot-drop-zone"
-        onDragEnter={onDragOver}
-        onDragOver={onDragOver}
-        onDragLeave={() => {
-          setDropping(false);
-        }}
-        onDrop={onDrop}
+        {...fileImport.dropHandlers}
       >
         <p className={styles.dropTitle}>Drop snapshot files here</p>
         <button
-          ref={chooseButton}
+          ref={fileImport.chooseButton}
           type="button"
           className={controls.control}
           aria-describedby={hintId}
           {...inertProps(busy ? 'An import is running' : unavailable)}
-          onClick={() => {
-            if (usable && !busy) input.current?.click();
-          }}
+          onClick={fileImport.openFilePicker}
         >
           Choose files…
         </button>
         <input
-          ref={input}
+          ref={fileImport.fileInput}
           type="file"
           multiple
           hidden
           tabIndex={-1}
-          onChange={(event) => {
-            const files = [...(event.currentTarget.files ?? [])];
-            event.currentTarget.value = '';
-            start(files);
-          }}
+          onChange={fileImport.onFileInputChange}
         />
         <p id={hintId} className={styles.note}>
           {usable
@@ -168,13 +65,18 @@ export function ImportPanel({ available }: { readonly available: boolean }): Rea
             : `${unavailable ?? ''}.`}
         </p>
       </div>
-      {usable ? <ReadTimeField state={typedTime} /> : null}
-      <JobStatus state={state} subject={subject} label="Importing" onCancel={cancel} />
-      {warnings.length === 0 ? null : (
+      {usable ? <ReadTimeField state={fileImport.typedTime} /> : null}
+      <JobStatus
+        state={fileImport.state}
+        subject={fileImport.subject}
+        label="Importing"
+        onCancel={fileImport.cancel}
+      />
+      {fileImport.warnings.length === 0 ? null : (
         <div className={styles.notice}>
           <p>Imported with notes:</p>
           <ul className={styles.list}>
-            {warnings.map((warning, index) => (
+            {fileImport.warnings.map((warning, index) => (
               <li key={`${String(index)}:${warning}`}>{warning}</li>
             ))}
           </ul>

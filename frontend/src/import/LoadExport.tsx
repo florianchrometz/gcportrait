@@ -27,25 +27,22 @@
  * page cancels the import the same way (snapshots/useImportSignal.ts), so none is stored after the person has gone.
  */
 import type { SnapshotRef } from '@gcportrait/model';
-import { useEffect, useId, useRef, useState, type DragEvent, type ReactElement } from 'react';
+import { useId, useRef, useState, type ReactElement } from 'react';
 
 import { cx } from '../classNames';
 import { CommandBlock } from '../preflight/CommandBlock';
-import { CANCELLED_MESSAGE, JobStatus, type JobState } from '../snapshots/JobStatus';
+import { JobStatus } from '../snapshots/JobStatus';
 import { formatUtc } from '../snapshots/labels';
 import { useLargeSnapshotGuard } from '../snapshots/LargeSnapshotGuard';
-import type { ImportCandidate } from '../snapshots/library';
-import { useSnapshotLibrary } from '../snapshots/SnapshotLibraryProvider';
-import { useImportSignal } from '../snapshots/useImportSignal';
-import { SnapshotJobCancelled, SnapshotJobError } from '../snapshots/worker/client';
 import { useAppState, useDiagramActions } from '../state';
 import { inertProps } from '../ui/dom';
 import { copyCommand, DESCRIBE_COMMAND, exportCommand } from './commands';
 import styles from './Import.module.css';
 import { ImportStatus } from './ImportStatus';
 import { runExportRead } from './run';
-import { ReadTimeField, useTypedReadTime } from './ReadTimeField';
+import { ReadTimeField } from './ReadTimeField';
 import { MAX_SIDECAR_BYTES, parseSidecar, SIDECAR_FILE_NAME, type ExportSidecar } from './sidecar';
+import { useFileImport } from './useFileImport';
 import { useImportJob } from './useImportJob';
 
 /** A gs:// URI as the backend takes it (backend/src/stream/export-read.ts checks it fully). */
@@ -58,7 +55,6 @@ export function isGcsUri(text: string): boolean {
 export const READ_ACTION = 'Read from Cloud Storage';
 
 export function LoadExport(): ReactElement {
-  const library = useSnapshotLibrary();
   const guard = useLargeSnapshotGuard();
   const { setSnapshot } = useDiagramActions();
   const signedIn = useAppState((state) => state.connect.session.status === 'signed-in');
@@ -69,100 +65,35 @@ export function LoadExport(): ReactElement {
     null,
   );
   const [sidecarProblem, setSidecarProblem] = useState<string | null>(null);
-  const [files, setFiles] = useState<JobState>({ kind: 'idle' });
   const [fileNotes, setFileNotes] = useState<{
     readonly ref: SnapshotRef;
     readonly notes: readonly string[];
   } | null>(null);
-  const [subject, setSubject] = useState('the files');
-  const [dropping, setDropping] = useState(false);
-  const typedTime = useTypedReadTime();
-  const fileInput = useRef<HTMLInputElement>(null);
-  const chooseButton = useRef<HTMLButtonElement>(null);
-  const sidecarInput = useRef<HTMLInputElement>(null);
-  const mounted = useRef(true);
-  // The dropped files' import: aborted by its Cancel and when the card leaves the page, which also takes back a
-  // large-snapshot question still open.
-  const importSignal = useImportSignal();
-  const ids = { drop: useId(), uri: useId(), uriHint: useId(), sidecar: useId() };
-  const reading = files.kind === 'busy';
-  const busy = reading || job.running;
-  const typedProblem = typedTime.problem;
-  const typedReadTime = typedTime.readTime;
 
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  /**
-   * The question before the files' snapshots are stored: about the one the import opens, the last; true (a small
-   * one, one already chosen, the session setting, or "Draw it anyway", which the guard remembers for its ref, so the
-   * diagram page does not ask again) stores them. An aborted `signal` (the card left the page) takes it back.
-   */
-  const confirmOf =
-    (signal: AbortSignal) =>
-    (candidates: readonly ImportCandidate[]): Promise<boolean> => {
+  const fileImport = useFileImport({
+    busy: job.running,
+    title: 'Nothing was imported.',
+    confirm: (signal) => (candidates) => {
       const opened = candidates.at(-1);
       if (opened === undefined) return Promise.resolve(true);
       return guard.confirm({ assets: opened.assets, ref: opened.ref }, signal);
-    };
+    },
+    onStart: () => {
+      setFileNotes(null);
+    },
+    onDone: ({ refs, warnings }) => {
+      const ref = refs.at(-1);
+      if (ref === undefined) return;
+      if (warnings.length === 0) setSnapshot(ref);
+      else setFileNotes({ ref, notes: warnings });
+    },
+  });
 
-  /** Cancel while the files are read: nothing is stored, and focus goes back to "Choose files…". */
-  const cancelFiles = (): void => {
-    importSignal.cancel();
-    chooseButton.current?.focus();
-  };
-
-  const importFiles = (chosen: readonly File[]): void => {
-    if (busy || chosen.length === 0) return;
-    setSubject(chosen.map((file) => file.name).join(', '));
-    setFileNotes(null);
-    if (typedProblem !== null) {
-      setFiles({ kind: 'failed', title: 'Nothing was imported.', message: typedProblem, problems: [] });
-      return;
-    }
-    setFiles({ kind: 'busy', progress: null });
-    const signal = importSignal.begin();
-    const confirm = confirmOf(signal);
-    library
-      .importFiles(
-        chosen,
-        (progress) => {
-          if (mounted.current && !signal.aborted) setFiles({ kind: 'busy', progress });
-        },
-        typedReadTime === undefined ? { confirm, signal } : { readTime: typedReadTime, confirm, signal },
-      )
-      .then(
-        ({ refs, warnings, declined }) => {
-          if (!mounted.current) return;
-          if (declined === true) {
-            setFiles({ kind: 'idle', message: CANCELLED_MESSAGE });
-            return;
-          }
-          const ref = refs.at(-1);
-          setFiles({ kind: 'idle' });
-          if (ref === undefined) return;
-          if (warnings.length === 0) setSnapshot(ref);
-          else setFileNotes({ ref, notes: warnings });
-        },
-        (error: unknown) => {
-          if (!mounted.current) return;
-          if (error instanceof SnapshotJobCancelled) {
-            setFiles({ kind: 'idle', message: CANCELLED_MESSAGE });
-            return;
-          }
-          setFiles({
-            kind: 'failed',
-            title: 'Nothing was imported.',
-            message: error instanceof Error ? error.message : String(error),
-            problems: error instanceof SnapshotJobError ? error.problems : [],
-          });
-        },
-      );
-  };
+  const sidecarInput = useRef<HTMLInputElement>(null);
+  const ids = { drop: useId(), uri: useId(), uriHint: useId(), sidecar: useId() };
+  const busy = fileImport.busy;
+  const typedProblem = fileImport.typedTime.problem;
+  const typedReadTime = fileImport.typedTime.readTime;
 
   const readSidecar = (file: File | undefined): void => {
     if (file === undefined) return;
@@ -173,7 +104,7 @@ export function LoadExport(): ReactElement {
       return;
     }
     void file.text().then((text) => {
-      if (!mounted.current) return;
+      if (!fileImport.mounted.current) return;
       const value = parseSidecar(text);
       if (value === null) {
         setSidecar(null);
@@ -202,66 +133,46 @@ export function LoadExport(): ReactElement {
     );
   };
 
-  const onDragOver = (event: DragEvent<HTMLDivElement>): void => {
-    if (!event.dataTransfer.types.includes('Files')) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = busy ? 'none' : 'copy';
-    setDropping(!busy);
-  };
-
-  const onDrop = (event: DragEvent<HTMLDivElement>): void => {
-    setDropping(false);
-    if (!event.dataTransfer.types.includes('Files')) return;
-    event.preventDefault();
-    importFiles([...event.dataTransfer.files]);
-  };
-
   return (
     <div className={styles.stack}>
       <div className={styles.columns}>
         <div className={styles.stack}>
           <div
-            className={cx(styles.dropZone, dropping && styles.dropping)}
+            className={cx(styles.dropZone, fileImport.dropping && styles.dropping)}
             data-testid="export-drop-zone"
-            onDragEnter={onDragOver}
-            onDragOver={onDragOver}
-            onDragLeave={() => {
-              setDropping(false);
-            }}
-            onDrop={onDrop}
+            {...fileImport.dropHandlers}
           >
             <p className={styles.dropTitle}>Drop the export’s files here</p>
             <button
-              ref={chooseButton}
+              ref={fileImport.chooseButton}
               type="button"
               className={styles.secondary}
               aria-describedby={ids.drop}
               {...inertProps(busy ? 'An import is running' : undefined)}
-              onClick={() => {
-                if (!busy) fileInput.current?.click();
-              }}
+              onClick={fileImport.openFilePicker}
             >
               Choose files…
             </button>
             <input
-              ref={fileInput}
+              ref={fileImport.fileInput}
               type="file"
               multiple
               hidden
               tabIndex={-1}
               data-testid="export-files"
-              onChange={(event) => {
-                const chosen = [...(event.currentTarget.files ?? [])];
-                event.currentTarget.value = '';
-                importFiles(chosen);
-              }}
+              onChange={fileImport.onFileInputChange}
             />
             <p id={ids.drop} className={styles.note}>
               Every file of one export (newline-delimited JSON), and its {SIDECAR_FILE_NAME} if you saved it.
               Read in this browser; nothing is uploaded.
             </p>
           </div>
-          <JobStatus state={files} subject={subject} label="Importing the export" onCancel={cancelFiles} />
+          <JobStatus
+            state={fileImport.state}
+            subject={fileImport.subject}
+            label="Importing the export"
+            onCancel={fileImport.cancel}
+          />
           {fileNotes === null ? null : (
             <div className={styles.notice}>
               <p>Imported with notes:</p>
@@ -378,7 +289,7 @@ export function LoadExport(): ReactElement {
         </div>
       </div>
 
-      <ReadTimeField state={typedTime} />
+      <ReadTimeField state={fileImport.typedTime} />
 
       <details className={styles.details}>
         <summary>How to make an export with gcloud</summary>
