@@ -11,27 +11,30 @@ import 'fake-indexeddb/auto';
 
 import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createDatabaseConnection } from '../storage/connection';
 import type { StoredTick } from '../storage/db';
+import * as storage from '../storage/db';
 import { createTickCacheStore } from '../storage/tickCache';
 import { expectNoAxeViolations } from '../test/axe';
-import { useFreshIndexedDb } from '../test/indexedDb';
-import { renderApp } from '../test/renderApp';
+import { TEST_OPEN_TIMEOUT_MS, useFreshIndexedDb } from '../test/indexedDb';
+import { renderApp, WHOLE_APP_TIMEOUT } from '../test/renderApp';
 import { storedTick } from '../timeline/testing/fixtures';
 import { fakeLibrary, storedRecord } from './testing';
 
 const EXPORT = '01J0000000000000000000000E';
 const PULL = '01J0000000000000000000000P';
 
-const { closeAfter } = useFreshIndexedDb();
+const { closeAfter, database } = useFreshIndexedDb();
 
 /** Day `date` of `scope` in the tick cache, taking `bytes`. */
 const day = (scope: string, date: string, bytes = 1_500): StoredTick => storedTick(scope, date, { bytes });
 
 async function openPage(ticks: readonly StoredTick[] = []) {
-  const connection = createDatabaseConnection();
+  const connection = createDatabaseConnection((onClose) =>
+    storage.openDatabase(TEST_OPEN_TIMEOUT_MS, onClose),
+  );
   closeAfter(async () => {
     (await connection.database())?.close();
   });
@@ -80,6 +83,30 @@ function rowsOf(region: HTMLElement): string[][] {
 }
 
 describe('the timelines by scope', () => {
+  it(
+    'opens its explicit connection with the test timeout and persists its ticks',
+    WHOLE_APP_TIMEOUT,
+    async () => {
+      const open = vi.spyOn(storage, 'openDatabase');
+      try {
+        const tick = day('organizations/30000000001', '2026-10-06');
+        const app = await openPage([tick]);
+        expect(open).toHaveBeenCalledExactlyOnceWith(TEST_OPEN_TIMEOUT_MS, expect.any(Function));
+        expect(await app.cache.persistent()).toBe(true);
+        app.unmount();
+        expect(await (await database()).get('tickCache', tick.key)).toMatchObject({
+          key: tick.key,
+          scope: tick.scope,
+          day: tick.day,
+          bytes: tick.bytes,
+          assetCount: tick.assetCount,
+        });
+      } finally {
+        open.mockRestore();
+      }
+    },
+  );
+
   it('lists each scope’s snapshots, extra ticks and cached days in time order, with sizes and a summary', async () => {
     const { section } = await openPage([
       day('organizations/30000000001', '2026-10-06'),
