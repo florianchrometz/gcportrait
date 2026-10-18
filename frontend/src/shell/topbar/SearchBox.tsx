@@ -21,7 +21,7 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { useDiagramSession } from '../../diagram/session';
-import { isShortcutKey } from '../../keyboard/shortcuts';
+import { isShortcutKey, isTypingTarget } from '../../keyboard/shortcuts';
 import { ResultIcon } from '../../search/ResultIcon';
 import { RevealDialog } from '../../search/RevealDialog';
 import { hitDescription, KIND_LABELS, resultCount } from '../../search/text';
@@ -44,14 +44,6 @@ interface Draft {
 /** The search text in a `highlight` (only the search box writes it; a full resource name is searched too). */
 function searchText(highlight: string | undefined): string {
   return highlight ?? '';
-}
-
-/** Whether a key press happened where `/` is text, not a shortcut. */
-function typingIn(target: EventTarget | null): boolean {
-  return (
-    target instanceof Element &&
-    target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]') !== null
-  );
 }
 
 export function SearchBox(): ReactElement {
@@ -113,7 +105,7 @@ export function SearchBox(): ReactElement {
     const onKeyDown = (event: KeyboardEvent): void => {
       // Matched by the character typed, whatever the layout needed for it (Shift, Option, AltGr).
       if (event.key !== '/' || !isShortcutKey(event)) return;
-      if (typingIn(event.target)) return;
+      if (isTypingTarget(event.target)) return;
       const input = inputRef.current;
       if (input === null || input.closest('[inert]') !== null) return;
       event.preventDefault();

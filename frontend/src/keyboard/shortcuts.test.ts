@@ -61,6 +61,13 @@ describe('where a key press lands', () => {
   it.each([
     ['a text field', '<input data-target>', true, false],
     ['a text area', '<textarea data-target></textarea>', true, false],
+    ['a select', '<select data-target><option>one</option></select>', true, false],
+    [
+      'an editable ancestor with an empty attribute',
+      '<p contenteditable=""><b data-target>x</b></p>',
+      true,
+      false,
+    ],
     ['an editable element', '<p contenteditable="true"><b data-target>x</b></p>', true, false],
     ['a button', '<button data-target></button>', false, false],
     ['an item of a menu', '<div role="menu"><button data-target></button></div>', false, true],
