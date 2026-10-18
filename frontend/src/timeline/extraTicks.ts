@@ -28,8 +28,10 @@ import { formatUtc } from '../snapshots/labels';
 import type { AppStore } from '../state';
 import type { SnapshotMeta } from '../storage/db';
 import type { TimelineSlice } from './state';
-import { dayReadTime, type LabelOptions, type TimelineTick } from './ticks';
+import { dayReadTime, localMinute, type LabelOptions, type TimelineTick } from './ticks';
 import { scopePathOf, type TimelineInfo } from './types';
+
+export { localMinute } from './ticks';
 
 /** Where an extra tick's snapshot came from: an export (file or Cloud Storage) or a manual API pull. */
 export type ExtraSource = 'export' | 'api';
@@ -300,28 +302,6 @@ export function bindExtraTicks(
   const unsubscribe = store.subscribe(sync);
   sync();
   return unsubscribe;
-}
-
-/** The parts of an instant in the viewer's time zone (or the one a test fixes), as digits. */
-function localParts(at: number, options: LabelOptions): Readonly<Record<string, string>> {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-    ...(options.timeZone === undefined ? {} : { timeZone: options.timeZone }),
-  }).formatToParts(at);
-  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
-}
-
-/** "2026-10-05 14:30" (with `seconds`, "2026-10-05 14:30:00"): an instant in the viewer's local time. */
-export function localMinute(at: number, options: LabelOptions = {}, seconds = false): string {
-  const part = localParts(at, options);
-  const time = `${part['hour'] ?? ''}:${part['minute'] ?? ''}${seconds ? `:${part['second'] ?? ''}` : ''}`;
-  return `${part['year'] ?? ''}-${part['month'] ?? ''}-${part['day'] ?? ''} ${time}`;
 }
 
 /** "export" or "pull": what an extra tick is, in its label. */

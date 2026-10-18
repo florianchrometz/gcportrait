@@ -95,10 +95,19 @@ export interface LabelOptions {
   readonly timeZone?: string;
 }
 
-/** The two forms of a tick's label. */
+/** The forms of a tick's label. */
 const LABEL_FIELDS = {
   label: { day: 'numeric', month: 'short' },
   title: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
+  minute: {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  },
 } as const satisfies Record<string, Intl.DateTimeFormatOptions>;
 
 /**
@@ -127,7 +136,7 @@ function defaultsKey(): string {
   return viewerDefaults;
 }
 
-function format(at: number, options: LabelOptions, form: keyof typeof LABEL_FIELDS): string {
+function formatterFor(options: LabelOptions, form: keyof typeof LABEL_FIELDS): Intl.DateTimeFormat {
   const defaults = options.locale === undefined || options.timeZone === undefined ? defaultsKey() : '';
   const key = `${form}\u0000${options.locale ?? ''}\u0000${options.timeZone ?? ''}\u0000${defaults}`;
   let formatter = formatters.get(key);
@@ -138,15 +147,28 @@ function format(at: number, options: LabelOptions, form: keyof typeof LABEL_FIEL
     });
     formatters.set(key, formatter);
   }
-  return formatter.format(at);
+  return formatter;
 }
 
 /** A tick's short label in the viewer's local date: "8 Oct" (en-GB), "Oct 8" (en-US). */
 export function tickLabel(tick: Pick<TimelineTick, 'at'>, options: LabelOptions = {}): string {
-  return format(tick.at, options, 'label');
+  return formatterFor(options, 'label').format(tick.at);
 }
 
 /** A tick's full label in the viewer's local date: "Thursday 8 October 2026" (en-GB). */
 export function tickTitle(tick: Pick<TimelineTick, 'at'>, options: LabelOptions = {}): string {
-  return format(tick.at, options, 'title');
+  return formatterFor(options, 'title').format(tick.at);
+}
+
+/** The parts of an instant in the viewer's time zone (or the one a test fixes), as digits. */
+function localParts(at: number, options: LabelOptions): Readonly<Record<string, string>> {
+  const parts = formatterFor({ ...options, locale: 'en-GB' }, 'minute').formatToParts(at);
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
+}
+
+/** "2026-10-05 14:30" (with `seconds`, "2026-10-05 14:30:00"): an instant in the viewer's local time. */
+export function localMinute(at: number, options: LabelOptions = {}, seconds = false): string {
+  const part = localParts(at, options);
+  const time = `${part['hour'] ?? ''}:${part['minute'] ?? ''}${seconds ? `:${part['second'] ?? ''}` : ''}`;
+  return `${part['year'] ?? ''}-${part['month'] ?? ''}-${part['day'] ?? ''} ${time}`;
 }

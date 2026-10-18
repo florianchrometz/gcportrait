@@ -14,6 +14,7 @@ import {
   historyTicks,
   indexOfDay,
   isDay,
+  localMinute,
   tickLabel,
   tickTitle,
   timelineTicks,
@@ -144,5 +145,73 @@ describe('labels', () => {
       await Promise.resolve();
       vi.unstubAllEnvs();
     }
+  });
+});
+
+describe('local minutes', () => {
+  const instant = Date.parse('2026-10-05T00:00:12Z');
+
+  it('keeps numeric en-GB fields, midnight and optional seconds regardless of locale', () => {
+    expect(localMinute(instant, { timeZone: 'UTC', locale: 'ar-EG' })).toBe('2026-10-05 00:00');
+    expect(localMinute(instant, { timeZone: 'UTC', locale: 'not_a_locale' }, true)).toBe(
+      '2026-10-05 00:00:12',
+    );
+    expect(localMinute(instant, { timeZone: 'America/Los_Angeles' })).toBe('2026-10-04 17:00');
+    expect(localMinute(Date.parse('2026-03-29T00:30:00Z'), { timeZone: 'Europe/Berlin' })).toBe(
+      '2026-03-29 01:30',
+    );
+    expect(localMinute(Date.parse('2026-03-29T01:30:00Z'), { timeZone: 'Europe/Berlin' })).toBe(
+      '2026-03-29 03:30',
+    );
+  });
+
+  it('reuses the numeric formatter across seconds and locale choices, but separates time zones', async () => {
+    vi.resetModules();
+    const fresh = await import('./ticks');
+    const constructor = vi.spyOn(Intl, 'DateTimeFormat');
+    try {
+      expect(fresh.localMinute(instant, { timeZone: 'UTC' })).toBe('2026-10-05 00:00');
+      expect(fresh.localMinute(instant, { timeZone: 'UTC', locale: 'ar-EG' }, true)).toBe(
+        '2026-10-05 00:00:12',
+      );
+      expect(fresh.localMinute(instant, { timeZone: 'Europe/Berlin' })).toBe('2026-10-05 02:00');
+      expect(fresh.localMinute(instant, { timeZone: 'UTC' })).toBe('2026-10-05 00:00');
+      expect(constructor).toHaveBeenCalledTimes(2);
+    } finally {
+      constructor.mockRestore();
+      vi.resetModules();
+    }
+  });
+
+  it('refreshes the default zone each turn while reusing formatters for previously seen zones', async () => {
+    vi.resetModules();
+    const fresh = await import('./ticks');
+    const constructor = vi.spyOn(Intl, 'DateTimeFormat');
+    try {
+      vi.stubEnv('TZ', 'UTC');
+      expect(fresh.localMinute(instant)).toBe('2026-10-05 00:00');
+      expect(fresh.localMinute(instant, {}, true)).toBe('2026-10-05 00:00:12');
+      expect(constructor).toHaveBeenCalledTimes(2);
+      await Promise.resolve();
+      vi.stubEnv('TZ', 'America/Los_Angeles');
+      expect(fresh.localMinute(instant)).toBe('2026-10-04 17:00');
+      expect(constructor).toHaveBeenCalledTimes(4);
+      await Promise.resolve();
+      vi.stubEnv('TZ', 'UTC');
+      expect(fresh.localMinute(instant)).toBe('2026-10-05 00:00');
+      expect(constructor).toHaveBeenCalledTimes(5);
+    } finally {
+      await Promise.resolve();
+      constructor.mockRestore();
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
+  });
+
+  it('propagates invalid time zones and instants as RangeErrors', () => {
+    expect(() => localMinute(instant, { timeZone: 'not/a/zone' })).toThrow(RangeError);
+    expect(() => localMinute(Number.NaN, { timeZone: 'UTC' })).toThrow(RangeError);
+    expect(() => localMinute(Number.POSITIVE_INFINITY, { timeZone: 'UTC' })).toThrow(RangeError);
+    expect(localMinute(instant, { timeZone: 'UTC' })).toBe('2026-10-05 00:00');
   });
 });

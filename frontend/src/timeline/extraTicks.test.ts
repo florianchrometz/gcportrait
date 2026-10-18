@@ -9,7 +9,7 @@
  * only with `playExtras`) and its words; and the store binding that keeps the `timeline` slice's extra ticks.
  */
 import { decodeViewSpec, type ViewSpec } from '@gcportrait/model';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createAppStore } from '../state';
 import type { SnapshotMeta } from '../storage/db';
@@ -234,6 +234,46 @@ describe('merging extra ticks with the days', () => {
 });
 
 describe('labels', () => {
+  it('constructs one formatter for all extra markers and their collision checks', async () => {
+    vi.resetModules();
+    const fresh = await import('./extraTicks');
+    expect(fresh.localMinute).toBe((await import('./ticks')).localMinute);
+    const extras = extraTicksFor(
+      Array.from({ length: 8 }, (_, index) =>
+        candidate(`01J0000000000000000000000${String(index)}`, {
+          readTime: `2026-10-05T14:3${String(index)}:12Z`,
+        }),
+      ),
+      OWNER,
+      NOW,
+    );
+    const constructor = vi.spyOn(Intl, 'DateTimeFormat');
+    try {
+      expect(extras.map((extra) => fresh.extraTickLabel(extra, extras, UTC))).toEqual(
+        Array.from({ length: 8 }, (_, index) => `export 2026-10-05 14:3${String(index)}`),
+      );
+      expect(constructor).toHaveBeenCalledTimes(1);
+    } finally {
+      constructor.mockRestore();
+      vi.resetModules();
+    }
+  });
+
+  it('keeps seconds when distinct instants share a local minute across the DST fall-back', () => {
+    const extras = extraTicksFor(
+      [
+        candidate(EXPORT, { readTime: '2026-10-25T00:30:12Z' }),
+        candidate(PULL, { source: 'api', readTime: '2026-10-25T01:30:45Z' }),
+      ],
+      OWNER,
+      Date.parse('2026-10-26T00:00:00Z'),
+    );
+    expect(extras.map((extra) => extraTickLabel(extra, extras, { timeZone: 'Europe/Berlin' }))).toEqual([
+      'export 2026-10-25 02:30:12',
+      'pull 2026-10-25 02:30:45',
+    ]);
+  });
+
   const [tick] = extraTicksFor([candidate(EXPORT)], OWNER, NOW);
   if (tick === undefined) throw new Error('no extra tick');
 
