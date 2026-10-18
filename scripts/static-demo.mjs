@@ -1,21 +1,9 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * `pnpm demo:static`: builds the static demo, the app in demo-only mode as a self-contained bundle for a
- * static host, which the website serves at https://gcportrait.app/demo/ on GitHub Pages. It needs no server:
- * no backend, no rewrites, no headers. What it holds and why (scripts/lib/static-demo.mjs, docs/website.md
- * "The demo"):
- *
- * - the app (frontend/, `vite build` with VITE_STATIC_DEMO=1) below the base path `/demo/`, assets content-hashed, the
- *   theme bootstrap kept, the brand icon as its favicon, the licence files in `licenses/`;
- * - its configuration built in, a demo-only instance's (frontend/src/api/staticConfig.ts): no sign-in and nothing
- *   read from Google Cloud, the version (`git describe`), the source link (VITE_SOURCE_URL, or the repository), and the
- *   Impressum and the privacy notice the footer links (the maintainer's pages unless --impressum-url and --privacy-url
- *   name others); no Google sign-in code at all;
- * - a copy of index.html per route (`diagram.html`, `snapshots.html`, …), so a reload or a shared link on any route
- *   works on a host without rewrites;
- * - the backend's demo-only Content Security Policy as a `<meta>` (without `frame-ancestors`, which a `<meta>` cannot
- *   carry), with the inline bootstrap's hash.
+ * `pnpm demo:static`: build the app's self-contained demo-only bundle for a static host. Rules: AGENTS.md,
+ * "Modes and hosting". Configuration: frontend/src/api/staticConfig.ts; routes and CSP: scripts/lib/static-demo.mjs.
+ * Operations: docs/website.md, "The demo".
  *
  *   node scripts/static-demo.mjs [--out DIR]          the bundle in DIR (default: dist/demo/ at the repository root)
  *                                [--base PATH]        the path it is served at (default /demo/; starts and ends with /)

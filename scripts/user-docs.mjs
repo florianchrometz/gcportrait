@@ -1,52 +1,18 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * The user guides under docs/: their generated parts, and the checks that keep them true to the tree.
+ * Generate the guides' lens blocks and check documentation against the tree (checkUserDocs and its helpers).
+ * Writing rules: AGENTS.md, "Documentation"; guide registration: docs/AGENTS.md, "User guides".
  *
- * Generated, between `<!-- user-docs:NAME:start -->` and `<!-- user-docs:NAME:end -->` markers:
- * - docs/lenses-and-filters.md `lens-table` and `lens-types`: every lens of the asset catalog with its intent, the
- *   relation kinds it draws, the detail level it opens at most at, and its type bundle, from the compiled catalog
- *   (`packages/catalog/dist/catalog.json`, which `pnpm catalog:build` writes from `packages/catalog/lenses/`).
+ * docs/lenses-and-filters.md's `lens-table` and `lens-types` blocks use the compiled catalog
+ * (packages/catalog/dist/catalog.json), between `<!-- user-docs:NAME:start -->` and `<!-- user-docs:NAME:end -->`.
+ * Run `pnpm catalog:build` after changing lens files; install, lint, typecheck and test already do so.
  *
- * Checked (a staleness test, scripts/user-docs.test.ts, runs the same checks in `pnpm test`):
- * - no user document logs what was checked when and where (a dated verification line or section, a heading
- *   about how it was verified, a dated note of when something changed or was decided, a machine and its
- *   versions, a measured or timed run, the record of a first version, a shell prompt with its output in
- *   code): a user document says what to do, and keeps no record of runs (AGENTS.md, Documentation). The user
- *   documents are the guides, the documents whose commands are checked, and logFreeDocs (every rules file,
- *   every skill and LISTED_LOG_FREE_DOCS);
- * - the self-hosting guide asks for nothing but QUICK_START_VARIABLES: the website's Variables panel lists the
- *   variables of a page's code, and the page that starts a deploy asks for the project id, the OAuth client id and
- *   the email address to grant, nothing optional;
- * - docs/configuration.md lists exactly the backend's environment variables (the zod schema in
- *   backend/src/config.ts) with their literal defaults, exactly the flags of `infra/deploy.sh --help`,
- *   `infra/uninstall.sh --help` and `infra/install.sh --help` with their defaults, every variable infra/compose.yaml
- *   reads, and exactly the SPA's build-time variables (frontend/src/vite-env.d.ts);
- * - every command in a guide's code exists: `pnpm SCRIPT` and `pnpm --filter @gcportrait/PKG SCRIPT` name a script
- *   (or a pnpm command), `infra/deploy.sh` and `infra/uninstall.sh` take each flag given, `infra/install.sh` and the
- *   installer line (`curl … install.sh | bash -s -- FLAGS`) take each flag as the installer's own or deploy.sh's
- *   (it passes the others on), `node scripts/FILE` exists;
- * - every value to fill in that the code of a document under docs/ or docs/legal/ names (a `YOUR_…` token, in a
- *   code block or inline code; docs/contributing.md, "Data, privacy and presentation") is a variable of the
- *   registry the website and the app take their fields from (COMMAND_VARIABLES,
- *   packages/model/src/schemas/command-variables.ts, which Node loads by type stripping);
- * - docs/modes.md names the size above which the app asks before it draws a snapshot ("more than 10,000 assets")
- *   with the model's own `LARGE_SNAPSHOT_ASSETS` (packages/model/src/schemas/vocabulary.ts), and no other;
- * - the render goldens' README (e2e/baselines/render/README.md) names the rasteriser, `@resvg/resvg-wasm`,
- *   with the version installed for packages/render, which pins it exactly (scripts/lib/dependency-versions.mjs
- *   reads both), and no other Markdown file names a version of resvg: the golden PNG is that version's bytes,
- *   and a number written anywhere else would drift on every bump;
- * - every Markdown file of the tree (as scripts/lib/repo-files.mjs walks it, the generated CHANGELOGs and the
- *   changesets aside) is wrapped at WIDTH columns, counted in code points, but where a line break cannot
- *   shorten a line or must not go: the YAML frontmatter, fenced code, table rows, a line that holds a URL, and
- *   a line of one word, an HTML tag or comment counting as one word (AGENTS.md, Documentation).
- *
- * Usage:
- *   node scripts/user-docs.mjs            check; exit 1 and list the problems when anything is stale
+ *   node scripts/user-docs.mjs            check and list problems
  *   node scripts/user-docs.mjs --write    rewrite the generated parts, then check
  *
- * Plain ESM, Node built-ins only (and the registry above, a TypeScript module without imports). Run `pnpm catalog:build` first when the lens files changed (`pnpm test`, `pnpm
- * install`, `lint` and `typecheck` do it already).
+ * scripts/user-docs.test.ts runs the repository check in `pnpm test`.
+ * Exit 0 on success, 1 on reported problems, 2 on a thrown error (including usage or file-read errors).
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';

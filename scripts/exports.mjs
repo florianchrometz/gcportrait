@@ -1,42 +1,19 @@
 // SPDX-License-Identifier: MIT
 // @ts-check
 /**
- * `node scripts/exports.mjs`: the sample exports the website offers for download (docs/website.md, "Sample
- * exports"): real SVG, PNG and draw.io files of the synthetic demo organisations, drawn by `pnpm render`: the
- * app's renderer's drawing of the views the Export menu offers (the title block's three lines, scope, lens
- * with read time and tagline, the legend, 2× PNG with a 24 px margin, the draw.io file compressed as
- * diagrams.net saves it; its `agent` without the command's version, `gcportrait` alone as the render golden
- * has it, so a release leaves the samples as they are), in the light and the dark theme, with a WebP preview
- * of each PNG at 480 and 960 pixels wide. Everything goes to docs/media/exports/ with a manifest (each file's
- * sample, demo size, lens, theme, size in pixels, bytes, hash and the command that made it), which the
- * website reads.
+ * Generate the website's synthetic sample exports with `pnpm render`, plus WebP previews and the manifest
+ * in docs/media/exports/. Usage and regeneration: docs/website.md, "Sample exports". Drawing and notice rules:
+ * AGENTS.md, "Exports and the render API" and "Non-affiliation, brand and legal".
  *
- * No file carries the non-affiliation line (AGENTS.md, Non-affiliation, brand and legal): the statement is in
- * the footers of the app and the website and in the long form, never in a drawing, so neither an SVG's title
- * block nor its <title> or <desc> may hold it, nor a draw.io file's labels, and `--check` fails a file that
- * does.
+ *   node scripts/exports.mjs                    render samples and write their manifest
+ *   node scripts/exports.mjs --check            validate files, manifest and generator inputs (problemsOf)
+ *   node scripts/exports.mjs --check --render   also re-render into a temporary folder and compare bytes
+ *   node scripts/exports.mjs --list             print the files a run writes
  *
- *   node scripts/exports.mjs                     render every sample, write docs/media/exports/ and its manifest
- *   node scripts/exports.mjs --check             compare the manifest with the files and this script: every file
- *                                                listed, present and unchanged, nothing else there, the generator's
- *                                                version, no SVG with an affiliation line (title block, <title> or
- *                                                <desc>), nothing loaded from elsewhere, every draw.io file readable
- *                                                as diagrams.net reads it and as clean, the size budget
- *   node scripts/exports.mjs --check --render    also render everything again into a temporary folder and compare
- *                                                byte for byte (the renderer, the demo data or the fonts changed?)
- *   node scripts/exports.mjs --list              print the files a run writes
- *
- * Kept apart from `pnpm media` (scripts/media.mjs) on purpose: these files come from the headless renderer,
- * not from screenshots of the app, so they neither depend on the demo app bundle nor touch the animated
- * demos; `pnpm media --check` does not look at them. The renderer is byte-stable
- * (packages/render-cli/README.md): the same arguments give the same bytes, so a second run writes the same
- * files, on every platform since its rasteriser is resvg's WebAssembly build.
- *
- * The previews are encoded by Playwright's Chromium (a canvas scaled with high-quality smoothing, then WebP), as the
- * media script encodes its WebPs: the website package's dev dependency, with Chromium from
- * `pnpm --filter @gcportrait/e2e install-browsers`. Only the synthetic demo organisations are drawn.
- * Exit code 0 on success (and with --check when everything agrees), 1 on a failure or a difference, 2 on a usage
- * error.
+ * These headless exports are independent of the demo app bundle and animated demos; `pnpm media --check`
+ * does not check them. Render parameters and preview encoding live in renderArgs and ENCODER_PAGE; install
+ * Chromium with `pnpm --filter @gcportrait/e2e install-browsers` before generating previews.
+ * Exit 0 on success, 1 on a failure or difference, 2 on a usage error.
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
