@@ -7,7 +7,7 @@
  * without `onFlip` behaves as before.
  */
 import { fireEvent, render } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '../../test/axe';
 import { DiagramCanvas, type DiagramCanvasProps } from '../DiagramCanvas';
@@ -187,6 +187,32 @@ describe('the camera and focus after a flip', () => {
     expect(now.k).toBeCloseTo(expected.k);
     expect(now.x).toBeCloseTo(expected.x);
     expect(now.y).toBeCloseTo(expected.y);
+  });
+
+  it('frames the zone in the part of the canvas an open drawer leaves (a tablet’s, over its right half)', () => {
+    reduceMotion();
+    const drawer = document.createElement('div');
+    drawer.setAttribute('data-canvas-overlay', '');
+    drawer.getBoundingClientRect = () => DOMRect.fromRect({ x: 640, y: 0, width: 640, height: 800 });
+    document.body.append(drawer);
+    onTestFinished(() => {
+      drawer.remove();
+    });
+    const { container, rerender } = render(<DiagramCanvas {...props()} />);
+    const svg = canvas(container);
+    svg.getBoundingClientRect = () => DOMRect.fromRect({ x: 0, y: 0, width: 1280, height: 800 });
+    const before = cameraOf(svg);
+    fireEvent.click(chipOf(svg, 'projects/data'));
+    rerender(<DiagramCanvas {...props({ model: expanded })} />);
+    const rect = expanded.input.layout.rects['projects/data'];
+    if (rect === undefined) throw new Error('no rect');
+    // The room left of the drawer, 640 × 800 at the canvas's top-left corner: framed there as on a canvas that size.
+    const expected = flipTransform(rect, 640, 800, before, true);
+    const now = cameraOf(svg);
+    expect(now.k).toBeCloseTo(expected.k);
+    expect(now.x).toBeCloseTo(expected.x);
+    expect(now.y).toBeCloseTo(expected.y);
+    expect((rect.x + rect.width / 2) * now.k + now.x).toBeCloseTo(320);
   });
 
   it('keeps the viewBox while the glide has not stepped yet, and fits a drawing nobody flipped', () => {

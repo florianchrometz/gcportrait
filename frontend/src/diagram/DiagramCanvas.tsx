@@ -805,8 +805,9 @@ export function DiagramCanvas({
   }, [hint]);
 
   // A chip expanded or a zone collapsed here: the drawing with that flip keeps the camera where it was
-  // (the fit below leaves it) and glides 200 ms to frame the zone; after a flip from the keyboard, focus follows
-  // the zone (the painter effect). Before the fit, which it tells to keep the camera.
+  // (the fit below leaves it) and glides 200 ms to frame the zone in the part of the canvas the panels lying over
+  // it leave (`clearRoom`, as a jump); after a flip from the keyboard, focus follows the zone (the painter effect).
+  // Before the fit, which it tells to keep the camera.
   useLayoutEffect(() => {
     const pending = flipRef.current;
     if (pending === null || pending.model === model) return;
@@ -817,8 +818,9 @@ export function DiagramCanvas({
     if (svg === null || place === null || rect === undefined || !isFlipDrawn(pending, rect)) return;
     keepCameraRef.current = model;
     if (pending.keyboard) focusAfterRef.current = pending.id;
-    const size = canvasSize(svg);
-    const to = flipTransform(rect, size.width, size.height, cameraRef.current, pending.wasChip);
+    const to = inRoom(clearRoom(svg), cameraRef.current, (width, height, camera) =>
+      flipTransform(rect, width, height, camera, pending.wasChip),
+    );
     glideRef.current?.stop();
     glideRef.current = {
       id: pending.id,
