@@ -4,43 +4,9 @@ import { defineConfig, devices, type ReporterDescription } from '@playwright/tes
 import { DEMO_URL, LIVE_URL, NAMED } from './fixtures/servers.js';
 
 /**
- * End-to-end tests run against the SPA in two servers, one in demo mode and one in normal mode, each on a free port the
- * run picks for itself (fixtures/servers.ts); no backend and no Google Cloud access needed. Locally they are the Vite dev
- * servers (`pnpm dev:demo`, and `pnpm dev`'s Vite server). On CI (`CI` set, so `CI=true` runs what CI runs) they are the
- * app as it ships, a build of each mode served by `vite preview` with the same `/api` proxy
- * (scripts/built-app.ts): every test opens a fresh browser context, so every page load is cold, and against the build
- * it fetches a few chunks instead of every module; the suite also tests the bundle that ships. The build leaves out
- * only what React's development build adds: StrictMode runs every effect twice under the dev server and not in the
- * build (the app reads no `import.meta.env.DEV`).
- *
- * - `chromium` runs every spec except the live ones against demo mode.
- * - `chromium-live` runs live.spec.ts, signin.spec.ts, preflight.spec.ts, live-pull.spec.ts, permissions-variables.spec.ts,
- *   sa-mode.spec.ts and demo-only.spec.ts against normal mode. Their backend calls (GET /api/config, and the scope
- *   search and the preflight) and Google's (the sign-in script, tokeninfo) are
- *   answered inside the browser by the specs (fixtures/live.ts, fixtures/gis.ts);
- *   sa-mode.spec.ts instead sends the backend calls to the real backend, started by the spec with a pretend Google
- *   (backend/src/auth/sa-harness.testing.ts); demo-only.spec.ts to the real backend in demo-only mode
- *   (backend/src/demo-only-harness.testing.ts); both through fixtures/harness.ts. No backend listens behind the
- *   server's `/api` proxy (port 8080): every spec that opens the server takes its `test` from fixtures/live.ts, which
- *   answers an `/api` request no route of the test answers with a 503 and fails the test, so the proxy is never
- *   reached and prints no error into the run's output.
- *
- * - `mobile` runs mobile.spec.ts and touch.spec.ts against demo mode, and a live instance's pages against normal mode:
- *   the phone and tablet layouts (frontend/AGENTS.md, Phones, tablets and desktops) and the canvas's touch gestures, in Chromium emulating a
- *   touch device at the sizes the specs set (`pnpm --filter @gcportrait/frontend mobile` runs it alone).
- * - `chromium-phone` and `chromium-tablet` run the tests tagged `@phone` and `@tablet` against demo mode, in Chromium
- *   emulating a touch device at 390 × 844 (an iPhone 13's window, the phone's layout) and 820 × 1180 (an iPad Air's,
- *   the tablet's): handheld.spec.ts, the app's flows by finger. `chromium` leaves the tagged tests out.
- *
- * Every run starts its own two servers, so two runs (of one checkout or of two) never meet, and a server another
- * checkout left running is never tested in this one's place: something that answers on a port the run picked fails the
- * run. Only a server whose URL a person named (E2E_DEMO_URL, E2E_LIVE_URL) is reused, and only locally; CI always
- * starts fresh ones. Chromium only for now; the desktop's functional specs at a window of 1440 × 900.
- *
- * A failed test leaves its trace in test-results/. A local run records one for every test and keeps a failed test's
- * (`retain-on-failure`); on CI, which retries a failed test twice, only a test's first retry records one
- * (`on-first-retry`): a trace holds a snapshot of the page at every action, the diagram's large SVG included, so a
- * test that passes at once records none, and a test that failed has the trace of its first retry.
+ * The projects and webServer definitions below select each spec's server, tags and device settings.
+ * e2e/README.md, Running, describes commands, server isolation, backend stand-ins and trace handling.
+ * e2e/AGENTS.md holds the suite's rules.
  */
 const LIVE_SPECS = /(?:live|signin|preflight|live-pull|sa-mode|demo-only|permissions-variables)\.spec\.ts$/;
 const MOBILE_SPECS = /(?:mobile|touch)\.spec\.ts$/;

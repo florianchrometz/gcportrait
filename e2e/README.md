@@ -31,16 +31,11 @@ renderer's tests ([`packages/render-cli`](../packages/render-cli/README.md); its
 how to update it). A person reviews a render against the style skill's fact-check list (gcp-diagram-style §11)
 and the layout skill's checks (gcp-diagram-layout §8).
 
-`playwright.config.ts` starts two servers as its `webServer`s, the app in demo mode and in normal mode
-(`fixtures/servers.ts`), and runs five projects:
-
-| Project | Server | Specs |
-|---|---|---|
-| `chromium` | demo mode | everything except the live specs, `mobile.spec.ts`, `touch.spec.ts` and the tests tagged `@phone` or `@tablet` |
-| `chromium-live` | normal mode | `live.spec.ts`, `signin.spec.ts`, `preflight.spec.ts`, `live-pull.spec.ts`, `permissions-variables.spec.ts`, `sa-mode.spec.ts`, `demo-only.spec.ts` |
-| `mobile` | demo mode, as `chromium`; a live instance's pages on the normal-mode server, as `chromium-live` | `mobile.spec.ts` and `touch.spec.ts`: the phone and tablet layouts and the canvas's touch gestures, in Chromium emulating a touch device at the sizes the specs set (`pnpm --filter @gcportrait/frontend mobile` runs this project alone) |
-| `chromium-phone` | demo mode, as `chromium` | the tests tagged `@phone` (`handheld.spec.ts`), in Chromium emulating a touch device at 390 × 844, 3× (an iPhone 13's window, the phone's layout) |
-| `chromium-tablet` | demo mode, as `chromium` | the tests tagged `@tablet` (`handheld.spec.ts`), in Chromium emulating a touch device at 820 × 1180, 2× (an iPad Air's window, the tablet's layout) |
+[playwright.config.ts](playwright.config.ts) defines the projects and their servers, spec patterns, tags
+and device settings (`projects`, `LIVE_SPECS`, `MOBILE_SPECS`, `PHONE`, `TABLET` and `VIEWPORT`). The
+`mobile` project's [mobile.spec.ts](tests/mobile.spec.ts) also opens normal-mode pages for live-instance
+checks; its demo base URL does not limit those checks. `pnpm --filter @gcportrait/frontend mobile` runs
+that project alone, including [touch.spec.ts](tests/touch.spec.ts).
 
 Locally the two servers are Vite dev servers, started by `scripts/built-app.ts --dev`. Each server gets a
 private temporary dependency cache through `GCPORTRAIT_VITE_CACHE_DIR`: simultaneous runs of one checkout
