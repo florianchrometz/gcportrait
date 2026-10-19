@@ -22,7 +22,7 @@ export function isInsidePopup(target: EventTarget | null): boolean {
   return (
     target instanceof Element &&
     target.closest(
-      '[inert], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], ' +
+      '[inert], [data-popup="true"], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], ' +
         '[role="combobox"][aria-expanded="true"], [aria-haspopup][aria-expanded="true"]',
     ) !== null
   );

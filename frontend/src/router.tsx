@@ -134,7 +134,8 @@ export function formatHref(path: Path, basename = '/'): string {
 
 export function parsePath(to: To, current?: Path): Path {
   if (typeof to === 'string') {
-    let pathname = to;
+    const trimmed = to.trim();
+    let pathname = trimmed;
     let search = '';
     let hash = '';
 
@@ -155,6 +156,9 @@ export function parsePath(to: To, current?: Path): Path {
 
     if (!pathname) {
       pathname = current?.pathname ?? '/';
+      if (trimmed.startsWith('#')) {
+        search = current?.search ?? '';
+      }
     } else if (!pathname.startsWith('/')) {
       pathname = `/${pathname}`;
     }
@@ -215,8 +219,10 @@ export function BrowserRouter({ basename = '/', children }: BrowserRouterProps):
 
   useEffect(() => {
     const handlePopState = () => {
+      const nextLocation = getLocationFromWindow(basenameRef.current);
+      locationRef.current = nextLocation;
       setState({
-        location: getLocationFromWindow(basenameRef.current),
+        location: nextLocation,
         navigationType: 'POP',
       });
     };
@@ -245,6 +251,7 @@ export function BrowserRouter({ basename = '/', children }: BrowserRouterProps):
       window.history.pushState({ key }, '', href);
     }
 
+    locationRef.current = nextLocation;
     setState({
       location: nextLocation,
       navigationType: navType,
@@ -460,8 +467,8 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
   { to, replace, onClick, target, ...rest },
   ref,
 ) {
-  const { basename, navigate } = useRouterContext();
-  const path = parsePath(to);
+  const { basename, navigate, location } = useRouterContext();
+  const path = parsePath(to, location);
   const href = formatHref(path, basename);
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -498,9 +505,9 @@ export const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(function NavL
   { to, end = false, className, style, children, ...rest },
   ref,
 ) {
-  const { pathname } = useLocation();
-  const targetPath = typeof to === 'string' ? parsePath(to).pathname : (to.pathname ?? '/');
-  const currentPath = normalizePathname(pathname);
+  const location = useLocation();
+  const targetPath = parsePath(to, location).pathname;
+  const currentPath = normalizePathname(location.pathname);
   const target = normalizePathname(targetPath);
 
   const isActive = end

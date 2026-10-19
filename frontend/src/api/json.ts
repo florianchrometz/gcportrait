@@ -62,8 +62,6 @@ export async function getPublicJson<T>(
   }
 }
 
-export const getJson = getPublicJson;
-
 export type PostJsonOutcome =
   | { readonly kind: 'response'; readonly response: Response; readonly body: unknown }
   | { readonly kind: 'signed-out' }
@@ -100,77 +98,4 @@ export async function postJson(
     parsedBody = undefined;
   }
   return { kind: 'response', response, body: parsedBody };
-}
-
-export type PostJsonTokenResult<T> =
-  | { readonly ok: true; readonly data: T }
-  | {
-      readonly ok: false;
-      readonly status: number;
-      readonly message: string;
-      readonly unauthorized?: true | undefined;
-      readonly aborted?: true | undefined;
-    };
-
-/**
- * Result-oriented wrapper around `postJson` validating parsed response payload.
- */
-export async function postJsonWithToken<T>(opts: {
-  readonly auth: AuthControls;
-  readonly path: string;
-  readonly body: unknown;
-  readonly signal?: AbortSignal | undefined;
-  readonly label?: string | undefined;
-  readonly parse: (raw: unknown) => T | null;
-}): Promise<PostJsonTokenResult<T>> {
-  let outcome: PostJsonOutcome;
-  try {
-    outcome = await postJson(opts.auth, opts.path, opts.body, opts.signal);
-  } catch (error) {
-    if (opts.signal?.aborted === true) {
-      return { ok: false, status: 0, message: 'Cancelled.', aborted: true };
-    }
-    const message = error instanceof Error ? error.message : String(error);
-    return { ok: false, status: 0, message: `Could not reach the backend (${message}).` };
-  }
-  if (outcome.kind === 'signed-out') {
-    return { ok: false, status: 401, message: 'Sign in first.', unauthorized: true };
-  }
-  if (outcome.kind === 'error') {
-    return { ok: false, status: 0, message: outcome.message };
-  }
-  const { response, body } = outcome;
-  if (response.status === 401) {
-    return {
-      ok: false,
-      status: 401,
-      message: 'Your token expired or was rejected (401). Sign in again.',
-      unauthorized: true,
-    };
-  }
-  if (!response.ok) {
-    const message =
-      isRecord(body) && typeof body.message === 'string'
-        ? body.message
-        : await readErrorMessage(response, `HTTP ${String(response.status)}`);
-    return { ok: false, status: response.status, message };
-  }
-  if (body === undefined) {
-    const label = opts.label ?? opts.path;
-    return {
-      ok: false,
-      status: response.status,
-      message: `The backend returned invalid JSON from ${label}.`,
-    };
-  }
-  const parsed = opts.parse(body);
-  if (parsed === null) {
-    const label = opts.label ?? opts.path;
-    return {
-      ok: false,
-      status: response.status,
-      message: `The backend returned an unexpected ${label} response.`,
-    };
-  }
-  return { ok: true, data: parsed };
 }

@@ -33,10 +33,17 @@ export function AppStateProvider({
   useLayoutEffect(() => {
     store.connectNavigator((target, mode) => {
       const current = locationRef.current;
+      const nextLocation = {
+        pathname: target.pathname,
+        search: target.pathname === current.pathname ? current.search : '',
+        hash: target.hash,
+        key: current.key,
+      };
+      locationRef.current = nextLocation;
       navigate(
         {
           pathname: target.pathname,
-          search: target.pathname === current.pathname ? current.search : '',
+          search: nextLocation.search,
           hash: target.hash,
         },
         { replace: mode === 'replace' },

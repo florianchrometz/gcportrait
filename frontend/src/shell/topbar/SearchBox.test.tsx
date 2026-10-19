@@ -318,4 +318,29 @@ describe('SearchBox', () => {
     fireEvent.keyDown(document.body, { key: '/' });
     expect(document.activeElement).not.toBe(searchBox());
   });
+
+  it(
+    'does not steal focus with / when focus is inside an open popup or menu',
+    DRAWING_APP_TIMEOUT,
+    async () => {
+      const app = open('/diagram#snapshot=demo:S');
+      await drawn(app.container);
+      const input = searchBox();
+
+      const popup = document.createElement('div');
+      popup.setAttribute('role', 'menu');
+      const item = document.createElement('button');
+      item.textContent = 'Menu Action';
+      popup.appendChild(item);
+      document.body.appendChild(popup);
+
+      item.focus();
+      expect(document.activeElement).toBe(item);
+      fireEvent.keyDown(item, { key: '/' });
+      expect(document.activeElement).toBe(item);
+      expect(document.activeElement).not.toBe(input);
+
+      popup.remove();
+    },
+  );
 });
