@@ -29,7 +29,14 @@ procedure and the checklists.
   [The SPDX header](../../../docs/contributing.md#the-spdx-header) explains placement, exemptions and
   registering an unknown type; `node scripts/check-provenance.mjs --list-exempt` prints the check's rules
   and exemptions. Run `pnpm provenance` to check the tree.
-- Branch or worktree per topic: `<topic>-<slug>` or `<issue>-<slug>` (for example `412-gutter-lanes`).
+- Branch or worktree per topic: `<topic>-<slug>` or `<issue>-<slug>` (for example `412-gutter-lanes`, or
+  `work/<N>` when working an issue). The `main` branch is protected by ruleset `#25366182`: direct
+  pushes are blocked; every change merges via pull request and rebase (`gh pr merge <PR> --rebase`).
+- Use isolated worktrees (for example under `.claude/worktrees/wt-<N>`) when working tasks in parallel to
+  avoid cross-task pollution and uncommitted changes colliding. Keep worktrees clean: repository tooling
+  (`scripts/lib/repo-files.mjs` via `listRepoFiles`) scans both cached and untracked files not matched by
+  repository `.gitignore` files (`git ls-files --cached --others`). Unignored scratch or temporary files
+  will be checked by `pnpm provenance` and repository test suites.
 - Read [Contributions and licensing](../../../docs/contributing.md#contributions-and-licensing) before
   submitting; confirm the provenance statement in the PR template.
 - For a new dependency, inspect `node scripts/check-licenses.mjs --list-rules`, then run `pnpm run
@@ -72,6 +79,20 @@ pnpm --filter @gcportrait/layout test:golden:update                           # 
 A layout change usually moves all three. The render golden is drawn by resvg's WebAssembly build, which
 computes the same bytes on every platform; should a platform ever rasterise an anti-aliased edge differently,
 the remedy is one golden per platform, not a tolerance (`packages/render-cli/README.md`, "Platforms").
+
+### Topological regeneration cascade
+
+When an upstream asset, schema, or package changes, regenerate downstream artifacts in topological order:
+
+1. `pnpm --filter @gcportrait/catalog compile` (or `pnpm catalog:build`)
+2. `pnpm --filter @gcportrait/icons build`
+3. `pnpm --filter @gcportrait/layout metrics`
+4. `pnpm --filter @gcportrait/layout goldens`
+5. `pnpm --filter @gcportrait/render goldens`
+6. `CI=true pnpm media` (highlight: changes to `frontend/` or bundled packages affect `inputs.bundle` in
+   `docs/media/manifest.json`, verified by `pnpm media --check`)
+7. `node scripts/exports.mjs` (or `pnpm exports`)
+8. `pnpm --filter @gcportrait/e2e test --update-snapshots`
 
 ## 3. Testing against a real scope (optional, recommended for backend/ingest/timeline work)
 
@@ -163,8 +184,23 @@ bump, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs` writes the roo
 package's `package.json`), commit, and tag. The notes of a release come from the tree: a `## X.Y.Z` section of
 the root `CHANGELOG.md` when the maintainer wrote one, else the subjects of the commits since the previous
 release tag, one group per `Area: …` prefix (`scripts/release-notes.mjs`, which the release workflow runs on
-the tag). No pull request adds a release-note file. Self-hosters install or pin a release through
 [docs/self-host.md](../../../docs/self-host.md).
+
+### Two-step release sequence under branch protection
+
+Because `main` is protected by ruleset `#25366182`, a release follows a two-step sequence:
+
+1. **Version bump pull request**: On a topic branch (`work/<N>`), bump versions across all workspace
+   packages with `pnpm release:version X.Y.Z`, update [CHANGELOG.md](../../../CHANGELOG.md) with a
+   `## X.Y.Z` section, commit, push, and open a PR against `main`. Once CI passes, rebase-merge the PR into
+   `main`.
+2. **Push the release tag**: On the freshly merged and up-to-date `main` branch (`git checkout main && git
+   pull --ff-only origin main`), create and push the version tag:
+   `git tag vX.Y.Z && git push origin vX.Y.Z`.
+   The tag triggers the release workflow (`.github/workflows/release.yml`).
+
+Release tooling (`scripts/release-notes.mjs` and `scripts/release-image.mjs`) guards tag consistency: when a
+tag begins with `v`, its version `tag.slice(1)` must match `package.json#version` exactly.
 
 For catalog version fields, follow packages/AGENTS.md, "Catalog and graph semantics". For a snapshot format
 change, follow [the model's migration policy](../../../packages/model/README.md#migration-policy).

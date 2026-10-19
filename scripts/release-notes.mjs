@@ -73,7 +73,31 @@ const sectionPattern = (version) => new RegExp(`^## ${version.replace(/\./g, '\\
 /** A commit subject's area prefix: `App: collapse all …` groups the commit under "App". */
 const SUBJECT_AREA = /^([^:]{1,40}):\s+(\S.*)$/;
 
-class UsageError extends Error {}
+export class UsageError extends Error {}
+
+/**
+ * Reads the "version" field from package.json under root, or undefined if absent or unreadable.
+ * @param {string} root
+ * @returns {string | undefined}
+ */
+export function packageVersionOf(root) {
+  const file = path.join(root, 'package.json');
+  if (!existsSync(file)) return undefined;
+  try {
+    const parsed = /** @type {unknown} */ (JSON.parse(readFileSync(file, 'utf8')));
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'version' in parsed &&
+      typeof parsed.version === 'string'
+    ) {
+      return parsed.version;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * What `git` prints for `args`, run in `root`, without its trailing newline.
@@ -244,12 +268,18 @@ function changesOf(root, tag, version) {
 
 /**
  * The notes of the release `tag`.
- * @param {{ root: string, tag: string, image?: string | undefined, digest?: string | undefined, latest?: boolean }} options
+ * @param {{ root: string, tag: string, image?: string | undefined, digest?: string | undefined, latest?: boolean, packageVersion?: string | undefined }} options
  * @returns {string}
  */
-export function releaseNotes({ root, tag, image, digest, latest = false }) {
+export function releaseNotes({ root, tag, image, digest, latest = false, packageVersion }) {
   const version = TAG.exec(tag)?.[1];
   if (version === undefined) throw new UsageError(`--tag must be a release tag such as v1.2.3, not "${tag}"`);
+  const expectedVersion = packageVersion ?? packageVersionOf(root);
+  if (expectedVersion !== undefined && tag.startsWith('v')) {
+    if (tag.slice(1) !== expectedVersion) {
+      throw new UsageError(`release tag ${tag} does not match package.json version ${expectedVersion}`);
+    }
+  }
   const { notesOf, lines } = changesOf(root, tag, version);
 
   const out = [NON_AFFILIATION_LONG, ''];
@@ -331,6 +361,7 @@ function main(argv) {
       digest: { type: 'string' },
       latest: { type: 'string', default: 'false' },
       root: { type: 'string' },
+      'package-version': { type: 'string' },
     },
     strict: true,
   });
@@ -345,6 +376,7 @@ function main(argv) {
       image: values.image,
       digest: values.digest,
       latest: values.latest === 'true',
+      packageVersion: values['package-version'],
     }),
   );
   return 0;
