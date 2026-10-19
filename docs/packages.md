@@ -336,11 +336,10 @@ render` (section 4). Reference: [packages/render-cli/README.md](../packages/rend
 | `e2e/` (`@gcportrait/e2e`) | Playwright functional, export and axe tests against the demo build; holds the renderer's SVG baselines (`baselines/diagram/`, written by the frontend's tests) and the render golden PNG (`baselines/render/`, written by `render-cli`) | none imported (`model` and `demo-data` are allowed); the export spec runs `pnpm render` as a separate process |
 
 `infra/` is not a workspace package: it holds the production image (`infra/Dockerfile`: the SPA build plus the
-backend bundled into one ESM file by `backend/bundle.ts`, on a distroless Node base), `infra/deploy.sh` and
-`infra/uninstall.sh` for Cloud Run, and `infra/compose.yaml` for local runs of the image
-([self-host.md](self-host.md), [configuration.md](configuration.md)); also `infra/cloud-run-button.sh`,
-the Cloud Run Button's hook for `app.json` at the root, and [infra/README.md](../infra/README.md), which lists
-every file.
+backend bundled into one ESM file by `backend/bundle.ts`, on a distroless Node base), `infra/install.sh`,
+`infra/deploy.sh` and `infra/uninstall.sh` for Cloud Run, and `infra/compose.yaml` for local runs of the image
+([self-host.md](self-host.md), [configuration.md](configuration.md), and
+[infra/README.md](../infra/README.md), which lists every file).
 
 ### The app's modules
 

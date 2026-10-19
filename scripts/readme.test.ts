@@ -166,13 +166,11 @@ describe('the README', () => {
     expect(INTRO).toMatch(/src="docs\/media\/animated\/[\w-]+-light\.gif"/);
   });
 
-  it('starts with the installer, then Cloud Shell, the Run on Google Cloud button and the demo', () => {
+  it('starts with the installer, then the demo', () => {
     const quickStart = section('Quick start');
     const found = positions(quickStart, [
       '### Self-host in 10 minutes',
       'curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT',
-      '[![Open in Cloud Shell]',
-      '[![Run on Google Cloud]',
       '### Try the demo',
     ]);
     expect(found.every((position) => position >= 0)).toBe(true);

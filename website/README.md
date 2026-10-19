@@ -64,7 +64,7 @@ Nothing is copied into the site by hand: each page is built from its one source 
 
 | Page | Source |
 |---|---|
-| `/` (landing) | `src/pages/index.astro`: the hero (with "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host", `src/components/StartLink.astro`, in a new tab) and "Three ways to use gcportrait" (self-hosted: the installer line of docs/self-host.md, `src/site.ts` `INSTALL_COMMAND`; web app: the drawer still and the demo; API: the render request of docs/api.md for demo S and the sample export it returns, `S-overview-light.png`), the features each marked with the ways it serves, numbers from the catalog; the FAQ teaser from `docs/faq.md`'s questions (the hosting, data and cost ones first); "About the author" (with the name line "Florian Chrometz & contributors", the contributors linked) and the Person structured data from `docs/author.md`; the SoftwareApplication's `featureList`, the three ways, from `src/lib/seo.ts` |
+| `/` (landing) | `src/pages/index.astro`: the hero and "Three ways to use gcportrait" (self-hosted: the installer line of docs/self-host.md, `src/site.ts` `INSTALL_COMMAND`; web app: the drawer still and the demo; API: the render request of docs/api.md for demo S and the sample export it returns, `S-overview-light.png`), the features each marked with the ways it serves, numbers from the catalog; the FAQ teaser from `docs/faq.md`'s questions (the hosting, data and cost ones first); "About the author" (with the name line "Florian Chrometz & contributors", the contributors linked) and the Person structured data from `docs/author.md`; the SoftwareApplication's `featureList`, the three ways, from `src/lib/seo.ts` |
 | `/docs/<slug>/` | the guides under `docs/` listed in `src/data/docs.ts` (`DOC_PAGES`), rendered by `src/lib/markdown.ts` |
 | `/exports/` | the sample exports in `docs/media/exports/` and their `manifest.json`, written by `node scripts/exports.mjs` (`src/lib/exports.ts`); the landing page's "Sample exports" section shows demo S's and M's overviews from them |
 | `/coverage/` | `@gcportrait/catalog` (the compiled catalog) and its `dist/coverage.json`, which `pnpm catalog:build` writes |
@@ -216,8 +216,7 @@ src/lib/               markdown, docs, coverage, author, placeholders, brand (th
                        exports), seo, sitemap, fillable and
                        fillable-page (the fillable commands of the docs pages and the landing page)
 src/components/        Header (sticky, with the GitHub link), Footer, Logo, DemoLink (a link to the demo, in a
-                       new tab), StartLink (the "Open in Cloud Shell" and "Run on Google Cloud" buttons, in a new
-                       tab), ThemedPicture, DemoVideo, Variables, ExportCard (a sample export: both themes'
+                       new tab), ThemedPicture, DemoVideo, Variables, ExportCard (a sample export: both themes'
                        previews with their download and open links)
 src/layouts/           Base (head, header, footer), Docs
 src/pages/             index, docs/index, docs/[slug], exports, coverage, contributing, licence, 404,

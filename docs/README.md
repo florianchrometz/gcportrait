@@ -10,11 +10,11 @@ trademarks of Google and are used under Google's icon usage terms.
 
 For people who use gcportrait or run an instance of it. They say what to do; `node scripts/user-docs.mjs` (run
 by `pnpm test`) fails when the ten guides from modes.md to api.md name a command, flag or setting the tree
-does not have; when a guide, getting-started.md, cloudshell-tutorial.md, website.md or a README for running
-gcportrait logs what was verified when and where (a dated note, a machine, a timed run, a recorded run in
-code); and when self-host.md asks for more than the project id, the OAuth client id and the email address to
-grant. The project's website (`gcportrait.app`) builds its /docs/ pages from the same files, and its "About
-the author" section from [author.md](author.md).
+does not have; when a guide, getting-started.md, website.md or a README for running gcportrait logs what was
+verified when and where (a dated note, a machine, a timed run, a recorded run in code); and when self-host.md
+asks for more than the project id, the OAuth client id and the email address to grant. The project's website
+(`gcportrait.app`) builds its /docs/ pages from the same files, and its "About the author" section from
+[author.md](author.md).
 
 | Guide | What it covers |
 |---|---|
@@ -29,7 +29,6 @@ the author" section from [author.md](author.md).
 | [self-host-options.md](self-host-options.md) | Optional deployment choices and troubleshooting. |
 | [configuration.md](configuration.md) | The reference for settings, defaults and installer flags. |
 | [api.md](api.md) | The HTTP API, with request examples, errors and limits. |
-| [cloudshell-tutorial.md](cloudshell-tutorial.md) | The guided self-hosting tutorial in Cloud Shell. |
 
 ## For contributors
 

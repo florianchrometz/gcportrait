@@ -156,9 +156,8 @@ the wording, and a test compares every copy with them.
   > Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by
   > Florian Chrometz
 
-- **Long form**, once per long-form text (root and package READMEs, docs index, docs, Cloud Shell tutorial,
-  release notes, image label, infra and installer `--help`, Connect page, site author and licence pages;
-  guides in their footer):
+- **Long form**, once per long-form text (root and package READMEs, docs index, docs, release notes, image
+  label, infra and installer `--help`, Connect page, site author and licence pages; guides in their footer):
 
   > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and
   > is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product

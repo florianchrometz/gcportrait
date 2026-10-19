@@ -34,7 +34,6 @@ the repository's `CHANGELOG.md` stays the hand-written summary of a release.
 | [Analytics](#analytics) | The site counts nothing: no page views, no third party, no measurement cookie; it makes no cross-host requests. |
 | [Favicon and logo](#favicon-and-logo) | One drawing from one file, `brand/icon.svg`, for the favicon, the header's and footer's logo and the app's favicon. |
 | [The installer](#the-installer) | `/install.sh`, the one-line installer: `infra/install.sh` copied by the build, its content type, kept out of search. |
-| [The landing page's start buttons](#the-landing-pages-start-buttons) | "Open in Cloud Shell" and "Run on Google Cloud" beside "Self-host": where they go, the new tab, the marks. |
 | [The demo](#the-demo) | The static build of the app at `/demo/`: what it holds, how it is built and checked, the routes, its Content Security Policy and what a static host cannot send. |
 | [Deploying to GitHub Pages](#deploying-to-github-pages) | The one-time setup, then every push to `main`. |
 | [DNS records](#dns-records) | The exact records for `gcportrait.app` and `www.gcportrait.app`: nothing else, the demo included. |
@@ -481,30 +480,6 @@ that script:
 type is none of the three, when the sitemap lists it or when `robots.txt` lets it in. A change to the
 installer reaches people with the next deploy of the site; the deploy scripts it downloads come from the
 release it names.
-
-## The landing page's start buttons
-
-The hero offers, beside "Self-host", the two ways to start without a terminal of one's own that the README's
-badges offer: "Open in Cloud Shell" (the guided tutorial, `docs/cloudshell-tutorial.md`) and "Run on Google
-Cloud" (the Cloud Run Button with `app.json`). The self-hosting section further down has the same two below
-the installer, each with its line of explanation. Both are written by `src/components/StartLink.astro`:
-
-- **The README's addresses.** `CLOUD_SHELL_URL` and `CLOUD_RUN_BUTTON_URL` in `src/site.ts` are the links of
-  the README's badges, and `scripts/cloud-run-button.test.ts` holds them equal.
-- **A new tab.** Each opens a page of Google's where a deploy runs for minutes, so the button opens a new tab
-  (`target="_blank"`, `rel="noopener"`) and keeps the site open beside it; its name ends with " (opens in a
-  new tab)", visually hidden, as a link to the demo does.
-- **The site's own marks.** Each is a site button (`.button`) with a small drawing of the site's own, inline
-  and in the text's colour in both themes: a terminal window, and a cloud with an arrow going up into it. The
-  badges' images from `gstatic.com` and `deploy.cloud.run` are not used, because the site loads nothing from
-  another host.
-- **Phones.** The hero's buttons wrap; below 30rem each line of buttons fills the width, so every button keeps
-  its 44-pixel target (`pnpm website:mobile`).
-
-`pnpm website:check` fails a button to either address that opens in the same tab, lacks `rel="noopener"` or
-the note, or shows its mark as an image, and a landing page whose hero does not offer each once. A guide's
-link to either address (the README badge, rendered as its alt text) is a link in a text, not a button, and
-opens like every other link of a guide.
 
 ## The demo
 

@@ -124,7 +124,7 @@ export function ConnectPage() {
 
 /**
  * A demo-only instance: the call to deploy gcportrait to one's own Google Cloud project, a link to the
- * self-hosting guide on the website, which starts with the one-line installer and the "Open in Cloud Shell" button.
+ * self-hosting guide on the website, which starts with the one-line installer.
  */
 function SelfHost() {
   return (
@@ -135,8 +135,7 @@ function SelfHost() {
       <p>
         This demo draws made-up organisations. To draw your own organisation, folder or project, run
         gcportrait in a Google Cloud project of yours: one Cloud Run service that one script sets up, with
-        your own Google sign-in and your own permissions. The guide starts with a one-line installer, with an
-        &ldquo;Open in Cloud Shell&rdquo; button for those without a terminal.
+        your own Google sign-in and your own permissions. The guide starts with a one-line installer.
       </p>
       <p>
         <a className={cx(controls.control, controls.primary, styles.cta)} href={SELF_HOST_GUIDE_URL}>

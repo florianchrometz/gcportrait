@@ -8,8 +8,7 @@
  * OpenGraph and Twitter card tags with a 1200×630 image and its alt text, valid JSON-LD and never an Organization
  * (nothing may read as Google's), no affiliation statement in its metadata (meta tags, JSON-LD: the statement belongs
  * in the footer and long-form texts), `lang`, one level-1 heading, alt text on every image, nothing loaded from
- * another host (self-hosted fonts and media only), every button to the Cloud Shell tutorial or the Cloud Run Button
- * opening a new tab that its name announces, with its mark drawn inline (checkStartLinks), the footer notice in
+ * another host (self-hosted fonts and media only), the footer notice in
  * the footer ("Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project
  * by", the maintainer's name linked to their website, and a full stop), the footer's links to the Impressum and the
  * privacy notice on the maintainer's website (src/site.ts, LEGAL_LINKS: each once, `rel="noopener"`, named as an
@@ -96,8 +95,6 @@ import { fileURLToPath } from 'node:url';
 import { commandVariable, variableTokens } from '@gcportrait/model';
 
 import {
-  CLOUD_RUN_BUTTON_URL,
-  CLOUD_SHELL_URL,
   DEMO_URL,
   EXPORT_DISCLAIMER,
   FOOTER_NOTICE,
@@ -508,48 +505,6 @@ export function checkDemoLinks(
 }
 
 /**
- * The two ways to start without a terminal of one's own, as README.md's badges name them, at the addresses those badges
- * use (src/site.ts): the Cloud Shell tutorial and the Cloud Run Button.
- */
-export const START_LINKS: readonly { readonly href: string; readonly label: string }[] = [
-  { href: CLOUD_SHELL_URL, label: 'Open in Cloud Shell' },
-  { href: CLOUD_RUN_BUTTON_URL, label: 'Run on Google Cloud' },
-];
-
-/**
- * The site's buttons to the Cloud Shell tutorial and the Cloud Run Button (src/components/StartLink.astro): every button
- * (`class="button"`) to either address reads as the README's badge, opens a new tab (`target="_blank"`,
- * `rel="noopener"`), says so in its name (the new-tab note, visually hidden) and draws its mark inline, never as an image
- * (`<img>`), which would load from another host. A guide's link to either address is text, not a button, and is left as
- * it is. On the landing page (`landing`), the hero offers both.
- */
-export function checkStartLinks(html: string, where: (message: string) => void, landing = false): void {
-  for (const match of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
-    const attributes = tags(`<a${match[1] ?? ''}>`, 'a')[0] ?? {};
-    const start = START_LINKS.find((link) => link.href === attributes.href);
-    if (start === undefined || !(attributes.class ?? '').split(/\s+/).includes('button')) continue;
-    const inner = match[2] ?? '';
-    const text = textContent(inner);
-    const name = `the "${start.label}" button`;
-    if (text !== `${start.label}${NEW_TAB_NOTE}`) where(`${name} reads "${text}"`);
-    if (attributes.target !== '_blank') where(`${name} does not open a new tab (target="_blank")`);
-    if (!(attributes.rel ?? '').split(/\s+/).includes('noopener')) where(`${name} has no rel="noopener"`);
-    if (!text.endsWith(NEW_TAB_NOTE.trim()))
-      where(`${name} does not say it opens a new tab ("${NEW_TAB_NOTE.trim()}", visually hidden)`);
-    if (/<img\b/i.test(inner) || !/<svg\b/i.test(inner))
-      where(`${name} does not draw its mark inline (<svg>, no <img>)`);
-  }
-  if (!landing) return;
-  const hero = /<section\b[^>]*class="[^"]*\bhero\b[^"]*"[^>]*>[\s\S]*?<\/section>/i.exec(html)?.[0] ?? '';
-  for (const start of START_LINKS) {
-    const buttons = tags(hero, 'a').filter(
-      (anchor) => anchor.href === start.href && (anchor.class ?? '').split(/\s+/).includes('button'),
-    );
-    if (buttons.length !== 1) where(`${String(buttons.length)} "${start.label}" buttons in the hero (one)`);
-  }
-}
-
-/**
  * The footer notice in the footer (AGENTS.md, Non-affiliation, brand and legal): its text up to the maintainer's
  * name, the name as a link to their website, and a full stop.
  */
@@ -870,7 +825,6 @@ export function checkPage(page: Page): string[] {
   checkVariables(page, where);
   checkFooterNotice(html, where);
   if (page.path === '/') checkLandingStatement(html, where);
-  checkStartLinks(html, where, page.path === '/');
   checkLegalLinks(html, where);
   checkDemoLinks(html, where, `${SITE_URL}${page.path}`);
   const github = tags(html, 'a').filter((anchor) =>
@@ -1453,6 +1407,6 @@ if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLTo
     process.exit(1);
   }
   console.log(
-    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host, focusable code blocks, the header's GitHub link, the Cloud Shell and Cloud Run buttons opening a new tab, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports and their links' names; the demo at ${DEMO_URL}: its pages, policy, favicon and links, every link to it opening a new tab).`,
+    `website:check: ${String(count)} pages OK (metadata with titles and descriptions search results show whole and no affiliation statement, links, anchors, links into the repository, sitemap, the installer at ${INSTALLER_PATH}, self-hosted resources, scripts asking no other host, focusable code blocks, the header's GitHub link, the footer notice and the long form in the author section only, the footer's legal links and no legal page of its own, the favicon and the logo from brand/icon.svg, viewport and phone widths, command variables and Copy buttons, sample exports and their links' names; the demo at ${DEMO_URL}: its pages, policy, favicon and links, every link to it opening a new tab).`,
   );
 }

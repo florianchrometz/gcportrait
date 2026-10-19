@@ -58,9 +58,8 @@ SOURCE_REPOSITORY="https://github.com/florianchrometz/gcportrait"
 REMOTE_REPO="ghcr"
 REMOTE_UPSTREAM="https://ghcr.io"
 
-# The startup and liveness probes on GET /healthz, set by deploy.sh and by the Cloud Run Button's hook
-# (infra/cloud-run-button.sh). Probes reach the container directly; from outside, Cloud Run's front end answers
-# /healthz itself.
+# The startup and liveness probes on GET /healthz, set by deploy.sh. Probes reach the container directly; from
+# outside, Cloud Run's front end answers /healthz itself.
 STARTUP_PROBE="httpGet.path=/healthz,initialDelaySeconds=0,periodSeconds=2,timeoutSeconds=2,failureThreshold=15"
 LIVENESS_PROBE="httpGet.path=/healthz,periodSeconds=30,timeoutSeconds=5,failureThreshold=3"
 

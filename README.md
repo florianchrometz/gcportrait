@@ -50,9 +50,8 @@ Animation not playing? Open the still frame (<a href="docs/media/animated/trace-
 
 ## Quick start
 
-To draw your own environment, run gcportrait in a Google Cloud project of yours: with the installer line
-below, with the guided tutorial in Cloud Shell, or with the "Run on Google Cloud" button. There is no hosted
-sign-in service. To look first, [try the demo](#try-the-demo).
+To draw your own environment, run gcportrait in a Google Cloud project of yours with the installer line below.
+There is no hosted sign-in service. To look first, [try the demo](#try-the-demo).
 
 ### Self-host in 10 minutes
 
@@ -83,15 +82,6 @@ curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT
 ```
 
 Everyone then signs in with their own Google account and sees only what their own IAM permissions allow.
-
-Without a terminal of your own:
-
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/florianchrometz/gcportrait.git&cloudshell_git_branch=main&cloudshell_workspace=.&cloudshell_tutorial=docs/cloudshell-tutorial.md&show=ide%2Cterminal)
-**Guided**: a tutorial in Cloud Shell, in your browser, walks you through the same steps.
-
-[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run/?git_repo=https://github.com/florianchrometz/gcportrait.git&revision=main)
-**Built from source**: Google's Cloud Run Button builds the image from source in Cloud Shell and deploys it,
-with fewer choices than the installer ([its limits](docs/self-host-options.md#run-on-google-cloud)).
 
 An instance is one Cloud Run service: the app and a small stateless backend, with no database and no stored
 token. People sign in with their own Google account and read what their roles allow, or a team grants the

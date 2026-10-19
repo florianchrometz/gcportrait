@@ -128,7 +128,6 @@ export const NOT_ON_SITE: Readonly<Record<string, string>> = {
   'docs/contributing.md': 'the contributor guide is read next to the code; /contributing/ links to it',
   'docs/packages.md': 'contributor reference (packages and data flow); /contributing/ links to it',
   'docs/catalog-followups.md': 'the asset catalog’s backlog, contributor material',
-  'docs/cloudshell-tutorial.md': 'Cloud Shell tutorial markup, opened by the "Open in Cloud Shell" button',
   'docs/author.md': 'rendered as the landing page’s "About the author" section',
   'docs/website.md': 'the maintainer’s guide to building and deploying this site',
   'docs/security.md': 'the security controls and the commands that check them, contributor material',

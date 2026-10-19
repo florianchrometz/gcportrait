@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * The stand-ins the infra tests (scripts/infra*.test.ts) run deploy.sh, uninstall.sh, cloud-run-button.sh and, with a
- * stand-in for GitHub's downloads of its own, install.sh against: `gcloud`, `curl` and `sleep` answer from a rule list
- * and log every call, so nothing reaches Google. The rules the tests share live here too.
+ * The stand-ins the infra tests (scripts/infra*.test.ts) run deploy.sh, uninstall.sh and, with a stand-in for
+ * GitHub's downloads of its own, install.sh against: `gcloud`, `curl` and `sleep` answer from a rule list and
+ * log every call, so nothing reaches Google. The rules the tests share live here too.
  */
 import { spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, readFileSync } from 'node:fs';
@@ -172,7 +172,7 @@ export type Run = {
  */
 export function useStandIns(): {
   run: (
-    script: 'deploy.sh' | 'uninstall.sh' | 'cloud-run-button.sh',
+    script: 'deploy.sh' | 'uninstall.sh',
     args: readonly string[],
     rules: readonly Rule[],
     locale?: string,
@@ -202,7 +202,7 @@ export function useStandIns(): {
   };
 
   function run(
-    script: 'deploy.sh' | 'uninstall.sh' | 'cloud-run-button.sh',
+    script: 'deploy.sh' | 'uninstall.sh',
     args: readonly string[],
     rules: readonly Rule[],
     locale = 'C',
