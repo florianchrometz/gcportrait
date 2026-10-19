@@ -1,6 +1,6 @@
 ---
 name: issue-worker
-description: Procedure for working GitHub issues on a feature branch — prioritizing issues by release milestone, re-evaluating issue accuracy against the current tree, checkout and worktree isolation, scope-specific verification gates, committing and pushing onto a feature branch, while leaving opening, reviewing and merging pull requests to the maintainer.
+description: Procedure for working GitHub issues on a feature branch — prioritizing issues by release milestone, re-evaluating issue accuracy against the current tree, posting a comment with findings, details and plan to solve it on the issue before starting work, checkout and worktree isolation, scope-specific verification gates, committing and pushing onto a feature branch, while leaving opening, reviewing and merging pull requests to the maintainer.
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
@@ -29,7 +29,7 @@ working one or more GitHub issues on a feature branch.
   requests, pushing commits to the feature branch without opening a pull request makes every commit visible
   online without triggering CI on intermediate pushes until the maintainer opens the pull request.
 
-## 2. Re-evaluate the issue before touching code
+## 2. Re-evaluate the issue and comment findings, details and plan before touching code
 
 1. Read [AGENTS.md](../../../AGENTS.md), the `AGENTS.md` of every top-level folder the issue touches, the
    [contributor-workflow skill](../contributor-workflow/SKILL.md), and the domain skill for that area.
@@ -37,10 +37,18 @@ working one or more GitHub issues on a feature branch.
    current checkout.
 3. Verify whether the issue description still matches the codebase:
    - **Already resolved**: if the behaviour is already fixed on the branch, make no redundant edits and report
-     the commit or file that resolved it.
+     the commit or file that resolved it on the issue.
    - **Partially resolved or shifted**: adapt the plan to what genuinely remains.
    - **Multi-part issue**: complete one coherent, self-contained slice, commit with `Part of #<N>; <what
      remains>.`, and note what remains on the issue.
+4. **Comment on the issue before starting implementation**: prior to editing any files, post a structured
+   comment on the GitHub issue (`gh issue comment <N> --body-file -`) outlining:
+   - **Findings**: what inspecting the current tree showed (exact files, symbols and current behaviour, and
+     whether any part of the issue has already shifted or been resolved).
+   - **Details**: root cause or design context, affected packages/surfaces, and the repository rules or
+     constraints that apply.
+   - **Plan**: the step-by-step implementation and verification plan (files to change, tests to write or
+     update first, and verification gates to run).
 
 ## 3. Checkout and worktree isolation
 
