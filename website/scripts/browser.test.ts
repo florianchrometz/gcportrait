@@ -3,10 +3,36 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Page } from 'playwright';
 
 import { SITE_URL } from '../src/site.js';
-import { readSitemapPages, sitemapPages } from './browser.js';
+import { axeProblems, readSitemapPages, sitemapPages } from './browser.js';
+
+type FakeAxeResult = {
+  readonly violations: readonly {
+    readonly id: string;
+    readonly help: string;
+    readonly nodes: readonly { readonly target: readonly unknown[] }[];
+  }[];
+};
+
+const { mockSetLegacyMode, mockAnalyze } = vi.hoisted(() => ({
+  mockSetLegacyMode: vi.fn<(mode?: boolean) => void>(),
+  mockAnalyze: vi.fn<() => Promise<FakeAxeResult>>(),
+}));
+
+vi.mock('@axe-core/playwright', () => ({
+  AxeBuilder: class {
+    setLegacyMode(mode?: boolean) {
+      mockSetLegacyMode(mode);
+      return this;
+    }
+    analyze(): Promise<FakeAxeResult> {
+      return mockAnalyze();
+    }
+  },
+}));
 
 describe('sitemapPages', () => {
   let tmpDir: string;
@@ -44,5 +70,27 @@ describe('sitemapPages', () => {
     expect(sitemapPages(tmpDir, true)).toEqual(['/', '/docs/', '/imprint/', '/404.html']);
     expect(sitemapPages(tmpDir, { include404: true })).toEqual(['/', '/docs/', '/imprint/', '/404.html']);
     expect(sitemapPages(tmpDir, { include404: false })).toEqual(['/', '/docs/', '/imprint/']);
+  });
+});
+
+describe('axeProblems', () => {
+  it('enables legacy mode on AxeBuilder and formats violations', async () => {
+    mockAnalyze.mockResolvedValueOnce({
+      violations: [
+        {
+          id: 'color-contrast',
+          help: 'Elements must have sufficient color contrast',
+          nodes: [{ target: ['#header'] }],
+        },
+      ],
+    });
+
+    const fakePage = {} as unknown as Page;
+    const problems = await axeProblems(fakePage);
+
+    expect(mockSetLegacyMode).toHaveBeenCalledWith(true);
+    expect(problems).toEqual([
+      'axe color-contrast: Elements must have sufficient color contrast (["#header"])',
+    ]);
   });
 });

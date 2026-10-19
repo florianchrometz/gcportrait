@@ -170,7 +170,7 @@ export async function expectNoAxeViolations(page: Page, scope?: string): Promise
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
-  const builder = new AxeBuilder({ page });
+  const builder = new AxeBuilder({ page }).setLegacyMode(true);
   if (scope !== undefined) builder.include(scope);
   const results = await builder.analyze();
   const violations = results.violations.map((violation) => ({
