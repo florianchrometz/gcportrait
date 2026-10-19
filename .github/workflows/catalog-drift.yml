@@ -4,7 +4,7 @@
 # `pnpm catalog:fetch-official` (scripts/catalog-fetch-official.mjs) downloads the official list, writes a dated
 # snapshot under .agents/skills/gcp-asset-catalog/references/ and reports the identifiers added and removed since
 # the newest committed snapshot, as JSON and Markdown; every run puts the Markdown in its job summary. When the
-# lists differ, scripts/drift-issue.mjs opens one issue titled "Catalog drift: official asset-type list changed",
+# lists differ (exit code 2), scripts/drift-issue.mjs opens one issue titled "Catalog drift: official asset-type list changed",
 # or updates it while it is still open, with that report. It never commits: a contributor commits the new snapshot
 # and the catalog changes in a pull request that closes the issue.
 name: Catalog drift
@@ -43,15 +43,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          status=0
           pnpm run catalog:fetch-official \
+            --fail-on-drift \
             --json "$RUNNER_TEMP/catalog-drift.json" \
-            --markdown "$RUNNER_TEMP/catalog-drift.md"
-          {
-            echo '## Catalog drift'
-            echo
-            cat "$RUNNER_TEMP/catalog-drift.md"
-          } >> "$GITHUB_STEP_SUMMARY"
-          echo "changed=$(jq -r .drift "$RUNNER_TEMP/catalog-drift.json")" >> "$GITHUB_OUTPUT"
+            --markdown "$RUNNER_TEMP/catalog-drift.md" || status=$?
+          if [ -f "$RUNNER_TEMP/catalog-drift.md" ]; then
+            {
+              echo '## Catalog drift'
+              echo
+              cat "$RUNNER_TEMP/catalog-drift.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          case "$status" in
+            0)
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              ;;
+            2)
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::The catalog drift check could not run (exit code ${status}); see the log above."
+              exit "$status"
+              ;;
+          esac
 
       - name: Open or update the drift issue
         if: steps.compare.outputs.changed == 'true'

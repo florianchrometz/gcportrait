@@ -13,14 +13,13 @@
  * theme is forced with Blink's preferredColorScheme setting, which is what prefers-color-scheme reads.
  */
 import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 
 import { chromium } from 'playwright';
 
-import { DEMO_URL, SITE_URL } from '../src/site.js';
+import { WEBSITE, readSitemapPages } from './browser.js';
 import { serve } from './serve.js';
 
 class UsageError extends Error {}
@@ -37,7 +36,6 @@ const THRESHOLDS: Readonly<Record<string, number>> = {
 };
 const CATEGORIES = ['performance', 'accessibility', 'best-practices', 'seo'] as const;
 
-const WEBSITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(WEBSITE, '..', 'out', 'lighthouse');
 
 const run = promisify(execFile);
@@ -66,16 +64,13 @@ async function main(): Promise<number> {
     : values.preset.length > 0
       ? (values.preset as Preset[])
       : ['desktop', 'mobile'];
-  const sitemapPath = path.join(WEBSITE, 'dist', 'sitemap.xml');
-  if (!existsSync(sitemapPath)) {
-    console.error('website/dist/sitemap.xml is missing; run pnpm --filter @gcportrait/website build first.');
+  let all: string[];
+  try {
+    all = readSitemapPages(path.join(WEBSITE, 'dist'));
+  } catch (error: unknown) {
+    console.error(error instanceof Error ? error.message : String(error));
     return 1;
   }
-  const sitemap = readFileSync(sitemapPath, 'utf8');
-  // The site's pages; the demo (/demo/) is the app, checked by the e2e suite and `… demo`.
-  const all = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
-    .map((match) => (match[1] ?? '').slice(SITE_URL.length))
-    .filter((page) => !page.startsWith(DEMO_URL));
   const pages = values.page.length > 0 ? values.page : all;
 
   const { base, close } = await serve(path.join(WEBSITE, 'dist'));

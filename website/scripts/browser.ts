@@ -1,16 +1,50 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * What the website's browser checks share (scripts/mobile.ts, scripts/fillable.ts, scripts/demo.ts):
- * the stand-in for tsx's name helper, axe-core via @axe-core/playwright, a wait for the layout to settle, and how to
- * tell a wait that ran out from any other failure.
+ * the stand-in for tsx's name helper, axe-core via @axe-core/playwright, a wait for the layout to settle, how to
+ * tell a wait that ran out from any other failure, and reading pages from sitemap.xml.
  */
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { AxeBuilder } from '@axe-core/playwright';
 import { errors, type Page } from 'playwright';
 
+import { DEMO_URL, SITE_URL } from '../src/site.js';
+
 export const WEBSITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+export interface SitemapPagesOptions {
+  readonly include404?: boolean;
+}
+
+/**
+ * The site's pages from its sitemap (without the demo at /demo/, which is the app), and optionally the 404 page.
+ * Throws when sitemap.xml is missing.
+ */
+export function sitemapPages(
+  dist: string,
+  optionsOrInclude404: boolean | SitemapPagesOptions = false,
+): string[] {
+  const sitemapPath = path.join(dist, 'sitemap.xml');
+  if (!existsSync(sitemapPath)) {
+    throw new Error(
+      'website/dist/sitemap.xml is missing; run pnpm --filter @gcportrait/website build first.',
+    );
+  }
+  const include404 =
+    typeof optionsOrInclude404 === 'boolean'
+      ? optionsOrInclude404
+      : (optionsOrInclude404.include404 ?? false);
+  const sitemap = readFileSync(sitemapPath, 'utf8');
+  const pages = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map((match) => (match[1] ?? '').slice(SITE_URL.length))
+    .filter((page) => !page.startsWith(DEMO_URL));
+  return include404 ? [...pages, '/404.html'] : pages;
+}
+
+export const readSitemapPages = sitemapPages;
 
 /**
  * tsx compiles these scripts with esbuild's keepNames, which wraps named functions in a `__name(…)` call; the

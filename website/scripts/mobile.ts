@@ -32,14 +32,13 @@
  * Browsers: Chromium from `pnpm --filter @gcportrait/e2e install-browsers`; WebKit once per machine with
  * `pnpm --filter @gcportrait/website exec playwright install webkit`.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { chromium, devices, webkit, type Browser, type BrowserType, type Page } from 'playwright';
 
-import { DEMO_URL, SITE_URL } from '../src/site.js';
-import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, settle } from './browser.js';
+import { KEEP_NAMES_SHIM, WEBSITE, axeProblems, settle, sitemapPages } from './browser.js';
 import { SPACE_BEFORE_PUNCTUATION } from './check-site.js';
 import { serve } from './serve.js';
 
@@ -53,21 +52,6 @@ type Theme = (typeof THEMES)[number];
 const TARGET = 43.5;
 
 class UsageError extends Error {}
-
-/**
- * The site's pages: the sitemap's and the 404 page, without the demo (/demo/), which is the app, checked by the e2e
- * suite (its phone and tablet layouts by `pnpm --filter @gcportrait/frontend mobile`) and `pnpm --filter
- * @gcportrait/website demo`.
- */
-function sitemapPages(dist: string): string[] {
-  const sitemap = readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
-  return [
-    ...[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
-      .map((match) => (match[1] ?? '').slice(SITE_URL.length))
-      .filter((page) => !page.startsWith(DEMO_URL)),
-    '/404.html',
-  ];
-}
 
 /**
  * Overflow, the header's items, touch targets: the problems at the current width, without the page's prefix.
@@ -519,7 +503,7 @@ async function main(): Promise<number> {
   }
   const themes = values.theme.length > 0 ? (values.theme as Theme[]) : [...THEMES];
   const wanted = (part: string): boolean => values.only.length === 0 || values.only.includes(part);
-  const pages = values.page.length > 0 ? values.page : sitemapPages(dist);
+  const pages = values.page.length > 0 ? values.page : sitemapPages(dist, { include404: true });
 
   const { base, close } = await serve(dist);
   const problems: string[] = [];

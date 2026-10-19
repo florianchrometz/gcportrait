@@ -163,14 +163,16 @@ export function recordApiRequests(page: Page): string[] {
 }
 
 /**
- * Runs axe-core (all non-experimental rules, best practices included) on the page as it is now, after the
- * web fonts have loaded, and fails with a readable summary of any violation (WCAG 2.2 AA).
+ * Runs axe-core (all non-experimental rules, best practices included) on the page (or `scope` when given)
+ * as it is now, after the web fonts have loaded, and fails with a readable summary of any violation (WCAG 2.2 AA).
  */
-export async function expectNoAxeViolations(page: Page): Promise<void> {
+export async function expectNoAxeViolations(page: Page, scope?: string): Promise<void> {
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
-  const results = await new AxeBuilder({ page }).analyze();
+  const builder = new AxeBuilder({ page });
+  if (scope !== undefined) builder.include(scope);
+  const results = await builder.analyze();
   const violations = results.violations.map((violation) => ({
     rule: violation.id,
     impact: violation.impact,

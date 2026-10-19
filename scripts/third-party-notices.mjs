@@ -34,7 +34,6 @@
  * Plain ESM, Node built-ins only; it reads node_modules, no network. Exit code 0, 1 on a problem, 2 on a usage error.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -70,24 +69,9 @@ const PLACES = /** @type {const} */ ({
 
 /** @typedef {keyof typeof PLACES} Place */
 
-const require = createRequire(import.meta.url);
-/** @type {unknown} */
-const branding = require(
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../frontend/src/branding.ts'),
-);
-const brandingRecord =
-  typeof branding === 'object' && branding !== null ? /** @type {Record<string, unknown>} */ (branding) : {};
+import { loadNonAffiliationLong, NON_AFFILIATION_LONG } from './lib/branding-text.mjs';
 
-/**
- * The non-affiliation statement's long form, exactly as the app words it (frontend/src/branding.ts).
- * @type {string}
- */
-export const NON_AFFILIATION_LONG =
-  typeof brandingRecord.NON_AFFILIATION_LONG === 'string'
-    ? brandingRecord.NON_AFFILIATION_LONG
-    : (() => {
-        throw new Error('frontend/src/branding.ts exports no NON_AFFILIATION_LONG string.');
-      })();
+export { loadNonAffiliationLong, NON_AFFILIATION_LONG };
 
 /** Files in a package's root that carry its licence, notices or copyright. */
 const LICENSE_FILE = /^(?:licen[cs]e|copying)(?:[-._].*)?$/i;
