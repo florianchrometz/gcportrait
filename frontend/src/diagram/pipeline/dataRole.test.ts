@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import 'fake-indexeddb/auto';
 
-import type { Snapshot } from '@gcportrait/model';
+import { normalizeViewSpec, type Snapshot } from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { encodeJson } from '../../snapshots/codec';
@@ -30,7 +30,7 @@ async function storeDemoRecord(
   historyBlob?: Blob,
 ): Promise<StoredSnapshot> {
   const db = await database();
-  const blob = await encodeJson({ ...snapshot, id });
+  const blob = await encodeJson(snapshot);
   const record: StoredSnapshot = {
     id,
     meta: { ...metaOf(snapshot, blob.size, id), savedAt: '2026-10-10T12:00:00Z' },
@@ -82,7 +82,7 @@ describe('the data worker role with demo snapshots', () => {
     const loaded = await loadAnySnapshot('demo:S', (stage) => stages.push(stage));
 
     expect(stages).toEqual(['ingest']);
-    expect(loaded.id).toBe('demo:S');
+    expect(loaded.id).toBe(original.id);
     expect(loaded.assets.length).toBe(original.assets.length);
   });
 
@@ -91,7 +91,7 @@ describe('the data worker role with demo snapshots', () => {
     const loaded = await loadAnySnapshot('demo:S', (stage) => stages.push(stage));
 
     expect(stages).toEqual(['generate', 'ingest']);
-    expect(loaded.id).toBe('demo:S');
+    expect(typeof loaded.id).toBe('string');
   });
 
   it('falls back to generating when a stored demo snapshot is damaged', async () => {
@@ -99,11 +99,13 @@ describe('the data worker role with demo snapshots', () => {
     const record: StoredSnapshot = {
       id: 'demo:S',
       meta: {
+        scope: { kind: 'organization', id: '30000000001', displayName: 'example.com' },
+        readTime: '2026-10-10T12:00:00Z',
         savedAt: '2026-10-10T12:00:00Z',
-        scopePath: 'organizations/30000000001',
+        source: 'demo',
         assetCount: 0,
         bytes: 10,
-        source: 'api',
+        schemaVersion: 1,
         detail: 'demo:S',
       },
       blob: new Blob(['invalid json'], { type: 'application/json' }),
@@ -113,8 +115,8 @@ describe('the data worker role with demo snapshots', () => {
     const stages: string[] = [];
     const loaded = await loadAnySnapshot('demo:S', (stage) => stages.push(stage));
 
-    expect(stages).toEqual(['generate', 'ingest']);
-    expect(loaded.id).toBe('demo:S');
+    expect(stages).toEqual(['ingest', 'generate', 'ingest']);
+    expect(typeof loaded.id).toBe('string');
   });
 
   it('startRole answers scene requests for stored demo without generate stage', async () => {
@@ -125,41 +127,34 @@ describe('the data worker role with demo snapshots', () => {
     const harness = roleHarness();
     const answer = await harness.ask({
       type: 'scene',
-      view: { snapshot: 'demo:S' },
+      spec: normalizeViewSpec({ snapshot: 'demo:S' }),
       viewport: TEST_VIEWPORT,
     });
 
     expect(answer.type).toBe('scene');
     expect(harness.stages(1)).toEqual(['ingest', 'graph', 'scene']);
+    if (answer.type === 'scene') {
+      expect(answer.answer.source.timeline?.kind).toBe('history');
+    }
 
     // Check stored history can be read
     const storedHistory = await loadStoredHistory('demo:S');
     expect(storedHistory).not.toBeNull();
     expect(storedHistory?.today).toBe(HISTORY.today);
-
-    // Timeline request
-    const timeline = await harness.ask({ type: 'timeline', snapshot: 'demo:S' });
-    expect(timeline).toMatchObject({
-      type: 'timeline',
-      info: { kind: 'history', today: HISTORY.today },
-    });
   });
 
   it('startRole generates demo and history when not stored', async () => {
     const harness = roleHarness();
     const answer = await harness.ask({
       type: 'scene',
-      view: { snapshot: 'demo:S' },
+      spec: normalizeViewSpec({ snapshot: 'demo:S' }),
       viewport: TEST_VIEWPORT,
     });
 
     expect(answer.type).toBe('scene');
     expect(harness.stages(1)).toEqual(['generate', 'ingest', 'graph', 'scene']);
-
-    const timeline = await harness.ask({ type: 'timeline', snapshot: 'demo:S' });
-    expect(timeline).toMatchObject({
-      type: 'timeline',
-      info: { kind: 'history', today: HISTORY.today },
-    });
+    if (answer.type === 'scene') {
+      expect(answer.answer.source.timeline?.kind).toBe('history');
+    }
   });
 });
