@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Firestore, in Native and Datastore mode. Cloud Asset Inventory names databases and backups by project
+# number (`//firestore.googleapis.com/projects/<number>/databases/<db>`, the default database being
+# `(default)`; `…/projects/<number>/locations/<l>/backups/<b>`), while the API's own fields use the project
+# id.
+product: Firestore
+service: firestore.googleapis.com
+icon: firestore
+types:
+  firestore.googleapis.com/Database:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} · {{data.locationId}}'
+    console: 'https://console.cloud.google.com/firestore/databases?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.cmekConfig.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      data.type is FIRESTORE_NATIVE or DATASTORE_MODE; locationId a region or a multi-region (eur3, nam5). A
+      customer-managed key is cmekConfig.kmsKeyName. The console link opens the database list, since the
+      console spells the default database `-default-` in its URLs.
+
+  firestore.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'backup · {{data.database | lastSegment}} · {{data.snapshotTime}}'
+    console: 'https://console.cloud.google.com/firestore/databases?project={{projectId}}'
+    notes: >-
+      A scheduled backup of one database, named in the subtitle. No edge to the database is drawn: data.database
+      (projects/<id>/databases/<db>) names the project by id while Cloud Asset Inventory names the database
+      asset by project number, and the name normaliser keeps the project as written, so the edge would never
+      resolve on real data and would only add a dangling reference. It can be added once names can be
+      canonicalised to one project form.

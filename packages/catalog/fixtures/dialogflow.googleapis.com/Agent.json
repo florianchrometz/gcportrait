@@ -1,0 +1,42 @@
+[
+  {
+    "name": "//dialogflow.googleapis.com/projects/demo-app-1/locations/global/agents/2f7b4c1e-9a3d-4e57-8b21-6c0d5e4f3a92",
+    "assetType": "dialogflow.googleapis.com/Agent",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/agents/2f7b4c1e-9a3d-4e57-8b21-6c0d5e4f3a92",
+      "displayName": "Checkout chat",
+      "defaultLanguageCode": "en",
+      "supportedLanguageCodes": ["de", "fr"],
+      "timeZone": "Europe/Berlin",
+      "description": "Data store agent behind the checkout chat app",
+      "startFlow": "projects/demo-app-1/locations/global/agents/2f7b4c1e-9a3d-4e57-8b21-6c0d5e4f3a92/flows/00000000-0000-0000-0000-000000000000",
+      "advancedSettings": {
+        "audioExportGcsDestination": {
+          "uri": "gs://demo-app-1-dialogflow-audio/checkout-chat"
+        },
+        "loggingSettings": {
+          "enableStackdriverLogging": true,
+          "enableInteractionLogging": true
+        }
+      },
+      "clientCertificateSettings": {
+        "sslCertificate": "-----BEGIN CERTIFICATE-----\nsynthetic-checkout-chat-client-certificate\n-----END CERTIFICATE-----\n",
+        "privateKey": "projects/10000000002/secrets/checkout-chat-client-key/versions/2",
+        "passphrase": "projects/10000000002/secrets/checkout-chat-client-key-passphrase/versions/1"
+      },
+      "genAppBuilderSettings": {
+        "engine": "projects/demo-app-1/locations/global/collections/default_collection/engines/checkout-chat"
+      },
+      "securitySettings": "projects/demo-app-1/locations/global/securitySettings/redact-pii"
+    }
+  }
+]

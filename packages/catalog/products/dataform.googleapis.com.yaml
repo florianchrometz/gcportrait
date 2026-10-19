@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dataform: the repository container (from the catalog seed), workspaces, release and workflow configurations,
+# their compilation results and invocations, and the BigQuery Studio folders repositories can sit in.
+# Everything below a repository continues its name (…/repositories/<r>/<collection>/<id>) and nests in it.
+product: Dataform
+service: dataform.googleapis.com
+icon: dataform
+types:
+  dataform.googleapis.com/Repository:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'Dataform repository · {{location}}'
+    console: 'https://console.cloud.google.com/bigquery/dataform/locations/{{location}}/repositories/{{name | lastSegment}}/details/workspaces?project={{projectId}}'
+    domains:
+      - $.data.gitRemoteSettings.url
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+      - kind: uses
+        to: $.data.gitRemoteSettings.authenticationTokenSecretVersion
+        normalize: name
+        service: secretmanager.googleapis.com
+      - kind: uses
+        to: $.data.gitRemoteSettings.sshAuthenticationConfig.userPrivateKeySecretVersion
+        normalize: name
+        service: secretmanager.googleapis.com
+      - kind: uses
+        to: $.data.npmrcEnvironmentVariablesSecretVersion
+        normalize: name
+        service: secretmanager.googleapis.com
+    contains:
+      - byParent: dataform.googleapis.com/Workspace
+      - byParent: dataform.googleapis.com/ReleaseConfig
+      - byParent: dataform.googleapis.com/WorkflowConfig
+      - byParent: dataform.googleapis.com/CompilationResult
+      - byParent: dataform.googleapis.com/WorkflowInvocation
+    notes: >-
+      gitRemoteSettings.url is the external Git remote (a host outside Google Cloud). The remote is
+      authenticated with a token or an SSH key held in Secret Manager secret versions. serviceAccount is the
+      identity workflow invocations run as unless a workflow configuration names its own.
+
+  dataform.googleapis.com/WorkflowConfig:
+    role: core
+    subtitle: '{{data.cronSchedule}} · {{data.timeZone}}'
+    console: 'https://console.cloud.google.com/bigquery/dataform/locations/{{location}}/repositories/{{name | parentSegment(repositories)}}/details/workflows?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.releaseConfig, normalize: name }
+      - { kind: runsAs, to: $.data.invocationConfig.serviceAccount, normalize: serviceAccountEmail }
+    hiddenWhen: '$.data.disabled == true'
+    notes: >-
+      A schedule that compiles nothing itself: each run invokes the latest compilation result of its release
+      configuration (releaseConfig), as invocationConfig.serviceAccount (the repository's service account when
+      empty). A disabled configuration starts hidden.
+
+  dataform.googleapis.com/ReleaseConfig:
+    role: leaf
+    subtitle: '{{data.gitCommitish}} · {{data.cronSchedule}}'
+    console: 'https://console.cloud.google.com/bigquery/dataform/locations/{{location}}/repositories/{{name | parentSegment(repositories)}}/details/releases?project={{projectId}}'
+    notes: >-
+      Compiles gitCommitish on its schedule; releaseCompilationResult names the newest compilation result
+      (hidden), so it is not drawn as an edge.
+
+  dataform.googleapis.com/Workspace:
+    role: leaf
+    subtitle: 'workspace'
+    console: 'https://console.cloud.google.com/bigquery/dataform/locations/{{location}}/repositories/{{name | parentSegment(repositories)}}/workspaces/{{name | lastSegment}}?project={{projectId}}'
+    notes: A developer's working copy of the repository.
+
+  dataform.googleapis.com/CompilationResult:
+    role: hidden
+    subtitle: '{{data.gitCommitish}} · {{data.dataformCoreVersion}}'
+    relations:
+      - { kind: uses, to: $.data.releaseConfig, normalize: name }
+      - { kind: uses, to: $.data.workspace, normalize: name }
+    notes: One per compilation (every scheduled release and every manual run), so hidden by default.
+
+  dataform.googleapis.com/WorkflowInvocation:
+    role: hidden
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.workflowConfig, normalize: name }
+      - { kind: uses, to: $.data.resolvedCompilationResult, normalize: name }
+      - { kind: runsAs, to: $.data.invocationConfig.serviceAccount, normalize: serviceAccountEmail }
+    notes: >-
+      One run of a workflow; compilationResult and workflowConfig are exclusive, resolvedCompilationResult is
+      always set.
+
+  dataform.googleapis.com/Folder:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: >-
+      A BigQuery Studio folder (code assets such as repositories, notebooks and queries can be filed in it).
+      containingFolder and teamFolderName name the folder or team folder it sits in; folders are an
+      organising view of the console, not infrastructure, so they are hidden and draw no edges.
+
+  dataform.googleapis.com/TeamFolder:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: A shared BigQuery Studio folder for a team; hidden like dataform.googleapis.com/Folder.

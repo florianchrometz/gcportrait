@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Memorystore for Memcached: Memcached clusters on a consumer VPC network (private services access).
+# Cloud Asset Inventory names them by project id
+# (`//memcache.googleapis.com/projects/<id>/locations/<region>/instances/<i>`).
+product: Memorystore for Memcached
+service: memcache.googleapis.com
+icon: memorystore
+types:
+  memcache.googleapis.com/Instance:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.nodeCount | plural(node)}} · {{data.memcacheVersion}}'
+    console: 'https://console.cloud.google.com/memorystore/memcached/instances?project={{projectId}}'
+    ips:
+      - '$.data.memcacheNodes[*].host'
+      - $.data.discoveryEndpoint
+    relations:
+      - { kind: attaches, to: $.data.authorizedNetwork, normalize: computeRelative }
+    notes: >-
+      authorizedNetwork is the consumer VPC network's full name (the default network when unset at creation).
+      Each node has its own address (memcacheNodes[*].host); discoveryEndpoint is host:port of the
+      auto-discovery service, whose port is dropped. nodeConfig holds the per-node CPU and memory. The console
+      link opens the instance list.

@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: Apache-2.0
+# AI assistants: the AGENTS.md files and .agents/skills/ are the one source of instructions (AGENTS.md,
+# "Assistants"). A tool's own instruction file, at any depth, and its per-user settings stay local;
+# `pnpm agents:setup` writes the pointer files, at the root and beside each folder's AGENTS.md.
+# Keep scripts/lib/repo-files.mjs (ASSISTANT_*) in step: the provenance check skips these too.
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.gemini/
+GEMINI.md
+.codex/
+AGENTS.local.md
+AGENTS.override.md
+.cursor/
+.cursorrules
+.windsurf/
+.windsurfrules
+.clinerules
+.roo/
+.roorules
+.junie/
+.kiro/
+.amazonq/
+.continue/
+/.github/copilot-instructions.md
+/.github/instructions/
+
+# Node / pnpm
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+
+# Build output: only directories at the root or directly under a workspace package, never src/**
+/dist/
+/build/
+/*/dist/
+/*/build/
+/packages/*/dist/
+/packages/*/build/
+coverage/
+.vite/
+.astro/
+website/dist/
+# The compiled asset catalog: written by `pnpm catalog:build` (also run by `pnpm install` and before lint,
+# typecheck and test), never committed; `pnpm catalog:check` fails if a file here is tracked.
+packages/catalog/src/generated/
+
+# Test artefacts
+e2e/test-results/
+e2e/playwright-report/
+e2e/blob-report/
+*.log
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Scratch output from `pnpm render` and screenshot runs
+/out/
+*.local.png
+*.local.svg

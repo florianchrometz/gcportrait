@@ -1,0 +1,3511 @@
+{
+  "date": "2026-10-19",
+  "source": "https://docs.cloud.google.com/asset-inventory/docs/supported-asset-types",
+  "pageUpdated": "2026-10-13",
+  "description": "Product sections of the official supported-asset-types page, as extracted by scripts/catalog-fetch-official.mjs; the .txt file next to this one is the identifier list.",
+  "products": [
+    {
+      "product": "Access Approval",
+      "section": "resource",
+      "types": [
+        {
+          "type": "accessapproval.googleapis.com/AccessApprovalSettings",
+          "reference": "https://docs.cloud.google.com/assured-workloads/access-approval/docs/reference/rest/v1/AccessApprovalSettings"
+        }
+      ]
+    },
+    {
+      "product": "Access Policy (Access Context Manager)",
+      "section": "resource",
+      "types": [
+        {
+          "type": "accesscontextmanager.googleapis.com/AuthorizedOrgsDesc",
+          "reference": "https://docs.cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.authorizedOrgsDescs"
+        },
+        {
+          "type": "identity.accesscontextmanager.googleapis.com/AccessLevel",
+          "reference": "https://docs.cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.accessLevels"
+        },
+        {
+          "type": "identity.accesscontextmanager.googleapis.com/AccessPolicy",
+          "reference": "https://docs.cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies"
+        },
+        {
+          "type": "identity.accesscontextmanager.googleapis.com/ServicePerimeter",
+          "reference": "https://docs.cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters"
+        }
+      ]
+    },
+    {
+      "product": "Agent Identity API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "agentidentity.googleapis.com/AuthProvider",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/agentidentity/rest/v1/projects.locations.authProviders"
+        }
+      ]
+    },
+    {
+      "product": "AI Commerce Search API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "retail.googleapis.com/Catalog",
+          "reference": "https://docs.cloud.google.com/retail/docs/reference/rest/v2/projects.locations.catalogs"
+        }
+      ]
+    },
+    {
+      "product": "AlloyDB for PostgreSQL",
+      "section": "resource",
+      "types": [
+        {
+          "type": "alloydb.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/alloydb/docs/reference/rest/v1/projects.locations.backups"
+        },
+        {
+          "type": "alloydb.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/alloydb/docs/reference/rest/v1/projects.locations.clusters"
+        },
+        {
+          "type": "alloydb.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/alloydb/docs/reference/rest/v1/projects.locations.clusters.instances"
+        }
+      ]
+    },
+    {
+      "product": "API Gateway",
+      "section": "resource",
+      "types": [
+        {
+          "type": "apigateway.googleapis.com/Api",
+          "reference": "https://docs.cloud.google.com/api-gateway/docs/reference/rest/v1/projects.locations.apis"
+        },
+        {
+          "type": "apigateway.googleapis.com/ApiConfig",
+          "reference": "https://docs.cloud.google.com/api-gateway/docs/reference/rest/v1/projects.locations.apis.configs"
+        },
+        {
+          "type": "apigateway.googleapis.com/Gateway",
+          "reference": "https://docs.cloud.google.com/api-gateway/docs/reference/rest/v1/projects.locations.gateways"
+        }
+      ]
+    },
+    {
+      "product": "API keys",
+      "section": "resource",
+      "types": [
+        {
+          "type": "apikeys.googleapis.com/Key",
+          "reference": "https://docs.cloud.google.com/api-keys/docs/reference/rest/v2/keys"
+        }
+      ]
+    },
+    {
+      "product": "Apigee",
+      "section": "resource",
+      "types": [
+        {
+          "type": "apigee.googleapis.com/ApiProxy",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.apis"
+        },
+        {
+          "type": "apigee.googleapis.com/ApiProxyRevision",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.apis.revisions"
+        },
+        {
+          "type": "apigee.googleapis.com/Environment",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments"
+        },
+        {
+          "type": "apigee.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.instances"
+        },
+        {
+          "type": "apigee.googleapis.com/Organization",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations"
+        },
+        {
+          "type": "apigee.googleapis.com/SecurityAction",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments.securityActions"
+        },
+        {
+          "type": "apigee.googleapis.com/SecurityMonitoringCondition",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.securityMonitoringConditions"
+        },
+        {
+          "type": "apigee.googleapis.com/SecurityProfileV2",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.securityProfilesV2"
+        }
+      ]
+    },
+    {
+      "product": "Apigee API hub",
+      "section": "resource",
+      "types": [
+        {
+          "type": "apihub.googleapis.com/ApiHubInstance",
+          "reference": "https://docs.cloud.google.com/apigee/docs/reference/apis/apihub/rest/v1/projects.locations.apiHubInstances"
+        }
+      ]
+    },
+    {
+      "product": "App Design Center",
+      "section": "resource",
+      "types": [
+        {
+          "type": "designcenter.googleapis.com/Application",
+          "reference": "https://docs.cloud.google.com/application-design-center/docs/reference/rest/v1alpha/projects.locations.spaces.applications"
+        },
+        {
+          "type": "designcenter.googleapis.com/ApplicationTemplateRevision",
+          "reference": "https://docs.cloud.google.com/application-design-center/docs/reference/rest/v1alpha/projects.locations.spaces.applicationTemplates.revisions"
+        },
+        {
+          "type": "designcenter.googleapis.com/Component",
+          "reference": "https://docs.cloud.google.com/application-design-center/docs/reference/rest/v1alpha/projects.locations.spaces.applicationTemplates.components"
+        },
+        {
+          "type": "designcenter.googleapis.com/Connection",
+          "reference": "https://docs.cloud.google.com/application-design-center/docs/reference/rest/v1alpha/projects.locations.spaces.applicationTemplates.components.connections"
+        },
+        {
+          "type": "designcenter.googleapis.com/SharedTemplate",
+          "reference": "https://docs.cloud.google.com/application-design-center/docs/reference/rest/v1alpha/projects.locations.spaces.sharedTemplates"
+        },
+        {
+          "type": "designcenter.googleapis.com/SharedTemplateRevision",
+          "reference": "https://docs.cloud.google.com/application-design-center/docs/reference/rest/v1alpha/projects.locations.spaces.sharedTemplates.revisions"
+        }
+      ]
+    },
+    {
+      "product": "App Engine",
+      "section": "resource",
+      "types": [
+        {
+          "type": "appengine.googleapis.com/Application",
+          "reference": "https://docs.cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps"
+        },
+        {
+          "type": "appengine.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services"
+        },
+        {
+          "type": "appengine.googleapis.com/Version",
+          "reference": "https://docs.cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services.versions"
+        }
+      ]
+    },
+    {
+      "product": "App Hub",
+      "section": "resource",
+      "types": [
+        {
+          "type": "apphub.googleapis.com/Application",
+          "reference": "https://docs.cloud.google.com/app-hub/docs/reference/rest/v1/projects.locations.applications"
+        },
+        {
+          "type": "apphub.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/app-hub/docs/reference/rest/v1/projects.locations.applications.services"
+        },
+        {
+          "type": "apphub.googleapis.com/ServiceProjectAttachment",
+          "reference": "https://docs.cloud.google.com/app-hub/docs/reference/rest/v1/projects.locations.serviceProjectAttachments"
+        },
+        {
+          "type": "apphub.googleapis.com/Workload",
+          "reference": "https://docs.cloud.google.com/app-hub/docs/reference/rest/v1/projects.locations.applications.workloads"
+        }
+      ]
+    },
+    {
+      "product": "App Lifecycle Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "saasservicemgmt.googleapis.com/Release",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.releases"
+        },
+        {
+          "type": "saasservicemgmt.googleapis.com/Rollout",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.rollouts"
+        },
+        {
+          "type": "saasservicemgmt.googleapis.com/RolloutKind",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.rolloutKinds"
+        },
+        {
+          "type": "saasservicemgmt.googleapis.com/Saas",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.saas"
+        },
+        {
+          "type": "saasservicemgmt.googleapis.com/Tenant",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.tenants"
+        },
+        {
+          "type": "saasservicemgmt.googleapis.com/Unit",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.units"
+        },
+        {
+          "type": "saasservicemgmt.googleapis.com/UnitKind",
+          "reference": "https://docs.cloud.google.com/saas-runtime/docs/reference/rest/v1/projects.locations.unitKinds"
+        }
+      ]
+    },
+    {
+      "product": "Application Integration",
+      "section": "resource",
+      "types": [
+        {
+          "type": "integrations.googleapis.com/AuthConfig",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.authConfigs"
+        },
+        {
+          "type": "integrations.googleapis.com/Certificate",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.certificates"
+        },
+        {
+          "type": "integrations.googleapis.com/Execution",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.integrations.executions"
+        },
+        {
+          "type": "integrations.googleapis.com/Integration",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.integrations"
+        },
+        {
+          "type": "integrations.googleapis.com/IntegrationVersion",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.integrations.versions"
+        },
+        {
+          "type": "integrations.googleapis.com/SfdcChannel",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.sfdcInstances.sfdcChannels"
+        },
+        {
+          "type": "integrations.googleapis.com/SfdcInstance",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.sfdcInstances"
+        },
+        {
+          "type": "integrations.googleapis.com/Suspension",
+          "reference": "https://docs.cloud.google.com/application-integration/docs/reference/rest/v1/projects.locations.integrations.executions.suspensions"
+        }
+      ]
+    },
+    {
+      "product": "Artifact Registry",
+      "section": "resource",
+      "types": [
+        {
+          "type": "artifactregistry.googleapis.com/DockerImage",
+          "reference": "https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories.dockerImages"
+        },
+        {
+          "type": "artifactregistry.googleapis.com/MavenArtifact",
+          "reference": "https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories.mavenArtifacts"
+        },
+        {
+          "type": "artifactregistry.googleapis.com/NpmPackage",
+          "reference": "https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories.npmPackages"
+        },
+        {
+          "type": "artifactregistry.googleapis.com/PythonPackage",
+          "reference": "https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories.pythonPackages"
+        },
+        {
+          "type": "artifactregistry.googleapis.com/Repository",
+          "reference": "https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories"
+        },
+        {
+          "type": "artifactregistry.googleapis.com/Rule",
+          "reference": "https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories.rules"
+        }
+      ]
+    },
+    {
+      "product": "Assured Workloads",
+      "section": "resource",
+      "types": [
+        {
+          "type": "assuredworkloads.googleapis.com/Workload",
+          "reference": "https://docs.cloud.google.com/assured-workloads/docs/reference/rest/v1/organizations.locations.workloads"
+        }
+      ]
+    },
+    {
+      "product": "Backup and DR Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "backupdr.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.backupVaults.dataSources.backups"
+        },
+        {
+          "type": "backupdr.googleapis.com/BackupPlan",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.backupPlans"
+        },
+        {
+          "type": "backupdr.googleapis.com/BackupPlanAssociation",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.backupPlanAssociations"
+        },
+        {
+          "type": "backupdr.googleapis.com/BackupPlanRevision",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.backupPlans.revisions"
+        },
+        {
+          "type": "backupdr.googleapis.com/BackupVault",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.backupVaults"
+        },
+        {
+          "type": "backupdr.googleapis.com/DataSource",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.backupVaults.dataSources"
+        },
+        {
+          "type": "backupdr.googleapis.com/DataSourceReference",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.dataSourceReferences"
+        },
+        {
+          "type": "backupdr.googleapis.com/ManagementServer",
+          "reference": "https://docs.cloud.google.com/backup-disaster-recovery/docs/reference/rest/v1/projects.locations.managementServers"
+        }
+      ]
+    },
+    {
+      "product": "Backup for GKE",
+      "section": "resource",
+      "types": [
+        {
+          "type": "gkebackup.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/reference/rest/v1/projects.locations.backupPlans.backups"
+        },
+        {
+          "type": "gkebackup.googleapis.com/BackupPlan",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/reference/rest/v1/projects.locations.backupPlans"
+        },
+        {
+          "type": "gkebackup.googleapis.com/Restore",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/reference/rest/v1/projects.locations.restorePlans.restores"
+        },
+        {
+          "type": "gkebackup.googleapis.com/RestorePlan",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/reference/rest/v1/projects.locations.restorePlans"
+        },
+        {
+          "type": "gkebackup.googleapis.com/VolumeBackup",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/reference/rest/v1/projects.locations.backupPlans.backups.volumeBackups"
+        },
+        {
+          "type": "gkebackup.googleapis.com/VolumeRestore",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/reference/rest/v1/projects.locations.restorePlans.restores.volumeRestores"
+        }
+      ]
+    },
+    {
+      "product": "Batch",
+      "section": "resource",
+      "types": [
+        {
+          "type": "batch.googleapis.com/Job",
+          "reference": "https://docs.cloud.google.com/batch/docs/reference/rest/v1/projects.locations.jobs"
+        }
+      ]
+    },
+    {
+      "product": "BigQuery",
+      "section": "resource",
+      "types": [
+        {
+          "type": "bigquery.googleapis.com/Dataset",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/datasets"
+        },
+        {
+          "type": "bigquery.googleapis.com/Model",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/models"
+        },
+        {
+          "type": "bigquery.googleapis.com/Routine",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/routines"
+        },
+        {
+          "type": "bigquery.googleapis.com/RowAccessPolicy",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/rowAccessPolicies"
+        },
+        {
+          "type": "bigquery.googleapis.com/Table",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/tables"
+        }
+      ]
+    },
+    {
+      "product": "BigQuery Data Transfer Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "bigquerydatatransfer.googleapis.com/TransferConfig",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/projects.locations.transferConfigs"
+        }
+      ]
+    },
+    {
+      "product": "BigQuery Migration Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "bigquerymigration.googleapis.com/MigrationWorkflow",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/migration/rest/v2/projects.locations.workflows"
+        }
+      ]
+    },
+    {
+      "product": "BigQuery Reservation API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "bigqueryreservation.googleapis.com/BiReservation",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/reservations/rest/v1/BiReservation"
+        },
+        {
+          "type": "bigqueryreservation.googleapis.com/CapacityCommitment",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/reservations/rest/v1/projects.locations.capacityCommitments"
+        },
+        {
+          "type": "bigqueryreservation.googleapis.com/Reservation",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/reservations/rest/v1/projects.locations.reservations"
+        },
+        {
+          "type": "bigqueryreservation.googleapis.com/ReservationAssignment",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/reservations/rest/v1/projects.locations.reservations.assignments"
+        },
+        {
+          "type": "bigqueryreservation.googleapis.com/ReservationGroup",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/reservations/rest/v1/projects.locations.reservationGroups"
+        }
+      ]
+    },
+    {
+      "product": "BigQuery sharing",
+      "section": "resource",
+      "types": [
+        {
+          "type": "analyticshub.googleapis.com/DataExchange",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/analytics-hub/rest/v1/projects.locations.dataExchanges"
+        },
+        {
+          "type": "analyticshub.googleapis.com/Listing",
+          "reference": "https://docs.cloud.google.com/bigquery/docs/reference/analytics-hub/rest/v1/projects.locations.dataExchanges.listings"
+        }
+      ]
+    },
+    {
+      "product": "Bigtable",
+      "section": "resource",
+      "types": [
+        {
+          "type": "bigtableadmin.googleapis.com/AppProfile",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.appProfiles"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/AuthorizedView",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.tables.authorizedViews"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.clusters.backups"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.clusters"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/LogicalView",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.logicalViews"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/MaterializedView",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.materializedViews"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/SchemaBundle",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.tables.schemaBundles"
+        },
+        {
+          "type": "bigtableadmin.googleapis.com/Table",
+          "reference": "https://docs.cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.tables"
+        }
+      ]
+    },
+    {
+      "product": "Binary Authorization",
+      "section": "resource",
+      "types": [
+        {
+          "type": "binaryauthorization.googleapis.com/Attestor",
+          "reference": "https://docs.cloud.google.com/binary-authorization/docs/reference/rest/v1/projects.attestors"
+        },
+        {
+          "type": "binaryauthorization.googleapis.com/PlatformPolicy",
+          "reference": "https://docs.cloud.google.com/binary-authorization/docs/reference/rest/v1/projects.platforms.policies"
+        },
+        {
+          "type": "binaryauthorization.googleapis.com/Policy",
+          "reference": "https://docs.cloud.google.com/binary-authorization/docs/reference/rest/v1/projects.policy"
+        }
+      ]
+    },
+    {
+      "product": "Blockchain Node Engine",
+      "section": "resource",
+      "types": [
+        {
+          "type": "blockchainnodeengine.googleapis.com/BlockchainNode",
+          "reference": "https://docs.cloud.google.com/blockchain-node-engine/docs/reference/rest/v1/projects.locations.blockchainNodes"
+        }
+      ]
+    },
+    {
+      "product": "Certificate Authority Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "privateca.googleapis.com/CaPool",
+          "reference": "https://docs.cloud.google.com/certificate-authority-service/docs/reference/rest/v1/projects.locations.caPools"
+        },
+        {
+          "type": "privateca.googleapis.com/Certificate",
+          "reference": "https://docs.cloud.google.com/certificate-authority-service/docs/reference/rest/v1/projects.locations.caPools.certificates"
+        },
+        {
+          "type": "privateca.googleapis.com/CertificateAuthority",
+          "reference": "https://docs.cloud.google.com/certificate-authority-service/docs/reference/rest/v1/projects.locations.caPools.certificateAuthorities"
+        },
+        {
+          "type": "privateca.googleapis.com/CertificateRevocationList",
+          "reference": "https://docs.cloud.google.com/certificate-authority-service/docs/reference/rest/v1/projects.locations.caPools.certificateAuthorities.certificateRevocationLists"
+        },
+        {
+          "type": "privateca.googleapis.com/CertificateTemplate",
+          "reference": "https://docs.cloud.google.com/certificate-authority-service/docs/reference/rest/v1/projects.locations.certificateTemplates"
+        }
+      ]
+    },
+    {
+      "product": "Certificate Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "certificatemanager.googleapis.com/Certificate",
+          "reference": "https://docs.cloud.google.com/certificate-manager/docs/reference/certificate-manager/rest/v1/projects.locations.certificates"
+        },
+        {
+          "type": "certificatemanager.googleapis.com/CertificateIssuanceConfig",
+          "reference": "https://docs.cloud.google.com/certificate-manager/docs/reference/certificate-manager/rest/v1/projects.locations.certificateIssuanceConfigs"
+        },
+        {
+          "type": "certificatemanager.googleapis.com/CertificateMap",
+          "reference": "https://docs.cloud.google.com/certificate-manager/docs/reference/certificate-manager/rest/v1/projects.locations.certificateMaps"
+        },
+        {
+          "type": "certificatemanager.googleapis.com/CertificateMapEntry",
+          "reference": "https://docs.cloud.google.com/certificate-manager/docs/reference/certificate-manager/rest/v1/projects.locations.certificateMaps.certificateMapEntries"
+        },
+        {
+          "type": "certificatemanager.googleapis.com/DnsAuthorization",
+          "reference": "https://docs.cloud.google.com/certificate-manager/docs/reference/certificate-manager/rest/v1/projects.locations.dnsAuthorizations"
+        },
+        {
+          "type": "certificatemanager.googleapis.com/TrustConfig",
+          "reference": "https://docs.cloud.google.com/certificate-manager/docs/reference/certificate-manager/rest/v1/projects.locations.trustConfigs"
+        }
+      ]
+    },
+    {
+      "product": "Chrome Enterprise Premium",
+      "section": "resource",
+      "types": [
+        {
+          "type": "beyondcorp.googleapis.com/AppConnection",
+          "reference": "https://docs.cloud.google.com/beyondcorp/docs/reference/rest/v1/projects.locations.appConnections"
+        },
+        {
+          "type": "beyondcorp.googleapis.com/AppConnector",
+          "reference": "https://docs.cloud.google.com/beyondcorp/docs/reference/rest/v1/projects.locations.appConnectors"
+        },
+        {
+          "type": "beyondcorp.googleapis.com/AppGateway",
+          "reference": "https://docs.cloud.google.com/beyondcorp/docs/reference/rest/v1/projects.locations.appGateways"
+        },
+        {
+          "type": "beyondcorp.googleapis.com/ClientConnectorService",
+          "reference": "https://docs.cloud.google.com/beyondcorp/docs/reference/rest/v1/projects.locations.clientConnectorServices"
+        },
+        {
+          "type": "beyondcorp.googleapis.com/ClientGateway",
+          "reference": "https://docs.cloud.google.com/beyondcorp/docs/reference/rest/v1/projects.locations.clientGateways"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Asset Inventory",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudasset.googleapis.com/Feed",
+          "reference": "https://docs.cloud.google.com/asset-inventory/docs/reference/rest/v1/feeds"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Billing",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudbilling.googleapis.com/BillingAccount",
+          "reference": "https://docs.cloud.google.com/billing/docs/reference/rest/v1/billingAccounts"
+        },
+        {
+          "type": "cloudbilling.googleapis.com/ProjectBillingInfo",
+          "reference": "https://docs.cloud.google.com/billing/docs/reference/rest/v1/ProjectBillingInfo"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Build",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudbuild.googleapis.com/BitbucketServerConfig",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.locations.bitbucketServerConfigs"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/Build",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.builds"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/BuildTrigger",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.locations.triggers"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/Connection",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v2/projects.locations.connections"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/GithubEnterpriseConfig",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.locations.githubEnterpriseConfigs"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/GlobalTriggerSettings"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/Repository",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v2/projects.locations.connections.repositories"
+        },
+        {
+          "type": "cloudbuild.googleapis.com/WorkerPool",
+          "reference": "https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.locations.workerPools"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Config Manager API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "config.googleapis.com/Deployment",
+          "reference": "https://docs.cloud.google.com/infrastructure-manager/docs/reference/rest/v1/projects.locations.deployments"
+        },
+        {
+          "type": "config.googleapis.com/Preview",
+          "reference": "https://docs.cloud.google.com/infrastructure-manager/docs/reference/rest/v1/projects.locations.previews"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Controls Partner API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudcontrolspartner.googleapis.com/Customer",
+          "reference": "https://docs.cloud.google.com/sovereign-controls-by-partners/docs/sovereign-partners/reference/rest/v1/organizations.locations.customers"
+        },
+        {
+          "type": "cloudcontrolspartner.googleapis.com/Partner",
+          "reference": "https://docs.cloud.google.com/sovereign-controls-by-partners/docs/sovereign-partners/reference/rest/v1/organizations.locations"
+        },
+        {
+          "type": "cloudcontrolspartner.googleapis.com/Workload",
+          "reference": "https://docs.cloud.google.com/sovereign-controls-by-partners/docs/sovereign-partners/reference/rest/v1/organizations.locations.customers.workloads"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Data Fusion",
+      "section": "resource",
+      "types": [
+        {
+          "type": "datafusion.googleapis.com/DnsPeering",
+          "reference": "https://docs.cloud.google.com/data-fusion/docs/reference/rest/v1beta1/projects.locations.instances.dnsPeerings"
+        },
+        {
+          "type": "datafusion.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/data-fusion/docs/reference/rest/v1beta1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Deploy",
+      "section": "resource",
+      "types": [
+        {
+          "type": "clouddeploy.googleapis.com/Automation",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deliveryPipelines.automations"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/AutomationRun",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deliveryPipelines.automationRuns"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/CustomTargetType",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.customTargetTypes"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/DeliveryPipeline",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deliveryPipelines"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/DeployPolicy",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deployPolicies"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/JobRun",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deliveryPipelines.releases.rollouts.jobRuns"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/Release",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deliveryPipelines.releases"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/Rollout",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.deliveryPipelines.releases.rollouts"
+        },
+        {
+          "type": "clouddeploy.googleapis.com/Target",
+          "reference": "https://docs.cloud.google.com/deploy/docs/api/reference/rest/v1/projects.locations.targets"
+        }
+      ]
+    },
+    {
+      "product": "Cloud DNS",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dns.googleapis.com/ManagedZone",
+          "reference": "https://docs.cloud.google.com/dns/docs/reference/v1/managedZones"
+        },
+        {
+          "type": "dns.googleapis.com/Policy",
+          "reference": "https://docs.cloud.google.com/dns/docs/reference/v1/policies"
+        },
+        {
+          "type": "dns.googleapis.com/ResourceRecordSet",
+          "reference": "https://docs.cloud.google.com/dns/docs/reference/v1/resourceRecordSets"
+        },
+        {
+          "type": "dns.googleapis.com/ResponsePolicy",
+          "reference": "https://docs.cloud.google.com/dns/docs/reference/v1/responsePolicies"
+        },
+        {
+          "type": "dns.googleapis.com/ResponsePolicyRule",
+          "reference": "https://docs.cloud.google.com/dns/docs/reference/v1/responsePolicyRules"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Domains",
+      "section": "resource",
+      "types": [
+        {
+          "type": "domains.googleapis.com/Registration",
+          "reference": "https://docs.cloud.google.com/domains/docs/reference/rest/v1/projects.locations.registrations"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Healthcare API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "healthcare.googleapis.com/ConsentStore",
+          "reference": "https://docs.cloud.google.com/healthcare-api/docs/reference/rest/v1/projects.locations.datasets.consentStores"
+        },
+        {
+          "type": "healthcare.googleapis.com/Dataset",
+          "reference": "https://docs.cloud.google.com/healthcare-api/docs/reference/rest/v1/projects.locations.datasets"
+        },
+        {
+          "type": "healthcare.googleapis.com/DicomStore",
+          "reference": "https://docs.cloud.google.com/healthcare-api/docs/reference/rest/v1/projects.locations.datasets.dicomStores"
+        },
+        {
+          "type": "healthcare.googleapis.com/FhirStore",
+          "reference": "https://docs.cloud.google.com/healthcare-api/docs/reference/rest/v1/projects.locations.datasets.fhirStores"
+        },
+        {
+          "type": "healthcare.googleapis.com/Hl7V2Store",
+          "reference": "https://docs.cloud.google.com/healthcare-api/docs/reference/rest/v1/projects.locations.datasets.hl7V2Stores"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Intrusion Detection System",
+      "section": "resource",
+      "types": [
+        {
+          "type": "ids.googleapis.com/Endpoint",
+          "reference": "https://docs.cloud.google.com/intrusion-detection-system/docs/configuring-ids#create_a_endpoint"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Key Management Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudkms.googleapis.com/AutokeyConfig",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/AutokeyConfig"
+        },
+        {
+          "type": "cloudkms.googleapis.com/CryptoKey",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys"
+        },
+        {
+          "type": "cloudkms.googleapis.com/CryptoKeyVersion",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys.cryptoKeyVersions"
+        },
+        {
+          "type": "cloudkms.googleapis.com/EkmConfig",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.ekmConfig"
+        },
+        {
+          "type": "cloudkms.googleapis.com/EkmConnection",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.ekmConnections"
+        },
+        {
+          "type": "cloudkms.googleapis.com/ImportJob",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.importJobs"
+        },
+        {
+          "type": "cloudkms.googleapis.com/KeyHandle",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyHandles"
+        },
+        {
+          "type": "cloudkms.googleapis.com/KeyRing",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings"
+        },
+        {
+          "type": "cloudkms.googleapis.com/RetiredResource",
+          "reference": "https://docs.cloud.google.com/kms/docs/reference/rest/v1/projects.locations.retiredResources"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Load Balancing",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networksecurity.googleapis.com/AuthzPolicy",
+          "reference": "https://docs.cloud.google.com/load-balancing/docs/reference/network-security/rest/v1/projects.locations.authzPolicies"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Logging",
+      "section": "resource",
+      "types": [
+        {
+          "type": "logging.googleapis.com/Link",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.locations.buckets.links"
+        },
+        {
+          "type": "logging.googleapis.com/LogBucket",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.locations.buckets"
+        },
+        {
+          "type": "logging.googleapis.com/LogMetric",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics"
+        },
+        {
+          "type": "logging.googleapis.com/LogSink",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.sinks"
+        },
+        {
+          "type": "logging.googleapis.com/LogView",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.locations.buckets.views"
+        },
+        {
+          "type": "logging.googleapis.com/RecentQuery",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.locations.recentQueries"
+        },
+        {
+          "type": "logging.googleapis.com/SavedQuery",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/projects.locations.savedQueries"
+        },
+        {
+          "type": "logging.googleapis.com/Settings",
+          "reference": "https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/Settings"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Monitoring",
+      "section": "resource",
+      "types": [
+        {
+          "type": "monitoring.googleapis.com/AlertPolicy",
+          "reference": "https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.alertPolicies"
+        },
+        {
+          "type": "monitoring.googleapis.com/Dashboard",
+          "reference": "https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v1/projects.dashboards"
+        },
+        {
+          "type": "monitoring.googleapis.com/NotificationChannel",
+          "reference": "https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.notificationChannels"
+        },
+        {
+          "type": "monitoring.googleapis.com/Snooze",
+          "reference": "https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.snoozes"
+        },
+        {
+          "type": "monitoring.googleapis.com/UptimeCheckConfig",
+          "reference": "https://docs.cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.uptimeCheckConfigs"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Next Generation Firewall Enterprise",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networksecurity.googleapis.com/AddressGroup",
+          "reference": "https://docs.cloud.google.com/firewall/docs/reference/network-security/rest/v1/projects.locations.tlsInspectionPolicies"
+        },
+        {
+          "type": "networksecurity.googleapis.com/FirewallEndpoint",
+          "reference": "https://docs.cloud.google.com/firewall/docs/reference/network-security/rest/v1/organizations.locations.firewallEndpoints"
+        },
+        {
+          "type": "networksecurity.googleapis.com/FirewallEndpointAssociation",
+          "reference": "https://docs.cloud.google.com/firewall/docs/reference/network-security/rest/v1/projects.locations.firewallEndpointAssociations"
+        },
+        {
+          "type": "networksecurity.googleapis.com/SecurityProfile",
+          "reference": "https://docs.cloud.google.com/firewall/docs/reference/network-security/rest/v1/organizations.locations.securityProfiles"
+        },
+        {
+          "type": "networksecurity.googleapis.com/SecurityProfileGroup",
+          "reference": "https://docs.cloud.google.com/firewall/docs/reference/network-security/rest/v1/organizations.locations.securityProfileGroups"
+        },
+        {
+          "type": "networksecurity.googleapis.com/TlsInspectionPolicy",
+          "reference": "https://docs.cloud.google.com/firewall/docs/reference/network-security/rest/v1/projects.locations.tlsInspectionPolicies"
+        }
+      ]
+    },
+    {
+      "product": "Cloud OS Config",
+      "section": "resource",
+      "types": [
+        {
+          "type": "osconfig.googleapis.com/OSPolicyAssignment",
+          "reference": "https://docs.cloud.google.com/compute/docs/osconfig/rest/v1/projects.locations.osPolicyAssignments"
+        },
+        {
+          "type": "osconfig.googleapis.com/OSPolicyAssignmentReport",
+          "reference": "https://docs.cloud.google.com/compute/docs/osconfig/rest/v1/projects.locations.instances.osPolicyAssignments.reports"
+        },
+        {
+          "type": "osconfig.googleapis.com/PatchDeployment",
+          "reference": "https://docs.cloud.google.com/compute/docs/osconfig/rest/v1/projects.patchDeployments"
+        },
+        {
+          "type": "osconfig.googleapis.com/VulnerabilityReport",
+          "reference": "https://docs.cloud.google.com/compute/docs/osconfig/rest/v1/projects.locations.instances.vulnerabilityReports"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Quotas",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudquotas.googleapis.com/QuotaPreference",
+          "reference": "https://docs.cloud.google.com/docs/quotas/reference/rest/v1/projects.locations.quotaPreferences"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Run",
+      "section": "resource",
+      "types": [
+        {
+          "type": "run.googleapis.com/DomainMapping",
+          "reference": "https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.domainmappings"
+        },
+        {
+          "type": "run.googleapis.com/Execution",
+          "reference": "https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.executions"
+        },
+        {
+          "type": "run.googleapis.com/Job",
+          "reference": "https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.jobs"
+        },
+        {
+          "type": "run.googleapis.com/Revision",
+          "reference": "https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.revisions"
+        },
+        {
+          "type": "run.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.services"
+        },
+        {
+          "type": "run.googleapis.com/WorkerPool",
+          "reference": "https://docs.cloud.google.com/run/docs/reference/rest/v1/projects.locations.workerpools"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Run functions (1st and 2nd gen)",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudfunctions.googleapis.com/Function",
+          "reference": "https://docs.cloud.google.com/functions/docs/reference/rest/v2/projects.locations.functions"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Run functions (1st gen)",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudfunctions.googleapis.com/CloudFunction",
+          "reference": "https://docs.cloud.google.com/functions/docs/reference/rest/v1/projects.locations.functions"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Service Mesh",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networksecurity.googleapis.com/AuthorizationPolicy",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-security/rest/v1/projects.locations.authorizationPolicies"
+        },
+        {
+          "type": "networksecurity.googleapis.com/ClientTlsPolicy",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-security/rest/v1/projects.locations.clientTlsPolicies"
+        },
+        {
+          "type": "networksecurity.googleapis.com/ServerTlsPolicy",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-security/rest/v1/projects.locations.serverTlsPolicies"
+        }
+      ]
+    },
+    {
+      "product": "Cloud SQL",
+      "section": "resource",
+      "types": [
+        {
+          "type": "sqladmin.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/backupRuns"
+        },
+        {
+          "type": "sqladmin.googleapis.com/BackupRun",
+          "reference": "https://docs.cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/backupRuns"
+        },
+        {
+          "type": "sqladmin.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/instances"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Storage",
+      "section": "resource",
+      "types": [
+        {
+          "type": "storage.googleapis.com/Bucket",
+          "reference": "https://docs.cloud.google.com/storage/docs/json_api/v1/buckets"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Tasks",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudtasks.googleapis.com/Queue",
+          "reference": "https://docs.cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues"
+        }
+      ]
+    },
+    {
+      "product": "Cloud TPU",
+      "section": "resource",
+      "types": [
+        {
+          "type": "tpu.googleapis.com/Node",
+          "reference": "https://docs.cloud.google.com/tpu/docs/reference/rest/v1/projects.locations.nodes"
+        },
+        {
+          "type": "tpu.googleapis.com/QueuedResource",
+          "reference": "https://docs.cloud.google.com/tpu/docs/reference/rest/v2/projects.locations.queuedResources"
+        }
+      ]
+    },
+    {
+      "product": "Cloud Workstations",
+      "section": "resource",
+      "types": [
+        {
+          "type": "workstations.googleapis.com/Workstation",
+          "reference": "https://docs.cloud.google.com/workstations/docs/reference/rest/v1/projects.locations.workstationClusters.workstationConfigs.workstations"
+        },
+        {
+          "type": "workstations.googleapis.com/WorkstationCluster",
+          "reference": "https://docs.cloud.google.com/workstations/docs/reference/rest/v1/projects.locations.workstationClusters"
+        },
+        {
+          "type": "workstations.googleapis.com/WorkstationConfig",
+          "reference": "https://docs.cloud.google.com/workstations/docs/reference/rest/v1/projects.locations.workstationClusters.workstationConfigs"
+        }
+      ]
+    },
+    {
+      "product": "Cluster Director",
+      "section": "resource",
+      "types": [
+        {
+          "type": "hypercomputecluster.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/cluster-director/docs/reference/rest"
+        }
+      ]
+    },
+    {
+      "product": "Compute Engine",
+      "section": "resource",
+      "types": [
+        {
+          "type": "compute.googleapis.com/Address",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/addresses"
+        },
+        {
+          "type": "compute.googleapis.com/Autoscaler",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/autoscalers"
+        },
+        {
+          "type": "compute.googleapis.com/BackendBucket",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/backendBuckets"
+        },
+        {
+          "type": "compute.googleapis.com/BackendService",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/backendServices"
+        },
+        {
+          "type": "compute.googleapis.com/Commitment",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/regionCommitments"
+        },
+        {
+          "type": "compute.googleapis.com/CrossSiteNetwork",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/crossSiteNetworks"
+        },
+        {
+          "type": "compute.googleapis.com/Disk",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/disks"
+        },
+        {
+          "type": "compute.googleapis.com/ExternalVpnGateway",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/externalVpnGateways"
+        },
+        {
+          "type": "compute.googleapis.com/Firewall",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/firewalls"
+        },
+        {
+          "type": "compute.googleapis.com/FirewallPolicy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/firewallPolicies"
+        },
+        {
+          "type": "compute.googleapis.com/ForwardingRule",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/forwardingRules"
+        },
+        {
+          "type": "compute.googleapis.com/GlobalAddress",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/globalAddresses"
+        },
+        {
+          "type": "compute.googleapis.com/GlobalForwardingRule",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/globalForwardingRules"
+        },
+        {
+          "type": "compute.googleapis.com/HealthCheck",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/healthChecks"
+        },
+        {
+          "type": "compute.googleapis.com/HttpHealthCheck",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/httpHealthChecks"
+        },
+        {
+          "type": "compute.googleapis.com/HttpsHealthCheck",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/httpsHealthChecks"
+        },
+        {
+          "type": "compute.googleapis.com/Image",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/images"
+        },
+        {
+          "type": "compute.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instances"
+        },
+        {
+          "type": "compute.googleapis.com/InstanceGroup",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instanceGroups"
+        },
+        {
+          "type": "compute.googleapis.com/InstanceGroupManager",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instanceGroupManagers"
+        },
+        {
+          "type": "compute.googleapis.com/InstanceSettings",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instanceSettings"
+        },
+        {
+          "type": "compute.googleapis.com/InstanceTemplate",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates"
+        },
+        {
+          "type": "compute.googleapis.com/InstantSnapshot",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instantSnapshots"
+        },
+        {
+          "type": "compute.googleapis.com/Interconnect",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/interconnects"
+        },
+        {
+          "type": "compute.googleapis.com/InterconnectAttachment",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/interconnectAttachments"
+        },
+        {
+          "type": "compute.googleapis.com/License",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/licenses"
+        },
+        {
+          "type": "compute.googleapis.com/MachineImage",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/machineImages"
+        },
+        {
+          "type": "compute.googleapis.com/Network",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/networks"
+        },
+        {
+          "type": "compute.googleapis.com/NetworkAttachment",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/networkAttachments"
+        },
+        {
+          "type": "compute.googleapis.com/NetworkEdgeSecurityService",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/networkEdgeSecurityServices"
+        },
+        {
+          "type": "compute.googleapis.com/NetworkEndpointGroup",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/networkEndpointGroups"
+        },
+        {
+          "type": "compute.googleapis.com/NodeGroup",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/nodeGroups"
+        },
+        {
+          "type": "compute.googleapis.com/NodeTemplate",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/nodeTemplates"
+        },
+        {
+          "type": "compute.googleapis.com/PacketMirroring",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/packetMirrorings"
+        },
+        {
+          "type": "compute.googleapis.com/Project",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/projects"
+        },
+        {
+          "type": "compute.googleapis.com/PublicAdvertisedPrefix",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/publicAdvertisedPrefixes"
+        },
+        {
+          "type": "compute.googleapis.com/PublicDelegatedPrefix",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/publicDelegatedPrefixes"
+        },
+        {
+          "type": "compute.googleapis.com/RegionBackendService",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/regionBackendServices"
+        },
+        {
+          "type": "compute.googleapis.com/RegionDisk",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/regionDisks"
+        },
+        {
+          "type": "compute.googleapis.com/Reservation",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/reservations"
+        },
+        {
+          "type": "compute.googleapis.com/ResourcePolicy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/resourcePolicies"
+        },
+        {
+          "type": "compute.googleapis.com/Route",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/routes"
+        },
+        {
+          "type": "compute.googleapis.com/Router",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/routers"
+        },
+        {
+          "type": "compute.googleapis.com/SecurityPolicy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/securityPolicies"
+        },
+        {
+          "type": "compute.googleapis.com/ServiceAttachment",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/serviceAttachments"
+        },
+        {
+          "type": "compute.googleapis.com/Snapshot",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/snapshots"
+        },
+        {
+          "type": "compute.googleapis.com/SslCertificate",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/sslCertificates"
+        },
+        {
+          "type": "compute.googleapis.com/SslPolicy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/sslPolicies"
+        },
+        {
+          "type": "compute.googleapis.com/StoragePool",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/storagePools"
+        },
+        {
+          "type": "compute.googleapis.com/Subnetwork",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/subnetworks"
+        },
+        {
+          "type": "compute.googleapis.com/TargetGrpcProxy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetGrpcProxies"
+        },
+        {
+          "type": "compute.googleapis.com/TargetHttpProxy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetHttpProxies"
+        },
+        {
+          "type": "compute.googleapis.com/TargetHttpsProxy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetHttpsProxies"
+        },
+        {
+          "type": "compute.googleapis.com/TargetInstance",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetInstances"
+        },
+        {
+          "type": "compute.googleapis.com/TargetPool",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetPools"
+        },
+        {
+          "type": "compute.googleapis.com/TargetSslProxy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetSslProxies"
+        },
+        {
+          "type": "compute.googleapis.com/TargetTcpProxy",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetTcpProxies"
+        },
+        {
+          "type": "compute.googleapis.com/TargetVpnGateway",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/targetVpnGateways"
+        },
+        {
+          "type": "compute.googleapis.com/UrlMap",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/urlMaps"
+        },
+        {
+          "type": "compute.googleapis.com/VpnGateway",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/vpnGateways"
+        },
+        {
+          "type": "compute.googleapis.com/VpnTunnel",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/vpnTunnels"
+        },
+        {
+          "type": "compute.googleapis.com/WireGroup",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/wireGroups"
+        }
+      ]
+    },
+    {
+      "product": "Container Registry",
+      "section": "resource",
+      "types": [
+        {
+          "type": "containerregistry.googleapis.com/Image"
+        }
+      ]
+    },
+    {
+      "product": "Customer Experience Insights",
+      "section": "resource",
+      "types": [
+        {
+          "type": "contactcenterinsights.googleapis.com/EncryptionSpec",
+          "reference": "https://docs.cloud.google.com/contact-center/insights/docs/reference/rest/v1/projects.locations.encryptionSpec"
+        },
+        {
+          "type": "contactcenterinsights.googleapis.com/IssueModel",
+          "reference": "https://docs.cloud.google.com/contact-center/insights/docs/reference/rest/v1/projects.locations.issueModels"
+        },
+        {
+          "type": "contactcenterinsights.googleapis.com/PhraseMatcher",
+          "reference": "https://docs.cloud.google.com/contact-center/insights/docs/reference/rest/v1/projects.locations.phraseMatchers"
+        },
+        {
+          "type": "contactcenterinsights.googleapis.com/View",
+          "reference": "https://docs.cloud.google.com/contact-center/insights/docs/reference/rest/v1/projects.locations.views"
+        }
+      ]
+    },
+    {
+      "product": "Data Lineage",
+      "section": "resource",
+      "types": [
+        {
+          "type": "datalineage.googleapis.com/Process",
+          "reference": "https://docs.cloud.google.com/data-catalog/docs/reference/data-lineage/rest/v1/projects.locations.processes"
+        }
+      ]
+    },
+    {
+      "product": "Database Migration Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "datamigration.googleapis.com/ConnectionProfile",
+          "reference": "https://docs.cloud.google.com/database-migration/docs/reference/rest/v1/projects.locations.connectionProfiles"
+        },
+        {
+          "type": "datamigration.googleapis.com/ConversionWorkspace",
+          "reference": "https://docs.cloud.google.com/database-migration/docs/reference/rest/v1/projects.locations.conversionWorkspaces"
+        },
+        {
+          "type": "datamigration.googleapis.com/MigrationJob",
+          "reference": "https://docs.cloud.google.com/database-migration/docs/reference/rest/v1/projects.locations.migrationJobs"
+        },
+        {
+          "type": "datamigration.googleapis.com/PrivateConnection",
+          "reference": "https://docs.cloud.google.com/database-migration/docs/reference/rest/v1/projects.locations.privateConnections"
+        }
+      ]
+    },
+    {
+      "product": "Dataflow",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dataflow.googleapis.com/Job",
+          "reference": "https://docs.cloud.google.com/dataflow/docs/reference/rest/v1b3/projects.jobs"
+        }
+      ]
+    },
+    {
+      "product": "Dataform",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dataform.googleapis.com/CompilationResult",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1beta1/projects.locations.repositories.compilationResults"
+        },
+        {
+          "type": "dataform.googleapis.com/Folder",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1/projects.locations.folders"
+        },
+        {
+          "type": "dataform.googleapis.com/ReleaseConfig",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1beta1/projects.locations.repositories.releaseConfigs"
+        },
+        {
+          "type": "dataform.googleapis.com/Repository",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1beta1/projects.locations.repositories"
+        },
+        {
+          "type": "dataform.googleapis.com/TeamFolder",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1/projects.locations.teamFolders"
+        },
+        {
+          "type": "dataform.googleapis.com/WorkflowConfig",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1beta1/projects.locations.repositories.workflowConfigs"
+        },
+        {
+          "type": "dataform.googleapis.com/WorkflowInvocation",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1beta1/projects.locations.repositories.workflowInvocations"
+        },
+        {
+          "type": "dataform.googleapis.com/Workspace",
+          "reference": "https://docs.cloud.google.com/dataform/reference/rest/v1beta1/projects.locations.repositories.workspaces"
+        }
+      ]
+    },
+    {
+      "product": "Dataproc Metastore",
+      "section": "resource",
+      "types": [
+        {
+          "type": "metastore.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/dataproc-metastore/docs/reference/rest/v1/projects.locations.services.backups"
+        },
+        {
+          "type": "metastore.googleapis.com/Federation",
+          "reference": "https://docs.cloud.google.com/dataproc-metastore/docs/reference/rest/v1/projects.locations.federations"
+        },
+        {
+          "type": "metastore.googleapis.com/MetadataImport",
+          "reference": "https://docs.cloud.google.com/dataproc-metastore/docs/reference/rest/v1/projects.locations.services.metadataImports"
+        },
+        {
+          "type": "metastore.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/dataproc-metastore/docs/reference/rest/v1/projects.locations.services"
+        }
+      ]
+    },
+    {
+      "product": "Datastream",
+      "section": "resource",
+      "types": [
+        {
+          "type": "datastream.googleapis.com/ConnectionProfile",
+          "reference": "https://docs.cloud.google.com/datastream/docs/reference/rest/v1/projects.locations.connectionProfiles"
+        },
+        {
+          "type": "datastream.googleapis.com/PrivateConnection",
+          "reference": "https://docs.cloud.google.com/datastream/docs/reference/rest/v1/projects.locations.privateConnections"
+        },
+        {
+          "type": "datastream.googleapis.com/Stream",
+          "reference": "https://docs.cloud.google.com/datastream/docs/reference/rest/v1/projects.locations.streams"
+        }
+      ]
+    },
+    {
+      "product": "Developer Connect",
+      "section": "resource",
+      "types": [
+        {
+          "type": "developerconnect.googleapis.com/Connection",
+          "reference": "https://docs.cloud.google.com/developer-connect/docs/api/reference/rest#rest-resource:-v1.projects.locations.connections"
+        },
+        {
+          "type": "developerconnect.googleapis.com/GitRepositoryLink",
+          "reference": "https://docs.cloud.google.com/developer-connect/docs/api/reference/rest#rest-resource:-v1.projects.locations.connections.gitrepositorylinks"
+        },
+        {
+          "type": "developerconnect.googleapis.com/InsightsConfig",
+          "reference": "https://docs.cloud.google.com/developer-connect/docs/api/reference/rest#rest-resource:-v1.projects.locations.insightsconfigs"
+        }
+      ]
+    },
+    {
+      "product": "Dialogflow CX",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dialogflow.googleapis.com/Agent",
+          "reference": "https://docs.cloud.google.com/dialogflow/cx/docs/reference/rest/v3/projects.locations.agents"
+        },
+        {
+          "type": "dialogflow.googleapis.com/LocationSettings"
+        }
+      ]
+    },
+    {
+      "product": "Dialogflow ES",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dialogflow.googleapis.com/ConversationProfile",
+          "reference": "https://docs.cloud.google.com/dialogflow/es/docs/reference/rest/v2/projects.locations.conversationProfiles"
+        },
+        {
+          "type": "dialogflow.googleapis.com/KnowledgeBase",
+          "reference": "https://docs.cloud.google.com/dialogflow/es/docs/reference/rest/v2/projects.locations.knowledgeBases"
+        }
+      ]
+    },
+    {
+      "product": "Discovery Engine",
+      "section": "resource",
+      "types": [
+        {
+          "type": "discoveryengine.googleapis.com/Assistant",
+          "reference": "https://docs.cloud.google.com/generative-ai-app-builder/docs/reference/rest/v1/projects.locations.collections.engines.assistants"
+        },
+        {
+          "type": "discoveryengine.googleapis.com/Collection",
+          "reference": "https://docs.cloud.google.com/generative-ai-app-builder/docs/reference/rest/v1/projects.locations.collections"
+        },
+        {
+          "type": "discoveryengine.googleapis.com/DataStore",
+          "reference": "https://docs.cloud.google.com/generative-ai-app-builder/docs/reference/rest/v1/projects.locations.dataStores"
+        },
+        {
+          "type": "discoveryengine.googleapis.com/Engine",
+          "reference": "https://docs.cloud.google.com/generative-ai-app-builder/docs/reference/rest/v1/projects.locations.collections.engines"
+        },
+        {
+          "type": "discoveryengine.googleapis.com/Notebook"
+        }
+      ]
+    },
+    {
+      "product": "DNS Armor",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networksecurity.googleapis.com/DnsThreatDetector",
+          "reference": "https://docs.cloud.google.com/dns/docs/reference/dns-armor/rest/v1/projects.locations.dnsThreatDetectors"
+        }
+      ]
+    },
+    {
+      "product": "Document AI",
+      "section": "resource",
+      "types": [
+        {
+          "type": "documentai.googleapis.com/HumanReviewConfig",
+          "reference": "https://docs.cloud.google.com/document-ai/docs/reference/rest/v1/projects.locations.processors.humanReviewConfig"
+        },
+        {
+          "type": "documentai.googleapis.com/LabelerPool"
+        },
+        {
+          "type": "documentai.googleapis.com/Processor",
+          "reference": "https://docs.cloud.google.com/document-ai/docs/reference/rest/v1/projects.locations.processors"
+        },
+        {
+          "type": "documentai.googleapis.com/ProcessorVersion"
+        }
+      ]
+    },
+    {
+      "product": "Essential Contacts",
+      "section": "resource",
+      "types": [
+        {
+          "type": "essentialcontacts.googleapis.com/Contact",
+          "reference": "https://docs.cloud.google.com/resource-manager/docs/reference/essentialcontacts/rest/v1/projects.contacts"
+        }
+      ]
+    },
+    {
+      "product": "Eventarc",
+      "section": "resource",
+      "types": [
+        {
+          "type": "eventarc.googleapis.com/Channel",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.channels"
+        },
+        {
+          "type": "eventarc.googleapis.com/ChannelConnection",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.channelConnections"
+        },
+        {
+          "type": "eventarc.googleapis.com/Enrollment",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.enrollments"
+        },
+        {
+          "type": "eventarc.googleapis.com/GoogleApiSource",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.googleApiSources"
+        },
+        {
+          "type": "eventarc.googleapis.com/GoogleChannelConfig",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/GoogleChannelConfig"
+        },
+        {
+          "type": "eventarc.googleapis.com/MessageBus",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.messageBuses"
+        },
+        {
+          "type": "eventarc.googleapis.com/Pipeline",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.pipelines"
+        },
+        {
+          "type": "eventarc.googleapis.com/Trigger",
+          "reference": "https://docs.cloud.google.com/eventarc/docs/reference/rest/v1/projects.locations.triggers"
+        }
+      ]
+    },
+    {
+      "product": "Fault Injection Testing",
+      "section": "resource",
+      "types": [
+        {
+          "type": "faulttesting.googleapis.com/Experiment",
+          "reference": "https://docs.cloud.google.com/fault-injection-testing/reference/rest/v1alpha/projects.locations.experiments"
+        },
+        {
+          "type": "faulttesting.googleapis.com/ExperimentTemplate",
+          "reference": "https://docs.cloud.google.com/fault-injection-testing/reference/rest/v1alpha/projects.locations.experimentTemplates"
+        },
+        {
+          "type": "faulttesting.googleapis.com/Validation",
+          "reference": "https://docs.cloud.google.com/fault-injection-testing/reference/rest/v1alpha/projects.locations.validations"
+        }
+      ]
+    },
+    {
+      "product": "Filestore",
+      "section": "resource",
+      "types": [
+        {
+          "type": "file.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/filestore/docs/reference/rest/v1/projects.locations.backups"
+        },
+        {
+          "type": "file.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/filestore/docs/reference/rest/v1/projects.locations.instances"
+        },
+        {
+          "type": "file.googleapis.com/Snapshot",
+          "reference": "https://docs.cloud.google.com/filestore/docs/reference/rest/v1/projects.locations.instances.snapshots"
+        }
+      ]
+    },
+    {
+      "product": "Financial Services",
+      "section": "resource",
+      "types": [
+        {
+          "type": "financialservices.googleapis.com/BacktestResult"
+        },
+        {
+          "type": "financialservices.googleapis.com/Dataset"
+        },
+        {
+          "type": "financialservices.googleapis.com/EngineConfig"
+        },
+        {
+          "type": "financialservices.googleapis.com/Instance"
+        },
+        {
+          "type": "financialservices.googleapis.com/Model"
+        },
+        {
+          "type": "financialservices.googleapis.com/PredictionResult"
+        }
+      ]
+    },
+    {
+      "product": "Firebase",
+      "section": "resource",
+      "types": [
+        {
+          "type": "firebase.googleapis.com/FirebaseAppInfo",
+          "reference": "https://firebase.google.com/docs/projects/api/reference/rest"
+        },
+        {
+          "type": "firebase.googleapis.com/FirebaseProject",
+          "reference": "https://firebase.google.com/docs/projects/api/reference/rest"
+        },
+        {
+          "type": "firebaserules.googleapis.com/Release",
+          "reference": "https://firebase.google.com/docs/reference/rules/rest/v1/projects.releases"
+        },
+        {
+          "type": "firebaserules.googleapis.com/Ruleset",
+          "reference": "https://firebase.google.com/docs/reference/rules/rest/v1/projects.rulesets"
+        }
+      ]
+    },
+    {
+      "product": "Firebase Data Connect",
+      "section": "resource",
+      "types": [
+        {
+          "type": "firebasedataconnect.googleapis.com/Connector",
+          "reference": "https://firebase.google.com/docs/reference/data-connect/rest/v1beta/projects.locations.services.connectors"
+        },
+        {
+          "type": "firebasedataconnect.googleapis.com/Schema",
+          "reference": "https://firebase.google.com/docs/reference/data-connect/rest/v1beta/projects.locations.services.schemas"
+        },
+        {
+          "type": "firebasedataconnect.googleapis.com/Service",
+          "reference": "https://firebase.google.com/docs/reference/data-connect/rest/v1beta/projects.locations.services"
+        }
+      ]
+    },
+    {
+      "product": "Firebase Storage",
+      "section": "resource",
+      "types": [
+        {
+          "type": "firebasestorage.googleapis.com/Bucket"
+        },
+        {
+          "type": "firebasestorage.googleapis.com/DefaultBucket"
+        }
+      ]
+    },
+    {
+      "product": "Firestore",
+      "section": "resource",
+      "types": [
+        {
+          "type": "firestore.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/firestore/docs/reference/rest/v1/projects.locations.backups"
+        },
+        {
+          "type": "firestore.googleapis.com/Database",
+          "reference": "https://docs.cloud.google.com/firestore/docs/reference/rest/v1/projects.databases"
+        }
+      ]
+    },
+    {
+      "product": "Gemini for Google Cloud API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudaicompanion.googleapis.com/CodeRepositoryIndex",
+          "reference": "https://docs.cloud.google.com/gemini/docs/api/reference/rest/v1/projects.locations.codeRepositoryIndexes"
+        },
+        {
+          "type": "cloudaicompanion.googleapis.com/RepositoryGroup",
+          "reference": "https://docs.cloud.google.com/gemini/docs/api/reference/rest/v1/projects.locations.codeRepositoryIndexes.repositoryGroups"
+        }
+      ]
+    },
+    {
+      "product": "GKE Multi-Cloud",
+      "section": "resource",
+      "types": [
+        {
+          "type": "gkemulticloud.googleapis.com/AttachedCluster",
+          "reference": "https://docs.cloud.google.com/anthos/clusters/docs/multi-cloud/reference/rest"
+        },
+        {
+          "type": "gkemulticloud.googleapis.com/AwsCluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/multi-cloud/docs/reference/rest/v1/projects.locations.awsClusters"
+        },
+        {
+          "type": "gkemulticloud.googleapis.com/AwsNodePool",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/multi-cloud/docs/reference/rest/v1/projects.locations.awsClusters.awsNodePools"
+        },
+        {
+          "type": "gkemulticloud.googleapis.com/AzureClient",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/multi-cloud/docs/reference/rest/v1/projects.locations.azureClients"
+        },
+        {
+          "type": "gkemulticloud.googleapis.com/AzureCluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/multi-cloud/docs/reference/rest/v1/projects.locations.azureClusters"
+        },
+        {
+          "type": "gkemulticloud.googleapis.com/AzureNodePool",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/multi-cloud/docs/reference/rest/v1/projects.locations.azureClusters.azureNodePools"
+        }
+      ]
+    },
+    {
+      "product": "GKE on GDC",
+      "section": "resource",
+      "types": [
+        {
+          "type": "anthos.googleapis.com/ConnectedCluster",
+          "reference": "https://docs.cloud.google.com/anthos/multicluster-management/reference/rest/v1/projects.locations.memberships"
+        }
+      ]
+    },
+    {
+      "product": "GKE On-Prem API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "gkeonprem.googleapis.com/BareMetalAdminCluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/reference/on-prem-api/rest/v1/projects.locations.bareMetalAdminClusters"
+        },
+        {
+          "type": "gkeonprem.googleapis.com/BareMetalCluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/reference/on-prem-api/rest/v1/projects.locations.bareMetalClusters"
+        },
+        {
+          "type": "gkeonprem.googleapis.com/BareMetalNodePool",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/reference/on-prem-api/rest/v1/projects.locations.bareMetalClusters.bareMetalNodePools"
+        },
+        {
+          "type": "gkeonprem.googleapis.com/VmwareAdminCluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/reference/on-prem-api/rest/v1/projects.locations.vmwareAdminClusters"
+        },
+        {
+          "type": "gkeonprem.googleapis.com/VmwareCluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/reference/on-prem-api/rest/v1/projects.locations.vmwareClusters"
+        },
+        {
+          "type": "gkeonprem.googleapis.com/VmwareNodePool",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/reference/on-prem-api/rest/v1/projects.locations.vmwareClusters.vmwareNodePools"
+        }
+      ]
+    },
+    {
+      "product": "Google Cloud Managed Lustre",
+      "section": "resource",
+      "types": [
+        {
+          "type": "lustre.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/managed-lustre/docs/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Google Cloud Managed Service for Apache Kafka",
+      "section": "resource",
+      "types": [
+        {
+          "type": "managedkafka.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/managed-service-for-apache-kafka/docs/reference/rest/v1/projects.locations.clusters"
+        },
+        {
+          "type": "managedkafka.googleapis.com/ConnectCluster",
+          "reference": "https://docs.cloud.google.com/managed-service-for-apache-kafka/docs/reference/rest/v1/projects.locations.connectClusters"
+        }
+      ]
+    },
+    {
+      "product": "Google Cloud Migration Center",
+      "section": "resource",
+      "types": [
+        {
+          "type": "migrationcenter.googleapis.com/Asset",
+          "reference": "https://docs.cloud.google.com/migration-center/docs/reference/rest/v1/projects.locations.assets"
+        },
+        {
+          "type": "migrationcenter.googleapis.com/CostAssessmentJob"
+        }
+      ]
+    },
+    {
+      "product": "Google Cloud NetApp Volumes",
+      "section": "resource",
+      "types": [
+        {
+          "type": "netapp.googleapis.com/ActiveDirectory",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.activeDirectories"
+        },
+        {
+          "type": "netapp.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.backupVaults.backups"
+        },
+        {
+          "type": "netapp.googleapis.com/BackupPolicy",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.backupPolicies"
+        },
+        {
+          "type": "netapp.googleapis.com/BackupVault",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.backupVaults"
+        },
+        {
+          "type": "netapp.googleapis.com/KmsConfig",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.kmsConfigs"
+        },
+        {
+          "type": "netapp.googleapis.com/Replication",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.volumes.replications"
+        },
+        {
+          "type": "netapp.googleapis.com/Snapshot",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.volumes.snapshots"
+        },
+        {
+          "type": "netapp.googleapis.com/StoragePool",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.storagePools"
+        },
+        {
+          "type": "netapp.googleapis.com/Volume",
+          "reference": "https://docs.cloud.google.com/netapp/volumes/docs/reference/rest/v1/projects.locations.volumes"
+        }
+      ]
+    },
+    {
+      "product": "Google Cloud VMware Engine",
+      "section": "resource",
+      "types": [
+        {
+          "type": "vmwareengine.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.privateClouds.clusters"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/ExternalAccessRule",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.networkPolicies.externalAccessRules"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/ExternalAddress",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.privateClouds.externalAddresses"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/NetworkPeering",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.networkPeerings"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/NetworkPolicy",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.networkPolicies"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/PrivateCloud",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.privateClouds"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/PrivateConnection",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.privateConnections"
+        },
+        {
+          "type": "vmwareengine.googleapis.com/VmwareEngineNetwork",
+          "reference": "https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/projects.locations.vmwareEngineNetworks"
+        }
+      ]
+    },
+    {
+      "product": "Google Kubernetes Engine",
+      "section": "resource",
+      "types": [
+        {
+          "type": "admissionregistration.k8s.io/MutatingWebhookConfiguration",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/mutating-webhook-configuration-v1/"
+        },
+        {
+          "type": "admissionregistration.k8s.io/ValidatingWebhookConfiguration",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/extend-resources/validating-webhook-configuration-v1/"
+        },
+        {
+          "type": "apps.k8s.io/DaemonSet",
+          "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/"
+        },
+        {
+          "type": "apps.k8s.io/Deployment",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/"
+        },
+        {
+          "type": "apps.k8s.io/ReplicaSet",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/replica-set-v1/"
+        },
+        {
+          "type": "apps.k8s.io/StatefulSet",
+          "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/"
+        },
+        {
+          "type": "autoscaling.k8s.io/HorizontalPodAutoscaler",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v1/"
+        },
+        {
+          "type": "batch.k8s.io/CronJob",
+          "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/"
+        },
+        {
+          "type": "batch.k8s.io/Job",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/job-v1/"
+        },
+        {
+          "type": "container.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters"
+        },
+        {
+          "type": "container.googleapis.com/NodePool",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters.nodePools"
+        },
+        {
+          "type": "extensions.k8s.io/DaemonSet",
+          "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/"
+        },
+        {
+          "type": "extensions.k8s.io/Ingress"
+        },
+        {
+          "type": "gateway.networking.k8s.io/Gateway",
+          "reference": "https://kubernetes.io/docs/concepts/services-networking/gateway/"
+        },
+        {
+          "type": "gateway.networking.k8s.io/GatewayClass",
+          "reference": "https://kubernetes.io/docs/concepts/services-networking/gateway/"
+        },
+        {
+          "type": "gateway.networking.k8s.io/HTTPRoute",
+          "reference": "https://kubernetes.io/docs/concepts/services-networking/gateway/"
+        },
+        {
+          "type": "gateway.networking.k8s.io/ReferenceGrant",
+          "reference": "https://kubernetes.io/docs/concepts/services-networking/gateway/"
+        },
+        {
+          "type": "k8s.io/Endpoints",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/"
+        },
+        {
+          "type": "k8s.io/Namespace",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/cluster-resources/namespace-v1/"
+        },
+        {
+          "type": "k8s.io/Node",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/cluster-resources/node-v1/"
+        },
+        {
+          "type": "k8s.io/PersistentVolume",
+          "reference": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+        },
+        {
+          "type": "k8s.io/PersistentVolumeClaim",
+          "reference": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+        },
+        {
+          "type": "k8s.io/Pod",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/"
+        },
+        {
+          "type": "k8s.io/PodTemplate",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-template-v1/"
+        },
+        {
+          "type": "k8s.io/ReplicationController",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/replication-controller-v1/"
+        },
+        {
+          "type": "k8s.io/ResourceQuota",
+          "reference": "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+        },
+        {
+          "type": "k8s.io/Secret",
+          "reference": "https://kubernetes.io/docs/concepts/configuration/secret/"
+        },
+        {
+          "type": "k8s.io/Service",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/"
+        },
+        {
+          "type": "k8s.io/ServiceAccount",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/service-account-v1/"
+        },
+        {
+          "type": "networking.k8s.io/Ingress",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/service-resources/ingress-v1/"
+        },
+        {
+          "type": "networking.k8s.io/NetworkPolicy",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/network-policy-v1/"
+        },
+        {
+          "type": "policy.k8s.io/PodDisruptionBudget",
+          "reference": "https://kubernetes.io/docs/concepts/workloads/pods/disruptions/"
+        },
+        {
+          "type": "rbac.authorization.k8s.io/ClusterRole",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/authorization-resources/cluster-role-v1/"
+        },
+        {
+          "type": "rbac.authorization.k8s.io/ClusterRoleBinding",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/authorization-resources/cluster-role-binding-v1/"
+        },
+        {
+          "type": "rbac.authorization.k8s.io/Role",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/authorization-resources/role-v1/"
+        },
+        {
+          "type": "rbac.authorization.k8s.io/RoleBinding",
+          "reference": "https://kubernetes.io/docs/reference/kubernetes-api/authorization-resources/role-binding-v1/"
+        },
+        {
+          "type": "storage.k8s.io/StorageClass",
+          "reference": "https://kubernetes.io/docs/concepts/storage/storage-classes/"
+        }
+      ]
+    },
+    {
+      "product": "Hub",
+      "section": "resource",
+      "types": [
+        {
+          "type": "gkehub.googleapis.com/Feature",
+          "reference": "https://docs.cloud.google.com/anthos/fleet-management/docs/reference/rest/v1/projects.locations.features"
+        },
+        {
+          "type": "gkehub.googleapis.com/Fleet",
+          "reference": "https://docs.cloud.google.com/anthos/fleet-management/docs/reference/rest/v1/projects.locations.fleets"
+        },
+        {
+          "type": "gkehub.googleapis.com/Membership",
+          "reference": "https://docs.cloud.google.com/anthos/multicluster-management/reference/rest/v1/projects.locations.memberships"
+        },
+        {
+          "type": "gkehub.googleapis.com/MembershipBinding",
+          "reference": "https://docs.cloud.google.com/anthos/fleet-management/docs/reference/rest/v1/projects.locations.memberships.bindings"
+        },
+        {
+          "type": "gkehub.googleapis.com/MembershipFeature",
+          "reference": "https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/reference/rest/v2/projects.locations.memberships.features"
+        },
+        {
+          "type": "gkehub.googleapis.com/Namespace",
+          "reference": "https://docs.cloud.google.com/anthos/fleet-management/docs/reference/rest/v1/projects.locations.scopes.namespaces"
+        },
+        {
+          "type": "gkehub.googleapis.com/RBACRoleBinding",
+          "reference": "https://docs.cloud.google.com/anthos/fleet-management/docs/reference/rest/v1/projects.locations.scopes.rbacrolebindings"
+        },
+        {
+          "type": "gkehub.googleapis.com/Scope",
+          "reference": "https://docs.cloud.google.com/anthos/fleet-management/docs/reference/rest/v1/projects.locations.scopes"
+        }
+      ]
+    },
+    {
+      "product": "Identity and Access Management v1",
+      "section": "resource",
+      "types": [
+        {
+          "type": "iam.googleapis.com/OauthClient",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.oauthClients"
+        },
+        {
+          "type": "iam.googleapis.com/OauthClientCredential",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.oauthClients.credentials"
+        },
+        {
+          "type": "iam.googleapis.com/Role",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/roles"
+        },
+        {
+          "type": "iam.googleapis.com/ServiceAccount",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts"
+        },
+        {
+          "type": "iam.googleapis.com/ServiceAccountKey",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts.keys"
+        },
+        {
+          "type": "iam.googleapis.com/WorkforcePool",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/locations.workforcePools"
+        },
+        {
+          "type": "iam.googleapis.com/WorkforcePoolProvider",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/locations.workforcePools.providers"
+        },
+        {
+          "type": "iam.googleapis.com/WorkforcePoolProviderKey",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/locations.workforcePools.providers.keys"
+        },
+        {
+          "type": "iam.googleapis.com/WorkloadIdentityPool",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.workloadIdentityPools"
+        },
+        {
+          "type": "iam.googleapis.com/WorkloadIdentityPoolManagedIdentity",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.workloadIdentityPools.namespaces.managedIdentities"
+        },
+        {
+          "type": "iam.googleapis.com/WorkloadIdentityPoolNamespace",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.workloadIdentityPools.namespaces"
+        },
+        {
+          "type": "iam.googleapis.com/WorkloadIdentityPoolProvider",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.workloadIdentityPools.providers"
+        },
+        {
+          "type": "iam.googleapis.com/WorkloadIdentityPoolProviderKey",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.locations.workloadIdentityPools.providers.keys"
+        }
+      ]
+    },
+    {
+      "product": "Identity and Access Management v2",
+      "section": "resource",
+      "types": [
+        {
+          "type": "iam.googleapis.com/PolicyV2",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v2/policies"
+        }
+      ]
+    },
+    {
+      "product": "Identity and Access Management v3",
+      "section": "resource",
+      "types": [
+        {
+          "type": "iam.googleapis.com/PolicyBinding",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v3/projects.locations.policyBindings"
+        },
+        {
+          "type": "iam.googleapis.com/PrincipalAccessBoundaryPolicy",
+          "reference": "https://docs.cloud.google.com/iam/docs/reference/rest/v3/organizations.locations.principalAccessBoundaryPolicies"
+        }
+      ]
+    },
+    {
+      "product": "Identity Platform",
+      "section": "resource",
+      "types": [
+        {
+          "type": "identitytoolkit.googleapis.com/Config",
+          "reference": "https://docs.cloud.google.com/identity-platform/docs/reference/rest/v2/Config"
+        },
+        {
+          "type": "identitytoolkit.googleapis.com/DefaultSupportedIdpConfig",
+          "reference": "https://docs.cloud.google.com/identity-platform/docs/reference/rest/v2/projects.defaultSupportedIdpConfigs"
+        },
+        {
+          "type": "identitytoolkit.googleapis.com/InboundSamlConfig",
+          "reference": "https://docs.cloud.google.com/identity-platform/docs/reference/rest/v2/projects.inboundSamlConfigs"
+        },
+        {
+          "type": "identitytoolkit.googleapis.com/OauthIdpConfig",
+          "reference": "https://docs.cloud.google.com/identity-platform/docs/reference/rest/v2/projects.oauthIdpConfigs"
+        },
+        {
+          "type": "identitytoolkit.googleapis.com/Tenant",
+          "reference": "https://docs.cloud.google.com/identity-platform/docs/reference/rest/v2/projects.tenants"
+        }
+      ]
+    },
+    {
+      "product": "Identity-Aware Proxy",
+      "section": "resource",
+      "types": [
+        {
+          "type": "iap.googleapis.com/TunnelDestGroup",
+          "reference": "https://docs.cloud.google.com/iap/docs/reference/rest/v1/projects.iap_tunnel.locations.destGroups"
+        }
+      ]
+    },
+    {
+      "product": "Integration Connectors",
+      "section": "resource",
+      "types": [
+        {
+          "type": "connectors.googleapis.com/Connection",
+          "reference": "https://docs.cloud.google.com/integration-connectors/docs/reference/rest/v1/projects.locations.connections"
+        },
+        {
+          "type": "connectors.googleapis.com/EndpointAttachment",
+          "reference": "https://docs.cloud.google.com/integration-connectors/docs/reference/rest/v1/projects.locations.endpointAttachments"
+        },
+        {
+          "type": "connectors.googleapis.com/EventSubscription",
+          "reference": "https://docs.cloud.google.com/integration-connectors/docs/reference/rest/v1/projects.locations.connections.eventSubscriptions"
+        },
+        {
+          "type": "connectors.googleapis.com/ManagedZone",
+          "reference": "https://docs.cloud.google.com/integration-connectors/docs/reference/rest/v1/projects.locations.global.managedZones"
+        },
+        {
+          "type": "connectors.googleapis.com/RegionalSettings",
+          "reference": "https://docs.cloud.google.com/integration-connectors/docs/reference/rest/v1/RegionalSettings"
+        },
+        {
+          "type": "connectors.googleapis.com/Settings",
+          "reference": "https://docs.cloud.google.com/integration-connectors/docs/reference/rest/v1/Settings"
+        }
+      ]
+    },
+    {
+      "product": "Knowledge Catalog",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dataplex.googleapis.com/AspectType",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.aspectTypes"
+        },
+        {
+          "type": "dataplex.googleapis.com/Asset",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.lakes.zones.assets"
+        },
+        {
+          "type": "dataplex.googleapis.com/DataScan",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.dataScans"
+        },
+        {
+          "type": "dataplex.googleapis.com/EncryptionConfig",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/organizations.locations.encryptionConfigs"
+        },
+        {
+          "type": "dataplex.googleapis.com/EntryGroup",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.entryGroups"
+        },
+        {
+          "type": "dataplex.googleapis.com/EntryType",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.entryTypes"
+        },
+        {
+          "type": "dataplex.googleapis.com/Glossary",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.glossaries"
+        },
+        {
+          "type": "dataplex.googleapis.com/Lake",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.lakes"
+        },
+        {
+          "type": "dataplex.googleapis.com/MetadataJob",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.metadataJobs"
+        },
+        {
+          "type": "dataplex.googleapis.com/Task",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.lakes.tasks"
+        },
+        {
+          "type": "dataplex.googleapis.com/Zone",
+          "reference": "https://docs.cloud.google.com/dataplex/docs/reference/rest/v1/projects.locations.lakes.zones"
+        }
+      ]
+    },
+    {
+      "product": "KRM API Hosting",
+      "section": "resource",
+      "types": [
+        {
+          "type": "krmapihosting.googleapis.com/KrmApiHost"
+        }
+      ]
+    },
+    {
+      "product": "Live Stream API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "livestream.googleapis.com/Asset",
+          "reference": "https://docs.cloud.google.com/livestream/docs/reference/rest/v1/projects.locations.assets"
+        },
+        {
+          "type": "livestream.googleapis.com/Channel",
+          "reference": "https://docs.cloud.google.com/livestream/docs/reference/rest/v1/projects.locations.channels"
+        },
+        {
+          "type": "livestream.googleapis.com/Input",
+          "reference": "https://docs.cloud.google.com/livestream/docs/reference/rest/v1/projects.locations.inputs"
+        },
+        {
+          "type": "livestream.googleapis.com/Pool",
+          "reference": "https://docs.cloud.google.com/livestream/docs/reference/rest/v1/projects.locations.pools"
+        }
+      ]
+    },
+    {
+      "product": "Looker",
+      "section": "resource",
+      "types": [
+        {
+          "type": "looker.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/looker/docs/reference/rest/v1/projects.locations.instances.backups"
+        },
+        {
+          "type": "looker.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/looker/docs/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Managed Service for Apache Airflow",
+      "section": "resource",
+      "types": [
+        {
+          "type": "composer.googleapis.com/Environment",
+          "reference": "https://docs.cloud.google.com/composer/docs/reference/rest/v1beta1/projects.locations.environments"
+        }
+      ]
+    },
+    {
+      "product": "Managed Service for Apache Spark",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dataproc.googleapis.com/AutoscalingPolicy",
+          "reference": "https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.autoscalingPolicies"
+        },
+        {
+          "type": "dataproc.googleapis.com/Batch",
+          "reference": "https://docs.cloud.google.com/dataproc-serverless/docs/reference/rest/v1/projects.locations.batches"
+        },
+        {
+          "type": "dataproc.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters"
+        },
+        {
+          "type": "dataproc.googleapis.com/Job",
+          "reference": "https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.jobs"
+        },
+        {
+          "type": "dataproc.googleapis.com/Session",
+          "reference": "https://docs.cloud.google.com/dataproc-serverless/docs/reference/rest/v1/projects.locations.sessions"
+        },
+        {
+          "type": "dataproc.googleapis.com/WorkflowTemplate",
+          "reference": "https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.workflowTemplates"
+        }
+      ]
+    },
+    {
+      "product": "Managed Service for Microsoft Active Directory",
+      "section": "resource",
+      "types": [
+        {
+          "type": "managedidentities.googleapis.com/Domain",
+          "reference": "https://docs.cloud.google.com/managed-microsoft-ad/reference/rest/v1/projects.locations.global.domains"
+        }
+      ]
+    },
+    {
+      "product": "Memorystore",
+      "section": "resource",
+      "types": [
+        {
+          "type": "memorystore.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/memorystore/docs/valkey/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Memorystore for Memcached",
+      "section": "resource",
+      "types": [
+        {
+          "type": "memcache.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/memorystore/docs/memcached/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Memorystore for Redis",
+      "section": "resource",
+      "types": [
+        {
+          "type": "redis.googleapis.com/Cluster",
+          "reference": "https://docs.cloud.google.com/memorystore/docs/cluster/reference/rest/v1/projects.locations.clusters"
+        },
+        {
+          "type": "redis.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/memorystore/docs/redis/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Migrate to Virtual Machines",
+      "section": "resource",
+      "types": [
+        {
+          "type": "vmmigration.googleapis.com/CloneJob",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.sources.migratingVms.cloneJobs"
+        },
+        {
+          "type": "vmmigration.googleapis.com/CutoverJob",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.sources.migratingVms.cutoverJobs"
+        },
+        {
+          "type": "vmmigration.googleapis.com/DatacenterConnector",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.sources.datacenterConnectors"
+        },
+        {
+          "type": "vmmigration.googleapis.com/Group",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.groups"
+        },
+        {
+          "type": "vmmigration.googleapis.com/ImageImport",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.imageImports"
+        },
+        {
+          "type": "vmmigration.googleapis.com/MigratingVm",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.sources.migratingVms"
+        },
+        {
+          "type": "vmmigration.googleapis.com/Source",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.sources"
+        },
+        {
+          "type": "vmmigration.googleapis.com/TargetProject",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.targetProjects"
+        },
+        {
+          "type": "vmmigration.googleapis.com/UtilizationReport",
+          "reference": "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/reference/rest/v1/projects.locations.sources.utilizationReports"
+        }
+      ]
+    },
+    {
+      "product": "Network Connectivity",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networkconnectivity.googleapis.com/Group",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.global.hubs.groups"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/Hub",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.global.hubs"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/HubRoute",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.global.hubs.routeTables.routes"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/InternalRange",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.internalRanges"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/PolicyBasedRoute"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/RegionalEndpoint",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.regionalEndpoints"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/RouteTable",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.global.hubs.routeTables"
+        },
+        {
+          "type": "networkconnectivity.googleapis.com/Spoke",
+          "reference": "https://docs.cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/projects.locations.spokes"
+        }
+      ]
+    },
+    {
+      "product": "Network Management API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networkmanagement.googleapis.com/ConnectivityTest",
+          "reference": "https://docs.cloud.google.com/network-intelligence-center/docs/connectivity-tests/reference/networkmanagement/rest/v1/projects.locations.global.connectivityTests"
+        },
+        {
+          "type": "networkmanagement.googleapis.com/VpcFlowLogsConfig",
+          "reference": "https://docs.cloud.google.com/network-intelligence-center/docs/reference/networkmanagement/rest/v1/projects.locations.vpcFlowLogsConfigs"
+        }
+      ]
+    },
+    {
+      "product": "Network Security Integration",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networksecurity.googleapis.com/InterceptDeployment",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.interceptDeployments"
+        },
+        {
+          "type": "networksecurity.googleapis.com/InterceptDeploymentGroup",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.interceptDeploymentGroups"
+        },
+        {
+          "type": "networksecurity.googleapis.com/InterceptEndpointGroup",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.interceptEndpointGroups"
+        },
+        {
+          "type": "networksecurity.googleapis.com/InterceptEndpointGroupAssociation",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.interceptEndpointGroupAssociations"
+        },
+        {
+          "type": "networksecurity.googleapis.com/MirroringDeployment",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.mirroringDeployments"
+        },
+        {
+          "type": "networksecurity.googleapis.com/MirroringDeploymentGroup",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.mirroringDeploymentGroups"
+        },
+        {
+          "type": "networksecurity.googleapis.com/MirroringEndpointGroup",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.mirroringEndpointGroups"
+        },
+        {
+          "type": "networksecurity.googleapis.com/MirroringEndpointGroupAssociation",
+          "reference": "https://docs.cloud.google.com/network-security-integration/docs/reference/rest/v1/projects.locations.mirroringEndpointGroupAssociations"
+        }
+      ]
+    },
+    {
+      "product": "Network Services API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networkservices.googleapis.com/AgentGateway",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1/projects.locations.agentGateways"
+        },
+        {
+          "type": "networkservices.googleapis.com/AuthzExtension",
+          "reference": "https://docs.cloud.google.com/service-extensions/docs/reference/rest/v1/projects.locations.authzExtensions"
+        },
+        {
+          "type": "networkservices.googleapis.com/EdgeCacheKeyset",
+          "reference": "https://docs.cloud.google.com/media-cdn/docs/reference/rest/v1/projects.locations.edgeCacheKeysets"
+        },
+        {
+          "type": "networkservices.googleapis.com/EdgeCacheOrigin",
+          "reference": "https://docs.cloud.google.com/media-cdn/docs/reference/rest/v1/projects.locations.edgeCacheOrigins"
+        },
+        {
+          "type": "networkservices.googleapis.com/EdgeCacheService",
+          "reference": "https://docs.cloud.google.com/media-cdn/docs/reference/rest/v1/projects.locations.edgeCacheServices"
+        },
+        {
+          "type": "networkservices.googleapis.com/EndpointPolicy",
+          "reference": "https://docs.cloud.google.com/traffic-director/docs/reference/network-services/rest/v1/projects.locations.endpointPolicies"
+        },
+        {
+          "type": "networkservices.googleapis.com/Gateway",
+          "reference": "https://docs.cloud.google.com/traffic-director/docs/reference/network-services/rest/v1/projects.locations.gateways"
+        },
+        {
+          "type": "networkservices.googleapis.com/GrpcRoute",
+          "reference": "https://docs.cloud.google.com/traffic-director/docs/reference/network-services/rest/v1/projects.locations.grpcRoutes"
+        },
+        {
+          "type": "networkservices.googleapis.com/HttpRoute",
+          "reference": "https://docs.cloud.google.com/traffic-director/docs/reference/network-services/rest/v1/projects.locations.httpRoutes"
+        },
+        {
+          "type": "networkservices.googleapis.com/LbRouteExtension",
+          "reference": "https://docs.cloud.google.com/service-extensions/docs/reference/rest/v1/projects.locations.lbRouteExtensions"
+        },
+        {
+          "type": "networkservices.googleapis.com/LbTrafficExtension",
+          "reference": "https://docs.cloud.google.com/service-extensions/docs/reference/rest/v1/projects.locations.lbTrafficExtensions"
+        },
+        {
+          "type": "networkservices.googleapis.com/Mesh",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1/projects.locations.meshes"
+        },
+        {
+          "type": "networkservices.googleapis.com/ServiceBinding",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1alpha1/projects.locations.serviceBindings"
+        },
+        {
+          "type": "networkservices.googleapis.com/ServiceLbPolicy",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1/projects.locations.serviceLbPolicies"
+        },
+        {
+          "type": "networkservices.googleapis.com/TcpRoute",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1/projects.locations.tcpRoutes"
+        },
+        {
+          "type": "networkservices.googleapis.com/TlsRoute",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1/projects.locations.tlsRoutes"
+        },
+        {
+          "type": "networkservices.googleapis.com/WasmPlugin",
+          "reference": "https://docs.cloud.google.com/service-extensions/docs/reference/rest/v1alpha1/projects.locations.wasmPlugins"
+        },
+        {
+          "type": "networkservices.googleapis.com/WasmPluginVersion",
+          "reference": "https://docs.cloud.google.com/service-extensions/docs/reference/rest/v1alpha1/projects.locations.wasmPlugins.versions"
+        }
+      ]
+    },
+    {
+      "product": "Oracle Database@Google Cloud",
+      "section": "resource",
+      "types": [
+        {
+          "type": "oracledatabase.googleapis.com/AutonomousDatabase",
+          "reference": "https://docs.cloud.google.com/oracle/database/docs/reference/rest/v1/projects.locations.autonomousDatabases"
+        },
+        {
+          "type": "oracledatabase.googleapis.com/CloudExadataInfrastructure",
+          "reference": "https://docs.cloud.google.com/oracle/database/docs/reference/rest/v1/projects.locations.cloudExadataInfrastructures"
+        },
+        {
+          "type": "oracledatabase.googleapis.com/CloudVmCluster",
+          "reference": "https://docs.cloud.google.com/oracle/database/docs/reference/rest/v1/projects.locations.cloudVmClusters"
+        }
+      ]
+    },
+    {
+      "product": "Organization Policy Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "orgpolicy.googleapis.com/Policy"
+        }
+      ]
+    },
+    {
+      "product": "Organization Policy Service v2",
+      "section": "resource",
+      "types": [
+        {
+          "type": "orgpolicy.googleapis.com/CustomConstraint",
+          "reference": "https://docs.cloud.google.com/organization-policy/reference/rest/v2/organizations.customConstraints"
+        },
+        {
+          "type": "orgpolicy.googleapis.com/Policy",
+          "reference": "https://docs.cloud.google.com/organization-policy/reference/rest/v2/organizations.policies#Policy"
+        }
+      ]
+    },
+    {
+      "product": "Parallelstore",
+      "section": "resource",
+      "types": [
+        {
+          "type": "parallelstore.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/parallelstore/docs/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Parameter Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "parametermanager.googleapis.com/Parameter",
+          "reference": "https://docs.cloud.google.com/secret-manager/parameter-manager/docs/reference/rest/v1/projects.locations.parameters"
+        },
+        {
+          "type": "parametermanager.googleapis.com/ParameterVersion",
+          "reference": "https://docs.cloud.google.com/secret-manager/parameter-manager/docs/reference/rest/v1/projects.locations.parameters.versions"
+        }
+      ]
+    },
+    {
+      "product": "Privileged Access Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "privilegedaccessmanager.googleapis.com/Entitlement"
+        },
+        {
+          "type": "privilegedaccessmanager.googleapis.com/Grant"
+        }
+      ]
+    },
+    {
+      "product": "Pub/Sub",
+      "section": "resource",
+      "types": [
+        {
+          "type": "pubsub.googleapis.com/Schema",
+          "reference": "https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.schemas"
+        },
+        {
+          "type": "pubsub.googleapis.com/Snapshot",
+          "reference": "https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/Snapshot"
+        },
+        {
+          "type": "pubsub.googleapis.com/Subscription",
+          "reference": "https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions"
+        },
+        {
+          "type": "pubsub.googleapis.com/Topic",
+          "reference": "https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.topics"
+        }
+      ]
+    },
+    {
+      "product": "reCAPTCHA",
+      "section": "resource",
+      "types": [
+        {
+          "type": "recaptchaenterprise.googleapis.com/FirewallPolicy",
+          "reference": "https://docs.cloud.google.com/recaptcha/docs/reference/rest/v1/projects.firewallpolicies"
+        },
+        {
+          "type": "recaptchaenterprise.googleapis.com/Key",
+          "reference": "https://docs.cloud.google.com/recaptcha/docs/reference/rest/v1/projects.keys"
+        }
+      ]
+    },
+    {
+      "product": "Resource Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "cloudresourcemanager.googleapis.com/Folder",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v2/folders"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Lien",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v3/liens"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Organization",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/organizations"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Project",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/projects"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/TagBinding",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v3/tagBindings"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/TagKey",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v3/tagKeys"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/TagValue",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v3/tagValues"
+        }
+      ]
+    },
+    {
+      "product": "Secret Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "secretmanager.googleapis.com/Secret",
+          "reference": "https://docs.cloud.google.com/secret-manager/docs/reference/rest/v1/projects.secrets"
+        },
+        {
+          "type": "secretmanager.googleapis.com/SecretVersion",
+          "reference": "https://docs.cloud.google.com/secret-manager/docs/reference/rest/v1/projects.secrets.versions"
+        }
+      ]
+    },
+    {
+      "product": "Secure Source Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "securesourcemanager.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/secure-source-manager/docs/reference/rest/v1/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Secure Web Proxy",
+      "section": "resource",
+      "types": [
+        {
+          "type": "networksecurity.googleapis.com/GatewaySecurityPolicy",
+          "reference": "https://docs.cloud.google.com/secure-web-proxy/docs/reference/network-security/rest/v1/projects.locations.gatewaySecurityPolicies"
+        },
+        {
+          "type": "networksecurity.googleapis.com/GatewaySecurityPolicyRule",
+          "reference": "https://docs.cloud.google.com/secure-web-proxy/docs/reference/network-security/rest/v1/projects.locations.gatewaySecurityPolicies.rules"
+        },
+        {
+          "type": "networksecurity.googleapis.com/TlsInspectionPolicy",
+          "reference": "https://docs.cloud.google.com/secure-web-proxy/docs/reference/network-security/rest/v1/projects.locations.tlsInspectionPolicies"
+        },
+        {
+          "type": "networksecurity.googleapis.com/UrlList",
+          "reference": "https://docs.cloud.google.com/secure-web-proxy/docs/reference/network-security/rest/v1/projects.locations.urlLists"
+        }
+      ]
+    },
+    {
+      "product": "Security Center Management API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "securitycentermanagement.googleapis.com/EventThreatDetectionCustomModule",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/security-center-management/rest/v1/projects.locations.eventThreatDetectionCustomModules"
+        },
+        {
+          "type": "securitycentermanagement.googleapis.com/SecurityCenterService",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/security-center-management/rest/v1/projects.locations.securityCenterServices"
+        },
+        {
+          "type": "securitycentermanagement.googleapis.com/SecurityHealthAnalyticsCustomModule",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/security-center-management/rest/v1/organizations.locations.securityHealthAnalyticsCustomModules"
+        }
+      ]
+    },
+    {
+      "product": "Security Command Center",
+      "section": "resource",
+      "types": [
+        {
+          "type": "securitycenter.googleapis.com/BigQueryExport",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v2/projects.locations.bigQueryExports"
+        },
+        {
+          "type": "securitycenter.googleapis.com/ContainerThreatDetectionSettings",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v1beta2/projects.containerThreatDetectionSettings"
+        },
+        {
+          "type": "securitycenter.googleapis.com/EventThreatDetectionSettings",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v1beta2/projects.eventThreatDetectionSettings"
+        },
+        {
+          "type": "securitycenter.googleapis.com/MuteConfig",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v2/projects.locations.muteConfigs"
+        },
+        {
+          "type": "securitycenter.googleapis.com/NotificationConfig",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v2/projects.locations.notificationConfigs"
+        },
+        {
+          "type": "securitycenter.googleapis.com/ResourceValueConfig",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v2/organizations.locations.resourceValueConfigs"
+        },
+        {
+          "type": "securitycenter.googleapis.com/SecurityHealthAnalyticsSettings",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v1beta2/projects.securityHealthAnalyticsSettings"
+        },
+        {
+          "type": "securitycenter.googleapis.com/VirtualMachineThreatDetectionSettings",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v1beta2/projects.virtualMachineThreatDetectionSettings"
+        },
+        {
+          "type": "securitycenter.googleapis.com/WebSecurityScannerSettings",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/rest/v1beta2/projects.webSecurityScannerSettings"
+        }
+      ]
+    },
+    {
+      "product": "Security Posture API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "securityposture.googleapis.com/Posture",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/securityposture/rest/v1/Posture"
+        },
+        {
+          "type": "securityposture.googleapis.com/PostureDeployment",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/securityposture/rest/v1/PostureDeployment"
+        }
+      ]
+    },
+    {
+      "product": "Sensitive Data Protection",
+      "section": "resource",
+      "types": [
+        {
+          "type": "dlp.googleapis.com/DeidentifyTemplate",
+          "reference": "https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/projects.locations.deidentifyTemplates"
+        },
+        {
+          "type": "dlp.googleapis.com/DiscoveryConfig",
+          "reference": "https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/projects.locations.discoveryConfigs"
+        },
+        {
+          "type": "dlp.googleapis.com/DlpJob",
+          "reference": "https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/projects.locations.dlpJobs"
+        },
+        {
+          "type": "dlp.googleapis.com/InspectTemplate",
+          "reference": "https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/projects.locations.inspectTemplates"
+        },
+        {
+          "type": "dlp.googleapis.com/JobTrigger",
+          "reference": "https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/projects.locations.jobTriggers"
+        },
+        {
+          "type": "dlp.googleapis.com/StoredInfoType",
+          "reference": "https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/projects.locations.storedInfoTypes"
+        }
+      ]
+    },
+    {
+      "product": "Serverless VPC Access",
+      "section": "resource",
+      "types": [
+        {
+          "type": "vpcaccess.googleapis.com/Connector",
+          "reference": "https://docs.cloud.google.com/vpc/docs/reference/vpcaccess/rest/v1/projects.locations.connectors"
+        }
+      ]
+    },
+    {
+      "product": "Service Directory",
+      "section": "resource",
+      "types": [
+        {
+          "type": "servicedirectory.googleapis.com/Endpoint",
+          "reference": "https://docs.cloud.google.com/service-directory/docs/reference/rest/v1/projects.locations.namespaces.services.endpoints"
+        },
+        {
+          "type": "servicedirectory.googleapis.com/Namespace",
+          "reference": "https://docs.cloud.google.com/service-directory/docs/reference/rest/v1/projects.locations.namespaces"
+        },
+        {
+          "type": "servicedirectory.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/service-directory/docs/reference/rest/v1/projects.locations.namespaces.services"
+        }
+      ]
+    },
+    {
+      "product": "Service Management",
+      "section": "resource",
+      "types": [
+        {
+          "type": "servicemanagement.googleapis.com/ManagedService",
+          "reference": "https://docs.cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services"
+        },
+        {
+          "type": "servicemanagement.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/services.configs"
+        }
+      ]
+    },
+    {
+      "product": "Service Networking",
+      "section": "resource",
+      "types": [
+        {
+          "type": "servicenetworking.googleapis.com/Connection",
+          "reference": "https://docs.cloud.google.com/service-infrastructure/docs/service-networking/reference/rest/v1/services.connections"
+        }
+      ]
+    },
+    {
+      "product": "Service Usage",
+      "section": "resource",
+      "types": [
+        {
+          "type": "serviceusage.googleapis.com/Service",
+          "reference": "https://docs.cloud.google.com/service-usage/docs/reference/rest/v1/services"
+        }
+      ]
+    },
+    {
+      "product": "Spanner",
+      "section": "resource",
+      "types": [
+        {
+          "type": "spanner.googleapis.com/Backup",
+          "reference": "https://docs.cloud.google.com/spanner/docs/reference/rest/v1/projects.instances.backups"
+        },
+        {
+          "type": "spanner.googleapis.com/Database",
+          "reference": "https://docs.cloud.google.com/spanner/docs/reference/rest/v1/projects.instances.databases"
+        },
+        {
+          "type": "spanner.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/spanner/docs/reference/rest/v1/projects.instances"
+        },
+        {
+          "type": "spanner.googleapis.com/InstanceConfig",
+          "reference": "https://docs.cloud.google.com/spanner/docs/reference/rest/v1/projects.instanceConfigs"
+        },
+        {
+          "type": "spanner.googleapis.com/InstancePartition",
+          "reference": "https://docs.cloud.google.com/spanner/docs/reference/rest/v1/projects.instances.instancePartitions"
+        }
+      ]
+    },
+    {
+      "product": "Speech-to-Text",
+      "section": "resource",
+      "types": [
+        {
+          "type": "speech.googleapis.com/Config",
+          "reference": "https://docs.cloud.google.com/speech-to-text/v2/docs/reference/rest/v2/projects.locations.config"
+        },
+        {
+          "type": "speech.googleapis.com/CustomClass",
+          "reference": "https://docs.cloud.google.com/speech-to-text/docs/reference/rest/v1/projects.locations.customClasses"
+        },
+        {
+          "type": "speech.googleapis.com/Endpoint"
+        },
+        {
+          "type": "speech.googleapis.com/Model"
+        },
+        {
+          "type": "speech.googleapis.com/PhraseSet",
+          "reference": "https://docs.cloud.google.com/speech-to-text/docs/reference/rest/v1/projects.locations.phraseSets"
+        },
+        {
+          "type": "speech.googleapis.com/Recognizer",
+          "reference": "https://docs.cloud.google.com/speech-to-text/v2/docs/reference/rest/v2/projects.locations.recognizers"
+        }
+      ]
+    },
+    {
+      "product": "Storage Batch Operations API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "storagebatchoperations.googleapis.com/Job",
+          "reference": "https://docs.cloud.google.com/storage/docs/storagebatchoperations/reference/rest/v1/projects.locations.jobs"
+        }
+      ]
+    },
+    {
+      "product": "Storage Insights",
+      "section": "resource",
+      "types": [
+        {
+          "type": "storageinsights.googleapis.com/ReportConfig",
+          "reference": "https://docs.cloud.google.com/storage/docs/insights/v1/reportConfig"
+        },
+        {
+          "type": "storageinsights.googleapis.com/ReportDetail",
+          "reference": "https://docs.cloud.google.com/storage/docs/insights/reference/rest/v1/projects.locations.reportConfigs.reportDetails"
+        }
+      ]
+    },
+    {
+      "product": "Storage Transfer Service",
+      "section": "resource",
+      "types": [
+        {
+          "type": "storagetransfer.googleapis.com/TransferJob",
+          "reference": "https://docs.cloud.google.com/storage-transfer/docs/reference/rest/v1/transferJobs"
+        }
+      ]
+    },
+    {
+      "product": "Transcoder API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "transcoder.googleapis.com/Job",
+          "reference": "https://docs.cloud.google.com/transcoder/docs/reference/rest/v1/projects.locations.jobs"
+        },
+        {
+          "type": "transcoder.googleapis.com/JobTemplate",
+          "reference": "https://docs.cloud.google.com/transcoder/docs/reference/rest/v1/projects.locations.jobTemplates"
+        }
+      ]
+    },
+    {
+      "product": "Vertex AI",
+      "section": "resource",
+      "types": [
+        {
+          "type": "aiplatform.googleapis.com/BatchPredictionJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/CachedContent",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.cachedContents"
+        },
+        {
+          "type": "aiplatform.googleapis.com/CustomJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.customJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/DataLabelingJob"
+        },
+        {
+          "type": "aiplatform.googleapis.com/Dataset",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.datasets"
+        },
+        {
+          "type": "aiplatform.googleapis.com/DeploymentResourcePool",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.deploymentResourcePools"
+        },
+        {
+          "type": "aiplatform.googleapis.com/Endpoint",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints"
+        },
+        {
+          "type": "aiplatform.googleapis.com/FeatureGroup",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.featureGroups"
+        },
+        {
+          "type": "aiplatform.googleapis.com/FeatureOnlineStore",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.featureOnlineStores"
+        },
+        {
+          "type": "aiplatform.googleapis.com/Featurestore",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.featurestores"
+        },
+        {
+          "type": "aiplatform.googleapis.com/HyperparameterTuningJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.hyperparameterTuningJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/Index",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.indexes"
+        },
+        {
+          "type": "aiplatform.googleapis.com/IndexEndpoint",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.indexEndpoints"
+        },
+        {
+          "type": "aiplatform.googleapis.com/MetadataStore",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.metadataStores"
+        },
+        {
+          "type": "aiplatform.googleapis.com/Model",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.models"
+        },
+        {
+          "type": "aiplatform.googleapis.com/ModelDeploymentMonitoringJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.modelDeploymentMonitoringJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/NasJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.nasJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/NotebookExecutionJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.notebookExecutionJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/NotebookRuntime",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.notebookRuntimes"
+        },
+        {
+          "type": "aiplatform.googleapis.com/NotebookRuntimeTemplate",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.notebookRuntimeTemplates"
+        },
+        {
+          "type": "aiplatform.googleapis.com/PipelineJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.pipelineJobs"
+        },
+        {
+          "type": "aiplatform.googleapis.com/ReasoningEngine",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.reasoningEngines"
+        },
+        {
+          "type": "aiplatform.googleapis.com/SpecialistPool",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.specialistPools"
+        },
+        {
+          "type": "aiplatform.googleapis.com/Tensorboard",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.tensorboards"
+        },
+        {
+          "type": "aiplatform.googleapis.com/TrainingPipeline",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.trainingPipelines"
+        },
+        {
+          "type": "aiplatform.googleapis.com/TuningJob",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.tuningJobs"
+        }
+      ]
+    },
+    {
+      "product": "Vertex AI Workbench",
+      "section": "resource",
+      "types": [
+        {
+          "type": "notebooks.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/vertex-ai/docs/workbench/reference/rest/v2/projects.locations.instances"
+        }
+      ]
+    },
+    {
+      "product": "Video Stitcher API",
+      "section": "resource",
+      "types": [
+        {
+          "type": "videostitcher.googleapis.com/CdnKey",
+          "reference": "https://docs.cloud.google.com/video-stitcher/docs/reference/rest/v1/projects.locations.cdnKeys"
+        },
+        {
+          "type": "videostitcher.googleapis.com/LiveConfig",
+          "reference": "https://docs.cloud.google.com/video-stitcher/docs/reference/rest/v1/projects.locations.liveConfigs"
+        },
+        {
+          "type": "videostitcher.googleapis.com/Slate",
+          "reference": "https://docs.cloud.google.com/video-stitcher/docs/reference/rest/v1/projects.locations.slates"
+        },
+        {
+          "type": "videostitcher.googleapis.com/VodConfig",
+          "reference": "https://docs.cloud.google.com/video-stitcher/docs/reference/rest/v1/projects.locations.vodConfigs"
+        }
+      ]
+    },
+    {
+      "product": "Web Security Scanner",
+      "section": "resource",
+      "types": [
+        {
+          "type": "websecurityscanner.googleapis.com/ScanConfig",
+          "reference": "https://docs.cloud.google.com/security-command-center/docs/reference/web-security-scanner/rest/v1/projects.scanConfigs"
+        }
+      ]
+    },
+    {
+      "product": "Workflows",
+      "section": "resource",
+      "types": [
+        {
+          "type": "workflows.googleapis.com/Workflow",
+          "reference": "https://docs.cloud.google.com/workflows/docs/reference/rest/v1/projects.locations.workflows"
+        }
+      ]
+    },
+    {
+      "product": "Workload Manager",
+      "section": "resource",
+      "types": [
+        {
+          "type": "workloadmanager.googleapis.com/Evaluation",
+          "reference": "https://docs.cloud.google.com/workload-manager/docs/reference/rest/v1/projects.locations.evaluations"
+        }
+      ]
+    },
+    {
+      "product": "Access policy (VPC Service Controls policy)",
+      "section": "policy",
+      "types": [
+        {
+          "type": "cloudresourcemanager.googleapis.com/Organization",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/organizations"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Folder",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/folders"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Project",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/projects"
+        }
+      ]
+    },
+    {
+      "product": "IAM policy",
+      "section": "policy",
+      "types": [
+        {
+          "type": "iap.googleapis.com/Tunnel"
+        },
+        {
+          "type": "iap.googleapis.com/TunnelInstance"
+        },
+        {
+          "type": "iap.googleapis.com/TunnelZone"
+        },
+        {
+          "type": "iap.googleapis.com/Web"
+        },
+        {
+          "type": "iap.googleapis.com/WebService"
+        },
+        {
+          "type": "iap.googleapis.com/WebServiceVersion"
+        },
+        {
+          "type": "iap.googleapis.com/WebType"
+        }
+      ]
+    },
+    {
+      "product": "Organization policy",
+      "section": "policy",
+      "types": [
+        {
+          "type": "cloudresourcemanager.googleapis.com/Folder",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v2/folders"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Organization",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/organizations"
+        },
+        {
+          "type": "cloudresourcemanager.googleapis.com/Project",
+          "reference": "https://docs.cloud.google.com/resource-manager/reference/rest/v1/projects"
+        }
+      ]
+    },
+    {
+      "product": "OS inventory",
+      "section": "runtime",
+      "types": [
+        {
+          "type": "compute.googleapis.com/Instance",
+          "reference": "https://docs.cloud.google.com/compute/docs/reference/rest/v1/instances"
+        }
+      ]
+    }
+  ]
+}

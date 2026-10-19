@@ -1,0 +1,41 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/global/machineImages/egress-appliance-golden",
+  "assetType": "compute.googleapis.com/MachineImage",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#machineImage",
+    "id": "7500000000000000001",
+    "name": "egress-appliance-golden",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/machineImages/egress-appliance-golden",
+    "status": "READY",
+    "sourceInstance": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/egress-appliance-1",
+    "instanceProperties": {
+      "machineType": "n2-standard-8",
+      "canIpForward": true
+    },
+    "savedDisks": [
+      {
+        "kind": "compute#savedDisk",
+        "sourceDisk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/egress-appliance-1",
+        "storageBytes": "10737418240",
+        "storageBytesStatus": "UP_TO_DATE",
+        "architecture": "X86_64"
+      }
+    ],
+    "machineImageEncryptionKey": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+    },
+    "storageLocations": ["eu"],
+    "totalStorageBytes": "10737418240",
+    "guestFlush": false,
+    "creationTimestamp": "2026-03-12T12:00:00.000-07:00"
+  }
+}

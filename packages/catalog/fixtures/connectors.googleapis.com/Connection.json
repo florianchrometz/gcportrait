@@ -1,0 +1,143 @@
+[
+  {
+    "name": "//connectors.googleapis.com/projects/demo-app-1/locations/europe-west3/connections/erp-postgres",
+    "assetType": "connectors.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/connections/erp-postgres",
+      "createTime": "2025-08-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "status": {
+        "state": "ACTIVE"
+      },
+      "nodeConfig": {
+        "minNodeCount": 2,
+        "maxNodeCount": 50
+      },
+      "serviceAccount": "connectors-runtime@demo-app-1.iam.gserviceaccount.com",
+      "subscriptionType": "PAY_G",
+      "suspended": false,
+      "connectionRevision": "3",
+      "serviceDirectory": "projects/a1b2c3d4e5f6-tp/locations/europe-west3/namespaces/connectors/services/runtime",
+      "description": "ERP database",
+      "connectorVersion": "projects/demo-app-1/locations/global/providers/gcp/connectors/postgresql/versions/1",
+      "configVariables": [
+        {
+          "key": "database",
+          "stringValue": "erp"
+        },
+        {
+          "key": "client_secret",
+          "secretValue": {
+            "secretVersion": "projects/demo-app-1/secrets/erp-client-secret/versions/1"
+          }
+        }
+      ],
+      "destinationConfigs": [
+        {
+          "key": "host",
+          "destinations": [
+            {
+              "host": "erp-db.corp.example.com",
+              "port": 5432
+            }
+          ]
+        },
+        {
+          "key": "failover_host",
+          "destinations": [
+            {
+              "host": "10.40.0.12",
+              "port": 5432
+            }
+          ]
+        }
+      ],
+      "authConfig": {
+        "authType": "USER_PASSWORD",
+        "userPassword": {
+          "username": "integration",
+          "password": {
+            "secretVersion": "projects/demo-app-1/secrets/erp-db-password/versions/3"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "//connectors.googleapis.com/projects/demo-app-1/locations/europe-west3/connections/inventory-api",
+    "assetType": "connectors.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/connections/inventory-api",
+      "createTime": "2025-08-01T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "status": {
+        "state": "ACTIVE"
+      },
+      "nodeConfig": {
+        "minNodeCount": 2,
+        "maxNodeCount": 50
+      },
+      "serviceAccount": "connectors-runtime@demo-app-1.iam.gserviceaccount.com",
+      "subscriptionType": "PAY_G",
+      "suspended": false,
+      "connectionRevision": "3",
+      "serviceDirectory": "projects/a1b2c3d4e5f6-tp/locations/europe-west3/namespaces/connectors/services/runtime",
+      "description": "Inventory REST API behind Private Service Connect",
+      "connectorVersion": "projects/demo-app-1/locations/global/providers/gcp/connectors/http/versions/1",
+      "destinationConfigs": [
+        {
+          "key": "base_url",
+          "destinations": [
+            {
+              "serviceAttachment": "projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+              "port": 443
+            }
+          ]
+        }
+      ],
+      "authConfig": {
+        "authType": "OAUTH2_CLIENT_CREDENTIALS",
+        "oauth2ClientCredentials": {
+          "clientId": "inventory-integration",
+          "clientSecret": {
+            "secretVersion": "projects/demo-app-1/secrets/inventory-client-secret/versions/2"
+          }
+        }
+      },
+      "sslConfig": {
+        "type": "MTLS",
+        "trustModel": "PRIVATE",
+        "useSsl": true,
+        "privateServerCertificate": {
+          "secretVersion": "projects/demo-app-1/secrets/inventory-ca/versions/1"
+        },
+        "clientCertificate": {
+          "secretVersion": "projects/demo-app-1/secrets/inventory-client-cert/versions/1"
+        },
+        "clientPrivateKey": {
+          "secretVersion": "projects/demo-app-1/secrets/inventory-client-key/versions/1"
+        },
+        "clientCertType": "PEM",
+        "serverCertType": "PEM"
+      }
+    }
+  }
+]

@@ -1,0 +1,149 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/forwardingRules/web-https",
+    "assetType": "compute.googleapis.com/GlobalForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-https",
+      "description": "Storefront HTTPS frontend",
+      "IPAddress": "203.0.113.10",
+      "IPProtocol": "TCP",
+      "portRange": "443-443",
+      "target": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetHttpsProxies/web-https-proxy",
+      "loadBalancingScheme": "EXTERNAL_MANAGED",
+      "networkTier": "PREMIUM",
+      "ipVersion": "IPV4",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "mB1u3BTkRmw=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/forwardingRules/web-https"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/forwardingRules/web-http",
+    "assetType": "compute.googleapis.com/GlobalForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-http",
+      "description": "Redirects HTTP to HTTPS",
+      "IPAddress": "203.0.113.10",
+      "IPProtocol": "TCP",
+      "portRange": "80-80",
+      "target": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetHttpProxies/web-http-proxy",
+      "loadBalancingScheme": "EXTERNAL_MANAGED",
+      "networkTier": "PREMIUM",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "Ttq0d5aN1kQ=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/forwardingRules/web-http"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/forwardingRules/internal-api-xr",
+    "assetType": "compute.googleapis.com/GlobalForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "internal-api-xr",
+      "description": "Cross-region internal Application Load Balancer",
+      "IPAddress": "10.10.0.21",
+      "IPProtocol": "TCP",
+      "portRange": "443-443",
+      "target": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetHttpsProxies/internal-api-xr-proxy",
+      "loadBalancingScheme": "INTERNAL_MANAGED",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "p3VtG1yWc2E=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/forwardingRules/internal-api-xr"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/forwardingRules/game-udp",
+    "assetType": "compute.googleapis.com/GlobalForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000005",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "game-udp",
+      "description": "Global external passthrough Network Load Balancer",
+      "IPAddress": "203.0.113.40",
+      "IPProtocol": "UDP",
+      "ports": ["7777"],
+      "backendService": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/backendServices/game-udp",
+      "loadBalancingScheme": "EXTERNAL",
+      "networkTier": "PREMIUM",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "Vd5q8Xn0eRs=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/forwardingRules/game-udp"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/global/forwardingRules/pscgoogleapis",
+    "assetType": "compute.googleapis.com/GlobalForwardingRule",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#forwardingRule",
+      "id": "7100000000000000004",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "pscgoogleapis",
+      "description": "Private Service Connect endpoint for Google APIs",
+      "IPAddress": "10.255.255.254",
+      "target": "all-apis",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "loadBalancingScheme": "",
+      "pscConnectionId": "71000000000000001",
+      "pscConnectionStatus": "ACCEPTED",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "fingerprint": "Nx2f3yX2cKM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/forwardingRules/pscgoogleapis"
+    }
+  }
+]

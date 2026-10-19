@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Organization Policy Service: organisation policies set on an organisation, folder or project, and
+# custom constraints. The official list names Policy under both "Organization Policy Service" and
+# "Organization Policy Service v2"; CustomConstraint only under v2, the API version both use.
+product: Organization Policy Service v2
+service: orgpolicy.googleapis.com
+icon: organization_policy
+types:
+  orgpolicy.googleapis.com/Policy:
+    role: hidden
+    console: 'https://console.cloud.google.com/iam-admin/orgpolicies?project={{projectId}}'
+    notes: >-
+      <organizations|folders|projects>/<n>/policies/<constraint>: the label is the constraint
+      (compute.vmExternalIpAccess, custom.<name>). Shown as a count on the organisation, folder or project it
+      is set on (its CAI parent), as the seed's badge.
+
+  orgpolicy.googleapis.com/CustomConstraint:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.actionType | lower}} · {{data.resourceTypes[0]}}'
+    notes: >-
+      organizations/<n>/customConstraints/custom.<id>: a CEL condition over the listed resource types (CAI
+      asset types, not assets). Policies that enforce it are named after it.

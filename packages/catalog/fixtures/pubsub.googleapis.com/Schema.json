@@ -1,0 +1,15 @@
+{
+  "name": "//pubsub.googleapis.com/projects/demo-data-1/schemas/order-event",
+  "assetType": "pubsub.googleapis.com/Schema",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/schemas/order-event",
+    "type": "AVRO",
+    "definition": "{\"type\":\"record\",\"name\":\"OrderEvent\",\"fields\":[{\"name\":\"orderId\",\"type\":\"string\"}]}",
+    "revisionId": "a1b2c3d4",
+    "revisionCreateTime": "2025-03-01T09:00:00Z"
+  }
+}

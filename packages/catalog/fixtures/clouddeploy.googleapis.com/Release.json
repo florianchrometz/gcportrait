@@ -1,0 +1,40 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1",
+  "assetType": "clouddeploy.googleapis.com/Release",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1",
+    "uid": "adbecfd0e1f2408192a3b4c5d6e7f809",
+    "description": "storefront 2.3.1",
+    "createTime": "2026-09-28T16:10:00Z",
+    "renderState": "SUCCEEDED",
+    "skaffoldConfigUri": "gs://demo-ops-1-deploy-artifacts/source/shop-2-3-1.tgz",
+    "skaffoldConfigPath": "skaffold.yaml",
+    "buildArtifacts": [
+      {
+        "image": "storefront",
+        "tag": "europe-west3-docker.pkg.dev/demo-app-1/apps/storefront@sha256:5d2c9e8f1a7b3c406e9d1f2a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c"
+      }
+    ],
+    "targetSnapshots": [
+      {
+        "name": "projects/demo-ops-1/locations/europe-west3/targets/shop-staging",
+        "targetId": "shop-staging",
+        "gke": {
+          "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot"
+        }
+      },
+      {
+        "name": "projects/demo-ops-1/locations/europe-west3/targets/shop-prod",
+        "targetId": "shop-prod",
+        "requireApproval": true,
+        "gke": {
+          "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop"
+        }
+      }
+    ]
+  }
+}

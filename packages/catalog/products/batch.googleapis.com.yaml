@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Batch. Jobs are operational records; the ones still queued or running are drawn, finished ones
+# start hidden.
+product: Batch
+service: batch.googleapis.com
+icon: batch
+types:
+  batch.googleapis.com/Job:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.status.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/batch/jobs?project={{projectId}}'
+    relations:
+      - {
+          kind: attaches,
+          to: '$.data.allocationPolicy.network.networkInterfaces[*].subnetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.allocationPolicy.network.networkInterfaces[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: '$.data.allocationPolicy.instances[*].instanceTemplate',
+          normalize: computeRelative,
+        }
+      - { kind: runsAs, to: $.data.allocationPolicy.serviceAccount.email, normalize: serviceAccountEmail }
+      - { kind: uses, to: '$.data.taskGroups[*].taskSpec.volumes[*].gcs.remotePath', normalize: gcsUri }
+      - {
+          kind: uses,
+          to: '$.data.taskGroups[*].taskSpec.runnables[*].container.imageUri',
+          normalize: artifactImage,
+        }
+      - { kind: triggers, to: '$.data.notifications[*].pubsubTopic', normalize: pubsubUri }
+    hiddenWhen: "$.data.status.state in ['SUCCEEDED', 'FAILED', 'CANCELLED', 'DELETION_IN_PROGRESS']"
+    notes: >-
+      The seed marks jobs hidden; they are core here with a hiddenWhen so that a job still queued or running
+      shows where it runs, and every finished job starts hidden. Network values may be full URLs,
+      `projects/…` paths or project-relative `global/…` and `regions/…` paths; an instance template given as
+      a plain name stays dangling. Cloud Asset Inventory names jobs with the project id
+      (//batch.googleapis.com/projects/PROJECT_ID/…, resource-name-format page), while `data.name` carries the
+      project number the API returns. Job notifications are published to Pub/Sub topics (triggers).

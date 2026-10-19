@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Secure Web Proxy, the Network Security part: gateway security policies, their rules and URL lists. The proxy
+# itself is a Network Services gateway (`networkservices.googleapis.com/Gateway`, type SECURE_WEB_GATEWAY)
+# that names its policy. networksecurity.googleapis.com is split by product between networking-fabric (NGFW
+# Enterprise, Network Security Integration, DNS Armor, and the TLS inspection policy) and load-balancing-edge
+# (Secure Web Proxy here, Cloud Service Mesh and Cloud Load Balancing in the -mesh and -authz files).
+product: Secure Web Proxy
+service: networksecurity.googleapis.com
+icon: secure_web_proxy
+types:
+  networksecurity.googleapis.com/GatewaySecurityPolicy:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'gateway security policy · {{location}}'
+    console: 'https://console.cloud.google.com/net-security/secure-web-proxy?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.tlsInspectionPolicy, normalize: name }
+    contains:
+      - byParent: networksecurity.googleapis.com/GatewaySecurityPolicyRule
+    notes: >-
+      Its rules nest inside by name (hidden, counted in the badge). Secure Web Proxy gateways point here
+      (`gatewaySecurityPolicy`); the optional TLS inspection policy is a networking-fabric type.
+
+  networksecurity.googleapis.com/GatewaySecurityPolicyRule:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.basicProfile | lower}} · {{data.priority}}'
+    console: 'https://console.cloud.google.com/net-security/secure-web-proxy?project={{projectId}}'
+    notes: >-
+      The matchers (`sessionMatcher`, `applicationMatcher`) are CEL expressions; a URL list appears inside them
+      as text (`inUrlList(host(), 'projects/…/urlLists/…')`), which is not parsed into a relation.
+
+  networksecurity.googleapis.com/UrlList:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.values[0]}}'
+    console: 'https://console.cloud.google.com/net-security/secure-web-proxy?project={{projectId}}'
+    domains:
+      - '$.data.values[*]'
+    notes: Host names, wildcards and URL prefixes; the host part of each is kept as a domain.

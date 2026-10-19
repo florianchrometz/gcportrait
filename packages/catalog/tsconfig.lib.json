@@ -1,0 +1,10 @@
+{
+  // The runtime library: no Node types, because everything the graph builder runs is pure (no side effects,
+  // no DOM, no Node APIs).
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src"],
+  "references": [{ "path": "../model" }]
+}

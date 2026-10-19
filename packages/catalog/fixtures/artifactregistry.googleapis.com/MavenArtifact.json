@@ -1,0 +1,17 @@
+{
+  "name": "//artifactregistry.googleapis.com/projects/demo-ops-1/locations/europe-west3/repositories/maven-libs/mavenArtifacts/com.example:pricing-core:1.8.0",
+  "assetType": "artifactregistry.googleapis.com/MavenArtifact",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/repositories/maven-libs/mavenArtifacts/com.example:pricing-core:1.8.0",
+    "pomUri": "europe-west3-maven.pkg.dev/demo-ops-1/maven-libs/com/example/pricing-core/1.8.0/pricing-core-1.8.0.pom",
+    "groupId": "com.example",
+    "artifactId": "pricing-core",
+    "version": "1.8.0",
+    "createTime": "2026-08-14T10:20:00Z",
+    "updateTime": "2026-08-14T10:20:00Z"
+  }
+}

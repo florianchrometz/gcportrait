@@ -1,0 +1,17 @@
+---
+/**
+ * A link to the demo at /demo/ (src/site.ts, DEMO_URL). The demo is the app itself, a page of its own with no way back
+ * to the site, so the link opens it in a new tab (`target="_blank"`, `rel="noopener"`) and says so to assistive
+ * technology (NEW_TAB_NOTE, visually hidden). `pnpm website:check` refuses any link to the demo without both. Other
+ * attributes (a class, Astro's scoping attribute) go onto the link.
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+import { DEMO_URL, NEW_TAB_NOTE } from '../site.js';
+
+type Props = Omit<HTMLAttributes<'a'>, 'href' | 'target' | 'rel'>;
+const attributes = Astro.props;
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<a {...attributes} href={DEMO_URL} target="_blank" rel="noopener"><slot /><span class="visually-hidden">{NEW_TAB_NOTE}</span></a>

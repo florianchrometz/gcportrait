@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Discovery Engine: the API behind Agent Search (formerly Vertex AI Search) and Gemini Enterprise apps.
+# Collection › data store and Collection › engine (app) › assistant nest by name
+# (projects/<number>/locations/<l>/collections/<c>/dataStores/<d>, …/engines/<e>/assistants/<a>); asset names
+# carry the project number. An engine names its data stores by bare id within its collection
+# (dataStoreIds), which the siblingName normaliser completes with the engine's own collection, so the
+# engine uses its data stores; both sit in their collection. A chat engine names its Dialogflow CX agent with
+# the project id the agent's asset name carries, so that edge is drawn from the engine.
+product: Discovery Engine
+service: discoveryengine.googleapis.com
+icon: vertex_ai_search
+types:
+  discoveryengine.googleapis.com/Collection:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.dataConnector.dataSource}} · {{location}}'
+    console: 'https://console.cloud.google.com/gen-app-builder/data-stores?project={{projectId}}'
+    contains:
+      - byParent: discoveryengine.googleapis.com/DataStore
+      - byParent: discoveryengine.googleapis.com/Engine
+    notes: >-
+      Most projects have only default_collection; a third-party data connector creates a collection of its
+      own with the data stores it syncs into. The v1alpha shape returns dataConnector as an output-only subset
+      (name, dataSource, entities[*].entityName and entities[*].dataStore), and those data stores nest here by
+      name anyway, so no relation is read; the subtitle names the connector's dataSource (jira, salesforce, …)
+      and falls back to the location for default_collection. The connector's CMEK key
+      (DataConnector.kmsKeyName) is input only and never comes back; the key in force shows on each data
+      store (cmekConfig.kmsKey).
+
+  discoveryengine.googleapis.com/DataStore:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.industryVertical | lower}} · {{data.contentConfig | lower}}'
+    console: 'https://console.cloud.google.com/gen-app-builder/data-stores?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.cmekConfig.kmsKey, normalize: kmsKey }
+      - {
+          kind: uses,
+          to: $.data.federatedSearchConfig.alloyDbConfig.alloydbConnectionConfig.instance,
+          normalize: name,
+          service: alloydb.googleapis.com,
+        }
+    notes: >-
+      A card rather than a zone: its documents, schemas and serving configs are not inventory types. Imported
+      sources (BigQuery, Cloud Storage, websites) are import operations, not fields, so only a federated
+      AlloyDB instance is drawn. kmsKeyName is input only; the key in force is cmekConfig.kmsKey. CMEK
+      needs a us or eu multi-region data store with a key in the us or europe location (not global), as the
+      fixture shows.
+
+  discoveryengine.googleapis.com/Engine:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.dataStoreIds[0]}} · {{location}}'
+    console: 'https://console.cloud.google.com/gen-app-builder/engines?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: $.data.chatEngineMetadata.dialogflowAgent,
+          normalize: name,
+          service: dialogflow.googleapis.com,
+        }
+      - { kind: encryptedBy, to: $.data.cmekConfig.kmsKey, normalize: kmsKey }
+      - {
+          kind: uses,
+          to: '$.data.dataStoreIds[*]',
+          normalize: siblingName,
+          pattern: '{parent}/dataStores/{id}',
+        }
+    contains:
+      - byParent: discoveryengine.googleapis.com/Assistant
+    notes: >-
+      An app (search, recommendations, chat, or a Gemini Enterprise app). dataStoreIds are bare ids of data
+      stores in the same collection, completed by siblingName (the engine uses each); search and
+      recommendation engines hold at most one, chat engines may hold several. The subtitle names the first one instead of
+      the raw solutionType enum. A chat engine names its Dialogflow CX agent in
+      chatEngineMetadata.dialogflowAgent (output only, projects/<id>/locations/<l>/agents/<uuid>, the form of
+      the agent's asset name), so the engine → agent edge resolves. The agent's genAppBuilderSettings.engine
+      names the engine back with the project id while engine asset names carry the number; the graph now
+      matches either spelling of the project, but the engine draws the link already.
+
+  discoveryengine.googleapis.com/Assistant:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.generationConfig.defaultModelId}}'
+    console: 'https://console.cloud.google.com/gen-app-builder/engines?project={{projectId}}'
+    notes: >-
+      The assistant of a Gemini Enterprise app, usually one per engine (default_assistant). Its Model Armor
+      templates (customerPolicy.modelArmorConfig) are not inventory types and are not drawn.
+
+  discoveryengine.googleapis.com/Notebook:
+    role: hidden
+    label: '{{data.title}}'
+    notes: >-
+      A NotebookLM Enterprise notebook (projects/<number>/locations/<global|us|eu>/notebooks/<id>), one per
+      user notebook, hence hidden.

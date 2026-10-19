@@ -1,0 +1,317 @@
+---
+/**
+ * An animated demo (a generated scene, scripts/media.mjs): its poster in the visitor's theme, with the WebM of
+ * that theme playing over it, muted, inline and looping, while it is on screen. The poster carries the description
+ * for assistive technology; the moving picture is decoration over it. Nothing moving loads without JavaScript.
+ *
+ * - On screen only, one at a time: a scene's file is fetched when the demo comes near the viewport, and only while
+ *   no other demo's file is still on its way (a phone scrolling past several demos fetches them one after another).
+ * - Where the WebM cannot play (canPlayType says no, the video reports an error, or it stalls before any data
+ *   arrives), the GIF of the same scene and theme takes its place, fetched only then and only on screen.
+ * - A demo loops for longer than five seconds next to other content, so it has a pause button (WCAG 2.2.2, Level A),
+ *   in its corner, named "Pause" or "Play" with the demo's title. Paused, a video stops on its frame and a GIF gives
+ *   way to the poster (a GIF cannot be paused). A demo the visitor paused stays paused when it scrolls out and back.
+ * - With reduced motion preferred, nothing plays by itself: the poster shows with the "Play" button, and the demo
+ *   plays only when the visitor presses it. When a browser refuses to play by itself (iOS in Low Power Mode), the
+ *   demo waits the same way.
+ */
+import type { ThemedVideo } from '../lib/media.js';
+
+interface Props {
+  video: ThemedVideo;
+  eager?: boolean;
+}
+const { video, eager = false } = Astro.props;
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<div class="demo-video" data-demo-video data-title={video.title}>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset={video.dark.src} type="image/webp" />
+    <img
+      src={video.light.src}
+      width={video.width}
+      height={video.height}
+      alt={video.alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding={eager ? 'auto' : 'async'}
+      fetchpriority={eager ? 'high' : undefined}
+    />
+  </picture>
+  <video
+    muted
+    loop
+    playsinline
+    preload="none"
+    aria-hidden="true"
+    tabindex="-1"
+    width={video.width}
+    height={video.height}
+    data-light={video.video.light}
+    data-dark={video.video.dark}
+    data-gif-light={video.gif.light}
+    data-gif-dark={video.gif.dark}
+    hidden></video>
+  <button type="button" class="demo-video-toggle" data-demo-toggle aria-label={`Pause: ${video.title}`} hidden>
+    <svg class="icon-pause" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+      <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"></path>
+    </svg>
+    <svg class="icon-play" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+      <path d="M8 5.2v13.6L18.8 12z" fill="currentColor"></path>
+    </svg>
+  </button>
+</div>
+
+<style>
+  .demo-video {
+    position: relative;
+  }
+  .demo-video img {
+    width: 100%;
+    height: auto;
+  }
+  /* The video, and the GIF the script puts in its place where the video cannot play. */
+  .demo-video video,
+  .demo-video :global(.demo-video-gif) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .demo-video-toggle {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-text);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+  .demo-video-toggle:hover {
+    background: var(--color-bg-alt);
+  }
+  .demo-video-toggle:focus-visible {
+    border-radius: 50%;
+  }
+  .demo-video-toggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .demo-video-toggle .icon-play,
+  .demo-video-toggle[data-paused] .icon-pause {
+    display: none;
+  }
+  .demo-video-toggle[data-paused] .icon-play {
+    display: block;
+  }
+  /* On a narrow screen the demo is small: the button sits closer to the corner, still 44 × 44 pixels. */
+  @media (max-width: 30rem) {
+    .demo-video-toggle {
+      right: 0.375rem;
+      bottom: 0.375rem;
+    }
+  }
+</style>
+
+<script>
+  type Demo = {
+    readonly video: HTMLVideoElement;
+    readonly toggle: HTMLButtonElement;
+    readonly title: string;
+    /** The GIF shown where the video cannot play, made when first needed. */
+    gif: HTMLImageElement | undefined;
+    useGif: boolean;
+    /** Neither the video nor the GIF can be shown: the poster stays. */
+    broken: boolean;
+    visible: boolean;
+    /** The visitor's last press: true to play, false to pause; undefined before the first. */
+    choice: boolean | undefined;
+    /** The file now set has played (or loaded) once, so playing it again needs no download. */
+    ready: boolean;
+  };
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const canPlayWebm = document.createElement('video').canPlayType('video/webm; codecs="vp9"') !== '';
+  // Keyed by the demo's container: the observer watches it, because the video has no box while it is hidden.
+  const demos = new Map<Element, Demo>();
+  /** The one demo whose file is on its way; the others wait for it. */
+  let loading: Demo | undefined;
+
+  const paused = (demo: Demo): boolean => demo.choice === undefined ? reduceMotion.matches : !demo.choice;
+
+  function source(demo: Demo, kind: 'video' | 'gif'): string {
+    const { dataset } = demo.video;
+    const dark = darkScheme.matches;
+    return (kind === 'video' ? (dark ? dataset.dark : dataset.light) : dark ? dataset.gifDark : dataset.gifLight) ?? '';
+  }
+
+  /** The demo's file for the visitor's theme has arrived: playing it needs no download. */
+  function fetched(demo: Demo): boolean {
+    const set = demo.useGif ? demo.gif?.getAttribute('src') : demo.video.getAttribute('src');
+    return demo.ready && set === source(demo, demo.useGif ? 'gif' : 'video');
+  }
+
+  /** Lets the next demo on screen fetch its file once this one's has arrived (or is no longer wanted). */
+  function release(demo: Demo): void {
+    if (loading !== demo) return;
+    loading = undefined;
+    for (const other of demos.values()) if (other !== demo && other.visible) update(other);
+  }
+
+  function fallBack(demo: Demo): void {
+    if (demo.useGif) return;
+    demo.useGif = true;
+    demo.ready = false;
+    demo.video.hidden = true;
+    demo.video.removeAttribute('src');
+    demo.video.load(); // stops the download
+    update(demo);
+  }
+
+  function showGif(demo: Demo): void {
+    const wanted = source(demo, 'gif');
+    let gif = demo.gif;
+    if (gif === undefined) {
+      gif = document.createElement('img');
+      gif.alt = '';
+      gif.className = 'demo-video-gif';
+      gif.decoding = 'async';
+      gif.hidden = true;
+      gif.addEventListener('load', () => {
+        demo.ready = true;
+        release(demo);
+        update(demo);
+      });
+      gif.addEventListener('error', () => {
+        demo.broken = true;
+        release(demo);
+        update(demo);
+      });
+      demo.video.after(gif);
+      demo.gif = gif;
+    }
+    if (wanted === '') {
+      demo.broken = true;
+      release(demo);
+    } else if (gif.getAttribute('src') !== wanted) {
+      gif.hidden = true;
+      demo.ready = false;
+      loading = demo;
+      gif.src = wanted;
+    } else if (demo.ready) {
+      gif.hidden = false;
+    }
+  }
+
+  function setState(demo: Demo, state: 'paused'): void {
+    if (state === 'paused') {
+      demo.choice = false;
+      update(demo);
+    }
+  }
+
+  function playVideo(demo: Demo): void {
+    const { video } = demo;
+    const wanted = source(demo, 'video');
+    if (wanted === '') {
+      fallBack(demo);
+      return;
+    }
+    if (video.getAttribute('src') !== wanted) {
+      // A theme change: the poster of the new theme shows until its video plays.
+      video.hidden = true;
+      demo.ready = false;
+      video.src = wanted;
+    }
+    if (!demo.ready) loading = demo;
+    video.muted = true;
+    video.play().catch((error: unknown) => {
+      const name = error instanceof DOMException ? error.name : '';
+      if (name === 'NotSupportedError') fallBack(demo);
+      else if (name === 'AbortError') return;
+      else if (name === 'NotAllowedError' || video.paused) {
+        release(demo);
+        setState(demo, 'paused');
+      }
+    });
+  }
+
+  function update(demo: Demo): void {
+    const { video, toggle } = demo;
+    const stopped = paused(demo);
+    toggle.setAttribute('aria-label', `${stopped ? 'Play' : 'Pause'}: ${demo.title}`);
+    toggle.toggleAttribute('data-paused', stopped);
+    if (!demo.broken && demo.visible && !stopped && (loading === undefined || loading === demo || fetched(demo))) {
+      if (demo.useGif) showGif(demo);
+      else playVideo(demo);
+    } else {
+      video.pause();
+      // A GIF cannot pause: the poster stands in for it.
+      if (demo.gif !== undefined) demo.gif.hidden = true;
+      if (!demo.visible || stopped || demo.broken) release(demo);
+    }
+    const showing = (!video.hidden && !video.paused) || (demo.gif !== undefined && !demo.gif.hidden);
+    toggle.hidden = demo.broken || !(stopped || showing);
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-demo-video]')) {
+    const video = root.querySelector('video');
+    const toggle = root.querySelector<HTMLButtonElement>('[data-demo-toggle]');
+    if (video === null || toggle === null) continue;
+    const demo: Demo = {
+      video,
+      toggle,
+      title: root.dataset.title ?? '',
+      gif: undefined,
+      useGif: !canPlayWebm,
+      broken: false,
+      visible: false,
+      choice: undefined,
+      ready: false,
+    };
+    demos.set(root, demo);
+    video.addEventListener('playing', () => {
+      demo.ready = true;
+      video.hidden = false;
+      release(demo);
+      update(demo);
+    });
+    video.addEventListener('error', () => {
+      if (video.getAttribute('src') !== null) fallBack(demo);
+    });
+    // Stalled before the first byte of the scene arrived: this browser will not get it to play.
+    video.addEventListener('stalled', () => {
+      if (video.readyState === HTMLMediaElement.HAVE_NOTHING) fallBack(demo);
+    });
+    toggle.addEventListener('click', () => {
+      demo.choice = paused(demo);
+      update(demo);
+    });
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const demo = demos.get(entry.target);
+        if (demo === undefined) continue;
+        demo.visible = entry.isIntersecting;
+        update(demo);
+      }
+    },
+    { rootMargin: '200px 0px' },
+  );
+  for (const root of demos.keys()) observer.observe(root);
+  const all = (): void => {
+    for (const demo of demos.values()) update(demo);
+  };
+  reduceMotion.addEventListener('change', all);
+  darkScheme.addEventListener('change', all);
+</script>

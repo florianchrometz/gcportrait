@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Transcoder API: jobs are
+# high-cardinality records (hidden) that read from and write to Cloud Storage; job templates are leaves.
+product: Transcoder API
+service: transcoder.googleapis.com
+icon: transcoder
+types:
+  transcoder.googleapis.com/Job:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: uses, to: '$.data.config.inputs[*].uri', normalize: gcsUri }
+      - { kind: uses, to: $.data.config.output.uri, normalize: gcsUri }
+      - { kind: triggers, to: $.data.config.pubsubDestination.topic, normalize: pubsubUri }
+    notes: >-
+      inputUri and outputUri are input only (the API fills config.inputs[*].uri and config.output.uri from
+      them), so the rules read the config; the seed's inputUri|outputUri paths are empty on stored jobs.
+
+  transcoder.googleapis.com/JobTemplate:
+    role: leaf
+    label: '{{name | lastSegment}}'

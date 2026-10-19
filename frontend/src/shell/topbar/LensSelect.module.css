@@ -1,0 +1,22 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The Lens picker's list (LensSelect.tsx): wide enough for a lens's description on one line, which is cut with
+   an ellipsis beyond it (the option's title and its accessible name carry all of it). */
+.list {
+  width: 30rem;
+}
+
+.list [role='option'] {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.list [role='option'] > span {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+/* The check mark's column keeps its width beside a long description (flex would shrink it). */
+.list [role='option']::before {
+  flex-shrink: 0;
+}

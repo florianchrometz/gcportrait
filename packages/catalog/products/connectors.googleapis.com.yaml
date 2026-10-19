@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Integration Connectors: connections run
+# in a Google-managed tenant project and reach private backends through endpoint attachments (Private Service
+# Connect endpoints to a service attachment) or directly through a destination's service attachment.
+product: Integration Connectors
+service: connectors.googleapis.com
+icon: integration_connectors
+types:
+  connectors.googleapis.com/Connection:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.connectorVersion | parentSegment(connectors)}} · {{location}}'
+    console: 'https://console.cloud.google.com/connectors/connections?project={{projectId}}'
+    ips:
+      - '$.data.destinationConfigs[*].destinations[*].host'
+    domains:
+      - '$.data.destinationConfigs[*].destinations[*].host'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: routes,
+          to: '$.data.destinationConfigs[*].destinations[*].serviceAttachment',
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: '$.data.authConfig.*.*.secretVersion',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.sslConfig.*.secretVersion',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.configVariables[*].secretValue.secretVersion',
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      connectorVersion
+      (projects/<p>/locations/global/providers/<provider>/connectors/<connector>/versions/<v>) names the
+      connector type in the subtitle. serviceDirectory, tlsServiceDirectory, imageLocation and
+      envoyImageLocation point into the Google-managed tenant project and are not read (the seed's Service
+      Directory edge would always dangle). A destination host is a host name or an address (an endpoint
+      attachment's address, matched to the attachment by IP), so it is read both as a domain and as an IP.
+      Secret references are secret versions (projects/<p>/secrets/<s>/versions/<n>), read from every
+      authentication method (authConfig.<method>.<field>.secretVersion: user password, OAuth client secret,
+      JWT key, SSH certificate, …), the TLS configuration (sslConfig.<certificate or key>.secretVersion) and
+      configuration variables; eventingConfig's authentication and its listener secrets are not read yet.
+      suspended is a badge.
+
+  connectors.googleapis.com/EndpointAttachment:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.endpointIp}}'
+    console: 'https://console.cloud.google.com/connectors/endpoint-attachments?project={{projectId}}'
+    ips:
+      - $.data.endpointIp
+    relations:
+      - { kind: routes, to: $.data.serviceAttachment, normalize: computeRelative }
+    notes: >-
+      A Private Service Connect endpoint in the connectors tenant network to the customer's service attachment
+      (projects/<p>/regions/<r>/serviceAttachments/<s>), drawn like a PSC forwarding rule's route.
+
+  connectors.googleapis.com/ManagedZone:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.dns}}'
+    console: 'https://console.cloud.google.com/connectors/managed-zones?project={{projectId}}'
+    domains:
+      - $.data.dns
+    notes: >-
+      DNS peering from the connectors tenant to the VPC targetVpc of project targetProject. Both are bare
+      names (network name, project id) that no normaliser joins into a network name, so the seed's peers edge
+      is not drawn; the targets are drawer facts.
+
+  connectors.googleapis.com/EventSubscription:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.eventTypeId}}'
+    relations:
+      - { kind: runsAs, to: $.data.destinations.serviceAccount, normalize: serviceAccountEmail }
+    domains:
+      - $.data.destinations.endpoint.endpointUri
+
+  connectors.googleapis.com/RegionalSettings:
+    role: hidden
+    label: 'Connectors settings {{location}}'
+    ips:
+      - '$.data.networkConfig.egressIps[*]'
+    relations:
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKeyName, normalize: kmsKey }
+
+  connectors.googleapis.com/Settings:
+    role: hidden
+    label: 'Connectors settings'
+    subtitle: '{{data.tenantProjectId}}'

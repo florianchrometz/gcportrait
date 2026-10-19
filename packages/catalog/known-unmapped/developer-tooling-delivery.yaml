@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Developer tooling and delivery. `owns` lists the official asset types this group owns, mapped or not (exact
+# types, or <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types
+# not mapped yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group developer-tooling-delivery
+title: Developer tooling and delivery
+owns:
+  - 'artifactregistry.googleapis.com/*'
+  - 'cloudbuild.googleapis.com/*'
+  - 'clouddeploy.googleapis.com/*'
+  - 'config.googleapis.com/*'
+  - 'containerregistry.googleapis.com/*'
+  - 'designcenter.googleapis.com/*'
+  - 'developerconnect.googleapis.com/*'
+  - 'saasservicemgmt.googleapis.com/*'
+  - 'securesourcemanager.googleapis.com/*'
+types: {}

@@ -1,0 +1,24 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/global/targetGrpcProxies/inventory-grpc-proxy",
+  "assetType": "compute.googleapis.com/TargetGrpcProxy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#targetGrpcProxy",
+    "id": "7200000000000000021",
+    "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+    "name": "inventory-grpc-proxy",
+    "description": "Proxyless gRPC clients of the inventory service",
+    "urlMap": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/urlMaps/inventory-grpc",
+    "validateForProxyless": true,
+    "fingerprint": "b8Zt2nVq1aA=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/targetGrpcProxies/inventory-grpc-proxy"
+  }
+}

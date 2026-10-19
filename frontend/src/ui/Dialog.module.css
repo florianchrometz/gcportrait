@@ -1,0 +1,71 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* A modal dialog over a backdrop (Dialog.tsx). The backdrop is the on-surface colour at 32 %, so it darkens the
+   light theme and lightens nothing in the dark one. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-on-surface) 32%, transparent);
+}
+
+.dialog {
+  display: grid;
+  gap: var(--space-3);
+  width: min(560px, calc(100vw - 2 * var(--space-8)));
+  max-height: calc(100vh - 2 * var(--space-8));
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  overflow: auto;
+  border: 1px solid var(--color-outline);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.dialog:focus {
+  outline: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.description {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--font-size-control);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* A phone (ui/screen.ts): the dialog nearly as wide and as tall as the window, with less room around its content. */
+@media (max-width: 47.99rem) {
+  .dialog {
+    width: calc(100vw - 2 * var(--space-4));
+    max-height: calc(100dvh - 2 * var(--space-4));
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+}

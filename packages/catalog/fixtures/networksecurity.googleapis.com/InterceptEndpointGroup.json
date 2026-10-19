@@ -1,0 +1,33 @@
+{
+  "name": "//networksecurity.googleapis.com/projects/10000000004/locations/global/interceptEndpointGroups/appliances",
+  "assetType": "networksecurity.googleapis.com/InterceptEndpointGroup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-22T07:15:00Z",
+  "data": {
+    "name": "projects/10000000004/locations/global/interceptEndpointGroups/appliances",
+    "createTime": "2026-04-10T10:00:00Z",
+    "updateTime": "2026-09-22T07:15:00Z",
+    "reconciling": false,
+    "description": "Consumer endpoint group for the production VPCs",
+    "interceptDeploymentGroup": "projects/10000000004/locations/global/interceptDeploymentGroups/appliances",
+    "state": "ACTIVE",
+    "associations": [
+      {
+        "name": "projects/10000000001/locations/global/interceptEndpointGroupAssociations/core",
+        "network": "projects/10000000001/global/networks/core",
+        "state": "ACTIVE"
+      }
+    ],
+    "connectedDeploymentGroup": {
+      "name": "projects/10000000004/locations/global/interceptDeploymentGroups/appliances",
+      "locations": [
+        {
+          "location": "europe-west3-a",
+          "state": "ACTIVE"
+        }
+      ]
+    }
+  }
+}

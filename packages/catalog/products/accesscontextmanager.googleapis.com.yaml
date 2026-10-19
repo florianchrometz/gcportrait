@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Access Context Manager, authorized organisations descriptions: the one type of this service; the
+# access policy, levels and perimeters are typed identity.accesscontextmanager.googleapis.com (in that file).
+product: Access Policy (Access Context Manager)
+service: accesscontextmanager.googleapis.com
+icon: access_context_manager
+types:
+  accesscontextmanager.googleapis.com/AuthorizedOrgsDesc:
+    role: hidden
+    subtitle: '{{data.authorizationType | lower}} · {{data.authorizationDirection | lower}}'
+    notes: >-
+      accessPolicies/<n>/authorizedOrgsDescs/<id>: trusts other organisations' devices or allows traffic to or
+      from them (orgs: organizations/<n>). Those organisations are outside the snapshot, so nothing is linked;
+      the description nests in its access policy.

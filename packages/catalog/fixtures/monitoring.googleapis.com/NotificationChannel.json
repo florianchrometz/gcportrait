@@ -1,0 +1,68 @@
+[
+  {
+    "name": "//monitoring.googleapis.com/projects/10000000005/notificationChannels/4000000000000000001",
+    "assetType": "monitoring.googleapis.com/NotificationChannel",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000005/notificationChannels/4000000000000000001",
+      "type": "pubsub",
+      "displayName": "Alerts to Pub/Sub",
+      "labels": {
+        "topic": "projects/demo-ops-1/topics/alerts"
+      },
+      "verificationStatus": "VERIFICATION_STATUS_UNSPECIFIED",
+      "enabled": true,
+      "creationRecord": {
+        "mutateTime": "2025-04-01T08:00:00Z",
+        "mutatedBy": "sre@example.com"
+      }
+    }
+  },
+  {
+    "name": "//monitoring.googleapis.com/projects/10000000005/notificationChannels/4000000000000000002",
+    "assetType": "monitoring.googleapis.com/NotificationChannel",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000005/notificationChannels/4000000000000000002",
+      "type": "webhook_tokenauth",
+      "displayName": "On-call webhook",
+      "labels": {
+        "url": "https://hooks.example.com/alerts"
+      },
+      "verificationStatus": "VERIFICATION_STATUS_UNSPECIFIED",
+      "enabled": true,
+      "creationRecord": {
+        "mutateTime": "2025-04-01T08:00:00Z",
+        "mutatedBy": "sre@example.com"
+      }
+    }
+  },
+  {
+    "name": "//monitoring.googleapis.com/projects/10000000005/notificationChannels/4000000000000000003",
+    "assetType": "monitoring.googleapis.com/NotificationChannel",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000005/notificationChannels/4000000000000000003",
+      "type": "email",
+      "displayName": "SRE mailing list",
+      "labels": {
+        "email_address": "sre@example.com"
+      },
+      "verificationStatus": "VERIFIED",
+      "enabled": true,
+      "creationRecord": {
+        "mutateTime": "2025-04-01T08:00:00Z",
+        "mutatedBy": "sre@example.com"
+      }
+    }
+  }
+]

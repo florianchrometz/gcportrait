@@ -1,0 +1,83 @@
+---
+import Base from '../../layouts/Base.astro';
+import { DOC_GROUPS, menuItems } from '../../data/docs.js';
+import { renderedDocs } from '../../lib/docs.js';
+import { socialImage } from '../../lib/media.js';
+import { breadcrumbLd } from '../../lib/seo.js';
+import { REPOSITORY_URL, repositoryFileUrl } from '../../site.js';
+
+const docs = renderedDocs();
+const meta = {
+  title: 'Documentation',
+  description:
+    'The gcportrait guides: try the web app, self-host it on Cloud Run, script it through the API; lenses, the timeline, export, permissions and the FAQ.',
+  path: '/docs/',
+  socialImage: socialImage('docs', 'gcportrait documentation'),
+  jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Docs', path: '/docs/' }])],
+};
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<Base meta={meta}>
+  <div class="container docs-index">
+    <h1>Documentation</h1>
+    <p class="lead">
+      How to use the web app, run your own instance and script its diagrams through the API. Every guide here is a
+      Markdown file in the <a href={repositoryFileUrl('docs', 'tree')}>docs folder</a> of the repository, verified
+      against the code it describes; the contributor material lives next to the code on
+      <a href={REPOSITORY_URL}>GitHub</a>.
+    </p>
+    {
+      DOC_GROUPS.map((group) => {
+        const items = menuItems(
+          docs.filter((doc) => doc.group === group),
+          group,
+        );
+        return (
+          items.length > 0 && (
+            <section aria-labelledby={`group-${group.toLowerCase().replace(/\s+/g, '-')}`}>
+              <h2 id={`group-${group.toLowerCase().replace(/\s+/g, '-')}`}>{group}</h2>
+              <ul class="grid cards">
+                {items.map((doc) => (
+                  <li class="card">
+                    <h3>
+                      <a href={doc.path}>{doc.label}</a>
+                    </h3>
+                    <p>{doc.description}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        );
+      })
+    }
+  </div>
+</Base>
+
+<style>
+  .docs-index {
+    padding-top: 2rem;
+  }
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+  .cards h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.125rem;
+  }
+  .cards p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  /* Phones: the guide's link is a 44-pixel-high target without moving the card's text. */
+  @media (max-width: 47.99rem) {
+    .cards h3 a {
+      display: block;
+      padding-block: 0.7rem;
+      margin-block: -0.7rem;
+    }
+  }
+</style>

@@ -1,0 +1,33 @@
+{
+  "name": "@gcportrait/backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gcportrait stateless Fastify service for Cloud Run.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "HOST=localhost LOG_FORMAT=pretty tsx watch --tsconfig ../frontend/tsconfig.json --env-file-if-exists=.env src/main.ts",
+    "build": "tsx bundle.ts",
+    "bundle": "tsx bundle.ts",
+    "start": "node --enable-source-maps dist/server.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/multipart": "10.1.2",
+    "@fastify/rate-limit": "^11.2.0",
+    "@gcportrait/model": "workspace:*",
+    "@gcportrait/render": "workspace:*",
+    "fastify": "^5.12.5",
+    "pino": "^10.4.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@gcportrait/ingest": "workspace:*",
+    "@types/node": "catalog:",
+    "esbuild": "^0.28.2",
+    "pino-pretty": "^13.2.0",
+    "tsx": "catalog:"
+  }
+}

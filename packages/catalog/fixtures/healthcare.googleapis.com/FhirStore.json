@@ -1,0 +1,48 @@
+[
+  {
+    "name": "//healthcare.googleapis.com/projects/10000000003/locations/europe-west3/datasets/clinical/fhirStores/patients",
+    "assetType": "healthcare.googleapis.com/FhirStore",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/datasets/clinical/fhirStores/patients",
+      "version": "R4",
+      "enableUpdateCreate": true,
+      "disableReferentialIntegrity": false,
+      "notificationConfigs": [
+        {
+          "pubsubTopic": "projects/demo-data-1/topics/fhir-changes",
+          "sendFullResource": false,
+          "sendPreviousResourceOnDelete": false
+        }
+      ],
+      "streamConfigs": [
+        {
+          "resourceTypes": ["Patient", "Observation"],
+          "bigqueryDestination": {
+            "datasetUri": "bq://demo-data-1.fhir_analytics",
+            "schemaConfig": { "schemaType": "ANALYTICS_V2", "recursiveStructureDepth": "2" },
+            "writeDisposition": "WRITE_APPEND"
+          }
+        }
+      ],
+      "bulkExportGcsDestination": { "uriPrefix": "gs://demo-data-1-fhir-export/patients" },
+      "complexDataTypeReferenceParsing": "ENABLED"
+    }
+  },
+  {
+    "name": "//healthcare.googleapis.com/projects/10000000003/locations/europe-west3/datasets/clinical/fhirStores/legacy-stu3",
+    "assetType": "healthcare.googleapis.com/FhirStore",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/datasets/clinical/fhirStores/legacy-stu3",
+      "version": "STU3",
+      "notificationConfig": { "pubsubTopic": "projects/demo-data-1/topics/fhir-legacy-changes" }
+    }
+  }
+]

@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Binary Authorization: the project's admission policy, attestors and platform policies. CAI names all
+# three with the project number (projects/<number>/policy, projects/<number>/attestors/<id>,
+# projects/<number>/platforms/<platform>/policies/<id>). Policies require attestations by attestors
+# (projects/<p>/attestors/<id>); the API reference, gcloud and the console write the attestor's project id
+# there, and such a reference matches no asset: the graph builder matches names verbatim and no normaliser
+# rewrites a project id to its number. Only references by project number resolve. Attestors verify with
+# public keys, which for Cloud KMS keys are key versions
+# (//cloudkms.googleapis.com/v1/…/cryptoKeyVersions/<n>).
+product: Binary Authorization
+service: binaryauthorization.googleapis.com
+icon: binary_authorization
+types:
+  binaryauthorization.googleapis.com/Policy:
+    role: core
+    label: 'Binary Authorization policy'
+    subtitle: '{{data.defaultAdmissionRule.evaluationMode | lower}} · {{data.defaultAdmissionRule.enforcementMode | lower}}'
+    console: 'https://console.cloud.google.com/security/binary-authorization/policy?project={{projectId}}'
+    relations:
+      - { kind: uses, to: '$.data.defaultAdmissionRule.requireAttestationsBy[*]', normalize: name }
+      - { kind: uses, to: '$.data.clusterAdmissionRules.*.requireAttestationsBy[*]', normalize: name }
+      - {
+          kind: uses,
+          to: '$.data.kubernetesNamespaceAdmissionRules.*.requireAttestationsBy[*]',
+          normalize: name,
+        }
+      - {
+          kind: uses,
+          to: '$.data.kubernetesServiceAccountAdmissionRules.*.requireAttestationsBy[*]',
+          normalize: name,
+        }
+      - {
+          kind: uses,
+          to: '$.data.istioServiceIdentityAdmissionRules.*.requireAttestationsBy[*]',
+          normalize: name,
+        }
+    notes: >-
+      One per project (projects/<number>/policy), so the label is fixed. The attestor edges resolve only for
+      references by project number (projects/<number>/attestors/<id>); the usual project-id form
+      (projects/<project id>/attestors/<id>) dangles until a project-id → number rewrite for name targets
+      exists (the fixture carries both forms). clusterAdmissionRules is keyed by <location>.<cluster id>: the
+      seed's secures edge to those GKE clusters needs the map's keys, which a JSONPath cannot select, and a
+      normaliser that builds a cluster name from a key and the asset's project; neither exists, so only the
+      attestor edges are drawn. Namespace, Kubernetes service account and Istio service identity rules (keyed
+      by namespace, namespace:account or spiffe://<domain>/ns/<ns>/sa/<sa>) also require attestors.
+
+  binaryauthorization.googleapis.com/Attestor:
+    role: core
+    subtitle: '{{data.userOwnedGrafeasNote.noteReference | lastSegment}}'
+    console: 'https://console.cloud.google.com/security/binary-authorization/attestors?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data.userOwnedGrafeasNote.publicKeys[?(@.id startsWith '//cloudkms.googleapis.com/')].id",
+          normalize: kmsKey,
+        }
+    notes: >-
+      A Cloud KMS public key's id is the key version's URI (//cloudkms.googleapis.com/v1/projects/…/
+      cryptoKeyVersions/<n>); the edge goes to the key (the seed's version level would point at a hidden
+      version). Only Cloud KMS ids are read: PGP fingerprints and other PKIX key URIs would only add dangling
+      references. noteReference is a Container Analysis note (projects/<p>/notes/<id>), which is no asset
+      type. delegationServiceAccountEmail (output only) is always the Binary Authorization service agent
+      (service-<number>@gcp-sa-binaryauthorization.iam.gserviceaccount.com) that reads the attestations; it is
+      no asset of the organisation, so the seed's runsAs edge would always dangle and is not drawn.
+
+  binaryauthorization.googleapis.com/PlatformPolicy:
+    role: leaf
+    subtitle: '{{name | parentSegment(platforms)}}'
+    console: 'https://console.cloud.google.com/security/binary-authorization/policy?project={{projectId}}'
+    notes: >-
+      Continuous-validation and check-based policies per platform (projects/<number>/platforms/<platform>/
+      policies/<id>, platform gke). Check sets reference attestors inside nested check definitions; not read yet.

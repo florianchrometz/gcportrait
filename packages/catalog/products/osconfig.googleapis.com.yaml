@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud OS Config / VM Manager. OS policy
+# assignments select VMs by labels and OS inventory only, so they make no edges; patch deployments may name
+# their VMs. The per-VM reports are operational records and start hidden. The API names these resources with
+# the project number; Cloud Asset Inventory's name format lists the project id.
+product: Cloud OS Config
+service: osconfig.googleapis.com
+icon: os_config
+types:
+  osconfig.googleapis.com/OSPolicyAssignment:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.rolloutState | lower}} · {{location}}'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.osPolicies[*].resourceGroups[*].resources[*].*.*.*.gcs.bucket',
+          normalize: gcsUri,
+        }
+      - {
+          kind: uses,
+          to: '$.data.osPolicies[*].resourceGroups[*].resources[*].file.file.gcs.bucket',
+          normalize: gcsUri,
+        }
+    hiddenWhen: '$.data.deleted == true'
+    notes: >-
+      The seed's secures edge to instances cannot be drawn: instanceFilter selects VMs by inclusionLabels,
+      exclusionLabels and inventories (OS short name and version), never by name; instanceFilter.all is a
+      badge. The asset's location is a zone. A revision that deletes the assignment (deleted) starts hidden.
+      Policies fetch packages, scripts and files from Cloud Storage (resources[*].pkg.deb|rpm|msi.source.gcs,
+      exec.validate|enforce.file.gcs, file.file.gcs; bare bucket names), so the assignment uses those
+      buckets (so it is core, not a leaf).
+
+  osconfig.googleapis.com/PatchDeployment:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.recurringSchedule.frequency | lower}} · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: '$.data.instanceFilter.instances[*]', normalize: computeRelative }
+      - { kind: uses, to: "$.data.patchConfig['preStep','postStep'].*.gcsObject.bucket", normalize: gcsUri }
+    notes: >-
+      instanceFilter.instances lists VMs as zones/<zone>/instances/<name> (in the deployment's project),
+      projects/<p>/zones/<zone>/instances/<name> or a full self-link; groupLabels, zones and
+      instanceNamePrefixes select VMs without naming them (no edge), and instanceFilter.all targets every VM
+      of the project (a badge). Pre- and post-patch scripts kept in Cloud Storage
+      (patchConfig.preStep|postStep.linux|windowsExecStepConfig.gcsObject.bucket) are uses edges to their
+      bucket.
+
+  osconfig.googleapis.com/OSPolicyAssignmentReport:
+    role: hidden
+    label: '{{name | parentSegment(osPolicyAssignments)}}'
+    subtitle: '{{data.instance}}'
+    notes: >-
+      One compliance report per VM and assignment; osPolicyAssignment carries an @revision suffix, so it is
+      not read as a reference.
+
+  osconfig.googleapis.com/VulnerabilityReport:
+    role: hidden
+    label: 'Vulnerability report'
+    subtitle: '{{data.highestUpgradableCveSeverity | lower}}'
+    notes: >-
+      One report per VM; the VM is named by its numeric instance id in the asset name, which no rule resolves.

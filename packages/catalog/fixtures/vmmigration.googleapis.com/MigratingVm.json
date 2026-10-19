@@ -1,0 +1,41 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/migratingVms/vm-1042",
+  "assetType": "vmmigration.googleapis.com/MigratingVm",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/migratingVms/vm-1042",
+    "sourceVmId": "vm-1042",
+    "displayName": "erp-app-01",
+    "state": "ACTIVE",
+    "group": "projects/demo-ops-1/locations/europe-west3/groups/erp-wave-1",
+    "computeEngineTargetDefaults": {
+      "vmName": "erp-app-01",
+      "targetProject": "projects/demo-ops-1/locations/global/targetProjects/demo-app-1",
+      "zone": "europe-west3-a",
+      "machineType": "n2-standard-8",
+      "machineTypeSeries": "n2",
+      "networkInterfaces": [
+        {
+          "network": "projects/demo-net-1/global/networks/core",
+          "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "internalIp": "10.10.0.80",
+          "networkTier": "NETWORK_TIER_PREMIUM"
+        }
+      ],
+      "serviceAccount": "erp-app@demo-app-1.iam.gserviceaccount.com",
+      "diskType": "COMPUTE_ENGINE_DISK_TYPE_BALANCED",
+      "encryption": {
+        "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute"
+      },
+      "labels": {
+        "app": "erp"
+      }
+    },
+    "createTime": "2026-06-01T08:00:00Z",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "stateTime": "2026-06-02T08:00:00Z"
+  }
+}

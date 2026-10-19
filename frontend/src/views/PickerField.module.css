@@ -1,0 +1,123 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The pickers of the Filters and Focus popovers (PickerField.tsx): a label, the chosen values as chips and the
+   search combobox, whose results list is given a width and a scroll height here (ui/Listbox keeps the active
+   result in view). App chrome tokens only, so both themes follow. On a phone or a tablet a chip and its remove button are touch
+   targets, and the results are as wide as the field. */
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.label {
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.hint {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A chosen value: outlined, with its remove button; the text is cut at a chip's width (the title has it all). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  height: 24px;
+  padding-left: var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 12px;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-footnote);
+}
+
+.chipText {
+  overflow: hidden;
+  max-width: 16rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.search {
+  display: block;
+}
+
+.search > span {
+  display: block;
+}
+
+.search input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* The results: a fixed width (long names and second lines are cut, their title has them) and a scroll height. */
+.search [role='listbox'] {
+  width: 24rem;
+  max-height: 264px;
+  overflow-y: auto;
+}
+
+.search [role='option'] > span {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+/* The selection mark's column keeps its width beside a long result (flex would shrink it). */
+.search [role='option']::before {
+  flex-shrink: 0;
+}
+
+.search [role='option'] > span > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 79.99rem) {
+  .chip {
+    height: var(--touch-target);
+    border-radius: calc(var(--touch-target) / 2);
+  }
+
+  .remove {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+
+  .search [role='listbox'] {
+    width: auto;
+    max-width: 100%;
+  }
+}

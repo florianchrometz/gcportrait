@@ -1,0 +1,23 @@
+{
+  "name": "//integrations.googleapis.com/projects/demo-app-1/locations/europe-west3/sfdcInstances/3c4d5e6f-0000-4000-8000-000000000001/sfdcChannels/4d5e6f7a-0000-4000-8000-000000000001",
+  "assetType": "integrations.googleapis.com/SfdcChannel",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/sfdcInstances/3c4d5e6f-0000-4000-8000-000000000001/sfdcChannels/4d5e6f7a-0000-4000-8000-000000000001",
+    "displayName": "Order events",
+    "description": "Platform events for new orders",
+    "channelTopic": "/event/Order_Event__e",
+    "isActive": true,
+    "lastReplayId": "1024",
+    "createTime": "2025-08-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z"
+  }
+}

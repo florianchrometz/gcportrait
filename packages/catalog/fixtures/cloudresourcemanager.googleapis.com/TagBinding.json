@@ -1,0 +1,19 @@
+{
+  "name": "//cloudresourcemanager.googleapis.com/tagBindings/%2F%2Fcloudresourcemanager.googleapis.com%2Fprojects%2F10000000002/tagValues/40000000011",
+  "assetType": "cloudresourcemanager.googleapis.com/TagBinding",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "tagBindings/%2F%2Fcloudresourcemanager.googleapis.com%2Fprojects%2F10000000002/tagValues/40000000011",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "tagValue": "tagValues/40000000011",
+    "tagValueNamespacedName": "30000000001/env/prod"
+  }
+}

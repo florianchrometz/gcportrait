@@ -1,0 +1,29 @@
+{
+  "name": "@gcportrait/icons",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Google Cloud product icons as Google Cloud provides them at https://cloud.google.com/icons (Google Cloud's, used as provided under the terms stated there, not covered by this package's licence), vendored unmodified, the icon-key mapping, gcportrait's own drawings, and the fallback chain from a catalog icon key to an inline SVG.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "drift": "node scripts/drift.mjs",
+    "contact-sheet": "node scripts/contact-sheet.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc -b tsconfig.json scripts/tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "playwright-core": "catalog:",
+    "prettier": "catalog:",
+    "yaml": "^2.9.1"
+  }
+}

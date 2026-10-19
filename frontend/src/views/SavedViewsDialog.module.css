@@ -1,0 +1,112 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The Saved views dialog (SavedViews.tsx): the save form, a status line, and the list of saved views with their
+   actions. Tokens only (both themes). */
+.panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.save,
+.rename {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.save input,
+.rename input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.label {
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.status {
+  min-height: 1.4em;
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.heading {
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-on-surface-variant);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-1);
+  max-height: 22rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+}
+
+.text {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  color: var(--color-on-surface);
+  font-weight: var(--font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary {
+  overflow: hidden;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--space-1);
+}
+
+.rename {
+  flex: 1 1 auto;
+}
+
+/* A phone (ui/screen.ts): the name field and its button wrap onto two lines when the dialog is too narrow for both, and
+   a saved view's actions go below its name. */
+@media (max-width: 47.99rem) {
+  .save,
+  .rename,
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .save input,
+  .rename input {
+    flex-basis: 10rem;
+  }
+}

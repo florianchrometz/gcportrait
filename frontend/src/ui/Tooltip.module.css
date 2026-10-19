@@ -1,0 +1,29 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* A tooltip (Tooltip.tsx): on-surface text on the surface container with an outline, legend-sized, below its
+   trigger (or above). */
+.tooltip {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 30;
+  width: max-content;
+  max-width: 280px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 6px;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-legend);
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.tooltip[hidden] {
+  display: none;
+}
+
+.above {
+  top: auto;
+  bottom: calc(100% + var(--space-1));
+}

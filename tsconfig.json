@@ -1,0 +1,28 @@
+{
+  // Solution file: `tsc -b` (pnpm typecheck) checks every project below in dependency order, and editors use
+  // it to find the project that owns a file. Add each new workspace package here.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.tooling.json" },
+    { "path": "./packages/model" },
+    { "path": "./packages/catalog" },
+    { "path": "./packages/ingest" },
+    { "path": "./packages/ingest/test" },
+    { "path": "./packages/demo-data" },
+    { "path": "./packages/demo-data/scripts" },
+    { "path": "./packages/graph" },
+    { "path": "./packages/graph/test" },
+    { "path": "./packages/graph/scripts" },
+    { "path": "./packages/layout" },
+    { "path": "./packages/layout/test" },
+    { "path": "./packages/layout/scripts" },
+    { "path": "./packages/icons" },
+    { "path": "./packages/icons/scripts" },
+    { "path": "./packages/render" },
+    { "path": "./packages/render-cli" },
+    { "path": "./frontend" },
+    { "path": "./backend" },
+    { "path": "./website" },
+    { "path": "./e2e" }
+  ]
+}

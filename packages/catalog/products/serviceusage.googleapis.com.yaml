@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Service Usage: one record per API
+# enabled on a project, hidden and counted ("N APIs enabled" on the project).
+product: Service Usage
+service: serviceusage.googleapis.com
+icon: cloud_apis
+types:
+  serviceusage.googleapis.com/Service:
+    role: hidden
+    label: '{{data.config.name}}'
+    subtitle: '{{data.config.title}}'
+    console: 'https://console.cloud.google.com/apis/api/{{data.config.name}}/overview?project={{projectId}}'
+    notes: >-
+      Named //serviceusage.googleapis.com/projects/<number>/services/<service>; data.parent is
+      projects/<number>.

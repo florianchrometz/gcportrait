@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kubernetes RBAC objects of GKE clusters with the asset inventory feature on: numerous and policy-like, so all
+# start hidden. Roles and role bindings nest in their namespace, cluster roles and cluster role bindings in
+# their cluster, by name path. roleRef and subjects carry apiGroup, kind and bare name (no apiVersion); the
+# k8sRef normaliser reads roleRef (a binding uses its role); subjects are users, groups and
+# service accounts, mostly not assets, and are not drawn.
+product: Google Kubernetes Engine
+service: rbac.authorization.k8s.io
+icon: google_kubernetes_engine
+types:
+  rbac.authorization.k8s.io/ClusterRole:
+    role: hidden
+    label: '{{data.metadata.name}}'
+
+  rbac.authorization.k8s.io/ClusterRoleBinding:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.roleRef.name}}'
+    relations:
+      - { kind: uses, to: $.data.roleRef, normalize: k8sRef }
+
+  rbac.authorization.k8s.io/Role:
+    role: hidden
+    label: '{{data.metadata.name}}'
+
+  rbac.authorization.k8s.io/RoleBinding:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.roleRef.name}}'
+    relations:
+      - { kind: uses, to: $.data.roleRef, normalize: k8sRef }

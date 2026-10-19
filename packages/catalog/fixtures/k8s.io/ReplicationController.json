@@ -1,0 +1,54 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/replicationcontrollers/legacy-cache",
+  "assetType": "k8s.io/ReplicationController",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "v1",
+    "kind": "ReplicationController",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000111",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "legacy-cache",
+      "namespace": "shop"
+    },
+    "spec": {
+      "replicas": 2,
+      "selector": {
+        "app": "legacy-cache"
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "legacy-cache"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "name": "cache",
+              "image": "europe-west3-docker.pkg.dev/demo-app-1/apps/legacy-cache:1.0.0",
+              "ports": [
+                {
+                  "containerPort": 11211
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "status": {
+      "replicas": 2,
+      "readyReplicas": 2,
+      "availableReplicas": 2
+    }
+  }
+}

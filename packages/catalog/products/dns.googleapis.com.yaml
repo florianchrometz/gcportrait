@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud DNS. Cloud Asset Inventory returns the five DNS types in the shape of the Cloud DNS v1 REST API, whose
+# enum values are lower case (`private`, `default`, `on`, `bypassResponsePolicy`). Managed zones and response
+# policies are small product zones: their record sets and rules are hidden by default and only counted in the
+# zone's badge until a view reveals them (`includeTypes`). Private zones, server policies and response
+# policies attach to the VPC networks they are bound to, so one bound to a single network of its own project
+# nests in that network (skill gcp-diagram-layout §2, rule 1), while a binding to another project's network
+# stays an edge.
+#
+# The published CAI name formats differ between the types: zones and server policies are named by project id
+# and their numeric id (`projects/<id>/managedZones/<zone id>`), record sets, response policies and rules by
+# project number under `locations/global`. Labels therefore read `data`, never the last segment of the name.
+product: Cloud DNS
+service: dns.googleapis.com
+icon: cloud_dns
+types:
+  dns.googleapis.com/ManagedZone:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.dnsName}} · {{data.visibility | lower}}'
+    console: 'https://console.cloud.google.com/net-services/dns/zones/{{data.name}}/details?project={{projectId}}'
+    ips:
+      - '$.data.forwardingConfig.targetNameServers[*].ipv4Address'
+      - '$.data.forwardingConfig.targetNameServers[*].ipv6Address'
+    domains:
+      - $.data.dnsName
+      - '$.data.forwardingConfig.targetNameServers[*].domainName'
+    relations:
+      - {
+          kind: attaches,
+          to: '$.data.privateVisibilityConfig.networks[*].networkUrl',
+          normalize: computeSelfLink,
+        }
+      - { kind: peers, to: $.data.peeringConfig.targetNetwork.networkUrl, normalize: computeSelfLink }
+      - {
+          kind: uses,
+          to: '$.data.privateVisibilityConfig.gkeClusters[*].gkeClusterName',
+          normalize: name,
+          service: container.googleapis.com,
+        }
+      - { kind: uses, to: $.data.serviceDirectoryConfig.namespace.namespaceUrl, normalize: name }
+    contains:
+      - byParent: dns.googleapis.com/ResourceRecordSet
+    notes: >-
+      The asset name ends in the zone's numeric id (data.id); data.name is the zone name the console and gcloud
+      use. A private zone is bound to VPC networks (attaches) and, for GKE Cloud DNS, to clusters given as
+      projects/p/locations/l/clusters/c (uses); a peering zone resolves through its target network (peers); a
+      Service Directory zone answers from a namespace given as an https://servicedirectory.googleapis.com/v1/
+      URL (uses). The ips are the forwarding targets, so a forwarding zone can be matched to the resolver it
+      sends queries to. A record set nests in its zone when its parent is the zone (fixture) or its name
+      continues the zone's name (demo data); the published record-set name uses the project number and
+      locations/global, so it never continues the zone's name in a real export.
+
+  dns.googleapis.com/Policy:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'server policy · {{data.alternativeNameServerConfig.targetNameServers[0].ipv4Address}}'
+    console: 'https://console.cloud.google.com/networking/dns/policies?project={{projectId}}'
+    ips:
+      - '$.data.alternativeNameServerConfig.targetNameServers[*].ipv4Address'
+      - '$.data.alternativeNameServerConfig.targetNameServers[*].ipv6Address'
+    relations:
+      - { kind: attaches, to: '$.data.networks[*].networkUrl', normalize: computeSelfLink }
+    notes: >-
+      A DNS server policy: inbound forwarding (data.enableInboundForwarding) and query logging
+      (data.enableLogging) for the networks it is bound to, plus optional alternative name servers (the ips). A
+      network has at most one server policy. The console has no stable detail URL, so the link opens the list.
+
+  dns.googleapis.com/ResourceRecordSet:
+    role: hidden
+    label: '{{data.name}}'
+    subtitle: '{{data.type}} · {{data.rrdatas[0]}}'
+    console: 'https://console.cloud.google.com/networking/dns/zones?project={{projectId}}'
+    ips:
+      - '$.data.rrdatas[*]'
+      - "$.data.routingPolicy['geo','wrr'].items[*].rrdatas[*]"
+      - '$.data.routingPolicy.primaryBackup.backupGeoTargets.items[*].rrdatas[*]'
+      - "$.data.routingPolicy['geo','wrr'].items[*].healthCheckedTargets.internalLoadBalancers[*].ipAddress"
+      - "$.data.routingPolicy['geo','wrr'].items[*].healthCheckedTargets.externalEndpoints[*]"
+      - '$.data.routingPolicy.primaryBackup.primaryTargets.internalLoadBalancers[*].ipAddress'
+      - '$.data.routingPolicy.primaryBackup.primaryTargets.externalEndpoints[*]'
+    domains:
+      - $.data.name
+      - '$.data.rrdatas[*]'
+    relations:
+      - { kind: uses, to: $.data.routingPolicy.healthCheck, normalize: computeSelfLink }
+    notes: >-
+      Hidden and counted in its zone. The ips are the A/AAAA data, the answers of geo, weighted round robin and
+      failover routing policies, and the frontend addresses of health-checked internal load balancers, so the
+      graph can match a record to the address or forwarding rule it points at; values that are not addresses
+      (CNAME, MX, TXT, …) are dropped by the extractor, and the host-shaped ones (CNAME, NS, PTR targets) are
+      kept as domains instead. A load-balancer target names its network, project and region but not the
+      forwarding rule, so it is matched by address rather than drawn as an edge. routingPolicy.healthCheck is the
+      Compute health check that probes external endpoints.
+
+  dns.googleapis.com/ResponsePolicy:
+    role: container
+    label: '{{data.responsePolicyName}}'
+    subtitle: 'response policy · {{data.description | short(48)}}'
+    console: 'https://console.cloud.google.com/networking/dns/zones?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: '$.data.networks[*].networkUrl', normalize: computeSelfLink }
+      - {
+          kind: uses,
+          to: '$.data.gkeClusters[*].gkeClusterName',
+          normalize: name,
+          service: container.googleapis.com,
+        }
+    contains:
+      - byParent: dns.googleapis.com/ResponsePolicyRule
+    notes: >-
+      A response policy zone (DNS firewall): its rules override answers for the networks and GKE clusters it is
+      bound to. A network has at most one response policy. The console lists response policies on a tab of the
+      Cloud DNS zones page, which is where the link goes.
+
+  dns.googleapis.com/ResponsePolicyRule:
+    role: hidden
+    label: '{{data.ruleName}}'
+    subtitle: '{{data.dnsName}} · {{data.localData.localDatas[0].type}} {{data.localData.localDatas[0].rrdatas[0]}}'
+    console: 'https://console.cloud.google.com/networking/dns/zones?project={{projectId}}'
+    ips:
+      - '$.data.localData.localDatas[*].rrdatas[*]'
+    domains:
+      - $.data.dnsName
+      - '$.data.localData.localDatas[*].rrdatas[*]'
+    notes: >-
+      Hidden and counted in its response policy, which its name continues. A rule either answers with local
+      data (record sets whose addresses and host names become ips and domains) or sets a behavior
+      (bypassResponsePolicy, rendered as the bare DNS name: template-unproven needs every subtitle variable on
+      one fixture, and a rule never has both, so the behavior cannot be shown next to the local data yet). Wildcard names such as *.googleapis.com. are kept
+      as domains with their leading *.

@@ -1,0 +1,25 @@
+{
+  "name": "//integrations.googleapis.com/projects/demo-app-1/locations/europe-west3/authConfigs/1a2b3c4d-0000-4000-8000-000000000001",
+  "assetType": "integrations.googleapis.com/AuthConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/authConfigs/1a2b3c4d-0000-4000-8000-000000000001",
+    "displayName": "ERP OAuth client",
+    "description": "Client credentials for the ERP API",
+    "credentialType": "OAUTH2_CLIENT_CREDENTIALS",
+    "visibility": "CLIENT_VISIBLE",
+    "state": "VALID",
+    "creatorEmail": "integrations@example.com",
+    "lastModifierEmail": "integrations@example.com",
+    "createTime": "2025-08-01T08:00:00Z",
+    "updateTime": "2026-03-01T08:00:00Z"
+  }
+}

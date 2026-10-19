@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Application Integration: an integration
+# holds its versions, executions and suspensions (hidden operational records that nest in it by name); auth
+# configs, certificates and Salesforce instances and channels are leaves of the project.
+product: Application Integration
+service: integrations.googleapis.com
+icon: application_integration
+types:
+  integrations.googleapis.com/Integration:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{location}}'
+    console: 'https://console.cloud.google.com/integrations/list/{{location}}?project={{projectId}}'
+    contains:
+      - byParent: integrations.googleapis.com/IntegrationVersion
+      - byParent: integrations.googleapis.com/Execution
+      - byParent: integrations.googleapis.com/Suspension
+    notes: >-
+      active (some version is published) is a badge. Triggers and tasks (Pub/Sub, API, connector, Cloud
+      Function tasks) are configured in the versions and name their targets inside free-form parameters, so
+      they make no edges.
+
+  integrations.googleapis.com/IntegrationVersion:
+    role: hidden
+    label: '{{name | parentSegment(integrations)}} {{data.snapshotNumber}}'
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: runsAs, to: $.data.runAsServiceAccount, normalize: serviceAccountEmail }
+      - { kind: encryptedBy, to: $.data.cloudKmsKey, normalize: kmsKey }
+    notes: >-
+      runAsServiceAccount is used for connector, REST and Cloud Function tasks when no auth config is set.
+
+  integrations.googleapis.com/Execution:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.executionMethod | lower}}'
+
+  integrations.googleapis.com/Suspension:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+
+  integrations.googleapis.com/AuthConfig:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.credentialType | lower}}'
+    notes: The credential itself is encrypted (encryptedCredential) and never shown.
+
+  integrations.googleapis.com/Certificate:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.certificateStatus | lower}} · {{data.validEndTime}}'
+
+  integrations.googleapis.com/SfdcInstance:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: 'Salesforce org {{data.sfdcOrgId}}'
+    notes: authConfigId lists auth config ids, not names, so it makes no edge; the Salesforce org is external.
+
+  integrations.googleapis.com/SfdcChannel:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{data.channelTopic}}'

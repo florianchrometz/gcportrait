@@ -1,0 +1,26 @@
+{
+  "name": "//backupdr.googleapis.com/projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3",
+  "assetType": "backupdr.googleapis.com/BackupVault",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3",
+    "description": "Immutable backups of the production workloads",
+    "createTime": "2025-03-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "backupMinimumEnforcedRetentionDuration": "604800s",
+    "deletable": false,
+    "etag": "v-3",
+    "state": "ACTIVE",
+    "backupCount": "42",
+    "serviceAccount": "vault-10000000005-a1b2c3@gcp-sa-backupdr-pr.iam.gserviceaccount.com",
+    "totalStoredBytes": "1099511627776",
+    "uid": "b0000000-0000-4000-8000-000000000001",
+    "accessRestriction": "WITHIN_ORGANIZATION",
+    "encryptionConfig": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/backups"
+    }
+  }
+}

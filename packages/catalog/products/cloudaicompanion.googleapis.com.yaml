@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Gemini for Google Cloud: Gemini Code Assist code customization. A code repository index is a zone
+# that holds its repository groups, nested by name
+# (projects/<id>/locations/<l>/codeRepositoryIndexes/<i>/repositoryGroups/<g>); the groups are hidden and
+# count on the index's badge, each naming the Developer Connect repositories it indexes.
+product: Gemini for Google Cloud API
+service: cloudaicompanion.googleapis.com
+icon: gemini
+types:
+  cloudaicompanion.googleapis.com/CodeRepositoryIndex:
+    role: container
+    subtitle: '{{data.state | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/gemini-code-assist/code-customization?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    contains:
+      - byParent: cloudaicompanion.googleapis.com/RepositoryGroup
+    notes: One index per project and location; kmsKey is the customer-managed key of the index (immutable).
+
+  cloudaicompanion.googleapis.com/RepositoryGroup:
+    role: hidden
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.repositories[*].resource',
+          normalize: name,
+          service: developerconnect.googleapis.com,
+        }
+    notes: >-
+      repositories[*].resource names a Developer Connect Git repository link as a full name, a relative name
+      or a resource URL; branchPattern is the RE2 pattern of indexed branches.

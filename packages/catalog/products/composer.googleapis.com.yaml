@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Composer, listed on the official page as Managed Service for Apache Airflow. An environment
+# runs Airflow on a GKE cluster (Composer 1 and 2: a cluster in the customer project; Composer 3: a
+# Google-managed one reached through a network attachment) and keeps its DAGs in a bucket.
+product: Managed Service for Apache Airflow
+service: composer.googleapis.com
+icon: cloud_composer
+types:
+  composer.googleapis.com/Environment:
+    role: core
+    subtitle: '{{data.config.softwareConfig.imageVersion}}'
+    console: 'https://console.cloud.google.com/composer/environments/detail/{{location}}/{{name | lastSegment}}/monitoring?project={{projectId}}'
+    ips:
+      - $.data.config.privateEnvironmentConfig.privateClusterConfig.masterIpv4CidrBlock
+      - $.data.config.privateEnvironmentConfig.webServerIpv4CidrBlock
+      - $.data.config.privateEnvironmentConfig.cloudSqlIpv4CidrBlock
+      - $.data.config.privateEnvironmentConfig.cloudComposerNetworkIpv4CidrBlock
+      - $.data.config.nodeConfig.composerInternalIpv4CidrBlock
+    domains:
+      - $.data.config.airflowUri
+      - $.data.config.airflowByoidUri
+    relations:
+      - { kind: attaches, to: $.data.config.nodeConfig.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.config.nodeConfig.network, normalize: computeRelative, weak: true }
+      - { kind: attaches, to: $.data.config.nodeConfig.composerNetworkAttachment, normalize: computeRelative }
+      - { kind: runsAs, to: $.data.config.nodeConfig.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.config.gkeCluster, normalize: name, service: container.googleapis.com }
+      - { kind: uses, to: $.data.config.dagGcsPrefix, normalize: gcsUri }
+      - { kind: uses, to: $.data.storageConfig.bucket, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.config.encryptionConfig.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      config.gkeCluster (output only) is the environment's GKE cluster, projects/<p>/locations/<l>/clusters/<c>
+      (zones/<z> for Composer 1); Composer 3 runs Airflow in a tenant project, so the field is empty and the
+      environment reaches the VPC through nodeConfig.composerNetworkAttachment instead. dagGcsPrefix is
+      gs://<bucket>/dags; storageConfig.bucket (a sibling of config, a bare bucket name) names the same
+      bucket when it was chosen at creation. The CIDR blocks are the ranges the environment reserves for its
+      control plane, web server, Cloud SQL and tenant network. Airflow DAGs and their tasks are not resources.

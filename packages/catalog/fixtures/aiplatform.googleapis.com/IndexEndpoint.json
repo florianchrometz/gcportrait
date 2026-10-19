@@ -1,0 +1,95 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216332800",
+    "assetType": "aiplatform.googleapis.com/IndexEndpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216332800",
+      "displayName": "product-search",
+      "deployedIndexes": [
+        {
+          "id": "products_v2",
+          "index": "projects/10000000003/locations/europe-west3/indexes/8810239912377344000",
+          "displayName": "products v2",
+          "createTime": "2026-09-01T08:00:00Z",
+          "privateEndpoints": {
+            "matchGrpcAddress": "10.20.1.4"
+          },
+          "indexSyncTime": "2026-10-01T06:00:00Z",
+          "reservedIpRanges": ["vertex-ai-range"]
+        }
+      ],
+      "etag": "AMEw9yN4",
+      "createTime": "2026-03-05T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "network": "projects/10000000001/global/networks/core",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      }
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216339999",
+    "assetType": "aiplatform.googleapis.com/IndexEndpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216339999",
+      "displayName": "docs-search-psc",
+      "deployedIndexes": [
+        {
+          "id": "docs_v1",
+          "index": "projects/10000000003/locations/europe-west3/indexes/8810239912377348888",
+          "createTime": "2026-09-02T08:00:00Z",
+          "privateEndpoints": {
+            "serviceAttachment": "projects/c8d2e3f4a5-tp/regions/europe-west3/serviceAttachments/sa-docs-v1",
+            "pscAutomatedEndpoints": [
+              {
+                "projectId": "demo-app-1",
+                "network": "projects/10000000001/global/networks/core",
+                "matchAddress": "10.10.15.41"
+              }
+            ]
+          },
+          "pscAutomationConfigs": [
+            {
+              "projectId": "demo-app-1",
+              "network": "projects/10000000001/global/networks/core",
+              "ipAddress": "10.10.15.41",
+              "forwardingRule": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/forwardingRules/psc-docs-v1",
+              "state": "PSC_AUTOMATION_STATE_SUCCESSFUL"
+            }
+          ]
+        }
+      ],
+      "createTime": "2026-09-02T08:00:00Z",
+      "updateTime": "2026-09-02T08:00:00Z",
+      "privateServiceConnectConfig": {
+        "enablePrivateServiceConnect": true,
+        "projectAllowlist": ["demo-app-1"]
+      },
+      "publicEndpointEnabled": false
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216337777",
+    "assetType": "aiplatform.googleapis.com/IndexEndpoint",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/indexEndpoints/3304458871216337777",
+      "displayName": "catalog-public",
+      "createTime": "2026-09-03T08:00:00Z",
+      "updateTime": "2026-09-03T08:00:00Z",
+      "publicEndpointEnabled": true,
+      "publicEndpointDomainName": "1923355108.europe-west3-10000000003.vdb.vertexai.goog"
+    }
+  }
+]

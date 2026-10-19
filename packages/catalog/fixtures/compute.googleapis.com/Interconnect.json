@@ -1,0 +1,54 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/global/interconnects/ic-fra-1",
+  "assetType": "compute.googleapis.com/Interconnect",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#interconnect",
+    "id": "5000000000000000201",
+    "name": "ic-fra-1",
+    "description": "Dedicated Interconnect to the primary data centre",
+    "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+    "location": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnectLocations/fra-zone1-2",
+    "interconnectType": "DEDICATED",
+    "linkType": "LINK_TYPE_ETHERNET_10G_LR",
+    "requestedLinkCount": 2,
+    "provisionedLinkCount": 2,
+    "adminEnabled": true,
+    "operationalStatus": "OS_ACTIVE",
+    "state": "ACTIVE",
+    "customerName": "Example Org",
+    "nocContactEmail": "network-oncall@example.com",
+    "googleReferenceId": "1000000000000000201",
+    "interconnectAttachments": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-a",
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-fra-1-l2"
+    ],
+    "wireGroups": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/crossSiteNetworks/csn-eu/wireGroups/wg-fra-ams"
+    ],
+    "circuitInfos": [
+      {
+        "googleCircuitId": "GCP-CIRCUIT-0001",
+        "googleDemarcId": "DEMARC-0001",
+        "customerDemarcId": "EX-0001"
+      },
+      {
+        "googleCircuitId": "GCP-CIRCUIT-0002",
+        "googleDemarcId": "DEMARC-0002",
+        "customerDemarcId": "EX-0002"
+      }
+    ],
+    "macsecEnabled": false,
+    "satisfiesPzs": false,
+    "labelFingerprint": "42WmSpB8rSM=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/interconnects/ic-fra-1"
+  }
+}

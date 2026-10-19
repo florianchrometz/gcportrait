@@ -1,0 +1,19 @@
+{
+  "name": "//netapp.googleapis.com/projects/demo-data-1/locations/europe-west3/backupVaults/primary-vault",
+  "assetType": "netapp.googleapis.com/BackupVault",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/backupVaults/primary-vault",
+    "state": "READY",
+    "createTime": "2025-04-01T09:00:00Z",
+    "backupVaultType": "CROSS_REGION",
+    "sourceRegion": "projects/demo-data-1/locations/europe-west3",
+    "backupRegion": "projects/demo-data-1/locations/europe-west1",
+    "destinationBackupVault": "projects/demo-data-1/locations/europe-west1/backupVaults/primary-vault-copy",
+    "kmsConfig": "projects/demo-data-1/locations/europe-west3/kmsConfigs/netapp-cmek",
+    "backupRetentionPolicy": { "backupMinimumEnforcedRetentionDays": 7, "dailyBackupImmutable": true }
+  }
+}

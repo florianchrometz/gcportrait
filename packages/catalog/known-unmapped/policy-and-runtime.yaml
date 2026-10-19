@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Types the official page lists only under its policy and runtime sections (IAM policy, access policy,
+# organisation policy, OS inventory content), never as RESOURCE content: v1 ingestion reads RESOURCE content
+# only (skill cai-ingestion §1, catalog seed "Policy and runtime types"), so they stay unmapped. A type that
+# is also a resource (iap.googleapis.com/TunnelDestGroup, the Resource Manager types, Compute instances) is
+# owned by its resource group instead.
+title: Policy and runtime content types (not RESOURCE data)
+owns:
+  - iap.googleapis.com/Tunnel
+  - iap.googleapis.com/TunnelInstance
+  - iap.googleapis.com/TunnelZone
+  - iap.googleapis.com/Web
+  - iap.googleapis.com/WebService
+  - iap.googleapis.com/WebServiceVersion
+  - iap.googleapis.com/WebType
+types:
+  iap.googleapis.com/Tunnel: IAM policy content only, no RESOURCE data; outside v1 ingestion
+  iap.googleapis.com/TunnelInstance: IAM policy content only, no RESOURCE data; outside v1 ingestion
+  iap.googleapis.com/TunnelZone: IAM policy content only, no RESOURCE data; outside v1 ingestion
+  iap.googleapis.com/Web: IAM policy content only, no RESOURCE data; outside v1 ingestion
+  iap.googleapis.com/WebService: IAM policy content only, no RESOURCE data; outside v1 ingestion
+  iap.googleapis.com/WebServiceVersion: IAM policy content only, no RESOURCE data; outside v1 ingestion
+  iap.googleapis.com/WebType: IAM policy content only, no RESOURCE data; outside v1 ingestion

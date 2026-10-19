@@ -1,0 +1,28 @@
+{
+  "name": "//monitoring.googleapis.com/projects/10000000005/dashboards/0b7c2d1e-0000-4000-8000-000000000001",
+  "assetType": "monitoring.googleapis.com/Dashboard",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000005/dashboards/0b7c2d1e-0000-4000-8000-000000000001",
+    "displayName": "Shop overview",
+    "etag": "5e0c7a9b2f",
+    "mosaicLayout": {
+      "columns": 48,
+      "tiles": [
+        {
+          "width": 24,
+          "height": 16,
+          "widget": {
+            "title": "Checkout errors"
+          }
+        }
+      ]
+    },
+    "labels": {
+      "team": "shop"
+    }
+  }
+}

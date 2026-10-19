@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dependabot version updates (AGENTS.md, Security and privacy, principle 7). Every update still has to pass
+# the CI gates, including the licence allow-list. A proposal is never closed unread: its update is adopted on
+# main, or declined with its reason in docs/backlog.md (AGENTS.md, Quality gates, testing and CI).
+version: 2
+updates:
+  # The pnpm workspace: from the root, Dependabot reads pnpm-workspace.yaml and pnpm-lock.yaml and updates
+  # every workspace package together with the lockfile.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+    ignore:
+      # Held at 6.0.x until typescript-eslint supports a newer TypeScript (see tsconfig.base.json).
+      - dependency-name: typescript
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      # The Node type definitions follow the Node 22 runtime (.nvmrc; AGENTS.md, Architecture and code), not
+      # the newest Node.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+
+  # Every action is pinned to a commit with its release as a comment, so these updates are each new release, as
+  # a new commit. The shared setup and Playwright actions under .github/actions/ reference actions too.
+  - package-ecosystem: github-actions
+    directories: ['/', '/.github/actions/*']
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+
+  # The two base images of infra/Dockerfile, pinned by digest on literal FROM lines: a newer Node 22 tag for the
+  # build stage, a new digest of distroless's `nonroot` tag for the runtime. Pull-request CI does not build the
+  # image; check an update with `pnpm docker:build` (or `infra/deploy.sh --build` in a test project), and the
+  # release workflow starts and checks both platforms' images before it pushes them.
+  - package-ecosystem: docker
+    directory: /infra
+    schedule:
+      interval: weekly
+    groups:
+      docker:
+        patterns: ['*']
+    ignore:
+      # The Node 22 line (.nvmrc; AGENTS.md, Architecture and code), not the newest Node.
+      - dependency-name: node
+        update-types: ['version-update:semver-major']

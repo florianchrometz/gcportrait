@@ -1,0 +1,39 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The Export menu, the last control of the top bar, at its right edge: the working-control metrics of the top bar's
+   controls (skill §9: 32 px tall, 8 px radius, 13 px text) in the primary fill, and a status line below it. Its menu
+   is the app's Menu (ui/popup.module.css), aligned to the button's right edge so it opens leftwards. */
+.anchor {
+  position: relative;
+}
+
+/* The outcome of the last export ("Saved …", "Copied …", why it failed). Kept in the DOM while empty (whenever a
+   diagram can be exported), so screen readers announce each new message; empty, it takes no room and shows
+   nothing. */
+.status {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 9;
+  width: max-content;
+  max-width: 360px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+}
+
+.status:empty {
+  padding: 0;
+  border: 0;
+}
+
+/* A phone or a tablet: in the More sheet the button is as wide as the sheet, its menu opens in the sheet (ui/popup
+   `.sheet`), and the status line is never wider than the button. */
+@media (max-width: 79.99rem) {
+  .status {
+    max-width: 100%;
+  }
+}

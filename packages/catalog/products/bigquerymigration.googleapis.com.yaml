@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# BigQuery Migration Service: SQL translation and migration workflows, operational records named by
+# project number (`//bigquerymigration.googleapis.com/projects/<number>/locations/<l>/workflows/<id>`).
+product: BigQuery Migration Service
+service: bigquerymigration.googleapis.com
+icon: bigquery
+types:
+  bigquerymigration.googleapis.com/MigrationWorkflow:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: 'migration workflow · {{data.state | lower}}'
+    notes: A batch SQL translation or migration run (its tasks map); a job record, hidden and counted.

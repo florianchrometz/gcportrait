@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Speech-to-Text, v2 resources: recognizers are cards; phrase sets, custom classes, the location config
+# singleton, custom models and endpoints are hidden. Asset names carry the project number
+# (projects/<number>/locations/<l>/recognizers/<r>). v2 resources are soft-deleted (state DELETED until
+# expireTime), so a deleted recognizer starts hidden.
+product: Speech-to-Text
+service: speech.googleapis.com
+icon: speech_to_text
+types:
+  speech.googleapis.com/Recognizer:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.defaultRecognitionConfig.model}} · {{location}}'
+    console: 'https://console.cloud.google.com/speech/recognizers?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.defaultRecognitionConfig.adaptation.phraseSets[*].phraseSet',
+          normalize: name,
+        }
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    hiddenWhen: "$.data.state == 'DELETED'"
+    notes: >-
+      The recognition defaults (model, languages, adaptation) callers reuse by name. Adaptation phrase sets
+      are referenced by name or given inline (inlinePhraseSet, not drawn). The top-level model and
+      languageCodes are deprecated in favour of defaultRecognitionConfig.
+
+  speech.googleapis.com/PhraseSet:
+    role: hidden
+    label: '{{data.displayName}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Adaptation phrases with a boost; recognizers and Dialogflow conversation profiles reference them. The
+      supported-types page links the v1 reference; v1 and v2 phrase sets both return the key that protects
+      them as kmsKeyName (output only), so one rule covers both.
+
+  speech.googleapis.com/CustomClass:
+    role: hidden
+    label: '{{data.displayName}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      Class items used inside phrase sets; v1 and v2 custom classes both return their key as kmsKeyName
+      (output only).
+
+  speech.googleapis.com/Config:
+    role: hidden
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      The location settings singleton (projects/<number>/locations/<l>/config); kmsKeyName is the default
+      key for resources created in the location afterwards.
+
+  speech.googleapis.com/Model:
+    role: hidden
+    notes: >-
+      A custom speech model (projects/<number>/locations/<l>/models/<m>); no REST reference is published for
+      it, so no field is read.
+
+  speech.googleapis.com/Endpoint:
+    role: hidden
+    notes: >-
+      A deployment of a custom speech model (projects/<number>/locations/<l>/endpoints/<e>); no REST
+      reference is published for it, so no field is read.

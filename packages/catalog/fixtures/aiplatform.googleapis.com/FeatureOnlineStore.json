@@ -1,0 +1,27 @@
+{
+  "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/featureOnlineStores/customer_features",
+  "assetType": "aiplatform.googleapis.com/FeatureOnlineStore",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/featureOnlineStores/customer_features",
+    "createTime": "2026-04-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "etag": "AMEw9yN6",
+    "state": "STABLE",
+    "optimized": {},
+    "dedicatedServingEndpoint": {
+      "publicEndpointDomainName": "7781223004.europe-west3-10000000003.featurestore.vertexai.goog",
+      "privateServiceConnectConfig": {
+        "enablePrivateServiceConnect": true,
+        "projectAllowlist": ["10000000002"]
+      },
+      "serviceAttachment": "projects/d9e3f4a5b6-tp/regions/europe-west3/serviceAttachments/fos-customer-features"
+    },
+    "encryptionSpec": {
+      "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+    }
+  }
+}

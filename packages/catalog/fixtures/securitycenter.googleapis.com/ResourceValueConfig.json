@@ -1,0 +1,19 @@
+{
+  "name": "//securitycenter.googleapis.com/organizations/30000000001/locations/global/resourceValueConfigs/prod-high",
+  "assetType": "securitycenter.googleapis.com/ResourceValueConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/global/resourceValueConfigs/prod-high",
+    "resourceValue": "HIGH",
+    "tagValues": ["tagValues/40000000011"],
+    "resourceType": "storage.googleapis.com/Bucket",
+    "scope": "",
+    "description": "Production buckets are high-value",
+    "createTime": "2025-08-01T09:00:00Z",
+    "updateTime": "2025-08-01T09:00:00Z",
+    "cloudProvider": "GOOGLE_CLOUD_PLATFORM"
+  }
+}

@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# BigQuery Data Transfer Service: scheduled loads into BigQuery (Cloud Storage, SaaS and other cloud
+# sources), scheduled queries and dataset copies. Cloud Asset Inventory names transfer configurations by
+# project number (`//bigquerydatatransfer.googleapis.com/projects/<number>/locations/<l>/transferConfigs/<id>`).
+product: BigQuery Data Transfer Service
+service: bigquerydatatransfer.googleapis.com
+icon: bigquery
+types:
+  bigquerydatatransfer.googleapis.com/TransferConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.dataSourceId}} · {{data.destinationDatasetId}} · {{data.schedule}}'
+    console: 'https://console.cloud.google.com/bigquery/transfers/locations/{{location}}/configs/{{name | lastSegment}}/runs?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.params.data_path_template, normalize: gcsUri }
+      - { kind: triggers, to: $.data.notificationPubsubTopic, normalize: pubsubUri }
+      - { kind: encryptedBy, to: $.data.encryptionConfiguration.kmsKeyName, normalize: kmsKey }
+      - { kind: runsAs, to: $.data.ownerInfo.email, normalize: serviceAccountEmail }
+    notes: >-
+      dataSourceId names the source (google_cloud_storage, scheduled_query, cross_region_copy, amazon_s3, …)
+      and params holds its source-specific settings: a Cloud Storage transfer reads params.data_path_template
+      (gs://bucket/path, drawn as uses → bucket). destinationDatasetId is a bare dataset id in the config's
+      project, which no normaliser can qualify yet, so the target dataset is shown in the subtitle instead of
+      as an edge; the same holds for a copy's params.source_dataset_id. ownerInfo.email is the identity whose
+      credentials run the transfer (runsAs; a user's address stays a dangling reference). The API fills
+      ownerInfo only on transferConfigs.get, so an export may lack it and the edge is then simply absent.

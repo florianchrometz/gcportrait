@@ -1,0 +1,255 @@
+[
+  {
+    "name": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000001",
+    "assetType": "dns.googleapis.com/ManagedZone",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#managedZone",
+      "name": "internal",
+      "dnsName": "internal.example.com.",
+      "description": "Private names for workloads on the core Shared VPC",
+      "id": "4100000000000000001",
+      "nameServers": ["ns-gcp-private.googledomains.com."],
+      "creationTime": "2025-03-14T09:20:11.482Z",
+      "visibility": "private",
+      "privateVisibilityConfig": {
+        "kind": "dns#managedZonePrivateVisibilityConfig",
+        "networks": [
+          {
+            "kind": "dns#managedZonePrivateVisibilityConfigNetwork",
+            "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+          }
+        ]
+      },
+      "dnssecConfig": { "kind": "dns#managedZoneDnsSecConfig", "state": "off" },
+      "cloudLoggingConfig": { "kind": "dns#managedZoneCloudLoggingConfig", "enableLogging": true },
+      "labels": { "env": "prod" }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000002",
+    "assetType": "dns.googleapis.com/ManagedZone",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#managedZone",
+      "name": "corp-forwarding",
+      "dnsName": "corp.example.com.",
+      "description": "Forwards the corporate domain to the on-premises resolvers",
+      "id": "4100000000000000002",
+      "nameServers": ["ns-gcp-private.googledomains.com."],
+      "creationTime": "2025-03-14T09:24:52.107Z",
+      "visibility": "private",
+      "privateVisibilityConfig": {
+        "kind": "dns#managedZonePrivateVisibilityConfig",
+        "networks": [
+          {
+            "kind": "dns#managedZonePrivateVisibilityConfigNetwork",
+            "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+          }
+        ]
+      },
+      "forwardingConfig": {
+        "kind": "dns#managedZoneForwardingConfig",
+        "targetNameServers": [
+          {
+            "kind": "dns#managedZoneForwardingConfigNameServerTarget",
+            "ipv4Address": "172.16.0.53",
+            "forwardingPath": "private"
+          },
+          {
+            "kind": "dns#managedZoneForwardingConfigNameServerTarget",
+            "ipv6Address": "fd20:c0de::53",
+            "forwardingPath": "private"
+          },
+          {
+            "kind": "dns#managedZoneForwardingConfigNameServerTarget",
+            "domainName": "resolver.corp.example.com."
+          }
+        ]
+      },
+      "dnssecConfig": { "kind": "dns#managedZoneDnsSecConfig", "state": "off" },
+      "cloudLoggingConfig": { "kind": "dns#managedZoneCloudLoggingConfig", "enableLogging": false }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000003",
+    "assetType": "dns.googleapis.com/ManagedZone",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#managedZone",
+      "name": "partner-peering",
+      "dnsName": "partner.example.net.",
+      "description": "Resolves the partner's names through the peered partner network",
+      "id": "4100000000000000003",
+      "nameServers": ["ns-gcp-private.googledomains.com."],
+      "creationTime": "2025-06-02T13:01:40.664Z",
+      "visibility": "private",
+      "privateVisibilityConfig": {
+        "kind": "dns#managedZonePrivateVisibilityConfig",
+        "networks": [
+          {
+            "kind": "dns#managedZonePrivateVisibilityConfigNetwork",
+            "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+          }
+        ]
+      },
+      "peeringConfig": {
+        "kind": "dns#managedZonePeeringConfig",
+        "targetNetwork": {
+          "kind": "dns#managedZonePeeringConfigTargetNetwork",
+          "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-partner-1/global/networks/partner"
+        }
+      },
+      "dnssecConfig": { "kind": "dns#managedZoneDnsSecConfig", "state": "off" },
+      "cloudLoggingConfig": { "kind": "dns#managedZoneCloudLoggingConfig", "enableLogging": false }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000004",
+    "assetType": "dns.googleapis.com/ManagedZone",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#managedZone",
+      "name": "services",
+      "dnsName": "svc.example.com.",
+      "description": "Answers from the internal Service Directory namespace",
+      "id": "4100000000000000004",
+      "nameServers": ["ns-gcp-private.googledomains.com."],
+      "creationTime": "2025-09-23T07:45:03.910Z",
+      "visibility": "private",
+      "privateVisibilityConfig": {
+        "kind": "dns#managedZonePrivateVisibilityConfig",
+        "networks": [
+          {
+            "kind": "dns#managedZonePrivateVisibilityConfigNetwork",
+            "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+          }
+        ]
+      },
+      "serviceDirectoryConfig": {
+        "kind": "dns#managedZoneServiceDirectoryConfig",
+        "namespace": {
+          "kind": "dns#managedZoneServiceDirectoryConfigNamespace",
+          "namespaceUrl": "https://servicedirectory.googleapis.com/v1/projects/demo-ops-1/locations/europe-west3/namespaces/internal"
+        }
+      },
+      "dnssecConfig": { "kind": "dns#managedZoneDnsSecConfig", "state": "off" },
+      "cloudLoggingConfig": { "kind": "dns#managedZoneCloudLoggingConfig", "enableLogging": false }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/demo-app-1/managedZones/4100000000000000005",
+    "assetType": "dns.googleapis.com/ManagedZone",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#managedZone",
+      "name": "gke-shop-5b1e0c7a-dns",
+      "dnsName": "cluster.local.",
+      "description": "Private zone for the GKE cluster shop (cluster scope)",
+      "id": "4100000000000000005",
+      "nameServers": ["ns-gcp-private.googledomains.com."],
+      "creationTime": "2025-11-05T16:12:27.338Z",
+      "visibility": "private",
+      "privateVisibilityConfig": {
+        "kind": "dns#managedZonePrivateVisibilityConfig",
+        "gkeClusters": [
+          {
+            "kind": "dns#managedZonePrivateVisibilityConfigGKECluster",
+            "gkeClusterName": "projects/demo-app-1/locations/europe-west3/clusters/shop"
+          }
+        ]
+      },
+      "dnssecConfig": { "kind": "dns#managedZoneDnsSecConfig", "state": "off" },
+      "cloudLoggingConfig": { "kind": "dns#managedZoneCloudLoggingConfig", "enableLogging": false }
+    }
+  },
+  {
+    "name": "//dns.googleapis.com/projects/demo-net-1/managedZones/4100000000000000006",
+    "assetType": "dns.googleapis.com/ManagedZone",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "dns#managedZone",
+      "name": "example-com",
+      "dnsName": "example.com.",
+      "description": "Public names of the storefront",
+      "id": "4100000000000000006",
+      "nameServers": [
+        "ns-cloud-a1.googledomains.com.",
+        "ns-cloud-a2.googledomains.com.",
+        "ns-cloud-a3.googledomains.com.",
+        "ns-cloud-a4.googledomains.com."
+      ],
+      "creationTime": "2024-11-20T10:02:33.017Z",
+      "visibility": "public",
+      "dnssecConfig": {
+        "kind": "dns#managedZoneDnsSecConfig",
+        "state": "on",
+        "nonExistence": "nsec3",
+        "defaultKeySpecs": [
+          {
+            "kind": "dns#dnsKeySpec",
+            "keyType": "keySigning",
+            "algorithm": "rsasha256",
+            "keyLength": 2048
+          },
+          {
+            "kind": "dns#dnsKeySpec",
+            "keyType": "zoneSigning",
+            "algorithm": "rsasha256",
+            "keyLength": 1024
+          }
+        ]
+      },
+      "cloudLoggingConfig": { "kind": "dns#managedZoneCloudLoggingConfig", "enableLogging": false },
+      "labels": { "env": "prod" }
+    }
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee01",
+    "assetType": "dataform.googleapis.com/CompilationResult",
+    "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T01:00:05Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee01",
+      "gitCommitish": "main",
+      "releaseConfig": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/releaseConfigs/production",
+      "resolvedGitCommitSha": "4f2a9c1d8e7b6a5f4e3d2c1b0a9f8e7d6c5b4a39",
+      "dataformCoreVersion": "3.0.26",
+      "createTime": "2026-10-01T01:00:00Z"
+    }
+  },
+  {
+    "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee02",
+    "assetType": "dataform.googleapis.com/CompilationResult",
+    "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-02T09:00:05Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/compilationResults/c0ffee02",
+      "workspace": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workspaces/alex-dev",
+      "dataformCoreVersion": "3.0.26",
+      "createTime": "2026-10-02T09:00:00Z"
+    }
+  }
+]

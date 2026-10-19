@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kubernetes storage classes of GKE clusters with the asset inventory feature on. Cluster-scoped: they nest in
+# their cluster by name path.
+product: Google Kubernetes Engine
+service: storage.k8s.io
+icon: google_kubernetes_engine
+types:
+  storage.k8s.io/StorageClass:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.provisioner}} · {{data.parameters.type}}'
+    console: 'https://console.cloud.google.com/kubernetes/storageclass/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.name}}/details?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: "$.data.parameters['disk-encryption-kms-key']", normalize: kmsKey }
+    notes: >-
+      The persistent disk CSI driver takes a customer-managed key for the disks it provisions in
+      parameters.disk-encryption-kms-key; that is the class's only cross-reference (seed: leaf otherwise).

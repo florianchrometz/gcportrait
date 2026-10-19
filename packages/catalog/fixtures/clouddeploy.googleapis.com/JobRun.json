@@ -1,0 +1,21 @@
+{
+  "name": "//clouddeploy.googleapis.com/projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1/rollouts/shop-2-3-1-to-shop-prod-0001/jobRuns/e1f2a3b4-c5d6-4e7f-9081-920a3b4c5d6e",
+  "assetType": "clouddeploy.googleapis.com/JobRun",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/deliveryPipelines/shop-delivery/releases/shop-2-3-1/rollouts/shop-2-3-1-to-shop-prod-0001/jobRuns/e1f2a3b4-c5d6-4e7f-9081-920a3b4c5d6e",
+    "uid": "cfd0e1f2a3b44a2a14c5d6e7f8091a2b",
+    "phaseId": "stable",
+    "jobId": "deploy",
+    "createTime": "2026-09-29T08:21:00Z",
+    "startTime": "2026-09-29T08:21:05Z",
+    "endTime": "2026-09-29T08:34:00Z",
+    "state": "SUCCEEDED",
+    "deployJobRun": {
+      "build": "projects/10000000005/locations/europe-west3/builds/d0e1f2a3-b4c5-4d6e-8f70-81920a3b4c5d"
+    }
+  }
+}

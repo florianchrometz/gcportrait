@@ -1,0 +1,21 @@
+{
+  "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/lakes/analytics/zones/raw",
+  "assetType": "dataplex.googleapis.com/Zone",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/lakes/analytics/zones/raw",
+    "displayName": "Raw",
+    "uid": "d0000000-0000-4000-8000-000000000002",
+    "state": "ACTIVE",
+    "type": "RAW",
+    "resourceSpec": {
+      "locationType": "SINGLE_REGION"
+    },
+    "discoverySpec": {
+      "enabled": true
+    }
+  }
+}

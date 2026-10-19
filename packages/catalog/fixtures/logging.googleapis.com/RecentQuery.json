@@ -1,0 +1,15 @@
+{
+  "name": "//logging.googleapis.com/projects/10000000005/locations/global/recentQueries/q-5f2a9c",
+  "assetType": "logging.googleapis.com/RecentQuery",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/recentQueries/q-5f2a9c",
+    "loggingQuery": {
+      "filter": "severity>=ERROR"
+    },
+    "lastRunTime": "2026-09-30T14:12:00Z"
+  }
+}

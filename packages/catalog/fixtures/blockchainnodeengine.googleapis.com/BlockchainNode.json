@@ -1,0 +1,35 @@
+{
+  "name": "//blockchainnodeengine.googleapis.com/projects/demo-app-1/locations/europe-west3/blockchainNodes/eth-mainnet-1",
+  "assetType": "blockchainnodeengine.googleapis.com/BlockchainNode",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/blockchainNodes/eth-mainnet-1",
+    "createTime": "2026-01-10T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "blockchainType": "ETHEREUM",
+    "connectionInfo": {
+      "endpointInfo": {
+        "jsonRpcApiEndpoint": "https://json-rpc.eth-mainnet-1.blockchainnodeengine.example.com",
+        "websocketsApiEndpoint": "wss://ws.eth-mainnet-1.blockchainnodeengine.example.com"
+      }
+    },
+    "ethereumDetails": {
+      "network": "MAINNET",
+      "nodeType": "FULL",
+      "executionClient": "GETH",
+      "consensusClient": "LIGHTHOUSE",
+      "apiEnableAdmin": false,
+      "apiEnableDebug": false
+    },
+    "state": "RUNNING",
+    "privateServiceConnectEnabled": false
+  }
+}

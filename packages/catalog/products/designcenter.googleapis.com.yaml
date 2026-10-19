@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# App Design Center: application templates (composed of components wired by connections), shared templates
+# and the applications deployed from them, all inside a space (…/locations/<l>/spaces/<s>/…). They describe
+# infrastructure rather than being it (the deployed resources appear as their own assets), so every type is
+# hidden by default; the edges below link them for the drawer and for includeTypes. The API is v1alpha, so
+# the reference paths are less settled than elsewhere.
+product: App Design Center
+service: designcenter.googleapis.com
+icon: application_design_center
+types:
+  designcenter.googleapis.com/Application:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.deploymentProject}} · {{data.deploymentRegion}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.apphubApplication, normalize: name, service: apphub.googleapis.com }
+    notes: >-
+      An application deployed from a template revision into deploymentProject and deploymentRegion through
+      Infra Manager (deploymentRevision names the Infra Manager revision, not an asset). apphubApplication
+      names the App Hub application it registers; the reference documents no format for it or for
+      serviceAccount, so both are read as the usual resource name and email forms.
+
+  designcenter.googleapis.com/ApplicationTemplateRevision:
+    role: hidden
+    notes: An immutable snapshot of an application template (snapshot holds the serialised template).
+
+  designcenter.googleapis.com/Component:
+    role: hidden
+    label: '{{data.displayName}}'
+    relations:
+      - { kind: uses, to: $.data.sharedTemplateRevisionUri, normalize: name }
+    notes: >-
+      A building block of an application template (…/applicationTemplates/<t>/components/<c>), generated from
+      a shared template revision. The reference gives no format for sharedTemplateRevisionUri; it is read as
+      the revision's resource name.
+
+  designcenter.googleapis.com/Connection:
+    role: hidden
+    relations:
+      - { kind: uses, to: $.data.destinationComponentUri, normalize: name }
+    notes: >-
+      Wires a component (its name continues the source component's: …/components/<c>/connections/<n>) to
+      destinationComponentUri.
+
+  designcenter.googleapis.com/SharedTemplate:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.templateCategory | lower}}'
+    notes: A template shared in the space or the Google catalog; its id is a server-generated UUID.
+
+  designcenter.googleapis.com/SharedTemplateRevision:
+    role: hidden
+    relations:
+      - { kind: uses, to: $.data.gcsSourceUri, normalize: gcsUri }
+    notes: >-
+      One revision of a shared template; its source is a Git repository, a Cloud Storage object
+      (gcsSourceUri), a Developer Connect source or an OCI repository of Helm charts; only the bucket is
+      drawn.

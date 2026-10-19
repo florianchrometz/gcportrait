@@ -1,0 +1,17 @@
+{
+  "name": "//contactcenterinsights.googleapis.com/projects/10000000002/locations/europe-west3/encryptionSpec",
+  "assetType": "contactcenterinsights.googleapis.com/EncryptionSpec",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/encryptionSpec",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/insights"
+  }
+}

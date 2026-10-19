@@ -1,0 +1,20 @@
+{
+  "name": "//apphub.googleapis.com/projects/demo-app-1/locations/global/serviceProjectAttachments/demo-data-1",
+  "assetType": "apphub.googleapis.com/ServiceProjectAttachment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/serviceProjectAttachments/demo-data-1",
+    "serviceProject": "projects/10000000003",
+    "createTime": "2025-07-01T08:00:00Z",
+    "uid": "c0ffee00-0000-4000-8000-000000000031",
+    "state": "ACTIVE"
+  }
+}

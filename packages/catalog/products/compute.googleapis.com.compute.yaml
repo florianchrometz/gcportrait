@@ -1,0 +1,325 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Compute Engine, compute: virtual machines and what they are made of. compute.googleapis.com is shared
+# by four catalog groups (see compute.googleapis.com.networking-fabric.yaml), so this file holds this group's
+# types only and uses the product icon the first file sets. Paths follow the Compute Engine v1 REST resources
+# (discovery document compute/v1); references are self-links with project ids, except the `created-by` and
+# `instance-template` metadata values, which Compute writes with project numbers.
+product: Compute Engine
+service: compute.googleapis.com
+icon: compute_engine
+types:
+  compute.googleapis.com/Instance:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.machineType | lastSegment}} · {{data.status | lower}}'
+    console: 'https://console.cloud.google.com/compute/instancesDetail/zones/{{location}}/instances/{{data.name}}?project={{projectId}}'
+    ips:
+      - '$.data.networkInterfaces[*].networkIP'
+      - '$.data.networkInterfaces[*].accessConfigs[*].natIP'
+      - '$.data.networkInterfaces[*].ipv6Address'
+      - '$.data.networkInterfaces[*].ipv6AccessConfigs[*].externalIpv6'
+      - '$.data.networkInterfaces[*].aliasIpRanges[*].ipCidrRange'
+    domains:
+      - $.data.hostname
+    relations:
+      - { kind: attaches, to: '$.data.networkInterfaces[*].subnetwork', normalize: computeSelfLink }
+      - { kind: attaches, to: '$.data.networkInterfaces[*].network', normalize: computeSelfLink, weak: true }
+      - { kind: connects, to: '$.data.networkInterfaces[*].networkAttachment', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.disks[*].source', normalize: computeSelfLink }
+      - { kind: uses, to: $.data.sourceMachineImage, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.resourcePolicies[*]', normalize: computeSelfLink }
+      - { kind: runsAs, to: '$.data.serviceAccounts[*].email', normalize: serviceAccountEmail }
+      - {
+          kind: memberOf,
+          to: "$.data.metadata.items[?(@.key=='created-by')].value",
+          normalize: computeRelative,
+        }
+      - { kind: encryptedBy, to: '$.data.disks[*].diskEncryptionKey.kmsKeyName', normalize: kmsKey }
+      - { kind: encryptedBy, to: $.data.instanceEncryptionKey.kmsKeyName, normalize: kmsKey }
+    nestsIn:
+      - {
+          to: "$.data.metadata.items[?(@.key=='created-by')].value",
+          normalize: siblingName,
+          pattern: '{parent}/instanceGroups/{id}',
+        }
+      - {
+          to: "$.data.scheduling.nodeAffinities[?(@.key=='compute.googleapis.com/node-group-name' && @.operator=='IN')].values[*]",
+          normalize: siblingName,
+          pattern: 'projects/{project}/zones/{zone}/nodeGroups/{id}',
+          kind: uses,
+        }
+    notes: >-
+      Stopped VMs stay visible (status in the subtitle, no hiddenWhen). The image a VM boots from is reached
+      through its boot disk (Disk sourceImage). A managed VM nests in its instance group (nestsIn): its
+      `created-by` metadata names the group's manager (projects/<number>/zones|regions/<l>/
+      instanceGroupManagers/<m>), and the group has the same path with instanceGroups; the memberOf edge to
+      the manager stays. A VM on sole-tenant nodes names its node group by plain name in
+      scheduling.nodeAffinities (key compute.googleapis.com/node-group-name, operator IN): it nests there
+      unless its managed group already holds it, and then uses the node group. Reservation affinity
+      (reservationAffinity.values) names reservations by plain name or a zone-less path and is left to
+      badges. The
+      `instance-template` metadata of a managed VM is not drawn: its manager already uses the template. A
+      Private Service Connect interface NIC (networkInterfaces[*].networkAttachment, the consumer's network
+      attachment) connects rather than attaches: the attachment usually lives in another project,
+      and a cross-project attaches edge would be derived into a false Shared VPC pair, as the network
+      attachment's own connects edge to its producer projects already avoids.
+
+  compute.googleapis.com/Disk:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.sizeGb}} GB · {{data.type | lastSegment}}'
+    icon: persistent_disk
+    console: 'https://console.cloud.google.com/compute/disksDetail/zones/{{location}}/disks/{{data.name}}?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data['sourceImage','sourceSnapshot','sourceDisk','sourceInstantSnapshot']",
+          normalize: computeSelfLink,
+        }
+      - { kind: uses, to: '$.data.resourcePolicies[*]', normalize: computeSelfLink }
+      - {
+          kind: replicates,
+          to: '$.data.asyncSecondaryDisks.*.asyncReplicationDisk.disk',
+          normalize: computeSelfLink,
+        }
+      - { kind: encryptedBy, to: $.data.diskEncryptionKey.kmsKeyName, normalize: kmsKey }
+    nestsIn: { to: $.data.storagePool, normalize: computeSelfLink, kind: uses }
+    notes: >-
+      Zonal disks only; regional disks are compute.googleapis.com/RegionDisk. A disk in a Hyperdisk storage
+      pool nests in it (nestsIn); a pool shared from another project (shareSettings) cannot hold it,
+      and the disk uses the pool instead. `users` is the reverse of the
+      instance's `disks[*].source` and is not drawn twice. Asynchronous replication is read on the primary
+      (`asyncSecondaryDisks`, an object keyed by secondary), so the edge runs primary → secondary. Public
+      source images (debian-cloud, cos-cloud, …) stay dangling references.
+
+  compute.googleapis.com/RegionDisk:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.sizeGb}} GB · {{data.type | lastSegment}} · regional'
+    icon: persistent_disk
+    console: 'https://console.cloud.google.com/compute/disksDetail/regions/{{location}}/disks/{{data.name}}?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data['sourceImage','sourceSnapshot','sourceDisk','sourceInstantSnapshot']",
+          normalize: computeSelfLink,
+        }
+      - { kind: uses, to: '$.data.resourcePolicies[*]', normalize: computeSelfLink }
+      - {
+          kind: replicates,
+          to: '$.data.asyncSecondaryDisks.*.asyncReplicationDisk.disk',
+          normalize: computeSelfLink,
+        }
+      - { kind: encryptedBy, to: $.data.diskEncryptionKey.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      The regional variant of a disk (`regions/<r>/disks/<d>`, two `replicaZones`); same shape and rules as
+      Disk.
+
+  compute.googleapis.com/Image:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.family}} · {{data.diskSizeGb}} GB'
+    console: 'https://console.cloud.google.com/compute/imagesDetail/projects/{{projectId}}/global/images/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: "$.data['sourceDisk','sourceImage','sourceSnapshot']", normalize: computeSelfLink }
+      - {
+          kind: uses,
+          to: "$[?(@.rawDisk.source contains 'storage.googleapis.com/')].rawDisk.source",
+          normalize: gcsUri,
+        }
+      - { kind: encryptedBy, to: $.data.imageEncryptionKey.kmsKeyName, normalize: kmsKey }
+    hiddenWhen: "$.data.deprecated.state in ['DEPRECATED', 'OBSOLETE', 'DELETED']"
+    notes: >-
+      Image pipelines leave a trail of superseded images in a family; those carry a deprecation state and
+      start hidden. `rawDisk.source` is a Cloud Storage URL for imported archives but can also be an
+      Artifact Registry package path, so the bucket rule only reads storage URLs.
+
+  compute.googleapis.com/Snapshot:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.diskSizeGb}} GB · {{data.storageLocations[0]}}'
+    console: 'https://console.cloud.google.com/compute/snapshotsDetail/projects/{{projectId}}/global/snapshots/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: "$.data['sourceDisk','sourceInstantSnapshot']", normalize: computeSelfLink }
+      - { kind: encryptedBy, to: $.data.snapshotEncryptionKey.kmsKeyName, normalize: kmsKey }
+    hiddenWhen: '$.data.autoCreated == true'
+    notes: >-
+      Snapshots a snapshot schedule creates (`autoCreated`) are high-cardinality operational records and
+      start hidden; manual snapshots stay visible.
+
+  compute.googleapis.com/MachineImage:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.instanceProperties.machineType | lastSegment}} · {{data.storageLocations[0]}}'
+    console: 'https://console.cloud.google.com/compute/machineImages?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.sourceInstance, normalize: computeSelfLink }
+      - { kind: encryptedBy, to: $.data.machineImageEncryptionKey.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      `instanceProperties` keeps the source VM's network interfaces; they are not drawn as attachments, a
+      machine image is a global backup and does not sit in a subnet.
+
+  compute.googleapis.com/InstantSnapshot:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.diskSizeGb}} GB · {{location}}'
+    console: 'https://console.cloud.google.com/compute/snapshots?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.sourceDisk, normalize: computeSelfLink }
+
+  compute.googleapis.com/InstanceTemplate:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.properties.machineType | lastSegment}}'
+    console: 'https://console.cloud.google.com/compute/instanceTemplates/list?project={{projectId}}'
+    relations:
+      - {
+          kind: attaches,
+          to: '$.data.properties.networkInterfaces[*].subnetwork',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.properties.networkInterfaces[*].network',
+          normalize: computeSelfLink,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: "$.data.properties.disks[*].initializeParams['sourceImage','sourceSnapshot']",
+          normalize: computeSelfLink,
+        }
+      - { kind: uses, to: $.data.sourceInstance, normalize: computeSelfLink }
+      - { kind: runsAs, to: '$.data.properties.serviceAccounts[*].email', normalize: serviceAccountEmail }
+      - {
+          kind: encryptedBy,
+          to: '$.data.properties.disks[*].diskEncryptionKey.kmsKeyName',
+          normalize: kmsKey,
+        }
+    notes: >-
+      Global (`global/instanceTemplates`) and regional (`regions/<r>/instanceTemplates`) templates share the
+      type; the machine type is a plain name here, not a URL. `properties.resourcePolicies` holds names, not
+      URLs, and zonal `properties.disks[*].source` values are disk names, so neither is drawn.
+
+  compute.googleapis.com/InstanceGroup:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.size | plural(instance)}} · {{location}}'
+    console: 'https://console.cloud.google.com/compute/instanceGroups/details/{{location}}/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+    notes: >-
+      A container: the group resource does not list its instances (instanceGroups.listInstances
+      is a separate call), but each managed VM names its manager in `created-by`, and the VM's nestsIn rule
+      places it in the group of the same name. Unmanaged groups' members stay where they are. The VMs'
+      memberOf edges to the manager stay. Zonal and regional groups share the type.
+
+  compute.googleapis.com/InstanceGroupManager:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'target size {{data.targetSize}} · {{location}}'
+    console: 'https://console.cloud.google.com/compute/instanceGroups/details/{{location}}/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.instanceGroup, normalize: computeSelfLink }
+      - { kind: uses, to: $.data.instanceTemplate, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.versions[*].instanceTemplate', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.autoHealingPolicies[*].healthCheck', normalize: computeSelfLink }
+      - { kind: uses, to: $.data.resourcePolicies.workloadPolicy, normalize: computeSelfLink }
+      - { kind: memberOf, to: '$.data.targetPools[*]', normalize: computeSelfLink }
+    notes: >-
+      Instances point here through their `created-by` metadata (memberOf). The group's VMs join its target
+      pools, so the manager is drawn as a member of each pool (the pool routes to them); a rule cannot
+      write the reverse routes edge from this side.
+
+  compute.googleapis.com/Autoscaler:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.autoscalingPolicy.minNumReplicas}}–{{data.autoscalingPolicy.maxNumReplicas}} replicas · {{data.autoscalingPolicy.mode | lower}}'
+    console: 'https://console.cloud.google.com/compute/instanceGroups/details/{{location}}/{{data.target | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.target, normalize: computeSelfLink }
+    notes: The console has no autoscaler page; the link opens the managed group it scales.
+
+  compute.googleapis.com/NodeGroup:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.size | plural(node)}} · {{location}}'
+    console: 'https://console.cloud.google.com/compute/soleTenancy?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.nodeTemplate, normalize: computeSelfLink }
+    notes: >-
+      A container: the node group does not list the VMs placed on it, but each VM names it by
+      plain name in scheduling.nodeAffinities, which the VM's nestsIn rule completes with the VM's project
+      and zone.
+
+  compute.googleapis.com/NodeTemplate:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: '{{data.nodeType}} · {{location}}'
+    console: 'https://console.cloud.google.com/compute/soleTenancy?project={{projectId}}'
+
+  compute.googleapis.com/Reservation:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.specificReservation.instanceProperties.machineType}} × {{data.specificReservation.count}} · {{location}}'
+    console: 'https://console.cloud.google.com/compute/reservations?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.commitment, normalize: computeSelfLink }
+      - { kind: uses, to: $.data.specificReservation.sourceInstanceTemplate, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.resourcePolicies.*', normalize: computeSelfLink }
+    notes: >-
+      The seed calls it a leaf; it is core here because it references its commitment, its source template
+      and its placement policies. VMs that consume it name it by plain name (reservationAffinity), which no
+      rule can resolve. `resourcePolicies` is an object keyed by a user-chosen name.
+
+  compute.googleapis.com/Commitment:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: '{{data.plan | lower}} · {{data.type | lower}} · {{data.status | lower}}'
+    console: 'https://console.cloud.google.com/compute/commitments?project={{projectId}}'
+    notes: Regional committed-use discounts (regionCommitments); reservations point here through `commitment`.
+
+  compute.googleapis.com/ResourcePolicy:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: '{{data.status | lower}} · {{location}}'
+    notes: >-
+      One type for snapshot schedules, placement, instance schedules, consistency groups and workload
+      policies (one of `snapshotSchedulePolicy`, `groupPlacementPolicy`, `instanceSchedulePolicy`,
+      `diskConsistencyGroupPolicy`, `workloadPolicy` is set). Disks, VMs, reservations and managed groups
+      point here. No console link: the kinds live on different console pages.
+
+  compute.googleapis.com/StoragePool:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.storagePoolType | lastSegment}} · {{data.poolProvisionedCapacityGb}} GiB'
+    console: 'https://console.cloud.google.com/compute/storagePools?project={{projectId}}'
+    notes: >-
+      A container: the pool does not list its disks, but each disk names it (storagePool) and
+      nests in it through its nestsIn rule. A disk in another project the pool is shared with
+      (shareSettings.projectMap) cannot nest across projects and uses the pool instead.
+
+  compute.googleapis.com/License:
+    role: hidden
+    label: '{{data.name}}'
+    subtitle: 'license {{data.licenseCode}}'
+    notes: Licences created in a project (public OS licences live in Google's image projects).
+
+  compute.googleapis.com/InstanceSettings:
+    role: hidden
+    label: 'instance settings · {{location}}'
+    console: 'https://console.cloud.google.com/compute/metadata?project={{projectId}}'
+    notes: A per-zone settings singleton (zonal default metadata); it has no name of its own.
+
+  compute.googleapis.com/Project:
+    role: hidden
+    label: '{{data.name}}'
+    subtitle: 'Shared VPC {{data.xpnProjectStatus | lower}}'
+    console: 'https://console.cloud.google.com/compute/metadata?project={{projectId}}'
+    notes: >-
+      The Compute Engine metadata object of a project, not the Resource Manager project: `data.name` is the
+      project id and `data.id` the project number. `xpnProjectStatus: HOST` marks a Shared VPC host and
+      `commonInstanceMetadata` holds project-wide metadata such as enable-oslogin; both are badges on the
+      Resource Manager project, so the asset itself stays hidden.

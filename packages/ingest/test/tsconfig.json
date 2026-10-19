@@ -1,0 +1,12 @@
+{
+  // Tests that need Node: fixture files (node:fs), the worker_threads harness and the performance budget, which
+  // reads the demo organisation XL (@gcportrait/demo-data, a dev dependency). Kept apart so that Node types
+  // never leak into the package's own sources.
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "../node_modules/.tmp/tsc-test"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }, { "path": "../../demo-data" }]
+}

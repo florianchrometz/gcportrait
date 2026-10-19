@@ -1,0 +1,639 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+# Contributing to gcportrait
+
+This guide takes you from a fork to a green `pnpm check` and an open pull request. It is written for people
+and AI assistants alike. [AGENTS.md](../AGENTS.md) holds the rules of the project, with the `AGENTS.md` of
+each top-level folder that has rules of its own, and
+[.agents/skills/contributor-workflow/SKILL.md](../.agents/skills/contributor-workflow/SKILL.md) is the
+checklist version that reviewers use.
+
+> What gcportrait does, with its features, screenshots and animated demos, is on the [root
+README](../README.md), whose "Roadmap" section says what comes later; [backlog.md](backlog.md) lists the open
+work, and [AGENTS.md](../AGENTS.md) the rules, with the folder files it names. [packages.md](packages.md)
+maps the packages.
+Not ready for a pull request? Open an issue from one of the forms (a bug report, a feature request or an
+asset type request; the chooser also links the user guides and the sign-in-free demo), and reproduce a
+problem in demo mode first: the demo organisations are synthetic and safe to share.
+
+## 1. What you need
+
+- **Git** and a GitHub account to fork the repository.
+- **Node.js 22, version 22.22.2 or newer.** `.nvmrc` names `22`, so `nvm install` (or `fnm install`) in the
+  repository picks the latest 22.x release. The root `package.json` requires `^22.22.2` and `.npmrc` sets
+  `engine-strict=true`, so `pnpm install` refuses an older Node instead of failing later in odd ways.
+- **pnpm 10.18.1**, the version pinned in the `packageManager` field of the root `package.json`. Node 22 ships
+  Corepack; run `corepack enable` once and every `pnpm` command in this repository uses exactly that version.
+- **No Google Cloud account, project or credentials.** Everything in this guide runs on synthetic data.
+
+pnpm runs package scripts through its cross-platform shell emulator (set in `.npmrc`), so scripts such as
+`VITE_DEMO=1 vite` work the same on macOS, Linux and Windows.
+
+## 2. Get the code and install it
+
+```sh
+git clone https://github.com/YOUR_GITHUB_USER/YOUR_FORK.git
+cd YOUR_FORK
+corepack enable
+pnpm install
+```
+
+A clone is for working on gcportrait. Running it needs none: self-hosters install a release with one line
+(`curl -fsSL https://gcportrait.app/install.sh | bash -s -- --project YOUR_PROJECT`,
+[self-host.md](self-host.md)). To build from source without a fork of your own, clone the project's repository
+the same way: `git clone https://github.com/florianchrometz/gcportrait.git`.
+
+`pnpm install` installs every workspace package from the lockfile: `frontend/`, `backend/`, `e2e/` and
+`packages/*`. CI installs with `pnpm install --frozen-lockfile`, so commit `pnpm-lock.yaml` whenever you add,
+remove or upgrade a dependency. pnpm 10 runs no dependency install scripts unless `pnpm-workspace.yaml` allows
+them.
+
+### With an AI assistant
+
+The rules files, [AGENTS.md](../AGENTS.md) at the root and the `AGENTS.md` of each top-level folder with
+rules of its own, and the skills under `.agents/skills/` are the one source of instructions for every
+assistant; Codex CLI, Cursor and GitHub Copilot read them as they are. The repository commits no file of a
+particular tool. `pnpm agents:setup` writes the local, git-ignored pointer files that close the gaps, each one
+paragraph that points to the rules files and the skills: `CLAUDE.md` with an `@AGENTS.md` import and a link
+per skill under `.claude/skills/` for Claude Code, `GEMINI.md` with an `@./AGENTS.md` import for Gemini CLI,
+a Cursor rule and Copilot's instructions file, and for each folder file a `CLAUDE.md` and a `GEMINI.md` beside
+it and Copilot's instructions for the folder's files under `.github/instructions/`. It never overwrites a file
+of yours without `--force`, and running it again changes nothing; `--tool claude` writes one tool's files
+only ([AGENTS.md](../AGENTS.md), "Assistants"; [.agents/README.md](../.agents/README.md) has what each tool
+reads). A rule goes in an AGENTS.md, never in a pointer file. Before you change a folder's files, read its
+`AGENTS.md`.
+
+## 3. Run the app
+
+| Command | What starts | Open |
+|---|---|---|
+| `pnpm dev:demo` | The single-page app as a demo build, a demo-only instance with its configuration built in: no backend, no API calls, no Google account. | <http://localhost:5174> |
+| `pnpm dev` | The app (Vite, which proxies `/api` to the backend) and the backend (Fastify under `tsx watch`, pretty logs). | <http://localhost:5173>; the backend answers on <http://localhost:8080/healthz> |
+
+Stop either with Ctrl+C. The app draws the synthetic demo organisations as diagrams: open
+<http://localhost:5174/diagram#snapshot=demo:M> (or press "Try the demo" on the Connect page, or pick S, M or
+L from the Snapshot menu), then switch the lens, focus, filters and detail level in the top bar, press `/` to
+search, select a resource for its details drawer, click a collapsed zone to open it, drill in, export SVG or
+PNG from the Export menu, and switch light, dark or system from the top bar's Theme menu or on the Settings
+page. Every view is in the URL hash, so a reload keeps it, the timeline's day included: the bar at the bottom
+moves through the demo's 35 days (`[` and `]`, the slider, playback), marking what was added, removed or
+changed since the day before ([timeline.md](timeline.md)). `pnpm dev` reads `backend/.env` if it exists;
+`backend/.env.example` documents every variable, and none is needed for local development.
+
+The pipeline also runs without the app. `pnpm render-scene --fixture M --lens networking` ingests the
+synthetic organisation M, builds its graph and the scene for a view, and prints a summary; `--help` lists the
+view options (focus, drill-in root, filters, detail level, JSON output). `pnpm render --fixture M --lens
+networking --png out.png` lays the same view out and draws it exactly as the app's renderer draws it (`--theme
+dark` for the dark theme, `--help` for the rest); it is how contributors and agents look at a visual change.
+[packages.md](packages.md) explains each step.
+
+## 4. The checks
+
+### `pnpm check`
+
+Run it before every push. It runs these steps in order and stops at the first failure:
+
+| Step | Runs | Fails when |
+|---|---|---|
+| `format:check` | `prettier --check .` | a TypeScript, JavaScript, JSON, YAML, CSS or HTML file is not formatted. Markdown is excluded: it is hand-wrapped prose at 110 columns. |
+| `lint` | `pnpm catalog:build`, then `eslint . --max-warnings=0` | any lint rule fails: typescript-eslint's strict type-checked rules, `any`, an import across a package boundary. |
+| `typecheck` | `pnpm catalog:build`, then `tsc -b`, then the website's `typecheck:astro` (`@astrojs/check` over its `.astro` files) | any project listed in the root `tsconfig.json` has a type error, or a website `.astro` file has any diagnostic, a hint such as an unused import included ([website.md](website.md), "Building and checking"). |
+| `test` | `pnpm catalog:build`, then `vitest run` | a unit test fails in any package or in the repository tooling (`scripts/**/*.test.ts`). |
+| `catalog:check` | the catalog package's `check` script (`packages/catalog/tooling/check.ts`) | the asset catalog is invalid: a schema error in a YAML file, a type described twice, a type missing from the newest official list, an official type neither mapped nor listed in the `known-unmapped/<group>.yaml` that owns it, a rule without a proving fixture, a fixture with real-looking data, or a committed `src/generated/` file. It also prints the coverage report, per group. |
+| `provenance` | `node scripts/check-provenance.mjs` | a provenance rule is broken (section 5). |
+| `licenses` | `node scripts/check-licenses.mjs` | an installed package has a licence on the deny list (copyleft that would reach gcportrait's combined work, non-commercial, proprietary, unknown) or outside the allowlist, or `THIRD_PARTY.md` is stale. |
+
+A green run ends like this (the counts change as the project grows):
+
+```text
+catalog:check: OK.
+provenance: OK. 2483 files scanned, 1373 SPDX headers (Apache-2.0) verified; no forbidden names, banned terms or banned files.
+licenses: project licence Apache-2.0 (the "license" field of the root package.json).
+licenses: compatibility: every accepted dependency licence is permissive, file-scoped weak copyleft (MPL-2.0) or, for the self-hosted font packages only, OFL-1.1; all are compatible with Apache-2.0, and none requires gcportrait to publish its code or relicense its combined work.
+licenses: OK. 565 installed packages are under allowed licences; the workspace packages (14) declare Apache-2.0; THIRD_PARTY.md is up to date.
+```
+
+### Fixing a failing step
+
+- **Formatting:** `pnpm format` runs `prettier --write .`; review the diff before committing.
+- **One package at a time:** `pnpm --filter @gcportrait/<package> lint`, `... typecheck` or `... test`, for
+  example `pnpm --filter @gcportrait/model test`.
+- **One test project from the root:** `pnpm test --project <name>`, where the name is `model`, `demo-data`,
+  `ingest`, `catalog`, `graph`, `layout`, `icons`, `render`, `render-cli`, `frontend`, `backend`, `website` or
+  `tooling`. `pnpm test:watch` re-runs tests as you edit.
+- **Coverage:** `pnpm test:coverage`, which CI's `unit (coverage)` leg runs, holds four packages to the
+  thresholds in their own `vitest.config.ts`: `@gcportrait/model` 100 % of its schemas and codec,
+  `@gcportrait/ingest`, `@gcportrait/graph` and `@gcportrait/layout` near 100 %. One package alone:
+  `pnpm --filter @gcportrait/model test -- --coverage`. `pnpm test --coverage` writes a report of every
+  project to `coverage/` without thresholds.
+- **The asset catalog:** the compiled catalog (`packages/catalog/src/generated/`) is a git-ignored build
+  artefact that `pnpm install`, `lint`, `typecheck` and `test` rebuild; after editing YAML under
+  `packages/catalog/`, run `pnpm catalog:check` (`--group <group>` for one authoring group's files only). The
+  [gcp-asset-catalog skill](../.agents/skills/gcp-asset-catalog/SKILL.md) is the step-by-step guide and the
+  catalog README's "Authoring a group" the group workflow.
+- **Licences:** after you add, remove or upgrade a dependency, run `pnpm run licenses --write` to regenerate
+  the dependency table in `THIRD_PARTY.md`, and commit it. `--write` cannot fix a licence on the deny list or
+  outside the allowlist: choose another package, or propose a change to the licence rules
+  ([AGENTS.md](../AGENTS.md), "Licence and dependencies"). The report names the project licence
+  (`Apache-2.0`) and why every allowed licence is compatible with it; `THIRD_PARTY.md` has the reasoning.
+  Always type `pnpm run licenses`; plain `pnpm licenses` is pnpm's own built-in command.
+- **Provenance:** every problem is printed as `path:line  [rule] message` (the rule is one of
+  `forbidden-name`, `banned-term`, `banned-file`, `symlink`, `spdx-header`, `plan-id`, `licence-name`,
+  `encoding`), and the message says what to add or remove. Section 5 explains the rules;
+  `node scripts/check-provenance.mjs --list-exempt` prints them, the refused names and phrases as labels only.
+
+### Continuous integration
+
+A pull request runs one workflow, **CI** (`.github/workflows/pr.yml`); a push to `main` runs it too, beside
+**Website** (`.github/workflows/pages.yml`). CI's jobs run side by side; each one installs the dependencies
+itself from the pnpm store cache, which `pnpm-lock.yaml` keys, so a run takes as long as its slowest job. The
+site's build is one definition, `.github/workflows/website.yml`, which `pages.yml` calls on a push to `main`
+(and workflow dispatch), and `release.yml` for a tag: it builds the demo and the site and checks them, warns
+about stale `docs/media/`, and `pages.yml` deploys what it built once the maintainer has switched deployment
+on ([website.md](website.md)). A pull request's site check is CI's `website` job, which builds without the
+demo and deploys nothing, so `pages.yml` does not run there: a second copy of the build drifts from the first
+(`.github/workflows/website.yml`). The CI jobs, and what each does on a change of only
+docs and media; the e2e legs, `layout-budget` and `website` also skip other changes they do not read (both
+below):
+
+| Job | Runs | Only docs and media changed |
+|---|---|---|
+| `changes` | sorts the changed files into docs, media and code and decides the `e2e`, `layout` and `website` gates (below); no install | runs |
+| `lint` | `pnpm format:check`, then `pnpm lint` | Prettier only, when media changed (its two manifests are JSON); skipped for docs alone |
+| `typecheck` | `pnpm typecheck` | skipped |
+| `unit (layout)`, `unit (frontend)` | `pnpm test --project layout`; `pnpm test --project frontend` | skipped |
+| `unit (coverage)` | `pnpm test:coverage`: model, ingest, graph and layout, each under V8 coverage with the thresholds of its own `vitest.config.ts`; fails below one | skipped |
+| `unit (all other projects)` | `pnpm test --project '!layout' --project '!frontend'`, which is every other project, a new one included | runs: the user guides' check, the citation check of the rules files, the README's and the media's tests and the backend's and the website's tests read docs and media |
+| `layout-budget` | `pnpm --filter @gcportrait/layout test:budget`, then the runner's CPU and the `bench` table in the job summary, then `pnpm --filter @gcportrait/layout explore` (the layout's properties over random Scenes, 1 000 runs each, under a seed from the run id that the summary names with a failure's path and counterexample). **Non-blocking**: the strict budgets describe a quiet M1-class machine, so the runner's figures are expected above them and a miss only warns, while `unit (layout)` enforces twice the budgets; and `unit (layout)` runs the properties under a fixed seed (`CI_PROPERTY_SEED`), so a counterexample found here is reported, not blocking. Runs only when `layout` is true | skipped |
+| `build` | `pnpm build:app` (every workspace with a build script but the website), then `pnpm size` | skipped |
+| `e2e (desktop 1/3)` to `e2e (desktop 3/3)` | `pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg N --of 3`, Chromium: every third test of the desktop specs, in demo and normal mode. Runs only when `e2e` is true | skipped |
+| `e2e (phones and tablets 1/2)`, `e2e (phones and tablets 2/2)` | `pnpm --filter @gcportrait/e2e leg --projects '!chromium-live !chromium' --leg N --of 2`, Chromium: every other test of every project but the desktop's, a new one included: the app's phone and tablet check (`mobile`) and its flows by finger on a phone and a tablet (`chromium-phone`, `chromium-tablet`). Runs only when `e2e` is true | skipped |
+| `website` | `pnpm website:build` and `pnpm website:check`, then in Chromium `mobile --only layout`, `demo` and `fillable --profile chromium`. Runs unless `website` is false | runs |
+| `repo-checks` | the checks that take seconds, as steps named after them, each run after a failed one: **provenance**, `pnpm provenance`, then a self-test: a planted banned file (a `.go` file) must fail the guard; **catalog-check**, `pnpm catalog:check` on the catalog the install compiled; **licenses**, `pnpm run licenses`; **audit**, `node scripts/check-audit.mjs` (asks the npm registry); **workflows-and-shell**, `actionlint`, `shellcheck -x infra/*.sh` and every other shell script with `shellcheck -x --severity=warning`. Installs the dependencies unless only media changed | provenance runs; licenses runs when docs changed (`THIRD_PARTY.md` is one); the other steps are skipped |
+| `required` | nothing of its own: green only when `changes` and every job above but `layout-budget` succeeded, or were skipped as `changes` planned (an e2e leg on `e2e=false`, `website` on `website=false`; `repo-checks` skips steps, never itself) | runs: a job skipped for such a change counts as passed |
+
+**A change of only docs and media** runs only the jobs that read such files
+([.github/AGENTS.md](../.github/AGENTS.md), "A change of only docs and media"). `changes` compares a push with
+the commit before it and a pull request (its merge commit) with the branch it merges into, and sorts every
+changed file:
+
+- **docs**: `docs/**/*.md`, the Markdown files at the root (`AGENTS.md`, `README.md`, `THIRD_PARTY.md`,
+  `CHANGELOG.md`), the `README.md` of each top-level folder and each package, and the `AGENTS.md` of each
+  top-level folder. The skills (`.agents/skills/`) are code: the frontend's theme test reads the style
+  skill's palette. So is any other Markdown file, a `README.md` in the catalog's fixture folders for one,
+  which `catalog:check` refuses.
+- **media**: `docs/media/**`, what `pnpm media` and `node scripts/exports.mjs` write.
+- **code**: every other file.
+
+With code among the changed files every job runs, and so it does when the comparison cannot be made (a new
+branch, a push whose commit before is not in the history) or finds no file. A skipped job's result is that of
+the tree the change starts from, which the run of that commit shows. The job summary of `changes` says what it
+compared and what it found.
+
+**The e2e, layout-budget and website gates** narrow three jobs further by the code files themselves
+([.github/AGENTS.md](../.github/AGENTS.md), "The e2e, layout-budget and website gates"):
+
+- **`e2e`** is false when every code file lies under `scripts/`, `website/`, `infra/`, `docs/`, `.agents/` or
+  `.github/`, or is one of the root's `eslint.config.js`, `.prettierrc`, `.prettierignore`, `.editorconfig`,
+  `.dockerignore`, `.gitignore` and `app.json`: the suites read none of them.
+- **`layout`** is true only for a code file under `packages/layout/` or the packages it is tested with or the
+  catalog's build reads (`model`, `catalog`, `demo-data`, `graph`, `ingest`, `icons`), `frontend/package.json`
+  (the fonts its metrics come from) or any file at the root.
+- **`website`** is false only when every changed file is a code file modified in place (not added, deleted or
+  renamed) under `backend/`, `e2e/`, `.agents/` or `.github/`: the site's checks resolve links to repository
+  paths, so an added or removed file can break them. Docs and media always run it.
+
+A change to `.github/actions/setup/`, `.github/actions/playwright/` or `.github/workflows/pr.yml` sets all
+three true, and so does a comparison that cannot be made.
+
+GitHub's standard runners have 4 vCPUs for a public repository and 2 for a private one, and Playwright runs
+half as many workers as there are vCPUs. Each job also spends about a minute on the checkout, Node and the
+install from the cache, and the e2e legs and `website` about another minute on Chromium's system libraries.
+The five e2e legs are the longest jobs, which is why the suite is split in five. The header of
+[e2e/scripts/leg.ts](../e2e/scripts/leg.ts) describes selection, exact-share validation and timing summaries.
+The summary compares the legs by their summed test time, apart from their set-up; the run's page shows
+each job's time.
+
+Some of these gates are not part of `pnpm check`; run these three locally when you touch the app:
+
+| Command | What it does |
+|---|---|
+| `pnpm build` | Builds every workspace that has a build script: `frontend/dist` (Vite), `backend/dist` (the two esbuild bundles, the render worker's assets and the licences of what they ship), the compiled catalog, the icon module and the website. `pnpm build:app` leaves the website out, as CI's `build` job does. |
+| `pnpm size` | After `pnpm build`: prints the gzipped size per chunk and thread, enforcing [frontend/AGENTS.md, Bundle budgets](../frontend/AGENTS.md#bundle-budgets), including its exclusions, first-paint classification and refusal of zod on the UI thread. |
+| `pnpm e2e` | Playwright: functional, export and axe accessibility tests in light and dark, against demo mode and normal mode, the app's phone and tablet check (below), and its flows by finger at a phone's and a tablet's size (`e2e/tests/handheld.spec.ts`; `pnpm e2e --project chromium-phone --project chromium-tablet` runs them alone). It starts both servers itself, on two free ports of each run's own, so two runs never meet and a dev server another checkout left on 5173 or 5174 is never tested: the dev servers, or with `CI` set a build of each mode served by `vite preview`; `E2E_DEMO_URL` and `E2E_LIVE_URL` name a server of your own that a local run reuses ([e2e/README.md](../e2e/README.md)). Run `pnpm --filter @gcportrait/e2e install-browsers` once per machine first. |
+| `pnpm --filter @gcportrait/frontend mobile` | The app's phone and tablet check alone (`mobile` project), including landscape and both themes: [mobile.spec.ts](../e2e/tests/mobile.spec.ts) defines page/diagram states and layout probes; [touch.spec.ts](../e2e/tests/touch.spec.ts) defines canvas finger gestures and mouse compatibility. CI runs it in the `e2e (phones and tablets …)` legs. |
+
+The phone-width check runs its layout half only (Chromium at 320 to 430 CSS pixels in both themes: sideways
+overflow, the header, 44 px touch targets, axe). Its playback half, the landing page's animated demos on an
+iPhone in WebKit, stays a local check before a release: Playwright's WebKit on Linux plays media through
+GStreamer, not through the iPhone's media stack, so a pass or a failure there would not say what the check is
+for (`pnpm website:mobile`, once per machine `pnpm --filter @gcportrait/website exec playwright install
+webkit`). The fillable-commands check's Firefox, WebKit and phone profiles and `pnpm website:lighthouse` stay
+local too, before a release ([docs/website.md](website.md), "Building and checking").
+
+**Running a job as the runner does.** Each job's commands are in the table. The runner's time zone is UTC, its
+locale is `C.UTF-8` (Node formats dates and numbers as `en-US` then) and `CI` is set, which changes three
+things: the tests' wall-clock limits (the layout's, the ingest's and the graph build's budget ceilings, the
+demo organisations' generation) are never skipped for a busy machine, Playwright retries a failed test twice
+and records a trace on a test's first retry only (a local run records one for every test and keeps a failed
+test's), runs against fresh builds of the app instead of the dev servers and writes an HTML report, and
+`test.only` fails the run. To reproduce a failure that does not happen on your machine:
+
+```sh
+TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project frontend      # one leg of `unit`, as on the runner
+CI=true pnpm --filter @gcportrait/e2e leg --projects "chromium-live chromium" --leg 2 --of 3   # e2e (desktop 2/3)
+actionlint && shellcheck -x infra/*.sh                            # repo-checks' workflows-and-shell steps (Homebrew has both)
+```
+
+A failed `e2e` leg uploads `playwright-report-` and its id (`desktop-1` to `desktop-3`,
+`phones-and-tablets-1`, `phones-and-tablets-2`): the HTML report, the trace of each failed test's first
+retry (`pnpm --filter @gcportrait/e2e exec playwright show-trace FILE` opens one) and, under
+`out/export/e2e/`, the export comparisons' images and their difference pictures. A failed `unit (all other
+projects)`, the leg that runs the render golden's tests, uploads `render-golden-failures` when the render
+golden did not match: the image the runner drew and a picture of the differences.
+
+**Required checks.** Branch protection needs exactly one check: `required`. In Settings > Rules > Rulesets, a
+branch ruleset for the default branch with "Require status checks to pass" and the check `required` (source:
+GitHub Actions); add "Require a pull request before merging" as you see fit. Do not list the other jobs or the
+matrix legs one by one: `required` already waits for them, and the ruleset then needs no change when a job is
+added, renamed or split. The jobs a change leaves out (only docs and media, or the e2e and website gates) are
+skipped inside the workflow, not by a path filter on it, so `required` reports on every pull request and push
+and decides itself when a skipped job counts as passed. `layout-budget` is left out on purpose, and so is
+every job of the Website workflow: it runs on `main`, never on a pull request, whose
+site check is CI's `website` job. GitHub offers a check in the ruleset only after it has run once, so add
+`required` after the first push to `main`.
+
+**Runs on GitHub.** What to expect, and what to do:
+
+- **Caches.** A repository's first run finds neither the pnpm store nor the Playwright browsers cached, so
+  every job downloads them and takes a minute or two longer. A pull request reads the caches that `main`'s
+  runs saved.
+- **Visual baselines.** There are no screenshot baselines that depend on the machine that wrote them, so e2e
+  runs on the plain `ubuntu-latest` runner, not in Playwright's container. The renderer's baselines
+  (`e2e/baselines/diagram/`) are SVG text, compared as text by the frontend's unit tests. The render golden
+  (`e2e/baselines/render/`) is drawn by resvg's WebAssembly build with the bundled fonts, which computes the
+  same bytes on every platform, and is compared byte for byte by the unit tests (render-cli, render, backend),
+  on the runner as on your machine. Should one of these golden comparisons fail on the runner: download the
+  artifact, look at the difference picture, and if it is anti-aliasing only, add a second golden for Linux
+  rather than a tolerance. The export checks in `e2e/tests/export.spec.ts` compare pictures drawn on the
+  runner and print each figure in the log: the exported SVG and the renderer's committed
+  baseline of the same view (`e2e/baselines/diagram/S-overview-auto-{light,dark}.svg`), both drawn by resvg,
+  with at most 0.05 % of pixels different; the PNG that Chromium draws and the PNG `pnpm render` draws of
+  that view, with at most 1 %; and Chromium's PNG inside its margin and resvg's drawing of the exported SVG
+  at 2×, with at most 1 %. Linux draws text through FreeType and macOS through Core Text, so the two figures
+  of Chromium's PNG differ between them, though not near the limit.
+- **Locale and time zone.** A unit test that passes on your machine can fail on the runner when it formats a
+  date or a number in the viewer's locale without fixing one: reproduce it with `TZ=UTC LC_ALL=C.UTF-8`
+  (above). The end-to-end specs that read dates fix `en-GB` and UTC themselves.
+- **The layout's budgets.** They describe a quiet M1-class machine, not a shared runner. `unit (layout)` holds
+  the layout to twice its budgets on whatever runner it gets; `layout-budget`'s summary shows the runner's CPU
+  and its strict figures, which are expected above the budgets by a margin.
+- **The weekly drift checks.** `catalog-drift.yml` (Mondays, `pnpm catalog:fetch-official --json … --markdown
+  …`) and `icon-drift.yml` (Thursdays, `pnpm --filter @gcportrait/icons drift`) put their report in the job
+  summary and, when something drifted, hand it to `scripts/drift-issue.mjs`, which opens or updates one issue
+  per check with `gh` and the workflow's token, commenting only when the drift differs from the one the issue
+  describes. Its unit tests run it against a stand-in `gh`; locally, run the check itself and read its report.
+
+For a visual change (layout, renderer, icons, palette), also render the M fixture in both themes and look at
+the PNGs (`pnpm render --fixture M --lens networking --png out.png`, then `--theme dark`), walk the checklists
+of the style and layout skills (the style skill's fact-check list, §11, and the layout skill's checklist, §8)
+item by item, and update the baselines deliberately: the renderer's SVG baselines with `pnpm --filter
+@gcportrait/frontend test src/diagram/baselines.test.tsx -u` (the file before `-u`), the render golden PNG
+with `pnpm --filter @gcportrait/render-cli test:golden:update`, and the layout's golden JSON with `pnpm
+--filter @gcportrait/layout test:golden:update`. Say in the pull request why each changed file changed. The
+layout's budgets run on their own with `pnpm --filter @gcportrait/layout test:budget`; quote their figures for
+a layout change.
+
+## 5. Rules every change follows
+
+Every rule is in [AGENTS.md](../AGENTS.md) or in the `AGENTS.md` of the folder it binds; these are the ones
+the checks enforce or that reviewers most often catch.
+
+### Provenance
+
+gcportrait is original work, licensed under the Apache License 2.0 (`Apache-2.0`; [AGENTS.md](../AGENTS.md),
+"Licence and dependencies"), and whoever receives it may rely on that licence alone, so nothing may bring in
+someone else's licence or an obligation that would force the project to publish its code or relicense its
+combined work.
+
+- Never copy, port or paraphrase another licensed project. If your solution reads like a translation of
+  someone else's code, start over.
+- No Go files, no Graphviz `.dot` or `.gv` files, no Gizmo graph queries, and no symbolic links.
+- The strings of AGENTS.md, "Names that never appear", never appear in a file's contents or its name: Google's
+  name with its company suffix (Google is "Google" or "Google Cloud"), a few project names, decision-record
+  numbers and links, numbered rules of an AGENTS.md, phrases that record how something was built rather than
+  what it is, and work-item ids. Say what a thing is or does, and cite a rule by the AGENTS.md that holds it
+  and its heading: "AGENTS.md, Security and privacy", and for a folder file its path from the root first,
+  `<folder>/AGENTS.md, <heading>`. `scripts/rules-files.test.ts` (part of `pnpm test`) fails on a citation
+  whose file, heading, principle or anchor does not exist.
+  `--list-exempt` prints the rules. Some phrases are known to the check only by their SHA-256 digest;
+  `node scripts/check-provenance.mjs --digest-of "<phrase>"` prints the entry that adds one to
+  `PHRASE_DIGESTS`.
+- Every text file is UTF-8, without a byte-order mark or NUL bytes, and a file with a binary extension holds
+  that format (`encoding`). The check reads text in any encoding and the metadata of binary files, so neither
+  hides a refused string.
+- The names of denied licences appear only in the dependency deny list (`THIRD_PARTY.md`,
+  `scripts/check-licenses.mjs` and its test) and in the verbatim licence texts in `scripts/licenses/`
+  (`licence-name`).
+- Every pull request carries the statement "Original work; nothing copied from other projects."
+
+### The SPDX header
+
+Every new text source file starts with the SPDX licence line for `Apache-2.0`, within its first 10 lines
+(a shebang or a Dockerfile `# syntax=` line may come first; in Markdown with YAML frontmatter, the header goes
+on the first line after the closing `---`). Add the line for the file's type:
+
+| Files | Header line |
+|---|---|
+| `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs` | `// SPDX-License-Identifier: Apache-2.0` |
+| `.yaml` `.yml` `.sh`, and by name `.editorconfig` `.gitignore` `.gitattributes` `.npmrc` `.prettierignore` `.dockerignore` `.env.example` `Dockerfile` `CODEOWNERS` | `# SPDX-License-Identifier: Apache-2.0` |
+| `.css` | `/* SPDX-License-Identifier: Apache-2.0 */` |
+| `.md` `.html` `.astro` | `<!-- SPDX-License-Identifier: Apache-2.0 -->` |
+
+`pnpm provenance` checks every header against the `license` field of the root `package.json`, so a header
+with any other identifier fails, and a new workspace package's `package.json` declares
+`"license": "Apache-2.0"` too. Files that cannot hold a comment or are data or licence texts need no
+header: `.json` (and `.jsonl`, `.ndjson`, `.prettierrc`), `.txt`, `.svg`, `.drawio`, `LICENSE`, `NOTICE`,
+`.nvmrc`, `.gitkeep`, `CNAME`, lockfiles, images, fonts and other binary files; so does `CHANGELOG.md`, which
+holds release notes rather than source. A text file of any other type fails the check until
+`scripts/lib/repo-files.mjs` gives its type a header form or lists it as header-free, in the same change.
+Should the project licence ever change, `scripts/set-license.mjs` rewrites every header; it is not needed
+otherwise.
+
+### Contributions and licensing
+
+Contributions are accepted under the Apache License 2.0, the project's licence (inbound = outbound): by
+opening a pull request you offer your change under it, and the provenance statement in the template confirms
+that it is your own work. You keep the copyright in what you write. There is no contributor licence agreement,
+and none is planned: with a permissive licence, nobody needs more rights than the Apache License 2.0 gives.
+The gcportrait name and icon are not covered by the Apache License 2.0
+([brand/LICENSE.md](../brand/LICENSE.md)): a fork uses its own. Third-party material keeps its own licences
+and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new dependency must pass `pnpm run licenses`.
+
+### Code
+
+- TypeScript only, strict, no `any`. `erasableSyntaxOnly` is on: no enums, namespaces or constructor parameter
+  properties; use union types and `as const` objects.
+- The backend, the e2e suite, the tooling and every package under `packages/` use NodeNext module resolution,
+  so relative imports carry an explicit `.js` extension (`import { x } from './x.js'`). Only the frontend uses
+  bundler resolution.
+- Each package exposes its public API through `src/index.ts`. Import another package by its name
+  (`@gcportrait/model`), never through a deep path or a relative path into it. The dependency direction is
+  fixed (`eslint.config.js`): packages under `packages/` may import only `@gcportrait/model`, which imports no
+  other package, except that `@gcportrait/graph` also imports `@gcportrait/catalog`, and its tests and its
+  `render-scene` command may use `demo-data` (and `ingest`); the backend may import `model`, `catalog` and
+  `ingest`; the frontend also `graph`, `layout`, `icons` and `demo-data`. [packages.md](packages.md) has the
+  full table.
+- A type that crosses a package boundary is a zod schema in `@gcportrait/model`, with the type inferred
+  through `z.infer`. Do not declare it a second time.
+- zod is imported as a namespace, `import * as z from 'zod'` (`import type * as z from 'zod'` where only its
+  types are used). With `z` as a named or default import esbuild keeps all of zod, every one of its locales
+  included, in the backend's bundles; `eslint.config.js` refuses that form, and `src/render/bundle.test.ts`
+  in the backend fails on a locale other than English in either bundle.
+- A new workspace package must be added to the `references` of the root `tsconfig.json`, or `pnpm typecheck`
+  skips it.
+- Data over code: asset types, relation rules, lenses, icon mappings, product names and console URLs live in
+  the catalog's data files (`packages/catalog/products/`, `lenses/`), never in a second map in code.
+
+### Data, privacy and presentation
+
+- No real organisation data, anywhere: fixtures and examples use `example.com` or `example.org`, project
+  numbers below 100000000000, and documentation (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`) or
+  private IP ranges.
+- Tokens and secrets never touch disk, logs or URLs. `.env` files are git-ignored and the provenance check
+  never reads them; never paste credentials into an issue or a pull request.
+- Phones, tablets and desktops, with every control at each ([AGENTS.md](../AGENTS.md), "Product rules"): a
+  narrower layout folds the same components into sheets, never copies them; targets are 44 × 44 px on a phone
+  and a tablet; a width is asked for only with the layouts' media queries in rem
+  (`frontend/src/ui/screen.ts`). `frontend/src/shell/parity.test.tsx` and `pnpm --filter @gcportrait/frontend
+  mobile` check it ([frontend/AGENTS.md](../frontend/AGENTS.md), "Phones, tablets and desktops").
+- Both themes, every time: anything visible must look right and pass the checks in light and dark.
+- The non-affiliation statement ([AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal") goes in the
+  footer of every route of the app and every page of the website and, as the long form above, in
+  documentation, READMEs and release notes; never in a drawing or an export. Never call the project official
+  or Google's, and never name Google with its company suffix.
+- The app links its source on every route, a courtesy to the people who use an instance (the Apache License
+  2.0 does not ask for it): the footer's "Source (Apache-2.0)" link, next to the non-affiliation notice,
+  points at the backend's `SOURCE_URL` (`sourceUrl` in `/api/config`) or, in a demo build, at the build-time
+  `VITE_SOURCE_URL`.
+  Do not remove it or move it off a route.
+- A value the reader fills in, in a guide's code or a command the app shows, is written `YOUR_` and capitals
+  as one word (`YOUR_PROJECT`, `YOUR_ORG_ID`): a plain word to a shell, so an unfilled copy fails clearly.
+  Each is a variable of `COMMAND_VARIABLES` in `@gcportrait/model`, which the website turns into a field and
+  `node scripts/user-docs.mjs` checks the guides against. Capitals without `YOUR_` stay text (an environment
+  variable, a script's usage line, a name pattern, a redacted part of a recorded run).
+
+## 6. Making a change
+
+1. **Pick the work.** An issue or an item of [backlog.md](backlog.md); a change to a rule updates the
+   `AGENTS.md` that holds it in the same pull request. Load the skills its area needs from `.agents/skills/`
+   ([AGENTS.md](../AGENTS.md), "Skills"), and read the `AGENTS.md` of every top-level folder you change and
+   the README of every package you change.
+2. **Branch.** Name it after the topic: `<topic>-<slug>` or `<issue>-<slug>`, for example `ingest-parser`,
+   `412-gutter-lanes`, or `work/<N>` when working an issue. The `main` branch is protected by ruleset
+   `#25366182`: direct pushes are blocked, and every change must merge via a pull request. When working
+   tasks in parallel, use isolated git worktrees (for example under `.claude/worktrees/wt-<N>`) to avoid
+   cross-task conflicts. Keep the working tree clean: repository tooling (`scripts/lib/repo-files.mjs` via
+   `listRepoFiles`) scans both tracked and untracked files not matched by repository `.gitignore` files
+   (`git ls-files --cached --others`), so unignored scratch files will be checked by `pnpm provenance`.
+3. **Tests first** for `packages/*`; fixtures first for catalog work; an e2e test for anything a user does.
+4. **Docs in the same pull request:** the package README if behaviour changed, the user guide under `docs/` if
+   users will notice it (the guides are listed in [README.md](README.md#user-guides); a guide says what to do,
+   with no record of when or where it was checked), and the `AGENTS.md` that holds a rule and the skill that
+   applies it if the rule changed. `node scripts/user-docs.mjs` (part of `pnpm test`) fails while a guide
+   names a `pnpm` script, an `infra/` flag or a setting the tree does not have, logs a verification, while
+   the generated lens tables differ from the catalog (`--write` regenerates them), while a Markdown line is
+   wider than 110 columns outside the exemptions of [AGENTS.md](../AGENTS.md), "Documentation", or while the
+   render goldens' README names another version of `@resvg/resvg-wasm` than the one installed or another
+   document names a version of resvg.
+5. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
+6. **Open the pull request** (section 7).
+
+### Topological regeneration cascade
+
+When upstream modules or authoring assets change, regenerate downstream artifacts in topological order:
+
+1. `pnpm --filter @gcportrait/catalog compile` (or `pnpm catalog:build`)
+2. `pnpm --filter @gcportrait/icons build`
+3. `pnpm --filter @gcportrait/layout metrics`
+4. `pnpm --filter @gcportrait/layout goldens`
+5. `pnpm --filter @gcportrait/render goldens`
+6. `CI=true pnpm media` (highlight: changes to `frontend/` or bundled workspace packages change
+   `inputs.bundle` in `docs/media/manifest.json`, verified by `pnpm media --check`)
+7. `node scripts/exports.mjs` (or `pnpm exports`)
+8. `pnpm --filter @gcportrait/e2e test --update-snapshots`
+
+### Release notes
+
+A pull request adds no file for the release notes: a version's notes are the `## X.Y.Z` section of
+[CHANGELOG.md](../CHANGELOG.md) when the maintainer writes one for that release, and the commits since the
+previous release tag otherwise, one group per area of their `Area: …` subject ([section 9](#9-releases)). The
+subject line is therefore what people read in the notes of the release a change lands in, so write it as the
+change reads to a user.
+
+## 7. Opening a pull request
+
+Pull requests are highly welcome, preferably small ones about one feature or one function rather than full
+rewrites: a focused change is quick to review and to merge, while a rewrite of a whole part is hard to review
+and is better proposed in an issue first, then made in small steps. Open one pull request per change.
+
+Push your branch and open a pull request against `main`. The template asks for:
+
+- what changed and why, with the issue or the [backlog.md](backlog.md) item;
+- how you verified it: the demo fixtures used, whether you tested against a real scope (never name it), and
+  the commands you ran with their real results, failures included;
+- screenshots in light and dark for any visual change, with every visual baseline update called out;
+- for asset catalog changes, the `catalog` label and a table of the types, roles and relation targets;
+- a risk and rollback note for backend and infrastructure changes;
+- the checklist, including the provenance statement.
+
+CI must be green. A reviewer, human or AI assistant, then checks the acceptance criteria of the issue or
+backlog item and the rules in the skills, the provenance rules, and the review checklist in the
+contributor-workflow skill (§6). `.github/CODEOWNERS` routes catalog, layout and infrastructure changes to the
+right reviewers. Releases are tagged by the maintainer ([section 9](#9-releases)).
+
+## 8. Testing against a real scope
+
+Backend changes are verified with the backend's unit and HTTP tests (`pnpm --filter @gcportrait/backend
+test`), which need no network; to try a change against a real scope, deploy your checkout to a project of
+yours with `infra/deploy.sh --project YOUR_PROJECT --build` from the clone's root ([self-host-options.md,
+"From a clone of the repository"](self-host-options.md#from-a-clone-of-the-repository), contributor-workflow
+skill §3). `--build` needs the clone: the release's scripts the installer downloads refuse it. A change to
+`infra/install.sh` reaches people with the next website deploy (the site serves it as
+`https://gcportrait.app/install.sh`), and a change to the deploy scripts with the next release, which attaches
+them (`scripts/release-assets.sh`); `pnpm test:infra` runs both against stand-ins.
+
+## 9. Releases
+
+For the maintainer. `.github/workflows/release.yml` publishes the image to GitHub Container Registry with the
+workflow's own `GITHUB_TOKEN`: no secret, no repository variable, no Google Cloud account. On every `v*` tag:
+
+1. **build-and-test**: `pnpm run check`, `pnpm run build` and the size budgets on the tag.
+2. **publish-image**: builds `infra/Dockerfile` with Buildx for `linux/amd64` and `linux/arm64` (arm64 under
+   QEMU emulation, the slow half), starts each image and checks `/healthz` (it must report the tag),
+   `/api/config` and the SPA, then pushes one multi-platform image to `ghcr.io/OWNER/gcportrait` with the tags
+   `X.Y.Z`, `X.Y` and `latest`. `latest` moves only for the newest release: never for a pre-release
+   (`v1.2.0-rc.1` gets only its own tag), and not for a patch of an older line tagged after a newer release.
+   The image carries the OCI labels and index annotations `org.opencontainers.image.source` (the repository),
+   `.licenses` (`Apache-2.0`) and `.description` (the long non-affiliation statement), the last two from
+   `infra/Dockerfile`'s `LABEL`; `scripts/release-image.mjs` computes the tags, labels and annotations. Then
+   it checks that anyone can pull the image, as the remote repository of deploy.sh does, and writes one SPDX
+   SBOM per platform with Syft, a release pinned by version and checked by its SHA-256 before it runs.
+3. **github-release**: the GitHub release `vX.Y.Z`, its notes built by `scripts/release-notes.mjs` from the
+   `## X.Y.Z` section of `CHANGELOG.md` when it has one, else from the subjects of the commits since the
+   previous release tag, with the long non-affiliation statement, the installer line, the image's tags and
+   digest. Attached: both SBOMs, the deploy scripts the installer downloads
+   (`gcportrait-deploy-vX.Y.Z.tar.gz`) and `checksums.txt` with the SHA-256 of every other asset, both written
+   by `scripts/release-assets.sh`. The installer needs both: a release without them installs nothing.
+
+Run by hand (Actions › Release › Run workflow, on any branch), it publishes the same image as `dev` only, with
+no other tag and no GitHub release, and reports `dev-SHA` as its version.
+
+One-time setup, on GitHub:
+
+1. **The first publish creates the package `gcportrait`**, private (GitHub's default for a new package). Run
+   the workflow by hand once (`dev`); it ends with a warning that the image cannot be pulled anonymously.
+2. **Make the package public**: the package's page (the repository's "Packages", or
+   `https://github.com/users/OWNER/packages/container/package/gcportrait`) › Package settings › Change
+   visibility › Public. Self-hosters' Artifact Registry pulls it without credentials, so it must be public; on
+   a `v*` tag the workflow fails at its pull check while it is not. The `org.opencontainers.image.source`
+   label links the package to the repository, which gives the workflow write access to it.
+3. **Check it**: `infra/deploy.sh --project YOUR_PROJECT --image dev --dry-run` finds the image on ghcr.io
+   and prints what it would deploy. A fork publishes to its own `ghcr.io/OWNER/gcportrait`, which deploys with
+   `--image ghcr.io/OWNER/gcportrait:TAG`; `PUBLISHED_IMAGE` and `SOURCE_REPOSITORY` in `infra/common.sh` name
+   the defaults, and `REPOSITORY` in `infra/install.sh` the repository whose releases the installer downloads.
+
+**A trial run of a release.** A pre-release tag runs the whole pipeline without changing what self-hosters
+deploy by default. After the one-time setup (`gh workflow run release.yml --ref main` once, which publishes
+`dev`, then the package made public):
+
+```sh
+git tag v1.0.0-rc.1
+git push origin v1.0.0-rc.1
+```
+
+It publishes the image as `1.0.0-rc.1` and creates the GitHub release `v1.0.0-rc.1`, marked as a pre-release,
+with the notes of the release it precedes (its `## 1.0.0` section of `CHANGELOG.md`, or the commits since the
+previous release tag; one sentence says which release's notes they are), the deploy archive and
+`checksums.txt`. It moves neither `latest` nor
+`1.0`, and the release is not marked latest, so the installer's default (GitHub's latest release) and
+`infra/deploy.sh`'s default image (`latest`) stay as they are. While `PAGES_DEPLOY` is `true` the tag also
+deploys the website and the static demo, whose version then reads `1.0.0-rc.1`; the next push to `main`, or
+the daily run of `pages.yml`, deploys `main` again. To check it, the installer line downloads and checks the
+pre-release's deploy scripts and `infra/deploy.sh` finds its image on ghcr.io; both print what they would
+deploy:
+
+```sh
+curl -fsSL https://gcportrait.app/install.sh | bash -s -- --version v1.0.0-rc.1 --project YOUR_PROJECT --dry-run
+infra/deploy.sh --project YOUR_PROJECT --image 1.0.0-rc.1 --dry-run
+```
+
+To take it down afterwards, if wanted: `gh release delete v1.0.0-rc.1 --yes --cleanup-tag` deletes the release
+and its tag on GitHub (`git tag -d v1.0.0-rc.1` the local one), and the image version `1.0.0-rc.1` is deleted
+on the package's page on GitHub, from its list of versions.
+
+Then, per release: follow the two-step sequence under branch protection (ruleset `#25366182`):
+
+1. **Version bump PR**: read `git log` since the last tag (`git log --oneline vX.Y.0..main`), choose the
+   bump that matches it, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs`: one fixed version in
+   the root's and every workspace package's `package.json`) on a topic branch, and optionally write the
+   version's `## X.Y.Z` section in [CHANGELOG.md](../CHANGELOG.md). Open a pull request against `main` and
+   rebase-merge it once checks pass.
+2. **Push the tag**: on the updated `main` branch (`git checkout main && git pull --ff-only origin main`),
+   create and push the release tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. Release tooling
+   (`scripts/release-notes.mjs` and `scripts/release-image.mjs`) guards consistency, verifying that `tag`
+   matches `package.json#version`.
+
+Once the release is out, `curl -fsSL https://gcportrait.app/install.sh | bash -s -- --version vX.Y.Z
+--project YOUR_PROJECT --dry-run` downloads and checks its deploy scripts and prints what they would deploy.
+
+**The first release, 1.0.0, is already versioned**: every `@gcportrait/*` package is at 1.0.0 and
+[CHANGELOG.md](../CHANGELOG.md) holds its section, so its tag needs no versioning step and its notes are that
+section. After the `dev` run of the one-time setup:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The tag runs `release.yml`: it checks and builds the tag, publishes the image as `1.0.0`, `1.0` and `latest`,
+creates the GitHub release and, while `PAGES_DEPLOY` is `true`, deploys the website.
+
+**Repository settings.** The workflows read one repository variable (Settings > Secrets and variables >
+Actions), beside GitHub's own `GITHUB_TOKEN`:
+
+| Name | For |
+|---|---|
+| `PAGES_DEPLOY` | `true` switches on the website's deployment to GitHub Pages from `main` and from each `v*` tag. Set it after the Pages source ("GitHub Actions"), the `github-pages` environment allowing `main` and `v*`, the verified domain, the DNS records and the custom domain with HTTPS enforced ([website.md, "Deploying to GitHub Pages"](website.md#deploying-to-github-pages)). |
+
+Under Settings > Advanced Security, Dependabot alerts and Dependabot security updates are on
+([security.md](security.md), finding O7). Every pull request Dependabot opens is adopted on `main` or declined
+with its reason in [backlog.md](backlog.md), never closed unread ([AGENTS.md](../AGENTS.md), "Quality gates,
+testing and CI").
+
+**A fork** publishes to its own `ghcr.io/OWNER/gcportrait` and changes the repository it names: the app's
+"Source (Apache-2.0)" link falls back to `DEFAULT_SOURCE_URL` in `frontend/src/source.ts` and to
+`SOURCE_URL`'s default in `backend/src/config.ts` when an instance sets neither `SOURCE_URL` nor
+`VITE_SOURCE_URL`, and the tests that pin them (`backend/src/config.test.ts`, `e2e/tests/support.ts`) change
+with them; `PUBLISHED_IMAGE`
+and `SOURCE_REPOSITORY` in `infra/common.sh`, `REPOSITORY` in `infra/install.sh`, `website/src/site.ts`, the
+README and the docs name the repository too.
+
+Release follow-ups are tracked in the [CI backlog](backlog.md#3-ci). A copy in a Google Cloud registry is
+not needed: deploy.sh pulls through a remote repository in the self-hoster's own project.
+
+## 10. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `pnpm install` refuses to run because of the Node version | Install Node 22.22.2 or newer in the 22.x line (`nvm install` reads `.nvmrc`). |
+| `pnpm` is a different version from the one in `packageManager` | Run `corepack enable`, then open a new shell. |
+| `pnpm licenses` prints pnpm's own licence listing | Use `pnpm run licenses`. |
+| `licenses: FAILED ... THIRD_PARTY.md is stale` | `pnpm run licenses --write`, then commit `THIRD_PARTY.md`. |
+| `provenance: FAILED` with `[spdx-header]` on a new file | Add the header line for its file type (section 5), or give a new file type a header form in `scripts/lib/repo-files.mjs`. |
+| `pnpm typecheck` ignores a new package | Add the package to the `references` of the root `tsconfig.json`. |
+| `pnpm e2e` cannot launch a browser | `pnpm --filter @gcportrait/e2e install-browsers`. |
+| Every CI job fails at "Install dependencies" with `ERR_PNPM_OUTDATED_LOCKFILE` | `pnpm-lock.yaml` does not match a `package.json`: run `pnpm install` and commit the lockfile. |
+| A test fails on CI but not on your machine | Run it as the runner does: `TZ=UTC LC_ALL=C.UTF-8 CI=true pnpm test --project <name>` (section 4, "Continuous integration"). |
+| `pnpm size` passes but says `frontend/dist does not exist yet` | It measured nothing: run `pnpm build` first. |
+| `user-docs: FAILED` (or `scripts/user-docs.test.ts` fails) | A user guide is stale: the message names the guide and the command, flag, variable or lens block. Fix the guide, or run `node scripts/user-docs.mjs --write` for the lens blocks after a catalog lens change. A line `path:line: N columns, the limit is 110` is a Markdown line to rewrap by hand (only the line breaks move). After a bump of `@resvg/resvg-wasm`, `e2e/baselines/render/README.md` names the new version (and the render golden PNG is drawn again if its bytes changed); every other document names resvg without a number. |

@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Container Registry, the predecessor of Artifact Registry. Its images are hidden and counted on their project
+# ("gcr.io images"); the gcr.io hosts are now served by Artifact Registry repositories, which is where gcr.io
+# image references from workloads resolve to.
+product: Container Registry
+service: containerregistry.googleapis.com
+icon: container_registry
+types:
+  containerregistry.googleapis.com/Image:
+    role: hidden
+    label: '{{name | lastSegment | short(48)}}'
+    notes: >-
+      Asset names read //containerregistry.googleapis.com/<registry host>/<project id>/<image>[@<digest>]. The
+      type has no public API reference (the registry speaks the Docker Registry HTTP API), so no rule reads its
+      data; the name is enough for the count badge.

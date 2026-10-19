@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Data Lineage: lineage processes, the jobs or pipelines that BigQuery, Composer, Dataflow, Dataproc,
+# Data Fusion and other systems report as moving data between entities. High-volume metadata, hidden by
+# default. Lineage is part of the Knowledge Catalog (Dataplex) product family and shares its icon.
+product: Data Lineage
+service: datalineage.googleapis.com
+icon: dataplex
+types:
+  datalineage.googleapis.com/Process:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.origin.sourceType | lower}}'
+    notes: >-
+      origin.name names the reporting system (projects/<p>/locations/<l>/environments/<e> for Composer, a
+      project location for BigQuery, free text for CUSTOM); its service depends on sourceType, so it is not
+      read as a reference. Runs and lineage events are not Cloud Asset Inventory types.

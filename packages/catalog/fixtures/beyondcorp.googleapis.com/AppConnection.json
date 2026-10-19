@@ -1,0 +1,56 @@
+[
+  {
+    "name": "//beyondcorp.googleapis.com/projects/demo-sec-1/locations/europe-west3/appConnections/wiki",
+    "assetType": "beyondcorp.googleapis.com/AppConnection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/appConnections/wiki",
+      "createTime": "2025-04-02T09:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "displayName": "Internal wiki",
+      "uid": "c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+      "type": "TCP_PROXY",
+      "applicationEndpoint": {
+        "host": "wiki.corp.example.com",
+        "port": 443
+      },
+      "connectors": ["projects/demo-sec-1/locations/europe-west3/appConnectors/onprem-dc1"],
+      "state": "CREATED",
+      "gateway": {
+        "type": "GCP_REGIONAL_MIG",
+        "ingressPort": 19443,
+        "appGateway": "projects/demo-sec-1/locations/europe-west3/appGateways/eu-gateway"
+      }
+    }
+  },
+  {
+    "name": "//beyondcorp.googleapis.com/projects/demo-sec-1/locations/europe-west3/appConnections/build-server",
+    "assetType": "beyondcorp.googleapis.com/AppConnection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/appConnections/build-server",
+      "createTime": "2025-04-03T09:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "displayName": "Legacy build server",
+      "uid": "d3e4f5a6-b7c8-4d9e-8f1a-2b3c4d5e6f70",
+      "type": "TCP_PROXY",
+      "applicationEndpoint": {
+        "host": "172.20.8.15",
+        "port": 8443
+      },
+      "connectors": ["projects/demo-sec-1/locations/europe-west3/appConnectors/onprem-dc1"],
+      "state": "CREATED",
+      "gateway": {
+        "type": "GCP_REGIONAL_MIG",
+        "ingressPort": 19443,
+        "appGateway": "projects/demo-sec-1/locations/europe-west3/appGateways/eu-gateway"
+      }
+    }
+  }
+]

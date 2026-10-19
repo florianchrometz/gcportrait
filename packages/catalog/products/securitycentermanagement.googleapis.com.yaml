@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Security Center Management API: per-service enablement of Security Command Center and custom
+# detection modules. All hidden: configuration records, counted on their organisation, folder or project.
+product: Security Center Management API
+service: securitycentermanagement.googleapis.com
+icon: security_command_center
+types:
+  securitycentermanagement.googleapis.com/SecurityCenterService:
+    role: hidden
+    subtitle: '{{data.effectiveEnablementState | lower}}'
+    notes: >-
+      One per detection service and scope (…/locations/<l>/securityCenterServices/<service>, e.g.
+      container-threat-detection), with the intended and effective enablement state.
+
+  securitycentermanagement.googleapis.com/EventThreatDetectionCustomModule:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.type}} · {{data.enablementState | lower}}'
+    notes: Custom Event Threat Detection modules; config is free-form per module type.
+
+  securitycentermanagement.googleapis.com/SecurityHealthAnalyticsCustomModule:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.customConfig.resourceSelector.resourceTypes[0]}} · {{data.enablementState | lower}}'
+    notes: >-
+      Custom Security Health Analytics detectors: a CEL predicate over the asset types in
+      customConfig.resourceSelector (CAI asset types), not references to assets.

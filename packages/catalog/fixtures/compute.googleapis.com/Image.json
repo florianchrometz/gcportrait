@@ -1,0 +1,70 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/images/web-base-v12",
+    "assetType": "compute.googleapis.com/Image",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#image",
+      "id": "7300000000000000012",
+      "name": "web-base-v12",
+      "family": "web-base",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/images/web-base-v12",
+      "sourceType": "RAW",
+      "status": "READY",
+      "diskSizeGb": "20",
+      "archiveSizeBytes": "2147483648",
+      "sourceDisk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/image-build-12",
+      "sourceDiskId": "7200000000000000099",
+      "imageEncryptionKey": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute/cryptoKeyVersions/1"
+      },
+      "storageLocations": ["eu"],
+      "architecture": "X86_64",
+      "licenses": [
+        "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-12-bookworm"
+      ],
+      "creationTimestamp": "2026-09-20T09:00:00.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/images/web-base-v11",
+    "assetType": "compute.googleapis.com/Image",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#image",
+      "id": "7300000000000000011",
+      "name": "web-base-v11",
+      "family": "web-base",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/images/web-base-v11",
+      "sourceType": "RAW",
+      "status": "READY",
+      "diskSizeGb": "20",
+      "rawDisk": {
+        "containerType": "TAR",
+        "source": "https://storage.googleapis.com/demo-app-1-images/web-base-v11.tar.gz"
+      },
+      "deprecated": {
+        "state": "DEPRECATED",
+        "replacement": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/images/web-base-v12"
+      },
+      "storageLocations": ["eu"],
+      "creationTimestamp": "2026-08-15T09:00:00.000-07:00"
+    }
+  }
+]

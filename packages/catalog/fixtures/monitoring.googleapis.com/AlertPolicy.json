@@ -1,0 +1,52 @@
+{
+  "name": "//monitoring.googleapis.com/projects/10000000005/alertPolicies/3000000000000000001",
+  "assetType": "monitoring.googleapis.com/AlertPolicy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000005/alertPolicies/3000000000000000001",
+    "displayName": "Checkout error rate",
+    "documentation": {
+      "content": "Check the orders API and its database.",
+      "mimeType": "text/markdown"
+    },
+    "userLabels": {
+      "team": "shop"
+    },
+    "conditions": [
+      {
+        "name": "projects/10000000005/alertPolicies/3000000000000000001/conditions/3000000000000000002",
+        "displayName": "Checkout errors above 5 per minute",
+        "conditionThreshold": {
+          "filter": "metric.type=\"logging.googleapis.com/user/checkout_errors\" resource.type=\"cloud_run_revision\"",
+          "comparison": "COMPARISON_GT",
+          "thresholdValue": 5,
+          "duration": "60s",
+          "aggregations": [
+            {
+              "alignmentPeriod": "60s",
+              "perSeriesAligner": "ALIGN_RATE"
+            }
+          ]
+        }
+      }
+    ],
+    "combiner": "OR",
+    "enabled": true,
+    "severity": "CRITICAL",
+    "notificationChannels": [
+      "projects/10000000005/notificationChannels/4000000000000000001",
+      "projects/10000000005/notificationChannels/4000000000000000002"
+    ],
+    "creationRecord": {
+      "mutateTime": "2025-04-02T08:00:00Z",
+      "mutatedBy": "sre@example.com"
+    },
+    "mutationRecord": {
+      "mutateTime": "2026-08-15T08:00:00Z",
+      "mutatedBy": "sre@example.com"
+    }
+  }
+}

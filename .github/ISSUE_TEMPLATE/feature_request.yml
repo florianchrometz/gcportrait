@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Feature request
+description: Suggest an improvement or a new capability.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Some boundaries are deliberate: gcportrait is a viewer, not a drawing tool; every control works on phones,
+        tablets and desktops alike; asset data stays in your browser and the backend stores nothing. The rules
+        of the project are in AGENTS.md and in the AGENTS.md of each folder that has rules of its own; a
+        proposal that changes one says which. To ask for a new asset type, use the "Asset type request" form
+        instead.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The proposal
+      description: >-
+        What you would like gcportrait to do. Sketches and mock-ups with synthetic data are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Diagram rendering and layout
+        - Lenses, focus views and filters
+        - Asset catalog
+        - Import (live API or export files)
+        - Timeline
+        - Export (PNG and SVG)
+        - App interface and themes
+        - Self-hosting and deployment
+        - Website and documentation
+        - Contributor tooling and CI
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to work on this myself.

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "//logging.googleapis.com/projects/10000000005/locations/europe-west3/buckets/central",
+    "assetType": "logging.googleapis.com/LogBucket",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/buckets/central",
+      "description": "Central operations log bucket",
+      "createTime": "2025-01-15T08:00:00Z",
+      "updateTime": "2026-09-01T08:00:00Z",
+      "retentionDays": 400,
+      "locked": false,
+      "lifecycleState": "ACTIVE",
+      "analyticsEnabled": true,
+      "cmekSettings": {
+        "name": "projects/demo-ops-1/cmekSettings",
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/logs",
+        "kmsKeyVersionName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/logs/cryptoKeyVersions/1",
+        "serviceAccountId": "service-10000000005@gcp-sa-logging.iam.gserviceaccount.com"
+      }
+    }
+  },
+  {
+    "name": "//logging.googleapis.com/projects/10000000002/locations/global/buckets/_Default",
+    "assetType": "logging.googleapis.com/LogBucket",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/global/buckets/_Default",
+      "description": "Default bucket",
+      "retentionDays": 30,
+      "lifecycleState": "ACTIVE",
+      "updateTime": "2025-01-15T08:00:00Z"
+    }
+  }
+]

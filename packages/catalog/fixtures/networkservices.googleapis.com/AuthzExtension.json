@@ -1,0 +1,26 @@
+{
+  "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/europe-west3/authzExtensions/partner-authz",
+  "assetType": "networkservices.googleapis.com/AuthzExtension",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/authzExtensions/partner-authz",
+    "description": "External authorization for the internal API",
+    "loadBalancingScheme": "INTERNAL_MANAGED",
+    "authority": "authz.example.com",
+    "service": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/backendServices/authz-bes",
+    "timeout": "0.1s",
+    "failOpen": false,
+    "wireFormat": "EXT_AUTHZ_GRPC",
+    "forwardHeaders": ["authorization", "x-partner-id"],
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

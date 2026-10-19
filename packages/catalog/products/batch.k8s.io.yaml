@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kubernetes batch workloads (batch/v1) of GKE clusters with the asset inventory feature on. They nest in
+# their namespace by name path.
+product: Google Kubernetes Engine
+service: batch.k8s.io
+icon: google_kubernetes_engine
+types:
+  batch.k8s.io/CronJob:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.schedule}}'
+    console: 'https://console.cloud.google.com/kubernetes/cronjob/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/details?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.spec.jobTemplate.spec.template.spec.containers[*].image',
+          normalize: artifactImage,
+        }
+
+  batch.k8s.io/Job:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.template.spec.containers[0].image | lastSegment | short(32)}}'
+    console: 'https://console.cloud.google.com/kubernetes/job/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/details?project={{projectId}}'
+    relations:
+      - { kind: memberOf, to: '$.data.metadata.ownerReferences[*]', normalize: k8sOwner }
+      - { kind: uses, to: '$.data.spec.template.spec.containers[*].image', normalize: artifactImage }
+    hiddenWhen: "$.data.metadata.ownerReferences[*].kind == 'CronJob'"
+    notes: >-
+      Jobs a cron job spawns (one per run, ownerReferences → the cron job) start hidden and count on the
+      cron job; stand-alone jobs are shown.

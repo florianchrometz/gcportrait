@@ -1,0 +1,77 @@
+[
+  {
+    "name": "//binaryauthorization.googleapis.com/projects/10000000004/attestors/build-verified",
+    "assetType": "binaryauthorization.googleapis.com/Attestor",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-03-05T09:00:00Z",
+    "data": {
+      "name": "projects/10000000004/attestors/build-verified",
+      "description": "Images built by the release pipeline",
+      "userOwnedGrafeasNote": {
+        "noteReference": "projects/demo-sec-1/notes/build-verified",
+        "publicKeys": [
+          {
+            "id": "//cloudkms.googleapis.com/v1/projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/attestor/cryptoKeyVersions/1",
+            "pkixPublicKey": {
+              "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHsynthetic\n-----END PUBLIC KEY-----\n",
+              "signatureAlgorithm": "ECDSA_P256_SHA256"
+            }
+          }
+        ],
+        "delegationServiceAccountEmail": "service-10000000004@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
+      },
+      "updateTime": "2026-03-05T09:00:00Z",
+      "etag": "BwYbQ9a1b2c="
+    }
+  },
+  {
+    "name": "//binaryauthorization.googleapis.com/projects/10000000004/attestors/security-reviewed",
+    "assetType": "binaryauthorization.googleapis.com/Attestor",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-04-18T09:00:00Z",
+    "data": {
+      "name": "projects/10000000004/attestors/security-reviewed",
+      "userOwnedGrafeasNote": {
+        "noteReference": "projects/demo-sec-1/notes/security-reviewed",
+        "publicKeys": [
+          {
+            "id": "4F2A9C1D7E5B40A6C8D2E1F0A9B8C7D6E5F4A3B2",
+            "asciiArmoredPgpPublicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----\nsynthetic\n-----END PGP PUBLIC KEY BLOCK-----\n"
+          }
+        ],
+        "delegationServiceAccountEmail": "service-10000000004@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
+      },
+      "updateTime": "2026-04-18T09:00:00Z"
+    }
+  },
+  {
+    "name": "//binaryauthorization.googleapis.com/projects/10000000004/attestors/vuln-scanned",
+    "assetType": "binaryauthorization.googleapis.com/Attestor",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-05-02T09:00:00Z",
+    "data": {
+      "name": "projects/10000000004/attestors/vuln-scanned",
+      "description": "Images whose vulnerability scan found no critical issues",
+      "userOwnedGrafeasNote": {
+        "noteReference": "projects/demo-sec-1/notes/vuln-scanned",
+        "publicKeys": [
+          {
+            "id": "ni:///sha-256;q1Wn3xS7l0cYtZ8vKpR2mE5dHfJ9bA4uC6gT0iN3oXw",
+            "pkixPublicKey": {
+              "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHsynthetic2\n-----END PUBLIC KEY-----\n",
+              "signatureAlgorithm": "ECDSA_P256_SHA256"
+            }
+          }
+        ],
+        "delegationServiceAccountEmail": "service-10000000004@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
+      },
+      "updateTime": "2026-05-02T09:00:00Z"
+    }
+  }
+]

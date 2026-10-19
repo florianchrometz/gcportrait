@@ -1,0 +1,19 @@
+{
+  "name": "//beyondcorp.googleapis.com/projects/demo-sec-1/locations/europe-west3/appGateways/eu-gateway",
+  "assetType": "beyondcorp.googleapis.com/AppGateway",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-sec-1/locations/europe-west3/appGateways/eu-gateway",
+    "createTime": "2025-04-01T08:00:00Z",
+    "updateTime": "2026-09-01T08:00:00Z",
+    "displayName": "EU gateway",
+    "uid": "e4f5a6b7-c8d9-4e0f-9a2b-3c4d5e6f7081",
+    "type": "TCP_PROXY",
+    "state": "RUNNING",
+    "hostType": "GCP_REGIONAL_MIG",
+    "uri": "https://eu-gateway-e4f5a6b7.beyondcorp.example.com"
+  }
+}

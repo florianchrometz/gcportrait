@@ -1,0 +1,153 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3",
+    "assetType": "compute.googleapis.com/Router",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#router",
+      "id": "5000000000000000108",
+      "name": "cr-prod-europe-west3",
+      "description": "Hybrid and NAT router of the production Shared VPC",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "bgp": {
+        "asn": 64512,
+        "advertiseMode": "CUSTOM",
+        "advertisedGroups": ["ALL_SUBNETS"],
+        "keepaliveInterval": 20
+      },
+      "interfaces": [
+        {
+          "name": "if-tunnel-dc1-0",
+          "linkedVpnTunnel": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnTunnels/tunnel-dc1-0",
+          "ipRange": "169.254.10.1/30",
+          "managementType": "MANAGED_BY_USER"
+        },
+        {
+          "name": "if-ica-dc1-1",
+          "linkedInterconnectAttachment": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-dc1-europe-west3-1",
+          "ipRange": "169.254.20.1/29",
+          "managementType": "MANAGED_BY_USER"
+        }
+      ],
+      "bgpPeers": [
+        {
+          "name": "peer-tunnel-dc1-0",
+          "interfaceName": "if-tunnel-dc1-0",
+          "ipAddress": "169.254.10.1",
+          "peerIpAddress": "169.254.10.2",
+          "peerAsn": 65001,
+          "advertisedRoutePriority": 100,
+          "enable": "TRUE",
+          "managementType": "MANAGED_BY_USER"
+        },
+        {
+          "name": "peer-ica-dc1-1",
+          "interfaceName": "if-ica-dc1-1",
+          "ipAddress": "169.254.20.1",
+          "peerIpAddress": "169.254.20.2",
+          "peerAsn": 65002,
+          "advertisedRoutePriority": 100,
+          "enable": "TRUE",
+          "managementType": "MANAGED_BY_USER"
+        }
+      ],
+      "nats": [
+        {
+          "name": "nat-europe-west3",
+          "type": "PUBLIC",
+          "natIpAllocateOption": "MANUAL_ONLY",
+          "natIps": [
+            "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/addresses/nat-ip-europe-west3-1"
+          ],
+          "drainNatIps": [
+            "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/addresses/nat-ip-europe-west3-0"
+          ],
+          "sourceSubnetworkIpRangesToNat": "LIST_OF_SUBNETWORKS",
+          "subnetworks": [
+            {
+              "name": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+              "sourceIpRangesToNat": ["ALL_IP_RANGES"]
+            },
+            {
+              "name": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/gke",
+              "sourceIpRangesToNat": ["PRIMARY_IP_RANGE", "LIST_OF_SECONDARY_IP_RANGES"],
+              "secondaryIpRangeNames": ["pods"]
+            }
+          ],
+          "enableEndpointIndependentMapping": false,
+          "minPortsPerVm": 64,
+          "logConfig": {
+            "enable": true,
+            "filter": "ERRORS_ONLY"
+          },
+          "endpointTypes": ["ENDPOINT_TYPE_VM"]
+        }
+      ],
+      "encryptedInterconnectRouter": false,
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/routers/cr-prod-europe-west3",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/routers/cr-nva-europe-west3",
+    "assetType": "compute.googleapis.com/Router",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#router",
+      "id": "5000000000000000109",
+      "name": "cr-nva-europe-west3",
+      "description": "Router appliance spoke: BGP with the network virtual appliances",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "bgp": {
+        "asn": 64520,
+        "advertiseMode": "DEFAULT",
+        "keepaliveInterval": 20
+      },
+      "interfaces": [
+        {
+          "name": "ra-if-0",
+          "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "privateIpAddress": "10.10.0.10",
+          "managementType": "MANAGED_BY_USER"
+        },
+        {
+          "name": "ra-if-1",
+          "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "privateIpAddress": "10.10.0.11",
+          "redundantInterface": "ra-if-0",
+          "managementType": "MANAGED_BY_USER"
+        }
+      ],
+      "bgpPeers": [
+        {
+          "name": "peer-nva-1",
+          "interfaceName": "ra-if-0",
+          "ipAddress": "10.10.0.10",
+          "peerIpAddress": "10.10.0.20",
+          "peerAsn": 65010,
+          "routerApplianceInstance": "https://www.googleapis.com/compute/v1/projects/demo-net-1/zones/europe-west3-a/instances/nva-1",
+          "enable": "TRUE",
+          "managementType": "MANAGED_BY_USER"
+        }
+      ],
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/routers/cr-nva-europe-west3",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+    }
+  }
+]

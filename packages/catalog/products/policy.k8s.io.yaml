@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kubernetes pod disruption budgets of GKE clusters with the asset inventory feature on. An operational
+# setting of a workload, so hidden by default; they nest in their namespace by name path.
+product: Google Kubernetes Engine
+service: policy.k8s.io
+icon: google_kubernetes_engine
+types:
+  policy.k8s.io/PodDisruptionBudget:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    notes: The budget selects its pods by label (spec.selector), which is no resource reference.

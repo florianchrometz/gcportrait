@@ -1,0 +1,43 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The Copy link toast (CopyLink.tsx): a status message at the bottom centre, above the timeline bar and the
+   footer, in the inverse surface (on-surface ground, surface text: the chrome's text pair, ≥ 4.5:1 in both
+   themes). Kept in the DOM while empty (a live region must exist before it speaks), invisible then. */
+.toast {
+  position: fixed;
+  bottom: 96px;
+  left: 50%;
+  z-index: 30;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--control-radius);
+  background: var(--color-on-surface);
+  color: var(--color-surface);
+  font-size: var(--font-size-control);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity 150ms ease-out;
+}
+
+.toast[data-shown] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+  }
+}
+
+/* A phone or a tablet: across the window but its edges, above the taller timeline bar and footer, and clear of a
+   phone's home indicator. */
+@media (max-width: 79.99rem) {
+  .toast {
+    right: var(--space-4);
+    bottom: calc(var(--space-8) * 5 + env(safe-area-inset-bottom, 0px));
+    left: var(--space-4);
+    text-align: center;
+    transform: none;
+  }
+}

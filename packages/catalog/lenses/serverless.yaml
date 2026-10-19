@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Serverless lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# memberOf is drawn (revisions in services, executions in jobs, Eventarc enrollments in message buses, when
+# revealed); API Gateway, Vertex AI Agent Engine, Application Integration, Integration Connectors, Firebase
+# and Data Connect are listed as serverless products, and the network attachments, private build pools and
+# Cloud Deploy targets serverless workloads use.
+title: Serverless
+description: >-
+  Cloud Run, Cloud Run functions, App Engine, Eventarc, Cloud Tasks and Workflows, with the topics,
+  connectors, secrets, databases and buckets they use.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  - 'compute.googleapis.com/NetworkAttachment'
+  - 'run.googleapis.com/*'
+  - 'cloudfunctions.googleapis.com/*'
+  - 'appengine.googleapis.com/*'
+  - 'eventarc.googleapis.com/*'
+  - 'cloudtasks.googleapis.com/*'
+  - 'workflows.googleapis.com/*'
+  - 'apigateway.googleapis.com/*'
+  - 'integrations.googleapis.com/*'
+  - 'connectors.googleapis.com/*'
+  - 'firebase.googleapis.com/*'
+  - 'firebasedataconnect.googleapis.com/*'
+  - 'aiplatform.googleapis.com/ReasoningEngine'
+  - 'vpcaccess.googleapis.com/*'
+  - 'pubsub.googleapis.com/Topic'
+  - 'pubsub.googleapis.com/Subscription'
+  - 'secretmanager.googleapis.com/Secret'
+  - 'sqladmin.googleapis.com/Instance'
+  - 'storage.googleapis.com/Bucket'
+  - 'artifactregistry.googleapis.com/Repository'
+  - 'cloudbuild.googleapis.com/WorkerPool'
+  - 'clouddeploy.googleapis.com/Target'
+relationKinds: [contains, triggers, uses, attaches, routes, memberOf]
+showHidden: false
+defaultDetail: projects

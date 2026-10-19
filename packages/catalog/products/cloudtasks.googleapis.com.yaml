@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Tasks queues. Asset names use the project number. A queue with an HTTP target override names the host
+# it calls and the identity whose token it attaches.
+product: Cloud Tasks
+service: cloudtasks.googleapis.com
+icon: cloud_tasks
+types:
+  cloudtasks.googleapis.com/Queue:
+    role: core
+    subtitle: '{{location}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/cloudtasks/queue/{{location}}/{{name | lastSegment}}/tasks?project={{projectId}}'
+    domains:
+      - $.data.httpTarget.uriOverride.host
+    relations:
+      - { kind: runsAs, to: $.data.httpTarget.oidcToken.serviceAccountEmail, normalize: serviceAccountEmail }
+      - { kind: runsAs, to: $.data.httpTarget.oauthToken.serviceAccountEmail, normalize: serviceAccountEmail }
+    notes: >-
+      Seeded as a leaf; the queue-level HTTP target (httpTarget) adds an identity, so it is core. Targets set
+      per task are not in the inventory. appEngineRoutingOverride names an App Engine service by bare id.

@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# AI. `owns` lists the official asset types this group owns, mapped or not (exact types, or <service>/* for a
+# whole service; the most specific pattern wins); `types` lists the owned types not mapped yet, each with its
+# reason (skill gcp-asset-catalog §6 and §8). Map a type in products/<service>[.<suffix>].yaml with its
+# fixture, then delete its line under `types`; `owns` stays.
+#
+# Every owned type is mapped (Vertex AI, Discovery Engine, Dialogflow CX and ES, Document AI,
+# Speech-to-Text, AI Commerce Search, Gemini for Google Cloud, Customer Experience Insights, Agent Identity),
+# so nothing is pending here.
+#
+# Check this group alone: pnpm catalog:check --group ai
+title: AI
+owns:
+  - 'agentidentity.googleapis.com/*'
+  - 'aiplatform.googleapis.com/*'
+  - 'cloudaicompanion.googleapis.com/*'
+  - 'contactcenterinsights.googleapis.com/*'
+  - 'dialogflow.googleapis.com/*'
+  - 'discoveryengine.googleapis.com/*'
+  - 'documentai.googleapis.com/*'
+  - 'retail.googleapis.com/*'
+  - 'speech.googleapis.com/*'
+types: {}

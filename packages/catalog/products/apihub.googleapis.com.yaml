@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Apigee API hub: one API hub instance per
+# project, optionally encrypted with a customer-managed key.
+product: Apigee API hub
+service: apihub.googleapis.com
+icon: api_hub
+types:
+  apihub.googleapis.com/ApiHubInstance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{location}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/apigee/api-hub/apis?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.config.cmekKeyName, normalize: kmsKey }

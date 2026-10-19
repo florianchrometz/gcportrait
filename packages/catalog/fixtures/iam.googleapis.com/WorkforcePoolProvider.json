@@ -1,0 +1,46 @@
+[
+  {
+    "name": "//iam.googleapis.com/locations/global/workforcePools/partners/providers/partner-oidc",
+    "assetType": "iam.googleapis.com/WorkforcePoolProvider",
+    "parent": "//iam.googleapis.com/locations/global/workforcePools/partners",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-06-03T11:10:00Z",
+    "data": {
+      "name": "locations/global/workforcePools/partners/providers/partner-oidc",
+      "displayName": "Partner IdP",
+      "state": "ACTIVE",
+      "disabled": false,
+      "attributeMapping": {
+        "google.subject": "assertion.sub",
+        "google.groups": "assertion.groups"
+      },
+      "oidc": {
+        "issuerUri": "https://idp.partner.example.org",
+        "clientId": "gcp-workforce",
+        "webSsoConfig": {
+          "responseType": "CODE",
+          "assertionClaimsBehavior": "MERGE_USER_INFO_OVER_ID_TOKEN_CLAIMS"
+        }
+      }
+    }
+  },
+  {
+    "name": "//iam.googleapis.com/locations/global/workforcePools/partners/providers/partner-saml-old",
+    "assetType": "iam.googleapis.com/WorkforcePoolProvider",
+    "parent": "//iam.googleapis.com/locations/global/workforcePools/partners",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-01T10:00:00Z",
+    "data": {
+      "name": "locations/global/workforcePools/partners/providers/partner-saml-old",
+      "displayName": "Partner SAML (retired)",
+      "state": "DELETED",
+      "disabled": true,
+      "expireTime": "2026-10-01T10:00:00Z",
+      "saml": {
+        "idpMetadataXml": "<EntityDescriptor entityID=\"https://idp.partner.example.org/saml\"/>"
+      }
+    }
+  }
+]

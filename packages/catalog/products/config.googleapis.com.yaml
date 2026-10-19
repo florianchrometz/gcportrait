@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Infra Manager (the supported-types page lists it as "Cloud Config Manager API"): Terraform deployments run
+# by Cloud Build, and their previews (plans), which are hidden. Cloud Asset Inventory names both with the
+# project id.
+product: Cloud Config Manager API
+service: config.googleapis.com
+icon: infrastructure_manager
+types:
+  config.googleapis.com/Deployment:
+    role: core
+    subtitle: '{{data.terraformBlueprint.gitSource.repo | lastSegment}} · {{location}}'
+    console: 'https://console.cloud.google.com/infra-manager/deployments?project={{projectId}}'
+    domains:
+      - $.data.terraformBlueprint.gitSource.repo
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.terraformBlueprint.gcsSource, normalize: gcsUri }
+      - { kind: uses, to: $.data.artifactsGcsBucket, normalize: gcsUri }
+      - { kind: uses, to: $.data.workerPool, normalize: name, service: cloudbuild.googleapis.com }
+    notes: >-
+      The blueprint comes from a Git repository (terraformBlueprint.gitSource: repo, directory, ref; the repo
+      host is read as a domain and the repository is the subtitle) or a Cloud Storage object (gcsSource). Runs
+      as serviceAccount (projects/<id>/serviceAccounts/<email>) on the default or a private Cloud Build pool,
+      and keeps its state and logs in artifactsGcsBucket. The resources it manages are not referenced by the
+      deployment, so no edges lead to them.
+
+  config.googleapis.com/Preview:
+    role: hidden
+    subtitle: '{{data.previewMode | lower}} · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.deployment, normalize: name }
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+    notes: A Terraform plan of a new or existing deployment (deployment names the latter); one per run, so hidden.

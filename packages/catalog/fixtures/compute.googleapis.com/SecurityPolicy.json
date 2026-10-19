@@ -1,0 +1,256 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/securityPolicies/web-armor",
+    "assetType": "compute.googleapis.com/SecurityPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#securityPolicy",
+      "id": "7900000000000000001",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-armor",
+      "description": "Edge protection for the storefront",
+      "type": "CLOUD_ARMOR",
+      "rules": [
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Block SQL injection",
+          "priority": 1000,
+          "action": "deny(403)",
+          "match": {
+            "expr": {
+              "expression": "evaluatePreconfiguredWaf('sqli-v33-stable')"
+            }
+          },
+          "preview": false
+        },
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Default rule, higher priority overrides it",
+          "priority": 2147483647,
+          "action": "allow",
+          "match": {
+            "versionedExpr": "SRC_IPS_V1",
+            "config": {
+              "srcIpRanges": ["*"]
+            }
+          },
+          "preview": false
+        }
+      ],
+      "adaptiveProtectionConfig": {
+        "layer7DdosDefenseConfig": {
+          "enable": true
+        }
+      },
+      "fingerprint": "xR2fJ9NbI0s=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/securityPolicies/web-armor"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/global/securityPolicies/web-edge",
+    "assetType": "compute.googleapis.com/SecurityPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#securityPolicy",
+      "id": "7900000000000000002",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "web-edge",
+      "description": "Edge security policy for cached content",
+      "type": "CLOUD_ARMOR_EDGE",
+      "rules": [
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Deny embargoed regions",
+          "priority": 100,
+          "action": "deny(403)",
+          "match": {
+            "expr": {
+              "expression": "origin.region_code == 'XX'"
+            }
+          },
+          "preview": false
+        },
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Default rule, higher priority overrides it",
+          "priority": 2147483647,
+          "action": "allow",
+          "match": {
+            "versionedExpr": "SRC_IPS_V1",
+            "config": {
+              "srcIpRanges": ["*"]
+            }
+          },
+          "preview": false
+        }
+      ],
+      "fingerprint": "tE3c0yR7mPq=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/securityPolicies/web-edge"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/securityPolicies/nlb-ddos",
+    "assetType": "compute.googleapis.com/SecurityPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#securityPolicy",
+      "id": "7900000000000000003",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "nlb-ddos",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "type": "CLOUD_ARMOR_NETWORK",
+      "ddosProtectionConfig": {
+        "ddosProtection": "ADVANCED"
+      },
+      "rules": [
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Default rule, higher priority overrides it",
+          "priority": 2147483647,
+          "action": "allow",
+          "match": {
+            "versionedExpr": "SRC_IPS_V1",
+            "config": {
+              "srcIpRanges": ["*"]
+            }
+          },
+          "preview": false
+        }
+      ],
+      "fingerprint": "u8Bq3Xk1oZc=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/securityPolicies/nlb-ddos"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/regions/europe-west3/securityPolicies/internal-api-armor",
+    "assetType": "compute.googleapis.com/SecurityPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#securityPolicy",
+      "id": "7900000000000000004",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "name": "internal-api-armor",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3",
+      "type": "CLOUD_ARMOR",
+      "rules": [
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Only the app subnet",
+          "priority": 1000,
+          "action": "allow",
+          "match": {
+            "versionedExpr": "SRC_IPS_V1",
+            "config": {
+              "srcIpRanges": ["10.10.0.0/20"]
+            }
+          },
+          "preview": false
+        },
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Default rule, higher priority overrides it",
+          "priority": 2147483647,
+          "action": "allow",
+          "match": {
+            "versionedExpr": "SRC_IPS_V1",
+            "config": {
+              "srcIpRanges": ["*"]
+            }
+          },
+          "preview": false
+        }
+      ],
+      "fingerprint": "g5Hs2Wq9nLm=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/securityPolicies/internal-api-armor"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/locations/global/securityPolicies/7900000000000000009",
+    "assetType": "compute.googleapis.com/SecurityPolicy",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#securityPolicy",
+      "id": "7900000000000000009",
+      "name": "7900000000000000009",
+      "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+      "shortName": "org-baseline-waf",
+      "displayName": "org-baseline-waf",
+      "type": "CLOUD_ARMOR",
+      "description": "Organisation-wide WAF baseline for every workload folder",
+      "parent": "organizations/30000000001",
+      "associations": [
+        {
+          "name": "org-baseline-waf-workloads",
+          "attachmentId": "folders/20000000001",
+          "securityPolicyId": "7900000000000000009",
+          "shortName": "org-baseline-waf",
+          "excludedProjects": ["projects/10000000004"]
+        }
+      ],
+      "rules": [
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Block SQL injection",
+          "priority": 1000,
+          "action": "deny(403)",
+          "match": {
+            "expr": {
+              "expression": "evaluatePreconfiguredWaf('sqli-v33-stable')"
+            }
+          },
+          "preview": false
+        },
+        {
+          "kind": "compute#securityPolicyRule",
+          "description": "Default rule, higher priority overrides it",
+          "priority": 2147483647,
+          "action": "allow",
+          "match": {
+            "versionedExpr": "SRC_IPS_V1",
+            "config": {
+              "srcIpRanges": ["*"]
+            }
+          },
+          "preview": false
+        }
+      ],
+      "fingerprint": "Wb0r6Jz1aYk=",
+      "selfLink": "https://www.googleapis.com/compute/v1/locations/global/securityPolicies/7900000000000000009"
+    }
+  }
+]

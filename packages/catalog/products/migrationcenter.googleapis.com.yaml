@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Google Cloud Migration Center:
+# discovered source-environment assets and cost assessments, hidden by default (they describe machines outside
+# Google Cloud).
+product: Google Cloud Migration Center
+service: migrationcenter.googleapis.com
+icon: migration_center
+types:
+  migrationcenter.googleapis.com/Asset:
+    role: hidden
+    label: '{{data.title}}'
+    subtitle: '{{data.machineDetails.machineName}}'
+
+  migrationcenter.googleapis.com/CostAssessmentJob:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    notes: No public API reference describes this type's fields; only the name is read.

@@ -1,0 +1,117 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Google Cloud VMware Engine: the private cloud container (from the catalog seed), its clusters and external
+# addresses (nested by name), the VMware Engine network (a VPC-like zone that private clouds and network
+# policies attach to) and the ways it reaches VPC networks: network peerings and private connections. Every
+# reference is a relative name whose project may be an id or a number, as the API returns it.
+product: Google Cloud VMware Engine
+service: vmwareengine.googleapis.com
+icon: vmware_engine
+types:
+  vmwareengine.googleapis.com/PrivateCloud:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} private cloud · {{location}}'
+    console: 'https://console.cloud.google.com/vmwareengine/privateclouds/{{location}}/{{name | lastSegment}}/general?project={{projectId}}'
+    ips:
+      - $.data.networkConfig.managementCidr
+      - $.data.networkConfig.dnsServerIp
+      - $.data.vcenter.internalIp
+      - $.data.nsx.internalIp
+      - $.data.hcx.internalIp
+    domains:
+      - $.data.vcenter.fqdn
+      - $.data.nsx.fqdn
+      - $.data.hcx.fqdn
+    relations:
+      - { kind: attaches, to: $.data.networkConfig.vmwareEngineNetwork, normalize: name }
+      - { kind: encryptedBy, to: $.data.encryptionConfig.cryptoKeyName, normalize: kmsKey }
+    contains:
+      - byParent: vmwareengine.googleapis.com/Cluster
+      - byParent: vmwareengine.googleapis.com/ExternalAddress
+
+  vmwareengine.googleapis.com/Cluster:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: 'vSphere cluster · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/vmwareengine/privateclouds/{{location}}/{{name | parentSegment(privateClouds)}}/general?project={{projectId}}'
+    notes: >-
+      Nests in its private cloud by name. Node counts live in `nodeTypeConfigs`, an object keyed by node
+      type id, which a subtitle cannot read; the seed's core role becomes leaf because a cluster references
+      nothing and nothing references it.
+
+  vmwareengine.googleapis.com/VmwareEngineNetwork:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} VMware Engine network'
+    zoneKind: vpc
+    console: 'https://console.cloud.google.com/vmwareengine/networks?project={{projectId}}'
+    notes: >-
+      Private clouds and network policies nest here through their attaches relations, like resources in a
+      VPC. `vpcNetworks[*].network` names the service VPCs Google manages for the network in a tenant
+      project; they are not drawn (the seed's peers rule would only ever dangle). Customer VPCs are reached
+      through NetworkPeering (standard networks) and PrivateConnection (legacy networks and services).
+
+  vmwareengine.googleapis.com/NetworkPeering:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.peerNetworkType | lower}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/vmwareengine/network-peerings?project={{projectId}}'
+    relations:
+      - { kind: peers, to: $.data.vmwareEngineNetwork, normalize: name }
+      - { kind: peers, to: "$[?(@.peerNetworkType == 'VMWARE_ENGINE_NETWORK')].peerNetwork", normalize: name }
+      - {
+          kind: peers,
+          to: "$[?(@.peerNetworkType != 'VMWARE_ENGINE_NETWORK')].peerNetwork",
+          normalize: computeRelative,
+        }
+    notes: >-
+      `peerNetwork` is a VMware Engine network when `peerNetworkType` is VMWARE_ENGINE_NETWORK and a VPC
+      network (`projects/<p>/global/networks/<n>`) otherwise, so two rules read it, each filtered on the type
+      (the filter runs over the asset's members and keeps `data`).
+
+  vmwareengine.googleapis.com/NetworkPolicy:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.edgeServicesCidr}} · internet access {{data.internetAccess.state | lower}}'
+    console: 'https://console.cloud.google.com/vmwareengine/network-policies?project={{projectId}}'
+    ips:
+      - $.data.edgeServicesCidr
+    relations:
+      - { kind: attaches, to: $.data.vmwareEngineNetwork, normalize: name }
+    notes: Internet access and external IP service (`internetAccess`, `externalIp`) are badges.
+
+  vmwareengine.googleapis.com/PrivateConnection:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.type | lower}} · {{data.peeringState | lower}}'
+    console: 'https://console.cloud.google.com/vmwareengine/private-connections?project={{projectId}}'
+    relations:
+      - { kind: connects, to: $.data.vmwareEngineNetwork, normalize: name }
+      - { kind: connects, to: $.data.serviceNetwork, normalize: computeRelative }
+    notes: >-
+      The API field is `serviceNetwork` (the seed's `vpcNetwork` does not exist): the Service Networking VPC
+      of private services access, or a NetApp, Dell or third-party service VPC, usually in a producer's
+      tenant project and then a dangling reference. connects, not attaches, so a connection to another
+      project's network never reads as Shared VPC.
+
+  vmwareengine.googleapis.com/ExternalAddress:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.externalIp}} → {{data.internalIp}}'
+    console: 'https://console.cloud.google.com/vmwareengine/privateclouds/{{location}}/{{name | parentSegment(privateClouds)}}/general?project={{projectId}}'
+    ips:
+      - $.data.externalIp
+      - $.data.internalIp
+    notes: A public address mapped to a workload VM's internal address; nests in its private cloud by name.
+
+  vmwareengine.googleapis.com/ExternalAccessRule:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.action | lower}} {{data.ipProtocol}} · priority {{data.priority}}'
+    console: 'https://console.cloud.google.com/vmwareengine/network-policies?project={{projectId}}'
+    ips:
+      - "$.data['sourceIpRanges','destinationIpRanges'][*]['ipAddress','ipAddressRange']"
+    relations:
+      - { kind: uses, to: '$.data.destinationIpRanges[*].externalAddress', normalize: name }
+    notes: A firewall-like rule of a network policy (`…/networkPolicies/p/externalAccessRules/r`).

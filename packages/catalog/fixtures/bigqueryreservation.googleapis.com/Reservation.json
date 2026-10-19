@@ -1,0 +1,19 @@
+{
+  "name": "//bigqueryreservation.googleapis.com/projects/10000000005/locations/europe-west3/reservations/prod",
+  "assetType": "bigqueryreservation.googleapis.com/Reservation",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/reservations/prod",
+    "slotCapacity": "100",
+    "ignoreIdleSlots": false,
+    "autoscale": { "currentSlots": "0", "maxSlots": "400" },
+    "concurrency": "0",
+    "edition": "ENTERPRISE",
+    "creationTime": "2025-01-10T09:00:00Z",
+    "updateTime": "2026-09-01T09:00:00Z",
+    "reservationGroup": "projects/demo-ops-1/locations/europe-west3/reservationGroups/analytics"
+  }
+}

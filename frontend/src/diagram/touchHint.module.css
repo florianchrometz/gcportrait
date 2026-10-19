@@ -1,0 +1,25 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* What a long press on the canvas names (DiagramCanvas.tsx): a tooltip's look (ui/Tooltip.module.css) over the
+   drawing, placed by the canvas above the finger and inside the canvas, under the details drawer that lies over the
+   canvas on a phone or a tablet (its z-index 2). It never takes a press: the next finger reaches the drawing under
+   it. */
+.hint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(280px, calc(100% - 2 * var(--space-2)));
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 6px;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-legend);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}

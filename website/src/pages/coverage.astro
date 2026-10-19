@@ -1,0 +1,335 @@
+---
+/**
+ * The asset catalog's coverage, generated at build time from the catalog's compiled data
+ * and the coverage data `pnpm catalog:build` writes (src/lib/coverage.ts): products, types by role, the unmapped
+ * types with their reasons, and the console-template coverage.
+ */
+import Base from '../layouts/Base.astro';
+import { ROLES, ROLE_DESCRIPTIONS, coverageReport, percent, products, totals } from '../lib/coverage.js';
+import { socialImage } from '../lib/media.js';
+import { breadcrumbLd } from '../lib/seo.js';
+import { repositoryFileUrl } from '../site.js';
+
+const report = coverageReport();
+const numbers = totals();
+const productList = products();
+const unmapped = report.groups.flatMap((group) => group.unmapped.map((item) => ({ ...item, group: group.title })));
+const fmt = (value: number): string => value.toLocaleString('en-GB');
+const meta = {
+  title: 'Asset type coverage',
+  description: `gcportrait’s catalog describes ${fmt(numbers.mapped)} of the ${fmt(report.officialTotal)} Cloud Asset Inventory asset types (list of ${report.officialDate}): by product, by role, and why the rest are not.`,
+  path: '/coverage/',
+  socialImage: socialImage('coverage', 'Asset type coverage of the gcportrait catalog'),
+  jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Coverage', path: '/coverage/' }])],
+};
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<Base meta={meta}>
+  <div class="container coverage">
+    <h1>Asset type coverage</h1>
+    <p class="lead">
+      The asset catalog says, for each Cloud Asset Inventory asset type, how gcportrait draws it, what it nests in,
+      what it references and where its Cloud Console page is. It is data in the repository
+      (<a href={repositoryFileUrl('packages/catalog', 'tree')}>packages/catalog</a>), checked against Google’s list of
+      supported asset types every week. Asset types the catalog does not know still appear, as generic cards in
+      their project.
+    </p>
+
+    <dl class="stats">
+      <div class="stat">
+        <dt>Types described</dt>
+        <dd>{fmt(numbers.mapped)} <span class="muted">of {fmt(report.officialTotal)} ({percent(numbers.mapped, report.officialTotal)} %)</span></dd>
+      </div>
+      <div class="stat">
+        <dt>Products</dt>
+        <dd>{fmt(numbers.products)}</dd>
+      </div>
+      <div class="stat">
+        <dt>Lenses</dt>
+        <dd>{fmt(numbers.lenses)}</dd>
+      </div>
+      <div class="stat">
+        <dt>Cloud Console links</dt>
+        <dd>{fmt(numbers.withConsole)} <span class="muted">types ({percent(numbers.withConsole, numbers.mapped)} %)</span></dd>
+      </div>
+    </dl>
+    <p class="muted">
+      Official list of {report.officialDate}; this page is generated from the catalog the website was built with.
+    </p>
+
+    <h2 id="products">By product</h2>
+    <div class="catalog-search" data-var-js>
+      <label class="search-label" for="catalog-search-input">
+        Search by product, service API or asset type
+      </label>
+      <div class="search-row">
+        <input
+          id="catalog-search-input"
+          class="search-input"
+          type="search"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="e.g. Cloud Run, compute.googleapis.com, Subnetwork"
+          data-search-input
+        />
+        <button type="button" class="search-clear" data-search-clear hidden>
+          Clear
+        </button>
+      </div>
+    </div>
+    <p role="status" aria-live="polite" data-search-status>
+      {fmt(productList.length)} products. Open one to see its types, their roles, and whether the type has its own Cloud
+      Console link.
+    </p>
+    <div class="products">
+      {
+        productList.map((product) => (
+          <details data-product-item data-product={product.product} data-service={product.service}>
+            <summary>
+              <span class="product-name">{product.product}</span>
+              <span class="muted"> · {product.service} · {product.types.length} {product.types.length === 1 ? 'type' : 'types'}</span>
+            </summary>
+            <ul>
+              {product.types.map((type) => (
+                <li data-type-item data-type={type.type} data-role={type.role}>
+                  <code class="code-long">{type.type}</code> <span class="muted">{type.role}{type.console ? ' · console link' : ''}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))
+      }
+    </div>
+
+    <h2 id="roles">Types by role</h2>
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <caption class="visually-hidden">Described asset types by role, with how many have a Cloud Console link template</caption>
+        <thead>
+          <tr><th scope="col">Role</th><th scope="col">How it is drawn</th><th scope="col" class="num">Types</th><th scope="col" class="num">With a console link</th></tr>
+        </thead>
+        <tbody>
+          {
+            ROLES.map((role) => (
+              <tr>
+                <th scope="row">{role}</th>
+                <td>{ROLE_DESCRIPTIONS[role]}</td>
+                <td class="num">{fmt(numbers.byRole[role])}</td>
+                <td class="num">{fmt(numbers.withConsoleByRole[role])}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+        <tfoot>
+          <tr><th scope="row">All</th><td></td><td class="num">{fmt(numbers.mapped)}</td><td class="num">{fmt(numbers.withConsole)}</td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <p class="muted">
+      A type without a console link template opens its project’s console page instead.
+    </p>
+
+    <h2 id="groups">By product group</h2>
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <caption class="visually-hidden">Coverage per product group of the official list</caption>
+        <thead>
+          <tr>
+            <th scope="col">Group</th>
+            <th scope="col" class="num">Official types</th>
+            <th scope="col" class="num">Described</th>
+            {ROLES.map((role) => <th scope="col" class="num">{role}</th>)}
+            <th scope="col" class="num">Unmapped</th>
+            <th scope="col" class="num">Coverage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            report.groups.map((group) => (
+              <tr>
+                <th scope="row">{group.title.replace(/\s*\((?:P\d[\d.]*|mapped in P[\d.]+)\)\s*$/, '')}</th>
+                <td class="num">{fmt(group.official)}</td>
+                <td class="num">{fmt(group.mapped.total)}</td>
+                {ROLES.map((role) => <td class="num">{fmt(group.mapped[role])}</td>)}
+                <td class="num">{fmt(group.unmapped.length)}</td>
+                <td class="num">{group.coveragePercent.toFixed(1)} %</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="unmapped">Not described, and why</h2>
+    {
+      unmapped.length === 0 ? (
+        <p>Every type of the official list is described.</p>
+      ) : (
+        <div class="table-scroll" tabindex="0">
+          <table>
+            <caption class="visually-hidden">Asset types of the official list the catalog does not describe, with the reason</caption>
+            <thead>
+              <tr><th scope="col">Asset type</th><th scope="col">Reason</th></tr>
+            </thead>
+            <tbody>
+              {unmapped.map((item) => (
+                <tr>
+                  <th scope="row"><code class="code-long">{item.type}</code></th>
+                  <td>{item.reason}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .coverage {
+    padding-top: 2rem;
+  }
+  .stats {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    margin: 1.5rem 0 0.5rem;
+  }
+  .catalog-search {
+    max-width: 36rem;
+    margin: 0.75rem 0;
+  }
+  .search-label {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    margin-bottom: 0.375rem;
+  }
+  .search-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .search-input {
+    flex: 1 1 10rem;
+    min-width: 0;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.9375rem;
+  }
+  .search-input::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+  .search-input:focus-visible {
+    outline-offset: 1px;
+    border-radius: var(--radius-small);
+  }
+  .search-clear {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0.375rem 0.875rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .search-clear:hover {
+    background: var(--color-bg-alt);
+  }
+  .search-clear:focus-visible {
+    border-radius: var(--radius-small);
+  }
+  /* Phones: two numbers a row from 360 pixels up (one below), each product a 44-pixel-high target to open. */
+  @media (max-width: 47.99rem) {
+    .stats {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+      gap: 0.75rem;
+    }
+    .stat {
+      padding: 0.75rem 1rem;
+    }
+    .stat dd {
+      font-size: 1.5rem;
+    }
+    .search-input {
+      font-size: 1rem;
+    }
+    details {
+      padding: 0;
+    }
+    summary {
+      padding-block: 0.6rem;
+    }
+  }
+  .stat {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+  .stat dt {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+  .stat dd {
+    margin: 0.25rem 0 0;
+    font-size: 1.75rem;
+    font-weight: 500;
+  }
+  .stat dd .muted {
+    font-size: 0.9375rem;
+    font-weight: 400;
+  }
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  tfoot th,
+  tfoot td {
+    font-weight: 500;
+    border-bottom: 0;
+  }
+  .products {
+    columns: 2 26rem;
+    column-gap: 2rem;
+  }
+  details {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.5rem 0;
+  }
+  summary {
+    cursor: pointer;
+  }
+  .product-name {
+    font-weight: 500;
+  }
+  details ul {
+    margin: 0.5rem 0 0.25rem;
+    padding-left: 1.25rem;
+    font-size: 0.875rem;
+  }
+  details code {
+    overflow-wrap: anywhere;
+  }
+</style>
+
+<script>
+  import { startCoverageSearch } from '../lib/coverage-search.js';
+
+  startCoverageSearch();
+</script>

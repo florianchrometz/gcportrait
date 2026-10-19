@@ -1,0 +1,22 @@
+{
+  "name": "//connectors.googleapis.com/projects/demo-app-1/locations/global/managedZones/corp-dns",
+  "assetType": "connectors.googleapis.com/ManagedZone",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/managedZones/corp-dns",
+    "description": "Resolve corp.example.com through the shared VPC",
+    "dns": "corp.example.com.",
+    "targetVpc": "core",
+    "targetProject": "demo-net-1",
+    "createTime": "2025-08-01T08:00:00Z",
+    "updateTime": "2025-08-01T08:00:00Z"
+  }
+}

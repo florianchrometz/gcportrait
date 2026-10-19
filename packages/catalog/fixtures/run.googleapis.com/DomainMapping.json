@@ -1,0 +1,41 @@
+{
+  "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/domainmappings/api.shop.example.org",
+  "assetType": "run.googleapis.com/DomainMapping",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "metadata": {
+      "name": "api.shop.example.org",
+      "namespace": "10000000002",
+      "labels": {
+        "cloud.googleapis.com/location": "europe-west3"
+      }
+    },
+    "spec": {
+      "routeName": "orders-api",
+      "certificateMode": "AUTOMATIC"
+    },
+    "status": {
+      "mappedRouteName": "orders-api",
+      "resourceRecords": [
+        {
+          "name": "api",
+          "type": "A",
+          "rrdata": "203.0.113.40"
+        },
+        {
+          "name": "api",
+          "type": "AAAA",
+          "rrdata": "2001:db8::40"
+        }
+      ]
+    }
+  }
+}

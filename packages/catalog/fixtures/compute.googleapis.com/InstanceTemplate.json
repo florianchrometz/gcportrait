@@ -1,0 +1,89 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/global/instanceTemplates/web-v12",
+  "assetType": "compute.googleapis.com/InstanceTemplate",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#instanceTemplate",
+    "id": "7700000000000000012",
+    "name": "web-v12",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/instanceTemplates/web-v12",
+    "sourceInstance": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/web-golden",
+    "properties": {
+      "machineType": "e2-standard-4",
+      "networkInterfaces": [
+        {
+          "kind": "compute#networkInterface",
+          "name": "nic0",
+          "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+          "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "stackType": "IPV4_ONLY"
+        }
+      ],
+      "disks": [
+        {
+          "kind": "compute#attachedDisk",
+          "type": "PERSISTENT",
+          "mode": "READ_WRITE",
+          "boot": true,
+          "autoDelete": true,
+          "deviceName": "persistent-disk-0",
+          "initializeParams": {
+            "sourceImage": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/images/web-base-v12",
+            "diskSizeGb": "20",
+            "diskType": "pd-balanced"
+          },
+          "diskEncryptionKey": {
+            "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute"
+          }
+        },
+        {
+          "kind": "compute#attachedDisk",
+          "type": "PERSISTENT",
+          "mode": "READ_WRITE",
+          "autoDelete": true,
+          "deviceName": "cache",
+          "initializeParams": {
+            "sourceSnapshot": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/snapshots/web-cache-seed",
+            "diskSizeGb": "50",
+            "diskType": "pd-ssd"
+          }
+        }
+      ],
+      "metadata": {
+        "kind": "compute#metadata",
+        "items": [
+          {
+            "key": "enable-oslogin",
+            "value": "TRUE"
+          }
+        ]
+      },
+      "serviceAccounts": [
+        {
+          "email": "vm-web@demo-app-1.iam.gserviceaccount.com",
+          "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        }
+      ],
+      "scheduling": {
+        "onHostMaintenance": "MIGRATE",
+        "automaticRestart": true,
+        "preemptible": false
+      },
+      "tags": {
+        "items": ["web", "allow-health-checks"]
+      },
+      "labels": {
+        "app": "web"
+      }
+    },
+    "creationTimestamp": "2026-09-20T10:00:00.000-07:00"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse/workspaces/alex-dev",
+  "assetType": "dataform.googleapis.com/Workspace",
+  "parent": "//dataform.googleapis.com/projects/demo-data-1/locations/europe-west3/repositories/warehouse",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/repositories/warehouse/workspaces/alex-dev",
+    "createTime": "2026-03-01T09:00:00Z"
+  }
+}

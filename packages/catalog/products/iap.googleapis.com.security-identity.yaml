@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Identity-Aware Proxy, the resource type: TCP forwarding destination groups. The other IAP asset
+# types carry IAM policies only (no RESOURCE content) and are policy-and-runtime's.
+product: Identity-Aware Proxy
+service: iap.googleapis.com
+icon: identity_aware_proxy
+types:
+  iap.googleapis.com/TunnelDestGroup:
+    role: hidden
+    ips:
+      - '$.data.cidrs[*]'
+    domains:
+      - '$.data.fqdns[*]'
+    notes: >-
+      projects/<number>/iap_tunnel/locations/<region>/destGroups/<id>: the ranges and host names IAP TCP
+      forwarding may reach (for VMs without external addresses and on-premises hosts). Hidden per the seed;
+      its ranges and host names still match what they cover.

@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# BigQuery Reservation API: slot reservations, the assignments that point projects, folders or the
+# organisation at a reservation, capacity commitments, BI Engine reservations and reservation groups. Cloud
+# Asset Inventory names these by project number
+# (`//bigqueryreservation.googleapis.com/projects/<number>/locations/<l>/reservations/<r>/assignments/<a>`),
+# while data.name uses the project id; reservations usually live in one administration project.
+product: BigQuery Reservation API
+service: bigqueryreservation.googleapis.com
+icon: bigquery
+types:
+  bigqueryreservation.googleapis.com/Reservation:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.edition | lower}} · {{data.slotCapacity | plural(slot)}}'
+    console: 'https://console.cloud.google.com/bigquery/admin/reservations?project={{projectId}}'
+    contains:
+      - byParent: bigqueryreservation.googleapis.com/ReservationAssignment
+    notes: >-
+      A container rather than the seed's card: its assignments are named under it (…/reservations/r/
+      assignments/a) and carry the edges to the projects, folders and organisation that consume its slots,
+      so the reservation zone holds them. slotCapacity is the baseline; autoscale.maxSlots the autoscaling
+      headroom. A reservation with managed disaster recovery also names its secondaryLocation (a region, not
+      an asset).
+
+  bigqueryreservation.googleapis.com/ReservationAssignment:
+    role: core
+    label: '{{data.assignee}}'
+    subtitle: '{{data.jobType | lower}} assignment'
+    console: 'https://console.cloud.google.com/bigquery/admin/reservations?project={{projectId}}'
+    relations:
+      - {
+          kind: secures,
+          to: "$.data[?(@ startsWith 'projects/' && !(@ contains '/locations/'))]",
+          normalize: projectNumberOrId,
+        }
+      - {
+          kind: secures,
+          to: "$.data[?(@ startsWith 'folders/' || @ startsWith 'organizations/')]",
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+    notes: >-
+      data.assignee is projects/<id>, folders/<number> or organizations/<number>: the reservation's slots apply
+      to the jobs of that scope (secures, policy → target, drawn in the lens overlays). The two filtered paths
+      both read data.assignee: the first keeps a project assignee (projectNumberOrId turns the id into the
+      Resource Manager name by number) and skips data.name, which also starts with projects/; the second keeps
+      folders and the organisation, which are already named by number. The assignment nests in its
+      reservation by name. The filters look at every string value of data, not at data.assignee alone (no
+      JSONPath here can filter one scalar member): today the only other string field that could match,
+      principal, starts with principal://, but a future projects/… string field without /locations/ would be
+      read as an assignee too.
+
+  bigqueryreservation.googleapis.com/CapacityCommitment:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.slotCount | plural(slot)}} · {{data.plan | lower}} · {{data.edition | lower}}'
+    console: 'https://console.cloud.google.com/bigquery/admin/reservations?project={{projectId}}'
+    notes: A purchased slot commitment of the administration project; it backs reservations without naming them.
+
+  bigqueryreservation.googleapis.com/BiReservation:
+    role: hidden
+    label: 'BI Engine reservation'
+    subtitle: '{{location}} · {{data.size | plural(byte)}}'
+    console: 'https://console.cloud.google.com/bigquery/admin/reservations?project={{projectId}}'
+    notes: >-
+      The project's BI Engine memory reservation per location, a settings singleton (…/locations/l/
+      biReservation); data.size is in bytes and preferredTables lists the tables it accelerates.
+
+  bigqueryreservation.googleapis.com/ReservationGroup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'reservation group'
+    console: 'https://console.cloud.google.com/bigquery/admin/reservations?project={{projectId}}'
+    notes: A grouping of reservations for idle-slot sharing; reservations name it in data.reservationGroup.

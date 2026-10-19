@@ -1,0 +1,18 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/utilizationReports/weekly-2026-40",
+  "assetType": "vmmigration.googleapis.com/UtilizationReport",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/utilizationReports/weekly-2026-40",
+    "displayName": "Week 40 utilisation",
+    "state": "SUCCEEDED",
+    "stateTime": "2026-10-05T08:00:00Z",
+    "timeFrame": "WEEK",
+    "vmCount": 42,
+    "frameEndTime": "2026-10-05T00:00:00Z",
+    "createTime": "2026-10-05T07:00:00Z"
+  }
+}

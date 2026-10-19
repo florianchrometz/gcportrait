@@ -1,0 +1,100 @@
+[
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/orders-mysql",
+    "assetType": "datastream.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/orders-mysql",
+      "displayName": "orders-mysql",
+      "mysqlProfile": {
+        "hostname": "10.40.0.12",
+        "port": 3306,
+        "username": "datastream",
+        "secretManagerStoredPassword": "projects/demo-data-1/secrets/orders-mysql-password/versions/1"
+      },
+      "privateConnectivity": {
+        "privateConnection": "projects/demo-data-1/locations/europe-west3/privateConnections/core-peering"
+      }
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/returns-postgres",
+    "assetType": "datastream.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/returns-postgres",
+      "displayName": "returns-postgres",
+      "postgresqlProfile": {
+        "hostname": "returns-db.corp.example.com",
+        "port": 5432,
+        "username": "datastream",
+        "database": "returns"
+      },
+      "forwardSshConnectivity": { "hostname": "bastion.corp.example.com" }
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/catalog-mongodb",
+    "assetType": "datastream.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/catalog-mongodb",
+      "displayName": "catalog-mongodb",
+      "mongodbProfile": {
+        "hostAddresses": [
+          { "hostname": "mongo-0.corp.example.com", "port": 27017 },
+          { "hostname": "10.40.0.21", "port": 27017 }
+        ]
+      },
+      "staticServiceIpConnectivity": {}
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/crm-salesforce",
+    "assetType": "datastream.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/crm-salesforce",
+      "displayName": "crm-salesforce",
+      "salesforceProfile": { "domain": "crm.example.com" }
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/landing-gcs",
+    "assetType": "datastream.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/landing-gcs",
+      "displayName": "landing-gcs",
+      "gcsProfile": { "bucket": "demo-data-1-landing", "rootPath": "/datastream" }
+    }
+  },
+  {
+    "name": "//datastream.googleapis.com/projects/demo-data-1/locations/europe-west3/connectionProfiles/bigquery",
+    "assetType": "datastream.googleapis.com/ConnectionProfile",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/connectionProfiles/bigquery",
+      "displayName": "bigquery",
+      "bigqueryProfile": {}
+    }
+  }
+]

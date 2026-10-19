@@ -1,0 +1,23 @@
+{
+  "name": "//networkservices.googleapis.com/projects/demo-app-1/locations/global/meshes/storefront-mesh",
+  "assetType": "networkservices.googleapis.com/Mesh",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/meshes/storefront-mesh",
+    "description": "Sidecar mesh of the storefront services",
+    "interceptionPort": 15001,
+    "labels": {
+      "team": "storefront"
+    },
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

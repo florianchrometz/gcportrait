@@ -1,0 +1,308 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Build, check and publish tagged releases; a manual run publishes a `dev` image only.
+# Rules: AGENTS.md, Releases; .github/AGENTS.md, Releases. Setup, versioning and trial runs:
+# docs/contributing.md, "9. Releases", and contributor-workflow skill §7. Website deployment: docs/website.md.
+# The jobs below define gates, platforms, tags, artifacts and deployment conditions; follow-ups: docs/backlog.md.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-test:
+    name: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No dependency cache in release jobs: a release is built from a clean store.
+      - uses: ./.github/actions/setup
+        with:
+          cache: 'false'
+      - name: All checks (format, lint, typecheck, unit, catalog, provenance, licences)
+        run: pnpm run check
+      - name: Build every workspace
+        run: pnpm run build
+      - name: SPA size budgets (UI thread and workers)
+        run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
+
+  publish-image:
+    name: publish-image
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # The arm64 build runs under emulation: several times slower than the amd64 one.
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write # push to ghcr.io with GITHUB_TOKEN
+    outputs:
+      image: ${{ steps.names.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+      latest: ${{ steps.names.outputs.latest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # All tags, to tell whether this one is the newest release (below).
+          fetch-depth: 0
+      # The image name, its version, `latest`, the tags, labels and annotations: scripts/release-image.mjs (its
+      # tests: scripts/release-image.test.ts), run on the runner's own Node; it reads the tags and infra/Dockerfile.
+      - name: Image name, version, `latest`, tags, labels and annotations
+        id: names
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          node scripts/release-image.mjs --event "$EVENT" --tag "$TAG" --sha "$SHA" --repository "$REPOSITORY" \
+            --server-url "$SERVER_URL" >"$RUNNER_TEMP/image.txt"
+          cat "$RUNNER_TEMP/image.txt"
+          cat "$RUNNER_TEMP/image.txt" >>"$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: arm64
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # Each platform is built once into the runner's Docker, started and checked before anything is pushed. The
+      # multi-platform push below reuses these builds' layers from the builder's cache.
+      - name: Build linux/amd64 for the smoke test
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/Dockerfile
+          platforms: linux/amd64
+          build-args: APP_VERSION=${{ steps.names.outputs.app_version }}
+          load: true
+          tags: gcportrait:check-amd64
+      - name: Build linux/arm64 for the smoke test (emulated)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/Dockerfile
+          platforms: linux/arm64
+          build-args: APP_VERSION=${{ steps.names.outputs.app_version }}
+          load: true
+          tags: gcportrait:check-arm64
+      - name: Smoke test both platforms (/healthz with the version, /api/config, the SPA)
+        env:
+          VERSION: ${{ steps.names.outputs.app_version }}
+        run: |
+          for arch in amd64 arm64; do
+            docker run --detach --name "check-$arch" --platform "linux/$arch" --publish 127.0.0.1:8080:8080 \
+              --read-only "gcportrait:check-$arch"
+            ok=0
+            for _ in $(seq 1 90); do
+              if curl --silent --fail http://127.0.0.1:8080/healthz >"/tmp/healthz-$arch.json"; then ok=1; break; fi
+              sleep 1
+            done
+            docker logs "check-$arch"
+            if [ "$ok" != 1 ]; then echo "::error::linux/$arch: /healthz did not answer"; exit 1; fi
+            cat "/tmp/healthz-$arch.json"
+            echo
+            grep -q "\"version\":\"$VERSION\"" "/tmp/healthz-$arch.json"
+            # Each answer goes to a file first: `curl | grep -q` under the step's pipefail fails when grep exits
+            # on its match before curl has written everything (curl then dies of SIGPIPE).
+            curl --silent --fail http://127.0.0.1:8080/api/config >"/tmp/config-$arch.json"
+            grep -q '"demo":false' "/tmp/config-$arch.json"
+            curl --silent --fail http://127.0.0.1:8080/ >"/tmp/index-$arch.html"
+            grep -q '<div id="root">' "/tmp/index-$arch.html"
+            docker rm --force "check-$arch"
+          done
+      # The workflow's own token, through standard input so it never reaches the command line; Syft reads the
+      # image with the same token below, and the last step logs out again.
+      - name: Log in to GitHub Container Registry
+        env:
+          ACTOR: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$TOKEN" | docker login ghcr.io --username "$ACTOR" --password-stdin
+      - name: Build and push linux/amd64 and linux/arm64
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: infra/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: APP_VERSION=${{ steps.names.outputs.app_version }}
+          push: true
+          provenance: false
+          sbom: false
+          # The Dockerfile's labels (title, description, licence) and these (source, revision, version...); the
+          # annotations go on every platform manifest and on the index, where ghcr.io reads a multi-platform
+          # package's description.
+          tags: ${{ steps.names.outputs.tags }}
+          labels: ${{ steps.names.outputs.labels }}
+          annotations: ${{ steps.names.outputs.annotations }}
+      - name: Anonymous pull check (as Artifact Registry's remote repository pulls)
+        env:
+          IMAGE: ${{ steps.names.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          path="${IMAGE#ghcr.io/}"
+          status="$(curl --silent --output /tmp/token.json --write-out '%{http_code}' \
+            "https://ghcr.io/token?scope=repository:${path}:pull&service=ghcr.io")"
+          if [ "$status" = 200 ]; then
+            # An anonymous pull token: anyone can get one for a public package; it is not a secret.
+            status="$(printf 'Authorization: Bearer %s\n' "$(jq -r .token /tmp/token.json)" |
+              curl --silent --head --output /dev/null --write-out '%{http_code}' --header @- \
+                --header 'Accept: application/vnd.oci.image.index.v1+json' "https://ghcr.io/v2/${path}/manifests/${DIGEST}")"
+          fi
+          if [ "$status" = 200 ]; then
+            echo "Anyone can pull $IMAGE@$DIGEST."
+          else
+            message="$IMAGE cannot be pulled anonymously (HTTP $status), so infra/deploy.sh cannot deploy it: make the package public once (its page on GitHub > Package settings > Change visibility > Public; docs/contributing.md, \"9. Releases\"), then re-run this job."
+            if [ "$EVENT" = push ]; then echo "::error::$message"; exit 1; fi
+            echo "::warning::$message"
+          fi
+      - name: Platform images in the pushed index
+        id: platforms
+        env:
+          IMAGE: ${{ steps.names.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          docker buildx imagetools inspect --raw "$IMAGE@$DIGEST" >/tmp/index.json
+          for arch in amd64 arm64; do
+            digest="$(jq -r --arg arch "$arch" \
+              '.manifests[] | select(.platform.os == "linux" and .platform.architecture == $arch) | .digest' /tmp/index.json)"
+            if [ -z "$digest" ]; then echo "::error::the index has no linux/$arch image"; exit 1; fi
+            echo "$arch=$digest" >>"$GITHUB_OUTPUT"
+          done
+      # Syft, pinned by version and by the SHA-256 that its release's syft_VERSION_checksums.txt gives for
+      # syft_VERSION_linux_amd64.tar.gz, checked before it runs (as pr.yml pins actionlint); a newer Syft changes
+      # both lines together. It reads each platform's image from the registry with the workflow's token (the
+      # package may still be private) and writes its SPDX JSON SBOM.
+      - name: SBOMs of linux/amd64 and linux/arm64 (Syft, SPDX JSON)
+        env:
+          SYFT_VERSION: 1.54.1
+          SYFT_SHA256: c069905b391cc4c20a5ba65ad5c10be2a7ba074f8ea6ad203e24d14e303dad47
+          IMAGE: ${{ steps.names.outputs.image }}
+          VERSION: ${{ steps.names.outputs.app_version }}
+          AMD64: ${{ steps.platforms.outputs.amd64 }}
+          ARM64: ${{ steps.platforms.outputs.arm64 }}
+          SYFT_REGISTRY_AUTH_AUTHORITY: ghcr.io
+          SYFT_REGISTRY_AUTH_USERNAME: ${{ github.actor }}
+          SYFT_REGISTRY_AUTH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          SYFT_CHECK_FOR_APP_UPDATE: 'false'
+        run: |
+          archive="syft_${SYFT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/$archive"
+          echo "$SYFT_SHA256  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/syft"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/syft" syft
+          "$RUNNER_TEMP/syft/syft" version
+          mkdir -p sbom
+          "$RUNNER_TEMP/syft/syft" scan "registry:$IMAGE@$AMD64" \
+            -o "spdx-json=sbom/gcportrait-${VERSION}-linux-amd64.spdx.json"
+          "$RUNNER_TEMP/syft/syft" scan "registry:$IMAGE@$ARM64" \
+            -o "spdx-json=sbom/gcportrait-${VERSION}-linux-arm64.spdx.json"
+      - name: Keep the SBOMs for the release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sbom
+          path: sbom/
+          if-no-files-found: error
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io
+
+  github-release:
+    name: github-release
+    # Waits for the image, so a release never announces an image that failed to publish. Tags only.
+    needs: [build-and-test, publish-image]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # create the GitHub release and attach its assets
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The whole history and every tag: the notes list the commits since the previous release tag.
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sbom
+          path: sbom
+      - name: Release notes from the commits since the previous release tag
+        env:
+          TAG: ${{ github.ref_name }}
+          IMAGE: ${{ needs.publish-image.outputs.image }}
+          DIGEST: ${{ needs.publish-image.outputs.digest }}
+          LATEST: ${{ needs.publish-image.outputs.latest }}
+        run: |
+          node scripts/release-notes.mjs --tag "$TAG" --image "$IMAGE" --digest "$DIGEST" --latest "$LATEST" \
+            >release-notes.md
+          cat release-notes.md
+      # The SBOMs, the deploy scripts infra/install.sh downloads, and checksums.txt over all of them, in one folder.
+      - name: Release assets (the SBOMs, the deploy scripts, checksums.txt)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir release-assets
+          cp sbom/*.spdx.json release-assets/
+          scripts/release-assets.sh --tag "$TAG" --out release-assets
+          (cd release-assets && sha256sum --check --strict checksums.txt)
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          LATEST: ${{ needs.publish-image.outputs.latest }}
+        run: |
+          flags=(--repo "$GITHUB_REPOSITORY" --verify-tag --title "gcportrait ${TAG#v}" --notes-file release-notes.md)
+          case "$TAG" in *-*) flags+=(--prerelease) ;; esac
+          if [ "$LATEST" != true ]; then flags+=(--latest=false); fi
+          gh release create "$TAG" "${flags[@]}" release-assets/*
+
+  website-build:
+    name: website-build
+    needs: build-and-test
+    # Tag pushes only (a run by hand publishes a `dev` image and no website), and only once the maintainer has set
+    # up Pages (docs/website.md): until then a release run neither builds nor checks the site. The same build as
+    # pages.yml's (website.yml), strict, with the demo's version and refusing stale docs/media.
+    if: github.event_name == 'push' && vars.PAGES_DEPLOY == 'true'
+    uses: ./.github/workflows/website.yml
+    with:
+      deploy: true
+      app-version: ${{ github.ref_name }}
+      require-media: true
+      cache: false
+
+  website-deploy:
+    name: website-deploy
+    needs: website-build
+    # Tag pushes only, and only once the maintainer has set up Pages (docs/website.md).
+    if: github.event_name == 'push' && vars.PAGES_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write # deploy to GitHub Pages
+      id-token: write # prove the deployment's origin to Pages
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

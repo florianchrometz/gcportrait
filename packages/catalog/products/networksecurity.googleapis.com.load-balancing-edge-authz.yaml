@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Load Balancing, the Network Security part: authorization policies on load balancer forwarding rules
+# and Secure Web Proxy gateways. The third file of the load-balancing-edge group for
+# networksecurity.googleapis.com (see networksecurity.googleapis.com.load-balancing-edge.yaml).
+product: Cloud Load Balancing
+service: networksecurity.googleapis.com
+icon: cloud_load_balancing
+types:
+  networksecurity.googleapis.com/AuthzPolicy:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.action | lower}} · {{data.target.loadBalancingScheme | lower}}'
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/list/loadBalancers?project={{projectId}}'
+    relations:
+      - {
+          kind: secures,
+          to: "$.data.target.resources[?(@ contains '/forwardingRules/')]",
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: secures,
+          to: "$.data.target.resources[?(@ contains '/gateways/')]",
+          normalize: name,
+          service: networkservices.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.customProvider.authzExtension.resources[*]',
+          normalize: name,
+          service: networkservices.googleapis.com,
+        }
+    notes: >-
+      `target.resources` mixes forwarding rule self-links with Secure Web Proxy (and Agent Gateway) gateway
+      names, so two filtered rules read them with the right normaliser. A CUSTOM policy delegates to an
+      authorization extension (`customProvider.authzExtension`) or to IAP (`customProvider.cloudIap`, a flag).

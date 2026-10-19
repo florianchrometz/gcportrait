@@ -1,0 +1,16 @@
+{
+  "name": "//healthcare.googleapis.com/projects/10000000003/locations/europe-west3/datasets/clinical/hl7V2Stores/admissions",
+  "assetType": "healthcare.googleapis.com/Hl7V2Store",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/datasets/clinical/hl7V2Stores/admissions",
+    "parserConfig": { "version": "V3", "allowNullHeader": false },
+    "notificationConfigs": [
+      { "pubsubTopic": "projects/demo-data-1/topics/hl7-admissions", "filter": "messageType = \"ADT\"" }
+    ],
+    "rejectDuplicateMessage": true
+  }
+}

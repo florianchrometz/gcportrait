@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# BigQuery: the dataset container (from the catalog seed), tables, models, routines and row access policies.
+# Cloud Asset Inventory names everything by project id and nests it by name under its dataset
+# (`//bigquery.googleapis.com/projects/<id>/datasets/<d>/tables/<t>`, `…/models/<m>`, `…/routines/<r>`,
+# `…/tables/<t>/rowAccessPolicies/<p>`); the data is the BigQuery v2 REST resource. References between
+# BigQuery resources are reference objects ({ projectId, datasetId, tableId }), which bigqueryUri reads as
+# they are.
+product: BigQuery
+service: bigquery.googleapis.com
+icon: bigquery
+types:
+  bigquery.googleapis.com/Dataset:
+    role: container
+    label: '{{data.datasetReference.datasetId}}'
+    subtitle: 'dataset · {{location}}'
+    console: 'https://console.cloud.google.com/bigquery?project={{projectId}}&p={{data.datasetReference.projectId}}&d={{data.datasetReference.datasetId}}&page=dataset'
+    relations:
+      - { kind: encryptedBy, to: $.data.defaultEncryptionConfiguration.kmsKeyName, normalize: kmsKey }
+      - { kind: uses, to: $.data.linkedDatasetSource.sourceDataset, normalize: bigqueryUri }
+    contains:
+      - byParent: bigquery.googleapis.com/Table
+      - byParent: bigquery.googleapis.com/Model
+      - byParent: bigquery.googleapis.com/Routine
+      - byParent: bigquery.googleapis.com/RowAccessPolicy
+    hiddenWhen: $.data.datasetReference.datasetId startsWith '_'
+    notes: >-
+      A linked dataset (type LINKED, created by subscribing to a BigQuery sharing listing) is a read-only
+      window on its source dataset, linkedDatasetSource.sourceDataset (uses). Datasets whose id starts with an
+      underscore are hidden datasets (anonymous query-result and script datasets), which the console hides
+      too; hiddenWhen does the same.
+
+  bigquery.googleapis.com/Table:
+    role: core
+    label: '{{data.tableReference.tableId}}'
+    subtitle: '{{data.type | lower}} · {{data.externalDataConfiguration.sourceFormat | lower}}'
+    console: 'https://console.cloud.google.com/bigquery?project={{projectId}}&p={{data.tableReference.projectId}}&d={{data.tableReference.datasetId}}&t={{data.tableReference.tableId}}&page=table'
+    relations:
+      - { kind: uses, to: '$.data.externalDataConfiguration.sourceUris[*]', normalize: gcsUri }
+      - { kind: uses, to: $.data.biglakeConfiguration.storageUri, normalize: gcsUri }
+      - { kind: uses, to: $.data.snapshotDefinition.baseTableReference, normalize: bigqueryUri }
+      - { kind: uses, to: $.data.cloneDefinition.baseTableReference, normalize: bigqueryUri }
+      - { kind: encryptedBy, to: $.data.encryptionConfiguration.kmsKeyName, normalize: kmsKey }
+    hiddenWhen: $.data.type == 'SNAPSHOT'
+    notes: >-
+      data.type is TABLE, VIEW, MATERIALIZED_VIEW, EXTERNAL or SNAPSHOT. An external table reads the buckets of
+      externalDataConfiguration.sourceUris (gs:// URIs; Bigtable and Drive URIs are not buckets and stay
+      dangling), a BigLake table for Apache Iceberg keeps its files under biglakeConfiguration.storageUri; both
+      draw uses → bucket. A table snapshot (type SNAPSHOT, hidden like other backups) and a table clone point
+      at their base table. Views and materialized views name their sources only inside SQL
+      (view.query, materializedView.query), which is not parsed. A dataset with many tables shows them all; the
+      catalog has no per-dataset threshold yet (the seed's "hidden above 50").
+
+  bigquery.googleapis.com/Model:
+    role: leaf
+    label: '{{data.modelReference.modelId}}'
+    subtitle: 'model · {{data.modelType | lower}}'
+    console: 'https://console.cloud.google.com/bigquery?project={{projectId}}&p={{data.modelReference.projectId}}&d={{data.modelReference.datasetId}}&page=dataset'
+    notes: >-
+      A BigQuery ML model; data.modelType is LINEAR_REG, KMEANS, BOOSTED_TREE_CLASSIFIER, ARIMA_PLUS,
+      TENSORFLOW, … The console link opens the model's dataset.
+
+  bigquery.googleapis.com/Routine:
+    role: leaf
+    label: '{{data.routineReference.routineId}}'
+    subtitle: '{{data.routineType | lower}} · {{data.language | lower}}'
+    console: 'https://console.cloud.google.com/bigquery?project={{projectId}}&p={{data.routineReference.projectId}}&d={{data.routineReference.datasetId}}&page=dataset'
+    notes: >-
+      A user-defined function, table function or stored procedure (data.routineType SCALAR_FUNCTION,
+      TABLE_VALUED_FUNCTION, AGGREGATE_FUNCTION, PROCEDURE). The console link opens the routine's dataset.
+
+  bigquery.googleapis.com/RowAccessPolicy:
+    role: hidden
+    label: '{{data.rowAccessPolicyReference.policyId}}'
+    subtitle: 'row access · {{data.rowAccessPolicyReference.tableId}}'
+    notes: >-
+      A row-level security filter on one table (filterPredicate); counted in its dataset's badge, as policies
+      are settings of a table rather than resources of their own.

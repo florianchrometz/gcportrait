@@ -1,0 +1,17 @@
+{
+  "name": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/models/churn_forecast",
+  "assetType": "bigquery.googleapis.com/Model",
+  "parent": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "modelReference": { "projectId": "demo-data-1", "datasetId": "sales", "modelId": "churn_forecast" },
+    "modelType": "BOOSTED_TREE_CLASSIFIER",
+    "location": "europe-west3",
+    "creationTime": "1720000000000",
+    "lastModifiedTime": "1727000000000",
+    "featureColumns": [{ "name": "orders_90d", "type": { "typeKind": "INT64" } }],
+    "labelColumns": [{ "name": "predicted_churned", "type": { "typeKind": "BOOL" } }]
+  }
+}

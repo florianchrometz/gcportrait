@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The resource hierarchy (skill gcp-diagram-layout §2). Cloud Asset Inventory serves
+# Organization and Project in their Resource Manager v1 shape (display name in data.displayName and data.name
+# respectively, data.lifecycleState), Folder in the v2 shape (data.displayName, data.lifecycleState) and the
+# tag and lien types in the v3 shape. Containment follows each asset's parent; tags and liens are hidden and
+# end up as badges on the resource they apply to.
+product: Resource Manager
+service: cloudresourcemanager.googleapis.com
+icon: resource_manager
+types:
+  cloudresourcemanager.googleapis.com/Organization:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'organization {{name | lastSegment}}'
+    icon: organization
+    console: 'https://console.cloud.google.com/cloud-resource-manager?organizationId={{name | lastSegment}}'
+    contains:
+      - byParent: cloudresourcemanager.googleapis.com/Folder
+      - byParent: cloudresourcemanager.googleapis.com/Project
+    notes: The canvas root; it is not drawn as a zone of its own.
+
+  cloudresourcemanager.googleapis.com/Folder:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'folder {{name | lastSegment}}'
+    icon: folder
+    console: 'https://console.cloud.google.com/cloud-resource-manager?folder={{name | lastSegment}}'
+    contains:
+      - byParent: cloudresourcemanager.googleapis.com/Folder
+      - byParent: cloudresourcemanager.googleapis.com/Project
+    hiddenWhen: "$.data.lifecycleState not in ['ACTIVE']"
+
+  cloudresourcemanager.googleapis.com/Project:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.projectId}}'
+    icon: project
+    console: 'https://console.cloud.google.com/home/dashboard?project={{data.projectId}}'
+    hiddenWhen: "$.data.lifecycleState not in ['ACTIVE']"
+    notes: >-
+      v1 shape: data.name is the display name. data.projectId and the number in the asset name build the
+      snapshot's project index. Everything without a more specific container nests here by its parent.
+
+  cloudresourcemanager.googleapis.com/TagKey:
+    role: hidden
+    label: '{{data.namespacedName}}'
+    subtitle: '{{data.description | short(48)}}'
+
+  cloudresourcemanager.googleapis.com/TagValue:
+    role: hidden
+    label: '{{data.namespacedName}}'
+    subtitle: '{{data.description | short(48)}}'
+    relations:
+      - { kind: memberOf, to: $.data.parent, normalize: name }
+
+  cloudresourcemanager.googleapis.com/TagBinding:
+    role: hidden
+    label: '{{data.tagValueNamespacedName}}'
+    relations:
+      - { kind: uses, to: $.data.tagValue, normalize: name }
+      - { kind: secures, to: $.data.parent, normalize: name }
+    notes: Shown as a tag badge on the bound resource (data.parent, a full resource name).
+
+  cloudresourcemanager.googleapis.com/Lien:
+    role: hidden
+    label: '{{data.reason | short(40)}}'
+    subtitle: '{{data.origin}}'
+    relations:
+      - { kind: secures, to: $.data.parent, normalize: projectNumberOrId }
+    notes: >-
+      Shown as a deletion-protection badge on its project. The official list says liens are served by the
+      search APIs only, so most snapshots will not contain any.

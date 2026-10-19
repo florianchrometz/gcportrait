@@ -1,0 +1,35 @@
+---
+/**
+ * gcportrait's mark: a frame holding nested zones in the diagram's tints (project blue, VPC green, subnet yellow), drawn
+ * for the project; no Google mark or icon. Its one source is brand/icon.svg, which is also the favicon: the shapes and
+ * both themes' colours are read from it at build time (src/lib/brand.ts), the light ones written as attributes and the
+ * dark ones as custom properties that the stylesheet below applies in the dark theme. Decorative: the wordmark next to
+ * it carries the name.
+ */
+import { brandDrawing, logoShapeAttributes } from '../lib/brand.js';
+
+interface Props {
+  size?: number;
+}
+const { size = 32 } = Astro.props;
+const drawing = brandDrawing();
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<svg class="logo" width={size} height={size} viewBox={drawing.viewBox} aria-hidden="true" focusable="false">
+  {drawing.shapes.map((shape) => <rect class="logo-shape" {...logoShapeAttributes(shape)} />)}
+</svg>
+
+<style>
+  .logo {
+    flex: none;
+  }
+  /* The dark colours of brand/icon.svg, carried by each shape (src/lib/brand.ts, DARK_PROPERTIES). */
+  @media (prefers-color-scheme: dark) {
+    .logo-shape {
+      fill: var(--dark-fill);
+      stroke: var(--dark-stroke);
+      stroke-width: var(--dark-stroke-width);
+    }
+  }
+</style>

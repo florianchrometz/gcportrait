@@ -1,0 +1,23 @@
+{
+  "name": "//accessapproval.googleapis.com/organizations/30000000001/accessApprovalSettings",
+  "assetType": "accessapproval.googleapis.com/AccessApprovalSettings",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/accessApprovalSettings",
+    "notificationEmails": ["security-approvers@example.com"],
+    "enrolledServices": [
+      {
+        "cloudProduct": "all",
+        "enrollmentLevel": "BLOCK_ALL"
+      }
+    ],
+    "enrolledAncestor": false,
+    "activeKeyVersion": "projects/demo-sec-1/locations/global/keyRings/global/cryptoKeys/approvals/cryptoKeyVersions/1",
+    "ancestorHasActiveKeyVersion": false,
+    "invalidKeyVersion": false,
+    "notificationPubsubTopic": "projects/demo-sec-1/topics/access-approval",
+    "requireCustomerVisibleJustification": true
+  }
+}

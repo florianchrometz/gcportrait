@@ -1,0 +1,14 @@
+{
+  "name": "//bigtable.googleapis.com/projects/demo-data-1/instances/events/appProfiles/ingest",
+  "assetType": "bigtableadmin.googleapis.com/AppProfile",
+  "parent": "//bigtable.googleapis.com/projects/demo-data-1/instances/events",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/events/appProfiles/ingest",
+    "etag": "aW5nZXN0",
+    "description": "Writes from the ingestion pipeline",
+    "singleClusterRouting": { "clusterId": "events-c1", "allowTransactionalWrites": true },
+    "standardIsolation": { "priority": "PRIORITY_HIGH" }
+  }
+}

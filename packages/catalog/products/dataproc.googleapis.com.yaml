@@ -1,0 +1,160 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dataproc, listed on the official page as Managed Service for Apache Spark: clusters on Compute Engine
+# or GKE, their jobs, serverless batches and interactive sessions, workflow templates and autoscaling
+# policies. Clusters and templates live in regions (…/regions/<r>/…), batches and sessions in locations.
+product: Managed Service for Apache Spark
+service: dataproc.googleapis.com
+icon: dataproc
+types:
+  dataproc.googleapis.com/Cluster:
+    role: core
+    label: '{{data.clusterName}}'
+    subtitle: '{{data.config.softwareConfig.imageVersion}} · {{data.status.state | lower}}'
+    console: 'https://console.cloud.google.com/dataproc/clusters/{{data.clusterName}}/monitoring?region={{location}}&project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.config.gceClusterConfig.subnetworkUri, normalize: computeSelfLink }
+      - {
+          kind: attaches,
+          to: $.data.config.gceClusterConfig.networkUri,
+          normalize: computeSelfLink,
+          weak: true,
+        }
+      - { kind: runsAs, to: $.data.config.gceClusterConfig.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.config.configBucket, normalize: gcsUri }
+      - { kind: uses, to: $.data.config.tempBucket, normalize: gcsUri }
+      - { kind: uses, to: $.data.virtualClusterConfig.stagingBucket, normalize: gcsUri }
+      - { kind: encryptedBy, to: $.data.config.encryptionConfig.gcePdKmsKeyName, normalize: kmsKey }
+      - { kind: encryptedBy, to: $.data.config.encryptionConfig.kmsKey, normalize: kmsKey }
+      - {
+          kind: uses,
+          to: $.data.config.metastoreConfig.dataprocMetastoreService,
+          normalize: name,
+          service: metastore.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: $.data.virtualClusterConfig.auxiliaryServicesConfig.metastoreConfig.dataprocMetastoreService,
+          normalize: name,
+          service: metastore.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: $.data.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget,
+          normalize: name,
+          service: container.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: $.data.virtualClusterConfig.auxiliaryServicesConfig.sparkHistoryServerConfig.dataprocCluster,
+          normalize: name,
+        }
+      - { kind: uses, to: $.data.config.autoscalingConfig.policyUri, normalize: name }
+    notes: >-
+      The asset name is …/regions/<r>/clusters/<clusterName>; data has no name field. networkUri and
+      subnetworkUri are exclusive and come as self-links, partial paths or bare names (a bare name is not
+      resolved). configBucket, tempBucket and stagingBucket are bucket names, not gs:// URIs. A cluster on
+      GKE (virtualClusterConfig) points at its GKE cluster instead of a network. The Compute Engine VMs of a
+      cluster carry goog-dataproc-cluster-* labels; the instance side would need a rule to point back here.
+      policyUri is documented as …/locations/<r>/autoscalingPolicies/<p> while the policy's asset name uses
+      …/regions/<r>/…; the regions form resolves, the locations form stays dangling (verify on an export).
+
+  dataproc.googleapis.com/Job:
+    role: hidden
+    label: '{{data.reference.jobId}}'
+    subtitle: '{{data.status.state | lower}} · {{data.placement.clusterName}}'
+    console: 'https://console.cloud.google.com/dataproc/jobs/{{data.reference.jobId}}?region={{location}}&project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: $.data.placement.clusterName,
+          normalize: siblingName,
+          pattern: '{parent}/clusters/{id}',
+        }
+    notes: >-
+      A job names its cluster by bare name (placement.clusterName, same project and region), which siblingName
+      completes: the job uses the cluster; the subtitle names it as well.
+
+  dataproc.googleapis.com/Batch:
+    role: hidden
+    subtitle: '{{data.state | lower}} · {{data.runtimeConfig.version}}'
+    console: 'https://console.cloud.google.com/dataproc/batches/{{location}}/{{name | lastSegment}}/summary?project={{projectId}}'
+    relations:
+      - {
+          kind: attaches,
+          to: $.data.environmentConfig.executionConfig.subnetworkUri,
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: attaches,
+          to: $.data.environmentConfig.executionConfig.networkUri,
+          normalize: computeSelfLink,
+          weak: true,
+        }
+      - {
+          kind: runsAs,
+          to: $.data.environmentConfig.executionConfig.serviceAccount,
+          normalize: serviceAccountEmail,
+        }
+      - { kind: encryptedBy, to: $.data.environmentConfig.executionConfig.kmsKey, normalize: kmsKey }
+      - { kind: uses, to: $.data.environmentConfig.executionConfig.stagingBucket, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.environmentConfig.peripheralsConfig.metastoreService,
+          normalize: name,
+          service: metastore.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: $.data.environmentConfig.peripheralsConfig.sparkHistoryServerConfig.dataprocCluster,
+          normalize: name,
+        }
+      - { kind: uses, to: $.data.runtimeConfig.containerImage, normalize: artifactImage }
+    notes: Serverless Spark batch workload; one asset per run, so hidden by default.
+
+  dataproc.googleapis.com/Session:
+    role: hidden
+    subtitle: '{{data.state | lower}} · {{data.user}}'
+    relations:
+      - {
+          kind: attaches,
+          to: $.data.environmentConfig.executionConfig.subnetworkUri,
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: attaches,
+          to: $.data.environmentConfig.executionConfig.networkUri,
+          normalize: computeSelfLink,
+          weak: true,
+        }
+      - {
+          kind: runsAs,
+          to: $.data.environmentConfig.executionConfig.serviceAccount,
+          normalize: serviceAccountEmail,
+        }
+      - { kind: encryptedBy, to: $.data.environmentConfig.executionConfig.kmsKey, normalize: kmsKey }
+      - {
+          kind: uses,
+          to: $.data.environmentConfig.peripheralsConfig.metastoreService,
+          normalize: name,
+          service: metastore.googleapis.com,
+        }
+    notes: >-
+      An interactive Serverless Spark session (Jupyter or Spark Connect) of one user; sessionTemplate names a
+      session template, which is no Cloud Asset Inventory type.
+
+  dataproc.googleapis.com/WorkflowTemplate:
+    role: leaf
+    subtitle: 'workflow template · {{location}}'
+    console: 'https://console.cloud.google.com/dataproc/workflows/templates?project={{projectId}}'
+    notes: >-
+      placement.managedCluster holds the configuration of the ephemeral cluster each run creates (the same
+      shape as a cluster's config); those references describe future clusters and are not drawn.
+
+  dataproc.googleapis.com/AutoscalingPolicy:
+    role: leaf
+    subtitle: 'up to {{data.workerConfig.maxInstances | plural(worker)}}'
+    console: 'https://console.cloud.google.com/dataproc/autoscalingPolicies?project={{projectId}}'
+    notes: >-
+      Clusters point at the policy through config.autoscalingConfig.policyUri. workerConfig.maxInstances is
+      required; minInstances may be left out (proto3 JSON drops defaults), so only the maximum is shown.

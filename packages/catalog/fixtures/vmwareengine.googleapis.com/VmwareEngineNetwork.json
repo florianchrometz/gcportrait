@@ -1,0 +1,24 @@
+{
+  "name": "//vmwareengine.googleapis.com/projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+  "assetType": "vmwareengine.googleapis.com/VmwareEngineNetwork",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/vmwareEngineNetworks/vmware-net",
+    "description": "Standard network for pc-1",
+    "state": "ACTIVE",
+    "type": "STANDARD",
+    "uid": "e0000000-0000-4000-8000-000000000013",
+    "etag": "c2ZpeHR1cmU=",
+    "vpcNetworks": [
+      {
+        "type": "INTERNET",
+        "network": "projects/10000000099/global/networks/internet"
+      }
+    ],
+    "createTime": "2026-01-20T08:00:00Z",
+    "updateTime": "2026-01-20T08:00:00Z"
+  }
+}

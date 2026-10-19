@@ -1,0 +1,30 @@
+{
+  "name": "//connectors.googleapis.com/projects/demo-app-1/locations/europe-west3/connections/erp-postgres/eventSubscriptions/order-created",
+  "assetType": "connectors.googleapis.com/EventSubscription",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/connections/erp-postgres/eventSubscriptions/order-created",
+    "eventTypeId": "order.created",
+    "destinations": {
+      "type": "ENDPOINT",
+      "serviceAccount": "connectors-runtime@demo-app-1.iam.gserviceaccount.com",
+      "endpoint": {
+        "endpointUri": "https://hooks.example.com/orders"
+      }
+    },
+    "status": {
+      "state": "ACTIVE"
+    },
+    "subscriber": "order-sync",
+    "createTime": "2025-09-01T08:00:00Z",
+    "updateTime": "2025-09-01T08:00:00Z"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "//logging.googleapis.com/projects/10000000005/locations/europe-west3/buckets/central/views/security",
+  "assetType": "logging.googleapis.com/LogView",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/buckets/central/views/security",
+    "description": "Audit logs for the security team",
+    "filter": "LOG_ID(\"cloudaudit.googleapis.com/activity\") OR LOG_ID(\"cloudaudit.googleapis.com/data_access\")",
+    "createTime": "2025-02-01T08:00:00Z",
+    "updateTime": "2025-02-01T08:00:00Z"
+  }
+}

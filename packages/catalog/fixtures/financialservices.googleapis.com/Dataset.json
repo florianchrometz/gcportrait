@@ -1,0 +1,26 @@
+{
+  "name": "//financialservices.googleapis.com/projects/demo-data-1/locations/europe-west1/instances/aml/datasets/q3",
+  "assetType": "financialservices.googleapis.com/Dataset",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "/projects/10000000003/locations/europe-west1/instances/aml/datasets/q3",
+    "createTime": "2026-07-01T08:00:00Z",
+    "updateTime": "2026-07-01T08:00:00Z",
+    "state": "ACTIVE",
+    "tableSpecs": {
+      "party": "bq://demo-data-1.aml_input.party",
+      "transaction": "bq://demo-data-1.aml_input.transaction",
+      "risk_case_event": "bq://demo-data-1.aml_input.risk_case_event"
+    },
+    "dateRange": {
+      "startTime": "2024-01-01T00:00:00Z",
+      "endTime": "2026-07-01T00:00:00Z"
+    },
+    "timeZone": {
+      "id": "Europe/Berlin"
+    }
+  }
+}

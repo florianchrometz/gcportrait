@@ -1,0 +1,472 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The details drawer: the second column of the diagram workspace (pages/DiagramPage.module.css), 360–420 px wide
+   (its inline width follows the resize handle). App chrome tokens only (skill gcp-diagram-style §9), so both
+   themes follow; controls are 32 px tall, copy buttons and jump links at least 24 px (WCAG 2.2 target size), and on
+   a phone or a tablet every one of them 44 px (the end of this sheet). */
+.drawer {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: var(--drawer-width);
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--color-outline);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+/* The hidden attribute must win over the grid display above. */
+.drawer[hidden] {
+  display: none;
+}
+
+/* The header and the details (DetailsDrawer.tsx): on a desktop no box of its own, the two rows of the drawer's grid;
+   narrower, the box that scrolls (the end of this sheet). */
+.content {
+  display: contents;
+}
+
+/* The resize handle: a strip on the left edge, a 2 px line in the primary colour while hovered or dragged. */
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: transparent;
+}
+
+.handle:hover::after,
+.handle:active::after {
+  background: var(--color-primary);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-4) var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-outline);
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.type {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+.title {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.product {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.status {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-3) var(--space-4) var(--space-6) var(--space-6);
+  overflow-y: auto;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: var(--font-size-control);
+}
+
+.facts dt {
+  color: var(--color-on-surface-variant);
+}
+
+.facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.nameRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.value {
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}
+
+.copy {
+  flex: none;
+  min-width: 24px;
+  height: 24px;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-footnote);
+  cursor: pointer;
+}
+
+.copy:hover {
+  background: var(--color-surface-container);
+}
+
+.values {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.values li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: 12px;
+  background: var(--color-surface-container);
+  font-size: var(--font-size-footnote);
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.badgeKey {
+  color: var(--color-on-surface-variant);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.count {
+  color: var(--color-on-surface-variant);
+  font-weight: var(--font-weight-regular);
+}
+
+.group {
+  display: grid;
+  gap: 2px;
+}
+
+.groupTitle {
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  font-weight: var(--font-weight-medium);
+}
+
+.relations {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relation {
+  min-height: 24px;
+  font-size: var(--font-size-control);
+  overflow-wrap: anywhere;
+}
+
+.arrow {
+  display: inline-block;
+  width: 1.4em;
+  color: var(--color-on-surface-variant);
+}
+
+/* A jump link: a button that reads as a link, at least 24 px tall. */
+.jump {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-size: inherit;
+  text-align: start;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--color-on-surface-variant);
+}
+
+/* A node's type after its jump link: quieter than the link. */
+.typeName {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.note {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.dangling {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.danglingEntry {
+  font-size: var(--font-size-control);
+  overflow-wrap: anywhere;
+}
+
+.kind {
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-outline);
+  border-radius: 4px;
+  font-size: var(--font-size-footnote);
+}
+
+.explanation {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.json {
+  margin: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface-container);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-footnote);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.json[hidden] {
+  display: none;
+}
+
+/* The "What changed" section: the node's own change, then the fields that differ, one per line. */
+.changeStatus {
+  font-size: var(--font-size-control);
+}
+
+.fieldChanges {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fieldChange {
+  font-size: var(--font-size-footnote);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Narrower than a desktop (ui/screen.ts) the drawer lies over the canvas, in the canvas's own cell of the workspace
+ * (DiagramPage.module.css), above the drawing and below the top bar's sheets. Its header and details scroll together
+ * in one box, so whatever the drawer's height nothing in it reaches past its edges (onto the timeline bar under the
+ * canvas); only the handle stands out over the edge. On a tablet: a panel along the right edge, at most half the
+ * canvas wide (the other half keeps the drawing and the disclosure bar), its handle a 44-pixel strip centred on that
+ * edge. Every target 44 px.
+ */
+@media (max-width: 79.99rem) {
+  .drawer {
+    z-index: 2;
+    grid-row: 1;
+    grid-column: 1;
+    grid-template-rows: minmax(0, 1fr);
+    justify-self: end;
+    max-width: 50%;
+    overflow: visible;
+  }
+
+  .content {
+    display: block;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .body {
+    overflow: visible;
+  }
+
+  .handle {
+    left: calc(var(--touch-target) / -2);
+    width: var(--touch-target);
+  }
+
+  .handle::after {
+    left: calc(50% - 1px);
+  }
+
+  .copy {
+    min-width: var(--touch-target);
+    height: var(--touch-target);
+  }
+
+  .jump {
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+  }
+
+  .relation {
+    min-height: var(--touch-target);
+  }
+}
+
+/*
+ * A phone: a sheet over the lower part of the canvas, its inline height (half the canvas or all of it) set by the
+ * handle along its top edge: a 44-pixel strip centred on the edge, with a grip drawn just inside the sheet, above the
+ * header. At full height the sheet stops where the strip still lies within the canvas, clear of the top bar.
+ */
+@media (max-width: 47.99rem) {
+  .drawer {
+    align-self: end;
+    justify-self: stretch;
+    width: auto;
+    max-width: none;
+    max-height: calc(100% - var(--touch-target) / 2);
+    border-top: 1px solid var(--color-outline);
+    border-left: 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  /* Dragged down far enough that letting go closes it (DetailsDrawer.tsx `data-dismissing`): the sheet fades. */
+  .drawer[data-dismissing] {
+    opacity: 0.6;
+  }
+
+  /* A control scrolled into view (by focus) stops just below the handle's inner half, which lies over the top of this
+     box: none lands under the handle. On a phone turned sideways the timeline bar keeps one line while the sheet is
+     open (pages/diagram/TimelineBar.module.css), so the canvas is tall enough for the half-height sheet to hold the
+     header's Close button whole, and every 44-pixel control below the handle. */
+  .content {
+    border-radius: inherit;
+    scroll-padding-top: calc(var(--touch-target) / 2);
+  }
+
+  .header {
+    padding: calc(var(--touch-target) / 2 + var(--space-1))
+      max(var(--space-4), env(safe-area-inset-right, 0px)) var(--space-2)
+      max(var(--space-4), env(safe-area-inset-left, 0px));
+  }
+
+  .body {
+    padding: var(--space-3) max(var(--space-4), env(safe-area-inset-right, 0px)) var(--space-6)
+      max(var(--space-4), env(safe-area-inset-left, 0px));
+  }
+
+  .sheetHandle {
+    top: calc(var(--touch-target) / -2);
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: var(--touch-target);
+    cursor: row-resize;
+  }
+
+  .sheetHandle::after,
+  .sheetHandle:hover::after,
+  .sheetHandle:active::after {
+    top: calc(50% + 6px);
+    bottom: auto;
+    left: calc(50% - 16px);
+    width: 32px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-on-surface-variant);
+  }
+}

@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Asset Inventory feeds: a feed
+# publishes asset changes to a Pub/Sub topic. Feeds live on projects (named with the project number), folders
+# and organisations.
+product: Cloud Asset Inventory
+service: cloudasset.googleapis.com
+icon: cloud_asset_inventory
+types:
+  cloudasset.googleapis.com/Feed:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.contentType | lower}}'
+    relations:
+      - { kind: triggers, to: $.data.feedOutputConfig.pubsubDestination.topic, normalize: pubsubUri }
+    notes: >-
+      assetTypes, assetNames and condition select what the feed watches (drawer facts); feeds have no Cloud
+      Console page.

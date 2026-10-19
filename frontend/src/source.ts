@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * The app's link to its own source (AGENTS.md, Product rules; frontend/AGENTS.md, The source link): where the
+ * source of the version in use is published, and under which licence, as the shell footer's "Source
+ * (Apache-2.0)" link on every route (shell/SourceLink.tsx). Its target is `sourceUrl` from GET /api/config (the
+ * backend's SOURCE_URL) in live mode, and the build-time VITE_SOURCE_URL in a demo build, where there is no
+ * backend; both fall back to DEFAULT_SOURCE_URL, so an unmodified copy links to the project's repository.
+ */
+
+/** The footer link's text, naming the licence. */
+export const SOURCE_LINK_TEXT = 'Source (Apache-2.0)';
+
+/**
+ * The project's repository: the same default as SOURCE_URL in backend/src/config.ts. A fork changes both, and the
+ * tests that pin them (docs/contributing.md, Releases).
+ */
+export const DEFAULT_SOURCE_URL = 'https://github.com/florianchrometz/gcportrait';
+
+/** Whether a value can be the link's target: an absolute http(s) URL (never `javascript:` or the like). */
+export function isSourceUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'https:' || url.protocol === 'http:') && url.hostname !== '';
+  } catch {
+    return false;
+  }
+}
+
+/** The build-time source URL (VITE_SOURCE_URL), or the default when it is unset, blank or not an http(s) URL. */
+export function readSourceUrl(value: string | undefined): string {
+  const trimmed = value?.trim();
+  return isSourceUrl(trimmed) ? trimmed : DEFAULT_SOURCE_URL;
+}

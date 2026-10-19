@@ -1,0 +1,30 @@
+[
+  {
+    "name": "//cloudbuild.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/ghe-shop/repositories/storefront",
+    "assetType": "cloudbuild.googleapis.com/Repository",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/ghe-shop/repositories/storefront",
+      "remoteUri": "https://github.example.com/shop/storefront.git",
+      "createTime": "2024-05-06T09:10:00Z",
+      "webhookId": "1042"
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/ghe-shop/repositories/inventory",
+    "assetType": "cloudbuild.googleapis.com/Repository",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/ghe-shop/repositories/inventory",
+      "remoteUri": "https://github.example.com/shop/inventory.git",
+      "createTime": "2025-04-02T07:20:00Z",
+      "webhookId": "1187"
+    }
+  }
+]

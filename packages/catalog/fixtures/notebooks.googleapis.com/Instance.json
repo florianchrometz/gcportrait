@@ -1,0 +1,62 @@
+{
+  "name": "//notebooks.googleapis.com/projects/demo-data-1/locations/europe-west3-a/instances/analyst-nb",
+  "assetType": "notebooks.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3-a/instances/analyst-nb",
+    "id": "b0000000-0000-4000-8000-000000000001",
+    "proxyUri": "5f2c0e1a7b9d4c3e-dot-europe-west3.notebooks.googleusercontent.com",
+    "creator": "analyst@example.com",
+    "instanceOwners": ["analyst@example.com"],
+    "state": "ACTIVE",
+    "healthState": "HEALTHY",
+    "gceSetup": {
+      "machineType": "e2-standard-4",
+      "networkInterfaces": [
+        {
+          "network": "projects/demo-net-1/global/networks/core",
+          "subnet": "projects/demo-net-1/regions/europe-west3/subnetworks/app",
+          "nicType": "GVNIC",
+          "accessConfigs": [
+            {
+              "externalIp": "203.0.113.71"
+            }
+          ]
+        }
+      ],
+      "serviceAccounts": [
+        {
+          "email": "notebooks@demo-data-1.iam.gserviceaccount.com",
+          "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        }
+      ],
+      "bootDisk": {
+        "diskSizeGb": "150",
+        "diskType": "PD_BALANCED",
+        "diskEncryption": "CMEK",
+        "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute"
+      },
+      "dataDisks": [
+        {
+          "diskSizeGb": "100",
+          "diskType": "PD_BALANCED",
+          "diskEncryption": "CMEK",
+          "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/compute"
+        }
+      ],
+      "containerImage": {
+        "repository": "europe-west3-docker.pkg.dev/demo-data-1/notebooks/analyst-image",
+        "tag": "latest"
+      },
+      "disablePublicIp": false
+    },
+    "labels": {
+      "team": "analytics"
+    },
+    "createTime": "2026-06-01T08:00:00Z",
+    "updateTime": "2026-09-30T08:00:00Z"
+  }
+}

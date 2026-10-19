@@ -1,0 +1,16 @@
+{
+  "name": "//logging.googleapis.com/organizations/30000000001/settings",
+  "assetType": "logging.googleapis.com/Settings",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/settings",
+    "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/logs",
+    "kmsServiceAccountId": "service-org-30000000001@gcp-sa-logging.iam.gserviceaccount.com",
+    "storageLocation": "europe-west3",
+    "disableDefaultSink": false,
+    "loggingServiceAccountId": "service-org-30000000001@gcp-sa-logging.iam.gserviceaccount.com"
+  }
+}

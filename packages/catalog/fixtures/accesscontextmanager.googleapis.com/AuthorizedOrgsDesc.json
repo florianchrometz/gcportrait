@@ -1,0 +1,13 @@
+{
+  "name": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001/authorizedOrgsDescs/partner_devices",
+  "assetType": "accesscontextmanager.googleapis.com/AuthorizedOrgsDesc",
+  "parent": "//accesscontextmanager.googleapis.com/accessPolicies/40000000001",
+  "ancestors": ["organizations/30000000001"],
+  "updateTime": "2026-06-30T09:00:00Z",
+  "data": {
+    "name": "accessPolicies/40000000001/authorizedOrgsDescs/partner_devices",
+    "authorizationType": "AUTHORIZATION_TYPE_TRUST",
+    "assetType": "ASSET_TYPE_DEVICE",
+    "authorizationDirection": "AUTHORIZATION_DIRECTION_TO"
+  }
+}

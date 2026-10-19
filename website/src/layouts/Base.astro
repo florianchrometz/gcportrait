@@ -1,0 +1,153 @@
+---
+/**
+ * The page frame: the head with every page's search and link-preview metadata (src/lib/seo.ts), the skip link,
+ * the header, the page, and the footer with the footer notice. Fonts are self-hosted (Roboto from
+ * @fontsource, Latin subset only), the three faces most text is set in preloaded (no layout shift when they arrive);
+ * nothing is loaded from another host and the site makes no cross-host requests.
+ *
+ * The header stays at the top while the page scrolls (src/components/Header.astro). The script below keeps its height
+ * in `--header-block` on the root element (global.css has an estimate per width until then), and the root's
+ * `scroll-padding-top` follows it, so an anchor jump, the skip link or a focused element never lands under the header.
+ *
+ * Disclosures: on a phone the header's menu and the docs pages' menu and contents fold away behind a button marked
+ * `data-disclosure` (aria-expanded, aria-controls naming the panel that follows it). The script below only flips
+ * aria-expanded (and Escape closes); each component's CSS shows the panel when it is expanded. Without JavaScript
+ * the noscript style shows every panel and hides the buttons, so nothing is out of reach, and hides what only works
+ * with the fillable commands' script (`data-var-js`: the code blocks' Copy bars and hint, the Variables panel's inputs;
+ * and the fields' edit mark, as nothing is editable without it).
+ */
+import '@fontsource/roboto/latin-400.css';
+import '@fontsource/roboto/latin-500.css';
+import '@fontsource/roboto/latin-700.css';
+import '@fontsource/roboto-mono/latin-400.css';
+import robotoRegular from '@fontsource/roboto/files/roboto-latin-400-normal.woff2?url';
+import robotoMedium from '@fontsource/roboto/files/roboto-latin-500-normal.woff2?url';
+import robotoMono from '@fontsource/roboto-mono/files/roboto-mono-latin-400-normal.woff2?url';
+import '../styles/global.css';
+
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { canonicalUrl, fullTitle, jsonLdText, websiteLd, type PageMeta } from '../lib/seo.js';
+
+interface Props {
+  meta: PageMeta;
+}
+const { meta } = Astro.props;
+const title = fullTitle(meta);
+const canonical = canonicalUrl(meta.path);
+const jsonLd = [websiteLd(), ...(meta.jsonLd ?? [])];
+const image = meta.socialImage;
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={meta.description} />
+    {meta.noindex === true ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f1f1f" media="(prefers-color-scheme: dark)" />
+    {
+      /* The faces the first screen sets, fetched with the page, so text is not set again once they arrive. */
+      [robotoRegular, robotoMedium, robotoMono].map((font) => (
+        <link rel="preload" href={font} as="font" type="font/woff2" crossorigin />
+      ))
+    }
+    <noscript>
+      <style is:inline>
+        [data-disclosure] {
+          display: none !important;
+        }
+        [data-disclosure] + * {
+          display: block !important;
+        }
+        [data-var-js] {
+          display: none !important;
+        }
+        .var::after {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+
+    <meta property="og:type" content={meta.type ?? 'website'} />
+    <meta property="og:site_name" content="gcportrait" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={meta.description} />
+    {meta.noindex !== true && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content="en_GB" />
+    {
+      image !== undefined && (
+        <>
+          <meta property="og:image" content={image.url} />
+          <meta property="og:image:type" content="image/jpeg" />
+          <meta property="og:image:width" content={String(image.width)} />
+          <meta property="og:image:height" content={String(image.height)} />
+          <meta property="og:image:alt" content={image.alt} />
+        </>
+      )
+    }
+    <meta name="twitter:card" content={image === undefined ? 'summary' : 'summary_large_image'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={meta.description} />
+    {
+      image !== undefined && (
+        <>
+          <meta name="twitter:image" content={image.url} />
+          <meta name="twitter:image:alt" content={image.alt} />
+        </>
+      )
+    }
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={jsonLdText(data)} />)}
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <Header path={meta.path} />
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>
+
+<script>
+  // The sticky header's height, for the root's scroll-padding-top (global.css).
+  const header = document.querySelector<HTMLElement>('.site-header');
+  if (header !== null && 'ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty(
+        '--header-block',
+        `${String(Math.ceil(header.getBoundingClientRect().height))}px`,
+      );
+    }).observe(header);
+  }
+
+  for (const toggle of document.querySelectorAll<HTMLButtonElement>('[data-disclosure]')) {
+    const panel = document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+    if (panel === null) continue;
+    const expanded = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
+    toggle.addEventListener('click', () => {
+      toggle.setAttribute('aria-expanded', String(!expanded()));
+    });
+    // Escape closes an open panel (where the button is shown, so the panel can fold) and returns to its button.
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || !expanded() || toggle.offsetParent === null) return;
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.focus();
+    };
+    toggle.addEventListener('keydown', onKeyDown);
+    panel.addEventListener('keydown', onKeyDown);
+  }
+</script>

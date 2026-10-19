@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kubernetes admission webhooks of GKE clusters with the asset inventory feature on: cluster-scoped
+# configuration installed by add-ons and policy agents, so hidden by default; they nest in their cluster by
+# name path.
+product: Google Kubernetes Engine
+service: admissionregistration.k8s.io
+icon: google_kubernetes_engine
+types:
+  admissionregistration.k8s.io/MutatingWebhookConfiguration:
+    role: hidden
+    label: '{{data.metadata.name}}'
+
+  admissionregistration.k8s.io/ValidatingWebhookConfiguration:
+    role: hidden
+    label: '{{data.metadata.name}}'

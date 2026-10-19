@@ -1,0 +1,116 @@
+[
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-app-1/locations/europe-west3/backupPlanAssociations/bpa-web-7k2p",
+    "assetType": "backupdr.googleapis.com/BackupPlanAssociation",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/backupPlanAssociations/bpa-web-7k2p",
+      "resourceType": "compute.googleapis.com/Instance",
+      "resource": "projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p",
+      "backupPlan": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-06-01T08:00:00Z",
+      "state": "ACTIVE",
+      "rulesConfigInfo": [
+        {
+          "ruleId": "daily",
+          "lastBackupState": "SUCCEEDED"
+        }
+      ],
+      "dataSource": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-web-7k2p",
+      "backupPlanRevisionId": "v2",
+      "backupPlanRevisionName": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm/revisions/v2"
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-data-1/locations/europe-west3/backupPlanAssociations/bpa-orders-db",
+    "assetType": "backupdr.googleapis.com/BackupPlanAssociation",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/backupPlanAssociations/bpa-orders-db",
+      "resourceType": "sqladmin.googleapis.com/Instance",
+      "resource": "//sqladmin.googleapis.com/projects/demo-data-1/instances/orders-db",
+      "backupPlan": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-06-01T08:00:00Z",
+      "state": "ACTIVE",
+      "rulesConfigInfo": [
+        {
+          "ruleId": "daily",
+          "lastBackupState": "SUCCEEDED"
+        }
+      ],
+      "dataSource": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-orders-db",
+      "backupPlanRevisionId": "v2",
+      "backupPlanRevisionName": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql/revisions/v2"
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-data-1/locations/europe-west3/backupPlanAssociations/bpa-orders-alloydb",
+    "assetType": "backupdr.googleapis.com/BackupPlanAssociation",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/backupPlanAssociations/bpa-orders-alloydb",
+      "resourceType": "alloydb.googleapis.com/Cluster",
+      "resource": "projects/demo-data-1/locations/europe-west3/clusters/orders",
+      "backupPlan": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-06-01T08:00:00Z",
+      "state": "ACTIVE",
+      "rulesConfigInfo": [
+        {
+          "ruleId": "daily",
+          "lastBackupState": "SUCCEEDED"
+        }
+      ],
+      "dataSource": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-orders-alloydb",
+      "backupPlanRevisionId": "v2",
+      "backupPlanRevisionName": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-sql/revisions/v2"
+    }
+  },
+  {
+    "name": "//backupdr.googleapis.com/projects/demo-app-1/locations/europe-west3/backupPlanAssociations/bpa-media",
+    "assetType": "backupdr.googleapis.com/BackupPlanAssociation",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/backupPlanAssociations/bpa-media",
+      "resourceType": "file.googleapis.com/Instance",
+      "resource": "projects/demo-app-1/locations/europe-west3/instances/media",
+      "backupPlan": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm",
+      "createTime": "2025-03-02T08:00:00Z",
+      "updateTime": "2026-06-01T08:00:00Z",
+      "state": "ACTIVE",
+      "rulesConfigInfo": [
+        {
+          "ruleId": "daily",
+          "lastBackupState": "SUCCEEDED"
+        }
+      ],
+      "dataSource": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-media",
+      "backupPlanRevisionId": "v2",
+      "backupPlanRevisionName": "projects/demo-ops-1/locations/europe-west3/backupPlans/daily-vm/revisions/v2"
+    }
+  }
+]

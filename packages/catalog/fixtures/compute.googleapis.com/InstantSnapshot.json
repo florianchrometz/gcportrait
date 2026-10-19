@@ -1,0 +1,26 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instantSnapshots/orders-data-isnap-1",
+  "assetType": "compute.googleapis.com/InstantSnapshot",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#instantSnapshot",
+    "id": "7600000000000000001",
+    "name": "orders-data-isnap-1",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instantSnapshots/orders-data-isnap-1",
+    "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+    "status": "READY",
+    "diskSizeGb": "500",
+    "sourceDisk": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/disks/orders-data",
+    "sourceDiskId": "7200000000000000002",
+    "architecture": "X86_64",
+    "creationTimestamp": "2026-10-02T06:00:00.000-07:00"
+  }
+}

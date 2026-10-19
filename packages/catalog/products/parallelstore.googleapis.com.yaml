@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Parallelstore: DAOS-based parallel file systems on a consumer VPC network (private services access).
+# Cloud Asset Inventory names them by project id
+# (`//parallelstore.googleapis.com/projects/<id>/locations/<zone>/instances/<i>`).
+product: Parallelstore
+service: parallelstore.googleapis.com
+icon: parallelstore
+types:
+  parallelstore.googleapis.com/Instance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.capacityGib}} GiB · {{data.deploymentType | lower}}'
+    console: 'https://console.cloud.google.com/parallelstore?project={{projectId}}'
+    ips:
+      - '$.data.accessPoints[*]'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+    notes: >-
+      network is the consumer VPC network (projects/<id>/global/networks/<name>); accessPoints are the IPv4
+      addresses clients mount. reservedIpRange and effectiveReservedIpRange name the allocated private services
+      access range (an id, not an address) and are not read. The console link opens the product page
+      (no per-instance URL is known).

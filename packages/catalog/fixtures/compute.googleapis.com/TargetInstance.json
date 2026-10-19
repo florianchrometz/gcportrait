@@ -1,0 +1,26 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/targetInstances/bastion-ti",
+  "assetType": "compute.googleapis.com/TargetInstance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#targetInstance",
+    "id": "7300000000000000011",
+    "creationTimestamp": "2026-03-02T09:15:00.000-08:00",
+    "name": "bastion-ti",
+    "description": "Protocol forwarding to the bastion VM",
+    "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+    "natPolicy": "NO_NAT",
+    "instance": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instances/bastion-1",
+    "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+    "securityPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/securityPolicies/nlb-ddos",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/targetInstances/bastion-ti"
+  }
+}

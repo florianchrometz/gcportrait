@@ -1,0 +1,24 @@
+{
+  "name": "//parametermanager.googleapis.com/projects/demo-app-1/locations/europe-west3/parameters/checkout-config",
+  "assetType": "parametermanager.googleapis.com/Parameter",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-09-10T10:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/parameters/checkout-config",
+    "createTime": "2026-04-01T10:00:00Z",
+    "updateTime": "2026-09-10T10:00:00Z",
+    "labels": { "app": "checkout" },
+    "format": "YAML",
+    "policyMember": {
+      "iamPolicyUidPrincipal": "principal://parametermanager.googleapis.com/projects/10000000002/uid/locations/europe-west3/parameters/5d2c9a1b-7e3f-4b60-9a8d-1c2b3a4d5e6f"
+    },
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/params"
+  }
+}

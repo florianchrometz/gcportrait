@@ -1,0 +1,103 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Logging: log sinks route log
+# entries to their destination (a bucket, a BigQuery dataset, a Pub/Sub topic, a log bucket or another
+# project), log buckets hold their views and linked BigQuery datasets. Cloud Asset Inventory names these
+# assets with the project number (//logging.googleapis.com/projects/<number>/sinks/<sink>); sinks, log
+# buckets, views, links, settings and queries also exist on organisations, folders and billing accounts, where
+# they nest in that organisation or folder by their parent. Every project carries the _Required and _Default
+# sinks and log buckets, which start hidden.
+product: Cloud Logging
+service: logging.googleapis.com
+icon: cloud_logging
+types:
+  logging.googleapis.com/LogSink:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.filter | short(48)}}'
+    console: 'https://console.cloud.google.com/logs/router?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.destination, normalize: logSinkDestination }
+      - { kind: runsAs, to: $.data.writerIdentity, normalize: serviceAccountEmail }
+    hiddenWhen: "$.data.name in ['_Required', '_Default'] || $.data.disabled == true"
+    notes: >-
+      data.name is the sink id only; the full path is data.resourceName. destination is
+      storage.googleapis.com/<bucket>, bigquery.googleapis.com/projects/<p>/datasets/<d>,
+      pubsub.googleapis.com/projects/<p>/topics/<t>, logging.googleapis.com/projects/<p> (another project's
+      log router) or logging.googleapis.com/projects/<p>/locations/<l>/buckets/<b>. A log bucket destination
+      written with the project id stays dangling, because Cloud Asset Inventory names log buckets with the
+      project number. writerIdentity is a Google-managed logging service agent unless the sink was created
+      with a custom writer identity (a user-managed service account), which is the case the runsAs edge
+      resolves. The _Required and _Default sinks every project, folder and organisation has, and disabled
+      sinks, start hidden; includeChildren (organisation and folder sinks) is a badge for the drawer.
+
+  logging.googleapis.com/LogBucket:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.retentionDays | plural(day)}} · {{location}}'
+    console: 'https://console.cloud.google.com/logs/storage?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.cmekSettings.kmsKeyName, normalize: kmsKey }
+    contains:
+      - byParent: logging.googleapis.com/LogView
+      - byParent: logging.googleapis.com/Link
+    hiddenWhen: >-
+      $.data.name endsWith '/buckets/_Required' || $.data.name endsWith '/buckets/_Default' ||
+      $.data.lifecycleState == 'DELETE_REQUESTED'
+    notes: >-
+      A container for its views and links (they nest by name). cmekSettings.kmsKeyName is the bucket's
+      customer-managed key; cmekSettings.kmsKeyVersionName and serviceAccountId are output only. locked and
+      analyticsEnabled are badges. The _Required and _Default buckets every project has start hidden, so a
+      sink that routes into another project's _Default bucket points at a hidden node (shown in the drawer).
+
+  logging.googleapis.com/LogView:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.filter | short(48)}}'
+    notes: Every _Default bucket has the _AllLogs and _Default views; views nest in their bucket by name.
+
+  logging.googleapis.com/Link:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'linked dataset · {{location}}'
+    console: 'https://console.cloud.google.com/logs/storage?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.bigqueryDataset.datasetId, normalize: bigqueryUri }
+    notes: >-
+      A link exposes the bucket to BigQuery: bigqueryDataset.datasetId is the full path of the linked dataset
+      (bigquery.googleapis.com/projects/<p>/datasets/<link id>), created in the bucket's project.
+
+  logging.googleapis.com/LogMetric:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.filter | short(48)}}'
+    console: 'https://console.cloud.google.com/logs/metrics?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.bucketName, normalize: name }
+    hiddenWhen: '$.data.disabled == true'
+    notes: >-
+      The seed calls log-based metrics leaves; bucket-scoped metrics (bucketName, a log bucket in the same
+      project) read their log bucket, hence core. data.name is the metric id ("error_count",
+      "nginx/requests"); bucketName is written with the project id in the API's examples, while Cloud Asset
+      Inventory names log buckets with the project number, so the edge resolves only when both agree. Alert
+      policies refer to log-based metrics inside their condition filters only (no relation).
+
+  logging.googleapis.com/Settings:
+    role: hidden
+    label: 'Logging settings'
+    subtitle: '{{data.storageLocation}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      A settings singleton per organisation, folder, project or billing account: the default storage location
+      and customer-managed key for the _Default and _Required buckets of new projects.
+
+  logging.googleapis.com/SavedQuery:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.visibility | lower}}'
+
+  logging.googleapis.com/RecentQuery:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.lastRunTime}}'

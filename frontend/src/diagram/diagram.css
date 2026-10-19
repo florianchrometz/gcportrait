@@ -1,0 +1,181 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/*
+ * The interactive canvas's states (skill gcp-diagram-style §5, §6). The drawing writes every colour
+ * as an SVG presentation attribute for the current theme; these rules override them for the states the
+ * highlight painter toggles by class, with the --dg-* custom properties of theme/tokens.css, so they follow
+ * <html data-theme> at once. Global, every class prefixed dg-: the classes are part of the SVG markup that the
+ * snapshot baselines and exports carry.
+ */
+
+.dg-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--dg-canvas);
+  cursor: grab;
+  /* Fingers pan, pinch and tap the drawing (touch.ts): the browser's own gestures stay off it, and only off it, so
+     the page around it pinch-zooms as the browser does. A tap flashes no highlight over the canvas. */
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-canvas:active {
+  cursor: grabbing;
+}
+
+/* Lines, overlays, rings and the timeline's outlines and dots never take the pointer: hover goes to the node or
+   zone underneath. */
+.dg-edges,
+.dg-edges-top,
+.dg-overlays,
+.dg-marks,
+.dg-diff {
+  pointer-events: none;
+}
+
+/* A timeline ghost is no node: resting on it shows its tooltip, a click on it is a click on the canvas. */
+.dg-ghost {
+  cursor: default;
+}
+
+/* Except a secures overlay's own dashes: resting on them shows the policy it stands for (its <title>). */
+.dg-overlay-line {
+  pointer-events: stroke;
+}
+
+/*
+ * The selected node's "Open in Cloud Console ↗" action: a link, opened only when activated, in the node's
+ * top-right corner. Icon-only at rest; on hover, keyboard focus and a finger's long press (`is-held`) the
+ * labelled pill replaces it where the painter found it fits inside the node (data-expand). Keyboard focus fills
+ * the pill in the focus colour (its own indicator, so the browser's outline around the link's box is not needed),
+ * on a 2 px canvas-coloured rim: on a selected open project in the light theme the focus colour (#185ABC) reaches
+ * 3.78 : 1 on the tint and 6.51 on the rim (the chrome's primary reaches only 2.62 on the tint).
+ */
+.dg-console-action {
+  cursor: pointer;
+  outline: none;
+}
+
+/* At most the card's 1.5 px border, so even the outline stays within the card's painted edge. */
+.dg-console-action:hover .dg-console-pill {
+  stroke-width: 1.5px;
+}
+
+.dg-console-action[data-expand='true']:is(:hover, :focus-visible, .is-held) .dg-console-full {
+  display: inline;
+}
+
+.dg-console-action[data-expand='true']:is(:hover, :focus-visible, .is-held) .dg-console-compact {
+  display: none;
+}
+
+.dg-console-action:focus-visible .dg-console-pill {
+  fill: var(--dg-focus);
+  stroke: var(--dg-canvas);
+  stroke-width: 2px;
+}
+
+.dg-console-action:focus-visible .dg-console-text {
+  fill: var(--dg-canvas);
+}
+
+.dg-console-action:focus-visible .dg-console-glyph {
+  stroke: var(--dg-canvas);
+}
+
+.dg-node {
+  cursor: pointer;
+}
+
+/* The drawing's own focus ring (.dg-focus-ring, positioned by the painter) replaces the browser outline. */
+.dg-node:focus {
+  outline: none;
+}
+
+/*
+ * The selection trace (skill §6; hover previews it): the path to the root in accent.path, 3 px, drawn by the
+ * path rings the painter places on each border, on their path-casing band (theme/tokens.ts). The path's nodes
+ * carry .is-path, the nodes the trace reaches .is-reached (their reach rings are one path in .dg-marks).
+ */
+.dg-path-ring .dg-path-casing {
+  stroke: var(--dg-path-casing);
+}
+
+.dg-path-ring .dg-path-line {
+  stroke: var(--dg-accent-path);
+}
+
+/*
+ * Traced lines (in dim mode, the focused set) are drawn again on top in accent.select, 3 px, over a canvas
+ * casing, their heads in the same colour; the painter makes them from the hidden per-kind prototypes while they are
+ * traced and marks them `is-focus`.
+ */
+.dg-edge-top {
+  display: none;
+}
+
+.dg-edge-top.is-focus {
+  display: inline;
+}
+
+.dg-edge-top .dg-casing {
+  stroke: var(--dg-canvas);
+}
+
+.dg-edge-top .dg-edge {
+  stroke: var(--dg-accent-select);
+}
+
+/*
+ * Selection (accent.select, 3 px), the nodes the trace reaches (accent.select, 1.5 px) and keyboard focus
+ * (primary, 2 px), each with a canvas-coloured gap.
+ */
+.dg-marks .dg-ring-gap {
+  stroke: var(--dg-canvas);
+}
+
+.dg-select-ring .dg-ring,
+.dg-reach-rings .dg-ring {
+  stroke: var(--dg-accent-select);
+}
+
+.dg-focus-ring .dg-ring {
+  stroke: var(--dg-focus);
+}
+
+/* The two-step pulse of a new selection: two dips in one second. */
+@keyframes dg-pulse {
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0.3;
+  }
+}
+
+.dg-select-ring.is-pulsing {
+  animation: dg-pulse 1s ease-in-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-select-ring.is-pulsing {
+    animation: none;
+  }
+}
+
+/* Level of detail (lod.ts): subtitles below 0.55, labels below 0.35, 2 px strokes thin to 1.5 px past 2×. */
+.dg-lod-nosub .dg-sub,
+.dg-lod-nolabel .dg-label,
+.dg-lod-nolabel .dg-sub {
+  display: none;
+}
+
+.dg-lod-thin .dg-w2 {
+  stroke-width: 1.5px;
+}

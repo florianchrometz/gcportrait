@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cluster Director: managed Slurm clusters for AI and HPC. The cluster's resources are objects keyed by
+# a user-chosen id (`networkResources`, `storageResources`, `computeResources`), so every path steps through
+# them with `.*`; the references read are the output-only `network`, `filestore`, `lustre` and `bucket`
+# references, which the service fills in for new and imported resources alike.
+product: Cluster Director
+service: hypercomputecluster.googleapis.com
+icon: cluster_director
+types:
+  hypercomputecluster.googleapis.com/Cluster:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'Slurm cluster · {{location}}'
+    console: 'https://console.cloud.google.com/cluster-director?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: '$.data.networkResources.*.network.subnetwork', normalize: computeRelative }
+      - {
+          kind: attaches,
+          to: '$.data.networkResources.*.network.network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - {
+          kind: uses,
+          to: '$.data.computeResources.*.config.newReservedInstances.reservation',
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: '$.data.storageResources.*.filestore.filestore',
+          normalize: name,
+          service: file.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.storageResources.*.lustre.lustre',
+          normalize: name,
+          service: lustre.googleapis.com,
+        }
+      - { kind: uses, to: '$.data.storageResources.*.bucket.bucket', normalize: gcsUri }
+      - {
+          kind: uses,
+          to: '$.data.orchestrator.slurm.loginNodes.instances[*].instance',
+          normalize: computeRelative,
+        }
+    notes: >-
+      The login-node VMs (`orchestrator.slurm.loginNodes.instances`) are Compute Engine instances the
+      cluster created; they are drawn as used by the cluster because a container rule cannot name children
+      of another service by relative name. Compute node sets are created on demand and have no list here.

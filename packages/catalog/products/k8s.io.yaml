@@ -1,0 +1,177 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kubernetes core objects of GKE clusters with the asset inventory feature on. Their names continue the
+# cluster's name (…/clusters/C/k8s/namespaces/N/…), which is what nests them: namespaced objects in their
+# namespace, cluster-scoped ones (nodes, persistent volumes) in the cluster. The namespace container comes
+# from the catalog seed.
+#
+# Kubernetes objects refer to each other mostly by bare name inside the namespace (a pod's spec.nodeName, a
+# claim's volumeName) or by { kind, name, namespace } without an apiVersion (a volume's claimRef). The
+# k8sRef normaliser reads both; ownerReferences (k8sOwner), Compute volume handles and workload-identity
+# annotations become edges too. A service's selector is a label query, not a reference.
+product: Google Kubernetes Engine
+service: k8s.io
+icon: google_kubernetes_engine
+types:
+  k8s.io/Namespace:
+    role: container
+    label: '{{data.metadata.name}}'
+    subtitle: 'namespace · {{data.status.phase | lower}}'
+    console: 'https://console.cloud.google.com/kubernetes/namespace/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.name}}/details?project={{projectId}}'
+    hiddenWhen: "$.data.metadata.name in ['kube-system', 'kube-public', 'kube-node-lease'] || $.data.metadata.name startsWith 'gke-' || $.data.metadata.name startsWith 'gmp-'"
+    contains:
+      - byParent: k8s.io/Pod
+      - byParent: k8s.io/Service
+      - byParent: k8s.io/Endpoints
+      - byParent: k8s.io/PersistentVolumeClaim
+      - byParent: k8s.io/PodTemplate
+      - byParent: k8s.io/ReplicationController
+      - byParent: k8s.io/ResourceQuota
+      - byParent: k8s.io/Secret
+      - byParent: k8s.io/ServiceAccount
+      - byParent: apps.k8s.io/Deployment
+      - byParent: apps.k8s.io/StatefulSet
+      - byParent: apps.k8s.io/DaemonSet
+      - byParent: apps.k8s.io/ReplicaSet
+      - byParent: batch.k8s.io/Job
+      - byParent: batch.k8s.io/CronJob
+      - byParent: networking.k8s.io/Ingress
+      - byParent: networking.k8s.io/NetworkPolicy
+      - byParent: extensions.k8s.io/Ingress
+      - byParent: extensions.k8s.io/DaemonSet
+      - byParent: gateway.networking.k8s.io/Gateway
+      - byParent: gateway.networking.k8s.io/HTTPRoute
+      - byParent: gateway.networking.k8s.io/ReferenceGrant
+      - byParent: autoscaling.k8s.io/HorizontalPodAutoscaler
+      - byParent: policy.k8s.io/PodDisruptionBudget
+      - byParent: rbac.authorization.k8s.io/Role
+      - byParent: rbac.authorization.k8s.io/RoleBinding
+    notes: System namespaces (kube-*, gke-*, gmp-*) start hidden.
+
+  k8s.io/Node:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.podCIDR}} · {{data.status.nodeInfo.kubeletVersion}}'
+    console: 'https://console.cloud.google.com/kubernetes/node/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.name}}/summary?project={{projectId}}'
+    ips:
+      - "$.data.status.addresses[?(@.type in ['InternalIP', 'ExternalIP'])].address"
+      - $.data.spec.podCIDR
+    notes: >-
+      Nests in its cluster by name; its pods use it (k8sRef), so it is core. spec.providerID
+      (gce://<project>/<zone>/<instance>) names the VM behind the node, but no normaliser reads that form
+      yet, so the node → instance edge of the seed is not drawn.
+
+  k8s.io/Pod:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.status.podIP}} · {{data.status.phase | lower}}'
+    console: 'https://console.cloud.google.com/kubernetes/pod/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/details?project={{projectId}}'
+    ips:
+      - $.data.status.podIP
+      - '$.data.status.podIPs[*].ip'
+    relations:
+      - { kind: memberOf, to: '$.data.metadata.ownerReferences[*]', normalize: k8sOwner }
+      - { kind: uses, to: $.data.spec.nodeName, normalize: k8sRef, k8sKind: Node }
+    hiddenWhen: "$.data.status.phase in ['Succeeded', 'Failed']"
+    notes: >-
+      Pods belong to their controller (replica set, daemon set, stateful set, job) through ownerReferences.
+      Finished pods (Succeeded, Failed: completed jobs, evicted pods) start hidden. spec.nodeName is the node's
+      bare name, read with k8sRef: the pod uses its node. spec.serviceAccountName names a Kubernetes
+      service account the same way; it is not drawn, because runsAs edges belong to the identity lens, which
+      lists no pods.
+      Container images are drawn from the owning workload, not from every pod.
+
+  k8s.io/Service:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.type}} · {{data.spec.clusterIP}}'
+    console: 'https://console.cloud.google.com/kubernetes/service/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/overview?project={{projectId}}'
+    ips:
+      - $.data.spec.clusterIP
+      - '$.data.spec.clusterIPs[*]'
+      - '$.data.status.loadBalancer.ingress[*].ip'
+    domains:
+      - $.data.spec.externalName
+    notes: >-
+      A service selects its pods by label (spec.selector) and its load balancer is named by GKE, not
+      referenced; neither is a resource name, so the service has no edges of its own. Ingresses and HTTP
+      routes route to it (k8sRef), so it is core. Its load-balancer address
+      (status.loadBalancer.ingress) is indexed, which lets search find it next to the forwarding rule with
+      the same address. ExternalName services index their external host.
+
+  k8s.io/Endpoints:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    notes: >-
+      One per service with the addresses of its ready pods; high churn and redundant with the pods, so it
+      starts hidden. targetRef entries carry no apiVersion, so k8sOwner cannot resolve them.
+
+  k8s.io/PersistentVolume:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.capacity.storage}} · {{data.spec.storageClassName}}'
+    console: 'https://console.cloud.google.com/kubernetes/persistentvolume/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.name}}/details?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.spec.csi.volumeHandle, normalize: computeRelative }
+      - {
+          kind: uses,
+          to: $.data.spec.claimRef,
+          normalize: k8sRef,
+          k8sKind: PersistentVolumeClaim,
+          reverse: true,
+        }
+    notes: >-
+      Cluster-scoped: nests in its cluster by name. The Compute Engine persistent disk CSI driver
+      (pd.csi.storage.gke.io) writes the disk as projects/<p>/zones/<z>/disks/<d> (regions/<r> for regional
+      disks) into spec.csi.volumeHandle; other drivers' handles are not resource names and yield nothing.
+      spec.claimRef ({ kind, namespace, name }) names the bound claim; read with k8sRef as a reverse rule, it
+      draws the same claim → volume edge as the claim's volumeName, and the two merge.
+
+  k8s.io/PersistentVolumeClaim:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.resources.requests.storage}} · {{data.spec.storageClassName}}'
+    console: 'https://console.cloud.google.com/kubernetes/persistentvolumeclaim/{{location}}/{{name | parentSegment(clusters)}}/{{data.metadata.namespace}}/{{data.metadata.name}}/details?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.spec.volumeName, normalize: k8sRef, k8sKind: PersistentVolume }
+    notes: >-
+      spec.volumeName names the bound persistent volume by bare name (cluster-scoped), read with k8sRef: the
+      claim uses the volume. An unbound claim has no volumeName.
+
+  k8s.io/PodTemplate:
+    role: hidden
+    label: '{{data.metadata.name}}'
+
+  k8s.io/ReplicationController:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.spec.template.spec.containers[0].image | lastSegment | short(32)}} · {{data.spec.replicas | plural(replica)}}'
+    relations:
+      - { kind: uses, to: '$.data.spec.template.spec.containers[*].image', normalize: artifactImage }
+    notes: The legacy predecessor of the replica set; pods point at it through their ownerReferences.
+
+  k8s.io/ResourceQuota:
+    role: hidden
+    label: '{{data.metadata.name}}'
+
+  k8s.io/Secret:
+    role: hidden
+    label: '{{data.metadata.name}}'
+    subtitle: '{{data.type}}'
+    notes: Only metadata matters here; secret payloads are never read or shown.
+
+  k8s.io/ServiceAccount:
+    role: core
+    label: '{{data.metadata.name}}'
+    subtitle: 'Kubernetes service account · {{data.metadata.namespace}}'
+    relations:
+      - {
+          kind: runsAs,
+          to: "$.data.metadata.annotations['iam.gke.io/gcp-service-account']",
+          normalize: serviceAccountEmail,
+        }
+    hiddenWhen: "$.data.metadata.annotations['iam.gke.io/gcp-service-account'] missing"
+    notes: >-
+      Only Kubernetes service accounts bound to an IAM service account through Workload Identity (the
+      iam.gke.io/gcp-service-account annotation) are shown; every namespace's default account and the
+      unbound ones start hidden.

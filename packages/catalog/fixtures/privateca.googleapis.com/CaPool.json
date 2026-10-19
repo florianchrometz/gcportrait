@@ -1,0 +1,72 @@
+[
+  {
+    "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/root-pool",
+    "assetType": "privateca.googleapis.com/CaPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/caPools/root-pool",
+      "tier": "ENTERPRISE",
+      "publishingOptions": {
+        "publishCaCert": true,
+        "publishCrl": true,
+        "encodingFormat": "PEM"
+      },
+      "labels": {
+        "team": "security"
+      }
+    }
+  },
+  {
+    "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/internal-pool",
+    "assetType": "privateca.googleapis.com/CaPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/caPools/internal-pool",
+      "tier": "ENTERPRISE",
+      "publishingOptions": {
+        "publishCaCert": true,
+        "publishCrl": true,
+        "encodingFormat": "PEM"
+      },
+      "labels": {
+        "team": "security"
+      },
+      "encryptionSpec": {
+        "cloudKmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/ca-pool"
+      },
+      "issuancePolicy": {
+        "maximumLifetime": "2592000s",
+        "allowedIssuanceModes": {
+          "allowCsrBasedIssuance": true,
+          "allowConfigBasedIssuance": true
+        }
+      }
+    }
+  },
+  {
+    "name": "//privateca.googleapis.com/projects/demo-sec-1/locations/europe-west3/caPools/ngfw-inspection",
+    "assetType": "privateca.googleapis.com/CaPool",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-sec-1/locations/europe-west3/caPools/ngfw-inspection",
+      "tier": "DEVOPS",
+      "publishingOptions": {
+        "publishCaCert": true,
+        "publishCrl": false,
+        "encodingFormat": "PEM"
+      },
+      "labels": {
+        "team": "security"
+      }
+    }
+  }
+]

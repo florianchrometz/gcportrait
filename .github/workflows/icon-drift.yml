@@ -1,0 +1,92 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Weekly drift check of the Google Cloud product icons (packages/icons/README.md, "Keeping the icons current";
+# the icons are Google Cloud's, provided at https://cloud.google.com/icons and used as provided under the terms
+# stated there). `packages/icons/scripts/drift.mjs` reads that page, downloads the icon archives it links into a
+# temporary directory (untrusted data: listed with the package's own ZIP reader, never executed) and compares
+# them with what packages/icons vendored (archive-index.json, mapping.json, manifest.json). Every run puts the
+# report in its job summary. When something drifted (exit code 1), scripts/drift-issue.mjs opens one issue titled
+# "Icon drift: Google Cloud product icons changed", or updates it while it is still open, with new icons (and the
+# catalog product each probably shows), changed, renamed and removed icons, mapped entries gone upstream, and
+# products still on an older symbol although a newer icon exists. It never commits: a contributor vendors the
+# update (`pnpm --filter @gcportrait/icons vendor`) in a pull request that closes the issue. Exit codes above 1
+# (the check could not run) fail the job instead.
+#
+# Built like catalog-drift.yml.
+name: Icon drift
+
+on:
+  schedule:
+    # Thursdays at 05:43 UTC: off the hour, when scheduled runs are delayed less, and on another day than the
+    # asset-type drift check (catalog-drift.yml, Mondays 06:17).
+    - cron: '43 5 * * 4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: icon-drift
+  cancel-in-progress: false
+
+jobs:
+  icon-drift:
+    name: icon-drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    env:
+      DRIFT_SCRIPT: packages/icons/scripts/drift.mjs
+      LC_ALL: C
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm and Node
+        uses: ./.github/actions/setup
+
+      - name: Compare the archives on cloud.google.com/icons with the vendored icons
+        id: compare
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          node "$DRIFT_SCRIPT" \
+            --markdown "$RUNNER_TEMP/icon-drift.md" \
+            --json "$RUNNER_TEMP/icon-drift.json" || status=$?
+          if [ -f "$RUNNER_TEMP/icon-drift.md" ]; then
+            {
+              echo '## Icon drift'
+              echo
+              cat "$RUNNER_TEMP/icon-drift.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          case "$status" in
+            0)
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              ;;
+            1)
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::The icon drift check could not run (exit code ${status}); see the log above."
+              exit "$status"
+              ;;
+          esac
+
+      - name: Open or update the drift issue
+        if: steps.compare.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/drift-issue.mjs
+          --title 'Icon drift: Google Cloud product icons changed'
+          --marker icon-drift
+          --label maintenance
+          --report "$RUNNER_TEMP/icon-drift.json"
+          --markdown "$RUNNER_TEMP/icon-drift.md"
+          --again 'The icons on cloud.google.com/icons changed again'
+          --rerun 'pnpm --filter @gcportrait/icons drift'

@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Memorystore: the Memorystore API's instances (Memorystore for Valkey; Redis Cluster is
+# redis.googleapis.com/Cluster), reached
+# through Private Service Connect endpoints that the service creates in the consumer network. Cloud Asset
+# Inventory names them by project id (`//memorystore.googleapis.com/projects/<id>/locations/<l>/instances/<i>`).
+product: Memorystore
+service: memorystore.googleapis.com
+icon: memorystore
+types:
+  memorystore.googleapis.com/Instance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.engineVersion}} · {{data.shardCount | plural(shard)}} · {{data.nodeType | lower}}'
+    console: 'https://console.cloud.google.com/memorystore/valkey/instances?project={{projectId}}'
+    ips:
+      - "$.data.endpoints[*].connections[*]['pscAutoConnection','pscConnection'].ipAddress"
+      - '$.data.pscAutoConnections[*].ipAddress'
+      - '$.data.discoveryEndpoints[*].address'
+    relations:
+      - {
+          kind: attaches,
+          to: "$.data.endpoints[*].connections[*]['pscAutoConnection','pscConnection'].network",
+          normalize: computeRelative,
+        }
+      - { kind: attaches, to: '$.data.pscAutoConnections[*].network', normalize: computeRelative }
+      - {
+          kind: uses,
+          to: "$.data.endpoints[*].connections[*]['pscAutoConnection','pscConnection'].forwardingRule",
+          normalize: computeRelative,
+        }
+      - { kind: uses, to: '$.data.pscAutoConnections[*].forwardingRule', normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+      - {
+          kind: replicates,
+          to: '$.data.crossInstanceReplicationConfig.secondaryInstances[*].instance',
+          normalize: name,
+        }
+    notes: >-
+      The current shape lists endpoints[*].connections[*], each holding either a pscAutoConnection (created by
+      the service through a service connection policy) or a pscConnection (an endpoint the customer created
+      against the instance's service attachments, pscAttachmentDetails); pscAutoConnections and
+      discoveryEndpoints are the deprecated earlier spellings, still read. Both kinds name the consumer
+      network (projects/<id>/global/networks/<name>, required), which the instance attaches to, and the
+      endpoint's forwarding rule in the consumer project (projects/<p>/regions/<r>/forwardingRules/<f>), which
+      it uses (drawn from the instance, although traffic flows from the forwarding rule to the instance: the
+      service attachment the rule targets lives in a Google tenant project, so only the instance side can
+      resolve), so an instance reached only through endpoints the customer created still gets its network edge;
+      the addresses are the endpoints'. Cross-region replication is read on the primary
+      (crossInstanceReplicationConfig. secondaryInstances, set only there), primary → secondary. mode is
+      CLUSTER, CLUSTER_DISABLED or the deprecated STANDALONE. The console link opens the instance list.

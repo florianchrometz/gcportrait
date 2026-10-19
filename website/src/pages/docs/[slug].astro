@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import Docs from '../../layouts/Docs.astro';
+import { authorSection } from '../../lib/author.js';
+import { renderedDocs, type RenderedDoc } from '../../lib/docs.js';
+import { socialImage } from '../../lib/media.js';
+import { articleLd, breadcrumbLd } from '../../lib/seo.js';
+
+export const getStaticPaths = (() =>
+  renderedDocs().map((doc) => ({ params: { slug: doc.slug }, props: { doc } }))) satisfies GetStaticPaths;
+
+interface Props {
+  doc: RenderedDoc;
+}
+const { doc } = Astro.props;
+const author = authorSection();
+const meta = {
+  title: doc.searchTitle ?? doc.title,
+  description: doc.description,
+  path: doc.path,
+  type: 'article' as const,
+  socialImage: socialImage(`docs-${doc.slug}`, `${doc.label}: gcportrait documentation`),
+  jsonLd: [
+    articleLd({ title: doc.title, description: doc.description, path: doc.path, author: author ?? undefined }),
+    breadcrumbLd([
+      { name: 'Home', path: '/' },
+      { name: 'Docs', path: '/docs/' },
+      { name: doc.label, path: doc.path },
+    ]),
+  ],
+};
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<Docs meta={meta} docs={renderedDocs()} doc={doc} />

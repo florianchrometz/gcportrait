@@ -1,0 +1,35 @@
+[
+  {
+    "name": "//iam.googleapis.com/locations/global/workforcePools/partners",
+    "assetType": "iam.googleapis.com/WorkforcePool",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-06-03T11:00:00Z",
+    "data": {
+      "name": "locations/global/workforcePools/partners",
+      "parent": "organizations/30000000001",
+      "displayName": "Partner engineers",
+      "description": "Contractors signing in through the partner identity provider",
+      "state": "ACTIVE",
+      "disabled": false,
+      "sessionDuration": "3600s"
+    }
+  },
+  {
+    "name": "//iam.googleapis.com/locations/global/workforcePools/contractors-2024",
+    "assetType": "iam.googleapis.com/WorkforcePool",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-30T10:00:00Z",
+    "data": {
+      "name": "locations/global/workforcePools/contractors-2024",
+      "parent": "organizations/30000000001",
+      "displayName": "Contractors 2024",
+      "state": "DELETED",
+      "disabled": true,
+      "expireTime": "2026-10-30T10:00:00Z"
+    }
+  }
+]

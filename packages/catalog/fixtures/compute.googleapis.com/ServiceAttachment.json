@@ -1,0 +1,51 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+  "assetType": "compute.googleapis.com/ServiceAttachment",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#serviceAttachment",
+    "id": "5000000000000000123",
+    "name": "inventory-api",
+    "description": "Publishes the inventory API to consumer VPCs",
+    "targetService": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-inventory",
+    "producerForwardingRule": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/forwardingRules/ilb-inventory",
+    "natSubnets": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/psc-nat"
+    ],
+    "connectionPreference": "ACCEPT_MANUAL",
+    "consumerAcceptLists": [
+      {
+        "projectIdOrNum": "demo-app-1",
+        "connectionLimit": 10
+      }
+    ],
+    "connectedEndpoints": [
+      {
+        "endpoint": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/forwardingRules/psc-inventory",
+        "pscConnectionId": "73400320000000001",
+        "status": "ACCEPTED",
+        "consumerNetwork": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/networks/app-vpc",
+        "natIps": ["10.40.0.5"],
+        "propagatedConnectionCount": 0
+      }
+    ],
+    "domainNames": ["inventory.internal.example.com."],
+    "enableProxyProtocol": false,
+    "reconcileConnections": false,
+    "pscServiceAttachmentId": {
+      "high": "1234567890",
+      "low": "9876543210"
+    },
+    "fingerprint": "Cq3m8v9KyHE=",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/serviceAttachments/inventory-api",
+    "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3"
+  }
+}

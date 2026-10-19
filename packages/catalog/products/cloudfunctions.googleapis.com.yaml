@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Run functions: Function is the v2 resource that lists 1st and 2nd gen functions, CloudFunction the v1
+# resource of 1st gen functions. A 2nd gen function is built into a Cloud Run service and triggered through an
+# Eventarc trigger; both are named on the function, the trigger draws its own link to it.
+product: Cloud Run functions (1st and 2nd gen)
+service: cloudfunctions.googleapis.com
+icon: cloud_functions
+types:
+  cloudfunctions.googleapis.com/Function:
+    role: core
+    subtitle: '{{data.buildConfig.runtime}} · {{location}}'
+    console: 'https://console.cloud.google.com/functions/details/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    domains:
+      - $.data.url
+      - $.data.serviceConfig.uri
+    relations:
+      - { kind: runsAs, to: $.data.serviceConfig.serviceAccountEmail, normalize: serviceAccountEmail }
+      - { kind: runsAs, to: $.data.buildConfig.serviceAccount, normalize: serviceAccountEmail }
+      - {
+          kind: attaches,
+          to: $.data.serviceConfig.vpcConnector,
+          normalize: name,
+          service: vpcaccess.googleapis.com,
+        }
+      - { kind: routes, to: $.data.serviceConfig.service, normalize: name, service: run.googleapis.com }
+      - { kind: uses, to: $.data.eventTrigger.pubsubTopic, normalize: pubsubUri }
+      - {
+          kind: uses,
+          to: "$.data.eventTrigger.eventFilters[?(@.attribute == 'bucket')].value",
+          normalize: gcsUri,
+        }
+      - { kind: uses, to: $.data.buildConfig.source.storageSource.bucket, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.buildConfig.dockerRepository,
+          normalize: name,
+          service: artifactregistry.googleapis.com,
+        }
+      - { kind: uses, to: $.data.buildConfig.workerPool, normalize: name, service: cloudbuild.googleapis.com }
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      The topic a Pub/Sub function listens to is a uses edge from the function (function →
+      topic, skill gcp-asset-catalog §4); the Eventarc trigger draws the delivery (triggers, from its destination.cloudFunction), so
+      eventTrigger.trigger is not read: it would repeat that link backwards. Secrets (serviceConfig.secretEnvironmentVariables,
+      secretVolumes) are a bare secret id plus a projectId field, which no normaliser combines yet.
+      buildConfig.serviceAccount is the build identity, drawn as a second runsAs.
+
+  cloudfunctions.googleapis.com/CloudFunction:
+    role: core
+    subtitle: '{{data.runtime}} · {{location}}'
+    console: 'https://console.cloud.google.com/functions/details/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    domains:
+      - $.data.httpsTrigger.url
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccountEmail, normalize: serviceAccountEmail }
+      - { kind: runsAs, to: $.data.buildServiceAccount, normalize: serviceAccountEmail }
+      - { kind: attaches, to: $.data.vpcConnector, normalize: name, service: vpcaccess.googleapis.com }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative, weak: true }
+      - { kind: uses, to: $.data.eventTrigger.resource, normalize: pubsubUri }
+      - {
+          kind: uses,
+          to: "$.data[?(@.resource startsWith 'projects/_/buckets/')].resource",
+          normalize: gcsUri,
+        }
+      - { kind: uses, to: $.data.sourceArchiveUrl, normalize: gcsUri }
+      - { kind: uses, to: $.data.dockerRepository, normalize: name, service: artifactregistry.googleapis.com }
+      - { kind: uses, to: $.data.buildWorkerPool, normalize: name, service: cloudbuild.googleapis.com }
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+    notes: >-
+      1st gen (v1) shape. eventTrigger.resource is a topic (projects/<p>/topics/<t>) or a bucket
+      (projects/_/buckets/<b>); the bucket rule filters on that prefix so a topic never reads as a bucket.
+      network is the deprecated legacy VPC field (full path or short name; short names yield nothing).

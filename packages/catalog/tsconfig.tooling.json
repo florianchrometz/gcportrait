@@ -1,0 +1,9 @@
+{
+  // Node tooling: the build and check commands and the tests that read the YAML, JSON and snapshot files.
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "outDir": "./node_modules/.tmp/tsc-tooling"
+  },
+  "include": ["tooling"],
+  "references": [{ "path": "./tsconfig.lib.json" }, { "path": "../model" }]
+}

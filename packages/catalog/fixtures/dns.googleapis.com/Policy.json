@@ -1,0 +1,42 @@
+{
+  "name": "//dns.googleapis.com/projects/demo-net-1/policies/4200000000000000001",
+  "assetType": "dns.googleapis.com/Policy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "dns#policy",
+    "id": "4200000000000000001",
+    "name": "core-dns",
+    "description": "Inbound forwarding for on-premises clients, query logging, on-premises fallback resolvers",
+    "enableInboundForwarding": true,
+    "enableLogging": true,
+    "networks": [
+      {
+        "kind": "dns#policyNetwork",
+        "networkUrl": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core"
+      }
+    ],
+    "alternativeNameServerConfig": {
+      "kind": "dns#policyAlternativeNameServerConfig",
+      "targetNameServers": [
+        {
+          "kind": "dns#policyAlternativeNameServerConfigTargetNameServer",
+          "ipv4Address": "172.16.0.53",
+          "forwardingPath": "private"
+        },
+        {
+          "kind": "dns#policyAlternativeNameServerConfigTargetNameServer",
+          "ipv6Address": "fd20:c0de::54",
+          "forwardingPath": "private"
+        }
+      ]
+    }
+  }
+}

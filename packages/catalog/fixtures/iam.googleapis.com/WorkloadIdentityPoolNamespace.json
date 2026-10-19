@@ -1,0 +1,14 @@
+{
+  "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/github/namespaces/payments",
+  "assetType": "iam.googleapis.com/WorkloadIdentityPoolNamespace",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-08-01T09:00:00Z",
+  "data": {
+    "name": "projects/10000000004/locations/global/workloadIdentityPools/github/namespaces/payments",
+    "description": "Workloads of the payments team",
+    "state": "ACTIVE",
+    "disabled": false
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "//certificatemanager.googleapis.com/projects/demo-app-1/locations/global/certificateMaps/storefront",
+  "assetType": "certificatemanager.googleapis.com/CertificateMap",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/certificateMaps/storefront",
+    "description": "Certificates of the storefront load balancer",
+    "gclbTargets": [
+      {
+        "targetHttpsProxy": "//compute.googleapis.com/projects/demo-app-1/global/targetHttpsProxies/partner-https-proxy",
+        "ipConfigs": [
+          {
+            "ipAddress": "203.0.113.11",
+            "ports": [443]
+          }
+        ]
+      }
+    ],
+    "createTime": "2026-04-14T10:20:00.000000000Z",
+    "updateTime": "2026-09-28T07:45:00.000000000Z"
+  }
+}

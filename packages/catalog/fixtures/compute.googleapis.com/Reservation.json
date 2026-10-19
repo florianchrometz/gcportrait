@@ -1,0 +1,75 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/reservations/web-e2-capacity",
+    "assetType": "compute.googleapis.com/Reservation",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#reservation",
+      "id": "8300000000000000001",
+      "name": "web-e2-capacity",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/reservations/web-e2-capacity",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "specificReservation": {
+        "count": "8",
+        "inUseCount": "4",
+        "instanceProperties": {
+          "machineType": "e2-standard-4"
+        }
+      },
+      "specificReservationRequired": false,
+      "status": "READY",
+      "commitment": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/commitments/cud-e2-1y",
+      "resourcePolicies": {
+        "spread": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/resourcePolicies/web-spread"
+      },
+      "shareSettings": {
+        "shareType": "LOCAL"
+      },
+      "creationTimestamp": "2026-06-01T09:00:00.000-07:00"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/reservations/web-from-template",
+    "assetType": "compute.googleapis.com/Reservation",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3-a",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#reservation",
+      "id": "8300000000000000002",
+      "name": "web-from-template",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/reservations/web-from-template",
+      "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+      "specificReservation": {
+        "count": "2",
+        "inUseCount": "0",
+        "sourceInstanceTemplate": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/instanceTemplates/web-v12"
+      },
+      "specificReservationRequired": true,
+      "status": "READY",
+      "shareSettings": {
+        "shareType": "SPECIFIC_PROJECTS",
+        "projectMap": {
+          "demo-data-1": {
+            "projectId": "demo-data-1"
+          }
+        }
+      },
+      "creationTimestamp": "2026-09-01T09:00:00.000-07:00"
+    }
+  }
+]

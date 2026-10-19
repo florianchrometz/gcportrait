@@ -1,0 +1,46 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/global/networks/core",
+  "assetType": "compute.googleapis.com/Network",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "id": "5000000000000000001",
+    "name": "core",
+    "description": "Shared VPC for the demo organisation",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+    "autoCreateSubnetworks": false,
+    "mtu": 1460,
+    "routingConfig": {
+      "routingMode": "GLOBAL"
+    },
+    "subnetworks": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/app",
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/gke",
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/psc-nat",
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/edge-v6"
+    ],
+    "peerings": [
+      {
+        "name": "core-to-partner",
+        "network": "https://www.googleapis.com/compute/v1/projects/demo-partner-1/global/networks/partner",
+        "state": "ACTIVE",
+        "stateDetails": "[2024-03-01T10:00:00Z]: Connected.",
+        "exchangeSubnetRoutes": true,
+        "exportCustomRoutes": false,
+        "importCustomRoutes": false
+      }
+    ],
+    "networkFirewallPolicyEnforcementOrder": "AFTER_CLASSIC_FIREWALL",
+    "creationTimestamp": "2022-06-01T09:10:00.000-07:00",
+    "kind": "compute#network",
+    "enableUlaInternalIpv6": true,
+    "internalIpv6Range": "fd20:a1b:2c3::/48"
+  }
+}

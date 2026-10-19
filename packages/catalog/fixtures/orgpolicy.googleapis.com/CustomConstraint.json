@@ -1,0 +1,17 @@
+{
+  "name": "//orgpolicy.googleapis.com/organizations/30000000001/customConstraints/custom.requireBucketCmek",
+  "assetType": "orgpolicy.googleapis.com/CustomConstraint",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/customConstraints/custom.requireBucketCmek",
+    "resourceTypes": ["storage.googleapis.com/Bucket"],
+    "methodTypes": ["CREATE", "UPDATE"],
+    "condition": "has(resource.encryption.defaultKmsKeyName)",
+    "actionType": "ALLOW",
+    "displayName": "Buckets need a customer-managed key",
+    "description": "Enforces CMEK on new and updated buckets",
+    "updateTime": "2025-03-01T09:00:00Z"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "//datamigration.googleapis.com/projects/demo-data-1/locations/europe-west3/conversionWorkspaces/erp-schema",
+  "assetType": "datamigration.googleapis.com/ConversionWorkspace",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/conversionWorkspaces/erp-schema",
+    "displayName": "erp-schema",
+    "source": { "engine": "ORACLE", "version": "19c" },
+    "destination": { "engine": "POSTGRESQL", "version": "16" },
+    "hasUncommittedChanges": false,
+    "latestCommitId": "c1",
+    "latestCommitTime": "2026-08-01T09:00:00Z",
+    "sourceProvider": "DATABASE_PROVIDER_UNSPECIFIED",
+    "destinationProvider": "ALLOYDB"
+  }
+}

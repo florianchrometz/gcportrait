@@ -1,0 +1,22 @@
+{
+  "name": "//run.googleapis.com/projects/demo-app-1/locations/europe-west3/executions/invoice-export-7k2xq",
+  "assetType": "run.googleapis.com/Execution",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/europe-west3/jobs/invoice-export/executions/invoice-export-7k2xq",
+    "uid": "00000000-0000-4000-8000-000000000177",
+    "job": "projects/demo-app-1/locations/europe-west3/jobs/invoice-export",
+    "taskCount": 1,
+    "succeededCount": 1,
+    "startTime": "2026-10-01T01:00:00Z",
+    "completionTime": "2026-10-01T01:12:00Z"
+  }
+}

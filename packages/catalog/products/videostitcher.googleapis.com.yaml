@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Video Stitcher API: ad-stitching
+# configuration records, all hidden by default; their hosts are kept for search.
+product: Video Stitcher API
+service: videostitcher.googleapis.com
+icon: video_stitcher
+types:
+  videostitcher.googleapis.com/CdnKey:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.hostname}}'
+    domains:
+      - $.data.hostname
+    notes: The key material (googleCdnKey, akamaiCdnKey, mediaCdnKey) is write-only and never shown.
+
+  videostitcher.googleapis.com/LiveConfig:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    domains:
+      - $.data.sourceUri
+    notes: >-
+      defaultSlate names a slate of the same project in a form the reference does not pin down (id or name);
+      it is not read.
+
+  videostitcher.googleapis.com/Slate:
+    role: hidden
+    label: '{{name | lastSegment}}'
+
+  videostitcher.googleapis.com/VodConfig:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    domains:
+      - $.data.sourceUri

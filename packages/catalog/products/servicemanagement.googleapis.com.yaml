@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Service Management: the API services the
+# organisation's projects produce (Cloud Endpoints, API Gateway managed services) and their configurations.
+product: Service Management
+service: servicemanagement.googleapis.com
+icon: cloud_endpoints
+types:
+  servicemanagement.googleapis.com/ManagedService:
+    role: leaf
+    label: '{{data.serviceName}}'
+    subtitle: '{{data.producerProjectId}}'
+    console: 'https://console.cloud.google.com/endpoints/api/{{data.serviceName}}/overview?project={{data.producerProjectId}}'
+    domains:
+      - $.data.serviceName
+    notes: >-
+      Named //servicemanagement.googleapis.com/services/<service name>; the service name is a DNS name
+      (<api>.endpoints.<project>.cloud.goog or a custom domain). The seed's uses edge to the producer project
+      (producerProjectId) is left out: the asset nests in that project by its parent already.
+
+  servicemanagement.googleapis.com/Service:
+    role: hidden
+    label: '{{data.title}}'
+    subtitle: '{{data.id}}'
+    notes: >-
+      One record per service configuration
+      (//servicemanagement.googleapis.com/services/<service>/configs/<id>).

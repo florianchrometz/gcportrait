@@ -1,0 +1,21 @@
+{
+  "name": "//lustre.googleapis.com/projects/demo-data-1/locations/europe-west3-a/instances/training-scratch",
+  "assetType": "lustre.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3-a/instances/training-scratch",
+    "filesystem": "scratch",
+    "capacityGib": "36000",
+    "network": "projects/demo-net-1/global/networks/core",
+    "state": "ACTIVE",
+    "mountPoint": "10.20.8.5@tcp:/scratch",
+    "createTime": "2026-05-01T09:00:00Z",
+    "updateTime": "2026-09-01T09:00:00Z",
+    "description": "Scratch space for model training",
+    "perUnitStorageThroughput": "500",
+    "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/lustre"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "//identitytoolkit.googleapis.com/projects/10000000002/config",
+  "assetType": "identitytoolkit.googleapis.com/Config",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/config",
+    "signIn": {
+      "email": {
+        "enabled": true,
+        "passwordRequired": true
+      },
+      "allowDuplicateEmails": false
+    },
+    "authorizedDomains": ["localhost", "demo-app-1.firebaseapp.com", "shop.example.com"],
+    "subtype": "IDENTITY_PLATFORM",
+    "multiTenant": {
+      "allowTenants": true
+    },
+    "mfa": {
+      "state": "ENABLED",
+      "enabledProviders": ["PHONE_SMS"]
+    }
+  }
+}

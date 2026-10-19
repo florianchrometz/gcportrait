@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dialogflow CX, now presented as Conversational Agents: the agent and the per-location settings. Asset
+# names carry the project id (projects/<id>/locations/<l>/agents/<uuid>). The Dialogflow ES types the
+# inventory lists (conversation profiles, knowledge bases) are their own product, in
+# dialogflow.googleapis.com.ai-es.yaml.
+product: Dialogflow CX
+service: dialogflow.googleapis.com
+icon: dialogflow
+types:
+  dialogflow.googleapis.com/Agent:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.defaultLanguageCode}} · {{location}}'
+    console: 'https://dialogflow.cloud.google.com/cx/projects/{{projectId}}/locations/{{location}}/agents/{{name | lastSegment}}'
+    relations:
+      - { kind: uses, to: $.data.advancedSettings.audioExportGcsDestination.uri, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: "$.data.clientCertificateSettings['privateKey','passphrase']",
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      A data store agent and its Discovery Engine chat app are linked from the engine side
+      (chatEngineMetadata.dialogflowAgent names the agent exactly as its asset name does). The agent's own
+      genAppBuilderSettings.engine is documented with the project id
+      (projects/<id>/locations/<l>/collections/<c>/engines/<e>) while engine asset names carry the project
+      number, so it is not read: it would only add a dangling reverse of the engine's edge. Custom client
+      certificates keep their private key and passphrase in Secret Manager secret versions
+      (projects/<p>/secrets/<s>/versions/<v>). securitySettings names a CX security settings resource, which
+      is not an inventory type; flows, playbooks and webhooks are not inventory types either. The console link
+      opens the Dialogflow CX console.
+
+  dialogflow.googleapis.com/LocationSettings:
+    role: hidden
+    notes: >-
+      The per-location settings singleton (projects/<id>/locations/<l>/locationSettings). Its API shape is not
+      published in the REST reference, so no field is read.

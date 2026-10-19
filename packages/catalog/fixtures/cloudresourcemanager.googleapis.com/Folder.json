@@ -1,0 +1,44 @@
+[
+  {
+    "name": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+    "assetType": "cloudresourcemanager.googleapis.com/Folder",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["folders/20000000001", "organizations/30000000001"],
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "folders/20000000001",
+      "parent": "organizations/30000000001",
+      "displayName": "Platform",
+      "lifecycleState": "ACTIVE",
+      "createTime": "2021-02-01T10:00:00Z"
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/folders/20000000002",
+    "assetType": "cloudresourcemanager.googleapis.com/Folder",
+    "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+    "ancestors": ["folders/20000000002", "folders/20000000001", "organizations/30000000001"],
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "folders/20000000002",
+      "parent": "folders/20000000001",
+      "displayName": "Shared services",
+      "lifecycleState": "ACTIVE",
+      "createTime": "2021-02-01T10:05:00Z"
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/folders/20000000009",
+    "assetType": "cloudresourcemanager.googleapis.com/Folder",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["folders/20000000009", "organizations/30000000001"],
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "folders/20000000009",
+      "parent": "organizations/30000000001",
+      "displayName": "Retired sandboxes",
+      "lifecycleState": "DELETE_REQUESTED",
+      "createTime": "2022-05-01T10:00:00Z"
+    }
+  }
+]

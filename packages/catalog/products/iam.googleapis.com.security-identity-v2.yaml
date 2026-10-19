@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Identity and Access Management v2: IAM deny policies. A separate official product from the v1
+# resources (iam.googleapis.com.yaml), hence its own file of the same service.
+product: Identity and Access Management v2
+service: iam.googleapis.com
+icon: identity_and_access_management
+types:
+  iam.googleapis.com/PolicyV2:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: >-
+      Deny policies, named policies/<attachment point>/denypolicies/<id>, where the attachment point is the
+      URL-encoded full name of the organisation, folder or project without its leading slashes
+      (cloudresourcemanager.googleapis.com%2Fprojects%2F<number>). No normaliser decodes a partly encoded
+      segment, so the policy has no secures edge to its attachment point; CAI's parent already nests it there.
+      The rules (deniedPrincipals, deniedPermissions, exceptionPrincipals) are principal sets, not assets.

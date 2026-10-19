@@ -1,0 +1,19 @@
+{
+  "name": "//iam.googleapis.com/projects/10000000004/locations/global/workloadIdentityPools/github/providers/github-oidc/keys/enc-2026",
+  "assetType": "iam.googleapis.com/WorkloadIdentityPoolProviderKey",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-07-11T12:06:00Z",
+  "data": {
+    "name": "projects/10000000004/locations/global/workloadIdentityPools/github/providers/github-oidc/keys/enc-2026",
+    "keyData": {
+      "format": "RSA_X509_PEM",
+      "keySpec": "RSA_2048",
+      "notBeforeTime": "2026-07-11T12:06:00Z",
+      "notAfterTime": "2027-07-11T12:06:00Z"
+    },
+    "state": "ACTIVE",
+    "use": "ENCRYPTION"
+  }
+}

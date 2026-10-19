@@ -1,0 +1,184 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "themes": ["light", "dark"],
+  "web": {
+    "widths": [1440, 720],
+    "quality": 0.82
+  },
+  "animated": {
+    "width": 1200,
+    "fps": 12,
+    "maxGifBytes": 3145728,
+    "bitrate": 600000
+  },
+  "social": {
+    "width": 1200,
+    "height": 630,
+    "quality": 86,
+    "theme": "light"
+  },
+  "stills": [
+    {
+      "id": "hero",
+      "title": "A whole organisation at a glance",
+      "alt": "gcportrait drawing the whole synthetic demo organisation S in the Overview lens: folders and projects as nested zones, the Shared VPC host's network and subnetworks as tinted zones, resources as cards with Google Cloud product icons, orthogonal arrows for the references between them, a title block and a legend."
+    },
+    {
+      "id": "lenses",
+      "title": "The Networking lens",
+      "alt": "The demo organisation M in the Networking lens: Shared VPC host projects with their VPC networks and subnetworks as tinted zones, firewall policies, routers and the projects that attach to them."
+    },
+    {
+      "id": "trace",
+      "title": "The selection trace of a load balancer",
+      "alt": "A global forwarding rule selected in the Load balancing lens: its chain through the target HTTPS proxy, the URL map, the backend services and the backend bucket to the instance group and the serverless network endpoint group is highlighted, with its path to the root of the organisation and its details drawer open."
+    },
+    {
+      "id": "drawer",
+      "title": "The details drawer",
+      "alt": "A virtual machine selected in the Compute lens with the details drawer open: its facts, its relations by kind with links, and its Cloud Console page."
+    },
+    {
+      "id": "timeline",
+      "title": "A day of the timeline compared with the day before",
+      "alt": "The timeline moved to 24 September: the newly added virtual machines are outlined in green, a deleted one stands as a faded, dashed ghost where it was, and the changed instance group manager carries an amber dot."
+    },
+    {
+      "id": "export",
+      "title": "The Export menu",
+      "alt": "The Export menu open over the demo organisation S: the whole diagram or the current viewport, light or dark, PNG at 2× or 3×, Embed fonts for the SVG file, and downloads of SVG, PNG and draw.io files or copying the PNG."
+    },
+    {
+      "id": "snapshots",
+      "title": "The Snapshots page",
+      "alt": "The Snapshots page listing the demo organisations S and M stored in this browser, each with Load, Export and a red Delete button, then each scope's timeline and the import area; nothing is uploaded anywhere."
+    }
+  ],
+  "scenes": [
+    {
+      "id": "trace",
+      "title": "Hover, click, trace",
+      "alt": "Animation: the pointer hovers a virtual machine and its path to the root lights up; a click keeps it selected, traces its network and disk connections, and shows the Open in Cloud Console action.",
+      "seconds": 9,
+      "posterAt": 6.5
+    },
+    {
+      "id": "lenses",
+      "title": "Switching lenses",
+      "alt": "Animation: the Lens picker switches the demo organisation S from the Overview to the Networking lens and then to the Load balancing lens; each redraws the same organisation for a different question.",
+      "seconds": 9.5,
+      "posterAt": 9
+    },
+    {
+      "id": "drill-in",
+      "title": "Drill in and expand",
+      "alt": "Animation: a click on a collapsed project expands it in place, then a double-click on another project drills into it so that it fills the canvas, with the breadcrumb leading back out.",
+      "seconds": 9,
+      "posterAt": 8
+    },
+    {
+      "id": "timeline",
+      "title": "Stepping through the timeline",
+      "alt": "Animation: the Workloads folder of the demo organisation S on the timeline, which jumps from 4 September to 8, 14 and 25 September; each day is drawn compared with the one before. On 8 September a new Pub/Sub subscription is outlined in green, on 14 September the next one is outlined and the first stands as a faded, dashed ghost, and on 25 September the decommissioned reporting project with its bucket, network, subnetwork and virtual machine stands as a ghost, a second machine in the web group is outlined, two more removed resources are ghosts and amber dots mark the changed ones. The view then zooms in on the ghost of the reporting project, marked removed, and moves to the legend, whose rows read added, removed and changed since 14 September.",
+      "seconds": 12,
+      "posterAt": 6.2
+    },
+    {
+      "id": "search",
+      "title": "Search by IP address",
+      "alt": "Animation: pressing slash opens the search box, typing the IP address 10.0.14.5 lists the matching resource, and Enter jumps to it on the diagram and opens its details.",
+      "seconds": 8,
+      "posterAt": 7
+    }
+  ],
+  "cards": [
+    {
+      "id": "home",
+      "heading": "A portrait of your Google Cloud environment",
+      "still": "hero"
+    },
+    {
+      "id": "docs",
+      "heading": "Documentation",
+      "still": "lenses"
+    },
+    {
+      "id": "docs-getting-started",
+      "heading": "Getting started",
+      "still": "hero"
+    },
+    {
+      "id": "docs-modes",
+      "heading": "Modes: your account, a service account, exports, the demo",
+      "still": "drawer"
+    },
+    {
+      "id": "docs-permissions",
+      "heading": "Permissions for reading a scope",
+      "still": "drawer"
+    },
+    {
+      "id": "docs-lenses-and-filters",
+      "heading": "Lenses, focus views and filters",
+      "still": "lenses"
+    },
+    {
+      "id": "docs-timeline",
+      "heading": "The 35-day timeline",
+      "still": "timeline"
+    },
+    {
+      "id": "docs-export",
+      "heading": "Export SVG, PNG and draw.io",
+      "still": "export"
+    },
+    {
+      "id": "exports",
+      "heading": "Sample exports: SVG, PNG and draw.io of the demo organisations",
+      "still": "export"
+    },
+    {
+      "id": "docs-faq",
+      "heading": "Frequently asked questions",
+      "still": "trace"
+    },
+    {
+      "id": "docs-self-host",
+      "heading": "Self-host on Cloud Run in 10 minutes",
+      "still": "hero"
+    },
+    {
+      "id": "docs-self-host-options",
+      "heading": "Self-hosting options",
+      "still": "drawer"
+    },
+    {
+      "id": "docs-configuration",
+      "heading": "Configuration reference",
+      "still": "hero"
+    },
+    {
+      "id": "docs-api",
+      "heading": "API: renders and pulls with curl",
+      "still": "export"
+    },
+    {
+      "id": "coverage",
+      "heading": "Asset type coverage",
+      "still": "trace"
+    },
+    {
+      "id": "contributing",
+      "heading": "Contributing to gcportrait",
+      "still": "lenses"
+    },
+    {
+      "id": "licence",
+      "heading": "Licence: Apache-2.0",
+      "still": "export"
+    }
+  ]
+}

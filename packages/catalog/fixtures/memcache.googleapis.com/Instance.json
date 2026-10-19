@@ -1,0 +1,36 @@
+{
+  "name": "//memcache.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/fragments",
+  "assetType": "memcache.googleapis.com/Instance",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/instances/fragments",
+    "displayName": "fragments",
+    "authorizedNetwork": "projects/demo-net-1/global/networks/core",
+    "zones": ["europe-west3-a", "europe-west3-b"],
+    "nodeCount": 2,
+    "nodeConfig": { "cpuCount": 1, "memorySizeMb": 4096 },
+    "memcacheVersion": "MEMCACHE_1_6_15",
+    "memcacheFullVersion": "memcached-1.6.15",
+    "memcacheNodes": [
+      {
+        "nodeId": "node-a-1",
+        "zone": "europe-west3-a",
+        "state": "READY",
+        "host": "10.20.5.2",
+        "port": 11211
+      },
+      { "nodeId": "node-b-1", "zone": "europe-west3-b", "state": "READY", "host": "10.20.5.3", "port": 11211 }
+    ],
+    "discoveryEndpoint": "10.20.5.5:11211",
+    "state": "READY",
+    "createTime": "2024-09-01T09:00:00Z"
+  }
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "//cloudbuild.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/ghe-shop",
+    "assetType": "cloudbuild.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/ghe-shop",
+      "createTime": "2024-05-06T09:00:00Z",
+      "updateTime": "2025-12-01T10:00:00Z",
+      "githubEnterpriseConfig": {
+        "hostUri": "https://github.example.com",
+        "appId": "4021",
+        "appSlug": "gcb-shop",
+        "privateKeySecretVersion": "projects/10000000005/secrets/ghe-app-private-key/versions/1",
+        "webhookSecretSecretVersion": "projects/10000000005/secrets/ghe-app-webhook/versions/2",
+        "appInstallationId": "77",
+        "serverVersion": "3.14.0"
+      },
+      "installationState": { "stage": "COMPLETE" },
+      "disabled": false,
+      "reconciling": false,
+      "etag": "W/\"b7e1\""
+    }
+  },
+  {
+    "name": "//cloudbuild.googleapis.com/projects/demo-ops-1/locations/europe-west3/connections/gitlab-ops",
+    "assetType": "cloudbuild.googleapis.com/Connection",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-ops-1/locations/europe-west3/connections/gitlab-ops",
+      "createTime": "2025-01-15T11:30:00Z",
+      "gitlabConfig": {
+        "hostUri": "https://gitlab.example.com",
+        "webhookSecretSecretVersion": "projects/10000000005/secrets/gitlab-webhook/versions/1",
+        "readAuthorizerCredential": {
+          "userTokenSecretVersion": "projects/10000000005/secrets/gitlab-read-token/versions/3",
+          "username": "gcb-reader"
+        },
+        "authorizerCredential": {
+          "userTokenSecretVersion": "projects/10000000005/secrets/gitlab-api-token/versions/3",
+          "username": "gcb-admin"
+        },
+        "serviceDirectoryConfig": {
+          "service": "projects/demo-ops-1/locations/europe-west3/namespaces/internal/services/gitlab"
+        },
+        "serverVersion": "17.4.1"
+      },
+      "installationState": { "stage": "COMPLETE" },
+      "disabled": false
+    }
+  }
+]

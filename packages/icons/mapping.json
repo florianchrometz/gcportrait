@@ -1,0 +1,589 @@
+{
+  "description": "Hand-maintained mapping from every icon key (the catalog's product and type icon keys, plus the generic marks) to its artwork. Each key names candidate sources in fallback order: 'own' (a gcportrait drawing under own/), 'core' (Google's core product colour mark, for marquee products), 'legacy' (Google's two-tone console icon), then 'category' (the Google category mark of the product's category, a key of 'categories', as Google's product icons overview assigns it), which is also the key's category. scripts/vendor.mjs takes the first candidate that exists in the downloaded sets and fails when none does; scripts/build.mjs compiles the result into src/generated/icons.ts. Source paths are entry names inside the zip files listed under 'sources'. 'legibility16' is the 16 px legibility check list: for each candidate glyph, whether the official icon stays or an own drawing replaces it (scripts/contact-sheet.mjs renders it). See README.md.",
+  "sources": {
+    "core": {
+      "title": "Core product icons",
+      "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+      "viewBox": 512
+    },
+    "legacy": {
+      "title": "Legacy console icons",
+      "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+      "viewBox": 24
+    },
+    "category": {
+      "title": "Product category icons",
+      "url": "https://services.google.com/fh/files/misc/category-icons.zip",
+      "viewBox": 512
+    }
+  },
+  "categories": {
+    "category_agents": "Category Icons/Agents/SVG/Agents-512-color.svg",
+    "category_ai_machine_learning": "Category Icons/AI _ Machine Learning/SVG/AIMachineLearning-512-color.svg",
+    "category_business_intelligence": "Category Icons/Business Intelligence/SVG/BusinessIntelligence-512-color.svg",
+    "category_compute": "Category Icons/Compute/SVG/Compute-512-color.svg",
+    "category_containers": "Category Icons/Containers/SVG/Containers-512-color.svg",
+    "category_data_analytics": "Category Icons/Data Analytics/SVG/DataAnalytics-512-color.svg",
+    "category_databases": "Category Icons/Databases/SVG/Databases-512-color.svg",
+    "category_developer_tools": "Category Icons/Developer Tools/SVG/Developer_Tools-512-color.svg",
+    "category_devops": "Category Icons/DevOps/SVG/DevOps-512-color.svg",
+    "category_hybrid_multicloud": "Category Icons/Hybrid & Multicloud/SVG/HybridMulticloud-512-color.svg",
+    "category_integration_services": "Category Icons/Integration Services/SVG/IntegrationServices-512-color.svg",
+    "category_management_tools": "Category Icons/Management Tools/SVG/ManagementTools-512-color.svg",
+    "category_media_services": "Category Icons/Media Services/SVG/MediaServices-512-color.svg",
+    "category_migration": "Category Icons/Migration/SVG/Migration-512-color.svg",
+    "category_networking": "Category Icons/Networking/SVG/Networking-512-color-rgb.svg",
+    "category_observability": "Category Icons/Observability/SVG/Observability-512-color.svg",
+    "category_operations": "Category Icons/Operations/SVG/Operations-512-color.svg",
+    "category_security_identity": "Category Icons/Security Identity/SVG/SecurityIdentity-512-color.svg",
+    "category_serverless_computing": "Category Icons/Serverless Computing/SVG/ServerlessComputing-512-color.svg",
+    "category_storage": "Category Icons/Storage/SVG/Storage-512-color.svg",
+    "category_web3": "Category Icons/Web3/SVG/Web3-512-color.svg",
+    "category_web_mobile": "Category Icons/Web & Mobile/SVG/WebMobile-512-color.svg"
+  },
+  "icons": {
+    "access_approval": {
+      "category": "category_security_identity"
+    },
+    "access_context_manager": {
+      "legacy": "access_context_manager/access_context_manager.svg",
+      "category": "category_security_identity"
+    },
+    "alloydb": {
+      "core": "Unique Icons/AlloyDB/SVG/AlloyDB-512-color.svg",
+      "category": "category_databases"
+    },
+    "analytics_hub": {
+      "legacy": "analytics_hub/analytics_hub.svg",
+      "category": "category_data_analytics"
+    },
+    "anthos": {
+      "core": "Unique Icons/Anthos/SVG/Anthos-512-color.svg",
+      "legacy": "anthos/anthos.svg",
+      "category": "category_hybrid_multicloud"
+    },
+    "api_gateway": {
+      "legacy": "cloud_api_gateway/cloud_api_gateway.svg",
+      "category": "category_integration_services"
+    },
+    "api_hub": {
+      "category": "category_integration_services"
+    },
+    "api_keys": {
+      "category": "category_security_identity"
+    },
+    "apigee": {
+      "core": "Unique Icons/Apigee/SVG/Apigee-512-color-rgb.svg",
+      "category": "category_integration_services"
+    },
+    "app_engine": {
+      "legacy": "app_engine/app_engine.svg",
+      "category": "category_serverless_computing"
+    },
+    "app_hub": {
+      "category": "category_operations"
+    },
+    "app_lifecycle_manager": {
+      "category": "category_management_tools"
+    },
+    "application_design_center": {
+      "category": "category_developer_tools"
+    },
+    "application_integration": {
+      "category": "category_integration_services"
+    },
+    "artifact_registry": {
+      "legacy": "artifact_registry/artifact_registry.svg",
+      "category": "category_devops"
+    },
+    "assured_workloads": {
+      "legacy": "assured_workloads/assured_workloads.svg",
+      "category": "category_security_identity"
+    },
+    "backup_and_dr": {
+      "category": "category_operations"
+    },
+    "batch": {
+      "legacy": "batch/batch.svg",
+      "category": "category_compute"
+    },
+    "beyondcorp": {
+      "legacy": "beyondcorp/beyondcorp.svg",
+      "category": "category_security_identity"
+    },
+    "bigquery": {
+      "core": "Unique Icons/BigQuery/SVG/BigQuery-512-color.svg",
+      "legacy": "bigquery/bigquery.svg",
+      "category": "category_data_analytics"
+    },
+    "bigtable": {
+      "legacy": "bigtable/bigtable.svg",
+      "category": "category_databases"
+    },
+    "binary_authorization": {
+      "legacy": "binary_authorization/binary_authorization.svg",
+      "category": "category_security_identity"
+    },
+    "blockchain_node_engine": {
+      "category": "category_web3"
+    },
+    "certificate_authority_service": {
+      "legacy": "certificate_authority_service/certificate_authority_service.svg",
+      "category": "category_security_identity"
+    },
+    "certificate_manager": {
+      "legacy": "certificate_manager/certificate_manager.svg",
+      "category": "category_security_identity"
+    },
+    "cloud_apis": {
+      "legacy": "cloud_apis/cloud_apis.svg",
+      "category": "category_integration_services"
+    },
+    "cloud_armor": {
+      "legacy": "cloud_armor/cloud_armor.svg",
+      "category": "category_networking"
+    },
+    "cloud_asset_inventory": {
+      "legacy": "cloud_asset_inventory/cloud_asset_inventory.svg",
+      "category": "category_security_identity"
+    },
+    "cloud_billing": {
+      "legacy": "billing/billing.svg",
+      "category": "category_management_tools"
+    },
+    "cloud_build": {
+      "legacy": "cloud_build/cloud_build.svg",
+      "category": "category_devops"
+    },
+    "cloud_cdn": {
+      "legacy": "cloud_cdn/cloud_cdn.svg",
+      "category": "category_networking"
+    },
+    "cloud_composer": {
+      "legacy": "cloud_composer/cloud_composer.svg",
+      "category": "category_data_analytics"
+    },
+    "cloud_controls_partner": {
+      "category": "category_security_identity"
+    },
+    "cloud_data_fusion": {
+      "legacy": "cloud_data_fusion/cloud_data_fusion.svg",
+      "category": "category_data_analytics"
+    },
+    "cloud_deploy": {
+      "legacy": "cloud_deploy/cloud_deploy.svg",
+      "category": "category_devops"
+    },
+    "cloud_dns": {
+      "legacy": "cloud_dns/cloud_dns.svg",
+      "category": "category_networking"
+    },
+    "cloud_domains": {
+      "legacy": "cloud_domains/cloud_domains.svg",
+      "category": "category_networking"
+    },
+    "cloud_endpoints": {
+      "legacy": "cloud_endpoints/cloud_endpoints.svg",
+      "category": "category_integration_services"
+    },
+    "cloud_external_ip_addresses": {
+      "legacy": "cloud_external_ip_addresses/cloud_external_ip_addresses.svg",
+      "category": "category_networking"
+    },
+    "cloud_firewall_rules": {
+      "legacy": "cloud_firewall_rules/cloud_firewall_rules.svg",
+      "category": "category_networking"
+    },
+    "cloud_functions": {
+      "legacy": "cloud_functions/cloud_functions.svg",
+      "category": "category_serverless_computing"
+    },
+    "cloud_generic": {
+      "legacy": "cloud_generic/cloud_generic.svg",
+      "generic": true
+    },
+    "cloud_healthcare_api": {
+      "legacy": "cloud_healthcare_api/cloud_healthcare_api.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "cloud_ids": {
+      "legacy": "cloud_ids/cloud_ids.svg",
+      "category": "category_networking"
+    },
+    "cloud_interconnect": {
+      "legacy": "cloud_interconnect/cloud_interconnect.svg",
+      "category": "category_networking"
+    },
+    "cloud_load_balancing": {
+      "legacy": "cloud_load_balancing/cloud_load_balancing.svg",
+      "category": "category_networking"
+    },
+    "cloud_logging": {
+      "legacy": "cloud_logging/cloud_logging.svg",
+      "category": "category_observability"
+    },
+    "cloud_monitoring": {
+      "legacy": "cloud_monitoring/cloud_monitoring.svg",
+      "category": "category_observability"
+    },
+    "cloud_quotas": {
+      "legacy": "quotas/quotas.svg",
+      "category": "category_management_tools"
+    },
+    "cloud_router": {
+      "legacy": "cloud_router/cloud_router.svg",
+      "category": "category_networking"
+    },
+    "cloud_routes": {
+      "legacy": "cloud_routes/cloud_routes.svg",
+      "category": "category_networking"
+    },
+    "cloud_run": {
+      "core": "Unique Icons/Cloud Run/SVG/CloudRun-512-color-rgb.svg",
+      "legacy": "cloud_run/cloud_run.svg",
+      "category": "category_serverless_computing"
+    },
+    "cloud_service_mesh": {
+      "legacy": "anthos_service_mesh/anthos_service_mesh.svg",
+      "category": "category_networking"
+    },
+    "cloud_sql": {
+      "core": "Unique Icons/Cloud SQL/SVG/CloudSQL-512-color.svg",
+      "legacy": "cloud_sql/cloud_sql.svg",
+      "category": "category_databases"
+    },
+    "cloud_storage": {
+      "core": "Unique Icons/Cloud Storage/SVG/Cloud_Storage-512-color.svg",
+      "legacy": "cloud_storage/cloud_storage.svg",
+      "category": "category_storage"
+    },
+    "cloud_tasks": {
+      "legacy": "cloud_tasks/cloud_tasks.svg",
+      "category": "category_developer_tools"
+    },
+    "cloud_tpu": {
+      "legacy": "cloud_tpu/cloud_tpu.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "cloud_vpn": {
+      "legacy": "cloud_vpn/cloud_vpn.svg",
+      "category": "category_networking"
+    },
+    "cloud_workstations": {
+      "category": "category_developer_tools"
+    },
+    "cluster_director": {
+      "category": "category_compute"
+    },
+    "compute_engine": {
+      "core": "Unique Icons/Compute Engine/SVG/ComputeEngine-512-color-rgb.svg",
+      "legacy": "compute_engine/compute_engine.svg",
+      "category": "category_compute"
+    },
+    "contact_center_ai": {
+      "legacy": "contact_center_ai/contact_center_ai.svg",
+      "category": "category_agents"
+    },
+    "container_registry": {
+      "legacy": "container_registry/container_registry.svg",
+      "category": "category_devops"
+    },
+    "database_migration_service": {
+      "legacy": "database_migration_service/database_migration_service.svg",
+      "category": "category_databases"
+    },
+    "dataflow": {
+      "legacy": "dataflow/dataflow.svg",
+      "category": "category_data_analytics"
+    },
+    "dataform": {
+      "category": "category_data_analytics"
+    },
+    "dataplex": {
+      "legacy": "dataplex/dataplex.svg",
+      "category": "category_data_analytics"
+    },
+    "dataproc": {
+      "legacy": "dataproc/dataproc.svg",
+      "category": "category_data_analytics"
+    },
+    "dataproc_metastore": {
+      "legacy": "dataproc_metastore/dataproc_metastore.svg",
+      "category": "category_data_analytics"
+    },
+    "datastream": {
+      "legacy": "datastream/datastream.svg",
+      "category": "category_data_analytics"
+    },
+    "developer_connect": {
+      "category": "category_developer_tools"
+    },
+    "dialogflow": {
+      "legacy": "dialogflow/dialogflow.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "document_ai": {
+      "legacy": "document_ai/document_ai.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "essential_contacts": {
+      "category": "category_management_tools"
+    },
+    "eventarc": {
+      "legacy": "eventarc/eventarc.svg",
+      "category": "category_integration_services"
+    },
+    "filestore": {
+      "legacy": "filestore/filestore.svg",
+      "category": "category_storage"
+    },
+    "financial_services": {
+      "category": "category_ai_machine_learning"
+    },
+    "firebase": {
+      "category": "category_web_mobile"
+    },
+    "firebase_data_connect": {
+      "category": "category_web_mobile"
+    },
+    "firestore": {
+      "legacy": "firestore/firestore.svg",
+      "category": "category_databases"
+    },
+    "folder": {
+      "own": "folder.svg",
+      "category": "category_management_tools"
+    },
+    "gemini": {
+      "category": "category_ai_machine_learning"
+    },
+    "generic_resource": {
+      "own": "generic_resource.svg"
+    },
+    "google_kubernetes_engine": {
+      "core": "Unique Icons/GKE/SVG/GKE-512-color.svg",
+      "legacy": "google_kubernetes_engine/google_kubernetes_engine.svg",
+      "category": "category_containers"
+    },
+    "identity_and_access_management": {
+      "legacy": "identity_and_access_management/identity_and_access_management.svg",
+      "category": "category_security_identity"
+    },
+    "identity_aware_proxy": {
+      "legacy": "identity-aware_proxy/identity-aware_proxy.svg",
+      "category": "category_security_identity"
+    },
+    "identity_platform": {
+      "legacy": "identity_platform/identity_platform.svg",
+      "category": "category_security_identity"
+    },
+    "infrastructure_manager": {
+      "category": "category_developer_tools"
+    },
+    "integration_connectors": {
+      "category": "category_integration_services"
+    },
+    "key_management_service": {
+      "legacy": "key_management_service/key_management_service.svg",
+      "category": "category_security_identity"
+    },
+    "krm_api_hosting": {
+      "category": "category_management_tools"
+    },
+    "live_stream": {
+      "category": "category_media_services"
+    },
+    "looker": {
+      "core": "Unique Icons/Looker/SVG/Looker-512-color.svg",
+      "legacy": "looker/looker.svg",
+      "category": "category_business_intelligence"
+    },
+    "managed_lustre": {
+      "category": "category_storage"
+    },
+    "managed_service_for_apache_kafka": {
+      "category": "category_data_analytics"
+    },
+    "managed_service_for_microsoft_active_directory": {
+      "legacy": "managed_service_for_microsoft_active_directory/managed_service_for_microsoft_active_directory.svg",
+      "category": "category_security_identity"
+    },
+    "memorystore": {
+      "legacy": "memorystore/memorystore.svg",
+      "category": "category_databases"
+    },
+    "migrate_to_virtual_machines": {
+      "legacy": "migrate_for_compute_engine/migrate_for_compute_engine.svg",
+      "category": "category_compute"
+    },
+    "migration_center": {
+      "category": "category_migration"
+    },
+    "netapp_volumes": {
+      "category": "category_storage"
+    },
+    "network_connectivity_center": {
+      "legacy": "network_connectivity_center/network_connectivity_center.svg",
+      "category": "category_networking"
+    },
+    "network_intelligence_center": {
+      "legacy": "network_intelligence_center/network_intelligence_center.svg",
+      "category": "category_networking"
+    },
+    "oracle_database": {
+      "category": "category_databases"
+    },
+    "organization": {
+      "own": "organization.svg",
+      "category": "category_management_tools"
+    },
+    "organization_policy": {
+      "category": "category_security_identity"
+    },
+    "os_config": {
+      "category": "category_compute"
+    },
+    "parallelstore": {
+      "category": "category_storage"
+    },
+    "persistent_disk": {
+      "core": "Unique Icons/Hyperdisk/SVG/Hyperdisk-512-color.svg",
+      "legacy": "persistent_disk/persistent_disk.svg",
+      "category": "category_storage"
+    },
+    "private_service_connect": {
+      "legacy": "private_service_connect/private_service_connect.svg",
+      "category": "category_networking"
+    },
+    "privileged_access_manager": {
+      "category": "category_security_identity"
+    },
+    "project": {
+      "legacy": "project/project.svg",
+      "category": "category_management_tools"
+    },
+    "pubsub": {
+      "legacy": "pubsub/pubsub.svg",
+      "category": "category_data_analytics"
+    },
+    "recaptcha": {
+      "category": "category_security_identity"
+    },
+    "resource_manager": {
+      "category": "category_management_tools"
+    },
+    "retail_api": {
+      "legacy": "retail_api/retail_api.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "secret_manager": {
+      "legacy": "secret_manager/secret_manager.svg",
+      "category": "category_security_identity"
+    },
+    "secure_source_manager": {
+      "category": "category_developer_tools"
+    },
+    "secure_web_proxy": {
+      "category": "category_networking"
+    },
+    "security_command_center": {
+      "core": "Unique Icons/Security Command Center/SVG/SecurityCommandCenter-512-color.svg",
+      "legacy": "security_command_center/security_command_center.svg",
+      "category": "category_security_identity"
+    },
+    "sensitive_data_protection": {
+      "legacy": "data_loss_prevention_api/data_loss_prevention_api.svg",
+      "category": "category_data_analytics"
+    },
+    "serverless_vpc_access": {
+      "category": "category_networking"
+    },
+    "service_account": {
+      "own": "service_account.svg",
+      "category": "category_security_identity"
+    },
+    "service_directory": {
+      "category": "category_networking"
+    },
+    "service_networking": {
+      "category": "category_networking"
+    },
+    "spanner": {
+      "core": "Unique Icons/Cloud Spanner/SVG/CloudSpanner-512-color.svg",
+      "legacy": "cloud_spanner/cloud_spanner.svg",
+      "category": "category_databases"
+    },
+    "speech_to_text": {
+      "legacy": "speech-to-text/speech-to-text.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "storage_transfer_service": {
+      "category": "category_storage"
+    },
+    "transcoder": {
+      "category": "category_media_services"
+    },
+    "vertex_ai": {
+      "core": "Unique Icons/Vertex AI/SVG/VertexAI-512-color.svg",
+      "legacy": "vertexai/vertexai.svg",
+      "category": "category_ai_machine_learning"
+    },
+    "vertex_ai_search": {
+      "category": "category_agents"
+    },
+    "video_stitcher": {
+      "category": "category_media_services"
+    },
+    "virtual_private_cloud": {
+      "legacy": "virtual_private_cloud/virtual_private_cloud.svg",
+      "category": "category_networking"
+    },
+    "vmware_engine": {
+      "legacy": "vmware_engine/vmware_engine.svg",
+      "category": "category_compute"
+    },
+    "web_security_scanner": {
+      "legacy": "web_security_scanner/web_security_scanner.svg",
+      "category": "category_security_identity"
+    },
+    "workflows": {
+      "legacy": "workflows/workflows.svg",
+      "category": "category_integration_services"
+    },
+    "workload_manager": {
+      "category": "category_operations"
+    }
+  },
+  "legibility16": [
+    {
+      "subject": "VM instance",
+      "key": "compute_engine",
+      "decision": "official",
+      "note": "Core colour mark: the chip outline and pins stay distinct at 16 px; kept."
+    },
+    {
+      "subject": "GKE pod (and every Kubernetes object)",
+      "key": "google_kubernetes_engine",
+      "decision": "official",
+      "note": "Core colour mark: the inner cube softens at 16 px, the four-colour hexagon stays recognisable; kept. Google ships no pod glyph; a pod-specific own drawing would need a catalog icon override and is not drawn."
+    },
+    {
+      "subject": "Firewall rule and firewall policy",
+      "key": "cloud_firewall_rules",
+      "decision": "official",
+      "note": "Legacy two-tone brick wall: the courses stay separate at 16 px; kept."
+    },
+    {
+      "subject": "Subnetwork (and VPC network)",
+      "key": "virtual_private_cloud",
+      "decision": "official",
+      "note": "Legacy two-tone node ring: the four nodes and links stay distinct at 16 px; kept. Subnets share the VPC glyph; the zone tint and title tell them apart."
+    },
+    {
+      "subject": "Service account",
+      "key": "service_account",
+      "decision": "own",
+      "note": "No Google glyph exists for a service account in the three sets; own drawing (person with a machine badge), legible at 16 px."
+    }
+  ]
+}

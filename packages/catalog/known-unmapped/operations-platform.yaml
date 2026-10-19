@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Operations and platform. `owns` lists the official asset types this group owns, mapped or not (exact types,
+# or <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not
+# mapped yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group operations-platform
+title: Operations and platform
+owns:
+  - 'apigee.googleapis.com/*'
+  - 'apihub.googleapis.com/*'
+  - 'apphub.googleapis.com/*'
+  - 'backupdr.googleapis.com/*'
+  - 'blockchainnodeengine.googleapis.com/*'
+  - 'cloudasset.googleapis.com/*'
+  - 'cloudbilling.googleapis.com/*'
+  - 'cloudcontrolspartner.googleapis.com/*'
+  - 'cloudquotas.googleapis.com/*'
+  - 'connectors.googleapis.com/*'
+  - 'faulttesting.googleapis.com/*'
+  - 'financialservices.googleapis.com/*'
+  - 'firebase.googleapis.com/*'
+  - 'firebasedataconnect.googleapis.com/*'
+  - 'firebaserules.googleapis.com/*'
+  - 'firebasestorage.googleapis.com/*'
+  - 'integrations.googleapis.com/*'
+  - 'krmapihosting.googleapis.com/*'
+  - 'livestream.googleapis.com/*'
+  - 'logging.googleapis.com/*'
+  - 'migrationcenter.googleapis.com/*'
+  - 'monitoring.googleapis.com/*'
+  - 'osconfig.googleapis.com/*'
+  - 'servicedirectory.googleapis.com/*'
+  - 'servicemanagement.googleapis.com/*'
+  - 'serviceusage.googleapis.com/*'
+  - 'transcoder.googleapis.com/*'
+  - 'videostitcher.googleapis.com/*'
+  - 'workloadmanager.googleapis.com/*'
+types:
+  faulttesting.googleapis.com/Experiment: fault injection testing; unmapped pending fixture and rules
+  faulttesting.googleapis.com/ExperimentTemplate: fault injection testing; unmapped pending fixture and rules
+  faulttesting.googleapis.com/Validation: fault injection testing; unmapped pending fixture and rules
+  firebasestorage.googleapis.com/Bucket: Firebase storage bucket; unmapped pending fixture and rules
+  firebasestorage.googleapis.com/DefaultBucket: Firebase storage bucket; unmapped pending fixture and rules

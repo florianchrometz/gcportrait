@@ -1,0 +1,394 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Compute Engine, load balancing and edge: forwarding rules, target proxies and pools, URL maps, backend
+# services and buckets, network endpoint groups, health checks, classic SSL certificates and policies, and
+# Cloud Armor security policies. compute.googleapis.com is shared by four catalog groups, each in its own file
+# (products/compute.googleapis.com.<group>.yaml); the product icon is the Compute Engine icon the first file
+# sets, and the load-balancing types override it with the Cloud Load Balancing and Cloud Armor icons.
+#
+# The traffic path is a chain of `routes` relations: forwarding rule → target proxy (or target pool, target
+# instance, service attachment, or straight to a backend service) → URL map → backend service or bucket →
+# instance group or network endpoint group. Certificates, SSL policies, health checks and security policies
+# hang off that chain as `uses`. Compute references are self-links; the global and regional variants of a
+# type share one entry (CAI exports regional proxies, URL maps, health checks, certificates, SSL and security
+# policies under the same type as the global ones).
+product: Compute Engine
+service: compute.googleapis.com
+icon: compute_engine
+types:
+  compute.googleapis.com/ForwardingRule:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.IPAddress}} · {{data.IPProtocol}} {{data.portRange}} · {{data.loadBalancingScheme | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/forwardingRules/details/regions/{{location}}/forwardingRules/{{data.name}}?project={{projectId}}'
+    ips:
+      - "$[?(@.IPAddress != '0.0.0.0')].IPAddress"
+    relations:
+      - { kind: routes, to: $.data.target, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.backendService, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+    notes: >-
+      Regional forwarding rules (CAI also lists global names under this type). `target` is a target proxy,
+      target pool, target instance, classic VPN gateway or, for a Private Service Connect endpoint, a service
+      attachment (badge "PSC" when `pscConnectionId` is set); a PSC endpoint for Google APIs names a bundle
+      (`all-apis`, `vpc-sc`) instead, which stays a dangling value. Internal passthrough and backend-service
+      based external passthrough load balancers set `backendService` and no target. `IPAddress` is always the
+      address itself when read back, never an Address URL; the reserved Address lists the rule in its
+      `users`. `ports` (up to five) is not shown in the subtitle because it excludes `portRange`.
+
+  compute.googleapis.com/GlobalForwardingRule:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.IPAddress}} · {{data.IPProtocol}} {{data.portRange}} · {{data.loadBalancingScheme | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/globalForwardingRules/details/{{data.name}}?project={{projectId}}'
+    ips:
+      - "$[?(@.IPAddress != '0.0.0.0')].IPAddress"
+    relations:
+      - { kind: routes, to: $.data.target, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.backendService, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+    notes: >-
+      Global external and cross-region internal Application and proxy Network load balancers, Cloud Service
+      Mesh (INTERNAL_SELF_MANAGED, address 0.0.0.0, not indexed as an address) and global PSC endpoints for
+      Google APIs. Only internal
+      schemes and PSC set `network`/`subnetwork`; external rules nest in their project. Global external
+      passthrough Network Load Balancers set `backendService` instead of a target.
+
+  compute.googleapis.com/TargetHttpProxy:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'HTTP proxy · {{location}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/targetHttpProxies/details/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.urlMap, normalize: computeSelfLink }
+
+  compute.googleapis.com/TargetHttpsProxy:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'HTTPS proxy · {{location}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/targetHttpsProxies/details/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.urlMap, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.sslCertificates[*]', normalize: name }
+      - { kind: uses, to: $.data.certificateMap, normalize: name, service: certificatemanager.googleapis.com }
+      - { kind: uses, to: $.data.sslPolicy, normalize: computeSelfLink }
+      - { kind: uses, to: $.data.serverTlsPolicy, normalize: name, service: networksecurity.googleapis.com }
+    notes: >-
+      `sslCertificates` holds classic SslCertificate self-links or, on regional and cross-region proxies,
+      Certificate Manager certificates (`//certificatemanager.googleapis.com/…` or their https URL), so it is
+      read with the generic `name` normaliser, which also turns Compute self-links into Compute names. Global
+      external proxies use a Certificate Manager map (`certificateMap`) instead. `serverTlsPolicy` (mTLS) is a
+      Network Security name. `authorizationPolicy` is documented as having no effect and is not drawn.
+
+  compute.googleapis.com/TargetGrpcProxy:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'gRPC proxy · {{location}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/targetGrpcProxies/details/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.urlMap, normalize: computeSelfLink }
+    notes: Cloud Service Mesh proxyless gRPC; `validateForProxyless` marks URL maps checked for proxyless clients.
+
+  compute.googleapis.com/TargetSslProxy:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'SSL proxy · {{data.proxyHeader | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/targetSslProxies/details/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.service, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.sslCertificates[*]', normalize: name }
+      - { kind: uses, to: $.data.certificateMap, normalize: name, service: certificatemanager.googleapis.com }
+      - { kind: uses, to: $.data.sslPolicy, normalize: computeSelfLink }
+    notes: A proxy Network Load Balancer goes straight from the proxy to a backend service (`service`), no URL map.
+
+  compute.googleapis.com/TargetTcpProxy:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'TCP proxy · {{data.proxyHeader | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/targetTcpProxies/details/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.service, normalize: computeSelfLink }
+
+  compute.googleapis.com/TargetPool:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'target pool · {{data.sessionAffinity | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/list/loadBalancers?project={{projectId}}'
+    relations:
+      - { kind: routes, to: '$.data.instances[*]', normalize: computeSelfLink }
+      - { kind: routes, to: $.data.backupPool, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.healthChecks[*]', normalize: computeSelfLink }
+      - { kind: secures, to: $.data.securityPolicy, normalize: computeSelfLink, reverse: true }
+    notes: >-
+      Legacy target-pool based external passthrough Network Load Balancer. The backup pool is a failover
+      traffic path (`routes`). Only legacy HttpHealthChecks apply. `securityPolicy` is output only: the Cloud
+      Armor network edge policy set on the pool, which secures it (a reverse rule).
+
+  compute.googleapis.com/TargetInstance:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'target instance · {{location}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/list/loadBalancers?project={{projectId}}'
+    relations:
+      - { kind: routes, to: $.data.instance, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - { kind: secures, to: $.data.securityPolicy, normalize: computeSelfLink, reverse: true }
+    notes: Protocol forwarding to one VM (zonal). `network` is optional; without it the VM's first NIC's network is used.
+
+  compute.googleapis.com/UrlMap:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'URL map · {{data.hostRules[0].hosts[0]}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/details/http/{{data.name}}?project={{projectId}}'
+    domains:
+      - '$.data.hostRules[*].hosts[*]'
+    relations:
+      - { kind: routes, to: $.data.defaultService, normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: '$.data.defaultRouteAction.weightedBackendServices[*].backendService',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: routes,
+          to: $.data.defaultRouteAction.requestMirrorPolicy.backendService,
+          normalize: computeSelfLink,
+        }
+      - { kind: routes, to: '$.data.pathMatchers[*].defaultService', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: '$.data.pathMatchers[*].defaultRouteAction.weightedBackendServices[*].backendService',
+          normalize: computeSelfLink,
+        }
+      - { kind: routes, to: '$.data.pathMatchers[*].pathRules[*].service', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: '$.data.pathMatchers[*].pathRules[*].routeAction.weightedBackendServices[*].backendService',
+          normalize: computeSelfLink,
+        }
+      - { kind: routes, to: '$.data.pathMatchers[*].routeRules[*].service', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: '$.data.pathMatchers[*].routeRules[*].routeAction.weightedBackendServices[*].backendService',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: routes,
+          to: '$.data.pathMatchers[*].routeRules[*].routeAction.requestMirrorPolicy.backendService',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: routes,
+          to: '$.data.pathMatchers[*].defaultRouteAction.requestMirrorPolicy.backendService',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: routes,
+          to: '$.data.pathMatchers[*].pathRules[*].routeAction.requestMirrorPolicy.backendService',
+          normalize: computeSelfLink,
+        }
+      - { kind: uses, to: $.data.defaultCustomErrorResponsePolicy.errorService, normalize: computeSelfLink }
+      - {
+          kind: uses,
+          to: '$.data.pathMatchers[*].defaultCustomErrorResponsePolicy.errorService',
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: uses,
+          to: "$.data.pathMatchers[*]['pathRules','routeRules'][*].customErrorResponsePolicy.errorService",
+          normalize: computeSelfLink,
+        }
+    notes: >-
+      The Cloud Console names an Application Load Balancer after its URL map. Services are backend services
+      or backend buckets; weighted backend services (traffic splitting) and request mirroring (at every level
+      a route action exists: the map, a path matcher, a path rule, a route rule) are routes too. Custom error
+      responses come from a backend bucket (customErrorResponsePolicy.errorService, a full or partial URL, at
+      the map, path matcher, path rule and route rule levels): uses, since no request is routed there.
+      A redirect-only map (`defaultUrlRedirect`, the HTTP-to-HTTPS map) has no outgoing routes. Host rules may
+      carry `host:port` and wildcards; the host part is kept, a bare `*` is not a domain.
+
+  compute.googleapis.com/BackendService:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.protocol}} · {{data.loadBalancingScheme | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/backends/details/backendService/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: routes, to: '$.data.backends[*].group', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.healthChecks[*]', normalize: computeSelfLink }
+      - { kind: secures, to: $.data.securityPolicy, normalize: computeSelfLink, reverse: true }
+      - { kind: secures, to: $.data.edgeSecurityPolicy, normalize: computeSelfLink, reverse: true }
+      - { kind: uses, to: $.data.serviceLbPolicy, normalize: name, service: networkservices.googleapis.com }
+      - {
+          kind: uses,
+          to: '$.data.serviceBindings[*]',
+          normalize: name,
+          service: networkservices.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: $.data.securitySettings.clientTlsPolicy,
+          normalize: name,
+          service: networksecurity.googleapis.com,
+        }
+    notes: >-
+      Global backend services. Backends are instance groups or network endpoint groups (zonal, serverless,
+      PSC, internet). Cloud Armor attaches through `securityPolicy` (backend policy) and `edgeSecurityPolicy`
+      (edge policy), both output only; the policy does not list its targets, so both are read here as reverse
+      rules: the policy secures the backend service. `iap.enabled` (badge "IAP") and
+      `enableCDN` (badge "CDN") are flags, not references. `serviceBindings` (Cloud Service Mesh with Service
+      Directory) replace backends and health checks; `securitySettings.clientTlsPolicy` is the mesh client
+      mTLS policy. `usedBy` repeats the incoming references and is not read.
+
+  compute.googleapis.com/RegionBackendService:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.protocol}} · {{data.loadBalancingScheme | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/list/backends?project={{projectId}}'
+    relations:
+      - { kind: routes, to: '$.data.backends[*].group', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.healthChecks[*]', normalize: computeSelfLink }
+      - { kind: secures, to: $.data.securityPolicy, normalize: computeSelfLink, reverse: true }
+      - { kind: uses, to: $.data.serviceLbPolicy, normalize: name, service: networkservices.googleapis.com }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+    notes: >-
+      Regional backend services: internal passthrough (`INTERNAL`, which carries `network`), regional
+      internal and external Application and proxy Network load balancers, backend-service based external
+      passthrough Network Load Balancers. Failover backends (`backends[*].failover`) are routes like the others.
+
+  compute.googleapis.com/BackendBucket:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'gs://{{data.bucketName}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/backends/details/backendBucket/{{data.name}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.bucketName, normalize: gcsUri }
+      - { kind: secures, to: $.data.edgeSecurityPolicy, normalize: computeSelfLink, reverse: true }
+    notes: >-
+      Serves a Cloud Storage bucket behind an Application Load Balancer (badge "CDN" when `enableCdn`). The
+      bucket is a `uses` target, not a route, so the traffic chain ends at the backend bucket.
+
+  compute.googleapis.com/NetworkEndpointGroup:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.networkEndpointType | lower}} · {{data.cloudRun.service | first(data.cloudFunction.function, data.appEngine.service)}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/compute/networkendpointgroups/list?project={{projectId}}'
+    ips:
+      - $.data.pscData.consumerPscAddress
+    relations:
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+      - { kind: routes, to: $.data.pscTargetService, normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: $.data.cloudRun.service,
+          normalize: siblingName,
+          service: run.googleapis.com,
+          pattern: 'projects/{project}/locations/{region}/services/{id}',
+        }
+      - {
+          kind: routes,
+          to: $.data.cloudFunction.function,
+          normalize: siblingName,
+          service: cloudfunctions.googleapis.com,
+          pattern: 'projects/{project}/locations/{region}/functions/{id}',
+        }
+      - {
+          kind: routes,
+          to: $.data.appEngine.service,
+          normalize: siblingName,
+          service: appengine.googleapis.com,
+          pattern: 'apps/{projectId}/services/{id}',
+        }
+    notes: >-
+      Zonal (GCE_VM_IP, GCE_VM_IP_PORT, NON_GCP_PRIVATE_IP_PORT), regional (SERVERLESS, PRIVATE_SERVICE_CONNECT,
+      INTERNET_*) and global (INTERNET_*) groups. The endpoints themselves are not in the resource, so the VMs
+      or pods behind a zonal NEG are unknown (drawer note). Serverless NEGs name their Cloud Run service, Cloud
+      Run function or App Engine service by its short name only (`cloudRun.service`, `cloudFunction.function`,
+      `appEngine.service`): siblingName completes it with the NEG's project and region (App Engine:
+      the app named after the project id), so the NEG routes to the service; the subtitle names it too
+      (first(…)). URL-mask NEGs (`urlMask` without a service) stay without an edge. A PSC NEG's `pscTargetService` is a service
+      attachment (drawn) or a Google API host such as `europe-west3-cloudkms.googleapis.com` (dangling).
+
+  compute.googleapis.com/HealthCheck:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: '{{data.type}} · {{data.httpHealthCheck.port}}{{data.httpHealthCheck.requestPath}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/compute/healthChecksDetail/{{data.name}}?project={{projectId}}'
+    notes: >-
+      Global and regional health checks. The port and path live in the protocol's own block (`httpHealthCheck`,
+      `httpsHealthCheck`, `tcpHealthCheck`, …); the subtitle shows the HTTP one and just the type otherwise.
+
+  compute.googleapis.com/HttpHealthCheck:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: 'legacy HTTP · {{data.port}}{{data.requestPath}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/compute/healthChecks?project={{projectId}}'
+    notes: Legacy health check; target pools can only use these.
+
+  compute.googleapis.com/HttpsHealthCheck:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: 'legacy HTTPS · {{data.port}}{{data.requestPath}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/compute/healthChecks?project={{projectId}}'
+
+  compute.googleapis.com/SslCertificate:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.subjectAlternativeNames[0]}} · {{data.type | lower}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-services/loadbalancing/advanced/sslCertificates/details/{{data.name}}?project={{projectId}}'
+    domains:
+      - '$.data.managed.domains[*]'
+      - '$.data.subjectAlternativeNames[*]'
+    notes: >-
+      Classic (Compute) certificates, Google-managed (`managed.domains`, `managed.status`) or self-managed.
+      `expireTime` is the expiry. Proxies point at certificates; the certificate points at nothing.
+
+  compute.googleapis.com/SslPolicy:
+    role: leaf
+    label: '{{data.name}}'
+    subtitle: '{{data.profile | lower}} · {{data.minTlsVersion}}'
+    icon: cloud_load_balancing
+    console: 'https://console.cloud.google.com/net-security/sslpolicies/details/{{data.name}}?project={{projectId}}'
+
+  compute.googleapis.com/SecurityPolicy:
+    role: core
+    label: '{{data.shortName}}'
+    subtitle: '{{data.type | lower}}'
+    icon: cloud_armor
+    console: 'https://console.cloud.google.com/net-security/securitypolicies/details/{{data.name}}?project={{projectId}}'
+    relations:
+      - {
+          kind: secures,
+          to: '$.data.associations[*].attachmentId',
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+    notes: >-
+      Cloud Armor. Backend (CLOUD_ARMOR), edge (CLOUD_ARMOR_EDGE) and network edge (CLOUD_ARMOR_NETWORK)
+      policies are attached from the other side: backend services, backend buckets, target pools and target
+      instances name them, and the policy lists no targets; their reverse rules draw the policy
+      securing each of them (`secures`). Hierarchical policies live under the
+      organisation (//compute.googleapis.com/locations/global/securityPolicies/<numeric id>, user-facing name
+      in `shortName`, no project and so no console link) and secure the folders or organisation in
+      `associations[*].attachmentId`. The label is shortName, which only hierarchical policies carry; a
+      project policy's label falls back to its name.

@@ -1,0 +1,9 @@
+{
+  "name": "//containerregistry.googleapis.com/eu.gcr.io/demo-ops-1/legacy-batch@sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a39281706f5e4d3c2b1a0",
+  "assetType": "containerregistry.googleapis.com/Image",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "eu",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {}
+}

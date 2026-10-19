@@ -1,0 +1,141 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+  A trimmed, hand-written stand-in for the official supported-asset-types page, used by
+  scripts/catalog-fetch-official.test.ts. It keeps the page's structure (three headed tables; a product name
+  in bold in each row's first cell; identifiers in <code> broken up with <wbr>; API reference links) and
+  none of its text.
+-->
+<html lang="en">
+  <body>
+    <table class="navigation">
+      <tr>
+        <td><b>Not a section</b></td>
+        <td><code>ignored.googleapis.com/BeforeTheSections</code></td>
+      </tr>
+    </table>
+    <h2 id="resource-types" data-text="Resource types">Resource types</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Asset type</th>
+        </tr>
+      </thead>
+      <tbody class="list">
+        <tr>
+          <td>
+            <p id="resource-compute-engine"><b>Compute Engine</b></p>
+            <div>
+              <p>A note that mentions <code>notes.googleapis.com/InTheFirstCell</code>.</p>
+            </div>
+          </td>
+          <td>
+            <p><a href="https://compute.googleapis.com/$discovery/rest?version=v1">API reference</a></p>
+            <ul>
+              <li>
+                <p>
+                  <a href="/compute/docs/reference/rest/v1/networks">
+                    <code translate="no" dir="ltr">
+                      compute.<wbr />googleapis.<wbr />com/<wbr />Network
+                    </code>
+                  </a>
+                </p>
+              </li>
+              <li>
+                <p>
+                  <a href="/compute/docs/reference/rest/v1/subnetworks"
+                    ><code translate="no" dir="ltr"
+                      >compute.<wbr />googleapis.<wbr />com/<wbr />Subnetwork</code
+                    ></a
+                  >
+                </p>
+                <p>Searchable attributes:</p>
+                <ul>
+                  <li><code translate="no" dir="ltr">ipCidrRange</code></li>
+                </ul>
+              </li>
+              <li>
+                <p>
+                  <a href="/compute/docs/reference/rest/v1/networks">
+                    <code translate="no" dir="ltr">compute.<wbr />googleapis.<wbr />com/<wbr />Network</code>
+                  </a>
+                </p>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p id="resource-google-kubernetes-engine"><b>Google Kubernetes Engine</b></p>
+          </td>
+          <td>
+            <ul>
+              <li>
+                <a href="https://kubernetes.io/docs/reference/kubernetes-api/cluster-resources/namespace-v1/">
+                  <code translate="no" dir="ltr">k8s.io/Namespace</code>
+                </a>
+              </li>
+              <li>
+                <code translate="no" dir="ltr">apps.<wbr />k8s.<wbr />io/<wbr />Deployment</code>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p id="resource-oracle"><b>Oracle Database&#64;Google Cloud &amp; friends</b></p>
+          </td>
+          <td>
+            <ul>
+              <li>
+                <a href="/oracle/reference?a=1&amp;b=2"
+                  ><code>oracledatabase.<wbr />googleapis.<wbr />com/<wbr />AutonomousDatabase</code></a
+                >
+              </li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p id="resource-empty"><b>A product without types</b></p>
+          </td>
+          <td><p>Nothing listed.</p></td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="policy-types" data-text="Policy types">Policy types</h2>
+    <table>
+      <tbody>
+        <tr>
+          <td id="policy-access-policy"><b>Access policy</b></td>
+          <td>
+            <ul>
+              <li>
+                <code>compute.<wbr />googleapis.<wbr />com/<wbr />Network</code>
+              </li>
+              <li><code>iap.googleapis.com/Tunnel</code></li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="runtime-information-types" data-text="Runtime information types">Runtime information types</h2>
+    <table>
+      <tbody>
+        <tr>
+          <td>
+            <p><b>OS inventory</b></p>
+          </td>
+          <td>
+            <ul>
+              <li>
+                <code>compute.<wbr />googleapis.<wbr />com/<wbr />Instance</code>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Last updated 2026-01-01 UTC.</p>
+  </body>
+</html>

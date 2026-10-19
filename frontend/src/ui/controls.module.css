@@ -1,0 +1,105 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The primitives' trigger controls (skill gcp-diagram-style §9: 32 px tall, 8 px radius, 13 px text), their
+   visible labels and carets, the inert look of a control that is not available yet (aria-disabled: dashed
+   border, secondary text), as the top bar's placeholders have it, and the destructive variant. Tokens only,
+   so both themes follow. */
+.anchor {
+  position: relative;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.control:hover {
+  background: var(--color-surface-container);
+}
+
+.control[aria-disabled='true'] {
+  border-style: dashed;
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+.control[aria-disabled='true']:hover {
+  background: var(--color-surface);
+}
+
+/* The highlighted primary action: `cx(controls.control, controls.primary)`, the primary fill and on-primary
+   text (light 4.51 : 1, dark 6.12 : 1; ui/tokens.test.ts). As with danger, the compound selector outranks
+   .control and any page's single class; an inert one keeps the inert look. */
+.control.primary:not([aria-disabled='true']) {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.control.primary:not([aria-disabled='true']):hover,
+.control.primary:not([aria-disabled='true'])[aria-expanded='true'] {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--color-on-surface) 12%, transparent),
+    color-mix(in srgb, var(--color-on-surface) 12%, transparent)
+  );
+}
+
+/* A pressed toggle ("Play extras", playback play): the primary colour as outline and text. */
+.control[aria-pressed='true']:not([aria-disabled='true']) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* A destructive action (every Delete button): `cx(controls.control, controls.danger)`, the error colour as
+   text and outline. On the control's fills it reaches, light, 4.77 : 1 on the surface and 4.53 on the
+   hover's surface container; dark, 6.90 and 5.44. The compound selector outranks `.control` and any page's
+   single class, so the variant holds whatever order the bundler emits the stylesheets in; an inert one
+   keeps the inert look. */
+.control.danger:not([aria-disabled='true']) {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+input.control {
+  cursor: text;
+}
+
+input.control::placeholder {
+  color: var(--color-on-surface-variant);
+  opacity: 1;
+}
+
+.caret {
+  font-size: 10.5px;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fieldLabel {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+/* A phone or a tablet: a field's label and its control share a line while they fit, and wrap otherwise. */
+@media (max-width: 79.99rem) {
+  .field {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+}

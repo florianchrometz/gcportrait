@@ -1,0 +1,22 @@
+{
+  "name": "//spanner.googleapis.com/projects/demo-data-1/instanceConfigs/custom-eur3-read-us",
+  "assetType": "spanner.googleapis.com/InstanceConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instanceConfigs/custom-eur3-read-us",
+    "displayName": "eur3 with a US read replica",
+    "configType": "USER_MANAGED",
+    "baseConfig": "projects/demo-data-1/instanceConfigs/eur3",
+    "replicas": [
+      { "location": "europe-west1", "type": "READ_WRITE", "defaultLeaderLocation": true },
+      { "location": "europe-west4", "type": "READ_WRITE" },
+      { "location": "europe-north1", "type": "WITNESS" },
+      { "location": "us-east1", "type": "READ_ONLY" }
+    ],
+    "leaderOptions": ["europe-west1", "europe-west4"],
+    "state": "READY"
+  }
+}

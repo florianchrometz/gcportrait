@@ -1,0 +1,83 @@
+[
+  {
+    "name": "//cloudtasks.googleapis.com/projects/10000000002/locations/europe-west3/queues/email-dispatch",
+    "assetType": "cloudtasks.googleapis.com/Queue",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/queues/email-dispatch",
+      "httpTarget": {
+        "uriOverride": {
+          "scheme": "HTTPS",
+          "host": "mailer.shop.example.com",
+          "pathOverride": {
+            "path": "/send"
+          }
+        },
+        "httpMethod": "POST",
+        "oidcToken": {
+          "serviceAccountEmail": "tasks-invoker@demo-app-1.iam.gserviceaccount.com",
+          "audience": "https://mailer.shop.example.com"
+        }
+      },
+      "rateLimits": {
+        "maxDispatchesPerSecond": 50,
+        "maxBurstSize": 100,
+        "maxConcurrentDispatches": 200
+      },
+      "retryConfig": {
+        "maxAttempts": 10,
+        "minBackoff": "0.100s",
+        "maxBackoff": "3600s",
+        "maxDoublings": 16
+      },
+      "state": "RUNNING"
+    }
+  },
+  {
+    "name": "//cloudtasks.googleapis.com/projects/10000000002/locations/europe-west3/queues/sheet-sync",
+    "assetType": "cloudtasks.googleapis.com/Queue",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/queues/sheet-sync",
+      "httpTarget": {
+        "uriOverride": {
+          "scheme": "HTTPS",
+          "host": "sheets.googleapis.com"
+        },
+        "httpMethod": "POST",
+        "oauthToken": {
+          "serviceAccountEmail": "sheet-sync@demo-app-1.iam.gserviceaccount.com",
+          "scope": "https://www.googleapis.com/auth/spreadsheets"
+        }
+      },
+      "rateLimits": {
+        "maxDispatchesPerSecond": 50,
+        "maxBurstSize": 100,
+        "maxConcurrentDispatches": 200
+      },
+      "retryConfig": {
+        "maxAttempts": 10,
+        "minBackoff": "0.100s",
+        "maxBackoff": "3600s",
+        "maxDoublings": 16
+      },
+      "state": "RUNNING"
+    }
+  }
+]

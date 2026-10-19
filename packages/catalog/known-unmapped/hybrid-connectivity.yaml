@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Hybrid connectivity. `owns` lists the official asset types this group owns, mapped or not (exact types, or
+# <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types not mapped
+# yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group hybrid-connectivity
+# Services you share with other groups get files named after this group (no plain products/<service>.yaml):
+# products/compute.googleapis.com.hybrid-connectivity.yaml.
+#
+# compute.googleapis.com is split by the catalog seed's sections; this group owns the Interconnect and VPN
+# types, and Cross-Site Interconnect's CrossSiteNetwork and WireGroup (Cross-Site Interconnect is hybrid
+# connectivity; the seed lists their relation hints under networking fabric).
+title: Hybrid connectivity
+owns:
+  - compute.googleapis.com/CrossSiteNetwork
+  - compute.googleapis.com/ExternalVpnGateway
+  - compute.googleapis.com/Interconnect
+  - compute.googleapis.com/InterconnectAttachment
+  - compute.googleapis.com/TargetVpnGateway
+  - compute.googleapis.com/VpnGateway
+  - compute.googleapis.com/VpnTunnel
+  - compute.googleapis.com/WireGroup
+  - 'networkconnectivity.googleapis.com/*'
+  - 'servicenetworking.googleapis.com/*'
+  - 'vpcaccess.googleapis.com/*'
+types: {}

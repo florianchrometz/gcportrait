@@ -1,0 +1,27 @@
+{
+  "name": "//storageinsights.googleapis.com/projects/demo-data-1/locations/europe-west3/reportConfigs/lake-inventory",
+  "assetType": "storageinsights.googleapis.com/ReportConfig",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/reportConfigs/lake-inventory",
+    "displayName": "Lake inventory",
+    "createTime": "2025-05-01T09:00:00Z",
+    "frequencyOptions": {
+      "frequency": "DAILY",
+      "startDate": { "year": 2025, "month": 5, "day": 1 },
+      "endDate": { "year": 2027, "month": 5, "day": 1 }
+    },
+    "parquetOptions": {},
+    "objectMetadataReportOptions": {
+      "metadataFields": ["project", "bucket", "name", "size", "storageClass", "updated"],
+      "storageFilters": { "bucket": "demo-data-1-lake" },
+      "storageDestinationOptions": {
+        "bucket": "demo-data-1-inventory",
+        "destinationPath": "lake/dt={datetime}"
+      }
+    }
+  }
+}

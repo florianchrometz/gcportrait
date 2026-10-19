@@ -1,0 +1,20 @@
+{
+  "name": "//videostitcher.googleapis.com/projects/demo-app-1/locations/europe-west1/cdnKeys/media-cdn",
+  "assetType": "videostitcher.googleapis.com/CdnKey",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west1/cdnKeys/media-cdn",
+    "hostname": "cdn.example.com",
+    "mediaCdnKey": {
+      "keyName": "stitcher-key"
+    }
+  }
+}

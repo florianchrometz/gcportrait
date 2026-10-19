@@ -1,0 +1,14 @@
+{
+  "name": "//eventarc.googleapis.com/projects/demo-ops-1/locations/europe-west3/channelConnections/shop-orders",
+  "assetType": "eventarc.googleapis.com/ChannelConnection",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/channelConnections/shop-orders",
+    "uid": "00000000-0000-4000-8000-000000000183",
+    "channel": "projects/demo-app-1/locations/europe-west3/channels/partner-events",
+    "createTime": "2026-04-01T10:10:00Z"
+  }
+}

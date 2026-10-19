@@ -1,0 +1,62 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The Focus control (FocusControl.tsx): the button's summary of the focus (cut with an ellipsis at a width that
+   keeps the top bar within 1280 px; its title and the button's name have all of it), and the popover's kind
+   select, parameter picker, notes and Clear focus button. Tokens only (both themes). On a phone or a tablet the
+   panel opens in the View sheet, as wide as the sheet. */
+.summary {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 8em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A refused focus (the view is drawn without it): words in the error colour on the button itself. */
+.refused {
+  display: inline-block;
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-error);
+  border-radius: 9px;
+  color: var(--color-error);
+  font-size: var(--font-size-footnote);
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.kind {
+  display: block;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-2);
+  width: 22rem;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+}
+
+.note strong {
+  color: var(--color-on-surface);
+  font-weight: var(--font-weight-medium);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--font-size-footnote);
+}
+
+.clear {
+  justify-self: start;
+}
+
+@media (max-width: 79.99rem) {
+  .panel {
+    width: auto;
+  }
+}

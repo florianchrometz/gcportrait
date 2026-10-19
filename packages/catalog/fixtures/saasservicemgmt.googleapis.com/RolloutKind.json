@@ -1,0 +1,19 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/rolloutKinds/shop-stack-waves",
+  "assetType": "saasservicemgmt.googleapis.com/RolloutKind",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/rolloutKinds/shop-stack-waves",
+    "unitKind": "projects/demo-ops-1/locations/global/unitKinds/shop-stack",
+    "rolloutOrchestrationStrategy": "Google.Cloud.Simple.OneLocationAtATime",
+    "updateUnitKindStrategy": "UPDATE_UNIT_KIND_STRATEGY_ON_START",
+    "errorBudget": {
+      "allowedCount": 1
+    },
+    "uid": "0b1c2d3e-4f5a-4b6c-9d7e-f8a9b0c1d2e3",
+    "createTime": "2026-02-01T10:00:00Z"
+  }
+}

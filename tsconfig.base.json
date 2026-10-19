@@ -1,0 +1,44 @@
+{
+  // Shared compiler settings for every gcportrait workspace: strict TypeScript everywhere (AGENTS.md,
+  // Architecture and code).
+  // This preset resolves modules like a bundler and is used as-is by browser code (frontend/).
+  // Node code (backend/, e2e/, repo tooling) and shared packages extend tsconfig.node.json instead.
+  //
+  // Every project is `composite` so the root tsconfig.json can reference it and `tsc -b` checks the whole
+  // workspace in dependency order. Only declaration files are emitted, into the project's own
+  // node_modules/.tmp/tsc (ignored by git, the linters and the provenance check); bundling and runtime
+  // builds are the job of Vite (frontend) and of the backend's bundle step (backend/bundle.ts, esbuild).
+  //
+  // TypeScript is held at 6.0.x because typescript-eslint 8 supports TypeScript < 6.1 only.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "types": [],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Every file must be transpilable on its own (Vite, tsx, Vitest) and type-only imports must say so.
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    // No enums, namespaces or parameter properties: keeps every file runnable by type-stripping tools.
+    "erasableSyntaxOnly": true,
+    "skipLibCheck": true,
+
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "${configDir}/node_modules/.tmp/tsc"
+  }
+}

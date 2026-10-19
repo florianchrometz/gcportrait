@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Serverless VPC Access: connectors that let Cloud Run, Cloud Run functions and App Engine reach a VPC
+# network. The serverless resources attach to the connector with their own rules; the connector names its
+# network and subnet by plain names, which the siblingName normaliser completes.
+product: Serverless VPC Access
+service: vpcaccess.googleapis.com
+icon: serverless_vpc_access
+types:
+  vpcaccess.googleapis.com/Connector:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.ipCidrRange}} · {{data.machineType}} · {{location}}'
+    console: 'https://console.cloud.google.com/networking/connectors?project={{projectId}}'
+    ips:
+      - $.data.ipCidrRange
+    relations:
+      - {
+          kind: attaches,
+          to: $.data.network,
+          normalize: siblingName,
+          service: compute.googleapis.com,
+          pattern: 'projects/{project}/global/networks/{id}',
+        }
+      - {
+          kind: attaches,
+          to: $.data.subnet,
+          normalize: siblingName,
+          service: compute.googleapis.com,
+          pattern: 'projects/{project}/regions/{region}/subnetworks/{id}',
+        }
+    notes: >-
+      Regional. data.network is the network's plain name in the connector's project, and data.subnet a
+      { name, projectId } pair (a plain subnet name, possibly in a Shared VPC host project, in the connector's
+      region); siblingName builds the Compute names, so the connector attaches to its network or
+      subnet and nests there (a subnet in a host project is a Shared VPC attachment). A subnet-based connector
+      has no data.ipCidrRange, so its subtitle starts with the machine type; the instance range is left out of
+      the subtitle, as older connectors set only data.minThroughput and data.maxThroughput (Mbps) and the
+      literal text around a missing count would remain. data.connectedProjects lists the projects whose
+      services use the connector: those services attach to it themselves, and an edge from the connector to
+      each project would point the wrong way, so it is not encoded.

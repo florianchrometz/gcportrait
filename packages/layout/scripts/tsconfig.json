@@ -1,0 +1,17 @@
+{
+  // Node commands of the package: the metrics generator (reads the frontend's font files) and the debug SVG
+  // dumper (builds demo Scenes through @gcportrait/graph). Kept apart so that Node types never leak into the
+  // layout's own sources.
+  "extends": "../../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "../node_modules/.tmp/tsc-scripts"
+  },
+  "include": ["."],
+  "references": [
+    { "path": ".." },
+    { "path": "../../demo-data" },
+    { "path": "../../graph" },
+    { "path": "../../catalog/tsconfig.lib.json" }
+  ]
+}

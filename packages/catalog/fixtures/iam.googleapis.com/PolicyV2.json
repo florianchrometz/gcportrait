@@ -1,0 +1,27 @@
+{
+  "name": "//iam.googleapis.com/policies/cloudresourcemanager.googleapis.com%2Fprojects%2F10000000004/denypolicies/no-key-creation",
+  "assetType": "iam.googleapis.com/PolicyV2",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+  "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-05-20T10:00:00Z",
+  "data": {
+    "name": "policies/cloudresourcemanager.googleapis.com%2Fprojects%2F10000000004/denypolicies/no-key-creation",
+    "uid": "6f1e2d3c-4b5a-4968-8776-655443322110",
+    "kind": "DenyPolicy",
+    "displayName": "Deny service account key creation",
+    "etag": "MTc1MjAwMDAwMA==",
+    "createTime": "2026-05-20T10:00:00Z",
+    "updateTime": "2026-05-20T10:00:00Z",
+    "rules": [
+      {
+        "description": "Nobody but the break-glass group creates keys",
+        "denyRule": {
+          "deniedPrincipals": ["principalSet://goog/public:all"],
+          "exceptionPrincipals": ["principalSet://goog/group/break-glass@example.com"],
+          "deniedPermissions": ["iam.googleapis.com/serviceAccountKeys.create"]
+        }
+      }
+    ]
+  }
+}

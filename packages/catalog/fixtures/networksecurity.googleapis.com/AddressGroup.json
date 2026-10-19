@@ -1,0 +1,48 @@
+[
+  {
+    "name": "//networksecurity.googleapis.com/organizations/30000000001/locations/global/addressGroups/blocked-ranges",
+    "assetType": "networksecurity.googleapis.com/AddressGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "organizations/30000000001/locations/global/addressGroups/blocked-ranges",
+      "description": "Ranges blocked everywhere in the organisation",
+      "createTime": "2026-02-10T09:00:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "type": "IPV4",
+      "capacity": 100,
+      "purpose": ["DEFAULT"],
+      "items": ["198.51.100.0/24", "192.0.2.0/24"],
+      "selfLink": "https://networksecurity.googleapis.com/v1/organizations/30000000001/locations/global/addressGroups/blocked-ranges"
+    }
+  },
+  {
+    "name": "//networksecurity.googleapis.com/projects/10000000001/locations/global/addressGroups/partner-ranges",
+    "assetType": "networksecurity.googleapis.com/AddressGroup",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-09-20T09:30:00Z",
+    "data": {
+      "name": "projects/10000000001/locations/global/addressGroups/partner-ranges",
+      "description": "Partner extranet ranges",
+      "createTime": "2026-02-10T09:10:00Z",
+      "updateTime": "2026-09-20T09:30:00Z",
+      "type": "IPV4",
+      "capacity": 50,
+      "purpose": ["DEFAULT", "CLOUD_ARMOR"],
+      "items": ["172.24.0.0/16", "203.0.113.192/27"],
+      "labels": {
+        "owner": "network"
+      },
+      "selfLink": "https://networksecurity.googleapis.com/v1/projects/10000000001/locations/global/addressGroups/partner-ranges"
+    }
+  }
+]

@@ -1,0 +1,94 @@
+---
+import Base from '../layouts/Base.astro';
+import { socialImage } from '../lib/media.js';
+import { breadcrumbLd } from '../lib/seo.js';
+import { REPOSITORY_URL, repositoryFileUrl } from '../site.js';
+
+const meta = {
+  title: 'Contributing',
+  description:
+    'Contribute to gcportrait: run the app in demo mode without Google Cloud, the checks, asset catalog entries, the provenance rules and the pull-request path.',
+  path: '/contributing/',
+  socialImage: socialImage('contributing', 'Contributing to gcportrait'),
+  jsonLd: [breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Contributing', path: '/contributing/' }])],
+};
+const loop = ['corepack enable', 'pnpm install', 'pnpm dev:demo     # the app in demo mode on http://localhost:5174', 'pnpm check        # format, lint, types, tests, catalog, provenance, licences'].join('\n');
+const guides = [
+  { href: repositoryFileUrl('docs/contributing.md'), title: 'Contributing guide', text: 'From a fork to a green check and a pull request: setup, the local loop, the checks, releases.' },
+  { href: repositoryFileUrl('AGENTS.md'), title: 'AGENTS.md', text: 'The rules of the project, the root file and one per folder that has rules of its own, with the layout and every command, for people and AI assistants alike.' },
+  { href: repositoryFileUrl('docs/packages.md'), title: 'Packages and data flow', text: 'The workspace packages and how a Cloud Asset Inventory source becomes a drawn diagram.' },
+  { href: repositoryFileUrl('.agents/skills/gcp-asset-catalog/SKILL.md'), title: 'Asset catalog guide', text: 'Add or change an asset type, a relation rule, a lens or a console link, with a fixture for each rule.' },
+  { href: repositoryFileUrl('docs/backlog.md'), title: 'Backlog', text: 'What is open: known defects, follow-ups and ideas for later, a good place to start.' },
+];
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<Base meta={meta}>
+  <div class="container contributing">
+    <h1>Contributing</h1>
+    <p class="lead">
+      gcportrait is open source under the Apache License 2.0, and contributions are welcome: new asset types for the
+      catalog, fixes, documentation, ideas. Everything runs locally in demo mode, so you need no Google Cloud account to
+      work on it.
+    </p>
+
+    <h2>Get going</h2>
+    <p>Node 22 (22.22.2 or newer) and pnpm through Corepack:</p>
+    <pre tabindex="0" aria-label="Local setup commands"><code>git clone {REPOSITORY_URL}.git && cd gcportrait
+{loop}</code></pre>
+
+    <h2>The guides</h2>
+    <ul class="grid cards">
+      {
+        guides.map((guide) => (
+          <li class="card">
+            <h3>
+              <a href={guide.href}>{guide.title}</a>
+            </h3>
+            <p>{guide.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>Before you open a pull request</h2>
+    <ul>
+      <li>Write the code yourself: nothing may be copied from other projects (the repository runs a provenance check).</li>
+      <li>Add tests, and a fixture for every catalog rule; run <code>pnpm check</code>, and <code>pnpm e2e</code> for app changes.</li>
+      <li>Check visual changes in the light and the dark theme.</li>
+      <li>Write the commit subject as the change should read in the next release’s notes.</li>
+    </ul>
+    <p>
+      Contributions are accepted under the project’s licence, the Apache License 2.0 (inbound = outbound), with no
+      contributor licence agreement (see the <a href={repositoryFileUrl('docs/contributing.md')}>contributing guide</a>).
+      <a href={`${REPOSITORY_URL}/issues`}>Issues</a> are the place for bugs and ideas.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .contributing {
+    padding-top: 2rem;
+    max-width: calc(var(--text-width) + 16rem);
+  }
+  .cards {
+    list-style: none;
+    padding: 0;
+  }
+  .cards h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.125rem;
+  }
+  .cards p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  /* Phones: the guide's link is a 44-pixel-high target without moving the card's text. */
+  @media (max-width: 47.99rem) {
+    .cards h3 a {
+      display: block;
+      padding-block: 0.7rem;
+      margin-block: -0.7rem;
+    }
+  }
+</style>

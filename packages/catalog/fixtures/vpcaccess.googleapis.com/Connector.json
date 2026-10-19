@@ -1,0 +1,54 @@
+[
+  {
+    "name": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+    "assetType": "vpcaccess.googleapis.com/Connector",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/europe-west3/connectors/conn-europe-west3",
+      "network": "core",
+      "ipCidrRange": "10.248.0.0/28",
+      "state": "READY",
+      "minThroughput": 200,
+      "maxThroughput": 300,
+      "minInstances": 2,
+      "maxInstances": 3,
+      "machineType": "e2-micro",
+      "connectedProjects": ["demo-app-1"]
+    }
+  },
+  {
+    "name": "//vpcaccess.googleapis.com/projects/demo-net-1/locations/europe-west3/connectors/conn-subnet-europe-west3",
+    "assetType": "vpcaccess.googleapis.com/Connector",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-net-1/locations/europe-west3/connectors/conn-subnet-europe-west3",
+      "subnet": {
+        "name": "serverless-connectors",
+        "projectId": "demo-net-1"
+      },
+      "state": "READY",
+      "minThroughput": 200,
+      "maxThroughput": 1000,
+      "minInstances": 2,
+      "maxInstances": 10,
+      "machineType": "e2-standard-4",
+      "connectedProjects": ["demo-app-1"]
+    }
+  }
+]

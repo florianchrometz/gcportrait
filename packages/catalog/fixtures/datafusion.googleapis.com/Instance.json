@@ -1,0 +1,57 @@
+[
+  {
+    "name": "//datafusion.googleapis.com/projects/demo-data-1/locations/europe-west3/instances/pipelines",
+    "assetType": "datafusion.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/instances/pipelines",
+      "displayName": "pipelines",
+      "type": "ENTERPRISE",
+      "privateInstance": true,
+      "networkConfig": {
+        "network": "projects/demo-net-1/global/networks/core",
+        "ipAllocation": "10.96.0.0/22",
+        "connectionType": "VPC_PEERING"
+      },
+      "state": "ACTIVE",
+      "serviceEndpoint": "https://pipelines-demo-data-1-dot-euw3.datafusion.googleusercontent.com",
+      "apiEndpoint": "https://pipelines-demo-data-1-dot-euw3.datafusion.googleusercontent.com/api",
+      "version": "6.10.1",
+      "zone": "europe-west3-a",
+      "gcsBucket": "df-d4000000-0000-4000-8000-000000000001",
+      "tenantProjectId": "a1b2c3d4e5f6-tp",
+      "dataprocServiceAccount": "datafusion-runner@demo-data-1.iam.gserviceaccount.com",
+      "cryptoKeyConfig": {
+        "keyReference": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/datafusion"
+      },
+      "eventPublishConfig": { "enabled": true, "topic": "projects/demo-data-1/topics/pipeline-events" }
+    }
+  },
+  {
+    "name": "//datafusion.googleapis.com/projects/demo-data-1/locations/europe-west3/instances/pipelines-psc",
+    "assetType": "datafusion.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/instances/pipelines-psc",
+      "type": "DEVELOPER",
+      "privateInstance": true,
+      "networkConfig": {
+        "connectionType": "PRIVATE_SERVICE_CONNECT_INTERFACES",
+        "privateServiceConnectConfig": {
+          "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/psc-if-ml",
+          "unreachableCidrBlock": "192.168.0.0/25",
+          "effectiveUnreachableCidrBlock": "192.168.0.0/25"
+        }
+      },
+      "state": "ACTIVE",
+      "version": "6.10.1",
+      "dataprocServiceAccount": "datafusion-runner@demo-data-1.iam.gserviceaccount.com"
+    }
+  }
+]

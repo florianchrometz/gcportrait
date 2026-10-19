@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Containers and serverless. `owns` lists the official asset types this group owns, mapped or not (exact
+# types, or <service>/* for a whole service; the most specific pattern wins); `types` lists the owned types
+# not mapped yet, each with its reason (skill gcp-asset-catalog §6 and §8). Map a type in
+# products/<service>[.<suffix>].yaml with its fixture, then delete its line under `types`; `owns` stays.
+#
+# Check this group alone: pnpm catalog:check --group containers-serverless
+title: Containers and serverless
+owns:
+  - 'admissionregistration.k8s.io/*'
+  - 'anthos.googleapis.com/*'
+  - 'appengine.googleapis.com/*'
+  - 'apps.k8s.io/*'
+  - 'autoscaling.k8s.io/*'
+  - 'batch.k8s.io/*'
+  - 'cloudfunctions.googleapis.com/*'
+  - 'cloudtasks.googleapis.com/*'
+  - 'container.googleapis.com/*'
+  - 'eventarc.googleapis.com/*'
+  - 'extensions.k8s.io/*'
+  - 'gateway.networking.k8s.io/*'
+  - 'gkebackup.googleapis.com/*'
+  - 'gkehub.googleapis.com/*'
+  - 'gkemulticloud.googleapis.com/*'
+  - 'gkeonprem.googleapis.com/*'
+  - 'k8s.io/*'
+  - 'networking.k8s.io/*'
+  - 'policy.k8s.io/*'
+  - 'rbac.authorization.k8s.io/*'
+  - 'run.googleapis.com/*'
+  - 'storage.k8s.io/*'
+  - 'workflows.googleapis.com/*'
+types: {} # every owned type is mapped: products/container.googleapis.com.yaml, the Kubernetes API group
+# files (k8s.io, apps, batch, autoscaling, networking, extensions, gateway, rbac, storage, policy,
+# admissionregistration), gkehub, gkemulticloud, gkeonprem, anthos, gkebackup, run, cloudfunctions, appengine,
+# eventarc, cloudtasks and workflows.

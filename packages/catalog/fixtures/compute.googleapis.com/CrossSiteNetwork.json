@@ -1,0 +1,21 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-net-1/global/crossSiteNetworks/csn-eu",
+  "assetType": "compute.googleapis.com/CrossSiteNetwork",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#crossSiteNetwork",
+    "id": "5000000000000000261",
+    "name": "csn-eu",
+    "description": "Cross-Site Interconnect between the Frankfurt and Amsterdam data centres",
+    "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/crossSiteNetworks/csn-eu"
+  }
+}

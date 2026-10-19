@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Financial Services / AML AI: an instance
+# (customer-managed key required) holds datasets, engine configurations, models, backtest and prediction
+# results, all hidden and nested by name. Datasets read BigQuery tables and prediction results write them.
+product: Financial Services
+service: financialservices.googleapis.com
+icon: financial_services
+types:
+  financialservices.googleapis.com/Instance:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'AML AI · {{location}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    contains:
+      - byParent: financialservices.googleapis.com/Dataset
+      - byParent: financialservices.googleapis.com/EngineConfig
+      - byParent: financialservices.googleapis.com/Model
+      - byParent: financialservices.googleapis.com/BacktestResult
+      - byParent: financialservices.googleapis.com/PredictionResult
+    notes: >-
+      The API names the instance's children with the project number and a leading slash
+      (/projects/<number>/locations/<l>/instances/<i>/models/<m>) while Cloud Asset Inventory's name format
+      lists the project id, so the references between them (model → engine config and dataset, results → model
+      and dataset) are not read; they would stay dangling.
+
+  financialservices.googleapis.com/Dataset:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: uses, to: '$.data.tableSpecs.*', normalize: bigqueryUri }
+    notes: tableSpecs maps a table type (party, transaction, risk_case_event, …) to a bq://<p>.<d>.<t> table.
+
+  financialservices.googleapis.com/EngineConfig:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.lineOfBusiness | lower}}'
+
+  financialservices.googleapis.com/Model:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+
+  financialservices.googleapis.com/BacktestResult:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+
+  financialservices.googleapis.com/PredictionResult:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.outputs.predictionDestination.tableUri, normalize: bigqueryUri }
+      - { kind: uses, to: $.data.outputs.explainabilityDestination.tableUri, normalize: bigqueryUri }

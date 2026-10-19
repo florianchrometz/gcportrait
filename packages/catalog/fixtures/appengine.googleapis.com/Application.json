@@ -1,0 +1,30 @@
+{
+  "name": "//appengine.googleapis.com/apps/demo-app-1",
+  "assetType": "appengine.googleapis.com/Application",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "apps/demo-app-1",
+    "id": "demo-app-1",
+    "authDomain": "example.com",
+    "locationId": "europe-west3",
+    "codeBucket": "staging.demo-app-1.appspot.com",
+    "defaultBucket": "demo-app-1.appspot.com",
+    "servingStatus": "SERVING",
+    "defaultHostname": "demo-app-1.ey.r.appspot.com",
+    "serviceAccount": "gae-default@demo-app-1.iam.gserviceaccount.com",
+    "gcrDomain": "eu.gcr.io",
+    "databaseType": "CLOUD_FIRESTORE",
+    "featureSettings": {
+      "splitHealthChecks": true,
+      "useContainerOptimizedOs": true
+    }
+  }
+}

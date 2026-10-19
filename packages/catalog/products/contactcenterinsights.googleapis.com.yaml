@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Customer Experience Insights, formerly Contact Center AI Insights: analysis configuration records,
+# all hidden (topic models, phrase matchers, saved views, the location's encryption settings). Asset names
+# carry the project number. Conversations themselves are not inventory types.
+product: Customer Experience Insights
+service: contactcenterinsights.googleapis.com
+icon: contact_center_ai
+types:
+  contactcenterinsights.googleapis.com/EncryptionSpec:
+    role: hidden
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      The location singleton (projects/<number>/locations/<l>/encryptionSpec) whose kmsKey encrypts the
+      location's conversations and analyses.
+
+  contactcenterinsights.googleapis.com/IssueModel:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: A topic model trained on conversations; issueCount counts its topics.
+
+  contactcenterinsights.googleapis.com/PhraseMatcher:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: A phrase-matching rule set applied to conversations; one revision per asset (revisionId).
+
+  contactcenterinsights.googleapis.com/View:
+    role: hidden
+    label: '{{data.displayName}}'
+    notes: A saved conversation filter (value is the filter expression).

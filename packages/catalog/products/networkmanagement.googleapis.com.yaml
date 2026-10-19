@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Network Management API (Network Intelligence Center): Connectivity Tests and VPC Flow Logs configurations
+# (networking fabric). Both are operational records, hidden by default and counted in their project;
+# their references point at the network resources they test or log. References are relative Compute names
+# (projects/<id>/global/networks/<n>, …/regions/<r>/subnetworks/<s>, …), read with computeRelative.
+product: Network Management API
+service: networkmanagement.googleapis.com
+icon: network_intelligence_center
+types:
+  networkmanagement.googleapis.com/ConnectivityTest:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.protocol}} · {{data.reachabilityDetails.result | lower}}'
+    console: 'https://console.cloud.google.com/net-intelligence/connectivity/tests/details/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: "$.data['source','destination'].instance", normalize: computeRelative }
+      - { kind: uses, to: "$.data['source','destination'].network", normalize: computeRelative }
+      - { kind: uses, to: "$.data['source','destination'].forwardingRule", normalize: computeRelative }
+      - {
+          kind: uses,
+          to: "$.data['source','destination'].cloudSqlInstance",
+          normalize: cloudSqlConnectionName,
+        }
+      - {
+          kind: uses,
+          to: "$.data['source','destination'].gkeMasterCluster",
+          normalize: name,
+          service: container.googleapis.com,
+        }
+    notes: >-
+      A test names its source and destination endpoints; the ones that are assets (instances, networks,
+      forwarding rules, Cloud SQL instances, GKE control planes) are uses edges, plain IP addresses and ports
+      are not indexed (they belong to the endpoints, not to the test). The latest verdict is
+      reachabilityDetails.result. Cloud Run, Cloud Functions and App Engine endpoints are objects with a uri
+      and are not read.
+
+  networkmanagement.googleapis.com/VpcFlowLogsConfig:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}} · {{data.aggregationInterval | lower}}'
+    console: 'https://console.cloud.google.com/net-intelligence/vpc-flow-logs?project={{projectId}}'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data['network','subnet','interconnectAttachment','vpnTunnel']",
+          normalize: computeRelative,
+        }
+    notes: >-
+      Exactly one target per configuration (a network, a subnetwork, a VLAN attachment or a VPN tunnel, always in
+      the configuration's own project); organization-level configurations have none. Subnetworks also carry
+      their classic flow-log settings inline (data.logConfig).

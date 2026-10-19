@@ -1,0 +1,30 @@
+{
+  "name": "//managedkafka.googleapis.com/projects/demo-data-1/locations/europe-west3/clusters/events",
+  "assetType": "managedkafka.googleapis.com/Cluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000003/locations/europe-west3/clusters/events",
+    "createTime": "2025-11-04T10:00:00Z",
+    "updateTime": "2026-09-20T10:00:00Z",
+    "labels": { "team": "streaming" },
+    "capacityConfig": { "vcpuCount": "6", "memoryBytes": "25769803776" },
+    "rebalanceConfig": { "mode": "AUTO_REBALANCE_ON_SCALE_UP" },
+    "state": "ACTIVE",
+    "gcpConfig": {
+      "accessConfig": {
+        "networkConfigs": [{ "subnet": "projects/demo-net-1/regions/europe-west3/subnetworks/app" }]
+      },
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/kafka"
+    },
+    "tlsConfig": {
+      "trustConfig": {
+        "casConfigs": [{ "caPool": "projects/demo-sec-1/locations/europe-west3/caPools/kafka-clients" }]
+      }
+    },
+    "satisfiesPzs": false,
+    "satisfiesPzi": false
+  }
+}

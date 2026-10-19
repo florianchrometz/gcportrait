@@ -1,0 +1,27 @@
+{
+  "name": "//gkemulticloud.googleapis.com/projects/10000000002/locations/us-east4/azureClusters/orders-azure/azureNodePools/general",
+  "assetType": "gkemulticloud.googleapis.com/AzureNodePool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "us-east4",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/us-east4/azureClusters/orders-azure/azureNodePools/general",
+    "version": "1.31.4-gke.100",
+    "config": {
+      "vmSize": "Standard_D4s_v3"
+    },
+    "autoscaling": {
+      "minNodeCount": 1,
+      "maxNodeCount": 3
+    },
+    "subnetId": "/subscriptions/00000000-0000-4000-8000-0000000000b1/resourceGroups/orders/providers/Microsoft.Network/virtualNetworks/orders/subnets/nodes",
+    "state": "RUNNING",
+    "uid": "00000000-0000-4000-8000-000000000157"
+  }
+}

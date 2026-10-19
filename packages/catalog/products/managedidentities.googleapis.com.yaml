@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Managed Service for Microsoft Active Directory: managed AD domains. The domain controllers run in
+# a Google tenant project and are reached over VPC peering from the authorised networks.
+product: Managed Service for Microsoft Active Directory
+service: managedidentities.googleapis.com
+icon: managed_service_for_microsoft_active_directory
+types:
+  managedidentities.googleapis.com/Domain:
+    role: core
+    subtitle: '{{data.reservedIpRange}} · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/security/cloud-ad?project={{projectId}}'
+    ips:
+      - $.data.reservedIpRange
+      - '$.data.trusts[*].targetDnsIpAddresses[*]'
+    domains:
+      - $.data.fqdn
+      - '$.data.trusts[*].targetDomainName'
+    relations:
+      - { kind: attaches, to: '$.data.authorizedNetworks[*]', normalize: computeRelative }
+    notes: >-
+      projects/<p>/locations/global/domains/<fqdn>. authorizedNetworks are the VPC networks the domain is
+      reachable from (projects/<id>/global/networks/<n>): one network nests the domain in it (same project
+      only), several draw attaches edges. reservedIpRange is the /24 the controllers use. Trusts name other
+      Active Directory forests by DNS name with their DNS servers' addresses; the seed's peers edge between
+      two managed domains needs a normaliser from a domain name to a Domain asset, which does not exist, so
+      the trusted domain names are listed as hosts instead. The console link shape is not verified.

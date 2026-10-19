@@ -1,0 +1,286 @@
+---
+/**
+ * Fillable commands on a page (docs/website.md, "Fillable commands"; the docs pages with code, and the landing page):
+ * the Variables panel, the live region the Copy buttons speak through, and the script (src/lib/fillable-page.ts) that
+ * turns the code's `span.var` tokens into fields, keeps every field of a variable on one value, copies code blocks
+ * with the values filled in and keeps the values in the visitor's browser.
+ *
+ * The panel lists the variables of the page's fields, each with its label, token, description and a synthetic
+ * example, and an input to fill it in once for the whole page. It is shown open on a wide screen; below 52rem it
+ * folds away behind a button like the docs menu (a disclosure, src/layouts/Base.astro), so the guide still starts on
+ * the first screen of a phone. Without JavaScript the panel shows the list without inputs (the noscript style in
+ * Base.astro hides what carries `data-var-js`), and the code shows its tokens as text.
+ */
+import type { CommandVariable } from '@gcportrait/model';
+
+interface Props {
+  variables: readonly CommandVariable[];
+  /** The panel title's level: 2 on a docs page, 3 inside a section of the landing page. */
+  headingLevel?: 2 | 3;
+}
+const { variables, headingLevel = 2 } = Astro.props;
+const Heading = headingLevel === 3 ? 'h3' : 'h2';
+/** A description in pieces, its flags (`--project`) as code so they never break at their hyphens. */
+const pieces = (text: string): { text: string; flag: boolean }[] =>
+  text.split(/(--[a-z][a-z-]*)/).map((piece, index) => ({ text: piece, flag: index % 2 === 1 }));
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+{
+  variables.length > 0 && (
+    <section class="variables" aria-labelledby="variables-title">
+      <Heading id="variables-title" class="variables-title">
+        Variables
+      </Heading>
+      <button
+        type="button"
+        class="disclosure-button"
+        data-disclosure
+        aria-expanded="false"
+        aria-controls="variables-body"
+      >
+        <span>Variables ({variables.length})</span>
+        <svg class="chevron" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          ></path>
+        </svg>
+      </button>
+      <div id="variables-body" class="variables-body">
+        <p class="variables-intro" data-var-js>
+          Edit a highlighted value in any command, or fill it in here: every command on this page follows, and Copy
+          copies a command with your values. They stay in this browser{variables.some((variable) => variable.secret) ? ', except secrets' : ''}.
+        </p>
+        <noscript>
+          <p class="variables-intro">The commands on this page use these placeholders: replace each with your value.</p>
+        </noscript>
+        <ul class="variables-list">
+          {
+            variables.map((variable) => (
+              <li
+                class="variable"
+                id={`var-${variable.name}`}
+                data-var-row={variable.name}
+                data-label={variable.label}
+                data-pattern={variable.pattern}
+                data-hint={variable.hint}
+                data-secret={variable.secret ? '' : undefined}
+              >
+                <div class="variable-name">
+                  <label for={`var-${variable.name}-input`}>{variable.label}</label>
+                  <code>{variable.name}</code>
+                </div>
+                <input
+                  id={`var-${variable.name}-input`}
+                  class="variable-input"
+                  type={variable.secret ? 'password' : 'text'}
+                  data-var-input={variable.name}
+                  data-var-js
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  aria-describedby={`var-${variable.name}-about var-${variable.name}-hint`}
+                />
+                <p class="variable-about" id={`var-${variable.name}-about`}>
+                  {pieces(variable.description).map((piece) => (piece.flag ? <code>{piece.text}</code> : piece.text))}{' '}
+                  Example: <code class="variable-example">{variable.example}</code>
+                </p>
+                <p class="variable-hint" id={`var-${variable.name}-hint`} data-var-hint hidden>
+                  Expected: {variable.hint}.
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="variables-actions" data-var-js>
+          <button type="button" class="variables-clear" data-var-clear>
+            Clear values
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+<div class="visually-hidden" role="status" aria-live="polite" data-var-status></div>
+
+<style>
+  .variables {
+    max-width: var(--text-width);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9375rem;
+  }
+  .variables-title {
+    font-size: 1rem;
+    margin: 0;
+  }
+  .variables-intro {
+    color: var(--color-text-muted);
+    margin: 0.5rem 0 0.75rem;
+  }
+  /* Two columns where they fit: each variable's name and token, its input, and what it is with an example. */
+  .variables-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem 1.5rem;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+  }
+  .variable {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  .variable-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.5rem;
+  }
+  .variable-name label {
+    font-weight: 500;
+  }
+  .variable-name code {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: none;
+    padding: 0;
+  }
+  .variable-input {
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+  .variable-input:focus-visible {
+    outline-offset: 1px;
+    border-radius: var(--radius-small);
+  }
+  .variable-input[aria-invalid='true'] {
+    border-color: var(--color-error);
+    box-shadow: inset 0 0 0 1px var(--color-error);
+  }
+  .variable-about,
+  .variable-hint {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+  .variable-about {
+    color: var(--color-text-muted);
+  }
+  /* A long example (an OAuth client id) may break anywhere; a flag never does, on a phone neither. */
+  .variable-about code {
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+  .variable-about .variable-example {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .variable-hint {
+    color: var(--color-error);
+    font-weight: 500;
+  }
+  .variables-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 0 0.25rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .variables-clear {
+    min-height: 2.25rem;
+    padding: 0.25rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .variables-clear:hover {
+    background: var(--color-bg-alt);
+  }
+  .variables-clear:focus-visible {
+    border-radius: 999px;
+  }
+  .disclosure-button {
+    display: none;
+  }
+
+  /* Below 52rem (as the docs menu): one column, folded behind a full-width button, 44-pixel targets. */
+  @media (max-width: 51.99rem) {
+    .variables {
+      padding: 0;
+      border: 0;
+    }
+    .variables-title {
+      display: none;
+    }
+    .disclosure-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.875rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-small);
+      background: var(--color-bg);
+      color: var(--color-text);
+      font: inherit;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+    }
+    .disclosure-button:hover {
+      background: var(--color-bg-alt);
+    }
+    .disclosure-button:focus-visible {
+      border-radius: var(--radius-small);
+    }
+    .chevron {
+      flex: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.15s ease;
+    }
+    .disclosure-button[aria-expanded='true'] .chevron {
+      transform: rotate(180deg);
+    }
+    .disclosure-button + * {
+      display: none;
+    }
+    .disclosure-button[aria-expanded='true'] + * {
+      display: block;
+    }
+    .variables-body {
+      padding: 0 0.875rem 0.25rem;
+    }
+    .variable-input {
+      min-height: 2.75rem;
+      font-size: 1rem;
+    }
+    .variables-clear {
+      min-height: 2.75rem;
+    }
+  }
+</style>
+
+<script>
+  import { startFillable } from '../lib/fillable-page.js';
+
+  startFillable();
+</script>

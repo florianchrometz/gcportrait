@@ -1,0 +1,656 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Pull-request and main-branch checks (docs/contributing.md §4, "Continuous integration"). The jobs run side by side,
+# those a change of only docs and media skips after a first small job, `changes`, has sorted the changed files
+# (below), so the run takes as long as its slowest job, not the sum of its jobs. Each job that needs the dependencies
+# installs them itself from the pnpm store cache (.github/actions/setup), which pnpm-lock.yaml keys: a lockfile that
+# is out of date fails every such job at its install step, with pnpm's ERR_PNPM_OUTDATED_LOCKFILE. The install's
+# `prepare` script compiles the asset catalog (packages/catalog/src/generated/, a git-ignored build artefact), so a
+# catalog that cannot be compiled at all fails every install. The checks that take seconds each (catalog-check,
+# provenance, licenses, audit, workflows-and-shell) are steps of one job, `repo-checks`, which spends its set-up
+# once; each step runs whether or not the one before it failed, so every check still reports by name.
+#
+# The job inventory and commands are in docs/contributing.md, "Continuous integration".
+#
+# A change of only docs and media runs only the jobs that read such files (.github/AGENTS.md, A change of only
+# docs and media). `changes` sorts every changed file into one of three kinds:
+#
+#   docs    Markdown that people read and, of the checks, only unit (all other projects), website, provenance and
+#           licenses: docs/**/*.md, the root's *.md files, each top-level folder's and each package's
+#           README.md, and each top-level folder's AGENTS.md (a rules file, whose
+#           citations the tooling tests in unit (all other projects) check). Not the skills' files
+#           (.agents/skills/: the frontend's theme test reads the style skill's palette) and no other Markdown
+#           (catalog-check, for one, refuses a file in the catalog's data folders that is not YAML or JSON).
+#   media   docs/media/**, what `pnpm media` and `node scripts/exports.mjs` write.
+#   code    every other file.
+#
+# With no code among the changed files, the run keeps unit (all other projects) (the user guides' check, the
+# README's and the media's tests, the backend's and the website's tests read these files), website, repo-checks'
+# provenance steps and required, with docs repo-checks' licenses step too (THIRD_PARTY.md) and with media lint's
+# Prettier step (the media's two manifests are JSON). It skips typecheck, unit (layout), unit (frontend), unit
+# (coverage), layout-budget, build, e2e, lint's ESLint step and repo-checks' catalog-check, audit and workflows-and-shell
+# steps: none of them reads a changed file, so each would give the result it gave the tree before the change,
+# which that commit's own run reports. Every job runs when the
+# comparison cannot be made (a new branch, a push whose commit before is not in the history) or finds no file.
+#
+# Three jobs, the longest and the one that only reports, are narrowed further by the code files themselves
+# (.github/AGENTS.md, The e2e, layout-budget and website gates), each by an output of `changes` of its own:
+#
+#   e2e      runs unless every code file is one the suites never read: scripts/, website/, infra/, docs/,
+#            .agents/, .github/ and the root's lint, format, editor, Docker and git settings
+#            (eslint.config.js, .prettierrc, .prettierignore, .editorconfig, .dockerignore, .gitignore, app.json).
+#   layout   (layout-budget) runs when a code file is one it reads: the layout and the packages it is tested
+#            with or that the catalog's build reads (model, catalog, demo-data, graph, ingest, icons),
+#            frontend/package.json (the fonts its metrics come from) or any file at the root.
+#   website  runs unless every changed file is a code file modified in place (not added, deleted or renamed:
+#            the site's checks resolve links to repository paths) under backend/, e2e/, .agents/ or .github/;
+#            docs and media always run it.
+#
+# For all three, the setup and Playwright actions (.github/actions/setup/, .github/actions/playwright/) and this
+# workflow file count as read, so a change to how the job runs runs it.
+#
+# Pinning: every action is pinned to a commit, with its release as a comment, and the two linters downloaded here
+# are pinned by version and SHA-256. Dependabot (github-actions) proposes new releases of the actions; the linters
+# are bumped by hand.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One group per pull request, and one per commit on main: a newer push to a pull request cancels the run it
+  # supersedes, while every commit on main keeps a complete CI result of its own.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # The kinds of files the change touches (the header): `code`, `docs` and `media`, and the gates of e2e,
+  # layout-budget and website, `e2e`, `layout` and `website`, each `true` or `false`. A push is compared with the
+  # commit before it (github.event.before), a pull request's merge commit with its first parent, the tip of the
+  # branch it merges into, so either way the files are those the change brings to the tree it starts from. The
+  # checkout fetches every commit and tree but file contents only for the checked-out tree (a blobless partial
+  # clone): `git diff --name-status --no-renames` compares trees only, and without rename detection it never asks
+  # for a file's contents (a rename is a deletion and an addition); GIT_NO_LAZY_FETCH keeps git from fetching an
+  # object that is missing (the checkout keeps no credentials), so a missing commit ends the comparison instead.
+  # Every doubt in the step ends in every output that runs a job being `true`, and the jobs skip only on an output
+  # that is `'false'`, so a doubt runs them all; should this job fail, the jobs that need it are skipped and
+  # `required` fails.
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.classify.outputs.code }}
+      docs: ${{ steps.classify.outputs.docs }}
+      media: ${{ steps.classify.outputs.media }}
+      e2e: ${{ steps.classify.outputs.e2e }}
+      layout: ${{ steps.classify.outputs.layout }}
+      website: ${{ steps.classify.outputs.website }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          filter: blob:none
+      - name: Sort the changed files into docs, media and code, and decide the e2e, layout and website gates
+        id: classify
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          GIT_NO_LAZY_FETCH: '1'
+          GIT_TERMINAL_PROMPT: '0'
+          MEDIA: '^docs/media/'
+          DOCS: '^(docs/.+|[^/]+|([^/]+|packages/[^/]+)/(README|AGENTS))\.md$'
+          # How the three gated jobs run: a change here runs each of them.
+          RUNNER: '^\.github/(actions/(setup|playwright)/|workflows/pr\.yml$)'
+          E2E_UNREAD: '^(scripts|website|infra|docs|\.agents|\.github)/'
+          E2E_UNREAD_ROOT: '^(eslint\.config\.js|\.(prettierrc|prettierignore|editorconfig|dockerignore|gitignore)|app\.json)$'
+          LAYOUT_READ: '^(packages/(layout|model|catalog|demo-data|graph|ingest|icons)/|frontend/package\.json$|[^/]+$)'
+          WEBSITE_UNREAD: '^(backend|e2e|\.agents|\.github)/'
+        run: |
+          base=''
+          if [ "$EVENT" = pull_request ]; then
+            # GitHub's merge commit of the pull request has two parents, the branch it merges into first.
+            if [ "$(git rev-list --no-walk --parents HEAD | wc -w)" -eq 3 ]; then
+              base=$(git rev-parse 'HEAD^1')
+            fi
+          elif [ "$EVENT" = push ] && [[ "$BEFORE" =~ ^[0-9a-f]+$ ]] && [[ ! "$BEFORE" =~ ^0+$ ]]; then
+            base=$BEFORE
+          fi
+          reason=''
+          changed=''
+          if [ -z "$base" ]; then
+            reason='no commit to compare with'
+          elif ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            reason="the commit before, ${base}, is not in the history"
+          elif ! changed=$(git diff --name-status --no-renames "$base" HEAD); then
+            reason='git diff failed'
+          elif [ -z "$changed" ]; then
+            reason='no file changed'
+          fi
+          code=true
+          docs=false
+          media=false
+          e2e=true
+          layout=true
+          website=true
+          if [ -z "$reason" ]; then
+            code=false
+            e2e=false
+            layout=false
+            website=false
+            # Each line is a status letter (A, D, M or T), a tab and the path.
+            while IFS=$'\t' read -r status file; do
+              if [[ $file =~ $MEDIA ]]; then
+                media=true
+                website=true
+              elif [[ $file =~ $DOCS ]]; then
+                docs=true
+                website=true
+              else
+                code=true
+                if [[ $file =~ $RUNNER ]]; then
+                  e2e=true
+                  layout=true
+                  website=true
+                  continue
+                fi
+                if [[ ! $file =~ $E2E_UNREAD && ! $file =~ $E2E_UNREAD_ROOT ]]; then
+                  e2e=true
+                fi
+                if [[ $file =~ $LAYOUT_READ ]]; then
+                  layout=true
+                fi
+                if [ "$status" != M ] || [[ ! $file =~ $WEBSITE_UNREAD ]]; then
+                  website=true
+                fi
+              fi
+            done <<< "$changed"
+          fi
+          {
+            echo "code=$code"
+            echo "docs=$docs"
+            echo "media=$media"
+            echo "e2e=$e2e"
+            echo "layout=$layout"
+            echo "website=$website"
+          } >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then
+            summary="Every job runs: ${reason}."
+          else
+            summary="Compared with ${base::12}, files changed: $(grep -c '' <<< "$changed")"
+            summary+="; code ${code}, docs ${docs}, media ${media}; e2e ${e2e}, layout ${layout}, website ${website}."
+            if [ "$code" = false ]; then
+              summary+=' Only docs and media changed: the jobs that read neither are skipped (the header).'
+            fi
+            head -n 100 <<< "$changed"
+          fi
+          echo "$summary"
+          printf '### Changes\n\n%s\n' "$summary" >> "$GITHUB_STEP_SUMMARY"
+
+  # Prettier checks the media's two JSON manifests too; neither tool reads Markdown (.prettierignore,
+  # eslint.config.js), and ESLint lints source files only.
+  lint:
+    name: lint
+    needs: changes
+    if: needs.changes.outputs.code != 'false' || needs.changes.outputs.media == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Formatting (Prettier)
+        run: pnpm run format:check
+      - name: ESLint (strict type-checked rules, import boundaries)
+        if: needs.changes.outputs.code != 'false'
+        # The type-checked rules hold every workspace's type information at once, more than Node's default
+        # heap (about 2 GiB on the runner) holds.
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm run lint
+
+  typecheck:
+    name: typecheck
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: TypeScript (tsc -b over every project, then astro check over the website's .astro files)
+        run: pnpm run typecheck
+
+  # `pnpm test` (every Vitest project of vitest.config.ts) in three legs. The layout runs alone because its
+  # performance tests assert 2 x the budgets on CI (packages/layout/README.md, "Performance"), which other suites
+  # on the same runner would eat into; the frontend is the largest project. These two are the `unit` matrix, which
+  # a change of only docs and media skips; the third leg, `unit-other`, runs every project but those two, by
+  # negation, on every change, so a new project is never left out, and a misspelt name in the first two legs fails
+  # the leg ("No projects matched the filter") instead of skipping a project. The matrix's `coverage` leg runs
+  # `pnpm test:coverage`: the packages with coverage thresholds in their own vitest.config.ts (model, ingest,
+  # graph, layout), each under V8 coverage, failing below a threshold. It is a leg of its own because
+  # instrumentation slows the tests and the layout's skips its time budgets under it, which `unit (layout)` keeps.
+  unit:
+    name: unit (${{ matrix.leg }})
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: layout
+            projects: layout
+          - leg: frontend
+            projects: frontend
+          - leg: coverage
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Vitest under coverage, with the packages' thresholds (model, ingest, graph, layout)
+        if: matrix.leg == 'coverage'
+        run: pnpm run test:coverage
+      - name: Vitest (${{ matrix.projects }})
+        if: matrix.leg != 'coverage'
+        env:
+          PROJECTS: ${{ matrix.projects }}
+        run: |
+          args=()
+          for project in $PROJECTS; do args+=(--project "$project"); done
+          pnpm run test "${args[@]}"
+
+  unit-other:
+    name: unit (all other projects)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Vitest (!layout !frontend)
+        run: pnpm run test --project '!layout' --project '!frontend'
+      # The render golden's comparison (packages/render-cli/test/golden.test.ts, in this leg) leaves the image it
+      # drew and a picture of the differences here when the bytes differ.
+      - name: Upload the render golden's failure images
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: render-golden-failures
+          path: out/render/golden-failures/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # Budgets: gcp-diagram-layout skill §7. Commands and non-blocking CI behavior: docs/contributing.md,
+  # "Continuous integration"; machine, regression ceilings and making this job blocking:
+  # packages/layout/README.md, "Performance". Property seeds and replay: the same README's "Tests".
+  # The exploration seed comes from the run id: a re-run keeps its inputs; a new run may change them.
+  layout-budget:
+    name: layout-budget
+    needs: changes
+    if: needs.changes.outputs.layout != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Layout budgets, strict, for a quiet M1-class machine (S 20 ms, M 100 ms, L 800 ms, XL collapsed 3 s in a worker)
+        id: budget
+        run: pnpm --filter @gcportrait/layout test:budget
+      # The summary names the runner's CPU: the figures are this runner's, not those of the machine the budgets
+      # describe. lscpu names the CPU on every hosted runner (/proc/cpuinfo has no model name on Arm); newer
+      # versions indent the line under its vendor.
+      - name: Bench figures in the job summary
+        id: bench
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          pnpm --silent --filter @gcportrait/layout bench > layout-bench.txt 2>&1 || status=$?
+          cat layout-bench.txt
+          cpu=$(LC_ALL=C lscpu | awk '/^[[:space:]]*Model name:/ && !found { sub(/^[^:]*:[[:space:]]*/, ""); print; found = 1 }')
+          {
+            echo '### Layout bench on a shared runner (the strict budgets describe a quiet M1-class machine)'
+            echo
+            echo "Runner: ${cpu:-unknown CPU}, $(nproc) cores, $(uname -sm)."
+            echo
+            echo '```text'
+            cat layout-bench.txt
+            echo '```'
+            echo
+            echo 'The strict budgets (gcp-diagram-layout skill §7) describe a quiet M1-class machine: one fast core per'
+            echo "layout, no other load. The figures above are this shared runner's and are expected to exceed the"
+            echo 'budgets by a margin, so this job only reports; the blocking unit (layout) leg asserts twice the budgets.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Warn when a budget is missed
+        if: failure() && (steps.budget.outcome == 'failure' || steps.bench.outcome == 'failure')
+        run: echo "::warning title=Layout budget::A strict layout budget was missed on this shared runner. The budgets (gcp-diagram-layout skill §7) describe a quiet M1-class machine, so the runner's figures in the job summary are expected to exceed them by a margin; the blocking unit (layout) leg asserts twice the budgets."
+      # fast-check prints a failing property's seed, path and shrunk counterexample; the summary keeps those
+      # lines, and the full output is in the step's log.
+      - name: Explore the layout's properties (1 000 runs each, a seed from the run id)
+        id: explore
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          FC_SEED=$((RUN_ID % 2147483647))
+          export FC_SEED
+          status=0
+          pnpm --silent --filter @gcportrait/layout explore > layout-explore.txt 2>&1 || status=$?
+          cat layout-explore.txt
+          {
+            echo '### Layout properties explored: 1 000 runs each'
+            echo
+            echo "Seed ${FC_SEED}, from the run id. Replay: \`FC_SEED=${FC_SEED} pnpm --filter @gcportrait/layout explore\`."
+            echo
+            if [ "$status" -eq 0 ]; then
+              echo 'Every property held.'
+            else
+              echo 'A property failed. fast-check names its seed, path and counterexample (the full output is in the log):'
+              echo
+              echo '```text'
+              grep -E 'FAIL|Property failed|seed:|Counterexample|Tests ' layout-explore.txt | cut -c1-4000 | head -n 40 || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Warn when an explored property fails
+        if: failure() && steps.explore.outcome == 'failure'
+        run: echo "::warning title=Layout property::A layout property failed in the exploration (1 000 runs each, a seed from the run id). The job summary names the seed, the path and the counterexample; the blocking unit (layout) leg runs the properties under a fixed seed."
+
+  # The app's workspaces (frontend, backend, catalog, icons; `pnpm build:app`, which leaves out the website that
+  # the `website` job builds), then the SPA's size budgets on frontend/dist. Each e2e leg builds the SPA itself
+  # (e2e/scripts/built-app.ts), so nothing waits for this build.
+  build:
+    name: build
+    needs: changes
+    if: needs.changes.outputs.code != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build the app's workspaces
+        run: pnpm run build:app
+      - name: SPA size budgets
+        run: pnpm run size --summary "$GITHUB_STEP_SUMMARY"
+
+  # Playwright on Chromium: e2e/playwright.config.ts owns the projects and servers; e2e/README.md, Running,
+  # describes operations. Phone/tablet coverage is in e2e/tests/{mobile,touch,handheld}.spec.ts.
+  # Leg selection, validation and timing: e2e/scripts/leg.ts's header; counts: the matrix below.
+  # Each leg serves its own demo and normal builds with vite preview, testing shipped chunks, not dev modules.
+  # Export fidelity compares Chromium's PNG with resvg's drawing of the same view on this runner.
+  # No Playwright screenshot baselines: frontend unit tests compare e2e/baselines/diagram/ SVG text, and
+  # render unit tests compare the WASM-drawn PNG goldens, independent of the OS that wrote the baseline.
+  e2e:
+    name: e2e (${{ matrix.leg }})
+    needs: changes
+    if: needs.changes.outputs.e2e != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: desktop 1/3
+            id: desktop-1
+            projects: chromium-live chromium
+            part: 1
+            of: 3
+          - leg: desktop 2/3
+            id: desktop-2
+            projects: chromium-live chromium
+            part: 2
+            of: 3
+          - leg: desktop 3/3
+            id: desktop-3
+            projects: chromium-live chromium
+            part: 3
+            of: 3
+          - leg: phones and tablets 1/2
+            id: phones-and-tablets-1
+            projects: '!chromium-live !chromium'
+            part: 1
+            of: 2
+          - leg: phones and tablets 2/2
+            id: phones-and-tablets-2
+            projects: '!chromium-live !chromium'
+            part: 2
+            of: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/playwright
+        with:
+          browsers: chromium
+      # The script resolves the negated projects against e2e/playwright.config.ts and fails on a name the config
+      # does not have.
+      - name: Playwright, ${{ matrix.leg }}
+        env:
+          PROJECTS: ${{ matrix.projects }}
+          PART: ${{ matrix.part }}
+          OF: ${{ matrix.of }}
+        run: pnpm --filter @gcportrait/e2e run leg --projects "$PROJECTS" --leg "$PART" --of "$OF"
+      - name: Upload the Playwright report, traces and export comparisons
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-${{ matrix.id }}
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            out/export/e2e/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The website (docs/website.md): built with its static demo at /demo/ and checked (`website:check`:
+  # metadata, links, sitemap, self-hosted resources, the footer's non-affiliation notice, the demo's pages and
+  # policy, every demo link opening a new tab), then in Chromium: at phone widths (`mobile --only layout`: 320 to
+  # 430 CSS pixels in both themes, sideways overflow, the sticky header, 44 px touch targets, axe), the demo in a
+  # browser (`demo`: the built /demo/ served as GitHub Pages serves it, S to L, a drill-in, the timeline, exports,
+  # a reload on a deep link, every route, the 404, the policy), and the fillable commands (`fillable --profile
+  # chromium`). Three parts stay local: playback of the landing page's animated demos on an iPhone in WebKit
+  # (Playwright's WebKit on Linux is not Safari: its media stack is GStreamer, not the iPhone's, so its result
+  # would not say what the check is for), `fillable`'s Firefox, WebKit and phone profiles, and `website:lighthouse`
+  # (docs/website.md, "Building and checking"). website.yml, called by pages.yml (main) and by release.yml (a tag),
+  # builds and deploys the site; this job is the pull request's gate.
+  website:
+    name: website
+    needs: changes
+    if: needs.changes.outputs.website != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build the site
+        run: pnpm run website:build
+      - name: Check the site
+        run: pnpm run website:check
+      - uses: ./.github/actions/playwright
+        with:
+          browsers: chromium
+          working-directory: website
+      - name: The site at phone widths (layout and axe, Chromium)
+        run: pnpm --filter @gcportrait/website run mobile --only layout
+      - name: The static demo in a browser (Chromium)
+        run: pnpm --filter @gcportrait/website run demo
+      - name: The fillable commands (Chromium)
+        run: pnpm --filter @gcportrait/website run fillable --profile chromium
+
+  # The checks that take seconds each, as steps of one job so that their set-up is spent once. Each step runs
+  # whether or not the one before it failed (`success() || failure()`), so every check reports by name, and each
+  # check runs on the changes it ran on as a job of its own: provenance on every change, licenses on code and docs
+  # (THIRD_PARTY.md, which the check compares with what it would write, is one of the docs), the others on code.
+  # The job itself runs even when `changes` failed (its outputs are then empty, which runs every step), and skips
+  # only when the run is cancelled; `required` never counts it skipped as passed. The install is left out for a
+  # change of only media, which runs provenance alone: the guard is a Node script without dependencies.
+  repo-checks:
+    name: repo-checks
+    needs: changes
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CODE: ${{ needs.changes.outputs.code }}
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+      SHELLCHECK_VERSION: 0.11.0
+      SHELLCHECK_SHA256: b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          install: >-
+            ${{ (needs.changes.outputs.code != 'false' || needs.changes.outputs.docs == 'true') && 'true' || 'false' }}
+      - name: 'provenance: the guard (forbidden names, banned terms and files, SPDX headers)'
+        if: success() || failure()
+        run: pnpm run provenance
+      # Proves on every run that the guard still bites: a planted Go file must fail the check, and fail it for
+      # that reason. The planted file exists only in this job's checkout, and is removed however the step ends.
+      - name: 'provenance: self-test, the guard rejects a planted banned file'
+        if: success() || failure()
+        run: |
+          trap 'rm -rf provenance-canary' EXIT
+          mkdir provenance-canary
+          printf '%s\n' 'package main' > provenance-canary/planted.go
+          if output=$(node scripts/check-provenance.mjs 2>&1); then
+            echo "$output"
+            echo "::error::The provenance guard accepted a planted banned file."
+            exit 1
+          fi
+          echo "$output"
+          if ! grep -qF 'provenance-canary/planted.go  [banned-file]' <<< "$output"; then
+            echo "::error::The provenance guard failed, but not on the planted banned file."
+            exit 1
+          fi
+          echo "Self-test passed: the planted banned file was rejected."
+      # The install's `prepare` script has compiled the catalog this step validates.
+      - name: 'catalog-check: asset catalog validation and coverage'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: pnpm run catalog:check
+      - name: 'licenses: dependency licence allow-list and THIRD_PARTY.md staleness'
+        if: (success() || failure()) && (needs.changes.outputs.code != 'false' || needs.changes.outputs.docs == 'true')
+        run: pnpm run licenses
+      # The dependency audit (AGENTS.md, Security and privacy, principle 7; docs/security.md, "Dependency audit"):
+      # `pnpm audit` over the production dependencies and over the whole tree, read from the lockfile. A high or
+      # critical advisory fails the step unless scripts/audit-allowlist.json accepts it, with a reason and an
+      # expiry date at most 90 days out; moderate and low ones are listed. It asks the npm registry's advisory
+      # service, so it can fail for a registry outage too (exit code 2, "could not run"); re-run the job then.
+      # Between pull requests, GitHub's Dependabot alerts report new advisories (a repository setting,
+      # docs/security.md).
+      - name: 'audit: dependency audit (production and development; high and critical fail unless accepted)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: node scripts/check-audit.mjs
+      # The workflows and the shell scripts, with two linters pinned by version and SHA-256 (actionlint's from its
+      # release's checksums file, shellcheck's taken from its release archive when pinned). actionlint
+      # (rhysd/actionlint) checks every workflow: syntax, expressions, job dependencies, the inputs of local
+      # actions and, through the pinned shellcheck, the shell of every `run:` step in the workflow files (not
+      # those of the composite actions, which only install). shellcheck then checks every shell script: the
+      # deployment scripts at its default severity (as `shellcheck -x infra/*.sh` locally, infra/AGENTS.md,
+      # Commands), the others for warnings and errors. infra/'s offline harness (`pnpm test:infra`) runs in `unit
+      # (all other projects)`. Locally: `actionlint` and the two shellcheck commands below (docs/contributing.md).
+      - name: 'workflows-and-shell: download actionlint and shellcheck'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: |
+          fetch() {
+            curl -fsSL --retry 3 -o "$RUNNER_TEMP/$2" "$1/$2"
+            echo "$3  $RUNNER_TEMP/$2" | sha256sum --check --strict
+            tar -xzf "$RUNNER_TEMP/$2" -C "$RUNNER_TEMP"
+          }
+          fetch "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}" \
+            "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" "$ACTIONLINT_SHA256"
+          fetch "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}" \
+            "shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.gz" "$SHELLCHECK_SHA256"
+          mkdir -p "$RUNNER_TEMP/bin"
+          mv "$RUNNER_TEMP/actionlint" "$RUNNER_TEMP/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" "$RUNNER_TEMP/bin/"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: 'workflows-and-shell: actionlint (the workflows, their run scripts through shellcheck)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: actionlint -version && actionlint -color -shellcheck="$RUNNER_TEMP/bin/shellcheck"
+      - name: 'workflows-and-shell: shellcheck (the deployment scripts, default severity)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: shellcheck --version && shellcheck -x infra/*.sh
+      - name: 'workflows-and-shell: shellcheck (every other shell script, warnings and errors)'
+        if: (success() || failure()) && needs.changes.outputs.code != 'false'
+        run: |
+          git ls-files -z -- '*.sh' ':!:infra/' \
+            | xargs -0 --no-run-if-empty shellcheck -x --severity=warning
+
+  # The one check to require in the branch protection or ruleset of main (docs/contributing.md, "Required checks"), on
+  # pull requests and on main alike: it succeeds only when `changes` and every blocking job succeeded, and fails when
+  # one failed, was cancelled or was skipped. A skip counts as passed only where `changes` planned it: any job but
+  # `changes` and `repo-checks` on a change of only docs and media (`code=false`), the e2e legs on `e2e=false` and
+  # website on `website=false` (the header), because the job's `if` skipped it for files it does not read; repo-checks
+  # skips its steps for such files, never itself. Any other skip fails this check, so a condition that skips a job
+  # wrongly shows here. The jobs are skipped by `if` inside this one workflow, not by leaving the workflow out with
+  # `paths-ignore`, because a workflow that does not run reports no `required` at all, and a pull request waits for a
+  # required check that never reports. Requiring this job alone keeps the protection rule unchanged when jobs are added,
+  # renamed, split into matrix legs or folded into steps here. layout-budget is left out on purpose (non-blocking, see
+  # the job).
+  required:
+    name: required
+    if: always()
+    needs:
+      - changes
+      - lint
+      - typecheck
+      - unit
+      - unit-other
+      - build
+      - e2e
+      - website
+      - repo-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Every blocking job succeeded (or was skipped where `changes` planned it)
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          CODE: ${{ needs.changes.outputs.code }}
+          E2E: ${{ needs.changes.outputs.e2e }}
+          WEBSITE: ${{ needs.changes.outputs.website }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
+          failed=$(jq -r --arg code "$CODE" --arg e2e "$E2E" --arg website "$WEBSITE" '[to_entries[]
+            | select(.value.result != "success")
+            | select(.key == "changes" or .key == "repo-checks" or .value.result != "skipped" or ($code != "false"
+                and (.key != "e2e" or $e2e != "false") and (.key != "website" or $website != "false")))
+            | .key] | join(", ")' <<< "$NEEDS")
+          if [ -n "$failed" ]; then
+            echo "::error title=Required checks::Not successful: ${failed}."
+            exit 1
+          fi
+          if [ "$CODE" = false ]; then
+            echo "Only docs and media changed: the blocking jobs that read them succeeded, the others were skipped."
+          else
+            echo "Every blocking job succeeded or was skipped as planned (e2e ${E2E}, website ${WEBSITE})."
+          fi

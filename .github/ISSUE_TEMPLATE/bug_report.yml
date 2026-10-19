@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Bug report
+description: Something breaks, renders wrong, or behaves differently from the documentation.
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. If you can, reproduce it in **demo mode** (`pnpm dev:demo`, or the
+        "try it" button): the demo organisations are synthetic and safe to share.
+
+        **Do not paste real organisation data.** No organisation, folder or project names or numbers, no email
+        addresses, IP addresses or domains, and no access tokens. Redact screenshots and logs before attaching
+        them. gcportrait supports phones, tablets and desktops: say which device and browser, and the window's
+        size if you know it.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you saw, including any error message (redacted).
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: >-
+        Ideally on a demo fixture (S, M, L or XL), naming the lens, focus view and filters. The URL of a demo
+        view is safe to paste; the URL of a view of real data is not.
+      placeholder: |
+        1. Open the demo organisation M
+        2. Switch to the networking lens
+        3. Drill into ...
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Data source
+      options:
+        - Demo mode
+        - Live import, signed in as a user
+        - Live import, service-account mode
+        - Cloud Asset Inventory export file
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Where does your gcportrait run?
+      options:
+        - The hosted instance
+        - Self-hosted on Cloud Run
+        - Local development (pnpm dev or pnpm dev:demo)
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      options:
+        - Light
+        - Dark
+        - Both
+        - Not relevant
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version shown in the app, the image tag, or the commit of your checkout.
+      placeholder: v1.0.0
+  - type: input
+    id: browser
+    attributes:
+      label: Browser, operating system and window size
+      placeholder: Chrome 141 on macOS, 1440×900
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or logs (redacted)
+      description: Drag images in; paste logs as text.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Before you submit
+      options:
+        - label: >-
+            This report contains no real organisation, folder or project names or numbers, email addresses,
+            IP addresses, domains or tokens.
+          required: true

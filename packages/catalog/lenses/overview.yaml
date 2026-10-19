@@ -1,0 +1,124 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Overview lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# Containers + networking + load balancing + compute + serverless + data, hidden tiers off. Lenses cannot
+# exclude types, so the shared services are listed type by type: a compute.googleapis.com/* glob would pull in
+# routes, firewall rules, addresses, health checks, SSL policies, images, snapshots, commitments and other
+# records that do not belong on an architecture overview. Identities, keys, policies and AI services have
+# their own lenses.
+title: Overview
+description: >-
+  The architecture at a glance: the resource hierarchy, networks, load balancing, compute, serverless and
+  data stores. Hidden operational records, identities and keys stay out.
+types:
+  # Resource hierarchy
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  # Networks and how they are joined
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  - 'compute.googleapis.com/Router'
+  - 'compute.googleapis.com/NetworkAttachment'
+  - 'compute.googleapis.com/ServiceAttachment'
+  - 'compute.googleapis.com/Interconnect'
+  - 'compute.googleapis.com/InterconnectAttachment'
+  - 'compute.googleapis.com/VpnGateway'
+  - 'compute.googleapis.com/ExternalVpnGateway'
+  - 'compute.googleapis.com/TargetVpnGateway'
+  - 'compute.googleapis.com/VpnTunnel'
+  - 'compute.googleapis.com/CrossSiteNetwork'
+  - 'compute.googleapis.com/WireGroup'
+  - 'networkconnectivity.googleapis.com/Hub'
+  - 'networkconnectivity.googleapis.com/Spoke'
+  - 'servicenetworking.googleapis.com/Connection'
+  - 'vpcaccess.googleapis.com/Connector'
+  - 'dns.googleapis.com/ManagedZone'
+  # Load balancing and API front doors
+  - 'compute.googleapis.com/ForwardingRule'
+  - 'compute.googleapis.com/GlobalForwardingRule'
+  - 'compute.googleapis.com/TargetHttpProxy'
+  - 'compute.googleapis.com/TargetHttpsProxy'
+  - 'compute.googleapis.com/TargetGrpcProxy'
+  - 'compute.googleapis.com/TargetSslProxy'
+  - 'compute.googleapis.com/TargetTcpProxy'
+  - 'compute.googleapis.com/TargetPool'
+  - 'compute.googleapis.com/TargetInstance'
+  - 'compute.googleapis.com/UrlMap'
+  - 'compute.googleapis.com/BackendService'
+  - 'compute.googleapis.com/RegionBackendService'
+  - 'compute.googleapis.com/BackendBucket'
+  - 'compute.googleapis.com/NetworkEndpointGroup'
+  - 'networkservices.googleapis.com/Gateway'
+  - 'networkservices.googleapis.com/Mesh'
+  - 'networkservices.googleapis.com/HttpRoute'
+  - 'networkservices.googleapis.com/GrpcRoute'
+  - 'networkservices.googleapis.com/TcpRoute'
+  - 'networkservices.googleapis.com/TlsRoute'
+  - 'networkservices.googleapis.com/EdgeCacheService'
+  - 'networkservices.googleapis.com/EdgeCacheOrigin'
+  - 'apigateway.googleapis.com/Gateway'
+  - 'apigee.googleapis.com/Organization'
+  - 'apigee.googleapis.com/Environment'
+  - 'apigee.googleapis.com/Instance'
+  # Compute
+  - 'compute.googleapis.com/Instance'
+  - 'compute.googleapis.com/InstanceGroup'
+  - 'compute.googleapis.com/InstanceGroupManager'
+  - 'tpu.googleapis.com/Node'
+  - 'notebooks.googleapis.com/Instance'
+  - 'workstations.googleapis.com/WorkstationCluster'
+  - 'hypercomputecluster.googleapis.com/Cluster'
+  - 'batch.googleapis.com/Job'
+  - 'vmwareengine.googleapis.com/VmwareEngineNetwork'
+  - 'vmwareengine.googleapis.com/PrivateCloud'
+  # Containers
+  - 'container.googleapis.com/Cluster'
+  - 'container.googleapis.com/NodePool'
+  # Serverless
+  - 'run.googleapis.com/*'
+  - 'cloudfunctions.googleapis.com/*'
+  - 'appengine.googleapis.com/*'
+  - 'eventarc.googleapis.com/*'
+  - 'workflows.googleapis.com/*'
+  - 'cloudtasks.googleapis.com/*'
+  # Data stores
+  - 'storage.googleapis.com/Bucket'
+  - 'bigquery.googleapis.com/Dataset'
+  - 'sqladmin.googleapis.com/*'
+  - 'spanner.googleapis.com/Instance'
+  - 'spanner.googleapis.com/Database'
+  - 'bigtableadmin.googleapis.com/Instance'
+  - 'bigtableadmin.googleapis.com/Cluster'
+  - 'alloydb.googleapis.com/*'
+  - 'firestore.googleapis.com/Database'
+  - 'redis.googleapis.com/*'
+  - 'memorystore.googleapis.com/*'
+  - 'memcache.googleapis.com/*'
+  - 'file.googleapis.com/Instance'
+  - 'netapp.googleapis.com/StoragePool'
+  - 'netapp.googleapis.com/Volume'
+  - 'lustre.googleapis.com/*'
+  - 'parallelstore.googleapis.com/*'
+  - 'oracledatabase.googleapis.com/*'
+  # Messaging and data processing
+  - 'pubsub.googleapis.com/Topic'
+  - 'pubsub.googleapis.com/Subscription'
+  - 'managedkafka.googleapis.com/Cluster'
+  - 'composer.googleapis.com/Environment'
+  - 'dataproc.googleapis.com/Cluster'
+  - 'dataflow.googleapis.com/Job'
+  - 'metastore.googleapis.com/Service'
+  - 'datafusion.googleapis.com/Instance'
+  - 'datastream.googleapis.com/Stream'
+  - 'looker.googleapis.com/Instance'
+  - 'healthcare.googleapis.com/Dataset'
+  - 'dataplex.googleapis.com/Lake'
+  - 'dataplex.googleapis.com/Zone'
+  - 'dataform.googleapis.com/Repository'
+relationKinds: [contains, attaches, routes, uses, peers, connects, memberOf, triggers, replicates, shares]
+showHidden: false
+defaultDetail: auto

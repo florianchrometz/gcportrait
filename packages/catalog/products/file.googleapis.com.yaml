@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Filestore: managed NFS instances on a consumer VPC network (direct peering, private services access or
+# Private Service Connect), their backups and snapshots. Cloud Asset Inventory names instances and snapshots
+# by project id (`//file.googleapis.com/projects/<id>/locations/<l>/instances/<i>`,
+# `…/instances/<i>/snapshots/<s>`); backups follow the Filestore API's name, which carries the project number
+# (`projects/{projectNumber}/locations/{locationId}/backups/{backupId}`).
+product: Filestore
+service: file.googleapis.com
+icon: filestore
+types:
+  file.googleapis.com/Instance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.tier | lower}} · {{data.fileShares[0].capacityGb}} GB · {{data.protocol | lower}}'
+    console: 'https://console.cloud.google.com/filestore/instances/locations/{{location}}/id/{{name | lastSegment}}?project={{projectId}}'
+    ips:
+      - '$.data.networks[*].ipAddresses[*]'
+      - '$.data.networks[*].reservedIpRange'
+    relations:
+      - { kind: attaches, to: '$.data.networks[*].network', normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+      - { kind: replicates, to: "$.data[?(@.role == 'ACTIVE')].replicas[*].peerInstance", normalize: name }
+    notes: >-
+      networks[*].network is the VPC network: a bare name (`default`) for a network of the instance's own
+      project, which no normaliser can qualify yet and stays a dangling reference, or the full
+      projects/<host>/global/networks/<name> for a Shared VPC network, which resolves. reservedIpRange is a
+      CIDR for direct peering, or the name of an allocated range for private services access (not an address,
+      skipped). Replication (zonal and regional instances) is read on the ACTIVE side only — the filter keeps
+      data.replication when its role is ACTIVE — so the edge runs active → standby.
+
+  file.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'backup · {{data.sourceInstance | lastSegment}}/{{data.sourceFileShare}}'
+    console: 'https://console.cloud.google.com/filestore/backups?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      A backup of one file share, whose instance and share are named in the subtitle. No edge to the instance is
+      drawn: data.sourceInstance names it by project number (projects/<number>/locations/<l>/instances/<i>)
+      while Cloud Asset Inventory names the instance asset by project id, and the name normaliser keeps the
+      project as written, so the edge would never resolve on real data and would only add a dangling reference.
+      It can be added once names can be canonicalised to one project form.
+
+  file.googleapis.com/Snapshot:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'snapshot · {{name | parentSegment(instances)}}'
+    console: 'https://console.cloud.google.com/filestore/instances/locations/{{location}}/id/{{name | parentSegment(instances)}}?project={{projectId}}'
+    notes: >-
+      A point-in-time snapshot of an instance's file share, named under the instance; hidden, counted in the
+      project's badge.

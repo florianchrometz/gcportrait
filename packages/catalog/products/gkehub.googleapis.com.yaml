@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Fleet management (GKE Hub): fleets, memberships of GKE, multi-cloud and on-premises clusters, fleet scopes
+# with their namespaces and role bindings, and fleet features. Cluster assets point at their membership
+# (memberOf, from fleet.membership); the membership's endpoint resourceLink draws the same edge
+# from its side as a weak reverse rule, so a registration is one edge either way, also for a cluster whose
+# data lacks fleet.membership. Memberships, scopes and features nest in their project's fleet.
+product: Hub
+service: gkehub.googleapis.com
+icon: anthos
+types:
+  gkehub.googleapis.com/Fleet:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'fleet · {{data.state.code | lower}}'
+    notes: >-
+      One per fleet host project (projects/<p>/locations/global/fleets/default). Memberships, scopes and
+      features carry no reference to the fleet resource and their names do not continue its name; their
+      nestsIn rule names the fleet of their own project, so they nest in it when the fleet is
+      exported, and in the project otherwise.
+
+  gkehub.googleapis.com/Membership:
+    role: core
+    subtitle: 'fleet membership · {{data.state.code | lower}}'
+    relations:
+      - {
+          kind: memberOf,
+          to: $.data.endpoint.gkeCluster.resourceLink,
+          normalize: name,
+          reverse: true,
+          weak: true,
+        }
+      - {
+          kind: memberOf,
+          to: $.data.endpoint.multiCloudCluster.resourceLink,
+          normalize: name,
+          reverse: true,
+          weak: true,
+        }
+      - {
+          kind: memberOf,
+          to: $.data.endpoint.onPremCluster.resourceLink,
+          normalize: name,
+          reverse: true,
+          weak: true,
+        }
+    nestsIn:
+      { to: $.name, normalize: siblingName, pattern: 'projects/{project}/locations/global/fleets/default' }
+    notes: >-
+      The registered cluster draws the link (memberOf, from its fleet.membership). endpoint.*.resourceLink
+      (full names: //container…, //gkemulticloud…, //gkeonprem…) names the same cluster from this side, read as a weak reverse
+      rule so that it does not repeat that link in the opposite direction: the edge it draws runs cluster → membership like the cluster's own and merges with it, so a
+      registered cluster without fleet.membership still links. Asset names use the project number, as GKE's
+      fleet.membership does; the graph matches either spelling of the project.
+
+  gkehub.googleapis.com/MembershipBinding:
+    role: hidden
+    relations:
+      - { kind: memberOf, to: $.data.scope, normalize: name }
+    notes: Binds a membership (its parent in the name) to a fleet scope.
+
+  gkehub.googleapis.com/MembershipFeature:
+    role: hidden
+    notes: A fleet feature's per-membership configuration and state (v2 API).
+
+  gkehub.googleapis.com/Feature:
+    role: leaf
+    subtitle: 'fleet feature · {{data.resourceState.state | lower}}'
+    nestsIn:
+      { to: $.name, normalize: siblingName, pattern: 'projects/{project}/locations/global/fleets/default' }
+    notes: The last name segment is the feature (configmanagement, servicemesh, multiclusteringress, …).
+
+  gkehub.googleapis.com/Scope:
+    role: container
+    subtitle: 'fleet scope'
+    contains:
+      - byParent: gkehub.googleapis.com/Namespace
+      - byParent: gkehub.googleapis.com/RBACRoleBinding
+    nestsIn:
+      { to: $.name, normalize: siblingName, pattern: 'projects/{project}/locations/global/fleets/default' }
+    notes: Fleet namespaces and RBAC role bindings continue the scope's name and nest in it.
+
+  gkehub.googleapis.com/Namespace:
+    role: hidden
+    notes: A fleet namespace, materialised as a Kubernetes namespace in every cluster bound to its scope.
+
+  gkehub.googleapis.com/RBACRoleBinding:
+    role: hidden
+    subtitle: '{{data.role.predefinedRole | lower}}'

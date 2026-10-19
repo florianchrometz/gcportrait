@@ -1,0 +1,27 @@
+{
+  "name": "//gkebackup.googleapis.com/projects/demo-app-1/locations/europe-west3/restorePlans/shop-to-autopilot",
+  "assetType": "gkebackup.googleapis.com/RestorePlan",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/restorePlans/shop-to-autopilot",
+    "uid": "00000000-0000-4000-8000-000000000165",
+    "backupPlan": "projects/demo-app-1/locations/europe-west3/backupPlans/shop-daily",
+    "cluster": "projects/demo-app-1/locations/europe-west3/clusters/shop-autopilot",
+    "restoreConfig": {
+      "allNamespaces": true,
+      "volumeDataRestorePolicy": "RESTORE_VOLUME_DATA_FROM_BACKUP",
+      "clusterResourceConflictPolicy": "USE_EXISTING_VERSION",
+      "namespacedResourceRestoreMode": "FAIL_ON_CONFLICT"
+    },
+    "state": "READY",
+    "createTime": "2025-05-02T10:00:00Z"
+  }
+}

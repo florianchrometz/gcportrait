@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Everything lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+title: Everything
+description: >-
+  Every asset type and every relation kind, hidden types included. Useful for search and for checking
+  coverage; large organisations need filters to stay readable.
+types:
+  - '*'
+relationKinds:
+  - contains
+  - attaches
+  - routes
+  - uses
+  - peers
+  - connects
+  - memberOf
+  - runsAs
+  - encryptedBy
+  - secures
+  - triggers
+  - replicates
+  - shares
+showHidden: true
+defaultDetail: auto

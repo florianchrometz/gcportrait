@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# API keys: projects/<number>/locations/global/keys/<uid>. Restrictions limit a key to APIs, to
+# browser referrers, server addresses or mobile apps; a key may be bound to a service account.
+product: API keys
+service: apikeys.googleapis.com
+icon: api_keys
+types:
+  apikeys.googleapis.com/Key:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.restrictions.apiTargets[0].service}}'
+    console: 'https://console.cloud.google.com/apis/credentials/key/{{data.uid}}?project={{projectId}}'
+    ips:
+      - '$.data.restrictions.serverKeyRestrictions.allowedIps[*]'
+    domains:
+      - '$.data.restrictions.browserKeyRestrictions.allowedReferrers[*]'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccountEmail, normalize: serviceAccountEmail }
+    hiddenWhen: '$.data.deleteTime exists'
+    notes: >-
+      Not in the seed; owned by this group. The key string is never part of the asset. serviceAccountEmail
+      binds the key to a service account (runsAs). Referrer restrictions are patterns; only those that are
+      plain host names or URLs yield a host. A deleted key is kept for 30 days with deleteTime set and starts
+      hidden.

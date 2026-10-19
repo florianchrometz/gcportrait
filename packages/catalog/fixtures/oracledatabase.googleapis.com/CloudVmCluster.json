@@ -1,0 +1,27 @@
+{
+  "name": "//oracledatabase.googleapis.com/projects/demo-data-1/locations/europe-west3/cloudVmClusters/erp-vmc",
+  "assetType": "oracledatabase.googleapis.com/CloudVmCluster",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/cloudVmClusters/erp-vmc",
+    "exadataInfrastructure": "projects/demo-data-1/locations/europe-west3/cloudExadataInfrastructures/exa-prod",
+    "displayName": "ERP VM cluster",
+    "gcpOracleZone": "europe-west3-a-r1",
+    "properties": {
+      "cpuCoreCount": 16,
+      "nodeCount": 2,
+      "shape": "Exadata.X11M",
+      "state": "AVAILABLE",
+      "hostnamePrefix": "erp",
+      "hostname": "erp-a1b2c",
+      "licenseType": "BRING_YOUR_OWN_LICENSE"
+    },
+    "createTime": "2025-02-10T09:00:00Z",
+    "cidr": "10.50.0.0/24",
+    "backupSubnetCidr": "10.50.1.0/24",
+    "network": "projects/demo-net-1/global/networks/core"
+  }
+}

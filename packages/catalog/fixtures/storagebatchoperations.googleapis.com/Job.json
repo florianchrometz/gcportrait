@@ -1,0 +1,22 @@
+{
+  "name": "//storagebatchoperations.googleapis.com/projects/demo-data-1/locations/global/jobs/rekey-lake-2026",
+  "assetType": "storagebatchoperations.googleapis.com/Job",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-20T10:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/global/jobs/rekey-lake-2026",
+    "description": "Rewrite the lake objects with the 2026 key",
+    "bucketList": {
+      "buckets": [{ "bucket": "demo-data-1-lake", "prefixList": { "includedObjectPrefixes": ["raw/"] } }]
+    },
+    "rewriteObject": {
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/lake-2026"
+    },
+    "createTime": "2026-09-20T08:00:00Z",
+    "completeTime": "2026-09-20T10:00:00Z",
+    "state": "SUCCEEDED",
+    "counters": { "totalObjectCount": "120000", "succeededObjectCount": "120000", "failedObjectCount": "0" }
+  }
+}

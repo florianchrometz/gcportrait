@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Blockchain Node Engine: a managed
+# blockchain node with public JSON-RPC and WebSockets endpoints, or a Private Service Connect service
+# attachment instead.
+product: Blockchain Node Engine
+service: blockchainnodeengine.googleapis.com
+icon: blockchain_node_engine
+types:
+  blockchainnodeengine.googleapis.com/BlockchainNode:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.blockchainType | lower}} · {{data.ethereumDetails.network | lower}}'
+    domains:
+      - $.data.connectionInfo.endpointInfo.jsonRpcApiEndpoint
+      - $.data.connectionInfo.endpointInfo.websocketsApiEndpoint
+    notes: >-
+      The seed calls it core; it references no other asset, so it is a leaf. connectionInfo.serviceAttachment
+      (set when privateServiceConnectEnabled) is the node's service attachment in a Google-managed project:
+      not read, it would always dangle; privateServiceConnectEnabled is a badge.

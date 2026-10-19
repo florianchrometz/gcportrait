@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# API Gateway: an API, its immutable configs (OpenAPI or gRPC definitions plus the identity the
+# gateway calls backends as) and the regional gateways that serve one config each.
+product: API Gateway
+service: apigateway.googleapis.com
+icon: api_gateway
+types:
+  apigateway.googleapis.com/Api:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'API · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/api-gateway?project={{projectId}}'
+    contains:
+      - byParent: apigateway.googleapis.com/ApiConfig
+    notes: >-
+      Configs nest inside by name. `managedService` names the Service Management service backing the API
+      (`<api>-<hash>.apigateway.<project>.cloud.goog`), a bare service name no normaliser turns into the
+      `servicemanagement.googleapis.com/ManagedService` asset name yet, so it is not drawn. The label falls back
+      to the API id when no display name is set.
+
+  apigateway.googleapis.com/ApiConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'config · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/api-gateway?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.gatewayServiceAccount, normalize: serviceAccountEmail }
+    hiddenWhen: "$.data.state in ['FAILED', 'DELETING']"
+    notes: >-
+      Configs are immutable: every change creates a new one, so an API collects them; failed ones start
+      hidden. `gatewayServiceAccount` is documented as an e-mail or `projects/{PROJECT}/accounts/{UNIQUE_ID}`;
+      the e-mail form resolves to the service account, the unique-id form stays a dangling reference (no
+      normaliser maps a unique id to the account yet; catalog follow-ups). The gateway uses it to call the
+      backends named in the OpenAPI document (`x-google-backend`), which are inline file contents and not
+      read.
+
+  apigateway.googleapis.com/Gateway:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.defaultHostname}}'
+    console: 'https://console.cloud.google.com/api-gateway?project={{projectId}}'
+    domains:
+      - $.data.defaultHostname
+    relations:
+      - { kind: routes, to: $.data.apiConfig, normalize: name }
+    notes: >-
+      A regional gateway serving one API config (`apiConfig`, a relative name in this service). Real
+      default host names end in `.gateway.dev`; the fixture uses an `example.com` host because the synthetic
+      data guard does not list `gateway.dev` as a platform domain yet.

@@ -1,0 +1,323 @@
+---
+/**
+ * A docs page: the docs menu (src/data/docs.ts, the guides that exist), the guide rendered from docs/, its
+ * contents (the level-2 headings, when there are more than two), and a link to the guide's source on GitHub.
+ *
+ * Wide screens: the menu is a sidebar that stays in view, the contents a box above the guide. Below 52rem the menu
+ * stacks above the guide and, like the contents, folds away behind a button (a disclosure, src/layouts/Base.astro),
+ * so the guide starts on the first screen of a phone.
+ *
+ * A guide with code gets its fillable commands (src/components/Variables.astro): the Variables panel under the
+ * contents when its code names variables, the Copy buttons' live region and the script.
+ */
+import { commandVariable, type CommandVariable } from '@gcportrait/model';
+
+import Base from './Base.astro';
+import Variables from '../components/Variables.astro';
+import { DOC_GROUPS, menuItems } from '../data/docs.js';
+import type { RenderedDoc } from '../lib/docs.js';
+import type { PageMeta } from '../lib/seo.js';
+import { repositoryFileUrl } from '../site.js';
+
+interface Props {
+  meta: PageMeta;
+  docs: readonly RenderedDoc[];
+  doc: RenderedDoc;
+}
+const { meta, docs, doc } = Astro.props;
+const contents = doc.headings.filter((heading) => heading.depth === 2);
+const variables = doc.variables
+  .map((name) => commandVariable(name))
+  .filter((variable): variable is CommandVariable => variable !== undefined);
+---
+
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<Base meta={meta}>
+  <div class="container docs-layout">
+    <div class="docs-side">
+      <button type="button" class="disclosure-button" data-disclosure aria-expanded="false" aria-controls="docs-menu">
+        <span>Docs menu</span>
+        <svg class="chevron" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          ></path>
+        </svg>
+      </button>
+      <nav id="docs-menu" class="docs-menu" aria-label="Docs">
+        <a class="docs-home" href="/docs/">Documentation</a>
+        {
+          DOC_GROUPS.map((group) => {
+            const items = menuItems(
+              docs.filter((item) => item.group === group),
+              group,
+            );
+            return (
+              items.length > 0 && (
+                <>
+                  <h2>{group}</h2>
+                  <ul>
+                    {items.map((item) => (
+                      <li>
+                        <a href={item.path} aria-current={'slug' in item && item.slug === doc.slug ? 'page' : undefined}>
+                          {item.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )
+            );
+          })
+        }
+      </nav>
+    </div>
+    <article class="docs-article">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li><a href="/docs/">Docs</a></li>
+          <li><span aria-current="page">{doc.label}</span></li>
+        </ol>
+      </nav>
+      <h1>{doc.title}</h1>
+      {
+        contents.length > 2 && (
+          <nav class="contents" aria-label="On this page">
+            <h2 class="contents-title">On this page</h2>
+            <button
+              type="button"
+              class="disclosure-button"
+              data-disclosure
+              aria-expanded="false"
+              aria-controls="contents-list"
+            >
+              <span>On this page</span>
+              <svg class="chevron" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                ></path>
+              </svg>
+            </button>
+            <ul id="contents-list">
+              {contents.map((heading) => (
+                <li>
+                  <a href={`#${heading.id}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+      {(doc.codeBlocks > 0 || variables.length > 0) && <Variables variables={variables} />}
+      <div class="prose" set:html={doc.html} />
+      <p class="source muted">
+        This page is <a href={repositoryFileUrl(doc.source)}>{doc.source}</a> in the repository, rendered for the website.
+      </p>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .docs-layout {
+    display: grid;
+    gap: 2rem 3rem;
+    grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+    align-items: start;
+    padding-top: 2rem;
+  }
+  /*
+   * Below the sticky header (Header.astro); a menu taller than the window scrolls on its own. The padding, taken back by
+   * the margin, keeps the links' hover background and focus ring, which reach past the column, inside the scrolling box.
+   */
+  .docs-side {
+    position: sticky;
+    top: calc(var(--header-block) + 0.75rem);
+    max-height: calc(100vh - var(--header-block) - 1.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.25rem 0.5rem;
+    margin: -0.25rem -0.5rem;
+  }
+  .docs-menu {
+    font-size: 0.9375rem;
+  }
+  .disclosure-button {
+    display: none;
+  }
+  .docs-home {
+    font-weight: 500;
+  }
+  .docs-menu h2 {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 1.25rem 0 0.25rem;
+  }
+  .docs-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .docs-menu li a {
+    display: block;
+    padding: 0.3rem 0.5rem;
+    margin-left: -0.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+  }
+  .docs-menu a[aria-current='page'] {
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    font-weight: 500;
+  }
+  .docs-article {
+    min-width: 0;
+  }
+  .docs-article > h1 {
+    margin-top: 0.5rem;
+  }
+  .breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+  .breadcrumb li + li::before {
+    content: '›';
+    margin-right: 0.25rem;
+  }
+  .contents {
+    max-width: var(--text-width);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9375rem;
+  }
+  .contents h2 {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+  }
+  /* A plain list: the guides number their own headings ("1. Try the demo"), so the list adds no numbers. */
+  .contents ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2 16rem;
+    column-gap: 2rem;
+  }
+  .contents li {
+    break-inside: avoid;
+    margin-bottom: 0.25rem;
+  }
+  .source {
+    margin-top: 3rem;
+    font-size: 0.875rem;
+  }
+
+  /*
+   * Below 52rem: one column. The menu no longer stays in view (it would cover the guide); it and the contents fold
+   * away behind full-width buttons, and every link in them is a 44-pixel-high target.
+   */
+  @media (max-width: 51.99rem) {
+    .docs-layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+      padding-top: 1rem;
+    }
+    .docs-side {
+      position: static;
+      max-height: none;
+      overflow-y: visible;
+      padding: 0;
+      margin: 0;
+    }
+    .disclosure-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.875rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-small);
+      background: var(--color-bg);
+      color: var(--color-text);
+      font: inherit;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+    }
+    .disclosure-button:hover {
+      background: var(--color-bg-alt);
+    }
+    .disclosure-button:focus-visible {
+      border-radius: var(--radius-small);
+    }
+    .chevron {
+      flex: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      transition: transform 0.15s ease;
+    }
+    .disclosure-button[aria-expanded='true'] .chevron {
+      transform: rotate(180deg);
+    }
+    .disclosure-button + * {
+      display: none;
+    }
+    .disclosure-button[aria-expanded='true'] + * {
+      display: block;
+    }
+    .docs-menu {
+      padding: 0.25rem 0.875rem 0.5rem;
+    }
+    .docs-home {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+    .docs-menu h2 {
+      margin-top: 0.75rem;
+    }
+    .docs-menu li a {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+    .breadcrumb a {
+      display: inline-flex;
+      align-items: center;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      justify-content: center;
+    }
+    .breadcrumb ol {
+      align-items: center;
+    }
+    .contents {
+      padding: 0;
+      border: 0;
+    }
+    .contents-title {
+      display: none;
+    }
+    .contents ul {
+      columns: auto;
+      padding: 0.25rem 0.875rem 0.5rem;
+    }
+    .contents li {
+      margin: 0;
+    }
+    .contents li a {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+  }
+</style>

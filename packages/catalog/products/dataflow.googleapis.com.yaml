@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dataflow: pipeline jobs. Streaming jobs run for months and are part of the architecture; batch jobs
+# come and go, so a job is drawn while it is active and starts hidden once it reached a terminal state.
+product: Dataflow
+service: dataflow.googleapis.com
+icon: dataflow
+types:
+  dataflow.googleapis.com/Job:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.type | lower}} · {{data.currentState | lower}}'
+    console: 'https://console.cloud.google.com/dataflow/jobs/{{location}}/{{data.id}}?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: '$.data.environment.workerPools[*].subnetwork', normalize: computeSelfLink }
+      - {
+          kind: attaches,
+          to: $.data.environment.sdkPipelineOptions.options.subnetwork,
+          normalize: computeSelfLink,
+        }
+      - { kind: runsAs, to: $.data.environment.serviceAccountEmail, normalize: serviceAccountEmail }
+      - { kind: encryptedBy, to: $.data.environment.serviceKmsKeyName, normalize: kmsKey }
+      - { kind: uses, to: $.data.environment.tempStoragePrefix, normalize: gcsUri }
+      - { kind: uses, to: $.data.environment.sdkPipelineOptions.options.tempLocation, normalize: gcsUri }
+      - { kind: uses, to: '$.data.jobMetadata.pubsubDetails[*].topic', normalize: pubsubUri }
+      - { kind: uses, to: '$.data.jobMetadata.pubsubDetails[*].subscription', normalize: pubsubUri }
+    hiddenWhen: "$.data.currentState in ['JOB_STATE_DONE', 'JOB_STATE_FAILED', 'JOB_STATE_CANCELLED', 'JOB_STATE_DRAINED', 'JOB_STATE_UPDATED']"
+    notes: >-
+      The seed marks jobs hidden; this entry keeps them core with a hiddenWhen on terminal states, so a
+      running streaming job shows in the data lens and finished batch runs do not (JOB_STATE_UPDATED is a job
+      replaced by a newer one). data.name is the job name and data.id the job id; the asset name ends in the
+      id. Worker subnetworks are written regions/<r>/subnetworks/<s> (the job's project) or as full self-links
+      (a Shared VPC host); the network option is usually a bare network name that no normaliser resolves, so
+      it is not read. tempStoragePrefix is storage.googleapis.com/<bucket>/<object>; the
+      <bucket>.storage.googleapis.com form is not understood by gcsUri. jobMetadata lists the Pub/Sub topics
+      and subscriptions the job reads and writes (populated by the service; verify the value shape on a real
+      export); its BigQuery entries are separate table/dataset/projectId fields that no normaliser composes.

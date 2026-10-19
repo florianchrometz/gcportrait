@@ -1,0 +1,10 @@
+gcportrait
+Copyright 2026 Florian Chrometz
+
+This product includes software developed as part of the gcportrait project
+(https://github.com/florianchrometz/gcportrait).
+
+The attribution notices of the third-party software a build conveys accompany it:
+THIRD_PARTY_NOTICES.txt in the app and server-dependencies.txt in the server, both
+under licenses/ next to the bundle. THIRD_PARTY.md in the source tree describes every
+category of third-party material and the terms it keeps.

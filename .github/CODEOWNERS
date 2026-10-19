@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Code owners (docs/contributing.md §7, "Opening a pull request"). GitHub requests a review from the owners
+# of every path a pull request touches, and the last matching line wins. The maintainer owns everything
+# today; the explicit lines mark the areas that need a specialist review, so reviewers can be added there as
+# the project grows without widening the catch-all.
+
+*                   @florianchrometz
+
+# Asset catalog: types, relation rules, lenses, console links (data over code; AGENTS.md, Data and graph
+# semantics).
+/packages/catalog/  @florianchrometz
+
+# Layout engine: invariants, determinism, golden layouts (packages/AGENTS.md, Layout and drawing rules).
+/packages/layout/   @florianchrometz
+
+# Deployment: Dockerfile, deploy.sh, uninstall.sh, the Cloud Run Button hook.
+/infra/             @florianchrometz

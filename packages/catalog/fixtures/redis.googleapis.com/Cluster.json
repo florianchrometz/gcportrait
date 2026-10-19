@@ -1,0 +1,172 @@
+[
+  {
+    "name": "//redis.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/cart",
+    "assetType": "redis.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/clusters/cart",
+      "createTime": "2025-03-01T09:00:00Z",
+      "state": "ACTIVE",
+      "uid": "e0000000-0000-4000-8000-000000000001",
+      "replicaCount": 1,
+      "authorizationMode": "AUTH_MODE_IAM_AUTH",
+      "transitEncryptionMode": "TRANSIT_ENCRYPTION_MODE_SERVER_AUTHENTICATION",
+      "sizeGb": 26,
+      "shardCount": 3,
+      "nodeType": "REDIS_HIGHMEM_MEDIUM",
+      "pscConfigs": [
+        {
+          "network": "projects/demo-net-1/global/networks/core"
+        }
+      ],
+      "discoveryEndpoints": [
+        {
+          "address": "10.20.3.10",
+          "port": 6379,
+          "pscConfig": {
+            "network": "projects/demo-net-1/global/networks/core"
+          }
+        }
+      ],
+      "pscConnections": [
+        {
+          "pscConnectionId": "71000000000000001",
+          "address": "10.20.3.10",
+          "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/redis-cart-discovery",
+          "projectId": "demo-app-1",
+          "network": "projects/demo-net-1/global/networks/core"
+        },
+        {
+          "pscConnectionId": "71000000000000002",
+          "address": "10.20.3.11",
+          "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/redis-cart-data",
+          "projectId": "demo-app-1",
+          "network": "projects/demo-net-1/global/networks/core"
+        }
+      ],
+      "clusterEndpoints": [
+        {
+          "connections": [
+            {
+              "pscAutoConnection": {
+                "pscConnectionId": "71000000000000001",
+                "address": "10.20.3.10",
+                "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/redis-cart-discovery",
+                "projectId": "demo-app-1",
+                "network": "projects/demo-net-1/global/networks/core",
+                "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/cart-psc-discovery",
+                "pscConnectionStatus": "PSC_CONNECTION_STATUS_ACTIVE",
+                "connectionType": "CONNECTION_TYPE_DISCOVERY"
+              }
+            },
+            {
+              "pscAutoConnection": {
+                "pscConnectionId": "71000000000000002",
+                "address": "10.20.3.11",
+                "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/redis-cart-data",
+                "projectId": "demo-app-1",
+                "network": "projects/demo-net-1/global/networks/core",
+                "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/cart-psc-data",
+                "pscConnectionStatus": "PSC_CONNECTION_STATUS_ACTIVE",
+                "connectionType": "CONNECTION_TYPE_PRIMARY"
+              }
+            }
+          ]
+        }
+      ],
+      "pscServiceAttachments": [
+        {
+          "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/cart-psc-discovery",
+          "connectionType": "CONNECTION_TYPE_DISCOVERY"
+        },
+        {
+          "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/cart-psc-data",
+          "connectionType": "CONNECTION_TYPE_PRIMARY"
+        }
+      ],
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/redis",
+      "crossClusterReplicationConfig": {
+        "clusterRole": "PRIMARY",
+        "secondaryClusters": [
+          {
+            "cluster": "projects/demo-app-1/locations/europe-west1/clusters/cart-dr",
+            "uid": "e0000000-0000-4000-8000-000000000002"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "//redis.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/sessions",
+    "assetType": "redis.googleapis.com/Cluster",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/clusters/sessions",
+      "createTime": "2026-06-01T09:00:00Z",
+      "state": "ACTIVE",
+      "uid": "e0000000-0000-4000-8000-000000000003",
+      "authorizationMode": "AUTH_MODE_DISABLED",
+      "transitEncryptionMode": "TRANSIT_ENCRYPTION_MODE_DISABLED",
+      "sizeGb": 13,
+      "shardCount": 3,
+      "nodeType": "REDIS_SHARED_CORE_NANO",
+      "clusterEndpoints": [
+        {
+          "connections": [
+            {
+              "pscConnection": {
+                "pscConnectionId": "71000000000000003",
+                "address": "10.40.0.32",
+                "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/redis-sessions-discovery",
+                "projectId": "demo-app-1",
+                "network": "projects/demo-app-1/global/networks/app",
+                "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/sessions-psc-discovery",
+                "pscConnectionStatus": "PSC_CONNECTION_STATUS_ACTIVE",
+                "connectionType": "CONNECTION_TYPE_DISCOVERY"
+              }
+            },
+            {
+              "pscConnection": {
+                "pscConnectionId": "71000000000000004",
+                "address": "10.40.0.33",
+                "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/redis-sessions-data",
+                "projectId": "demo-app-1",
+                "network": "projects/demo-app-1/global/networks/app",
+                "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/sessions-psc-data",
+                "pscConnectionStatus": "PSC_CONNECTION_STATUS_ACTIVE",
+                "connectionType": "CONNECTION_TYPE_PRIMARY"
+              }
+            }
+          ]
+        }
+      ],
+      "pscServiceAttachments": [
+        {
+          "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/sessions-psc-discovery",
+          "connectionType": "CONNECTION_TYPE_DISCOVERY"
+        },
+        {
+          "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/sessions-psc-data",
+          "connectionType": "CONNECTION_TYPE_PRIMARY"
+        }
+      ],
+      "deletionProtectionEnabled": true
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "name": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger/instancePartitions/ledger-us",
+  "assetType": "spanner.googleapis.com/InstancePartition",
+  "parent": "//spanner.googleapis.com/projects/demo-data-1/instances/ledger",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "us-east1",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/instances/ledger/instancePartitions/ledger-us",
+    "config": "projects/demo-data-1/instanceConfigs/regional-us-east1",
+    "displayName": "Ledger US",
+    "processingUnits": 1000,
+    "state": "READY",
+    "createTime": "2025-06-01T09:00:00Z"
+  }
+}

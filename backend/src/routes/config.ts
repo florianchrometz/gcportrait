@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: Apache-2.0
+import type { FastifyInstance } from 'fastify';
+
+import type { ServerConfig } from '../config.js';
+import { PublicConfigResponseSchema, toFastifySchema, type PublicConfigResponse } from '../schemas.js';
+
+/**
+ * GET /api/config: public SPA configuration, with no credentials. src/schemas.ts owns the field
+ * contracts; docs/api.md describes the answer. publicConfigOf applies the instance's mode below.
+ */
+
+/**
+ * The `hostedBy` line: "Hosted by NAME.", or null without a name. It carries no non-affiliation line: the
+ * app's footer says that on every page (footers and long-form texts only; AGENTS.md, Non-affiliation, brand
+ * and legal).
+ */
+export function hostedByLine(hostedBy: string | null): string | null {
+  const name = hostedBy?.replace(/[.\s]+$/u, '') ?? '';
+  return name === '' ? null : `Hosted by ${name}.`;
+}
+
+/**
+ * The answer of GET /api/config. In demo-only mode it names no OAuth client, no service-account mode and no
+ * account, whatever else is set (config.ts refuses a client id and service-account mode with DEMO_ONLY=true, so this
+ * is a second line of defence).
+ */
+export function publicConfigOf(config: ServerConfig): PublicConfigResponse {
+  const live = !config.demoOnly;
+  return {
+    oauthClientId: live ? config.oauthClientId : null,
+    saMode: live && config.saModeEnabled,
+    saStrictExposure: live && config.saModeEnabled && config.saStrictExposure,
+    backendServiceAccount: live ? config.backendServiceAccount : null,
+    version: config.version,
+    sourceUrl: config.sourceUrl,
+    hostedBy: hostedByLine(config.hostedBy),
+    demo: false,
+    demoOnly: config.demoOnly,
+    legal: {
+      impressum: config.legal.impressum !== null,
+      privacy: config.legal.privacy !== null,
+      impressumUrl: config.legalUrls.impressum,
+      privacyUrl: config.legalUrls.privacy,
+    },
+    render:
+      live && config.render !== null
+        ? {
+            maxAssets: config.render.maxAssets,
+            maxPixels: config.render.maxPixels,
+            maxBodyBytes: config.render.maxBodyBytes,
+            timeoutMs: config.render.timeoutMs,
+          }
+        : null,
+  };
+}
+
+export function registerConfigRoute(app: FastifyInstance, config: ServerConfig): void {
+  const body = publicConfigOf(config);
+  app.get<{ Reply: PublicConfigResponse }>(
+    '/api/config',
+    { schema: { response: { 200: toFastifySchema(PublicConfigResponseSchema) } } },
+    () => Promise.resolve(body),
+  );
+}

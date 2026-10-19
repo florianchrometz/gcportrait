@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The Kubernetes lens (docs/lenses-and-filters.md; skill gcp-asset-catalog §7). Types are asset types,
+# <service>/* globs or *; relationKinds are the relation kinds the lens draws. packages/graph composes lenses
+# with focus views and filters.
+#
+# The lens lists what GKE objects point at (node pools' managed instance groups, persistent disks, global
+# load-balancer rules, Artifact Registry repositories), GKE's Cloud DNS zones and response policies, the
+# products that run on GKE (Composer environments, Dataproc on GKE) and the Cloud Deploy pipelines and
+# targets that deploy onto clusters. Workload Identity (runsAs) stays in the identity lens.
+title: Kubernetes
+description: >-
+  GKE clusters, node pools, namespaces and workload objects, fleets, multi-cloud and on-premises clusters,
+  and Backup for GKE.
+types:
+  - 'cloudresourcemanager.googleapis.com/Organization'
+  - 'cloudresourcemanager.googleapis.com/Folder'
+  - 'cloudresourcemanager.googleapis.com/Project'
+  - 'compute.googleapis.com/Network'
+  - 'compute.googleapis.com/Subnetwork'
+  - 'compute.googleapis.com/ForwardingRule'
+  - 'compute.googleapis.com/GlobalForwardingRule'
+  - 'compute.googleapis.com/InstanceGroupManager'
+  - 'compute.googleapis.com/Disk'
+  - 'container.googleapis.com/*'
+  - 'k8s.io/*'
+  - 'apps.k8s.io/*'
+  - 'batch.k8s.io/*'
+  - 'networking.k8s.io/*'
+  - 'extensions.k8s.io/*'
+  - 'gateway.networking.k8s.io/*'
+  - 'autoscaling.k8s.io/*'
+  - 'policy.k8s.io/*'
+  - 'rbac.authorization.k8s.io/*'
+  - 'storage.k8s.io/*'
+  - 'admissionregistration.k8s.io/*'
+  - 'gkehub.googleapis.com/*'
+  - 'gkemulticloud.googleapis.com/*'
+  - 'gkeonprem.googleapis.com/*'
+  - 'anthos.googleapis.com/*'
+  - 'gkebackup.googleapis.com/*'
+  - 'artifactregistry.googleapis.com/Repository'
+  - 'dns.googleapis.com/ManagedZone'
+  - 'dns.googleapis.com/ResponsePolicy'
+  - 'composer.googleapis.com/Environment'
+  - 'dataproc.googleapis.com/Cluster'
+  - 'clouddeploy.googleapis.com/DeliveryPipeline'
+  - 'clouddeploy.googleapis.com/Target'
+relationKinds: [contains, attaches, uses, memberOf, routes]
+showHidden: false
+defaultDetail: all

@@ -1,0 +1,27 @@
+{
+  "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/deidentifyTemplates/mask-pii",
+  "assetType": "dlp.googleapis.com/DeidentifyTemplate",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+  "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-09-15T08:00:00Z",
+  "data": {
+    "name": "projects/demo-data-1/locations/europe-west3/deidentifyTemplates/mask-pii",
+    "displayName": "Mask PII",
+    "createTime": "2025-10-20T09:10:00Z",
+    "updateTime": "2025-10-20T09:10:00Z",
+    "deidentifyConfig": {
+      "infoTypeTransformations": {
+        "transformations": [
+          {
+            "primitiveTransformation": {
+              "characterMaskConfig": {
+                "maskingCharacter": "#"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

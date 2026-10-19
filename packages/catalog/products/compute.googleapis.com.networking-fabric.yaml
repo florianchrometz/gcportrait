@@ -1,0 +1,352 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Compute Engine, networking fabric: VPC networks and subnetworks (the Tier-0 containers of the catalog seed),
+# routes, Cloud Routers with Cloud NAT, addresses, VPC firewall rules and firewall policies, Private Service
+# Connect attachments, packet mirroring, BYOIP prefixes and network edge security services.
+# compute.googleapis.com is shared by four catalog groups, so each group's types live in a file named after
+# the group (products/compute.googleapis.com.<group>.yaml: networking-fabric, hybrid-connectivity,
+# load-balancing-edge, compute; see their known-unmapped/<group>.yaml) and no two groups edit one file. This file
+# is the first of the product, so its icon is the Compute Engine product icon the other files use.
+#
+# Every field read below is in the Compute Engine v1 REST resource of its type. Compute references are
+# self-links (https://www.googleapis.com/compute/v1/projects/<id>/…), normalised with computeSelfLink.
+product: Compute Engine
+service: compute.googleapis.com
+icon: compute_engine
+types:
+  compute.googleapis.com/Network:
+    role: container
+    label: '{{data.name}}'
+    subtitle: 'VPC network · {{data.routingConfig.routingMode | lower}} routing'
+    icon: virtual_private_cloud
+    zoneKind: vpc
+    console: 'https://console.cloud.google.com/networking/networks/details/{{data.name}}?project={{projectId}}'
+    ips:
+      - $.data.internalIpv6Range
+    relations:
+      - { kind: peers, to: '$.data.peerings[*].network', normalize: computeSelfLink }
+    contains:
+      - '$.data.subnetworks[*]'
+    notes: >-
+      Subnetworks nest here: the network lists them, and each subnetwork attaches to its network. Peerings
+      appear on both networks of a pair and are drawn once. data.firewallPolicy (output only) is not read: the
+      firewall policy's own association draws that link. internalIpv6Range is the ULA /48 of networks with
+      internal IPv6.
+
+  compute.googleapis.com/Subnetwork:
+    role: container
+    label: '{{data.name}}'
+    subtitle: '{{data.ipCidrRange}} · {{location}}'
+    icon: virtual_private_cloud
+    zoneKind: subnet
+    console: 'https://console.cloud.google.com/networking/subnetworks/details/{{location}}/{{data.name}}?project={{projectId}}'
+    ips:
+      - $.data.ipCidrRange
+      - '$.data.secondaryIpRanges[*].ipCidrRange'
+      - $.data.gatewayAddress
+      - $.data.internalIpv6Prefix
+      - $.data.externalIpv6Prefix
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - {
+          kind: uses,
+          to: $.data.reservedInternalRange,
+          normalize: name,
+          service: networkconnectivity.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.secondaryIpRanges[*].reservedInternalRange',
+          normalize: name,
+          service: networkconnectivity.googleapis.com,
+        }
+      - { kind: uses, to: $.data.ipCollection, normalize: computeSelfLink }
+    notes: >-
+      Resources nest in a subnetwork through their own attaches rules (skill gcp-diagram-layout §2, rule 1), never across projects;
+      Shared VPC users stay in their service project. data.purpose tells special subnets apart
+      (PRIVATE_SERVICE_CONNECT NAT subnets, REGIONAL_MANAGED_PROXY proxy-only subnets, PRIVATE_NAT); the entry
+      schema has no badge field yet, so it is not shown. reservedInternalRange (primary and secondary ranges)
+      points at a Network Connectivity internal range; ipCollection at the BYOIP public delegated prefix an
+      IPv6 subnet takes its range from.
+
+  compute.googleapis.com/Route:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.destRange}} · priority {{data.priority}}'
+    icon: cloud_routes
+    console: 'https://console.cloud.google.com/networking/routes/details/{{data.name}}?project={{projectId}}'
+    ips:
+      - $.data.destRange
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopInstance, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopIlb, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopVpnTunnel, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopInterconnectAttachment, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.nextHopHub, normalize: name, service: networkconnectivity.googleapis.com }
+    hiddenWhen: "$.data.routeType in ['SUBNET', 'BGP', 'TRANSIT'] || $.data.nextHopNetwork exists || $.data.nextHopPeering exists || $.data.nextHopHub exists || $.data.description == 'k8s-node-route'"
+    notes: >-
+      Routes nest in their VPC network. The next hop is a traffic path, so it is a routes edge: an instance
+      (appliance), an internal passthrough load balancer's forwarding rule, a VPN tunnel, a VLAN attachment
+      (output only, static routes of L2 attachments) or a Network Connectivity Center hub (output only, a full
+      resource name). nextHopIlb may also hold the load balancer's IP address instead of a URL; that value
+      stays a dangling reference. nextHopIp and nextHopGateway (the default internet gateway) are not assets.
+      Subnet, peering, hub, BGP and transit routes are generated by the platform (one per subnet or spoke
+      range) and start hidden, still linked; so do the per-node routes of routes-based GKE clusters
+      (description k8s-node-route, one per node). User-defined static routes and the default internet route
+      stay visible.
+
+  compute.googleapis.com/Router:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'ASN {{data.bgp.asn}} · {{location}} · {{data.nats[0].name}}'
+    icon: cloud_router
+    console: 'https://console.cloud.google.com/hybrid/routers/details/{{location}}/{{data.name}}?project={{projectId}}'
+    ips:
+      - '$.data.interfaces[*].ipRange'
+      - '$.data.interfaces[*].privateIpAddress'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+      - { kind: attaches, to: '$.data.interfaces[*].subnetwork', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.nats[*].natIps[*]', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.nats[*].drainNatIps[*]', normalize: computeSelfLink }
+      - { kind: connects, to: '$.data.bgpPeers[*].routerApplianceInstance', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.nats[*].subnetworks[*].name', normalize: computeSelfLink }
+    notes: >-
+      Cloud NAT is inline (data.nats); the subtitle names the first NAT gateway when there is one, and its
+      static addresses (natIps, and drainNatIps while they drain) are uses edges to the Address assets. A NAT
+      gateway that serves a list of subnetworks (sourceSubnetworkIpRangesToNat LIST_OF_SUBNETWORKS) uses each
+      of them (nats[*].subnetworks[*].name). The
+      BGP interfaces' linkedVpnTunnel and linkedInterconnectAttachment are not read: every such tunnel and VLAN
+      attachment names this router in its own data.router, which draws the connects edge once (hybrid
+      connectivity group). A router appliance router (Network Connectivity Center) has interfaces in a
+      subnetwork and BGP peers on appliance VMs (connects): its interface subnetwork is its strong attachment
+      and the network yields to it.
+
+  compute.googleapis.com/Address:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.address}} · {{data.addressType | lower}} · {{data.status | lower}}'
+    icon: cloud_external_ip_addresses
+    console: 'https://console.cloud.google.com/networking/addresses/list?project={{projectId}}'
+    ips:
+      - $.data.address
+    relations:
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+      - { kind: uses, to: $.data.ipCollection, normalize: name }
+      - { kind: uses, to: '$.data.users[*]', normalize: computeSelfLink, reverse: true }
+    notes: >-
+      Regional addresses (global ones are compute.googleapis.com/GlobalAddress). Internal addresses attach to
+      their subnetwork, or to the network for IPSEC_INTERCONNECT ranges; external ones nest in their project.
+      data.users lists the resources holding the address (forwarding rules, VMs, Cloud NAT routers); it is read
+      as a reverse rule, so each user uses the address. A forwarding rule only names the address's IP
+      (its IPAddress is never an Address URL), so this is the only edge between the two; a router's own natIps
+      rule draws the same edge, and the copies merge. ipCollection is the BYOIP public delegated prefix the
+      address was taken from (a self-link, read with the name normaliser so that other services' URLs also
+      resolve).
+
+  compute.googleapis.com/GlobalAddress:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.address}} · {{data.addressType | lower}} · {{data.purpose | lower}}'
+    icon: cloud_external_ip_addresses
+    console: 'https://console.cloud.google.com/networking/addresses/list?project={{projectId}}'
+    ips:
+      - $.data.address
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - { kind: uses, to: $.data.ipCollection, normalize: name }
+      - { kind: uses, to: '$.data.users[*]', normalize: computeSelfLink, reverse: true }
+    notes: >-
+      Global addresses: external load balancer IPs, private services access ranges (purpose VPC_PEERING, with
+      prefixLength; the Service Networking connection uses them by name) and Private Service Connect endpoints
+      for Google APIs (purpose PRIVATE_SERVICE_CONNECT). data.users (the forwarding rules holding the address)
+      is read as a reverse rule, as on regional addresses. The internal ones attach to their network. data.address
+      is the first address of a range; the prefix length is data.prefixLength. ipCollection is a BYOIP public
+      delegated prefix (a Compute self-link) or, for global internal addresses, a Network Connectivity internal
+      range (an https://networkconnectivity.googleapis.com/v1/… URL), so it is read with the name normaliser.
+
+  compute.googleapis.com/Firewall:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.direction | lower}} · priority {{data.priority}}'
+    icon: cloud_firewall_rules
+    console: 'https://console.cloud.google.com/networking/firewalls/details/{{data.name}}?project={{projectId}}'
+    ips:
+      - '$.data.sourceRanges[*]'
+      - '$.data.destinationRanges[*]'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - { kind: secures, to: '$.data.targetServiceAccounts[*]', normalize: serviceAccountEmail }
+      - { kind: uses, to: '$.data.sourceServiceAccounts[*]', normalize: serviceAccountEmail }
+    hiddenWhen: "$.data.disabled == true || (($.data.name startsWith 'gke-' || $.data.name startsWith 'k8s-' || $.data.name startsWith 'k8s2-') && $.data.targetTags[*] startsWith 'gke-')"
+    notes: >-
+      VPC firewall rules nest in their network. targetServiceAccounts names the identities whose VMs the rule
+      applies to (secures: policy to target, skill gcp-asset-catalog §4; the seed's runsAs is kept for workloads), and
+      sourceServiceAccounts the identities whose traffic it matches (uses). Network tags (targetTags,
+      sourceTags) are strings, not assets. Disabled rules start hidden, and so do the rules GKE manages for
+      its clusters and load balancers (gke-<cluster>-<hash>-all|master|vms|…, k8s-fw-…, k8s-…-node-hc,
+      k8s2-…, all targeting a gke-…-node tag): a Shared VPC host can hold dozens of them.
+
+  compute.googleapis.com/FirewallPolicy:
+    role: core
+    label: '{{data.shortName}}'
+    subtitle: '{{location}} · {{data.ruleTupleCount}} rule tuples'
+    icon: cloud_firewall_rules
+    console: 'https://console.cloud.google.com/net-security/firewall-manager/firewall-policies/details/{{data.name}}?project={{projectId}}'
+    ips:
+      - '$.data.rules[*].match.srcIpRanges[*]'
+      - '$.data.rules[*].match.destIpRanges[*]'
+    domains:
+      - "$.data.rules[*].match['srcFqdns','destFqdns'][*]"
+    relations:
+      - {
+          kind: secures,
+          to: '$.data.associations[*].attachmentTarget',
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+      - { kind: secures, to: '$.data.rules[*].targetResources[*]', normalize: computeSelfLink }
+      - { kind: secures, to: '$.data.rules[*].targetServiceAccounts[*]', normalize: serviceAccountEmail }
+      - {
+          kind: uses,
+          to: "$.data['rules','packetMirroringRules'][*].securityProfileGroup",
+          normalize: name,
+          service: networksecurity.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data.rules[*].match['srcAddressGroups','destAddressGroups'][*]",
+          normalize: name,
+          service: networksecurity.googleapis.com,
+        }
+      - {
+          kind: secures,
+          to: '$.data.rules[*].targetSecureTags[*].name',
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.rules[*].match.srcSecureTags[*].name',
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+    notes: >-
+      Two shapes share the type. Hierarchical policies live under an organization or folder (name is a numeric
+      id, shortName the user's name, data.parent the node) and associate with organizations and folders;
+      global and regional network firewall policies live in a project and associate with VPC networks.
+      associations[*].attachmentTarget is organizations/N, folders/N or a network self-link, all read by one
+      rule (relative names belong to Resource Manager). Rules may narrow the policy to networks
+      (targetResources), service accounts and secure tags (targetSecureTags, tagValues/N: secures the tag
+      value), match source secure tags (uses), apply a Cloud NGFW security profile group, and match address
+      groups and FQDNs. The console link exists for project policies only.
+
+  compute.googleapis.com/NetworkAttachment:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.connectionPreference | lower}} · {{location}}'
+    icon: private_service_connect
+    console: 'https://console.cloud.google.com/net-services/psc/list/networkAttachments?project={{projectId}}'
+    ips:
+      - '$.data.connectionEndpoints[*].ipAddress'
+    relations:
+      - { kind: attaches, to: '$.data.subnetworks[*]', normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink, weak: true }
+      - { kind: connects, to: '$.data.connectionEndpoints[*].projectIdOrNum', normalize: projectNumberOrId }
+    notes: >-
+      The consumer side of Private Service Connect interfaces: producers (Vertex AI, Apigee, Cloud Run, a
+      partner's VMs) get a NIC in the consumer's subnetwork. Each accepted connection names the producer
+      project by id or number (connects); Google-managed tenant projects stay dangling. The producer
+      interfaces' addresses come from the subnetwork and are indexed here.
+
+  compute.googleapis.com/ServiceAttachment:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.connectionPreference | lower}} · {{location}}'
+    icon: private_service_connect
+    console: 'https://console.cloud.google.com/net-services/psc/list/producers?project={{projectId}}'
+    ips:
+      - '$.data.connectedEndpoints[*].natIps[*]'
+    domains:
+      - '$.data.domainNames[*]'
+    relations:
+      - { kind: routes, to: "$.data['targetService','producerForwardingRule']", normalize: computeSelfLink }
+      - { kind: attaches, to: '$.data.natSubnets[*]', normalize: computeSelfLink }
+      - { kind: connects, to: '$.data.connectedEndpoints[*].consumerNetwork', normalize: computeSelfLink }
+      - {
+          kind: routes,
+          to: '$.data.connectedEndpoints[*].endpoint',
+          normalize: computeSelfLink,
+          reverse: true,
+        }
+    notes: >-
+      The producer side of Private Service Connect: it publishes the internal load balancer named by
+      targetService (producerForwardingRule is its deprecated spelling) and translates consumers through its
+      NAT subnetworks (purpose PRIVATE_SERVICE_CONNECT). The consumer's endpoint is a forwarding rule whose
+      target is this attachment; connectedEndpoints[*].endpoint names it from this side and is read as a
+      reverse rule, so the endpoint routes here even when only the producer's project is exported (the
+      consumer's own target rule draws the same edge, and the copies merge). connectedEndpoints also adds the
+      consumer networks (connects), which shows consumers outside the selected scope.
+
+  compute.googleapis.com/PacketMirroring:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.filter.direction | lower}} · {{location}}'
+    icon: virtual_private_cloud
+    console: 'https://console.cloud.google.com/networking/packetmirroring/list?project={{projectId}}'
+    ips:
+      - '$.data.filter.cidrRanges[*]'
+    relations:
+      - { kind: attaches, to: $.data.network.url, normalize: computeSelfLink }
+      - { kind: routes, to: $.data.collectorIlb.url, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.mirroredResources.subnetworks[*].url', normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.mirroredResources.instances[*].url', normalize: computeSelfLink }
+    hiddenWhen: "$.data.enable == 'FALSE'"
+    notes: >-
+      References are objects ({ url, canonicalUrl }), not strings. Mirrored traffic goes to the collector
+      internal load balancer (routes); the mirrored subnetworks and instances are uses edges, mirrored network
+      tags are strings. A policy with enable FALSE is not enforced and starts hidden.
+
+  compute.googleapis.com/PublicAdvertisedPrefix:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.ipCidrRange}} · {{data.status | lower}}'
+    icon: cloud_external_ip_addresses
+    console: 'https://console.cloud.google.com/networking/byoip/list?project={{projectId}}'
+    ips:
+      - $.data.ipCidrRange
+    notes: >-
+      A BYOIP range advertised by Google. Its delegated prefixes (publicDelegatedPrefixs) are listed by name and
+      project number only; each public delegated prefix points back through parentPrefix, which draws the edge.
+
+  compute.googleapis.com/PublicDelegatedPrefix:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.ipCidrRange}} · {{location}}'
+    icon: cloud_external_ip_addresses
+    console: 'https://console.cloud.google.com/networking/byoip/list?project={{projectId}}'
+    ips:
+      - $.data.ipCidrRange
+      - '$.data.publicDelegatedSubPrefixs[*].ipCidrRange'
+    relations:
+      - { kind: uses, to: $.data.parentPrefix, normalize: computeSelfLink }
+    notes: >-
+      Global or regional. parentPrefix is the public advertised prefix or, for a sub-prefix, another public
+      delegated prefix. Sub-prefixes delegated to other projects (delegateeProject) are not assets of their own;
+      their ranges are indexed here. Addresses and IPv6 subnetworks taken from a prefix point at it through
+      their ipCollection.
+
+  compute.googleapis.com/NetworkEdgeSecurityService:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'edge security · {{location}}'
+    icon: cloud_armor
+    console: 'https://console.cloud.google.com/net-security/securitypolicies/list?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.securityPolicy, normalize: computeSelfLink }
+    notes: >-
+      Cloud Armor network edge security (advanced network DDoS protection): one per region, holding the regional
+      security policy that applies to the region's external passthrough load balancers and VMs with external
+      addresses.

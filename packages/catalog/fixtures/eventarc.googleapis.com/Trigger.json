@@ -1,0 +1,189 @@
+[
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/triggers/orders-events",
+    "assetType": "eventarc.googleapis.com/Trigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/triggers/orders-events",
+      "uid": "00000000-0000-4000-8000-000000000178",
+      "createTime": "2026-08-07T19:32:59Z",
+      "updateTime": "2026-08-27T05:04:14Z",
+      "eventFilters": [
+        {
+          "attribute": "type",
+          "value": "google.cloud.pubsub.topic.v1.messagePublished"
+        }
+      ],
+      "serviceAccount": "eventarc-invoker@demo-app-1.iam.gserviceaccount.com",
+      "destination": {
+        "cloudRun": {
+          "service": "orders-api",
+          "region": "europe-west3",
+          "path": "/events"
+        }
+      },
+      "transport": {
+        "pubsub": {
+          "topic": "projects/demo-app-1/topics/orders",
+          "subscription": "projects/demo-app-1/subscriptions/eventarc-europe-west3-orders-events-sub-101"
+        }
+      },
+      "eventDataContentType": "application/json"
+    }
+  },
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/triggers/thumbnailer-204417",
+    "assetType": "eventarc.googleapis.com/Trigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/triggers/thumbnailer-204417",
+      "uid": "00000000-0000-4000-8000-000000000179",
+      "createTime": "2026-08-07T19:32:59Z",
+      "updateTime": "2026-08-27T05:04:14Z",
+      "eventFilters": [
+        {
+          "attribute": "type",
+          "value": "google.cloud.storage.object.v1.finalized"
+        },
+        {
+          "attribute": "bucket",
+          "value": "demo-app-1-uploads"
+        }
+      ],
+      "serviceAccount": "fn-runtime@demo-app-1.iam.gserviceaccount.com",
+      "destination": {
+        "cloudFunction": "projects/demo-app-1/locations/europe-west3/functions/thumbnailer"
+      },
+      "transport": {
+        "pubsub": {
+          "subscription": "projects/demo-app-1/subscriptions/eventarc-europe-west3-thumbnailer-204417-sub-512"
+        }
+      },
+      "labels": {
+        "goog-managed-by": "cloudfunctions"
+      }
+    }
+  },
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/triggers/partner-orders",
+    "assetType": "eventarc.googleapis.com/Trigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/triggers/partner-orders",
+      "uid": "00000000-0000-4000-8000-000000000180",
+      "createTime": "2026-08-07T19:32:59Z",
+      "updateTime": "2026-08-27T05:04:14Z",
+      "eventFilters": [
+        {
+          "attribute": "type",
+          "value": "order.created"
+        }
+      ],
+      "serviceAccount": "workflows-runner@demo-app-1.iam.gserviceaccount.com",
+      "channel": "projects/demo-app-1/locations/europe-west3/channels/partner-events",
+      "destination": {
+        "workflow": "projects/demo-app-1/locations/europe-west3/workflows/order-fulfilment"
+      }
+    }
+  },
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/triggers/inventory-webhook",
+    "assetType": "eventarc.googleapis.com/Trigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/triggers/inventory-webhook",
+      "uid": "00000000-0000-4000-8000-000000000181",
+      "createTime": "2026-08-07T19:32:59Z",
+      "updateTime": "2026-08-27T05:04:14Z",
+      "eventFilters": [
+        {
+          "attribute": "type",
+          "value": "google.cloud.audit.log.v1.written"
+        }
+      ],
+      "serviceAccount": "eventarc-invoker@demo-app-1.iam.gserviceaccount.com",
+      "destination": {
+        "httpEndpoint": {
+          "uri": "https://inventory.internal.example.com/events"
+        },
+        "networkConfig": {
+          "networkAttachment": "projects/demo-net-1/regions/europe-west3/networkAttachments/eventarc-egress"
+        }
+      }
+    }
+  },
+  {
+    "name": "//eventarc.googleapis.com/projects/demo-app-1/locations/europe-west3/triggers/stock-events-gke",
+    "assetType": "eventarc.googleapis.com/Trigger",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/triggers/stock-events-gke",
+      "uid": "00000000-0000-4000-8000-000000000179",
+      "createTime": "2026-08-07T19:32:59Z",
+      "updateTime": "2026-08-27T05:04:14Z",
+      "eventFilters": [
+        {
+          "attribute": "type",
+          "value": "google.cloud.pubsub.topic.v1.messagePublished"
+        }
+      ],
+      "serviceAccount": "eventarc-invoker@demo-app-1.iam.gserviceaccount.com",
+      "destination": {
+        "gke": {
+          "cluster": "shop",
+          "location": "europe-west3",
+          "namespace": "shop",
+          "service": "stock-events",
+          "path": "/"
+        }
+      },
+      "transport": {
+        "pubsub": {
+          "topic": "projects/demo-app-1/topics/orders",
+          "subscription": "projects/demo-app-1/subscriptions/eventarc-europe-west3-stock-events-gke-sub-102"
+        }
+      },
+      "eventDataContentType": "application/json"
+    }
+  }
+]

@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Build context of infra/Dockerfile (docker build -f infra/Dockerfile ., Cloud Build, release.yml). The image
+# needs the workspace manifests, the lockfile, the sources of frontend/, backend/ and packages/, LICENSE (the SPA
+# build copies it into frontend/dist/licenses/), THIRD_PARTY.md and brand/ (the icon, and brand/LICENSE.md, which
+# LICENSE points to for the gcportrait name and icon). Everything else stays out: smaller uploads,
+# fewer cache misses, and nothing local (env files, credentials notes, build output) can reach an image layer.
+# Patterns are anchored at the repository root; `**/` matches at any depth. .agents/ stays in: the catalog build
+# reads the official asset-type list from .agents/skills/gcp-asset-catalog/references/.
+
+# Version control, editors, assistants, OS noise
+.git
+.github
+.claude
+**/.DS_Store
+**/Thumbs.db
+
+# Dependencies and build output: the image installs and builds its own
+**/node_modules
+**/.pnpm-store
+**/dist
+**/build
+**/coverage
+**/.vite
+**/.vite-demo
+**/*.tsbuildinfo
+out
+packages/catalog/src/generated
+
+# Local environment and credentials of any kind (backend/.env, *.local.* notes, keys)
+**/.env
+**/.env.*
+**/*.local.*
+**/*.pem
+**/*.key
+**/*-key.json
+**/application_default_credentials.json
+**/*.log
+
+# Not part of the product: docs, release notes, deployment scripts
+docs
+infra/*
+!infra/Dockerfile
+**/*.md
+!THIRD_PARTY.md
+!brand/LICENSE.md
+
+# The e2e workspace: only its manifest, which the lockfile's importers need
+e2e/*
+!e2e/package.json

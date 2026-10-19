@@ -1,0 +1,83 @@
+{
+  "name": "//compute.googleapis.com/projects/demo-app-1/zones/europe-west3-a/instanceGroupManagers/web",
+  "assetType": "compute.googleapis.com/InstanceGroupManager",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3-a",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "kind": "compute#instanceGroupManager",
+    "id": "7900000000000000001",
+    "name": "web",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instanceGroupManagers/web",
+    "zone": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a",
+    "baseInstanceName": "web",
+    "instanceGroup": "https://www.googleapis.com/compute/v1/projects/demo-app-1/zones/europe-west3-a/instanceGroups/web",
+    "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/instanceTemplates/web-v12",
+    "versions": [
+      {
+        "name": "stable",
+        "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/instanceTemplates/web-v12",
+        "targetSize": {
+          "calculated": 3
+        }
+      },
+      {
+        "name": "canary",
+        "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/instanceTemplates/web-v13",
+        "targetSize": {
+          "fixed": 1,
+          "calculated": 1
+        }
+      }
+    ],
+    "targetSize": 4,
+    "targetPools": [
+      "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/targetPools/web-legacy"
+    ],
+    "autoHealingPolicies": [
+      {
+        "healthCheck": "https://www.googleapis.com/compute/v1/projects/demo-app-1/global/healthChecks/web-http",
+        "initialDelaySec": 120
+      }
+    ],
+    "resourcePolicies": {
+      "workloadPolicy": "https://www.googleapis.com/compute/v1/projects/demo-app-1/regions/europe-west3/resourcePolicies/web-ha"
+    },
+    "namedPorts": [
+      {
+        "name": "http",
+        "port": 8080
+      }
+    ],
+    "currentActions": {
+      "none": 4,
+      "creating": 0,
+      "recreating": 0,
+      "deleting": 0,
+      "abandoning": 0,
+      "restarting": 0,
+      "refreshing": 0,
+      "verifying": 0
+    },
+    "status": {
+      "isStable": true,
+      "versionTarget": {
+        "isReached": true
+      }
+    },
+    "updatePolicy": {
+      "type": "PROACTIVE",
+      "minimalAction": "REPLACE",
+      "replacementMethod": "SUBSTITUTE"
+    },
+    "listManagedInstancesResults": "PAGELESS",
+    "fingerprint": "c2ZpeHR1cmU=",
+    "creationTimestamp": "2026-07-01T08:50:00.000-07:00"
+  }
+}

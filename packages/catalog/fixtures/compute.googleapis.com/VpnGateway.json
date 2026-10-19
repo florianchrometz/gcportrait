@@ -1,0 +1,78 @@
+[
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3",
+    "assetType": "compute.googleapis.com/VpnGateway",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#vpnGateway",
+      "id": "5000000000000000221",
+      "name": "vpn-ha-europe-west3",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "description": "HA VPN to the primary data centre",
+      "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "vpnInterfaces": [
+        {
+          "id": 0,
+          "ipAddress": "203.0.113.10",
+          "ipv6Address": "2001:db8:20::a"
+        },
+        {
+          "id": 1,
+          "ipAddress": "203.0.113.11",
+          "ipv6Address": "2001:db8:20::b"
+        }
+      ],
+      "stackType": "IPV4_IPV6",
+      "gatewayIpVersion": "IPV4",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-europe-west3"
+    }
+  },
+  {
+    "name": "//compute.googleapis.com/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-ic-europe-west3",
+    "assetType": "compute.googleapis.com/VpnGateway",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "kind": "compute#vpnGateway",
+      "id": "5000000000000000222",
+      "name": "vpn-ha-ic-europe-west3",
+      "region": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3",
+      "description": "HA VPN over Cloud Interconnect (encrypted Partner attachments)",
+      "creationTimestamp": "2023-02-01T09:00:00.000-08:00",
+      "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+      "vpnInterfaces": [
+        {
+          "id": 0,
+          "ipAddress": "10.200.0.2",
+          "interconnectAttachment": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-partner-a"
+        },
+        {
+          "id": 1,
+          "ipAddress": "10.200.0.3",
+          "interconnectAttachment": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/interconnectAttachments/ica-partner-b"
+        }
+      ],
+      "stackType": "IPV4_ONLY",
+      "gatewayIpVersion": "IPV4",
+      "labelFingerprint": "42WmSpB8rSM=",
+      "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/vpnGateways/vpn-ha-ic-europe-west3"
+    }
+  }
+]

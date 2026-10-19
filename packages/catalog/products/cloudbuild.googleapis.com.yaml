@@ -1,0 +1,170 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Build: triggers, private worker pools, host connections (2nd-gen repositories) and the 1st-gen
+# GitHub Enterprise and Bitbucket Data Center configs. Builds are operational records: hidden, counted on
+# their project. Cloud Asset Inventory names triggers, builds, worker pools and the 1st-gen configs with the
+# project number, but connections and their repositories with the project id; references written by users
+# (a trigger's pool, a target's pool) use whichever form the user typed, so an edge to a pool or a config
+# resolves only when the spelling matches the asset name.
+product: Cloud Build
+service: cloudbuild.googleapis.com
+icon: cloud_build
+types:
+  cloudbuild.googleapis.com/BuildTrigger:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.repositoryEventConfig.repository | lastSegment}} · {{location}}'
+    console: 'https://console.cloud.google.com/cloud-build/triggers;region={{location}}/edit/{{data.id}}?project={{projectId}}'
+    domains:
+      - $.data.sourceToBuild.uri
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.repositoryEventConfig.repository, normalize: name }
+      - { kind: uses, to: $.data.sourceToBuild.repository, normalize: name }
+      - { kind: uses, to: $.data.github.enterpriseConfigResourceName, normalize: name }
+      - { kind: uses, to: $.data.bitbucketServerTriggerConfig.bitbucketServerConfigResource, normalize: name }
+      - {
+          kind: uses,
+          to: $.data.developerConnectEventConfig.gitRepositoryLink,
+          normalize: name,
+          service: developerconnect.googleapis.com,
+        }
+      - { kind: uses, to: $.data.pubsubConfig.topic, normalize: pubsubUri }
+      - {
+          kind: uses,
+          to: $.data.webhookConfig.secret,
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - { kind: uses, to: $.data.build.options.pool.name, normalize: name }
+      - { kind: uses, to: '$.data.build.images[*]', normalize: artifactImage }
+    notes: >-
+      The asset name ends in the trigger's generated id, so the label reads data.name. The subtitle names
+      the 2nd-gen repository; 1st-gen GitHub triggers (github.owner/name) and Pub/Sub or webhook triggers show
+      the location only. Only an inline build (data.build) names its worker pool and images; a trigger that
+      reads cloudbuild.yaml from the repository (data.filename) has neither, so those edges are missing for
+      it. The Pub/Sub topic is the event source the trigger listens on (drawn as uses, like an Eventarc
+      transport).
+
+  cloudbuild.googleapis.com/Build:
+    role: hidden
+    subtitle: '{{data.status | lower}}'
+    console: 'https://console.cloud.google.com/cloud-build/builds;region={{location}}/{{data.id}}?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.source.storageSource.bucket, normalize: gcsUri }
+      - { kind: uses, to: $.data.source.connectedRepository.repository, normalize: name }
+      - {
+          kind: uses,
+          to: $.data.source.developerConnectConfig.gitRepositoryLink,
+          normalize: name,
+          service: developerconnect.googleapis.com,
+        }
+      - { kind: uses, to: $.data.options.pool.name, normalize: name }
+      - { kind: uses, to: '$.data.images[*]', normalize: artifactImage }
+    notes: >-
+      One per build run, so hidden and counted on the project. buildTriggerId is a bare trigger id and is
+      not resolved; the serviceAccount field reads projects/<id>/serviceAccounts/<email>.
+
+  cloudbuild.googleapis.com/WorkerPool:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.privatePoolV1Config.workerConfig.machineType}} · {{location}}'
+    console: 'https://console.cloud.google.com/cloud-build/settings/worker-pool?project={{projectId}}'
+    ips:
+      - $.data.privatePoolV1Config.networkConfig.peeredNetworkIpRange
+    relations:
+      - {
+          kind: attaches,
+          to: $.data.privatePoolV1Config.networkConfig.peeredNetwork,
+          normalize: computeRelative,
+        }
+      - {
+          kind: attaches,
+          to: $.data.privatePoolV1Config.privateServiceConnect.networkAttachment,
+          normalize: computeRelative,
+        }
+    notes: >-
+      A private pool runs in a Google-managed producer network that is either peered with a VPC
+      (networkConfig.peeredNetwork, projects/<number>/global/networks/<n>, with the reserved
+      peeredNetworkIpRange, which may be a bare prefix length such as /29) or reaches it through a Private
+      Service Connect interface on a network attachment (privateServiceConnect.networkAttachment). Pools
+      without either use the public default network and draw no edge.
+
+  cloudbuild.googleapis.com/Connection:
+    role: container
+    subtitle: '{{data.installationState.stage | lower}} · {{location}}'
+    console: 'https://console.cloud.google.com/cloud-build/repositories/2nd-gen?project={{projectId}}'
+    domains:
+      - '$.data.*.hostUri'
+    relations:
+      - {
+          kind: uses,
+          to: "$.data.*['authorizerCredential', 'readAuthorizerCredential']['oauthTokenSecretVersion', 'userTokenSecretVersion']",
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: "$.data.*['webhookSecretSecretVersion', 'privateKeySecretVersion']",
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.*.serviceDirectoryConfig.service',
+          normalize: name,
+          service: servicedirectory.googleapis.com,
+        }
+    contains:
+      - byParent: cloudbuild.googleapis.com/Repository
+    notes: >-
+      A host connection (v2 API) to GitHub, GitHub Enterprise, GitLab (Enterprise) or Bitbucket (Cloud or
+      Data Center); exactly one provider config is set. Credentials are Secret Manager secret versions, so the
+      edges point at versions, not at the secrets. A self-hosted provider on a private network is reached
+      through a Service Directory service (serviceDirectoryConfig.service). Linked repositories nest by name.
+
+  cloudbuild.googleapis.com/Repository:
+    role: leaf
+    console: 'https://console.cloud.google.com/cloud-build/repositories/2nd-gen?project={{projectId}}'
+    domains:
+      - $.data.remoteUri
+    notes: A repository linked through its connection (…/connections/<c>/repositories/<r>), nested in it.
+
+  cloudbuild.googleapis.com/GithubEnterpriseConfig:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'GitHub Enterprise · {{location}}'
+    console: 'https://console.cloud.google.com/cloud-build/repositories/1st-gen?project={{projectId}}'
+    domains:
+      - $.data.hostUrl
+    relations:
+      - { kind: attaches, to: $.data.peeredNetwork, normalize: computeRelative }
+      - { kind: uses, to: '$.data.secrets.*', normalize: name, service: secretmanager.googleapis.com }
+    notes: >-
+      1st-gen GitHub Enterprise host config (v1 API). peeredNetwork is set when the host is only reachable
+      on a VPC. secrets holds the app's private key, webhook secret and OAuth secret versions
+      (privateKeyVersionName, webhookSecretVersionName, oauthSecretVersionName, oauthClientIdVersionName; the
+      older *Name fields name secrets).
+
+  cloudbuild.googleapis.com/BitbucketServerConfig:
+    role: core
+    subtitle: 'Bitbucket Data Center · {{location}}'
+    console: 'https://console.cloud.google.com/cloud-build/repositories/1st-gen?project={{projectId}}'
+    ips:
+      - $.data.peeredNetworkIpRange
+    domains:
+      - $.data.hostUri
+    relations:
+      - { kind: attaches, to: $.data.peeredNetwork, normalize: computeRelative }
+      - { kind: uses, to: '$.data.secrets.*', normalize: name, service: secretmanager.googleapis.com }
+    notes: >-
+      1st-gen Bitbucket Data Center (Server) host config (v1 API); secrets holds the admin and read access
+      tokens and the webhook secret as secret versions.
+
+  cloudbuild.googleapis.com/GlobalTriggerSettings:
+    role: hidden
+    label: 'Global trigger settings'
+    notes: >-
+      A per-project settings singleton (…/projects/<number>/global_trigger_settings). Its fields are not in
+      the public API reference, so no rule reads them.

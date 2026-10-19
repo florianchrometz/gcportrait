@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Assured Workloads: compliance-regime workloads, organisation-level
+# (organizations/<n>/locations/<l>/workloads/<id>).
+product: Assured Workloads
+service: assuredworkloads.googleapis.com
+icon: assured_workloads
+types:
+  assuredworkloads.googleapis.com/Workload:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.complianceRegime | lower}} · {{location}}'
+    relations:
+      - {
+          kind: secures,
+          to: "$.data.resources[?(@.resourceType in ['CONSUMER_PROJECT', 'ENCRYPTION_KEYS_PROJECT'])].resourceId",
+          normalize: projectNumberOrId,
+        }
+    notes: >-
+      resources lists what the workload provisioned, each a resourceId (an int64 string: a project number for
+      projects) and a resourceType. Projects (CONSUMER_PROJECT, deprecated, and ENCRYPTION_KEYS_PROJECT) are
+      secured; the CONSUMER_FOLDER, the workload's own folder, is a bare folder number that no normaliser turns
+      into folders/<n>, so that edge is missing until one does. provisionedResourcesParent is input only.

@@ -1,0 +1,25 @@
+{
+  "name": "//backupdr.googleapis.com/projects/demo-app-1/locations/europe-west3/dataSourceReferences/dsr-web-7k2p",
+  "assetType": "backupdr.googleapis.com/DataSourceReference",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/dataSourceReferences/dsr-web-7k2p",
+    "dataSource": "projects/demo-ops-1/locations/europe-west3/backupVaults/vault-euw3/dataSources/ds-web-7k2p",
+    "createTime": "2025-03-02T08:00:00Z",
+    "dataSourceBackupConfigState": "ACTIVE",
+    "dataSourceBackupCount": "14",
+    "dataSourceGcpResourceInfo": {
+      "gcpResourcename": "projects/demo-app-1/zones/europe-west3-a/instances/web-7k2p",
+      "type": "compute.googleapis.com/Instance",
+      "location": "europe-west3-a"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "@gcportrait/layout",
+  "version": "1.0.0",
+  "private": true,
+  "description": "gcportrait layout engine: Scene → absolute rectangles and routed edges (forest normalisation, sizing from a generated Roboto metrics table, grid packing, gutters, orthogonal lane routing with hub bundles), pure and deterministic.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "prelint": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "lint": "eslint . --max-warnings=0",
+    "pretypecheck": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "typecheck": "tsc -b tsconfig.json test/tsconfig.json scripts/tsconfig.json",
+    "pretest": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test": "vitest run",
+    "pretest:budget": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test:budget": "GCPORTRAIT_LAYOUT_BUDGET=strict vitest run test/performance.test.ts test/worker.test.ts --no-file-parallelism --silent=false",
+    "pretest:golden:update": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "test:golden:update": "LAYOUT_UPDATE_GOLDEN=1 vitest run test/golden.test.ts",
+    "metrics": "tsx scripts/generate-metrics.ts",
+    "predebug-svg": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "debug-svg": "tsx scripts/debug-svg.ts",
+    "prebench": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "bench": "tsx scripts/bench.ts",
+    "premeasure": "pnpm --silent --filter @gcportrait/catalog run build --quiet",
+    "measure": "tsx scripts/measure.ts",
+    "explore": "FC_RUNS=1000 vitest run src/layout.property.test.ts src/gutters.test.ts"
+  },
+  "dependencies": {
+    "@gcportrait/model": "workspace:*"
+  },
+  "devDependencies": {
+    "@gcportrait/catalog": "workspace:*",
+    "@gcportrait/demo-data": "workspace:*",
+    "@gcportrait/graph": "workspace:*",
+    "@resvg/resvg-js": "2.6.2",
+    "@types/node": "catalog:",
+    "@types/opentype.js": "1.3.10",
+    "fast-check": "catalog:",
+    "opentype.js": "1.3.4",
+    "prettier": "catalog:",
+    "tsx": "catalog:"
+  }
+}

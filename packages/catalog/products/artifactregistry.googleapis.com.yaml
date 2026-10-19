@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Artifact Registry. A repository is a container; the packages, images and access rules inside it continue its
+# name (…/repositories/<r>/<collection>/<id>) and are hidden, so a repository shows how many it holds. Workloads
+# reach a repository through the artifactImage normaliser (image paths such as
+# <region>-docker.pkg.dev/<project>/<repo>/<image> resolve to the repository), which is why the repository and
+# not the image is the node they point at. Cloud Asset Inventory names everything here with the project id,
+# except access rules, which it names with the project number: their names do not continue the repository's,
+# so rules count on the project instead.
+product: Artifact Registry
+service: artifactregistry.googleapis.com
+icon: artifact_registry
+types:
+  artifactregistry.googleapis.com/Repository:
+    role: container
+    subtitle: '{{data.format | lower}} · {{data.mode | lower}}'
+    console: 'https://console.cloud.google.com/artifacts/{{data.format | lower}}/{{projectId}}/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    domains:
+      - '$.data.remoteRepositoryConfig.*.customRepository.uri'
+      - $.data.remoteRepositoryConfig.commonRepository.uri
+    relations:
+      - { kind: encryptedBy, to: $.data.kmsKeyName, normalize: kmsKey }
+      - { kind: uses, to: '$.data.virtualRepositoryConfig.upstreamPolicies[*].repository', normalize: name }
+      - {
+          kind: uses,
+          to: $.data.remoteRepositoryConfig.upstreamCredentials.usernamePasswordCredentials.passwordSecretVersion,
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    contains:
+      - byParent: artifactregistry.googleapis.com/DockerImage
+      - byParent: artifactregistry.googleapis.com/MavenArtifact
+      - byParent: artifactregistry.googleapis.com/NpmPackage
+      - byParent: artifactregistry.googleapis.com/PythonPackage
+    notes: >-
+      mode is STANDARD_REPOSITORY, VIRTUAL_REPOSITORY (a single endpoint over upstream repositories, drawn
+      as uses edges by priority) or REMOTE_REPOSITORY (a pull-through cache of a public registry, or of a
+      custom upstream whose host is read as a domain; its upstream credentials are a secret version).
+      kmsKeyName is set at creation for CMEK repositories. A gcr.io repository (named gcr.io, us.gcr.io, …)
+      serves the former Container Registry host and is what gcr.io image paths resolve to.
+
+  artifactregistry.googleapis.com/DockerImage:
+    role: hidden
+    label: '{{data.uri | lastSegment | short(48)}}'
+    subtitle: '{{data.tags[0]}}'
+    notes: >-
+      One per pushed digest; the name ends in <image>@sha256:<digest> with slashes inside the image path
+      URL-encoded. Hidden and counted on its repository.
+
+  artifactregistry.googleapis.com/MavenArtifact:
+    role: hidden
+    label: '{{data.artifactId}}'
+    subtitle: '{{data.groupId}} · {{data.version}}'
+    notes: One per artifact version (groupId:artifactId:version); hidden and counted on its repository.
+
+  artifactregistry.googleapis.com/NpmPackage:
+    role: hidden
+    label: '{{data.packageName}}'
+    subtitle: '{{data.version}}'
+    notes: One per package version; hidden and counted on its repository.
+
+  artifactregistry.googleapis.com/PythonPackage:
+    role: hidden
+    label: '{{data.packageName}}'
+    subtitle: '{{data.version}}'
+    notes: One per package version; hidden and counted on its repository.
+
+  artifactregistry.googleapis.com/Rule:
+    role: hidden
+    subtitle: '{{data.action | lower}} {{data.operation | lower}} · {{data.packageId}}'
+    notes: >-
+      An access rule (allow or deny downloads, optionally for one packageId and under a CEL condition). Its
+      asset name uses the project number (…/projects/<number>/locations/<l>/repositories/<r>/rules/<id>) while
+      the repository's uses the project id, and the rule has no field naming its repository, so it cannot
+      nest in the repository and is counted on the project.

@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# GKE on GDC (Google Distributed Cloud connected) clusters as Cloud Asset Inventory reports them: one asset per
+# fleet membership, named //gkehub.googleapis.com/projects/<number>/locations/<l>/memberships/<m>/cluster.
+product: GKE on GDC
+service: anthos.googleapis.com
+icon: anthos
+types:
+  anthos.googleapis.com/ConnectedCluster:
+    role: leaf
+    label: '{{name | parentSegment(memberships)}}'
+    subtitle: 'connected cluster · {{location}}'
+    notes: >-
+      The supported-types page links the type to the fleet membership reference, and the data shape is not
+      documented further, so the entry reads only the asset name (the last segment is always "cluster"; the
+      label is the membership). Its membership names the cluster through endpoint.*; no edge is drawn from
+      this side until the data shape is confirmed.

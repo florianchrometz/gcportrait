@@ -1,0 +1,51 @@
+{
+  "name": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop/k8s/namespaces/shop/apis/gateway.networking.k8s.io/httproutes/storefront",
+  "assetType": "gateway.networking.k8s.io/HTTPRoute",
+  "parent": "//container.googleapis.com/projects/demo-app-1/locations/europe-west3/clusters/shop",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "apiVersion": "gateway.networking.k8s.io/v1",
+    "kind": "HTTPRoute",
+    "metadata": {
+      "uid": "00000000-0000-4000-8000-000000000133",
+      "creationTimestamp": "2026-05-04T09:00:00Z",
+      "name": "storefront",
+      "namespace": "shop"
+    },
+    "spec": {
+      "parentRefs": [
+        {
+          "group": "gateway.networking.k8s.io",
+          "kind": "Gateway",
+          "name": "shop-gateway"
+        }
+      ],
+      "hostnames": ["shop.example.org"],
+      "rules": [
+        {
+          "matches": [
+            {
+              "path": {
+                "type": "PathPrefix",
+                "value": "/"
+              }
+            }
+          ],
+          "backendRefs": [
+            {
+              "name": "frontend",
+              "port": 80
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,109 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud KMS: the key ring container (from the catalog seed), keys, key versions, import jobs, external key
+# manager connections and configuration, Autokey (configuration and key handles) and retired resources.
+# Every customer-managed encryption key in the catalog points here: encryptedBy relations use the kmsKey
+# normaliser, which resolves to the CryptoKey (or, with versionLevel, the version). Key rings and keys are
+# named with the project id (projects/<id>/locations/<l>/keyRings/<r>/cryptoKeys/<k>), the CAI parent of a key
+# is its key ring and that of a version its key.
+product: Cloud Key Management Service
+service: cloudkms.googleapis.com
+icon: key_management_service
+types:
+  cloudkms.googleapis.com/KeyRing:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'key ring · {{location}}'
+    console: 'https://console.cloud.google.com/security/kms/keyring/manage/{{location}}/{{name | lastSegment}}/key?project={{projectId}}'
+    contains:
+      - byParent: cloudkms.googleapis.com/CryptoKey
+      - byParent: cloudkms.googleapis.com/CryptoKeyVersion
+      - byParent: cloudkms.googleapis.com/ImportJob
+
+  cloudkms.googleapis.com/CryptoKey:
+    role: core
+    subtitle: '{{data.purpose | lower}} · {{data.versionTemplate.protectionLevel | lower}}'
+    console: 'https://console.cloud.google.com/security/kms/key/manage/{{location}}/{{name | parentSegment(keyRings)}}/{{name | lastSegment}}?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.cryptoKeyBackend, normalize: name, service: cloudkms.googleapis.com }
+    notes: >-
+      The target of every encryptedBy relation. cryptoKeyBackend names the EkmConnection of an EXTERNAL_VPC key
+      (projects/<p>/locations/<l>/ekmConnections/<c>), or a single-tenant HSM instance, which is no asset type
+      yet and stays dangling. Versions are hidden and nest in the key ring (the key is a card, not a zone); each
+      links back to its key (memberOf).
+
+  cloudkms.googleapis.com/CryptoKeyVersion:
+    role: hidden
+    label: '{{name | parentSegment(cryptoKeys)}} v{{name | lastSegment}}'
+    domains:
+      - $.data.externalProtectionLevelOptions.externalKeyUri
+    relations:
+      - { kind: memberOf, to: $.data.name, normalize: kmsKey }
+      - { kind: uses, to: $.data.importJob, normalize: name }
+    notes: >-
+      One per rotation, so hidden and counted. data.name is the version path, which the kmsKey normaliser
+      reduces to its key. importJob names the import job of an imported version. An EXTERNAL version's
+      externalKeyUri is the key's URL at the external key manager (its host is listed); an EXTERNAL_VPC
+      version's ekmConnectionKeyPath is a path on the key manager (e.g. v0/my/key), not a reference to the
+      connection, which the key names in cryptoKeyBackend instead.
+
+  cloudkms.googleapis.com/ImportJob:
+    role: hidden
+    subtitle: '{{data.importMethod | lower}} · {{data.state | lower}}'
+    notes: >-
+      Wrapping keys for importing key material; they expire after three days. Nested in the key ring.
+      cryptoKeyBackend is only set for HSM_SINGLE_TENANT jobs and names a single-tenant HSM instance
+      (projects/<p>/locations/<l>/singleTenantHsmInstances/<i>), which is no asset type, so it is not read.
+
+  cloudkms.googleapis.com/EkmConnection:
+    role: core
+    subtitle: '{{data.keyManagementMode | lower}} · {{location}}'
+    domains:
+      - '$.data.serviceResolvers[*].hostname'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.serviceResolvers[*].serviceDirectoryService',
+          normalize: name,
+          service: servicedirectory.googleapis.com,
+        }
+    notes: >-
+      Cloud External Key Manager over VPC: each service resolver names the Service Directory service
+      (projects/<p>/locations/<l>/namespaces/<n>/services/<s>) whose endpoints reach an EKM replica, and the
+      replica's TLS host name. Keys with protection level EXTERNAL_VPC point here (cryptoKeyBackend).
+
+  cloudkms.googleapis.com/EkmConfig:
+    role: hidden
+    label: 'EKM config · {{location}}'
+    relations:
+      - { kind: uses, to: $.data.defaultEkmConnection, normalize: name, service: cloudkms.googleapis.com }
+    notes: One per project and location (…/locations/<l>/ekmConfig); names the default EKM connection.
+
+  cloudkms.googleapis.com/KeyHandle:
+    role: hidden
+    label: '{{data.resourceTypeSelector}}'
+    subtitle: '{{data.kmsKey | lastSegment}}'
+    relations:
+      - { kind: uses, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      Cloud KMS Autokey: one handle per resource created with Autokey, in the resource's project, naming the
+      key Autokey provisioned in the key project. Hidden (not core as the seed suggests) because there is one
+      per protected resource, and the protected resource already draws its own encryptedBy edge to the key.
+
+  cloudkms.googleapis.com/AutokeyConfig:
+    role: hidden
+    label: 'Autokey'
+    subtitle: '{{data.keyProject}} · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.keyProject, normalize: projectNumberOrId }
+    notes: >-
+      folders/<n>/autokeyConfig (or projects/<p>/autokeyConfig): enables Autokey below the folder and names the
+      key project (projects/<id> or projects/<number>) where Autokey creates keys, a Resource Manager project.
+
+  cloudkms.googleapis.com/RetiredResource:
+    role: hidden
+    label: '{{data.originalResource | lastSegment}}'
+    subtitle: '{{data.resourceType}} · {{data.deleteTime}}'
+    notes: >-
+      A record of a deleted key whose name cannot be reused (originalResource, resourceType). The original
+      no longer exists, so nothing is linked.

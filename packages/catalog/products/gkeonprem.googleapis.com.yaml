@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# GKE on-premises clusters (Google Distributed Cloud software for VMware and for bare metal) enrolled in the
+# GKE On-Prem API. User clusters hold their node pools and are managed by an admin cluster; every cluster is a
+# fleet member (fleet.membership).
+product: GKE On-Prem API
+service: gkeonprem.googleapis.com
+icon: anthos
+types:
+  gkeonprem.googleapis.com/VmwareCluster:
+    role: container
+    subtitle: 'VMware user cluster · {{data.onPremVersion}}'
+    ips:
+      - '$.data.networkConfig.podAddressCidrBlocks[*]'
+      - '$.data.networkConfig.serviceAddressCidrBlocks[*]'
+      - $.data.loadBalancer.vipConfig.controlPlaneVip
+      - $.data.loadBalancer.vipConfig.ingressVip
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+      - { kind: uses, to: $.data.adminClusterName, normalize: name }
+      - { kind: uses, to: $.data.adminClusterMembership, normalize: name, service: gkehub.googleapis.com }
+    contains:
+      - byParent: gkeonprem.googleapis.com/VmwareNodePool
+    notes: >-
+      adminClusterName (output only) names the admin cluster when it is enrolled in the API;
+      adminClusterMembership (required) names the admin cluster's fleet membership. endpoint is a DNS name of
+      the on-premises network and is not indexed.
+
+  gkeonprem.googleapis.com/VmwareAdminCluster:
+    role: core
+    subtitle: 'VMware admin cluster · {{data.onPremVersion}}'
+    ips:
+      - '$.data.networkConfig.podAddressCidrBlocks[*]'
+      - '$.data.networkConfig.serviceAddressCidrBlocks[*]'
+      - $.data.loadBalancer.vipConfig.controlPlaneVip
+      - $.data.loadBalancer.vipConfig.addonsVip
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+
+  gkeonprem.googleapis.com/VmwareNodePool:
+    role: leaf
+    subtitle: '{{data.config.imageType}} · {{data.onPremVersion}}'
+
+  gkeonprem.googleapis.com/BareMetalCluster:
+    role: container
+    subtitle: 'bare metal user cluster · {{data.bareMetalVersion}}'
+    ips:
+      - $.data.endpoint
+      - '$.data.networkConfig.islandModeCidr.podAddressCidrBlocks[*]'
+      - '$.data.networkConfig.islandModeCidr.serviceAddressCidrBlocks[*]'
+      - $.data.loadBalancer.vipConfig.controlPlaneVip
+      - $.data.loadBalancer.vipConfig.ingressVip
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+      - { kind: uses, to: $.data.adminClusterName, normalize: name }
+      - { kind: uses, to: $.data.adminClusterMembership, normalize: name, service: gkehub.googleapis.com }
+    contains:
+      - byParent: gkeonprem.googleapis.com/BareMetalNodePool
+    notes: endpoint is the IP address of the user cluster's API server.
+
+  gkeonprem.googleapis.com/BareMetalAdminCluster:
+    role: core
+    subtitle: 'bare metal admin cluster · {{data.bareMetalVersion}}'
+    ips:
+      - $.data.endpoint
+      - '$.data.networkConfig.islandModeCidr.podAddressCidrBlocks[*]'
+      - '$.data.networkConfig.islandModeCidr.serviceAddressCidrBlocks[*]'
+      - $.data.loadBalancer.vipConfig.controlPlaneVip
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+
+  gkeonprem.googleapis.com/BareMetalNodePool:
+    role: leaf
+    subtitle: '{{data.nodePoolConfig.operatingSystem | lower}} · {{data.state | lower}}'
+    ips:
+      - '$.data.nodePoolConfig.nodeConfigs[*].nodeIp'

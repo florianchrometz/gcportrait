@@ -1,0 +1,18 @@
+{
+  "name": "//saasservicemgmt.googleapis.com/projects/demo-ops-1/locations/global/rollouts/shop-stack-v12-wave1",
+  "assetType": "saasservicemgmt.googleapis.com/Rollout",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/rollouts/shop-stack-v12-wave1",
+    "release": "projects/demo-ops-1/locations/global/releases/shop-stack-v12",
+    "rolloutKind": "projects/demo-ops-1/locations/global/rolloutKinds/shop-stack-waves",
+    "state": "ROLLOUT_STATE_SUCCEEDED",
+    "startTime": "2026-09-21T08:00:00Z",
+    "endTime": "2026-09-21T11:00:00Z",
+    "uid": "1c2d3e4f-5a6b-4c7d-8e8f-a9b0c1d2e3f4",
+    "createTime": "2026-09-21T07:55:00Z"
+  }
+}

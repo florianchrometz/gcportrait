@@ -1,0 +1,30 @@
+{
+  "name": "@gcportrait/ingest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Streaming Cloud Asset Inventory ingestion for gcportrait: NDJSON line reader, normaliser, project index and snapshot assembly.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc -b tsconfig.json test/tsconfig.json",
+    "test": "vitest run",
+    "test:budget": "GCPORTRAIT_INGEST_BUDGET=strict vitest run test/worker-budget.test.ts --silent=false"
+  },
+  "dependencies": {
+    "@gcportrait/model": "workspace:*"
+  },
+  "devDependencies": {
+    "@gcportrait/demo-data": "workspace:*",
+    "@types/node": "catalog:",
+    "fast-check": "catalog:",
+    "tsx": "catalog:"
+  }
+}

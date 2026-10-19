@@ -1,0 +1,18 @@
+{
+  "name": "//iap.googleapis.com/projects/10000000001/iap_tunnel/locations/europe-west3/destGroups/onprem-admin",
+  "assetType": "iap.googleapis.com/TunnelDestGroup",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000001/iap_tunnel/locations/europe-west3/destGroups/onprem-admin",
+    "cidrs": ["172.20.0.0/16", "10.20.8.0/24"],
+    "fqdns": ["jump.corp.example.com"]
+  }
+}

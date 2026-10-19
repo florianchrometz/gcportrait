@@ -1,0 +1,60 @@
+{
+  "name": "//binaryauthorization.googleapis.com/projects/10000000002/policy",
+  "assetType": "binaryauthorization.googleapis.com/Policy",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-08-11T10:00:00Z",
+  "data": {
+    "name": "projects/10000000002/policy",
+    "description": "Production clusters admit attested images only",
+    "globalPolicyEvaluationMode": "ENABLE",
+    "admissionWhitelistPatterns": [
+      {
+        "namePattern": "europe-west3-docker.pkg.dev/demo-app-1/base-images/*"
+      }
+    ],
+    "defaultAdmissionRule": {
+      "evaluationMode": "REQUIRE_ATTESTATION",
+      "enforcementMode": "ENFORCED_BLOCK_AND_AUDIT_LOG",
+      "requireAttestationsBy": ["projects/demo-sec-1/attestors/build-verified"]
+    },
+    "clusterAdmissionRules": {
+      "europe-west3.shop-autopilot": {
+        "evaluationMode": "REQUIRE_ATTESTATION",
+        "enforcementMode": "ENFORCED_BLOCK_AND_AUDIT_LOG",
+        "requireAttestationsBy": [
+          "projects/demo-sec-1/attestors/build-verified",
+          "projects/10000000004/attestors/vuln-scanned"
+        ]
+      }
+    },
+    "kubernetesNamespaceAdmissionRules": {
+      "payments": {
+        "evaluationMode": "REQUIRE_ATTESTATION",
+        "enforcementMode": "ENFORCED_BLOCK_AND_AUDIT_LOG",
+        "requireAttestationsBy": ["projects/demo-sec-1/attestors/security-reviewed"]
+      }
+    },
+    "kubernetesServiceAccountAdmissionRules": {
+      "payments:ledger": {
+        "evaluationMode": "REQUIRE_ATTESTATION",
+        "enforcementMode": "DRYRUN_AUDIT_LOG_ONLY",
+        "requireAttestationsBy": ["projects/demo-sec-1/attestors/security-reviewed"]
+      }
+    },
+    "istioServiceIdentityAdmissionRules": {
+      "spiffe://example.com/ns/payments/sa/gateway": {
+        "evaluationMode": "REQUIRE_ATTESTATION",
+        "enforcementMode": "DRYRUN_AUDIT_LOG_ONLY",
+        "requireAttestationsBy": ["projects/demo-sec-1/attestors/vuln-scanned"]
+      }
+    },
+    "updateTime": "2026-08-11T10:00:00Z"
+  }
+}

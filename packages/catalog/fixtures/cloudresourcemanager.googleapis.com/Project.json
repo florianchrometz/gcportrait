@@ -1,0 +1,144 @@
+[
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+    "assetType": "cloudresourcemanager.googleapis.com/Project",
+    "parent": "//cloudresourcemanager.googleapis.com/folders/20000000002",
+    "ancestors": [
+      "projects/10000000001",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectNumber": "10000000001",
+      "projectId": "demo-net-1",
+      "lifecycleState": "ACTIVE",
+      "name": "Demo network host",
+      "createTime": "2022-05-10T12:00:00Z",
+      "parent": {
+        "type": "folder",
+        "id": "20000000002"
+      },
+      "labels": {
+        "env": "prod"
+      }
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "assetType": "cloudresourcemanager.googleapis.com/Project",
+    "parent": "//cloudresourcemanager.googleapis.com/folders/20000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectNumber": "10000000002",
+      "projectId": "demo-app-1",
+      "lifecycleState": "ACTIVE",
+      "name": "Demo shop",
+      "createTime": "2022-05-10T12:00:00Z",
+      "parent": {
+        "type": "folder",
+        "id": "20000000002"
+      },
+      "labels": {
+        "env": "prod"
+      }
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "assetType": "cloudresourcemanager.googleapis.com/Project",
+    "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectNumber": "10000000003",
+      "projectId": "demo-data-1",
+      "lifecycleState": "ACTIVE",
+      "name": "Demo data platform",
+      "createTime": "2022-05-10T12:00:00Z",
+      "parent": {
+        "type": "folder",
+        "id": "20000000001"
+      },
+      "labels": {
+        "env": "prod"
+      }
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/10000000004",
+    "assetType": "cloudresourcemanager.googleapis.com/Project",
+    "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+    "ancestors": ["projects/10000000004", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectNumber": "10000000004",
+      "projectId": "demo-sec-1",
+      "lifecycleState": "ACTIVE",
+      "name": "Demo security",
+      "createTime": "2022-05-10T12:00:00Z",
+      "parent": {
+        "type": "folder",
+        "id": "20000000001"
+      },
+      "labels": {
+        "env": "prod"
+      }
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+    "assetType": "cloudresourcemanager.googleapis.com/Project",
+    "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+    "ancestors": ["projects/10000000005", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectNumber": "10000000005",
+      "projectId": "demo-ops-1",
+      "lifecycleState": "ACTIVE",
+      "name": "Demo operations",
+      "createTime": "2022-05-10T12:00:00Z",
+      "parent": {
+        "type": "organization",
+        "id": "30000000001"
+      },
+      "labels": {
+        "env": "prod"
+      }
+    }
+  },
+  {
+    "name": "//cloudresourcemanager.googleapis.com/projects/10000000006",
+    "assetType": "cloudresourcemanager.googleapis.com/Project",
+    "parent": "//cloudresourcemanager.googleapis.com/folders/20000000001",
+    "ancestors": ["projects/10000000006", "folders/20000000001", "organizations/30000000001"],
+    "location": "global",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "projectNumber": "10000000006",
+      "projectId": "demo-old-1",
+      "lifecycleState": "DELETE_REQUESTED",
+      "name": "Demo retired",
+      "createTime": "2022-05-10T12:00:00Z",
+      "parent": {
+        "type": "folder",
+        "id": "20000000001"
+      },
+      "labels": {
+        "env": "retired"
+      }
+    }
+  }
+]

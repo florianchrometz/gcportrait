@@ -1,0 +1,9 @@
+{
+  // The runtime library: the icon table and its lookups, compiled without DOM or Node types so that the app,
+  // its workers and the headless renderer can all import it. The Node tooling lives in scripts/.
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Migrate to Virtual Machines. Migration records are operational, so every type starts hidden (skill
+# gcp-asset-catalog §3); `includeTypes` reveals them. A source's connectors, migrating VMs, their clone and
+# cutover jobs and its utilization reports are named under it (`…/sources/s/migratingVms/m/cloneJobs/j`); the
+# source is hidden rather than a container (see its notes), so they nest in the project.
+product: Migrate to Virtual Machines
+service: vmmigration.googleapis.com
+icon: migrate_to_virtual_machines
+types:
+  vmmigration.googleapis.com/Source:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'migration source · {{location}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+    ips:
+      - $.data.vmware.vcenterIp
+      - $.data.aws.publicIp
+    domains:
+      - $.data.vmware.resolvedVcenterHost
+    relations:
+      - { kind: encryptedBy, to: $.data.encryption.kmsKey, normalize: kmsKey }
+    notes: >-
+      Hidden like the rest of the product, and not a container: catalog:check proves every hiddenWhen with a
+      fixture it matches and one it does not, so an always-true hiddenWhen ($.name exists) cannot hide a
+      container whose records would nest inside it once revealed, and the catalog has no hidden container. Its records (connectors, migrating VMs, jobs, reports)
+      name it as their parent and nest where it nests, in the project. One of `vmware`, `aws` or `azure`
+      describes the source.
+
+  vmmigration.googleapis.com/DatacenterConnector:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}} · {{data.version}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+
+  vmmigration.googleapis.com/MigratingVm:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.state | lower}} → {{data.computeEngineTargetDefaults.vmName}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.computeEngineTargetDefaults.targetProject, normalize: name }
+      - {
+          kind: uses,
+          to: '$.data.computeEngineTargetDefaults.networkInterfaces[*].subnetwork',
+          normalize: computeRelative,
+        }
+      - {
+          kind: uses,
+          to: '$.data.computeEngineTargetDefaults.networkInterfaces[*].network',
+          normalize: computeRelative,
+          weak: true,
+        }
+      - { kind: memberOf, to: $.data.group, normalize: name }
+      - { kind: uses, to: $.data.computeEngineTargetDefaults.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.computeEngineTargetDefaults.encryption.kmsKey, normalize: kmsKey }
+    notes: >-
+      The target network is where the migrated VM will be created, usually in another project than the
+      migration records, so it is a uses edge, never attaches (no false Shared VPC pair). The API does not
+      document the NIC network format; `projects/<p>/global/networks/<n>` paths resolve, bare names stay
+      dangling. The target service account and key describe the future VM, not the migration record, so they
+      are uses edges too, not runsAs or encryptedBy.
+
+  vmmigration.googleapis.com/TargetProject:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.project}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.project, normalize: projectNumberOrId }
+    notes: A global record naming a project VMs are migrated into (`project` is an id, a number or `projects/…`).
+
+  vmmigration.googleapis.com/Group:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.migrationTargetType | lower}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+
+  vmmigration.googleapis.com/CloneJob:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'clone · {{data.state | lower}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+
+  vmmigration.googleapis.com/CutoverJob:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'cutover · {{data.state | lower}} · {{data.progressPercent}} %'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+
+  vmmigration.googleapis.com/ImageImport:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.diskImageTargetDefaults.imageName}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.cloudStorageUri, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: "$.data['diskImageTargetDefaults','machineImageTargetDefaults'].targetProject",
+          normalize: name,
+        }
+      - { kind: encryptedBy, to: $.data.encryption.kmsKey, normalize: kmsKey }
+
+  vmmigration.googleapis.com/UtilizationReport:
+    role: hidden
+    label: '{{data.displayName}}'
+    subtitle: '{{data.vmCount | plural(VM)}} · {{data.timeFrame | lower}}'
+    console: 'https://console.cloud.google.com/compute/mfce?project={{projectId}}'

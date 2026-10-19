@@ -1,0 +1,11 @@
+{
+  // The builder itself: pure code compiled without DOM or Node types (a pure core), so a stray
+  // `document`, `fs`, `process` or `performance` fails to compile. Unit and property tests that need no host
+  // API live next to the code.
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src"],
+  "references": [{ "path": "../model" }, { "path": "../catalog/tsconfig.lib.json" }]
+}

@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Access Context Manager: the organisation's access policies, their access levels and VPC Service
+# Controls perimeters. Note the two service names: the asset types are identity.accesscontextmanager…, but the
+# assets and every reference between them are named in accesscontextmanager.googleapis.com
+# (//accesscontextmanager.googleapis.com/accessPolicies/<n>/servicePerimeters/<p>), so relative references
+# name that service explicitly. Authorized organisations descriptions (accesscontextmanager.googleapis.com/…)
+# are in accesscontextmanager.googleapis.com.yaml.
+product: Access Policy (Access Context Manager)
+service: identity.accesscontextmanager.googleapis.com
+icon: access_context_manager
+types:
+  identity.accesscontextmanager.googleapis.com/AccessPolicy:
+    role: container
+    label: '{{data.title}}'
+    subtitle: 'access policy · {{data.scopes[0]}}'
+    console: 'https://console.cloud.google.com/security/service-perimeter?organizationId={{data.parent | lastSegment}}'
+    contains:
+      - byParent: identity.accesscontextmanager.googleapis.com/ServicePerimeter
+      - byParent: identity.accesscontextmanager.googleapis.com/AccessLevel
+      - byParent: accesscontextmanager.googleapis.com/AuthorizedOrgsDesc
+    relations:
+      - {
+          kind: secures,
+          to: '$.data.scopes[*]',
+          normalize: name,
+          service: cloudresourcemanager.googleapis.com,
+        }
+    notes: >-
+      accessPolicies/<number>, parented by the organisation (data.parent organizations/<n>), so it nests under
+      the organisation. A scoped policy (data.scopes: one folders/<n> or projects/<number>) is delegated to that
+      folder or project, which it secures. Perimeters, access levels and authorized organisations descriptions
+      have the policy as CAI parent and nest in it.
+
+  identity.accesscontextmanager.googleapis.com/AccessLevel:
+    role: core
+    label: '{{data.title}}'
+    subtitle: '{{data.basic.conditions[0].ipSubnetworks[0]}}'
+    console: 'https://console.cloud.google.com/security/access-level'
+    ips:
+      - '$.data.basic.conditions[*].ipSubnetworks[*]'
+      - '$.data.basic.conditions[*].vpcNetworkSources[*].vpcSubnetwork.vpcIpSubnetworks[*]'
+    relations:
+      - {
+          kind: uses,
+          to: '$.data.basic.conditions[*].requiredAccessLevels[*]',
+          normalize: name,
+          service: accesscontextmanager.googleapis.com,
+        }
+      - {
+          kind: uses,
+          to: '$.data.basic.conditions[*].vpcNetworkSources[*].vpcSubnetwork.network',
+          normalize: computeSelfLink,
+        }
+    notes: >-
+      A basic level combines conditions (AND or OR): source ranges, device policy, required other levels
+      (accessPolicies/<n>/accessLevels/<l>), members, regions, and VPC networks with their ranges
+      (//compute.googleapis.com/projects/<id>/global/networks/<n>). A custom level is a CEL expression and has
+      no references. The subtitle shows the first source range (a template cannot count conditions). The
+      console link opens the access levels page of the organisation selected in the console.
+
+  identity.accesscontextmanager.googleapis.com/ServicePerimeter:
+    role: core
+    label: '{{data.title}}'
+    subtitle: '{{data.perimeterType | lower}}'
+    console: 'https://console.cloud.google.com/security/service-perimeter'
+    relations:
+      - {
+          kind: secures,
+          to: "$.data.status.resources[?(@ startsWith 'projects/')]",
+          normalize: projectNumberOrId,
+        }
+      - {
+          kind: secures,
+          to: "$.data.status.resources[?(@ startsWith '//compute.googleapis.com/')]",
+          normalize: computeSelfLink,
+        }
+      - {
+          kind: uses,
+          to: '$.data.status.accessLevels[*]',
+          normalize: name,
+          service: accesscontextmanager.googleapis.com,
+        }
+    notes: >-
+      Enforced configuration (status): resources are projects/<number> or VPC networks
+      (//compute.googleapis.com/projects/<id>/global/networks/<n>), so the list is read twice, filtered by
+      form, each with its own normaliser; the security lens draws the secured projects as a dashed overlay.
+      accessLevels name levels of the same policy. Regular perimeters and bridges (PERIMETER_TYPE_BRIDGE, no
+      access levels) alike. The dry-run configuration (spec, useExplicitDryRunSpec) is not drawn, and ingress
+      and egress rules (sources, identities, resources) are not read yet.

@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Google Cloud Managed Lustre: parallel file systems for AI and HPC on a consumer VPC network (private
+# services access). Cloud Asset Inventory names them by project id
+# (`//lustre.googleapis.com/projects/<id>/locations/<zone>/instances/<i>`).
+product: Google Cloud Managed Lustre
+service: lustre.googleapis.com
+icon: managed_lustre
+types:
+  lustre.googleapis.com/Instance:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.capacityGib}} GiB · {{data.perUnitStorageThroughput}} MB/s per TiB · {{data.filesystem}}'
+    console: 'https://console.cloud.google.com/managed-lustre?project={{projectId}}'
+    ips:
+      - $.data.mountPoint
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+    notes: >-
+      network is projects/<id>/global/networks/<name>. mountPoint reads `<address>@tcp:/<filesystem>`; the
+      address is extracted. The console link opens the product page (no per-instance URL is known).

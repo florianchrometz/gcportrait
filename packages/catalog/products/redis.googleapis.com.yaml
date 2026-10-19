@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Memorystore for Redis: standalone Redis instances, reached over VPC peering or private services
+# access, and Redis Cluster, reached through Private Service Connect endpoints in the consumer network. Cloud
+# Asset Inventory names both by project id
+# (`//redis.googleapis.com/projects/<id>/locations/<region>/instances/<i>`, `…/clusters/<c>`).
+product: Memorystore for Redis
+service: redis.googleapis.com
+icon: memorystore
+types:
+  redis.googleapis.com/Instance:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.tier | lower}} · {{data.memorySizeGb}} GB · {{data.connectMode | lower}}'
+    console: 'https://console.cloud.google.com/memorystore/redis/locations/{{location}}/instances/{{name | lastSegment}}/details/overview?project={{projectId}}'
+    ips:
+      - $.data.host
+      - $.data.readEndpoint
+      - $.data.reservedIpRange
+    relations:
+      - { kind: attaches, to: $.data.authorizedNetwork, normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.customerManagedKey, normalize: kmsKey }
+    notes: >-
+      authorizedNetwork is the consumer VPC network (projects/<id>/global/networks/<name>); connectMode is
+      DIRECT_PEERING or PRIVATE_SERVICE_ACCESS. host is the primary endpoint, readEndpoint the read replicas'
+      endpoint (STANDARD_HA with read replicas), reservedIpRange the CIDR the service took (for private
+      services access the request may name an allocated range instead, which is not an address and is
+      skipped). Replicas inside one instance (replicaCount) are not separate assets.
+
+  redis.googleapis.com/Cluster:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.shardCount | plural(shard)}} · {{data.nodeType | lower}} · {{data.sizeGb}} GB'
+    console: 'https://console.cloud.google.com/memorystore/redis/clusters?project={{projectId}}'
+    ips:
+      - "$.data.clusterEndpoints[*].connections[*]['pscAutoConnection','pscConnection'].address"
+      - '$.data.discoveryEndpoints[*].address'
+      - '$.data.pscConnections[*].address'
+    relations:
+      - {
+          kind: attaches,
+          to: "$.data.clusterEndpoints[*].connections[*]['pscAutoConnection','pscConnection'].network",
+          normalize: computeRelative,
+        }
+      - { kind: attaches, to: '$.data.pscConfigs[*].network', normalize: computeRelative }
+      - {
+          kind: uses,
+          to: "$.data.clusterEndpoints[*].connections[*]['pscAutoConnection','pscConnection'].forwardingRule",
+          normalize: computeRelative,
+        }
+      - { kind: uses, to: '$.data.pscConnections[*].forwardingRule', normalize: computeRelative }
+      - { kind: encryptedBy, to: $.data.kmsKey, normalize: kmsKey }
+      - {
+          kind: replicates,
+          to: '$.data.crossClusterReplicationConfig.secondaryClusters[*].cluster',
+          normalize: name,
+        }
+    notes: >-
+      Private Service Connect endpoints come in two shapes. clusterEndpoints[*] is one group of connections
+      per consumer network, each connection either a pscAutoConnection (created by the service through a
+      service connection policy) or a pscConnection (created by the customer against the cluster's
+      pscServiceAttachments); both name the network (projects/<id>/global/networks/<name>, attaches), the
+      endpoint's forwarding rule (projects/<p>/regions/<r>/forwardingRules/<f>, uses) and its address. The
+      earlier shape, still filled, is pscConfigs[*].network (the networks of the automatic endpoints) with
+      pscConnections, which lists the automatic endpoints only, so a customer-created endpoint appears under
+      clusterEndpoints alone. replicaCount is left out of the subtitle because the API omits it when it is 0;
+      sizeGb is the cluster's total memory. Cross-region replication is read on the primary:
+      crossClusterReplicationConfig. secondaryClusters (set only there) draws primary → secondary. The console
+      link opens the cluster list.

@@ -1,0 +1,11 @@
+{
+  "name": "//migrationcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/costAssessmentJobs/q4-estimate",
+  "assetType": "migrationcenter.googleapis.com/CostAssessmentJob",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/costAssessmentJobs/q4-estimate"
+  }
+}

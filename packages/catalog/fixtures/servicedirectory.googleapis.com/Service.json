@@ -1,0 +1,15 @@
+{
+  "name": "//servicedirectory.googleapis.com/projects/demo-ops-1/locations/europe-west3/namespaces/internal/services/payments",
+  "assetType": "servicedirectory.googleapis.com/Service",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/namespaces/internal/services/payments",
+    "annotations": {
+      "protocol": "grpc"
+    },
+    "uid": "f0000000-0000-4000-8000-000000000002"
+  }
+}

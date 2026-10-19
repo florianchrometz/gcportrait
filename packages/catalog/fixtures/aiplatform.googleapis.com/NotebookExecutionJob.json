@@ -1,0 +1,65 @@
+[
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/notebookExecutionJobs/4455001122334455667",
+    "assetType": "aiplatform.googleapis.com/NotebookExecutionJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/notebookExecutionJobs/4455001122334455667",
+      "displayName": "weekly-churn-report",
+      "executionTimeout": "3600s",
+      "scheduleResourceName": "projects/10000000003/locations/europe-west3/schedules/weekly-churn-report",
+      "jobState": "JOB_STATE_SUCCEEDED",
+      "createTime": "2026-09-28T06:00:00Z",
+      "updateTime": "2026-09-28T06:40:00Z",
+      "kernelName": "python3",
+      "encryptionSpec": {
+        "kmsKeyName": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/vertex"
+      },
+      "gcsNotebookSource": {
+        "uri": "gs://demo-data-1-notebooks/churn/report.ipynb",
+        "generation": "1727500000000000"
+      },
+      "notebookRuntimeTemplateResourceName": "projects/10000000003/locations/europe-west3/notebookRuntimeTemplates/private-e2",
+      "gcsOutputUri": "gs://demo-data-1-notebooks/churn/output",
+      "serviceAccount": "notebook-runner@demo-data-1.iam.gserviceaccount.com"
+    }
+  },
+  {
+    "name": "//aiplatform.googleapis.com/projects/10000000003/locations/europe-west3/notebookExecutionJobs/4455001122334450000",
+    "assetType": "aiplatform.googleapis.com/NotebookExecutionJob",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/10000000003/locations/europe-west3/notebookExecutionJobs/4455001122334450000",
+      "displayName": "feature-checks",
+      "jobState": "JOB_STATE_FAILED",
+      "createTime": "2026-09-29T06:00:00Z",
+      "updateTime": "2026-09-29T06:05:00Z",
+      "dataformRepositorySource": {
+        "dataformRepositoryResourceName": "projects/demo-data-1/locations/europe-west3/repositories/analytics",
+        "commitSha": "5f1c2d9a"
+      },
+      "customEnvironmentSpec": {
+        "machineSpec": {
+          "machineType": "e2-standard-4"
+        },
+        "persistentDiskSpec": {
+          "diskType": "pd-standard",
+          "diskSizeGb": "100"
+        },
+        "networkSpec": {
+          "enableInternetAccess": false,
+          "network": "projects/demo-net-1/global/networks/core",
+          "subnetwork": "projects/demo-net-1/regions/europe-west3/subnetworks/app"
+        }
+      },
+      "gcsOutputUri": "gs://demo-data-1-notebooks/feature-checks/output",
+      "executionUser": "analyst@example.com"
+    }
+  }
+]

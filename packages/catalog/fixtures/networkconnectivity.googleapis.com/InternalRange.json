@@ -1,0 +1,32 @@
+{
+  "name": "//networkconnectivity.googleapis.com/projects/10000000001/locations/global/internalRanges/gke-pods-reserved",
+  "assetType": "networkconnectivity.googleapis.com/InternalRange",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000001",
+  "ancestors": [
+    "projects/10000000001",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000001/locations/global/internalRanges/gke-pods-reserved",
+    "description": "Reserved for the GKE pod ranges of the production clusters",
+    "createTime": "2025-01-15T09:00:00Z",
+    "updateTime": "2025-01-15T09:00:00Z",
+    "labels": {
+      "env": "prod"
+    },
+    "ipCidrRange": "10.128.0.0/12",
+    "network": "https://www.googleapis.com/compute/v1/projects/demo-net-1/global/networks/core",
+    "usage": "FOR_VPC",
+    "peering": "FOR_SELF",
+    "prefixLength": 12,
+    "users": [
+      "https://www.googleapis.com/compute/v1/projects/demo-net-1/regions/europe-west3/subnetworks/gke"
+    ],
+    "overlaps": [],
+    "immutable": false
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/global/targetProjects/demo-app-1",
+  "assetType": "vmmigration.googleapis.com/TargetProject",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/global/targetProjects/demo-app-1",
+    "project": "projects/demo-app-1",
+    "description": "Application landing zone",
+    "createTime": "2026-04-01T08:00:00Z",
+    "updateTime": "2026-04-01T08:00:00Z"
+  }
+}

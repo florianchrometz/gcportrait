@@ -1,0 +1,123 @@
+[
+  {
+    "name": "//memorystore.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/catalog-cache",
+    "assetType": "memorystore.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/instances/catalog-cache",
+      "createTime": "2025-05-01T09:00:00Z",
+      "state": "ACTIVE",
+      "uid": "f0000000-0000-4000-8000-000000000001",
+      "replicaCount": 1,
+      "authorizationMode": "IAM_AUTH",
+      "transitEncryptionMode": "SERVER_AUTHENTICATION",
+      "shardCount": 3,
+      "nodeType": "HIGHMEM_MEDIUM",
+      "engineVersion": "VALKEY_8_0",
+      "mode": "CLUSTER",
+      "kmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/memorystore",
+      "endpoints": [
+        {
+          "connections": [
+            {
+              "pscAutoConnection": {
+                "pscConnectionId": "72000000000000001",
+                "ipAddress": "10.20.4.10",
+                "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/valkey-catalog-discovery",
+                "projectId": "demo-app-1",
+                "network": "projects/demo-net-1/global/networks/core",
+                "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/catalog-cache-psc-1",
+                "pscConnectionStatus": "ACTIVE",
+                "connectionType": "CONNECTION_TYPE_DISCOVERY",
+                "port": 6379
+              }
+            }
+          ]
+        },
+        {
+          "connections": [
+            {
+              "pscConnection": {
+                "pscConnectionId": "72000000000000002",
+                "ipAddress": "10.40.0.30",
+                "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/valkey-catalog-local",
+                "projectId": "demo-app-1",
+                "network": "projects/demo-app-1/global/networks/app",
+                "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/catalog-cache-psc-1",
+                "pscConnectionStatus": "ACTIVE",
+                "connectionType": "CONNECTION_TYPE_DISCOVERY",
+                "port": 6379
+              }
+            }
+          ]
+        }
+      ],
+      "crossInstanceReplicationConfig": {
+        "instanceRole": "PRIMARY",
+        "secondaryInstances": [
+          {
+            "instance": "projects/demo-app-1/locations/europe-west1/instances/catalog-cache-dr",
+            "uid": "f0000000-0000-4000-8000-000000000002"
+          }
+        ]
+      },
+      "pscAttachmentDetails": [
+        {
+          "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/catalog-cache-psc-1",
+          "connectionType": "CONNECTION_TYPE_DISCOVERY"
+        },
+        {
+          "serviceAttachment": "projects/e1f2a3b4c5-tp/regions/europe-west3/serviceAttachments/catalog-cache-psc-2",
+          "connectionType": "CONNECTION_TYPE_PRIMARY"
+        }
+      ]
+    }
+  },
+  {
+    "name": "//memorystore.googleapis.com/projects/demo-app-1/locations/europe-west3/instances/legacy-cache",
+    "assetType": "memorystore.googleapis.com/Instance",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+    "ancestors": [
+      "projects/10000000002",
+      "folders/20000000002",
+      "folders/20000000001",
+      "organizations/30000000001"
+    ],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-app-1/locations/europe-west3/instances/legacy-cache",
+      "createTime": "2024-11-01T09:00:00Z",
+      "state": "ACTIVE",
+      "shardCount": 1,
+      "nodeType": "SHARED_CORE_NANO",
+      "engineVersion": "VALKEY_7_2",
+      "mode": "CLUSTER_DISABLED",
+      "pscAutoConnections": [
+        {
+          "pscConnectionId": "72000000000000003",
+          "ipAddress": "10.20.4.20",
+          "forwardingRule": "projects/demo-app-1/regions/europe-west3/forwardingRules/valkey-legacy-discovery",
+          "projectId": "demo-app-1",
+          "network": "projects/demo-net-1/global/networks/core",
+          "connectionType": "CONNECTION_TYPE_DISCOVERY"
+        }
+      ],
+      "discoveryEndpoints": [
+        {
+          "address": "10.20.4.20",
+          "port": 6379,
+          "network": "projects/demo-net-1/global/networks/core"
+        }
+      ]
+    }
+  }
+]

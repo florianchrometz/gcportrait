@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dataproc Metastore: managed Hive metastore services, federations over several metastores, and their
+# backups and metadata imports. Dataproc clusters, batches and Dataplex lakes point at a service.
+product: Dataproc Metastore
+service: metastore.googleapis.com
+icon: dataproc_metastore
+types:
+  metastore.googleapis.com/Service:
+    role: core
+    subtitle: '{{data.tier | lower}} · Hive {{data.hiveMetastoreConfig.version}}'
+    console: 'https://console.cloud.google.com/dataproc/metastore/services/{{location}}/{{name | lastSegment}}/details?project={{projectId}}'
+    ips:
+      - $.data.endpointUri
+    domains:
+      - $.data.endpointUri
+      - '$.data.networkConfig.consumers[*].endpointUri'
+    relations:
+      - { kind: attaches, to: '$.data.networkConfig.consumers[*].subnetwork', normalize: computeRelative }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative, weak: true }
+      - { kind: encryptedBy, to: $.data.encryptionConfig.kmsKey, normalize: kmsKey }
+      - { kind: uses, to: $.data.artifactGcsUri, normalize: gcsUri }
+      - {
+          kind: uses,
+          to: $.data.hiveMetastoreConfig.kerberosConfig.keytab.cloudSecret,
+          normalize: name,
+          service: secretmanager.googleapis.com,
+        }
+    notes: >-
+      A service is reached either through VPC peering with one network (data.network, written with the
+      project number) or through Private Service Connect endpoints in consumer subnets
+      (networkConfig.consumers[*].subnetwork); the network edge is weak so a consumer subnet decides the
+      nesting. endpointUri is thrift://<ip>:9083 for a Thrift endpoint (read as an address) or an https URL
+      for a gRPC endpoint (read as a host name); a PSC consumer's endpointUri is read as a host name (its
+      exact shape is unverified). The KMS key is documented with a project number, which kmsKey keeps
+      verbatim: such a key matches no id-named key asset and stays dangling. Backups and metadata imports
+      continue the service's name but stay in the project (the service is a card, not a container).
+
+  metastore.googleapis.com/Federation:
+    role: core
+    subtitle: 'federation · Hive {{data.version}}'
+    console: 'https://console.cloud.google.com/dataproc/metastore/federations/{{location}}/{{name | lastSegment}}/details?project={{projectId}}'
+    domains:
+      - $.data.endpointUri
+    relations:
+      - {
+          kind: uses,
+          to: "$.data.backendMetastores[?(@.metastoreType == 'DATAPROC_METASTORE')].name",
+          normalize: name,
+        }
+      - {
+          kind: uses,
+          to: "$.data.backendMetastores[?(@.metastoreType == 'BIGQUERY')].name",
+          normalize: projectNumberOrId,
+        }
+    notes: >-
+      A federation serves a gRPC endpoint (endpointUri, an https URL). backendMetastores is a map keyed by
+      rank. A Dataproc Metastore backend is a service name (projects/<p>/locations/<l>/services/<s>, read
+      with the federation's own service); a BigQuery backend is a project (projects/<p>), read as the
+      project. Each rule reads the backends of its metastoreType.
+
+  metastore.googleapis.com/Backup:
+    role: hidden
+    subtitle: '{{data.state | lower}} · {{data.createTime}}'
+    notes: >-
+      serviceRevision is a full copy of the service as it was at backup time; its references are history and
+      are not read. The name continues the service's name.
+
+  metastore.googleapis.com/MetadataImport:
+    role: hidden
+    subtitle: '{{data.state | lower}} · {{data.databaseDump.type | lower}}'
+    relations:
+      - { kind: uses, to: $.data.databaseDump.gcsUri, normalize: gcsUri }
+    notes: A one-off import of a MySQL or Avro dump from Cloud Storage into the service its name continues.

@@ -1,0 +1,20 @@
+{
+  "name": "//vmmigration.googleapis.com/projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/datacenterConnectors/dc1-appliance",
+  "assetType": "vmmigration.googleapis.com/DatacenterConnector",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/sources/vcenter-dc1/datacenterConnectors/dc1-appliance",
+    "registrationId": "dc1-appliance-reg",
+    "serviceAccount": "m2vm-connector@demo-ops-1.iam.gserviceaccount.com",
+    "version": "5.0.12",
+    "state": "ACTIVE",
+    "stateTime": "2026-09-30T08:00:00Z",
+    "applianceInfrastructureVersion": "5.0.12",
+    "applianceSoftwareVersion": "5.0.12",
+    "createTime": "2026-04-01T09:00:00Z",
+    "updateTime": "2026-09-30T08:00:00Z"
+  }
+}

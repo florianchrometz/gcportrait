@@ -1,0 +1,16 @@
+{
+  "name": "//artifactregistry.googleapis.com/projects/demo-ops-1/locations/europe-west3/repositories/npm-libs/npmPackages/@shop%2Fui-kit:4.2.0",
+  "assetType": "artifactregistry.googleapis.com/NpmPackage",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/repositories/npm-libs/npmPackages/@shop%2Fui-kit:4.2.0",
+    "packageName": "@shop/ui-kit",
+    "version": "4.2.0",
+    "tags": ["latest"],
+    "createTime": "2026-09-02T13:00:00Z",
+    "updateTime": "2026-09-02T13:00:00Z"
+  }
+}

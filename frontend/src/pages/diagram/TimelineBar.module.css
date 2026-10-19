@@ -1,0 +1,366 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* The timeline bar (TimelineBar.tsx): the second row of the diagram workspace, across both columns
+   (DiagramPage.module.css), 48 px tall on a desktop so the canvas keeps its size, two lines on a tablet and three on a
+   phone, one on a phone turned sideways while the details sheet is open (the end of this sheet). Chrome tokens only
+   (skill gcp-diagram-style §9),
+   so both themes follow; every marker shape keeps 3 : 1 against the bar's surface container in both themes. */
+.timeline {
+  /* How far the thumb's focus ring reaches past the thumb's centre (below): the dot's 8 px radius, the ring and the
+     band, 14 px. */
+  --ring-reach: calc(8px + var(--focus-ring-gap) + var(--focus-ring-width) + 2px);
+  /* Half the height of the tallest day marker, its own ring included (the current day's, below): 4.5 + 3 px. */
+  --marker-reach: 7.5px;
+
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 48px;
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--color-outline);
+  background: var(--color-surface-container);
+}
+
+/* The parts that group the readout with "Try again" and the playback options draw no box on a desktop: their
+   controls are the bar's own flex items. */
+.readoutRow,
+.options {
+  display: contents;
+}
+
+/* The slider's line: the slider between its edge dates, centred in the line's content box, and the row of day markers
+   under the track (below) in the room the line keeps beneath it. On a desktop the line fills the bar's height and
+   keeps twice the markers' half height beneath its content box, which centres the ring's reach above the track and
+   the marker row below it in the 48-pixel bar. */
+.track {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--space-3);
+  min-width: 0;
+  padding-bottom: calc(2 * var(--marker-reach));
+}
+
+.buttons {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-height);
+  padding: 0;
+}
+
+.glyph {
+  width: 16px;
+  height: 16px;
+  fill: currentcolor;
+}
+
+.title {
+  font-size: var(--font-size-control);
+  font-weight: var(--font-weight-medium);
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+  /* The room the thumb's focus ring needs beside the track (below), past the line's 12 px gap. */
+  margin-inline: calc(var(--ring-reach) - var(--space-3));
+}
+
+.edge {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-footnote);
+  white-space: nowrap;
+}
+
+/* The thumb's focus ring (global.css) crosses the track's line: a 2 px band of the bar's own colour outside it keeps
+   the ring away from the line, so it reaches 3 : 1 against everything beside it (keyboard.spec.ts measures it). The
+   ring goes round the thumb on a desktop and round its 16-pixel dot (`::after`) on a phone or a tablet, where the
+   thumb is a 44-pixel touch box (ui/Slider; the end of this sheet): either way it reaches the dot's 8 px radius, the
+   ring and the band past the thumb's centre (`--ring-reach`), which lies on the track's end at the first and the last
+   day. The slider keeps that much room, the gap before the dates included, between its track and the dates beside it
+   (above), and the marker row starts below it (below), so the ring covers neither a date nor a marker. */
+.slider [role='slider']:focus-visible,
+.slider [role='slider']:focus-visible::after {
+  box-shadow:
+    0 0 0 var(--focus-ring-gap) var(--color-surface),
+    0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary),
+    0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width) + 2px) var(--color-surface-container);
+}
+
+/* The markers sit in a row under the track, so the track and the thumb stay as ui/Slider draws them. The row starts
+   where the thumb's focus ring ends, the markers centred half the tallest one's height below that, so the ring round
+   a thumb that has keyboard focus covers no day marker, the current day's right under it included. */
+.markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  top: calc(50% + var(--ring-reach) + var(--marker-reach));
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Not read yet: a hollow ring. */
+.marker[data-state='unknown'] {
+  border: 1.5px solid var(--color-on-surface-variant);
+}
+
+/* Ready (local, or cached in this browser): a filled dot. */
+.marker[data-state='cached'] {
+  background: var(--color-on-surface-variant);
+}
+
+/* Loading: a larger dashed ring in the primary colour, turning (standing still with reduced motion). */
+.marker[data-state='loading'] {
+  width: 9px;
+  height: 9px;
+  border: 2px dashed var(--color-primary);
+  animation: turn 1.2s linear infinite;
+}
+
+/* On screen: a larger filled dot in the primary colour with a gap and a ring. */
+.marker[data-state='current'] {
+  width: 9px;
+  height: 9px;
+  background: var(--color-primary);
+  box-shadow:
+    0 0 0 1.5px var(--color-surface-container),
+    0 0 0 3px var(--color-primary);
+}
+
+/* Failed: a cross in the error colour. */
+.marker[data-state='error'] {
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
+}
+
+.marker[data-state='error']::before,
+.marker[data-state='error']::after {
+  position: absolute;
+  top: 50%;
+  left: -1px;
+  width: 11px;
+  height: 2px;
+  background: var(--color-error);
+  content: '';
+}
+
+.marker[data-state='error']::before {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.marker[data-state='error']::after {
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+/* An extra tick (an export or a manual pull of the scope): a diamond, apart from the days' dots by shape. It
+   takes the pointer, so its tooltip names it ("export 2026-10-05 14:30: ready"); a press on it is still a press on
+   the track (it is inside it), which moves the view there. */
+.marker[data-kind='extra'] {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: auto;
+}
+
+/* Its read time is an estimate (the latest asset change): a hollow diamond. */
+.marker[data-kind='extra'][data-estimated='true'][data-state='cached'] {
+  border: 1.5px solid var(--color-on-surface-variant);
+  background: none;
+}
+
+.marker[data-kind='extra'][data-state='current'],
+.marker[data-kind='extra'][data-state='loading'] {
+  width: 9px;
+  height: 9px;
+}
+
+.marker[data-kind='extra'][data-estimated='true'][data-state='current'] {
+  border: 2px solid var(--color-primary);
+  background: var(--color-surface-container);
+}
+
+@keyframes turn {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Playback glides the thumb from day to day. */
+.playing [role='slider'] {
+  transition: left 200ms ease-out;
+}
+
+/* Two lines at most: a read's progress with its size and time, or Google's message, wraps instead of being cut
+   at one line; what still does not fit ends in an ellipsis, and the whole text is the tooltip and the status. */
+.readout {
+  display: -webkit-box;
+  flex: none;
+  overflow: hidden;
+  width: 300px;
+  max-height: 32px;
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: var(--font-size-control);
+  line-height: 16px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker[data-state='loading'] {
+    animation: none;
+  }
+
+  .playing [role='slider'] {
+    transition: none;
+  }
+}
+
+/*
+ * A tablet (ui/screen.ts): the slider, its buttons and the playback options on the first line, the readout on a line
+ * of its own below them. Every target 44 px (--control-height), the edges of a phone's screen kept clear.
+ */
+@media (max-width: 79.99rem) {
+  /* The parts of a line line up at its top: the slider's line is taller than the 44-pixel controls beside it on a
+     tablet (below), and its track lies in the middle of its top 44 pixels, as theirs do. */
+  .timeline {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    row-gap: var(--space-1);
+    height: auto;
+    padding: var(--space-1) max(var(--space-3), env(safe-area-inset-right, 0px)) var(--space-1)
+      max(var(--space-3), env(safe-area-inset-left, 0px));
+  }
+
+  .title {
+    line-height: var(--touch-target);
+  }
+
+  /* The slider's line: its content box as tall as the thumb's touch band (ui/Slider), the track and the dates in its
+     middle, and below it as much room as the marker row (above) reaches past the band: the line below it (a phone's
+     readout) starts under both, never under a marker. */
+  .track {
+    --marker-room: calc(var(--ring-reach) + 2 * var(--marker-reach) - var(--touch-target) / 2);
+
+    flex: 1 1 12rem;
+    gap: var(--space-2);
+    min-height: calc(var(--touch-target) + var(--marker-room));
+    padding-bottom: var(--marker-room);
+  }
+
+  /* The ring's room beside the track (above), past the line's 8 px gap. */
+  .slider {
+    margin-inline: calc(var(--ring-reach) - var(--space-2));
+  }
+
+  /* A press on the marker row is a press on the track, below the touch band as within it (ui/Slider). */
+  .markers::before {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: calc(var(--ring-reach) + 2 * var(--marker-reach));
+    pointer-events: auto;
+    content: '';
+  }
+
+  /* The ring goes round the thumb's dot (above), not round its touch box. */
+  .slider [role='slider']:focus-visible {
+    box-shadow: none;
+  }
+
+  .readoutRow,
+  .options {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .options {
+    flex-wrap: wrap;
+  }
+
+  .readoutRow {
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+
+  .readout {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .iconButton {
+    width: var(--control-height);
+  }
+}
+
+/* A phone: the slider across the whole width, the readout under it, then the buttons and the playback options. */
+@media (max-width: 47.99rem) {
+  /* The slider's line starts at the bar's top, and the gap under it gives up what the marker row adds to the line
+     beyond the bar's top padding: the bar is no taller for the row and the readout stays where it is, as a phone
+     turned sideways has no height to spare for the canvas above the bar. */
+  .timeline {
+    padding-top: 0;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .track {
+    flex: 1 0 100%;
+    margin-bottom: calc(var(--space-1) - var(--marker-room));
+  }
+
+  .buttons,
+  .options {
+    flex: 0 1 auto;
+  }
+
+  .options {
+    margin-left: auto;
+  }
+
+  /* A phone turned sideways, its workspace too short for the whole bar and a canvas whose half-height details sheet
+     holds its header's Close button whole (`CONTAINER.shortWorkspace` of ui/screen.ts, the workspace its container,
+     pages/DiagramPage.module.css): while the sheet is open (at half height or full) the bar keeps one line, the slider
+     and after it, as in the tab order, the step and play buttons, so Pause and the steps stay in reach (as do the
+     slider, and `[` and `]`), and the canvas above it is tall enough for the sheet's header. The readout (with "Try
+     again") and the playback options (the speed, "Play extras") are hidden meanwhile, out of sight, focus and the
+     accessibility tree, as the disclosure bar is on a canvas this short (the markers still show a day's state), and
+     come back when the sheet closes. The slider's line wraps under the buttons where it would be narrower than 12rem. */
+  @container (max-height: 18.49rem) {
+    :has(> [data-sheet]:not([hidden])) > .timeline .track {
+      flex: 1 1 12rem;
+    }
+
+    :has(> [data-sheet]:not([hidden])) > .timeline .readoutRow,
+    :has(> [data-sheet]:not([hidden])) > .timeline .options {
+      display: none;
+    }
+  }
+}

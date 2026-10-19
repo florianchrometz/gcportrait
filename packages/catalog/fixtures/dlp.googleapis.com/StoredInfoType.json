@@ -1,0 +1,67 @@
+[
+  {
+    "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/storedInfoTypes/customer-ids",
+    "assetType": "dlp.googleapis.com/StoredInfoType",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/storedInfoTypes/customer-ids",
+      "currentVersion": {
+        "config": {
+          "displayName": "Customer ids",
+          "description": "Customer ids from the CRM export",
+          "largeCustomDictionary": {
+            "outputPath": {
+              "path": "gs://demo-data-1-dlp-dictionaries/customer-ids/"
+            },
+            "cloudStorageFileSet": {
+              "url": "gs://demo-data-1-lake/reference/crm/customer_ids*.txt"
+            }
+          }
+        },
+        "createTime": "2026-01-05T09:00:00Z",
+        "state": "READY",
+        "stats": {
+          "largeCustomDictionary": {
+            "approxNumPhrases": "120000"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "//dlp.googleapis.com/projects/demo-data-1/locations/europe-west3/storedInfoTypes/employee-ids",
+    "assetType": "dlp.googleapis.com/StoredInfoType",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/storedInfoTypes/employee-ids",
+      "currentVersion": {
+        "config": {
+          "displayName": "Employee ids",
+          "largeCustomDictionary": {
+            "outputPath": {
+              "path": "gs://demo-data-1-dlp-dictionaries/employee-ids/"
+            },
+            "bigQueryField": {
+              "table": {
+                "projectId": "demo-data-1",
+                "datasetId": "hr",
+                "tableId": "employees"
+              },
+              "field": {
+                "name": "employee_id"
+              }
+            }
+          }
+        },
+        "createTime": "2026-01-06T09:00:00Z",
+        "state": "READY"
+      }
+    }
+  }
+]

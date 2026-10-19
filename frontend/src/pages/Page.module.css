@@ -1,0 +1,57 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Shared layout for the text pages (Connect, Snapshots, Permissions, Settings, not found). */
+.page {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+}
+
+.intro {
+  display: grid;
+}
+
+.title {
+  font-size: var(--font-size-headline);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.3;
+}
+
+.lead {
+  margin-top: var(--space-2);
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-title);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-medium);
+}
+
+.note {
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+/* A phone: less room around the text, the page's sides clear of a phone's rounded corners (the safe-area insets). */
+@media (max-width: 47.99rem) {
+  .page {
+    gap: var(--space-4);
+    padding: var(--space-6) max(var(--space-4), env(safe-area-inset-right, 0px)) var(--space-6)
+      max(var(--space-4), env(safe-area-inset-left, 0px));
+  }
+}
+
+/* A phone or a tablet: the page's one column is the room it has, never as wide as its widest field or table. */
+@media (max-width: 79.99rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

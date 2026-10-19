@@ -1,0 +1,140 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Eventarc Standard (triggers and channels) and Eventarc Advanced (message buses, enrollments, pipelines and
+# Google API sources). Event flow is drawn as triggers edges from the source towards the destination.
+product: Eventarc
+service: eventarc.googleapis.com
+icon: eventarc
+types:
+  eventarc.googleapis.com/Trigger:
+    role: core
+    subtitle: '{{data.destination.cloudRun.service | first(data.destination.gke.service, data.destination.cloudFunction, data.destination.workflow) | lastSegment}} · {{location}}'
+    console: 'https://console.cloud.google.com/eventarc/triggers/{{location}}/{{name | lastSegment}}?project={{projectId}}'
+    domains:
+      - $.data.destination.httpEndpoint.uri
+    relations:
+      - {
+          kind: triggers,
+          to: $.data.destination.cloudFunction,
+          normalize: name,
+          service: cloudfunctions.googleapis.com,
+        }
+      - {
+          kind: triggers,
+          to: $.data.destination.workflow,
+          normalize: name,
+          service: workflows.googleapis.com,
+        }
+      - {
+          kind: triggers,
+          to: $.data.destination.cloudRun,
+          normalize: siblingName,
+          service: run.googleapis.com,
+          pattern: 'projects/{project}/locations/{region}/services/{.service}',
+        }
+      - {
+          kind: triggers,
+          to: $.data.destination.gke,
+          normalize: siblingName,
+          service: container.googleapis.com,
+          pattern: 'projects/{project}/locations/{location}/clusters/{.cluster}',
+        }
+      - { kind: attaches, to: $.data.destination.networkConfig.networkAttachment, normalize: computeRelative }
+      - { kind: uses, to: $.data.transport.pubsub.topic, normalize: pubsubUri }
+      - { kind: uses, to: $.data.transport.pubsub.subscription, normalize: pubsubUri }
+      - { kind: uses, to: "$.data.eventFilters[?(@.attribute == 'bucket')].value", normalize: gcsUri }
+      - { kind: uses, to: $.data.channel, normalize: name }
+      - { kind: runsAs, to: $.data.serviceAccount, normalize: serviceAccountEmail }
+    notes: >-
+      destination.cloudRun ({ service, region, path }) and destination.gke ({ cluster, location, namespace,
+      service, path }) name the service and the cluster by bare name, with the region or location beside it
+      and the trigger's own project; siblingName composes their full names from the object, so the
+      trigger triggers the Cloud Run service or the GKE cluster. The subtitle names the destination (the
+      first one set, first(…)). The Pub/Sub transport topic and subscription are the trigger's own delivery
+      path.
+
+  eventarc.googleapis.com/Channel:
+    role: core
+    subtitle: '{{data.provider | lastSegment}} · {{data.state | lower}}'
+    relations:
+      - { kind: uses, to: $.data.pubsubTopic, normalize: pubsubUri }
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: A channel receives a third-party provider's events; triggers subscribe to it through their channel field.
+
+  eventarc.googleapis.com/ChannelConnection:
+    role: hidden
+    relations:
+      - { kind: uses, to: $.data.channel, normalize: name }
+    notes: Created in the event provider's project; channel names the subscriber's channel.
+
+  eventarc.googleapis.com/GoogleChannelConfig:
+    role: hidden
+    label: 'Google channel settings'
+    relations:
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: A per-location settings singleton (…/locations/<l>/googleChannelConfig).
+
+  eventarc.googleapis.com/MessageBus:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: 'message bus · {{location}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: >-
+      A container: enrollments point at the bus without nesting in its name, and nest in it through
+      their nestsIn rule; Google API sources publish to it (triggers).
+
+  eventarc.googleapis.com/Enrollment:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'enrollment · {{location}}'
+    relations:
+      - { kind: triggers, to: $.data.destination, normalize: name }
+    nestsIn: { to: $.data.messageBus, normalize: name, kind: memberOf }
+    notes: >-
+      celMatch selects the bus's messages that go to the destination pipeline. The enrollment nests in its
+      message bus (nestsIn; a memberOf edge when it cannot nest).
+
+  eventarc.googleapis.com/Pipeline:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'pipeline · {{location}}'
+    domains:
+      - '$.data.destinations[*].httpEndpoint.uri'
+    relations:
+      - { kind: triggers, to: '$.data.destinations[*].messageBus', normalize: name }
+      - {
+          kind: triggers,
+          to: '$.data.destinations[*].workflow',
+          normalize: name,
+          service: workflows.googleapis.com,
+        }
+      - {
+          kind: attaches,
+          to: '$.data.destinations[*].networkConfig.networkAttachment',
+          normalize: computeRelative,
+        }
+      - {
+          kind: runsAs,
+          to: '$.data.destinations[*].authenticationConfig.googleOidc.serviceAccount',
+          normalize: serviceAccountEmail,
+        }
+      - {
+          kind: runsAs,
+          to: '$.data.destinations[*].authenticationConfig.oauthToken.serviceAccount',
+          normalize: serviceAccountEmail,
+        }
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: >-
+      destinations holds one entry whose target is a union of httpEndpoint, workflow, messageBus and topic.
+      The topic form documented for pipelines (projects/<p>/locations/<l>/topics/<t>) is no Pub/Sub name,
+      so it is not read until its shape is confirmed.
+
+  eventarc.googleapis.com/GoogleApiSource:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: 'Google API source · {{location}}'
+    relations:
+      - { kind: triggers, to: $.data.destination, normalize: name }
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: Publishes Google API events (of its project, or of listed projects or the organisation) to a bus.

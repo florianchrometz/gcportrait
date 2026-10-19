@@ -1,0 +1,22 @@
+{
+  "name": "//integrations.googleapis.com/projects/demo-app-1/locations/europe-west3/integrations/order-sync",
+  "assetType": "integrations.googleapis.com/Integration",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/integrations/order-sync",
+    "description": "Synchronises orders with the ERP",
+    "active": true,
+    "createTime": "2025-08-01T08:00:00Z",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "creatorEmail": "integrations@example.com",
+    "lastModifierEmail": "integrations@example.com"
+  }
+}

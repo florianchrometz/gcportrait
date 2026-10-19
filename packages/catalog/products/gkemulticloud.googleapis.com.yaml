@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# GKE Multi-Cloud: GKE clusters on AWS and Azure and attached clusters (EKS, AKS, other conformant Kubernetes)
+# managed from a Google Cloud project. Asset names use the project number. Each cluster is a fleet member
+# (fleet.membership, projects/<number>/locations/<location>/memberships/<id>).
+product: GKE Multi-Cloud
+service: gkemulticloud.googleapis.com
+icon: anthos
+types:
+  gkemulticloud.googleapis.com/AttachedCluster:
+    role: core
+    subtitle: '{{data.distribution}} · {{data.kubernetesVersion}}'
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+    notes: clusterRegion is the AWS or Azure region; location is the Google Cloud region managing it.
+
+  gkemulticloud.googleapis.com/AwsCluster:
+    role: container
+    subtitle: '{{data.awsRegion}} · {{data.controlPlane.version}}'
+    ips:
+      - '$.data.networking.podAddressCidrBlocks[*]'
+      - '$.data.networking.serviceAddressCidrBlocks[*]'
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+    contains:
+      - byParent: gkemulticloud.googleapis.com/AwsNodePool
+    notes: >-
+      Like a GKE cluster, it holds its node pools (their names continue the cluster's). networking.vpcId,
+      subnet ids and the KMS key ARNs are AWS resources outside the inventory.
+
+  gkemulticloud.googleapis.com/AwsNodePool:
+    role: leaf
+    subtitle: '{{data.config.instanceType}} · {{data.version}}'
+
+  gkemulticloud.googleapis.com/AzureCluster:
+    role: container
+    subtitle: '{{data.azureRegion}} · {{data.controlPlane.version}}'
+    ips:
+      - '$.data.networking.podAddressCidrBlocks[*]'
+      - '$.data.networking.serviceAddressCidrBlocks[*]'
+    relations:
+      - { kind: memberOf, to: $.data.fleet.membership, normalize: name, service: gkehub.googleapis.com }
+      - { kind: uses, to: $.data.azureClient, normalize: name }
+    contains:
+      - byParent: gkemulticloud.googleapis.com/AzureNodePool
+    notes: >-
+      azureClient (projects/<number>/locations/<region>/azureClients/<id>) is the Azure AD application the
+      cluster authenticates with; clusters using workload identity federation (azureServicesAuthentication)
+      have none.
+
+  gkemulticloud.googleapis.com/AzureNodePool:
+    role: leaf
+    subtitle: '{{data.config.vmSize}} · {{data.version}}'
+
+  gkemulticloud.googleapis.com/AzureClient:
+    role: hidden
+    notes: Credentials object (tenant and application ids) used by Azure clusters; drawn only as their edge target.

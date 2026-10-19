@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# App Hub: an application groups the
+# services and workloads registered in it (they nest in it by name), and each registration uses the resource
+# it stands for. Applications live in the App Hub host project and register resources of the attached service
+# projects, so their uses edges cross projects. Cloud Asset Inventory names App Hub assets with the host
+# project id.
+product: App Hub
+service: apphub.googleapis.com
+icon: app_hub
+types:
+  apphub.googleapis.com/Application:
+    role: container
+    label: '{{data.displayName}}'
+    subtitle: '{{data.scope.type | lower}} · {{data.attributes.environment.type | lower}}'
+    console: 'https://console.cloud.google.com/apphub/applications?project={{projectId}}'
+    contains:
+      - byParent: apphub.googleapis.com/Service
+      - byParent: apphub.googleapis.com/Workload
+    notes: >-
+      A logical grouping, not a network or product boundary: the application focus view and drill-in use it.
+      attributes (criticality, environment, owners) are drawer facts. It keeps the default zone kind
+      (product): the scene's group kind is its label bundles, which never collapse and count as bundles.
+
+  apphub.googleapis.com/Service:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.attributes.criticality.type | lower}} · {{data.serviceProperties.location}}'
+    relations:
+      - { kind: uses, to: $.data.serviceReference.uri, normalize: computeRelative }
+    notes: >-
+      serviceReference.uri is the full resource name of the registered resource (forwarding rule, URL map,
+      backend service, Cloud Run service, Cloud SQL instance, …), in the form Cloud Asset Inventory names it
+      (App Hub's supported-resources page). computeRelative keeps a non-Compute full name as it is and maps a
+      Compute project number to its id through the project index, so either project spelling resolves for
+      Compute; a non-Compute name written with the other project form still dangles (catalog follow-ups).
+      serviceProperties.identity.principal (sa://<email>) is not read: no normaliser accepts the sa:// form.
+
+  apphub.googleapis.com/Workload:
+    role: core
+    label: '{{data.displayName}}'
+    subtitle: '{{data.attributes.criticality.type | lower}} · {{data.workloadProperties.location}}'
+    relations:
+      - { kind: uses, to: $.data.workloadReference.uri, normalize: computeRelative }
+    notes: >-
+      workloadReference.uri is the full resource name of the registered compute resource: a managed instance
+      group is registered by its instance group (…/zones|regions/<r>/instanceGroups/<name>), a GKE workload,
+      a Cloud Run job or worker pool by their own names. The same project form caveat as for services
+      applies.
+
+  apphub.googleapis.com/ServiceProjectAttachment:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'service project'
+    relations:
+      - { kind: uses, to: $.data.serviceProject, normalize: projectNumberOrId }
+    notes: >-
+      Attaches a service project (serviceProject, projects/<number> on output) to the App Hub host project the
+      attachment lives in. The seed suggests the derived shares kind, which catalog rules cannot write; uses
+      draws the host → service project link instead.

@@ -1,0 +1,19 @@
+{
+  "name": "//securityposture.googleapis.com/organizations/30000000001/locations/global/postureDeployments/baseline-shared-services",
+  "assetType": "securityposture.googleapis.com/PostureDeployment",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/global/postureDeployments/baseline-shared-services",
+    "targetResource": "folders/20000000002",
+    "state": "ACTIVE",
+    "postureId": "organizations/30000000001/locations/global/postures/baseline",
+    "postureRevisionId": "a1b2c3d4",
+    "createTime": "2026-06-02T09:00:00Z",
+    "updateTime": "2026-06-02T09:00:00Z",
+    "description": "Baseline on the shared services folder",
+    "etag": "W/\"1748854800\""
+  }
+}

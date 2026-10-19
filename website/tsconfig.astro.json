@@ -1,0 +1,11 @@
+{
+  // The .astro files' TypeScript, for `astro check` (scripts/astro-check.ts, the package's typecheck:astro script):
+  // their frontmatter, expressions and scripts, with the declarations of src/env.d.ts, under tsconfig.json's options.
+  // The .ts files are tsconfig.json's, which `tsc -b` checks: listed here, the checker would report them a second
+  // time, and it cannot type a package that reaches its own dependencies only through pnpm's symbolic links (such as
+  // playwright, whose types are playwright-core's), since its host does not resolve them. Not composite: a composite
+  // project must list every file it reads, and the pages read the modules under src/lib/.
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "composite": false },
+  "include": ["src/**/*.astro", "src/env.d.ts"]
+}

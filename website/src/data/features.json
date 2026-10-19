@@ -1,0 +1,62 @@
+[
+  {
+    "id": "diagrams",
+    "title": "Diagrams from real data",
+    "blurb": "Nothing to draw by hand. Folders, projects, networks and clusters nest as zones, Google’s product icons sit on every card, and load balancer chains, Shared VPC and every other reference become arrows routed through the gaps, never across a box."
+  },
+  {
+    "id": "lenses",
+    "title": "Lenses, focus and filters",
+    "blurb": "Eleven lenses redraw the same organisation: the overview, everything, and one for each question — networking, load balancing, compute, serverless, Kubernetes, data, security, identity and operations. Focus on a project, a Shared VPC or a perimeter; filter by region, project, folder, type and depth. The API takes the same view."
+  },
+  {
+    "id": "trace",
+    "title": "Click to trace, open in the console",
+    "blurb": "Hover a resource and its path to the top of the organisation lights up; click it and its path and its connections stay traced, the whole chain behind a load balancer included. The details drawer lists its facts and relations, and “Open in Cloud Console” opens its page only when you choose it."
+  },
+  {
+    "id": "timeline",
+    "title": "A 35-day timeline",
+    "blurb": "Move any view through the last 35 days, each day read from Cloud Asset Inventory when you stop on it and kept in your browser. Each day is compared with the day you came from: added resources outlined, removed ones as ghosts where they stood, changed ones marked. Exports and manual pulls appear as extra ticks, and the API draws any of those days."
+  },
+  {
+    "id": "drill-in",
+    "title": "Drill in and expand",
+    "blurb": "Large organisations open collapsed: projects become chips that count what they hold. Click a zone to expand it in place, double-click to make it the whole canvas; the breadcrumb leads back out."
+  },
+  {
+    "id": "search",
+    "title": "Search anything",
+    "blurb": "Press <code>/</code> to find any asset by name, IP address, domain or project id. Enter selects it, opens the zones around it and shows its details; if the lens hides it, a dialog offers a way to show it."
+  },
+  {
+    "id": "export",
+    "title": "Export SVG, PNG and draw.io",
+    "blurb": "Save the current view as SVG, as PNG (2× or 3×) or as a draw.io file, the whole diagram or the visible part, in either theme, with a title block, a legend and the date it shows. Every view is also a link, and a self-hosted instance draws the same files for scripts through its API (<code>POST /api/render</code>)."
+  },
+  {
+    "id": "drawio",
+    "title": "Export to draw.io, edit in diagrams.net",
+    "blurb": "The draw.io file is the drawing as a diagram you can edit, not a picture of it: in diagrams.net or draw.io every zone is a container that moves with what it holds, every resource a group of its box, Google’s icon and its label, every arrow a connector between its two resources with its bends, heads and dashes, and the title block and the legend sit on a layer of their own, in the colours of the theme you exported. It is the SVG drawing translated, not drawn a second time, and the test suite checks it against the SVG. gcportrait itself stays a viewer: draw.io is an export, never an import."
+  },
+  {
+    "id": "demo",
+    "title": "A demo mode, no account needed",
+    "blurb": "Four synthetic organisations, from about 100 to about 50&nbsp;000 assets, each with a 35-day history, generated in your browser. Try the diagrams, lenses, search, timeline and export before you deploy anything."
+  },
+  {
+    "id": "data-stays",
+    "title": "Your inventory stays in your browser",
+    "blurb": "Snapshots, the demo’s and your own, live in your browser and leave it only as files you export. The backend is stateless: it streams what Cloud Asset Inventory returns and keeps nothing; your sign-in token stays in the tab’s memory."
+  },
+  {
+    "id": "coverage",
+    "title": "Broad asset coverage",
+    "blurb": "The asset catalog maps Cloud Asset Inventory types, each rule proven by a fixture; unmapped types are listed with a reason. A type the catalog does not know still renders."
+  },
+  {
+    "id": "light-dark",
+    "title": "Light and dark",
+    "blurb": "Every view in a light and a dark theme, with the same layout, the same tints and Google’s product icons unchanged. The app follows your system or the theme you pick, and an export, from the app or the API, is drawn in the theme you choose, whatever the screen shows."
+  }
+]

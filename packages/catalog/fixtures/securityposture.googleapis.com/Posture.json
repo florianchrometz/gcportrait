@@ -1,0 +1,37 @@
+{
+  "name": "//securityposture.googleapis.com/organizations/30000000001/locations/global/postures/baseline",
+  "assetType": "securityposture.googleapis.com/Posture",
+  "parent": "//cloudresourcemanager.googleapis.com/organizations/30000000001",
+  "ancestors": ["organizations/30000000001"],
+  "location": "global",
+  "updateTime": "2026-09-01T08:00:00Z",
+  "data": {
+    "name": "organizations/30000000001/locations/global/postures/baseline",
+    "state": "ACTIVE",
+    "revisionId": "a1b2c3d4",
+    "createTime": "2025-10-01T09:00:00Z",
+    "updateTime": "2026-06-01T09:00:00Z",
+    "description": "Organisation baseline",
+    "policySets": [
+      {
+        "policySetId": "org-policies",
+        "policies": [
+          {
+            "policyId": "no-sa-keys",
+            "constraint": {
+              "orgPolicyConstraint": {
+                "cannedConstraintId": "iam.disableServiceAccountKeyCreation",
+                "policyRules": [
+                  {
+                    "enforce": true
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "etag": "W/\"1748768400\""
+  }
+}

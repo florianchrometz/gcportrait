@@ -1,0 +1,29 @@
+{
+  "name": "//agentidentity.googleapis.com/projects/demo-app-1/locations/global/authProviders/crm-oauth",
+  "assetType": "agentidentity.googleapis.com/AuthProvider",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/global/authProviders/crm-oauth",
+    "createTime": "2026-08-01T08:00:00Z",
+    "updateTime": "2026-08-01T08:00:00Z",
+    "authProviderTypeParams": {
+      "threeLeggedOauth": {
+        "clientId": "crm-agent-client",
+        "authorizationUrl": "https://crm.example.com/oauth/authorize",
+        "tokenUrl": "https://crm.example.com/oauth/token",
+        "enablePkce": true
+      }
+    },
+    "allowedScopes": ["crm.read"],
+    "description": "CRM access for the support agent",
+    "state": "ENABLED"
+  }
+}

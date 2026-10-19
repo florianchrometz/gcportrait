@@ -1,0 +1,47 @@
+{
+  "name": "//integrations.googleapis.com/projects/demo-app-1/locations/europe-west3/integrations/order-sync/versions/8f2c1a4e-0000-4000-8000-000000000001",
+  "assetType": "integrations.googleapis.com/IntegrationVersion",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-app-1/locations/europe-west3/integrations/order-sync/versions/8f2c1a4e-0000-4000-8000-000000000001",
+    "description": "Published version",
+    "state": "ACTIVE",
+    "snapshotNumber": "7",
+    "createTime": "2026-09-15T08:00:00Z",
+    "updateTime": "2026-09-15T08:00:00Z",
+    "lastModifierEmail": "integrations@example.com",
+    "triggerConfigs": [
+      {
+        "label": "API Trigger",
+        "triggerType": "API",
+        "triggerId": "api_trigger/order-sync_API_1",
+        "startTasks": [
+          {
+            "taskId": "1"
+          }
+        ]
+      }
+    ],
+    "taskConfigs": [
+      {
+        "task": "GenericConnectorTask",
+        "taskId": "1",
+        "displayName": "Upsert order in ERP"
+      }
+    ],
+    "runAsServiceAccount": "integrations-runner@demo-app-1.iam.gserviceaccount.com",
+    "cloudKmsKey": "projects/demo-sec-1/locations/europe-west3/keyRings/data/cryptoKeys/integrations",
+    "cloudLoggingDetails": {
+      "enableCloudLogging": true,
+      "cloudLoggingSeverity": "ERROR"
+    }
+  }
+}

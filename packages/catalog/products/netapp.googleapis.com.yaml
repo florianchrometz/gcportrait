@@ -1,0 +1,127 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Google Cloud NetApp Volumes: storage pools on a consumer VPC network (private services access),
+# the volumes carved out of them, cross-region replications, Active Directory and CMEK settings, backup vaults
+# with their backups, backup policies and snapshots. Cloud Asset Inventory names everything by project id
+# (`//netapp.googleapis.com/projects/<id>/locations/<l>/storagePools/<p>`, `…/volumes/<v>`,
+# `…/volumes/<v>/replications/<r>`, `…/backupVaults/<b>/backups/<x>`), while the API's reference fields may
+# use the project number. The console links open the product's start page (no per-resource URL is known).
+product: Google Cloud NetApp Volumes
+service: netapp.googleapis.com
+icon: netapp_volumes
+types:
+  netapp.googleapis.com/StoragePool:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.serviceLevel | lower}} · {{data.capacityGib}} GiB · {{data.network | lastSegment}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: uses, to: $.data.activeDirectory, normalize: name }
+      - { kind: encryptedBy, to: $.data.kmsConfig, normalize: name }
+    notes: >-
+      A container: a pool does not list its volumes and a volume's parent is its project, but each
+      volume names its pool (data.storagePool, a bare pool id or a full name), which the volume's nestsIn rule
+      completes with its own project and location; the pool's name also shows in each volume's subtitle. The
+      pool itself nests in its network. network is projects/<number or id>/global/networks/
+      <name> (attaches); activeDirectory and kmsConfig name the pool's Active Directory and CMEK settings
+      (projects/<p>/locations/<l>/activeDirectories/<a>, …/kmsConfigs/<k>). psaRange is the name of the
+      allocated range, not an address. The subtitle names the network rather than volumeCount, which the API
+      omits for an empty pool.
+
+  netapp.googleapis.com/Volume:
+    role: core
+    label: '{{data.shareName}}'
+    subtitle: '{{data.protocols[0] | lower}} · {{data.capacityGib}} GiB · {{data.storagePool | lastSegment}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    ips:
+      - '$.data.mountOptions[*].ipAddress'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeRelative }
+      - { kind: uses, to: $.data.backupConfig.backupVault, normalize: name }
+      - { kind: uses, to: '$.data.backupConfig.backupPolicies[*]', normalize: name }
+    nestsIn:
+      { to: $.data.storagePool, normalize: siblingName, pattern: '{parent}/storagePools/{id}', kind: uses }
+    notes: >-
+      network (output only) is the pool's network. mountOptions[*].ipAddress is the export address; export
+      and exportFull hold `<address>:/<share>` mount strings, which are not read. data.storagePool, a bare id in
+      the API, nests the volume in its pool (siblingName in the volume's project and location). Replication runs through the replications named under
+      the source volume; backups land in backupConfig.backupVault according to backupConfig.backupPolicies.
+
+  netapp.googleapis.com/Replication:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.replicationSchedule | lower}} · {{data.mirrorState | lower}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    relations:
+      - { kind: replicates, to: $.data.destinationVolume, normalize: name }
+      - { kind: uses, to: $.data.sourceVolume, normalize: name }
+    notes: >-
+      A replication is named under its source volume. It draws replicates → destinationVolume (usually in
+      another region) and uses → sourceVolume, so source volume, replication and destination read as one
+      chain; hybrid replications (hybridReplicationType) from on-premises ONTAP have no source volume here.
+
+  netapp.googleapis.com/ActiveDirectory:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.domain}} · {{data.site}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    ips:
+      - $.data.dns
+      - $.data.kdcIp
+    domains:
+      - $.data.domain
+    notes: >-
+      The Active Directory join settings SMB volumes of a storage pool use; storage pools point here. dns is a
+      comma-separated list of DNS server addresses: a single address is read, a list with several is not
+      split (no JSONPath step does), so only one-server values yield addresses.
+
+  netapp.googleapis.com/KmsConfig:
+    role: core
+    label: '{{name | lastSegment}}'
+    subtitle: 'CMEK · {{data.cryptoKeyName | lastSegment}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    relations:
+      - { kind: encryptedBy, to: $.data.cryptoKeyName, normalize: kmsKey }
+    notes: >-
+      NetApp Volumes' customer-managed encryption policy: it wraps one Cloud KMS key (cryptoKeyName), and
+      storage pools and backup vaults point at it (encryptedBy), so the chain pool → policy → key reads as
+      one.
+
+  netapp.googleapis.com/BackupVault:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.backupVaultType | lower}} backup vault · {{data.backupRegion | lastSegment}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    relations:
+      - { kind: replicates, to: $.data.destinationBackupVault, normalize: name }
+      - { kind: encryptedBy, to: $.data.kmsConfig, normalize: name }
+    contains:
+      - byParent: netapp.googleapis.com/Backup
+    notes: >-
+      Backups are named under their vault and nest in it (hidden, counted in its badge). A CROSS_REGION vault
+      in the source region names its counterpart in destinationBackupVault (primary → copy, replicates); the
+      counterpart's sourceBackupVault points back and is not read.
+
+  netapp.googleapis.com/BackupPolicy:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.dailyBackupLimit}} daily · {{data.weeklyBackupLimit}} weekly · {{data.monthlyBackupLimit}} monthly'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    notes: A schedule with retention counts; volumes name it in backupConfig.backupPolicies.
+
+  netapp.googleapis.com/Backup:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.backupType | lower}} backup · {{data.sourceVolume | lastSegment}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    relations:
+      - { kind: uses, to: $.data.sourceVolume, normalize: name }
+    notes: A backup of one volume (sourceVolume), kept in its vault.
+
+  netapp.googleapis.com/Snapshot:
+    role: hidden
+    label: '{{name | lastSegment}}'
+    subtitle: 'snapshot · {{name | parentSegment(volumes)}}'
+    console: 'https://console.cloud.google.com/netapp/volumes?project={{projectId}}'
+    notes: A point-in-time snapshot of a volume, named under it; hidden, counted in the project's badge.

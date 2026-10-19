@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The resource hierarchy: organisations, folders, projects, tags and liens. Every type is mapped in
+# products/cloudresourcemanager.googleapis.com.yaml (the catalog seed), so nothing is pending here.
+title: Resource hierarchy
+owns:
+  - 'cloudresourcemanager.googleapis.com/*'
+types: {}

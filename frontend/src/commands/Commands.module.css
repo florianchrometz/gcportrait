@@ -1,0 +1,141 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/*
+ * Fillable commands (commands/): a variable's field inside a command's code, and the Variables panel. App chrome tokens
+ * only (skill gcp-diagram-style §9), so both themes follow; the global focus ring applies unchanged. The field's
+ * border is the secondary text colour (light 5.74 : 1, dark 4.93 : 1 on the code’s surface-container, WCAG 1.4.11),
+ * dashed while the field is unfilled and solid once filled, so the state never rests on colour alone; a value of the
+ * wrong format adds the error colour and a thicker border, and the command's note says it in words.
+ */
+.field {
+  box-sizing: content-box;
+  min-width: 2ch;
+  max-width: 100%;
+  margin: 0 1px;
+  padding: 0 3px;
+  border: 1px solid var(--color-on-surface-variant);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font: inherit;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+.field.unfilled {
+  border-style: dashed;
+}
+
+.field::placeholder {
+  color: var(--color-on-surface-variant);
+  opacity: 1;
+}
+
+.field[aria-invalid='true'] {
+  border: 2px solid var(--color-error);
+  padding: 0 2px;
+}
+
+/* The Variables panel: each variable of the commands below it, filled in once for all of them. */
+.panel {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--control-radius);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.panelIntro {
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-size-control);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-3) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.variable {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  min-width: 0;
+  font-size: var(--font-size-control);
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+}
+
+.name label {
+  font-weight: var(--font-weight-medium);
+}
+
+.name code,
+.about {
+  color: var(--color-on-surface-variant);
+}
+
+.input {
+  height: var(--control-height);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-on-surface-variant);
+  border-radius: var(--control-radius);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-control);
+}
+
+.input::placeholder {
+  color: var(--color-on-surface-variant);
+  opacity: 1;
+}
+
+.input[aria-invalid='true'] {
+  border: 2px solid var(--color-error);
+  padding: 0 calc(var(--space-2) - 1px);
+}
+
+.about {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* A value of the wrong format: the error colour as text (on the surface: light 4.77 : 1, dark 6.90 : 1). */
+.hint {
+  margin: 0;
+  color: var(--color-error);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* A phone or a tablet: a variable's column is never wider than the panel, and its field never wider than the column. */
+@media (max-width: 79.99rem) {
+  .list {
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+  }
+
+  .input {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

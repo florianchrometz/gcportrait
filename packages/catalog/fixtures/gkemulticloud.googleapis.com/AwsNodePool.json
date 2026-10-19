@@ -1,0 +1,30 @@
+{
+  "name": "//gkemulticloud.googleapis.com/projects/10000000002/locations/us-east4/awsClusters/orders-aws/awsNodePools/general",
+  "assetType": "gkemulticloud.googleapis.com/AwsNodePool",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "us-east4",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/us-east4/awsClusters/orders-aws/awsNodePools/general",
+    "version": "1.31.4-gke.100",
+    "config": {
+      "instanceType": "m5.large",
+      "rootVolume": {
+        "sizeGib": 50
+      }
+    },
+    "autoscaling": {
+      "minNodeCount": 1,
+      "maxNodeCount": 5
+    },
+    "subnetId": "subnet-0a1b2c3d4e5f60718",
+    "state": "RUNNING",
+    "uid": "00000000-0000-4000-8000-000000000154"
+  }
+}

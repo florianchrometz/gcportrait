@@ -1,0 +1,25 @@
+{
+  "name": "//gkehub.googleapis.com/projects/10000000002/locations/global/scopes/shop-team/namespaces/checkout",
+  "assetType": "gkehub.googleapis.com/Namespace",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000002",
+  "ancestors": [
+    "projects/10000000002",
+    "folders/20000000002",
+    "folders/20000000001",
+    "organizations/30000000001"
+  ],
+  "location": "global",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/10000000002/locations/global/scopes/shop-team/namespaces/checkout",
+    "uid": "00000000-0000-4000-8000-000000000150",
+    "scope": "shop-team",
+    "state": {
+      "code": "READY"
+    },
+    "namespaceLabels": {
+      "team": "shop"
+    },
+    "createTime": "2025-04-01T09:40:00Z"
+  }
+}

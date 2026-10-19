@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# DNS Armor (networking fabric): DNS threat detection for the VPC networks of a project, served by
+# networksecurity.googleapis.com. Cloud Asset Inventory names detectors with the project number.
+product: DNS Armor
+service: networksecurity.googleapis.com
+icon: cloud_dns
+types:
+  networksecurity.googleapis.com/DnsThreatDetector:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: 'DNS threat detection · {{data.provider | lower}}'
+    notes: >-
+      Watches the DNS queries of every VPC network in its project except data.excludedNetworks; an exclusion
+      is not a relation kind, so no edge is drawn and the detector nests in its project.

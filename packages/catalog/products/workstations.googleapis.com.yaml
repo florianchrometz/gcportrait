@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cloud Workstations: cluster › configuration › workstation, nested by name
+# (`…/workstationClusters/c/workstationConfigs/w/workstations/x`).
+product: Cloud Workstations
+service: workstations.googleapis.com
+icon: cloud_workstations
+types:
+  workstations.googleapis.com/WorkstationCluster:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: 'control plane {{data.controlPlaneIp}} · {{location}}'
+    console: 'https://console.cloud.google.com/workstations/clusters?project={{projectId}}'
+    ips:
+      - $.data.controlPlaneIp
+    domains:
+      - $.data.domainConfig.domain
+      - $.data.privateClusterConfig.clusterHostname
+    relations:
+      - { kind: attaches, to: $.data.subnetwork, normalize: computeRelative }
+      - { kind: attaches, to: $.data.network, normalize: computeRelative, weak: true }
+      - { kind: uses, to: $.data.privateClusterConfig.serviceAttachmentUri, normalize: computeRelative }
+    contains:
+      - byParent: workstations.googleapis.com/WorkstationConfig
+    notes: >-
+      A private cluster publishes a Private Service Connect service attachment in a Google-managed tenant
+      project (`serviceAttachmentUri`); it stays a dangling reference unless the tenant project is in the
+      snapshot. On a Shared VPC subnet the cluster stays in its own project.
+
+  workstations.googleapis.com/WorkstationConfig:
+    role: container
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.host.gceInstance.machineType}} · {{data.container.image | lastSegment}}'
+    console: 'https://console.cloud.google.com/workstations/configurations?project={{projectId}}'
+    relations:
+      - { kind: runsAs, to: $.data.host.gceInstance.serviceAccount, normalize: serviceAccountEmail }
+      - { kind: uses, to: $.data.container.image, normalize: artifactImage }
+      - { kind: encryptedBy, to: $.data.encryptionKey.kmsKey, normalize: kmsKey }
+    contains:
+      - byParent: workstations.googleapis.com/Workstation
+    notes: >-
+      Preconfigured base images live in Google's own Artifact Registry repositories and stay dangling. The
+      persistent-directory `sourceSnapshot` fields are documented as plain snapshot names and are not drawn.
+
+  workstations.googleapis.com/Workstation:
+    role: leaf
+    label: '{{name | lastSegment}}'
+    subtitle: '{{data.state | lower}}'
+    console: 'https://console.cloud.google.com/workstations/list?project={{projectId}}'
+    domains:
+      - $.data.host
+    notes: >-
+      One per developer; it inherits network, identity and key from its configuration (its own `kmsKey` is
+      the configuration's key, output only), so it carries no edges of its own.

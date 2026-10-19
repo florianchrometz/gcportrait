@@ -1,0 +1,44 @@
+[
+  {
+    "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/dataScans/orders-quality",
+    "assetType": "dataplex.googleapis.com/DataScan",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/dataScans/orders-quality",
+      "uid": "d0000000-0000-4000-8000-000000000006",
+      "displayName": "Orders quality",
+      "state": "ACTIVE",
+      "data": { "resource": "//bigquery.googleapis.com/projects/demo-data-1/datasets/sales/tables/orders" },
+      "executionSpec": { "trigger": { "schedule": { "cron": "0 6 * * *" } } },
+      "type": "DATA_QUALITY",
+      "dataQualitySpec": {
+        "rules": [{ "column": "order_id", "dimension": "COMPLETENESS", "nonNullExpectation": {} }],
+        "postScanActions": {
+          "bigqueryExport": {
+            "resultsTable": "//bigquery.googleapis.com/projects/demo-data-1/datasets/quality/tables/scan_results"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "//dataplex.googleapis.com/projects/demo-data-1/locations/europe-west3/dataScans/landing-discovery",
+    "assetType": "dataplex.googleapis.com/DataScan",
+    "parent": "//cloudresourcemanager.googleapis.com/projects/10000000003",
+    "ancestors": ["projects/10000000003", "folders/20000000001", "organizations/30000000001"],
+    "location": "europe-west3",
+    "updateTime": "2026-10-01T08:00:00Z",
+    "data": {
+      "name": "projects/demo-data-1/locations/europe-west3/dataScans/landing-discovery",
+      "displayName": "Landing discovery",
+      "state": "ACTIVE",
+      "data": { "resource": "//storage.googleapis.com/projects/demo-data-1/buckets/demo-data-1-landing" },
+      "executionSpec": { "trigger": { "onDemand": {} } },
+      "type": "DATA_DISCOVERY",
+      "dataDiscoverySpec": { "storageConfig": { "includePatterns": ["**.parquet"] } }
+    }
+  }
+]

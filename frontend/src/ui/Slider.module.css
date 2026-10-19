@@ -1,0 +1,122 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* A thin slider (Slider.tsx): a 4 px track, the filled part in the primary colour, a 16 px thumb with the
+   global focus ring. The track's outline colour and the thumb's primary fill keep 3 : 1 against the surface in
+   both themes (skill §9 tokens); inert, the fill turns to the secondary text colour and the thumb is hollow, a
+   ring in that colour, so the shape says it as well as the colour (colour never carries meaning alone). */
+.slider {
+  flex: 1;
+}
+
+.track {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-on-surface-variant);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-primary);
+  transform: translate(-50%, -50%);
+}
+
+/* A thumb a pointer's press focused (a mouse, a pen or a finger; Slider.tsx marks it until a key is pressed on it or
+   focus leaves) shows no ring, as a native range input shows none after a press: the ring is keyboard focus's, and
+   the first key brings it back. Two classes, the mark and the pseudo-class outrank a caller's own ring for the thumb
+   (TimelineBar's band), whatever order the stylesheets come in. */
+.track .thumb[data-pointer-focus='true']:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.inert {
+  cursor: not-allowed;
+}
+
+.inert .fill {
+  background: var(--color-on-surface-variant);
+}
+
+.inert .thumb {
+  border-color: var(--color-on-surface-variant);
+  background: var(--color-surface);
+}
+
+/* A phone or a tablet: the thumb is a 44-pixel touch target (a transparent box) around the same 16-pixel dot, which
+   carries the focus ring, and the track takes a press within that height too. */
+@media (max-width: 79.99rem) {
+  .track::before {
+    position: absolute;
+    inset: calc((var(--touch-target) - 4px) / -2) 0;
+    content: '';
+  }
+
+  .thumb {
+    width: var(--touch-target);
+    height: var(--touch-target);
+    border: 0;
+    background: transparent;
+  }
+
+  .thumb::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-surface);
+    border-radius: 50%;
+    background: var(--color-primary);
+    transform: translate(-50%, -50%);
+    content: '';
+  }
+
+  .inert .thumb {
+    background: transparent;
+  }
+
+  .inert .thumb::after {
+    border-color: var(--color-on-surface-variant);
+    background: var(--color-surface);
+  }
+
+  /* The focus ring goes round the dot, as on a desktop, not round the transparent touch box: it reaches no further
+     past the thumb's centre than the dot's radius and the ring, so what lies beside the track stays clear of it at
+     either end (the timeline's dates), and it stays inside the touch box's height. The touch box draws none, and a
+     pointer's mark hides the dot's (above). */
+  .thumb:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .thumb:focus-visible::after {
+    outline: var(--focus-ring-width) solid transparent;
+    outline-offset: var(--focus-ring-gap);
+    box-shadow:
+      0 0 0 var(--focus-ring-gap) var(--color-surface),
+      0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-primary);
+  }
+
+  .track .thumb[data-pointer-focus='true']:focus-visible::after {
+    outline: none;
+    box-shadow: none;
+  }
+}

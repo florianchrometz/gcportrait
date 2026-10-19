@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# AI Commerce Search, the Retail API: one catalog per project (default_catalog), named with the project
+# id (projects/<id>/locations/global/catalogs/default_catalog).
+product: AI Commerce Search API
+service: retail.googleapis.com
+icon: retail_api
+types:
+  retail.googleapis.com/Catalog:
+    role: leaf
+    label: '{{data.displayName}}'
+    subtitle: '{{location}}'
+    console: 'https://console.cloud.google.com/ai/retail/catalogs/{{name | lastSegment}}/data?project={{projectId}}'
+    notes: >-
+      Products, serving configs and models live inside the catalog and are not inventory types; the
+      Merchant Center link is configured outside the catalog resource. The subtitle is the location only:
+      productLevelConfig.ingestionProductType (primary or variant) is the one other fact, and a bare 'primary'
+      reads as a catalog rank rather than an ingestion mode.

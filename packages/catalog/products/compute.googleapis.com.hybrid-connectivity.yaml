@@ -1,0 +1,160 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Compute Engine, hybrid connectivity: Cloud VPN (HA and Classic), Cloud Interconnect (connections and
+# VLAN attachments) and Cross-Site Interconnect (cross-site networks and wire groups). compute.googleapis.com
+# is shared by four catalog groups, so these types live in this group's own file and keep the Compute Engine
+# product icon of the first file; each type overrides it with its product's icon.
+#
+# The hybrid path is drawn with `connects` edges, each from the resource that names the other one in its own
+# data: tunnel → its gateway, the peer gateway and the Cloud Router; VLAN attachment → its Interconnect and
+# the Cloud Router; wire group → the Interconnects it joins. Output-only back-references (a Classic gateway's
+# `tunnels`, an Interconnect's `interconnectAttachments` and `wireGroups`) are not encoded again, so every
+# link is drawn once. Gateways sit on their VPC network (`attaches`, nesting per skill gcp-diagram-layout §2,
+# rule 1), and so does an L2 VLAN attachment on the network it forwards frames into.
+product: Compute Engine
+service: compute.googleapis.com
+icon: compute_engine
+types:
+  compute.googleapis.com/Interconnect:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.interconnectType | lower}} · {{data.requestedLinkCount}}-link bundle · {{data.location | lastSegment}}'
+    icon: cloud_interconnect
+    console: 'https://console.cloud.google.com/hybrid/interconnects/list?tab=interconnects&project={{projectId}}'
+    notes: >-
+      A Dedicated or Cross-Cloud (data.remoteLocation set) Interconnect connection, global. data.location is
+      an InterconnectLocation URL (a colocation facility, not an asset). VLAN attachments and wire groups
+      point here with their own connects rules; the output-only lists data.interconnectAttachments and
+      data.wireGroups mirror them and are not encoded again. Partner Interconnect connections belong to the
+      partner and never appear in the customer's inventory. The subtitle counts the links instead of naming
+      their speed: data.linkType is an enum (LINK_TYPE_ETHERNET_10G_LR) that no template filter shortens, and
+      data.requestedLinkCount is set on every connection (at least 1), so the '-link bundle' text never stands
+      alone.
+
+  compute.googleapis.com/InterconnectAttachment:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.type | lower}} · {{data.state | lower}} · {{location}}'
+    icon: cloud_interconnect
+    console: 'https://console.cloud.google.com/hybrid/interconnects/list?tab=attachments&project={{projectId}}'
+    ips:
+      - $.data.cloudRouterIpAddress
+      - $.data.customerRouterIpAddress
+      - $.data.cloudRouterIpv6Address
+      - $.data.customerRouterIpv6Address
+      - $.data.l2Forwarding.tunnelEndpointIpAddress
+      - $.data.l2Forwarding.defaultApplianceIpAddress
+      - '$.data.l2Forwarding.applianceMappings.*.applianceIpAddress'
+      - '$.data.l2Forwarding.applianceMappings.*.innerVlanToApplianceMappings[*].innerApplianceIpAddress'
+    relations:
+      - { kind: connects, to: $.data.interconnect, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.router, normalize: computeSelfLink }
+      - { kind: attaches, to: $.data.l2Forwarding.network, normalize: computeSelfLink }
+      - { kind: uses, to: '$.data.ipsecInternalAddresses[*]', normalize: computeSelfLink }
+    notes: >-
+      A VLAN attachment, regional. The BGP addresses are link-local address/prefix pairs
+      (169.254.x.y/29). Partner attachments have no data.interconnect (the connection is the partner's) but
+      carry data.partnerMetadata and a pairing key. data.ipsecInternalAddresses names the internal address
+      ranges reserved for HA VPN over Cloud Interconnect (data.encryption IPSEC). An L2 attachment (type
+      L2_DEDICATED) has no Cloud Router and no BGP addresses: it forwards layer-2 frames, encapsulated, to
+      appliance VMs in the VPC network that data.l2Forwarding.network names, so that network is its link to
+      the VPC (attaches: it nests there, while layer-3 attachments reach the VPC through their router). Its
+      addresses are the tunnel endpoint and the appliances' addresses, the default one and those of
+      data.l2Forwarding.applianceMappings, a map keyed by VLAN tag or range (hence the `.*` step). The
+      subtitle shows data.state rather than the VLAN tag, which a Partner attachment lacks until the partner
+      provisions it (state PENDING_PARTNER).
+
+  compute.googleapis.com/VpnGateway:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'HA VPN · {{data.vpnInterfaces[0].ipAddress}} · {{location}}'
+    icon: cloud_vpn
+    console: 'https://console.cloud.google.com/hybrid/vpn/list?tab=gateways&project={{projectId}}'
+    ips:
+      - '$.data.vpnInterfaces[*].ipAddress'
+      - '$.data.vpnInterfaces[*].ipv6Address'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+      - { kind: connects, to: '$.data.vpnInterfaces[*].interconnectAttachment', normalize: computeSelfLink }
+    notes: >-
+      An HA VPN gateway, regional. It does not list its tunnels: each tunnel names the gateway. For HA VPN over
+      Cloud Interconnect, each interface names the VLAN attachment it rides on and its address is internal.
+
+  compute.googleapis.com/ExternalVpnGateway:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'peer VPN gateway · {{data.redundancyType | lower}}'
+    icon: cloud_vpn
+    console: 'https://console.cloud.google.com/hybrid/vpn/list?project={{projectId}}'
+    ips:
+      - '$.data.interfaces[*].ipAddress'
+      - '$.data.interfaces[*].ipv6Address'
+    notes: >-
+      The on-premises or other-cloud side of HA VPN, global, as the project describes it: its interface
+      addresses are the peer's public addresses. HA VPN tunnels connect to it through data.peerExternalGateway.
+
+  compute.googleapis.com/TargetVpnGateway:
+    role: core
+    label: '{{data.name}}'
+    subtitle: 'Classic VPN · {{data.status | lower}} · {{location}}'
+    icon: cloud_vpn
+    console: 'https://console.cloud.google.com/hybrid/vpn/list?tab=gateways&project={{projectId}}'
+    relations:
+      - { kind: attaches, to: $.data.network, normalize: computeSelfLink }
+    notes: >-
+      A Classic VPN gateway, regional. Its public address belongs to the forwarding rules (ESP, UDP 500 and
+      4500) that target it; those rules route to it from the load-balancing group's entries, and each tunnel
+      names it through data.targetVpnGateway, so the output-only lists data.forwardingRules and data.tunnels
+      are not encoded again.
+
+  compute.googleapis.com/VpnTunnel:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.peerIp}} · {{data.status | lower}} · {{location}}'
+    icon: cloud_vpn
+    console: 'https://console.cloud.google.com/hybrid/vpn/list?tab=tunnels&project={{projectId}}'
+    ips:
+      - $.data.peerIp
+    relations:
+      - { kind: connects, to: $.data.vpnGateway, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.targetVpnGateway, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.peerExternalGateway, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.peerGcpGateway, normalize: computeSelfLink }
+      - { kind: connects, to: $.data.router, normalize: computeSelfLink }
+    notes: >-
+      HA VPN tunnels name their gateway (data.vpnGateway) and the peer (data.peerExternalGateway, or
+      data.peerGcpGateway for VPC-to-VPC HA VPN, possibly in another project); Classic tunnels name their
+      gateway in data.targetVpnGateway and the peer only by data.peerIp. data.router is the Cloud Router that
+      holds the BGP session (absent for static routing); its link is a connects edge like the attachment's, as
+      the BGP session terminates there. Traffic selectors are policy ranges, not addresses of the tunnel, and
+      are not read as ips.
+
+  compute.googleapis.com/CrossSiteNetwork:
+    role: container
+    label: '{{data.name}}'
+    subtitle: 'cross-site network · {{data.description | short(40)}}'
+    icon: cloud_interconnect
+    console: 'https://console.cloud.google.com/hybrid/interconnects/list?project={{projectId}}'
+    contains:
+      - byParent: compute.googleapis.com/WireGroup
+    notes: >-
+      Cross-Site Interconnect, global: a container for the wire groups that join the project's Interconnect
+      connections in different metros. Its wire groups' names continue its own
+      (…/crossSiteNetworks/N/wireGroups/W), which is how they nest.
+
+  compute.googleapis.com/WireGroup:
+    role: core
+    label: '{{data.name}}'
+    subtitle: '{{data.topology.endpoints[0].city}} · {{data.topology.endpoints[1].city}}'
+    icon: cloud_interconnect
+    console: 'https://console.cloud.google.com/hybrid/interconnects/list?project={{projectId}}'
+    relations:
+      - { kind: connects, to: '$.data.endpoints.*.interconnects.*.interconnect', normalize: computeSelfLink }
+    notes: >-
+      A group of redundant pseudowires between two endpoints (metros) of a cross-site network. data.endpoints
+      and each endpoint's interconnects are maps keyed by user labels, hence the `.*` steps; an Interconnect
+      may live in another project (partial or full URL). data.wires[*].endpoints[*].interconnect is the
+      output-only per-wire copy of the same connections and is not encoded again. The subtitle names the two
+      metros (output-only data.topology); the bandwidth (data.wireProperties.bandwidthUnmetered, Gbps) is left
+      to the inspector, as a missing value would leave the unit behind. Like the cross-site network, a wire
+      group is global (asset location `global`).

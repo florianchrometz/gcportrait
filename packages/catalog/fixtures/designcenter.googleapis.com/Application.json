@@ -1,0 +1,19 @@
+{
+  "name": "//designcenter.googleapis.com/projects/demo-ops-1/locations/europe-west3/spaces/platform/applications/shop-web",
+  "assetType": "designcenter.googleapis.com/Application",
+  "parent": "//cloudresourcemanager.googleapis.com/projects/10000000005",
+  "ancestors": ["projects/10000000005", "organizations/30000000001"],
+  "location": "europe-west3",
+  "updateTime": "2026-10-01T08:00:00Z",
+  "data": {
+    "name": "projects/demo-ops-1/locations/europe-west3/spaces/platform/applications/shop-web",
+    "displayName": "Shop web",
+    "description": "Storefront stack deployed from the web-stack template",
+    "createTime": "2026-05-04T09:00:00Z",
+    "updateTime": "2026-09-01T10:00:00Z",
+    "serviceAccount": "projects/demo-ops-1/serviceAccounts/adc-deployer@demo-ops-1.iam.gserviceaccount.com",
+    "deploymentProject": "demo-app-1",
+    "deploymentRegion": "europe-west3",
+    "apphubApplication": "projects/demo-ops-1/locations/global/applications/shop"
+  }
+}
