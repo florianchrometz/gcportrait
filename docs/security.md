@@ -25,7 +25,7 @@ Status: **in place** (the control holds and a test keeps it), **open** (section 
 | 7 | [Logs: no token at any level](#7-logs-no-token-at-any-level) | in place |
 | 8 | [Errors, request ids, shutdown, static files](#8-errors-request-ids-shutdown-static-files) | in place |
 | 9 | [Container and Cloud Run](#9-container-and-cloud-run) | in place |
-| 10 | [Dependency audit and Dependabot](#10-dependency-audit-and-dependabot) | in place; repository settings and a dependency cooldown open (O6, O7) |
+| 10 | [Dependency audit and Dependabot](#10-dependency-audit-and-dependabot) | in place; a dependency cooldown open (O6) |
 | 11 | [Licence compliance](#11-licence-compliance) | in place |
 
 ## 1. Upstream host allowlist
@@ -303,7 +303,7 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
   included, and is adopted on `main` or declined with its reason ([AGENTS.md](../AGENTS.md), "Quality gates,
   testing and CI"). Every action of every workflow and of the composite actions is pinned to a commit, with
   its release as a comment ([.github/AGENTS.md](../.github/AGENTS.md), "CI"). **Dependabot alerts** and
-  **Dependabot security updates** (Settings → Code security) are repository settings, not files (O7).
+  **Dependabot security updates** (Settings → Code security) are enabled in the repository settings.
   Not in place yet: a minimum package age for updates
   (Dependabot's `cooldown`, pnpm's `minimumReleaseAge`; O6).
 
@@ -338,7 +338,6 @@ sign-in is not; both draw the diagram without console errors or warnings, and bo
 | O4 | A stream still running 8 s after SIGTERM is cut and the process exits 1. | low | Acceptable: the browser reports the pull as failed and it can be repeated; Cloud Run sends SIGTERM to instances it retires. |
 | O5 | The build account of `deploy.sh --build` holds Storage Admin on its own bucket, which also allows changing that bucket's IAM policy or deleting it. | low | A custom role (Storage Object Admin plus `storage.buckets.get`); needs a real `--build` run to verify. |
 | O6 | Supply chain: dependency updates have no minimum age. | low | Add `cooldown` to `.github/dependabot.yml` and `minimumReleaseAge` to `pnpm-workspace.yaml` ([backlog.md](backlog.md), section 3). |
-| O7 | Dependabot alerts and security updates are repository settings. | maintainer | Turn both on in the repository settings ([backlog.md](backlog.md), "Before the first release"). |
 | O9 | The page scanner checks a page's structure, not every literal (`tru` would pass); the browser parses each frame. | informational | None needed: Google's answers come over TLS from fixed hosts, and a malformed frame ends the import in the browser with an error. |
 | O10 | `HOSTED_BY`'s non-affiliation guard (it may not name Google) does not catch look-alikes such as `G00gle`. | informational | None: it catches an honest operator's slip. |
 

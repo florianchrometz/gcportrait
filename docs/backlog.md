@@ -38,7 +38,6 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 
 - **DNS records** for `gcportrait.app` and `www` and the Pages settings (the custom domain with HTTPS
   enforced) ([website.md](website.md), "Deploying to GitHub Pages" and "DNS records").
-- **Dependabot** alerts and security updates on in the repository settings (security finding O7).
 - **Make the repository and the ghcr.io package public, and tag `v1.0.0`** ([contributing.md, "9.
   Releases"](contributing.md#9-releases)); the tag is the release workflow's first run.
 - **The legal pages** on the maintainer's website, checked against [legal/](legal/README.md): the privacy
@@ -63,7 +62,6 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - The Playwright cache-key race warning is harmless (a note only).
 - No CI job runs the website's phone check (`pnpm website:mobile`, 80 MB of WebKit per run).
 - `node scripts/exports.mjs --check` as a root script and a CI step.
-- `release.yml`'s strict website build should get `GITHUB_TOKEN` (for the repository widget's facts).
 - Signing the image (cosign with the workflow's OIDC identity) and build provenance attestations.
 
 ## 4. Self-hosting and backend
