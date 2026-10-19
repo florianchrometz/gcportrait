@@ -33,6 +33,11 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { inflateRawSync } from 'node:zlib';
 
+import { loadNonAffiliationLong, NON_AFFILIATION_LONG } from './lib/branding-text.mjs';
+import { dependencyVersions } from './lib/dependency-versions.mjs';
+
+export { loadNonAffiliationLong, NON_AFFILIATION_LONG };
+
 /**
  * @typedef {'light' | 'dark'} Theme
  * @typedef {'png' | 'svg' | 'drawio' | 'webp'} Format
@@ -232,6 +237,7 @@ export const TAGLINE = 'gcportrait.app - Visualize your Google Cloud Infrastruct
 export function statesAffiliation(text) {
   return (
     text.includes(DISCLAIMER) ||
+    text.includes(NON_AFFILIATION_LONG) ||
     /\bnot affiliated\b/i.test(text) ||
     /\baffiliated with\b[^.]*\bGoogle\b/i.test(text)
   );
@@ -356,19 +362,19 @@ export function generatorHash(
 /** @param {string} name @param {string} workspace @returns {string} */
 function toolVersion(name, workspace) {
   // A tool of this repository is its workspace package; the others are installed in a workspace's node_modules.
-  const own = path.join(ROOT, workspace, 'package.json');
-  const file = name.startsWith('@gcportrait/')
-    ? own
-    : path.join(ROOT, workspace, 'node_modules', name, 'package.json');
-  if (!existsSync(file)) return 'missing';
-  /** @type {unknown} */
-  const manifest = JSON.parse(readFileSync(file, 'utf8'));
-  return typeof manifest === 'object' &&
-    manifest !== null &&
-    'version' in manifest &&
-    typeof manifest.version === 'string'
-    ? manifest.version
-    : 'unknown';
+  if (name.startsWith('@gcportrait/')) {
+    const own = path.join(ROOT, workspace, 'package.json');
+    if (!existsSync(own)) return 'missing';
+    /** @type {unknown} */
+    const manifest = JSON.parse(readFileSync(own, 'utf8'));
+    return typeof manifest === 'object' &&
+      manifest !== null &&
+      'version' in manifest &&
+      typeof manifest.version === 'string'
+      ? manifest.version
+      : 'unknown';
+  }
+  return dependencyVersions(ROOT, workspace, name).installed ?? 'missing';
 }
 
 function tools() {

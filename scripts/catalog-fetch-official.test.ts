@@ -263,6 +263,26 @@ describe('catalog-fetch-official', () => {
     });
   });
 
+  it('exits with code 2 when --fail-on-drift is passed and drift is detected', () => {
+    tree.write(
+      'refs/cai-supported-asset-types.2026-01-01.txt',
+      snapshotText('2026-01-01', SAMPLE_IDS.slice(1)),
+    );
+    // With drift and without --fail-on-drift: exit 0
+    expect(fetchOfficial({ date: '2026-01-02' }).status).toBe(0);
+
+    // Overwrite previous snapshot to have drift for date 2026-01-03
+    tree.write(
+      'refs/cai-supported-asset-types.2026-01-02.txt',
+      snapshotText('2026-01-02', SAMPLE_IDS.slice(1)),
+    );
+    // With drift and with --fail-on-drift: exit 2
+    expect(fetchOfficial({ date: '2026-01-03' }, '--fail-on-drift').status).toBe(2);
+
+    // Running again against the written 2026-01-03 snapshot has no drift: exit 0
+    expect(fetchOfficial({ date: '2026-01-03' }, '--fail-on-drift').status).toBe(0);
+  });
+
   it('compares a same-day snapshot as it was before replacing it', () => {
     tree.write(
       'refs/cai-supported-asset-types.2026-01-02.txt',

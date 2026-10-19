@@ -2,7 +2,6 @@
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { AxeBuilder } from '@axe-core/playwright';
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 
 import { ALL_SCOPES, stubGoogle, TEST_CLIENT_ID, TOKENINFO_URL } from '../fixtures/gis.js';
@@ -15,6 +14,7 @@ import {
   DEFAULT_SOURCE_URL,
   demoCaiExport,
   detailsDrawer,
+  expectNoAxeViolations,
   exportOperation,
   openDiagram,
   viewParam,
@@ -682,26 +682,6 @@ function canvasRoom(page: Page): Promise<{ readonly ofWindow: number; readonly u
       uncovered: 1 - covered / (canvas.width * canvas.height),
     };
   });
-}
-
-/**
- * Runs axe-core (all non-experimental rules, best practices included) on the page (or `scope` when given)
- * as it is now, after web fonts have loaded, and fails with a readable summary of any violation (WCAG 2.2 AA).
- */
-async function expectNoAxeViolations(page: Page, scope?: string): Promise<void> {
-  await page.evaluate(async () => {
-    await document.fonts.ready;
-  });
-  const builder = new AxeBuilder({ page });
-  if (scope !== undefined) builder.include(scope);
-  const results = await builder.analyze();
-  const violations = results.violations.map((violation) => ({
-    rule: violation.id,
-    impact: violation.impact,
-    help: violation.help,
-    targets: violation.nodes.map((node) => node.target.join(' ')),
-  }));
-  expect(violations).toEqual([]);
 }
 
 /**

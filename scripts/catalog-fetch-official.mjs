@@ -20,13 +20,14 @@
  * machine-translated copy of the page whose list is months behind.
  *
  * Usage: node scripts/catalog-fetch-official.mjs [--from <saved.html>] [--url <url>] [--out-dir <dir>]
- *                                                [--date <YYYY-MM-DD>] [--force]
+ *                                                [--date <YYYY-MM-DD>] [--force] [--fail-on-drift]
  *                                                [--json <file>] [--markdown <file>]
  *   --from     parse a saved copy of the page instead of downloading it (tests use a trimmed sample)
  *   --out-dir  where the snapshots live (default: the skill's references directory)
  *   --date     the snapshot date (default: today, UTC)
  *   --force    write even when the page yields fewer than half the identifiers of the previous snapshot
  *              (without it, that is treated as a page-layout change and nothing is written)
+ *   --fail-on-drift exit with code 2 when the fetched identifiers differ from the newest committed snapshot
  *   --json     also write the drift report as JSON (`drift`, `snapshot`, `added`, `removed`, `digest`, `summary`)
  *   --markdown also write the drift report as Markdown (the drift issue's body)
  *
@@ -348,6 +349,7 @@ async function main() {
       'out-dir': { type: 'string', default: DEFAULT_OUT_DIR },
       date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
       force: { type: 'boolean', default: false },
+      'fail-on-drift': { type: 'boolean', default: false },
       json: { type: 'string' },
       markdown: { type: 'string' },
     },
@@ -414,6 +416,7 @@ async function main() {
   }
   if (previous === undefined) {
     console.log('No earlier snapshot to compare with.');
+    if (values['fail-on-drift'] && report.drift) process.exit(2);
     return;
   }
   const replaced = previous === target ? ' (its content before this run, which this run replaced)' : '';
@@ -422,6 +425,7 @@ async function main() {
   );
   for (const id of report.added) console.log(`+ ${id}`);
   for (const id of report.removed) console.log(`- ${id}`);
+  if (values['fail-on-drift'] && report.drift) process.exit(2);
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
