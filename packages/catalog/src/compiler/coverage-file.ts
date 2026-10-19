@@ -7,6 +7,7 @@
  * the file's shape, here in the package that writes it, so the site neither spawns a command nor re-declares it.
  * Unmapped types are sorted by type, so the file reads as the page shows it and two builds of one catalog agree.
  */
+import { compareText } from '@gcportrait/model';
 import type { CoverageReport, RoleCounts } from './types.js';
 
 /** An official type the catalog does not map, and why. */
@@ -44,7 +45,7 @@ export function catalogCoverage(report: CoverageReport): CatalogCoverage {
       mapped: group.mapped,
       unmapped: Object.entries(group.unmapped.types)
         .map(([type, reason]) => ({ type, reason }))
-        .sort((a, b) => (a.type < b.type ? -1 : 1)),
+        .sort((a, b) => compareText(a.type, b.type)),
       coveragePercent: group.coveragePercent,
     })),
   };

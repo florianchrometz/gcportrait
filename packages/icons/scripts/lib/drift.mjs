@@ -289,7 +289,7 @@ export function compareInventories(before, after) {
   return {
     added: [...addedLeft].sort(),
     changed,
-    renamed: renamed.sort((a, b) => (a.from < b.from ? -1 : 1)),
+    renamed: renamed.sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0)),
     removed: [...removedLeft].sort(),
   };
 }
@@ -327,7 +327,7 @@ export function mappedEntries(mapping) {
 export function symbolsInUse(mapping, manifest) {
   /** @type {DriftReport['symbols']} */
   const symbols = { core: [], legacy: [], category: [], own: [] };
-  for (const [key, entry] of Object.entries(mapping.icons).sort(([a], [b]) => (a < b ? -1 : 1))) {
+  for (const [key, entry] of Object.entries(mapping.icons).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     if (entry.generic === true) continue;
     if (entry.own !== undefined) {
       symbols.own.push(key);
@@ -450,7 +450,7 @@ export function driftReport({ mapping, manifest, index, products, page, current,
         .filter((name) => !usedHere.has(name))
         .sort()
         .map((name) => ({ name, guess: guessKey(iconNameOf(name), candidatesFor(set)) }));
-      for (const [entry, keys] of [...usedHere].sort(([a], [b]) => (a < b ? -1 : 1))) {
+      for (const [entry, keys] of [...usedHere].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
         if (entry in entries) continue;
         mappedMissing.push({
           set,
@@ -467,7 +467,7 @@ export function driftReport({ mapping, manifest, index, products, page, current,
 
   /** @type {ExtraReport[]} */
   const extraReports = [...extra]
-    .sort((a, b) => (a.url < b.url ? -1 : 1))
+    .sort((a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0))
     .map((archive) => {
       /** @type {ExtraReport} */
       const report = {
@@ -526,7 +526,9 @@ export function driftReport({ mapping, manifest, index, products, page, current,
       });
     }
   }
-  newerAvailable.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : a.entry < b.entry ? -1 : 1));
+  newerAvailable.sort(
+    (a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : a.entry < b.entry ? -1 : a.entry > b.entry ? 1 : 0),
+  );
 
   const counts = {
     added:

@@ -981,7 +981,7 @@ export function compileCatalog(
       total: officialTotal - mappedTotal,
       known: unmappedKnown,
       knownByReason: Object.fromEntries(
-        Object.entries(knownByReason).sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true })),
+        Object.entries(knownByReason).sort(([a], [b]) => compareText(a, b)),
       ),
       unlisted,
     },

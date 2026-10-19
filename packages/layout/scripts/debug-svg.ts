@@ -131,6 +131,8 @@ export function run(argv: readonly string[]): number {
           fontFiles: fonts,
           defaultFontFamily: 'Roboto',
           sansSerifFamily: 'Roboto',
+          serifFamily: 'Roboto',
+          monospaceFamily: 'Roboto Mono',
         },
       })
         .render()
