@@ -33,6 +33,7 @@
  * `pnpm --filter @gcportrait/website exec playwright install webkit`.
  */
 import { existsSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -251,50 +252,75 @@ async function layout(
       isMobile: true,
     });
     await context.addInitScript(KEEP_NAMES_SHIM);
-    const page = await context.newPage();
-    for (const pagePath of pages) {
-      await page.setViewportSize({ width: widths[0] ?? 375, height: HEIGHT });
-      await page.goto(`${base}${pagePath}`, { waitUntil: 'load' });
-      await page.evaluate(() => document.fonts.ready.then(() => undefined));
-      const found: string[] = [];
-      for (const width of widths) {
-        await page.setViewportSize({ width, height: HEIGHT });
-        await settle(page);
-        const where = `${pagePath} ${String(width)} px ${theme}`;
-        for (const problem of await layoutProblems(page, TARGET)) found.push(`${where}: ${problem}`);
-        for (const problem of await stickyProblems(page)) found.push(`${where}: ${problem}`);
-        for (const problem of await axeProblems(page)) found.push(`${where}: ${problem}`);
-        if (width === widths[0]) {
-          const menuToggle = page.locator('#menu-toggle');
-          if (await menuToggle.isVisible()) {
-            await menuToggle.click();
-            if ((await menuToggle.getAttribute('aria-expanded')) !== 'true') {
-              found.push(`${where}: #menu-toggle did not open on click`);
+    const concurrency = Math.min(availableParallelism(), 4, Math.max(1, pages.length));
+    type PageResult = { readonly log: string; readonly problems: readonly string[] };
+    const results: Array<PageResult | undefined> = new Array<PageResult | undefined>(pages.length);
+    let nextIndex = 0;
+
+    const worker = async (): Promise<void> => {
+      const page = await context.newPage();
+      try {
+        while (nextIndex < pages.length) {
+          const index = nextIndex;
+          nextIndex += 1;
+          const pagePath = pages[index];
+          if (pagePath === undefined) break;
+
+          await page.setViewportSize({ width: widths[0] ?? 375, height: HEIGHT });
+          await page.goto(`${base}${pagePath}`, { waitUntil: 'load' });
+          await page.evaluate(() => document.fonts.ready.then(() => undefined));
+          const found: string[] = [];
+          for (const width of widths) {
+            await page.setViewportSize({ width, height: HEIGHT });
+            await settle(page);
+            const where = `${pagePath} ${String(width)} px ${theme}`;
+            for (const problem of await layoutProblems(page, TARGET)) found.push(`${where}: ${problem}`);
+            for (const problem of await stickyProblems(page)) found.push(`${where}: ${problem}`);
+            for (const problem of await axeProblems(page)) found.push(`${where}: ${problem}`);
+            if (width === widths[0]) {
+              const menuToggle = page.locator('#menu-toggle');
+              if (await menuToggle.isVisible()) {
+                await menuToggle.click();
+                if ((await menuToggle.getAttribute('aria-expanded')) !== 'true') {
+                  found.push(`${where}: #menu-toggle did not open on click`);
+                }
+                await page.keyboard.press('Escape');
+                if ((await menuToggle.getAttribute('aria-expanded')) !== 'false') {
+                  found.push(`${where}: #menu-toggle did not close on Escape while focused`);
+                }
+              }
             }
-            await page.keyboard.press('Escape');
-            if ((await menuToggle.getAttribute('aria-expanded')) !== 'false') {
-              found.push(`${where}: #menu-toggle did not close on Escape while focused`);
+            const unfolded = await setDisclosures(page, true);
+            // The names once per page and theme, with every disclosure unfolded, so no link is folded out of the tree.
+            if (width === widths[0]) {
+              for (const problem of await nameProblems(page)) found.push(`${pagePath} ${theme}: ${problem}`);
+            }
+            if (unfolded > 0) {
+              for (const problem of await layoutProblems(page, TARGET))
+                found.push(`${where}, unfolded: ${problem}`);
+              if (width === AXE_UNFOLDED_WIDTH) {
+                for (const problem of await axeProblems(page)) found.push(`${where}, unfolded: ${problem}`);
+              }
+              await setDisclosures(page, false);
             }
           }
+          results[index] = {
+            log: `layout  ${theme.padEnd(5)} ${pagePath.padEnd(28)} ${found.length === 0 ? 'ok' : `${String(found.length)} problem(s)`}`,
+            problems: found,
+          };
         }
-        const unfolded = await setDisclosures(page, true);
-        // The names once per page and theme, with every disclosure unfolded, so no link is folded out of the tree.
-        if (width === widths[0]) {
-          for (const problem of await nameProblems(page)) found.push(`${pagePath} ${theme}: ${problem}`);
-        }
-        if (unfolded > 0) {
-          for (const problem of await layoutProblems(page, TARGET))
-            found.push(`${where}, unfolded: ${problem}`);
-          if (width === AXE_UNFOLDED_WIDTH) {
-            for (const problem of await axeProblems(page)) found.push(`${where}, unfolded: ${problem}`);
-          }
-          await setDisclosures(page, false);
-        }
+      } finally {
+        await page.close();
       }
-      console.log(
-        `layout  ${theme.padEnd(5)} ${pagePath.padEnd(28)} ${found.length === 0 ? 'ok' : `${String(found.length)} problem(s)`}`,
-      );
-      problems.push(...found);
+    };
+
+    await Promise.all(Array.from({ length: concurrency }, () => worker()));
+
+    for (const result of results) {
+      if (result !== undefined) {
+        console.log(result.log);
+        problems.push(...result.problems);
+      }
     }
     await context.close();
   }

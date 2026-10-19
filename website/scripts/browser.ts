@@ -54,7 +54,7 @@ export const KEEP_NAMES_SHIM = 'globalThis.__name ??= (target) => target;';
 
 /** axe-core's violations on the page as it is now (all its non-experimental rules, as the e2e tests run it). */
 export async function axeProblems(page: Page): Promise<string[]> {
-  const result = await new AxeBuilder({ page }).analyze();
+  const result = await new AxeBuilder({ page }).setLegacyMode(true).analyze();
   return result.violations.map(
     (violation) =>
       `axe ${violation.id}: ${violation.help} (${violation.nodes

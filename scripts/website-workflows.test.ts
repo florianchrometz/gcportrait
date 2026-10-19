@@ -53,4 +53,10 @@ describe('the website workflows', () => {
     expect(release).toMatch(/require-media: true\n/);
     expect(pages).not.toMatch(/require-media:/);
   });
+
+  it('accurately describes the pr.yml website job in website.yml comments', () => {
+    expect(build).toContain(
+      "runs CI's\n# `website` job (pr.yml), which builds and checks the site and static demo without deploying.",
+    );
+  });
 });
