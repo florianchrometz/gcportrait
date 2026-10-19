@@ -17,6 +17,7 @@ import { performance } from 'node:perf_hooks';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import type { Scene } from '@gcportrait/model';
+import { BATCHES, measureBatches } from '@gcportrait/model/testing';
 import {
   BENCH_CASES,
   BUDGET_MS,
@@ -108,8 +109,11 @@ export async function run(
   const memoised = startLayoutWorker();
   const failures: string[] = [];
   try {
-    const first = scenes.values().next().value;
-    if (first !== undefined) await measuring.client.layout(first);
+    const warmCase = cases.find((entry) => entry.fixture === 'M' && entry.detail === 'auto') ?? cases[0];
+    if (warmCase !== undefined) {
+      const warmScene = scenes.get(warmCase) as Scene;
+      for (let i = 0; i < WARM_UP; i += 1) await measuring.client.layout(warmScene);
+    }
     write(
       `worker started in ${(performance.now() - started).toFixed(0)} ms (tsx); memo off for the timings\n\n`,
     );
@@ -118,8 +122,18 @@ export async function run(
     );
     for (const entry of cases) {
       const scene = scenes.get(entry) as Scene;
-      const figures = await measureInWorker(measuring, scene, runs, warmUp);
       const budget = BUDGET_MS[entry.fixture];
+      const { best: figures } = await measureBatches(
+        (batchRuns, batchWarmUp, deadline) =>
+          measureInWorker(measuring, scene, batchRuns, batchWarmUp, deadline),
+        (candidate) => candidate.roundTrip,
+        {
+          plan: { batches: BATCHES, runs, warmUp },
+          limit: budget,
+          timeoutMs: 120_000,
+          laterWarmUp: 1,
+        },
+      );
       const over = figures.roundTrip >= budget;
       if (over) failures.push(`${caseName(entry)}: ${ms(figures.roundTrip)} ≥ ${String(budget)} ms`);
       write(

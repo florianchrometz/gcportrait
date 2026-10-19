@@ -60,7 +60,7 @@ export function instrumented(): boolean {
  * every other test file runs, and a small layout then reads up to four times its quiet figure); under
  * coverage instrumentation, which slows a layout several times over and under which no time limit is
  * checked, one layout per case, so the coverage run still lays every case out without spending minutes on
- * figures nobody checks. The bench measures once.
+ * figures nobody checks.
  */
 export function budgetPlan(): BudgetPlan {
   return instrumented()

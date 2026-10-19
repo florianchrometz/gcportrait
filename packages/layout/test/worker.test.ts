@@ -58,7 +58,7 @@ beforeAll(async () => {
   memoised = startLayoutWorker();
   // Module loading through tsx is not layout work, nor is building the demo Scenes (XL takes seconds).
   for (const { fixture, lens, detail } of BENCH_CASES) demoScene(fixture, lens, detail);
-  await measuring.client.layout(demoScene('S', 'overview'));
+  for (let i = 0; i < 3; i += 1) await measuring.client.layout(demoScene('M', 'overview'));
 }, 120_000);
 
 afterAll(async () => {
