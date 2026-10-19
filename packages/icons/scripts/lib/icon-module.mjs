@@ -95,7 +95,7 @@ export function collectIcons() {
     if (!entries.some((entry) => entry.key === key))
       throw new Error(`${key} has no artwork; run scripts/vendor.mjs`);
   }
-  return entries.sort((a, b) => (a.key < b.key ? -1 : 1));
+  return entries.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 
 /**

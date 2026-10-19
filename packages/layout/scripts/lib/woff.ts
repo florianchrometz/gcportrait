@@ -24,6 +24,10 @@ export function woffToSfnt(woff: Buffer): Buffer {
   }
   const flavor = woff.readUInt32BE(4);
   const numTables = woff.readUInt16BE(12);
+  const directoryEnd = WOFF_HEADER_SIZE + numTables * WOFF_ENTRY_SIZE;
+  if (directoryEnd > woff.length) {
+    throw new Error('WOFF table directory runs past the end of the file');
+  }
   const tables: TableEntry[] = [];
   for (let i = 0; i < numTables; i += 1) {
     const at = WOFF_HEADER_SIZE + i * WOFF_ENTRY_SIZE;
@@ -32,6 +36,9 @@ export function woffToSfnt(woff: Buffer): Buffer {
     const compLength = woff.readUInt32BE(at + 8);
     const origLength = woff.readUInt32BE(at + 12);
     const checksum = woff.readUInt32BE(at + 16);
+    if (offset + compLength > woff.length || compLength > origLength) {
+      throw new Error(`WOFF table ${tag.toString(16)} has an invalid offset or length`);
+    }
     const stored = woff.subarray(offset, offset + compLength);
     const data = compLength < origLength ? inflateSync(stored) : Buffer.from(stored);
     if (data.length !== origLength) throw new Error(`WOFF table ${tag.toString(16)} has the wrong length`);

@@ -48,4 +48,34 @@ describe('woffToSfnt', () => {
       /WOFF/,
     );
   });
+
+  it('refuses a WOFF file whose table directory runs past EOF', () => {
+    const header = Buffer.alloc(44);
+    header.writeUInt32BE(0x774f4646, 0); // 'wOFF'
+    header.writeUInt16BE(10, 12); // numTables = 10, requires 44 + 200 = 244 bytes
+    expect(() => woffToSfnt(header)).toThrow(/table directory runs past the end of the file/);
+  });
+
+  it('refuses a WOFF file whose table offset or length is invalid', () => {
+    const buf = Buffer.alloc(64);
+    buf.writeUInt32BE(0x774f4646, 0); // 'wOFF'
+    buf.writeUInt16BE(1, 12); // numTables = 1
+    // Table entry at offset 44: tag, offset, compLength, origLength, checksum
+    buf.writeUInt32BE(0x68656164, 44); // 'head'
+    buf.writeUInt32BE(100, 48); // offset = 100 > buf.length (64)
+    buf.writeUInt32BE(10, 52); // compLength = 10
+    buf.writeUInt32BE(10, 56); // origLength = 10
+    expect(() => woffToSfnt(buf)).toThrow(/invalid offset or length/);
+  });
+
+  it('refuses a WOFF file where compressed length exceeds original length', () => {
+    const buf = Buffer.alloc(64);
+    buf.writeUInt32BE(0x774f4646, 0); // 'wOFF'
+    buf.writeUInt16BE(1, 12); // numTables = 1
+    buf.writeUInt32BE(0x68656164, 44); // 'head'
+    buf.writeUInt32BE(60, 48); // offset = 60
+    buf.writeUInt32BE(4, 52); // compLength = 4
+    buf.writeUInt32BE(2, 56); // origLength = 2 (< compLength)
+    expect(() => woffToSfnt(buf)).toThrow(/invalid offset or length/);
+  });
 });

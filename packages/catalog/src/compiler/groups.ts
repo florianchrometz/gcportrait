@@ -5,7 +5,7 @@
  * (`types`, each with a reason). Ownership lets `pnpm catalog:check --group <group>` check one group's files
  * while others are mid-edit, and the coverage report count per group. Pure.
  */
-import { AssetTypePatternSchema, AssetTypeSchema, NonEmptyStringSchema } from '@gcportrait/model';
+import { AssetTypePatternSchema, AssetTypeSchema, NonEmptyStringSchema, compareText } from '@gcportrait/model';
 import * as z from 'zod';
 import { serviceOf } from '../engine/rules.js';
 import type { SourceFile } from './types.js';
@@ -79,8 +79,7 @@ export type MappedTypes = ReadonlyMap<
 >;
 
 function comparePaths(a: SourceFile, b: SourceFile): number {
-  if (a.path < b.path) return -1;
-  return a.path > b.path ? 1 : 0;
+  return compareText(a.path, b.path);
 }
 
 /** Parses the group files and resolves ownership; reports misnamed and invalid group files through `add`. */
@@ -167,7 +166,7 @@ export function analyseGroups(
   }
 
   const universe = new Set([...official, ...mapped.keys(), ...listed.keys()]);
-  for (const assetType of [...universe].sort()) {
+  for (const assetType of [...universe].sort(compareText)) {
     const [first, ...others] = claimants(assetType);
     if (first === undefined) continue;
     for (const other of others) {
