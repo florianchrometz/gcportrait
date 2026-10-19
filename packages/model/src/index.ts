@@ -358,10 +358,17 @@ export {
 } from './schemas/patterns.js';
 export {
   COMMAND_VARIABLES,
+  COMMAND_VARIABLE_MAX_VALUE,
+  SAFE_EMAIL_PATTERN,
   VARIABLE_NAME_PATTERN,
   commandVariable,
+  copiedMessage,
+  fieldValue,
   isCommandVariableValue,
+  matchesVariablePattern,
+  resolveCommandParts,
   splitVariableTokens,
+  unfilledNote,
   variableTokens,
   type CommandTextPart,
   type CommandVariableName,

@@ -47,6 +47,7 @@ import {
   loadExportsManifest,
   type SampleExportManifest,
   scriptConnectionProblems,
+  scriptZodSignatures,
   statesAffiliation,
   timelineShorthands,
   urlPathOf,
@@ -395,6 +396,12 @@ describe('checkPage', () => {
     };
     expect(checkPage(withoutStatement).join('\n')).toContain('the footer lacks the footer notice');
   });
+
+  it('refuses an inline script containing zod', () => {
+    expect(problems('<script>const def = schema._zod.def;</script>')).toContain(
+      'an inline script contains zod (._zod)',
+    );
+  });
 });
 
 describe('scriptConnectionProblems', () => {
@@ -453,6 +460,23 @@ describe('scriptConnectionProblems', () => {
     expect(one('new WebSocket("wss://socket.example.com")')).toContain(
       'a script names another host: wss://socket.example.com',
     );
+  });
+});
+
+describe('scriptZodSignatures', () => {
+  it('returns an empty array when no zod signature is present', () => {
+    expect(scriptZodSignatures('console.log("hello world");')).toEqual([]);
+    expect(scriptZodSignatures('')).toEqual([]);
+  });
+
+  it.each([
+    ['._zod property', 'const def = schema._zod.def;', '._zod'],
+    ['"$Zod…" constructor string', 'const type = "$ZodType";', '"$Zod…"'],
+    ['"ZodError" string', 'throw new Error("ZodError");', '"ZodError"'],
+    ['"ZodObject" string', 'const kind = "ZodObject";', '"ZodObject"'],
+    ['"ZodString" string', "const kind = 'ZodString';", '"ZodObject"'],
+  ])('detects %s', (_case, code, signature) => {
+    expect(scriptZodSignatures(code)).toContain(signature);
   });
 });
 

@@ -2,9 +2,11 @@
 /**
  * The copy-ready `gcloud` commands of the permissions checklist (docs/permissions.md; skill cai-ingestion
  * §3). Every value placed into a command has been validated before: the scope and the quota project by their
- * schemas (digits, lower-case letters, `.`, `:` and `-` only), an email by {@link SAFE_EMAIL}, so no command
+ * schemas (digits, lower-case letters, `.`, `:` and `-` only), an email by {@link SAFE_EMAIL_PATTERN}, so no command
  * can carry shell syntax. An unknown email becomes the visible placeholder `YOUR_EMAIL`.
  */
+import { SAFE_EMAIL_PATTERN } from '@gcportrait/model';
+
 import type { ParsedScope } from '../upstream/scope.js';
 
 export const CLOUD_ASSET_VIEWER = 'roles/cloudasset.viewer';
@@ -16,9 +18,6 @@ export const QUOTA_PERMISSION = 'serviceusage.services.use';
 /** The placeholder for the caller's email when Google does not say it (a token without the email scope). */
 export const EMAIL_PLACEHOLDER = 'YOUR_EMAIL';
 
-/** An email that is safe inside a double-quoted shell word: no quotes, no `$`, no backquote, no space. */
-const SAFE_EMAIL = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}$/;
-
 const SERVICE_ACCOUNT_DOMAIN = '.gserviceaccount.com';
 
 /**
@@ -26,7 +25,7 @@ const SERVICE_ACCOUNT_DOMAIN = '.gserviceaccount.com';
  * the email is missing or not safe to put into a command.
  */
 export function memberFor(email: string | undefined): string | null {
-  if (email === undefined || !SAFE_EMAIL.test(email)) return null;
+  if (email === undefined || !SAFE_EMAIL_PATTERN.test(email)) return null;
   return email.toLowerCase().endsWith(SERVICE_ACCOUNT_DOMAIN) ? `serviceAccount:${email}` : `user:${email}`;
 }
 

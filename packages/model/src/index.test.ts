@@ -227,10 +227,17 @@ describe('public surface', () => {
         'zoneRegion',
         // command variables: the registry (zod-free) and its row schema
         'COMMAND_VARIABLES',
+        'COMMAND_VARIABLE_MAX_VALUE',
+        'SAFE_EMAIL_PATTERN',
         'VARIABLE_NAME_PATTERN',
         'commandVariable',
+        'copiedMessage',
+        'fieldValue',
         'isCommandVariableValue',
+        'matchesVariablePattern',
+        'resolveCommandParts',
         'splitVariableTokens',
+        'unfilledNote',
         'variableTokens',
         'CommandVariableSchema',
         // catalog rule engine contract

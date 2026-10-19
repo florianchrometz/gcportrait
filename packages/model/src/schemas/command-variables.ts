@@ -19,6 +19,9 @@ import type { CommandVariable } from './command-variable.js';
 /** A variable's name, which is also its token in the texts. */
 export const VARIABLE_NAME_PATTERN = /^YOUR_[A-Z0-9]+(?:_[A-Z0-9]+)*$/;
 
+/** An email that is safe inside a double-quoted shell word: no quotes, no `$`, no backquote, no space. */
+export const SAFE_EMAIL_PATTERN = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}$/;
+
 /** A token inside a text: the name as a whole word (`gs://YOUR_BUCKET/x` holds YOUR_BUCKET; `YOUR_Xs` holds none). */
 const TOKEN_SOURCE = String.raw`\bYOUR_[A-Z0-9]+(?:_[A-Z0-9]+)*\b`;
 
@@ -113,7 +116,7 @@ export const COMMAND_VARIABLES = [
     label: 'Your e-mail',
     description: 'The e-mail address of the Google account you sign in with.',
     example: 'ada@example.com',
-    pattern: String.raw`^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}$`,
+    pattern: SAFE_EMAIL_PATTERN.source,
     hint: 'an e-mail address such as ada@example.com',
     secret: false,
   },
@@ -248,13 +251,12 @@ export const COMMAND_VARIABLES = [
 /** The name of a registered variable. */
 export type CommandVariableName = (typeof COMMAND_VARIABLES)[number]['name'];
 
-const BY_NAME: ReadonlyMap<string, CommandVariable> = new Map(
-  COMMAND_VARIABLES.map((variable) => [variable.name, variable]),
-);
+let byName: Map<string, CommandVariable> | undefined;
 
 /** The registered variable of that name, or undefined. */
 export function commandVariable(name: string): CommandVariable | undefined {
-  return BY_NAME.get(name);
+  byName ??= new Map(COMMAND_VARIABLES.map((variable) => [variable.name, variable]));
+  return byName.get(name);
 }
 
 /** Whether `value` has the variable's format. A check for a hint only: a value is never refused for it. */
@@ -262,12 +264,75 @@ export function isCommandVariableValue(variable: Pick<CommandVariable, 'pattern'
   return new RegExp(variable.pattern, 'u').test(value);
 }
 
-/** A piece of a command's text: plain text, or a token (registered or not). */
-export type CommandTextPart = string | { readonly token: string };
+/** A stored value longer than this is dropped (nothing a command needs is this long). */
+export const COMMAND_VARIABLE_MAX_VALUE = 500;
+
+/** A value as typed into a field: line breaks and tabs (from a paste) removed. */
+export function fieldValue(raw: string): string {
+  return raw.replace(/[\r\n\t]+/g, '');
+}
+
+/** The note next to a code block's Copy button: how many of its variables are still to fill. */
+export function unfilledNote(count: number): string {
+  if (count <= 0) return '';
+  return count === 1 ? '1 value to fill' : `${String(count)} values to fill`;
+}
+
+/** What the live region says after a copy, with the tokens that were copied unfilled. */
+export function copiedMessage(unfilled: readonly string[]): string {
+  if (unfilled.length === 0) return 'Copied.';
+  const what = unfilled.length === 1 ? 'value' : 'values';
+  return `Copied, with ${String(unfilled.length)} ${what} still to fill: ${unfilled.join(', ')}.`;
+}
+
+/** Whether `value` has the format of `pattern` (a JavaScript regular expression source); an empty value does. */
+export function matchesVariablePattern(pattern: string, value: string): boolean {
+  if (value === '') return true;
+  try {
+    return new RegExp(pattern, 'u').test(value);
+  } catch {
+    return true;
+  }
+}
+
+/** A piece of a command's text or a code block: plain text, or a token/variable name. */
+export type CommandTextPart = string | { readonly token: string } | { readonly name: string };
+
+/**
+ * Resolves a command or code block's parts against variable values.
+ * Registered or known tokens are replaced by their value, unfilled ones left as their token;
+ * unregistered tokens or plain text are preserved as they are.
+ */
+export function resolveCommandParts(
+  parts: readonly CommandTextPart[],
+  values: Readonly<Record<string, string>>,
+  isVariable: (token: string) => boolean = () => true,
+): { readonly text: string; readonly unfilled: readonly string[] } {
+  const unfilled: string[] = [];
+  let text = '';
+  for (const part of parts) {
+    if (typeof part === 'string') {
+      text += part;
+      continue;
+    }
+    const token = 'token' in part ? part.token : part.name;
+    const variable = isVariable(token);
+    const value = variable ? (values[token] ?? '').trim() : '';
+    if (value !== '') {
+      text += value;
+      continue;
+    }
+    text += token;
+    if (variable && !unfilled.includes(token)) {
+      unfilled.push(token);
+    }
+  }
+  return { text, unfilled };
+}
 
 /** `text` cut into plain text and tokens, in order; joining the parts (tokens as their names) gives `text` back. */
-export function splitVariableTokens(text: string): CommandTextPart[] {
-  const parts: CommandTextPart[] = [];
+export function splitVariableTokens(text: string): (string | { readonly token: string })[] {
+  const parts: (string | { readonly token: string })[] = [];
   let at = 0;
   for (const match of text.matchAll(new RegExp(TOKEN_SOURCE, 'g'))) {
     if (match.index > at) parts.push(text.slice(at, match.index));

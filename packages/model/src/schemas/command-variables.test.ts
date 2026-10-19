@@ -4,13 +4,20 @@ import { describe, expect, it } from 'vitest';
 import { findNonSyntheticData } from '../testing/synthetic.js';
 import {
   COMMAND_VARIABLES,
-  CommandVariableSchema,
+  COMMAND_VARIABLE_MAX_VALUE,
+  SAFE_EMAIL_PATTERN,
   VARIABLE_NAME_PATTERN,
   commandVariable,
+  copiedMessage,
+  fieldValue,
   isCommandVariableValue,
+  matchesVariablePattern,
+  resolveCommandParts,
   splitVariableTokens,
+  unfilledNote,
   variableTokens,
-} from './command-variable.js';
+} from './command-variables.js';
+import { CommandVariableSchema } from './command-variable.js';
 
 describe('COMMAND_VARIABLES', () => {
   it.each(COMMAND_VARIABLES.map((variable) => [variable.name, variable] as const))(
@@ -155,5 +162,91 @@ describe('tokens in a text', () => {
     expect(VARIABLE_NAME_PATTERN.test('YOUR_PROJECT_NUMBER')).toBe(true);
     expect(VARIABLE_NAME_PATTERN.test('YOUR__X')).toBe(false);
     expect(commandVariable('YOUR_NOTHING')).toBeUndefined();
+  });
+});
+
+describe('SAFE_EMAIL_PATTERN', () => {
+  it.each([
+    'ada@example.com',
+    'gcportrait-backend@demo-host.iam.gserviceaccount.com',
+    'a.b+c_d%e-f@example.org',
+  ])('accepts %s', (email) => {
+    expect(SAFE_EMAIL_PATTERN.test(email)).toBe(true);
+  });
+
+  it.each([
+    '',
+    '"$(id)"@example.com',
+    'a b@c.d',
+    'ada@example',
+    'ada@example.c',
+    '`id`@example.com',
+    '@example.com',
+    'user@',
+  ])('refuses %j', (email) => {
+    expect(SAFE_EMAIL_PATTERN.test(email)).toBe(false);
+  });
+});
+
+describe('fillable-command helpers', () => {
+  it('defines COMMAND_VARIABLE_MAX_VALUE as 500', () => {
+    expect(COMMAND_VARIABLE_MAX_VALUE).toBe(500);
+  });
+
+  it('removes line breaks and tabs in fieldValue', () => {
+    expect(fieldValue('demo-\r\nweb-1\t')).toBe('demo-web-1');
+  });
+
+  it('computes unfilledNote', () => {
+    expect(unfilledNote(0)).toBe('');
+    expect(unfilledNote(-1)).toBe('');
+    expect(unfilledNote(1)).toBe('1 value to fill');
+    expect(unfilledNote(3)).toBe('3 values to fill');
+  });
+
+  it('computes copiedMessage', () => {
+    expect(copiedMessage([])).toBe('Copied.');
+    expect(copiedMessage(['YOUR_REGION'])).toBe('Copied, with 1 value still to fill: YOUR_REGION.');
+    expect(copiedMessage(['YOUR_REGION', 'YOUR_SERVICE'])).toBe(
+      'Copied, with 2 values still to fill: YOUR_REGION, YOUR_SERVICE.',
+    );
+  });
+
+  it('checks patterns leniently in matchesVariablePattern', () => {
+    expect(matchesVariablePattern('^[a-z]+[0-9]$', 'europe3')).toBe(true);
+    expect(matchesVariablePattern('^[a-z]+[0-9]$', 'Europe 3')).toBe(false);
+    expect(matchesVariablePattern('^[a-z]+[0-9]$', '')).toBe(true);
+    expect(matchesVariablePattern('^[a-z$', 'x')).toBe(true);
+  });
+
+  it('resolves parts with tokens and names in resolveCommandParts', () => {
+    const parts = [
+      'gcloud projects add-iam-policy-binding ',
+      { name: 'YOUR_PROJECT_ID' },
+      ' --member="serviceAccount:gcportrait-backend@',
+      { token: 'YOUR_PROJECT' },
+      '.iam.gserviceaccount.com"\n# again: ',
+      { name: 'YOUR_PROJECT_ID' },
+    ];
+    expect(resolveCommandParts(parts, { YOUR_PROJECT: ' demo-tools-1 ' })).toEqual({
+      text: 'gcloud projects add-iam-policy-binding YOUR_PROJECT_ID --member="serviceAccount:gcportrait-backend@demo-tools-1.iam.gserviceaccount.com"\n# again: YOUR_PROJECT_ID',
+      unfilled: ['YOUR_PROJECT_ID'],
+    });
+    expect(
+      resolveCommandParts(parts, { YOUR_PROJECT: 'demo-tools-1', YOUR_PROJECT_ID: 'demo-web-1' }).unfilled,
+    ).toEqual([]);
+    expect(resolveCommandParts(['plain'], {})).toEqual({ text: 'plain', unfilled: [] });
+
+    const mixedParts = ['echo ', { token: 'YOUR_PROJECT' }, ' ', { token: 'YOUR_UNREGISTERED' }];
+    expect(
+      resolveCommandParts(
+        mixedParts,
+        { YOUR_PROJECT: 'my-proj', YOUR_UNREGISTERED: 'unreg' },
+        (token) => token === 'YOUR_PROJECT',
+      ),
+    ).toEqual({
+      text: 'echo my-proj YOUR_UNREGISTERED',
+      unfilled: [],
+    });
   });
 });

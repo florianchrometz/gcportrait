@@ -26,7 +26,8 @@
  *
  * Scripts (every inline script of a page and every script file of the build) connect to nothing but the site itself:
  * each `fetch(` names its address as a literal path of the site. No script names an address on any other host (XML
- * namespaces aside), and none uses XMLHttpRequest, WebSocket, EventSource, sendBeacon or importScripts.
+ * namespaces aside), none uses XMLHttpRequest, WebSocket, EventSource, sendBeacon or importScripts, and none carries
+ * zod (zod runs in the workers of the app, never on the site).
  *
  * Phones, as far as the HTML shows it (scripts/mobile.ts checks the rendered pages in a browser): one viewport meta
  * tag, `width=device-width, initial-scale=1`, that leaves zooming alone; every table in its own keyboard-focusable
@@ -429,6 +430,26 @@ export function scriptConnectionProblems(source: string): string[] {
     problems.push(`a script names another host: ${address}`);
   }
   return problems;
+}
+
+/**
+ * What gives zod away in a minified chunk: names a minifier keeps (property names and string literals), by zod
+ * version. Each is specific enough on its own (none is a word an app would write), so one match is enough.
+ */
+export const ZOD_SIGNATURES: readonly { readonly name: string; readonly pattern: RegExp }[] = [
+  // zod 4: every schema keeps its internals on `_zod` (`inst._zod.def`, `schema._zod.run`).
+  { name: '._zod', pattern: /\._zod\b/ },
+  // zod 4 core: `$constructor("$ZodType", …)`, `"$ZodObject"`, `"$ZodError"`.
+  { name: '"$Zod…"', pattern: /["'`]\$Zod[A-Z]\w*["'`]/ },
+  // zod 3 and 4: the error class's name, set as a string (`name = "ZodError"`).
+  { name: '"ZodError"', pattern: /["'`]ZodError["'`]/ },
+  // zod 3: the first-party type names (`typeName: "ZodString"`, `ZodFirstPartyTypeKind`).
+  { name: '"ZodObject"', pattern: /["'`]Zod(?:Object|String|Number|Array|Union|Effects|Optional)["'`]/ },
+];
+
+/** Names of zod signatures found in `code` (empty if none). */
+export function scriptZodSignatures(code: string): string[] {
+  return ZOD_SIGNATURES.filter(({ pattern }) => pattern.test(code)).map(({ name }) => name);
 }
 
 /**
@@ -836,6 +857,8 @@ export function checkPage(page: Page): string[] {
   for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
     if (/\btype\s*=\s*["']?application\/ld\+json/i.test(match[1] ?? '')) continue;
     for (const problem of scriptConnectionProblems(match[2] ?? '')) where(problem);
+    for (const signature of scriptZodSignatures(match[2] ?? ''))
+      where(`an inline script contains zod (${signature})`);
   }
   for (const block of tags(html, 'pre')) {
     if (block.tabindex !== '0' && !(block.class ?? '').split(/\s+/).includes('wrap'))
@@ -1347,6 +1370,8 @@ export function checkSite(dist: string, brandSource = BRAND_SOURCE): string[] {
     const source = readFileSync(path.join(dist, file), 'utf8');
     for (const problem of scriptConnectionProblems(source))
       problems.push(`${file.split(path.sep).join('/')}: ${problem}`);
+    for (const signature of scriptZodSignatures(source))
+      problems.push(`${file.split(path.sep).join('/')}: contains zod (${signature})`);
   }
   const stylesheets = filesEndingIn('.css', dist)
     .filter((file) => !inDemo(file))

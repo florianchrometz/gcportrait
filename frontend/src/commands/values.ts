@@ -12,20 +12,25 @@
  * is 20000000001, and the new folder's number once another is picked.
  */
 import {
+  COMMAND_VARIABLE_MAX_VALUE,
   commandVariable,
-  isCommandVariableValue,
+  copiedMessage,
+  fieldValue,
+  matchesVariablePattern,
+  resolveCommandParts,
+  SAFE_EMAIL_PATTERN,
   splitVariableTokens,
+  unfilledNote,
   VARIABLE_NAME_PATTERN,
   type CommandVariableName,
 } from '@gcportrait/model';
 
 import type { ScopeChoice, ScopeKind } from '../scope/scopeName';
 
+export { copiedMessage, fieldValue, unfilledNote };
+
 /** The one sessionStorage key: a JSON object of variable name → entry, variables that are not secret only. */
 export const STORAGE_KEY = 'gcportrait.commandVariables';
-
-/** A stored value longer than this is dropped (nothing a command needs is this long). */
-const MAX_VALUE = 500;
 
 /** What the person typed into a variable's field, over the fact the app knew then ('' for none). */
 export interface Entry {
@@ -45,12 +50,9 @@ export const SCOPE_ID_VARIABLES = {
   project: 'YOUR_PROJECT_ID',
 } as const satisfies Readonly<Record<ScopeKind, CommandVariableName>>;
 
-/** An email that is safe inside a double-quoted shell word (the backend's own rule, preflight/commands.ts). */
-const SAFE_EMAIL = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\.[A-Za-z]{2,63}$/;
-
-/** `email` when {@link SAFE_EMAIL} holds it, else undefined: the app's one rule for an email in a command. */
+/** `email` when {@link SAFE_EMAIL_PATTERN} holds it, else undefined: the app's one rule for an email in a command. */
 export function safeEmail(email: string | null): string | undefined {
-  return email !== null && SAFE_EMAIL.test(email) ? email : undefined;
+  return email !== null && SAFE_EMAIL_PATTERN.test(email) ? email : undefined;
 }
 
 /**
@@ -100,15 +102,10 @@ export function effectiveValues(entries: Entries, facts: Facts): Readonly<Record
   return values;
 }
 
-/** A value as typed into a field: line breaks and tabs (from a paste) removed. */
-export function fieldValue(raw: string): string {
-  return raw.replace(/[\r\n\t]+/g, '');
-}
-
 /** Whether `value` has the format of the variable `name`; an empty value and an unregistered name do. */
 export function matchesFormat(name: string, value: string): boolean {
   const variable = commandVariable(name);
-  return value.trim() === '' || variable === undefined || isCommandVariableValue(variable, value.trim());
+  return variable === undefined || matchesVariablePattern(variable.pattern, value.trim());
 }
 
 /** Whether `name` is a registered variable that is a secret (never kept). */
@@ -124,36 +121,11 @@ export function resolveCommand(
   command: string,
   values: Readonly<Record<string, string>>,
 ): { readonly text: string; readonly unfilled: readonly string[] } {
-  const unfilled: string[] = [];
-  let text = '';
-  for (const part of splitVariableTokens(command)) {
-    if (typeof part === 'string') {
-      text += part;
-      continue;
-    }
-    const value = commandVariable(part.token) === undefined ? '' : (values[part.token] ?? '').trim();
-    if (value !== '') {
-      text += value;
-      continue;
-    }
-    text += part.token;
-    if (commandVariable(part.token) !== undefined && !unfilled.includes(part.token))
-      unfilled.push(part.token);
-  }
-  return { text, unfilled };
-}
-
-/** The note a Copy button is described by: how many of its command's values are still to fill. */
-export function unfilledNote(count: number): string {
-  if (count <= 0) return '';
-  return count === 1 ? '1 value to fill' : `${String(count)} values to fill`;
-}
-
-/** What the live region says after a copy, with the tokens that were copied unfilled. */
-export function copiedMessage(unfilled: readonly string[]): string {
-  if (unfilled.length === 0) return 'Copied.';
-  const what = unfilled.length === 1 ? 'value' : 'values';
-  return `Copied, with ${String(unfilled.length)} ${what} still to fill: ${unfilled.join(', ')}.`;
+  return resolveCommandParts(
+    splitVariableTokens(command),
+    values,
+    (token) => commandVariable(token) !== undefined,
+  );
 }
 
 function isEntry(value: unknown): value is Entry {
@@ -162,8 +134,8 @@ function isEntry(value: unknown): value is Entry {
   return (
     typeof record.value === 'string' &&
     typeof record.basis === 'string' &&
-    record.value.length <= MAX_VALUE &&
-    record.basis.length <= MAX_VALUE
+    record.value.length <= COMMAND_VARIABLE_MAX_VALUE &&
+    record.basis.length <= COMMAND_VARIABLE_MAX_VALUE
   );
 }
 
