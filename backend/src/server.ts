@@ -202,7 +202,10 @@ export async function buildServer(
   });
 
   app.setErrorHandler(async (error: unknown, request, reply) => {
-    if (isClientGoneError(error) || ((reply.raw.closed || reply.raw.destroyed) && !reply.raw.writableFinished)) {
+    if (
+      isClientGoneError(error) ||
+      ((reply.raw.closed || reply.raw.destroyed) && !reply.raw.writableFinished)
+    ) {
       return sendClientGone(reply);
     }
     const status = statusCodeOf(error);

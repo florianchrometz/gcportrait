@@ -666,7 +666,11 @@ describe('POST /api/render: refusals', () => {
 
   it('cancels token verification and logs no error when the client disconnects mid-flight', async () => {
     let callSignal: AbortSignal | null = null;
-    const { server: app, lock, logs } = await start({
+    const {
+      server: app,
+      lock,
+      logs,
+    } = await start({
       google: {
         tokeninfo: (call) => {
           callSignal = call.signal;
@@ -1026,6 +1030,117 @@ describe('POST /api/render: uploads that time out or cannot be read', () => {
     expect(errorOf(early.body).code).toBe('REQUEST_TIMEOUT');
     expect(outcomesOf(logs())).toEqual(['REQUEST_TIMEOUT']);
     expect(lock.size).toBe(0);
+  });
+
+  it('413 BODY_TOO_LARGE when the multipart request JSON field exceeds 64 KiB', async () => {
+    const { server: app, lock } = await start();
+    const oversizedRequest = JSON.stringify({
+      source: { kind: 'ndjson', readTime: READ_TIME },
+      format: 'svg',
+      padding: 'x'.repeat(65 * 1024),
+    });
+    const body = multipart([
+      { name: 'request', value: oversizedRequest },
+      { name: 'file', value: syntheticNdjson(10), filename: 'export.ndjson' },
+    ]);
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/render',
+      headers: { ...OWN, 'content-type': body.contentType },
+      payload: body.payload,
+    });
+    expect(response.statusCode).toBe(413);
+    expect(errorOf(response.body)).toMatchObject({ code: 'BODY_TOO_LARGE' });
+    expect(lock.size).toBe(0);
+  });
+
+  it('413 BODY_TOO_LARGE when a multipart upload contains extra trailing parts after file', async () => {
+    const { server: app, lock } = await start();
+    const body = multipart([
+      { name: 'request', value: request },
+      { name: 'file', value: syntheticNdjson(10), filename: 'export.ndjson' },
+      { name: 'extra', value: 'unexpected trailing part' },
+    ]);
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/render',
+      headers: { ...OWN, 'content-type': body.contentType },
+      payload: body.payload,
+    });
+    expect(response.statusCode).toBe(413);
+    expect(errorOf(response.body)).toMatchObject({ code: 'BODY_TOO_LARGE' });
+    expect(lock.size).toBe(0);
+  });
+
+  it('releases RENDER_LOCK_KEY on early disconnect before watchResponse, so subsequent renders succeed', async () => {
+    let callCount = 0;
+    const tokeninfoCalled = Promise.withResolvers<undefined>();
+    const {
+      server: app,
+      lock,
+      logs,
+    } = await start({
+      google: {
+        tokeninfo: async (call) => {
+          callCount++;
+          if (callCount === 1) {
+            tokeninfoCalled.resolve(undefined);
+            await untilAborted(call.signal).catch(() => undefined);
+          }
+          return answers.tokenInfo();
+        },
+      },
+    });
+    const url = await listening(app);
+    const client = httpRequest(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...OWN },
+    });
+    client.on('error', () => undefined);
+    client.end(JSON.stringify({ source: { kind: 'demo', size: 'S' } }));
+    await tokeninfoCalled.promise;
+    client.destroy();
+    await expect.poll(() => outcomesOf(logs())).toEqual(['client-gone']);
+    expect(lock.size).toBe(0);
+    const next = await post(app, { source: { kind: 'demo', size: 'S' }, format: 'svg' });
+    expect(next.statusCode, next.body).toBe(200);
+  });
+
+  it('releases RENDER_LOCK_KEY on failed pull over keep-alive HTTP, so subsequent renders succeed', async () => {
+    const { server: app, lock } = await start({
+      google: {
+        list: () => answers.listDenied(),
+      },
+    });
+    const url = await listening(app);
+    const http = await import('node:http');
+    const agent = new http.Agent({ keepAlive: true });
+    try {
+      const first = await new Promise<{ statusCode: number }>((resolve, reject) => {
+        const req = httpRequest(
+          url,
+          {
+            agent,
+            method: 'POST',
+            headers: { 'content-type': 'application/json', ...OWN },
+          },
+          (res) => {
+            res.resume();
+            res.on('end', () => {
+              resolve({ statusCode: res.statusCode ?? 0 });
+            });
+          },
+        );
+        req.on('error', reject);
+        req.end(JSON.stringify({ source: PULL, format: 'svg' }));
+      });
+      expect(first.statusCode).toBe(403);
+      expect(lock.size).toBe(0);
+      const next = await post(app, { source: { kind: 'demo', size: 'S' }, format: 'svg' });
+      expect(next.statusCode, next.body).toBe(200);
+    } finally {
+      agent.destroy();
+    }
   });
 });
 
