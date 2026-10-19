@@ -33,6 +33,12 @@ describe('the brand mark in the top bar', () => {
     const header = readSource('../../website/src/components/Header.astro');
     expect(declarations(header, '.wordmark {')).toContain('gap: 0.6rem');
   });
+
+  it('colours the "gc" prefix of the wordmark in the primary blue, matching the website header', () => {
+    expect(declarations(css, '.wordmarkGc {')).toEqual(['color: var(--color-primary)']);
+    const header = readSource('../../website/src/components/Header.astro');
+    expect(declarations(header, '.wordmark-gc {')).toEqual(['color: var(--color-primary)']);
+  });
 });
 
 describe('a sheet over the diagram’s canvas', () => {

@@ -135,8 +135,22 @@ describe('the favicon and the logo are the same drawing', () => {
       themeOf(APPROVED, 'dark'),
     );
     // scripts/media.mjs draws the mark on every link-preview image (light).
-    const card = /const MARK_SVG =\s*'([^']*)'/.exec(read('scripts/media.mjs'))?.[1] ?? '';
+    const media = read('scripts/media.mjs');
+    const card = /const MARK_SVG =\s*'([^']*)'/.exec(media)?.[1] ?? '';
     expect(themeOf(drawingOfSvg(card), 'light')).toEqual(themeOf(APPROVED, 'light'));
+    // Every wordmark colours "gc" in blue and "portrait" in the surface text colour.
+    const pathFills = (file: string): string[] =>
+      [...read(file).matchAll(/<path\b[^>]*\bfill="([^"]+)"/g)].map((match) => normalColour(match[1] ?? ''));
+    expect(pathFills('docs/media/brand/wordmark-light.svg')).toEqual(['#1a73e8', '#202124']);
+    expect(pathFills('docs/media/brand/wordmark-dark.svg')).toEqual(['#8ab4f8', '#e8eaed']);
+    expect(media).toContain('.mark .gc { color: #1a73e8; }');
+    expect(media).toContain('<span><span class="gc">gc</span>portrait</span>');
+    expect(read('website/src/components/Header.astro')).toContain(
+      '<span><span class="wordmark-gc">{PRODUCT_NAME.slice(0, 2)}</span>{PRODUCT_NAME.slice(2)}</span>',
+    );
+    expect(read('website/src/components/Footer.astro')).toContain(
+      '<span><span class="wordmark-gc">{PRODUCT_NAME.slice(0, 2)}</span>{PRODUCT_NAME.slice(2)}</span>',
+    );
   });
 });
 

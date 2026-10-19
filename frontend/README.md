@@ -604,10 +604,11 @@ under `prefers-color-scheme: dark`. The top bar shows the same file beside the w
 empty `alt` from `BASE_URL` (`import.meta.env.BASE_URL` + `favicon.svg`), 24 pixels square and centred on the
 wordmark, with the website header's gap (0.6rem) before the name. An image's `prefers-color-scheme` follows
 the `color-scheme` the theme sets on `<html>`, so the mark takes the app's theme even when it differs from the
-system's. There is no PNG fallback: it would be a second, derived file to keep in step with the source, and a
-PNG cannot follow the theme; a browser without SVG favicons shows its default icon. Tests: `TopBar.test.tsx`,
-`TopBar.css.test.ts` and `e2e/tests/shell.spec.ts` (the served file is `brand/icon.svg` byte for byte);
-`scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
+system's, and the wordmark colours `gc` in `--color-primary` and `portrait` in `--color-on-surface` as on the
+website and in `docs/media/brand/`. There is no PNG fallback: it would be a second, derived file to keep in
+step with the source, and a PNG cannot follow the theme; a browser without SVG favicons shows its default
+icon. Tests: `TopBar.test.tsx`, `TopBar.css.test.ts` and `e2e/tests/shell.spec.ts` (the served file is
+`brand/icon.svg` byte for byte); `scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
 
 ## Sign-in (`src/auth/`)
 

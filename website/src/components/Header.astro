@@ -38,7 +38,7 @@ const current = (href: string): boolean =>
   <div class="container header-row">
     <a class="wordmark" href="/" aria-label={`${PRODUCT_NAME} home`}>
       <Logo size={30} />
-      <span>{PRODUCT_NAME}</span>
+      <span><span class="wordmark-gc">{PRODUCT_NAME.slice(0, 2)}</span>{PRODUCT_NAME.slice(2)}</span>
     </a>
     {
       /*
@@ -126,6 +126,9 @@ const current = (href: string): boolean =>
     font-weight: 500;
     text-decoration: none;
     letter-spacing: -0.01em;
+  }
+  .wordmark-gc {
+    color: var(--color-primary);
   }
   nav {
     flex: 1 1 auto;

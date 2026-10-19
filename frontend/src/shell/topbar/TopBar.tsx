@@ -152,7 +152,10 @@ export function TopBar(): ReactElement {
       <div className={styles.appRow}>
         <Link key="home" to="/" className={styles.wordmark}>
           <img src={brandMarkSource()} alt="" className={styles.mark} data-testid="brand-mark" />
-          {phone ? <span className="visually-hidden">{WORDMARK}</span> : WORDMARK}
+          <span className={phone ? 'visually-hidden' : undefined}>
+            <span className={styles.wordmarkGc}>{WORDMARK.slice(0, 2)}</span>
+            {WORDMARK.slice(2)}
+          </span>
         </Link>
         {phone ? null : badge}
         {phone && onDiagram ? <Breadcrumb key="breadcrumb" /> : null}
