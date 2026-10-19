@@ -285,6 +285,40 @@ describe('a prepared view', () => {
     expect(preparedViewKey(base, { readTime: '2026-09-17T00:00:00Z', viewportBudget: 30 })).toBe(key);
   });
 
+  it('canonicalizes undefined filter entries and focus parameter order', () => {
+    const key = preparedViewKey(base, ENV);
+    const withUndefinedFilters: ViewSpec = {
+      ...base,
+      filters: {
+        ...base.filters,
+        regions: undefined,
+        projects: undefined,
+        folders: undefined,
+      },
+    };
+    expect(preparedViewKey(withUndefinedFilters, ENV)).toBe(key);
+
+    const focus1: ViewSpec = {
+      ...base,
+      focus: { kind: 'project', params: { project: 'p1', host: 'h1' } },
+    };
+    const focus2: ViewSpec = {
+      ...base,
+      focus: { kind: 'project', params: { host: 'h1', project: 'p1' } },
+    };
+    expect(preparedViewKey(focus1, ENV)).toBe(preparedViewKey(focus2, ENV));
+
+    const focusWithUndefined: ViewSpec = {
+      ...base,
+      focus: { kind: 'project', params: { project: 'p1', host: undefined as unknown as string } },
+    };
+    const focusWithoutUndefined: ViewSpec = {
+      ...base,
+      focus: { kind: 'project', params: { project: 'p1' } },
+    };
+    expect(preparedViewKey(focusWithUndefined, ENV)).toBe(preparedViewKey(focusWithoutUndefined, ENV));
+  });
+
   it('does not serve another lens, focus, root, filter, root label or region setting', () => {
     const key = preparedViewKey(base, ENV);
     for (const input of [

@@ -47,22 +47,40 @@ interface Instant {
   readonly fraction: string;
 }
 
+function isLeapYear(year: number): boolean {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+}
+
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+
 function parseInstant(timestamp: string): Instant | undefined {
   const match = RFC3339.exec(timestamp);
   if (match === null) return undefined;
   const [, year, month, day, hour, minute, second, fraction = '', , sign, offsetHours, offsetMinutes] = match;
-  const local = Date.UTC(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second),
-  );
-  const offset =
-    sign === undefined
-      ? 0
-      : (sign === '-' ? -1 : 1) * (Number(offsetHours) * 60 + Number(offsetMinutes)) * 60;
+  const yearNum = Number(year);
+  const monthNum = Number(month);
+  const dayNum = Number(day);
+  const hourNum = Number(hour);
+  const minuteNum = Number(minute);
+  const secondNum = Number(second);
+  if (monthNum < 1 || monthNum > 12) return undefined;
+  const maxDay = monthNum === 2 && isLeapYear(yearNum) ? 29 : (DAYS_IN_MONTH[monthNum - 1] ?? 0);
+  if (dayNum < 1 || dayNum > maxDay) return undefined;
+  if (hourNum < 0 || hourNum > 23) return undefined;
+  if (minuteNum < 0 || minuteNum > 59) return undefined;
+  if (secondNum < 0 || secondNum > 60) return undefined;
+
+  let offset = 0;
+  if (sign !== undefined) {
+    const offsetHoursNum = Number(offsetHours);
+    const offsetMinutesNum = Number(offsetMinutes);
+    if (offsetHoursNum < 0 || offsetHoursNum > 23) return undefined;
+    if (offsetMinutesNum < 0 || offsetMinutesNum > 59) return undefined;
+    offset = (sign === '-' ? -1 : 1) * (offsetHoursNum * 60 + offsetMinutesNum) * 60;
+  }
+  const date = new Date(Date.UTC(yearNum, monthNum - 1, dayNum, hourNum, minuteNum, secondNum));
+  if (yearNum >= 0 && yearNum < 100) date.setUTCFullYear(yearNum);
+  const local = date.getTime();
   return { seconds: local / 1000 - offset, fraction: fraction.replace(/0+$/, '') };
 }
 

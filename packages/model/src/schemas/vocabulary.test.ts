@@ -39,6 +39,7 @@ import {
   isFocusKind,
   isLensId,
   isRelationKind,
+  isRfc3339Timestamp,
   isScopeKind,
   isSnapshotRef,
   scopePathOf,
@@ -258,7 +259,33 @@ describe('timeline days and time helpers', () => {
     expect(start).toBe(Date.UTC(2026, 9, 19, 0, 0, 0, 0));
     expect(dayReadTime(day)).toBe('2026-10-19T00:00:00Z');
     expect(dayOfReadTime('2026-10-19T14:30:00Z')).toBe(day);
+    expect(dayOfReadTime('2026-10-10T01:00:00+02:00')).toBe('2026-10-09');
+    expect(dayOfReadTime('2026-02-30T00:00:00Z')).toBeNull();
+    expect(dayOfReadTime('not a time')).toBeNull();
+    expect(dayOfReadTime('2026-10-19')).toBeNull();
+    expect(dayOfReadTime('October 19, 2026')).toBeNull();
     expect(addDays(day, 1)).toBe('2026-10-20');
     expect(addDays(day, -1)).toBe('2026-10-18');
+  });
+
+  it('validates RFC 3339 timestamps with isRfc3339Timestamp', () => {
+    expect(isRfc3339Timestamp('2026-10-19T14:30:00Z')).toBe(true);
+    expect(isRfc3339Timestamp('2026-10-19t14:30:00z')).toBe(true);
+    expect(isRfc3339Timestamp('2026-10-19T14:30:00.123456Z')).toBe(true);
+    expect(isRfc3339Timestamp('2026-10-10T01:00:00+02:00')).toBe(true);
+    expect(isRfc3339Timestamp('2026-10-10T01:00:00-05:00')).toBe(true);
+    expect(isRfc3339Timestamp('2024-02-29T12:00:00Z')).toBe(true);
+    // Invalid calendar dates or formats
+    expect(isRfc3339Timestamp('2026-02-30T00:00:00Z')).toBe(false);
+    expect(isRfc3339Timestamp('2026-02-29T00:00:00Z')).toBe(false);
+    expect(isRfc3339Timestamp('2026-13-01T00:00:00Z')).toBe(false);
+    expect(isRfc3339Timestamp('2026-04-31T00:00:00Z')).toBe(false);
+    expect(isRfc3339Timestamp('2026-10-19T25:00:00Z')).toBe(false);
+    expect(isRfc3339Timestamp('2026-10-19T14:60:00Z')).toBe(false);
+    expect(isRfc3339Timestamp('2026-10-19')).toBe(false);
+    expect(isRfc3339Timestamp('October 19, 2026')).toBe(false);
+    expect(isRfc3339Timestamp(12345)).toBe(false);
+    expect(isRfc3339Timestamp(null)).toBe(false);
+    expect(isRfc3339Timestamp(undefined)).toBe(false);
   });
 });

@@ -212,6 +212,7 @@ describe('public surface', () => {
         'isNumericId',
         'isProjectRef',
         'isRelationKind',
+        'isRfc3339Timestamp',
         'isScopeKind',
         'isSnapshotRef',
         'scopePathOf',
