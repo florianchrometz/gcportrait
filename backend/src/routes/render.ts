@@ -14,9 +14,7 @@
  * ../stream/ndjson.ts sends the answer in pieces; ../errors.ts and ../render/errors.ts map refusals
  * before any image byte. The route records one counts-only outcome line (backend/README.md, "Render API").
  */
-import { Readable } from 'node:stream';
-
-import multipart from '@fastify/multipart';
+import multipart, { type Multipart, type MultipartFile } from '@fastify/multipart';
 import {
   DemoSizeSchema,
   RenderOptionsObjectSchema,
@@ -143,6 +141,15 @@ class UploadUnreadable extends Error {
   }
 }
 
+/** The upload violated multipart constraints (oversized JSON part or extra trailing parts). */
+class UploadError extends Error {
+  readonly statusCode: number;
+  constructor(code: 'field-too-large' | 'bad-parts', message: string) {
+    super(message);
+    this.statusCode = code === 'field-too-large' ? 413 : 400;
+  }
+}
+
 /**
  * `promise`, or `signal`'s reason as soon as it aborts. `promise` may still reject after that (a job stopped since,
  * ../render/runner.ts); its rejection is handled here in every case, so it never becomes an unhandled rejection,
@@ -169,9 +176,15 @@ function unlessAborted<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> 
   });
 }
 
+/** The uploaded file part and its multipart stream iterator for trailing checks. */
+interface UploadFile {
+  readonly filePart: MultipartFile;
+  readonly parts: AsyncIterableIterator<Multipart>;
+}
+
 /** The multipart parts of an upload: the `request` field's text and the `file` part's stream. */
 type Upload =
-  | { readonly ok: true; readonly document: unknown; readonly next: () => Promise<Readable | null> }
+  | { readonly ok: true; readonly document: unknown; readonly next: () => Promise<UploadFile | null> }
   | { readonly ok: false; readonly failure: RenderFailure };
 
 /**
@@ -208,55 +221,73 @@ async function readUpload(
     ok: false,
     failure: uploadFailure(body.failed() ?? error, bodyTimeoutMs),
   });
-  let parts;
-  let first;
   try {
-    parts = body.request.parts({
+    const parts = body.request.parts({
       limits: { fields: 1, files: 1, parts: 2, fieldSize: fieldBytes, fileSize: fileBytes },
     });
-    first = await parts.next();
+    const first = await parts.next();
+    const part = first.done === true ? undefined : first.value;
+    if (part?.type !== 'field' || part.fieldname !== 'request')
+      return { ok: false, failure: { status: 400, code: 'INVALID_REQUEST', message: UPLOAD_SHAPE } };
+    if (part.valueTruncated || part.fieldnameTruncated)
+      throw new UploadError('field-too-large', 'The request JSON part exceeds the 64 KiB field limit.');
+    let document: unknown = part.value;
+    if (typeof document === 'string') {
+      try {
+        document = JSON.parse(document);
+      } catch {
+        return {
+          ok: false,
+          failure: {
+            status: 400,
+            code: 'INVALID_REQUEST',
+            message: 'Invalid request: request: not valid JSON.',
+          },
+        };
+      }
+    }
+    return {
+      ok: true,
+      document,
+      next: async () => {
+        let second;
+        try {
+          second = await parts.next();
+        } catch (error) {
+          throw new UploadUnreadable(error);
+        }
+        const file = second.done === true ? undefined : second.value;
+        if (file?.type !== 'file' || file.fieldname !== 'file') return null;
+        return { filePart: file, parts };
+      },
+    };
   } catch (error) {
     return refused(error);
   }
-  const part = first.done === true ? undefined : first.value;
-  if (part?.type !== 'field' || part.fieldname !== 'request')
-    return { ok: false, failure: { status: 400, code: 'INVALID_REQUEST', message: UPLOAD_SHAPE } };
-  let document: unknown = part.value;
-  if (typeof document === 'string') {
-    try {
-      document = JSON.parse(document);
-    } catch {
-      return {
-        ok: false,
-        failure: {
-          status: 400,
-          code: 'INVALID_REQUEST',
-          message: 'Invalid request: request: not valid JSON.',
-        },
-      };
-    }
-  }
-  return {
-    ok: true,
-    document,
-    next: async () => {
-      let second;
-      try {
-        second = await parts.next();
-      } catch (error) {
-        throw new UploadUnreadable(error);
-      }
-      const file = second.done === true ? undefined : second.value;
-      return file?.type === 'file' && file.fieldname === 'file' ? file.file : null;
-    },
-  };
 }
 
 /** The file part's chunks; a failure to read them (the body late, cut short, malformed) is {@link UploadUnreadable}. */
-async function* uploadChunks(file: Readable): AsyncGenerator<Uint8Array, void, undefined> {
+async function* uploadChunks(
+  filePart: MultipartFile,
+  parts: AsyncIterableIterator<Multipart>,
+): AsyncGenerator<Uint8Array, void, undefined> {
   try {
-    for await (const chunk of file as AsyncIterable<Uint8Array>) yield chunk;
+    for await (const chunk of filePart.file as AsyncIterable<Uint8Array>) yield chunk;
+    if (filePart.file.truncated) throw new UploadTooLarge();
+    let trailing;
+    try {
+      trailing = await parts.next();
+    } catch (error) {
+      throw new UploadUnreadable(error);
+    }
+    if (!trailing.done) {
+      if (trailing.value.type === 'file') trailing.value.file.resume();
+      throw new UploadError('bad-parts', 'Extra multipart parts after the file are not allowed.');
+    }
   } catch (error) {
+    if (error instanceof UploadTooLarge) throw error;
+    if (error instanceof UploadUnreadable) throw error;
+    if (error instanceof UploadError) throw error;
     throw new UploadUnreadable(error);
   }
 }
@@ -310,7 +341,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
       if (callerToken === null) return reply;
 
       let document: unknown = request.body;
-      let nextFile: (() => Promise<Readable | null>) | undefined;
+      let nextFile: (() => Promise<UploadFile | null>) | undefined;
       const uploadBody = multipartBody ? watchUploadBody(request) : null;
       // Why reading the upload failed: the request's own error (the body deadline's 408) before the reader's.
       const unreadable = (error: UploadUnreadable): RenderFailure =>
@@ -339,7 +370,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
             ? `The ${source.kind} source is an upload. ${UPLOAD_SHAPE}`
             : `The ${source.kind} source takes a JSON body (application/json), not multipart.`,
         });
-      let file: Readable | null = null;
+      let file: UploadFile | null = null;
       if (nextFile !== undefined) {
         try {
           file = await nextFile();
@@ -434,123 +465,136 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         return refuse(failure);
       };
 
-      let credentials;
-      if (source.kind === 'scope') {
-        const pull = await pullCredentials(
-          request,
-          reply,
-          source,
-          callerToken,
-          authority,
-          'render',
-          life.signal,
-        );
-        if (!pull.ok) {
-          outcome = 'refused';
-          return pull.reply;
-        }
-        credentials = pull.credentials;
-      }
-
-      const spec: JobSpec = {
-        source: jobSourceOf(source),
-        options: {
-          view: body.view,
-          theme: body.theme,
-          format: body.format,
-          viewport: body.viewport,
-          ...(body.scale === undefined ? {} : { scale: body.scale }),
-          ...(body.width === undefined ? {} : { width: body.width }),
-          ...(body.compressed === undefined ? {} : { compressed: body.compressed }),
-          ...(body.fontSource === undefined ? {} : { fontSource: body.fontSource }),
-        },
-        maxAssets: limits.maxAssets,
-        maxPixels: limits.maxPixels,
-        ...(options.version === undefined ? {} : { version: options.version }),
-      };
-      const job = options.runner(spec);
-      current.run = job;
-      let result: JobResult;
+      let streamed = false;
       try {
-        if (source.kind === 'scope' && credentials !== undefined) {
-          const frames = assetListFrames(
-            assetListQueryOf(source),
-            {
-              client: authority.upstream,
-              credentials,
-              stats,
-              budget: options.budget,
-              onRetry: (event) => {
-                request.log.warn({ upstream: 'cloudasset', ...event }, 'retrying upstream');
-              },
-            },
-            signal,
+        let credentials;
+        if (source.kind === 'scope') {
+          const pull = await pullCredentials(
+            request,
+            reply,
+            source,
+            callerToken,
+            authority,
+            'render',
+            life.signal,
           );
-          const encoder = new TextEncoder();
-          for await (const line of frames) {
-            // A page Google answered after the end (the client gone, the time up) is not handed to the stopped job.
-            if (signal.aborted) break;
-            if (typeof line === 'string' && line.startsWith('{"t":"error"'))
-              throw new PullFailure(JSON.parse(line) as ErrorFrame);
-            if (stats.assets > limits.maxAssets)
-              throw new RenderJobError('TOO_MANY_ASSETS', renderTooManyAssetsMessage(limits.maxAssets));
-            await unlessAborted(job.push(typeof line === 'string' ? encoder.encode(line) : line), signal);
+          if (!pull.ok) {
+            outcome = life.signal.aborted ? 'client-gone' : 'refused';
+            return await pull.reply;
           }
-        } else if (file !== null) {
-          // Past RENDER_MAX_BODY_BYTES busboy cuts the file short and marks it truncated.
-          const truncated = (): boolean => (file as Readable & { truncated?: boolean }).truncated === true;
-          for await (const chunk of uploadChunks(file)) {
-            if (truncated() || signal.aborted) break;
-            await unlessAborted(job.push(chunk), signal);
+          credentials = pull.credentials;
+        }
+
+        const spec: JobSpec = {
+          source: jobSourceOf(source),
+          options: {
+            view: body.view,
+            theme: body.theme,
+            format: body.format,
+            viewport: body.viewport,
+            ...(body.scale === undefined ? {} : { scale: body.scale }),
+            ...(body.width === undefined ? {} : { width: body.width }),
+            ...(body.compressed === undefined ? {} : { compressed: body.compressed }),
+            ...(body.fontSource === undefined ? {} : { fontSource: body.fontSource }),
+          },
+          maxAssets: limits.maxAssets,
+          maxPixels: limits.maxPixels,
+          ...(options.version === undefined ? {} : { version: options.version }),
+        };
+        const job = options.runner(spec);
+        current.run = job;
+        let result: JobResult;
+        try {
+          if (source.kind === 'scope' && credentials !== undefined) {
+            const frames = assetListFrames(
+              assetListQueryOf(source),
+              {
+                client: authority.upstream,
+                credentials,
+                stats,
+                budget: options.budget,
+                onRetry: (event) => {
+                  request.log.warn({ upstream: 'cloudasset', ...event }, 'retrying upstream');
+                },
+              },
+              signal,
+            );
+            const encoder = new TextEncoder();
+            for await (const line of frames) {
+              // A page Google answered after the end (the client gone, the time up) is not handed to the stopped job.
+              if (signal.aborted) break;
+              if (typeof line === 'string' && line.startsWith('{"t":"error"'))
+                throw new PullFailure(JSON.parse(line) as ErrorFrame);
+              if (stats.assets > limits.maxAssets)
+                throw new RenderJobError('TOO_MANY_ASSETS', renderTooManyAssetsMessage(limits.maxAssets));
+              await unlessAborted(job.push(typeof line === 'string' ? encoder.encode(line) : line), signal);
+            }
+          } else if (file !== null) {
+            // Past RENDER_MAX_BODY_BYTES busboy cuts the file short and marks it truncated.
+            const truncated = (): boolean => file.filePart.file.truncated;
+            for await (const chunk of uploadChunks(file.filePart, file.parts)) {
+              if (truncated() || signal.aborted) break;
+              await unlessAborted(job.push(chunk), signal);
+            }
+            if (truncated()) throw new UploadTooLarge();
           }
-          if (truncated()) throw new UploadTooLarge();
-        }
-        if (signal.aborted) throw signal.reason as Error;
-        result = await unlessAborted(job.end(), signal);
-      } catch (error) {
-        job.stop();
-        if (life.signal.aborted || isClientGoneError(error, life.signal)) {
-          outcome = 'client-gone';
-          return reply;
-        }
-        if (error instanceof UploadTooLarge)
-          return fail({
-            status: 413,
-            code: 'BODY_TOO_LARGE',
-            message: 'The upload is larger than this instance accepts (RENDER_MAX_BODY_BYTES).',
-          });
-        if (timeout.aborted && error === timeout.reason)
-          return fail({
-            status: 503,
-            code: 'RENDER_TIMEOUT',
-            message:
-              'The render took longer than this instance allows. Narrow the data or the view, or ask for an SVG.',
-            retryable: false,
-          });
-        if (error instanceof PullFailure) {
-          const failure = frameFailure(error.frame);
-          // Google no longer accepts the caller's token: the sign-in answer every route gives.
-          if (failure.status === 401) {
-            outcome = failure.code;
-            return sendError(request, reply, { status: 401, message: failure.message });
+          if (signal.aborted) throw signal.reason as Error;
+          result = await unlessAborted(job.end(), signal);
+        } catch (error) {
+          job.stop();
+          if (life.signal.aborted || isClientGoneError(error, life.signal)) {
+            outcome = 'client-gone';
+            return await reply;
           }
-          return fail(failure);
+          if (error instanceof UploadTooLarge)
+            return await fail({
+              status: 413,
+              code: 'BODY_TOO_LARGE',
+              message: 'The upload is larger than this instance accepts (RENDER_MAX_BODY_BYTES).',
+            });
+          if (timeout.aborted && error === timeout.reason)
+            return await fail({
+              status: 503,
+              code: 'RENDER_TIMEOUT',
+              message:
+                'The render took longer than this instance allows. Narrow the data or the view, or ask for an SVG.',
+              retryable: false,
+            });
+          if (error instanceof PullFailure) {
+            const failure = frameFailure(error.frame);
+            // Google no longer accepts the caller's token: the sign-in answer every route gives.
+            if (failure.status === 401) {
+              outcome = failure.code;
+              return await sendError(request, reply, { status: 401, message: failure.message });
+            }
+            return await fail(failure);
+          }
+          if (error instanceof RenderJobError) {
+            if (error.detail !== undefined) request.log.error({ renderError: error.detail }, 'render failed');
+            return await fail(jobFailure(error, source.kind));
+          }
+          if (error instanceof UploadError)
+            return await fail({
+              status: error.statusCode,
+              code: error.statusCode === 413 ? 'BODY_TOO_LARGE' : 'INVALID_REQUEST',
+              message: error.message,
+            });
+          if (error instanceof UploadUnreadable) return await fail(unreadable(error));
+          throw error;
         }
-        if (error instanceof RenderJobError) {
-          if (error.detail !== undefined) request.log.error({ renderError: error.detail }, 'render failed');
-          return fail(jobFailure(error, source.kind));
-        }
-        if (error instanceof UploadUnreadable) return fail(unreadable(error));
-        throw error;
+        outcome = 'finished';
+        bytes = result.bytes.byteLength;
+        const sent = sendPieces(reply, life, () => [result.bytes], {
+          log: request.log,
+          contentType: result.contentType,
+          headers: resultHeaders(result),
+          ...(options.stallMs === undefined ? {} : { stallMs: options.stallMs }),
+        });
+        streamed = true;
+        return await sent;
+      } finally {
+        if (!streamed) life.end();
       }
-      outcome = 'finished';
-      bytes = result.bytes.byteLength;
-      return sendPieces(reply, life, () => [result.bytes], {
-        log: request.log,
-        contentType: result.contentType,
-        headers: resultHeaders(result),
-        ...(options.stallMs === undefined ? {} : { stallMs: options.stallMs }),
-      });
     });
   });
 }
