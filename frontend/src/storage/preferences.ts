@@ -54,6 +54,7 @@ export function createPreferenceStore(source: DatabaseSource): PreferenceStore {
 
   return {
     async get(key) {
+      if (memory.has(key)) return readMemory(key);
       const db = await database();
       if (db === null) return readMemory(key);
       try {

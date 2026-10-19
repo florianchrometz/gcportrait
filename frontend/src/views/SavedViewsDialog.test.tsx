@@ -163,4 +163,47 @@ describe('saved views', () => {
     }, SLOW);
     await within(dialog).findByText(/^Updated “Mine”\./, {}, SLOW);
   });
+
+  it(
+    'shows a status message and keeps the edit field open when renaming to an existing view name',
+    WHOLE_APP_TIMEOUT,
+    async () => {
+      renderControls('/diagram#snapshot=demo:S&detail=projects', { workers: false });
+      const dialog = await openDialog();
+      const name = within(dialog).getByRole('textbox', { name: 'Name' });
+
+      // Save two views: First and Second
+      await userEvent.clear(name);
+      await userEvent.type(name, 'First{Enter}');
+      await within(dialog).findByText(/^Saved “First”\./, {}, SLOW);
+
+      await userEvent.clear(name);
+      await userEvent.type(name, 'Second{Enter}');
+      await within(dialog).findByText(/^Saved “Second”\./, {}, SLOW);
+
+      // Try renaming First to Second (duplicate)
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Rename First' }));
+      const field = within(dialog).getByRole('textbox', { name: 'New name for First' });
+      await userEvent.clear(field);
+      await userEvent.type(field, 'Second{Enter}');
+
+      // An inline validation message appears on the status line
+      await within(dialog).findByText('A saved view named “Second” already exists.', {}, SLOW);
+      // The edit field is still present and focused
+      expect(document.activeElement).toBe(field);
+
+      // Renaming to an empty name gives a prompt message and stays focused
+      await userEvent.clear(field);
+      await userEvent.type(field, '{Enter}');
+      await within(dialog).findByText('Give the view a name first.', {}, SLOW);
+      expect(document.activeElement).toBe(field);
+
+      // Correcting the name to an unused name succeeds
+      await userEvent.type(field, 'Unique name{Enter}');
+      await within(dialog).findByText('Renamed “First” to “Unique name”.', {}, SLOW);
+      expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Rename Unique name' }));
+
+      await expectNoAxeViolations();
+    },
+  );
 });

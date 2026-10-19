@@ -116,8 +116,8 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Engineering:** worker-side budgets for search and locate (XL search about 150 ms, locate 0.9–1.7 s); the
   data worker's per-request store read; the floating "N of M shown" bar; breadcrumb truncation; XL's
   Snapshot-menu radio; the dark scrim; `shares` bands on L and XL.
-- **Defects:** search mixes texts on XL; slow reveals reopen the drawer; focus after a jump link; renaming a
-  saved view can duplicate a name; a pending `jumpTo`; another tab deleting the open snapshot.
+- **Defects:** search mixes texts on XL; slow reveals reopen the drawer; focus after a jump link; a pending
+  `jumpTo`; another tab deleting the open snapshot.
 - **Connect and Permissions pages:** a permission check in flight at sign-out is not cancelled; the scope
   picker's hint lacks `aria-describedby`; a type-filtered pull is stored like a full one; an `operation.json`
   whose scope differs relabels silently; `ImportFailure.command` is never set; the sign-in e2e runs on Vite,

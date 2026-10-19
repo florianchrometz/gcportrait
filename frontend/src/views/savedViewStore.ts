@@ -88,7 +88,10 @@ export function createSavedViewStore(
     const db = await database();
     if (db === null) return { views: [...memory.values()], db };
     try {
-      return { views: await db.getAll('savedViews'), db };
+      const stored = await db.getAll('savedViews');
+      const byId = new Map(stored.map((item) => [item.id, item]));
+      for (const [id, item] of memory) byId.set(id, item);
+      return { views: [...byId.values()], db };
     } catch {
       return { views: [...memory.values()], db: null };
     }
@@ -99,6 +102,7 @@ export function createSavedViewStore(
     if (db === null) return false;
     try {
       await db.put('savedViews', view);
+      memory.delete(view.id);
       return true;
     } catch {
       return false;
@@ -130,6 +134,9 @@ export function createSavedViewStore(
       const { views, db } = await readAll();
       const existing = views.find((view) => view.id === id);
       if (existing === undefined) return null;
+      if (views.some((view) => view.id !== id && sameName(view.name, clean))) {
+        throw new Error(`A saved view named “${clean}” already exists.`);
+      }
       const view: StoredView = { ...existing, name: clean, updatedAt: now().toISOString() };
       await write(db, view);
       changed();
