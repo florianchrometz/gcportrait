@@ -7,11 +7,17 @@
  * whole answer for demo organisation M's bastion VM and its project.
  */
 import { catalog } from '@gcportrait/catalog';
-import { RelationKindSchema, type Graph, type GraphNode, type RelationEdge } from '@gcportrait/model';
+import {
+  RELATION_KIND_IDS,
+  RelationKindSchema,
+  type Graph,
+  type GraphNode,
+  type RelationEdge,
+} from '@gcportrait/model';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { demoGraph } from '../diagram/testing/demoScenes';
-import { danglingEntry, groupRelations, labelsOf, nodeDetails, RELATION_ORDER, tagsOf } from './details';
+import { danglingEntry, groupRelations, labelsOf, nodeDetails, tagsOf } from './details';
 import type { NodeDetails } from './types';
 
 function node(id: string, assetType: string, label: string, role: GraphNode['role'] = 'core'): GraphNode {
@@ -76,9 +82,9 @@ function graphAroundX(): Graph {
 
 describe('relation grouping', () => {
   it('follows the model’s relation kinds in their declared order (catalog skill §4)', () => {
-    expect(RELATION_ORDER).toEqual(RelationKindSchema.options);
-    expect(RELATION_ORDER.slice(0, 4)).toEqual(['contains', 'attaches', 'routes', 'uses']);
-    expect(RELATION_ORDER.at(-1)).toBe('shares');
+    expect(RELATION_KIND_IDS).toEqual(RelationKindSchema.options);
+    expect(RELATION_KIND_IDS.slice(0, 4)).toEqual(['contains', 'attaches', 'routes', 'uses']);
+    expect(RELATION_KIND_IDS.at(-1)).toBe('shares');
   });
 
   it('groups by kind in that order, outgoing before peers before incoming, each by label', () => {

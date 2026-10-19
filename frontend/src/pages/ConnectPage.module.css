@@ -34,28 +34,6 @@
   font-size: var(--font-size-control);
 }
 
-.sourceAction {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-
-/* A source without a panel of its own shows an inert placeholder: aria-disabled, so it stays focusable. */
-.button {
-  height: var(--control-height);
-  padding: 0 var(--space-4);
-  border: 1px dashed var(--color-outline);
-  border-radius: var(--control-radius);
-  background: var(--color-surface-container);
-  color: var(--color-on-surface-variant);
-  font-weight: var(--font-weight-medium);
-}
-
-.button[aria-disabled='true'] {
-  cursor: not-allowed;
-}
-
 .about {
   padding: var(--space-4);
   border-radius: 12px;

@@ -1,12 +1,8 @@
 // @vitest-environment node
 // SPDX-License-Identifier: Apache-2.0
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { decodeJson, decodeText, encodeJson, GZIP_TYPE, JSON_TYPE, plainBlob } from './codec';
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
 
 const VALUE = {
   name: 'example.com',
@@ -24,11 +20,10 @@ describe('the stored-document codec', () => {
     expect(await plain.text()).toBe(JSON.stringify(VALUE));
   });
 
-  it('stores plain JSON where the platform cannot compress, and reads both', async () => {
-    vi.stubGlobal('CompressionStream', undefined);
-    const blob = await encodeJson(VALUE);
-    expect(blob.type).toBe(JSON_TYPE);
+  it('reads plain JSON blobs without decompression', async () => {
+    const blob = new Blob([JSON.stringify(VALUE)], { type: JSON_TYPE });
     expect(await decodeText(blob)).toBe(JSON.stringify(VALUE));
     expect(await plainBlob(blob)).toBe(blob);
+    expect(await decodeJson(blob)).toEqual(VALUE);
   });
 });

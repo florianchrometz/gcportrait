@@ -65,18 +65,10 @@ interface SearchProps {
   readonly unavailable?: string | null | undefined;
   readonly exclude?: ReadonlySet<string>;
   readonly onChoose: (value: string) => void;
-  readonly placeholder?: string;
 }
 
 /** The combobox both pickers share: its text, its results and the Escape order. */
-function PickerSearch({
-  label,
-  options,
-  unavailable,
-  exclude,
-  onChoose,
-  placeholder,
-}: SearchProps): ReactElement {
+function PickerSearch({ label, options, unavailable, exclude, onChoose }: SearchProps): ReactElement {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const failed = unavailable !== undefined && unavailable !== null;
@@ -94,9 +86,7 @@ function PickerSearch({
           setQuery('');
           onChoose(option.key);
         }}
-        placeholder={
-          failed ? 'Not available' : loading ? 'Loading…' : (placeholder ?? 'Type to search, ↓ to list')
-        }
+        placeholder={failed ? 'Not available' : loading ? 'Loading…' : 'Type to search, ↓ to list'}
         noResults="No matches"
         open={open}
         onOpenChange={setOpen}
@@ -119,7 +109,6 @@ export interface PickerFieldProps {
   readonly onRemove: (value: string) => void;
   /** A hint under the field. */
   readonly hint?: string;
-  readonly placeholder?: string;
 }
 
 /** A list of chosen values as chips with a remove button each, and a combobox to add one. */
@@ -131,7 +120,6 @@ export function PickerField({
   onAdd,
   onRemove,
   hint,
-  placeholder,
 }: PickerFieldProps): ReactElement {
   const labelId = useId();
   const hintId = useId();
@@ -180,7 +168,6 @@ export function PickerField({
         unavailable={unavailable}
         exclude={new Set(values)}
         onChoose={onAdd}
-        {...(placeholder === undefined ? {} : { placeholder })}
       />
       {hint === undefined ? null : (
         <span id={hintId} className={styles.hint}>
@@ -198,24 +185,9 @@ export interface PickerInputProps {
   /** Why nothing can be chosen (the snapshot could not be loaded). */
   readonly unavailable?: string | null | undefined;
   readonly onChoose: (value: string) => void;
-  readonly placeholder?: string;
 }
 
 /** One value to choose (the Focus control's parameter). */
-export function PickerInput({
-  label,
-  options,
-  unavailable,
-  onChoose,
-  placeholder,
-}: PickerInputProps): ReactElement {
-  return (
-    <PickerSearch
-      label={label}
-      options={options}
-      unavailable={unavailable}
-      onChoose={onChoose}
-      {...(placeholder === undefined ? {} : { placeholder })}
-    />
-  );
+export function PickerInput({ label, options, unavailable, onChoose }: PickerInputProps): ReactElement {
+  return <PickerSearch label={label} options={options} unavailable={unavailable} onChoose={onChoose} />;
 }

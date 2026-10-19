@@ -7,14 +7,13 @@
  * Closed: ↓ ↑ Enter Space open on the current option, Home and End on the first and last, a typed character on
  * the next option starting with it. Open: ↓ ↑ move (no wrap), Home End jump, typed characters move (type-ahead),
  * Enter or Space choose, Tab chooses and moves on, Escape closes. A click on the button toggles, a click on an
- * option chooses it, a press elsewhere closes. `onChange` only fires for another value. Inert (`disabled`): a
- * focusable, announced-unavailable combobox that never opens.
+ * option chooses it, a press elsewhere closes. `onChange` only fires for another value.
  */
 import { useId, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
 
 import { cx } from '../classNames';
 import styles from './controls.module.css';
-import { inertProps, isInert, useOpenState, useOutsidePress, type Inert } from './dom';
+import { useOpenState, useOutsidePress } from './dom';
 import { Listbox } from './Listbox';
 import { isTypeaheadKey, typeaheadMatch, useTypeahead } from './typeahead';
 
@@ -31,10 +30,8 @@ export interface SelectProps<T extends string> {
   readonly options: readonly SelectOption<T>[];
   readonly value: T;
   readonly onChange: (value: T) => void;
-  readonly disabled?: Inert;
   readonly open?: boolean;
   readonly onOpenChange?: (open: boolean) => void;
-  readonly align?: 'start' | 'end';
   /** Extra class for the listbox popup (a width for options with descriptions). */
   readonly listClassName?: string | undefined;
 }
@@ -44,10 +41,8 @@ export function Select<T extends string>({
   options,
   value,
   onChange,
-  disabled,
   open: controlled,
   onOpenChange,
-  align = 'start',
   listClassName,
 }: SelectProps<T>): ReactElement {
   const [open, setOpen] = useOpenState(controlled, onOpenChange);
@@ -56,8 +51,7 @@ export function Select<T extends string>({
   const labelId = useId();
   const listId = useId();
   const type = useTypeahead();
-  const inert = isInert(disabled);
-  const shown = open && !inert;
+  const shown = open;
   const selected = Math.max(
     0,
     options.findIndex((option) => option.value === value),
@@ -68,7 +62,7 @@ export function Select<T extends string>({
   });
 
   const openAt = (index: number): void => {
-    if (inert || options.length === 0) return;
+    if (options.length === 0) return;
     setActive(Math.min(last, Math.max(0, index)));
     setOpen(true);
   };
@@ -156,7 +150,6 @@ export function Select<T extends string>({
         aria-expanded={shown}
         aria-controls={listId}
         aria-activedescendant={shown ? optionId(active) : undefined}
-        {...inertProps(disabled)}
         onClick={() => {
           if (shown) setOpen(false);
           else openAt(selected);
@@ -180,7 +173,6 @@ export function Select<T extends string>({
         active={active}
         optionId={optionId}
         hidden={!shown}
-        align={align}
         checks
         className={listClassName}
         onActivate={setActive}

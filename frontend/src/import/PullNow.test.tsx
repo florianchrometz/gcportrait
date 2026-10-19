@@ -4,7 +4,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { useLocation } from 'react-router';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { TEST_TOKEN } from '../auth/testing';
 import { readyConnect } from '../preflight/testing';
@@ -36,15 +36,6 @@ function GuardProbe(): ReactElement {
   const ref = hashOf(useLocation().hash).replace(/^snapshot=/, '');
   return <p data-testid="guard-probe">{ref === '' ? '' : String(guard.asks(50_000, ref))}</p>;
 }
-
-beforeEach(() => {
-  // jsdom's Blob cannot stream, so the snapshot is stored as plain JSON (the codec's fallback).
-  vi.stubGlobal('CompressionStream', undefined);
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
 
 describe('Pull now', () => {
   it('waits, with the reason, until the permission check says the scope is ready', async () => {

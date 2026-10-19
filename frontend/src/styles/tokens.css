@@ -48,14 +48,7 @@
   --font-family-sans: 'Google Sans', 'Google Sans Text', Roboto, system-ui, sans-serif;
   --font-family-mono: 'Roboto Mono', ui-monospace, monospace;
 
-  /* §3 diagram sizes at scale 1 (used by the renderer). Nothing below 10.5 px. */
-  --font-size-zone-title: 15px;
-  --font-size-zone-title-deep: 13px;
-  --font-weight-zone-title: 500;
-  --font-size-card-title: 13px;
-  --font-weight-card-title: 700;
-  --font-size-card-subtitle: 10.5px;
-  --font-size-chip: 10.5px;
+  /* §3 diagram sizes at scale 1 (used by the renderer). */
   --font-size-legend: 11px;
 
   /* App chrome type scale. Controls use 13 px (§9); the footnote matches the legend size. */
@@ -66,7 +59,6 @@
   --font-size-headline: 22px;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
-  --font-weight-bold: 700;
 
   /* §9 controls and focus ring: 2 px primary with a 2 px surface gap. */
   --control-height: 32px;

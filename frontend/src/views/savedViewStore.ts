@@ -179,7 +179,7 @@ export function useSavedViewStore(): SavedViewStore {
 }
 
 /** The saved views, newest first, kept current; null until first read. */
-export function useSavedViews(active = true): readonly StoredView[] | null {
+export function useSavedViews(): readonly StoredView[] | null {
   const store = useSavedViewStore();
   const [views, setViews] = useState<readonly StoredView[] | null>(null);
   const refresh = useCallback(() => {
@@ -198,7 +198,6 @@ export function useSavedViews(active = true): readonly StoredView[] | null {
   }, [store]);
 
   useEffect(() => {
-    if (!active) return undefined;
     let cancel = refresh();
     const unsubscribe = store.subscribe(() => {
       cancel();
@@ -208,7 +207,7 @@ export function useSavedViews(active = true): readonly StoredView[] | null {
       cancel();
       unsubscribe();
     };
-  }, [store, refresh, active]);
+  }, [store, refresh]);
 
   return views;
 }

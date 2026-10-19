@@ -44,9 +44,6 @@ export interface DetailsSource {
   readonly ctx: RuleContext;
 }
 
-/** The kinds in the model's order: its enum follows the relation table of the catalog skill (§4). */
-export const RELATION_ORDER: readonly RelationKind[] = RELATION_KIND_IDS;
-
 const DIRECTION_RANK: Readonly<Record<RelationDirection, number>> = { out: 0, both: 1, in: 2 };
 
 function compare(a: string, b: string): number {
@@ -105,7 +102,7 @@ export function groupRelations(
   }
 
   const ordered: RelationGroup[] = [];
-  for (const kind of RELATION_ORDER) {
+  for (const kind of RELATION_KIND_IDS) {
     const list = groups.get(kind);
     if (list === undefined) continue;
     list.sort(

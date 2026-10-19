@@ -18,8 +18,6 @@ import { Menu, type MenuCloseReason, type MenuItem } from './Menu';
 export interface MenuButtonProps {
   /** The button's text and name. */
   readonly label: string;
-  /** The menu's name (default: the button's). */
-  readonly menuLabel?: string;
   readonly items: readonly MenuItem[];
   readonly align?: 'start' | 'end';
   readonly disabled?: Inert;
@@ -30,7 +28,6 @@ export interface MenuButtonProps {
 
 export function MenuButton({
   label,
-  menuLabel,
   items,
   align = 'start',
   disabled,
@@ -97,7 +94,7 @@ export function MenuButton({
       {open && !inert ? (
         <Menu
           id={menuId}
-          label={menuLabel ?? label}
+          label={label}
           items={items}
           align={align}
           initialIndex={initial}

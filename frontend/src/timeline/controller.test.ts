@@ -88,7 +88,6 @@ function setup(options: { readonly hash?: string; readonly cached?: readonly Sto
     get: (key) => Promise.resolve(kept.get(key)),
     put: () => Promise.resolve(),
     listScope: (scope) => Promise.resolve([...kept.values()].filter((entry) => entry.scope === scope)),
-    persistent: () => Promise.resolve(true),
   };
   /** Another tab of the browser stores a day, behind this controller's back. */
   const storedElsewhere = (entry: StoredTick): void => {

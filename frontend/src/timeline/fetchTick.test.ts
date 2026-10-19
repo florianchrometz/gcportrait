@@ -81,7 +81,6 @@ function memoryCache(): TickCacheStore & {
       }
     },
     listScope: () => Promise.resolve([...stored.values()]),
-    persistent: () => Promise.resolve(true),
   };
 }
 

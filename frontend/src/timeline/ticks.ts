@@ -16,11 +16,10 @@ import {
   dayOfReadTime,
   dayReadTime,
   dayStart,
-  isDay,
   utcDayOf,
 } from '@gcportrait/model';
 
-export { DAY_MS, TIMELINE_DAYS, addDays, dayOfReadTime, dayReadTime, dayStart, isDay, utcDayOf };
+export { DAY_MS, TIMELINE_DAYS, addDays, dayOfReadTime, dayReadTime, dayStart, utcDayOf };
 
 export interface TimelineTick {
   /** 0 for the oldest tick, `TIMELINE_DAYS - 1` for the latest. */

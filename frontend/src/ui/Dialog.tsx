@@ -11,15 +11,7 @@
  * actions make: it has no Close button, a press on the backdrop does nothing, Escape still closes it (the way to
  * cancel), and focus moves to `initialFocus` (its least destructive action) when given.
  */
-import {
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  type ReactElement,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { useId, useLayoutEffect, useRef, type ReactElement, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 
 import controls from './controls.module.css';
@@ -62,12 +54,7 @@ function OpenDialog({
   const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const descriptionId = useId();
-  const onCloseRef = useRef(onClose);
   const initialFocusRef = useRef(initialFocus);
-
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  });
 
   // Modal: the rest of the page is inert while the dialog is open; focus comes back where it was.
   useLayoutEffect(() => {
@@ -95,7 +82,7 @@ function OpenDialog({
       ref={backdropRef}
       className={styles.backdrop}
       onPointerDown={(event) => {
-        if (!alert && event.target === event.currentTarget) onCloseRef.current('backdrop');
+        if (!alert && event.target === event.currentTarget) onClose('backdrop');
       }}
     >
       <div

@@ -17,7 +17,6 @@
  *   divides each run of items from the next (the Export menu's options and actions).
  */
 import {
-  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -103,12 +102,7 @@ export function Menu({
   const start = Math.min(Math.max(0, initialIndex), Math.max(0, items.length - 1));
   const [active, setActive] = useState(start);
   const [position, setPosition] = useState(at);
-  const onCloseRef = useRef(onClose);
   const type = useTypeahead();
-
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  });
 
   // At a point: keep the menu inside the viewport. Then focus the initial item.
   useLayoutEffect(() => {
@@ -129,7 +123,7 @@ export function Menu({
   }, [at]);
 
   useOutsidePress(insideRef === undefined ? [listRef] : [listRef, insideRef], true, () => {
-    onCloseRef.current('outside');
+    onClose('outside');
   });
 
   const move = (index: number): void => {

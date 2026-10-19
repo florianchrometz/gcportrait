@@ -22,7 +22,7 @@ import {
   type ExportSettings,
 } from '../../export/exportDiagram';
 import { sessionFontFaceCss } from '../../export/fonts';
-import { rasterizeSvg, scaleLabel, type PngGeometry, type PngScale } from '../../export/raster';
+import { PNG_SCALES, rasterizeSvg, scaleLabel, type PngGeometry, type PngScale } from '../../export/raster';
 import { usePopover } from '../../state';
 import { useTheme } from '../../theme/useTheme';
 import type { MenuItem } from '../../ui/Menu';
@@ -210,7 +210,7 @@ export function ExportMenu({
         setThemeChoice(value);
       }),
     ),
-    ...([2, 3] as const).map((value) =>
+    ...PNG_SCALES.map((value) =>
       option('PNG resolution', `scale-${String(value)}`, scaleLabel(value), scale === value, () => {
         setScale(value);
       }),

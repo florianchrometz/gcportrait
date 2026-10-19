@@ -24,7 +24,6 @@ import { BuildMemo, buildGraph, viewportBudget } from '@gcportrait/graph';
 import {
   buildProjectIndex,
   demoSizeOfRef,
-  isDemoSize,
   isSnapshotRef,
   LENS_IDS,
   ViewSpecSchema,
@@ -179,8 +178,12 @@ function viewportOf(value: unknown): Viewport {
   return { width, height };
 }
 
+type DataHandlerRequest = Exclude<DataRequest, { readonly type: 'demo' }>;
+
 /** Parses a message from the page; anything else is a protocol error. */
-function parseRequest(message: unknown): DataRequest | { readonly id: number; readonly error: string } {
+function parseRequest(
+  message: unknown,
+): DataHandlerRequest | { readonly id: number; readonly error: string } {
   const id = isObject(message) && typeof message['id'] === 'number' ? message['id'] : -1;
   if (!isObject(message)) return { id, error: 'a request must be an object' };
   if (message['type'] === 'lenses') return { type: 'lenses', id };
@@ -230,12 +233,6 @@ function parseRequest(message: unknown): DataRequest | { readonly id: number; re
     const query = parseLocateQuery(message['query']);
     if (query === null || query.spec.snapshot === '') return { id, error: 'the locate query is malformed' };
     return { type: 'locate', id, query };
-  }
-  if (message['type'] === 'demo') {
-    const size = message['size'];
-    return isDemoSize(size)
-      ? { type: 'demo', id, size }
-      : { id, error: `no demo organisation of size ${JSON.stringify(size)}` };
   }
   return { id, error: `unknown request type ${JSON.stringify(message['type'])}` };
 }
@@ -397,15 +394,7 @@ export function createDataHandler(
   const graphOn = async (ref: SnapshotRef, day: DayRef, id: number): Promise<Loaded> =>
     (await graphAt(ref, day.tick ?? undefined, id)).loaded;
 
-  const handle = async (request: DataRequest): Promise<void> => {
-    if (request.type === 'demo') {
-      const { prepareDemo } = await demoModule();
-      const prepared = await prepareDemo(request.size, (progress) => {
-        post({ type: 'job-progress', id: request.id, progress });
-      });
-      post({ type: 'demo', id: request.id, prepared });
-      return;
-    }
+  const handle = async (request: DataHandlerRequest): Promise<void> => {
     if (request.type === 'lenses') {
       post({ type: 'lenses', id: request.id, lenses: lensList() });
       return;

@@ -19,3 +19,24 @@ afterEach(() => {
   // "Do not ask again in this session" (the large-snapshot guard) is a tab's: each test starts a new one.
   window.sessionStorage.clear();
 });
+
+// jsdom lacks CompressionStream, DecompressionStream, and Blob.prototype.stream, standard in target browsers and Node.
+if (typeof window !== 'undefined') {
+  if (typeof window.CompressionStream === 'undefined' && typeof CompressionStream !== 'undefined') {
+    window.CompressionStream = CompressionStream;
+  }
+  if (typeof window.DecompressionStream === 'undefined' && typeof DecompressionStream !== 'undefined') {
+    window.DecompressionStream = DecompressionStream;
+  }
+  if (typeof Blob !== 'undefined' && typeof Blob.prototype.stream !== 'function') {
+    Blob.prototype.stream = function stream(this: Blob): ReadableStream<Uint8Array<ArrayBuffer>> {
+      return new ReadableStream<Uint8Array<ArrayBuffer>>({
+        start: async (controller) => {
+          const buffer = await this.arrayBuffer();
+          controller.enqueue(new Uint8Array(buffer));
+          controller.close();
+        },
+      });
+    };
+  }
+}

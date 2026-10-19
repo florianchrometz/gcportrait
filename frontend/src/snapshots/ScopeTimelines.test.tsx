@@ -92,7 +92,6 @@ describe('the timelines by scope', () => {
         const tick = day('organizations/30000000001', '2026-10-06');
         const app = await openPage([tick]);
         expect(open).toHaveBeenCalledExactlyOnceWith(TEST_OPEN_TIMEOUT_MS, expect.any(Function));
-        expect(await app.cache.persistent()).toBe(true);
         app.unmount();
         expect(await (await database()).get('tickCache', tick.key)).toMatchObject({
           key: tick.key,

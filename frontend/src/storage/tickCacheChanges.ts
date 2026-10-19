@@ -82,9 +82,8 @@ export interface TabChannel {
 /** Opens channel `name`, handing what other tabs post on it to `receive`; null where the browser has none. */
 export type TabChannelOpener = (name: string, receive: (data: unknown) => void) => TabChannel | null;
 
-/** The browser's `BroadcastChannel`, when it has one and lets the page open it. */
+/** The browser's `BroadcastChannel`, when it lets the page open it. */
 export function openBroadcastChannel(name: string, receive: (data: unknown) => void): TabChannel | null {
-  if (typeof BroadcastChannel !== 'function') return null;
   let channel: BroadcastChannel;
   try {
     channel = new BroadcastChannel(name);

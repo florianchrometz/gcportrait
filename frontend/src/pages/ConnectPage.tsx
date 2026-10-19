@@ -15,7 +15,6 @@ import { ScopeStep } from '../scope/ScopeStep';
 import { DemoEntry } from '../snapshots/DemoEntry';
 import { useAppState } from '../state';
 import controls from '../ui/controls.module.css';
-import { INERT_HINT } from '../ui/dom';
 import { SELF_HOST_GUIDE_URL } from '../projectSite';
 import styles from './ConnectPage.module.css';
 import page from './Page.module.css';
@@ -97,22 +96,8 @@ export function ConnectPage() {
                 <DemoEntry action={source.action} />
               ) : source.id === SIGN_IN_SOURCE.id ? (
                 <SignInCard />
-              ) : source.id === EXPORT_SOURCE.id ? (
-                <LoadExport />
               ) : (
-                <div className={styles.sourceAction}>
-                  <button
-                    type="button"
-                    className={styles.button}
-                    aria-disabled="true"
-                    aria-describedby={`${source.id}-hint`}
-                  >
-                    {source.action}
-                  </button>
-                  <span id={`${source.id}-hint`} className={page.note}>
-                    {INERT_HINT}
-                  </span>
-                </div>
+                <LoadExport />
               )}
             </li>
           ))}

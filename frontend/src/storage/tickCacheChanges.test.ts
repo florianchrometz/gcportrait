@@ -7,7 +7,7 @@
  * it posts itself; and without `BroadcastChannel`, or with one that refuses, nothing is posted, heard or thrown. The
  * last cases run on Node's own `BroadcastChannel`, under a name of their own.
  */
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { TICK_CONTENT_TYPE, tickCacheKey } from '../timeline/cacheKey';
 import {
@@ -56,10 +56,6 @@ function fakeOpener(): { readonly open: TabChannelOpener; readonly channels: Fak
   };
   return { open, channels };
 }
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
 
 describe('a change of the tick cache', () => {
   it('names the entry by its key fields alone', () => {
@@ -152,8 +148,11 @@ describe('the change signal', () => {
       failing.post(PUT);
     }).not.toThrow();
     expect(closed).toBe(true);
-    vi.stubGlobal('BroadcastChannel', undefined);
+    const throwing = vi.spyOn(globalThis, 'BroadcastChannel').mockImplementation(function () {
+      throw new Error('SecurityError');
+    });
     expect(openBroadcastChannel(TICK_CACHE_CHANNEL, () => undefined)).toBeNull();
+    throwing.mockRestore();
   });
 
   it('is one per page', () => {

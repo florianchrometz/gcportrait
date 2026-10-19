@@ -5,7 +5,6 @@ import { useState, type ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '../test/axe';
-import { expectInertButFocusable } from '../test/inert';
 import { renderInPage } from '../test/page';
 import { Select, type SelectOption } from './Select';
 
@@ -97,16 +96,5 @@ describe('Select (select-only combobox)', () => {
     await userEvent.click(combobox);
     fireEvent.pointerDown(screen.getByRole('button', { name: 'outside' }));
     expect(combobox.getAttribute('aria-expanded')).toBe('false');
-  });
-
-  it('is inert when disabled', async () => {
-    renderInPage(<Select label="Lens" options={LEVELS} value="auto" onChange={() => undefined} disabled />);
-    const combobox = screen.getByRole('combobox', { name: 'Lens' });
-    expectInertButFocusable(combobox);
-    await userEvent.click(combobox);
-    combobox.focus();
-    await userEvent.keyboard('{ArrowDown}');
-    expect(combobox.getAttribute('aria-expanded')).toBe('false');
-    await expectNoAxeViolations();
   });
 });

@@ -8,9 +8,10 @@ import { DataError } from '../../diagram/pipeline/dataHandler';
 import { findStoredExtra, loadStoredHistory, storedSnapshotVersion } from '../../snapshots/load';
 import { storedRecord } from '../../snapshots/testing';
 import * as storage from '../../storage/db';
+import { resetWorkerDatabase } from '../../storage/workerDatabase';
 import { TEST_OPEN_TIMEOUT_MS, useFreshIndexedDb } from '../../test/indexedDb';
 import { storedTick } from '../testing/fixtures';
-import { readCachedTick, resetTickStoreDatabase } from './store';
+import { readCachedTick } from './store';
 
 const REF = '01J0000000000000000000000E';
 const RECORD = storedRecord(REF);
@@ -23,7 +24,7 @@ const OWNER = {
 const { database } = useFreshIndexedDb({ resetSnapshots: true });
 
 beforeEach(() => {
-  resetTickStoreDatabase(TEST_OPEN_TIMEOUT_MS);
+  resetWorkerDatabase(TEST_OPEN_TIMEOUT_MS);
   vi.spyOn(storage, 'openDatabase');
 });
 
@@ -32,7 +33,7 @@ afterEach(() => {
     if (result.type === 'fulfilled') result.value?.close();
   }
   vi.restoreAllMocks();
-  resetTickStoreDatabase();
+  resetWorkerDatabase();
 });
 
 async function populate(): Promise<void> {
@@ -98,9 +99,9 @@ describe('the worker’s shared snapshot and tick database', () => {
     expect(open).toHaveBeenCalledTimes(2);
   });
 
-  it('restores the shared production timeout through the tick reader’s reset', async () => {
+  it('restores the shared production timeout through worker database reset', async () => {
     await populate();
-    resetTickStoreDatabase();
+    resetWorkerDatabase();
     expect(await storedSnapshotVersion(REF)).toBe(RECORD.meta.savedAt);
     expect(await readCachedTick(TICK.key)).toEqual(TICK);
     expect(storage.openDatabase).toHaveBeenCalledExactlyOnceWith(

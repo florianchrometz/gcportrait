@@ -393,7 +393,7 @@ control's fills and that no other sheet defines a `danger` or `primary` class, a
 - Colours, focus ring and control metrics are the app chrome tokens of
   `.agents/skills/gcp-diagram-style/SKILL.md` §9, and typography is §3, copied value for value into
   `src/styles/tokens.css` as CSS custom properties (`--color-primary`, `--color-surface`, ...,
-  `--font-family-sans`, `--font-size-card-title`, ...). A new colour goes into the skill first, then into the
+  `--font-family-sans`, `--font-size-control`, ...). A new colour goes into the skill first, then into the
   tokens, in both themes. Every stylesheet of the chrome is a CSS module beside its component and uses these
   properties only, never a raw colour value, and asks for a width only with the layouts' media queries, in
   rem, at its end (section "Layouts"): `ui/tokens.test.ts` fails on a raw colour or a colour token one theme

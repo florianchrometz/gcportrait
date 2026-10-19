@@ -7,13 +7,14 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
+import { isDay } from '@gcportrait/model';
+
 import {
   addDays,
   dayOfReadTime,
   dayReadTime,
   historyTicks,
   indexOfDay,
-  isDay,
   localMinute,
   tickLabel,
   tickTitle,

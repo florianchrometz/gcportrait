@@ -13,7 +13,6 @@
  * module, so `react-dom/server` stays out of its bundle.
  */
 export { TAGLINE, WORDMARK } from './branding';
-export { documentText, type StaticOptions } from './diagram/DiagramSvg';
 export { diagramIcons } from './diagram/iconTable';
 export type { DiagramInput } from './diagram/model';
 export { loadDemoSnapshot, zoneTypeNames } from './diagram/pipeline/dataHandler';
@@ -22,19 +21,14 @@ export { PALETTES, type DiagramTheme } from './diagram/theme/tokens';
 export {
   DRAWIO_EXTENSION,
   DRAWIO_MEDIA_TYPE,
-  DrawioError,
-  FONT_STYLESHEET,
   readDrawioFile,
   svgToDrawio,
   type DrawioFile,
-  type DrawioOptions,
-  type DrawioSummary,
-  type ReadDrawio,
 } from './export/drawio';
-export { exportFileName, type ExportExtension, type FileNameParts } from './export/fileName';
+export { exportFileName } from './export/fileName';
 export { pngGeometry, PngGeometryError } from './export/pngGeometry';
 export { drawnViewKey } from './state/sceneKey';
-export { createImportHandler, type HandlerEnvironment } from './import/worker/handler';
+export { createImportHandler } from './import/worker/handler';
 export type { ImportResponse, StreamFailure, StreamSettings } from './import/worker/protocol';
 export { isBundle } from './snapshots/bundle';
 export { decodeJson } from './snapshots/codec';

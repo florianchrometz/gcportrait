@@ -24,11 +24,7 @@ beforeAll(async () => {
 
 const { database } = useFreshIndexedDb({ resetSnapshots: true });
 
-async function storeDemoRecord(
-  id: string,
-  snapshot: Snapshot,
-  historyBlob?: Blob,
-): Promise<StoredSnapshot> {
+async function storeDemoRecord(id: string, snapshot: Snapshot, historyBlob?: Blob): Promise<StoredSnapshot> {
   const db = await database();
   const blob = await encodeJson(snapshot);
   const record: StoredSnapshot = {

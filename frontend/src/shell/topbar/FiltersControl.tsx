@@ -12,7 +12,9 @@ import {
   depthFromSlider,
   depthSliderMax,
   depthSliderValue,
+  FILTER_LISTS,
   formOf,
+  HIDE_SWITCHES,
   NO_FILTERS,
   withFormField,
   withListItem,
@@ -161,7 +163,7 @@ function WorkingFilters({ inert }: { readonly inert: string | undefined }): Reac
         <div className={styles.column}>
           <fieldset className={styles.fieldset} aria-describedby={hideId}>
             <legend className={styles.legend}>Hide</legend>
-            {(['hideEmptyProjects', 'hideEmptyFolders', 'hideDisconnected'] as const).map((name) => (
+            {HIDE_SWITCHES.map((name) => (
               <label key={name} className={styles.check}>
                 <input
                   type="checkbox"
@@ -235,7 +237,7 @@ function WorkingFilters({ inert }: { readonly inert: string | undefined }): Reac
               {choicesError} Its regions, projects, folders and types cannot be listed.
             </p>
           )}
-          {(['regions', 'projects', 'folders', 'includeTypes', 'excludeTypes'] as const).map((list) => (
+          {FILTER_LISTS.map((list) => (
             <PickerField
               key={list}
               label={LIST_LABELS[list]}

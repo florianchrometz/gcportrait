@@ -10,15 +10,14 @@
 export const JSON_TYPE = 'application/json';
 export const GZIP_TYPE = 'application/gzip';
 
-/** A Blob of `text`, compressed when the platform can. */
+/** A Blob of `text`, gzip-compressed. */
 export async function encodeText(text: string): Promise<Blob> {
   const plain = new Blob([text], { type: JSON_TYPE });
-  if (typeof CompressionStream !== 'function') return plain;
   const stream = plain.stream().pipeThrough(new CompressionStream('gzip'));
   return new Response(stream, { headers: { 'Content-Type': GZIP_TYPE } }).blob();
 }
 
-/** `value` as JSON in a Blob (compressed when the platform can). */
+/** `value` as JSON in a gzip-compressed Blob. */
 export function encodeJson(value: unknown): Promise<Blob> {
   return encodeText(JSON.stringify(value));
 }

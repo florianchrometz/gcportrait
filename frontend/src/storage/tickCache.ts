@@ -50,8 +50,6 @@ export interface TickCacheStore {
   put(tick: StoredTick, today: string, options?: TickWriteOptions): Promise<void>;
   /** The cached ticks of a scope (every key it has; a Blob is a handle, read only when asked). */
   listScope(scope: string): Promise<readonly StoredTick[]>;
-  /** Whether ticks can be stored here (false without IndexedDB). */
-  persistent(): Promise<boolean>;
 }
 
 /** What the Snapshots page does with the cache besides: list every scope's ticks, delete them. */
@@ -135,9 +133,6 @@ export function createTickCacheStore(
       } catch {
         return [];
       }
-    },
-    async persistent() {
-      return (await database()) !== null;
     },
     async list() {
       const db = await database();

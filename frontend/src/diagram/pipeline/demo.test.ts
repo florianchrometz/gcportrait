@@ -11,9 +11,10 @@ import { describe, expect, it } from 'vitest';
 
 import { decodeJson } from '../../snapshots/codec';
 import type { JobProgress } from '../../snapshots/worker/protocol';
+import { createDataClient, type DataClient } from './dataClient';
 import { loadDemoSnapshot } from './dataHandler';
 import { prepareDemo } from './demo';
-import { createInProcessWorkers } from './inProcess';
+import { startRole } from './demoRole';
 
 describe('the demo job (data worker)', () => {
   it('prepares demo S as the data worker draws it, with its 35-day history', async () => {
@@ -39,20 +40,30 @@ describe('the demo job (data worker)', () => {
   });
 
   it('is what the data client’s `demo` resolves to through the worker protocol, its progress forwarded', async () => {
-    const workers = createInProcessWorkers();
+    let client: DataClient | null = null;
+    const handler = startRole((response) => {
+      queueMicrotask(() => {
+        client?.receive(response);
+      });
+    });
+    client = createDataClient((request) => {
+      queueMicrotask(() => {
+        handler(request);
+      });
+    });
     try {
       const stages: JobProgress['stage'][] = [];
-      const prepared = await workers.data.demo('S', (progress) => stages.push(progress.stage));
+      const prepared = await client.demo('S', (progress) => stages.push(progress.stage));
       expect(prepared.id).toBe('demo:S');
       expect(stages).toEqual(['generate', 'read', 'read', 'encode']);
       // A size there is none of is refused by the handler as a protocol error, which the client passes on.
-      await expect(workers.data.demo('Q' as DemoSize)).rejects.toMatchObject({
+      await expect(client.demo('Q' as DemoSize)).rejects.toMatchObject({
         name: 'DataWorkerError',
         code: 'protocol',
         message: 'no demo organisation of size "Q"',
       });
     } finally {
-      workers.dispose();
+      client.dispose();
     }
   });
 });

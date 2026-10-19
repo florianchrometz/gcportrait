@@ -92,7 +92,6 @@ describe('the tick cache', () => {
     // The same key again replaces the entry.
     await cache.put(tick(ORG, '2026-10-01', { assetCount: 9 }), '2026-10-10');
     expect((await cache.get(key))?.assetCount).toBe(9);
-    expect(await cache.persistent()).toBe(true);
   });
 
   it('drops the scope’s days before the 35-day window when a tick is stored', async () => {
@@ -249,7 +248,6 @@ describe('the tick cache', () => {
     await expect(cache.put(tick(ORG, '2026-10-01'), '2026-10-10')).rejects.toThrow(/does not let gcportrait/);
     expect(await cache.listScope(ORG)).toEqual([]);
     expect(await cache.get('x')).toBeUndefined();
-    expect(await cache.persistent()).toBe(false);
     expect(await cache.list()).toEqual([]);
     await cache.remove('x');
     expect(await cache.removeScope(ORG)).toBe(0);

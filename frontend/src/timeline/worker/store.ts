@@ -4,13 +4,8 @@
  * connection shared with its snapshot reader (storage/workerDatabase.ts, never the page's), opened on first use
  * and again after it was closed under the worker (another tab's schema upgrade). Without IndexedDB nothing is cached.
  */
-import { OPEN_TIMEOUT_MS, type StoredTick } from '../../storage/db';
-import { recoverWorkerDatabase, resetWorkerDatabase, workerDatabase } from '../../storage/workerDatabase';
-
-/** Forgets the worker's shared connection and sets its next opens' timeout (tests replace IndexedDB). */
-export function resetTickStoreDatabase(timeoutMs = OPEN_TIMEOUT_MS): void {
-  resetWorkerDatabase(timeoutMs);
-}
+import type { StoredTick } from '../../storage/db';
+import { recoverWorkerDatabase, workerDatabase } from '../../storage/workerDatabase';
 
 /**
  * The cached tick under `key`, or undefined when absent or IndexedDB is unavailable. Opening errors propagate;

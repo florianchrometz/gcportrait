@@ -8,8 +8,6 @@
 export const SUBTITLE_MIN_SCALE = 0.55;
 export const LABEL_MIN_SCALE = 0.35;
 export const THIN_ABOVE_SCALE = 2;
-/** The width 2 px strokes thin to past `THIN_ABOVE_SCALE`. */
-export const THIN_STROKE = 1.5;
 
 export interface LevelOfDetail {
   readonly subtitles: boolean;

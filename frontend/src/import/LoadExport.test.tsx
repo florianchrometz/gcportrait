@@ -3,7 +3,7 @@ import { generateOrganization, toCaiNdjson } from '@gcportrait/demo-data';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, type ReactElement } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { signedInSession } from '../auth/testing';
 import { SIGNED_OUT_SESSION } from '../auth/types';
@@ -49,14 +49,6 @@ async function drop(
   await userEvent.upload(screen.getByTestId('export-files'), [new File([LINES], 'export.json')]);
   await act(() => library.answer({ ok: { refs: records.map((record) => record.id), records, warnings } }));
 }
-
-beforeEach(() => {
-  vi.stubGlobal('CompressionStream', undefined);
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
 
 describe('isGcsUri', () => {
   it('takes gs://BUCKET/… only', () => {
